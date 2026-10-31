@@ -4,7 +4,7 @@ extends RefCounted
 ## so a deal is always O(n) with no rejection sampling. Only one bias applies per deal:
 ## two would evict each other's cards, and nothing needs stacking yet.
 
-const SEATS: int = 3
+const SEATS: int = Seats.COUNT
 const HAND_SIZE: int = 17
 const KITTY_SIZE: int = 3
 

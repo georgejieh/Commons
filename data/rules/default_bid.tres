@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="BidParams" format=3]
+
+[ext_resource type="Script" path="res://data/rules/bid_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+base_stake = 1
+grab_multiplier = 2
