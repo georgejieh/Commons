@@ -20,3 +20,20 @@ extends Resource
 @export var weak_teammate_rank: int
 ## The lowest rank the upstream seat blocks with.
 @export var block_low_rank: int
+## Bid points, from the Plan.
+@export var big_joker_points: float
+@export var small_joker_points: float
+@export var two_points: float
+@export var ace_points: float
+@export var bomb_points: float
+@export var rocket_points: float
+## Each hand under par adds shape_points.
+@export var shape_par_hands: float
+@export var shape_points: float
+@export var call_threshold: float
+@export var grab_threshold: float
+## Scales the bar for the last seat to decide.
+@export var last_bidder_factor: float
+## The share of deals that should find a landlord.
+@export var bid_rate_low: float
+@export var bid_rate_high: float

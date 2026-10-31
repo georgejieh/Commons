@@ -46,6 +46,13 @@ func needs_redeal() -> bool:
 	return _phase == Phase.DONE and _landlord == Seats.NONE
 
 
+## True when no seat decides after this one, unless a call opens the grabbing.
+func is_last_to_act() -> bool:
+	if _phase == Phase.CALLING:
+		return _decided == Seats.COUNT - 1
+	return _pending.is_empty()
+
+
 ## claim means call while calling and grab while grabbing. False is a pass.
 func act(seat: int, claim: bool) -> Reason:
 	if _phase == Phase.DONE:

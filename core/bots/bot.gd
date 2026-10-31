@@ -5,8 +5,16 @@ extends RefCounted
 
 
 ## True claims the landlord seat. counts is the bot's own dealt hand.
-static func decide_bid(_counts: PackedByteArray, _config: BotConfig, _budget: BotBudget) -> bool:
-	return false
+static func decide_bid(
+	counts: PackedByteArray,
+	is_grab: bool,
+	is_last: bool,
+	table: BotTable,
+	config: BotConfig,
+	_budget: BotBudget
+) -> bool:
+	var points: float = BidPolicy.hand_points(counts, table, config.weights)
+	return points >= BidPolicy.threshold(is_grab, is_last, config.weights)
 
 
 ## legal is what MoveGenerator lists. Returns a pass only when following.

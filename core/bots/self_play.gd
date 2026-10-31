@@ -41,6 +41,26 @@ static func play_duplicate(
 	return wins
 
 
+## Runs bidding over a deal. A seat's first hand is its deal, because the kitty comes later.
+static func bid_round(
+	deal: DealResult, configs: Array[BotConfig], table: BotTable, first_seat: int
+) -> Bidding:
+	var bidding: Bidding = Bidding.new(first_seat)
+	while bidding.phase() != Bidding.Phase.DONE:
+		var seat: int = bidding.seat_to_act()
+		var is_grab: bool = bidding.phase() == Bidding.Phase.GRABBING
+		var claim: bool = Bot.decide_bid(
+			deal.hands[seat].counts(),
+			is_grab,
+			bidding.is_last_to_act(),
+			table,
+			configs[seat],
+			BotBudget.unlimited()
+		)
+		bidding.act(seat, claim)
+	return bidding
+
+
 ## Deals one seeded hand from a fresh deck.
 static func deal_from_seed(deal_seed: int) -> DealResult:
 	var cards: Array[CardInstance] = []
