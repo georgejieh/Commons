@@ -1,0 +1,9 @@
+Copyright (c) 2026 George Jieh. All rights reserved.
+
+This repository and the game Commons are proprietary. You may download and play
+released builds free of charge. No other right is granted: you may not copy,
+modify, redistribute, sell or create derivative works from the code, art, audio,
+text or data in this repository without written permission.
+
+Third-party components keep their own licenses. See docs/DEPENDENCIES.md and the
+license files in addons/ and .claude/skills/.
