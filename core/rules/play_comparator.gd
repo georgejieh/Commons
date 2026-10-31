@@ -20,6 +20,8 @@ static func beats(play: Pattern, current: Pattern, rules: RuleSet) -> bool:
 		return play_tier > current_tier
 	if play_tier == TIER_PLAIN and play.shape() != current.shape():
 		return false
+	if play.type == Pattern.Type.ROCKET:
+		return false
 	return play.key > current.key
 
 

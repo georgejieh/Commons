@@ -130,6 +130,16 @@ func test_a_bigger_bomb_wins_when_five_of_a_kind_is_enabled() -> void:
 	assert_bool(PlayComparator.beats(_read("44444", rules), low_five, rules)).is_true()
 
 
+func test_a_rocket_never_beats_a_rocket_whatever_the_rank_maps() -> void:
+	var counts: PackedByteArray = RankText.counts("sb")
+	var plain: Pattern = Classifier.classify(counts, _rules, Ranks.identity_map()).pattern
+	var reversed_map: PackedByteArray = Ranks.identity_map()
+	reversed_map.reverse()
+	var reversed: Pattern = Classifier.classify(counts, _rules, reversed_map).pattern
+	assert_bool(PlayComparator.beats(plain, reversed, _rules)).is_false()
+	assert_bool(PlayComparator.beats(reversed, plain, _rules)).is_false()
+
+
 func test_wild_bomb_sits_below_the_rocket_by_default() -> void:
 	var rules: RuleSet = _wild_rules(true)
 	var wild: Pattern = _read("7777", rules)
