@@ -1,10 +1,11 @@
 extends SceneTree
-## Fails if core/ breaks the layer rules. Run:
+## Fails if core/ or data/ breaks the layer rules. Run:
 ##   godot --headless --path . --script res://tools/check_layers.gd
 
 
 func _initialize() -> void:
 	var problems: PackedStringArray = LayerCheck.scan("res://core")
+	problems.append_array(LayerCheck.scan("res://data"))
 	for problem: String in problems:
 		printerr(problem)
 	print("Layer check: %d problem(s)" % problems.size())

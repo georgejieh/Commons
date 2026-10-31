@@ -3,6 +3,8 @@ extends GdUnitTestSuite
 
 const SEED: int = 2026
 const DRAWS: int = 200
+## Above 2^53, so a JSON number could not hold it.
+const UNSAFE_JSON_SEED: int = 9007199254740993
 
 
 func test_stable_hash_matches_published_fnv1a_vectors() -> void:
@@ -32,7 +34,7 @@ func test_different_run_seeds_give_different_draws() -> void:
 
 
 func test_saved_state_resumes_every_stream_through_json() -> void:
-	var original: RandomStreams = RandomStreams.new(-SEED)
+	var original: RandomStreams = RandomStreams.new(UNSAFE_JSON_SEED)
 	for stream_name: String in RandomStreams.NAMES:
 		_draws(original, stream_name)
 	var saved: Dictionary = JSON.parse_string(JSON.stringify(original.to_dict()))
