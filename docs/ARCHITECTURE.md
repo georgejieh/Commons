@@ -16,6 +16,10 @@ Dependencies run one way: `ui` → `game` → `core`. `core` may read definition
 | `tests/` | Unit, integration and golden tests |
 | `tools/` | Asset scripts and headless harnesses |
 
-`tools/layer_check.gd` enforces the `core/` rules, and the test suite runs it. It reads base types and global classes from Godot and separates code from strings. It fails on a path outside `core/` and `data/`, a relative or `uid://` path, runtime `load()`, a Node subclass, a scene, a global class outside those folders, autoload or scene tree access, or an engine singleton other than the math ones.
+`tools/layer_check.gd` enforces the `core/` rules, and the test suite runs it. It reads base types and global classes from Godot and separates code from strings. It fails on a path outside `core/` and `data/`, a relative or `uid://` path, runtime `load()`, a Node subclass, a scene, a global class outside those folders, autoload or scene tree access, an engine singleton other than the math ones, a global random call, array shuffle or pick, or an engine generator outside the stream service.
 
 `tools/script_check.gd` makes every project script compile in the test suite, because exports tokenize scripts without type checking.
+
+## Randomness
+
+Each run has one `RandomStreams` with six independent streams: deal, shop, debuff, ai, events, cosmetic. A stream's seed is an FNV-1a hash of the run seed and its name, so adding a stream never disturbs the others. `core/` code takes a `RandomStream` and never touches an engine generator. Seeds and states serialize as text, because JSON numbers cannot hold 64 bits.

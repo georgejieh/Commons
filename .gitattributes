@@ -33,3 +33,6 @@
 
 # Compiled string table (P1A.1)
 *.translation filter=lfs diff=lfs merge=lfs -text
+
+# Golden logs
+*.golden text eol=lf
