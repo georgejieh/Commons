@@ -1,20 +1,31 @@
 extends GdUnitTestSuite
 ## Rank constants, chainability and the index to label to index round trip.
 
+const LABELS: PackedStringArray = [
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+	"10",
+	"J",
+	"Q",
+	"K",
+	"A",
+	"2",
+	"Small Joker",
+	"Big Joker",
+]
+
 
 func test_every_rank_round_trips_through_its_label() -> void:
-	var rank_by_label: Dictionary[String, int] = {}
 	for rank: int in Ranks.COUNT:
 		var label: String = tr(Ranks.label_key(rank))
-		assert_str(label).is_not_equal(Ranks.label_key(rank))
-		assert_bool(rank_by_label.has(label)).is_false()
-		rank_by_label[label] = rank
-
-	assert_int(rank_by_label.size()).is_equal(15)
-	for label: String in rank_by_label:
-		var key: String = Ranks.label_key(rank_by_label[label])
-		assert_str(tr(key)).is_equal(label)
-		assert_int(Ranks.from_label_key(key)).is_equal(rank_by_label[label])
+		assert_str(label).is_equal(LABELS[rank])
+		var key: String = Ranks.label_key(LABELS.find(label))
+		assert_int(Ranks.from_label_key(key)).is_equal(rank)
 
 
 func test_indices_follow_the_rank_order() -> void:
