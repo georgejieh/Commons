@@ -17,7 +17,7 @@ permissions:
 
 env:
   GODOT_VERSION: 4.7.2
-  VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.0.0-dev' }}
+  VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.0.0' }}
   APPIMAGETOOL_VERSION: 1.9.1
   APPIMAGETOOL_SHA256: ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0
   APPIMAGE_RUNTIME_VERSION: 20251108
