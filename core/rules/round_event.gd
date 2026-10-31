@@ -10,6 +10,8 @@ var type: Type
 var seat: int
 ## The cards played or taken. Empty for every other event.
 var card_ids: Array[int]
+## Copies of the played cards, because scoring reads their enhancements and stamps.
+var cards: Array[CardInstance] = []
 var pattern: Pattern
 ## Cards left for ANNOUNCED. A Finish for ROUND_ENDED.
 var value: int

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "criticism_meeting"
+kind = 4
+tag = 1
+lever = 1
+hooks = Array[String](["build_rank_map"])
+parameters = Dictionary[String, int]({"rank": 12, "ranks_as": 0})
+rarity = 0
+cost = 0
+name_key = "modifier.criticism_meeting.name"
+text_key = "modifier.criticism_meeting.text"

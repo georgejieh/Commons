@@ -52,9 +52,9 @@ func test_selection_is_deterministic_whatever_the_hand_order() -> void:
 
 func test_plain_cards_go_before_valuable_ones() -> void:
 	var hand: Hand = _hand_of([0, 1, 2, 3])
-	hand.cards()[0].set_enhancement("gold")
-	hand.cards()[1].set_owner_stamp(0)
-	hand.cards()[2].set_seal("red")
+	CardModifiers.enhance(hand.cards()[0], "gold")
+	CardModifiers.stamp(hand.cards()[1], 0)
+	CardModifiers.seal(hand.cards()[2], "red")
 	var single: Pattern = Classifier.classify(RankText.counts("3"), _rules, _map).pattern
 	assert_array(_ids(CardSelection.pick(hand, single))).is_equal([3])
 	var pair: Pattern = Classifier.classify(RankText.counts("33"), _rules, _map).pattern

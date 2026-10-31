@@ -14,3 +14,15 @@ rank.a,A
 rank.2,2
 rank.small_joker,Small Joker
 rank.big_joker,Big Joker
+modifier.cultural_revolution.name,Cultural Revolution
+modifier.cultural_revolution.text,"After any bomb, rank order inverts until the trick ends."
+modifier.promotion_of_the_masses.name,Promotion of the Masses
+modifier.promotion_of_the_masses.text,"3s rank above 2s, below the jokers."
+modifier.criticism_meeting.name,Criticism Meeting
+modifier.criticism_meeting.text,Your 2s rank as 3s this round.
+modifier.inverted_order.name,Inverted Order
+modifier.inverted_order.text,Rank order is reversed for your plays only.
+score.suffix.thousand,K
+score.suffix.million,M
+score.suffix.billion,B
+score.suffix.trillion,T

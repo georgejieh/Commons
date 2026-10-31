@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "cultural_revolution"
+kind = 0
+tag = 0
+lever = 1
+hooks = Array[String](["build_rank_map"])
+parameters = Dictionary[String, int]({})
+rarity = 2
+cost = 6
+name_key = "modifier.cultural_revolution.name"
+text_key = "modifier.cultural_revolution.text"

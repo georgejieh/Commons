@@ -9,9 +9,7 @@ var _params: RuleParams
 
 
 func _init(params: RuleParams) -> void:
-	_params = params.duplicate()
-	_params.wild_ranks = params.wild_ranks.duplicate()
-	_params.announce_at = params.announce_at.duplicate()
+	_params = params.copy()
 
 
 static func default_rules() -> RuleSet:
