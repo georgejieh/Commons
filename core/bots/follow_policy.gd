@@ -10,7 +10,7 @@ static func choose(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 	if position.trick_owner() == position.teammate:
 		return _on_teammate(position, legal)
 	if position.opponent_cards <= position.config.weights.block_cards:
-		var block: Pattern = _block(position, legal)
+		var block: Pattern = _block(legal)
 		if block != null:
 			return BotPlay.new(block, BotRationale.Code.BLOCK_OPPONENT)
 	return _best_response(position, _ungated(position, legal))
@@ -30,7 +30,7 @@ static func _on_teammate(position: BotPosition, legal: Array[Pattern]) -> BotPla
 
 
 ## The strongest ordinary answer, or the lowest bomb if there is none.
-static func _block(position: BotPosition, legal: Array[Pattern]) -> Pattern:
+static func _block(legal: Array[Pattern]) -> Pattern:
 	var strongest: Pattern = null
 	var bomb: Pattern = null
 	for move: Pattern in legal:
