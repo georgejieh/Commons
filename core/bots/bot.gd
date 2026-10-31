@@ -19,18 +19,7 @@ static func decide_play(
 	var position: BotPosition = BotPosition.new(view, table, config, scorer)
 	if view.public.current_play == null:
 		return LeadPolicy.choose(position, legal)
-	return _follow(position, legal)
-
-
-static func _follow(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
-	var best_move: Pattern = Pattern.pass_play()
-	var best_score: float = position.scorer.score_pass()
-	for move: Pattern in legal:
-		var score: float = position.scorer.score_play(move)
-		if score > best_score:
-			best_score = score
-			best_move = move
-	return BotPlay.new(best_move, BotRationale.Code.BEST_SCORE)
+	return FollowPolicy.choose(position, legal)
 
 
 ## Returns the need the bot declares before a Commons split.

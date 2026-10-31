@@ -12,3 +12,11 @@ extends Resource
 @export var type_bonus: PackedFloat32Array
 ## What emptying the hand is worth. Larger than any hand's value.
 @export var win_value: float
+## An opponent on this many cards or fewer must be stopped.
+@export var block_cards: int
+## A landlord on this many cards or fewer opens the peasants' bomb gate.
+@export var runaway_cards: int
+## The upstream seat tops a teammate's card below this rank.
+@export var weak_teammate_rank: int
+## The lowest rank the upstream seat blocks with.
+@export var block_low_rank: int

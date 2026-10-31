@@ -60,7 +60,7 @@ func test_prefers_the_weakest_of_equal_groups() -> void:
 
 
 func test_never_uses_a_two_as_a_kicker() -> void:
-	_assert_lead(["3332QQKKAA", FAR, FAR], "333")
+	_assert_lead(["333277QQ", FAR, FAR], "333")
 
 
 func test_never_breaks_a_bomb_for_a_kicker() -> void:

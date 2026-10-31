@@ -55,6 +55,11 @@ func trick_owner() -> int:
 	return Seats.NONE
 
 
+## The seat that plays just before the landlord.
+func is_upstream() -> bool:
+	return Seats.next(seat) == view.public.landlord
+
+
 func forced_win() -> bool:
 	return controls.effective_hands <= 1
 
