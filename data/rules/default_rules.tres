@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="RuleParams" format=3]
+
+[ext_resource type="Script" path="res://data/rules/rule_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+min_straight_length = 5
+min_pair_chain_length = 3
+min_airplane_length = 2
+two_may_chain = false
+single_wings_allowed = true
+pair_wings_allowed = true
+single_wings_may_pair = true
+joker_or_two_may_be_wing = true
+rocket_may_be_kicker = false
+four_two_singles_allowed = true
+four_two_pairs_allowed = true
+four_two_singles_may_share_rank = false
+five_plus_is_bomb = false
+wild_ranks = Array[int]([])
+rocket_above_wild_bomb = true
+anti_spring_doubles = true
