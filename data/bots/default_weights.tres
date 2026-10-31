@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="BotWeights" format=3]
+
+[ext_resource type="Script" path="res://data/bots/bot_weights.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+memo_cap = 50000
