@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_call:
 
 permissions:
   contents: read
@@ -53,4 +54,4 @@ jobs:
           godot --headless --path . --export-release Windows build/windows/Commons.exe
           godot --headless --path . --export-release Linux build/linux/Commons.x86_64
           test -s build/windows/Commons.exe
-          test -s build/linux/Commons.x86_64
+          bash tools/packaging/smoke.sh build/linux/Commons.x86_64
