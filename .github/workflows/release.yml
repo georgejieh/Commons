@@ -25,7 +25,7 @@ jobs:
       - name: Install packaging tools
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends nsis zip file
+          apt-get install -y --no-install-recommends nsis zip file curl ca-certificates
       - name: Move export templates to the runner's home
         run: |
           mkdir -p ~/.local/share/godot/export_templates ~/.config
