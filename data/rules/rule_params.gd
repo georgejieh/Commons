@@ -20,3 +20,5 @@ extends Resource
 @export var wild_ranks: Array[int]
 @export var rocket_above_wild_bomb: bool
 @export var anti_spring_doubles: bool
+## Hand sizes that are called out to the table.
+@export var announce_at: Array[int]

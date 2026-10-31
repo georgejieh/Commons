@@ -41,6 +41,11 @@ static func from_dict(data: Dictionary) -> CardInstance:
 	return card
 
 
+## Returns an independent copy, for views of a hand.
+func snapshot() -> CardInstance:
+	return CardInstance.from_dict(to_dict())
+
+
 func id() -> int:
 	return _id
 

@@ -1,6 +1,7 @@
 class_name RoundEvent
 extends RefCounted
-## One domain event. Presentation and bots read these and never reach into a round.
+## One domain event. Presentation reads these and never reaches into a round. Bots get
+## a SeatView instead.
 
 enum Type { ROUND_STARTED, KITTY_TAKEN, PLAYED, PASSED, TRICK_WON, ANNOUNCED, ROUND_ENDED }
 enum Finish { NORMAL, SPRING, ANTI_SPRING }
@@ -36,7 +37,8 @@ func describe() -> String:
 		sorted.sort()
 		line += " cards=%s" % str(sorted)
 	if pattern != null:
-		line += " pattern=%s" % Pattern.Type.keys()[pattern.type]
+		line += " pattern=%s main=%d" % [Pattern.Type.keys()[pattern.type], pattern.main_rank]
+		line += " chain=%d kickers=%s" % [pattern.chain_length, str(Array(pattern.kicker_ranks))]
 	if type == Type.ANNOUNCED or type == Type.ROUND_ENDED:
 		line += " value=%d" % value
 	return line

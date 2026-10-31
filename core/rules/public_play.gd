@@ -12,3 +12,7 @@ func _init(playing_seat: int, played: Pattern, played_counts: PackedByteArray) -
 	seat = playing_seat
 	pattern = played
 	counts = played_counts
+
+
+func copy() -> PublicPlay:
+	return PublicPlay.new(seat, pattern.copy(), counts.duplicate())

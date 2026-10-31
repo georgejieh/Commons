@@ -1,7 +1,7 @@
 class_name PublicView
 extends RefCounted
-## Everything any seat may know about a round. It holds copies of values and no link
-## back to the round, so nothing here can reach another seat's hand.
+## Everything any seat may know about a round. Every field is an independent copy with
+## no link back to the round, so changing a view changes nothing and reaches no hand.
 
 var landlord: int
 var seat_to_act: int
@@ -28,10 +28,12 @@ func _init(
 	landlord = landlord_seat
 	seat_to_act = acting_seat
 	remaining = sizes
-	history = plays.duplicate()
+	history = []
+	for play: PublicPlay in plays:
+		history.append(play.copy())
 	kitty_counts = PackedByteArray()
 	kitty_counts.resize(Ranks.COUNT)
 	for card: CardInstance in kitty:
 		kitty_counts[card.base_rank()] += 1
-	current_play = to_beat
+	current_play = null if to_beat == null else to_beat.copy()
 	announced = calls.duplicate()

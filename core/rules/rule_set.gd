@@ -11,6 +11,7 @@ var _params: RuleParams
 func _init(params: RuleParams) -> void:
 	_params = params.duplicate()
 	_params.wild_ranks = params.wild_ranks.duplicate()
+	_params.announce_at = params.announce_at.duplicate()
 
 
 static func default_rules() -> RuleSet:
@@ -88,3 +89,7 @@ func rocket_above_wild_bomb() -> bool:
 
 func anti_spring_doubles() -> bool:
 	return _params.anti_spring_doubles
+
+
+func announces_at(cards_left: int) -> bool:
+	return _params.announce_at.has(cards_left)

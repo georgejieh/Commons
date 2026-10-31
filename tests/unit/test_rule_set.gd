@@ -65,6 +65,12 @@ func test_anti_spring_doubles() -> void:
 	assert_bool(_rules.anti_spring_doubles()).is_true()
 
 
+func test_announcements_come_at_two_and_one_cards() -> void:
+	assert_bool(_rules.announces_at(2)).is_true()
+	assert_bool(_rules.announces_at(1)).is_true()
+	assert_bool(_rules.announces_at(3)).is_false()
+
+
 func test_a_rule_set_ignores_later_edits_to_its_params() -> void:
 	var params: RuleParams = RuleSet.DEFAULT_PARAMS.duplicate()
 	var wild: Array[int] = [Ranks.SEVEN]

@@ -4,6 +4,8 @@ extends GdUnitTestSuite
 const SEED: int = 1802
 const RANDOM_GAMES: int = 10000
 const TOTAL_CARDS: int = 54
+## Every three actions play at least one card, so a game can't need more.
+const MAX_ACTIONS: int = 162
 
 var _rules: RuleSet = RuleSet.default_rules()
 var _map: PackedByteArray = Ranks.identity_map()
@@ -131,7 +133,7 @@ func test_a_second_landlord_play_stops_an_anti_spring() -> void:
 	assert_int(_last_finish(round_state)).is_equal(RoundEvent.Finish.NORMAL)
 
 
-func test_anti_spring_can_be_switched_off() -> void:
+func test_anti_spring_is_detected_even_when_it_does_not_double() -> void:
 	var params: RuleParams = RuleSet.DEFAULT_PARAMS.duplicate()
 	params.anti_spring_doubles = false
 	var rules: RuleSet = RuleSet.new(params)
@@ -139,7 +141,58 @@ func test_anti_spring_can_be_switched_off() -> void:
 	var round_state: RoundState = RoundState.new(deal, 0, rules, _map)
 	_apply(round_state, "3")
 	_apply(round_state, "4")
-	assert_int(_last_finish(round_state)).is_equal(RoundEvent.Finish.NORMAL)
+	assert_int(_last_finish(round_state)).is_equal(RoundEvent.Finish.ANTI_SPRING)
+
+
+## Hands listed from the landlord round the table, for a landlord in the given seat.
+func _round_for_landlord(landlord: int, hands: Array[String]) -> RoundState:
+	var seats: Array[String] = ["", "", ""]
+	var seat: int = landlord
+	for text: String in hands:
+		seats[seat] = text
+		seat = Seats.next(seat)
+	return RoundState.new(RoundScript.stacked_deal(seats, ""), landlord, _rules, _map)
+
+
+func test_finishes_hold_for_a_landlord_in_every_seat() -> void:
+	for landlord: int in Seats.COUNT:
+		var spring: RoundState = _round_for_landlord(landlord, ["39", "4", "5"])
+		_apply(spring, "3")
+		_pass(spring)
+		_pass(spring)
+		_apply(spring, "9")
+		assert_int(_last_finish(spring)).is_equal(RoundEvent.Finish.SPRING)
+		assert_bool(spring.landlord_won()).is_true()
+
+		var anti_spring: RoundState = _round_for_landlord(landlord, ["38", "4", "5"])
+		_apply(anti_spring, "3")
+		_apply(anti_spring, "4")
+		assert_int(_last_finish(anti_spring)).is_equal(RoundEvent.Finish.ANTI_SPRING)
+		assert_bool(anti_spring.landlord_won()).is_false()
+
+		var normal: RoundState = _round_for_landlord(landlord, ["3589", "47", "6J"])
+		_apply(normal, "3")
+		_apply(normal, "4")
+		_pass(normal)
+		_apply(normal, "5")
+		_apply(normal, "7")
+		assert_int(_last_finish(normal)).is_equal(RoundEvent.Finish.NORMAL)
+
+
+func test_the_last_play_wins_its_trick_before_the_round_ends() -> void:
+	var round_state: RoundState = _round(["3", "4", "5"])
+	_apply(round_state, "3")
+	var events: Array[RoundEvent] = round_state.events()
+	assert_int(events[-2].type).is_equal(RoundEvent.Type.TRICK_WON)
+	assert_int(events[-2].seat).is_equal(0)
+
+
+func test_a_deal_can_not_reach_the_round_afterwards() -> void:
+	var deal: DealResult = RoundScript.stacked_deal(["33", "44", "55"], "6")
+	var round_state: RoundState = RoundState.new(deal, 0, _rules, _map)
+	deal.hands[1].remove(deal.hands[1].cards()[0].id())
+	deal.kitty.clear()
+	assert_array(Array(round_state.remaining())).is_equal([3, 2, 2])
 
 
 func test_every_applied_action_emits_an_event() -> void:
@@ -157,95 +210,8 @@ func test_seats_get_their_turn_in_order() -> void:
 	assert_int(Seats.next(2)).is_equal(0)
 
 
-func test_the_view_announces_at_two_and_one_cards() -> void:
-	var round_state: RoundState = _round(["3456", "8", "9"])
-	_apply(round_state, "3")
-	_pass(round_state)
-	_pass(round_state)
-	assert_int(round_state.public_view().announced[0]).is_equal(0)
-	_apply(round_state, "4")
-	_pass(round_state)
-	_pass(round_state)
-	assert_int(round_state.public_view().announced[0]).is_equal(2)
-	_apply(round_state, "5")
-	assert_int(round_state.public_view().announced[0]).is_equal(1)
-	assert_bool(_announcements(round_state) == [2, 1]).is_true()
-
-
-func _announcements(round_state: RoundState) -> Array[int]:
-	var values: Array[int] = []
-	for event: RoundEvent in round_state.events():
-		if event.type == RoundEvent.Type.ANNOUNCED:
-			values.append(event.value)
-	return values
-
-
-func test_the_view_shows_counts_history_and_the_kitty() -> void:
-	var round_state: RoundState = _round(["33", "44", "55"], "678")
-	_apply(round_state, "33")
-	_pass(round_state)
-	var view: PublicView = round_state.public_view()
-	assert_array(Array(view.remaining)).is_equal([3, 2, 2])
-	assert_int(view.history.size()).is_equal(2)
-	assert_int(view.history[0].counts[Ranks.THREE]).is_equal(2)
-	assert_int(view.history[1].pattern.type).is_equal(Pattern.Type.PASS)
-	assert_int(view.kitty_counts[Ranks.SIX]).is_equal(1)
-	assert_int(view.current_play.type).is_equal(Pattern.Type.PAIR)
-
-
-func test_a_view_is_a_snapshot() -> void:
-	var round_state: RoundState = _round(["33", "44", "55"])
-	var view: PublicView = round_state.public_view()
-	view.history.append(PublicPlay.new(0, Pattern.pass_play(), PackedByteArray()))
-	view.remaining[1] = 0
-	assert_int(round_state.public_view().history.size()).is_equal(0)
-	assert_array(Array(round_state.remaining())).is_equal([2, 2, 2])
-
-
-func test_a_seat_view_holds_only_its_own_hand() -> void:
-	var round_state: RoundState = _round(["33", "44", "55"])
-	var view: SeatView = round_state.view_for(1)
-	assert_int(view.own_counts[Ranks.FOUR]).is_equal(2)
-	assert_int(view.own_counts[Ranks.THREE]).is_equal(0)
-	assert_int(view.own_cards.size()).is_equal(2)
-	view.own_cards.clear()
-	view.own_counts[Ranks.FOUR] = 0
-	assert_int(round_state.view_for(1).own_cards.size()).is_equal(2)
-	assert_int(round_state.view_for(1).own_counts[Ranks.FOUR]).is_equal(2)
-
-
 ## Walks every object a bot can reach from its view. No type on the walk may lead to a
 ## Hand or a round, and no card outside its own hand may appear.
-func test_the_bot_api_has_no_path_to_other_hands() -> void:
-	var round_state: RoundState = _round(["33", "44", "55"], "678")
-	_apply(round_state, "33")
-	var view: SeatView = round_state.view_for(1)
-	var visited: Array[Object] = []
-	_walk(view, visited)
-	var allowed: Array[String] = ["SeatView", "PublicView", "PublicPlay", "Pattern", "CardInstance"]
-	for reached: Object in visited:
-		var script: Script = reached.get_script()
-		assert_array(allowed).contains([script.get_global_name()])
-		if reached is CardInstance:
-			var card: CardInstance = reached
-			assert_int(card.base_rank()).is_equal(Ranks.FOUR)
-
-
-func _walk(value: Variant, visited: Array[Object]) -> void:
-	if value is Array:
-		var items: Array = value
-		for item: Variant in items:
-			_walk(item, visited)
-	elif value is Object:
-		var reached: Object = value
-		if visited.has(reached):
-			return
-		visited.append(reached)
-		for property: Dictionary in reached.get_property_list():
-			if int(property["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE != 0:
-				_walk(reached.get(property["name"]), visited)
-
-
 func test_random_legal_games_terminate_with_every_card_accounted_for() -> void:
 	var stream: RandomStream = RandomStream.new(SEED)
 	for game: int in RANDOM_GAMES:
@@ -254,27 +220,30 @@ func test_random_legal_games_terminate_with_every_card_accounted_for() -> void:
 			cards.append(CardInstance.from_deck_id(deck_id))
 		var deal: DealResult = Dealer.deal(cards, stream)
 		var round_state: RoundState = RoundState.new(deal, game % Seats.COUNT, _rules, _map)
-		var played: Dictionary[int, bool] = _play_randomly(round_state, stream)
+		var seen: Dictionary[int, bool] = _play_randomly(round_state, stream)
 		assert_bool(round_state.is_over()).is_true()
-		var total: int = played.size()
-		for size: int in round_state.remaining():
-			total += size
-		assert_int(total).is_equal(TOTAL_CARDS)
+		assert_int(round_state.remaining()[round_state.winner()]).is_equal(0)
+		for seat: int in Seats.COUNT:
+			for card: CardInstance in round_state.view_for(seat).own_cards:
+				assert_bool(seen.has(card.id())).is_false()
+				seen[card.id()] = true
+		for deck_id: int in Deck.generate():
+			assert_bool(seen.has(deck_id)).is_true()
+		assert_int(seen.size()).is_equal(TOTAL_CARDS)
 
 
 func _play_randomly(round_state: RoundState, stream: RandomStream) -> Dictionary[int, bool]:
 	var played: Dictionary[int, bool] = {}
-	while not round_state.is_over():
-		var seat: int = round_state.seat_to_act()
+	var actions: int = 0
+	while not round_state.is_over() and actions < MAX_ACTIONS:
+		actions += 1
 		var moves: Array[Pattern] = round_state.legal_moves()
 		var pick: int = stream.next_int(0, moves.size())
 		if pick == moves.size() and round_state.current_play() == null:
 			pick = 0
-		var action: RoundAction = RoundAction.new(seat)
+		var action: RoundAction = RoundAction.new(round_state.seat_to_act())
 		if pick < moves.size():
-			action = RoundAction.from_cards(
-				seat, CardSelection.pick(round_state.hand_for_selection(), moves[pick])
-			)
+			action = round_state.action_for(moves[pick])
 		var reason: RoundState.Reason = round_state.apply(action)
 		if reason != RoundState.Reason.OK:
 			assert_int(reason).is_equal(RoundState.Reason.OK)

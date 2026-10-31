@@ -14,10 +14,9 @@ enum Reason {
 	DOES_NOT_BEAT,
 }
 
-const ANNOUNCE_AT: Array[int] = [2, 1]
 const PASSES_TO_RESET: int = 2
 
-var _hands: Array[Hand]
+var _hands: Array[Hand] = []
 var _kitty: Array[CardInstance]
 var _landlord: int
 var _rules: RuleSet
@@ -27,17 +26,23 @@ var _turn: int
 var _current: Pattern = null
 var _trick_leader: int = Seats.NONE
 var _passes: int = 0
-var _plays_by_seat: PackedInt32Array = PackedInt32Array([0, 0, 0])
+var _plays_by_seat: PackedInt32Array = PackedInt32Array()
 var _winner: int = Seats.NONE
 var _events: Array[RoundEvent] = []
 var _history: Array[PublicPlay] = []
-var _announced: PackedInt32Array = PackedInt32Array([0, 0, 0])
+var _announced: PackedInt32Array = PackedInt32Array()
 
 
 ## The landlord takes the kitty and leads.
 func _init(deal: DealResult, landlord: int, rules: RuleSet, rank_map: PackedByteArray) -> void:
-	_hands = deal.hands
-	_kitty = deal.kitty
+	for dealt: Hand in deal.hands:
+		var hand: Hand = Hand.new()
+		for card: CardInstance in dealt.cards():
+			hand.add(card)
+		_hands.append(hand)
+	_kitty = deal.kitty.duplicate()
+	_plays_by_seat.resize(Seats.COUNT)
+	_announced.resize(Seats.COUNT)
 	_landlord = landlord
 	_rules = rules
 	_rank_map = rank_map
@@ -81,7 +86,7 @@ func seat_to_act() -> int:
 
 
 func current_play() -> Pattern:
-	return _current
+	return null if _current == null else _current.copy()
 
 
 func events() -> Array[RoundEvent]:
@@ -94,8 +99,9 @@ func legal_moves() -> Array[Pattern]:
 	return MoveGenerator.generate(hand.counts(), hand.rank_mask(), _current, _rules, _rank_map)
 
 
-func hand_for_selection() -> Hand:
-	return _hands[_turn]
+## Turns a pattern into an action for the seat to act, using its least valuable cards.
+func action_for(pattern: Pattern) -> RoundAction:
+	return RoundAction.from_cards(_turn, CardSelection.pick(_hands[_turn], pattern))
 
 
 ## Cards in hand for every seat, which is all that is public about them.
@@ -114,7 +120,10 @@ func public_view() -> PublicView:
 
 ## What one seat may know: the public view plus its own hand.
 func view_for(seat: int) -> SeatView:
-	return SeatView.new(seat, public_view(), _hands[seat].counts(), _hands[seat].cards())
+	var cards: Array[CardInstance] = []
+	for card: CardInstance in _hands[seat].cards():
+		cards.append(card.snapshot())
+	return SeatView.new(seat, public_view(), _hands[seat].counts(), cards)
 
 
 func _apply_pass() -> Reason:
@@ -161,12 +170,13 @@ func _commit_play(card_ids: Array[int], pattern: Pattern) -> void:
 	for card_id: int in card_ids:
 		hand.remove(card_id)
 	_plays_by_seat[seat] += 1
-	_events.append(RoundEvent.new(RoundEvent.Type.PLAYED, seat, card_ids.duplicate(), pattern))
-	_history.append(PublicPlay.new(seat, pattern, pattern.counts()))
+	var logged: Pattern = pattern.copy()
+	_events.append(RoundEvent.new(RoundEvent.Type.PLAYED, seat, card_ids.duplicate(), logged))
+	_history.append(PublicPlay.new(seat, pattern.copy(), pattern.counts()))
 	_current = pattern
 	_trick_leader = seat
 	_passes = 0
-	if ANNOUNCE_AT.has(hand.size()):
+	if _rules.announces_at(hand.size()):
 		_announced[seat] = hand.size()
 		_events.append(RoundEvent.new(RoundEvent.Type.ANNOUNCED, seat, [], null, hand.size()))
 	if hand.size() == 0:
@@ -177,6 +187,7 @@ func _commit_play(card_ids: Array[int], pattern: Pattern) -> void:
 
 func _finish(seat: int) -> void:
 	_winner = seat
+	_events.append(RoundEvent.new(RoundEvent.Type.TRICK_WON, seat))
 	var finish: RoundEvent.Finish = _finish_kind()
 	_events.append(RoundEvent.new(RoundEvent.Type.ROUND_ENDED, seat, [], null, finish))
 
@@ -188,7 +199,6 @@ func _finish_kind() -> RoundEvent.Finish:
 			if seat != _landlord:
 				peasant_plays += _plays_by_seat[seat]
 		return RoundEvent.Finish.SPRING if peasant_plays == 0 else RoundEvent.Finish.NORMAL
-	var one_play: bool = _plays_by_seat[_landlord] == 1
-	if one_play and _rules.anti_spring_doubles():
+	if _plays_by_seat[_landlord] == 1:
 		return RoundEvent.Finish.ANTI_SPRING
 	return RoundEvent.Finish.NORMAL

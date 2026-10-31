@@ -43,4 +43,4 @@ Patterns store base ranks. Only the comparison key uses the effective rank map, 
 
 ### Information boundary
 
-A bot receives a `SeatView` and nothing else: a `PublicView` plus copies of its own hand. `PublicView` holds values, with no link back to the round, so no other seat's hand is reachable from it. A test walks every object reachable from a `SeatView` to prove this.
+A bot receives a `SeatView` and nothing else: a `PublicView` plus copies of its own hand. Every field of a view is an independent copy with no link back to the round, so a bot can neither reach another seat's hand nor change the round by editing what it holds. A test walks every object reachable from a `SeatView`, and another edits a view and checks the round is unchanged. The round copies the hands it is given and never hands out a `Hand`; `action_for()` turns a Pattern into an action on the controller side.

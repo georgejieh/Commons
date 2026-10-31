@@ -20,13 +20,9 @@ static func stacked_deal(seat_texts: Array[String], kitty_text: String) -> DealR
 
 ## Returns the seat's lowest-ID cards for the text, as an action.
 static func play(round_state: RoundState, text: String) -> RoundAction:
-	var seat: int = round_state.seat_to_act()
 	var rules: RuleSet = RuleSet.default_rules()
 	var map: PackedByteArray = Ranks.identity_map()
-	var pattern: Pattern = Classifier.classify(RankText.counts(text), rules, map).pattern
-	return RoundAction.from_cards(
-		seat, CardSelection.pick(round_state.hand_for_selection(), pattern)
-	)
+	return round_state.action_for(Classifier.classify(RankText.counts(text), rules, map).pattern)
 
 
 static func _take(pool: Array[CardInstance], text: String) -> Array[CardInstance]:

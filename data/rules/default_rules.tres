@@ -20,3 +20,4 @@ five_plus_is_bomb = false
 wild_ranks = Array[int]([])
 rocket_above_wild_bomb = true
 anti_spring_doubles = true
+announce_at = Array[int]([2, 1])
