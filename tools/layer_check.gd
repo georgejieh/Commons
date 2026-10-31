@@ -17,7 +17,30 @@ const FORBIDDEN_WORDS: PackedStringArray = [
 	"ResourceSaver",
 	"HTTPRequest",
 	"HTTPClient",
+	"Crypto",
+	"Expression",
+	"GDScript",
+	"generate_scene_unique_id",
+	"str_to_var",
+	"tr",
 ]
+## The only core script that may hold an engine generator.
+const RANDOM_SERVICE: String = "res://core/run/random_stream.gd"
+const RANDOM_CLASS: String = "RandomNumberGenerator"
+const RANDOM_NAMES: PackedStringArray = [
+	"randi",
+	"randf",
+	"randi_range",
+	"randf_range",
+	"randfn",
+	"randomize",
+	"rand_from_seed",
+	"shuffle",
+	"pick_random",
+	"_rng",
+]
+## The bare word "seed" is common, so only a call counts.
+const SEED_CALL_PATTERN: String = r"\bseed\s*\\?\s*(\(|$)"
 const RESOURCE_EXTENSIONS: PackedStringArray = ["gd", "tres", "res", "tscn", "scn", "gdshader"]
 const SCENE_EXTENSIONS: PackedStringArray = ["tscn", "scn"]
 
@@ -28,10 +51,12 @@ static func scan(root: String) -> PackedStringArray:
 		return PackedStringArray(["%s: folder not found" % root])
 
 	var forbidden: RegEx = RegEx.create_from_string("\\b(%s)\\b" % "|".join(_forbidden_names()))
+	var random_names: String = r"\b(%s)\b" % "|".join(RANDOM_NAMES)
+	var random: RegEx = RegEx.create_from_string(random_names + "|" + SEED_CALL_PATTERN)
 	var problems: PackedStringArray = []
 	for path: String in _files_under(root):
 		if path.get_extension() == "gd":
-			problems.append_array(_check_script(path, forbidden))
+			problems.append_array(_check_script(path, forbidden, random))
 		elif SCENE_EXTENSIONS.has(path.get_extension()):
 			problems.append("%s: scene in core" % path)
 	return problems
@@ -53,7 +78,7 @@ static func _forbidden_names() -> PackedStringArray:
 	return names
 
 
-static func _check_script(path: String, forbidden: RegEx) -> PackedStringArray:
+static func _check_script(path: String, forbidden: RegEx, random: RegEx) -> PackedStringArray:
 	var problems: PackedStringArray = []
 	if not FileAccess.file_exists(path):
 		return PackedStringArray(["%s: cannot read" % path])
@@ -64,6 +89,8 @@ static func _check_script(path: String, forbidden: RegEx) -> PackedStringArray:
 		var parts: PackedStringArray = _split_line(line)
 		for found: RegExMatch in forbidden.search_all(parts[0]):
 			problems.append("%s:%d: forbidden name: %s" % [path, line_number, found.get_string()])
+		for reason: String in _check_random(path, parts, random):
+			problems.append("%s:%d: %s" % [path, line_number, reason])
 		for text: String in parts.slice(1):
 			var reason: String = _check_string(text)
 			if not reason.is_empty():
@@ -72,6 +99,22 @@ static func _check_script(path: String, forbidden: RegEx) -> PackedStringArray:
 	for reason: String in _check_inheritance(path):
 		problems.append("%s: %s" % [path, reason])
 	return problems
+
+
+static func _check_random(
+	path: String, parts: PackedStringArray, random: RegEx
+) -> PackedStringArray:
+	var reasons: PackedStringArray = []
+	if path == RANDOM_SERVICE:
+		return reasons
+	for found: RegExMatch in random.search_all(parts[0]):
+		reasons.append("global random use: " + found.get_string())
+	if parts[0].contains(RANDOM_CLASS):
+		reasons.append("engine generator outside the stream service")
+	for text: String in parts.slice(1):
+		if RANDOM_NAMES.has(text):
+			reasons.append("global random use by name: " + text)
+	return reasons
 
 
 ## Returns the line's code first, then each string literal, with comments removed.

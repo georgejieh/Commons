@@ -8,6 +8,10 @@ func test_core_follows_layer_rules() -> void:
 	assert_array(LayerCheck.scan("res://core")).is_empty()
 
 
+func test_data_follows_layer_rules() -> void:
+	assert_array(LayerCheck.scan("res://data")).is_empty()
+
+
 func test_clean_folder_passes_including_nested_scripts_and_comments() -> void:
 	assert_array(LayerCheck.scan(FIXTURES + "good")).is_empty()
 
