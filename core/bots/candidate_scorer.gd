@@ -31,6 +31,10 @@ func score_pass() -> float:
 	return _hand_value(_counts, 1)
 
 
+func decompose_own_hand() -> Decomposition:
+	return _decomposer.decompose(_counts)
+
+
 func _hand_value(counts: PackedByteArray, extra_rounds: int) -> float:
 	var groups: Array[Pattern] = _decomposer.decompose(counts).groups
 	var value: float = 0.0

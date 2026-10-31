@@ -16,11 +16,17 @@ static func decide_play(
 	if legal.is_empty():
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.PASS_NOTHING_BEATS)
 	var scorer: CandidateScorer = CandidateScorer.new(view.own_counts, table, config.weights)
-	var following: bool = view.public.current_play != null
-	var best_move: Pattern = Pattern.pass_play() if following else legal[0]
-	var best_score: float = scorer.score_pass() if following else -INF
+	var position: BotPosition = BotPosition.new(view, table, config, scorer)
+	if view.public.current_play == null:
+		return LeadPolicy.choose(position, legal)
+	return _follow(position, legal)
+
+
+static func _follow(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
+	var best_move: Pattern = Pattern.pass_play()
+	var best_score: float = position.scorer.score_pass()
 	for move: Pattern in legal:
-		var score: float = scorer.score_play(move)
+		var score: float = position.scorer.score_play(move)
 		if score > best_score:
 			best_score = score
 			best_move = move
