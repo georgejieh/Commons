@@ -5,6 +5,8 @@
 *.tscn text eol=lf
 *.tres text eol=lf
 *.sh text eol=lf
+*.import text eol=lf
+*.uid text eol=lf
 .githooks/* text eol=lf
 
 # Images
