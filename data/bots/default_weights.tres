@@ -5,3 +5,7 @@
 [resource]
 script = ExtResource("1")
 memo_cap = 50000
+round_penalty = 7.0
+rank_offset = 7.0
+type_bonus = PackedFloat32Array(0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 9, 14)
+win_value = 1000.0

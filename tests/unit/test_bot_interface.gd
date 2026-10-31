@@ -6,7 +6,7 @@ const EXPORT_PRESETS: String = "res://export_presets.cfg"
 const BOT_FOLDER: String = "res://core/bots/"
 ## Everything in core/bots/ except the interface and what callers must pass or read.
 const PUBLIC_FILES: PackedStringArray = [
-	"bot.gd", "bot_budget.gd", "bot_play.gd", "bot_rationale.gd", "bot_table.gd"
+	"bot.gd", "bot_budget.gd", "bot_config.gd", "bot_play.gd", "bot_rationale.gd", "bot_table.gd"
 ]
 
 var _now: int = 0

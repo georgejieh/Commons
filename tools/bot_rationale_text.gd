@@ -4,7 +4,6 @@ extends RefCounted
 
 const TEXT: Dictionary[BotRationale.Code, String] = {
 	BotRationale.Code.NONE: "No reason recorded",
-	BotRationale.Code.ONLY_MOVE: "Only one legal move",
 	BotRationale.Code.PASS_NOTHING_BEATS: "Nothing beats passing",
-	BotRationale.Code.LOWEST_BEATING_PLAY: "Lowest play that beats the table",
+	BotRationale.Code.BEST_SCORE: "Best hand left after playing",
 }

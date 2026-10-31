@@ -4,7 +4,6 @@ extends RefCounted
 
 enum Code {
 	NONE,
-	ONLY_MOVE,
 	PASS_NOTHING_BEATS,
-	LOWEST_BEATING_PLAY,
+	BEST_SCORE,
 }
