@@ -1,7 +1,8 @@
 class_name Dealer
 extends RefCounted
-## Shuffles on the deal stream and deals. Biases use bounded swaps after the shuffle,
-## so a deal is always O(n) with no rejection sampling.
+## Shuffles on the deal stream and deals. A bias uses bounded swaps after the shuffle,
+## so a deal is always O(n) with no rejection sampling. Only one bias applies per deal:
+## two would evict each other's cards, and nothing needs stacking yet.
 
 const SEATS: int = 3
 const HAND_SIZE: int = 17
@@ -9,9 +10,9 @@ const KITTY_SIZE: int = 3
 
 
 static func deal(
-	cards: Array[CardInstance], stream: RandomStream, biases: Array[DealBias] = []
+	cards: Array[CardInstance], stream: RandomStream, bias: DealBias = null
 ) -> DealResult:
-	var order: Array[CardInstance] = arrange(cards, stream, biases)
+	var order: Array[CardInstance] = arrange(cards, stream, bias)
 	var result: DealResult = DealResult.new()
 	for seat: int in SEATS:
 		var hand: Hand = Hand.new()
@@ -24,11 +25,12 @@ static func deal(
 
 ## Returns the cards in deal order: seat 0's hand, seat 1's, seat 2's, then the kitty.
 static func arrange(
-	cards: Array[CardInstance], stream: RandomStream, biases: Array[DealBias] = []
+	cards: Array[CardInstance], stream: RandomStream, bias: DealBias = null
 ) -> Array[CardInstance]:
+	assert(cards.size() == SEATS * HAND_SIZE + KITTY_SIZE)
 	var order: Array[CardInstance] = cards.duplicate()
 	_fisher_yates(order, stream)
-	for bias: DealBias in biases:
+	if bias != null and bias.multiplier > 1.0:
 		_apply_bias(order, bias, stream)
 	return order
 

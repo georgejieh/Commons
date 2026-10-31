@@ -1,12 +1,18 @@
 extends GdUnitTestSuite
-## Deals are complete and unbiased, and configured biases hit their targets.
+## Deals are complete and unbiased, and a configured bias hits its target.
 
 const DEALS: int = 100000
 const SEED: int = 1107
 const DESTINATIONS: int = 4
-## Chi-square critical value at the 1% level for 53 × 3 = 159 degrees of freedom.
+## Chi-square critical value at the 1% level for 53 × 3 = 159 degrees of freedom. Fixed
+## seat sizes inflate the raw statistic by 54/53, so it is scaled back before comparing.
 const CHI_SQUARE_CRITICAL: float = 203.4
 const BIAS_TOLERANCE: float = 0.02
+const PAIR_DEALS: int = 20000
+## (3 × 17 × 16 + 3 × 2) / (54 × 53): two cards share a destination this often.
+const PAIR_RATE: float = 822.0 / 2862.0
+const PAIR_TOLERANCE: float = 0.015
+const CERTAIN_MULTIPLIER: float = 4.0
 
 
 func test_deal_gives_17_to_each_seat_and_3_to_the_kitty() -> void:
@@ -39,7 +45,7 @@ func test_unbiased_deals_pass_chi_square_at_the_one_percent_level() -> void:
 		for index: int in Deck.SIZE:
 			counts[order[index].id() * DESTINATIONS + _destination(index)] += 1
 
-	var statistic: float = _chi_square(counts)
+	var statistic: float = _chi_square(counts) * (Deck.SIZE - 1) / Deck.SIZE
 	print(
 		"Chi-square over %d deals: %.2f (critical %.1f)" % [DEALS, statistic, CHI_SQUARE_CRITICAL]
 	)
@@ -54,32 +60,64 @@ func test_bias_doubles_the_chance_of_a_single_joker_for_another_seat() -> void:
 	_assert_bias_hits_target(Ranks.BIG_JOKER, 2, 2.0)
 
 
+func test_every_card_shares_a_destination_with_the_first_at_the_right_rate() -> void:
+	var deck: Array[CardInstance] = _deck()
+	var stream: RandomStream = _stream()
+	var shared: PackedInt32Array = []
+	shared.resize(Deck.SIZE)
+	var destinations: PackedInt32Array = []
+	destinations.resize(Deck.SIZE)
+	for _i: int in PAIR_DEALS:
+		var order: Array[CardInstance] = Dealer.arrange(deck, stream)
+		for index: int in Deck.SIZE:
+			destinations[order[index].id()] = _destination(index)
+		for card: int in range(1, Deck.SIZE):
+			if destinations[card] == destinations[0]:
+				shared[card] += 1
+
+	for card: int in range(1, Deck.SIZE):
+		var rate: float = float(shared[card]) / PAIR_DEALS
+		assert_float(rate).is_between(PAIR_RATE - PAIR_TOLERANCE, PAIR_RATE + PAIR_TOLERANCE)
+
+
 func test_bias_never_creates_or_loses_a_card() -> void:
-	var biases: Array[DealBias] = [DealBias.new(1, Ranks.TWO, 3.0)]
+	var bias: DealBias = DealBias.new(1, Ranks.TWO, 3.0)
 	var stream: RandomStream = _stream()
 	for _i: int in 1000:
 		var seen: Dictionary[int, bool] = {}
-		for card: CardInstance in Dealer.arrange(_deck(), stream, biases):
+		for card: CardInstance in Dealer.arrange(_deck(), stream, bias):
 			seen[card.id()] = true
 		assert_int(seen.size()).is_equal(Deck.SIZE)
 
 
-func test_multiplier_of_one_changes_no_cards() -> void:
-	var biases: Array[DealBias] = [DealBias.new(0, Ranks.ACE, 1.0)]
-	var plain: Array[CardInstance] = Dealer.arrange(_deck(), _stream())
-	var biased: Array[CardInstance] = Dealer.arrange(_deck(), _stream(), biases)
+func test_multiplier_of_one_changes_no_cards_and_draws_nothing() -> void:
+	var plain_stream: RandomStream = _stream()
+	var biased_stream: RandomStream = _stream()
+	var plain: Array[CardInstance] = Dealer.arrange(_deck(), plain_stream)
+	var biased: Array[CardInstance] = Dealer.arrange(
+		_deck(), biased_stream, DealBias.new(0, Ranks.ACE, 1.0)
+	)
 	for index: int in Deck.SIZE:
 		assert_int(biased[index].id()).is_equal(plain[index].id())
+	assert_str(biased_stream.save_state()).is_equal(plain_stream.save_state())
+
+
+func test_deal_applies_its_bias_and_a_large_one_places_every_copy() -> void:
+	var stream: RandomStream = _stream()
+	for _i: int in 200:
+		var bias: DealBias = DealBias.new(1, Ranks.ACE, CERTAIN_MULTIPLIER)
+		var result: DealResult = Dealer.deal(_deck(), stream, bias)
+		assert_int(result.hands[1].count_of(Ranks.ACE)).is_equal(4)
 
 
 func _assert_bias_hits_target(rank: int, seat: int, multiplier: float) -> void:
 	var deck: Array[CardInstance] = _deck()
 	var stream: RandomStream = _stream()
-	var biases: Array[DealBias] = [DealBias.new(seat, rank, multiplier)]
+	var bias: DealBias = DealBias.new(seat, rank, multiplier)
 	var copies: int = 0
 	var landed: int = 0
 	for _i: int in DEALS:
-		var order: Array[CardInstance] = Dealer.arrange(deck, stream, biases)
+		var order: Array[CardInstance] = Dealer.arrange(deck, stream, bias)
 		for index: int in Deck.SIZE:
 			if order[index].base_rank() == rank:
 				copies += 1
@@ -105,6 +143,7 @@ func _chi_square(counts: PackedInt32Array) -> float:
 
 ## Seats 0 to 2, or 3 for the kitty.
 func _destination(index: int) -> int:
+	@warning_ignore("integer_division")
 	return mini(index / Dealer.HAND_SIZE, 3)
 
 

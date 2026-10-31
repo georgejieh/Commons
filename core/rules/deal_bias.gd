@@ -4,7 +4,8 @@ extends RefCounted
 
 var seat: int
 var rank: int
-## How many times likelier each copy is to reach the seat. 1 or less changes nothing.
+## How many times likelier each copy is to reach the seat. 1 or less changes nothing,
+## and draws nothing from the stream.
 var multiplier: float
 
 

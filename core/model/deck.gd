@@ -23,6 +23,7 @@ static func rank_of(id: int) -> int:
 		return Ranks.SMALL_JOKER
 	if id == BIG_JOKER_ID:
 		return Ranks.BIG_JOKER
+	@warning_ignore("integer_division")
 	return id / SUITS
 
 
