@@ -8,7 +8,7 @@ Architecture is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), decisions in [d
 
 ## Commands
 
-Run these from the repository root, in Bash. `godot` must be Godot 4.7.2; set `GODOT_BIN` if it has another name.
+Run these from the repository root, in Bash. `godot` must be Godot 4.7.2; set `GODOT_BIN` if it has another name. `tools/lint.sh` needs `gdlint` and `gdformat` from `requirements-dev.txt`, or `uvx`.
 
 ```bash
 git config core.hooksPath .githooks
@@ -26,7 +26,7 @@ Imports the project. Needed once on a fresh clone before anything else that uses
 bash tools/test.sh
 ```
 
-Runs every test. Exits 0 only if all pass. Reports go to `reports/`.
+Runs every test, including the layer check and a check that every project script compiles. Exits 0 only if tests ran and all passed. Reports go to `reports/`.
 
 ```bash
 bash tools/lint.sh
@@ -52,13 +52,13 @@ Tournament and balance commands arrive with P2.12 and P4.16. Add them here when 
 
 Dependencies run `ui` → `game` → `core`. `core` may read `data` definitions. Nothing in `core` references `game` or `ui`.
 
-- `core/` is pure logic: no Node subclasses, scenes, autoloads, file or network I/O, or engine singletons except math. It must run headless.
+- `core/` is pure logic: no Node subclasses, scenes, autoloads, file or network I/O, runtime `load()`, or engine singletons except math. It must run headless. `preload` is allowed for `core/` and `data/`.
 - Presentation never mutates game state. It sends commands to a controller and renders the events it receives.
 - Content definitions are data. Their behavior lives in small effect scripts registered by ID, with no logic in `.tres` files.
 
 ## Conventions
 
-- Static typing on every variable, parameter, return value and array. Untyped code fails to load.
+- Static typing on every variable, parameter, return value and array. Untyped declarations fail to load. Godot does not enforce typed arrays and dictionaries, so write `Array[int]` yourself.
 - All randomness goes through the seeded stream service. Global random functions and array shuffle are forbidden in `core/`.
 - Every tunable number lives in data Resources. Structural constants are named constants.
 - Every player-facing string lives in one English string table and is referenced by key. The game is English only.
@@ -73,6 +73,7 @@ Dependencies run `ui` → `game` → `core`. `core` may read `data` definitions.
 - If an item needs a decision the docs don't cover, write an ADR in `docs/adr/`, mark the item blocked and stop for a human.
 - When an item changes architecture, update `docs/ARCHITECTURE.md` in the same change.
 - `main` is protected. Work on a branch and open a pull request; `lint`, `test` and `export` must pass.
+- Releases come from `vX.Y.Z` tags on `main`. A pull request that changes packaging runs the release without publishing.
 - `addons/godot_ai` and `addons/gdUnit4` never ship. Export presets exclude them, and `tools/` and `tests/`.
 - Start Claude Code before opening the Godot editor, so the editor attaches to the running Godot AI server.
 - Binary assets go through Git LFS. Check `.gitattributes` before adding a new type.

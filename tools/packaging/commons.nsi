@@ -1,5 +1,5 @@
 ; Per-user installer with a Start-menu shortcut and an uninstaller.
-; Build: makensis -DVERSION=<version> -DSOURCE=<Commons.exe> -DOUTPUT=<setup.exe> commons.nsi
+; Build: makensis -DVERSION=<version> -DSOURCE=<Commons.exe> -DNOTICES=<notices.txt> -DOUTPUT=<setup.exe> commons.nsi
 
 Unicode true
 Name "Commons"
@@ -18,6 +18,7 @@ UninstPage instfiles
 Section "Commons"
 	SetOutPath "$INSTDIR"
 	File "/oname=Commons.exe" "${SOURCE}"
+	File "/oname=THIRD-PARTY-NOTICES.txt" "${NOTICES}"
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
 	CreateShortCut "$SMPROGRAMS\Commons.lnk" "$INSTDIR\Commons.exe"
 	WriteRegStr HKCU "${UNINSTALL_KEY}" "DisplayName" "Commons"
@@ -28,6 +29,7 @@ SectionEnd
 Section "Uninstall"
 	Delete "$SMPROGRAMS\Commons.lnk"
 	Delete "$INSTDIR\Commons.exe"
+	Delete "$INSTDIR\THIRD-PARTY-NOTICES.txt"
 	Delete "$INSTDIR\Uninstall.exe"
 	RMDir "$INSTDIR"
 	DeleteRegKey HKCU "${UNINSTALL_KEY}"

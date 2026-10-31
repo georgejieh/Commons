@@ -6,7 +6,11 @@
 | [awesome-gamedev-agent-skills](https://github.com/gamedev-skills/awesome-gamedev-agent-skills) (16 skills in `.claude/skills`) | `19d93f9` | Apache-2.0 | Godot 4.7 and game-design guidance for agents; not shipped | Nothing |
 | [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4) (`addons/gdUnit4`) | v6.2.2 (`0127a55`) | MIT | Test framework, ADR 0003; development only | Hand-written runner |
 | [gdtoolkit](https://github.com/Scony/godot-gdscript-toolkit) | 4.5.0 | MIT | Lint and format, ADR 0004; development only | Nothing |
+| Godot Engine | 4.7.2-stable | MIT, plus bundled third-party licenses | The engine; ships in every build, and its notices ship as `THIRD-PARTY-NOTICES.txt` | Nothing |
+| [godot-ci image](https://github.com/abarichello/godot-ci) | 4.7.2, digest pinned | MIT | CI environment; not shipped | Nothing |
 | [appimagetool](https://github.com/AppImage/appimagetool) | 1.9.1, SHA-256 pinned | MIT | Builds the Linux AppImage in CI; not shipped | Nothing |
+| [AppImage type2-runtime](https://github.com/AppImage/type2-runtime) | 20251108, SHA-256 pinned | MIT | Ships inside the AppImage | Nothing |
+| [butler](https://github.com/itchio/butler) | 15.32.0, SHA-256 pinned | MIT | Pushes builds to itch.io in CI; not shipped | Third-party GitHub action |
 | [NSIS](https://nsis.sourceforge.io/) | Ubuntu package in CI | zlib | Builds the Windows installer; not shipped | Nothing |
 | commons-prose (`.claude/skills/commons-prose`) | project-owned | See its NOTICE.md | Voice and AI-tell rules for all game text; adapted from blader/humanizer, hardikpandya/stop-slop and conorbronsdon/avoid-ai-writing; not shipped | Nothing |
 | commons-bgm (`.claude/skills/commons-bgm`) | project-owned | See its NOTICE.md | Suno prompts and music planning; not shipped | Nothing |

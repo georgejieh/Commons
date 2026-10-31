@@ -20,4 +20,5 @@ A public repository at `georgejieh/Commons`, default branch `main`. The source s
 
 - Nothing with a redistribution limit goes in the repository, including raw or derived Sonniss sounds.
 - A ruleset with no bypass requires pull requests and passing `lint`, `test` and `export` checks, so nobody pushes straight to `main`.
-- CI uses the `barichello/godot-ci` image pinned by digest, and actions pinned by commit, so builds repeat exactly.
+- CI pins the `barichello/godot-ci` image by digest, actions by commit, and downloaded tools and the AppImage runtime by SHA-256. Ubuntu packages and hosted runner images still move, so builds are close to repeatable, not identical.
+- Releases run the full CI first and only publish from tags on `main`.
