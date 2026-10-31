@@ -1,0 +1,353 @@
+game 101
+ROUND_STARTED seat=2
+KITTY_TAKEN seat=2 cards=[16, 43, 50]
+PLAYED seat=2 cards=[0] pattern=SINGLE
+PLAYED seat=0 cards=[5] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[8] pattern=SINGLE
+PLAYED seat=0 cards=[17] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[22] pattern=SINGLE
+PLAYED seat=0 cards=[24] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[29] pattern=SINGLE
+PLAYED seat=0 cards=[33] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[40] pattern=SINGLE
+PLAYED seat=0 cards=[45] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[50] pattern=SINGLE
+PLAYED seat=0 cards=[52] pattern=SINGLE
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[1] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[6] pattern=SINGLE
+PLAYED seat=0 cards=[20] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[26] pattern=SINGLE
+PLAYED seat=0 cards=[28] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[34] pattern=SINGLE
+PLAYED seat=0 cards=[36] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[41] pattern=SINGLE
+PLAYED seat=0 cards=[49] pattern=SINGLE
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[7] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[13] pattern=SINGLE
+PLAYED seat=0 cards=[23] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[30] pattern=SINGLE
+PLAYED seat=0 cards=[38] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[43] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[2] pattern=SINGLE
+PLAYED seat=0 cards=[25] pattern=SINGLE
+ANNOUNCED seat=0 value=2
+PASSED seat=1
+PLAYED seat=2 cards=[44] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[14] pattern=SINGLE
+PLAYED seat=0 cards=[27] pattern=SINGLE
+ANNOUNCED seat=0 value=1
+PASSED seat=1
+PLAYED seat=2 cards=[46] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[15] pattern=SINGLE
+ANNOUNCED seat=2 value=2
+PLAYED seat=0 cards=[31] pattern=SINGLE
+ROUND_ENDED seat=0 value=0
+game 202
+ROUND_STARTED seat=1
+KITTY_TAKEN seat=1 cards=[10, 37, 52]
+PLAYED seat=1 cards=[0] pattern=SINGLE
+PLAYED seat=2 cards=[5] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[9] pattern=SINGLE
+PLAYED seat=2 cards=[13] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[21] pattern=SINGLE
+PLAYED seat=2 cards=[26] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[34] pattern=SINGLE
+PLAYED seat=2 cards=[44] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[48] pattern=SINGLE
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[2] pattern=SINGLE
+PLAYED seat=2 cards=[11] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[12] pattern=SINGLE
+PLAYED seat=2 cards=[16] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[23] pattern=SINGLE
+PLAYED seat=2 cards=[27] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[37] pattern=SINGLE
+PLAYED seat=2 cards=[47] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[51] pattern=SINGLE
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[6] pattern=SINGLE
+PLAYED seat=2 cards=[15] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[25] pattern=SINGLE
+PLAYED seat=2 cards=[29] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[40] pattern=SINGLE
+PLAYED seat=2 cards=[50] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[52] pattern=SINGLE
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[10] pattern=SINGLE
+PLAYED seat=2 cards=[17] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[42] pattern=SINGLE
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[43] pattern=SINGLE
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[45] pattern=SINGLE
+ANNOUNCED seat=1 value=2
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[46] pattern=SINGLE
+ANNOUNCED seat=1 value=1
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[53] pattern=SINGLE
+ROUND_ENDED seat=1 value=0
+game 303
+ROUND_STARTED seat=0
+KITTY_TAKEN seat=0 cards=[7, 27, 44]
+PLAYED seat=0 cards=[2] pattern=SINGLE
+PLAYED seat=1 cards=[6] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[11] pattern=SINGLE
+PLAYED seat=1 cards=[13] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[16] pattern=SINGLE
+PLAYED seat=1 cards=[21] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[24] pattern=SINGLE
+PLAYED seat=1 cards=[32] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[42] pattern=SINGLE
+PLAYED seat=1 cards=[45] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[48] pattern=SINGLE
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[3] pattern=SINGLE
+PLAYED seat=1 cards=[8] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[14] pattern=SINGLE
+PLAYED seat=1 cards=[18] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[20] pattern=SINGLE
+PLAYED seat=1 cards=[26] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[29] pattern=SINGLE
+PLAYED seat=1 cards=[33] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[43] pattern=SINGLE
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[4] pattern=SINGLE
+PLAYED seat=1 cards=[10] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[25] pattern=SINGLE
+PLAYED seat=1 cards=[37] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[44] pattern=SINGLE
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[5] pattern=SINGLE
+PLAYED seat=1 cards=[15] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[27] pattern=SINGLE
+PLAYED seat=1 cards=[38] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[50] pattern=SINGLE
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[7] pattern=SINGLE
+ANNOUNCED seat=0 value=2
+PLAYED seat=1 cards=[19] pattern=SINGLE
+PASSED seat=2
+PLAYED seat=0 cards=[52] pattern=SINGLE
+ANNOUNCED seat=0 value=1
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[53] pattern=SINGLE
+ROUND_ENDED seat=0 value=0
+game 404
+ROUND_STARTED seat=2
+KITTY_TAKEN seat=2 cards=[11, 14, 51]
+PLAYED seat=2 cards=[6] pattern=SINGLE
+PLAYED seat=0 cards=[12] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[19] pattern=SINGLE
+PLAYED seat=0 cards=[20] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[24] pattern=SINGLE
+PLAYED seat=0 cards=[29] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[39] pattern=SINGLE
+PLAYED seat=0 cards=[40] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[44] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[7] pattern=SINGLE
+PLAYED seat=0 cards=[13] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[22] pattern=SINGLE
+PLAYED seat=0 cards=[33] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[43] pattern=SINGLE
+PLAYED seat=0 cards=[46] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[49] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[8] pattern=SINGLE
+PLAYED seat=0 cards=[17] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[25] pattern=SINGLE
+PLAYED seat=0 cards=[35] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[45] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[9] pattern=SINGLE
+PLAYED seat=0 cards=[23] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[27] pattern=SINGLE
+PLAYED seat=0 cards=[37] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[51] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[11] pattern=SINGLE
+PLAYED seat=0 cards=[38] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[53] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[14] pattern=SINGLE
+ANNOUNCED seat=2 value=2
+PLAYED seat=0 cards=[41] pattern=SINGLE
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[0] pattern=SINGLE
+PASSED seat=1
+PLAYED seat=2 cards=[28] pattern=SINGLE
+ANNOUNCED seat=2 value=1
+PLAYED seat=0 cards=[42] pattern=SINGLE
+ANNOUNCED seat=0 value=2
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[1] pattern=SINGLE
+ANNOUNCED seat=0 value=1
+PASSED seat=1
+PLAYED seat=2 cards=[31] pattern=SINGLE
+ROUND_ENDED seat=2 value=0
+game 505
+ROUND_STARTED seat=1
+KITTY_TAKEN seat=1 cards=[8, 34, 46]
+PLAYED seat=1 cards=[0] pattern=SINGLE
+PLAYED seat=2 cards=[5] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[8] pattern=SINGLE
+PLAYED seat=2 cards=[17] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[23] pattern=SINGLE
+PLAYED seat=2 cards=[27] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[34] pattern=SINGLE
+PLAYED seat=2 cards=[36] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[40] pattern=SINGLE
+PLAYED seat=2 cards=[44] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[51] pattern=SINGLE
+PLAYED seat=2 cards=[52] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[53] pattern=SINGLE
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[3] pattern=SINGLE
+PLAYED seat=2 cards=[7] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[11] pattern=SINGLE
+PLAYED seat=2 cards=[21] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[25] pattern=SINGLE
+PLAYED seat=2 cards=[30] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[37] pattern=SINGLE
+PLAYED seat=2 cards=[43] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[46] pattern=SINGLE
+PLAYED seat=2 cards=[50] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[9] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[12] pattern=SINGLE
+PLAYED seat=2 cards=[32] pattern=SINGLE
+PASSED seat=0
+PLAYED seat=1 cards=[41] pattern=SINGLE
+PLAYED seat=2 cards=[45] pattern=SINGLE
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[10] pattern=SINGLE
+ANNOUNCED seat=2 value=2
+PASSED seat=0
+PLAYED seat=1 cards=[13] pattern=SINGLE
+PLAYED seat=2 cards=[33] pattern=SINGLE
+ANNOUNCED seat=2 value=1
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[35] pattern=SINGLE
+ROUND_ENDED seat=2 value=0
