@@ -64,8 +64,13 @@ static func pass_play() -> Pattern:
 
 ## Returns an independent copy, so a view can never reach the round's own play.
 func copy() -> Pattern:
-	var rank: int = key & ((1 << KEY_RANK_BITS) - 1)
-	return Pattern.new(type, main_rank, chain_length, card_count, kicker_ranks.duplicate(), rank)
+	return rekeyed(key & ((1 << KEY_RANK_BITS) - 1))
+
+
+## Returns a copy compared at a new effective rank.
+func rekeyed(effective_main: int) -> Pattern:
+	var kickers: PackedByteArray = kicker_ranks.duplicate()
+	return Pattern.new(type, main_rank, chain_length, card_count, kickers, effective_main)
 
 
 func shape() -> int:

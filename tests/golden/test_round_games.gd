@@ -16,7 +16,7 @@ func _game_log(seed_value: int) -> PackedStringArray:
 	var deal: DealResult = Dealer.deal(cards, streams.stream(RandomStreams.DEAL))
 	var landlord: int = seed_value % Seats.COUNT
 	var round_state: RoundState = RoundState.new(
-		deal, landlord, RuleSet.default_rules(), Ranks.identity_map()
+		deal, landlord, SeatRules.uniform(RuleSet.default_rules(), Ranks.identity_map())
 	)
 	var turn: int = 0
 	while not round_state.is_over():
@@ -47,7 +47,9 @@ func _largest(moves: Array[Pattern]) -> Pattern:
 func _authored_log(name: String, hands: Array[String], plays: Array[String]) -> PackedStringArray:
 	var rules: RuleSet = RuleSet.default_rules()
 	var deal: DealResult = RoundScript.stacked_deal(hands, "")
-	var round_state: RoundState = RoundState.new(deal, 0, rules, Ranks.identity_map())
+	var round_state: RoundState = RoundState.new(
+		deal, 0, SeatRules.uniform(rules, Ranks.identity_map())
+	)
 	for play: String in plays:
 		var action: RoundAction = RoundAction.new(round_state.seat_to_act())
 		if play != "-":

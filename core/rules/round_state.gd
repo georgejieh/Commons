@@ -19,8 +19,7 @@ const PASSES_TO_RESET: int = 2
 var _hands: Array[Hand] = []
 var _kitty: Array[CardInstance]
 var _landlord: int
-var _rules: RuleSet
-var _rank_map: PackedByteArray
+var _table: SeatRules
 var _turn: int
 ## The play to beat, or null when the seat to act leads.
 var _current: Pattern = null
@@ -34,7 +33,7 @@ var _announced: PackedInt32Array = PackedInt32Array()
 
 
 ## The landlord takes the kitty and leads.
-func _init(deal: DealResult, landlord: int, rules: RuleSet, rank_map: PackedByteArray) -> void:
+func _init(deal: DealResult, landlord: int, table: SeatRules) -> void:
 	for dealt: Hand in deal.hands:
 		var hand: Hand = Hand.new()
 		for card: CardInstance in dealt.cards():
@@ -44,8 +43,8 @@ func _init(deal: DealResult, landlord: int, rules: RuleSet, rank_map: PackedByte
 	_plays_by_seat.resize(Seats.COUNT)
 	_announced.resize(Seats.COUNT)
 	_landlord = landlord
-	_rules = rules
-	_rank_map = rank_map
+	_table = table
+	_table.start_round(landlord)
 	_turn = landlord
 	_events.append(RoundEvent.new(RoundEvent.Type.ROUND_STARTED, landlord))
 	var kitty_ids: Array[int] = []
@@ -96,7 +95,9 @@ func events() -> Array[RoundEvent]:
 ## Lists what the seat to act may play. A follower may also pass.
 func legal_moves() -> Array[Pattern]:
 	var hand: Hand = _hands[_turn]
-	return MoveGenerator.generate(hand.counts(), hand.rank_mask(), _current, _rules, _rank_map)
+	return MoveGenerator.generate(
+		hand.counts(), hand.rank_mask(), _current, _table.rules_for(_turn), _table.map_for(_turn)
+	)
 
 
 ## Turns a pattern into an action for the seat to act, using its least valuable cards.
@@ -139,6 +140,7 @@ func _apply_pass() -> Reason:
 		_current = null
 		_passes = 0
 		_turn = _trick_leader
+		_table.set_trick_bombed(false)
 	return Reason.OK
 
 
@@ -155,34 +157,48 @@ func _apply_play(action: RoundAction) -> Reason:
 			return Reason.UNKNOWN_CARD
 		cards.append(card)
 
-	var reading: Classification = CardSelection.classify_cards(cards, _rules, _rank_map)
+	var rules: RuleSet = _table.rules_for(_turn)
+	var reading: Classification = CardSelection.classify_cards(cards, rules, _table.map_for(_turn))
 	if not reading.is_valid():
 		return Reason.ILLEGAL_PLAY
-	if _current != null and not PlayComparator.beats(reading.pattern, _current, _rules):
+	if _current != null and not PlayComparator.beats(reading.pattern, _current, rules):
 		return Reason.DOES_NOT_BEAT
-	_commit_play(action.card_ids, reading.pattern)
+	_commit_play(cards, action.card_ids, reading.pattern)
 	return Reason.OK
 
 
-func _commit_play(card_ids: Array[int], pattern: Pattern) -> void:
+func _commit_play(cards: Array[CardInstance], card_ids: Array[int], pattern: Pattern) -> void:
 	var seat: int = _turn
 	var hand: Hand = _hands[seat]
 	for card_id: int in card_ids:
 		hand.remove(card_id)
 	_plays_by_seat[seat] += 1
 	var logged: Pattern = pattern.copy()
-	_events.append(RoundEvent.new(RoundEvent.Type.PLAYED, seat, card_ids.duplicate(), logged))
+	var event: RoundEvent = RoundEvent.new(
+		RoundEvent.Type.PLAYED, seat, card_ids.duplicate(), logged
+	)
+	for card: CardInstance in cards:
+		event.cards.append(card.snapshot())
+	_events.append(event)
 	_history.append(PublicPlay.new(seat, pattern.copy(), pattern.counts()))
 	_current = pattern
 	_trick_leader = seat
 	_passes = 0
-	if _rules.announces_at(hand.size()):
+	if pattern.type == Pattern.Type.BOMB:
+		_table.set_trick_bombed(true)
+		_rekey_current()
+	if _table.rules_for(seat).announces_at(hand.size()):
 		_announced[seat] = hand.size()
 		_events.append(RoundEvent.new(RoundEvent.Type.ANNOUNCED, seat, [], null, hand.size()))
 	if hand.size() == 0:
 		_finish(seat)
 	else:
 		_turn = Seats.next(_turn)
+
+
+## A changed rank map applies to the play on the table too, read in its player's map.
+func _rekey_current() -> void:
+	_current = _current.rekeyed(_table.map_for(_trick_leader)[_current.main_rank])
 
 
 func _finish(seat: int) -> void:

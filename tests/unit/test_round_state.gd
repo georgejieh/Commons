@@ -12,7 +12,9 @@ var _map: PackedByteArray = Ranks.identity_map()
 
 
 func _round(seats: Array[String], kitty: String = "") -> RoundState:
-	return RoundState.new(RoundScript.stacked_deal(seats, kitty), 0, _rules, _map)
+	return RoundState.new(
+		RoundScript.stacked_deal(seats, kitty), 0, SeatRules.uniform(_rules, _map)
+	)
 
 
 func _apply(round_state: RoundState, text: String) -> void:
@@ -138,7 +140,7 @@ func test_anti_spring_is_detected_even_when_it_does_not_double() -> void:
 	params.anti_spring_doubles = false
 	var rules: RuleSet = RuleSet.new(params)
 	var deal: DealResult = RoundScript.stacked_deal(["38", "4", "5"], "")
-	var round_state: RoundState = RoundState.new(deal, 0, rules, _map)
+	var round_state: RoundState = RoundState.new(deal, 0, SeatRules.uniform(rules, _map))
 	_apply(round_state, "3")
 	_apply(round_state, "4")
 	assert_int(_last_finish(round_state)).is_equal(RoundEvent.Finish.ANTI_SPRING)
@@ -151,7 +153,9 @@ func _round_for_landlord(landlord: int, hands: Array[String]) -> RoundState:
 	for text: String in hands:
 		seats[seat] = text
 		seat = Seats.next(seat)
-	return RoundState.new(RoundScript.stacked_deal(seats, ""), landlord, _rules, _map)
+	return RoundState.new(
+		RoundScript.stacked_deal(seats, ""), landlord, SeatRules.uniform(_rules, _map)
+	)
 
 
 func test_finishes_hold_for_a_landlord_in_every_seat() -> void:
@@ -189,7 +193,7 @@ func test_the_last_play_wins_its_trick_before_the_round_ends() -> void:
 
 func test_a_deal_can_not_reach_the_round_afterwards() -> void:
 	var deal: DealResult = RoundScript.stacked_deal(["33", "44", "55"], "6")
-	var round_state: RoundState = RoundState.new(deal, 0, _rules, _map)
+	var round_state: RoundState = RoundState.new(deal, 0, SeatRules.uniform(_rules, _map))
 	deal.hands[1].remove(deal.hands[1].cards()[0].id())
 	deal.kitty.clear()
 	assert_array(Array(round_state.remaining())).is_equal([3, 2, 2])
@@ -219,7 +223,9 @@ func test_random_legal_games_terminate_with_every_card_accounted_for() -> void:
 		for deck_id: int in Deck.generate():
 			cards.append(CardInstance.from_deck_id(deck_id))
 		var deal: DealResult = Dealer.deal(cards, stream)
-		var round_state: RoundState = RoundState.new(deal, game % Seats.COUNT, _rules, _map)
+		var round_state: RoundState = RoundState.new(
+			deal, game % Seats.COUNT, SeatRules.uniform(_rules, _map)
+		)
 		var seen: Dictionary[int, bool] = _play_randomly(round_state, stream)
 		assert_bool(round_state.is_over()).is_true()
 		assert_int(round_state.remaining()[round_state.winner()]).is_equal(0)

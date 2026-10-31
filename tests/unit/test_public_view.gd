@@ -6,7 +6,9 @@ var _map: PackedByteArray = Ranks.identity_map()
 
 
 func _round(seats: Array[String], kitty: String = "") -> RoundState:
-	return RoundState.new(RoundScript.stacked_deal(seats, kitty), 0, _rules, _map)
+	return RoundState.new(
+		RoundScript.stacked_deal(seats, kitty), 0, SeatRules.uniform(_rules, _map)
+	)
 
 
 func _apply(round_state: RoundState, text: String) -> void:
