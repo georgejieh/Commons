@@ -35,5 +35,5 @@ static func _deal_line(streams: RandomStreams, biases: Array[DealBias]) -> Strin
 		cards.append(CardInstance.from_deck_id(id))
 	var values: PackedStringArray = []
 	for card: CardInstance in Dealer.arrange(cards, streams.stream(RandomStreams.DEAL), biases):
-		values.append(str(card.id))
+		values.append(str(card.id()))
 	return "deal %s" % " ".join(values)

@@ -17,12 +17,17 @@ func test_counts_and_mask_match_a_recount_after_random_operations() -> void:
 		)
 		if adding:
 			var index: int = rng.randi_range(0, outside.size() - 1)
-			hand.add(outside[index])
+			if not hand.add(outside[index]):
+				mismatches += 1
 			outside[index] = outside[-1]
 			outside.resize(outside.size() - 1)
 		else:
 			var held: Array[CardInstance] = hand.cards()
-			outside.append(hand.remove(held[rng.randi_range(0, held.size() - 1)].id))
+			var chosen: CardInstance = held[rng.randi_range(0, held.size() - 1)]
+			var removed: CardInstance = hand.remove(chosen.id())
+			if removed != chosen:
+				mismatches += 1
+			outside.append(removed)
 		if not _matches_recount(hand):
 			mismatches += 1
 	assert_int(mismatches).is_equal(0)
@@ -74,6 +79,6 @@ func _matches_recount(hand: Hand) -> bool:
 	counts.resize(Ranks.COUNT)
 	var mask: int = 0
 	for card: CardInstance in hand.cards():
-		counts[card.base_rank] += 1
-		mask |= 1 << card.base_rank
+		counts[card.base_rank()] += 1
+		mask |= 1 << card.base_rank()
 	return counts == hand.counts() and mask == hand.rank_mask()

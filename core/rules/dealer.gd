@@ -47,14 +47,14 @@ static func _apply_bias(order: Array[CardInstance], bias: DealBias, stream: Rand
 
 	var exchangeable: PackedInt32Array = []
 	for index: int in range(first, first + HAND_SIZE):
-		if order[index].base_rank != bias.rank:
+		if order[index].base_rank() != bias.rank:
 			exchangeable.append(index)
 
 	for index: int in order.size():
 		if exchangeable.is_empty():
 			return
 		var in_seat: bool = index >= first and index < first + HAND_SIZE
-		if in_seat or order[index].base_rank != bias.rank:
+		if in_seat or order[index].base_rank() != bias.rank:
 			continue
 		if stream.next_float() < swap_chance:
 			var pick: int = stream.next_int(0, exchangeable.size() - 1)

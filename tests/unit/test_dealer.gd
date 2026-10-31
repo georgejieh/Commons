@@ -15,18 +15,18 @@ func test_deal_gives_17_to_each_seat_and_3_to_the_kitty() -> void:
 	for hand: Hand in result.hands:
 		assert_int(hand.size()).is_equal(17)
 		for card: CardInstance in hand.cards():
-			seen[card.id] = true
+			seen[card.id()] = true
 	assert_int(result.kitty.size()).is_equal(3)
 	for card: CardInstance in result.kitty:
-		seen[card.id] = true
+		seen[card.id()] = true
 	assert_int(seen.size()).is_equal(54)
 
 
 func test_deal_leaves_the_input_order_alone() -> void:
 	var deck: Array[CardInstance] = _deck()
 	Dealer.deal(deck, _stream())
-	assert_int(deck[0].id).is_equal(0)
-	assert_int(deck[53].id).is_equal(53)
+	assert_int(deck[0].id()).is_equal(0)
+	assert_int(deck[53].id()).is_equal(53)
 
 
 func test_unbiased_deals_pass_chi_square_at_the_one_percent_level() -> void:
@@ -37,7 +37,7 @@ func test_unbiased_deals_pass_chi_square_at_the_one_percent_level() -> void:
 	for _i: int in DEALS:
 		var order: Array[CardInstance] = Dealer.arrange(deck, stream)
 		for index: int in Deck.SIZE:
-			counts[order[index].id * DESTINATIONS + _destination(index)] += 1
+			counts[order[index].id() * DESTINATIONS + _destination(index)] += 1
 
 	var statistic: float = _chi_square(counts)
 	print(
@@ -60,7 +60,7 @@ func test_bias_never_creates_or_loses_a_card() -> void:
 	for _i: int in 1000:
 		var seen: Dictionary[int, bool] = {}
 		for card: CardInstance in Dealer.arrange(_deck(), stream, biases):
-			seen[card.id] = true
+			seen[card.id()] = true
 		assert_int(seen.size()).is_equal(Deck.SIZE)
 
 
@@ -69,7 +69,7 @@ func test_multiplier_of_one_changes_no_cards() -> void:
 	var plain: Array[CardInstance] = Dealer.arrange(_deck(), _stream())
 	var biased: Array[CardInstance] = Dealer.arrange(_deck(), _stream(), biases)
 	for index: int in Deck.SIZE:
-		assert_int(biased[index].id).is_equal(plain[index].id)
+		assert_int(biased[index].id()).is_equal(plain[index].id())
 
 
 func _assert_bias_hits_target(rank: int, seat: int, multiplier: float) -> void:
@@ -81,7 +81,7 @@ func _assert_bias_hits_target(rank: int, seat: int, multiplier: float) -> void:
 	for _i: int in DEALS:
 		var order: Array[CardInstance] = Dealer.arrange(deck, stream, biases)
 		for index: int in Deck.SIZE:
-			if order[index].base_rank == rank:
+			if order[index].base_rank() == rank:
 				copies += 1
 				if _destination(index) == seat:
 					landed += 1

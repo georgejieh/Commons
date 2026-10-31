@@ -15,12 +15,12 @@ func _init() -> void:
 
 ## Returns false, changing nothing, if the card is already in the hand.
 func add(card: CardInstance) -> bool:
-	if _index_by_id.has(card.id):
+	if _index_by_id.has(card.id()):
 		return false
-	_index_by_id[card.id] = _cards.size()
+	_index_by_id[card.id()] = _cards.size()
 	_cards.append(card)
-	_counts[card.base_rank] += 1
-	_rank_mask |= 1 << card.base_rank
+	_counts[card.base_rank()] += 1
+	_rank_mask |= 1 << card.base_rank()
 	return true
 
 
@@ -33,22 +33,18 @@ func remove(card_id: int) -> CardInstance:
 	var card: CardInstance = _cards[index]
 	var last: CardInstance = _cards[-1]
 	_cards[index] = last
-	_index_by_id[last.id] = index
+	_index_by_id[last.id()] = index
 	_cards.resize(_cards.size() - 1)
 	_index_by_id.erase(card_id)
 
-	_counts[card.base_rank] -= 1
-	if _counts[card.base_rank] == 0:
-		_rank_mask &= ~(1 << card.base_rank)
+	_counts[card.base_rank()] -= 1
+	if _counts[card.base_rank()] == 0:
+		_rank_mask &= ~(1 << card.base_rank())
 	return card
 
 
 func size() -> int:
 	return _cards.size()
-
-
-func has_card(card_id: int) -> bool:
-	return _index_by_id.has(card_id)
 
 
 func count_of(rank: int) -> int:

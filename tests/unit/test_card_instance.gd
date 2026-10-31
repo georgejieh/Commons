@@ -5,16 +5,16 @@ const ITERATIONS: int = 10000
 const SEED: int = 1101
 
 
-func test_dictionary_round_trip_is_lossless_for_random_instances() -> void:
+func test_round_trip_is_lossless_for_random_instances() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = SEED
 	var failures: int = 0
 	for _i: int in ITERATIONS:
-		var data: Dictionary = _random_card(rng).to_dict()
-		if CardInstance.from_dict(data).to_dict() != data:
+		var card: CardInstance = _random_card(rng)
+		if not _same_fields(card, CardInstance.from_dict(card.to_dict())):
 			failures += 1
-		var through_json: Variant = JSON.parse_string(JSON.stringify(data))
-		if _normalized(CardInstance.from_dict(through_json).to_dict()) != _normalized(data):
+		var through_json: Dictionary = JSON.parse_string(JSON.stringify(card.to_dict()))
+		if not _same_fields(card, CardInstance.from_dict(through_json)):
 			failures += 1
 	assert_int(failures).is_equal(0)
 
@@ -22,10 +22,10 @@ func test_dictionary_round_trip_is_lossless_for_random_instances() -> void:
 func test_base_instances_reuse_deck_ids() -> void:
 	for deck_id: int in Deck.generate():
 		var card: CardInstance = CardInstance.from_deck_id(deck_id)
-		assert_int(card.id).is_equal(deck_id)
-		assert_int(card.base_rank).is_equal(Deck.rank_of(deck_id))
-		assert_int(card.suit).is_equal(Deck.suit_of(deck_id))
-		assert_int(card.origin).is_equal(CardInstance.Origin.DECK)
+		assert_int(card.id()).is_equal(deck_id)
+		assert_int(card.base_rank()).is_equal(Deck.rank_of(deck_id))
+		assert_int(card.suit()).is_equal(Deck.suit_of(deck_id))
+		assert_int(card.origin()).is_equal(CardInstance.Origin.DECK)
 
 
 func test_new_instance_has_no_enhancement_seal_or_stamp() -> void:
@@ -51,6 +51,13 @@ func _random_card(rng: RandomNumberGenerator) -> CardInstance:
 	return card
 
 
-## JSON numbers come back as floats, so compare as text.
-func _normalized(data: Dictionary) -> String:
-	return JSON.stringify(data, "", true)
+func _same_fields(first: CardInstance, second: CardInstance) -> bool:
+	return (
+		first.id() == second.id()
+		and first.base_rank() == second.base_rank()
+		and first.suit() == second.suit()
+		and first.origin() == second.origin()
+		and first.enhancement_id() == second.enhancement_id()
+		and first.seal_id() == second.seal_id()
+		and first.owner_stamp() == second.owner_stamp()
+	)
