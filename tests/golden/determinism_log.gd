@@ -1,7 +1,7 @@
 class_name DeterminismLog
 extends RefCounted
 ## Builds the scripted log the determinism golden test compares. It stands in for the
-## real event log until P1B.8: draws from every stream in a fixed order, per seed.
+## real event log until P1B.8: draws from every stream in a fixed order, then deals, per seed.
 
 const SEEDS: PackedInt64Array = [1, 2026, -7, 9007199254740993]
 const DRAWS: int = 4
@@ -14,6 +14,9 @@ static func build() -> PackedStringArray:
 		lines.append("seed %d" % run_seed)
 		for stream_name: String in RandomStreams.NAMES:
 			lines.append(_draw_line(streams, stream_name))
+		var biases: Array[DealBias] = [DealBias.new(0, Ranks.ACE, 2.0)]
+		lines.append(_deal_line(streams, []))
+		lines.append(_deal_line(streams, biases))
 	return lines
 
 
@@ -24,3 +27,13 @@ static func _draw_line(streams: RandomStreams, stream_name: String) -> String:
 		values.append(str(stream.next_int(0, 53)))
 		values.append("%.9f" % stream.next_float())
 	return "%s %s" % [stream_name, " ".join(values)]
+
+
+static func _deal_line(streams: RandomStreams, biases: Array[DealBias]) -> String:
+	var cards: Array[CardInstance] = []
+	for id: int in Deck.generate():
+		cards.append(CardInstance.from_deck_id(id))
+	var values: PackedStringArray = []
+	for card: CardInstance in Dealer.arrange(cards, streams.stream(RandomStreams.DEAL), biases):
+		values.append(str(card.id))
+	return "deal %s" % " ".join(values)
