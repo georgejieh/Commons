@@ -56,19 +56,21 @@ func set_trick_bombed(bombed: bool) -> void:
 		refresh()
 
 
-## Rebuilds if the flag is set or the stack has changed.
-func refresh() -> void:
+## Rebuilds if the flag is set or the stack has changed. Returns true if it rebuilt.
+## The round calls this before each action, so a stack change applies at once.
+func refresh() -> bool:
 	if _fixed or (not _dirty and _seen_revision == _stack.revision):
-		return
+		return false
 	_seen_revision = _stack.revision
 	_dirty = false
 	rebuilds += 1
 	_rules.clear()
 	_maps.clear()
 	for seat: int in Seats.COUNT:
-		var params: RuleParams = _base_params.duplicate()
+		var params: RuleParams = _base_params.copy()
 		_stack.run_build_ruleset(RulesetContext.new(seat, _landlord, params))
 		_rules.append(RuleSet.new(params))
 		var rank_map: PackedByteArray = Ranks.identity_map()
 		_stack.run_build_rank_map(RankMapContext.new(seat, _landlord, _trick_bombed, rank_map))
 		_maps.append(rank_map)
+	return true

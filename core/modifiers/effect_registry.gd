@@ -10,7 +10,7 @@ static func has_effect(modifier_id: String) -> bool:
 ## Returns a new effect for the definition, held by the seat.
 static func create(definition: ModifierDef, holder_seat: int) -> ModifierEffect:
 	var effect: ModifierEffect = _build(definition.id)
-	effect.parameters = definition.parameters
+	effect.parameters = definition.parameters.duplicate()
 	effect.holder_seat = holder_seat
 	return effect
 

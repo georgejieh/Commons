@@ -70,6 +70,105 @@ func test_inverted_order_reverses_only_the_holders_plays() -> void:
 	assert_int(_play(round_state, table, "5")).is_equal(RoundState.Reason.DOES_NOT_BEAT)
 
 
+func test_inverted_order_reverses_every_rank_for_the_holder_alone() -> void:
+	var table: SeatRules = _table(["inverted_order"], 1)
+	assert_bool(table.map_for(0) == Ranks.identity_map()).is_true()
+	assert_bool(table.map_for(2) == Ranks.identity_map()).is_true()
+	for rank: int in Ranks.COUNT:
+		assert_int(table.map_for(1)[rank]).is_equal(Ranks.COUNT - 1 - rank)
+
+
+func test_a_tied_rank_does_not_beat() -> void:
+	var table: SeatRules = _table(["criticism_meeting"], 1)
+	var round_state: RoundState = _round(table, ["39", "2J", "5"])
+	assert_int(_play(round_state, table, "3")).is_equal(RoundState.Reason.OK)
+	assert_int(_play(round_state, table, "2")).is_equal(RoundState.Reason.DOES_NOT_BEAT)
+
+
+func test_a_promoted_chain_compares_by_its_lowest_rank() -> void:
+	var table: SeatRules = _table(["promotion_of_the_masses"])
+	var round_state: RoundState = _round(table, ["TJQKA9", "345678", "5"])
+	assert_int(_play(round_state, table, "TJQKA")).is_equal(RoundState.Reason.OK)
+	assert_int(_play(round_state, table, "34567")).is_equal(RoundState.Reason.OK)
+
+
+func test_repeated_promotion_changes_nothing() -> void:
+	var once: SeatRules = _table(["promotion_of_the_masses"])
+	var twice: SeatRules = _table(["promotion_of_the_masses", "promotion_of_the_masses"])
+	assert_bool(once.map_for(0) == twice.map_for(0)).is_true()
+
+
+func _assert_no_ties(rank_map: PackedByteArray) -> void:
+	var seen: Dictionary[int, bool] = {}
+	for rank: int in Ranks.COUNT:
+		seen[rank_map[rank]] = true
+	assert_int(seen.size()).is_equal(Ranks.COUNT)
+
+
+func test_promotion_and_inversion_compose_in_either_order() -> void:
+	var first: SeatRules = _table(["cultural_revolution", "promotion_of_the_masses"])
+	var second: SeatRules = _table(["promotion_of_the_masses", "cultural_revolution"])
+	first.set_trick_bombed(true)
+	second.set_trick_bombed(true)
+	_assert_no_ties(first.map_for(0))
+	_assert_no_ties(second.map_for(0))
+	var promoted_after: PackedByteArray = first.map_for(0)
+	assert_bool(promoted_after[Ranks.THREE] > promoted_after[Ranks.TWO]).is_true()
+	var inverted_after: PackedByteArray = second.map_for(0)
+	assert_bool(inverted_after[Ranks.THREE] < inverted_after[Ranks.TWO]).is_true()
+
+
+func test_a_modifier_added_mid_trick_applies_at_once() -> void:
+	var stack: ModifierStack = ModifierStack.new()
+	var table: SeatRules = SeatRules.new(stack)
+	var round_state: RoundState = _round(table, ["29", "34", "5"])
+	assert_int(_play(round_state, table, "2")).is_equal(RoundState.Reason.OK)
+	stack.add(ResourceLoader.load("res://data/modifiers/promotion_of_the_masses.tres"), 0)
+	assert_int(round_state.legal_moves().size()).is_equal(1)
+	assert_int(_play(round_state, table, "3")).is_equal(RoundState.Reason.OK)
+
+
+func test_a_modifier_removed_mid_trick_refreshes_the_play_on_the_table() -> void:
+	var stack: ModifierStack = ModifierStack.new()
+	var entry: ActiveModifier = stack.add(
+		ResourceLoader.load("res://data/modifiers/promotion_of_the_masses.tres"), 0
+	)
+	var table: SeatRules = SeatRules.new(stack)
+	var round_state: RoundState = _round(table, ["39", "45", "6"])
+	assert_int(_play(round_state, table, "3")).is_equal(RoundState.Reason.OK)
+	stack.remove(entry)
+	assert_int(_play(round_state, table, "4")).is_equal(RoundState.Reason.OK)
+
+
+func test_the_refresh_reads_the_players_own_map() -> void:
+	var stack: ModifierStack = ModifierStack.new()
+	stack.add(ResourceLoader.load("res://data/modifiers/cultural_revolution.tres"), 0)
+	stack.add(ResourceLoader.load("res://data/modifiers/inverted_order.tres"), 1)
+	var table: SeatRules = SeatRules.new(stack)
+	var round_state: RoundState = _round(table, ["34", "7777J", "5"])
+	assert_int(_play(round_state, table, "3")).is_equal(RoundState.Reason.OK)
+	assert_int(_play(round_state, table, "7777")).is_equal(RoundState.Reason.OK)
+	var view: PublicView = round_state.public_view()
+	var expected: int = table.map_for(1)[Ranks.SEVEN]
+	assert_int(expected).is_equal(Ranks.SEVEN)
+	assert_int(view.current_play.key & 0xFF).is_equal(expected)
+	assert_int(view.history[1].pattern.key & 0xFF).is_equal(expected)
+
+
+func test_a_round_ending_on_a_bomb_clears_the_inversion() -> void:
+	var table: SeatRules = _table(["cultural_revolution"])
+	var round_state: RoundState = _round(table, ["3333", "4", "5"])
+	assert_int(_play(round_state, table, "3333")).is_equal(RoundState.Reason.OK)
+	assert_bool(table.map_for(0) == Ranks.identity_map()).is_true()
+
+
+func test_a_new_round_starts_with_a_clean_table() -> void:
+	var table: SeatRules = _table(["cultural_revolution"])
+	table.set_trick_bombed(true)
+	_round(table, ["3", "4", "5"])
+	assert_bool(table.map_for(0) == Ranks.identity_map()).is_true()
+
+
 func test_cultural_revolution_inverts_after_a_bomb_until_the_trick_ends() -> void:
 	var table: SeatRules = _table(["cultural_revolution"])
 	var round_state: RoundState = _round(table, ["34", "77778888", "6666J5"])
@@ -124,4 +223,4 @@ func test_every_generated_move_is_accepted_under_each_modifier() -> void:
 	]
 	for name: String in names:
 		for game: int in GAMES:
-			_random_game(_table([name], game % Seats.COUNT), stream, game % Seats.COUNT)
+			_random_game(_table([name], (game + 1) % Seats.COUNT), stream, game % Seats.COUNT)

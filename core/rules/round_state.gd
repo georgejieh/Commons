@@ -24,6 +24,8 @@ var _turn: int
 ## The play to beat, or null when the seat to act leads.
 var _current: Pattern = null
 var _trick_leader: int = Seats.NONE
+## Where the play on the table sits in the history.
+var _leader_entry: int = 0
 var _passes: int = 0
 var _plays_by_seat: PackedInt32Array = PackedInt32Array()
 var _winner: int = Seats.NONE
@@ -57,6 +59,7 @@ func _init(deal: DealResult, landlord: int, table: SeatRules) -> void:
 func apply(action: RoundAction) -> Reason:
 	if is_over():
 		return Reason.ROUND_OVER
+	_sync_rules()
 	if action.seat != _turn:
 		return Reason.OUT_OF_TURN
 	if action.card_ids.is_empty():
@@ -94,6 +97,7 @@ func events() -> Array[RoundEvent]:
 
 ## Lists what the seat to act may play. A follower may also pass.
 func legal_moves() -> Array[Pattern]:
+	_sync_rules()
 	var hand: Hand = _hands[_turn]
 	return MoveGenerator.generate(
 		hand.counts(), hand.rank_mask(), _current, _table.rules_for(_turn), _table.map_for(_turn)
@@ -181,6 +185,7 @@ func _commit_play(cards: Array[CardInstance], card_ids: Array[int], pattern: Pat
 		event.cards.append(card.snapshot())
 	_events.append(event)
 	_history.append(PublicPlay.new(seat, pattern.copy(), pattern.counts()))
+	_leader_entry = _history.size() - 1
 	_current = pattern
 	_trick_leader = seat
 	_passes = 0
@@ -198,11 +203,19 @@ func _commit_play(cards: Array[CardInstance], card_ids: Array[int], pattern: Pat
 
 ## A changed rank map applies to the play on the table too, read in its player's map.
 func _rekey_current() -> void:
-	_current = _current.rekeyed(_table.map_for(_trick_leader)[_current.main_rank])
+	if _current != null:
+		_current = _current.rekeyed(_table.map_for(_trick_leader)[_current.main_rank])
+		_history[_leader_entry].pattern = _current.copy()
+
+
+func _sync_rules() -> void:
+	if _table.refresh():
+		_rekey_current()
 
 
 func _finish(seat: int) -> void:
 	_winner = seat
+	_table.set_trick_bombed(false)
 	_events.append(RoundEvent.new(RoundEvent.Type.TRICK_WON, seat))
 	var finish: RoundEvent.Finish = _finish_kind()
 	_events.append(RoundEvent.new(RoundEvent.Type.ROUND_ENDED, seat, [], null, finish))

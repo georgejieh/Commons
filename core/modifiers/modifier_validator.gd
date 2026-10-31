@@ -23,4 +23,15 @@ static func validate(
 	for parameter: String in effect.required_parameters():
 		if not definition.parameters.has(parameter):
 			problems.append("%s: missing parameter %s" % [definition.id, parameter])
+	for parameter: String in effect.rank_parameters():
+		if not Ranks.is_valid(definition.parameters.get(parameter, 0)):
+			problems.append("%s: bad rank in %s" % [definition.id, parameter])
+	var own_methods: Array[String] = []
+	var script: Script = effect.get_script()
+	for method: Dictionary in script.get_script_method_list():
+		own_methods.append(method["name"])
+	for hook: String in definition.hooks:
+		# The list repeats a method the script overrides, once per class that defines it.
+		if Hooks.ALL.has(hook) and own_methods.count(hook) < 2:
+			problems.append("%s: does not implement %s" % [definition.id, hook])
 	return problems

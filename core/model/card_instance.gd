@@ -1,8 +1,8 @@
 class_name CardInstance
 extends RefCounted
 ## One physical card in a run. Identity is fixed at construction, because hands cache
-## counts by rank. Enhancement, seal and stamp change only through the modifier service
-## (P1C), which is the only caller allowed to use their setters.
+## counts by rank. Enhancement, seal and stamp change only through CardModifiers, which
+## is the only caller the layer check allows for their setters.
 
 enum Origin { DECK, PLOT }
 

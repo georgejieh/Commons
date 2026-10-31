@@ -12,6 +12,11 @@ func required_parameters() -> PackedStringArray:
 	return PackedStringArray()
 
 
+## Names the parameters that must be valid ranks.
+func rank_parameters() -> PackedStringArray:
+	return PackedStringArray()
+
+
 func build_ruleset(_context: RulesetContext) -> void:
 	pass
 

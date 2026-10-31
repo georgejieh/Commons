@@ -4,6 +4,10 @@ extends GdUnitTestSuite
 const FIXTURES: String = "res://tests/fixtures/layers/"
 
 
+func test_card_setters_outside_the_service_fail() -> void:
+	assert_str(_report("bad_card_setter")).contains("card setter outside CardModifiers")
+
+
 func test_every_global_random_function_fails() -> void:
 	var report: String = _report("bad_random_global")
 	for random_name: String in ["randi", "randf", "randi_range", "randf_range", "randfn"]:

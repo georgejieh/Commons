@@ -24,6 +24,12 @@ const FORBIDDEN_WORDS: PackedStringArray = [
 	"str_to_var",
 	"tr",
 ]
+## Card setters belong to these scripts alone.
+const CARD_SETTER_PATTERN: String = r"\bset_(enhancement|seal|owner_stamp)\b"
+const CARD_SETTER_OWNERS: PackedStringArray = [
+	"res://core/model/card_instance.gd",
+	"res://core/modifiers/card_modifiers.gd",
+]
 ## The only core script that may hold an engine generator.
 const RANDOM_SERVICE: String = "res://core/run/random_stream.gd"
 const RANDOM_CLASS: String = "RandomNumberGenerator"
@@ -54,9 +60,11 @@ static func scan(root: String) -> PackedStringArray:
 	var random_names: String = r"\b(%s)\b" % "|".join(RANDOM_NAMES)
 	var random: RegEx = RegEx.create_from_string(random_names + "|" + SEED_CALL_PATTERN)
 	var problems: PackedStringArray = []
+	var setters: RegEx = RegEx.create_from_string(CARD_SETTER_PATTERN)
 	for path: String in _files_under(root):
 		if path.get_extension() == "gd":
 			problems.append_array(_check_script(path, forbidden, random))
+			problems.append_array(_check_card_setters(path, setters))
 		elif SCENE_EXTENSIONS.has(path.get_extension()):
 			problems.append("%s: scene in core" % path)
 	return problems
@@ -98,6 +106,18 @@ static func _check_script(path: String, forbidden: RegEx, random: RegEx) -> Pack
 
 	for reason: String in _check_inheritance(path):
 		problems.append("%s: %s" % [path, reason])
+	return problems
+
+
+static func _check_card_setters(path: String, setters: RegEx) -> PackedStringArray:
+	var problems: PackedStringArray = []
+	if CARD_SETTER_OWNERS.has(path):
+		return problems
+	var line_number: int = 0
+	for line: String in FileAccess.get_file_as_string(path).split("\n"):
+		line_number += 1
+		if setters.search(_split_line(line)[0]) != null:
+			problems.append("%s:%d: card setter outside CardModifiers" % [path, line_number])
 	return problems
 
 

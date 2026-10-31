@@ -22,3 +22,11 @@ extends Resource
 @export var anti_spring_doubles: bool
 ## Hand sizes that are called out to the table.
 @export var announce_at: Array[int]
+
+
+## Returns a copy sharing nothing, because duplicate() shares the arrays.
+func copy() -> RuleParams:
+	var result: RuleParams = duplicate()
+	result.wild_ranks = wild_ranks.duplicate()
+	result.announce_at = announce_at.duplicate()
+	return result

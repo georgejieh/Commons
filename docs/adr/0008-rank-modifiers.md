@@ -19,12 +19,12 @@ Comparisons use effective ranks. Chain adjacency always uses base ranks, so prom
 
 A play's strength comes from the map of the seat that played it. "Your 2s rank as 3s" and "reversed for your plays only" change your plays and nobody else's.
 
-When a bomb changes the maps mid-trick, the round refreshes the play on the table under its player's new map. So after Cultural Revolution fires, a lower bomb beats the higher one just played. The inversion ends with the trick.
+When the maps change mid-trick, from a bomb or from a modifier being added or removed, the round refreshes the play on the table under its player's new map before the next action. So after Cultural Revolution fires, a lower bomb beats the higher one just played. The inversion ends with the trick.
 
-An effective-rank map is a byte per base rank. Promotion moves a rank to just above another and steps the ranks between down, so order is preserved. Maps may tie: Criticism Meeting gives 2s the same value as 3s, and the comparator's strict "higher" means neither beats the other.
+An effective-rank map is a byte per base rank. Promotion moves a rank to just above another and shifts the ranks between, so order is preserved whichever way the map already runs. Maps may tie: Criticism Meeting gives 2s the same value as 3s, and the comparator's strict "higher" means neither beats the other.
 
 A chain's strength is its lowest rank's effective value, as P1B.2 defines main rank. Under Promotion of the Masses a straight from 3 therefore beats every other straight, because its lowest rank is the promoted one. Reversal stays consistent, because order flips for every rank.
 
 ## Consequences
 
-`SeatRules` holds one RuleSet and one map per seat, and the round asks it for the acting seat's. `Pattern.rekeyed()` exists for the refresh. The chain behavior under Promotion is a playtest question; changing it means choosing a different chain main rank, in `Pattern` construction only.
+`SeatRules` holds one RuleSet and one map per seat, and the round asks it for the acting seat's. `Pattern.rekeyed()` exists for the refresh. The chain behavior under Promotion is a playtest question; changing it means choosing a different effective rank wherever a chain's Pattern is built: the classifier, the move generator's floor and `RoundState`'s refresh.

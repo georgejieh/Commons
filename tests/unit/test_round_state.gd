@@ -199,6 +199,19 @@ func test_a_deal_can_not_reach_the_round_afterwards() -> void:
 	assert_array(Array(round_state.remaining())).is_equal([3, 2, 2])
 
 
+func test_a_played_event_carries_copies_of_the_cards() -> void:
+	var deal: DealResult = RoundScript.stacked_deal(["34567", "8", "9"], "")
+	var card: CardInstance = deal.hands[0].cards()[0]
+	CardModifiers.enhance(card, "gold")
+	var round_state: RoundState = RoundState.new(deal, 0, SeatRules.uniform(_rules, _map))
+	_apply(round_state, "3")
+	var event: RoundEvent = round_state.events()[-1]
+	assert_int(event.cards.size()).is_equal(1)
+	assert_str(event.cards[0].enhancement_id()).is_equal("gold")
+	CardModifiers.enhance(card, "silver")
+	assert_str(event.cards[0].enhancement_id()).is_equal("gold")
+
+
 func test_every_applied_action_emits_an_event() -> void:
 	var round_state: RoundState = _round(["34567", "8", "9"])
 	var before: int = round_state.events().size()
