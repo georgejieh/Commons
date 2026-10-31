@@ -18,17 +18,21 @@ static func score_play(
 	stack: ModifierStack,
 	params: ScoreParams = DEFAULT_PARAMS
 ) -> ScoreBreakdown:
-	var scored: Array[CardInstance] = _scored_cards(cards, pattern)
-	var breakdown: ScoreBreakdown = ScoreBreakdown.new(scored.size())
+	var scored: int = 0
+	for card: CardInstance in cards:
+		if _is_scored(card, pattern):
+			scored += 1
+	var breakdown: ScoreBreakdown = ScoreBreakdown.new(scored)
 	var grain: float = params.grain_for(pattern.type, level)
 	breakdown.add_step(ScoreBreakdown.Step.BASE_GRAIN, grain)
 
-	for card: CardInstance in scored:
-		var base: float = params.card_grain[card.base_rank()]
-		var context: CardContext = CardContext.new(seat, is_landlord, card, base)
-		stack.run_card_scored(context)
-		breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)
-		grain += context.grain
+	for card: CardInstance in cards:
+		if _is_scored(card, pattern):
+			var base: float = params.card_grain[card.base_rank()]
+			var context: CardContext = CardContext.new(seat, is_landlord, card, base)
+			stack.run_card_scored(context)
+			breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)
+			grain += context.grain
 
 	var zeal: float = params.zeal_for(pattern.type, level)
 	breakdown.add_step(ScoreBreakdown.Step.BASE_ZEAL, zeal)
@@ -49,19 +53,28 @@ static func score_play(
 	return breakdown
 
 
-## The end-of-round multiplier for one side's score.
+## The end-of-round multiplier for one side's score. Spring and anti-spring reward only
+## the side that won.
 static func round_multiplier(
 	finish: RoundEvent.Finish,
 	went_out_first: bool,
+	side_won: bool,
 	rules: RuleSet,
 	params: ScoreParams = DEFAULT_PARAMS
 ) -> float:
 	var multiplier: float = params.first_out_multiplier if went_out_first else 1.0
+	if not side_won:
+		return multiplier
 	if finish == RoundEvent.Finish.SPRING:
 		multiplier *= params.spring_multiplier
 	elif finish == RoundEvent.Finish.ANTI_SPRING and rules.anti_spring_doubles():
 		multiplier *= params.anti_spring_multiplier
 	return multiplier
+
+
+## Applies a round multiplier, keeping the result in range.
+static func round_total(score: float, multiplier: float) -> float:
+	return clamp_score(score * multiplier)
 
 
 static func clamp_score(value: float) -> float:
@@ -70,13 +83,8 @@ static func clamp_score(value: float) -> float:
 	return maxf(value, -MAX_SCORE)
 
 
-static func _scored_cards(cards: Array[CardInstance], pattern: Pattern) -> Array[CardInstance]:
-	var scored: Array[CardInstance] = []
-	for card: CardInstance in cards:
-		if pattern.type == Pattern.Type.ROCKET or _in_body(card.base_rank(), pattern):
-			scored.append(card)
-	return scored
-
-
-static func _in_body(rank: int, pattern: Pattern) -> bool:
+static func _is_scored(card: CardInstance, pattern: Pattern) -> bool:
+	if pattern.type == Pattern.Type.ROCKET:
+		return true
+	var rank: int = card.base_rank()
 	return rank >= pattern.main_rank and rank < pattern.main_rank + pattern.chain_length

@@ -34,10 +34,13 @@ func _lines() -> String:
 		lines.append("%s grain=%s zeal=%s total=%s" % [name, score.grain, score.zeal, score.total])
 		for finish: int in RoundEvent.Finish.values():
 			for first: bool in [false, true]:
-				var multiplier: float = Scorer.round_multiplier(finish, first, rules)
+				var multiplier: float = Scorer.round_multiplier(finish, first, true, rules)
 				var finish_name: String = RoundEvent.Finish.keys()[finish]
 				lines.append(
-					"  %s first=%s total=%s" % [finish_name, first, score.total * multiplier]
+					(
+						"  %s first=%s total=%s"
+						% [finish_name, first, Scorer.round_total(score.total, multiplier)]
+					)
 				)
 	return "\n".join(lines) + "\n"
 

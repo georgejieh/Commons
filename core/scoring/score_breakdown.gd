@@ -14,13 +14,10 @@ var zeal: float = 0.0
 var total: float = 0.0
 var steps: PackedFloat64Array = PackedFloat64Array()
 var step_count: int = 0
-## Counts how many times the step array was sized.
-var allocations: int = 0
 
 
 func _init(scored_cards: int) -> void:
 	steps.resize((scored_cards + FIXED_STEPS) * VALUES_PER_STEP)
-	allocations += 1
 
 
 func add_step(kind: Step, value: float) -> void:

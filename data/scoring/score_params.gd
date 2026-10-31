@@ -12,9 +12,13 @@ extends Resource
 @export var anti_spring_multiplier: float
 
 
-func grain_for(type: Pattern.Type, level: int) -> int:
+## type is a Pattern.Type value. level runs from 1 to max_level.
+func grain_for(type: int, level: int) -> int:
+	assert(level >= 1 and level <= max_level)
 	return hand_grain[type * max_level + level - 1]
 
 
-func zeal_for(type: Pattern.Type, level: int) -> int:
+## type is a Pattern.Type value. level runs from 1 to max_level.
+func zeal_for(type: int, level: int) -> int:
+	assert(level >= 1 and level <= max_level)
 	return hand_zeal[type * max_level + level - 1]
