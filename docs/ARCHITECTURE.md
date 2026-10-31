@@ -9,7 +9,7 @@ Dependencies run one way: `ui` → `game` → `core`. `core` may read definition
 | Folder | Holds |
 | --- | --- |
 | `core/` | Pure logic: model, rules, modifiers, scoring, bots, run. No nodes, scenes, autoloads or I/O |
-| `data/` | Resource definitions |
+| `data/` | Resource definitions and the string table ([ADR 0006](adr/0006-string-table.md)) |
 | `game/` | Controllers that bridge `core` to scenes |
 | `ui/` | Scenes and themes |
 | `art/`, `audio/`, `shaders/` | Assets |
