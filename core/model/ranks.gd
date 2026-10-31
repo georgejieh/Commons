@@ -57,3 +57,12 @@ static func label_key(rank: int) -> String:
 ## Returns the rank for a label key, or INVALID.
 static func from_label_key(key: String) -> int:
 	return LABEL_KEYS.find(key)
+
+
+## Returns the map where every rank is its own effective rank.
+static func identity_map() -> PackedByteArray:
+	var result: PackedByteArray = PackedByteArray()
+	result.resize(COUNT)
+	for rank: int in COUNT:
+		result[rank] = rank
+	return result
