@@ -1,0 +1,228 @@
+game 101
+ROUND_STARTED seat=2
+KITTY_TAKEN seat=2 cards=[16, 43, 50]
+PLAYED seat=2 cards=[0, 2, 13, 14, 40, 41, 43, 44, 46, 47] pattern=AIRPLANE_PAIRS main=10 chain=2 kickers=[0, 0, 3, 3]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[6, 8, 15, 16, 22, 26, 29, 34] pattern=STRAIGHT main=1 chain=8 kickers=[]
+ANNOUNCED seat=2 value=2
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[30] pattern=SINGLE main=7 chain=1 kickers=[]
+ANNOUNCED seat=2 value=1
+PLAYED seat=0 cards=[33] pattern=SINGLE main=8 chain=1 kickers=[]
+PASSED seat=1
+PLAYED seat=2 cards=[50] pattern=SINGLE main=12 chain=1 kickers=[]
+TRICK_WON seat=2
+ROUND_ENDED seat=2 value=0
+game 202
+ROUND_STARTED seat=1
+KITTY_TAKEN seat=1 cards=[10, 37, 52]
+PLAYED seat=1 cards=[0, 2, 40, 42, 43] pattern=TRIO_PAIR main=10 chain=1 kickers=[0, 0]
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[9, 10] pattern=PAIR main=2 chain=1 kickers=[]
+PLAYED seat=2 cards=[13, 15] pattern=PAIR main=3 chain=1 kickers=[]
+PASSED seat=0
+PLAYED seat=1 cards=[21, 23] pattern=PAIR main=5 chain=1 kickers=[]
+PLAYED seat=2 cards=[26, 27] pattern=PAIR main=6 chain=1 kickers=[]
+PASSED seat=0
+PLAYED seat=1 cards=[45, 46] pattern=PAIR main=11 chain=1 kickers=[]
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[48, 51] pattern=PAIR main=12 chain=1 kickers=[]
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[52, 53] pattern=ROCKET main=13 chain=1 kickers=[]
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[6] pattern=SINGLE main=1 chain=1 kickers=[]
+PLAYED seat=2 cards=[11] pattern=SINGLE main=2 chain=1 kickers=[]
+PASSED seat=0
+PLAYED seat=1 cards=[12] pattern=SINGLE main=3 chain=1 kickers=[]
+PLAYED seat=2 cards=[16] pattern=SINGLE main=4 chain=1 kickers=[]
+PASSED seat=0
+PLAYED seat=1 cards=[25] pattern=SINGLE main=6 chain=1 kickers=[]
+ANNOUNCED seat=1 value=2
+PLAYED seat=2 cards=[29] pattern=SINGLE main=7 chain=1 kickers=[]
+PASSED seat=0
+PLAYED seat=1 cards=[34] pattern=SINGLE main=8 chain=1 kickers=[]
+ANNOUNCED seat=1 value=1
+PLAYED seat=2 cards=[44] pattern=SINGLE main=11 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[17, 19] pattern=PAIR main=4 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[32, 33] pattern=PAIR main=8 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[5] pattern=SINGLE main=1 chain=1 kickers=[]
+PASSED seat=0
+PLAYED seat=1 cards=[37] pattern=SINGLE main=9 chain=1 kickers=[]
+TRICK_WON seat=1
+ROUND_ENDED seat=1 value=0
+game 303
+ROUND_STARTED seat=0
+KITTY_TAKEN seat=0 cards=[7, 27, 44]
+PLAYED seat=0 cards=[2, 4, 11, 14, 16, 20, 24, 29] pattern=STRAIGHT main=0 chain=8 kickers=[]
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[5, 7] pattern=PAIR main=1 chain=1 kickers=[]
+PLAYED seat=1 cards=[8, 10] pattern=PAIR main=2 chain=1 kickers=[]
+PASSED seat=2
+PLAYED seat=0 cards=[25, 27] pattern=PAIR main=6 chain=1 kickers=[]
+PLAYED seat=1 cards=[32, 33] pattern=PAIR main=8 chain=1 kickers=[]
+PASSED seat=2
+PLAYED seat=0 cards=[42, 43] pattern=PAIR main=10 chain=1 kickers=[]
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[48, 50] pattern=PAIR main=12 chain=1 kickers=[]
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[52, 53] pattern=ROCKET main=13 chain=1 kickers=[]
+ANNOUNCED seat=0 value=2
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[3] pattern=SINGLE main=0 chain=1 kickers=[]
+ANNOUNCED seat=0 value=1
+PLAYED seat=1 cards=[6] pattern=SINGLE main=1 chain=1 kickers=[]
+PASSED seat=2
+PLAYED seat=0 cards=[44] pattern=SINGLE main=11 chain=1 kickers=[]
+TRICK_WON seat=0
+ROUND_ENDED seat=0 value=0
+game 404
+ROUND_STARTED seat=2
+KITTY_TAKEN seat=2 cards=[11, 14, 51]
+PLAYED seat=2 cards=[6, 8, 14, 19, 22, 24, 28] pattern=STRAIGHT main=1 chain=7 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[9, 11] pattern=PAIR main=2 chain=1 kickers=[]
+PLAYED seat=0 cards=[12, 13] pattern=PAIR main=3 chain=1 kickers=[]
+PASSED seat=1
+PLAYED seat=2 cards=[25, 27] pattern=PAIR main=6 chain=1 kickers=[]
+PLAYED seat=0 cards=[33, 35] pattern=PAIR main=8 chain=1 kickers=[]
+PASSED seat=1
+PLAYED seat=2 cards=[44, 45] pattern=PAIR main=11 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[49, 51] pattern=PAIR main=12 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[7] pattern=SINGLE main=1 chain=1 kickers=[]
+PLAYED seat=0 cards=[17] pattern=SINGLE main=4 chain=1 kickers=[]
+PASSED seat=1
+PLAYED seat=2 cards=[31] pattern=SINGLE main=7 chain=1 kickers=[]
+PLAYED seat=0 cards=[37] pattern=SINGLE main=9 chain=1 kickers=[]
+PASSED seat=1
+PLAYED seat=2 cards=[43] pattern=SINGLE main=10 chain=1 kickers=[]
+ANNOUNCED seat=2 value=2
+PLAYED seat=0 cards=[46] pattern=SINGLE main=11 chain=1 kickers=[]
+PASSED seat=1
+PLAYED seat=2 cards=[53] pattern=SINGLE main=14 chain=1 kickers=[]
+ANNOUNCED seat=2 value=1
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[39] pattern=SINGLE main=9 chain=1 kickers=[]
+TRICK_WON seat=2
+ROUND_ENDED seat=2 value=0
+game 505
+ROUND_STARTED seat=1
+KITTY_TAKEN seat=1 cards=[8, 34, 46]
+PLAYED seat=1 cards=[0, 3, 4, 6, 8, 11, 12, 13, 18, 19] pattern=PAIR_CHAIN main=0 chain=5 kickers=[]
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[40, 41] pattern=PAIR main=10 chain=1 kickers=[]
+PLAYED seat=2 cards=[44, 45] pattern=PAIR main=11 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[17, 21, 27, 30, 32, 36, 43] pattern=STRAIGHT main=4 chain=7 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[5, 7] pattern=PAIR main=1 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[9, 10] pattern=PAIR main=2 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[33, 35] pattern=PAIR main=8 chain=1 kickers=[]
+ANNOUNCED seat=2 value=2
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[50] pattern=SINGLE main=12 chain=1 kickers=[]
+ANNOUNCED seat=2 value=1
+PASSED seat=0
+PLAYED seat=1 cards=[53] pattern=SINGLE main=14 chain=1 kickers=[]
+PASSED seat=2
+PASSED seat=0
+TRICK_WON seat=1
+PLAYED seat=1 cards=[14] pattern=SINGLE main=3 chain=1 kickers=[]
+PLAYED seat=2 cards=[52] pattern=SINGLE main=13 chain=1 kickers=[]
+TRICK_WON seat=2
+ROUND_ENDED seat=2 value=0
+game compound
+ROUND_STARTED seat=0
+KITTY_TAKEN seat=0
+PLAYED seat=0 cards=[0, 1, 2, 4, 5, 6, 8, 12] pattern=AIRPLANE_SINGLES main=0 chain=2 kickers=[2, 3]
+ANNOUNCED seat=0 value=2
+PLAYED seat=1 cards=[16, 17, 18, 20, 21, 22, 24, 28] pattern=AIRPLANE_SINGLES main=4 chain=2 kickers=[6, 7]
+PASSED seat=2
+PLAYED seat=0 cards=[52, 53] pattern=ROCKET main=13 chain=1 kickers=[]
+TRICK_WON seat=0
+ROUND_ENDED seat=0 value=0
+game bombs
+ROUND_STARTED seat=0
+KITTY_TAKEN seat=0
+PLAYED seat=0 cards=[0, 1, 4, 5, 8, 9] pattern=PAIR_CHAIN main=0 chain=3 kickers=[]
+ANNOUNCED seat=0 value=2
+PLAYED seat=1 cards=[12, 13, 16, 17, 20, 21] pattern=PAIR_CHAIN main=3 chain=3 kickers=[]
+ANNOUNCED seat=1 value=2
+PLAYED seat=2 cards=[28, 29, 30, 31] pattern=BOMB main=7 chain=1 kickers=[]
+PASSED seat=0
+PASSED seat=1
+TRICK_WON seat=2
+PLAYED seat=2 cards=[32, 33, 34, 44] pattern=TRIO_SINGLE main=8 chain=1 kickers=[11]
+TRICK_WON seat=2
+ROUND_ENDED seat=2 value=2
+game spring
+ROUND_STARTED seat=0
+KITTY_TAKEN seat=0
+PLAYED seat=0 cards=[0, 4, 8, 12, 16] pattern=STRAIGHT main=0 chain=5 kickers=[]
+ANNOUNCED seat=0 value=1
+PASSED seat=1
+PASSED seat=2
+TRICK_WON seat=0
+PLAYED seat=0 cards=[20] pattern=SINGLE main=5 chain=1 kickers=[]
+TRICK_WON seat=0
+ROUND_ENDED seat=0 value=1
+game anti spring
+ROUND_STARTED seat=0
+KITTY_TAKEN seat=0
+PLAYED seat=0 cards=[0] pattern=SINGLE main=0 chain=1 kickers=[]
+ANNOUNCED seat=0 value=1
+PLAYED seat=1 cards=[4] pattern=SINGLE main=1 chain=1 kickers=[]
+TRICK_WON seat=1
+ROUND_ENDED seat=1 value=2

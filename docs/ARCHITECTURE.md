@@ -23,3 +23,24 @@ Dependencies run one way: `ui` → `game` → `core`. `core` may read definition
 ## Randomness
 
 Each run has one `RandomStreams` with six independent streams: deal, shop, debuff, ai, events, cosmetic. A stream's seed is an FNV-1a hash of the run seed and its name, so adding a stream never disturbs the others. `core/` code takes a `RandomStream` and never touches an engine generator. Seeds and states serialize as text, because JSON numbers cannot hold 64 bits.
+
+## Rules
+
+`core/rules/` is the rules engine. Everything works on rank counts, so suits never affect legality.
+
+| Piece | Job |
+| --- | --- |
+| `RuleSet` | Frozen legality parameters, built from a `RuleParams` Resource |
+| `Pattern` | One play as ranks, with a comparison key fixed at construction |
+| `Classifier` | Reads one Pattern from a count vector in O(15) ([ADR 0007](adr/0007-classifier-rules.md)) |
+| `PlayComparator` | Decides whether one play beats another |
+| `MoveGenerator` | Lists every legal Pattern for a hand |
+| `CardSelection` | Maps a Pattern to card instances, and a player's picks back to a Pattern |
+| `Bidding`, `LandlordSeat` | Call and grab, and who holds the seat across a Set |
+| `RoundState` | One round. `apply()` is its only mutator, and it returns a reason code or emits `RoundEvent`s |
+
+Patterns store base ranks. Only the comparison key uses the effective rank map, so chains stay adjacent in base ranks whatever a modifier does to rank order.
+
+### Information boundary
+
+A bot receives a `SeatView` and nothing else: a `PublicView` plus copies of its own hand. Every field of a view is an independent copy with no link back to the round, so a bot can neither reach another seat's hand nor change the round by editing what it holds. A test walks every object reachable from a `SeatView`, and another edits a view and checks the round is unchanged. The round copies the hands it is given and never hands out a `Hand`; `action_for()` turns a Pattern into an action on the controller side.

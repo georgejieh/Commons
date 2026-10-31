@@ -43,6 +43,13 @@ func remove(card_id: int) -> CardInstance:
 	return card
 
 
+## Returns the card with this ID, or null.
+func find(card_id: int) -> CardInstance:
+	if not _index_by_id.has(card_id):
+		return null
+	return _cards[_index_by_id[card_id]]
+
+
 func size() -> int:
 	return _cards.size()
 
