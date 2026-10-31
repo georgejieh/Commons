@@ -23,6 +23,9 @@ static func choose(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 		var feed: Pattern = _feed_teammate(position, safe)
 		if feed != null:
 			return BotPlay.new(feed, BotRationale.Code.FEED_TEAMMATE)
+	var fed: Pattern = SeatRole.feed_lead(position, safe)
+	if fed != null:
+		return BotPlay.new(fed, BotRationale.Code.FEED_TEAMMATE)
 	var weakest: Pattern = _weakest_group(position, safe)
 	if weakest != null:
 		return BotPlay.new(weakest, BotRationale.Code.WEAKEST_GROUP)

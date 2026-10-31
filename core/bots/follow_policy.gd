@@ -10,10 +10,13 @@ static func choose(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 	if position.trick_owner() == position.teammate:
 		return _on_teammate(position, legal)
 	if position.opponent_cards <= position.config.weights.block_cards:
-		var block: Pattern = _block(legal)
-		if block != null:
-			return BotPlay.new(block, BotRationale.Code.BLOCK_OPPONENT)
-	return _best_response(position, _ungated(position, legal))
+		var stop: Pattern = _block(legal)
+		if stop != null:
+			return BotPlay.new(stop, BotRationale.Code.BLOCK_OPPONENT)
+	var block: Pattern = SeatRole.block_landlord_single(position, legal)
+	if block != null:
+		return BotPlay.new(block, BotRationale.Code.BLOCK_LANDLORD)
+	return _best_response(position, SeatRole.saved_for_later(position, _ungated(position, legal)))
 
 
 ## Passes, unless this is the upstream seat and the landlord could take the card cheaply.
