@@ -15,3 +15,5 @@ Dependencies run one way: `ui` → `game` → `core`. `core` may read definition
 | `art/`, `audio/`, `shaders/` | Assets |
 | `tests/` | Unit, integration and golden tests |
 | `tools/` | Asset scripts and headless harnesses |
+
+`tools/check_layers.gd` enforces the `core/` rules. It fails on a path outside `core/` and `data/`, a Node subclass, or autoload access.
