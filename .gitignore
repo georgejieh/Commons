@@ -1,0 +1,67 @@
+# Private planning docs (ADRs and architecture docs in docs/ stay tracked)
+/docs/PLAN.md
+/docs/CHECKLIST.md
+
+# Godot 4 (keep *.import, *.uid and export_presets.cfg tracked)
+.godot/
+/android/
+
+# Export output
+/build/
+/builds/
+/dist/
+/export/
+*.pck
+*.AppImage
+*.dmg
+
+# Test and harness output
+/reports/
+/output/
+/tmp/
+*.log
+
+# Private UI reference board (P3B.0): third-party screenshots, never redistributed
+/design/reference/
+
+# Audio working files: Sonniss bars redistributing raw or derived sounds
+/audio/sources/raw/
+/audio/preview/
+
+# Python tooling (tools/)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Optional DouZero benchmark weights
+*.ckpt
+
+# Secrets and signing (itch.io butler, Windows and macOS signing)
+.env
+.env.*
+!.env.example
+butler_creds
+*.pfx
+*.p12
+*.p8
+*.cer
+*.keystore
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/worktrees/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
