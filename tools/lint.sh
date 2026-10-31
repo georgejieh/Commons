@@ -3,7 +3,10 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-mapfile -t files < <(git ls-files --cached --others --exclude-standard '*.gd' ':!:addons/*')
+files=()
+while IFS= read -r file; do
+	files+=("$file")
+done < <(git ls-files --cached --others --exclude-standard '*.gd' ':!:addons/*')
 
 if command -v gdlint > /dev/null; then
 	gdlint "${files[@]}"
