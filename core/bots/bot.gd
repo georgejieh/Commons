@@ -26,7 +26,7 @@ static func decide_play(
 	if config.tier == BotConfig.Tier.EASY:
 		return GreedyPolicy.choose(view, legal, table, config)
 	var job: BotSearchJob = search_job(view, legal, table, config)
-	if not ExpertSearch.applies(view, config):
+	if not ExpertSearch.applies(config):
 		return job.fallback
 	return ExpertSearch.run(job, budget)
 
@@ -39,7 +39,7 @@ static func search_job(
 	var position: BotPosition = BotPosition.new(view, table, config, scorer)
 	var play: BotPlay = _by_policy(position, legal)
 	var candidates: Array[Pattern] = []
-	if ExpertSearch.applies(view, config):
+	if ExpertSearch.applies(config):
 		candidates = legal
 	return BotSearchJob.new(position, candidates, play)
 

@@ -19,11 +19,9 @@ static func round_after(
 	return round_state
 
 
-## Hard with no search, so a test sees the rules rather than rollouts.
+## Hard, which plays by rules alone.
 static func policy_only() -> BotConfig:
-	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS.duplicate()
-	weights.endgame_cards = 0
-	return BotConfig.new(weights)
+	return BotConfig.new()
 
 
 ## What the seat to act decides.

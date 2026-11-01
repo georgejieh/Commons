@@ -2,18 +2,11 @@ class_name ExpertSearch
 extends RefCounted
 ## Determinized sampling: deals the unseen cards consistently with what is public, rolls
 ## out the top candidates on each deal with the Medium policy, and picks the best average.
-## Hard searches only in the endgame. A pure job, so a runner may spread it over threads.
+## Only Expert searches. A pure job, so a runner may spread it over threads.
 
 
-static func applies(view: SeatView, config: BotConfig) -> bool:
-	if config.tier == BotConfig.Tier.EXPERT:
-		return true
-	if config.tier != BotConfig.Tier.HARD:
-		return false
-	var left: int = 0
-	for size: int in view.public.remaining:
-		left += size
-	return left <= config.weights.endgame_cards
+static func applies(config: BotConfig) -> bool:
+	return config.tier == BotConfig.Tier.EXPERT
 
 
 ## Runs a job's samples in turn, stopping if the deadline passes.

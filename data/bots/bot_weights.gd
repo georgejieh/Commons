@@ -38,11 +38,7 @@ extends Resource
 @export var bid_rate_low: float
 @export var bid_rate_high: float
 ## How many top candidates a search rolls out, and how many deals of the unseen cards.
-@export var hard_candidates: int
-@export var hard_samples: int
 @export var expert_candidates: int
 @export var expert_samples: int
-## Hard searches once this few cards are left around the table, itself included.
-@export var endgame_cards: int
 ## Actions after which a rollout counts as a loss.
 @export var search_step_limit: int

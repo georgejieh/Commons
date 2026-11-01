@@ -44,11 +44,10 @@ func test_the_policy_play_is_always_a_candidate() -> void:
 	assert_bool(top[0].equals(policy.pattern)).is_true()
 
 
-func test_searching_tiers_keep_off_a_teammates_winning_card() -> void:
+func test_a_search_keeps_off_a_teammates_winning_card() -> void:
 	var seats: Array[String] = ["3" + FAR, "A" + FAR, "2KK"]
-	for tier: BotConfig.Tier in [BotConfig.Tier.HARD, BotConfig.Tier.EXPERT]:
-		var play: BotPlay = BotScript.decide(seats, ["3", "A"], 0, _config(tier))
-		assert_bool(play.is_pass()).is_true()
+	var play: BotPlay = BotScript.decide(seats, ["3", "A"], 0, _config(BotConfig.Tier.EXPERT))
+	assert_bool(play.is_pass()).is_true()
 
 
 func test_a_search_never_bombs_a_teammate() -> void:

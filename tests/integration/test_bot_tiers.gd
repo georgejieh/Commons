@@ -53,6 +53,13 @@ func test_medium_has_no_seat_role() -> void:
 	assert_str(BotScript.text_of(play)).is_equal("6")
 
 
+func test_only_expert_searches() -> void:
+	assert_bool(ExpertSearch.applies(_config(BotConfig.Tier.EASY))).is_false()
+	assert_bool(ExpertSearch.applies(_config(BotConfig.Tier.MEDIUM))).is_false()
+	assert_bool(ExpertSearch.applies(_config(BotConfig.Tier.HARD))).is_false()
+	assert_bool(ExpertSearch.applies(_config(BotConfig.Tier.EXPERT))).is_true()
+
+
 func test_a_search_keeps_to_legal_moves_and_can_pass() -> void:
 	var round_state: RoundState = BotScript.round_after(["39TJ", "458", "67"], ["3"])
 	var legal: Array[Pattern] = round_state.legal_moves()

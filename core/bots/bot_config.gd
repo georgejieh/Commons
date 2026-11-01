@@ -44,11 +44,11 @@ static func from_personality(personality: Personality, seed_value: int = 0) -> B
 
 
 func search_candidates() -> int:
-	return weights.expert_candidates if tier == Tier.EXPERT else weights.hard_candidates
+	return weights.expert_candidates
 
 
 func search_samples() -> int:
-	return weights.expert_samples if tier == Tier.EXPERT else weights.hard_samples
+	return weights.expert_samples
 
 
 ## The policy rollouts play by.
