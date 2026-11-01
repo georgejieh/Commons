@@ -23,6 +23,7 @@ static func play_round(
 			break
 		_take_turn(round_state, configs, table, clock, result)
 	result.winner = round_state.winner()
+	result.history = round_state.public_view().history
 	return result
 
 
@@ -85,11 +86,13 @@ static func _take_turn(
 	)
 	if clock.is_valid():
 		result.decision_usec.append(clock.call() - started)
+		result.decision_seats.append(seat)
 	result.decisions += 1
 	_record(round_state, seat, play, result)
 	var reason: RoundState.Reason = round_state.apply(_action_for(round_state, play))
 	if reason != RoundState.Reason.OK:
 		result.illegal_actions += 1
+		result.illegal_by_seat[seat] += 1
 		var fallback: Pattern = legal[0] if not legal.is_empty() else Pattern.pass_play()
 		round_state.apply(_action_for(round_state, BotPlay.new(fallback)))
 		play = BotPlay.new(fallback)
