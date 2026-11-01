@@ -25,7 +25,7 @@ One JSON object per line.
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `version` | int | 1 |
-| `seed` | int | The deal seed, for `SelfPlay.deal_from_seed()` |
+| `seed` | string | The deal seed, for `SelfPlay.deal_from_seed()`. Text, because JSON numbers lose large integers |
 | `seats` | array of string | The configuration at seats 0, 1 and 2 |
 | `landlord` | int | The landlord's seat |
 | `hands` | array of string | Each seat's dealt hand, before the kitty |

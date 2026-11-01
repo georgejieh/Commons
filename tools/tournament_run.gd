@@ -34,6 +34,7 @@ func _init(first: String, second: String, first_seed: int = 0, keep_log: bool = 
 
 ## Plays each deal with the sides swapped, so games rounds down to an even number (ADR 0010).
 func play_duplicate(games: int) -> void:
+	@warning_ignore("integer_division")
 	for deal: int in games / 2:
 		var deal_seed: int = _first_seed + deal
 		_play(DUPLICATE, deal_seed, 0, [_first, _second, _second])
@@ -48,8 +49,10 @@ func play_bidding(games: int) -> void:
 		var game_seed: int = _first_seed + game
 		var names: Array[String] = [_second, _second, _second]
 		names[game % Seats.COUNT] = _first
+		@warning_ignore("integer_division")
+		var first_bidder: int = (game + game / Seats.COUNT) % Seats.COUNT
 		var bidding: Bidding = SelfPlay.bid_round(
-			SelfPlay.deal_from_seed(game_seed), _seat_configs(names), table, game % Seats.COUNT
+			SelfPlay.deal_from_seed(game_seed), _seat_configs(names), table, first_bidder
 		)
 		if not bidding.needs_redeal():
 			_play(BIDDING, game_seed, bidding.landlord(), names)

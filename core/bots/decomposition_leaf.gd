@@ -78,7 +78,10 @@ func groups(counts: PackedByteArray, planes: PackedInt32Array) -> Array[Pattern]
 	for rank: int in spare_pairs:
 		result.append(_group(Pattern.Type.PAIR, rank, 1, HandDecomposer.PAIR_WIDTH))
 	for rank: int in _bombs:
-		result.append(_group(Pattern.Type.BOMB, rank, 1, HandDecomposer.BOMB_WIDTH))
+		var width: int = HandDecomposer.BOMB_WIDTH
+		if _rules.five_plus_is_bomb():
+			width = counts[rank]
+		result.append(_group(Pattern.Type.BOMB, rank, 1, width))
 	if _has_rocket:
 		var cards: int = HandDecomposer.PAIR_WIDTH
 		result.append(_group(Pattern.Type.ROCKET, Ranks.SMALL_JOKER, 1, cards))

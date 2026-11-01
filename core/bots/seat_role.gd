@@ -16,21 +16,21 @@ static func block_landlord_single(position: BotPosition, legal: Array[Pattern]) 
 	var low_rank: int = position.config.weights.block_low_rank
 	var lowest: Pattern = null
 	for move: Pattern in legal:
-		var fits: bool = move.type == Pattern.Type.SINGLE and move.main_rank <= Ranks.TWO
-		if fits and position.rank_of(move.main_rank) >= low_rank:
+		var rank: int = position.rank_of(move.main_rank)
+		if move.type == Pattern.Type.SINGLE and rank <= Ranks.TWO and rank >= low_rank:
 			if lowest == null or move.key < lowest.key:
 				lowest = move
 	return lowest
 
 
-## The downstream seat saves its controls, so it answers with none of them unless a gate
-## is open. Other seats keep every move.
+## The downstream seat saves its controls, so it answers with none of them short of a
+## forced win. Other seats keep every move.
 static func saved_for_later(position: BotPosition, moves: Array[Pattern]) -> Array[Pattern]:
 	if not position.plays_a_role() or position.is_upstream() or position.forced_win():
 		return moves
 	var kept: Array[Pattern] = []
 	for move: Pattern in moves:
-		if move.type != Pattern.Type.SINGLE or move.main_rank < Ranks.ACE:
+		if move.type != Pattern.Type.SINGLE or position.rank_of(move.main_rank) < Ranks.ACE:
 			kept.append(move)
 	return kept
 

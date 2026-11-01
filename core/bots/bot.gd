@@ -24,7 +24,7 @@ static func decide_play(
 	if legal.is_empty():
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.PASS_NOTHING_BEATS)
 	if config.tier == BotConfig.Tier.EASY:
-		return GreedyPolicy.choose(view, legal, config)
+		return GreedyPolicy.choose(view, legal, table, config)
 	var job: BotSearchJob = search_job(view, legal, table, config)
 	if not ExpertSearch.applies(view, config):
 		return job.fallback
@@ -56,5 +56,5 @@ static func declare_need(
 ) -> int:
 	if stream.next_float() < config.honesty:
 		return true_need
-	var extra: int = roundi(true_need * BotConfig.TABLE.lie_share)
+	var extra: int = roundi(true_need * config.lie_share)
 	return true_need + maxi(extra, BotConfig.TABLE.lie_floor)

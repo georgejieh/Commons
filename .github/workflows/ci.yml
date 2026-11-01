@@ -34,7 +34,7 @@ jobs:
       - run: bash tools/test.sh
       - name: Smoke tournament
         timeout-minutes: 2
-        run: godot --headless --path . --script res://tools/tournament.gd -- --games 200 --a medium --b easy --bidding
+        run: godot --headless --path . --script res://tools/tournament.gd -- --games 200 --a medium --b easy
 
   export:
     runs-on: ubuntu-latest

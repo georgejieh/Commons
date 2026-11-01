@@ -56,6 +56,16 @@ func trick_owner() -> int:
 	return Seats.NONE
 
 
+## Passes made since the play on the table.
+func passes_on_table() -> int:
+	var passes: int = 0
+	for index: int in range(view.public.history.size() - 1, -1, -1):
+		if view.public.history[index].pattern.type != Pattern.Type.PASS:
+			break
+		passes += 1
+	return passes
+
+
 ## The seat that plays just before the landlord.
 func is_upstream() -> bool:
 	return Seats.next(seat) == view.public.landlord

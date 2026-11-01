@@ -119,6 +119,17 @@ func test_honesty_lowers_lies() -> void:
 	assert_int(high).is_equal(0)
 
 
+func test_honesty_shrinks_a_lie() -> void:
+	var low: BotConfig = _medium(_set_honesty, Personality.Level.LOW)
+	var mid: BotConfig = _medium(_set_honesty, Personality.Level.MID)
+	low.honesty = 0.0
+	mid.honesty = 0.0
+	var budget: BotBudget = BotBudget.unlimited()
+	var stream: RandomStream = RandomStream.new(2112)
+	var low_need: int = Bot.declare_need(10, low, stream, budget)
+	assert_int(low_need).is_greater(Bot.declare_need(10, mid, stream, budget))
+
+
 func test_a_lie_only_ever_inflates_need() -> void:
 	var stream: RandomStream = RandomStream.new(2111)
 	var config: BotConfig = _medium(_set_honesty, Personality.Level.LOW)

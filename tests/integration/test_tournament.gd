@@ -29,22 +29,27 @@ func test_a_tournament_counts_no_illegal_action() -> void:
 	assert_int(_run().tally.illegal_actions).is_equal(0)
 
 
-func test_bidding_mode_plays_a_game_for_every_claimed_deal() -> void:
+func test_bidding_mode_plays_no_more_games_than_asked() -> void:
 	var run: TournamentRun = TournamentRun.new("medium", "easy")
 	run.play_bidding(GAMES)
-	assert_str(run.tally.csv()).contains("bidding,")
+	var games: int = 0
+	for line: String in run.tally.csv().strip_edges().split("\n"):
+		var cells: PackedStringArray = line.split(",")
+		if cells[0] == TournamentRun.BIDDING and cells[2] == "landlord":
+			games += int(cells[4])
+	assert_int(games).is_greater(0)
+	assert_int(games).is_less_equal(GAMES)
 
 
 func test_the_log_replays_the_cards_each_seat_held() -> void:
 	var record: Dictionary = JSON.parse_string(_run().log_lines[0])
-	var cards: int = 0
-	for hand: String in record["hands"]:
-		cards += hand.length()
-	assert_int(cards + String(record["kitty"]).length()).is_equal(54)
-	var played: int = 0
+	var hands: Array[String] = []
+	hands.assign(record["hands"])
+	hands[int(record["landlord"])] += record["kitty"]
 	for play: Array in record["plays"]:
-		if int(play[0]) == int(record["winner"]):
-			played += String(play[1]).length()
-	var winner_hand: String = record["hands"][int(record["winner"])]
-	var extra: int = 3 if int(record["winner"]) == int(record["landlord"]) else 0
-	assert_int(played).is_equal(winner_hand.length() + extra)
+		for card: String in String(play[1]):
+			var seat: int = int(play[0])
+			var at: int = hands[seat].find(card)
+			assert_int(at).is_greater_equal(0)
+			hands[seat] = hands[seat].erase(at, 1)
+	assert_str(hands[int(record["winner"])]).is_empty()

@@ -15,6 +15,8 @@ var search_seed: int
 var bomb_shift: float = 0.0
 var cooperation: float = 1.0
 var honesty: float = 1.0
+## The share of true need a lie adds.
+var lie_share: float = 0.0
 var ambition: float = 0.0
 var grudge: float = 0.0
 ## How much this bot holds against each seat, from villager memory.
@@ -35,6 +37,7 @@ static func from_personality(personality: Personality, seed_value: int = 0) -> B
 	config.bomb_shift = TABLE.bomb_aggression[personality.bomb_aggression]
 	config.cooperation = TABLE.cooperation[personality.cooperation]
 	config.honesty = TABLE.honesty[personality.honesty]
+	config.lie_share = TABLE.lie_share[personality.honesty]
 	config.ambition = TABLE.ambition[personality.ambition]
 	config.grudge = TABLE.grudge[personality.grudge]
 	return config

@@ -21,7 +21,7 @@ static func line(
 		kitty[card.base_rank()] += 1
 	var record: Dictionary[String, Variant] = {
 		"version": VERSION,
-		"seed": game_seed,
+		"seed": str(game_seed),
 		"seats": names,
 		"landlord": result.landlord,
 		"hands": hands,

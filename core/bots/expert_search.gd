@@ -24,20 +24,28 @@ static func run(job: BotSearchJob, budget: BotBudget) -> BotPlay:
 		if budget.is_expired():
 			return job.fallback
 		job.run_sample(sample)
-	return job.best()
+	return job.fallback if budget.is_expired() else job.best()
 
 
-## The policy's order by hand left. Passing competes whenever it is allowed.
-static func top_candidates(position: BotPosition, legal: Array[Pattern]) -> Array[Pattern]:
-	var scored: Array[Array] = []
+## The policy's own play first, so ties keep it, then a pass when one is allowed, then the
+## moves the policy's gates leave open, by hand left. A search never reopens a gate.
+static func top_candidates(
+	position: BotPosition, legal: Array[Pattern], policy_play: BotPlay
+) -> Array[Pattern]:
+	var top: Array[Pattern] = [policy_play.pattern]
+	var moves: Array[Pattern] = legal
 	if position.view.public.current_play != null:
-		scored.append([position.scorer.score_pass(), Pattern.pass_play()])
-	for move: Pattern in legal:
-		scored.append([position.scorer.score_play(move), move])
+		moves = FollowPolicy.open_moves(position, legal)
+		_add_new(top, Pattern.pass_play())
+	var spite: float = FollowPolicy.spite(position)
+	var scored: Array[Array] = []
+	for move: Pattern in moves:
+		scored.append([position.scorer.score_play(move) + spite, move])
 	scored.sort_custom(_scores_higher)
-	var top: Array[Pattern] = []
-	for entry: Array in scored.slice(0, position.config.search_candidates()):
-		top.append(entry[1])
+	for entry: Array in scored:
+		if top.size() >= position.config.search_candidates():
+			break
+		_add_new(top, entry[1])
 	return top
 
 
@@ -53,6 +61,7 @@ static func roll(position: BotPosition, hands: Array[PackedByteArray], move: Pat
 		position.seat,
 		view.public.current_play,
 		position.trick_owner(),
+		position.passes_on_table(),
 		position.table,
 		position.config.rollout_config()
 	)
@@ -124,6 +133,13 @@ static func _sample_seed(position: BotPosition, sample: int) -> int:
 	var view: SeatView = position.view
 	var state: int = CountKey.encode(view.own_counts) ^ (view.public.history.size() << 8)
 	return position.config.search_seed ^ state ^ (sample * RandomStreams.FNV_PRIME)
+
+
+static func _add_new(moves: Array[Pattern], move: Pattern) -> void:
+	for other: Pattern in moves:
+		if other.equals(move):
+			return
+	moves.append(move)
 
 
 static func _scores_higher(first: Array, second: Array) -> bool:

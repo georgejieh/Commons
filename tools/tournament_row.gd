@@ -25,5 +25,6 @@ func csv() -> String:
 		total += usec
 	var count: int = sorted.size()
 	var mean: float = float(total) / count if count > 0 else 0.0
+	@warning_ignore("integer_division")
 	var p99: int = sorted[count * 99 / 100] if count > 0 else 0
 	return "%d,%d,%.4f,%.1f,%d,%d" % [games, wins, float(wins) / games, mean, p99, illegal_actions]

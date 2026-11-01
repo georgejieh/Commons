@@ -6,7 +6,8 @@ extends RefCounted
 const WAIT_STEP_MSEC: int = 1
 
 var _job: BotSearchJob
-## Read by every worker, written only here, so a late sample stops at once.
+## Read by every worker, written only here. Samples not yet started are skipped, and one
+## already running finishes first.
 var _expired: bool = false
 
 
@@ -18,6 +19,7 @@ func decide(
 	limit_usec: int,
 ) -> BotPlay:
 	var deadline: int = Time.get_ticks_usec() + limit_usec
+	_expired = false
 	_job = Bot.search_job(view, legal, table, config)
 	if not _job.is_ready():
 		return _job.fallback
@@ -27,6 +29,7 @@ func decide(
 			_expired = true
 		OS.delay_msec(WAIT_STEP_MSEC)
 	WorkerThreadPool.wait_for_group_task_completion(group)
+	_expired = _expired or Time.get_ticks_usec() >= deadline
 	return _job.fallback if _expired else _job.best()
 
 

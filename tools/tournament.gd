@@ -11,8 +11,10 @@ func _initialize() -> void:
 	var first: String = options.get("a", "")
 	var second: String = options.get("b", "")
 	var games: int = int(options.get("games", "0"))
-	if games <= 0 or first == second or not _known(first) or not _known(second):
-		printerr("Needs --games N and two different --a and --b from easy, medium, hard, expert.")
+	if games < 2 or first == second or not _known(first) or not _known(second):
+		printerr(
+			"Needs --games N of at least 2 and two different --a and --b from easy, medium, hard, expert."
+		)
 		quit(2)
 		return
 	var log_path: String = options.get("log", "")

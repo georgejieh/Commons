@@ -70,6 +70,17 @@ static func deal_from_seed(deal_seed: int) -> DealResult:
 	return Dealer.deal(cards, RandomStream.new(deal_seed))
 
 
+## True for a pass or a legal move. The round would read a play it can't find cards for
+## as a pass, so a harness has to check.
+static func is_offered(play: BotPlay, legal: Array[Pattern]) -> bool:
+	if play.is_pass():
+		return true
+	for move: Pattern in legal:
+		if move.equals(play.pattern):
+			return true
+	return false
+
+
 static func _take_turn(
 	round_state: RoundState,
 	configs: Array[BotConfig],
@@ -89,7 +100,9 @@ static func _take_turn(
 		result.decision_seats.append(seat)
 	result.decisions += 1
 	_record(round_state, seat, play, result)
-	var reason: RoundState.Reason = round_state.apply(_action_for(round_state, play))
+	var reason: RoundState.Reason = RoundState.Reason.DOES_NOT_BEAT
+	if is_offered(play, legal):
+		reason = round_state.apply(_action_for(round_state, play))
 	if reason != RoundState.Reason.OK:
 		result.illegal_actions += 1
 		result.illegal_by_seat[seat] += 1

@@ -6,12 +6,14 @@ extends RefCounted
 
 var _counts: PackedByteArray
 var _weights: BotWeights
+var _rank_map: PackedByteArray
 var _decomposer: HandDecomposer
 
 
 func _init(counts: PackedByteArray, table: BotTable, weights: BotWeights) -> void:
 	_counts = counts
 	_weights = weights
+	_rank_map = table.rank_map
 	_decomposer = HandDecomposer.new(table.rules, table.rank_map, weights.memo_cap)
 
 
@@ -44,5 +46,5 @@ func _hand_value(counts: PackedByteArray, extra_rounds: int) -> float:
 
 
 func _group_value(group: Pattern) -> float:
-	var top: int = group.main_rank + group.chain_length - 1
+	var top: int = _rank_map[group.main_rank] + group.chain_length - 1
 	return top - _weights.rank_offset + _weights.type_bonus[group.type]

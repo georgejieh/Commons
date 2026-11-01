@@ -13,5 +13,5 @@ extends Resource
 ## Score added, per point of memory, for answering a seat.
 @export var grudge: PackedFloat32Array
 ## A lie adds this share of true need, plus at least lie_floor.
-@export var lie_share: float
+@export var lie_share: PackedFloat32Array
 @export var lie_floor: int

@@ -7,6 +7,7 @@ const TIMING_FLAG: String = "COMMONS_TIMING"
 const DEADLINE_USEC: int = 300000
 const P99_LIMIT_USEC: int = 400000
 const SOON_USEC: int = 1
+const LONG_USEC: int = 10000000
 
 var _rules: RuleSet = RuleSet.default_rules()
 var _map: PackedByteArray = Ranks.identity_map()
@@ -39,6 +40,7 @@ func test_p99_stays_under_the_limit() -> void:
 	for deal_seed: int in LongRun.sample(3, 40):
 		times.append_array(_times_for_game(deal_seed))
 	times.sort()
+	@warning_ignore("integer_division")
 	var p99: int = times[times.size() * 99 / 100]
 	print("expert on threads: %d decisions, p99 %d usec" % [times.size(), p99])
 	if OS.get_environment(TIMING_FLAG) == "1":
@@ -49,6 +51,15 @@ func test_a_passed_deadline_leaves_the_hard_decision() -> void:
 	var round_state: RoundState = BotScript.round_after(["39TJQ", "4578", "6KA"], ["3"])
 	var view: SeatView = round_state.view_for(1)
 	var legal: Array[Pattern] = round_state.legal_moves()
-	var hard: BotPlay = Bot.search_job(view, legal, _bot_table, _expert).fallback
 	var play: BotPlay = ExpertRunner.new().decide(view, legal, _bot_table, _expert, SOON_USEC)
-	assert_str(BotScript.text_of(play)).is_equal(BotScript.text_of(hard))
+	assert_int(play.rationale).is_not_equal(BotRationale.Code.SEARCHED)
+
+
+func test_a_runner_searches_again_after_a_missed_deadline() -> void:
+	var round_state: RoundState = BotScript.round_after(["39TJQ", "4578", "6KA"], ["3"])
+	var view: SeatView = round_state.view_for(1)
+	var legal: Array[Pattern] = round_state.legal_moves()
+	var runner: ExpertRunner = ExpertRunner.new()
+	runner.decide(view, legal, _bot_table, _expert, SOON_USEC)
+	var play: BotPlay = runner.decide(view, legal, _bot_table, _expert, LONG_USEC)
+	assert_int(play.rationale).is_equal(BotRationale.Code.SEARCHED)

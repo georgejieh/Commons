@@ -4,12 +4,16 @@ extends RefCounted
 ## lowest play that beats the table. Bombs wait for an opponent about to go out.
 
 
-static func choose(view: SeatView, legal: Array[Pattern], config: BotConfig) -> BotPlay:
+static func choose(
+	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
+) -> BotPlay:
 	if view.public.current_play == null:
-		return BotPlay.new(_lowest_longest(legal), BotRationale.Code.GREEDY)
+		return BotPlay.new(_lowest_longest(legal, table), BotRationale.Code.GREEDY)
+	var landlord: int = view.public.landlord
 	var fewest: int = BotPosition.NO_CARDS
 	for other: int in Seats.COUNT:
-		if other != view.seat and view.public.remaining[other] < fewest:
+		var rival: bool = other != view.seat and (view.seat == landlord or other == landlord)
+		if rival and view.public.remaining[other] < fewest:
 			fewest = view.public.remaining[other]
 	var bombs_open: bool = fewest <= config.weights.block_cards
 	var lowest: Pattern = null
@@ -29,11 +33,13 @@ static func _is_better_answer(move: Pattern, other: Pattern) -> bool:
 	return move.key < other.key
 
 
-static func _lowest_longest(legal: Array[Pattern]) -> Pattern:
+static func _lowest_longest(legal: Array[Pattern], table: BotTable) -> Pattern:
 	var best: Pattern = legal[0]
 	for move: Pattern in legal:
-		var lower: bool = move.main_rank < best.main_rank
-		var longer: bool = move.main_rank == best.main_rank and move.card_count > best.card_count
+		var rank: int = table.rank_map[move.main_rank]
+		var best_rank: int = table.rank_map[best.main_rank]
+		var lower: bool = rank < best_rank
+		var longer: bool = rank == best_rank and move.card_count > best.card_count
 		if (lower or longer) and not FollowPolicy.is_bomb(move):
 			best = move
 	return best

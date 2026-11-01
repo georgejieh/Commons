@@ -36,7 +36,7 @@ static func choose(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 static func _forced_lead(position: BotPosition, legal: Array[Pattern]) -> Pattern:
 	for index: int in position.groups.size():
 		if position.controls.flags[index]:
-			var move: Pattern = _usable(position.groups[index], legal)
+			var move: Pattern = _usable(position, position.groups[index], legal)
 			if move != null:
 				return move
 	return null
@@ -106,7 +106,7 @@ static func _weakest_group(position: BotPosition, moves: Array[Pattern]) -> Patt
 	for index: int in position.groups.size():
 		if position.controls.flags[index]:
 			continue
-		var move: Pattern = _usable(position.groups[index], moves)
+		var move: Pattern = _usable(position, position.groups[index], moves)
 		if move == null:
 			continue
 		var low: int = _low_cards(position, move)
@@ -133,10 +133,10 @@ static func _is_lower(position: BotPosition, move: Pattern, other: Pattern) -> b
 
 ## The group as a legal move. A 2 or joker never rides as a kicker, so a group carrying
 ## one is played bare.
-static func _usable(group: Pattern, moves: Array[Pattern]) -> Pattern:
+static func _usable(position: BotPosition, group: Pattern, moves: Array[Pattern]) -> Pattern:
 	var wanted: Pattern = group
 	for kicker: int in group.kicker_ranks:
-		if kicker >= Ranks.TWO:
+		if position.rank_of(kicker) >= Ranks.TWO:
 			wanted = _bare(group)
 			break
 	for move: Pattern in moves:

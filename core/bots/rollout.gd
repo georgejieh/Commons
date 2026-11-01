@@ -8,7 +8,7 @@ var _landlord: int
 var _turn: int
 var _current: Pattern
 var _owner: int
-var _passes: int = 0
+var _passes: int
 var _table: BotTable
 var _config: BotConfig
 
@@ -19,6 +19,7 @@ func _init(
 	turn: int,
 	current: Pattern,
 	owner: int,
+	passes: int,
 	table: BotTable,
 	config: BotConfig
 ) -> void:
@@ -27,6 +28,7 @@ func _init(
 	_turn = turn
 	_current = current
 	_owner = owner
+	_passes = passes
 	_table = table
 	_config = config
 

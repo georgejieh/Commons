@@ -26,7 +26,8 @@ func _init(
 	var mask: int = UnseenCards.mask_of(unseen)
 	var controls: int = 0
 	for group: Pattern in groups:
-		var is_control: bool = group.main_rank >= Ranks.TWO or group.type == Pattern.Type.BOMB
+		var high: bool = table.rank_map[group.main_rank] >= Ranks.TWO
+		var is_control: bool = high or group.type == Pattern.Type.BOMB
 		if counts_cards:
 			is_control = _is_control(group, unseen, mask, largest_hand, table)
 		flags.append(is_control)

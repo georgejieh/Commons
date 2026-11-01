@@ -17,7 +17,7 @@ func _init(position: BotPosition, legal: Array[Pattern], policy_play: BotPlay) -
 	fallback = policy_play
 	if legal.is_empty():
 		return
-	_candidates = ExpertSearch.top_candidates(position, legal)
+	_candidates = ExpertSearch.top_candidates(position, legal, policy_play)
 	if _candidates.size() < 2:
 		return
 	for sample: int in position.config.search_samples():
