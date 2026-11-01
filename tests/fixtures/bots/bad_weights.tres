@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="BotWeights" format=3]
+
+[ext_resource type="Script" path="res://data/bots/bot_weights.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+memo_cap = 50000
+round_penalty = -7.0
+rank_offset = 7.0
+type_bonus = PackedFloat32Array(0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 9, 14)
+win_value = 0.0
+block_cards = 2
+runaway_cards = 5
+weak_teammate_rank = 5
+block_low_rank = 7
+big_joker_points = 4.0
+small_joker_points = 3.0
+two_points = 2.0
+ace_points = 1.0
+bomb_points = 5.0
+rocket_points = 7.0
+shape_par_hands = 7.0
+shape_points = 1.0
+call_threshold = 7.0
+grab_threshold = 10.0
+last_bidder_factor = 0.9
+bid_rate_low = 0.95
+bid_rate_high = 0.995
+hard_candidates = 3
+hard_samples = 6
+expert_candidates = 4
+expert_samples = 12
+endgame_cards = 36
+search_step_limit = 200

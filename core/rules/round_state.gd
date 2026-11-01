@@ -91,6 +91,11 @@ func current_play() -> Pattern:
 	return null if _current == null else _current.copy()
 
 
+## The seat whose play is on the table, or Seats.NONE when the seat to act leads.
+func trick_owner() -> int:
+	return _trick_leader if _current != null else Seats.NONE
+
+
 func events() -> Array[RoundEvent]:
 	return _events.duplicate()
 
