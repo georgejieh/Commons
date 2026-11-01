@@ -19,12 +19,19 @@ static func round_after(
 	return round_state
 
 
+## Hard with no search, so a test sees the rules rather than rollouts.
+static func policy_only() -> BotConfig:
+	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS.duplicate()
+	weights.endgame_cards = 0
+	return BotConfig.new(weights)
+
+
 ## What the seat to act decides.
 static func decide(
 	seats: Array[String],
 	plays: Array[String] = [],
 	landlord: int = 0,
-	config: BotConfig = BotConfig.new()
+	config: BotConfig = policy_only()
 ) -> BotPlay:
 	var round_state: RoundState = round_after(seats, plays, landlord)
 	var seat: int = round_state.seat_to_act()

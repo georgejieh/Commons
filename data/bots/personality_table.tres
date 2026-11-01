@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PersonalityTable" format=3]
+
+[ext_resource type="Script" path="res://data/bots/personality_table.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+bomb_aggression = PackedFloat32Array(-3, 0, 12)
+cooperation = PackedFloat32Array(0.5, 0.85, 1)
+honesty = PackedFloat32Array(0.3, 0.7, 1)
+ambition = PackedFloat32Array(-2, 0, 3)
+grudge = PackedFloat32Array(0, 2, 6)
+lie_share = 0.5
+lie_floor = 1

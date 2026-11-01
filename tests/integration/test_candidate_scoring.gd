@@ -45,8 +45,8 @@ func test_passing_costs_one_more_round() -> void:
 
 func test_bad_weights_lower_the_win_rate() -> void:
 	var table: SeatRules = SeatRules.uniform(_rules, _map)
-	var good: BotConfig = BotConfig.new()
-	var bad: BotConfig = BotConfig.new(BAD_WEIGHTS)
+	var good: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
+	var bad: BotConfig = BotConfig.new(BAD_WEIGHTS, BotConfig.Tier.MEDIUM)
 	var deals: int = LongRun.sample(40, 400)
 	var wins: int = 0
 	for deal_seed: int in deals:

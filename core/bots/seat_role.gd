@@ -10,7 +10,8 @@ extends RefCounted
 static func block_landlord_single(position: BotPosition, legal: Array[Pattern]) -> Pattern:
 	var play: Pattern = position.view.public.current_play
 	var from_landlord: bool = position.trick_owner() == position.view.public.landlord
-	if not position.is_upstream() or not from_landlord or play.type != Pattern.Type.SINGLE:
+	var blocks: bool = position.plays_a_role() and position.is_upstream()
+	if not blocks or not from_landlord or play.type != Pattern.Type.SINGLE:
 		return null
 	var low_rank: int = position.config.weights.block_low_rank
 	var lowest: Pattern = null
@@ -25,7 +26,7 @@ static func block_landlord_single(position: BotPosition, legal: Array[Pattern]) 
 ## The downstream seat saves its controls, so it answers with none of them unless a gate
 ## is open. Other seats keep every move.
 static func saved_for_later(position: BotPosition, moves: Array[Pattern]) -> Array[Pattern]:
-	if position.is_landlord() or position.is_upstream() or position.forced_win():
+	if not position.plays_a_role() or position.is_upstream() or position.forced_win():
 		return moves
 	var kept: Array[Pattern] = []
 	for move: Pattern in moves:
@@ -36,7 +37,7 @@ static func saved_for_later(position: BotPosition, moves: Array[Pattern]) -> Arr
 
 ## The upstream seat's lead: its lowest loose single or pair, so its teammate can take over.
 static func feed_lead(position: BotPosition, moves: Array[Pattern]) -> Pattern:
-	if not position.is_upstream() or position.is_landlord():
+	if not position.plays_a_role() or not position.is_upstream():
 		return null
 	var lowest: Pattern = null
 	for index: int in position.groups.size():

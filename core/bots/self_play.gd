@@ -86,6 +86,7 @@ static func _take_turn(
 	if clock.is_valid():
 		result.decision_usec.append(clock.call() - started)
 	result.decisions += 1
+	_record(round_state, seat, play, result)
 	var reason: RoundState.Reason = round_state.apply(_action_for(round_state, play))
 	if reason != RoundState.Reason.OK:
 		result.illegal_actions += 1
@@ -93,6 +94,18 @@ static func _take_turn(
 		round_state.apply(_action_for(round_state, BotPlay.new(fallback)))
 		play = BotPlay.new(fallback)
 	result.cards_played[seat] += play.pattern.card_count
+
+
+static func _record(
+	round_state: RoundState, seat: int, play: BotPlay, result: SelfPlayResult
+) -> void:
+	if play.is_pass():
+		return
+	if play.pattern.type == Pattern.Type.BOMB or play.pattern.type == Pattern.Type.ROCKET:
+		result.bombs[seat] += 1
+	var owner: int = round_state.trick_owner()
+	if owner != Seats.NONE:
+		result.answers[seat * Seats.COUNT + owner] += 1
 
 
 static func _action_for(round_state: RoundState, play: BotPlay) -> RoundAction:

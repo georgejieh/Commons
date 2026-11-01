@@ -10,6 +10,10 @@ var illegal_actions: int = 0
 var decision_usec: PackedInt64Array = PackedInt64Array()
 ## Cards played per seat.
 var cards_played: PackedInt32Array = PackedInt32Array()
+## Bombs and rockets played per seat.
+var bombs: PackedInt32Array = PackedInt32Array([0, 0, 0])
+## Plays made over each seat's play, as seat * Seats.COUNT + owner.
+var answers: PackedInt32Array = PackedInt32Array([0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 
 func landlord_won() -> bool:

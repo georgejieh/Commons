@@ -29,7 +29,8 @@ func _init(
 	_read_seats()
 	unseen = UnseenCards.from_view(view)
 	groups = scorer.decompose_own_hand().groups
-	controls = Controls.new(groups, unseen, _largest_opposing_hand(), table)
+	var counts_cards: bool = config.reads_the_table()
+	controls = Controls.new(groups, unseen, _largest_opposing_hand(), table, counts_cards)
 
 
 func hand_size() -> int:
@@ -60,6 +61,11 @@ func is_upstream() -> bool:
 	return Seats.next(seat) == view.public.landlord
 
 
+## Roles and endgame blocking belong to the tiers that read the table.
+func plays_a_role() -> bool:
+	return config.reads_the_table() and not is_landlord()
+
+
 func forced_win() -> bool:
 	return controls.effective_hands <= 1
 
@@ -70,6 +76,20 @@ func going_out(legal: Array[Pattern]) -> Pattern:
 		if move.card_count == hand_size():
 			return move
 	return null
+
+
+## Reads other groups the way this hand's own were read.
+## The landlord, alone against two hands, keeps the fixed reading: harness runs show that
+## holding back every group nothing unseen beats costs it about five points of win rate.
+func read_groups(other: Array[Pattern]) -> Controls:
+	var counts_cards: bool = config.reads_the_table() and not is_landlord()
+	return Controls.new(other, unseen, _largest_opposing_hand(), table, counts_cards)
+
+
+## A repeatable roll for this decision, from 0 to 1.
+func roll() -> float:
+	var state: int = CountKey.encode(view.own_counts) ^ (view.public.history.size() << 8)
+	return RandomStream.new(config.search_seed ^ state).next_float()
 
 
 func rank_of(rank: int) -> int:

@@ -1,6 +1,7 @@
 class_name Controls
 extends RefCounted
 ## Which of a hand's groups nothing unseen can beat, given what could still appear.
+## A bot that doesn't count cards treats only 2s, jokers and bombs as controls.
 
 const BOMB_WIDTH: int = 4
 
@@ -16,6 +17,7 @@ func _init(
 	unseen: PackedByteArray,
 	largest_hand: int,
 	table: BotTable,
+	counts_cards: bool = true,
 ) -> void:
 	rocket_possible = unseen[Ranks.SMALL_JOKER] > 0 and unseen[Ranks.BIG_JOKER] > 0
 	for rank: int in Ranks.COUNT:
@@ -24,7 +26,9 @@ func _init(
 	var mask: int = UnseenCards.mask_of(unseen)
 	var controls: int = 0
 	for group: Pattern in groups:
-		var is_control: bool = _is_control(group, unseen, mask, largest_hand, table)
+		var is_control: bool = group.main_rank >= Ranks.TWO or group.type == Pattern.Type.BOMB
+		if counts_cards:
+			is_control = _is_control(group, unseen, mask, largest_hand, table)
 		flags.append(is_control)
 		controls += 1 if is_control else 0
 	effective_hands = groups.size() - controls

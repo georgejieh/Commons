@@ -45,6 +45,8 @@ static func _forced_lead(position: BotPosition, legal: Array[Pattern]) -> Patter
 ## Keeps moves that an opponent on 1 or 2 cards can't simply go out over.
 static func _safe_moves(position: BotPosition, legal: Array[Pattern]) -> Array[Pattern]:
 	var moves: Array[Pattern] = legal
+	if not position.config.reads_the_table():
+		return moves
 	if position.opponent_cards == ONE_CARD:
 		moves = _without_low(position, moves, Pattern.Type.SINGLE, SINGLE_WIDTH)
 	elif position.opponent_cards == TWO_CARDS:
