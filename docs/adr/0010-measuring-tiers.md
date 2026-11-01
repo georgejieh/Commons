@@ -20,8 +20,8 @@ Play each seeded deal twice with a fixed landlord in seat 0: A as landlord again
 
 Full games with bidding are reported separately by the tournament harness.
 
-This is the project's own method. DouZero's paper ([arXiv 2106.06135](https://arxiv.org/abs/2106.06135)) also reports winning percentage over sampled decks with per-position results, but we did not confirm that it swaps sides on the same deal.
+DouZero's paper ([arXiv 2106.06135](https://arxiv.org/abs/2106.06135)) does the same in section 5.1: it plays each deck twice, with the sides switched, and reports winning percentage over 10,000 sampled decks.
 
 ## Consequences
 
-Deal luck cancels within each pair, so samples go further. A tier's strength as landlord and as peasant both count, and the harness reports them apart. The 60% bar is demanding: that paper has DouZero beating the next-best program only 58.6% of the time.
+Deal luck cancels within each pair, so samples go further. A tier's strength as landlord and as peasant both count, and the harness reports them apart. The 60% bar is demanding: in that paper's Table 1, DouZero wins 58.6% against DeltaDou, the second-ranked program it tested.

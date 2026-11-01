@@ -8,17 +8,19 @@ Proposed. P2.9 is blocked until a human chooses.
 
 P2.9 asks each tier to beat the tier below at least 60% of the time, measured as in [ADR 0010](0010-measuring-tiers.md). The time budgets are a median under 30 ms and a p99 under 100 ms for Easy to Hard, and a p99 under 400 ms on worker threads for Expert.
 
-| Pair | Games | Win rate | Search size | Bar |
-| --- | --- | --- | --- | --- |
-| Medium over Easy | 2,000 | 63.2% | None | Met |
-| Hard over Medium | 2,000 | 56.3% | Hard 3 candidates × 4 samples | Missed |
-| Expert over Hard | 1,000 | 50.9% | Expert 4 × 12, Hard 3 × 4 | Missed |
+These figures come from commit 0c741bc, after the full review fixed bugs in the bot search. Figures from before those fixes are not used. Each row is 2,000 games over 1,000 deals, so the margin is about ±2.2 points at 95%, taking the games as independent.
 
-The Hard budget then forced Hard down to 3 × 3, with a median of 0.9 ms and a p99 of 83 ms. At that size Hard over Medium was 58.3% over 400 games, which is too few to separate from 56.3%. At 3 × 6 it was 58.1% over 1,000 games, with a p99 of 168 ms.
+| Pair | Win rate | Search size | Bar |
+| --- | --- | --- | --- |
+| Medium over Easy | 63.3% | None | Met |
+| Hard over Medium | 57.1% | Hard 3 candidates × 3 samples | Missed |
+| Expert over Hard | 50.1% | Expert 4 × 12, Hard 3 × 3 | Missed |
 
-Expert's time budget is met: a p99 of 373 ms over 1,128 decisions through `ExpertRunner`, with a 300 ms deadline.
+The review fixes moved Hard over Medium up from 55.3% at the same size. Expert is still no stronger than Hard: it wins 45.5% as landlord, against Hard's 45.2%, and 54.8% as peasants, against Hard's 54.5%.
 
-Hard's rules alone reached only 55% to 57% over Medium. Effective-hand scoring, a tempo bonus, leading the hardest group and a stricter forced win were each tried and dropped. So Hard also searches once 36 or fewer cards are left, which the checklist does not ask for. A larger endgame search was stronger in small samples but breaks the Hard budget.
+All time budgets are met. Timed alone over 600 games, Hard's p99 is 95 ms at worst across seats and its mean is 13 ms at worst, which holds the median under 26 ms. Expert's p99 is 365 ms over 1,276 decisions through `ExpertRunner`, with a 300 ms deadline. There is no room to raise Hard's sample count: before the fixes, 3 × 4 gave a p99 of 111 ms.
+
+Before the review fixes, Hard's rules alone reached only 55% to 57% over Medium. Effective-hand scoring, a tempo bonus, leading the hardest group and a stricter forced win were each tried and dropped. So Hard also searches once 36 or fewer cards are left, which the checklist does not ask for. A larger endgame search was stronger in small samples but breaks the Hard budget.
 
 Expert's rollouts use the Medium policy, as the checklist says. Hard already searches its endgame with the same rollouts, which leaves Expert only its early game and a larger sample to pull ahead.
 
