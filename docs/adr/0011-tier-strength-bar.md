@@ -93,6 +93,17 @@ Neither method beats the control by more than its margin. The filter's replay us
 
 True hands show up to about 9 points are held in the hidden cards, but play history did not recover them in these tests.
 
+An exact endgame was also tried and dropped. With few hidden cards left, Expert listed every split of them and solved each one exactly, for all legal moves. The solver gave the right answer on six hand-worked positions.
+
+| Hidden cards solved | Games | Expert over Hard |
+| --- | --- | --- |
+| None, the control | 480 | 52.3% |
+| Up to 6 | 480 | 50.2% |
+| Up to 8 | 480 | 50.6% |
+| Up to 10 | 480 | 51.9% |
+
+None beats the control, and the slowest decisions took from 16 s to 535 s on one thread, against 300 ms in play. Solving each split assumes both sides can see every hand, which may be why it adds nothing. So the strength in the true hands probably lies in earlier decisions, though that was not measured.
+
 ## Consequences
 
 P2.9's box stays unticked until a human sets Expert's bar. The remaining choices are to accept a lower bar, or to let Expert see some hidden cards, which trades fairness for strength. Expert is safe to ship as it stands, but it is at best slightly stronger than Hard.
