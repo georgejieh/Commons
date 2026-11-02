@@ -92,6 +92,36 @@ func test_an_expired_budget_falls_back_to_the_hard_decision() -> void:
 	assert_object(ExpertSearch.run(job, budget)).is_same(job.fallback)
 
 
+func _search_job(weights: BotWeights) -> BotSearchJob:
+	var round_state: RoundState = BotScript.round_after(["39TJQ", "4578", "6KA"], ["3"])
+	var table: BotTable = BotTable.new(_rules, _map)
+	var config: BotConfig = BotConfig.new(weights, BotConfig.Tier.EXPERT)
+	return Bot.search_job(round_state.view_for(1), round_state.legal_moves(), table, config)
+
+
+func test_a_rival_short_of_the_margin_leaves_the_policy_play() -> void:
+	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS.duplicate()
+	weights.expert_margin = 2.0
+	var job: BotSearchJob = _search_job(weights)
+	var play: BotPlay = ExpertSearch.run(job, BotBudget.unlimited())
+	assert_int(play.rationale).is_equal(BotRationale.Code.SEARCHED)
+	assert_bool(play.pattern.equals(job.fallback.pattern)).is_true()
+
+
+func test_too_few_finished_samples_leave_the_policy_play() -> void:
+	var job: BotSearchJob = _search_job(BotConfig.DEFAULT_WEIGHTS)
+	for sample: int in BotConfig.DEFAULT_WEIGHTS.expert_min_samples - 1:
+		job.run_sample(sample)
+	assert_object(job.best()).is_same(job.fallback)
+
+
+func test_enough_finished_samples_decide_at_a_deadline() -> void:
+	var job: BotSearchJob = _search_job(BotConfig.DEFAULT_WEIGHTS)
+	for sample: int in BotConfig.DEFAULT_WEIGHTS.expert_min_samples:
+		job.run_sample(sample)
+	assert_int(job.best().rationale).is_equal(BotRationale.Code.SEARCHED)
+
+
 func test_the_unseen_deal_fits_every_hand_and_keeps_the_kitty_with_the_landlord() -> void:
 	var deal: DealResult = RoundScript.stacked_deal(["3456", "789", "TJQ"], "KA2")
 	var round_state: RoundState = RoundState.new(deal, 0, _table)

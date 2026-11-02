@@ -9,15 +9,15 @@ static func applies(config: BotConfig) -> bool:
 	return config.tier == BotConfig.Tier.EXPERT
 
 
-## Runs a job's samples in turn, stopping if the deadline passes.
+## Runs a job's samples in turn until the deadline, then decides on those it finished.
 static func run(job: BotSearchJob, budget: BotBudget) -> BotPlay:
 	if not job.is_ready():
 		return job.fallback
 	for sample: int in job.sample_count():
 		if budget.is_expired():
-			return job.fallback
+			break
 		job.run_sample(sample)
-	return job.fallback if budget.is_expired() else job.best()
+	return job.best()
 
 
 ## The policy's own play first, so ties keep it, then a pass when one is allowed, then the

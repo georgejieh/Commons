@@ -1,7 +1,7 @@
 class_name ExpertRunner
 extends RefCounted
 ## Runs one Expert decision on the worker pool and enforces its deadline. Core stays free
-## of threads and clocks (ADR 0009). If the deadline passes, the Hard decision stands.
+## of threads and clocks (ADR 0009). At the deadline it decides on the samples finished.
 
 const WAIT_STEP_MSEC: int = 1
 
@@ -21,7 +21,7 @@ func decide(
 	var deadline: int = Time.get_ticks_usec() + limit_usec
 	_expired = false
 	_job = Bot.search_job(view, legal, table, config)
-	if not _job.is_ready():
+	if not _job.is_ready() or Time.get_ticks_usec() >= deadline:
 		return _job.fallback
 	var group: int = WorkerThreadPool.add_group_task(_run_sample, _job.sample_count())
 	while not WorkerThreadPool.is_group_task_completed(group):
@@ -29,8 +29,7 @@ func decide(
 			_expired = true
 		OS.delay_msec(WAIT_STEP_MSEC)
 	WorkerThreadPool.wait_for_group_task_completion(group)
-	_expired = _expired or Time.get_ticks_usec() >= deadline
-	return _job.fallback if _expired else _job.best()
+	return _job.best()
 
 
 func _run_sample(sample: int) -> void:

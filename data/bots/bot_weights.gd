@@ -40,5 +40,10 @@ extends Resource
 ## How many top candidates a search rolls out, and how many deals of the unseen cards.
 @export var expert_candidates: int
 @export var expert_samples: int
+## A rival beats the policy's play only by this share of the samples run, so noise can't
+## overturn it (ADR 0011).
+@export var expert_margin: float
+## Fewer finished samples than this leave the policy's play standing.
+@export var expert_min_samples: int
 ## Actions after which a rollout counts as a loss.
 @export var search_step_limit: int

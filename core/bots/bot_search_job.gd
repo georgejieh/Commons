@@ -26,9 +26,7 @@ func _init(position: BotPosition, legal: Array[Pattern], policy_play: BotPlay) -
 			_hands.clear()
 			return
 		_hands.append(hands)
-		var row: PackedInt32Array = PackedInt32Array()
-		row.resize(_candidates.size())
-		_results.append(row)
+		_results.append(PackedInt32Array())
 
 
 ## False when there is no choice to make or the unseen cards can't be dealt.
@@ -43,20 +41,32 @@ func sample_count() -> int:
 func run_sample(sample: int) -> void:
 	var hands: Array[PackedByteArray] = []
 	hands.assign(_hands[sample])
-	var row: PackedInt32Array = _results[sample]
+	var row: PackedInt32Array = PackedInt32Array()
+	row.resize(_candidates.size())
 	for index: int in _candidates.size():
 		row[index] = ExpertSearch.roll(_position, hands, _candidates[index])
 	_results[sample] = row
 
 
+## Decides on the samples finished so far. The policy's play stands unless a rival beats
+## it by the margin, and stands outright if too few samples finished.
 func best() -> BotPlay:
 	var wins: PackedInt32Array = PackedInt32Array()
 	wins.resize(_candidates.size())
+	var finished: int = 0
 	for row: PackedInt32Array in _results:
+		if row.is_empty():
+			continue
+		finished += 1
 		for index: int in row.size():
 			wins[index] += row[index]
+	var weights: BotWeights = _position.config.weights
+	if finished == 0 or finished < weights.expert_min_samples:
+		return fallback
 	var top: int = 0
 	for index: int in wins.size():
 		if wins[index] > wins[top]:
 			top = index
+	if wins[top] - wins[0] < ceili(finished * weights.expert_margin):
+		top = 0
 	return BotPlay.new(_candidates[top], BotRationale.Code.SEARCHED)
