@@ -77,8 +77,24 @@ Both miss the proposed 55%. The short runs above overstated the gain: the settin
 
 The unlimited-time figure is probably a real gain over 50.0%, but only just: the two margins overlap slightly. The 300 ms figure cannot be told apart from Hard. Players get the 300 ms game, and fewer samples finish on a weaker machine.
 
+## Better guesses about the hidden cards
+
+Two ways of reading play history were tried and dropped. All runs had unlimited time and used 48 samples, on deals from 900000. Each rate has a margin of about ±4.4 points at 480 games and ±3.1 at 960.
+
+| Search | Games | Expert over Hard |
+| --- | --- | --- |
+| Even deals of the hidden cards, the control | 960 | 52.9% |
+| Fewer high cards dealt to a seat that passed | 960 | 53.6% |
+| Keep the quarter of deals that best explain the last 8 moves | 480 | 53.7%, control 52.3% on the same deals |
+| The same, last 16 moves | 480 | 53.5%, control 52.3% on the same deals |
+| Seeing the true hands | 480 | 61.9% |
+
+Neither method beats the control by more than its margin. The filter's replay used the same rules Hard plays by, so this was its best case, and a human will be harder to read. It also costs extra time on every decision. Bidding was not tried: bids are not in a seat's view, and the duplicate measure in ADR 0010 fixes the landlord without bidding.
+
+True hands show up to about 9 points are held in the hidden cards, but play history did not recover them in these tests.
+
 ## Consequences
 
-P2.9's box stays unticked until a human sets Expert's bar or asks for more strength. The remaining choices are to accept a lower bar, or to improve how Expert guesses the hidden cards, for example from bidding and play history. Expert is safe to ship as it stands, but it is at best slightly stronger than Hard.
+P2.9's box stays unticked until a human sets Expert's bar. The remaining choices are to accept a lower bar, or to let Expert see some hidden cards, which trades fairness for strength. Expert is safe to ship as it stands, but it is at best slightly stronger than Hard.
 
 P2.10 to P2.12 do not depend on the choice.
