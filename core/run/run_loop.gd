@@ -308,8 +308,11 @@ func _bot_play() -> void:
 	var action: RoundAction = RoundAction.new(seat)
 	if not play.is_pass():
 		action = _round.action_for(play.pattern)
+	var offered: bool = (
+		play.is_pass() or legal.any(func(move: Pattern) -> bool: return move.equals(play.pattern))
+	)
 	var reason: RoundState.Reason = RoundState.Reason.DOES_NOT_BEAT
-	if SelfPlay.is_offered(play, legal):
+	if offered:
 		reason = _round.apply(action)
 	assert(reason == RoundState.Reason.OK, "A bot chose an illegal action")
 	_after_action()
