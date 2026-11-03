@@ -1,7 +1,8 @@
 class_name RunState
 extends RefCounted
 ## Everything a run needs to resume, as one serializable object. Numbers that can pass
-## 2^53 are saved as text, because JSON numbers are doubles.
+## 2^53 are saved as text, because JSON numbers are doubles, and floats as their exact
+## bits, because the JSON writer does not round-trip every double.
 
 enum SetType { SMALL, LARGE, BOSS }
 
@@ -15,6 +16,8 @@ var year: int = 1
 var set_index: int = 0
 var set_type: SetType = SetType.SMALL
 var round_index: int = 0
+## The player's banked score toward the current Set's target.
+var set_progress: float = 0.0
 ## One debuff ID per round of the current Set; round 0 is always NO_DEBUFF.
 var debuff_ladder: Array[String] = []
 var famine: int = 0
@@ -40,6 +43,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.set_index = int(data["set_index"])
 	state.set_type = int(data["set_type"]) as SetType
 	state.round_index = int(data["round_index"])
+	state.set_progress = float_from_text(str(data["set_progress"]))
 	state.debuff_ladder.assign(data["debuff_ladder"])
 	state.famine = int(data["famine"])
 	state.denunciation = int(data["denunciation"])
@@ -69,6 +73,7 @@ func to_dict() -> Dictionary:
 		"set_index": set_index,
 		"set_type": set_type,
 		"round_index": round_index,
+		"set_progress": float_text(set_progress),
 		"debuff_ladder": debuff_ladder.duplicate(),
 		"famine": famine,
 		"denunciation": denunciation,
@@ -79,3 +84,16 @@ func to_dict() -> Dictionary:
 		"landlord_seat": landlord_seat,
 		"summaries": summary_data,
 	}
+
+
+## Halves keep the text unsigned, as RandomStream does.
+static func float_text(value: float) -> String:
+	var bits: int = PackedFloat64Array([value]).to_byte_array().decode_s64(0)
+	return "%08x%08x" % [(bits >> 32) & 0xFFFFFFFF, bits & 0xFFFFFFFF]
+
+
+static func float_from_text(text: String) -> float:
+	var bytes: PackedByteArray = PackedByteArray()
+	bytes.resize(8)
+	bytes.encode_s64(0, (text.substr(0, 8).hex_to_int() << 32) | text.substr(8).hex_to_int())
+	return bytes.decode_double(0)

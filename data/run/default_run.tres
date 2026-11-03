@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RunParams" format=3]
+
+[ext_resource type="Script" path="res://data/run/run_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+base_need = 10
+swaps_per_round = 1
+famine_on_missed_target = 10
+meter_max = 100

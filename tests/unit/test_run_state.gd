@@ -15,7 +15,7 @@ func test_round_trip_through_json_is_lossless_for_random_states() -> void:
 	for _i: int in ITERATIONS:
 		var state: RunState = _random_state(rng)
 		var restored: RunState = _through_json(state)
-		if JSON.stringify(restored.to_dict()) != JSON.stringify(state.to_dict()):
+		if _text(restored) != _text(state):
 			failures += 1
 		elif not _same_fields(state, restored):
 			failures += 1
@@ -41,8 +41,20 @@ func test_values_above_two_to_the_53_survive() -> void:
 	assert_int(restored.commons_pool).is_equal(UNSAFE_JSON_VALUE)
 
 
+## Full precision, as saves write it, so floats survive exactly.
+func _text(state: RunState) -> String:
+	return JSON.stringify(state.to_dict(), "", true, true)
+
+
+func test_floats_survive_exactly_including_negative_and_extreme_values() -> void:
+	for value: float in [0.0, -0.0, -1.5, 0.1, 980703413486.4807, -1e300, 1e300, 5e-324]:
+		var restored: float = RunState.float_from_text(RunState.float_text(value))
+		assert_float(restored).is_equal(value)
+		assert_str(RunState.float_text(restored)).is_equal(RunState.float_text(value))
+
+
 func _through_json(state: RunState) -> RunState:
-	return RunState.from_dict(JSON.parse_string(JSON.stringify(state.to_dict())))
+	return RunState.from_dict(JSON.parse_string(_text(state)))
 
 
 func _random_state(rng: RandomNumberGenerator) -> RunState:
@@ -54,6 +66,7 @@ func _random_state(rng: RandomNumberGenerator) -> RunState:
 	state.set_index = rng.randi_range(0, 2)
 	state.set_type = rng.randi_range(0, 2) as RunState.SetType
 	state.round_index = rng.randi_range(0, 3)
+	state.set_progress = (rng.randf() - 0.5) * 1e12
 	state.debuff_ladder.append(RunState.NO_DEBUFF)
 	for _i: int in rng.randi_range(0, 3):
 		state.debuff_ladder.append("debuff_%d" % rng.randi_range(0, 19))
@@ -99,6 +112,7 @@ func _same_fields(first: RunState, second: RunState) -> bool:
 		and first.set_index == second.set_index
 		and first.set_type == second.set_type
 		and first.round_index == second.round_index
+		and first.set_progress == second.set_progress
 		and first.debuff_ladder == second.debuff_ladder
 		and first.famine == second.famine
 		and first.denunciation == second.denunciation

@@ -1,0 +1,63 @@
+class_name RunEvent
+extends RefCounted
+## One thing that happened in a run. Round play arrives wrapped as ROUND events.
+
+enum Type {
+	SET_STARTED,
+	DEBUFF_ADDED,
+	DEALT,
+	REDEALT,
+	BID,
+	LANDLORD_CHOSEN,
+	SWAPPED,
+	ROUND,
+	PLAY_SCORED,
+	ROUND_SCORED,
+	BANKED,
+	NEED_DECLARED,
+	SHARE_PAID,
+	SEAT_KEPT,
+	SEAT_LOST,
+	METER_CHANGED,
+	SET_ENDED,
+}
+
+var type: Type
+var seat: int
+var value: int
+var amount: float
+var text: String
+## Set only for ROUND events.
+var round_event: RoundEvent
+
+
+func _init(
+	event_type: Type,
+	acting_seat: int = Seats.NONE,
+	event_value: int = 0,
+	event_amount: float = 0.0,
+	event_text: String = ""
+) -> void:
+	type = event_type
+	seat = acting_seat
+	value = event_value
+	amount = event_amount
+	text = event_text
+
+
+static func wrap(event: RoundEvent) -> RunEvent:
+	var wrapped: RunEvent = RunEvent.new(Type.ROUND, event.seat)
+	wrapped.round_event = event
+	return wrapped
+
+
+## One line for golden logs.
+func describe() -> String:
+	if round_event != null:
+		return "  " + round_event.describe()
+	var line: String = "%s seat=%d value=%d" % [Type.keys()[type], seat, value]
+	if amount != 0.0:
+		line += " amount=%.3f" % amount
+	if not text.is_empty():
+		line += " " + text
+	return line
