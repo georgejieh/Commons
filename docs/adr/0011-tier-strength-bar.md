@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted for Hard. Open for Expert, so P2.9 stays blocked until a human chooses.
+Accepted.
 
 ## Context
 
@@ -31,7 +31,7 @@ Expert's rollouts use the Medium policy, as the checklist says. Hard searched it
 
 Options 1 and 2 together, for Hard. Hard plays by rules alone, and its bar is 55% over Medium. Tiers should feel different to play against, and Expert should be the one that searches.
 
-Expert's bar is not settled. The aim was at least 55% over Hard, and the measurements below miss it.
+For Expert, the aim of at least 55% over Hard was missed, as the measurements below show. A human then set Expert's bar at no weaker than Hard: at least 50% over 2,000 games. It stays the tier that searches.
 
 ## Results
 
@@ -106,6 +106,6 @@ None beats the control, and the slowest decisions took from 16 s to 535 s on one
 
 ## Consequences
 
-P2.9's box stays unticked until a human sets Expert's bar. The remaining choices are to accept a lower bar, or to let Expert see some hidden cards, which trades fairness for strength. Expert is safe to ship as it stands, but it is at best slightly stronger than Hard.
+Expert meets its bar at 53.2%, and its p99 is under 400 ms, so P2.9 is done. Under the real deadline its 51.2% cannot be told apart from Hard, so players may not feel a step up from Hard to Expert. Letting Expert see some hidden cards is the one tested route to more strength. It trades fairness for strength, so it would have to be shown to the player, for example as a villager trait or modifier in Phase 4.
 
 P2.10 to P2.12 do not depend on the choice.
