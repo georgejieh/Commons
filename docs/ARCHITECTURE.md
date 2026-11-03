@@ -92,3 +92,37 @@ Card enhancements, seals and stamps change only through `CardModifiers`, and the
 ## Run
 
 `core/run/` holds the run. `RunState` is everything a run needs to resume: the seed and stream states, the Year, Set and round, the debuff ladder, both meters, the roster as `RosterEntry` rows, the player's `RunInventory` (Cadres in slot order, consumables, the private plot), coupons, the Commons pool, the landlord seat, and one `SetSummary` per finished Set. It serializes to a Dictionary of JSON-safe values, with numbers that can pass 2^53 as text.
+
+`RunFlow` holds the run's states and the one table of moves between them; any other move returns a reason code and changes nothing. `RunState.phase` records where the run stands. A test checks this diagram against the table.
+
+```mermaid
+stateDiagram-v2
+    [*] --> RUN_START
+    RUN_START --> SET_INTRO
+    SET_INTRO --> BIDDING
+    BIDDING --> BIDDING
+    BIDDING --> ROUND_PLAY
+    ROUND_PLAY --> ROUND_END
+    ROUND_END --> BIDDING
+    ROUND_END --> ROUND_PLAY
+    ROUND_END --> SET_END
+    ROUND_END --> RUN_END
+    SET_END --> SHOP
+    SET_END --> REEDUCATION
+    SET_END --> RUN_END
+    SHOP --> EVENT
+    SHOP --> SET_INTRO
+    SHOP --> YEAR_END
+    SHOP --> RUN_END
+    EVENT --> SET_INTRO
+    EVENT --> YEAR_END
+    EVENT --> RUN_END
+    YEAR_END --> SET_INTRO
+    YEAR_END --> RUN_END
+    REEDUCATION --> SET_INTRO
+    REEDUCATION --> YEAR_END
+    REEDUCATION --> RUN_END
+    RUN_END --> [*]
+```
+
+Bidding loops on itself for a redeal. A round goes back to bidding when the landlord lost, and straight to play when the seat is kept. Reeducation (P4.1) replaces a Set's shop visit, and the run can end wherever a meter moves.

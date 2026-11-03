@@ -8,6 +8,7 @@ enum SetType { SMALL, LARGE, BOSS }
 const NO_DEBUFF: String = ""
 
 var run_seed: int
+var phase: RunFlow.State = RunFlow.State.RUN_START
 var streams: RandomStreams
 ## Years count from 1, Sets and rounds from 0.
 var year: int = 1
@@ -34,6 +35,7 @@ func _init(seed_value: int) -> void:
 static func from_dict(data: Dictionary) -> RunState:
 	var state: RunState = RunState.new(str(data["seed"]).to_int())
 	state.streams = RandomStreams.from_dict(data["streams"])
+	state.phase = int(data["phase"]) as RunFlow.State
 	state.year = int(data["year"])
 	state.set_index = int(data["set_index"])
 	state.set_type = int(data["set_type"]) as SetType
@@ -62,6 +64,7 @@ func to_dict() -> Dictionary:
 	return {
 		"seed": str(run_seed),
 		"streams": streams.to_dict(),
+		"phase": phase,
 		"year": year,
 		"set_index": set_index,
 		"set_type": set_type,

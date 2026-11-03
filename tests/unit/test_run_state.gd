@@ -49,6 +49,7 @@ func _random_state(rng: RandomNumberGenerator) -> RunState:
 	var state: RunState = RunState.new(rng.randi() * rng.randi())
 	for _i: int in rng.randi_range(0, 30):
 		state.streams.stream(RandomStreams.NAMES[rng.randi_range(0, 5)]).next_float()
+	state.phase = rng.randi_range(0, RunFlow.State.size() - 1) as RunFlow.State
 	state.year = rng.randi_range(1, 8)
 	state.set_index = rng.randi_range(0, 2)
 	state.set_type = rng.randi_range(0, 2) as RunState.SetType
@@ -93,6 +94,7 @@ func _fill_inventory(rng: RandomNumberGenerator, inventory: RunInventory) -> voi
 func _same_fields(first: RunState, second: RunState) -> bool:
 	return (
 		first.run_seed == second.run_seed
+		and first.phase == second.phase
 		and first.year == second.year
 		and first.set_index == second.set_index
 		and first.set_type == second.set_type
