@@ -54,6 +54,12 @@ func test_malformed_params_are_rejected() -> void:
 	params = _params()
 	params.reward_coupons.clear()
 	assert_int(SetConfig.validate(params)).is_equal(SetConfig.Reason.NO_REWARDS)
+	params = _params()
+	params.targets[1] = NAN
+	assert_int(SetConfig.validate(params)).is_equal(SetConfig.Reason.NOT_POSITIVE)
+	params = _params()
+	params.reward_coupons.clear()
+	assert_int(SetConfig.validate(params)).is_equal(SetConfig.Reason.NO_REWARDS)
 
 
 ## Distinct values everywhere, so a misread index shows.

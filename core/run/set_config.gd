@@ -27,7 +27,8 @@ static func validate(params: SetParams) -> Reason:
 	if params.reward_coupons.size() != SETS_PER_YEAR:
 		return Reason.NO_REWARDS
 	for index: int in params.targets.size():
-		if params.targets[index] <= 0.0:
+		# Written this way round so NaN fails too.
+		if not params.targets[index] > 0.0:
 			return Reason.NOT_POSITIVE
 		if index > 0 and params.targets[index] < params.targets[index - 1]:
 			return Reason.DECREASING

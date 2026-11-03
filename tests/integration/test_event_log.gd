@@ -21,7 +21,7 @@ var _sets_played: int = 0
 func before() -> void:
 	var loop: RunLoop = RunLoop.new(RunState.new(SEED), RunScript.bots())
 	loop.state.table.assign(["player", "wang", "li"])
-	loop.on_boundary = func() -> void: _measure(loop)
+	loop.on_boundary = _measure
 	var script: RunScript = RunScript.new()
 	loop.start_set()
 	while loop.awaiting() != RunLoop.Awaiting.RUN_OVER:

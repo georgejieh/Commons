@@ -3,8 +3,9 @@ extends RefCounted
 ## Writes and reads one save file as JSON with a schema version. A write goes to a
 ## temporary file first and is renamed into place, and the save it replaces is kept as
 ## a backup, so a crash at any point leaves one whole save. An older save is brought up
-## to date one version at a time by the registered migrations. Run saves and the
-## profile save are separate files with their own services.
+## to date one version at a time by the registered migrations, then checked by the
+## validator, so a file that parses but lost its shape counts as damaged. Run saves and
+## the profile save are separate files with their own services.
 
 const SCHEMA_VERSION: int = 1
 const RUN_PATH: String = "user://run.json"
@@ -19,16 +20,25 @@ var _path: String
 ## From version to the function that turns a save of that version into the next.
 var _migrations: Dictionary[int, Callable]
 var _version: int
+## Takes the migrated data and returns true when it is whole.
+var _validator: Callable
 
 
 func _init(
 	path: String = RUN_PATH,
 	migrations: Dictionary[int, Callable] = {},
-	version: int = SCHEMA_VERSION
+	version: int = SCHEMA_VERSION,
+	validator: Callable = Callable()
 ) -> void:
 	_path = path
 	_migrations = migrations
 	_version = version
+	_validator = validator
+
+
+## A run save, checked as a RunRecord.
+static func for_run(path: String = RUN_PATH) -> SaveService:
+	return SaveService.new(path, {}, SCHEMA_VERSION, RunRecord.is_valid)
 
 
 func path() -> String:
@@ -51,12 +61,15 @@ func save(data: Dictionary) -> Error:
 	file.close()
 	if not stored:
 		return ERR_FILE_CANT_WRITE
-	if FileAccess.file_exists(_path):
+	# A damaged main file never replaces the backup, which may be the only good save.
+	if _read(_path) != null:
 		if FileAccess.file_exists(backup_path()):
 			DirAccess.remove_absolute(backup_path())
 		var kept: Error = DirAccess.rename_absolute(_path, backup_path())
 		if kept != OK:
 			return kept
+	elif FileAccess.file_exists(_path):
+		DirAccess.remove_absolute(_path)
 	return DirAccess.rename_absolute(temp, _path)
 
 
@@ -88,8 +101,14 @@ func _read(file_path: String) -> Variant:
 	var save: Dictionary = json.data
 	if not save.get("schema_version") is float or not save.get("data") is Dictionary:
 		return null
-	var version: int = int(save["schema_version"])
-	var data: Dictionary = save["data"]
+	var data: Variant = _migrate(save["data"], int(save["schema_version"]))
+	if data == null or (_validator.is_valid() and not _validator.call(data)):
+		return null
+	return data
+
+
+## Brings data up to this version, or returns null when it is newer or a step is missing.
+func _migrate(data: Dictionary, version: int) -> Variant:
 	if version > _version:
 		return null
 	while version < _version:

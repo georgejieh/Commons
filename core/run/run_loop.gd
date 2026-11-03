@@ -2,8 +2,8 @@ class_name RunLoop
 extends RefCounted
 ## Plays a run's Sets round by round: deal, bidding, plot swaps, play, scoring, banking,
 ## seat persistence, debuffs, meters and Set completion. The player sits in seat 0 and
-## acts through commands; bots act in advance(). A round is rebuilt from the RunState
-## at its start plus the player's commands, which is how mid-round saves resume.
+## acts through commands; bots act in advance(). A Set is rebuilt from the RunState at
+## its start plus the player's commands, which is how saves inside a Set resume.
 
 enum Awaiting { NOTHING, PLAYER_BID, PLAYER_SWAP, PLAYER_PLAY, PLAYER_NEED, SET_OVER, RUN_OVER }
 enum Reason { OK, NOT_AWAITED, ILLEGAL }
@@ -15,7 +15,7 @@ const DEFAULT_POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
 var state: RunState
 var flow: RunFlow
 var record: RunRecord = RunRecord.new()
-## Called after every state move, for autosaves.
+## Called with the loop after every state move, for autosaves.
 var on_boundary: Callable = Callable()
 
 var _configs: Array[BotConfig]
@@ -53,7 +53,6 @@ func _init(
 	for definition: ModifierDef in pool:
 		_pool_by_id[definition.id] = definition
 	_table = SeatRules.new(_stack)
-	record.mark(state)
 
 
 func awaiting() -> Awaiting:
@@ -93,7 +92,11 @@ func target() -> float:
 	return _sets.target(state.year, state.set_type)
 
 
-func start_set() -> void:
+## Starts the Set the state names. The Set's start is the save checkpoint.
+func start_set() -> Reason:
+	if not RunFlow.allows(flow.state(), RunFlow.State.SET_INTRO):
+		return Reason.NOT_AWAITED
+	record.mark(state)
 	_log.start_set(state, set_number())
 	_move(RunFlow.State.SET_INTRO)
 	state.round_index = 0
@@ -106,25 +109,23 @@ func start_set() -> void:
 	_log.add(
 		RunEvent.new(RunEvent.Type.SET_STARTED, Seats.NONE, set_number(), target(), ladder_text)
 	)
-	start_round()
+	_start_round()
+	return Reason.OK
 
 
-## Picks up at a checkpoint: past a Set or the run, or at a round's start.
+## Picks up at a checkpoint: past a Set or the run, or at a Set's start.
 func resume_at_checkpoint() -> void:
 	match state.phase:
-		RunFlow.State.RUN_START:
-			start_set()
 		RunFlow.State.SET_END:
 			_awaiting = Awaiting.SET_OVER
 		RunFlow.State.RUN_END:
 			_awaiting = Awaiting.RUN_OVER
 		_:
-			start_round()
+			start_set()
 
 
-## Starts the round state.round_index names, from the RunState alone.
-func start_round() -> void:
-	record.mark(state)
+## Starts the round state.round_index names.
+func _start_round() -> void:
 	_log.start_round()
 	_rebuild_debuffs()
 	_seat = LandlordSeat.new()
@@ -208,15 +209,13 @@ func next_set() -> Reason:
 	if state.set_type == RunState.SetType.BOSS:
 		_move(RunFlow.State.YEAR_END)
 		if state.year == _sets.years():
-			_move(RunFlow.State.RUN_END)
-			record.mark(state)
+			_move(RunFlow.State.RUN_END, true)
 			_awaiting = Awaiting.RUN_OVER
 			return Reason.OK
 		state.year += 1
 	state.set_index = (state.set_index + 1) % SetConfig.SETS_PER_YEAR
 	state.set_type = state.set_index as RunState.SetType
-	start_set()
-	return Reason.OK
+	return start_set()
 
 
 ## Counts Sets across the run from 0.
@@ -225,8 +224,7 @@ func set_number() -> int:
 
 
 func _rebuild_debuffs() -> void:
-	for entry: ActiveModifier in _stack.ordered_entries():
-		_stack.remove(entry)
+	_stack.clear()
 	for round_index: int in range(1, state.round_index + 1):
 		var id: String = state.debuff_ladder[round_index]
 		if id == RunState.NO_DEBUFF:
@@ -311,10 +309,9 @@ func _bot_play() -> void:
 	var offered: bool = (
 		play.is_pass() or legal.any(func(move: Pattern) -> bool: return move.equals(play.pattern))
 	)
-	var reason: RoundState.Reason = RoundState.Reason.DOES_NOT_BEAT
-	if offered:
-		reason = _round.apply(action)
-	assert(reason == RoundState.Reason.OK, "A bot chose an illegal action")
+	if not offered or _round.apply(action) != RoundState.Reason.OK:
+		assert(false, "A bot chose an illegal action")
+		_round.apply(_round.action_for(legal[0]))
 	_after_action()
 
 
@@ -370,12 +367,11 @@ func _end_round() -> void:
 	if state.set_progress >= target() or state.round_index >= _sets.max_rounds():
 		_end_set()
 		return
-	start_round()
+	_start_round()
 
 
 func _end_set() -> void:
 	var met: bool = state.set_progress >= target()
-	_move(RunFlow.State.SET_END)
 	_stack.run_set_end(SetContext.new(state.set_index, met))
 	if met:
 		state.coupons += _sets.reward(state.set_type)
@@ -383,18 +379,20 @@ func _end_set() -> void:
 		RunMeters.raise_famine(
 			state, _params.famine_on_missed_target, _stack, _params, PLAYER, _log.events()
 		)
-	for entry: ActiveModifier in _stack.ordered_entries():
-		_stack.remove(entry)
+	_stack.clear()
 	state.landlord_seat = Seats.NONE
 	_log.add(RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1 if met else 0, state.set_progress))
-	record.mark(state)
+	_move(RunFlow.State.SET_END, true)
 	_awaiting = Awaiting.SET_OVER
 
 
-## Every move the loop makes is in the table, so a refusal is a bug.
-func _move(to: RunFlow.State) -> void:
+## Every move the loop makes is in the table, so a refusal is a bug. A checkpoint move
+## marks the record before the autosave sees it.
+func _move(to: RunFlow.State, checkpoint: bool = false) -> void:
 	var reason: RunFlow.Reason = flow.move(to)
 	assert(reason == RunFlow.Reason.OK, "Illegal run transition")
 	state.phase = flow.state()
+	if checkpoint:
+		record.mark(state)
 	if on_boundary.is_valid():
-		on_boundary.call()
+		on_boundary.call(self)

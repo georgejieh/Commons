@@ -14,8 +14,10 @@ static func is_valid(
 	for card_id: int in hand_ids:
 		if hand.find(card_id) == null:
 			return false
+	# Until ADR 0014 settles plot identity, an ID already in hand would be refused by
+	# Hand.add() and the card lost.
 	for card_id: int in plot_ids:
-		if _plot_index(inventory, card_id) < 0:
+		if _plot_index(inventory, card_id) < 0 or hand.find(card_id) != null:
 			return false
 	return true
 

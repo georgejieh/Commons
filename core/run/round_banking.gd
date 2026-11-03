@@ -17,8 +17,9 @@ static func bank(
 		state.set_progress += totals[landlord]
 	for seat: int in Seats.COUNT:
 		if seat != landlord:
-			var units: int = Banking.to_pool_units(totals[seat])
-			state.commons_pool = mini(state.commons_pool + units, Banking.MAX_POOL)
+			# Clamped before adding, so two saturated totals can't wrap past 2^63.
+			var room: int = Banking.MAX_POOL - state.commons_pool
+			state.commons_pool += mini(Banking.to_pool_units(totals[seat]), room)
 
 
 ## Bots declare on the ai stream. The player's need counts only when they are a peasant.

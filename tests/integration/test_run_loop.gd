@@ -145,10 +145,67 @@ func test_plot_swaps_conserve_cards() -> void:
 
 func test_commands_out_of_turn_are_refused() -> void:
 	var loop: RunLoop = RunLoop.new(RunState.new(SEEDS[0]), RunScript.bots())
-	loop.start_set()
+	assert_int(loop.player_bid(true)).is_equal(RunLoop.Reason.NOT_AWAITED)
+	assert_int(loop.start_set()).is_equal(RunLoop.Reason.OK)
+	var before: String = JSON.stringify(loop.state.to_dict())
+	assert_int(loop.start_set()).is_equal(RunLoop.Reason.NOT_AWAITED)
+	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(before)
+	var none: Array[int] = []
 	if loop.awaiting() != RunLoop.Awaiting.PLAYER_NEED:
 		assert_int(loop.player_need(1)).is_equal(RunLoop.Reason.NOT_AWAITED)
+	if loop.awaiting() != RunLoop.Awaiting.PLAYER_PLAY:
+		assert_int(loop.player_play(none)).is_equal(RunLoop.Reason.NOT_AWAITED)
+	if loop.awaiting() != RunLoop.Awaiting.PLAYER_BID:
+		assert_int(loop.player_bid(false)).is_equal(RunLoop.Reason.NOT_AWAITED)
+	assert_int(loop.player_swap(none, none)).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_int(loop.next_set()).is_equal(RunLoop.Reason.NOT_AWAITED)
+	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(before)
+
+
+## An all-pass bid redeals on the deal stream and bidding starts again.
+func test_an_all_pass_redeals_and_the_round_goes_on() -> void:
+	var found: bool = false
+	for seed_value: int in range(3800, 3900):
+		var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots())
+		loop.start_set()
+		RunScript.new().play_until_set_over(loop)
+		var types: Array[int] = []
+		for event: RunEvent in loop.events():
+			types.append(event.type)
+		var at: int = types.find(RunEvent.Type.REDEALT)
+		if at < 0:
+			continue
+		found = true
+		assert_int(types[at + 1]).is_equal(RunEvent.Type.DEALT)
+		assert_int(types.find(RunEvent.Type.LANDLORD_CHOSEN, at)).is_greater(at)
+		assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.SET_OVER)
+		break
+	assert_bool(found).is_true()
+
+
+func test_illegal_swaps_are_refused() -> void:
+	var state: RunState = RunState.new(PLOT_SEED)
+	for index: int in 2:
+		state.inventory.plot.append(
+			CardInstance.new(CardInstance.FIRST_PLOT_ID + index, 12, 0, CardInstance.Origin.PLOT)
+		)
+	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
+	var script: RunScript = RunScript.new()
+	loop.start_set()
+	while loop.awaiting() == RunLoop.Awaiting.PLAYER_BID:
+		script.act(loop)
+	var first: int = loop.player_cards()[0].id()
+	var second: int = loop.player_cards()[1].id()
+	var plot: Array[int] = [state.inventory.plot[0].id(), state.inventory.plot[1].id()]
+	var over_limit: Array[int] = [first, second]
+	assert_int(loop.player_swap(over_limit, plot)).is_equal(RunLoop.Reason.ILLEGAL)
+	var repeated: Array[int] = [first]
+	var repeated_plot: Array[int] = [plot[0], plot[0]]
+	assert_int(loop.player_swap([first, first] as Array[int], repeated_plot)).is_equal(
+		RunLoop.Reason.ILLEGAL
+	)
+	assert_int(loop.player_swap(repeated, [999] as Array[int])).is_equal(RunLoop.Reason.ILLEGAL)
+	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.PLAYER_SWAP)
 
 
 func _count(loop: RunLoop, type: RunEvent.Type) -> int:
