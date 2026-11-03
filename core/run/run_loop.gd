@@ -11,10 +11,12 @@ enum Reason { OK, NOT_AWAITED, ILLEGAL }
 const PLAYER: int = 0
 const DEFAULT_PARAMS: RunParams = preload("res://data/run/default_run.tres")
 const DEFAULT_POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
-const FAMINE: String = "famine"
 
 var state: RunState
 var flow: RunFlow
+var record: RunRecord = RunRecord.new()
+## Called after every state move, for autosaves.
+var on_boundary: Callable = Callable()
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -51,6 +53,7 @@ func _init(
 	for definition: ModifierDef in pool:
 		_pool_by_id[definition.id] = definition
 	_table = SeatRules.new(_stack)
+	record.mark(state)
 
 
 func awaiting() -> Awaiting:
@@ -105,8 +108,22 @@ func start_set() -> void:
 	start_round()
 
 
+## Picks up at a checkpoint: past a Set or the run, or at a round's start.
+func resume_at_checkpoint() -> void:
+	match state.phase:
+		RunFlow.State.RUN_START:
+			start_set()
+		RunFlow.State.SET_END:
+			_awaiting = Awaiting.SET_OVER
+		RunFlow.State.RUN_END:
+			_awaiting = Awaiting.RUN_OVER
+		_:
+			start_round()
+
+
 ## Starts the round state.round_index names, from the RunState alone.
 func start_round() -> void:
+	record.mark(state)
 	_rebuild_debuffs()
 	_seat = LandlordSeat.new()
 	_seat.assign(state.landlord_seat)
@@ -134,6 +151,7 @@ func player_bid(claim: bool) -> Reason:
 	if _awaiting != Awaiting.PLAYER_BID:
 		return Reason.NOT_AWAITED
 	_awaiting = Awaiting.NOTHING
+	record.add({"type": "bid", "claim": claim})
 	_record_bid(PLAYER, claim)
 	advance()
 	return Reason.OK
@@ -143,8 +161,11 @@ func player_bid(claim: bool) -> Reason:
 func player_swap(hand_ids: Array[int], plot_ids: Array[int]) -> Reason:
 	if _awaiting != Awaiting.PLAYER_SWAP:
 		return Reason.NOT_AWAITED
-	if not PlotSwap.is_valid(_deal.hands[PLAYER], state.inventory, hand_ids, plot_ids, _swaps()):
+	if not PlotSwap.is_valid(
+		_deal.hands[PLAYER], state.inventory, hand_ids, plot_ids, _params.swaps_per_round
+	):
 		return Reason.ILLEGAL
+	record.add({"type": "swap", "hand": hand_ids.duplicate(), "plot": plot_ids.duplicate()})
 	PlotSwap.apply(_deal.hands[PLAYER], state.inventory, hand_ids, plot_ids)
 	_events.append(RunEvent.new(RunEvent.Type.SWAPPED, PLAYER, hand_ids.size()))
 	_awaiting = Awaiting.NOTHING
@@ -159,6 +180,7 @@ func player_play(card_ids: Array[int]) -> Reason:
 		return Reason.NOT_AWAITED
 	if _round.apply(RoundAction.new(PLAYER, card_ids)) != RoundState.Reason.OK:
 		return Reason.ILLEGAL
+	record.add({"type": "play", "cards": card_ids.duplicate()})
 	_awaiting = Awaiting.NOTHING
 	_after_action()
 	advance()
@@ -168,6 +190,7 @@ func player_play(card_ids: Array[int]) -> Reason:
 func player_need(need: int) -> Reason:
 	if _awaiting != Awaiting.PLAYER_NEED:
 		return Reason.NOT_AWAITED
+	record.add({"type": "need", "need": need})
 	_awaiting = Awaiting.NOTHING
 	_split_commons(need)
 	advance()
@@ -184,6 +207,7 @@ func next_set() -> Reason:
 		_move(RunFlow.State.YEAR_END)
 		if state.year == _sets.years():
 			_move(RunFlow.State.RUN_END)
+			record.mark(state)
 			_awaiting = Awaiting.RUN_OVER
 			return Reason.OK
 		state.year += 1
@@ -257,14 +281,10 @@ func _record_bid(seat: int, claim: bool) -> void:
 
 func _begin_play() -> void:
 	_move(RunFlow.State.ROUND_PLAY)
-	if not state.inventory.plot.is_empty() and _swaps() > 0:
+	if not state.inventory.plot.is_empty() and _params.swaps_per_round > 0:
 		_awaiting = Awaiting.PLAYER_SWAP
 		return
 	_create_round()
-
-
-func _swaps() -> int:
-	return _params.swaps_per_round
 
 
 func _create_round() -> void:
@@ -307,21 +327,10 @@ func _collect_round_events() -> void:
 		var event: RoundEvent = round_events[index]
 		_events.append(RunEvent.wrap(event))
 		if event.type == RoundEvent.Type.PLAYED:
-			_score_play(event)
+			var total: float = RoundTotals.play_score(event, _levels, state.landlord_seat, _stack)
+			_scores[event.seat] += total
+			_events.append(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total))
 	_round_seen = round_events.size()
-
-
-func _score_play(event: RoundEvent) -> void:
-	var breakdown: ScoreBreakdown = Scorer.score_play(
-		event.cards,
-		event.pattern,
-		_levels.level_of(event.pattern.type),
-		event.seat,
-		event.seat == state.landlord_seat,
-		_stack
-	)
-	_scores[event.seat] += breakdown.total
-	_events.append(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, breakdown.total))
 
 
 func _finish_round() -> void:
@@ -369,24 +378,17 @@ func _end_set() -> void:
 	if met:
 		state.coupons += _sets.reward(state.set_type)
 	else:
-		_raise_famine(_params.famine_on_missed_target)
+		RunMeters.raise_famine(
+			state, _params.famine_on_missed_target, _stack, _params, PLAYER, _events
+		)
 	for entry: ActiveModifier in _stack.ordered_entries():
 		_stack.remove(entry)
 	state.landlord_seat = Seats.NONE
 	_events.append(
 		RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1 if met else 0, state.set_progress)
 	)
+	record.mark(state)
 	_awaiting = Awaiting.SET_OVER
-
-
-func _raise_famine(delta: int) -> void:
-	var context: MeterContext = MeterContext.new(FAMINE, delta)
-	_stack.run_meter_change(context)
-	var before: int = state.famine
-	state.famine = clampi(state.famine + context.delta, 0, _params.meter_max)
-	_events.append(
-		RunEvent.new(RunEvent.Type.METER_CHANGED, PLAYER, state.famine - before, 0.0, FAMINE)
-	)
 
 
 ## Every move the loop makes is in the table, so a refusal is a bug.
@@ -394,3 +396,5 @@ func _move(to: RunFlow.State) -> void:
 	var reason: RunFlow.Reason = flow.move(to)
 	assert(reason == RunFlow.Reason.OK, "Illegal run transition")
 	state.phase = flow.state()
+	if on_boundary.is_valid():
+		on_boundary.call()
