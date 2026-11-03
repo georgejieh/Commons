@@ -32,6 +32,10 @@ func decide(
 	return _job.best()
 
 
+func finished_samples() -> int:
+	return _job.finished_samples()
+
+
 func _run_sample(sample: int) -> void:
 	if not _expired:
 		_job.run_sample(sample)

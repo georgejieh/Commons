@@ -103,9 +103,41 @@ func test_a_rival_short_of_the_margin_leaves_the_policy_play() -> void:
 	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS.duplicate()
 	weights.expert_margin = 2.0
 	var job: BotSearchJob = _search_job(weights)
+	assert_object(ExpertSearch.run(job, BotBudget.unlimited())).is_same(job.fallback)
+
+
+func test_a_rival_past_the_margin_overturns_the_policy_play() -> void:
+	var job: BotSearchJob = _search_job(BotConfig.DEFAULT_WEIGHTS)
 	var play: BotPlay = ExpertSearch.run(job, BotBudget.unlimited())
+	assert_bool(job.fallback.is_pass()).is_false()
+	assert_bool(play.is_pass()).is_true()
 	assert_int(play.rationale).is_equal(BotRationale.Code.SEARCHED)
-	assert_bool(play.pattern.equals(job.fallback.pattern)).is_true()
+
+
+func test_the_margin_rounds_up_and_needs_a_lead() -> void:
+	assert_bool(BotSearchJob.clears_margin(5, 48, 0.125)).is_false()
+	assert_bool(BotSearchJob.clears_margin(6, 48, 0.125)).is_true()
+	assert_bool(BotSearchJob.clears_margin(1, 12, 0.125)).is_false()
+	assert_bool(BotSearchJob.clears_margin(2, 12, 0.125)).is_true()
+	assert_bool(BotSearchJob.clears_margin(1, 9, 0.125)).is_false()
+	assert_bool(BotSearchJob.clears_margin(2, 9, 0.125)).is_true()
+	assert_bool(BotSearchJob.clears_margin(0, 48, 0.0)).is_false()
+
+
+func test_a_deadline_stops_the_samples_and_decides_on_those_finished() -> void:
+	var job: BotSearchJob = _search_job(BotConfig.DEFAULT_WEIGHTS)
+	var ticks: Array[int] = [0]
+	var clock: Callable = func() -> int:
+		ticks[0] += 1
+		return ticks[0] - 1
+	var budget: BotBudget = BotBudget.new(BotConfig.DEFAULT_WEIGHTS.expert_min_samples + 1, clock)
+	ExpertSearch.run(job, budget)
+	assert_int(job.finished_samples()).is_equal(BotConfig.DEFAULT_WEIGHTS.expert_min_samples)
+
+
+func test_the_default_samples_can_reach_the_minimum() -> void:
+	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS
+	assert_int(weights.expert_samples).is_greater_equal(weights.expert_min_samples)
 
 
 func test_too_few_finished_samples_leave_the_policy_play() -> void:
@@ -116,8 +148,10 @@ func test_too_few_finished_samples_leave_the_policy_play() -> void:
 
 
 func test_enough_finished_samples_decide_at_a_deadline() -> void:
-	var job: BotSearchJob = _search_job(BotConfig.DEFAULT_WEIGHTS)
-	for sample: int in BotConfig.DEFAULT_WEIGHTS.expert_min_samples:
+	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS.duplicate()
+	weights.expert_margin = 0.0
+	var job: BotSearchJob = _search_job(weights)
+	for sample: int in weights.expert_min_samples:
 		job.run_sample(sample)
 	assert_int(job.best().rationale).is_equal(BotRationale.Code.SEARCHED)
 

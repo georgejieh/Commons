@@ -79,7 +79,7 @@ The unlimited-time figure is probably a real gain over 50.0%, but only just: the
 
 ## Better guesses about the hidden cards
 
-Two ways of reading play history were tried and dropped. All runs had unlimited time and used 48 samples, on deals from 900000. Each rate has a margin of about ±4.4 points at 480 games and ±3.1 at 960.
+Two ways of reading play history were tried and dropped. All runs had unlimited time and used 48 samples, on deals from 900000. Each rate has a margin of about ±4.5 points at 480 games and ±3.2 at 960.
 
 | Search | Games | Expert over Hard |
 | --- | --- | --- |

@@ -1,7 +1,8 @@
 class_name ExpertSearch
 extends RefCounted
 ## Determinized sampling: deals the unseen cards consistently with what is public, rolls
-## out the top candidates on each deal with the Medium policy, and picks the best average.
+## out the top candidates on each deal with the Medium policy, and keeps the policy's play
+## unless a rival clearly beats it.
 ## Only Expert searches. A pure job, so a runner may spread it over threads.
 
 

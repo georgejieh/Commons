@@ -7,6 +7,8 @@ const TIMING_FLAG: String = "COMMONS_TIMING"
 const DEADLINE_USEC: int = 300000
 const P99_LIMIT_USEC: int = 400000
 const SOON_USEC: int = 1
+## Shorter than a full search of an opening hand on any machine.
+const MID_RUN_USEC: int = 10000
 const LONG_USEC: int = 10000000
 
 var _rules: RuleSet = RuleSet.default_rules()
@@ -53,6 +55,14 @@ func test_a_passed_deadline_leaves_the_hard_decision() -> void:
 	var legal: Array[Pattern] = round_state.legal_moves()
 	var play: BotPlay = ExpertRunner.new().decide(view, legal, _bot_table, _expert, SOON_USEC)
 	assert_int(play.rationale).is_not_equal(BotRationale.Code.SEARCHED)
+
+
+func test_a_deadline_mid_run_skips_the_samples_not_started() -> void:
+	var round_state: RoundState = RoundState.new(SelfPlay.deal_from_seed(1), 0, _table)
+	var legal: Array[Pattern] = round_state.legal_moves()
+	var runner: ExpertRunner = ExpertRunner.new()
+	runner.decide(round_state.view_for(0), legal, _bot_table, _expert, MID_RUN_USEC)
+	assert_int(runner.finished_samples()).is_less(_expert.search_samples())
 
 
 func test_a_runner_searches_again_after_a_missed_deadline() -> void:

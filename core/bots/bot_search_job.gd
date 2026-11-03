@@ -53,20 +53,30 @@ func run_sample(sample: int) -> void:
 func best() -> BotPlay:
 	var wins: PackedInt32Array = PackedInt32Array()
 	wins.resize(_candidates.size())
-	var finished: int = 0
 	for row: PackedInt32Array in _results:
-		if row.is_empty():
-			continue
-		finished += 1
 		for index: int in row.size():
 			wins[index] += row[index]
 	var weights: BotWeights = _position.config.weights
+	var finished: int = finished_samples()
 	if finished == 0 or finished < weights.expert_min_samples:
 		return fallback
 	var top: int = 0
 	for index: int in wins.size():
 		if wins[index] > wins[top]:
 			top = index
-	if wins[top] - wins[0] < ceili(finished * weights.expert_margin):
-		top = 0
+	if not clears_margin(wins[top] - wins[0], finished, weights.expert_margin):
+		return fallback
 	return BotPlay.new(_candidates[top], BotRationale.Code.SEARCHED)
+
+
+func finished_samples() -> int:
+	var finished: int = 0
+	for row: PackedInt32Array in _results:
+		if not row.is_empty():
+			finished += 1
+	return finished
+
+
+## True if a rival's lead over the policy's play, in wins, is enough to overturn it.
+static func clears_margin(lead: int, finished: int, margin: float) -> bool:
+	return lead > 0 and lead >= ceili(finished * margin)
