@@ -78,6 +78,7 @@ func _random_state(rng: RandomNumberGenerator) -> RunState:
 		entry.return_timer = rng.randi_range(0, 3)
 		state.roster.append(entry)
 	_fill_inventory(rng, state.inventory)
+	state.table.assign(["player", "family_%d" % rng.randi_range(0, 15), "youth_1"])
 	state.coupons = rng.randi_range(0, 10000)
 	state.commons_pool = rng.randi() * rng.randi_range(1, 1 << 30)
 	state.landlord_seat = rng.randi_range(-1, 2)
@@ -117,6 +118,7 @@ func _same_fields(first: RunState, second: RunState) -> bool:
 		and first.famine == second.famine
 		and first.denunciation == second.denunciation
 		and first.roster.size() == second.roster.size()
+		and first.table == second.table
 		and first.inventory.cadres == second.inventory.cadres
 		and first.inventory.consumables == second.inventory.consumables
 		and first.inventory.plot.size() == second.inventory.plot.size()

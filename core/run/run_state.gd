@@ -7,6 +7,8 @@ extends RefCounted
 enum SetType { SMALL, LARGE, BOSS }
 
 const NO_DEBUFF: String = ""
+## Family IDs by seat until P4.5 seats the roster.
+const DEFAULT_TABLE: Array[String] = ["player", "seat_1", "seat_2"]
 
 var run_seed: int
 var phase: RunFlow.State = RunFlow.State.RUN_START
@@ -23,6 +25,8 @@ var debuff_ladder: Array[String] = []
 var famine: int = 0
 var denunciation: int = 0
 var roster: Array[RosterEntry] = []
+## The family in each seat this Set.
+var table: Array[String] = DEFAULT_TABLE.duplicate()
 var inventory: RunInventory = RunInventory.new()
 var coupons: int = 0
 var commons_pool: int = 0
@@ -47,6 +51,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.debuff_ladder.assign(data["debuff_ladder"])
 	state.famine = int(data["famine"])
 	state.denunciation = int(data["denunciation"])
+	state.table.assign(data["table"])
 	for entry_data: Dictionary in data["roster"]:
 		state.roster.append(RosterEntry.from_dict(entry_data))
 	state.inventory = RunInventory.from_dict(data["inventory"])
@@ -78,6 +83,7 @@ func to_dict() -> Dictionary:
 		"famine": famine,
 		"denunciation": denunciation,
 		"roster": roster_data,
+		"table": table.duplicate(),
 		"inventory": inventory.to_dict(),
 		"coupons": coupons,
 		"commons_pool": str(commons_pool),

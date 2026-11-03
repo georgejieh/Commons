@@ -5,11 +5,13 @@ extends RefCounted
 ## the player counts toward the Set's target.
 
 
-## Banks the landlord and fills the pool.
+## Records each seat's total, banks the landlord and fills the pool.
 static func bank(
 	state: RunState, totals: PackedFloat64Array, player: int, events: Array[RunEvent]
 ) -> void:
 	var landlord: int = state.landlord_seat
+	for seat: int in Seats.COUNT:
+		events.append(RunEvent.new(RunEvent.Type.ROUND_SCORED, seat, 0, totals[seat]))
 	events.append(RunEvent.new(RunEvent.Type.BANKED, landlord, 0, totals[landlord]))
 	if landlord == player:
 		state.set_progress += totals[landlord]
