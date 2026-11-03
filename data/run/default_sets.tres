@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SetParams" format=3]
+
+[ext_resource type="Script" path="res://data/run/set_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+years = 8
+max_rounds = 4
+targets = Array[float]([600.0, 750.0, 900.0, 960.0, 1200.0, 1440.0, 1536.0, 1920.0, 2304.0, 2458.0, 3072.0, 3686.0, 3932.0, 4915.0, 5898.0, 6291.0, 7864.0, 9437.0, 10066.0, 12583.0, 15099.0, 16106.0, 20133.0, 24159.0])
+reward_coupons = Array[int]([3, 4, 5])
