@@ -46,7 +46,19 @@ godot --headless --path . --export-release Windows build/windows/Commons.exe
 
 Exports a Windows build. Create `build/windows` first. `Linux` works the same way, with `build/linux/Commons.x86_64`.
 
-Tournament and balance commands arrive with P2.12 and P4.16. Add them here when they work.
+```bash
+godot --headless --path . --script res://tools/tournament.gd -- --games 200 --a medium --b easy
+```
+
+Plays seeded bot games between `easy`, `medium`, `hard` and `expert`, and writes `reports/tournament.csv`. Exits 1 on any illegal action. Add `--bidding`, `--seed N`, `--out PATH` or `--log PATH`. [docs/TOURNAMENT_LOG.md](docs/TOURNAMENT_LOG.md) has the formats.
+
+```bash
+godot --headless --path . --script res://tools/expert_deadline.gd -- --deals 1000 --seed 0
+```
+
+Plays Expert against Hard through `ExpertRunner` at its real deadline, 300 ms unless `--limit-usec N` says otherwise. The tournament gives Expert unlimited time, so use this for what players get. Takes hours, and reports strength and p99.
+
+Balance commands arrive with P4.16. Add them here when they work.
 
 ## Layers
 
