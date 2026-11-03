@@ -15,6 +15,9 @@ static func validate(
 	for key: String in [definition.name_key, definition.text_key]:
 		if not string_keys.has(key):
 			problems.append("%s: missing string key %s" % [definition.id, key])
+	var is_debuff: bool = definition.kind == ModifierDef.Kind.DEBUFF
+	if is_debuff and (definition.tier < 1 or definition.tier > ModifierDef.MAX_TIER):
+		problems.append("%s: bad tier %d" % [definition.id, definition.tier])
 	if not EffectRegistry.has_effect(definition.id):
 		problems.append("%s: no effect script" % definition.id)
 		return problems

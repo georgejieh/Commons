@@ -8,6 +8,7 @@ id = "inverted_order"
 kind = 4
 tag = 1
 lever = 1
+tier = 4
 hooks = Array[String](["build_rank_map"])
 parameters = Dictionary[String, int]({})
 rarity = 0

@@ -8,6 +8,7 @@ id = "criticism_meeting"
 kind = 4
 tag = 1
 lever = 1
+tier = 3
 hooks = Array[String](["build_rank_map"])
 parameters = Dictionary[String, int]({"rank": 12, "ranks_as": 0})
 rarity = 0
