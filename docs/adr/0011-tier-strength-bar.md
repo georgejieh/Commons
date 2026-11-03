@@ -72,10 +72,11 @@ Commit 0a17560 applies the fix. Expert searches 3 candidates at 48 samples and k
 | --- | --- | --- | --- |
 | Unlimited time, one thread | 2,000 | 53.2% | ±2.2 |
 | `ExpertRunner` at 300 ms, 8 cores | 600 | 51.2% | ±4 |
+| `ExpertRunner` at 300 ms, 8 cores, at 3cff84c | 2,000 | 53.0% | ±2.2 |
 
-Both miss the proposed 55%. The short runs above overstated the gain: the settings were picked on those deals, and the 2,000 games use a different range. As landlord, Expert wins 51.2% to Hard's 44.7%. There were 0 illegal actions. Expert's p99 through `ExpertRunner` is 357 ms over 1,163 decisions.
+All miss the proposed 55%. The short runs above overstated the gain: the settings were picked on those deals, and the 2,000 games use a different range. As landlord, Expert wins 51.2% to Hard's 44.7%. There were 0 illegal actions. Expert's p99 through `ExpertRunner` is 357 ms over 1,163 decisions.
 
-The unlimited-time figure is probably a real gain over 50.0%, but only just: the two margins overlap slightly. The 300 ms figure cannot be told apart from Hard. Players get the 300 ms game, and fewer samples finish on a weaker machine.
+The last row is what players get. It plays Expert through `ExpertRunner`, which the tournament cannot, on the same 2,000 games as the unlimited row, with `tools/expert_deadline.gd -- --deals 1000 --seed 0`. Expert wins 53.0%, with 0 illegal actions and a p99 of 357 ms. This is a small but real gain over Hard: the margin's low end is 50.8%. The 600-game run was too short to show it.
 
 ## Better guesses about the hidden cards
 
@@ -106,6 +107,8 @@ None beats the control, and the slowest decisions took from 16 s to 535 s on one
 
 ## Consequences
 
-Expert meets its bar at 53.2%, and its p99 is under 400 ms, so P2.9 is done. Under the real deadline its 51.2% cannot be told apart from Hard, so players may not feel a step up from Hard to Expert. Letting Expert see some hidden cards is the one tested route to more strength. It trades fairness for strength, so it would have to be shown to the player, for example as a villager trait or modifier in Phase 4.
+Expert meets its bar at 53.0% under the real deadline, and its p99 is under 400 ms, so P2.9 is done. The step up from Hard is small, so players may not feel it.
+
+The p99 has about 43 ms of headroom, roughly one sample's overrun, so a slower machine may miss 400 ms. The 300 ms deadline is set only in tests and tools. When Phase 3 wires `ExpertRunner` into play, the deadline moves into data and the p99 is measured again. The nightly job does not measure Expert, so `tools/expert_deadline.gd` must be rerun by hand after changes to Expert. Letting Expert see some hidden cards is the one tested route to more strength. It trades fairness for strength, so it would have to be shown to the player, for example as a villager trait or modifier in Phase 4.
 
 P2.10 to P2.12 do not depend on the choice.
