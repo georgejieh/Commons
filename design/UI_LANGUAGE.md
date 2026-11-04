@@ -1,17 +1,17 @@
 # UI language
 
-Commons' visual language for P3B.0, in the propaganda-poster direction ([ADR 0015](../docs/adr/0015-art-direction.md)). The reference board in `design/reference/` is private: 24 store-page screenshots, four per game, which are gitignored, excluded from exports, and never traced or used as image-model input. This file records what each reference solves and Commons' own answer to it, from the Plan's divergence table.
+Commons' visual language for P3B.0, in the propaganda-poster direction ([ADR 0015](../docs/adr/0015-art-direction.md)). The reference board in `design/reference/` is private: 24 store-page screenshots, four per game, which are gitignored, excluded from exports, and never traced or used as image-model input. This file records what each reference solves and Commons' own answer to it, from the Plan's divergence table. The "problem it solves" column is a design reading, not a measured result. The reference descriptions were cross-checked with GPT-6.1-Sol on 2026-11-03.
 
 ## What each reference solves
 
 | Reference | Problem it solves | How it solves it | What Commons takes |
 | --- | --- | --- | --- |
-| Balatro | Reading a score as it builds | A fixed left column holds the target, the running score and the hand's two factors as two big colored numbers. Played cards sit center stage while each one adds its value | Show the score in visible stages, one modifier at a time, and give each factor one color that never changes |
-| Luck be a Landlord | Making escalating pressure feel physical | The rent due and the turns left are always on screen, and the whole frame is one loud, flat color | Keep the Quota and the rounds left in view at all times |
-| Inscryption | An opponent in the room and a table you sit at | A first-person view across a table, with the opponent's face above the board and props that tell you where you are | Put the villagers across the table from you, as people, not as panels |
-| Slice & Dice | A whole fight on one screen | Allies in one column and enemies in the other, with each unit's state packed into a single row | Fit a whole trick on one screen: every seat's last play stays visible until the trick ends |
-| Cobalt Core | Legibility at a glance | Few colors per element, a strong outline, and the numbers players act on drawn large | Draw the numbers you act on large, Grain and Zeal first, on plain grounds |
-| Wildfrost | Cute art over grim systems | Soft, friendly characters with clear stat badges, so the danger lives in the numbers | The clean board looks warm and sincere, and the dread comes from decay, not from how the board starts |
+| Balatro | Reading a score as it builds | A fixed left column holds the target, the round score and the hand's two factors as two big colored numbers (Chips in blue, Mult in red). The scoring cards and then other effects resolve one at a time while the factors change | Show the score in visible stages, one modifier at a time, and give each factor one color that never changes |
+| Luck be a Landlord | Making escalating pressure feel physical | The rent due and the spins left stay visible in normal play, over a bold, flat background | Keep the Quota and the rounds left in view during play |
+| Inscryption (Act I cabin) | An opponent in the room and a table you sit at | A first-person view across a table, with the opponent above the board, mostly in shadow, and props that are part of the room | Put the villagers across the table from you, as people, not as panels |
+| Slice & Dice | A whole fight on one screen | Heroes in a column on the left and enemies on the right, each unit's status in one compact row | Fit a whole trick on one screen: every seat's last play stays visible until the trick ends |
+| Cobalt Core | Legibility at a glance | In its store screenshots, interface elements are outlined and the key readouts are easy to pick out. Where things sit on the ships matters as much as the numbers | Draw the numbers you act on large, Grain and Zeal first, on plain grounds |
+| Wildfrost | Cute art over grim systems | Cute companions with stat icons on each card, including a countdown to when the card acts, in a hostile winter setting | The clean board looks warm and sincere, and the dread comes from decay, not from how the board starts |
 
 ## Commons' answers
 
