@@ -75,11 +75,14 @@ func round_state() -> RoundState:
 	return _round
 
 
-## The player's cards: the dealt hand before play, the round's hand during it.
+## The player's cards: the dealt hand before play, the round's hand during it, and none
+## between deals.
 func player_cards() -> Array[CardInstance]:
 	if _round != null:
 		return _round.view_for(PLAYER).own_cards
 	var cards: Array[CardInstance] = []
+	if _deal == null:
+		return cards
 	for card: CardInstance in _deal.hands[PLAYER].cards():
 		cards.append(card.snapshot())
 	return cards

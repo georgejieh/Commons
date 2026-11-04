@@ -15,7 +15,7 @@ Commons' visual language for P3B.0, in the propaganda-poster direction ([ADR 001
 
 ## Commons' answers
 
-**Table.** You look across a three-seat table from your own seat. The two villagers sit at the far left and far right, each with a portrait, a card-count badge and a speech line. The landlord's seat has a red paper banner. Your hand fans along the bottom edge. Each seat's current play lands in front of that seat, so you can read a trick by where the cards sit.
+**Table.** The screen is the play area, not a whole table seen from above, the way Hearthstone and MTGO frame their boards (the project owner's direction, 2026-11-03). A dark wooden rail runs around the screen edge, so it reads as the edge of a table rather than a wall or a playmat. Inside it, the two villagers sit along the top edge as compact portraits with their name, card count, role and last words. Each has a lane in front of them where their current play lands. Your hand fans along the bottom rail, and your own play lands in a lane above it. The landlord's portrait has a gold frame and a red LANDLORD tag.
 
 **Scoring.** Each play is written into a work-point ledger, one row per play, in a narrow ledger book on the right. A row shows the hand type, then Grain in wheat ochre times Zeal in vermilion, then a red ink stamp with the total. Modifiers add their steps to the row one at a time, so you see what changed the score. The Set's progress is tallied at the foot of the page against the Quota, the way an accountant totals a sheet.
 

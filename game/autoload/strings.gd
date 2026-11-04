@@ -15,3 +15,11 @@ func format(key: String, values: Dictionary) -> String:
 
 func has(key: String) -> bool:
 	return tr(key) != key
+
+
+## A score in short-scale form, with suffixes from the table.
+func score(value: float) -> String:
+	var suffixes: PackedStringArray = []
+	for key: String in ScoreFormat.SUFFIX_KEYS:
+		suffixes.append(tr(key))
+	return ScoreFormat.short(value, suffixes)

@@ -168,3 +168,10 @@ Four singletons, and no more (P3B.2): `Settings` (`SettingsStore`: player settin
 At each round's start the loop rebuilds its modifier stack from the player's Cadres in slot order, then the ladder's debuffs so far, as the hook order says.
 
 `RunController` saves through its `SaveService` after every state boundary and every accepted command, so quitting at any moment loses nothing.
+
+## Demo app and screens
+
+`ui/main.tscn` runs `DemoApp` ([ADR 0017](adr/0017-demo-first-2d-3d-comparison.md)), which owns the `RunController`, the `HandModel` and a `SceneSwitcher` (`game/scenes/`). The switcher shows one screen at a time under a host node, with a back stack. Each screen is its own scene and gets the app in `open()`; the run lives beside the switcher, never in a screen, so changing or going back between screens keeps it. The demo is one Year (`data/run/demo.tres`): title, Set intro with the ladder, table, Set summary, state store, Year summary, settings and a closing screen. The table is the 2D `ui/table2d/table_screen.tscn` unless the build has the `table_3d` feature.
+
+The 2D table renders the run's events through an `EventPlayer`, which spaces bids, plays, passes and trick ends a step apart so each bot play can be seen, and holds still during a hit-stop. It reads the run only when the queue is empty. Card views come from the table's `CardPool`, and ledger rows and notice-board slots are made once, so nothing is instanced during a round.
+

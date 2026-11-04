@@ -46,6 +46,17 @@ func play_run(controller: RunController) -> void:
 				return
 
 
+## The card IDs the script would play now; empty is a pass.
+func choose_play(controller: RunController) -> Array[int]:
+	var view: SeatView = controller.seat_view()
+	var play: BotPlay = Bot.decide_play(
+		view, controller.legal_moves(), controller.player_table(), config, BotBudget.unlimited()
+	)
+	if play.is_pass():
+		return []
+	return controller.card_ids_for(play.pattern)
+
+
 func _play(controller: RunController) -> bool:
 	var view: SeatView = controller.seat_view()
 	var play: BotPlay = Bot.decide_play(

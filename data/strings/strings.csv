@@ -85,3 +85,96 @@ modifier.morning_meeting.name,Morning Meeting
 modifier.morning_meeting.text,Your first play each round scores nothing.
 modifier.straightened_lines.name,Straightened Lines
 modifier.straightened_lines.text,Your Straights score {percent}% of their total.
+game.title,Commons
+title.subtitle,"Fight the Landlord, one Year at a time. Demo build."
+title.new_run,New Run
+title.continue,Continue
+title.settings,Settings
+title.quit,Quit
+seat.you,You
+villager.wang,Wang
+villager.zhao,Zhao
+table.landlord,LANDLORD
+table.cards_left,{count} cards
+table.role.landlord,Landlord
+table.role.teammate,Your teammate
+table.role.peasant,Peasant
+table.say.call,I'll call.
+table.say.pass,Pass.
+table.say.cards_left,{count} left.
+table.status,Year {year} · {set} · Round {round} of {rounds} · {progress} / {target}
+table.coupons,{count} coupons
+set.type.0,Small Quota
+set.type.1,Large Quota
+set.type.2,Boss Quota
+meter.famine,Famine
+meter.denunciation,Denunciation
+ledger.title,Work-Point Ledger
+ledger.row,{who} · {type} · {total}
+action.play,Play
+action.pass,Pass
+action.hint,Hint
+action.sort,Sort
+action.rules,Rules
+action.call,Call
+action.decline,Pass
+board.empty,Empty
+need.prompt,Declare your need. The Commons is split by declared need.
+need.declare,Declare
+cheat.title,Hand types
+cheat.active,In play now
+cheat.none,Nothing changes the rules right now.
+cheat.order,"Rank order, low to high: {order}"
+cheat.example.single,7
+cheat.example.pair,7 7
+cheat.example.trio,7 7 7
+cheat.example.trio_single,7 7 7 + 3
+cheat.example.trio_pair,7 7 7 + 3 3
+cheat.example.straight,3 4 5 6 7
+cheat.example.pair_chain,3 3 4 4 5 5
+cheat.example.airplane,7 7 7 8 8 8
+cheat.example.airplane_singles,7 7 7 8 8 8 + 3 4
+cheat.example.airplane_pairs,7 7 7 8 8 8 + 3 3 4 4
+cheat.example.four_two_singles,7 7 7 7 + 3 4
+cheat.example.four_two_pairs,7 7 7 7 + 3 3 4 4
+cheat.example.bomb,7 7 7 7
+cheat.example.rocket,Small + Big
+intro.where,Year {year} · Quota {set} of 3
+intro.target,Score {target} in up to {rounds} rounds.
+intro.ladder,Each round after the first adds a debuff. They stack.
+intro.round,Round {round}
+intro.clean,Clean
+intro.clean_text,No debuff.
+intro.begin,Begin
+summary.met,Quota met
+summary.missed,Quota missed
+summary.progress,{progress} of {target}
+summary.coupons,Coupons: {count}
+summary.famine,Famine: {value}
+summary.to_store,To the Store
+summary.to_year,End the Year
+store.title,State Store
+store.coupons,{count} coupons
+store.reroll,Reroll · {price} coupons
+store.owned,Your Cadres: {names}
+store.none,none
+store.leave,Next Quota
+store.sold,Sold
+store.buy,Buy · {price} coupons
+year.title,Year {year} done
+year.coupons,Coupons left: {count}
+year.famine,Famine: {value}
+year.cadres,Cadres held: {count}
+year.next,Continue
+demo.done,End of the demo
+demo.done_text,The full game runs eight Years.
+demo.to_title,Back to Title
+settings.title,Settings
+settings.music_volume,Music
+settings.effects_volume,Effects
+settings.voice_volume,Voice
+settings.reduced_motion,Reduced motion
+settings.back,Back
+table.you.bidding,"Bidding for the landlord seat."
+table.you.landlord,"You are the landlord. You bank everything you score."
+table.you.peasant,"You are a peasant. Your score goes into the Commons."

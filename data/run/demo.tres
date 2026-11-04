@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="DemoParams" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/run/demo_params.gd" id="1"]
+[ext_resource type="Resource" path="res://data/run/demo_sets.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+sets = ExtResource("2")
+tiers = Array[int]([1, 1, 2])
+name_keys = Array[String](["seat.you", "villager.wang", "villager.zhao"])
+starting_coupons = 4
