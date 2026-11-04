@@ -35,8 +35,12 @@ func _step(controller: RunController, round_index: int, debuff_id: String) -> Co
 	var card: VBoxContainer = ScreenKit.card(Vector2(330, 250))
 	card.add_child(ScreenKit.eyebrow(tr("intro.round").format({"round": round_index + 1})))
 	if debuff_id.is_empty():
-		card.add_child(ScreenKit.styled(tr("intro.clean"), CommonsTheme.TITLE))
-		card.add_child(ScreenKit.styled(tr("intro.clean_text"), CommonsTheme.CAPTION))
+		# A later round with nothing left to draw still carries the earlier debuffs.
+		var held: bool = round_index > 0
+		var title_key: String = "intro.none_new" if held else "intro.clean"
+		var text_key: String = "intro.none_new_text" if held else "intro.clean_text"
+		card.add_child(ScreenKit.styled(tr(title_key), CommonsTheme.TITLE))
+		card.add_child(ScreenKit.styled(tr(text_key), CommonsTheme.CAPTION))
 	else:
 		var name: Label = ScreenKit.styled(tr("modifier.%s.name" % debuff_id), CommonsTheme.TITLE)
 		name.add_theme_font_size_override("font_size", StoreScreen.NAME_SIZE)

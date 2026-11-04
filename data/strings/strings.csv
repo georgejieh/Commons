@@ -142,10 +142,12 @@ cheat.example.bomb,7 7 7 7
 cheat.example.rocket,Small + Big
 intro.where,Year {year} · Quota {set} of 3
 intro.target,Score {target} in up to {rounds} rounds.
-intro.ladder,Each round after the first adds a debuff. They stack.
+intro.ladder,Later rounds add debuffs. They stack.
 intro.round,Round {round}
 intro.clean,Clean
 intro.clean_text,No debuff.
+intro.none_new,No new debuff
+intro.none_new_text,Earlier debuffs still apply.
 intro.begin,Begin
 summary.met,Quota met
 summary.missed,Quota missed
