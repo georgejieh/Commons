@@ -16,11 +16,13 @@ func _ready() -> void:
 	var title: Label = Label.new()
 	title.text = tr("ledger.title")
 	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_font_override("font", ScreenKit.TYPEWRITER_BOLD)
 	title.add_theme_color_override("font_color", INK)
 	add_child(title)
 	for _index: int in MAX_ROWS:
 		var row: Label = Label.new()
 		row.add_theme_font_size_override("font_size", 18)
+		row.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 		row.add_theme_color_override("font_color", STAMP)
 		add_child(row)
 		_labels.append(row)

@@ -9,6 +9,13 @@ const RED: Color = Color("9e1b16")
 const GOLD: Color = Color("f3d98a")
 const COUPON: Color = Color("6f9a62")
 const ART: ArtLibrary = preload("res://data/ui/art.tres")
+## The bold poster face for titles; everything else uses the theme's medium weight.
+const DISPLAY_BOLD: FontVariation = preload("res://ui/theme/oswald_bold.tres")
+## A typewriter face for the ledger's tallies.
+const TYPEWRITER: FontFile = preload("res://art/fonts/CourierPrime-Regular.ttf")
+const TYPEWRITER_BOLD: FontFile = preload("res://art/fonts/CourierPrime-Bold.ttf")
+## Labels this size and up are headlines, in the bold face.
+const HEADLINE_SIZE: int = 48
 ## How wide the paper halo around text is, in pixels.
 const HALO_SIZE: int = 10
 ## Pixels of the card stock's border that never stretch.
@@ -42,6 +49,8 @@ static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
 
 static func label(text: String, font_size: int, color: Color = INK) -> Label:
 	var made: Label = Label.new()
+	if font_size >= HEADLINE_SIZE:
+		made.add_theme_font_override("font", DISPLAY_BOLD)
 	made.text = text
 	made.add_theme_font_size_override("font_size", font_size)
 	made.add_theme_color_override("font_color", color)
