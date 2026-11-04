@@ -6,6 +6,8 @@ extends Resource
 @export var hand_grain: Array[int]
 @export var hand_zeal: Array[int]
 @export var card_grain: Array[int]
+## No play scores with less Zeal than this, so a Zeal debuff never zeroes a hand.
+@export var min_zeal: float = 1.0
 @export var bomb_zeal_multiplier: float
 @export var first_out_multiplier: float
 @export var spring_multiplier: float

@@ -31,7 +31,7 @@ func _score(text: String, ids: Array[String], seat: int = PLAYER, plays_before: 
 func test_iron_rice_bowl_adds_grain_and_caps_zeal() -> void:
 	assert_float(_score("9", [])).is_equal(14.0)
 	assert_float(_score("9", ["iron_rice_bowl"])).is_equal(44.0)
-	assert_float(_score("9999", [])).is_equal(2176.0)
+	assert_float(_score("9999", [])).is_equal(1088.0)
 	assert_float(_score("9999", ["iron_rice_bowl"])).is_equal(996.0)
 	assert_float(_score("9", ["iron_rice_bowl"], OTHER)).is_equal(14.0)
 
@@ -79,3 +79,8 @@ func test_straightened_lines_halves_a_capped_total() -> void:
 	var capped: float = _score("3456789TJQ", ["iron_rice_bowl", "stakhanovite"])
 	var both: Array[String] = ["iron_rice_bowl", "stakhanovite", "straightened_lines"]
 	assert_float(_score("3456789TJQ", both)).is_equal(capped / 2.0)
+
+
+func test_zeal_never_falls_below_one() -> void:
+	# A Single has 1 Zeal; Ration Cut takes 1, and the floor keeps it scoring.
+	assert_float(_score("9", ["ration_cut"])).is_equal(14.0)

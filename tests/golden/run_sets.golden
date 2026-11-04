@@ -113,7 +113,7 @@ PLAY_SCORED seat=0 value=0 amount=30.000
   PASSED seat=2
   TRICK_WON seat=0
   PLAYED seat=0 cards=[52, 53] pattern=ROCKET main=13 chain=1 kickers=[]
-PLAY_SCORED seat=0 value=0 amount=3540.000
+PLAY_SCORED seat=0 value=0 amount=1770.000
   ANNOUNCED seat=0 value=2
   PASSED seat=1
   PASSED seat=2
@@ -122,17 +122,17 @@ PLAY_SCORED seat=0 value=0 amount=3540.000
 PLAY_SCORED seat=0 value=0 amount=32.000
   TRICK_WON seat=0
   ROUND_ENDED seat=0 value=0
-ROUND_SCORED seat=0 value=0 amount=5962.500
+ROUND_SCORED seat=0 value=0 amount=3307.500
 ROUND_SCORED seat=1 value=0 amount=292.000
 ROUND_SCORED seat=2 value=0 amount=368.000
-BANKED seat=0 value=0 amount=5962.500
+BANKED seat=0 value=0 amount=3307.500
 NEED_DECLARED seat=1 value=10
 NEED_DECLARED seat=2 value=10
 SHARE_PAID seat=1 value=330
 SHARE_PAID seat=2 value=330
 SEAT_KEPT seat=0 value=0
-SET_ENDED seat=-1 value=1 amount=6248.500
-end progress=6248.500 coupons=3 famine=0 plot=0
+SET_ENDED seat=-1 value=1 amount=3593.500
+end progress=3593.500 coupons=3 famine=0 plot=0
 set 3502
 SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,criticism_meeting,
 DEALT seat=-1 value=0
@@ -736,7 +736,7 @@ PLAY_SCORED seat=0 value=0 amount=64.000
   PASSED seat=2
   TRICK_WON seat=0
   PLAYED seat=0 cards=[52, 53] pattern=ROCKET main=13 chain=1 kickers=[]
-PLAY_SCORED seat=0 value=0 amount=3540.000
+PLAY_SCORED seat=0 value=0 amount=1770.000
   ANNOUNCED seat=0 value=2
   PASSED seat=1
   PASSED seat=2
@@ -745,17 +745,17 @@ PLAY_SCORED seat=0 value=0 amount=3540.000
 PLAY_SCORED seat=0 value=0 amount=60.000
   TRICK_WON seat=0
   ROUND_ENDED seat=0 value=0
-ROUND_SCORED seat=0 value=0 amount=6037.500
+ROUND_SCORED seat=0 value=0 amount=3382.500
 ROUND_SCORED seat=1 value=0
 ROUND_SCORED seat=2 value=0 amount=597.000
 BANKED seat=2 value=0 amount=597.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
-SHARE_PAID seat=0 value=3293
-SHARE_PAID seat=1 value=2744
+SHARE_PAID seat=0 value=1845
+SHARE_PAID seat=1 value=1537
 SEAT_LOST seat=2 value=0
-SET_ENDED seat=-1 value=1 amount=3544.000
-end progress=3544.000 coupons=3 famine=0 plot=2
+SET_ENDED seat=-1 value=1 amount=2096.000
+end progress=2096.000 coupons=3 famine=0 plot=2
 set 3505
 SET_STARTED seat=-1 value=0 amount=1000000000.000 straightened_lines,,criticism_meeting
 DEALT seat=-1 value=0

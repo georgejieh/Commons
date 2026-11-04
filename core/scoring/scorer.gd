@@ -44,7 +44,7 @@ static func score_play(
 	play.card_grain = params.card_grain
 	stack.run_play_scored(play)
 	grain += play.add_grain
-	zeal = (zeal + play.add_zeal) * play.mul_zeal
+	zeal = maxf(params.min_zeal, (zeal + play.add_zeal) * play.mul_zeal)
 	breakdown.add_step(ScoreBreakdown.Step.ADD_GRAIN, play.add_grain)
 	breakdown.add_step(ScoreBreakdown.Step.ADD_ZEAL, play.add_zeal)
 	breakdown.add_step(ScoreBreakdown.Step.MUL_ZEAL, play.mul_zeal)

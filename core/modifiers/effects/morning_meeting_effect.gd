@@ -5,4 +5,4 @@ extends ModifierEffect
 
 func play_scored(context: PlayContext) -> void:
 	if context.seat == holder_seat and context.plays_before == 0:
-		context.mul_zeal = 0.0
+		context.total_scale = 0.0

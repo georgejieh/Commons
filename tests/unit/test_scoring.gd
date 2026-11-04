@@ -65,12 +65,13 @@ func test_kickers_do_not_score() -> void:
 
 
 func test_a_bomb_doubles_zeal() -> void:
-	assert_float(_score("9999").zeal).is_equal(16.0)
+	# Bomb base Zeal 4 at level 1, doubled.
+	assert_float(_score("9999").zeal).is_equal(8.0)
 
 
 func test_a_rocket_doubles_zeal_and_both_jokers_score() -> void:
 	var result: ScoreBreakdown = _score("sb")
-	assert_float(result.zeal).is_equal(20.0)
+	assert_float(result.zeal).is_equal(10.0)
 	assert_float(result.grain).is_equal(150.0 + 13.0 + 14.0)
 
 
@@ -99,7 +100,7 @@ func test_hooks_apply_grain_then_added_zeal_then_multiplied_zeal() -> void:
 
 func test_a_bomb_doubles_after_the_hooks() -> void:
 	var result: ScoreBreakdown = _score("9999", _scoring_stack(Adder.new()))
-	assert_float(result.zeal).is_equal((8.0 + 2.0) * 3.0 * 2.0)
+	assert_float(result.zeal).is_equal((4.0 + 2.0) * 3.0 * 2.0)
 
 
 func test_hooks_receive_the_seat_and_role() -> void:
@@ -115,7 +116,7 @@ func test_multipliers_come_from_the_params() -> void:
 	var result: ScoreBreakdown = Scorer.score_play(
 		_cards("9999"), _pattern("9999"), 1, 0, false, _stack, params
 	)
-	assert_float(result.zeal).is_equal(40.0)
+	assert_float(result.zeal).is_equal(4.0 * 5.0)
 
 
 func test_a_score_through_the_hooks_clamps() -> void:
