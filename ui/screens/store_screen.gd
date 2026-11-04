@@ -5,6 +5,8 @@ extends Control
 
 ## Cadre names are long, so they print a step below the title size.
 const NAME_SIZE: int = 32
+## The owned-Cadres line wraps at this width on its paper chip.
+const OWNED_WIDTH: float = 900.0
 
 var _app: DemoApp
 var _counter: HBoxContainer = HBoxContainer.new()
@@ -23,6 +25,8 @@ func open(app: DemoApp) -> void:
 	_coupons.add_theme_color_override("font_color", ScreenKit.COUPON)
 	_coupons.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_owned.add_theme_font_size_override("font_size", 22)
+	# The chip shrinks to its content, so a wrapping label needs a set width.
+	_owned.custom_minimum_size = Vector2(OWNED_WIDTH, 0)
 	balance.add_child(_coupons)
 	balance.size_flags_vertical = Control.SIZE_SHRINK_END
 	column.add_child(ScreenKit.row([heading, balance], 64))

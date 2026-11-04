@@ -110,7 +110,7 @@ set.type.2,Boss Quota
 meter.famine,Famine
 meter.denunciation,Denunciation
 ledger.title,Work-Point Ledger
-ledger.row,{who} · {type} · {total}
+ledger.row,{who} · {total}
 action.play,Play
 action.pass,Pass
 action.hint,Hint

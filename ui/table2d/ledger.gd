@@ -28,6 +28,7 @@ func _ready() -> void:
 		row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		row.custom_minimum_size = Vector2(ROW_WIDTH, 0)
 		row.add_theme_color_override("font_color", INK)
+		row.add_theme_constant_override("line_spacing", -2)
 		add_child(row)
 		_labels.append(row)
 
@@ -38,9 +39,9 @@ func set_pending(type_text: String) -> void:
 
 
 func add_row(who: String, total: float) -> void:
-	_texts.append(
-		tr("ledger.row").format({"who": who, "type": _pending_type, "total": Strings.score(total)})
-	)
+	# Two lines per entry: who and the score, then the hand type indented beneath.
+	var head: String = tr("ledger.row").format({"who": who, "total": Strings.score(total)})
+	_texts.append("%s\n  %s" % [head, _pending_type])
 	if _texts.size() > MAX_ROWS:
 		_texts.remove_at(0)
 	_show()
