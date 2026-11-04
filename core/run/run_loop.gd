@@ -17,6 +17,7 @@ var flow: RunFlow
 var record: RunRecord = RunRecord.new()
 ## Called with the loop after every state move, for autosaves.
 var on_boundary: Callable = Callable()
+var set_log: SetLog = SetLog.new()
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -27,7 +28,6 @@ var _stack: ModifierStack = ModifierStack.new()
 var _table: SeatRules
 var _seat: LandlordSeat = LandlordSeat.new()
 var _levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
-var _log: SetLog = SetLog.new()
 var _awaiting: Awaiting = Awaiting.NOTHING
 var _deal: DealResult
 var _bidding: Bidding
@@ -60,7 +60,7 @@ func awaiting() -> Awaiting:
 
 
 func events() -> Array[RunEvent]:
-	return _log.events()
+	return set_log.events()
 
 
 ## The current round, for views. Null between rounds.
@@ -97,7 +97,7 @@ func start_set() -> Reason:
 	if not RunFlow.allows(flow.state(), RunFlow.State.SET_INTRO):
 		return Reason.NOT_AWAITED
 	record.mark(state)
-	_log.start_set(state, set_number())
+	set_log.start_set(state, set_number())
 	_move(RunFlow.State.SET_INTRO)
 	state.round_index = 0
 	state.set_progress = 0.0
@@ -106,7 +106,7 @@ func start_set() -> Reason:
 		_pool, state.set_type, _sets.max_rounds(), state.streams.stream(RandomStreams.DEBUFF)
 	)
 	var ladder_text: String = ",".join(state.debuff_ladder.slice(1))
-	_log.add(
+	set_log.add(
 		RunEvent.new(RunEvent.Type.SET_STARTED, Seats.NONE, set_number(), target(), ladder_text)
 	)
 	_start_round()
@@ -126,7 +126,7 @@ func resume_at_checkpoint() -> void:
 
 ## Starts the round state.round_index names.
 func _start_round() -> void:
-	_log.start_round()
+	set_log.start_round()
 	_rebuild_debuffs()
 	_seat = LandlordSeat.new()
 	_seat.assign(state.landlord_seat)
@@ -170,7 +170,7 @@ func player_swap(hand_ids: Array[int], plot_ids: Array[int]) -> Reason:
 		return Reason.ILLEGAL
 	record.add({"type": "swap", "hand": hand_ids.duplicate(), "plot": plot_ids.duplicate()})
 	PlotSwap.apply(_deal.hands[PLAYER], state.inventory, hand_ids, plot_ids)
-	_log.add(RunEvent.new(RunEvent.Type.SWAPPED, PLAYER, hand_ids.size()))
+	set_log.add(RunEvent.new(RunEvent.Type.SWAPPED, PLAYER, hand_ids.size()))
 	_awaiting = Awaiting.NOTHING
 	_create_round()
 	advance()
@@ -231,7 +231,7 @@ func _rebuild_debuffs() -> void:
 			continue
 		_stack.add(_pool_by_id[id], PLAYER)
 		if round_index == state.round_index:
-			_log.add(RunEvent.new(RunEvent.Type.DEBUFF_ADDED, PLAYER, round_index, 0.0, id))
+			set_log.add(RunEvent.new(RunEvent.Type.DEBUFF_ADDED, PLAYER, round_index, 0.0, id))
 
 
 func _deal_cards() -> void:
@@ -240,7 +240,7 @@ func _deal_cards() -> void:
 		cards.append(CardInstance.from_deck_id(deck_id))
 	_deal = Dealer.deal(cards, state.streams.stream(RandomStreams.DEAL))
 	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal))
-	_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
+	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
 
 
 func _bot_bid() -> void:
@@ -261,18 +261,18 @@ func _bot_bid() -> void:
 
 func _record_bid(seat: int, claim: bool) -> void:
 	_bidding.act(seat, claim)
-	_log.add(RunEvent.new(RunEvent.Type.BID, seat, 1 if claim else 0))
+	set_log.add(RunEvent.new(RunEvent.Type.BID, seat, 1 if claim else 0))
 	if _bidding.phase() != Bidding.Phase.DONE:
 		return
 	if _bidding.needs_redeal():
-		_log.add(RunEvent.new(RunEvent.Type.REDEALT))
+		set_log.add(RunEvent.new(RunEvent.Type.REDEALT))
 		_move(RunFlow.State.BIDDING)
 		_deal_cards()
 		_bidding = Bidding.new(state.round_index % Seats.COUNT)
 		return
 	_seat.assign(_bidding.landlord())
 	state.landlord_seat = _bidding.landlord()
-	_log.add(RunEvent.new(RunEvent.Type.LANDLORD_CHOSEN, _bidding.landlord(), _bidding.stake()))
+	set_log.add(RunEvent.new(RunEvent.Type.LANDLORD_CHOSEN, _bidding.landlord(), _bidding.stake()))
 	_bidding = null
 	_begin_play()
 
@@ -325,11 +325,11 @@ func _collect_round_events() -> void:
 	var round_events: Array[RoundEvent] = _round.events()
 	for index: int in range(_round_seen, round_events.size()):
 		var event: RoundEvent = round_events[index]
-		_log.add(RunEvent.wrap(event))
+		set_log.add(RunEvent.wrap(event))
 		if event.type == RoundEvent.Type.PLAYED:
 			var total: float = RoundTotals.play_score(event, _levels, state.landlord_seat, _stack)
 			_scores[event.seat] += total
-			_log.add(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total))
+			set_log.add(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total))
 	_round_seen = round_events.size()
 
 
@@ -342,7 +342,7 @@ func _finish_round() -> void:
 	var totals: PackedFloat64Array = RoundTotals.totals(
 		_scores, landlord, winner, finish, _table.rules_for(landlord)
 	)
-	RoundBanking.bank(state, totals, PLAYER, _log.events())
+	RoundBanking.bank(state, totals, PLAYER, set_log.events())
 	if landlord != PLAYER:
 		_awaiting = Awaiting.PLAYER_NEED
 		return
@@ -350,17 +350,17 @@ func _finish_round() -> void:
 
 
 func _split_commons(player_need: int) -> void:
-	RoundBanking.split(state, PLAYER, player_need, _configs, _params, _log.events())
+	RoundBanking.split(state, PLAYER, player_need, _configs, _params, set_log.events())
 	_end_round()
 
 
 func _end_round() -> void:
-	_log.end_round(state, PLAYER)
+	set_log.end_round(state, PLAYER)
 	var landlord_won: bool = _round.landlord_won()
 	_seat.record_round(landlord_won)
 	state.landlord_seat = _seat.holder()
 	var kept: RunEvent.Type = RunEvent.Type.SEAT_KEPT if landlord_won else RunEvent.Type.SEAT_LOST
-	_log.add(RunEvent.new(kept, _round.landlord()))
+	set_log.add(RunEvent.new(kept, _round.landlord()))
 	_round = null
 	_deal = null
 	state.round_index += 1
@@ -377,11 +377,13 @@ func _end_set() -> void:
 		state.coupons += _sets.reward(state.set_type)
 	else:
 		RunMeters.raise_famine(
-			state, _params.famine_on_missed_target, _stack, _params, PLAYER, _log.events()
+			state, _params.famine_on_missed_target, _stack, _params, PLAYER, set_log.events()
 		)
 	_stack.clear()
 	state.landlord_seat = Seats.NONE
-	_log.add(RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1 if met else 0, state.set_progress))
+	set_log.add(
+		RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1 if met else 0, state.set_progress)
+	)
 	_move(RunFlow.State.SET_END, true)
 	_awaiting = Awaiting.SET_OVER
 

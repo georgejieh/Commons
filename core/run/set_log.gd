@@ -4,8 +4,14 @@ extends RefCounted
 ## log never outgrows one Set. Each round is folded into the Set's summary as it ends,
 ## so a run resumed mid-Set keeps the summary of the rounds before.
 
+## Called with each event in order, so a view sees events across Set boundaries.
+var on_add: Callable = Callable()
+
 var _events: Array[RunEvent] = []
 var _round_start: int = 0
+## How many events on_add has seen. Banking and meters append to events() directly, so
+## they reach on_add at the next add or flush.
+var _flushed: int = 0
 
 
 func events() -> Array[RunEvent]:
@@ -14,11 +20,22 @@ func events() -> Array[RunEvent]:
 
 func add(event: RunEvent) -> void:
 	_events.append(event)
+	flush()
+
+
+## Hands on_add every event it hasn't seen.
+func flush() -> void:
+	while _flushed < _events.size():
+		_flushed += 1
+		if on_add.is_valid():
+			on_add.call(_events[_flushed - 1])
 
 
 ## Starts the Set's summary as the run's last.
 func start_set(state: RunState, set_number: int) -> void:
+	flush()
 	_events.clear()
+	_flushed = 0
 	_round_start = 0
 	state.summaries.append(SetSummary.new(set_number))
 
