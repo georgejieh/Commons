@@ -36,7 +36,12 @@ func open(app: DemoApp) -> void:
 			app.show_screen("set_intro", true)
 	)
 	column.add_child(ScreenKit.row([leave, _reroll]))
-	column.add_child(_owned)
+	# A paper chip, so the line reads over the mural.
+	var chip: VBoxContainer = ScreenKit.card(Vector2(0, 0))
+	chip.add_child(_owned)
+	var chip_panel: Control = ScreenKit.card_panel(chip)
+	chip_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	column.add_child(chip_panel)
 	_shown_coupons = app.controller.state_copy().coupons
 	_refresh()
 	ScreenKit.reveal(column)
