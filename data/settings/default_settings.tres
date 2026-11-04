@@ -8,3 +8,4 @@ music_volume = 0.8
 effects_volume = 0.8
 voice_volume = 0.8
 reduced_motion = false
+post_process = true

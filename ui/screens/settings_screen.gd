@@ -25,6 +25,12 @@ func open(app: DemoApp) -> void:
 	motion.button_pressed = bool(Settings.value("reduced_motion"))
 	motion.toggled.connect(func(on: bool) -> void: Settings.set_value("reduced_motion", on))
 	column.add_child(motion)
+	var print_pass: CheckBox = CheckBox.new()
+	print_pass.text = tr("settings.post_process")
+	print_pass.add_theme_font_size_override("font_size", 28)
+	print_pass.button_pressed = bool(Settings.value("post_process"))
+	print_pass.toggled.connect(func(on: bool) -> void: Settings.set_value("post_process", on))
+	column.add_child(print_pass)
 	var back: Button = ScreenKit.button(tr("settings.back"))
 	back.pressed.connect(
 		func() -> void:

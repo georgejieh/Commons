@@ -18,3 +18,16 @@ A seeded Set played by bot at the table's real pacing until the Set ended (1,613
 | Median frame time | 16.67 ms |
 | p99 frame time | 16.73 ms |
 | Scene nodes while a round is in play | 576 at every sample, so no node is made during a round |
+
+### With the art pass and the print post-process (P3B.7)
+
+Same machine and command, after the GPT Image art and the full-screen post-process shader (1,606 frames):
+
+| Measure | Result |
+| --- | --- |
+| Mean frame time | 16.67 ms (60.0 fps) |
+| Median frame time | 16.66 ms |
+| p99 frame time | 17.72 ms |
+| Scene nodes while a round is in play | 758 at every sample |
+
+The GPU cost of the post-process pass alone was not isolated; P3B.7's under-1 ms check needs a GPU profiler capture.

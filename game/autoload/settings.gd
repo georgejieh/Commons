@@ -8,7 +8,9 @@ signal changed(key: String)
 const PATH: String = "user://settings.cfg"
 const SECTION: String = "settings"
 const DEFAULTS: SettingsParams = preload("res://data/settings/default_settings.tres")
-const KEYS: Array[String] = ["music_volume", "effects_volume", "voice_volume", "reduced_motion"]
+const KEYS: Array[String] = [
+	"music_volume", "effects_volume", "voice_volume", "reduced_motion", "post_process"
+]
 
 var _values: Dictionary[String, Variant] = {}
 var _path: String = PATH

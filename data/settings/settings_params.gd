@@ -8,3 +8,5 @@ extends Resource
 @export var voice_volume: float = 0.8
 ## Scales or disables shake, hit-stop and other motion (P3B.6).
 @export var reduced_motion: bool = false
+## The full-screen print and grain pass (P3B.7). Off is the low-quality setting.
+@export var post_process: bool = true
