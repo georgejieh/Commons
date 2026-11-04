@@ -16,6 +16,10 @@ config/features=PackedStringArray("4.7")
 
 [autoload]
 
+Settings="*res://game/autoload/settings.gd"
+Strings="*res://game/autoload/strings.gd"
+Saves="*res://game/autoload/saves.gd"
+Audio="*res://game/autoload/audio.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [debug]
