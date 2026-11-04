@@ -128,6 +128,7 @@ func _build_seats() -> void:
 
 
 func _on_event(event: RunEvent) -> void:
+	Audio.play(AudioEvents.name_for(event))
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)

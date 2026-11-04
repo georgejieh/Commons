@@ -1,11 +1,15 @@
 class_name AudioMixer
 extends Node
 ## The Audio autoload: the Music, Effects and Voice buses and their volumes, set from the
-## Settings autoload. Named audio events arrive with P3B.10.
+## Settings autoload. play() takes a named audio event (P3B.10); every name is silent
+## until P3C.8 brings the sounds.
 
 const BUSES: Dictionary[String, String] = {
 	"Music": "music_volume", "Effects": "effects_volume", "Voice": "voice_volume"
 }
+
+## The last event name played, for tests and a debug overlay.
+var last_played: String = ""
 
 
 func _ready() -> void:
@@ -34,3 +38,8 @@ func _on_setting_changed(key: String) -> void:
 	for bus: String in BUSES:
 		if BUSES[bus] == key:
 			apply_volume(bus)
+
+
+## Plays the sound for a named event. Silent placeholder until P3C.8.
+func play(event_name: String) -> void:
+	last_played = event_name

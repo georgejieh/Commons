@@ -175,3 +175,7 @@ At each round's start the loop rebuilds its modifier stack from the player's Cad
 
 The 2D table renders the run's events through an `EventPlayer`, which spaces bids, plays, passes and trick ends a step apart so each bot play can be seen, and holds still during a hit-stop. It reads the run only when the queue is empty. Card views come from the table's `CardPool`, and ledger rows and notice-board slots are made once, so nothing is instanced during a round.
 
+## Audio events
+
+`AudioEvents` in `game/audio/` names a sound for every domain event type (P3B.10): each `RunEvent` type, each round event inside a `ROUND` event, and a separate name for bombs and rockets. The table passes each event it shows to `Audio.play()`, which routes it to the right bus once P3C.8 adds the sounds; until then every name is silent.
+
