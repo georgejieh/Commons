@@ -136,3 +136,17 @@ func test_buttons_lock_while_events_play() -> void:
 	if _app.controller.awaiting() == RunController.AWAIT_PLAY:
 		assert_bool(table.actions().pass_turn.disabled).is_true()
 		assert_bool(table.actions().play.disabled).is_true()
+
+
+## A shortcut presses the same button a click does: Pass on the bid turns the call down.
+func test_a_shortcut_presses_its_button() -> void:
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	table.skip_events()
+	if _app.controller.awaiting() != RunController.AWAIT_BID:
+		return
+	var shortcut: InputEventAction = InputEventAction.new()
+	shortcut.action = "commons_pass"
+	shortcut.pressed = true
+	table._unhandled_input(shortcut)
+	assert_int(_app.controller.awaiting()).is_not_equal(RunController.AWAIT_BID)

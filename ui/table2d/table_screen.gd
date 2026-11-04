@@ -111,6 +111,26 @@ func need_panel() -> NeedPanel:
 	return _need_panel
 
 
+## Keyboard shortcuts press the same buttons a click does (P3B.11, in part).
+func _unhandled_input(event: InputEvent) -> void:
+	var shortcuts: Dictionary[String, Button] = {
+		"commons_play": _actions.call if _actions.call.visible else _actions.play,
+		"commons_pass": _actions.decline if _actions.decline.visible else _actions.pass_turn,
+		"commons_hint": _actions.hint,
+		"commons_sort": _actions.sort,
+		"commons_rules": _actions.rules,
+	}
+	for action: String in shortcuts:
+		var button: Button = shortcuts[action]
+		if event.is_action_pressed(action) and button.is_visible_in_tree() and not button.disabled:
+			if button.toggle_mode:
+				button.button_pressed = not button.button_pressed
+			else:
+				button.pressed.emit()
+			get_viewport().set_input_as_handled()
+			return
+
+
 func _exit_tree() -> void:
 	if _controller != null and _controller.event_emitted.is_connected(_player.push):
 		_controller.event_emitted.disconnect(_player.push)
