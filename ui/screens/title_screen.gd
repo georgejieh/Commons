@@ -4,9 +4,16 @@ extends Control
 
 
 func open(app: DemoApp) -> void:
-	var column: VBoxContainer = ScreenKit.page(self)
-	column.add_child(ScreenKit.label(tr("game.title"), 120, ScreenKit.RED))
-	column.add_child(ScreenKit.label(tr("title.subtitle"), 28))
+	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title)
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	var title: Label = ScreenKit.label(tr("game.title"), 150, ScreenKit.GOLD)
+	title.add_theme_color_override("font_outline_color", ScreenKit.INK)
+	title.add_theme_constant_override("outline_size", 18)
+	column.add_child(title)
+	var subtitle: Label = ScreenKit.label(tr("title.subtitle"), 30, ScreenKit.GOLD)
+	subtitle.add_theme_color_override("font_outline_color", ScreenKit.INK)
+	subtitle.add_theme_constant_override("outline_size", 8)
+	column.add_child(subtitle)
 	var new_run: Button = ScreenKit.button(tr("title.new_run"), ScreenKit.RED)
 	new_run.pressed.connect(
 		func() -> void:

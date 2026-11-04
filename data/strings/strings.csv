@@ -178,3 +178,4 @@ settings.back,Back
 table.you.bidding,"Bidding for the landlord seat."
 table.you.landlord,"You are the landlord. You bank everything you score."
 table.you.peasant,"You are a peasant. Your score goes into the Commons."
+settings.post_process,Print grain and film effects

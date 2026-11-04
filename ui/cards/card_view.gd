@@ -16,6 +16,8 @@ const RED: Color = Color("b02a17")
 const GLYPH_SIZE: int = 40
 const JOKER_SIZE: int = 20
 const TILT_SHADER: Shader = preload("res://shaders/card_tilt.gdshader")
+## Aged card stock under every face; the scene's flat style is the fallback.
+const FACE: Texture2D = preload("res://art/cards/card_face.png")
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -48,6 +50,9 @@ var card_id: int = -1
 func _ready() -> void:
 	# The scene shares one LabelSettings; each card sizes its own glyphs.
 	_rank.label_settings = _rank.label_settings.duplicate()
+	var stock: StyleBoxTexture = StyleBoxTexture.new()
+	stock.texture = FACE
+	_frame.add_theme_stylebox_override("panel", stock)
 	var tilt: ShaderMaterial = ShaderMaterial.new()
 	tilt.shader = TILT_SHADER
 	_frame.material = tilt

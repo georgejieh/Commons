@@ -38,9 +38,12 @@ var _motion: TableMotion = TableMotion.new()
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_place(_backdrop(RAIL_EDGE), Vector2.ZERO, Vector2(1920, 1080))
-	_place(_backdrop(RAIL), Vector2(8, 80), Vector2(1904, 992))
-	_place(_backdrop(SURFACE), Vector2(48, 112), Vector2(1480, 928))
-	_place(_backdrop(PAPER), Vector2(1560, 112), Vector2(320, 928))
+	var surface: TextureRect = ScreenKit.cover(ScreenKit.ART.table_surface)
+	_place(surface, Vector2(0, 72), Vector2(1920, 1008))
+	var ledger_paper: Panel = Panel.new()
+	ledger_paper.add_theme_stylebox_override("panel", ScreenKit.paper_style())
+	ledger_paper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_place(ledger_paper, Vector2(1560, 112), Vector2(320, 900))
 	_place(_hud, Vector2.ZERO, Vector2(1920, 72))
 	_place(_board, Vector2(560, 128), Vector2(600, 140))
 	_place(_ledger, Vector2(1576, 128), Vector2(290, 640))
@@ -142,8 +145,12 @@ func _build_seats() -> void:
 	for seat: int in [1, 2]:
 		var panel: SeatPanel = SeatPanel.new()
 		panel.setup(seat, _app.seat_name(seat), _app.seat_portrait(seat))
-		var x: float = 1180.0 if seat == 1 else 72.0
-		_place(panel, Vector2(x, 128), Vector2(340, 200))
+		var x: float = 1180.0 if seat == 1 else 96.0
+		var backing: Panel = Panel.new()
+		backing.add_theme_stylebox_override("panel", ScreenKit.paper_style())
+		backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_place(backing, Vector2(x - 14, 116), Vector2(370, 200))
+		_place(panel, Vector2(x, 128), Vector2(340, 176))
 		_seats[seat] = panel
 
 
@@ -248,6 +255,7 @@ func _refresh_seats() -> void:
 
 func _refresh_status() -> void:
 	_hud.show_state(_controller.state_copy(), _controller.target(), _app.max_rounds())
+	_app.update_dread()
 
 
 func _refresh_actions() -> void:

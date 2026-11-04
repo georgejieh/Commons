@@ -29,8 +29,9 @@ func _ready() -> void:
 	status.add_theme_font_size_override("font_size", 26)
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(status)
-	row.add_child(_meter("meter.famine", famine, GRAIN))
-	row.add_child(_meter("meter.denunciation", denunciation, ZEAL))
+	row.add_child(_meter("meter.famine", famine, GRAIN, ScreenKit.ART.icon_famine))
+	row.add_child(_meter("meter.denunciation", denunciation, ZEAL, ScreenKit.ART.icon_denunciation))
+	row.add_child(_icon(ScreenKit.ART.icon_coupon))
 	coupons.add_theme_color_override("font_color", COUPON)
 	coupons.add_theme_font_size_override("font_size", 26)
 	row.add_child(coupons)
@@ -56,8 +57,9 @@ func show_state(state: RunState, target: float, rounds: int) -> void:
 	denunciation.value = state.denunciation
 
 
-func _meter(key: String, bar: ProgressBar, color: Color) -> HBoxContainer:
+func _meter(key: String, bar: ProgressBar, color: Color, icon: Texture2D) -> HBoxContainer:
 	var box: HBoxContainer = HBoxContainer.new()
+	box.add_child(_icon(icon))
 	var label: Label = Label.new()
 	label.text = tr(key)
 	label.add_theme_color_override("font_color", PAPER)
@@ -75,3 +77,12 @@ func _meter(key: String, bar: ProgressBar, color: Color) -> HBoxContainer:
 	box.add_child(label)
 	box.add_child(bar)
 	return box
+
+
+static func _icon(texture: Texture2D) -> TextureRect:
+	var icon: TextureRect = TextureRect.new()
+	icon.texture = texture
+	icon.custom_minimum_size = Vector2(44, 44)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	return icon

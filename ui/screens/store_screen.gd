@@ -12,7 +12,7 @@ var _reroll: Button = ScreenKit.button("")
 
 func open(app: DemoApp) -> void:
 	_app = app
-	var column: VBoxContainer = ScreenKit.page(self)
+	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.store)
 	column.add_child(ScreenKit.label(tr("store.title"), 72, ScreenKit.RED))
 	column.add_child(_coupons)
 	_counter.add_theme_constant_override("separation", 32)
@@ -57,6 +57,10 @@ func _item(slot: int, cadre_id: String) -> Control:
 		card.add_child(ScreenKit.label(tr("store.sold"), 30))
 		return ScreenKit.card_panel(card)
 	var controller: RunController = _app.controller
+	var picture: TextureRect = ScreenKit.cover(ScreenKit.ART.cadre(cadre_id))
+	picture.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	picture.custom_minimum_size = Vector2(0, 170)
+	card.add_child(picture)
 	card.add_child(ScreenKit.label(tr("modifier.%s.name" % cadre_id), 30, ScreenKit.RED))
 	card.add_child(ScreenKit.label(controller.modifier_text(cadre_id), 22))
 	var buy: Button = ScreenKit.button(

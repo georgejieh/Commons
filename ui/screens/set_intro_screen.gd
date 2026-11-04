@@ -7,7 +7,7 @@ extends Control
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
 	var state: RunState = controller.state_copy()
-	var column: VBoxContainer = ScreenKit.page(self)
+	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
 	column.add_child(
 		ScreenKit.label(
 			tr("intro.where").format(

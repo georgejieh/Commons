@@ -22,6 +22,7 @@ const SCREENS: Dictionary[String, String] = {
 var controller: RunController = RunController.new()
 var hand: HandModel
 var switcher: SceneSwitcher = SceneSwitcher.new()
+var post: PostProcess = PostProcess.new()
 
 @onready var _host: Control = $Screens
 
@@ -29,6 +30,7 @@ var switcher: SceneSwitcher = SceneSwitcher.new()
 func _ready() -> void:
 	add_child(controller)
 	add_child(switcher)
+	add_child(post)
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
 	for screen_id: String in SCREENS:
@@ -103,6 +105,13 @@ func need_cap() -> int:
 
 func sets_per_year() -> int:
 	return SetConfig.SETS_PER_YEAR
+
+
+## Dread for the post-process: the higher meter, as a share of its range.
+func update_dread() -> void:
+	if controller.has_run():
+		var state: RunState = controller.state_copy()
+		post.set_dread(maxi(state.famine, state.denunciation) / 100.0)
 
 
 func max_rounds() -> int:

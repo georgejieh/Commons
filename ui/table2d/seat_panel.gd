@@ -18,6 +18,8 @@ var _count: Label = Label.new()
 var _role: Label = Label.new()
 var _speech: Label = Label.new()
 var _info: VBoxContainer = VBoxContainer.new()
+var _back: TextureRect = TextureRect.new()
+var _count_row: HBoxContainer = HBoxContainer.new()
 
 
 func _init() -> void:
@@ -47,7 +49,13 @@ func _init() -> void:
 	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_speech.custom_minimum_size = Vector2(210, 0)
 	add_child(_portrait)
-	for child: Control in [_banner, _name, _count, _role, _speech]:
+	_back.texture = ScreenKit.ART.card_back
+	_back.custom_minimum_size = Vector2(30, 42)
+	_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+	_count_row.add_child(_back)
+	_count_row.add_child(_count)
+	for child: Control in [_banner, _name, _count_row, _role, _speech]:
 		_info.add_child(child)
 	add_child(_info)
 
