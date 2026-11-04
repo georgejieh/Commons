@@ -48,6 +48,25 @@ static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
 	return column
 
 
+## A full-screen page over a backdrop with its content centered on one sheet, for
+## verdicts and summaries.
+static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.add_child(cover(backdrop))
+	var shade: ColorRect = ColorRect.new()
+	shade.color = Color(0.05, 0.03, 0.02, 0.55)
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(shade)
+	var center: CenterContainer = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.add_child(center)
+	var sheet: VBoxContainer = card(Vector2(1040, 0))
+	sheet.add_theme_constant_override("separation", STYLE.gap + 10)
+	center.add_child(card_panel(sheet))
+	return sheet
+
+
 ## A small tracked label over a big headline, the way a poster leads.
 static func header(eyebrow_text: String, headline_text: String, color: Color = RED) -> Control:
 	var block: VBoxContainer = VBoxContainer.new()

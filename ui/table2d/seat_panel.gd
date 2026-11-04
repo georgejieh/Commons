@@ -86,7 +86,8 @@ func set_count(cards: int) -> void:
 
 
 func set_role(is_landlord: bool, teammate: bool) -> void:
-	_banner.visible = is_landlord
+	# The tag keeps its space either way, so the seat never changes height.
+	_banner.modulate.a = 1.0 if is_landlord else 0.0
 	_portrait.color = GOLD if is_landlord else PAPER
 	if is_landlord:
 		_role.text = tr("table.role.landlord").to_upper()

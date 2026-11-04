@@ -221,3 +221,7 @@ pause.to_title,Return to title
 pause.quit,Quit game
 pause.saved,Your run saves after every move. Continue on the title screen picks up here.
 table.card_left,{count} card
+table.say.no_call,No call.
+table.bid_prompt,"Call for the landlord seat, or pass?"
+summary.paid,The Quota paid {count} coupons.
+summary.cost,"Famine rose by {rise}, to {famine}. At 100, the village starves."

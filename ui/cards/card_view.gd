@@ -14,7 +14,7 @@ const INK: Color = Color("1e1a16")
 const RED: Color = Color("b02a17")
 ## Joker words are longer than a rank glyph, so they print smaller.
 const GLYPH_SIZE: int = 40
-const JOKER_SIZE: int = 20
+const JOKER_SIZE: int = 24
 const TILT_SHADER: Shader = preload("res://shaders/card_tilt.gdshader")
 ## Aged card stock under every face; the scene's flat style is the fallback.
 const FACE: Texture2D = preload("res://art/cards/card_face.png")

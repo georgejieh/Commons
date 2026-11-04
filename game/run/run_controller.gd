@@ -128,7 +128,7 @@ func awaiting() -> int:
 
 func is_last_set() -> bool:
 	var state: RunState = _loop.state
-	return state.set_type == RunState.SetType.BOSS and state.year == _loop.years()
+	return state.set_type == RunState.SetType.BOSS and state.year == _loop.sets().years()
 
 
 ## The store's stock per slot, an empty ID for a sold slot.
@@ -142,6 +142,16 @@ func store_price(slot: int) -> int:
 
 func reroll_price() -> int:
 	return _loop.shop.reroll_price()
+
+
+## Coupons the current Set pays when its Quota is met.
+func quota_reward() -> int:
+	return _loop.sets().reward(_loop.state.set_type)
+
+
+## How much Famine a missed Quota adds.
+func famine_per_miss() -> int:
+	return RunLoop.DEFAULT_PARAMS.famine_on_missed_target
 
 
 ## Cadres the player can hold at once.

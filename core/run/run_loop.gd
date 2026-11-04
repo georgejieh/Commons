@@ -250,8 +250,8 @@ func next_set() -> Reason:
 	return start_set()
 
 
-func years() -> int:
-	return _sets.years()
+func sets() -> SetConfig:
+	return _sets
 
 
 ## Counts Sets across the run from 0.

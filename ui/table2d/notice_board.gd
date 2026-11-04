@@ -2,11 +2,14 @@ class_name NoticeBoard
 extends HBoxContainer
 ## The player's Cadres as portrait cards pinned in slot order. Slots are made once.
 
+## How faint an empty Cadre slot is.
+const EMPTY_ALPHA: float = 0.22
 const PAPER: Color = Color("f6edd9")
 const INK: Color = Color("1e1a16")
 
 var _labels: Array[Label] = []
 var _pictures: Array[TextureRect] = []
+var _cards: Array[Control] = []
 
 
 ## Makes one slot per Cadre the player can hold.
@@ -31,14 +34,14 @@ func setup(slots: int) -> void:
 		card.add_child(column)
 		add_child(card)
 		_labels.append(label)
+		_cards.append(card)
 		_pictures.append(picture)
 
 
 func show_cadres(cadre_ids: Array[String]) -> void:
 	for index: int in _labels.size():
 		var held: bool = index < cadre_ids.size()
-		_labels[index].text = (
-			tr("modifier.%s.name" % cadre_ids[index]) if held else tr("board.empty")
-		)
-		_labels[index].modulate.a = 1.0 if held else 0.45
+		_labels[index].text = tr("modifier.%s.name" % cadre_ids[index]) if held else ""
+		# An empty slot is a faint pin mark on the board, so it doesn't pull the eye.
+		_cards[index].modulate.a = 1.0 if held else EMPTY_ALPHA
 		_pictures[index].texture = ScreenKit.ART.cadre(cadre_ids[index]) if held else null

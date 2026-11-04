@@ -4,9 +4,9 @@ extends Control
 ## are pooled views laid at fixed offsets, closing up so a long play still fits, and
 ## drop in one after another. It takes no clicks.
 
-const PLAY_SCALE: float = 0.7
+const PLAY_SCALE: float = 0.8
 ## Space between the left edges of cards in a lane; most of each card shows.
-const LANE_SPACING: float = 56.0
+const LANE_SPACING: float = 62.0
 
 var _pool: CardPool
 var _pool_parent: Control
