@@ -161,3 +161,34 @@ func test_the_post_process_follows_its_setting() -> void:
 	assert_bool(_app.post.is_on()).is_true()
 	_app.post.set_dread(4.0)
 	Settings.set_value("post_process", was)
+
+
+## Sort cycles rank, suit and groups, and the button names the current one.
+func test_sort_cycles_and_names_its_mode() -> void:
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	table.skip_events()
+	var seen: Array[String] = []
+	for _press_count: int in 3:
+		table.actions().sort.pressed.emit()
+		seen.append(table.actions().sort.text)
+	assert_int(seen.size()).is_equal(3)
+	assert_bool(seen[0] != seen[1] and seen[1] != seen[2]).is_true()
+	assert_str(table.actions().sort.tooltip_text).is_not_empty()
+
+
+## The rules card and the menu sit above the table and block clicks to it.
+func test_overlays_open_above_the_table() -> void:
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	table.actions().rules.pressed.emit()
+	var sheet: Control = table.get("_cheat_sheet")
+	assert_bool(sheet.visible).is_true()
+	assert_int(sheet.get_index()).is_equal(table.get_child_count() - 1)
+	assert_int(sheet.mouse_filter).is_equal(Control.MOUSE_FILTER_STOP)
+	sheet.visible = false
+	var hud: TableHud = table.get("_hud")
+	hud.menu.pressed.emit()
+	var pause: Control = table.get("_pause")
+	assert_bool(pause.visible).is_true()
+	assert_int(pause.get_index()).is_equal(table.get_child_count() - 1)

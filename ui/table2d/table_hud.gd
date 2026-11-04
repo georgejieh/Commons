@@ -13,6 +13,7 @@ var status: Label = Label.new()
 var coupons: Label = Label.new()
 var famine: ProgressBar = ProgressBar.new()
 var denunciation: ProgressBar = ProgressBar.new()
+var menu: Button = Button.new()
 
 
 func _ready() -> void:
@@ -37,6 +38,12 @@ func _ready() -> void:
 	coupons.add_theme_font_size_override("font_size", 26)
 	coupons.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	row.add_child(coupons)
+	menu.text = tr("pause.open")
+	menu.theme_type_variation = CommonsTheme.GHOST
+	menu.add_theme_font_size_override("font_size", 18)
+	menu.tooltip_text = tr("pause.open_tip")
+	UiMotion.hoverable(menu)
+	row.add_child(menu)
 	add_child(row)
 
 

@@ -151,6 +151,15 @@ static func _controls(theme: Theme) -> void:
 	theme.set_stylebox("grabber_area_highlight", "HSlider", grabbed)
 	theme.set_stylebox("focus", "HSlider", _focus_ring())
 	theme.set_stylebox("focus", "CheckBox", _focus_ring())
+	# CheckBox inherits Button's look; it reads as a plain line of text with a box.
+	for state: String in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+		var plain: StyleBoxEmpty = StyleBoxEmpty.new()
+		plain.content_margin_top = 4
+		plain.content_margin_bottom = 4
+		theme.set_stylebox(state, "CheckBox", plain)
+	theme.set_color("font_focus_color", "CheckBox", STYLE.ink)
+	theme.set_color("font_hover_pressed_color", "CheckBox", STYLE.vermilion)
+	theme.set_font("font", "CheckBox", MEDIUM)
 	theme.set_color("font_color", "CheckBox", STYLE.ink)
 	theme.set_color("font_hover_color", "CheckBox", STYLE.vermilion)
 	theme.set_color("font_pressed_color", "CheckBox", STYLE.ink)
