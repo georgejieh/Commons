@@ -1,7 +1,8 @@
 class_name SeatPanel
-extends HBoxContainer
-## One villager at the table: portrait, name, cards left, role and their last words.
-## The card count announces itself at 2 and 1 cards.
+extends PanelContainer
+## One villager at the table, on one paper sheet: portrait, name, cards left, role and
+## their last words. The sheet grows with its content, so the portrait always sits
+## inside it. The card count turns red at 2 and 1 cards.
 
 const INK: Color = Color("1e1a16")
 const LANDLORD_RED: Color = Color("9e1b16")
@@ -20,10 +21,14 @@ var _speech: Label = Label.new()
 var _info: VBoxContainer = VBoxContainer.new()
 var _back: TextureRect = TextureRect.new()
 var _count_row: HBoxContainer = HBoxContainer.new()
+var _row: HBoxContainer = HBoxContainer.new()
 
 
 func _init() -> void:
-	add_theme_constant_override("separation", 14)
+	theme_type_variation = CommonsTheme.SHEET
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_row.add_theme_constant_override("separation", 14)
+	add_child(_row)
 	_info.add_theme_constant_override("separation", 4)
 	_banner.text = tr("table.landlord").to_upper()
 	_banner.theme_type_variation = CommonsTheme.EYEBROW
@@ -35,7 +40,8 @@ func _init() -> void:
 	tag.content_margin_right = 10
 	_banner.add_theme_stylebox_override("normal", tag)
 	_banner.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_portrait.custom_minimum_size = Vector2(110, 130)
+	_portrait.custom_minimum_size = Vector2(110, 138)
+	_portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_portrait.color = PAPER
 	_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
@@ -53,8 +59,9 @@ func _init() -> void:
 	_speech.add_theme_font_size_override("font_size", 20)
 	_speech.add_theme_color_override("font_color", INK)
 	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_speech.custom_minimum_size = Vector2(210, 0)
-	add_child(_portrait)
+	_speech.custom_minimum_size = Vector2(200, 0)
+	_speech.max_lines_visible = 2
+	_row.add_child(_portrait)
 	_back.texture = ScreenKit.ART.card_back
 	_back.custom_minimum_size = Vector2(30, 42)
 	_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -63,7 +70,7 @@ func _init() -> void:
 	_count_row.add_child(_count)
 	for child: Control in [_banner, _name, _count_row, _role, _speech]:
 		_info.add_child(child)
-	add_child(_info)
+	_row.add_child(_info)
 
 
 func setup(seat_index: int, display_name: String, portrait: Texture2D = null) -> void:
@@ -73,7 +80,8 @@ func setup(seat_index: int, display_name: String, portrait: Texture2D = null) ->
 
 
 func set_count(cards: int) -> void:
-	_count.text = tr("table.cards_left").format({"count": cards})
+	var key: String = "table.card_left" if cards == 1 else "table.cards_left"
+	_count.text = tr(key).format({"count": cards})
 	_count.add_theme_color_override("font_color", LANDLORD_RED if cards <= 2 else INK)
 
 

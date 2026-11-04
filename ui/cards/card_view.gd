@@ -38,6 +38,9 @@ const RANK_KEYS: PackedStringArray = [
 
 var card_id: int = -1
 
+## Every tween moving this view, so a reused view can stop them all.
+var _tweens: Array[Tween] = []
+
 @onready var _frame: Panel = $Frame
 @onready var _rank: Label = $Frame/Rank
 @onready var _suit: Label = $Frame/Suit
@@ -58,8 +61,30 @@ func _ready() -> void:
 	_frame.material = tilt
 
 
+## A tween on this view that settle() can stop.
+func tween() -> Tween:
+	var made: Tween = create_tween()
+	_tweens.append(made)
+	return made
+
+
+## Stops every tween and puts the view back to rest: full size, upright, opaque, with
+## its pivot at the bottom middle. Pooled views pass through here whenever they move.
+func settle() -> void:
+	for running: Tween in _tweens:
+		if running != null and running.is_valid():
+			running.kill()
+	_tweens.clear()
+	scale = Vector2.ONE
+	rotation = 0.0
+	modulate = Color.WHITE
+	pivot_offset = Vector2(size.x / 2.0, size.y)
+	z_index = 0
+
+
 ## Shows card, or hides the view when card is null.
 func bind(card: CardInstance) -> void:
+	settle()
 	visible = card != null
 	if card == null:
 		card_id = -1

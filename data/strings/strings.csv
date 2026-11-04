@@ -202,3 +202,22 @@ banner.bomb,Bomb
 banner.rocket,Rocket
 banner.landlord_wins,The landlord wins the round
 banner.peasants_win,The peasants win the round
+sort.rank,Rank
+sort.suit,Suit
+sort.groups,Groups
+action.sort_by,Sort: {mode}
+action.sort_tip,Sorted by {mode}. Click to change.
+action.hint_tip,Selects the play a careful player would make.
+hand.hint.pass,Passing is the best move here.
+cheat.eyebrow,Rules of the table
+cheat.close,Close
+pause.open,Menu
+pause.open_tip,"Pause, settings, or leave the table (Esc)"
+pause.eyebrow,Paused
+pause.title,The table waits
+pause.resume,Resume
+pause.settings,Settings
+pause.to_title,Return to title
+pause.quit,Quit game
+pause.saved,Your run saves after every move. Continue on the title screen picks up here.
+table.card_left,{count} card

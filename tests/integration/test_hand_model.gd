@@ -134,3 +134,13 @@ func test_a_stale_selection_waits() -> void:
 	_hand.toggle(ids[0])
 	_hand.toggle(ids[0])
 	assert_str(_hand.label_key()).is_equal(HandModel.KEY_WAIT)
+
+
+## The hint picks a legal play the player can make right now.
+func test_the_hint_suggests_a_legal_play_on_lead() -> void:
+	_to_player_play(false)
+	_hand.refresh()
+	var ids: Array[int] = _hand.suggested_ids()
+	assert_array(ids).is_not_empty()
+	_hand.select_only(ids)
+	assert_bool(_hand.can_play()).is_true()

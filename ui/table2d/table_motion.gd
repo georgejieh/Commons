@@ -30,7 +30,8 @@ func duration(seconds: float) -> float:
 ## Moves node to a position and rotation with the preset easing. The tween belongs to
 ## node, so it dies with it.
 func move(node: Control, to: Vector2, angle: float, seconds: float) -> Tween:
-	var tween: Tween = node.create_tween().set_parallel(true)
+	var view: CardView = node as CardView
+	var tween: Tween = (view.tween() if view != null else node.create_tween()).set_parallel(true)
 	tween.set_trans(PRESETS.transition as Tween.TransitionType)
 	tween.set_ease(PRESETS.ease as Tween.EaseType)
 	tween.tween_property(node, "position", to, duration(seconds))
@@ -54,7 +55,8 @@ func drop(card: Control, rest_scale: float, order: int) -> void:
 		return
 	card.scale = Vector2.ONE * rest_scale * 1.3
 	card.modulate.a = 0.0
-	var tween: Tween = card.create_tween().set_parallel(true)
+	var view: CardView = card as CardView
+	var tween: Tween = (view.tween() if view != null else card.create_tween()).set_parallel(true)
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	var delay: float = order * PRESETS.deal_stagger
 	tween.tween_property(card, "scale", Vector2.ONE * rest_scale, PRESETS.fly_time).set_delay(delay)

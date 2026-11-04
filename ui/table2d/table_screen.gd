@@ -13,6 +13,13 @@ const SURFACE: Color = Color("e9dcbc")
 const INK: Color = Color("1e1a16")
 const RED: Color = Color("9e1b16")
 const PLAY_SCALE: float = 0.7
+## Space between the left edges of cards in a play lane; most of each card shows.
+const LANE_SPACING: float = 56.0
+## The play area's middle in x, and the seats' width and gap from that middle. The
+## Cadre board centers on it between the seats.
+const PLAY_CENTER: float = 790.0
+const SEAT_WIDTH: float = 380.0
+const SEAT_OFFSET: float = 330.0
 
 var _app: DemoApp
 var _controller: RunController
@@ -20,7 +27,7 @@ var _hand: HandModel
 var _pool: CardPool = CardPool.new()
 var _player: EventPlayer = EventPlayer.new()
 var _seats: Dictionary[int, SeatPanel] = {}
-var _plays: Dictionary[int, HBoxContainer] = {}
+var _plays: Dictionary[int, Control] = {}
 var _play_views: Dictionary[int, Array] = {}
 
 var _hand_view: HandView = HandView.new()
@@ -34,6 +41,7 @@ var _pool_parent: Control = Control.new()
 var _you: Label = Label.new()
 var _motion: TableMotion = TableMotion.new()
 var _banner: TableBanner = TableBanner.new()
+var _pause: PauseMenu = PauseMenu.new()
 var _landlord: int = Seats.NONE
 var _fresh_deal: bool = false
 
@@ -43,26 +51,28 @@ func _ready() -> void:
 	_place(_backdrop(RAIL_EDGE), Vector2.ZERO, Vector2(1920, 1080))
 	var surface: TextureRect = ScreenKit.cover(ScreenKit.ART.table_surface)
 	_place(surface, Vector2(0, 72), Vector2(1920, 1008))
-	var ledger_paper: Panel = Panel.new()
-	ledger_paper.add_theme_stylebox_override("panel", ScreenKit.paper_style())
+	# The ledger sits inside its paper, so its margins come from the sheet.
+	var ledger_paper: PanelContainer = PanelContainer.new()
+	ledger_paper.theme_type_variation = CommonsTheme.SHEET
 	ledger_paper.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_place(ledger_paper, Vector2(1560, 112), Vector2(320, 900))
+	_place(ledger_paper, Vector2(1556, 112), Vector2(328, 900))
+	ledger_paper.add_child(_ledger)
 	_place(_hud, Vector2.ZERO, Vector2(1920, 72))
-	_place(_board, Vector2(560, 128), Vector2(600, 140))
-	_place(_ledger, Vector2(1576, 128), Vector2(290, 640))
+	_place(_board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
 	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
 	_you.theme_type_variation = CommonsTheme.TITLE
 	_you.add_theme_font_size_override("font_size", 28)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
 	_place(_need_panel, Vector2(720, 420), Vector2(420, 200))
-	_place(_cheat_sheet, Vector2(560, 120), Vector2(680, 760))
+	_place(_cheat_sheet, Vector2.ZERO, Vector2(1920, 1080))
+	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_banner, Vector2(410, 300), Vector2(760, 0))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
 	for seat: int in Seats.COUNT:
-		var play_area: HBoxContainer = HBoxContainer.new()
-		play_area.add_theme_constant_override("separation", -30)
+		var play_area: Control = Control.new()
+		play_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_plays[seat] = play_area
 		_play_views[seat] = []
 	_place(_plays[0], Vector2(520, 560), Vector2(560, 130))
@@ -93,12 +103,17 @@ func open(app: DemoApp) -> void:
 	_player.queued.connect(_refresh_actions)
 	_actions.play.pressed.connect(_on_play)
 	_actions.pass_turn.pressed.connect(_on_pass)
-	_actions.hint.toggled.connect(_hand_view.set_hint)
+	_actions.hint.pressed.connect(_on_hint)
+	_show_sort()
 	_actions.sort.pressed.connect(_toggle_sort)
 	_actions.rules.pressed.connect(_cheat_sheet.toggle.bind(_controller))
 	_actions.call.pressed.connect(_on_bid.bind(true))
 	_actions.decline.pressed.connect(_on_bid.bind(false))
 	_need_panel.declared.connect(_on_need)
+	_hud.menu.pressed.connect(_open_pause)
+	_pause.resumed.connect(func() -> void: _player.set_process(true))
+	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
+	_pause.quit_game.connect(func() -> void: get_tree().quit())
 	for event: RunEvent in _controller.set_events():
 		_player.push(event)
 	_player.flush()
@@ -118,8 +133,23 @@ func need_panel() -> NeedPanel:
 	return _need_panel
 
 
-## Keyboard shortcuts press the same buttons a click does (P3B.11, in part).
+func _open_pause() -> void:
+	_player.set_process(false)
+	_pause.open()
+
+
+## Keyboard shortcuts press the same buttons a click does (P3B.11, in part). Escape
+## closes the rules card, or opens the menu.
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and not _pause.visible:
+		if _cheat_sheet.visible:
+			_cheat_sheet.visible = false
+		else:
+			_open_pause()
+		get_viewport().set_input_as_handled()
+		return
+	if _pause.visible or _cheat_sheet.visible:
+		return
 	var shortcuts: Dictionary[String, Button] = {
 		"commons_play": _actions.call if _actions.call.visible else _actions.play,
 		"commons_pass": _actions.decline if _actions.decline.visible else _actions.pass_turn,
@@ -144,17 +174,15 @@ func _exit_tree() -> void:
 
 
 ## Seat 1 acts after you, so it sits on your right; seat 2 on your left. Both sit
-## along the top edge of the play area, facing you.
+## along the top edge of the play area, the same distance from its middle.
 func _build_seats() -> void:
 	for seat: int in [1, 2]:
 		var panel: SeatPanel = SeatPanel.new()
 		panel.setup(seat, _app.seat_name(seat), _app.seat_portrait(seat))
-		var x: float = 1180.0 if seat == 1 else 96.0
-		var backing: Panel = Panel.new()
-		backing.add_theme_stylebox_override("panel", ScreenKit.paper_style())
-		backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_place(backing, Vector2(x - 14, 116), Vector2(370, 200))
-		_place(panel, Vector2(x, 128), Vector2(340, 176))
+		var x: float = (
+			PLAY_CENTER + SEAT_OFFSET if seat == 1 else PLAY_CENTER - SEAT_OFFSET - SEAT_WIDTH
+		)
+		_place(panel, Vector2(x, 112), Vector2(SEAT_WIDTH, 0))
 		_seats[seat] = panel
 
 
@@ -228,18 +256,26 @@ func _show_play(seat: int, cards: Array[CardInstance]) -> void:
 		if view == null:
 			return
 		view.reparent(_plays[seat], false)
-		view.position = Vector2.ZERO
-		view.rotation = 0.0
 		view.bind(card)
-		view.custom_minimum_size = view.size * PLAY_SCALE
+		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		view.pivot_offset = Vector2.ZERO
-		_motion.drop(view, PLAY_SCALE, _play_views[seat].size())
+		var order: int = _play_views[seat].size()
+		view.position = Vector2(order * _lane_spacing(seat, cards.size(), view), 0)
+		_motion.drop(view, PLAY_SCALE, order)
 		_play_views[seat].append(view)
+
+
+## Cards spread at the lane spacing, closing up so a long play still fits its lane.
+func _lane_spacing(seat: int, count: int, view: CardView) -> float:
+	if count < 2:
+		return LANE_SPACING
+	var room: float = _plays[seat].size.x - view.size.x * PLAY_SCALE
+	return minf(LANE_SPACING, room / (count - 1))
 
 
 func _clear_play(seat: int) -> void:
 	for view: CardView in _play_views[seat]:
-		view.scale = Vector2.ONE
+		view.mouse_filter = Control.MOUSE_FILTER_STOP
 		view.reparent(_pool_parent, false)
 		_pool.release(view)
 	_play_views[seat].clear()
@@ -320,9 +356,28 @@ func _on_need(need: int) -> void:
 	_refresh_actions()
 
 
+## Cycles rank, suit and groups, and names the current sort on the button.
 func _toggle_sort() -> void:
-	var grouped: bool = _hand_view.sort_mode == HandView.Sort.RANK
-	_hand_view.set_sort(HandView.Sort.GROUPS if grouped else HandView.Sort.RANK)
+	var next: int = (_hand_view.sort_mode + 1) % HandView.Sort.size()
+	_hand_view.set_sort(next as HandView.Sort)
+	_show_sort()
+
+
+func _show_sort() -> void:
+	var mode: String = tr(HandView.SORT_KEYS[_hand_view.sort_mode])
+	_actions.sort.text = tr("action.sort_by").format({"mode": mode})
+	_actions.sort.tooltip_text = tr("action.sort_tip").format({"mode": mode})
+
+
+## Selects the play a Medium villager would make, and lights it.
+func _on_hint() -> void:
+	if _controller.awaiting() != RunController.AWAIT_PLAY:
+		return
+	var ids: Array[int] = _hand.suggested_ids()
+	_hand.select_only(ids)
+	_hand_view.show_hint(ids)
+	if ids.is_empty():
+		_actions.reading.text = tr("hand.hint.pass")
 
 
 static func _type_name(pattern: Pattern) -> String:

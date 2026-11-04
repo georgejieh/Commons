@@ -4,7 +4,7 @@ extends Control
 ## computed in O(n). Click toggles a card; press and drag across cards selects or
 ## clears them all the way the first card went. Selection lives in the HandModel.
 
-enum Sort { RANK, GROUPS }
+enum Sort { RANK, SUIT, GROUPS }
 
 ## Most space between card centers, and how far the arc and lift bend, in pixels.
 const MAX_SPACING: float = 64.0
@@ -13,12 +13,18 @@ const TILT_PER_CARD: float = 0.025
 const LIFT: float = 32.0
 ## How far below the fan a freshly dealt card starts.
 const DEAL_RISE: float = 260.0
+## Jokers have no suit, so suit sorting puts them after the four suits.
+const SUIT_LAST: int = 4
+## The string key naming each sort, for the Sort button.
+const SORT_KEYS: Dictionary[Sort, String] = {
+	Sort.RANK: "sort.rank", Sort.SUIT: "sort.suit", Sort.GROUPS: "sort.groups"
+}
 
 ## Tweens the lift of a selected or hovered card, when set.
 var motion: TableMotion = null
-var hint_on: bool = false
 var sort_mode: Sort = Sort.RANK
 
+var _hinted: Array[int] = []
 var _model: HandModel
 var _pool: CardPool
 var _views: Array[CardView] = []
@@ -34,6 +40,7 @@ func setup(model: HandModel, pool: CardPool) -> void:
 
 ## Lays out the model's cards with pooled views, in the current sort order.
 func show_cards() -> void:
+	_hinted.clear()
 	for view: CardView in _views:
 		_disconnect(view)
 		_pool.release(view)
@@ -50,8 +57,9 @@ func show_cards() -> void:
 	_mark()
 
 
-func set_hint(on: bool) -> void:
-	hint_on = on
+## Lights these cards with the hint edge until the hand next changes.
+func show_hint(ids: Array[int]) -> void:
+	_hinted = ids.duplicate()
 	_mark()
 
 
@@ -69,7 +77,7 @@ func deal_in() -> void:
 		var rest: Vector2 = view.position
 		view.position = rest + Vector2(0, DEAL_RISE)
 		view.modulate.a = 0.0
-		var tween: Tween = view.create_tween().set_parallel(true)
+		var tween: Tween = view.tween().set_parallel(true)
 		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		var delay: float = index * TableMotion.PRESETS.deal_stagger
 		var seconds: float = TableMotion.PRESETS.fly_time
@@ -92,13 +100,13 @@ func _layout() -> void:
 		var view: CardView = _views[index]
 		view.position = Vector2(slot.x - view.size.x / 2.0, slot.y)
 		view.rotation = slot.z
-		view.z_index = index
+		# Clicks go to the last child under the cursor, so tree order must match the
+		# fan: each card sits above the one to its left.
+		move_child(view, index)
 
 
 func _mark() -> void:
-	var hinted: Array[int] = []
-	if hint_on:
-		hinted = _model.hint_ids()
+	var hinted: Array[int] = _hinted
 	for index: int in _views.size():
 		var view: CardView = _views[index]
 		var selected: bool = _model.is_selected(view.card_id)
@@ -115,8 +123,17 @@ func _sorted(cards: Array[CardInstance]) -> Array[CardInstance]:
 	if sort_mode == Sort.GROUPS:
 		return _model.grouped_cards()
 	var sorted: Array[CardInstance] = cards.duplicate()
-	sorted.sort_custom(_before)
+	sorted.sort_custom(_by_suit if sort_mode == Sort.SUIT else _before)
 	return sorted
+
+
+## Suit first, jokers last, then rank within each suit.
+func _by_suit(a: CardInstance, b: CardInstance) -> bool:
+	var a_suit: int = SUIT_LAST if a.base_rank() >= Ranks.SMALL_JOKER else a.suit()
+	var b_suit: int = SUIT_LAST if b.base_rank() >= Ranks.SMALL_JOKER else b.suit()
+	if a_suit != b_suit:
+		return a_suit < b_suit
+	return _before(a, b)
 
 
 func _before(a: CardInstance, b: CardInstance) -> bool:

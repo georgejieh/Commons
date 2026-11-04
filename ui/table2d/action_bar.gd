@@ -33,7 +33,7 @@ func _ready() -> void:
 		button.add_theme_font_size_override("font_size", 18)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		toggles.add_child(button)
-	hint.toggle_mode = true
+	hint.tooltip_text = tr("action.hint_tip")
 	_turn_row.add_child(toggles)
 	add_child(_turn_row)
 	_button(call, "action.call", CommonsTheme.PRIMARY)

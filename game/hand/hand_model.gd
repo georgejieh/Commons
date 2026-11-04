@@ -117,6 +117,32 @@ func hint_ids() -> Array[int]:
 	return ids
 
 
+## The cards a Medium bot would play now, or none when passing is best or it isn't the
+## player's turn.
+func suggested_ids() -> Array[int]:
+	var none: Array[int] = []
+	var view: SeatView = _controller.seat_view()
+	var legal: Array[Pattern] = _controller.legal_moves()
+	if view == null or legal.is_empty():
+		return none
+	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
+	var play: BotPlay = Bot.decide_play(
+		view, legal, _controller.player_table(), config, BotBudget.unlimited()
+	)
+	if play.is_pass():
+		return none
+	return _controller.card_ids_for(play.pattern)
+
+
+## Selects exactly these cards.
+func select_only(ids: Array[int]) -> void:
+	_selected.clear()
+	for card_id: int in ids:
+		if _holds(card_id):
+			_selected[card_id] = true
+	_update()
+
+
 ## The cards in suggested play order: the hand split into its fewest plays (P2.2), each
 ## group's cards together, lowest rank first within the leftovers.
 func grouped_cards() -> Array[CardInstance]:

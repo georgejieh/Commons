@@ -5,7 +5,7 @@ extends VBoxContainer
 
 const MAX_ROWS: int = 9
 ## Rows wrap inside the ledger's paper.
-const ROW_WIDTH: float = 250.0
+const ROW_WIDTH: float = 270.0
 const INK: Color = Color("1e1a16")
 const STAMP: Color = Color("b02a17")
 
