@@ -13,6 +13,12 @@ func format(key: String, values: Dictionary) -> String:
 	return tr(key).format(values)
 
 
+## A count line: the key's ".one" form when there is exactly one and the table has it.
+func count(key: String, amount: int) -> String:
+	var chosen: String = key + ".one" if amount == 1 and has(key + ".one") else key
+	return tr(chosen).format({"count": amount})
+
+
 func has(key: String) -> bool:
 	return tr(key) != key
 

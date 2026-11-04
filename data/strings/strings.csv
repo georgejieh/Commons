@@ -104,6 +104,7 @@ table.say.pass,Pass.
 table.say.cards_left,{count} left.
 table.status,Year {year} · {set} · Round {round} of {rounds} · {progress} / {target}
 table.coupons,{count} coupons
+table.coupons.one,1 coupon
 set.type.0,Small Quota
 set.type.1,Large Quota
 set.type.2,Boss Quota
@@ -155,6 +156,7 @@ summary.to_store,To the Store
 summary.to_year,End the Year
 store.title,State Store
 store.coupons,{count} coupons
+store.coupons.one,1 coupon
 store.reroll,Reroll · {price} coupons
 store.owned,Your Cadres: {names}
 store.none,none
@@ -224,4 +226,5 @@ table.card_left,{count} card
 table.say.no_call,No call.
 table.bid_prompt,Call the landlord seat?
 summary.paid,The Quota paid {count} coupons.
+summary.paid.one,The Quota paid 1 coupon.
 summary.cost,"Famine rose by {rise}, to {famine}. At 100, the village starves."

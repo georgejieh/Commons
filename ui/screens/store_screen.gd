@@ -121,4 +121,4 @@ func _on_reroll() -> void:
 
 
 func _coupon_text(value: float) -> String:
-	return tr("store.coupons").format({"count": roundi(value)})
+	return Strings.count("store.coupons", roundi(value))

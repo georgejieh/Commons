@@ -61,7 +61,7 @@ func show_state(state: RunState, target: float, rounds: int) -> void:
 			}
 		)
 	)
-	coupons.text = tr("table.coupons").format({"count": state.coupons})
+	coupons.text = Strings.count("table.coupons", state.coupons)
 	famine.value = state.famine
 	denunciation.value = state.denunciation
 

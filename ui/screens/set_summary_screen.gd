@@ -40,7 +40,7 @@ func open(app: DemoApp) -> void:
 func _consequence(controller: RunController, met: bool, famine: int) -> Label:
 	var text: String
 	if met:
-		text = tr("summary.paid").format({"count": controller.quota_reward()})
+		text = Strings.count("summary.paid", controller.quota_reward())
 	else:
 		text = tr("summary.cost").format({"rise": controller.famine_per_miss(), "famine": famine})
 	var line: Label = ScreenKit.styled(text, CommonsTheme.TITLE)
