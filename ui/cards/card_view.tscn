@@ -1,0 +1,115 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://ui/cards/card_view.gd" id="1_card"]
+
+[sub_resource type="StyleBoxFlat" id="paper"]
+bg_color = Color(0.984, 0.965, 0.918, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.118, 0.102, 0.086, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.36, 0.3, 0.2, 0.6)
+shadow_size = 3
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="edge"]
+draw_center = false
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+
+[sub_resource type="LabelSettings" id="glyph"]
+font_size = 40
+font_color = Color(1, 1, 1, 1)
+
+[node name="CardView" type="Control"]
+custom_minimum_size = Vector2(120, 168)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 120.0
+offset_bottom = 168.0
+pivot_offset = Vector2(60, 168)
+mouse_filter = 0
+script = ExtResource("1_card")
+
+[node name="Frame" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("paper")
+
+[node name="Rank" type="Label" parent="Frame"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 6.0
+offset_right = 108.0
+offset_bottom = 58.0
+mouse_filter = 2
+label_settings = SubResource("glyph")
+
+[node name="Suit" type="Label" parent="Frame"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 56.0
+offset_right = 108.0
+offset_bottom = 104.0
+mouse_filter = 2
+label_settings = SubResource("glyph")
+
+[node name="Enhancement" type="ColorRect" parent="Frame"]
+visible = false
+layout_mode = 0
+offset_left = 6.0
+offset_top = 120.0
+offset_right = 114.0
+offset_bottom = 132.0
+mouse_filter = 2
+color = Color(0.784, 0.584, 0.169, 0.8)
+
+[node name="Seal" type="Label" parent="Frame"]
+visible = false
+layout_mode = 0
+offset_left = 84.0
+offset_top = 132.0
+offset_right = 114.0
+offset_bottom = 162.0
+mouse_filter = 2
+text = "●"
+
+[node name="Stamp" type="Label" parent="Frame"]
+visible = false
+layout_mode = 0
+offset_left = 10.0
+offset_top = 134.0
+offset_right = 80.0
+offset_bottom = 160.0
+rotation = -0.12
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.69, 0.165, 0.09, 1)
+text = "card.stamp.yours"
+
+[node name="Highlight" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("edge")
