@@ -33,7 +33,7 @@ jobs:
       - name: Install a virtual display and software OpenGL
         run: |
           apt-get update -qq
-          apt-get install -y -qq xvfb xauth libgl1-mesa-dri libglx-mesa0 libgl1 > /dev/null
+          apt-get install -y -qq xvfb xauth libgl1-mesa-dri libglx-mesa0 libgl1             libfontconfig1 libxcursor1 libxinerama1 libxrandr2 libxi6 libxkbcommon0             libxrender1 libxext6 libasound2t64 libpulse0 > /dev/null ||           apt-get install -y -qq xvfb xauth libgl1-mesa-dri libglx-mesa0 libgl1             libfontconfig1 libxcursor1 libxinerama1 libxrandr2 libxi6 libxkbcommon0             libxrender1 libxext6 libasound2 libpulse0 > /dev/null
       - name: Import
         run: godot --headless --path . --import
       - name: Play through the UI
