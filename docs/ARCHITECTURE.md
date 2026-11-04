@@ -179,3 +179,9 @@ The 2D table renders the run's events through an `EventPlayer`, which spaces bid
 
 `AudioEvents` in `game/audio/` names a sound for every domain event type (P3B.10): each `RunEvent` type, each round event inside a `ROUND` event, and a separate name for bombs and rockets. The table passes each event it shows to `Audio.play()`, which routes it to the right bus once P3C.8 adds the sounds; until then every name is silent.
 
+## Interface components and motion
+
+`CommonsTheme` (`ui/theme/`) builds the demo's one component theme from `UiStyle` tokens (`data/ui/ui_style.tres`): four button kinds (primary vermilion, secondary ink, coupon green, ghost paper) drawn as raised keys whose bottom edge shrinks when pressed so the label sinks; a gold focus ring on every focusable control; paper `Sheet` panels; and a type scale of `Headline`, `Title`, `Eyebrow` and `Caption`. Screens choose a kind or level with `theme_type_variation` and style nothing by hand. `ScreenKit` composes pages, headers, sheets, stat tiles and rows from it.
+
+`UiMotion` (`ui/motion/`) is the interface's motion: buttons lift on hover or focus and sink when pressed, pages bring their pieces in one after another, numbers roll to new values, and verdicts land like ink stamps. It moves only scale and opacity, so containers keep their layout, and each tween belongs to the node it moves. The app fades through ink between screens. On the table, played cards drop into their lanes, a fresh hand rises into the fan, ledger rows stamp in, and a reused `TableBanner` announces the landlord seat, bombs and the round's winner. Every duration is in `MotionPresets`; reduced motion shortens or skips all of it.
+

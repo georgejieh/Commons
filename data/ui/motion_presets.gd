@@ -27,3 +27,27 @@ extends Resource
 @export var max_tilt: float = 0.12
 ## Duration multiplier under reduced motion.
 @export var reduced_scale: float = 0.35
+
+@export_group("Interface")
+## A button's scale on hover and while pressed.
+@export var hover_scale: float = 1.04
+@export var press_scale: float = 0.96
+@export var hover_time: float = 0.12
+## A screen's pieces fade and rise in one after another.
+@export var enter_time: float = 0.32
+@export var enter_stagger: float = 0.05
+@export var enter_rise: float = 18.0
+## Numbers roll to their new value over this long.
+@export var count_time: float = 0.6
+## A stamp lands from this scale and tilt.
+@export var stamp_from_scale: float = 1.6
+@export var stamp_tilt: float = -0.12
+@export var stamp_time: float = 0.22
+## A played card flies from its seat to its lane.
+@export var fly_time: float = 0.28
+## Cards in a fresh deal arrive one after another.
+@export var deal_stagger: float = 0.03
+## A banner stays up this long.
+@export var banner_hold: float = 1.1
+## Screen changes cross through an ink wipe this long.
+@export var wipe_time: float = 0.22

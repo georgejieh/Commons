@@ -23,6 +23,8 @@ var controller: RunController = RunController.new()
 var hand: HandModel
 var switcher: SceneSwitcher = SceneSwitcher.new()
 var post: PostProcess = PostProcess.new()
+var _wipe: ColorRect = ColorRect.new()
+var _wipe_layer: CanvasLayer = CanvasLayer.new()
 
 @onready var _host: Control = $Screens
 
@@ -31,6 +33,14 @@ func _ready() -> void:
 	add_child(controller)
 	add_child(switcher)
 	add_child(post)
+	theme = CommonsTheme.build()
+	_wipe.color = CommonsTheme.STYLE.ink
+	_wipe.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_wipe.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_wipe.modulate.a = 0.0
+	_wipe_layer.layer = PostProcess.LAYER - 1
+	_wipe_layer.add_child(_wipe)
+	add_child(_wipe_layer)
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
 	for screen_id: String in SCREENS:
@@ -42,10 +52,21 @@ func _ready() -> void:
 
 ## Shows a screen and hands it the app. replace drops the way back.
 func show_screen(screen_id: String, replace: bool = false) -> Node:
+	_play_wipe()
 	var screen: Node = switcher.replace(screen_id) if replace else switcher.push(screen_id)
 	if screen.has_method("open"):
 		screen.call("open", self)
 	return screen
+
+
+## Screens cut through a quick ink fade, like a page turning under a lamp.
+func _play_wipe() -> void:
+	if UiMotion.reduced():
+		return
+	_wipe.modulate.a = 1.0
+	var tween: Tween = _wipe.create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_wipe, "modulate:a", 0.0, UiMotion.PRESETS.wipe_time)
 
 
 func back() -> void:
