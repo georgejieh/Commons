@@ -13,6 +13,10 @@ Commons' visual language for P3B.0, in the propaganda-poster direction ([ADR 001
 | Cobalt Core | Legibility at a glance | In its store screenshots, interface elements are outlined and the key readouts are easy to pick out. Where things sit on the ships matters as much as the numbers | Draw the numbers you act on large, Grain and Zeal first, on plain grounds |
 | Wildfrost | Cute art over grim systems | Cute companions with stat icons on each card, including a countdown to when the card acts, in a hostile winter setting | The clean board looks warm and sincere, and the dread comes from decay, not from how the board starts |
 
+## The look, after the owner's refinement
+
+The art reads as Mao-era propaganda at a glance and as something worse the longer you look ([ADR 0015](../docs/adr/0015-art-direction.md), amendment). The sun every poster turns toward is a vast lidless eye; its rays end in pale hands; crowds share one blank, smiling face; shadows have too many arms. Nothing names a real nation: no emblems on the flags, no stars, no leaders, no slogans, no characters. The interface stays plain ink and paper so the art carries the dread, and the dark room around the table (one weak lamp, eyes beyond it) carries it during play.
+
 ## Commons' answers
 
 **Table.** The screen is the play area, not a whole table seen from above, the way Hearthstone and MTGO frame their boards (the project owner's direction, 2026-11-03). A dark wooden rail runs around the screen edge, so it reads as the edge of a table rather than a wall or a playmat. Inside it, the two villagers sit along the top edge as compact portraits with their name, card count, role and last words. Each has a lane in front of them where their current play lands. Your hand fans along the bottom rail, and your own play lands in a lane above it. The landlord's portrait has a gold frame and a red LANDLORD tag.
