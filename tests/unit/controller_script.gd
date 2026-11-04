@@ -11,7 +11,7 @@ var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.
 ## Takes one player turn. Returns false when the run is not waiting on the player.
 func act(controller: RunController) -> bool:
 	match controller.awaiting():
-		RunLoop.Awaiting.PLAYER_BID:
+		RunController.AWAIT_BID:
 			var claim: bool = Bot.decide_bid(
 				counts(controller.player_cards()),
 				false,
@@ -20,22 +20,30 @@ func act(controller: RunController) -> bool:
 				config,
 				BotBudget.unlimited()
 			)
-			return controller.bid(claim) == RunLoop.Reason.OK
-		RunLoop.Awaiting.PLAYER_PLAY:
+			return controller.bid(claim) == RunController.OK
+		RunController.AWAIT_PLAY:
 			return _play(controller)
-		RunLoop.Awaiting.PLAYER_NEED:
-			return controller.declare_need(NEED) == RunLoop.Reason.OK
+		RunController.AWAIT_NEED:
+			return controller.declare_need(NEED) == RunController.OK
 	return false
 
 
-## Plays Sets until the run is over.
+## Plays Sets until the run is over, buying the first Cadre it can afford at each store.
 func play_run(controller: RunController) -> void:
 	while true:
 		while act(controller):
 			pass
-		if controller.awaiting() != RunLoop.Awaiting.SET_OVER:
-			return
-		controller.finish_set()
+		match controller.awaiting():
+			RunController.AWAIT_SET_OVER:
+				controller.finish_set()
+			RunController.AWAIT_STORE:
+				for slot: int in controller.store_stock().size():
+					if controller.can_buy(slot):
+						controller.buy(slot)
+						break
+				controller.leave_store()
+			_:
+				return
 
 
 func _play(controller: RunController) -> bool:
@@ -44,8 +52,8 @@ func _play(controller: RunController) -> bool:
 		view, controller.legal_moves(), controller.player_table(), config, BotBudget.unlimited()
 	)
 	if play.is_pass():
-		return controller.pass_turn() == RunLoop.Reason.OK
-	return controller.play(controller.card_ids_for(play.pattern)) == RunLoop.Reason.OK
+		return controller.pass_turn() == RunController.OK
+	return controller.play(controller.card_ids_for(play.pattern)) == RunController.OK
 
 
 static func counts(cards: Array[CardInstance]) -> PackedByteArray:

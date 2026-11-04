@@ -1,21 +1,43 @@
+# gdlint: disable=max-public-methods
+# Over 20 public methods: this is the UI's whole command and query surface, kept in one place.
 class_name RunController
 extends Node
 ## The one way the UI touches a run. It owns the run loop and its state, takes the UI's
 ## commands, and re-emits the loop's domain events as signals. Queries hand out copies,
-## so a view can read the run but never change it.
+## so a view can read the run but never change it. With a save service it saves after
+## every state boundary and every command, so quitting at any moment loses nothing.
 
 signal event_emitted(event: RunEvent)
-## The loop now waits on this RunLoop.Awaiting value.
+## The loop now waits on this value, one of the AWAIT constants.
 signal awaiting_changed(awaiting: int)
-## A command the loop refused, with its RunLoop.Reason.
+## A command the loop refused, with its reason.
 signal command_refused(command: String, reason: int)
 
 ## Every command the UI may send. Selection is the hand model's, not the run's.
-const COMMANDS: Array[String] = ["bid", "swap", "play", "pass", "declare_need", "finish_set"]
+const COMMANDS: Array[String] = [
+	"bid",
+	"swap",
+	"play",
+	"pass",
+	"declare_need",
+	"finish_set",
+	"buy",
+	"reroll",
+	"leave_store",
+]
+## What the run waits on, for views that may not name the loop.
+const AWAIT_BID: int = RunLoop.Awaiting.PLAYER_BID
+const AWAIT_SWAP: int = RunLoop.Awaiting.PLAYER_SWAP
+const AWAIT_PLAY: int = RunLoop.Awaiting.PLAYER_PLAY
+const AWAIT_NEED: int = RunLoop.Awaiting.PLAYER_NEED
+const AWAIT_SET_OVER: int = RunLoop.Awaiting.SET_OVER
+const AWAIT_STORE: int = RunLoop.Awaiting.SHOP
+const AWAIT_RUN_OVER: int = RunLoop.Awaiting.RUN_OVER
+const OK: int = RunLoop.Reason.OK
 
 var _loop: RunLoop
-## Called with the loop at every state boundary, for autosaves.
-var _on_boundary: Callable = Callable()
+var _saves: SaveService = null
+var _definitions: Dictionary[String, ModifierDef] = {}
 
 
 ## Starts a new run from seed, with one bot config per seat.
@@ -23,20 +45,36 @@ func start_run(
 	seed_value: int,
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
-	on_boundary: Callable = Callable()
+	saves: SaveService = null,
+	starting_coupons: int = 0
 ) -> void:
-	_on_boundary = on_boundary
-	_attach(RunLoop.new(RunState.new(seed_value), configs, sets))
+	var state: RunState = RunState.new(seed_value)
+	state.coupons = starting_coupons
+	_attach(RunLoop.new(state, configs, sets), saves)
 	_loop.start_set()
 	_loop.set_log.flush()
 	awaiting_changed.emit(_loop.awaiting())
 
 
 ## Takes over a loop that was resumed from a save.
-func resume(loop: RunLoop, on_boundary: Callable = Callable()) -> void:
-	_on_boundary = on_boundary
-	_attach(loop)
+func resume(loop: RunLoop, saves: SaveService = null) -> void:
+	_attach(loop, saves)
 	awaiting_changed.emit(_loop.awaiting())
+
+
+## Resumes the run in the save, falling back to its backup. False when neither loads.
+func resume_saved(saves: SaveService, configs: Array[BotConfig], sets: SetConfig) -> bool:
+	var loaded: SaveLoad = saves.load_save()
+	if (
+		loaded.status != SaveLoad.Status.OK
+		and loaded.status != SaveLoad.Status.RESTORED_FROM_BACKUP
+	):
+		return false
+	var loop: RunLoop = RunRecord.resume(loaded.data, configs, sets)
+	if loop == null:
+		return false
+	resume(loop, saves)
+	return true
 
 
 func has_run() -> bool:
@@ -64,18 +102,55 @@ func declare_need(need: int) -> int:
 	return _finish("declare_need", _loop.player_need(need))
 
 
-## Moves past a finished Set to the next one, or to the run's end.
+## Moves past a finished Set: into the state store, or past the run's last Set to its end.
 func finish_set() -> int:
-	return _finish("finish_set", _loop.next_set())
+	if is_last_set():
+		return _finish("finish_set", _loop.next_set())
+	return _finish("finish_set", _loop.open_shop())
+
+
+func buy(slot: int) -> int:
+	return _finish("buy", _loop.player_buy(slot))
+
+
+func reroll() -> int:
+	return _finish("reroll", _loop.player_reroll())
+
+
+## Leaves the store for the next Set, or the run's end.
+func leave_store() -> int:
+	return _finish("leave_store", _loop.next_set())
+
+
+func awaiting() -> int:
+	return _loop.awaiting()
+
+
+func is_last_set() -> bool:
+	var state: RunState = _loop.state
+	return state.set_type == RunState.SetType.BOSS and state.year == _loop.years()
+
+
+## The store's stock per slot, an empty ID for a sold slot.
+func store_stock() -> Array[String]:
+	return _loop.shop.stock()
+
+
+func store_price(slot: int) -> int:
+	return _loop.shop.price(slot)
+
+
+func reroll_price() -> int:
+	return _loop.shop.reroll_price()
+
+
+func can_buy(slot: int) -> bool:
+	return _loop.shop.check_buy(slot) == RunShop.Reason.OK
 
 
 ## The current Set's events so far, for a view that joins mid-Set.
 func set_events() -> Array[RunEvent]:
 	return _loop.events().duplicate()
-
-
-func awaiting() -> RunLoop.Awaiting:
-	return _loop.awaiting()
 
 
 ## The player's seat view of the current round, or null between rounds.
@@ -116,6 +191,27 @@ func preview_play(card_ids: Array[int]) -> PlayPreview:
 	return _loop.preview_play(card_ids.duplicate())
 
 
+## The modifiers in play now: Cadres in slot order, then this Set's debuffs so far.
+func active_modifier_ids() -> Array[String]:
+	var state: RunState = _loop.state
+	var ids: Array[String] = state.inventory.cadres.duplicate()
+	for round_index: int in range(1, mini(state.round_index + 1, state.debuff_ladder.size())):
+		if state.debuff_ladder[round_index] != RunState.NO_DEBUFF:
+			ids.append(state.debuff_ladder[round_index])
+	return ids
+
+
+## The Set's ladder: one debuff ID per round, round 1 always empty.
+func ladder() -> Array[String]:
+	return _loop.state.debuff_ladder.duplicate()
+
+
+## A modifier's rules text with its parameters filled in.
+func modifier_text(modifier_id: String) -> String:
+	var definition: ModifierDef = _definitions[modifier_id]
+	return tr(definition.text_key).format(definition.parameters)
+
+
 func target() -> float:
 	return _loop.target()
 
@@ -125,10 +221,13 @@ func state_copy() -> RunState:
 	return RunState.from_dict(_loop.state.to_dict())
 
 
-func _attach(loop: RunLoop) -> void:
+func _attach(loop: RunLoop, saves: SaveService) -> void:
 	_loop = loop
+	for definition: ModifierDef in RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres:
+		_definitions[definition.id] = definition
+	_saves = saves
 	_loop.set_log.on_add = func(event: RunEvent) -> void: event_emitted.emit(event)
-	_loop.on_boundary = _on_boundary
+	_loop.on_boundary = func(_at: RunLoop) -> void: _save()
 
 
 func _finish(command: String, reason: RunLoop.Reason) -> int:
@@ -136,5 +235,11 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 	if reason != RunLoop.Reason.OK:
 		command_refused.emit(command, reason)
 	else:
+		_save()
 		awaiting_changed.emit(_loop.awaiting())
 	return reason
+
+
+func _save() -> void:
+	if _saves != null:
+		_saves.save(_loop.record.to_dict())

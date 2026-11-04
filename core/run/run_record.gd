@@ -7,7 +7,13 @@ extends RefCounted
 ## Each command type and the fields its replay reads.
 ## Array values, because a constant of PackedStringArray values reads garbage in 4.7.2.
 const COMMAND_FIELDS: Dictionary[String, Array] = {
-	"bid": ["claim"], "swap": ["hand", "plot"], "play": ["cards"], "need": ["need"]
+	"bid": ["claim"],
+	"swap": ["hand", "plot"],
+	"play": ["cards"],
+	"need": ["need"],
+	"shop": [],
+	"buy": ["slot"],
+	"reroll": [],
 }
 
 var checkpoint: Dictionary = {}
@@ -67,6 +73,12 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_play(_ids(command["cards"]))
 		"need":
 			return loop.player_need(int(command["need"]))
+		"shop":
+			return loop.open_shop()
+		"buy":
+			return loop.player_buy(int(command["slot"]))
+		"reroll":
+			return loop.player_reroll()
 	return RunLoop.Reason.ILLEGAL
 
 
