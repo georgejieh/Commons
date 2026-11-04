@@ -179,3 +179,26 @@ table.you.bidding,"Bidding for the landlord seat."
 table.you.landlord,"You are the landlord. You bank everything you score."
 table.you.peasant,"You are a peasant. Your score goes into the Commons."
 settings.post_process,Print grain and film effects
+title.eyebrow,A Fight the Landlord roguelike
+store.eyebrow,Between Quotas
+store.balance,Your coupons
+store.cadre,Cadre
+summary.scored,Scored
+summary.target,Target
+summary.coupons_label,Coupons
+summary.famine_label,Famine
+year.eyebrow,Year's end
+year.coupons_label,Coupons left
+year.cadres_label,Cadres held
+year.famine_label,Famine
+year.denunciation_label,Denunciation
+demo.eyebrow,Thank you for playing
+settings.eyebrow,Preferences
+settings.audio,Sound
+settings.display,Display
+banner.landlord_you,You take the landlord seat
+banner.landlord_other,{name} takes the landlord seat
+banner.bomb,Bomb
+banner.rocket,Rocket
+banner.landlord_wins,The landlord wins the round
+banner.peasants_win,The peasants win the round

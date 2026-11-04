@@ -8,7 +8,7 @@ const SEED: int = 4242
 const SCREENS: Array[String] = [
 	"title", "set_intro", "table", "store", "set_summary", "settings", "demo_complete"
 ]
-const SETTLE_FRAMES: int = 20
+const SETTLE_FRAMES: int = 70
 
 var _out: String = "res://reports/shots"
 

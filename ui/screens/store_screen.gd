@@ -1,40 +1,53 @@
 class_name StoreScreen
 extends Control
 ## The state store between Sets: three Cadres on the counter, bought with coupons, a
-## reroll, and your notice board. Every purchase goes through the run controller.
+## reroll, and what you already hold. Every purchase goes through the run controller.
+
+## Cadre names are long, so they print a step below the title size.
+const NAME_SIZE: int = 32
 
 var _app: DemoApp
 var _counter: HBoxContainer = HBoxContainer.new()
-var _coupons: Label = ScreenKit.label("", 30, ScreenKit.COUPON)
-var _owned: Label = ScreenKit.label("", 22)
-var _reroll: Button = ScreenKit.button("")
+var _coupons: Label = ScreenKit.styled("", CommonsTheme.TITLE)
+var _owned: Label = ScreenKit.styled("", CommonsTheme.CAPTION)
+var _reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
+var _shown_coupons: float = 0.0
 
 
 func open(app: DemoApp) -> void:
 	_app = app
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.store)
-	column.add_child(ScreenKit.label(tr("store.title"), 72, ScreenKit.RED))
-	column.add_child(_coupons)
-	_counter.add_theme_constant_override("separation", 32)
+	var heading: Control = ScreenKit.header(tr("store.eyebrow"), tr("store.title"))
+	var balance: VBoxContainer = VBoxContainer.new()
+	balance.add_child(ScreenKit.eyebrow(tr("store.balance")))
+	_coupons.add_theme_color_override("font_color", ScreenKit.COUPON)
+	_coupons.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_owned.add_theme_font_size_override("font_size", 22)
+	balance.add_child(_coupons)
+	balance.size_flags_vertical = Control.SIZE_SHRINK_END
+	column.add_child(ScreenKit.row([heading, balance], 64))
+	_counter.add_theme_constant_override("separation", 28)
 	column.add_child(_counter)
 	_reroll.pressed.connect(_on_reroll)
-	column.add_child(_reroll)
-	column.add_child(_owned)
-	var leave: Button = ScreenKit.button(tr("store.leave"), ScreenKit.RED)
+	var leave: Button = ScreenKit.button(tr("store.leave"), CommonsTheme.PRIMARY)
 	leave.pressed.connect(
 		func() -> void:
 			app.controller.leave_store()
 			app.show_screen("set_intro", true)
 	)
-	column.add_child(leave)
+	column.add_child(ScreenKit.row([leave, _reroll]))
+	column.add_child(_owned)
+	_shown_coupons = app.controller.state_copy().coupons
 	_refresh()
+	ScreenKit.reveal(column)
 	leave.grab_focus()
 
 
 func _refresh() -> void:
 	var controller: RunController = _app.controller
 	var state: RunState = controller.state_copy()
-	_coupons.text = tr("store.coupons").format({"count": state.coupons})
+	UiMotion.count(_coupons, _shown_coupons, state.coupons, _coupon_text)
+	_shown_coupons = state.coupons
 	for child: Node in _counter.get_children():
 		_counter.remove_child(child)
 		child.queue_free()
@@ -52,20 +65,31 @@ func _refresh() -> void:
 
 
 func _item(slot: int, cadre_id: String) -> Control:
-	var card: VBoxContainer = ScreenKit.card(Vector2(360, 380))
+	var card: VBoxContainer = ScreenKit.card(Vector2(360, 470))
 	if cadre_id.is_empty():
-		card.add_child(ScreenKit.label(tr("store.sold"), 30))
+		var sold: Label = ScreenKit.styled(tr("store.sold"), CommonsTheme.HEADLINE)
+		sold.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		sold.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		sold.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		card.add_child(sold)
+		UiMotion.stamp(sold)
 		return ScreenKit.card_panel(card)
 	var controller: RunController = _app.controller
 	var picture: TextureRect = ScreenKit.cover(ScreenKit.ART.cadre(cadre_id))
 	picture.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	picture.custom_minimum_size = Vector2(0, 170)
+	picture.custom_minimum_size = Vector2(0, 190)
 	card.add_child(picture)
-	card.add_child(ScreenKit.label(tr("modifier.%s.name" % cadre_id), 30, ScreenKit.RED))
-	card.add_child(ScreenKit.label(controller.modifier_text(cadre_id), 22))
+	card.add_child(ScreenKit.eyebrow(tr("store.cadre")))
+	var name: Label = ScreenKit.styled(tr("modifier.%s.name" % cadre_id), CommonsTheme.TITLE)
+	name.add_theme_font_size_override("font_size", NAME_SIZE)
+	card.add_child(name)
+	var rules: Label = ScreenKit.label(controller.modifier_text(cadre_id), 20)
+	rules.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	card.add_child(rules)
 	var buy: Button = ScreenKit.button(
-		tr("store.buy").format({"price": controller.store_price(slot)}), ScreenKit.COUPON
+		tr("store.buy").format({"price": controller.store_price(slot)}), CommonsTheme.COUPON
 	)
+	buy.size_flags_horizontal = Control.SIZE_FILL
 	buy.disabled = not controller.can_buy(slot)
 	buy.pressed.connect(
 		func() -> void:
@@ -73,9 +97,19 @@ func _item(slot: int, cadre_id: String) -> Control:
 			_refresh()
 	)
 	card.add_child(buy)
-	return ScreenKit.card_panel(card)
+	var panel: Control = ScreenKit.card_panel(card)
+	UiMotion.hoverable(panel)
+	return panel
 
 
 func _on_reroll() -> void:
 	_app.controller.reroll()
 	_refresh()
+	var fresh: Array[Control] = []
+	for child: Node in _counter.get_children():
+		fresh.append(child as Control)
+	UiMotion.enter(fresh)
+
+
+func _coupon_text(value: float) -> String:
+	return tr("store.coupons").format({"count": roundi(value)})

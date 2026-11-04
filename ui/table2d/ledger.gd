@@ -4,6 +4,8 @@ extends VBoxContainer
 ## once and reused, so scoring a play instances nothing.
 
 const MAX_ROWS: int = 9
+## Rows wrap inside the ledger's paper.
+const ROW_WIDTH: float = 250.0
 const INK: Color = Color("1e1a16")
 const STAMP: Color = Color("b02a17")
 
@@ -23,6 +25,8 @@ func _ready() -> void:
 		var row: Label = Label.new()
 		row.add_theme_font_size_override("font_size", 18)
 		row.add_theme_font_override("font", ScreenKit.TYPEWRITER)
+		row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.custom_minimum_size = Vector2(ROW_WIDTH, 0)
 		row.add_theme_color_override("font_color", STAMP)
 		add_child(row)
 		_labels.append(row)
@@ -40,6 +44,8 @@ func add_row(who: String, total: float) -> void:
 	if _texts.size() > MAX_ROWS:
 		_texts.remove_at(0)
 	_show()
+	var newest: Label = _labels[mini(_texts.size(), _labels.size()) - 1]
+	UiMotion.stamp(newest)
 
 
 func clear_rows() -> void:

@@ -11,6 +11,8 @@ const MAX_SPACING: float = 64.0
 const ARC_DROP: float = 0.6
 const TILT_PER_CARD: float = 0.025
 const LIFT: float = 32.0
+## How far below the fan a freshly dealt card starts.
+const DEAL_RISE: float = 260.0
 
 ## Tweens the lift of a selected or hovered card, when set.
 var motion: TableMotion = null
@@ -56,6 +58,23 @@ func set_hint(on: bool) -> void:
 func set_sort(mode: Sort) -> void:
 	sort_mode = mode
 	show_cards()
+
+
+## A fresh deal: every card rises into the fan from below, one after another.
+func deal_in() -> void:
+	if motion == null or motion.reduced:
+		return
+	for index: int in _views.size():
+		var view: CardView = _views[index]
+		var rest: Vector2 = view.position
+		view.position = rest + Vector2(0, DEAL_RISE)
+		view.modulate.a = 0.0
+		var tween: Tween = view.create_tween().set_parallel(true)
+		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		var delay: float = index * TableMotion.PRESETS.deal_stagger
+		var seconds: float = TableMotion.PRESETS.fly_time
+		tween.tween_property(view, "position", rest, seconds).set_delay(delay)
+		tween.tween_property(view, "modulate:a", 1.0, seconds * 0.6).set_delay(delay)
 
 
 ## Where card index sits for n cards: x, y and rotation. Pure, for tests.

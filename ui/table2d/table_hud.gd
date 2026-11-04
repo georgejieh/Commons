@@ -27,6 +27,7 @@ func _ready() -> void:
 	row.add_theme_constant_override("separation", 28)
 	status.add_theme_color_override("font_color", PAPER)
 	status.add_theme_font_size_override("font_size", 26)
+	status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(status)
 	row.add_child(_meter("meter.famine", famine, GRAIN, ScreenKit.ART.icon_famine))
@@ -34,6 +35,7 @@ func _ready() -> void:
 	row.add_child(_icon(ScreenKit.ART.icon_coupon))
 	coupons.add_theme_color_override("font_color", COUPON)
 	coupons.add_theme_font_size_override("font_size", 26)
+	coupons.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	row.add_child(coupons)
 	add_child(row)
 
@@ -61,9 +63,9 @@ func _meter(key: String, bar: ProgressBar, color: Color, icon: Texture2D) -> HBo
 	var box: HBoxContainer = HBoxContainer.new()
 	box.add_child(_icon(icon))
 	var label: Label = Label.new()
-	label.text = tr(key)
+	label.theme_type_variation = CommonsTheme.EYEBROW
+	label.text = tr(key).to_upper()
 	label.add_theme_color_override("font_color", PAPER)
-	label.add_theme_font_size_override("font_size", 18)
 	bar.custom_minimum_size = Vector2(180, 18)
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	bar.show_percentage = false

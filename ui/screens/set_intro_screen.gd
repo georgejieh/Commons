@@ -8,43 +8,39 @@ func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
 	var state: RunState = controller.state_copy()
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
-	column.add_child(
-		ScreenKit.label(
-			tr("intro.where").format(
-				{"year": state.year, "set": state.set_index + 1, "sets": app.sets_per_year()}
-			),
-			26
-		)
+	var where: String = tr("intro.where").format(
+		{"year": state.year, "set": state.set_index + 1, "sets": app.sets_per_year()}
 	)
-	column.add_child(ScreenKit.label(tr("set.type.%d" % state.set_type), 88, ScreenKit.RED))
-	column.add_child(
-		ScreenKit.label(
-			tr("intro.target").format(
-				{"target": Strings.score(controller.target()), "rounds": app.max_rounds()}
-			),
-			34
-		)
+	column.add_child(ScreenKit.header(where, tr("set.type.%d" % state.set_type)))
+	var target: String = tr("intro.target").format(
+		{"target": Strings.score(controller.target()), "rounds": app.max_rounds()}
 	)
-	column.add_child(ScreenKit.label(tr("intro.ladder"), 30))
-	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 24)
+	column.add_child(ScreenKit.styled(target, CommonsTheme.TITLE))
+	column.add_child(ScreenKit.eyebrow(tr("intro.ladder")))
+	var steps: Array[Control] = []
 	var ladder: Array[String] = controller.ladder()
 	for round_index: int in ladder.size():
-		row.add_child(_step(controller, round_index, ladder[round_index]))
+		steps.append(_step(controller, round_index, ladder[round_index]))
+	var row: HBoxContainer = ScreenKit.row(steps, 20)
 	column.add_child(row)
-	var begin: Button = ScreenKit.button(tr("intro.begin"), ScreenKit.RED)
+	var begin: Button = ScreenKit.button(tr("intro.begin"), CommonsTheme.PRIMARY)
 	begin.pressed.connect(func() -> void: app.show_screen(app.table_id(), true))
 	column.add_child(begin)
+	ScreenKit.reveal(column)
+	UiMotion.enter(steps)
 	begin.grab_focus()
 
 
 func _step(controller: RunController, round_index: int, debuff_id: String) -> Control:
-	var card: VBoxContainer = ScreenKit.card(Vector2(320, 260))
-	card.add_child(ScreenKit.label(tr("intro.round").format({"round": round_index + 1}), 24))
+	var card: VBoxContainer = ScreenKit.card(Vector2(330, 250))
+	card.add_child(ScreenKit.eyebrow(tr("intro.round").format({"round": round_index + 1})))
 	if debuff_id.is_empty():
-		card.add_child(ScreenKit.label(tr("intro.clean"), 30))
-		card.add_child(ScreenKit.label(tr("intro.clean_text"), 20))
+		card.add_child(ScreenKit.styled(tr("intro.clean"), CommonsTheme.TITLE))
+		card.add_child(ScreenKit.styled(tr("intro.clean_text"), CommonsTheme.CAPTION))
 	else:
-		card.add_child(ScreenKit.label(tr("modifier.%s.name" % debuff_id), 30, ScreenKit.RED))
+		var name: Label = ScreenKit.styled(tr("modifier.%s.name" % debuff_id), CommonsTheme.TITLE)
+		name.add_theme_font_size_override("font_size", StoreScreen.NAME_SIZE)
+		name.add_theme_color_override("font_color", ScreenKit.RED)
+		card.add_child(name)
 		card.add_child(ScreenKit.label(controller.modifier_text(debuff_id), 20))
 	return ScreenKit.card_panel(card)

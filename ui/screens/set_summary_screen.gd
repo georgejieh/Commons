@@ -9,25 +9,20 @@ func open(app: DemoApp) -> void:
 	var state: RunState = controller.state_copy()
 	var met: bool = state.set_progress >= controller.target()
 	var column: VBoxContainer = ScreenKit.page(self)
-	column.add_child(
-		ScreenKit.label(tr("summary.met" if met else "summary.missed"), 80, ScreenKit.RED)
+	var verdict: Control = ScreenKit.header(
+		tr("set.type.%d" % state.set_type), tr("summary.met" if met else "summary.missed")
 	)
-	column.add_child(
-		ScreenKit.label(
-			tr("summary.progress").format(
-				{
-					"progress": Strings.score(state.set_progress),
-					"target": Strings.score(controller.target())
-				}
-			),
-			34
-		)
-	)
-	column.add_child(ScreenKit.label(tr("summary.coupons").format({"count": state.coupons}), 28))
-	column.add_child(ScreenKit.label(tr("summary.famine").format({"value": state.famine}), 28))
+	column.add_child(verdict)
+	var tiles: Array[Control] = [
+		ScreenKit.stat(tr("summary.scored"), state.set_progress),
+		ScreenKit.stat(tr("summary.target"), controller.target(), controller.target()),
+		ScreenKit.stat(tr("summary.coupons_label"), state.coupons),
+		ScreenKit.stat(tr("summary.famine_label"), state.famine),
+	]
+	column.add_child(ScreenKit.row(tiles, 20))
 	var last: bool = controller.is_last_set()
 	var next: Button = ScreenKit.button(
-		tr("summary.to_year" if last else "summary.to_store"), ScreenKit.RED
+		tr("summary.to_year" if last else "summary.to_store"), CommonsTheme.PRIMARY
 	)
 	next.pressed.connect(
 		func() -> void:
@@ -35,4 +30,6 @@ func open(app: DemoApp) -> void:
 			app.show_screen("year_summary" if last else "store", true)
 	)
 	column.add_child(next)
+	ScreenKit.reveal(column)
+	UiMotion.stamp(verdict)
 	next.grab_focus()

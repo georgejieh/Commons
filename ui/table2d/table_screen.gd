@@ -33,6 +33,9 @@ var _cheat_sheet: CheatSheet = CheatSheet.new()
 var _pool_parent: Control = Control.new()
 var _you: Label = Label.new()
 var _motion: TableMotion = TableMotion.new()
+var _banner: TableBanner = TableBanner.new()
+var _landlord: int = Seats.NONE
+var _fresh_deal: bool = false
 
 
 func _ready() -> void:
@@ -48,12 +51,13 @@ func _ready() -> void:
 	_place(_board, Vector2(560, 128), Vector2(600, 140))
 	_place(_ledger, Vector2(1576, 128), Vector2(290, 640))
 	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
-	_you.add_theme_font_size_override("font_size", 26)
-	_you.add_theme_color_override("font_color", INK)
+	_you.theme_type_variation = CommonsTheme.TITLE
+	_you.add_theme_font_size_override("font_size", 28)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
 	_place(_need_panel, Vector2(720, 420), Vector2(420, 200))
 	_place(_cheat_sheet, Vector2(560, 120), Vector2(680, 760))
+	_place(_banner, Vector2(410, 300), Vector2(760, 0))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
 	for seat: int in Seats.COUNT:
@@ -166,6 +170,10 @@ func _on_event(event: RunEvent) -> void:
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			_clear_all_plays()
 			_ledger.clear_rows()
+			_fresh_deal = true
+		RunEvent.Type.LANDLORD_CHOSEN:
+			_landlord = event.seat
+			_announce_landlord(event.seat)
 	_refresh_status()
 
 
@@ -178,12 +186,18 @@ func _on_round_event(event: RoundEvent) -> void:
 				_hand_view.show_cards()
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
+				var rocket: bool = event.pattern.type == Pattern.Type.ROCKET
+				_banner.announce(tr("banner.rocket" if rocket else "banner.bomb"), ScreenKit.RED)
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
 		RoundEvent.Type.PASSED:
 			_clear_play(event.seat)
 			_say(event.seat, tr("table.say.pass"))
 		RoundEvent.Type.TRICK_WON:
 			_clear_all_plays()
+		RoundEvent.Type.ROUND_ENDED:
+			var landlord_won: bool = event.seat == _landlord
+			var key: String = "banner.landlord_wins" if landlord_won else "banner.peasants_win"
+			_banner.announce(tr(key), ScreenKit.INK)
 		RoundEvent.Type.ANNOUNCED:
 			_say(event.seat, tr("table.say.cards_left").format({"count": event.value}))
 
@@ -199,6 +213,9 @@ func _on_drained() -> void:
 		_need_panel.ask()
 	_hand.refresh()
 	_hand_view.show_cards()
+	if _fresh_deal:
+		_fresh_deal = false
+		_hand_view.deal_in()
 	_refresh_actions()
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
@@ -214,8 +231,9 @@ func _show_play(seat: int, cards: Array[CardInstance]) -> void:
 		view.position = Vector2.ZERO
 		view.rotation = 0.0
 		view.bind(card)
-		view.scale = Vector2(PLAY_SCALE, PLAY_SCALE)
 		view.custom_minimum_size = view.size * PLAY_SCALE
+		view.pivot_offset = Vector2.ZERO
+		_motion.drop(view, PLAY_SCALE, _play_views[seat].size())
 		_play_views[seat].append(view)
 
 
@@ -230,6 +248,15 @@ func _clear_play(seat: int) -> void:
 func _clear_all_plays() -> void:
 	for seat: int in _play_views:
 		_clear_play(seat)
+
+
+func _announce_landlord(seat: int) -> void:
+	if seat == 0:
+		_banner.announce(tr("banner.landlord_you"), ScreenKit.RED)
+	else:
+		_banner.announce(
+			tr("banner.landlord_other").format({"name": _app.seat_name(seat)}), ScreenKit.INK
+		)
 
 
 func _say(seat: int, text: String) -> void:

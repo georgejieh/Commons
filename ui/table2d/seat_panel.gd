@@ -25,9 +25,16 @@ var _count_row: HBoxContainer = HBoxContainer.new()
 func _init() -> void:
 	add_theme_constant_override("separation", 14)
 	_info.add_theme_constant_override("separation", 4)
-	_banner.text = tr("table.landlord")
-	_banner.add_theme_color_override("font_color", GOLD)
-	_banner.add_theme_font_size_override("font_size", 22)
+	_banner.text = tr("table.landlord").to_upper()
+	_banner.theme_type_variation = CommonsTheme.EYEBROW
+	_banner.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
+	var tag: StyleBoxFlat = StyleBoxFlat.new()
+	tag.bg_color = ScreenKit.STYLE.vermilion
+	tag.set_corner_radius_all(ScreenKit.STYLE.radius)
+	tag.content_margin_left = 10
+	tag.content_margin_right = 10
+	_banner.add_theme_stylebox_override("normal", tag)
+	_banner.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_portrait.custom_minimum_size = Vector2(110, 130)
 	_portrait.color = PAPER
 	_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -38,12 +45,11 @@ func _init() -> void:
 	_picture.offset_right = -4
 	_picture.offset_bottom = -4
 	_portrait.add_child(_picture)
-	_name.add_theme_font_size_override("font_size", 34)
-	_name.add_theme_color_override("font_color", INK)
+	_name.theme_type_variation = CommonsTheme.TITLE
+	_name.add_theme_font_size_override("font_size", 36)
 	_count.add_theme_font_size_override("font_size", 26)
 	_count.add_theme_color_override("font_color", INK)
-	_role.add_theme_font_size_override("font_size", 16)
-	_role.add_theme_color_override("font_color", INK)
+	_role.theme_type_variation = CommonsTheme.EYEBROW
 	_speech.add_theme_font_size_override("font_size", 20)
 	_speech.add_theme_color_override("font_color", INK)
 	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -75,11 +81,11 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 	_banner.visible = is_landlord
 	_portrait.color = GOLD if is_landlord else PAPER
 	if is_landlord:
-		_role.text = tr("table.role.landlord")
+		_role.text = tr("table.role.landlord").to_upper()
 	elif teammate:
-		_role.text = tr("table.role.teammate")
+		_role.text = tr("table.role.teammate").to_upper()
 	else:
-		_role.text = tr("table.role.peasant")
+		_role.text = tr("table.role.peasant").to_upper()
 
 
 func say(text: String) -> void:
