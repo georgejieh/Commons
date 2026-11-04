@@ -93,6 +93,10 @@ func seat_name(seat: int) -> String:
 	return tr(DEMO.name_keys[seat])
 
 
+func seat_portrait(seat: int) -> Texture2D:
+	return DEMO.portraits[seat] if seat < DEMO.portraits.size() else null
+
+
 func max_rounds() -> int:
 	return DEMO.sets.max_rounds
 

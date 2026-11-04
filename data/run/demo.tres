@@ -1,11 +1,14 @@
-[gd_resource type="Resource" script_class="DemoParams" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="DemoParams" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://data/run/demo_params.gd" id="1"]
 [ext_resource type="Resource" path="res://data/run/demo_sets.tres" id="2"]
+[ext_resource type="Texture2D" path="res://art/portraits/portrait_wang_placeholder.png" id="3"]
+[ext_resource type="Texture2D" path="res://art/portraits/portrait_zhao_placeholder.png" id="4"]
 
 [resource]
 script = ExtResource("1")
 sets = ExtResource("2")
 tiers = Array[int]([1, 1, 2])
 name_keys = Array[String](["seat.you", "villager.wang", "villager.zhao"])
+portraits = Array[Texture2D]([null, ExtResource("3"), ExtResource("4")])
 starting_coupons = 4

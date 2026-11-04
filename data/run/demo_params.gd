@@ -7,5 +7,7 @@ extends Resource
 @export var tiers: Array[int] = [1, 1, 2]
 ## Display name keys per seat.
 @export var name_keys: Array[String] = ["seat.you", "villager.wang", "villager.zhao"]
+## Portrait per seat; the player's entry is unused.
+@export var portraits: Array[Texture2D] = []
 ## Coupons at the start, so the first store visit has something to buy.
 @export var starting_coupons: int = 4

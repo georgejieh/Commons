@@ -12,6 +12,7 @@ var seat: int = -1
 
 var _banner: Label = Label.new()
 var _portrait: ColorRect = ColorRect.new()
+var _picture: TextureRect = TextureRect.new()
 var _name: Label = Label.new()
 var _count: Label = Label.new()
 var _role: Label = Label.new()
@@ -27,6 +28,14 @@ func _init() -> void:
 	_banner.add_theme_font_size_override("font_size", 22)
 	_portrait.custom_minimum_size = Vector2(110, 130)
 	_portrait.color = PAPER
+	_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_picture.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_picture.offset_left = 4
+	_picture.offset_top = 4
+	_picture.offset_right = -4
+	_picture.offset_bottom = -4
+	_portrait.add_child(_picture)
 	_name.add_theme_font_size_override("font_size", 34)
 	_name.add_theme_color_override("font_color", INK)
 	_count.add_theme_font_size_override("font_size", 26)
@@ -43,9 +52,10 @@ func _init() -> void:
 	add_child(_info)
 
 
-func setup(seat_index: int, display_name: String) -> void:
+func setup(seat_index: int, display_name: String, portrait: Texture2D = null) -> void:
 	seat = seat_index
 	_name.text = display_name
+	_picture.texture = portrait
 
 
 func set_count(cards: int) -> void:

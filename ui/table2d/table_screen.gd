@@ -118,7 +118,7 @@ func _exit_tree() -> void:
 func _build_seats() -> void:
 	for seat: int in [1, 2]:
 		var panel: SeatPanel = SeatPanel.new()
-		panel.setup(seat, _app.seat_name(seat))
+		panel.setup(seat, _app.seat_name(seat), _app.seat_portrait(seat))
 		var x: float = 1180.0 if seat == 1 else 72.0
 		_place(panel, Vector2(x, 128), Vector2(340, 200))
 		_seats[seat] = panel
