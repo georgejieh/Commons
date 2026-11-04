@@ -23,11 +23,11 @@ func _ready() -> void:
 	add_child(title)
 	for _index: int in MAX_ROWS:
 		var row: Label = Label.new()
-		row.add_theme_font_size_override("font_size", 18)
+		row.add_theme_font_size_override("font_size", 20)
 		row.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 		row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		row.custom_minimum_size = Vector2(ROW_WIDTH, 0)
-		row.add_theme_color_override("font_color", STAMP)
+		row.add_theme_color_override("font_color", INK)
 		add_child(row)
 		_labels.append(row)
 

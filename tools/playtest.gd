@@ -9,6 +9,7 @@ extends SceneTree
 const SEED: int = 4242
 const SHOT_EVERY: int = 5
 const STEP_FRAMES: int = 4
+const SETTLE_SECONDS: float = 1.2
 const SAVE_PATH: String = "user://playtest/run.json"
 
 var _out: String = "res://reports/playtest"
@@ -304,6 +305,9 @@ func _frames(count: int) -> void:
 
 
 func _shot(name: String) -> void:
+	# Count-ups and entrances run on the clock, and software rendering is slow, so wait
+	# on time, not frames, before a picture.
+	await create_timer(SETTLE_SECONDS).timeout
 	await RenderingServer.frame_post_draw
 	_shots += 1
 	var path: String = _out.path_join("%02d_%s.png" % [_shots, name])
