@@ -11,6 +11,8 @@ var add_grain: float
 var add_zeal: float
 ## Multiplied last.
 var mul_zeal: float
+## The seat's plays before this one in the round, so effects need no state of their own.
+var plays_before: int = 0
 
 
 func _init(

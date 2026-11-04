@@ -108,6 +108,14 @@ func card_ids_for(pattern: Pattern) -> Array[int]:
 	return _loop.round_state().action_for(pattern).card_ids.duplicate()
 
 
+## How the player's chosen cards read and what they would score now, or null between
+## rounds. A preview changes nothing.
+func preview_play(card_ids: Array[int]) -> PlayPreview:
+	if _loop.round_state() == null:
+		return null
+	return _loop.preview_play(card_ids.duplicate())
+
+
 func target() -> float:
 	return _loop.target()
 

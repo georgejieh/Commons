@@ -27,13 +27,12 @@ var _pool_by_id: Dictionary[String, ModifierDef] = {}
 var _stack: ModifierStack = ModifierStack.new()
 var _table: SeatRules
 var _seat: LandlordSeat = LandlordSeat.new()
-var _levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
+var _scoring: RoundScoring
 var _awaiting: Awaiting = Awaiting.NOTHING
 var _deal: DealResult
 var _bidding: Bidding
 var _round: RoundState
 var _round_seen: int = 0
-var _scores: PackedFloat64Array = PackedFloat64Array()
 
 
 ## configs has one entry per seat; the player's entry is unused.
@@ -53,6 +52,7 @@ func _init(
 	for definition: ModifierDef in pool:
 		_pool_by_id[definition.id] = definition
 	_table = SeatRules.new(_stack)
+	_scoring = RoundScoring.new(HandLevels.new(Scorer.DEFAULT_PARAMS.max_level), _stack)
 
 
 func awaiting() -> Awaiting:
@@ -78,8 +78,9 @@ func player_cards() -> Array[CardInstance]:
 	return cards
 
 
-func player_counts() -> PackedByteArray:
-	return _deal.hands[PLAYER].counts()
+## What the player's cards would score if played now, through the real scoring path.
+func preview_play(card_ids: Array[int]) -> PlayPreview:
+	return _scoring.preview(_round, PLAYER, card_ids)
 
 
 ## What the seat's rules and rank order are, for bots and hints.
@@ -288,8 +289,7 @@ func _begin_play() -> void:
 func _create_round() -> void:
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
-	_scores = PackedFloat64Array()
-	_scores.resize(Seats.COUNT)
+	_scoring.start(state.landlord_seat)
 	_stack.run_round_start(RoundContext.new(state.landlord_seat, Seats.NONE, 0))
 	_collect_round_events()
 
@@ -327,8 +327,7 @@ func _collect_round_events() -> void:
 		var event: RoundEvent = round_events[index]
 		set_log.add(RunEvent.wrap(event))
 		if event.type == RoundEvent.Type.PLAYED:
-			var total: float = RoundTotals.play_score(event, _levels, state.landlord_seat, _stack)
-			_scores[event.seat] += total
+			var total: float = _scoring.score(event)
 			set_log.add(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total))
 	_round_seen = round_events.size()
 
@@ -340,7 +339,7 @@ func _finish_round() -> void:
 	var landlord: int = state.landlord_seat
 	_stack.run_round_end(RoundContext.new(landlord, winner, finish))
 	var totals: PackedFloat64Array = RoundTotals.totals(
-		_scores, landlord, winner, finish, _table.rules_for(landlord)
+		_scoring.scores(), landlord, winner, finish, _table.rules_for(landlord)
 	)
 	RoundBanking.bank(state, totals, PLAYER, set_log.events())
 	if landlord != PLAYER:

@@ -16,7 +16,8 @@ static func score_play(
 	seat: int,
 	is_landlord: bool,
 	stack: ModifierStack,
-	params: ScoreParams = DEFAULT_PARAMS
+	params: ScoreParams = DEFAULT_PARAMS,
+	plays_before: int = 0
 ) -> ScoreBreakdown:
 	var scored: int = 0
 	for card: CardInstance in cards:
@@ -37,6 +38,7 @@ static func score_play(
 	var zeal: float = params.zeal_for(pattern.type, level)
 	breakdown.add_step(ScoreBreakdown.Step.BASE_ZEAL, zeal)
 	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, 0.0, 1.0)
+	play.plays_before = plays_before
 	stack.run_play_scored(play)
 	grain += play.add_grain
 	zeal = (zeal + play.add_zeal) * play.mul_zeal

@@ -29,7 +29,7 @@ func act(loop: RunLoop) -> bool:
 	match loop.awaiting():
 		RunLoop.Awaiting.PLAYER_BID:
 			var claim: bool = Bot.decide_bid(
-				loop.player_counts(),
+				ControllerScript.counts(loop.player_cards()),
 				false,
 				false,
 				loop.seat_table(RunLoop.PLAYER),

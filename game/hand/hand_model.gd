@@ -1,0 +1,133 @@
+class_name HandModel
+extends RefCounted
+## The player's hand as both table views see it: which cards are selected, how the
+## selection reads, what it would score, and which cards a hint lights. Selection is
+## local; playing it goes through RunController.
+
+signal changed
+
+const KEY_SELECT: String = "hand.reason.select"
+const KEY_WAIT: String = "hand.reason.wait"
+const KEY_DOES_NOT_BEAT: String = "hand.reason.does_not_beat"
+const KEY_INVALID_PREFIX: String = "hand.reason."
+const KEY_PATTERN_PREFIX: String = "pattern."
+
+var _controller: RunController
+var _cards: Array[CardInstance] = []
+var _selected: Dictionary[int, bool] = {}
+var _preview: PlayPreview = null
+
+
+func _init(controller: RunController) -> void:
+	_controller = controller
+
+
+## Reads the player's cards again, keeping the selection of cards still held.
+func refresh() -> void:
+	_cards = _controller.player_cards()
+	var held: Dictionary[int, bool] = {}
+	for card: CardInstance in _cards:
+		if _selected.has(card.id()):
+			held[card.id()] = true
+	_selected = held
+	_update()
+
+
+func cards() -> Array[CardInstance]:
+	return _cards
+
+
+func is_selected(card_id: int) -> bool:
+	return _selected.has(card_id)
+
+
+func toggle(card_id: int) -> void:
+	set_selected(card_id, not _selected.has(card_id))
+
+
+func set_selected(card_id: int, on: bool) -> void:
+	if not _holds(card_id) or _selected.has(card_id) == on:
+		return
+	if on:
+		_selected[card_id] = true
+	else:
+		_selected.erase(card_id)
+	_update()
+
+
+func clear() -> void:
+	if _selected.is_empty():
+		return
+	_selected.clear()
+	_update()
+
+
+## Selected card IDs in hand order.
+func selected_ids() -> Array[int]:
+	var ids: Array[int] = []
+	for card: CardInstance in _cards:
+		if _selected.has(card.id()):
+			ids.append(card.id())
+	return ids
+
+
+func can_play() -> bool:
+	return _preview != null and _preview.can_play()
+
+
+func can_pass() -> bool:
+	var view: SeatView = _controller.seat_view()
+	return (
+		_controller.awaiting() == RunLoop.Awaiting.PLAYER_PLAY
+		and view != null
+		and view.public.current_play != null
+	)
+
+
+## The pattern name when the selection forms one, else the reason Play is off.
+func label_key() -> String:
+	if _selected.is_empty():
+		return KEY_SELECT
+	if _preview == null:
+		return KEY_WAIT
+	var reading: PlayReading = _preview.reading
+	if reading.pattern == null:
+		var reason: String = Classification.Reason.keys()[reading.invalid_reason]
+		return KEY_INVALID_PREFIX + reason.to_lower()
+	if reading.reason == RoundState.Reason.DOES_NOT_BEAT:
+		return KEY_DOES_NOT_BEAT
+	if reading.reason == RoundState.Reason.OUT_OF_TURN:
+		return KEY_WAIT
+	var type_name: String = Pattern.Type.keys()[reading.pattern.type]
+	return KEY_PATTERN_PREFIX + type_name.to_lower()
+
+
+## What the selection would score if played now, or 0 when it forms no pattern.
+func projected_score() -> float:
+	return 0.0 if _preview == null else _preview.score
+
+
+## Cards whose rank appears in any legal move. Moves are over ranks, not instances.
+func hint_ids() -> Array[int]:
+	var ranks: Dictionary[int, bool] = {}
+	for move: Pattern in _controller.legal_moves():
+		var counts: PackedByteArray = move.counts()
+		for rank: int in counts.size():
+			if counts[rank] > 0:
+				ranks[rank] = true
+	var ids: Array[int] = []
+	for card: CardInstance in _cards:
+		if ranks.has(card.base_rank()):
+			ids.append(card.id())
+	return ids
+
+
+func _holds(card_id: int) -> bool:
+	return _cards.any(func(card: CardInstance) -> bool: return card.id() == card_id)
+
+
+func _update() -> void:
+	_preview = null
+	if not _selected.is_empty() and _controller.seat_view() != null:
+		_preview = _controller.preview_play(selected_ids())
+	changed.emit()

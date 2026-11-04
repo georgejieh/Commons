@@ -13,7 +13,7 @@ func act(controller: RunController) -> bool:
 	match controller.awaiting():
 		RunLoop.Awaiting.PLAYER_BID:
 			var claim: bool = Bot.decide_bid(
-				_counts(controller.player_cards()),
+				counts(controller.player_cards()),
 				false,
 				false,
 				controller.player_table(),
@@ -48,9 +48,9 @@ func _play(controller: RunController) -> bool:
 	return controller.play(controller.card_ids_for(play.pattern)) == RunLoop.Reason.OK
 
 
-static func _counts(cards: Array[CardInstance]) -> PackedByteArray:
-	var counts: PackedByteArray = PackedByteArray()
-	counts.resize(Ranks.COUNT)
+static func counts(cards: Array[CardInstance]) -> PackedByteArray:
+	var result: PackedByteArray = PackedByteArray()
+	result.resize(Ranks.COUNT)
 	for card: CardInstance in cards:
-		counts[card.base_rank()] += 1
-	return counts
+		result[card.base_rank()] += 1
+	return result
