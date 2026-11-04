@@ -122,6 +122,33 @@ func hint_ids() -> Array[int]:
 	return ids
 
 
+## The cards in suggested play order: the hand split into its fewest plays (P2.2), each
+## group's cards together, lowest rank first within the leftovers.
+func grouped_cards() -> Array[CardInstance]:
+	var table: BotTable = _controller.player_table()
+	var search: HandDecomposer = HandDecomposer.new(
+		table.rules, table.rank_map, BotConfig.DEFAULT_WEIGHTS.memo_cap
+	)
+	var counts: PackedByteArray = PackedByteArray()
+	counts.resize(Ranks.COUNT)
+	var left: Array[CardInstance] = _cards.duplicate()
+	left.sort_custom(
+		func(a: CardInstance, b: CardInstance) -> bool: return a.base_rank() < b.base_rank()
+	)
+	for card: CardInstance in left:
+		counts[card.base_rank()] += 1
+	var ordered: Array[CardInstance] = []
+	for group: Pattern in search.decompose(counts).groups:
+		var needed: PackedByteArray = group.counts()
+		for card: CardInstance in left.duplicate():
+			if needed[card.base_rank()] > 0:
+				needed[card.base_rank()] -= 1
+				ordered.append(card)
+				left.erase(card)
+	ordered.append_array(left)
+	return ordered
+
+
 func _holds(card_id: int) -> bool:
 	return _cards.any(func(card: CardInstance) -> bool: return card.id() == card_id)
 
