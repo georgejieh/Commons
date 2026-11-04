@@ -144,6 +144,22 @@ func reroll_price() -> int:
 	return _loop.shop.reroll_price()
 
 
+## Cadres the player can hold at once.
+func cadre_slots() -> int:
+	return RunLoop.DEFAULT_SHOP.cadre_slots
+
+
+## What every villager declares by default, a fair need to start the player's choice.
+func base_need() -> int:
+	return RunLoop.DEFAULT_PARAMS.base_need
+
+
+## A reroll is worth pressing: affordable, and the board has room for what it draws.
+func can_reroll() -> bool:
+	var state: RunState = _loop.state
+	return state.coupons >= reroll_price() and state.inventory.cadres.size() < cadre_slots()
+
+
 func can_buy(slot: int) -> bool:
 	return _loop.shop.check_buy(slot) == RunShop.Reason.OK
 
@@ -223,6 +239,9 @@ func state_copy() -> RunState:
 
 func _attach(loop: RunLoop, saves: SaveService) -> void:
 	_loop = loop
+	# A replayed loop may hold events banking appended unseen; the view reads those from
+	# set_events(), so the listener starts after them.
+	_loop.set_log.flush()
 	for definition: ModifierDef in RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres:
 		_definitions[definition.id] = definition
 	_saves = saves

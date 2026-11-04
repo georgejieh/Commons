@@ -74,7 +74,7 @@ modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Zeal can't go 
 modifier.stakhanovite.name,Stakhanovite
 modifier.stakhanovite.text,Your Straights gain {zeal_per_card} Zeal for each card past {base_length}.
 modifier.hidden_reserves.name,Hidden Reserves
-modifier.hidden_reserves.text,Your kickers score their Grain.
+modifier.hidden_reserves.text,Your kickers score their base Grain.
 modifier.landlords_ledger.name,Landlord's Ledger
 modifier.landlords_ledger.text,"While you are landlord, kitty cards score their Grain twice."
 modifier.ration_cut.name,Ration Cut

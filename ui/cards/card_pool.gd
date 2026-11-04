@@ -3,7 +3,8 @@ extends Node
 ## Every card view the table uses, made once when the table loads and reused after, so
 ## no card is instanced during a round (P3B.3).
 
-const SIZE: int = 60
+## A full hand, plus a large play in every seat's lane, still fits.
+const SIZE: int = 80
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 
 var _free: Array[CardView] = []

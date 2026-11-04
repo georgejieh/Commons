@@ -5,6 +5,7 @@ extends Node
 ## connect to played and read the run only once the queue is empty.
 
 signal played(event: RunEvent)
+signal queued
 signal drained
 
 ## Seconds between events.
@@ -18,6 +19,7 @@ var _wait: float = 0.0
 
 func push(event: RunEvent) -> void:
 	_queue.append(event)
+	queued.emit()
 
 
 func is_idle() -> bool:

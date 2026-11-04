@@ -42,6 +42,7 @@ func _refresh() -> void:
 	for slot: int in stock.size():
 		_counter.add_child(_item(slot, stock[slot]))
 	_reroll.text = tr("store.reroll").format({"price": controller.reroll_price()})
+	_reroll.disabled = not controller.can_reroll()
 	var names: PackedStringArray = []
 	for cadre_id: String in state.inventory.cadres:
 		names.append(tr("modifier.%s.name" % cadre_id))

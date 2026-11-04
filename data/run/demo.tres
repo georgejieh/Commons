@@ -11,4 +11,5 @@ sets = ExtResource("2")
 tiers = Array[int]([1, 1, 2])
 name_keys = Array[String](["seat.you", "villager.wang", "villager.zhao"])
 portraits = Array[Texture2D]([null, ExtResource("3"), ExtResource("4")])
+need_cap = 40
 starting_coupons = 4

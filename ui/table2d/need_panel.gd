@@ -5,8 +5,6 @@ extends PanelContainer
 
 signal declared(need: int)
 
-const MAX_NEED: int = 99
-
 var _spin: SpinBox = SpinBox.new()
 
 
@@ -17,7 +15,6 @@ func _ready() -> void:
 	prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	prompt.custom_minimum_size = Vector2(360, 0)
 	_spin.min_value = 0
-	_spin.max_value = MAX_NEED
 	var button: Button = Button.new()
 	button.text = tr("need.declare")
 	button.pressed.connect(func() -> void: declared.emit(int(_spin.value)))
@@ -25,6 +22,12 @@ func _ready() -> void:
 		box.add_child(child)
 	add_child(box)
 	visible = false
+
+
+## Starts the choice at a fair need, with the most a declaration may claim.
+func setup(default_need: int, cap: int) -> void:
+	_spin.max_value = cap
+	_spin.value = default_need
 
 
 ## Shows the panel with the last value kept.

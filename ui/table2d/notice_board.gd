@@ -2,16 +2,16 @@ class_name NoticeBoard
 extends HBoxContainer
 ## The player's Cadres as portrait cards pinned in slot order. Slots are made once.
 
-const SLOTS: int = 5
 const PAPER: Color = Color("f6edd9")
 const INK: Color = Color("1e1a16")
 
 var _labels: Array[Label] = []
 
 
-func _ready() -> void:
+## Makes one slot per Cadre the player can hold.
+func setup(slots: int) -> void:
 	add_theme_constant_override("separation", 14)
-	for _index: int in SLOTS:
+	for _index: int in slots:
 		var card: PanelContainer = PanelContainer.new()
 		card.custom_minimum_size = Vector2(108, 130)
 		var style: StyleBoxFlat = StyleBoxFlat.new()

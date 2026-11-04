@@ -76,11 +76,14 @@ func open(app: DemoApp) -> void:
 	_motion.setup(self, bool(Settings.value("reduced_motion")))
 	_hand_view.motion = _motion
 	_build_seats()
+	_board.setup(_controller.cadre_slots())
+	_need_panel.setup(_controller.base_need(), app.need_cap())
 	_hand_view.setup(_hand, _pool)
 	_hand.changed.connect(_refresh_actions)
 	_player.played.connect(_on_event)
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)
+	_player.queued.connect(_refresh_actions)
 	_actions.play.pressed.connect(_on_play)
 	_actions.pass_turn.pressed.connect(_on_pass)
 	_actions.hint.toggled.connect(_hand_view.set_hint)
@@ -142,6 +145,9 @@ func _on_round_event(event: RoundEvent) -> void:
 	match event.type:
 		RoundEvent.Type.PLAYED:
 			_show_play(event.seat, event.cards)
+			if event.seat == 0:
+				_hand.refresh()
+				_hand_view.show_cards()
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
@@ -233,24 +239,29 @@ func _refresh_actions() -> void:
 	_actions.reading.text = text
 
 
+## Every command fills the event queue, so the buttons go off until it drains.
 func _on_play() -> void:
 	if _controller.play(_hand.selected_ids()) == RunController.OK:
 		_hand.clear()
+	_refresh_actions()
 
 
 func _on_pass() -> void:
 	_controller.pass_turn()
 	_hand.clear()
+	_refresh_actions()
 
 
 func _on_bid(claim: bool) -> void:
 	_actions.show_bidding(false)
 	_controller.bid(claim)
+	_refresh_actions()
 
 
 func _on_need(need: int) -> void:
 	_need_panel.visible = false
 	_controller.declare_need(need)
+	_refresh_actions()
 
 
 func _toggle_sort() -> void:

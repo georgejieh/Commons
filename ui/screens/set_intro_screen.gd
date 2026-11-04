@@ -10,7 +10,10 @@ func open(app: DemoApp) -> void:
 	var column: VBoxContainer = ScreenKit.page(self)
 	column.add_child(
 		ScreenKit.label(
-			tr("intro.where").format({"year": state.year, "set": state.set_index + 1}), 26
+			tr("intro.where").format(
+				{"year": state.year, "set": state.set_index + 1, "sets": app.sets_per_year()}
+			),
+			26
 		)
 	)
 	column.add_child(ScreenKit.label(tr("set.type.%d" % state.set_type), 88, ScreenKit.RED))

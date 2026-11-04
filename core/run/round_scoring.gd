@@ -41,7 +41,12 @@ func preview(round_state: RoundState, seat: int, card_ids: Array[int]) -> PlayPr
 	var reading: PlayReading = round_state.read_play(seat, card_ids)
 	if reading.pattern == null:
 		return PlayPreview.new(reading, 0.0)
-	return PlayPreview.new(reading, _score_cards(reading.cards, reading.pattern, seat))
+	var score: float = _score_cards(reading.cards, reading.pattern, seat)
+	var copies: Array[CardInstance] = []
+	for card: CardInstance in reading.cards:
+		copies.append(card.snapshot())
+	reading.cards = copies
+	return PlayPreview.new(reading, score)
 
 
 func _score_cards(cards: Array[CardInstance], pattern: Pattern, seat: int) -> float:

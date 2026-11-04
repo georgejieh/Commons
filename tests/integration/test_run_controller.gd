@@ -115,4 +115,38 @@ func test_a_save_in_the_store_resumes_with_the_same_stock() -> void:
 	assert_int(resumed.awaiting()).is_equal(RunController.AWAIT_STORE)
 	assert_array(resumed.store_stock()).is_equal(stock)
 	assert_int(resumed.state_copy().coupons).is_equal(coupons)
+	# A purchase after the resume saves too, and a second resume keeps it.
+	var slot: int = resumed.store_stock().find(RunShop.SOLD) + 1
+	var bought: Array[String] = resumed.state_copy().inventory.cadres
+	if resumed.can_buy(slot):
+		resumed.buy(slot)
+		bought = resumed.state_copy().inventory.cadres
+	var again: RunController = auto_free(RunController.new())
+	assert_bool(again.resume_saved(service, RunScript.bots(), SetConfig.new())).is_true()
+	assert_int(service.load_save().status).is_equal(SaveLoad.Status.OK)
+	assert_array(again.state_copy().inventory.cadres).is_equal(bought)
+	service.delete()
+
+
+## A run resumed mid-round hands the view only events it has not read from the log.
+func test_a_resumed_run_never_repeats_an_event() -> void:
+	var service: SaveService = SaveService.for_run("user://test_controller/run.json")
+	service.delete()
+	var controller: RunController = auto_free(RunController.new())
+	controller.start_run(SEED, RunScript.bots(), SetConfig.new(), service)
+	var script: ControllerScript = ControllerScript.new()
+	while controller.awaiting() != RunController.AWAIT_NEED:
+		if not script.act(controller):
+			break
+	if controller.awaiting() != RunController.AWAIT_NEED:
+		service.delete()
+		return
+	var resumed: RunController = auto_free(RunController.new())
+	assert_bool(resumed.resume_saved(service, RunScript.bots(), SetConfig.new())).is_true()
+	var known: Array[RunEvent] = resumed.set_events()
+	var heard: Array[RunEvent] = []
+	resumed.event_emitted.connect(func(event: RunEvent) -> void: heard.append(event))
+	resumed.declare_need(ControllerScript.NEED)
+	for event: RunEvent in heard:
+		assert_bool(known.has(event)).is_false()
 	service.delete()

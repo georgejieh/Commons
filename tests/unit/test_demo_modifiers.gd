@@ -67,3 +67,15 @@ func test_morning_meeting_zeroes_only_the_first_play() -> void:
 func test_straightened_lines_halves_straights() -> void:
 	assert_float(_score("34567", ["straightened_lines"])).is_equal(_score("34567", []) / 2.0)
 	assert_float(_score("99", ["straightened_lines"])).is_equal(_score("99", []))
+
+
+func test_paperwork_halves_grain_that_cadres_added_too() -> void:
+	# A pair of 9s: 10 base + 18 card Grain, plus Iron Rice Bowl's 30, then halved.
+	assert_float(_score("99", ["iron_rice_bowl"])).is_equal(116.0)
+	assert_float(_score("99", ["iron_rice_bowl", "paperwork"])).is_equal(58.0)
+
+
+func test_straightened_lines_halves_a_capped_total() -> void:
+	var capped: float = _score("3456789TJQ", ["iron_rice_bowl", "stakhanovite"])
+	var both: Array[String] = ["iron_rice_bowl", "stakhanovite", "straightened_lines"]
+	assert_float(_score("3456789TJQ", both)).is_equal(capped / 2.0)

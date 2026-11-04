@@ -111,3 +111,28 @@ func _scripts(root: String) -> PackedStringArray:
 	for folder: String in DirAccess.get_directories_at(root):
 		paths.append_array(_scripts(root.path_join(folder)))
 	return paths
+
+
+## After a command the buttons stay off until the bots' plays have been shown.
+func test_buttons_lock_while_events_play() -> void:
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	var driver: ControllerScript = ControllerScript.new()
+	for _turn: int in 200:
+		table.skip_events()
+		if _app.controller.awaiting() == RunController.AWAIT_PLAY:
+			break
+		_press(table, driver)
+		await await_idle_frame()
+	assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_PLAY)
+	table.skip_events()
+	var ids: Array[int] = driver.choose_play(_app.controller)
+	for card_id: int in ids:
+		_app.hand.toggle(card_id)
+	if ids.is_empty():
+		table.actions().pass_turn.pressed.emit()
+	else:
+		table.actions().play.pressed.emit()
+	if _app.controller.awaiting() == RunController.AWAIT_PLAY:
+		assert_bool(table.actions().pass_turn.disabled).is_true()
+		assert_bool(table.actions().play.disabled).is_true()

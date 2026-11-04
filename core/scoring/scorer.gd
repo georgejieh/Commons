@@ -57,7 +57,7 @@ static func score_play(
 
 	breakdown.grain = clamp_score(grain)
 	breakdown.zeal = clamp_score(zeal)
-	breakdown.total = clamp_score(grain * zeal)
+	breakdown.total = clamp_score(grain * zeal * play.total_scale)
 	return breakdown
 
 

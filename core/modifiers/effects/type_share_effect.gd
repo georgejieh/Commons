@@ -1,11 +1,11 @@
 class_name TypeShareEffect
 extends ModifierEffect
-## The holder's plays of one hand type keep only a percentage of their Grain, or of their
-## whole score.
+## The holder's plays of one hand type keep only a percentage of their Grain, counting
+## Grain that Cadres added, or of their finished total.
 
 const TYPE: String = "type"
 const PERCENT: String = "percent"
-## 1 cuts the whole score through Zeal; 0 cuts Grain only.
+## 1 cuts the finished total; 0 cuts Grain only.
 const WHOLE: String = "whole"
 
 
@@ -18,6 +18,6 @@ func play_scored(context: PlayContext) -> void:
 		return
 	var share: float = parameters[PERCENT] / 100.0
 	if parameters[WHOLE] == 1:
-		context.mul_zeal *= share
+		context.total_scale *= share
 	else:
-		context.add_grain -= context.grain * (1.0 - share)
+		context.add_grain -= (context.grain + context.add_grain) * (1.0 - share)

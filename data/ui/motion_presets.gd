@@ -18,6 +18,8 @@ extends Resource
 @export var bomb_trauma: float = 0.6
 @export var trauma_decay: float = 1.6
 @export var max_shake: float = 18.0
+## How fast the shake wobbles on each axis, in radians per second.
+@export var shake_speed: Vector2 = Vector2(47.0, 53.0)
 ## Seconds the game holds still when a bomb lands.
 @export var hit_stop: float = 0.08
 ## Hover lift and tilt for a card under the cursor, in pixels and radians.

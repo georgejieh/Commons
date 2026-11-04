@@ -19,6 +19,8 @@ var grain: float = 0.0
 var card_grain: Array[int] = []
 ## The most Zeal the play may end with, after the bomb multiplier.
 var zeal_cap: float = INF
+## Multiplies the finished total, after every other step and the cap.
+var total_scale: float = 1.0
 
 
 func _init(

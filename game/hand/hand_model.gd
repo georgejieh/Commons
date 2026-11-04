@@ -91,13 +91,8 @@ func label_key() -> String:
 	if _preview == null:
 		return KEY_WAIT
 	var reading: PlayReading = _preview.reading
-	if reading.pattern == null:
-		var reason: String = Classification.Reason.keys()[reading.invalid_reason]
-		return KEY_INVALID_PREFIX + reason.to_lower()
-	if reading.reason == RoundState.Reason.DOES_NOT_BEAT:
-		return KEY_DOES_NOT_BEAT
-	if reading.reason == RoundState.Reason.OUT_OF_TURN:
-		return KEY_WAIT
+	if reading.pattern == null or reading.reason != RoundState.Reason.OK:
+		return _refusal_key(reading)
 	var type_name: String = Pattern.Type.keys()[reading.pattern.type]
 	return KEY_PATTERN_PREFIX + type_name.to_lower()
 
@@ -125,10 +120,6 @@ func hint_ids() -> Array[int]:
 ## The cards in suggested play order: the hand split into its fewest plays (P2.2), each
 ## group's cards together, lowest rank first within the leftovers.
 func grouped_cards() -> Array[CardInstance]:
-	var table: BotTable = _controller.player_table()
-	var search: HandDecomposer = HandDecomposer.new(
-		table.rules, table.rank_map, BotConfig.DEFAULT_WEIGHTS.memo_cap
-	)
 	var counts: PackedByteArray = PackedByteArray()
 	counts.resize(Ranks.COUNT)
 	var left: Array[CardInstance] = _cards.duplicate()
@@ -138,7 +129,8 @@ func grouped_cards() -> Array[CardInstance]:
 	for card: CardInstance in left:
 		counts[card.base_rank()] += 1
 	var ordered: Array[CardInstance] = []
-	for group: Pattern in search.decompose(counts).groups:
+	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
+	for group: Pattern in Bot.suggest_groups(counts, _controller.player_table(), config):
 		var needed: PackedByteArray = group.counts()
 		for card: CardInstance in left.duplicate():
 			if needed[card.base_rank()] > 0:
@@ -147,6 +139,18 @@ func grouped_cards() -> Array[CardInstance]:
 				left.erase(card)
 	ordered.append_array(left)
 	return ordered
+
+
+## Why a selection can't be played now. Cards that no longer read, such as cards
+## just played, wait rather than name a key the table lacks.
+func _refusal_key(reading: PlayReading) -> String:
+	if reading.pattern != null:
+		var beaten: bool = reading.reason == RoundState.Reason.DOES_NOT_BEAT
+		return KEY_DOES_NOT_BEAT if beaten else KEY_WAIT
+	if reading.invalid_reason == Classification.Reason.OK:
+		return KEY_WAIT
+	var reason: String = Classification.Reason.keys()[reading.invalid_reason]
+	return KEY_INVALID_PREFIX + reason.to_lower()
 
 
 func _holds(card_id: int) -> bool:

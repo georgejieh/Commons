@@ -56,6 +56,9 @@ static func resume(
 	var loop: RunLoop = RunLoop.new(
 		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool
 	)
+	# The resumed loop's own record starts from the same checkpoint, so its next save
+	# keeps it even when no new Set starts first, as in the store.
+	loop.record.mark(loop.state)
 	loop.resume_at_checkpoint()
 	for command: Dictionary in data["commands"]:
 		if _replay(loop, command) != RunLoop.Reason.OK:

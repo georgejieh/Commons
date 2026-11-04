@@ -97,6 +97,14 @@ func seat_portrait(seat: int) -> Texture2D:
 	return DEMO.portraits[seat] if seat < DEMO.portraits.size() else null
 
 
+func need_cap() -> int:
+	return DEMO.need_cap
+
+
+func sets_per_year() -> int:
+	return SetConfig.SETS_PER_YEAR
+
+
 func max_rounds() -> int:
 	return DEMO.sets.max_rounds
 

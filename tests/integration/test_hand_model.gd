@@ -120,3 +120,17 @@ func _two_ranks_apart() -> Array[int]:
 		if absi(other.base_rank() - cards[0].base_rank()) >= 2:
 			return [cards[0].id(), other.id()]
 	return []
+
+
+## A selection that no longer reads, such as cards just played, waits instead of naming
+## a key the table lacks.
+func test_a_stale_selection_waits() -> void:
+	_to_player_play(false)
+	_hand.refresh()
+	var ids: Array[int] = _controller.card_ids_for(_controller.legal_moves()[0])
+	for card_id: int in ids:
+		_hand.toggle(card_id)
+	_controller.play(ids)
+	_hand.toggle(ids[0])
+	_hand.toggle(ids[0])
+	assert_str(_hand.label_key()).is_equal(HandModel.KEY_WAIT)

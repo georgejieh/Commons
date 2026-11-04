@@ -60,4 +60,7 @@ func _process(delta: float) -> void:
 	_trauma = maxf(0.0, _trauma - PRESETS.trauma_decay * delta)
 	var amount: float = _trauma * _trauma * PRESETS.max_shake
 	var phase: float = Time.get_ticks_msec() / 1000.0
-	target.position = _origin + Vector2(sin(phase * 47.0), cos(phase * 53.0)) * amount
+	target.position = (
+		_origin
+		+ Vector2(sin(phase * PRESETS.shake_speed.x), cos(phase * PRESETS.shake_speed.y)) * amount
+	)
