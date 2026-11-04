@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArtLibrary" load_steps=20 format=3]
+[gd_resource type="Resource" script_class="ArtLibrary" load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://data/ui/art_library.gd" id="1"]
 [ext_resource type="Texture2D" path="res://art/backdrops/table_surface.png" id="2"]
@@ -19,6 +19,8 @@
 [ext_resource type="Texture2D" path="res://art/cadres/cadre_hidden_reserves.png" id="17"]
 [ext_resource type="Texture2D" path="res://art/cadres/cadre_landlords_ledger.png" id="18"]
 [ext_resource type="Texture2D" path="res://art/ui/panel_paper.png" id="19"]
+[ext_resource type="Texture2D" path="res://art/backdrops/title_night.png" id="20"]
+[ext_resource type="Texture2D" path="res://art/backdrops/watchers.png" id="21"]
 
 [resource]
 script = ExtResource("1")
@@ -26,6 +28,8 @@ table_surface = ExtResource("2")
 title = ExtResource("3")
 store = ExtResource("4")
 notice_wall = ExtResource("5")
+title_night = ExtResource("20")
+watchers = ExtResource("21")
 card_back = ExtResource("6")
 card_face = ExtResource("7")
 paper = ExtResource("8")

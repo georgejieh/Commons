@@ -6,6 +6,10 @@ extends Resource
 @export var title: Texture2D
 @export var store: Texture2D
 @export var notice_wall: Texture2D
+## The village at night, for the title.
+@export var title_night: Texture2D
+## Faint eyes on black, added over the table's darkness.
+@export var watchers: Texture2D
 @export var card_back: Texture2D
 @export var card_face: Texture2D
 @export var paper: Texture2D

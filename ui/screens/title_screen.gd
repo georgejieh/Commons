@@ -4,7 +4,7 @@ extends Control
 
 
 func open(app: DemoApp) -> void:
-	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title)
+	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title_night)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(ScreenKit.eyebrow(tr("title.eyebrow")))
 	var title: Label = ScreenKit.styled(tr("game.title"), CommonsTheme.HEADLINE)
@@ -15,6 +15,8 @@ func open(app: DemoApp) -> void:
 	column.add_child(title)
 	var subtitle: Label = ScreenKit.styled(tr("title.subtitle"), CommonsTheme.TITLE)
 	subtitle.add_theme_font_size_override("font_size", 30)
+	subtitle.add_theme_color_override("font_color", ScreenKit.STYLE.paper)
+	subtitle.add_theme_color_override("font_outline_color", ScreenKit.INK)
 	column.add_child(subtitle)
 	var spacer: Control = Control.new()
 	spacer.custom_minimum_size = Vector2(0, 24)

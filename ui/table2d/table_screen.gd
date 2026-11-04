@@ -12,9 +12,6 @@ const RAIL_EDGE: Color = Color("3e2a19")
 const SURFACE: Color = Color("e9dcbc")
 const INK: Color = Color("1e1a16")
 const RED: Color = Color("9e1b16")
-const PLAY_SCALE: float = 0.7
-## Space between the left edges of cards in a play lane; most of each card shows.
-const LANE_SPACING: float = 56.0
 ## The play area's middle in x, and the seats' width and gap from that middle. The
 ## Cadre board centers on it between the seats.
 const PLAY_CENTER: float = 790.0
@@ -27,8 +24,7 @@ var _hand: HandModel
 var _pool: CardPool = CardPool.new()
 var _player: EventPlayer = EventPlayer.new()
 var _seats: Dictionary[int, SeatPanel] = {}
-var _plays: Dictionary[int, Control] = {}
-var _play_views: Dictionary[int, Array] = {}
+var _plays: Dictionary[int, PlayLane] = {}
 
 var _hand_view: HandView = HandView.new()
 var _hud: TableHud = TableHud.new()
@@ -42,6 +38,7 @@ var _you: Label = Label.new()
 var _motion: TableMotion = TableMotion.new()
 var _banner: TableBanner = TableBanner.new()
 var _pause: PauseMenu = PauseMenu.new()
+var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
 var _fresh_deal: bool = false
 
@@ -51,6 +48,8 @@ func _ready() -> void:
 	_place(_backdrop(RAIL_EDGE), Vector2.ZERO, Vector2(1920, 1080))
 	var surface: TextureRect = ScreenKit.cover(ScreenKit.ART.table_surface)
 	_place(surface, Vector2(0, 72), Vector2(1920, 1008))
+	_place(_atmosphere, Vector2(0, 72), Vector2(1920, 1008))
+	_atmosphere.name = "Atmosphere"
 	# The ledger sits inside its paper, so its margins come from the sheet.
 	var ledger_paper: PanelContainer = PanelContainer.new()
 	ledger_paper.theme_type_variation = CommonsTheme.SHEET
@@ -67,14 +66,11 @@ func _ready() -> void:
 	_place(_need_panel, Vector2(720, 420), Vector2(420, 200))
 	_place(_cheat_sheet, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
-	_place(_banner, Vector2(410, 300), Vector2(760, 0))
+	_place(_banner, Vector2(PLAY_CENTER - 380.0, 480), Vector2(760, 0))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
 	for seat: int in Seats.COUNT:
-		var play_area: Control = Control.new()
-		play_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_plays[seat] = play_area
-		_play_views[seat] = []
+		_plays[seat] = PlayLane.new()
 	_place(_plays[0], Vector2(520, 560), Vector2(560, 130))
 	_place(_plays[1], Vector2(900, 360), Vector2(520, 130))
 	_place(_plays[2], Vector2(140, 360), Vector2(520, 130))
@@ -91,6 +87,8 @@ func open(app: DemoApp) -> void:
 	_player.step = app.motion_step()
 	_player.motion = _motion
 	_motion.setup(self, bool(Settings.value("reduced_motion")))
+	for lane: PlayLane in _plays.values():
+		lane.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
 	_build_seats()
 	_board.setup(_controller.cadre_slots())
@@ -208,7 +206,7 @@ func _on_event(event: RunEvent) -> void:
 func _on_round_event(event: RoundEvent) -> void:
 	match event.type:
 		RoundEvent.Type.PLAYED:
-			_show_play(event.seat, event.cards)
+			_plays[event.seat].show_play(event.cards)
 			if event.seat == 0:
 				_hand.refresh()
 				_hand_view.show_cards()
@@ -218,7 +216,7 @@ func _on_round_event(event: RoundEvent) -> void:
 				_banner.announce(tr("banner.rocket" if rocket else "banner.bomb"), ScreenKit.RED)
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
 		RoundEvent.Type.PASSED:
-			_clear_play(event.seat)
+			_plays[event.seat].clear()
 			_say(event.seat, tr("table.say.pass"))
 		RoundEvent.Type.TRICK_WON:
 			_clear_all_plays()
@@ -249,41 +247,9 @@ func _on_drained() -> void:
 		_app.show_screen("set_summary", true)
 
 
-func _show_play(seat: int, cards: Array[CardInstance]) -> void:
-	_clear_play(seat)
-	for card: CardInstance in cards:
-		var view: CardView = _pool.acquire()
-		if view == null:
-			return
-		view.reparent(_plays[seat], false)
-		view.bind(card)
-		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		view.pivot_offset = Vector2.ZERO
-		var order: int = _play_views[seat].size()
-		view.position = Vector2(order * _lane_spacing(seat, cards.size(), view), 0)
-		_motion.drop(view, PLAY_SCALE, order)
-		_play_views[seat].append(view)
-
-
-## Cards spread at the lane spacing, closing up so a long play still fits its lane.
-func _lane_spacing(seat: int, count: int, view: CardView) -> float:
-	if count < 2:
-		return LANE_SPACING
-	var room: float = _plays[seat].size.x - view.size.x * PLAY_SCALE
-	return minf(LANE_SPACING, room / (count - 1))
-
-
-func _clear_play(seat: int) -> void:
-	for view: CardView in _play_views[seat]:
-		view.mouse_filter = Control.MOUSE_FILTER_STOP
-		view.reparent(_pool_parent, false)
-		_pool.release(view)
-	_play_views[seat].clear()
-
-
 func _clear_all_plays() -> void:
-	for seat: int in _play_views:
-		_clear_play(seat)
+	for lane: PlayLane in _plays.values():
+		lane.clear()
 
 
 func _announce_landlord(seat: int) -> void:
@@ -317,8 +283,10 @@ func _refresh_seats() -> void:
 
 
 func _refresh_status() -> void:
-	_hud.show_state(_controller.state_copy(), _controller.target(), _app.max_rounds())
+	var state: RunState = _controller.state_copy()
+	_hud.show_state(state, _controller.target(), _app.max_rounds())
 	_app.update_dread()
+	_atmosphere.show_meters(state.famine, state.denunciation)
 
 
 func _refresh_actions() -> void:
