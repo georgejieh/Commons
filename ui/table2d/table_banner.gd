@@ -6,6 +6,7 @@ extends PanelContainer
 
 var _text: Label = Label.new()
 var _tween: Tween = null
+var _stamp: Tween = null
 
 
 func _ready() -> void:
@@ -20,8 +21,9 @@ func _ready() -> void:
 
 ## Hides the banner at once, for a new deal.
 func dismiss() -> void:
-	if _tween != null and _tween.is_valid():
-		_tween.kill()
+	for running: Tween in [_tween, _stamp]:
+		if running != null and running.is_valid():
+			running.kill()
 	modulate.a = 0.0
 
 
@@ -31,7 +33,9 @@ func announce(text: String, color: Color) -> void:
 	_text.add_theme_color_override("font_color", color)
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
-	UiMotion.stamp(self)
+	if _stamp != null and _stamp.is_valid():
+		_stamp.kill()
+	_stamp = UiMotion.stamp(self)
 	modulate.a = 1.0
 	_tween = create_tween()
 	_tween.tween_interval(UiMotion.seconds(UiMotion.PRESETS.banner_hold))

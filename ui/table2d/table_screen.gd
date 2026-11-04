@@ -37,6 +37,7 @@ var _pool_parent: Control = Control.new()
 var _you: Label = Label.new()
 var _motion: TableMotion = TableMotion.new()
 var _banner: TableBanner = TableBanner.new()
+var _replaying: bool = false
 var _pause: PauseMenu = PauseMenu.new()
 var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
@@ -111,9 +112,12 @@ func open(app: DemoApp) -> void:
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
 	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
 	_pause.quit_game.connect(func() -> void: get_tree().quit())
+	# Joining mid-Set replays what already happened silently, without banners.
+	_replaying = true
 	for event: RunEvent in _controller.set_events():
 		_player.push(event)
 	_player.flush()
+	_replaying = false
 
 
 ## Plays every queued event at once, skipping the pacing.
@@ -210,7 +214,7 @@ func _on_round_event(event: RoundEvent) -> void:
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
 				var rocket: bool = event.pattern.type == Pattern.Type.ROCKET
-				_banner.announce(tr("banner.rocket" if rocket else "banner.bomb"), ScreenKit.RED)
+				_announce(tr("banner.rocket" if rocket else "banner.bomb"), ScreenKit.RED)
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
 		RoundEvent.Type.PASSED:
 			_plays[event.seat].clear()
@@ -220,7 +224,7 @@ func _on_round_event(event: RoundEvent) -> void:
 		RoundEvent.Type.ROUND_ENDED:
 			var landlord_won: bool = event.seat == _landlord
 			var key: String = "banner.landlord_wins" if landlord_won else "banner.peasants_win"
-			_banner.announce(tr(key), ScreenKit.INK)
+			_announce(tr(key), ScreenKit.INK)
 		RoundEvent.Type.ANNOUNCED:
 			_say(event.seat, tr("table.say.cards_left").format({"count": event.value}))
 
@@ -263,13 +267,16 @@ func _clear_all_plays() -> void:
 		lane.clear()
 
 
+func _announce(text: String, color: Color) -> void:
+	if not _replaying:
+		_banner.announce(text, color)
+
+
 func _announce_landlord(seat: int) -> void:
 	if seat == 0:
-		_banner.announce(tr("banner.landlord_you"), ScreenKit.RED)
+		_announce(tr("banner.landlord_you"), ScreenKit.RED)
 	else:
-		_banner.announce(
-			tr("banner.landlord_other").format({"name": _app.seat_name(seat)}), ScreenKit.INK
-		)
+		_announce(tr("banner.landlord_other").format({"name": _app.seat_name(seat)}), ScreenKit.INK)
 
 
 func _say(seat: int, text: String) -> void:

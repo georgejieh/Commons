@@ -63,10 +63,10 @@ static func count(label: Label, from: float, to: float, shown: Callable) -> void
 
 
 ## Lands a control like an ink stamp: from large and tilted down to its place.
-static func stamp(control: Control) -> void:
+static func stamp(control: Control) -> Tween:
 	_center_pivot(control)
 	if reduced():
-		return
+		return null
 	control.scale = Vector2.ONE * PRESETS.stamp_from_scale
 	control.rotation = PRESETS.stamp_tilt
 	control.modulate.a = 0.0
@@ -75,6 +75,7 @@ static func stamp(control: Control) -> void:
 	tween.tween_property(control, "scale", Vector2.ONE, PRESETS.stamp_time)
 	tween.tween_property(control, "rotation", 0.0, PRESETS.stamp_time)
 	tween.tween_property(control, "modulate:a", 1.0, PRESETS.stamp_time * 0.5)
+	return tween
 
 
 ## A short swell to draw the eye to a change.

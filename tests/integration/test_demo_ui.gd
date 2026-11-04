@@ -192,3 +192,21 @@ func test_overlays_open_above_the_table() -> void:
 	var pause: Control = table.get("_pause")
 	assert_bool(pause.visible).is_true()
 	assert_int(pause.get_index()).is_equal(table.get_child_count() - 1)
+
+
+## Joining a Set mid-way replays its earlier events without raising their banners.
+func test_rejoining_the_table_raises_no_old_banner() -> void:
+	var driver: ControllerScript = ControllerScript.new()
+	var ended: int = 0
+	_app.controller.event_emitted.connect(
+		func(event: RunEvent) -> void:
+			if event.round_event != null and event.round_event.type == RoundEvent.Type.ROUND_ENDED:
+				ended += 1
+	)
+	while not (ended >= 1 and _app.controller.awaiting() == RunController.AWAIT_BID):
+		if not driver.act(_app.controller):
+			return
+	var table: TableScreen = _app.show_screen("table", true)
+	var banner: Control = table.get("_banner")
+	await await_millis(400)
+	assert_float(banner.modulate.a).is_equal(0.0)
