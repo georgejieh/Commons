@@ -25,4 +25,18 @@ static func _build(modifier_id: String) -> ModifierEffect:
 			return RankAsEffect.new()
 		"inverted_order":
 			return InvertedOrderEffect.new()
+		"iron_rice_bowl":
+			return IronRiceBowlEffect.new()
+		"stakhanovite":
+			return StakhanoviteEffect.new()
+		"hidden_reserves":
+			return HiddenReservesEffect.new()
+		"landlords_ledger":
+			return LandlordsLedgerEffect.new()
+		"ration_cut":
+			return RationCutEffect.new()
+		"paperwork", "straightened_lines":
+			return TypeShareEffect.new()
+		"morning_meeting":
+			return MorningMeetingEffect.new()
 	return null

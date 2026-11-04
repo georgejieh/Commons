@@ -2,7 +2,8 @@ class_name Scorer
 extends RefCounted
 ## Scores a play as Grain × Zeal. Grain is the hand type's base plus each scored card.
 ## Hooks then apply additive Grain, additive Zeal and multiplicative Zeal, in that order.
-## Each bomb or rocket doubles Zeal. Kickers don't score.
+## Each bomb or rocket doubles Zeal, and a hook's Zeal cap applies last. Kickers don't
+## score.
 
 const DEFAULT_PARAMS: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 ## Largest value the display can show. NaN and infinity clamp to it.
@@ -39,6 +40,8 @@ static func score_play(
 	breakdown.add_step(ScoreBreakdown.Step.BASE_ZEAL, zeal)
 	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, 0.0, 1.0)
 	play.plays_before = plays_before
+	play.grain = grain
+	play.card_grain = params.card_grain
 	stack.run_play_scored(play)
 	grain += play.add_grain
 	zeal = (zeal + play.add_zeal) * play.mul_zeal
@@ -48,6 +51,9 @@ static func score_play(
 	if pattern.type == Pattern.Type.BOMB or pattern.type == Pattern.Type.ROCKET:
 		zeal *= params.bomb_zeal_multiplier
 		breakdown.add_step(ScoreBreakdown.Step.BOMB_ZEAL, params.bomb_zeal_multiplier)
+	if zeal > play.zeal_cap:
+		zeal = play.zeal_cap
+		breakdown.add_step(ScoreBreakdown.Step.ZEAL_CAP, play.zeal_cap)
 
 	breakdown.grain = clamp_score(grain)
 	breakdown.zeal = clamp_score(zeal)

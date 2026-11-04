@@ -19,7 +19,7 @@ modifier.cultural_revolution.text,"After any bomb, rank order inverts until the 
 modifier.promotion_of_the_masses.name,Promotion of the Masses
 modifier.promotion_of_the_masses.text,"3s rank above 2s, below the jokers."
 modifier.criticism_meeting.name,Criticism Meeting
-modifier.criticism_meeting.text,Your 2s rank as 3s this round.
+modifier.criticism_meeting.text,Your 2s rank as 3s.
 modifier.inverted_order.name,Inverted Order
 modifier.inverted_order.text,Rank order is reversed for your plays only.
 score.suffix.thousand,K
@@ -69,3 +69,19 @@ card.rank.2,2
 card.rank.small_joker,Small
 card.rank.big_joker,Big
 card.stamp.yours,Yours
+modifier.iron_rice_bowl.name,Iron Rice Bowl
+modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Zeal can't go above {zeal_cap}."
+modifier.stakhanovite.name,Stakhanovite
+modifier.stakhanovite.text,Your Straights gain {zeal_per_card} Zeal for each card past {base_length}.
+modifier.hidden_reserves.name,Hidden Reserves
+modifier.hidden_reserves.text,Your kickers score their Grain.
+modifier.landlords_ledger.name,Landlord's Ledger
+modifier.landlords_ledger.text,"While you are landlord, kitty cards score their Grain twice."
+modifier.ration_cut.name,Ration Cut
+modifier.ration_cut.text,Your plays lose {zeal} Zeal.
+modifier.paperwork.name,Paperwork
+modifier.paperwork.text,Your Pairs score {percent}% of their Grain.
+modifier.morning_meeting.name,Morning Meeting
+modifier.morning_meeting.text,Your first play each round scores nothing.
+modifier.straightened_lines.name,Straightened Lines
+modifier.straightened_lines.text,Your Straights score {percent}% of their total.
