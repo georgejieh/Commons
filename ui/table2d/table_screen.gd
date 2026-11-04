@@ -40,7 +40,6 @@ var _banner: TableBanner = TableBanner.new()
 var _pause: PauseMenu = PauseMenu.new()
 var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
-var _fresh_deal: bool = false
 
 
 func _ready() -> void:
@@ -190,13 +189,11 @@ func _on_event(event: RunEvent) -> void:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
 		RunEvent.Type.BID:
-			_say(event.seat, tr("table.say.call" if event.value == 1 else "table.say.pass"))
+			_say(event.seat, tr("table.say.call" if event.value == 1 else "table.say.no_call"))
 		RunEvent.Type.PLAY_SCORED:
 			_ledger.add_row(_app.seat_name(event.seat), event.amount)
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
-			_clear_all_plays()
-			_ledger.clear_rows()
-			_fresh_deal = true
+			_new_deal()
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
 			_announce_landlord(event.seat)
@@ -228,6 +225,23 @@ func _on_round_event(event: RoundEvent) -> void:
 			_say(event.seat, tr("table.say.cards_left").format({"count": event.value}))
 
 
+## A fresh deal wipes the last round off the table: lanes, ledger, speech, the
+## round's banner and the landlord tag, and every villager back to a full hand. Your
+## new hand rises in now, not after the bots' first plays.
+func _new_deal() -> void:
+	_clear_all_plays()
+	_ledger.clear_rows()
+	_banner.dismiss()
+	_landlord = Seats.NONE
+	for panel: SeatPanel in _seats.values():
+		panel.set_count(Dealer.HAND_SIZE)
+		panel.set_role(false, false)
+		panel.say("")
+	_hand.refresh()
+	_hand_view.show_cards()
+	_hand_view.deal_in()
+
+
 func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
@@ -239,9 +253,6 @@ func _on_drained() -> void:
 		_need_panel.ask()
 	_hand.refresh()
 	_hand_view.show_cards()
-	if _fresh_deal:
-		_fresh_deal = false
-		_hand_view.deal_in()
 	_refresh_actions()
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
@@ -293,6 +304,9 @@ func _refresh_actions() -> void:
 	var my_turn: bool = _player.is_idle() and _controller.awaiting() == RunController.AWAIT_PLAY
 	_actions.play.disabled = not (my_turn and _hand.can_play())
 	_actions.pass_turn.disabled = not (my_turn and _hand.can_pass())
+	if _controller.awaiting() == RunController.AWAIT_BID:
+		_actions.reading.text = tr("table.bid_prompt")
+		return
 	var text: String = tr(_hand.label_key())
 	if _hand.can_play() or _hand.projected_score() > 0.0:
 		text += "  ·  " + Strings.score(_hand.projected_score())

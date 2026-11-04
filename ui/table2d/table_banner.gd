@@ -18,6 +18,13 @@ func _ready() -> void:
 	modulate.a = 0.0
 
 
+## Hides the banner at once, for a new deal.
+func dismiss() -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	modulate.a = 0.0
+
+
 ## Shows text, in color, for the preset hold time.
 func announce(text: String, color: Color) -> void:
 	_text.text = text

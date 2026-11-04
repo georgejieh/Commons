@@ -8,8 +8,9 @@ signal played(event: RunEvent)
 signal queued
 signal drained
 
-## Seconds between events.
+## Seconds between events, and the pause after a round ends so its banner can be read.
 var step: float = 0.55
+var round_end_hold: float = 1.6
 ## Holds the queue still during a hit-stop.
 var motion: TableMotion = null
 
@@ -44,8 +45,14 @@ func _process(delta: float) -> void:
 		played.emit(event)
 		if _shows(event):
 			_wait = step
+		if _ends_round(event):
+			_wait = round_end_hold
 	if _queue.is_empty():
 		drained.emit()
+
+
+func _ends_round(event: RunEvent) -> bool:
+	return event.round_event != null and event.round_event.type == RoundEvent.Type.ROUND_ENDED
 
 
 ## Only bids, plays, passes and trick ends take a step; bookkeeping goes at once.
