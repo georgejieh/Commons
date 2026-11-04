@@ -21,6 +21,8 @@ var _rounds_seen: int = 0
 var _turns_in_round: int = 0
 var _driver: Object
 var _toured: bool = false
+var _resumed: bool = false
+var _bought: int = 0
 
 
 func _initialize() -> void:
@@ -71,11 +73,16 @@ func _step() -> void:
 			await _click_first_button()
 		"store":
 			await _shot("store")
+			await _buy_one()
 			await _click_button_with_text(tr("store.leave"))
 		"set_intro":
 			await _shot("set_intro")
 			await _click_button_with_text(tr("intro.begin"))
-		"year_summary", "demo_complete":
+		"year_summary":
+			await _shot("year_summary")
+			await _click_first_button()
+		"demo_complete":
+			await _shot("demo_complete")
 			_rounds_seen = _rounds_wanted + 1
 
 
@@ -92,6 +99,10 @@ func _table_step() -> void:
 			_rounds_seen += 1
 			_turns_in_round = 0
 			await _shot("round%d_bid" % _rounds_seen)
+			if _rounds_seen == 3 and not _resumed:
+				_resumed = true
+				await _leave_and_continue(table)
+				return
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
 		4:
@@ -128,6 +139,38 @@ func _play_turn(table: Node, controller: Node) -> void:
 		for card_id: int in ids:
 			hand.call("set_selected", card_id, true)
 	await _press(play)
+
+
+## Buys the first Cadre the store will sell, and photographs the store after.
+func _buy_one() -> void:
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	for child: Node in screen.find_children("*", "Button", true, false):
+		var button: Button = child as Button
+		if button.theme_type_variation == "CouponButton" and not button.disabled:
+			await _press(button)
+			await _frames(30)
+			_bought += 1
+			await _shot("store_bought")
+			return
+
+
+## Menu, Return to title, then Continue: the run must pick up on the same bid.
+func _leave_and_continue(table: Node) -> void:
+	var hud: Object = table.get("_hud")
+	await _press(hud.get("menu"))
+	await _frames(20)
+	var pause: Node = table.get("_pause")
+	await _press(_button_in(pause, tr("pause.to_title")))
+	await _frames(30)
+	await _shot("resume_title")
+	await _click_button_with_text(tr("title.continue"))
+	await _frames(40)
+	await _shot("resume_table")
+	var controller: Node = _app.get("controller")
+	if controller.call("awaiting") != 1:
+		_misclicks += 1
+		print("RESUME WRONG STATE %d" % controller.call("awaiting"))
 
 
 ## Presses every table control once and photographs the result.

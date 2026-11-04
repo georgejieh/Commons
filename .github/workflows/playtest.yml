@@ -46,7 +46,7 @@ jobs:
             --script res://tools/playtest.gd -- --rounds "${{ inputs.rounds || '8' }}" \
             --out reports/playtest 2>&1 | tee reports/playtest.log
           grep -E 'rounds=' reports/playtest.log
-          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|SCRIPT ERROR' reports/playtest.log
+          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR' reports/playtest.log
       - name: Screens
         if: always()
         env:
