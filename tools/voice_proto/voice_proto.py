@@ -170,8 +170,8 @@ def render_line(text, mood, voice_name):
     return out, syllables, pitches
 
 
-def write_wav(path, samples):
-    peak = max(1e-6, max(abs(s) for s in samples))
+def write_wav(path, samples, peak):
+    """Writes with one shared peak, so louder and softer lines stay that way."""
     scale = 0.8 * 32767 / peak
     with wave.open(path, "wb") as handle:
         handle.setnchannels(1)
@@ -185,13 +185,16 @@ def main():
     parser.add_argument("--out", default="reports/voice_proto")
     args = parser.parse_args()
     os.makedirs(args.out, exist_ok=True)
+    rendered = []
     for voice_name in VOICES:
         for number, (text, mood) in enumerate(LINES, 1):
-            samples, syllables, pitches = render_line(text, mood, voice_name)
-            path = os.path.join(args.out, f"{voice_name}_{number:02d}.wav")
-            write_wav(path, samples)
-            rise = pitches[-1] / pitches[0] if pitches else 1.0
-            print(f"{path}: {' '.join(syllables)} | end/start pitch {rise:.2f} | {text}")
+            rendered.append((voice_name, number, text) + render_line(text, mood, voice_name))
+    peak = max(1e-6, max(max(abs(s) for s in item[3]) for item in rendered))
+    for voice_name, number, text, samples, syllables, pitches in rendered:
+        path = os.path.join(args.out, f"{voice_name}_{number:02d}.wav")
+        write_wav(path, samples, peak)
+        rise = pitches[-1] / pitches[0] if pitches else 1.0
+        print(f"{path}: {' '.join(syllables)} | end/start pitch {rise:.2f} | {text}")
 
 
 if __name__ == "__main__":

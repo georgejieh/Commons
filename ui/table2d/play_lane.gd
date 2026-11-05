@@ -54,7 +54,8 @@ func sweep(toward: Vector2) -> void:
 	for view: CardView in _views:
 		var target: Vector2 = view.position + (toward - view.global_position) * SWEEP_REACH
 		last = view.tween().set_parallel(true)
-		last.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		last.set_trans(TableMotion.PRESETS.sweep_transition as Tween.TransitionType)
+		last.set_ease(TableMotion.PRESETS.sweep_ease as Tween.EaseType)
 		last.tween_property(view, "position", target, seconds)
 		last.tween_property(view, "modulate:a", 0.0, seconds)
 	last.chain().tween_callback(clear)

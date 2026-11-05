@@ -89,10 +89,14 @@ func test_intensity_zero_is_the_clean_board() -> void:
 	dread.force(90, 90, true)
 	Settings.set_value("horror_intensity", 0.0)
 	dread.apply()
+	var materials: Dictionary[String, ShaderMaterial] = dread.get("_materials")
 	for layer: HorrorLayer in CONFIG.layers:
 		for key: String in layer.shader_params:
-			if not is_nan(dread.param_value(key)):
-				assert_float(dread.param_value(key)).is_equal(dread.param_clean(key))
+			assert_bool(is_nan(dread.param_value(key))).override_failure_message(key).is_false()
+			assert_float(dread.param_value(key)).is_equal(dread.param_clean(key))
+			var material: ShaderMaterial = materials[key.get_slice(":", 0)]
+			var written: float = material.get_shader_parameter(key.get_slice(":", 1))
+			assert_float(written).is_equal_approx(dread.param_clean(key), 0.0001)
 		for piece: String in layer.dressing:
 			assert_float(dread.piece_weight(piece)).is_equal(0.0)
 
@@ -176,3 +180,46 @@ func _readings(node: Node, dread: DreadLayers) -> PackedStringArray:
 	for child: Node in node.get_children():
 		found.append_array(_readings(child, dread))
 	return found
+
+
+func test_a_flashed_extra_chair_hides_again() -> void:
+	var table: TableScreen = await _open_table()
+	var dressing: DreadDressing = table.get("_dressing")
+	dressing.flash_piece("extra_chair", 0.1)
+	assert_bool(dressing.is_shown("extra_chair")).is_true()
+	await await_millis(400)
+	assert_bool(dressing.is_shown("extra_chair")).is_false()
+
+
+func test_layer_values_stay_inside_their_range() -> void:
+	var dread: DreadLayers = await _table_dread()
+	dread.force(100, 0, true)
+	assert_float(dread.param_value("post:warmth")).is_greater_equal(0.0)
+
+
+func test_a_texture_swap_shows_past_half_weight() -> void:
+	var swapped: Texture2D = PlaceholderTexture2D.new()
+	var clean: Texture2D = PlaceholderTexture2D.new()
+	var layer: HorrorLayer = HorrorLayer.new()
+	layer.input = "famine"
+	layer.texture_swaps = {"table_surface": swapped}
+	var config: HorrorConfig = HorrorConfig.new()
+	config.layers = [layer]
+	var dread: DreadLayers = auto_free(DreadLayers.new())
+	add_child(dread)
+	dread.config = config
+	var surface: TextureRect = auto_free(TextureRect.new())
+	surface.texture = clean
+	var slots: Dictionary[String, TextureRect] = {"table_surface": surface}
+	var dressing: DreadDressing = auto_free(DreadDressing.new())
+	add_child(dressing)
+	var materials: Dictionary[String, ShaderMaterial] = {}
+	var seats: Array[SeatPanel] = []
+	dread.setup(materials, dressing, seats, slots)
+	dread.force(30, 0, false)
+	assert_object(surface.texture).is_same(clean)
+	dread.force(80, 0, false)
+	assert_object(surface.texture).is_same(swapped)
+	Settings.set_value("horror_intensity", 0.0)
+	dread.apply()
+	assert_object(surface.texture).is_same(clean)

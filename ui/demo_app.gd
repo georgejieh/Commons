@@ -84,9 +84,13 @@ func _play_wipe() -> void:
 	tween.tween_property(_wipe, "modulate:a", 0.0, UiMotion.PRESETS.wipe_time)
 
 
-func back() -> void:
-	if switcher.back() and switcher.current().has_method("open"):
+## Goes back one screen. Returns false at the bottom of the stack.
+func back() -> bool:
+	if not switcher.back():
+		return false
+	if switcher.current().has_method("open"):
 		switcher.current().call("open", self)
+	return true
 
 
 ## The table this build plays on.

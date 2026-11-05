@@ -81,8 +81,15 @@ func _play_round(method: Method) -> void:
 	assert_int(_plays).is_greater(0)
 
 
+## The round is over when the run moved to the next round or the Set ended, not merely
+## when the table closed.
 func _round_over(start: int) -> bool:
-	return _app.switcher.current_id() != "table" or _app.controller.state_copy().round_index > start
+	var awaiting: int = _app.controller.awaiting()
+	return (
+		_app.controller.state_copy().round_index > start
+		or awaiting == RunController.AWAIT_SET_OVER
+		or awaiting == RunController.AWAIT_RUN_OVER
+	)
 
 
 func _take_turn(method: Method, driver: ControllerScript) -> void:
@@ -187,3 +194,24 @@ func _index_of(hand_view: HandView, card_id: int) -> int:
 				return index
 			index += 1
 	return -1
+
+
+## The cursor's mark stays visible on a card that is already selected.
+func test_the_cursor_shows_on_a_selected_card() -> void:
+	for _step: int in 200:
+		_table.skip_events()
+		await await_idle_frame()
+		match _app.controller.awaiting():
+			RunController.AWAIT_PLAY:
+				break
+			RunController.AWAIT_BID:
+				await _press_action(Method.KEYBOARD, "pass", _table.actions().decline)
+			RunController.AWAIT_NEED:
+				await _declare(Method.KEYBOARD)
+	assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_PLAY)
+	var hand_view: HandView = _table.get("_hand_view")
+	await _send(Method.KEYBOARD, "right")
+	await _send(Method.KEYBOARD, "select")
+	var view: CardView = _view_for(hand_view, hand_view.cursor_card())
+	assert_bool(_app.hand.is_selected(view.card_id)).is_true()
+	assert_bool(view.has_cursor()).is_true()

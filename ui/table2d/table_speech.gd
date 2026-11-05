@@ -45,6 +45,14 @@ func on_event(event: RunEvent) -> void:
 				say(seat, "won" if same_side else "lost")
 
 
+## How many lines this table has said, for tests.
+func lines_said() -> int:
+	var total: int = 0
+	for seat: int in _said:
+		total += _said[seat]
+	return total
+
+
 ## Says one line for event at seat, if the seat has a panel and the book has a line.
 func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	if not _seats.has(seat):

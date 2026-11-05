@@ -4,6 +4,9 @@ extends Resource
 ## on the board. Weights run 0 to 1. Everything here is decoration: no layer can touch a
 ## card, count, rank or score.
 
+## A layer's texture swaps show once its weight reaches this.
+const SWAP_AT: float = 0.5
+
 ## Which board input drives the layer: one of BoardState.INPUTS.
 @export var input: String = ""
 ## Maps the input, 0 to 1, to the layer's weight, 0 to 1: points sorted by x, with
@@ -16,6 +19,9 @@ extends Resource
 ## Set-dressing pieces shown at the layer's weight: chairs, poster, redaction, spotlight,
 ## gilt.
 @export var dressing: Array[String] = []
+## Slot name to the texture shown there once the layer's weight passes SWAP_AT. Slots
+## are the table's swappable art, such as table_surface. Empty until the art pass.
+@export var texture_swaps: Dictionary[String, Texture2D] = {}
 ## Music stems this layer fades (P3C.9); silent until the music exists.
 @export var audio_stems: Array[String] = []
 

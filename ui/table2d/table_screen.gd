@@ -45,6 +45,7 @@ var _speech: TableSpeech = TableSpeech.new()
 var _input: TableInput = TableInput.new()
 var _dread: DreadLayers = DreadLayers.new()
 var _dressing: DreadDressing = DreadDressing.new()
+var _surface: TextureRect
 
 
 func _ready() -> void:
@@ -52,10 +53,10 @@ func _ready() -> void:
 	var rail: ColorRect = ColorRect.new()
 	rail.color = RAIL_EDGE
 	rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var surface: TextureRect = ScreenKit.cover(ScreenKit.ART.table_surface)
+	_surface = ScreenKit.cover(ScreenKit.ART.table_surface)
 	# The room fills the screen below the bar, so a 16:10 screen shows more table, not
 	# a band of nothing (P3B.11).
-	for backdrop: Control in [rail, surface, _atmosphere]:
+	for backdrop: Control in [rail, _surface, _atmosphere]:
 		add_child(backdrop)
 		backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		backdrop.offset_top = 0.0 if backdrop == rail else 72.0
@@ -166,15 +167,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Dread reads the run at round boundaries, and starts settled when the table opens.
 func _setup_dread(app: DemoApp) -> void:
-	var materials: Dictionary[String, ShaderMaterial] = {
-		"post": app.post.material(),
-		"lamp": _atmosphere.lamp_material(),
-		"watchers": _atmosphere.eyes_material(),
-		"spotlight": _dressing.spotlight_material,
-	}
+	var materials: Dictionary[String, ShaderMaterial] = DreadLayers.table_materials(
+		app.post.material(), _atmosphere, _dressing
+	)
 	var panels: Array[SeatPanel] = []
 	panels.assign(_seats.values())
-	_dread.setup(materials, _dressing, panels)
+	var slots: Dictionary[String, TextureRect] = {"table_surface": _surface}
+	_dread.setup(materials, _dressing, panels, slots)
 	_dread.refresh(_controller.state_copy(), true)
 
 
@@ -198,8 +197,10 @@ func _build_seats() -> void:
 
 
 func _on_event(event: RunEvent) -> void:
-	Audio.play(AudioEvents.name_for(event))
-	_speech.on_event(event)
+	# Rejoining replays the Set silently: nothing is said or played twice.
+	if not _replaying:
+		Audio.play(AudioEvents.name_for(event))
+		_speech.on_event(event)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
@@ -208,11 +209,12 @@ func _on_event(event: RunEvent) -> void:
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			_new_deal()
 			_dread.refresh(_controller.state_copy())
-		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED:
+		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED, RunEvent.Type.ROUND_SCORED:
 			_dread.refresh(_controller.state_copy())
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
 			_announce_landlord(event.seat)
+			_dread.refresh(_controller.state_copy(), false, event.seat == 0)
 	_refresh_status()
 
 

@@ -16,7 +16,9 @@ const NO_FLASH_BREATHE: float = 0.0
 ## The lamp shader's own flutter, which no-flash turns off.
 const DEFAULT_BREATHE: float = 0.05
 
-var board: BoardState = BoardState.new(CONFIG)
+## The layers in use; tests may set another before setup().
+var config: HorrorConfig = CONFIG
+var board: BoardState
 
 var _materials: Dictionary[String, ShaderMaterial] = {}
 var _dressing: DreadDressing
@@ -26,6 +28,10 @@ var _param_material: Array[ShaderMaterial] = []
 var _param_name: Array[StringName] = []
 var _param_clean: PackedFloat32Array = []
 var _param_value: PackedFloat32Array = []
+## The lowest and highest value any layer asks for, so layers that push the same way
+## never stack past the shader's range.
+var _param_low: PackedFloat32Array = []
+var _param_high: PackedFloat32Array = []
 ## One entry per layer's effect on a parameter.
 var _effect_param: PackedInt32Array = []
 var _effect_layer: PackedInt32Array = []
@@ -38,20 +44,30 @@ var _flicker_wait: PackedFloat32Array = []
 var _flicker_seat: int = 0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _breathe: float = DEFAULT_BREATHE
+## Slot name to the TextureRect it swaps, its own texture, and the texture shown now.
+var _slots: Dictionary[String, TextureRect] = {}
+var _slot_clean: Dictionary[String, Texture2D] = {}
 
 
 func setup(
-	materials: Dictionary[String, ShaderMaterial], dressing: DreadDressing, seats: Array[SeatPanel]
+	materials: Dictionary[String, ShaderMaterial],
+	dressing: DreadDressing,
+	seats: Array[SeatPanel],
+	slots: Dictionary[String, TextureRect] = {}
 ) -> void:
+	board = BoardState.new(config)
 	_materials = materials
+	_slots = slots
+	for slot: String in slots:
+		_slot_clean[slot] = slots[slot].texture
 	_dressing = dressing
 	_seats = seats
 	_rng.seed = FLICKER_SEED
 	_bind_params()
 	_bind_dressing()
-	_flicker_wait.resize(CONFIG.flickers.size())
-	for index: int in CONFIG.flickers.size():
-		_flicker_wait[index] = _cooldown(CONFIG.flickers[index])
+	_flicker_wait.resize(config.flickers.size())
+	for index: int in config.flickers.size():
+		_flicker_wait[index] = _cooldown(config.flickers[index])
 	apply()
 	set_process(true)
 
@@ -61,9 +77,23 @@ func _ready() -> void:
 	set_process(false)
 
 
-## New targets from the run, read at a round boundary.
-func refresh(state: RunState, settle_now: bool = false) -> void:
-	board.set_inputs(state.famine, state.denunciation, state.landlord_seat == 0, corruption())
+## The table's shader materials by the target names layers use.
+static func table_materials(
+	post: ShaderMaterial, atmosphere: TableAtmosphere, dressing: DreadDressing
+) -> Dictionary[String, ShaderMaterial]:
+	return {
+		"post": post,
+		"lamp": atmosphere.lamp_material(),
+		"watchers": atmosphere.eyes_material(),
+		"spotlight": dressing.spotlight_material,
+	}
+
+
+## New targets from the run, read at a round boundary. landlord overrides the state's
+## seat when the table knows it sooner, as when a bid has just been won.
+func refresh(state: RunState, settle_now: bool = false, landlord: Variant = null) -> void:
+	var is_landlord: bool = state.landlord_seat == 0 if landlord == null else bool(landlord)
+	board.set_inputs(state.famine, state.denunciation, is_landlord, corruption())
 	if settle_now:
 		board.settle()
 	apply()
@@ -97,13 +127,16 @@ func apply() -> void:
 		var weight: float = board.shown(_effect_layer[index], intensity)
 		_param_value[_effect_param[index]] += _effect_delta[index] * weight
 	for index: int in _param_value.size():
-		_param_material[index].set_shader_parameter(_param_name[index], _param_value[index])
+		var value: float = clampf(_param_value[index], _param_low[index], _param_high[index])
+		_param_value[index] = value
+		_param_material[index].set_shader_parameter(_param_name[index], value)
 	for index: int in _piece_ids.size():
 		var weight: float = 0.0
 		for layer: int in _piece_layers[index]:
 			weight = maxf(weight, board.shown(layer, intensity))
 		_piece_weight[index] = weight
 		_dressing.show_piece(_piece_ids[index], weight)
+	_apply_swaps(intensity)
 	if _materials.has("lamp"):
 		var breathe: float = NO_FLASH_BREATHE if bool(Settings.value("no_flash")) else _breathe
 		_materials["lamp"].set_shader_parameter("breathe", breathe)
@@ -113,6 +146,22 @@ func apply() -> void:
 func clear() -> void:
 	for index: int in _param_clean.size():
 		_param_material[index].set_shader_parameter(_param_name[index], _param_clean[index])
+
+
+## Each slot shows the last layer's swap whose weight has reached SWAP_AT, or its own
+## texture. Assigning the same texture again costs nothing.
+func _apply_swaps(intensity: float) -> void:
+	for slot: String in _slots:
+		var shown: Texture2D = _slot_clean[slot]
+		for index: int in config.layers.size():
+			var layer: HorrorLayer = config.layers[index]
+			if (
+				layer.texture_swaps.has(slot)
+				and board.shown(index, intensity) >= HorrorLayer.SWAP_AT
+			):
+				shown = layer.texture_swaps[slot]
+		if _slots[slot].texture != shown:
+			_slots[slot].texture = shown
 
 
 ## The weight a dressing piece shows this frame, for tests.
@@ -146,11 +195,11 @@ func _process(delta: float) -> void:
 func tick_flickers(delta: float) -> void:
 	var no_flash: bool = bool(Settings.value("no_flash"))
 	var intensity: float = float(Settings.value("horror_intensity"))
-	for index: int in CONFIG.flickers.size():
+	for index: int in config.flickers.size():
 		_flicker_wait[index] -= delta
 		if _flicker_wait[index] > 0.0:
 			continue
-		var flicker: FlickerDef = CONFIG.flickers[index]
+		var flicker: FlickerDef = config.flickers[index]
 		_flicker_wait[index] = _cooldown(flicker)
 		if no_flash or board.shown(flicker.layer, intensity) < flicker.min_weight:
 			continue
@@ -174,8 +223,8 @@ func _cooldown(flicker: FlickerDef) -> float:
 
 func _bind_params() -> void:
 	var keys: Array[String] = []
-	for layer_index: int in CONFIG.layers.size():
-		var layer: HorrorLayer = CONFIG.layers[layer_index]
+	for layer_index: int in config.layers.size():
+		var layer: HorrorLayer = config.layers[layer_index]
 		for key: String in layer.shader_params:
 			var target: String = key.get_slice(":", 0)
 			if not _materials.has(target):
@@ -189,14 +238,18 @@ func _bind_params() -> void:
 				_param_name.append(StringName(key.get_slice(":", 1)))
 				_param_clean.append(range_values.x)
 				_param_value.append(range_values.x)
+				_param_low.append(range_values.x)
+				_param_high.append(range_values.x)
+			_param_low[param] = minf(_param_low[param], minf(range_values.x, range_values.y))
+			_param_high[param] = maxf(_param_high[param], maxf(range_values.x, range_values.y))
 			_effect_param.append(param)
 			_effect_layer.append(layer_index)
 			_effect_delta.append(range_values.y - range_values.x)
 
 
 func _bind_dressing() -> void:
-	for layer_index: int in CONFIG.layers.size():
-		for piece: String in CONFIG.layers[layer_index].dressing:
+	for layer_index: int in config.layers.size():
+		for piece: String in config.layers[layer_index].dressing:
 			var index: int = _piece_ids.find(piece)
 			if index < 0:
 				index = _piece_ids.size()

@@ -48,9 +48,22 @@ func show_piece(piece: String, weight: float) -> void:
 
 
 ## Shows a piece in full for a moment, as a flicker.
+## Pieces no layer drives, such as the extra chair, hide again on their own.
 func flash_piece(piece: String, seconds: float) -> void:
+	if not _pieces.has(piece):
+		return
 	_flash_until[piece] = Time.get_ticks_msec() + int(seconds * 1000.0)
 	show_piece(piece, 0.0)
+	var control: Control = _pieces[piece]
+	var tween: Tween = control.create_tween()
+	tween.tween_interval(seconds)
+	tween.tween_callback(_end_flash.bind(piece))
+
+
+func _end_flash(piece: String) -> void:
+	_flash_until.erase(piece)
+	var control: Control = _pieces[piece]
+	control.visible = control.visible and control.modulate.a < 1.0 and control.modulate.a > 0.01
 
 
 func is_shown(piece: String) -> bool:

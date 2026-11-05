@@ -151,6 +151,15 @@ func test_a_schema_1_run_save_gains_empty_observations() -> void:
 	assert_dict(migrated["observations"]).is_empty()
 
 
+func test_damaged_observations_fail_validation() -> void:
+	var data: Dictionary = _record(5)
+	var checkpoint: Dictionary = data["checkpoint"]
+	checkpoint["observations"] = []
+	assert_bool(RunRecord.is_valid(data)).is_false()
+	checkpoint["observations"] = {"wang": null}
+	assert_bool(RunRecord.is_valid(data)).is_false()
+
+
 func test_a_save_left_mid_rename_loads_the_backup() -> void:
 	_service.save(_record(1))
 	_service.save(_record(2))

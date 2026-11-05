@@ -10,6 +10,7 @@ const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
 var _app: DemoApp
 var _announced: Dictionary[int, int] = {}
 var _spoken: Dictionary[int, int] = {}
+var _said_any: int = 0
 
 
 func before_test() -> void:
@@ -101,3 +102,32 @@ func _play_set(table: TableScreen) -> void:
 						_app.hand.toggle(card_id)
 					table.actions().play.pressed.emit()
 		await await_idle_frame()
+
+
+## Coming back to the table mid-Set replays its events silently: nothing is said twice.
+func test_reopening_the_table_says_nothing_again() -> void:
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	var speech: TableSpeech = table.get("_speech")
+	speech.spoke.connect(_on_spoke_any)
+	var driver: ControllerScript = ControllerScript.new()
+	for _turn: int in 200:
+		if _said_any >= 3 or _app.controller.awaiting() == RunController.AWAIT_SET_OVER:
+			break
+		table.skip_events()
+		driver.act(_app.controller)
+		await await_idle_frame()
+	table.skip_events()
+	await await_idle_frame()
+	assert_int(_said_any).is_greater(0)
+	assert_str(_app.switcher.current_id()).is_equal("table")
+	# The new table replays the Set inside show_screen, so count what its speech said.
+	var reopened: TableScreen = _app.show_screen("table", true)
+	reopened.skip_events()
+	await await_idle_frame()
+	var echo: TableSpeech = reopened.get("_speech")
+	assert_int(echo.lines_said()).is_equal(0)
+
+
+func _on_spoke_any(_seat: int, _event: String, _line: SpeechLine) -> void:
+	_said_any += 1

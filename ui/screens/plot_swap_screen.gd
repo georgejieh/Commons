@@ -20,7 +20,8 @@ func open(app: DemoApp) -> void:
 		func() -> void:
 			if controller.awaiting() == RunController.AWAIT_SWAP:
 				controller.swap([], [])
-			app.back()
+			if not app.back():
+				app.show_screen(app.table_id(), true)
 	)
 	sheet.add_child(keep)
 	ScreenKit.reveal(sheet)

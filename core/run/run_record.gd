@@ -38,6 +38,8 @@ static func is_valid(data: Dictionary) -> bool:
 	for key: String in RunState.new(0).to_dict():
 		if not checkpoint.has(key):
 			return false
+	if not _observations_valid(checkpoint["observations"]):
+		return false
 	var phase: Variant = checkpoint["phase"]
 	if not (phase is int or phase is float) or phase < 0 or phase >= RunFlow.State.size():
 		return false
@@ -113,3 +115,14 @@ func add(command: Dictionary) -> void:
 
 func to_dict() -> Dictionary:
 	return {"checkpoint": checkpoint.duplicate(true), "commands": commands.duplicate(true)}
+
+
+## Observations are a dictionary of family IDs to arrays of counts.
+static func _observations_valid(value: Variant) -> bool:
+	if not value is Dictionary:
+		return false
+	var observations: Dictionary = value
+	for family: Variant in observations:
+		if not family is String or not observations[family] is Array:
+			return false
+	return true

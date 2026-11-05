@@ -10,6 +10,9 @@ extends Resource
 @export var select: float = 0.1
 @export var play: float = 0.22
 @export var sweep: float = 0.3
+## A won trick leaves the table with this Tween.TransitionType and Tween.EaseType.
+@export var sweep_transition: int = Tween.TRANS_CUBIC
+@export var sweep_ease: int = Tween.EASE_IN
 @export var count_up: float = 0.45
 ## Tween.TransitionType and Tween.EaseType for every move.
 @export var transition: int = Tween.TRANS_CUBIC

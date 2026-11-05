@@ -14,6 +14,8 @@ const INK: Color = Color("1e1a16")
 const RED: Color = Color("b02a17")
 const HINT: Color = Color("c9a227")
 const CURSOR: Color = Color("f4ecd8")
+## Height of the cursor's bar under the card.
+const CURSOR_BAR: float = 8.0
 ## Joker words are longer than a rank glyph, so they print smaller.
 const GLYPH_SIZE: int = 40
 const JOKER_SIZE: int = 24
@@ -40,6 +42,8 @@ const RANK_KEYS: PackedStringArray = [
 
 var card_id: int = -1
 
+var _cursor_mark: ColorRect = ColorRect.new()
+
 ## Every tween moving this view, so a reused view can stop them all.
 var _tweens: Array[Tween] = []
 
@@ -61,6 +65,13 @@ func _ready() -> void:
 	var tilt: ShaderMaterial = ShaderMaterial.new()
 	tilt.shader = TILT_SHADER
 	_frame.material = tilt
+	_cursor_mark.color = CURSOR
+	_cursor_mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cursor_mark.visible = false
+	_cursor_mark.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_cursor_mark.offset_top = CURSOR_BAR
+	_cursor_mark.offset_bottom = CURSOR_BAR * 2.0
+	add_child(_cursor_mark)
 
 
 ## A tween on this view that settle() can stop.
@@ -106,16 +117,17 @@ func bind(card: CardInstance) -> void:
 	set_marked(false, false)
 
 
-## Selected cards lift and get a red edge; hinted cards get a gold edge; the keyboard
-## and gamepad cursor gets a paper-white edge.
+## Selected cards lift and get a red edge; hinted cards get a gold edge. The keyboard
+## and gamepad cursor gets its own paper-white bar under the card, so it shows on a
+## selected card too.
 func set_marked(selected: bool, hinted: bool, cursor: bool = false) -> void:
-	_highlight.visible = selected or hinted or cursor
-	if selected:
-		_highlight.modulate = RED
-	elif hinted:
-		_highlight.modulate = HINT
-	else:
-		_highlight.modulate = CURSOR
+	_highlight.visible = selected or hinted
+	_highlight.modulate = RED if selected else HINT
+	_cursor_mark.visible = cursor
+
+
+func has_cursor() -> bool:
+	return _cursor_mark.visible
 
 
 func _gui_input(event: InputEvent) -> void:

@@ -138,3 +138,29 @@ func _find_button(node: Node, text: String) -> Button:
 		if found != null:
 			return found
 	return null
+
+
+func test_last_round_reports_exact_values_and_keeps_them() -> void:
+	var events: Array[RunEvent] = [
+		RunEvent.wrap(RoundEvent.new(RoundEvent.Type.ROUND_STARTED, 1)),
+		RunEvent.wrap(RoundEvent.new(RoundEvent.Type.ROUND_ENDED, 2)),
+		RunEvent.new(RunEvent.Type.ROUND_SCORED, 0, 0, 120.0),
+		RunEvent.new(RunEvent.Type.SHARE_PAID, 0, 30),
+		RunEvent.wrap(RoundEvent.new(RoundEvent.Type.ROUND_STARTED, 0)),
+	]
+	var last: Dictionary = RoundSummaryScreen.last_round(events)
+	assert_bool(last["won"]).is_true()
+	assert_float(last["score"]).is_equal(120.0)
+	assert_int(last["share"]).is_equal(30)
+	events.append(RunEvent.wrap(RoundEvent.new(RoundEvent.Type.ROUND_ENDED, 1)))
+	var lost: Dictionary = RoundSummaryScreen.last_round(events)
+	assert_bool(lost["won"]).is_false()
+
+
+func test_keeping_a_hand_with_nothing_behind_returns_to_the_table() -> void:
+	_app.new_run(SEED)
+	_app.show_screen("plot_swap", true)
+	await await_idle_frame()
+	_press("plot.keep")
+	await await_idle_frame()
+	assert_str(_app.switcher.current_id()).is_equal(_app.table_id())
