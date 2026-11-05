@@ -33,6 +33,7 @@ const AWAIT_NEED: int = RunLoop.Awaiting.PLAYER_NEED
 const AWAIT_SET_OVER: int = RunLoop.Awaiting.SET_OVER
 const AWAIT_STORE: int = RunLoop.Awaiting.SHOP
 const AWAIT_RUN_OVER: int = RunLoop.Awaiting.RUN_OVER
+const AWAIT_REEDUCATION: int = RunLoop.Awaiting.REEDUCATION
 const OK: int = RunLoop.Reason.OK
 
 var _loop: RunLoop
@@ -122,6 +123,11 @@ func leave_store() -> int:
 	return _finish("leave_store", _loop.next_set())
 
 
+## Returns from reeducation to the next Set, or the run's end.
+func leave_reeducation() -> int:
+	return _finish("leave_reeducation", _loop.next_set())
+
+
 func awaiting() -> int:
 	return _loop.awaiting()
 
@@ -151,7 +157,18 @@ func quota_reward() -> int:
 
 ## How much Famine a missed Quota adds.
 func famine_per_miss() -> int:
-	return RunLoop.DEFAULT_PARAMS.famine_on_missed_target
+	return RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount
+
+
+## True while high Famine cuts the store's slots.
+func is_rationed() -> bool:
+	return _loop.state.rationed
+
+
+## The Famine value rationing must fall below to lift.
+func rationing_lifts_below() -> int:
+	var bands: MeterBands = RunLoop.DEFAULT_METERS.famine
+	return bands.mid - bands.rearm_margin
 
 
 ## Cadres the player can hold at once.

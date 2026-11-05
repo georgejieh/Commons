@@ -29,6 +29,20 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 2 saves predate the meter setbacks (P4.1): armed, with none in force.
+static func migrate_from_2(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		var defaults: Dictionary = {
+			"famine_armed": true,
+			"denunciation_armed": true,
+			"rationed": false,
+			"reeducation_due": false,
+		}
+		checkpoint.merge(defaults)
+	return data
+
+
 ## True when data has a checkpoint with every RunState field and well-formed commands,
 ## so a save that parses but lost its shape falls back to the backup.
 static func is_valid(data: Dictionary) -> bool:
@@ -62,10 +76,11 @@ static func resume(
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	params: RunParams = RunLoop.DEFAULT_PARAMS,
-	pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs
+	pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs,
+	meters: MeterTable = RunLoop.DEFAULT_METERS
 ) -> RunLoop:
 	var loop: RunLoop = RunLoop.new(
-		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool
+		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool, meters
 	)
 	# The resumed loop's own record starts from the same checkpoint, so its next save
 	# keeps it even when no new Set starts first, as in the store.

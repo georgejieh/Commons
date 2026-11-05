@@ -1,0 +1,64 @@
+[gd_resource type="Resource" script_class="MeterTable" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://data/run/meter_table.gd" id="1"]
+[ext_resource type="Script" path="res://data/run/meter_bands.gd" id="2"]
+[ext_resource type="Script" path="res://data/run/meter_source.gd" id="3"]
+
+[sub_resource type="Resource" id="famine"]
+script = ExtResource("2")
+low = 25
+mid = 50
+high = 75
+death = 100
+rearm_margin = 5
+
+[sub_resource type="Resource" id="denunciation"]
+script = ExtResource("2")
+low = 25
+mid = 50
+high = 75
+death = 100
+rearm_margin = 5
+
+[sub_resource type="Resource" id="source_0"]
+script = ExtResource("3")
+id = "missed_target"
+meter = "famine"
+amount = 10
+
+[sub_resource type="Resource" id="source_1"]
+script = ExtResource("3")
+id = "commons_shortfall"
+meter = "famine"
+amount = 3
+
+[sub_resource type="Resource" id="source_2"]
+script = ExtResource("3")
+id = "private_purchase"
+meter = "denunciation"
+amount = 3
+
+[sub_resource type="Resource" id="source_3"]
+script = ExtResource("3")
+id = "caught_lie"
+meter = "denunciation"
+amount = 8
+
+[sub_resource type="Resource" id="source_4"]
+script = ExtResource("3")
+id = "debuff_famine"
+meter = "famine"
+amount = 25
+
+[sub_resource type="Resource" id="source_5"]
+script = ExtResource("3")
+id = "debuff_denunciation"
+meter = "denunciation"
+amount = 25
+
+[resource]
+script = ExtResource("1")
+famine = SubResource("famine")
+denunciation = SubResource("denunciation")
+sources = Array[ExtResource("3")]([SubResource("source_0"), SubResource("source_1"), SubResource("source_2"), SubResource("source_3"), SubResource("source_4"), SubResource("source_5")])
+rationing_shop_cut = 1

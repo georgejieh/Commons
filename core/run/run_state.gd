@@ -24,6 +24,14 @@ var set_progress: float = 0.0
 var debuff_ladder: Array[String] = []
 var famine: int = 0
 var denunciation: int = 0
+## Setback state (P4.1). A meter's setback is armed until it fires, and re-arms once the
+## meter falls back below its margin.
+var famine_armed: bool = true
+var denunciation_armed: bool = true
+## Rationing holds while true.
+var rationed: bool = false
+## Reeducation replaces the next shop visit while true.
+var reeducation_due: bool = false
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -53,6 +61,10 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.debuff_ladder.assign(data["debuff_ladder"])
 	state.famine = int(data["famine"])
 	state.denunciation = int(data["denunciation"])
+	state.famine_armed = bool(data["famine_armed"])
+	state.denunciation_armed = bool(data["denunciation_armed"])
+	state.rationed = bool(data["rationed"])
+	state.reeducation_due = bool(data["reeducation_due"])
 	state.table.assign(data["table"])
 	for entry_data: Dictionary in data["roster"]:
 		state.roster.append(RosterEntry.from_dict(entry_data))
@@ -85,6 +97,10 @@ func to_dict() -> Dictionary:
 		"debuff_ladder": debuff_ladder.duplicate(),
 		"famine": famine,
 		"denunciation": denunciation,
+		"famine_armed": famine_armed,
+		"denunciation_armed": denunciation_armed,
+		"rationed": rationed,
+		"reeducation_due": reeducation_due,
 		"roster": roster_data,
 		"table": table.duplicate(),
 		"inventory": inventory.to_dict(),

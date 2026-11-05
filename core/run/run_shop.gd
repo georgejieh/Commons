@@ -12,14 +12,24 @@ const SOLD: String = ""
 var _state: RunState
 var _params: ShopParams
 var _pool: Array[ModifierDef]
+## Slots lost while rationing is in force (P4.1).
+var _ration_cut: int
 var _stock: Array[String] = []
 var _rerolls: int = 0
 
 
-func _init(state: RunState, params: ShopParams, pool: Array[ModifierDef]) -> void:
+func _init(
+	state: RunState, params: ShopParams, pool: Array[ModifierDef], ration_cut: int = 0
+) -> void:
 	_state = state
 	_params = params
 	_pool = pool
+	_ration_cut = ration_cut
+
+
+## Slots this visit offers: fewer while rationing is in force.
+func slot_count() -> int:
+	return maxi(_params.slots - (_ration_cut if _state.rationed else 0), 0)
 
 
 ## Starts a visit with fresh stock.
@@ -75,7 +85,7 @@ func reroll() -> Reason:
 func _restock() -> void:
 	_stock = draw(
 		_pool,
-		_params.slots,
+		slot_count(),
 		_state.inventory.cadres,
 		_params.rarity_weights,
 		_state.streams.stream(RandomStreams.SHOP)

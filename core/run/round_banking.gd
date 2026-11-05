@@ -23,6 +23,7 @@ static func bank(
 
 
 ## Bots declare on the ai stream. The player's need counts only when they are a peasant.
+## Returns true when the pool fell short of the needs declared, a Commons shortfall.
 static func split(
 	state: RunState,
 	player: int,
@@ -30,7 +31,7 @@ static func split(
 	configs: Array[BotConfig],
 	params: RunParams,
 	events: Array[RunEvent]
-) -> void:
+) -> bool:
 	var peasants: Array[int] = []
 	var needs: PackedInt64Array = PackedInt64Array()
 	for seat: int in Seats.COUNT:
@@ -47,9 +48,14 @@ static func split(
 		peasants.append(seat)
 		needs.append(need)
 		events.append(RunEvent.new(RunEvent.Type.NEED_DECLARED, seat, need))
+	var declared: int = 0
+	for need: int in needs:
+		declared += clampi(need, 0, Banking.MAX_NEED)
+	var short: bool = state.commons_pool < declared
 	var shares: PackedInt64Array = Banking.split(state.commons_pool, needs)
 	for index: int in peasants.size():
 		events.append(RunEvent.new(RunEvent.Type.SHARE_PAID, peasants[index], shares[index]))
 		if peasants[index] == player:
 			state.set_progress += shares[index]
 	state.commons_pool = 0
+	return short

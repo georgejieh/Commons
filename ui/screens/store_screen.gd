@@ -46,6 +46,8 @@ func open(app: DemoApp) -> void:
 	var market: Button = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
 	market.pressed.connect(func() -> void: app.show_screen("black_market"))
 	column.add_child(ScreenKit.row([leave, _reroll, market]))
+	if app.controller.is_rationed():
+		column.add_child(_rationing_note(app.controller))
 	# A paper chip, so the line reads over the mural.
 	var chip: VBoxContainer = ScreenKit.card(Vector2(0, 0))
 	chip.add_child(_reading)
@@ -136,3 +138,14 @@ func _on_reroll() -> void:
 
 func _coupon_text(value: float) -> String:
 	return Strings.count("store.coupons", roundi(value))
+
+
+## Why the counter is short while rationing holds.
+func _rationing_note(controller: RunController) -> Label:
+	var slots: int = controller.store_stock().size()
+	var text: String = Strings.count("store.rationed", slots).format(
+		{"below": controller.rationing_lifts_below()}
+	)
+	var note: Label = ScreenKit.label(text, 22)
+	note.add_theme_color_override("font_color", ScreenKit.RED)
+	return note

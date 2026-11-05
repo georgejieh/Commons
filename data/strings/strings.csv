@@ -162,6 +162,8 @@ store.none,none
 store.leave,Next Quota
 store.sold,Sold
 store.buy,Buy · {price} coupons
+store.rationed,Rationing: {count} Cadres on the counter until Famine falls below {below}.
+store.rationed.one,Rationing: 1 Cadre on the counter until Famine falls below {below}.
 year.title,Year {year} done
 year.coupons,Coupons left: {count}
 year.famine,Famine: {value}
@@ -287,8 +289,8 @@ plot.empty,Your plot is empty.
 plot.keep,Keep hand
 plot.back,Back
 reed.eyebrow,Reeducation
-reed.title,Sent away for a Set
-reed.body,You sit out the next Set. Your private plot is emptied.
+reed.title,Sent for reeducation
+reed.body,"You miss this visit to the State Store. Your private plot is emptied. If you hold a Cadre, one is exchanged for a Cadre you don't hold."
 reed.continue,Continue
 end.eyebrow,The run is over
 end.landlord,You finished as landlord

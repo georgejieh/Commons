@@ -28,7 +28,7 @@ func open(app: DemoApp) -> void:
 	next.pressed.connect(
 		func() -> void:
 			controller.finish_set()
-			app.show_screen("year_summary" if last else "store", true)
+			app.show_screen(app.screen_for(controller.awaiting()), true)
 	)
 	sheet.add_child(next)
 	ScreenKit.reveal(sheet)

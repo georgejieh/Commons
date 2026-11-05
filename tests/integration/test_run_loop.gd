@@ -94,7 +94,7 @@ func test_a_missed_target_plays_every_round_and_raises_famine() -> void:
 	var ladder_debuffs: int = max_rounds - state.debuff_ladder.count(RunState.NO_DEBUFF)
 	assert_int(_count(loop, RunEvent.Type.DEBUFF_ADDED)).is_equal(ladder_debuffs)
 	assert_int(state.coupons).is_equal(0)
-	assert_int(state.famine).is_equal(RunLoop.DEFAULT_PARAMS.famine_on_missed_target)
+	assert_int(state.famine).is_equal(RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount)
 
 
 func test_every_round_accounts_for_all_cards() -> void:
@@ -221,3 +221,98 @@ func _ids(cards: Array[CardInstance]) -> Array[int]:
 	for card: CardInstance in cards:
 		ids.append(card.id())
 	return ids
+
+
+## The meter table with the missed target moved to another meter and size, so a missed
+## Set drives that meter through the loop's real path.
+func _meters_with_miss(meter: String, amount: int) -> MeterTable:
+	var table: MeterTable = RunLoop.DEFAULT_METERS.duplicate()
+	var sources: Array[MeterSource] = []
+	for row: MeterSource in RunLoop.DEFAULT_METERS.sources:
+		if row.id != RunMeters.MISSED_TARGET:
+			sources.append(row)
+	var miss: MeterSource = MeterSource.new()
+	miss.id = RunMeters.MISSED_TARGET
+	miss.meter = meter
+	miss.amount = amount
+	sources.append(miss)
+	table.sources = sources
+	return table
+
+
+func _missed_set(meters: MeterTable, state: RunState) -> RunLoop:
+	var loop: RunLoop = RunLoop.new(
+		state,
+		RunScript.bots(),
+		_hard_sets(),
+		RunLoop.DEFAULT_PARAMS,
+		RunLoop.DEFAULT_POOL.debuffs,
+		meters
+	)
+	loop.start_set()
+	RunScript.new().play_until_set_over(loop)
+	return loop
+
+
+func test_famine_at_death_ends_the_run() -> void:
+	var state: RunState = RunState.new(MISSED_SEED)
+	var loop: RunLoop = _missed_set(_meters_with_miss(RunMeters.FAMINE, 100), state)
+	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)
+	assert_int(loop.flow.state()).is_equal(RunFlow.State.RUN_END)
+	assert_str(loop.events()[-1].text).is_equal(RunMeters.FAMINE)
+	assert_int(loop.next_set()).is_equal(RunLoop.Reason.NOT_AWAITED)
+
+
+func test_denunciation_at_death_ends_the_run() -> void:
+	var state: RunState = RunState.new(MISSED_SEED)
+	var loop: RunLoop = _missed_set(_meters_with_miss(RunMeters.DENUNCIATION, 100), state)
+	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)
+	assert_int(loop.events()[-1].type).is_equal(RunEvent.Type.RUN_DIED)
+	assert_str(loop.events()[-1].text).is_equal(RunMeters.DENUNCIATION)
+
+
+func test_mid_denunciation_sends_you_to_reeducation_in_place_of_the_store() -> void:
+	var state: RunState = RunState.new(MISSED_SEED)
+	state.inventory.cadres.assign([RunLoop.DEFAULT_CADRES.cadres[0].id])
+	var meters: MeterTable = _meters_with_miss(RunMeters.DENUNCIATION, 50)
+	var loop: RunLoop = _missed_set(meters, state)
+	assert_bool(state.reeducation_due).is_true()
+	# Filled after play, so the script needn't swap; the Set-end checkpoint keeps it.
+	state.inventory.plot.append(
+		CardInstance.new(CardInstance.FIRST_PLOT_ID, 12, 0, CardInstance.Origin.PLOT)
+	)
+	loop.record.mark(state)
+	var saved: Dictionary = loop.record.to_dict()
+	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
+	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.REEDUCATION)
+	assert_int(loop.flow.state()).is_equal(RunFlow.State.REEDUCATION)
+	assert_bool(state.inventory.plot.is_empty()).is_true()
+	assert_int(state.inventory.cadres.size()).is_equal(1)
+	assert_str(state.inventory.cadres[0]).is_not_equal(RunLoop.DEFAULT_CADRES.cadres[0].id)
+	assert_bool(state.reeducation_due).is_false()
+	# A save taken in reeducation replays to the same place and the same exchange.
+	var commands: Array = saved["commands"]
+	commands.append({"type": "shop"})
+	var resumed: RunLoop = RunRecord.resume(
+		saved,
+		RunScript.bots(),
+		_hard_sets(),
+		RunLoop.DEFAULT_PARAMS,
+		RunLoop.DEFAULT_POOL.debuffs,
+		meters
+	)
+	assert_int(resumed.awaiting()).is_equal(RunLoop.Awaiting.REEDUCATION)
+	assert_array(resumed.state.inventory.cadres).is_equal(state.inventory.cadres)
+	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(loop.flow.state()).is_not_equal(RunFlow.State.REEDUCATION)
+	assert_int(state.set_index).is_equal(1)
+
+
+func test_rationing_cuts_a_store_slot_until_famine_falls() -> void:
+	var state: RunState = RunState.new(MISSED_SEED)
+	state.famine = RunLoop.DEFAULT_METERS.famine.mid - 1
+	var loop: RunLoop = _missed_set(_meters_with_miss(RunMeters.FAMINE, 1), state)
+	assert_bool(state.rationed).is_true()
+	loop.open_shop()
+	var cut: int = RunLoop.DEFAULT_METERS.rationing_shop_cut
+	assert_int(loop.shop.stock().size()).is_equal(RunLoop.DEFAULT_SHOP.slots - cut)

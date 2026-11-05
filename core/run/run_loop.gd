@@ -7,7 +7,17 @@ extends RefCounted
 ## acts through commands; bots act in advance(). A Set is rebuilt from the RunState at
 ## its start plus the player's commands, which is how saves inside a Set resume.
 
-enum Awaiting {NOTHING, PLAYER_BID, PLAYER_SWAP, PLAYER_PLAY, PLAYER_NEED, SET_OVER, SHOP, RUN_OVER}
+enum Awaiting {
+	NOTHING,
+	PLAYER_BID,
+	PLAYER_SWAP,
+	PLAYER_PLAY,
+	PLAYER_NEED,
+	SET_OVER,
+	SHOP,
+	RUN_OVER,
+	REEDUCATION,
+}
 enum Reason { OK, NOT_AWAITED, ILLEGAL }
 
 const PLAYER: int = 0
@@ -15,6 +25,7 @@ const DEFAULT_PARAMS: RunParams = preload("res://data/run/default_run.tres")
 const DEFAULT_POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
 const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
 const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
+const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 
 var state: RunState
 var flow: RunFlow
@@ -28,6 +39,7 @@ var shop: RunShop
 var _configs: Array[BotConfig]
 var _sets: SetConfig
 var _params: RunParams
+var _meters: MeterTable
 var _pool: Array[ModifierDef]
 var _pool_by_id: Dictionary[String, ModifierDef] = {}
 var _stack: ModifierStack = ModifierStack.new()
@@ -47,17 +59,19 @@ func _init(
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	params: RunParams = DEFAULT_PARAMS,
-	pool: Array[ModifierDef] = DEFAULT_POOL.debuffs
+	pool: Array[ModifierDef] = DEFAULT_POOL.debuffs,
+	meters: MeterTable = DEFAULT_METERS
 ) -> void:
 	state = run_state
 	flow = RunFlow.new(run_state.phase)
 	_configs = configs
 	_sets = sets
 	_params = params
+	_meters = meters
 	_pool = pool
 	for definition: ModifierDef in pool + DEFAULT_CADRES.cadres:
 		_pool_by_id[definition.id] = definition
-	shop = RunShop.new(state, DEFAULT_SHOP, DEFAULT_CADRES.cadres)
+	shop = RunShop.new(state, DEFAULT_SHOP, DEFAULT_CADRES.cadres, meters.rationing_shop_cut)
 	_table = SeatRules.new(_stack)
 	_scoring = RoundScoring.new(HandLevels.new(Scorer.DEFAULT_PARAMS.max_level), _stack)
 
@@ -211,11 +225,14 @@ func player_need(need: int) -> Reason:
 	return Reason.OK
 
 
-## Leaves a finished Set for the state store.
+## Leaves a finished Set for the state store, or for reeducation when it is owed.
 func open_shop() -> Reason:
 	if _awaiting != Awaiting.SET_OVER:
 		return Reason.NOT_AWAITED
 	record.add({"type": "shop"})
+	if state.reeducation_due:
+		_reeducate()
+		return Reason.OK
 	_move(RunFlow.State.SHOP)
 	shop.open()
 	_awaiting = Awaiting.SHOP
@@ -233,7 +250,7 @@ func player_reroll() -> Reason:
 ## Moves past a finished Set or the shop: a Year's end after the boss, then the next Set.
 ## From a finished Set it passes through the shop without stopping.
 func next_set() -> Reason:
-	if _awaiting != Awaiting.SET_OVER and _awaiting != Awaiting.SHOP:
+	if not [Awaiting.SET_OVER, Awaiting.SHOP, Awaiting.REEDUCATION].has(_awaiting):
 		return Reason.NOT_AWAITED
 	if _awaiting == Awaiting.SET_OVER:
 		_move(RunFlow.State.SHOP)
@@ -387,7 +404,10 @@ func _finish_round() -> void:
 
 
 func _split_commons(player_need: int) -> void:
-	RoundBanking.split(state, PLAYER, player_need, _configs, _params, set_log.events())
+	if RoundBanking.split(state, PLAYER, player_need, _configs, _params, set_log.events()):
+		_raise(RunMeters.COMMONS_SHORTFALL)
+		if _end_if_dead():
+			return
 	_end_round()
 
 
@@ -413,9 +433,7 @@ func _end_set() -> void:
 	if met:
 		state.coupons += _sets.reward(state.set_type)
 	else:
-		RunMeters.raise_famine(
-			state, _params.famine_on_missed_target, _stack, _params, PLAYER, set_log.events()
-		)
+		_raise(RunMeters.MISSED_TARGET)
 	_stack.clear()
 	state.landlord_seat = Seats.NONE
 	set_log.add(
@@ -423,6 +441,42 @@ func _end_set() -> void:
 	)
 	_move(RunFlow.State.SET_END, true)
 	_awaiting = Awaiting.SET_OVER
+	_end_if_dead()
+
+
+## Moves a meter by a source in the meter table. Callers check death at a boundary.
+func _raise(source_id: String) -> void:
+	RunMeters.apply(state, source_id, _meters, _stack, _params, PLAYER, set_log.events())
+
+
+## Ends the run when a meter has reached death. Every caller sits at a state that may
+## move to the run's end.
+func _end_if_dead() -> bool:
+	if not RunMeters.dead(state, _meters):
+		return false
+	var meter: String = RunMeters.FAMINE
+	if state.denunciation >= _meters.denunciation.death:
+		meter = RunMeters.DENUNCIATION
+	set_log.add(RunEvent.new(RunEvent.Type.RUN_DIED, PLAYER, 0, 0.0, meter))
+	_round = null
+	_deal = null
+	_stack.clear()
+	_move(RunFlow.State.RUN_END, true)
+	_awaiting = Awaiting.RUN_OVER
+	return true
+
+
+## Serves owed reeducation in place of the shop: the plot is emptied and one held
+## Cadre, drawn on the events stream, is exchanged for one the player does not hold.
+func _reeducate() -> void:
+	_move(RunFlow.State.REEDUCATION)
+	state.reeducation_due = false
+	state.inventory.plot.clear()
+	var change: PackedStringArray = Reeducation.change_cadre(
+		state.inventory, DEFAULT_CADRES.cadres, state.streams.stream(RandomStreams.EVENTS)
+	)
+	set_log.add(RunEvent.new(RunEvent.Type.REEDUCATED, PLAYER, 0, 0.0, ">".join(change)))
+	_awaiting = Awaiting.REEDUCATION
 
 
 func _shop_command(command: Dictionary, act: Callable) -> Reason:

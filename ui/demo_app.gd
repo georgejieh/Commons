@@ -122,6 +122,8 @@ func screen_for(awaiting: int) -> String:
 			return "set_summary"
 		RunController.AWAIT_STORE:
 			return "store"
+		RunController.AWAIT_REEDUCATION:
+			return "reeducation"
 		RunController.AWAIT_RUN_OVER:
 			return "year_summary"
 		RunController.AWAIT_SWAP:

@@ -20,6 +20,11 @@ enum Type {
 	SEAT_LOST,
 	METER_CHANGED,
 	SET_ENDED,
+	## value 1 when a setback starts, 0 when it lifts; text names it.
+	SETBACK,
+	## A meter reached its death threshold; text names the meter.
+	RUN_DIED,
+	REEDUCATED,
 }
 
 var type: Type

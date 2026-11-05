@@ -21,6 +21,9 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.SEAT_LOST: "seat_lost",
 	RunEvent.Type.METER_CHANGED: "meter_changed",
 	RunEvent.Type.SET_ENDED: "set_ended",
+	RunEvent.Type.SETBACK: "setback",
+	RunEvent.Type.RUN_DIED: "run_died",
+	RunEvent.Type.REEDUCATED: "reeducated",
 }
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",
