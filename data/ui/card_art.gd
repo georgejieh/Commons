@@ -12,6 +12,8 @@ extends Resource
 @export var court: Array[Texture2D] = []
 ## The small and big joker.
 @export var jokers: Array[Texture2D] = []
+## How strongly a pip card's middle suit shows, so the corner rank stays the focus.
+@export_range(0.0, 1.0) var pip_alpha: float = 0.35
 
 
 ## The picture in a card's middle: court or joker art, or else its suit icon.

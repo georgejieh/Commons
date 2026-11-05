@@ -21,8 +21,6 @@ const GLYPH_SIZE: int = 40
 const JOKER_SIZE: int = 24
 const TILT_SHADER: Shader = preload("res://shaders/card_tilt.gdshader")
 const ART: CardArt = preload("res://data/ui/card_art.tres")
-## How strongly a pip card's middle suit shows, so the corner rank stays the focus.
-const PIP_ALPHA: float = 0.35
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -124,7 +122,7 @@ func bind(card: CardInstance) -> void:
 		_suit.texture = ArtStages.resolve(art.suits[card.suit()])
 	_picture.texture = ArtStages.resolve(art.picture(rank, card.suit()))
 	var pip: bool = rank < Ranks.JACK or (rank > Ranks.KING and not joker)
-	_picture.modulate.a = PIP_ALPHA if pip else 1.0
+	_picture.modulate.a = art.pip_alpha if pip else 1.0
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
 	_rank.modulate = RED if red else INK
 	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID

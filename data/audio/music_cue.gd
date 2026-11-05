@@ -10,6 +10,10 @@ extends Resource
 ## Measured from the audio, not the prompt. Cue changes land on a bar line.
 @export var bpm: float = 84.0
 @export var beats_per_bar: int = 4
+## Seconds from the start of the file to the first downbeat, measured from the audio.
+## Stems keep their leading silence, so bars count from here. The loop must also start
+## and end on bar lines from this point.
+@export var downbeat: float = 0.0
 
 
 func has_audio() -> bool:

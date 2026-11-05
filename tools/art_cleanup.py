@@ -6,8 +6,9 @@ Each image goes through the same fixed steps, in order:
    generated on a flat background can be cut out.
 1. Trim fully transparent edges.
 2. Threshold alpha: pixels below the cut become fully transparent, the rest opaque.
-3. Fit inside the target size, keeping the aspect ratio, with a fixed Lanczos filter
-   (only if a size is given).
+3. Shrink to fit inside the target size, keeping the aspect ratio, with a fixed Lanczos
+   filter (only if a size is given and the image is larger), then threshold and trim
+   again.
 4. Quantize to the style palette in art/palette.json, with optional Floyd-Steinberg
    dithering.
 5. Normalize outlines: dark pixels that touch transparency become the palette's ink.
@@ -27,7 +28,9 @@ from PIL import Image
 PALETTE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "art", "palette.json")
 ALPHA_CUT = 128
 # Largest per-channel difference from the key color that still counts as background.
-KEY_TOLERANCE = 40
+# Kept below the gap between the key and the palette's lightest color, so a cleaned
+# image's own pale paper is never keyed out on a second pass.
+KEY_TOLERANCE = 12
 # Pixels at or below this luminance next to transparency count as outline.
 OUTLINE_LUMA = 80
 INK_NAME = "ink"
@@ -74,8 +77,9 @@ def threshold_alpha(image):
 
 
 def resize(image, size):
-    """Fits the image inside size, keeping its aspect ratio."""
-    if size is None:
+    """Shrinks the image to fit inside size, keeping its aspect ratio. An image that
+    already fits is left alone, so a second pass changes nothing."""
+    if size is None or (image.size[0] <= size[0] and image.size[1] <= size[1]):
         return image
     scale = min(size[0] / image.size[0], size[1] / image.size[1])
     target = (max(1, round(image.size[0] * scale)), max(1, round(image.size[1] * scale)))
@@ -127,10 +131,8 @@ def clean(image, colors, ink, size=None, dither=False, key=None):
     image = image.convert("RGBA")
     if key is not None:
         image = key_out(image, key)
-    image = trim(image)
-    image = threshold_alpha(image)
-    image = resize(image, size)
-    image = threshold_alpha(image)
+    image = trim(threshold_alpha(image))
+    image = trim(threshold_alpha(resize(image, size)))
     image = quantize(image, colors, dither)
     return normalize_outlines(image, ink)
 

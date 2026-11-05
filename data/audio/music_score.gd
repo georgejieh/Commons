@@ -32,13 +32,3 @@ func cue_for(famine_weight: float, landlord_seat: bool) -> String:
 	if famine_weight >= famine_mid_at:
 		return famine_mid
 	return landlord if landlord_seat else village
-
-
-## A stem's gain, 0 to 1: each layer that names the stem fades it by its weight, and the
-## strongest such layer wins.
-func stem_gain(stem: String, layers: Array[HorrorLayer], weights: PackedFloat32Array) -> float:
-	var gain: float = 1.0
-	for index: int in mini(layers.size(), weights.size()):
-		if layers[index].audio_stems.has(stem):
-			gain = minf(gain, 1.0 - clampf(weights[index], 0.0, 1.0))
-	return gain

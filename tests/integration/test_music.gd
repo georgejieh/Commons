@@ -24,22 +24,66 @@ func test_the_cue_follows_famine_and_the_landlord_seat() -> void:
 		assert_object(SCORE.cue(cue_id)).is_not_null()
 
 
-func test_layers_thin_only_the_stems_they_name() -> void:
-	var weights: PackedFloat32Array = []
-	weights.resize(CONFIG.layers.size())
-	weights.fill(0.0)
-	weights[0] = 0.75  # Famine
-	assert_float(SCORE.stem_gain("percussion", CONFIG.layers, weights)).is_equal_approx(0.25, 0.001)
-	assert_float(SCORE.stem_gain("harmony", CONFIG.layers, weights)).is_equal(1.0)
-
-
-func test_a_new_cue_waits_for_the_next_bar_line() -> void:
-	var cue: MusicCue = SCORE.cue(SCORE.village)
+func test_bars_count_from_the_first_downbeat() -> void:
+	var cue: MusicCue = MusicCue.new()
+	cue.bpm = 120.0
+	cue.downbeat = 0.4
 	var bar: float = cue.bar_seconds()
-	assert_float(bar).is_equal_approx(60.0 / cue.bpm * cue.beats_per_bar, 0.0001)
-	assert_float(MusicPlayer.seconds_to_bar(cue, 0.0)).is_equal(0.0)
-	assert_float(MusicPlayer.seconds_to_bar(cue, bar * 0.25)).is_equal_approx(bar * 0.75, 0.001)
-	assert_float(MusicPlayer.seconds_to_bar(cue, bar * 2.0 + 0.01)).is_equal(0.0)
+	assert_float(bar).is_equal_approx(2.0, 0.0001)
+	assert_int(MusicPlayer.bar_at(cue, 0.2)).is_equal(-1)
+	assert_int(MusicPlayer.bar_at(cue, 0.4)).is_equal(0)
+	assert_int(MusicPlayer.bar_at(cue, 2.39)).is_equal(0)
+	assert_int(MusicPlayer.bar_at(cue, 2.41)).is_equal(1)
+
+
+func test_a_waiting_cue_starts_when_playback_crosses_a_bar_even_between_frames() -> void:
+	var village: MusicCue = _tone_cue("tone_village", ["melody", "percussion"])
+	var famine: MusicCue = _tone_cue("tone_famine", ["melody"])
+	_music.request("tone_village")
+	_music.request("tone_famine")
+	assert_str(_music.pending_id()).is_equal("tone_famine")
+	var bar: float = village.bar_seconds()
+	# Frames either side of a bar line, neither within any tolerance of it.
+	_music.call("_check_bar", bar * 0.98)
+	assert_str(_music.current_id()).is_equal("tone_village")
+	_music.call("_check_bar", bar * 1.02)
+	assert_str(_music.current_id()).is_equal("tone_famine")
+	_remove(village)
+	_remove(famine)
+
+
+func test_asking_for_the_playing_cue_cancels_a_waiting_change() -> void:
+	var village: MusicCue = _tone_cue("tone_village", ["melody"])
+	var landlord: MusicCue = _tone_cue("tone_landlord", ["melody"])
+	_music.request("tone_landlord")
+	_music.request("tone_village")
+	_music.request("tone_landlord")
+	assert_str(_music.pending_id()).is_empty()
+	_music.call("_check_bar", 0.0)
+	_music.call("_check_bar", landlord.bar_seconds() * 1.5)
+	assert_str(_music.current_id()).is_equal("tone_landlord")
+	_remove(village)
+	_remove(landlord)
+
+
+func test_a_held_down_stem_stays_down_across_a_cue_change() -> void:
+	var village: MusicCue = _tone_cue("tone_village", ["melody", "percussion"])
+	var famine: MusicCue = _tone_cue("tone_famine", ["melody", "harmony"])
+	_music.request("tone_village")
+	var board: BoardState = BoardState.new(CONFIG)
+	board.set_inputs(0, 100, false, 0)
+	board.settle()
+	_music.follow(board, CONFIG.layers, 1.0)
+	_music._process(SCORE.fade_seconds + 0.1)
+	assert_float(_music.stem_gain("melody")).is_equal(0.0)
+	_music.request("tone_famine")
+	_music.call("_check_bar", 0.0)
+	_music.call("_check_bar", village.bar_seconds() * 1.1)
+	assert_str(_music.current_id()).is_equal("tone_famine")
+	assert_float(_music.stem_gain("melody")).is_equal(0.0)
+	assert_float(_music.stem_gain("harmony")).is_equal(1.0)
+	_remove(village)
+	_remove(famine)
 
 
 func test_famine_fades_its_stems_by_volume_and_they_return() -> void:
@@ -60,12 +104,7 @@ func test_famine_fades_its_stems_by_volume_and_they_return() -> void:
 
 
 func test_stems_share_one_synchronized_stream_and_fade_by_volume() -> void:
-	var cue: MusicCue = MusicCue.new()
-	cue.id = "test_tones"
-	cue.stem_names = ["melody", "percussion"]
-	cue.stems = [_tone(440.0), _tone(220.0)]
-	var score_cues: Array[MusicCue] = SCORE.cues
-	score_cues.append(cue)
+	var cue: MusicCue = _tone_cue("test_tones", ["melody", "percussion"])
 	_music.request("test_tones")
 	var player: AudioStreamPlayer = _music.get("_player")
 	var mix: AudioStreamSynchronized = player.stream as AudioStreamSynchronized
@@ -80,7 +119,7 @@ func test_stems_share_one_synchronized_stream_and_fade_by_volume() -> void:
 	assert_int(mix.stream_count).is_equal(2)
 	assert_float(mix.get_sync_stream_volume(1)).is_equal(MusicPlayer.SILENT_DB)
 	assert_float(mix.get_sync_stream_volume(0)).is_equal_approx(0.0, 0.001)
-	score_cues.erase(cue)
+	_remove(cue)
 
 
 func _tone(hertz: float) -> AudioStreamWAV:
@@ -96,3 +135,20 @@ func _tone(hertz: float) -> AudioStreamWAV:
 	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	wav.loop_end = RATE
 	return wav
+
+
+## A cue of generated tones, one per stem, added to the shipped score for one test.
+func _tone_cue(cue_id: String, names: Array[String]) -> MusicCue:
+	var cue: MusicCue = MusicCue.new()
+	cue.id = cue_id
+	cue.stem_names = names
+	for index: int in names.size():
+		cue.stems.append(_tone(220.0 * (index + 1)))
+	var cues: Array[MusicCue] = SCORE.cues
+	cues.append(cue)
+	return cue
+
+
+func _remove(cue: MusicCue) -> void:
+	var cues: Array[MusicCue] = SCORE.cues
+	cues.erase(cue)

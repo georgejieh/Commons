@@ -21,13 +21,28 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import voice_proto  # noqa: E402
 
 PROFILE_DIR = os.path.join("data", "ui", "voices")
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROFILE_SCRIPT = os.path.join(ROOT, "data", "ui", "voice_profile.gd")
 FIELDS = ("pitch", "tone", "pace", "roughness")
-FIELD_LINE = re.compile(r"^(pitch|tone|pace|roughness)\s*=\s*([-0-9.]+)\s*$")
+NUMBER = r"([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)"
+FIELD_LINE = re.compile(r"^(pitch|tone|pace|roughness)\s*=\s*" + NUMBER + r"\s*$")
+DEFAULT_LINE = re.compile(r"var (pitch|tone|pace|roughness)\s*:\s*float\s*=\s*" + NUMBER)
+
+
+def profile_defaults(script=PROFILE_SCRIPT):
+    """The script's default for each field; Godot leaves defaults out of .tres files."""
+    defaults = {}
+    with open(script, encoding="utf-8") as handle:
+        for line in handle:
+            match = DEFAULT_LINE.search(line)
+            if match:
+                defaults[match.group(1)] = float(match.group(2))
+    return defaults
 
 
 def read_profile(path):
-    """Reads the four numbers from a VoiceProfile .tres file."""
-    values = {}
+    """Reads the four numbers from a VoiceProfile .tres file, defaulting missing ones."""
+    values = dict(profile_defaults())
     with open(path, encoding="utf-8") as handle:
         for line in handle:
             match = FIELD_LINE.match(line.strip())

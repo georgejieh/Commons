@@ -26,6 +26,8 @@ func test_every_row_is_complete_and_points_at_a_file() -> void:
 		assert_bool(FileAccess.file_exists(path)).override_failure_message(path).is_true()
 		assert_str(row[1]).is_not_empty()
 		assert_str(row[2]).is_not_empty()
+		var date: RegEx = RegEx.create_from_string("^\\d{4}-\\d{2}-\\d{2}$")
+		assert_object(date.search(row[3])).override_failure_message(row[0]).is_not_null()
 		assert_bool(row[4] in ["yes", "no"]).override_failure_message(row[0]).is_true()
 
 

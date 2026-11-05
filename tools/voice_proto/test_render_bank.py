@@ -38,3 +38,13 @@ def test_the_bank_covers_every_syllable_and_is_byte_identical(tmp_path):
         assert len(files) == len(render_bank.bank_syllables())
         match, mismatch, errors = filecmp.cmpfiles(first / voice, second / voice, files, False)
         assert not mismatch and not errors
+
+
+def test_a_profile_saved_with_default_values_still_reads(tmp_path):
+    defaults = render_bank.profile_defaults()
+    assert set(defaults) == set(render_bank.FIELDS)
+    path = tmp_path / "plain.tres"
+    path.write_text('[resource]\nscript = ExtResource("1")\npitch = 1.2e2\n', encoding="utf-8")
+    profile = render_bank.read_profile(str(path))
+    assert profile["pitch"] == 120.0
+    assert profile["tone"] == defaults["tone"]

@@ -32,6 +32,8 @@ def pack(sprites):
 
 
 def _try(sprites, side):
+    if any(width + 2 * PADDING > side for _, (width, _) in sprites):
+        return None
     placed = {}
     x = y = shelf = PADDING
     for name, (width, height) in sprites:
@@ -43,6 +45,18 @@ def _try(sprites, side):
         x += width + PADDING
         shelf = max(shelf, height)
     return placed
+
+
+def res_path(path):
+    """The Godot res:// path for a file, relative to the project root when it is inside."""
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    full = os.path.abspath(path)
+    try:
+        inside = os.path.commonpath([root, full]) == root
+    except ValueError:  # different drives on Windows
+        inside = False
+    relative = os.path.relpath(full, root) if inside else path
+    return "res://" + relative.replace(os.sep, "/")
 
 
 def atlas_tres(atlas_res, region):
@@ -70,7 +84,7 @@ def main():
         sheet.paste(images[name], (x, y))
     os.makedirs(os.path.dirname(args.atlas), exist_ok=True)
     sheet.save(args.atlas, format="PNG", optimize=False, compress_level=9)
-    atlas_res = "res://" + args.atlas.replace(os.sep, "/")
+    atlas_res = res_path(args.atlas)
     os.makedirs(args.resources, exist_ok=True)
     for name, region in placed.items():
         path = os.path.join(args.resources, os.path.splitext(name)[0] + ".tres")

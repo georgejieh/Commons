@@ -9,24 +9,19 @@ const MASK: int = 2
 const NORMALS: String = "res://art/normals/%s_n.png"
 const LIGHT_TEXTURE_SIZE: int = 256
 
-static var _lit: Dictionary[Texture2D, Texture2D] = {}
 
-
-## texture with its normal map, or texture itself when it has none.
+## texture with its normal map, or texture itself when it has none. Nothing is cached
+## here, so a stage's textures leave memory once nothing shows them.
 static func lit(texture: Texture2D) -> Texture2D:
 	if texture == null or texture.resource_path.is_empty():
 		return texture
-	if _lit.has(texture):
-		return _lit[texture]
-	var made: Texture2D = texture
 	var normal_path: String = NORMALS % texture.resource_path.get_file().get_basename()
-	if ResourceLoader.exists(normal_path):
-		var canvas: CanvasTexture = CanvasTexture.new()
-		canvas.diffuse_texture = texture
-		canvas.normal_texture = load(normal_path)
-		made = canvas
-	_lit[texture] = made
-	return made
+	if not ResourceLoader.exists(normal_path):
+		return texture
+	var canvas: CanvasTexture = CanvasTexture.new()
+	canvas.diffuse_texture = texture
+	canvas.normal_texture = load(normal_path)
+	return canvas
 
 
 ## The texture behind a lit one.

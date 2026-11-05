@@ -84,6 +84,18 @@ func test_only_the_stage_shown_is_loaded() -> void:
 	assert_bool(ResourceLoader.has_cached(unused)).is_false()
 
 
+func test_the_table_surface_is_lit_with_the_normal_map_for_its_stage() -> void:
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	var surface: TextureRect = table.get("_surface")
+	var canvas: CanvasTexture = surface.texture as CanvasTexture
+	assert_object(canvas).is_not_null()
+	assert_str(canvas.normal_texture.resource_path).is_equal(
+		"res://art/normals/table_surface_s0_n.png"
+	)
+	assert_int(surface.light_mask).is_equal(Lighting.MASK)
+
+
 func test_screens_built_later_use_the_new_stage() -> void:
 	ArtStages.stage_override = 9
 	var rect: TextureRect = auto_free(ScreenKit.cover(ScreenKit.ART.table_surface))

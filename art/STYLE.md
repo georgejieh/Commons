@@ -50,7 +50,7 @@ The player never sees which stage they are in. Each stage keeps the one before i
 | 6 | The sun is an eye with eyelids. Faces turn blank or show only their whites. The paper is torn and stained | |
 | 7 | The eye stares outward. Its rays are reaching arms, and the crowd raise their arms toward it | `art/backdrops/table_surface.png` (current art) |
 | 8 | Shapes too large to see whole in the clouds, and limbs among the banners. The crowd shares one face | |
-| 9 | Full cosmic horror. The eye fills the sky, and hands come out of everything. Still printed as a poster, still with no gore | `art/cards/card_back.png` (current art) |
+| 9 | Full cosmic horror. The eye fills the sky, and hands come out of everything. Still printed as a poster, still with no gore | `art/cards/card_back.png` (current art, shown from stage 7 until stage 8 and 9 versions exist) |
 
 **Horror rules.** Absence over spectacle: no blood, wounds or bodies, ever. The horror is in the eye, the hands, and smiles held too long. Each stage stays readable as the same poster, so the player notices the change rather than watching it happen.
 

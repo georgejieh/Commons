@@ -92,7 +92,7 @@ Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is 
 | Before (every asset at full size) | 170.4 MB | Over |
 | Large art capped at 512 px on import, icons packed into one atlas | 89.2 MB | Pass |
 
-The art library preloads every texture, so this is the whole resident set, not just what one screen shows.
+The art library preloads every base texture. Stage versions load only when shown, so since the stage art arrived the tool also shows all 54 card faces and measures at stages 0, 4 and 9 in turn, reporting the peak.
 
 ## Table light GPU cost (P3C.6)
 
@@ -106,4 +106,4 @@ The art library preloads every texture, so this is the whole resident set, not j
 | 4 | 1.890 | 1.495 | 0.395 |
 | 5 | 1.016 | 0.753 | 0.263 |
 
-The median cost is 0.266 ms, inside the 1 ms budget. Run 4 was taken at a higher GPU clock state, as in P3B.7. Every run held 60 fps with a p99 frame time of 17.2 ms or less. The four normal maps add about 8 MB of texture memory, which leaves the full table near 97 MB of the 128 MB budget.
+The median cost is 0.266 ms, inside the 1 ms budget. Run 4 was taken while the GPU sat at a lower clock state, which doubled its baseline, as in P3B.7. Every run held 60 fps with a p99 frame time of 17.2 ms or less. The four normal maps add about 8 MB of texture memory, which leaves the full table near 97 MB of the 128 MB budget.

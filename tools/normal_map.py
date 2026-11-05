@@ -42,7 +42,9 @@ def normal_map(height, strength):
             dy = (at(x - 1, y + 1) + 2 * at(x, y + 1) + at(x + 1, y + 1)) - (
                 at(x - 1, y - 1) + 2 * at(x, y - 1) + at(x + 1, y - 1)
             )
-            nx, ny, nz = -dx * strength, -dy * strength, 1.0
+            # Green points up the image (OpenGL convention, as Godot's canvas lighting
+            # expects); image y runs down, so a height rising downward tilts it up.
+            nx, ny, nz = -dx * strength, dy * strength, 1.0
             length = math.sqrt(nx * nx + ny * ny + nz * nz)
             pixels[x, y] = tuple(round((component / length * 0.5 + 0.5) * 255) for component in (nx, ny, nz))
     return out

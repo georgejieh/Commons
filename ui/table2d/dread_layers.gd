@@ -61,6 +61,7 @@ func setup(
 	for slot: String in slots:
 		_slot_clean[slot] = ArtStages.base_of(Lighting.diffuse(slots[slot].texture))
 		slots[slot].light_mask = Lighting.MASK
+		slots[slot].texture = Lighting.lit(Lighting.diffuse(slots[slot].texture))
 	_dressing = dressing
 	_seats = seats
 	_rng.seed = FLICKER_SEED
@@ -143,6 +144,8 @@ func apply() -> void:
 func clear() -> void:
 	for index: int in _param_clean.size():
 		_param_material[index].set_shader_parameter(_param_name[index], _param_clean[index])
+	Audio.music.relax()
+	Audio.music.request(MusicPlayer.SCORE.village)
 
 
 ## Each slot shows its art for the board's corruption stage, unless a layer's swap has
@@ -157,9 +160,8 @@ func _apply_swaps(intensity: float) -> void:
 				and board.shown(index, intensity) >= HorrorLayer.SWAP_AT
 			):
 				shown = layer.texture_swaps[slot]
-		shown = Lighting.lit(shown)
-		if _slots[slot].texture != shown:
-			_slots[slot].texture = shown
+		if Lighting.diffuse(_slots[slot].texture) != shown:
+			_slots[slot].texture = Lighting.lit(shown)
 
 
 ## The weight a dressing piece shows this frame, for tests.

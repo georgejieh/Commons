@@ -12,6 +12,11 @@ const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
 static var stage_override: int = -1
 static var variants_override: Array[ArtVariant] = []
 
+## The stage files loaded for one stage, held so a picture that leaves the screen and
+## comes back mid-play is not read from disk again. Dropped when the stage changes.
+static var _loaded: Dictionary[String, Texture2D] = {}
+static var _loaded_stage: int = -1
+
 
 ## The hidden corruption stage, 0 to 9. It stays 0 until the profile save holds it;
 ## a development build can pass --corruption-stage N to check each stage.
@@ -35,9 +40,16 @@ static func resolve(texture: Texture2D, at_stage: int = -1) -> Texture2D:
 	var variant: ArtVariant = _variant_for(texture)
 	if variant == null:
 		return texture
-	var path: String = variant.path_at(stage() if at_stage < 0 else at_stage)
-	# Loaded on demand: the resource cache shares it while anything shows it.
-	return variant.base if path.is_empty() else load(path)
+	var shown_stage: int = stage() if at_stage < 0 else at_stage
+	var path: String = variant.path_at(shown_stage)
+	if path.is_empty():
+		return variant.base
+	if shown_stage != _loaded_stage:
+		_loaded.clear()
+		_loaded_stage = shown_stage
+	if not _loaded.has(path):
+		_loaded[path] = load(path)
+	return _loaded[path]
 
 
 ## The base asset a shown texture came from, or the texture itself.

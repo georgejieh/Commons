@@ -67,7 +67,7 @@ def test_output_uses_only_palette_colors_and_hard_alpha(tmp_path):
         for y in range(4, 16):
             image.putpixel((x, y), (x * 12, y * 15, 200, 90 + x * 9))
     result = art_cleanup.clean(image, colors, ink, size=(10, 10))
-    assert result.size == (10, 8)
+    assert max(result.size) == 10 and min(result.size) < 10
     for red, green, blue, alpha in result.getdata():
         assert alpha in (0, 255)
         if alpha:
@@ -131,3 +131,61 @@ def test_normal_maps_are_deterministic_and_flat_on_flat_input(tmp_path):
         subprocess.run([sys.executable, os.path.join(HERE, "normal_map.py"), str(source), str(target)], check=True)
         outputs.append(target)
     assert filecmp.cmp(outputs[0], outputs[1], shallow=False)
+
+
+def _idempotent(image, tmp_path, *extra):
+    source = tmp_path / "in"
+    source.mkdir(exist_ok=True)
+    image.save(source / "sprite.png")
+    once, twice = tmp_path / "once", tmp_path / "twice"
+    _run(source, once, *extra)
+    _run(once, twice, *extra)
+    assert filecmp.cmp(once / "sprite.png", twice / "sprite.png", shallow=False)
+
+
+def test_cleaning_twice_changes_nothing_after_a_resize_with_a_thin_spike(tmp_path):
+    image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+    for x in range(10, 90):
+        for y in range(20, 90):
+            image.putpixel((x, y), (180, 40, 25, 255))
+    for y in range(0, 20):
+        image.putpixel((50, y), (180, 40, 25, 255))
+    _idempotent(image, tmp_path, "--size", "40x40")
+
+
+def test_cleaning_twice_changes_nothing_with_a_key_and_pale_paper(tmp_path):
+    image = Image.new("RGB", (30, 30), (255, 255, 255))
+    for x in range(5, 25):
+        for y in range(5, 25):
+            image.putpixel((x, y), (240, 232, 212) if x < 15 else (180, 40, 25))
+    _idempotent(image, tmp_path, "--key", "ffffff")
+
+
+def test_cleaning_twice_changes_nothing_with_soft_margins(tmp_path):
+    image = Image.new("RGBA", (6, 6), (200, 60, 40, 64))
+    for x in range(2, 4):
+        for y in range(2, 4):
+            image.putpixel((x, y), (200, 60, 40, 255))
+    _idempotent(image, tmp_path)
+
+
+def test_normal_maps_point_up_on_a_slope_rising_down_the_image():
+    import normal_map
+
+    ramp = Image.new("L", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            ramp.putpixel((x, y), y * 16)
+    result = normal_map.normal_map(ramp, 2.0)
+    red, green, blue = result.getpixel((8, 8))
+    assert green > 128 and abs(red - 128) <= 1
+
+
+def test_the_packer_rejects_a_sprite_wider_than_an_atlas():
+    import pack_atlas
+
+    try:
+        pack_atlas.pack([("wide.png", (5000, 10))])
+    except ValueError:
+        return
+    raise AssertionError("a 5000 px sprite was packed")
