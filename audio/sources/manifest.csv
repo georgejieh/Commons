@@ -1,0 +1,22 @@
+file,type,source,pack_or_url,author,license,plan,model,prompt_or_patch,generated,downloaded,edited
+audio/sfx/card_play_01.wav,sfx,Kenney,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-place-3.ogg,Kenney Vleugels,CC0,,,,,2026-11-05,"slice.py: single hit cut, faded, high-passed, loudness-matched"
+audio/sfx/card_play_02.wav,sfx,Kenney,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-place-1.ogg,Kenney Vleugels,CC0,,,,,2026-11-05,"slice.py: single hit cut, faded, high-passed, loudness-matched"
+audio/sfx/card_play_03.wav,sfx,Kenney,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-place-4.ogg,Kenney Vleugels,CC0,,,,,2026-11-05,"slice.py: single hit cut, faded, high-passed, loudness-matched"
+audio/sfx/card_play_04.wav,sfx,Kenney,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-place-2.ogg,Kenney Vleugels,CC0,,,,,2026-11-05,"slice.py: single hit cut, faded, high-passed, loudness-matched"
+audio/sfx/deal.wav,sfx,Kenney,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-shuffle.ogg,Kenney Vleugels,CC0,,,audio/patches/deal.json,2026-11-05,2026-11-05,"first 0.95 s, faded"
+audio/sfx/pass_01.wav,sfx,Kenney,Impact Sounds 1.0 (https://kenney.nl/assets/impact-sounds) impactWood_light_000.ogg,Kenney Vleugels,CC0,,,audio/patches/pass.json,2026-11-05,2026-11-05,"trimmed, low-passed, quietened"
+audio/sfx/pass_02.wav,sfx,Kenney,Impact Sounds 1.0 (https://kenney.nl/assets/impact-sounds) impactWood_light_002.ogg,Kenney Vleugels,CC0,,,audio/patches/pass.json,2026-11-05,2026-11-05,"trimmed, low-passed, quietened"
+audio/sfx/pass_03.wav,sfx,Kenney,Impact Sounds 1.0 (https://kenney.nl/assets/impact-sounds) impactWood_light_004.ogg,Kenney Vleugels,CC0,,,audio/patches/pass.json,2026-11-05,2026-11-05,"trimmed, low-passed, quietened"
+audio/sfx/trick_won_01.wav,sfx,Kenney,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-slide-2.ogg,Kenney Vleugels,CC0,,,audio/patches/trick_won.json,2026-11-05,2026-11-05,"trimmed, faded"
+audio/sfx/trick_won_02.wav,sfx,Kenney,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-slide-3.ogg,Kenney Vleugels,CC0,,,audio/patches/trick_won.json,2026-11-05,2026-11-05,"trimmed, faded"
+audio/sfx/trick_won_03.wav,sfx,Kenney,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-slide-4.ogg,Kenney Vleugels,CC0,,,audio/patches/trick_won.json,2026-11-05,2026-11-05,"trimmed, faded"
+audio/sfx/bomb.wav,sfx,Kenney + synthesis,Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-shove-1.ogg; Impact Sounds 1.0 (https://kenney.nl/assets/impact-sounds) impactWood_heavy_000.ogg,Kenney Vleugels; project,CC0,,,audio/patches/bomb.json,2026-11-05,2026-11-05,layered with a synthesized thump
+audio/sfx/rocket.wav,sfx,Kenney + synthesis,"Casino Audio 1.1 (https://kenney.nl/assets/casino-audio) card-shove-1.ogg, card-shove-3.ogg; Impact Sounds 1.0 (https://kenney.nl/assets/impact-sounds) impactWood_heavy_002.ogg",Kenney Vleugels; project,CC0,,,audio/patches/rocket.json,2026-11-05,2026-11-05,layered with a synthesized thump
+audio/sfx/round_won.wav,sfx,Freesound,https://freesound.org/people/radwoc/sounds/256749/ piecz_07.wav,radwoc,CC0,,,,,2026-11-05,"slice.py: single hit cut, faded, high-passed, loudness-matched (HQ preview OGG)"
+audio/sfx/store_buy_01.wav,sfx,Freesound,https://freesound.org/people/radwoc/sounds/256747/ piecz_01.wav,radwoc,CC0,,,,,2026-11-05,"slice.py: single hit cut, faded, high-passed, loudness-matched (HQ preview OGG)"
+audio/sfx/store_buy_02.wav,sfx,Freesound,https://freesound.org/people/radwoc/sounds/256744/ piecz_04.wav,radwoc,CC0,,,,,2026-11-05,"slice.py: single hit cut, faded, high-passed, loudness-matched (HQ preview OGG)"
+audio/sfx/round_lost.wav,sfx,Freesound,"https://freesound.org/people/ani_music/sounds/632473/ Pencil writing on paper (1 stroke, Take A)",ani_music,CC0,,,audio/patches/round_lost.json,2026-11-05,2026-11-05,"trimmed, low-passed (HQ preview OGG)"
+audio/sfx/click_01.wav,sfx,Synthesis,commons-sfx sfx.py,project,Original,,,audio/patches/click.json,2026-11-05,,variant 1
+audio/sfx/click_02.wav,sfx,Synthesis,commons-sfx sfx.py,project,Original,,,audio/patches/click.json,2026-11-05,,variant 2
+audio/sfx/click_03.wav,sfx,Synthesis,commons-sfx sfx.py,project,Original,,,audio/patches/click.json,2026-11-05,,variant 3
+audio/sfx/meter_rose.wav,sfx,Synthesis,commons-sfx sfx.py,project,Original,,,audio/patches/meter_rose.json,2026-11-05,,
