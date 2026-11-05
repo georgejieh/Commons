@@ -65,8 +65,9 @@ func _ready() -> void:
 	# The scene shares one LabelSettings; each card sizes its own glyphs.
 	_rank.label_settings = _rank.label_settings.duplicate()
 	var stock: StyleBoxTexture = StyleBoxTexture.new()
-	stock.texture = ArtStages.resolve(parts().frame)
+	stock.texture = Lighting.lit(ArtStages.resolve(parts().frame))
 	_frame.add_theme_stylebox_override("panel", stock)
+	_frame.light_mask = Lighting.MASK
 	var tilt: ShaderMaterial = ShaderMaterial.new()
 	tilt.shader = TILT_SHADER
 	_frame.material = tilt

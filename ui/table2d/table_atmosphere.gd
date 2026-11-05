@@ -8,11 +8,14 @@ extends Control
 
 const LAMP_SHADER: Shader = preload("res://shaders/lamp_light.gdshader")
 const WATCHERS_SHADER: Shader = preload("res://shaders/watchers.gdshader")
+const LIGHT: TableLight = preload("res://data/ui/table_light.tres")
 
 var _lamp: ColorRect = ColorRect.new()
 var _watchers: TextureRect = ScreenKit.cover(ScreenKit.ART.watchers)
 var _lamp_material: ShaderMaterial = ShaderMaterial.new()
 var _eyes_material: ShaderMaterial = ShaderMaterial.new()
+## The lamp as a 2D light, for the normal-mapped table and cards (P3C.6).
+var _light: PointLight2D = Lighting.light(LIGHT)
 
 
 func _ready() -> void:
@@ -25,6 +28,13 @@ func _ready() -> void:
 	_eyes_material.shader = WATCHERS_SHADER
 	_watchers.material = _eyes_material
 	add_child(_watchers)
+	add_child(_light)
+	resized.connect(_place_light)
+	_place_light()
+
+
+func light() -> PointLight2D:
+	return _light
 
 
 func lamp_material() -> ShaderMaterial:
@@ -33,3 +43,8 @@ func lamp_material() -> ShaderMaterial:
 
 func eyes_material() -> ShaderMaterial:
 	return _eyes_material
+
+
+func _place_light() -> void:
+	_light.position = size * LIGHT.position
+	_light.texture_scale = maxf(size.x, 1.0) * LIGHT.reach / Lighting.LIGHT_TEXTURE_SIZE

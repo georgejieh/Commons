@@ -93,3 +93,17 @@ Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is 
 | Large art capped at 512 px on import, icons packed into one atlas | 89.2 MB | Pass |
 
 The art library preloads every texture, so this is the whole resident set, not just what one screen shows.
+
+## Table light GPU cost (P3C.6)
+
+`table_perf.gd --light-ab` switches the table's one `PointLight2D` on and off every 60 frames during play and compares the GPU time per frame, the P3B.7 method. It ran on the development PC (ADR 0016) with its window on the second monitor (`--screen 1`), five runs of 30 seconds.
+
+| Run | GPU on (ms) | GPU off (ms) | Light cost (ms) |
+| --- | --- | --- | --- |
+| 1 | 1.003 | 0.737 | 0.266 |
+| 2 | 1.029 | 0.750 | 0.279 |
+| 3 | 1.007 | 0.746 | 0.261 |
+| 4 | 1.890 | 1.495 | 0.395 |
+| 5 | 1.016 | 0.753 | 0.263 |
+
+The median cost is 0.266 ms, inside the 1 ms budget. Run 4 was taken at a higher GPU clock state, as in P3B.7. Every run held 60 fps with a p99 frame time of 17.2 ms or less. The four normal maps add about 8 MB of texture memory, which leaves the full table near 97 MB of the 128 MB budget.

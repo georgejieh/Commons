@@ -112,3 +112,22 @@ def test_a_key_color_is_cut_out(tmp_path):
     result = art_cleanup.clean(image, colors, ink, key=(255, 255, 255))
     assert result.size == (10, 10)
     assert all(alpha == 255 for alpha in result.getchannel("A").getdata())
+
+
+def test_normal_maps_are_deterministic_and_flat_on_flat_input(tmp_path):
+    import normal_map
+
+    flat = Image.new("RGB", (24, 16), (128, 128, 128))
+    result = normal_map.normal_map(normal_map.height_field(flat, 0), 2.0)
+    assert set(result.getdata()) == {(128, 128, 255)}
+    source = tmp_path / "bumpy.png"
+    bumpy = Image.new("RGB", (32, 32), (90, 90, 90))
+    for x in range(10, 22):
+        bumpy.putpixel((x, 16), (250, 250, 250))
+    bumpy.save(source)
+    outputs = []
+    for run in ("a", "b"):
+        target = tmp_path / f"{run}.png"
+        subprocess.run([sys.executable, os.path.join(HERE, "normal_map.py"), str(source), str(target)], check=True)
+        outputs.append(target)
+    assert filecmp.cmp(outputs[0], outputs[1], shallow=False)

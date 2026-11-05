@@ -59,7 +59,8 @@ func setup(
 	_materials = materials
 	_slots = slots
 	for slot: String in slots:
-		_slot_clean[slot] = ArtStages.base_of(slots[slot].texture)
+		_slot_clean[slot] = ArtStages.base_of(Lighting.diffuse(slots[slot].texture))
+		slots[slot].light_mask = Lighting.MASK
 	_dressing = dressing
 	_seats = seats
 	_rng.seed = FLICKER_SEED
@@ -153,6 +154,7 @@ func _apply_swaps(intensity: float) -> void:
 				and board.shown(index, intensity) >= HorrorLayer.SWAP_AT
 			):
 				shown = layer.texture_swaps[slot]
+		shown = Lighting.lit(shown)
 		if _slots[slot].texture != shown:
 			_slots[slot].texture = shown
 
