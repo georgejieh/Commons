@@ -2,9 +2,12 @@
 
 Each image goes through the same fixed steps, in order:
 
+0. With --key, pixels within KEY_TOLERANCE of the key color become transparent, so art
+   generated on a flat background can be cut out.
 1. Trim fully transparent edges.
 2. Threshold alpha: pixels below the cut become fully transparent, the rest opaque.
-3. Resize to the target size with a fixed Lanczos filter (only if a size is given).
+3. Fit inside the target size, keeping the aspect ratio, with a fixed Lanczos filter
+   (only if a size is given).
 4. Quantize to the style palette in art/palette.json, with optional Floyd-Steinberg
    dithering.
 5. Normalize outlines: dark pixels that touch transparency become the palette's ink.
@@ -12,7 +15,7 @@ Each image goes through the same fixed steps, in order:
 The output is deterministic (the same input always gives byte-identical files) and
 idempotent (cleaning a cleaned image changes nothing).
 
-    python tools/art_cleanup.py IN_DIR OUT_DIR [--size 512x512] [--dither]
+    python tools/art_cleanup.py IN_DIR OUT_DIR [--size 512x512] [--dither] [--key ffffff]
 """
 
 import argparse
@@ -23,6 +26,8 @@ from PIL import Image
 
 PALETTE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "art", "palette.json")
 ALPHA_CUT = 128
+# Largest per-channel difference from the key color that still counts as background.
+KEY_TOLERANCE = 40
 # Pixels at or below this luminance next to transparency count as outline.
 OUTLINE_LUMA = 80
 INK_NAME = "ink"
@@ -43,6 +48,19 @@ def _rgb(hex_text):
     return tuple(int(value[index : index + 2], 16) for index in (0, 2, 4))
 
 
+def key_out(image, key):
+    """Makes every pixel close to the key color fully transparent."""
+    result = image.copy()
+    pixels = result.load()
+    width, height = result.size
+    for y in range(height):
+        for x in range(width):
+            red, green, blue, alpha = pixels[x, y]
+            if max(abs(red - key[0]), abs(green - key[1]), abs(blue - key[2])) <= KEY_TOLERANCE:
+                pixels[x, y] = (red, green, blue, 0)
+    return result
+
+
 def trim(image):
     box = image.getchannel("A").getbbox()
     return image.crop(box) if box else image
@@ -56,9 +74,14 @@ def threshold_alpha(image):
 
 
 def resize(image, size):
-    if size is None or image.size == size:
+    """Fits the image inside size, keeping its aspect ratio."""
+    if size is None:
         return image
-    return image.resize(size, Image.Resampling.LANCZOS)
+    scale = min(size[0] / image.size[0], size[1] / image.size[1])
+    target = (max(1, round(image.size[0] * scale)), max(1, round(image.size[1] * scale)))
+    if target == image.size:
+        return image
+    return image.resize(target, Image.Resampling.LANCZOS)
 
 
 def quantize(image, colors, dither):
@@ -100,8 +123,11 @@ def _touches_clear(pixels, x, y, width, height):
     return False
 
 
-def clean(image, colors, ink, size=None, dither=False):
-    image = trim(image.convert("RGBA"))
+def clean(image, colors, ink, size=None, dither=False, key=None):
+    image = image.convert("RGBA")
+    if key is not None:
+        image = key_out(image, key)
+    image = trim(image)
     image = threshold_alpha(image)
     image = resize(image, size)
     image = threshold_alpha(image)
@@ -128,6 +154,7 @@ def main():
     parser.add_argument("--size", help="target size as WIDTHxHEIGHT")
     parser.add_argument("--dither", action="store_true")
     parser.add_argument("--palette", default=PALETTE_PATH)
+    parser.add_argument("--key", help="background color to cut out, as hex")
     args = parser.parse_args()
     colors, ink = load_palette(args.palette)
     os.makedirs(args.target, exist_ok=True)
@@ -135,7 +162,8 @@ def main():
         if not name.lower().endswith(IMAGE_TYPES):
             continue
         with Image.open(os.path.join(args.source, name)) as image:
-            result = clean(image, colors, ink, parse_size(args.size), args.dither)
+            key = _rgb(args.key) if args.key else None
+            result = clean(image, colors, ink, parse_size(args.size), args.dither, key)
         out_name = os.path.splitext(name)[0] + ".png"
         save(result, os.path.join(args.target, out_name))
         print(f"{name} -> {out_name} {result.size[0]}x{result.size[1]}")

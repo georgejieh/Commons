@@ -66,8 +66,8 @@ def test_output_uses_only_palette_colors_and_hard_alpha(tmp_path):
     for x in range(2, 18):
         for y in range(4, 16):
             image.putpixel((x, y), (x * 12, y * 15, 200, 90 + x * 9))
-    result = art_cleanup.clean(image, colors, ink, size=(10, 6))
-    assert result.size == (10, 6)
+    result = art_cleanup.clean(image, colors, ink, size=(10, 10))
+    assert result.size == (10, 8)
     for red, green, blue, alpha in result.getdata():
         assert alpha in (0, 255)
         if alpha:
@@ -101,3 +101,14 @@ def test_the_atlas_packer_is_deterministic_and_regions_fit(tmp_path):
     for i, a in enumerate(boxes):
         for b in boxes[i + 1 :]:
             assert a[0] + a[2] <= b[0] or b[0] + b[2] <= a[0] or a[1] + a[3] <= b[1] or b[1] + b[3] <= a[1]
+
+
+def test_a_key_color_is_cut_out(tmp_path):
+    colors, ink = art_cleanup.load_palette()
+    image = Image.new("RGB", (30, 30), (252, 250, 248))
+    for x in range(10, 20):
+        for y in range(10, 20):
+            image.putpixel((x, y), (180, 40, 25))
+    result = art_cleanup.clean(image, colors, ink, key=(255, 255, 255))
+    assert result.size == (10, 10)
+    assert all(alpha == 255 for alpha in result.getchannel("A").getdata())
