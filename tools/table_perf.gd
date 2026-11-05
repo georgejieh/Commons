@@ -6,7 +6,9 @@ extends SceneTree
 ## With --stress it instead shows all 54 cards at once, moving every frame, from the
 ## table's own pool, and reports the same measures. With --post-ab it also times the GPU
 ## per frame, switching the post-process pass on and off every POST_BLOCK frames, and
-## reports the pass's cost as the difference (P3B.7).
+## reports the pass's cost as the difference (P3B.7). --horror-ab does the same with
+## horror intensity at 0 and 1, the table held still at its worst board state, both
+## meters high and the last corruption stage (P3B.12).
 ## Prints one result line per measure. Development only; tools/ never ships.
 
 const SEED: int = 5151
@@ -25,6 +27,8 @@ var _frame_ms: PackedFloat64Array = []
 var _node_counts: PackedInt64Array = []
 var _stress: bool = false
 var _post_ab: bool = false
+## The setting the A/B run switches: post_process, or horror_intensity.
+var _ab_key: String = "post_process"
 var _gpu_on: PackedFloat64Array = []
 var _gpu_off: PackedFloat64Array = []
 var _post_frame: int = 0
@@ -36,7 +40,9 @@ func _initialize() -> void:
 	if at >= 0 and at + 1 < args.size():
 		_seconds = float(args[at + 1])
 	_stress = args.has("--stress")
-	_post_ab = args.has("--post-ab")
+	_post_ab = args.has("--post-ab") or args.has("--horror-ab")
+	if args.has("--horror-ab"):
+		_ab_key = "horror_intensity"
 	_run.call_deferred()
 
 
@@ -57,6 +63,10 @@ func _run() -> void:
 		_report()
 		quit(0)
 		return
+	var horror: bool = _ab_key == "horror_intensity"
+	if horror:
+		var dread: Object = table.get("_dread")
+		dread.call("force", 90, 90, false, 9)
 	var controller: Node = app.get("controller")
 	var script: GDScript = load("res://tests/unit/controller_script.gd")
 	var driver: Object = script.new()
@@ -74,7 +84,7 @@ func _run() -> void:
 		if not is_instance_valid(table) or table.get_parent() == null:
 			break
 		var events: Node = table.get("_player")
-		if events.call("is_idle"):
+		if events.call("is_idle") and not horror:
 			driver.call("act", controller)
 	_report()
 	quit(0)
@@ -138,16 +148,17 @@ func _report_post() -> void:
 	var off: float = _median(_gpu_off)
 	print("gpu_samples_on=%d off=%d" % [_gpu_on.size(), _gpu_off.size()])
 	print("gpu_median_ms_on=%.3f off=%.3f" % [on, off])
-	print("post_process_gpu_ms=%.3f" % (on - off))
+	print("%s_gpu_ms=%.3f" % [_ab_key, on - off])
 
 
 # The Settings autoload is looked up at run time; a --script tool can't name it.
 func _post_on() -> bool:
-	return bool(root.get_node("Settings").call("value", "post_process"))
+	return float(root.get_node("Settings").call("value", _ab_key)) > 0.5
 
 
 func _set_post(on: bool) -> void:
-	root.get_node("Settings").call("set_value", "post_process", on)
+	var value: Variant = on if _ab_key == "post_process" else (1.0 if on else 0.0)
+	root.get_node("Settings").call("set_value", _ab_key, value)
 
 
 static func _median(values: PackedFloat64Array) -> float:

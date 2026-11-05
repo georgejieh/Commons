@@ -20,6 +20,7 @@ func _ready() -> void:
 	add_theme_constant_override("separation", 12)
 	reading.theme_type_variation = CommonsTheme.TITLE
 	reading.add_theme_font_size_override("font_size", 24)
+	ScreenKit.paper_outline(reading)
 	reading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(reading)
 	_button(play, "action.play", CommonsTheme.PRIMARY)

@@ -1,0 +1,75 @@
+[gd_resource type="Resource" script_class="HorrorConfig" format=3]
+
+[ext_resource type="Script" path="res://data/horror/horror_config.gd" id="1"]
+[ext_resource type="Script" path="res://data/horror/horror_layer.gd" id="2"]
+[ext_resource type="Script" path="res://data/horror/flicker_def.gd" id="3"]
+
+[sub_resource type="Resource" id="layer_famine"]
+script = ExtResource("2")
+input = "famine"
+response = PackedVector2Array(0, 0, 0.4, 0.15, 0.65, 0.6, 1, 1)
+shader_params = Dictionary[String, Vector2]({"post:dread": Vector2(0.0, 0.5), "post:warmth": Vector2(0.25, 0.0), "lamp:dread": Vector2(0.0, 0.8)})
+dressing = Array[String](["empty_chairs"])
+audio_stems = Array[String](["melody", "chatter"])
+
+[sub_resource type="Resource" id="layer_denunciation"]
+script = ExtResource("2")
+input = "denunciation"
+response = PackedVector2Array(0, 0, 0.4, 0.15, 0.65, 0.6, 1, 1)
+shader_params = Dictionary[String, Vector2]({"watchers:presence": Vector2(0.28, 0.95), "post:vignette": Vector2(0.55, 0.7)})
+dressing = Array[String](["poster", "redaction"])
+audio_stems = Array[String](["whispers", "clock"])
+
+[sub_resource type="Resource" id="layer_struggle"]
+script = ExtResource("2")
+input = "struggle"
+response = PackedVector2Array(0, 0, 0.55, 0.0, 0.8, 0.7, 1, 1)
+shader_params = Dictionary[String, Vector2]({"lamp:darkness": Vector2(0.94, 0.97)})
+dressing = Array[String](["spotlight"])
+audio_stems = Array[String](["crowd"])
+
+[sub_resource type="Resource" id="layer_landlord"]
+script = ExtResource("2")
+input = "landlord"
+response = PackedVector2Array(0, 0, 1, 1)
+shader_params = Dictionary[String, Vector2]({"post:warmth": Vector2(0.25, 0.05)})
+dressing = Array[String](["gilt"])
+audio_stems = Array[String](["room_tone"])
+
+[sub_resource type="Resource" id="layer_corruption"]
+script = ExtResource("2")
+input = "corruption"
+response = PackedVector2Array(0, 0, 1, 1)
+shader_params = Dictionary[String, Vector2]({"post:grain": Vector2(0.035, 0.12), "post:misregistration": Vector2(1.2, 3.0)})
+dressing = Array[String]([])
+audio_stems = Array[String]([])
+
+[sub_resource type="Resource" id="flicker_1"]
+script = ExtResource("3")
+kind = "portrait_blink"
+layer = 0
+min_weight = 0.5
+cooldown = Vector2(25.0, 50.0)
+duration = 0.12
+
+[sub_resource type="Resource" id="flicker_2"]
+script = ExtResource("3")
+kind = "extra_chair"
+layer = 0
+min_weight = 0.75
+cooldown = Vector2(40.0, 80.0)
+duration = 0.6
+
+[sub_resource type="Resource" id="flicker_3"]
+script = ExtResource("3")
+kind = "portrait_blink"
+layer = 1
+min_weight = 0.6
+cooldown = Vector2(30.0, 60.0)
+duration = 0.1
+
+[resource]
+script = ExtResource("1")
+layers = Array[ExtResource("2")]([SubResource("layer_famine"), SubResource("layer_denunciation"), SubResource("layer_struggle"), SubResource("layer_landlord"), SubResource("layer_corruption")])
+flickers = Array[ExtResource("3")]([SubResource("flicker_1"), SubResource("flicker_2"), SubResource("flicker_3")])
+ease_seconds = 4.0

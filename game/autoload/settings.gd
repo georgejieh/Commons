@@ -9,7 +9,14 @@ const PATH: String = "user://settings.cfg"
 const SECTION: String = "settings"
 const DEFAULTS: SettingsParams = preload("res://data/settings/default_settings.tres")
 const KEYS: Array[String] = [
-	"music_volume", "effects_volume", "voice_volume", "reduced_motion", "post_process"
+	"music_volume",
+	"effects_volume",
+	"voice_volume",
+	"reduced_motion",
+	"post_process",
+	"horror_intensity",
+	"no_flash",
+	"content_note_seen",
 ]
 
 var _values: Dictionary[String, Variant] = {}

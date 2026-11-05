@@ -104,6 +104,14 @@ func say(text: String, mood: String = "") -> void:
 	_mood = mood
 
 
+## Dims the portrait for a moment, as a flicker (P3B.12). The tween belongs to the
+## picture, so it dies with it.
+func blink(seconds: float) -> void:
+	var tween: Tween = _picture.create_tween()
+	tween.tween_property(_picture, "modulate:v", 0.1, seconds * 0.3)
+	tween.tween_property(_picture, "modulate:v", 1.0, seconds * 0.7)
+
+
 func speech() -> String:
 	return _speech.text
 

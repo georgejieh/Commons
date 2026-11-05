@@ -308,3 +308,13 @@ hist.empty,No history yet.
 hist.set,Quota {number}
 hist.row,"{name}: fed {fed}, bombed {bombed}, denounced {denounced}, betrayed {betrayed}"
 hist.back,Back
+note.eyebrow,Before you play
+note.title,Content note
+note.themes,"Commons is set in a farming village under a planned economy. It shows famine, political persecution and surveillance, without gore."
+note.board,The table grows darker and stranger as Famine and Denunciation rise.
+note.settings,"To soften it, lower Horror intensity in Settings. No flashes turns off flickering."
+note.continue,Continue
+settings.horror_intensity,Horror intensity
+settings.no_flash,No flashes
+dread.notice,"Brigade notice: the threshing floor is swept. Bring your own baskets on Sunday."
+dread.poster,Household under review

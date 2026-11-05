@@ -49,6 +49,11 @@ func _run() -> void:
 	var script: GDScript = load("res://tests/unit/controller_script.gd")
 	_driver = script.new()
 	await _frames(20)
+	var switcher: Object = _app.get("switcher")
+	if switcher.call("current_id") == "content_note":
+		await _shot("content_note")
+		await _click_button_with_text(tr("note.continue"))
+		await _frames(20)
 	await _shot("title")
 	await _click_button_with_text(tr("title.new_run"))
 	await _frames(30)

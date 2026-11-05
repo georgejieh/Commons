@@ -10,3 +10,9 @@ extends Resource
 @export var reduced_motion: bool = false
 ## The full-screen print and grain pass (P3B.7). Off is the low-quality setting.
 @export var post_process: bool = true
+## Scales every dread layer, 0 (the clean board) to 1 (P3B.12).
+@export var horror_intensity: float = 1.0
+## Turns off every flicker and the lamp's flutter (P3B.12).
+@export var no_flash: bool = false
+## Set once the first-launch content note has been read.
+@export var content_note_seen: bool = false

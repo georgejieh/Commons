@@ -190,3 +190,10 @@ static func reveal(column: VBoxContainer) -> void:
 		if piece != null:
 			pieces.append(piece)
 	UiMotion.enter(pieces)
+
+
+## A paper-colored edge around text that sits straight on the table, so it stays
+## readable however dark the room behind it gets (P3B.12).
+static func paper_outline(label: Label) -> void:
+	label.add_theme_color_override("font_outline_color", STYLE.paper)
+	label.add_theme_constant_override("outline_size", 8)

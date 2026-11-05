@@ -43,6 +43,8 @@ var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
 var _speech: TableSpeech = TableSpeech.new()
 var _input: TableInput = TableInput.new()
+var _dread: DreadLayers = DreadLayers.new()
+var _dressing: DreadDressing = DreadDressing.new()
 
 
 func _ready() -> void:
@@ -58,6 +60,8 @@ func _ready() -> void:
 		backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		backdrop.offset_top = 0.0 if backdrop == rail else 72.0
 	_atmosphere.name = "Atmosphere"
+	add_child(_dressing)
+	add_child(_dread)
 	# The ledger sits inside its paper, so its margins come from the sheet.
 	var ledger_paper: PanelContainer = PanelContainer.new()
 	ledger_paper.theme_type_variation = CommonsTheme.SHEET
@@ -69,6 +73,7 @@ func _ready() -> void:
 	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
 	_you.theme_type_variation = CommonsTheme.TITLE
 	_you.add_theme_font_size_override("font_size", 28)
+	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
 	_place(_need_panel, Vector2(720, 420), Vector2(420, 200))
@@ -125,6 +130,7 @@ func open(app: DemoApp) -> void:
 	_pause.dossier.connect(func() -> void: app.show_screen("dossier"))
 	_pause.last_round.connect(func() -> void: app.show_screen("round_summary"))
 	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
+	_setup_dread(app)
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
 	for event: RunEvent in _controller.set_events():
@@ -158,7 +164,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+## Dread reads the run at round boundaries, and starts settled when the table opens.
+func _setup_dread(app: DemoApp) -> void:
+	var materials: Dictionary[String, ShaderMaterial] = {
+		"post": app.post.material(),
+		"lamp": _atmosphere.lamp_material(),
+		"watchers": _atmosphere.eyes_material(),
+		"spotlight": _dressing.spotlight_material,
+	}
+	var panels: Array[SeatPanel] = []
+	panels.assign(_seats.values())
+	_dread.setup(materials, _dressing, panels)
+	_dread.refresh(_controller.state_copy(), true)
+
+
 func _exit_tree() -> void:
+	_dread.clear()
 	if _controller != null and _controller.event_emitted.is_connected(_player.push):
 		_controller.event_emitted.disconnect(_player.push)
 
@@ -186,6 +207,9 @@ func _on_event(event: RunEvent) -> void:
 			_ledger.add_row(_app.seat_name(event.seat), event.amount)
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			_new_deal()
+			_dread.refresh(_controller.state_copy())
+		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED:
+			_dread.refresh(_controller.state_copy())
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
 			_announce_landlord(event.seat)
@@ -299,8 +323,6 @@ func _refresh_seats() -> void:
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
 	_hud.show_state(state, _controller.target(), _app.max_rounds())
-	_app.update_dread()
-	_atmosphere.show_meters(state.famine, state.denunciation)
 
 
 func _refresh_actions() -> void:

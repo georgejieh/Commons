@@ -18,6 +18,7 @@ const SCREENS: Dictionary[String, String] = {
 	"settings": "res://ui/screens/settings_screen.tscn",
 	"demo_complete": "res://ui/screens/demo_complete_screen.tscn",
 	"dossier": "res://ui/screens/dossier_screen.tscn",
+	"content_note": "res://ui/screens/content_note_screen.tscn",
 	"run_setup": "res://ui/screens/run_setup_screen.tscn",
 	"round_summary": "res://ui/screens/round_summary_screen.tscn",
 	"black_market": "res://ui/screens/black_market_screen.tscn",
@@ -56,7 +57,12 @@ func _ready() -> void:
 		if ResourceLoader.exists(SCREENS[screen_id]):
 			scenes[screen_id] = load(SCREENS[screen_id])
 	switcher.setup(_host, scenes)
-	show_screen("title", true)
+	show_screen(first_screen(), true)
+
+
+## The content note on first launch, then the title ever after.
+func first_screen() -> String:
+	return "title" if bool(Settings.value("content_note_seen")) else "content_note"
 
 
 ## Shows a screen and hands it the app. replace drops the way back.
@@ -140,12 +146,6 @@ func sets_per_year() -> int:
 
 
 ## Dread for the post-process: the higher meter, as a share of its range.
-func update_dread() -> void:
-	if controller.has_run():
-		var state: RunState = controller.state_copy()
-		post.set_dread(maxi(state.famine, state.denunciation) / 100.0)
-
-
 func max_rounds() -> int:
 	return DEMO.sets.max_rounds
 

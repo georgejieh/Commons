@@ -161,14 +161,13 @@ func test_a_shortcut_presses_its_button() -> void:
 	assert_int(_app.controller.awaiting()).is_not_equal(RunController.AWAIT_BID)
 
 
-## The print pass follows its setting, and dread stays in range.
+## The print pass follows its setting.
 func test_the_post_process_follows_its_setting() -> void:
 	var was: bool = bool(Settings.value("post_process"))
 	Settings.set_value("post_process", false)
 	assert_bool(_app.post.is_on()).is_false()
 	Settings.set_value("post_process", true)
 	assert_bool(_app.post.is_on()).is_true()
-	_app.post.set_dread(4.0)
 	Settings.set_value("post_process", was)
 
 

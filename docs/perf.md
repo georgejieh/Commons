@@ -68,3 +68,17 @@ Five 30-second runs of each version of the screen sampler, in ms of GPU time per
 The pass never samples a lower mip, so building mipmaps of the screen copy each frame was wasted work. Dropping them changes nothing on screen.
 
 Runs 1 and 4 of the shipped version had pass-off baselines of 0.85 ms and 3.26 ms, against about 0.65 ms in the other runs. That points to the GPU running at lower clocks for the whole run, not to the pass. Run 4, at those low clocks, measured 1.015 ms, just over budget. P5.3 re-measures on the real minimum-spec machine.
+
+## Dread layers GPU cost (P3B.12)
+
+Same machine, 2026-11-04. The table is held still at its worst board state: both meters at 90 and the last corruption stage. Horror intensity switches between 0 and 1 every 60 frames, with the print pass on throughout.
+
+```bash
+godot --path . --script res://tools/table_perf.gd -- --seconds 30 --horror-ab
+```
+
+| Run | 1 | 2 | 3 | 4 | 5 | Median |
+| --- | --- | --- | --- | --- | --- | --- |
+| Dread layers, ms of GPU per frame | 0.093 | 0.064 | 0.048 | -0.160 | 0.046 | 0.048 |
+
+Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is noise. Together with the print pass (median 0.223 ms), the full-screen work costs about 0.27 ms, inside P3B.7's 1 ms budget.
