@@ -84,6 +84,17 @@ func test_corruption_adds_a_layer_under_the_meters() -> void:
 	assert_float(board.targets[FAMINE]).is_equal(0.0)
 
 
+func test_watcher_eyes_stay_hidden_on_an_early_clean_board() -> void:
+	var dread: DreadLayers = await _table_dread()
+	for stage: int in 5:
+		dread.force(0, 0, false, stage)
+		assert_float(dread.param_value("watchers:presence")).is_equal(0.0)
+	dread.force(0, 0, false, BoardState.CORRUPTION_STAGES - 1)
+	assert_float(dread.param_value("watchers:presence")).is_equal_approx(0.28, 0.001)
+	dread.force(0, 100, false, 0)
+	assert_float(dread.param_value("watchers:presence")).is_greater(0.5)
+
+
 func test_intensity_zero_is_the_clean_board() -> void:
 	var dread: DreadLayers = await _table_dread()
 	dread.force(90, 90, true)

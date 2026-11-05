@@ -22,7 +22,7 @@ audio_stems = Array[String](["melody", "chatter"])
 script = ExtResource("2")
 input = "denunciation"
 response = PackedVector2Array(0, 0, 0.4, 0.15, 0.65, 0.6, 1, 1)
-shader_params = Dictionary[String, Vector2]({"watchers:presence": Vector2(0.28, 0.95), "post:vignette": Vector2(0.55, 0.7)})
+shader_params = Dictionary[String, Vector2]({"watchers:presence": Vector2(0.0, 0.95), "post:vignette": Vector2(0.55, 0.7)})
 dressing = Array[String](["poster", "redaction"])
 audio_stems = Array[String](["whispers", "clock"])
 
@@ -47,6 +47,14 @@ script = ExtResource("2")
 input = "corruption"
 response = PackedVector2Array(0, 0, 1, 1)
 shader_params = Dictionary[String, Vector2]({"post:grain": Vector2(0.035, 0.12), "post:misregistration": Vector2(1.2, 3.0)})
+dressing = Array[String]([])
+audio_stems = Array[String]([])
+
+[sub_resource type="Resource" id="layer_corruption_watchers"]
+script = ExtResource("2")
+input = "corruption"
+response = PackedVector2Array(0, 0, 0.45, 0, 1, 1)
+shader_params = Dictionary[String, Vector2]({"watchers:presence": Vector2(0.0, 0.28)})
 dressing = Array[String]([])
 audio_stems = Array[String]([])
 
@@ -86,7 +94,7 @@ stages = Array[Texture2D]([ExtResource("9"), null, null, null, null, ExtResource
 
 [resource]
 script = ExtResource("1")
-layers = Array[ExtResource("2")]([SubResource("layer_famine"), SubResource("layer_denunciation"), SubResource("layer_struggle"), SubResource("layer_landlord"), SubResource("layer_corruption")])
+layers = Array[ExtResource("2")]([SubResource("layer_famine"), SubResource("layer_denunciation"), SubResource("layer_struggle"), SubResource("layer_landlord"), SubResource("layer_corruption"), SubResource("layer_corruption_watchers")])
 flickers = Array[ExtResource("3")]([SubResource("flicker_1"), SubResource("flicker_2"), SubResource("flicker_3")])
 ease_seconds = 4.0
 art = Array[ExtResource("4")]([SubResource("art_table_surface"), SubResource("art_card_back")])
