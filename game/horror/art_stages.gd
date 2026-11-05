@@ -2,7 +2,8 @@ class_name ArtStages
 extends RefCounted
 ## Picks every key asset's art for the hidden corruption stage (P3B.12, ADR 0018).
 ## Screens ask for an asset by its base texture and get that stage's variant, so the art
-## itself changes across a profile, under the meter layers' effects. Stages change only
+## itself changes across a profile, under the meter layers' effects. Variant files load
+## only when shown. Stages change only
 ## when a screen is built or the table refreshes at a round boundary.
 
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
@@ -34,7 +35,9 @@ static func resolve(texture: Texture2D, at_stage: int = -1) -> Texture2D:
 	var variant: ArtVariant = _variant_for(texture)
 	if variant == null:
 		return texture
-	return variant.at(stage() if at_stage < 0 else at_stage)
+	var path: String = variant.path_at(stage() if at_stage < 0 else at_stage)
+	# Loaded on demand: the resource cache shares it while anything shows it.
+	return variant.base if path.is_empty() else load(path)
 
 
 ## The base asset a shown texture came from, or the texture itself.
@@ -48,6 +51,6 @@ static func _variant_for(texture: Texture2D) -> ArtVariant:
 		variants_override if not variants_override.is_empty() else CONFIG.art
 	)
 	for variant: ArtVariant in variants:
-		if variant.base == texture or variant.stages.has(texture):
+		if variant.base == texture or variant.has_path(texture.resource_path):
 			return variant
 	return null
