@@ -52,6 +52,9 @@ func _run() -> void:
 	await _shot("title")
 	await _click_button_with_text(tr("title.new_run"))
 	await _frames(30)
+	await _shot("run_setup")
+	await _click_button_with_text(tr("setup.start"))
+	await _frames(30)
 	await _shot("set_intro")
 	await _click_button_with_text(tr("intro.begin"))
 	var guard: int = 0

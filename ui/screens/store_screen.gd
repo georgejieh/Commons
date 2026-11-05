@@ -39,7 +39,9 @@ func open(app: DemoApp) -> void:
 			app.controller.leave_store()
 			app.show_screen("set_intro", true)
 	)
-	column.add_child(ScreenKit.row([leave, _reroll]))
+	var market: Button = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
+	market.pressed.connect(func() -> void: app.show_screen("black_market"))
+	column.add_child(ScreenKit.row([leave, _reroll, market]))
 	# A paper chip, so the line reads over the mural.
 	var chip: VBoxContainer = ScreenKit.card(Vector2(0, 0))
 	chip.add_child(_owned)

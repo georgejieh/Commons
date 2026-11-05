@@ -119,6 +119,7 @@ func open(app: DemoApp) -> void:
 	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
 	_pause.quit_game.connect(func() -> void: get_tree().quit())
 	_pause.dossier.connect(func() -> void: app.show_screen("dossier"))
+	_pause.last_round.connect(func() -> void: app.show_screen("round_summary"))
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
 	for event: RunEvent in _controller.set_events():

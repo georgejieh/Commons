@@ -15,6 +15,14 @@ const SCREENS: Array[String] = [
 	"settings",
 	"demo_complete",
 	"dossier",
+	"run_setup",
+	"round_summary",
+	"black_market",
+	"plot_swap",
+	"reeducation",
+	"ending",
+	"collection",
+	"village_history",
 ]
 
 var _app: DemoApp

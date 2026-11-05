@@ -257,3 +257,54 @@ dossier.went_out,Went out first: {count}
 dossier.landlord,Rounds as landlord: {count}
 dossier.empty,Nothing seen yet.
 dossier.back,Back
+title.collection,Collection
+title.history,History
+setup.eyebrow,New run
+setup.title,Choose a stake
+setup.stake_base,Base Stake
+setup.stake_base_text,The standard rules. No extra pressure.
+setup.locked,Harder stakes unlock after a won run.
+setup.start,Start
+setup.back,Back
+round.eyebrow,Round {round}
+round.won,Your side won the round
+round.lost,Your side lost the round
+round.none,No round has finished yet
+round.score,Your score
+round.share,Your Commons share
+round.progress,Toward the Quota
+round.back,Back to the table
+pause.last_round,Last round
+market.eyebrow,Behind the store
+market.title,Black market
+market.empty,Nothing for sale today.
+market.open,Black market
+market.back,Back to the store
+plot.eyebrow,Private plot
+plot.title,Swap cards
+plot.hand,Your hand
+plot.plot,Your plot
+plot.empty,Your plot is empty.
+plot.keep,Keep hand
+plot.back,Back
+reed.eyebrow,Reeducation
+reed.title,Sent away for a Set
+reed.body,You sit out the next Set. Your private plot is emptied.
+reed.continue,Continue
+end.eyebrow,The run is over
+end.landlord,You finished as landlord
+end.peasant,You finished as a peasant
+end.famine,Famine
+end.denunciation,Denunciation
+end.coupons,Coupons
+end.table,At the table
+end.to_title,Return to title
+coll.eyebrow,Collection
+coll.title,Cadres
+coll.back,Back
+hist.eyebrow,Village history
+hist.title,This run
+hist.empty,No history yet.
+hist.set,Quota {number}
+hist.row,"{name}: fed {fed}, bombed {bombed}, denounced {denounced}, betrayed {betrayed}"
+hist.back,Back

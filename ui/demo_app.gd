@@ -18,6 +18,14 @@ const SCREENS: Dictionary[String, String] = {
 	"settings": "res://ui/screens/settings_screen.tscn",
 	"demo_complete": "res://ui/screens/demo_complete_screen.tscn",
 	"dossier": "res://ui/screens/dossier_screen.tscn",
+	"run_setup": "res://ui/screens/run_setup_screen.tscn",
+	"round_summary": "res://ui/screens/round_summary_screen.tscn",
+	"black_market": "res://ui/screens/black_market_screen.tscn",
+	"plot_swap": "res://ui/screens/plot_swap_screen.tscn",
+	"reeducation": "res://ui/screens/reeducation_screen.tscn",
+	"ending": "res://ui/screens/ending_screen.tscn",
+	"collection": "res://ui/screens/collection_screen.tscn",
+	"village_history": "res://ui/screens/village_history_screen.tscn",
 }
 
 var controller: RunController = RunController.new()
@@ -106,6 +114,8 @@ func screen_for(awaiting: int) -> String:
 			return "store"
 		RunController.AWAIT_RUN_OVER:
 			return "year_summary"
+		RunController.AWAIT_SWAP:
+			return "plot_swap"
 	return table_id()
 
 
