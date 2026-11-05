@@ -28,6 +28,10 @@ Option 2. The demo is one Year (3 Sets) with a state store and about 10 Cadres, 
 - **Commits.** Demo-only work is tagged `DEMO` in commit messages. Work that belongs to a checklist item carries that ID. A checklist box is ticked only when its whole "Done when" is verified.
 - **Dev-only autoloads are allowed.** The autoload check in P3B.2 allows the Godot AI add-on's dev-only autoload, because export presets exclude that add-on.
 
+## Outcome, 2026-11-04: 2D only
+
+The project owner played the 2D demo and found it good enough, so the 3D table is dropped before any of it was built. The Plan's "Decided: full 2D" stands. The 3D export preset is removed, and Blender is not added as a dependency.
+
 ## Consequences
 
 - After the comparison, the owner picks one direction. The other table is deleted, or the Plan's art pipeline section is rewritten for 3D in a new ADR.
