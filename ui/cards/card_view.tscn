@@ -64,22 +64,22 @@ offset_bottom = 58.0
 mouse_filter = 2
 label_settings = SubResource("glyph")
 
+[node name="Picture" type="TextureRect" parent="Frame"]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 56.0
+offset_right = 112.0
+offset_bottom = 160.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Suit" type="TextureRect" parent="Frame"]
 layout_mode = 0
 offset_left = 12.0
 offset_top = 58.0
 offset_right = 44.0
 offset_bottom = 90.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Picture" type="TextureRect" parent="Frame"]
-layout_mode = 0
-offset_left = 30.0
-offset_top = 50.0
-offset_right = 112.0
-offset_bottom = 160.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
