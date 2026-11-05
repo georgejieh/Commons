@@ -32,6 +32,8 @@ var denunciation_armed: bool = true
 var rationed: bool = false
 ## Reeducation replaces the next shop visit while true.
 var reeducation_due: bool = false
+## The village's Resentment of the player (P4.2).
+var resentment: int = 0
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -65,6 +67,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.denunciation_armed = bool(data["denunciation_armed"])
 	state.rationed = bool(data["rationed"])
 	state.reeducation_due = bool(data["reeducation_due"])
+	state.resentment = int(data["resentment"])
 	state.table.assign(data["table"])
 	for entry_data: Dictionary in data["roster"]:
 		state.roster.append(RosterEntry.from_dict(entry_data))
@@ -101,6 +104,7 @@ func to_dict() -> Dictionary:
 		"denunciation_armed": denunciation_armed,
 		"rationed": rationed,
 		"reeducation_due": reeducation_due,
+		"resentment": resentment,
 		"roster": roster_data,
 		"table": table.duplicate(),
 		"inventory": inventory.to_dict(),

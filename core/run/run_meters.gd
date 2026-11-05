@@ -13,6 +13,8 @@ const PRIVATE_PURCHASE: String = "private_purchase"
 const CAUGHT_LIE: String = "caught_lie"
 const DEBUFF_FAMINE: String = "debuff_famine"
 const DEBUFF_DENUNCIATION: String = "debuff_denunciation"
+## Its amount comes from the Resentment curve (P4.2), not the row.
+const RESENTMENT: String = "resentment"
 const RATIONING: String = "rationing"
 const REEDUCATION: String = "reeducation"
 
@@ -29,7 +31,22 @@ static func apply(
 ) -> void:
 	var source: MeterSource = table.source(source_id)
 	assert(source != null, "Unknown meter source")
-	var context: MeterContext = MeterContext.new(source.meter, source.amount)
+	apply_amount(state, source_id, source.amount, table, stack, params, player, events)
+
+
+## Applies the source's meter by an amount worked out elsewhere, such as a curve.
+static func apply_amount(
+	state: RunState,
+	source_id: String,
+	amount: int,
+	table: MeterTable,
+	stack: ModifierStack,
+	params: RunParams,
+	player: int,
+	events: Array[RunEvent]
+) -> void:
+	var source: MeterSource = table.source(source_id)
+	var context: MeterContext = MeterContext.new(source.meter, amount)
 	stack.run_meter_change(context)
 	var before: int = value(state, source.meter)
 	var after: int = clampi(before + context.delta, 0, params.meter_max)

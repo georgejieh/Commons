@@ -25,6 +25,8 @@ enum Type {
 	## A meter reached its death threshold; text names the meter.
 	RUN_DIED,
 	REEDUCATED,
+	## value is the change; text names the cause.
+	RESENTMENT,
 }
 
 var type: Type

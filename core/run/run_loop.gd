@@ -26,6 +26,7 @@ const DEFAULT_POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
 const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
 const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
 const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
+const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
 
 var state: RunState
 var flow: RunFlow
@@ -342,6 +343,7 @@ func _begin_play() -> void:
 
 
 func _create_round() -> void:
+	_aim_grudges()
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
 	_scoring.start(state.landlord_seat)
@@ -383,6 +385,11 @@ func _collect_round_events() -> void:
 		set_log.add(RunEvent.wrap(event))
 		if event.type == RoundEvent.Type.PLAYED:
 			var total: float = _scoring.score(event)
+			if event.seat == PLAYER:
+				_resent(
+					Resentment.stamped(event.cards, PLAYER) * DEFAULT_RESENTMENT.stamped_card,
+					Resentment.STAMPED_CARD
+				)
 			set_log.add(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total))
 	_round_seen = round_events.size()
 
@@ -434,6 +441,13 @@ func _end_set() -> void:
 		state.coupons += _sets.reward(state.set_type)
 	else:
 		_raise(RunMeters.MISSED_TARGET)
+	var held: int = Resentment.private_cadres(state.inventory.cadres, DEFAULT_CADRES.cadres)
+	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
+	var owed: int = Resentment.denunciation(state.resentment, DEFAULT_RESENTMENT)
+	if owed > 0:
+		RunMeters.apply_amount(
+			state, RunMeters.RESENTMENT, owed, _meters, _stack, _params, PLAYER, set_log.events()
+		)
 	_stack.clear()
 	state.landlord_seat = Seats.NONE
 	set_log.add(
@@ -447,6 +461,22 @@ func _end_set() -> void:
 ## Moves a meter by a source in the meter table. Callers check death at a boundary.
 func _raise(source_id: String) -> void:
 	RunMeters.apply(state, source_id, _meters, _stack, _params, PLAYER, set_log.events())
+
+
+func _resent(amount: int, cause: String) -> void:
+	if amount != 0:
+		Resentment.add(state, amount, cause, DEFAULT_RESENTMENT, set_log.events())
+
+
+## Every bot holds the player's Resentment against them; P4.6 adds family memory to it.
+func _aim_grudges() -> void:
+	var held: float = Resentment.grudge(state.resentment, DEFAULT_RESENTMENT)
+	for seat: int in Seats.COUNT:
+		if seat == PLAYER:
+			continue
+		var memory: PackedFloat32Array = _configs[seat].memory
+		memory[PLAYER] = held
+		_configs[seat].memory = memory
 
 
 ## Ends the run when a meter has reached death. Every caller sits at a state that may

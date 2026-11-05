@@ -29,7 +29,8 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 	return data
 
 
-## Version 2 saves predate the meter setbacks (P4.1): armed, with none in force.
+## Version 2 saves predate the meter setbacks (P4.1): armed, with none in force, and
+## Resentment (P4.2) at zero.
 static func migrate_from_2(data: Dictionary) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
 		var checkpoint: Dictionary = data["checkpoint"]
@@ -38,6 +39,7 @@ static func migrate_from_2(data: Dictionary) -> Dictionary:
 			"denunciation_armed": true,
 			"rationed": false,
 			"reeducation_due": false,
+			"resentment": 0,
 		}
 		checkpoint.merge(defaults)
 	return data

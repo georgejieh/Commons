@@ -144,7 +144,18 @@ The two setbacks:
 - **Rationing** holds while Famine stays up. `RunShop.slot_count()` cuts the store's slots for as long as it lasts.
 - **Reeducation** is owed once. `open_shop()` serves it in place of the store: the run moves to `REEDUCATION`, the plot is emptied, and one held Cadre is exchanged ([ADR 0019](adr/0019-reeducation-setback.md)).
 
-Death is checked after each meter move, at a state that may go to `RUN_END`: Set end, or round end for a shortfall. The run log gets `RUN_DIED`, naming the meter. Run saves are schema 3; `RunRecord.migrate_from_2` adds the setback flags.
+Death is checked after each meter move, at a state that may go to `RUN_END`: Set end, or round end for a shortfall. The run log gets `RUN_DIED`, naming the meter. Run saves are schema 3; `RunRecord.migrate_from_2` adds the setback flags and Resentment.
+
+**Resentment (P4.2).** `RunState.resentment` runs from 0 to 100. `Resentment` and `data/run/resentment.tres` define what raises it:
+
+- each private purchase (called by the black market in P4.10);
+- each private Cadre held at a Set's end;
+- each card the player scores that carries their own stamp.
+
+Resentment acts in two ways:
+
+- **Denunciation.** At each Set's end, Denunciation rises by `denunciation.sample(resentment / max)`, through the meter table's `resentment` row. That curve is the only mapping from Resentment to Denunciation.
+- **Grudge.** At each round's start, every bot's `memory[player]` is set to `grudge(resentment)`. A bot's spite (grudge × memory) is added to every answer it scores. It also divides its cooperation, so a resented player's teammate covers for them less often.
 
 `SetConfig` reads the run's shape from the `SetParams` Resource in `data/run/`: the number of Years, rounds per Set, coupons per Set type, and the target curve, one target per Set in play order. `validate()` rejects a curve that falls anywhere, across Years too.
 
