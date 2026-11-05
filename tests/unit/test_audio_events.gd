@@ -41,3 +41,33 @@ func test_every_name_is_unique() -> void:
 			continue
 		assert_bool(seen.has(name)).override_failure_message(name).is_false()
 		seen[name] = true
+
+
+func test_rockets_and_bombs_have_their_own_names() -> void:
+	var rocket: Pattern = (
+		Classifier
+		. classify(RankText.counts("sb"), RuleSet.default_rules(), Ranks.identity_map())
+		. pattern
+	)
+	var event: RunEvent = RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PLAYED, 1, [52, 53], rocket))
+	assert_str(AudioEvents.name_for(event)).is_equal(AudioEvents.ROCKET_NAME)
+
+
+func test_a_round_is_won_or_lost_from_the_players_side() -> void:
+	var landlord_out: RunEvent = RunEvent.wrap(RoundEvent.new(RoundEvent.Type.ROUND_ENDED, 2))
+	var peasant_out: RunEvent = RunEvent.wrap(RoundEvent.new(RoundEvent.Type.ROUND_ENDED, 1))
+	# You hold the seat: only your own finish wins.
+	assert_str(AudioEvents.name_for(peasant_out, 0)).is_equal(AudioEvents.ROUND_LOST)
+	# A villager holds seat 2: your teammate's finish is your win.
+	assert_str(AudioEvents.name_for(peasant_out, 2)).is_equal(AudioEvents.ROUND_WON)
+	assert_str(AudioEvents.name_for(landlord_out, 2)).is_equal(AudioEvents.ROUND_LOST)
+	# Without a landlord the plain name stands.
+	assert_str(AudioEvents.name_for(landlord_out)).is_equal("round_ended")
+
+
+func test_a_meter_rises_past_a_mark_once() -> void:
+	var marks: Array[int] = [25, 50]
+	assert_bool(AudioEvents.meter_rose(20, 30, marks)).is_true()
+	assert_bool(AudioEvents.meter_rose(25, 40, marks)).is_false()
+	assert_bool(AudioEvents.meter_rose(60, 40, marks)).is_false()
+	assert_bool(AudioEvents.meter_rose(49, 50, marks)).is_true()

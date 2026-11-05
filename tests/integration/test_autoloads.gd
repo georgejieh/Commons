@@ -57,8 +57,8 @@ func test_no_autoload_holds_an_object_field() -> void:
 				continue
 			var held: Variant = node.get(property["name"])
 			if held is Object:
-				# The music player holds audio and cue data, never run state.
-				var allowed: bool = held is SaveService or held is MusicPlayer
+				# The music and effects players hold audio and cue data, never run state.
+				var allowed: bool = held is SaveService or held is MusicPlayer or held is SfxPlayer
 				(
 					assert_bool(allowed)
 					. override_failure_message(path + ": " + property["name"])
