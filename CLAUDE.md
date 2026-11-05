@@ -68,7 +68,7 @@ Draws seeded debuff ladders and writes the tier share per Set type and round to 
 git tag playtest/<name> && git push origin playtest/<name>
 ```
 
-Plays the demo through its real UI on a GitHub runner with a virtual display, so no window opens locally (about 10 minutes). It fails on any misclick, hand mismatch, missing button or script error. Get the screenshots and log with `gh run download <run id> -n playtest`. Locally, `godot --path . --script res://tools/playtest.gd -- --rounds 6 --out reports/playtest` does the same in a window.
+Plays the demo through its real UI on a GitHub runner with a virtual display, so no window opens locally (about 10 minutes). It fails on any misclick, hand mismatch, missing button or script error. It also renders the demo screens and every dread board state and corruption stage. Get the screenshots and log with `gh run download <run id> -n playtest`. Use this for any visual check, so nothing opens a window on the owner's screen. Locally, `godot --path . --script res://tools/playtest.gd -- --rounds 6 --out reports/playtest` does the same in a window.
 
 Balance commands arrive with P4.16. Add them here when they work.
 
