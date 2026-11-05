@@ -54,6 +54,12 @@ The player never sees which stage they are in. Each stage keeps the one before i
 
 **Horror rules.** Absence over spectacle: no blood, wounds or bodies, ever. The horror is in the eye, the hands, and smiles held too long. Each stage stays readable as the same poster, so the player notices the change rather than watching it happen.
 
+## Files, sizes and atlases
+
+- **Names** follow `category_name_variant`: `cadre_stakhanovite`, `portrait_wang_face`, `icon_grain`. A corruption-stage version adds `_sN`, as in `table_surface_s4`, and lives in a `stages/` folder next to its base asset.
+- **Import sizes.** Backdrops import at full size. Cadre art, portraits, card stock and paper textures are capped at 512 px on their long side (`process/size_limit`), because nothing on screen draws them larger. A full table scene must stay under 128 MB of texture memory (`tools/texture_budget.gd`, run in the cloud playtest).
+- **Atlases.** Small UI sprites are packed by `tools/pack_atlas.py` into `art/atlases/atlas_<category>.png`, at most 4096 x 4096, with one `AtlasTexture` per sprite in `data/ui/atlas/`. The game loads the AtlasTexture, never the loose sprite. Mipmaps stay off for UI.
+
 ## Reference images
 
 These are approved assets in the repository. Use them as `--ref` attachments when generating:

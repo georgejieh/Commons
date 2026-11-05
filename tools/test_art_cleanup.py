@@ -72,3 +72,32 @@ def test_output_uses_only_palette_colors_and_hard_alpha(tmp_path):
         assert alpha in (0, 255)
         if alpha:
             assert (red, green, blue) in colors
+
+
+def test_the_atlas_packer_is_deterministic_and_regions_fit(tmp_path):
+    import pack_atlas
+
+    source = tmp_path / "sprites"
+    source.mkdir()
+    for index, size in enumerate(((30, 20), (64, 64), (10, 50), (40, 40))):
+        Image.new("RGBA", size, (index * 40, 90, 120, 255)).save(source / f"icon_{index}.png")
+    outputs = []
+    for run in ("a", "b"):
+        atlas = tmp_path / run / "atlas_icons.png"
+        resources = tmp_path / run / "atlas"
+        subprocess.run(
+            [sys.executable, os.path.join(HERE, "pack_atlas.py"), str(source), str(atlas), str(resources)],
+            check=True,
+        )
+        outputs.append((atlas, resources))
+    assert filecmp.cmp(outputs[0][0], outputs[1][0], shallow=False)
+    width, height = Image.open(outputs[0][0]).size
+    assert width <= pack_atlas.MAX_SIDE and height <= pack_atlas.MAX_SIDE
+    sizes = [(f"icon_{i}.png", s) for i, s in enumerate(((30, 20), (64, 64), (10, 50), (40, 40)))]
+    _, _, placed = pack_atlas.pack(sizes)
+    boxes = list(placed.values())
+    for x, y, w, h in boxes:
+        assert x + w <= width and y + h <= height
+    for i, a in enumerate(boxes):
+        for b in boxes[i + 1 :]:
+            assert a[0] + a[2] <= b[0] or b[0] + b[2] <= a[0] or a[1] + a[3] <= b[1] or b[1] + b[3] <= a[1]
