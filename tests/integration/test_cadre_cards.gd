@@ -48,9 +48,12 @@ func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
 	var store: Control = _app.show_screen("store")
 	await await_idle_frame()
 	var counter: HBoxContainer = store.get("_counter")
+	var idle: Label = store.get("_reading")
+	assert_bool(idle.visible).is_false()
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	buy.focus_entered.emit()
 	var reading: Label = store.get("_reading")
+	assert_bool(reading.visible).is_true()
 	var first: String = _app.controller.store_stock()[0]
 	assert_str(reading.text).is_equal(ScreenKit.cadre_tip(_app.controller, first))
 

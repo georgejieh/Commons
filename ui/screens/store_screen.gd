@@ -64,7 +64,7 @@ func _refresh() -> void:
 	var state: RunState = controller.state_copy()
 	UiMotion.count(_coupons, _shown_coupons, state.coupons, _coupon_text)
 	_shown_coupons = state.coupons
-	_reading.text = ""
+	_read("")
 	for child: Node in _counter.get_children():
 		_counter.remove_child(child)
 		child.queue_free()
@@ -110,13 +110,19 @@ func _item(slot: int, cadre_id: String) -> Control:
 			_refresh()
 	)
 	buy.tooltip_text = tip
-	buy.focus_entered.connect(func() -> void: _reading.text = tip)
+	buy.focus_entered.connect(_read.bind(tip))
 	card.add_child(buy)
 	var panel: Control = ScreenKit.card_panel(card)
 	panel.tooltip_text = tip
-	panel.mouse_entered.connect(func() -> void: _reading.text = tip)
+	panel.mouse_entered.connect(_read.bind(tip))
 	UiMotion.hoverable(panel)
 	return panel
+
+
+## Shows a Cadre's name and rules on the reading line; an empty line takes no space.
+func _read(tip: String) -> void:
+	_reading.text = tip
+	_reading.visible = not tip.is_empty()
 
 
 func _on_reroll() -> void:
