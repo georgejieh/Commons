@@ -35,6 +35,18 @@ bash tools/lint.sh
 Lints and format-checks project GDScript. Add-ons are skipped.
 
 ```bash
+python -m pytest -q tools
+```
+
+Tests the Python tools (art cleanup, voice bank). Needs `pillow` and `pytest` from `requirements-dev.txt`.
+
+```bash
+python tools/art_cleanup.py IN_DIR OUT_DIR --size 512x512
+```
+
+Cleans generated art: trims, hardens alpha, resizes, quantizes to `art/palette.json` and normalizes outlines. Add `--dither` for dithering. Deterministic and idempotent.
+
+```bash
 godot --headless --path . --script res://tools/check_layers.gd
 ```
 
