@@ -40,3 +40,7 @@ The art reads as Mao-era propaganda at a glance and as something worse the longe
 3. Set intro: the Quota, the Set type and the debuff ladder, one card per round, with round 1 always clean.
 
 Each mockup has to pass the side-by-side check against the references: no copied layout, color scheme, typography or asset.
+
+## Sign-off
+
+On 2026-11-04 the project owner approved the table, state store and Set intro mockups and completed the side-by-side review against `design/reference/`, finding no copied layout, color scheme, typography or asset. Other screens reuse the approved screens' parts through `ui/screens/screen_kit.gd` rather than having mockups of their own.
