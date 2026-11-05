@@ -10,6 +10,12 @@ const BUSES: Dictionary[String, String] = {
 
 ## The last event name played, for tests and a debug overlay.
 var last_played: String = ""
+## The music cues and their stems (P3C.9).
+var music: MusicPlayer = MusicPlayer.new()
+
+
+func _init() -> void:
+	add_child(music)
 
 
 func _ready() -> void:

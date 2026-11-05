@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="MusicScore" format=3]
+
+[ext_resource type="Script" path="res://data/audio/music_score.gd" id="1"]
+[ext_resource type="Script" path="res://data/audio/music_cue.gd" id="2"]
+
+[sub_resource type="Resource" id="village_master"]
+script = ExtResource("2")
+id = "village_master"
+stem_names = Array[String](["melody", "counter", "harmony", "bass", "percussion"])
+bpm = 84.0
+
+[sub_resource type="Resource" id="landlord_master"]
+script = ExtResource("2")
+id = "landlord_master"
+stem_names = Array[String](["melody", "counter", "harmony", "bass", "percussion"])
+bpm = 84.0
+
+[sub_resource type="Resource" id="famine_mid"]
+script = ExtResource("2")
+id = "famine_mid"
+stem_names = Array[String](["melody", "harmony", "bass"])
+bpm = 66.0
+
+[sub_resource type="Resource" id="famine_high"]
+script = ExtResource("2")
+id = "famine_high"
+stem_names = Array[String](["melody"])
+bpm = 60.0
+
+[resource]
+script = ExtResource("1")
+cues = Array[ExtResource("2")]([SubResource("village_master"), SubResource("landlord_master"), SubResource("famine_mid"), SubResource("famine_high")])

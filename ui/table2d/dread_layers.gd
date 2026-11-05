@@ -95,6 +95,7 @@ static func table_materials(
 func refresh(state: RunState, settle_now: bool = false, landlord: Variant = null) -> void:
 	var is_landlord: bool = state.landlord_seat == 0 if landlord == null else bool(landlord)
 	board.set_inputs(state.famine, state.denunciation, is_landlord, corruption())
+	_choose_music(is_landlord)
 	if settle_now:
 		board.settle()
 	apply()
@@ -103,6 +104,7 @@ func refresh(state: RunState, settle_now: bool = false, landlord: Variant = null
 ## Shows a board state at once, for tools and tests: meters 0 to 100.
 func force(famine: int, denunciation: int, landlord: bool, stage: int = 0) -> void:
 	board.set_inputs(famine, denunciation, landlord, stage)
+	_choose_music(landlord)
 	board.settle()
 	apply()
 
@@ -131,6 +133,7 @@ func apply() -> void:
 		_piece_weight[index] = weight
 		_dressing.show_piece(_piece_ids[index], weight)
 	_apply_swaps(intensity)
+	Audio.music.follow(board, config.layers, intensity)
 	if _materials.has("lamp"):
 		var breathe: float = NO_FLASH_BREATHE if bool(Settings.value("no_flash")) else _breathe
 		_materials["lamp"].set_shader_parameter("breathe", breathe)
@@ -262,3 +265,14 @@ func _key(index: int) -> String:
 		if _materials[target] == _param_material[index]:
 			return "%s:%s" % [target, _param_name[index]]
 	return ""
+
+
+## Picks the music cue for the board at a round boundary: the Famine layer's target,
+## scaled by horror intensity, and the landlord seat (P3C.9).
+func _choose_music(landlord: bool) -> void:
+	var famine: float = 0.0
+	for index: int in config.layers.size():
+		if config.layers[index].input == "famine":
+			famine = maxf(famine, board.targets[index])
+	famine *= float(Settings.value("horror_intensity"))
+	Audio.music.request(MusicPlayer.SCORE.cue_for(famine, landlord))

@@ -16,7 +16,7 @@ input = "famine"
 response = PackedVector2Array(0, 0, 0.4, 0.15, 0.65, 0.6, 1, 1)
 shader_params = Dictionary[String, Vector2]({"post:dread": Vector2(0.0, 0.5), "post:warmth": Vector2(0.25, 0.0), "lamp:dread": Vector2(0.0, 0.8)})
 dressing = Array[String](["empty_chairs"])
-audio_stems = Array[String](["melody", "chatter"])
+audio_stems = Array[String](["percussion", "counter", "chatter"])
 
 [sub_resource type="Resource" id="layer_denunciation"]
 script = ExtResource("2")
@@ -24,7 +24,7 @@ input = "denunciation"
 response = PackedVector2Array(0, 0, 0.4, 0.15, 0.65, 0.6, 1, 1)
 shader_params = Dictionary[String, Vector2]({"watchers:presence": Vector2(0.0, 0.95), "post:vignette": Vector2(0.55, 0.7)})
 dressing = Array[String](["poster", "redaction"])
-audio_stems = Array[String](["whispers", "clock"])
+audio_stems = Array[String](["melody", "percussion", "whispers", "clock"])
 
 [sub_resource type="Resource" id="layer_struggle"]
 script = ExtResource("2")
@@ -32,7 +32,7 @@ input = "struggle"
 response = PackedVector2Array(0, 0, 0.55, 0.0, 0.8, 0.7, 1, 1)
 shader_params = Dictionary[String, Vector2]({"lamp:darkness": Vector2(0.94, 0.97)})
 dressing = Array[String](["spotlight"])
-audio_stems = Array[String](["crowd"])
+audio_stems = Array[String](["counter", "harmony", "bass", "crowd"])
 
 [sub_resource type="Resource" id="layer_landlord"]
 script = ExtResource("2")
