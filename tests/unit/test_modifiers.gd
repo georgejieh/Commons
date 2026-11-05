@@ -119,6 +119,7 @@ func test_the_validator_catches_each_kind_of_bad_definition() -> void:
 		"bad_text.tres": "missing string key",
 		"bad_rank.tres": "bad rank",
 		"bad_listed_hook.tres": "does not implement",
+		"bad_tier.tres": "bad tier",
 	}
 	for file: String in cases:
 		var definition: ModifierDef = ResourceLoader.load(FIXTURES + file)

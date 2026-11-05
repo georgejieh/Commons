@@ -33,6 +33,12 @@ func remove(entry: ActiveModifier) -> void:
 	_changed()
 
 
+## Removes every entry, enabled or not.
+func clear() -> void:
+	_entries.clear()
+	_changed()
+
+
 func set_enabled(entry: ActiveModifier, enabled: bool) -> void:
 	entry.enabled = enabled
 	_changed()
