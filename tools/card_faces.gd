@@ -1,7 +1,7 @@
 extends SceneTree
 ## Renders all 54 card faces, composed from their parts (P3C.5), into one sheet for
-## checking by eye. Needs a real renderer; it runs in the cloud playtest so no window
-## opens locally:
+## checking by eye, then again under the table light (P3C.6). Needs a real renderer;
+## it runs in the cloud playtest so no window opens locally:
 ##   godot --path . --script res://tools/card_faces.gd -- --out reports/card_faces
 ## Development only; tools/ never ships.
 
@@ -39,4 +39,15 @@ func _run() -> void:
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("%s/all_faces.png" % _out)
 	print("saved all_faces")
+	# The same faces under the table light (P3C.6), to compare with the unlit sheet.
+	var params: TableLight = load("res://data/ui/table_light.tres")
+	var light: PointLight2D = Lighting.light(params)
+	light.position = Vector2(root.size) * params.position
+	light.texture_scale = root.size.x * params.reach / Lighting.LIGHT_TEXTURE_SIZE
+	root.add_child(light)
+	for _frame: int in SETTLE_FRAMES:
+		await process_frame
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("%s/all_faces_lit.png" % _out)
+	print("saved all_faces_lit")
 	quit(0)
