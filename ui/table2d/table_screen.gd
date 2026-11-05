@@ -42,6 +42,7 @@ var _pause: PauseMenu = PauseMenu.new()
 var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
 var _speech: TableSpeech = TableSpeech.new()
+var _input: TableInput = TableInput.new()
 
 
 func _ready() -> void:
@@ -49,10 +50,13 @@ func _ready() -> void:
 	var rail: ColorRect = ColorRect.new()
 	rail.color = RAIL_EDGE
 	rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_place(rail, Vector2.ZERO, Vector2(1920, 1080))
 	var surface: TextureRect = ScreenKit.cover(ScreenKit.ART.table_surface)
-	_place(surface, Vector2(0, 72), Vector2(1920, 1008))
-	_place(_atmosphere, Vector2(0, 72), Vector2(1920, 1008))
+	# The room fills the screen below the bar, so a 16:10 screen shows more table, not
+	# a band of nothing (P3B.11).
+	for backdrop: Control in [rail, surface, _atmosphere]:
+		add_child(backdrop)
+		backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		backdrop.offset_top = 0.0 if backdrop == rail else 72.0
 	_atmosphere.name = "Atmosphere"
 	# The ledger sits inside its paper, so its margins come from the sheet.
 	var ledger_paper: PanelContainer = PanelContainer.new()
@@ -120,6 +124,7 @@ func open(app: DemoApp) -> void:
 	_pause.quit_game.connect(func() -> void: get_tree().quit())
 	_pause.dossier.connect(func() -> void: app.show_screen("dossier"))
 	_pause.last_round.connect(func() -> void: app.show_screen("round_summary"))
+	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
 	for event: RunEvent in _controller.set_events():
@@ -147,34 +152,10 @@ func _open_pause() -> void:
 	_pause.open()
 
 
-## Keyboard shortcuts press the same buttons a click does (P3B.11, in part). Escape
-## closes the rules card, or opens the menu.
+## Keyboard and gamepad go through TableInput (P3B.11).
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and not _pause.visible:
-		if _cheat_sheet.visible:
-			_cheat_sheet.visible = false
-		else:
-			_open_pause()
+	if _input.handle(event):
 		get_viewport().set_input_as_handled()
-		return
-	if _pause.visible or _cheat_sheet.visible:
-		return
-	var shortcuts: Dictionary[String, Button] = {
-		"commons_play": _actions.call if _actions.call.visible else _actions.play,
-		"commons_pass": _actions.decline if _actions.decline.visible else _actions.pass_turn,
-		"commons_hint": _actions.hint,
-		"commons_sort": _actions.sort,
-		"commons_rules": _actions.rules,
-	}
-	for action: String in shortcuts:
-		var button: Button = shortcuts[action]
-		if event.is_action_pressed(action) and button.is_visible_in_tree() and not button.disabled:
-			if button.toggle_mode:
-				button.button_pressed = not button.button_pressed
-			else:
-				button.pressed.emit()
-			get_viewport().set_input_as_handled()
-			return
 
 
 func _exit_tree() -> void:

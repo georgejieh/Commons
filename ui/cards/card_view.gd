@@ -12,6 +12,8 @@ const RED_SUITS: Array[int] = [1, 3]
 const JOKER_GLYPH: String = "★"
 const INK: Color = Color("1e1a16")
 const RED: Color = Color("b02a17")
+const HINT: Color = Color("c9a227")
+const CURSOR: Color = Color("f4ecd8")
 ## Joker words are longer than a rank glyph, so they print smaller.
 const GLYPH_SIZE: int = 40
 const JOKER_SIZE: int = 24
@@ -104,10 +106,16 @@ func bind(card: CardInstance) -> void:
 	set_marked(false, false)
 
 
-## Selected cards lift and get a red edge; hinted cards get a gold edge.
-func set_marked(selected: bool, hinted: bool) -> void:
-	_highlight.visible = selected or hinted
-	_highlight.modulate = RED if selected else Color("c9a227")
+## Selected cards lift and get a red edge; hinted cards get a gold edge; the keyboard
+## and gamepad cursor gets a paper-white edge.
+func set_marked(selected: bool, hinted: bool, cursor: bool = false) -> void:
+	_highlight.visible = selected or hinted or cursor
+	if selected:
+		_highlight.modulate = RED
+	elif hinted:
+		_highlight.modulate = HINT
+	else:
+		_highlight.modulate = CURSOR
 
 
 func _gui_input(event: InputEvent) -> void:

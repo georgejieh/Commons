@@ -52,5 +52,6 @@ func show_bidding(on: bool) -> void:
 
 func _button(button: Button, key: String, kind: String) -> void:
 	button.text = tr(key)
+	button.focus_mode = Control.FOCUS_NONE
 	button.theme_type_variation = kind
 	UiMotion.hoverable(button)

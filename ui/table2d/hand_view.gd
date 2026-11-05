@@ -2,7 +2,9 @@ class_name HandView
 extends Control
 ## The player's hand as a fan along the bottom of the table. Positions sit on an arc,
 ## computed in O(n). Click toggles a card; press and drag across cards selects or
-## clears them all the way the first card went. Selection lives in the HandModel.
+## clears them all the way the first card went. Keyboard and gamepad move a cursor
+## along the fan and toggle the card under it (P3B.11). Selection lives in the
+## HandModel.
 
 enum Sort { RANK, SUIT, GROUPS }
 
@@ -30,6 +32,8 @@ var _pool: CardPool
 var _views: Array[CardView] = []
 var _dragging: bool = false
 var _drag_selects: bool = true
+## The card the keyboard or gamepad points at, or -1 before either is used.
+var _cursor: int = -1
 
 
 func setup(model: HandModel, pool: CardPool) -> void:
@@ -53,8 +57,34 @@ func show_cards() -> void:
 		view.pressed.connect(_on_pressed)
 		view.hovered.connect(_on_hovered)
 		_views.append(view)
+	if _cursor >= _views.size():
+		_cursor = _views.size() - 1
 	_layout()
 	_mark()
+
+
+## Moves the cursor by step cards, stopping at either end. The first move lands on
+## the leftmost card.
+func move_cursor(step: int) -> void:
+	if _views.is_empty():
+		return
+	_cursor = 0 if _cursor < 0 else clampi(_cursor + step, 0, _views.size() - 1)
+	_mark()
+
+
+## Toggles the card under the cursor.
+func toggle_cursor() -> void:
+	if _cursor < 0 or _cursor >= _views.size():
+		move_cursor(0)
+		return
+	_model.toggle(_views[_cursor].card_id)
+
+
+## The card under the cursor, or -1.
+func cursor_card() -> int:
+	if _cursor < 0 or _cursor >= _views.size():
+		return -1
+	return _views[_cursor].card_id
 
 
 ## Lights these cards with the hint edge until the hand next changes.
@@ -110,7 +140,7 @@ func _mark() -> void:
 	for index: int in _views.size():
 		var view: CardView = _views[index]
 		var selected: bool = _model.is_selected(view.card_id)
-		view.set_marked(selected, hinted.has(view.card_id))
+		view.set_marked(selected, hinted.has(view.card_id), index == _cursor)
 		var slot: Vector3 = fan_slot(index, _views.size(), size.x)
 		var to: Vector2 = Vector2(view.position.x, slot.y - (LIFT if selected else 0.0))
 		if motion == null:
