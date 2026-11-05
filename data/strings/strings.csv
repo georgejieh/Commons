@@ -99,9 +99,6 @@ table.cards_left,{count} cards
 table.role.landlord,Landlord
 table.role.teammate,Your teammate
 table.role.peasant,Peasant
-table.say.call,I'll call.
-table.say.pass,Pass.
-table.say.cards_left,{count} left.
 table.status,Year {year} · {set} · Round {round} of {rounds} · {progress} / {target}
 table.coupons,{count} coupons
 table.coupons.one,1 coupon
@@ -225,8 +222,38 @@ pause.to_title,Return to title
 pause.quit,Quit game
 pause.saved,Your run saves after every move. Continue on the title screen picks up here.
 table.card_left,{count} card
-table.say.no_call,No call.
 table.bid_prompt,Call the landlord seat?
 summary.paid,The Quota paid {count} coupons.
 summary.paid.one,The Quota paid 1 coupon.
 summary.cost,"Famine rose by {rise}, to {famine}. At 100, the village starves."
+speech.call.1,I'll call.
+speech.call.2,Give me the seat.
+speech.call.3,Fine. I'll take it.
+speech.no_call.1,No call.
+speech.no_call.2,Not with these cards.
+speech.no_call.3,Someone else can have it.
+speech.pass.1,Pass.
+speech.pass.2,Go on.
+speech.pass.3,Nothing for that.
+speech.pass.4,Pass. Again.
+speech.cards_left.1,{count} left.
+speech.cards_left.2,Down to {count}.
+speech.cards_left.3,Only {count} now. Careful.
+speech.bomb.1,Bomb.
+speech.bomb.2,Sorry. I had to.
+speech.bomb.3,Try topping that.
+speech.won.1,Count it up.
+speech.won.2,Good. Deal again.
+speech.lost.1,"Shuffle, then."
+speech.lost.2,Bad cards from the start.
+dossier.open,Dossier
+dossier.eyebrow,Seen at the table
+dossier.title,Dossier
+dossier.calls,Called on {called} of {bids} bid turns
+dossier.bombs,Bombs played: {count}
+dossier.passes,Passes: {count}
+dossier.beat_teammate,Beat a teammate's play: {count}
+dossier.went_out,Went out first: {count}
+dossier.landlord,Rounds as landlord: {count}
+dossier.empty,Nothing seen yet.
+dossier.back,Back

@@ -87,6 +87,9 @@ func _random_state(rng: RandomNumberGenerator) -> RunState:
 		for _i: int in rng.randi_range(0, 4):
 			summary.add("family_%d" % rng.randi_range(0, 15), rng.randi_range(0, 3), 1)
 		state.summaries.append(summary)
+	for _i: int in rng.randi_range(0, 12):
+		var kind: int = rng.randi_range(0, Observations.KIND_COUNT - 1)
+		state.observations.add("family_%d" % rng.randi_range(0, 15), kind, rng.randi_range(1, 9))
 	return state
 
 
@@ -126,4 +129,5 @@ func _same_fields(first: RunState, second: RunState) -> bool:
 		and first.commons_pool == second.commons_pool
 		and first.landlord_seat == second.landlord_seat
 		and first.summaries.size() == second.summaries.size()
+		and first.observations.to_dict() == second.observations.to_dict()
 	)

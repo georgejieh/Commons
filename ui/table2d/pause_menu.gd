@@ -7,6 +7,7 @@ extends Control
 signal resumed
 signal to_title
 signal quit_game
+signal dossier
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.78)
 
@@ -55,6 +56,7 @@ func _menu() -> VBoxContainer:
 	sheet.add_child(ScreenKit.header(tr("pause.eyebrow"), tr("pause.title"), ScreenKit.INK))
 	_resume = _wide(tr("pause.resume"), CommonsTheme.PRIMARY, close)
 	sheet.add_child(_resume)
+	sheet.add_child(_wide(tr("dossier.open"), CommonsTheme.SECONDARY, _leave.bind(dossier)))
 	sheet.add_child(_wide(tr("pause.settings"), CommonsTheme.SECONDARY, _show_page.bind(null)))
 	sheet.add_child(_wide(tr("pause.to_title"), CommonsTheme.GHOST, _leave.bind(to_title)))
 	sheet.add_child(_wide(tr("pause.quit"), CommonsTheme.GHOST, _leave.bind(quit_game)))

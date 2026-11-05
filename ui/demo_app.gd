@@ -17,6 +17,7 @@ const SCREENS: Dictionary[String, String] = {
 	"year_summary": "res://ui/screens/year_summary_screen.tscn",
 	"settings": "res://ui/screens/settings_screen.tscn",
 	"demo_complete": "res://ui/screens/demo_complete_screen.tscn",
+	"dossier": "res://ui/screens/dossier_screen.tscn",
 }
 
 var controller: RunController = RunController.new()

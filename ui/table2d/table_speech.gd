@@ -1,0 +1,58 @@
+class_name TableSpeech
+extends RefCounted
+## Turns run events into what villagers say at the table (P3B.8). Lines come from the
+## SpeechBook by event. Each seat cycles through a salt, so the same events in the same
+## order always give the same lines, with no global random.
+
+## A villager said a line: the voice (P3B.13) listens here.
+signal spoke(seat: int, event: String, line: SpeechLine)
+
+const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
+## Spreads the seats' salts so two villagers rarely say the same line together.
+const SEAT_SALT: int = 7
+
+var _seats: Dictionary[int, SeatPanel] = {}
+var _said: Dictionary[int, int] = {}
+var _landlord: int = Seats.NONE
+
+
+func setup(seats: Dictionary[int, SeatPanel]) -> void:
+	_seats = seats
+
+
+## Speaks for event, if anyone would.
+func on_event(event: RunEvent) -> void:
+	if event.type == RunEvent.Type.BID:
+		say(event.seat, "call" if event.value == 1 else "no_call")
+		return
+	if event.type != RunEvent.Type.ROUND:
+		return
+	var played: RoundEvent = event.round_event
+	match played.type:
+		RoundEvent.Type.ROUND_STARTED:
+			_landlord = played.seat
+		RoundEvent.Type.PASSED:
+			say(played.seat, "pass")
+		RoundEvent.Type.ANNOUNCED:
+			say(played.seat, "cards_left", {"count": played.value})
+		RoundEvent.Type.PLAYED:
+			var type: Pattern.Type = played.pattern.type
+			if type == Pattern.Type.BOMB or type == Pattern.Type.ROCKET:
+				say(played.seat, "bomb")
+		RoundEvent.Type.ROUND_ENDED:
+			for seat: int in _seats:
+				var same_side: bool = (seat == _landlord) == (played.seat == _landlord)
+				say(seat, "won" if same_side else "lost")
+
+
+## Says one line for event at seat, if the seat has a panel and the book has a line.
+func say(seat: int, event: String, fields: Dictionary = {}) -> void:
+	if not _seats.has(seat):
+		return
+	var said: int = _said.get(seat, 0)
+	_said[seat] = said + 1
+	var line: SpeechLine = BOOK.pick(event, said + seat * SEAT_SALT)
+	if line == null:
+		return
+	_seats[seat].say(tr(line.text_key).format(fields), line.mood)
+	spoke.emit(seat, event, line)

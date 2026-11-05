@@ -14,6 +14,7 @@ const SCREENS: Array[String] = [
 	"year_summary",
 	"settings",
 	"demo_complete",
+	"dossier",
 ]
 
 var _app: DemoApp

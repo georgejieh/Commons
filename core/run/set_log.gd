@@ -47,3 +47,4 @@ func start_round() -> void:
 func end_round(state: RunState, player: int) -> void:
 	var round_events: Array[RunEvent] = _events.slice(_round_start)
 	SummaryFold.fold_round(state.summaries[-1], round_events, player, state.table)
+	ObservationFold.fold_round(state.observations, round_events, player, state.table)

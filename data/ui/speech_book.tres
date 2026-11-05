@@ -1,0 +1,128 @@
+[gd_resource type="Resource" script_class="SpeechBook" load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://data/ui/speech_book.gd" id="1"]
+[ext_resource type="Script" path="res://data/ui/speech_line.gd" id="2"]
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("2")
+event = "call"
+text_key = "speech.call.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("2")
+event = "call"
+text_key = "speech.call.2"
+mood = "eager"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("2")
+event = "call"
+text_key = "speech.call.3"
+mood = "tired"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("2")
+event = "no_call"
+text_key = "speech.no_call.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_5"]
+script = ExtResource("2")
+event = "no_call"
+text_key = "speech.no_call.2"
+mood = "sour"
+
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("2")
+event = "no_call"
+text_key = "speech.no_call.3"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_7"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.pass.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_8"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.pass.2"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_9"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.pass.3"
+mood = "sour"
+
+[sub_resource type="Resource" id="line_10"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.pass.4"
+mood = "tired"
+
+[sub_resource type="Resource" id="line_11"]
+script = ExtResource("2")
+event = "cards_left"
+text_key = "speech.cards_left.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_12"]
+script = ExtResource("2")
+event = "cards_left"
+text_key = "speech.cards_left.2"
+mood = "eager"
+
+[sub_resource type="Resource" id="line_13"]
+script = ExtResource("2")
+event = "cards_left"
+text_key = "speech.cards_left.3"
+mood = "sly"
+
+[sub_resource type="Resource" id="line_14"]
+script = ExtResource("2")
+event = "bomb"
+text_key = "speech.bomb.1"
+mood = "eager"
+
+[sub_resource type="Resource" id="line_15"]
+script = ExtResource("2")
+event = "bomb"
+text_key = "speech.bomb.2"
+mood = "sly"
+
+[sub_resource type="Resource" id="line_16"]
+script = ExtResource("2")
+event = "bomb"
+text_key = "speech.bomb.3"
+mood = "eager"
+
+[sub_resource type="Resource" id="line_17"]
+script = ExtResource("2")
+event = "won"
+text_key = "speech.won.1"
+mood = "eager"
+
+[sub_resource type="Resource" id="line_18"]
+script = ExtResource("2")
+event = "won"
+text_key = "speech.won.2"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_19"]
+script = ExtResource("2")
+event = "lost"
+text_key = "speech.lost.1"
+mood = "tired"
+
+[sub_resource type="Resource" id="line_20"]
+script = ExtResource("2")
+event = "lost"
+text_key = "speech.lost.2"
+mood = "tired"
+
+[resource]
+script = ExtResource("1")
+lines = Array[ExtResource("2")]([SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6"), SubResource("line_7"), SubResource("line_8"), SubResource("line_9"), SubResource("line_10"), SubResource("line_11"), SubResource("line_12"), SubResource("line_13"), SubResource("line_14"), SubResource("line_15"), SubResource("line_16"), SubResource("line_17"), SubResource("line_18"), SubResource("line_19"), SubResource("line_20")])

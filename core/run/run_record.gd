@@ -20,6 +20,15 @@ var checkpoint: Dictionary = {}
 var commands: Array[Dictionary] = []
 
 
+## Schema 1 to 2: runs saved before the dossier start with nothing observed.
+static func migrate_from_1(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		if not checkpoint.has("observations"):
+			checkpoint["observations"] = {}
+	return data
+
+
 ## True when data has a checkpoint with every RunState field and well-formed commands,
 ## so a save that parses but lost its shape falls back to the backup.
 static func is_valid(data: Dictionary) -> bool:

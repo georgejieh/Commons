@@ -32,6 +32,8 @@ var coupons: int = 0
 var commons_pool: int = 0
 var landlord_seat: int = Seats.NONE
 var summaries: Array[SetSummary] = []
+## What the player has seen each villager do this run, for the dossier.
+var observations: Observations = Observations.new()
 
 
 func _init(seed_value: int) -> void:
@@ -60,6 +62,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.landlord_seat = int(data["landlord_seat"])
 	for summary_data: Dictionary in data["summaries"]:
 		state.summaries.append(SetSummary.from_dict(summary_data))
+	state.observations = Observations.from_dict(data["observations"])
 	return state
 
 
@@ -89,6 +92,7 @@ func to_dict() -> Dictionary:
 		"commons_pool": str(commons_pool),
 		"landlord_seat": landlord_seat,
 		"summaries": summary_data,
+		"observations": observations.to_dict(),
 	}
 
 

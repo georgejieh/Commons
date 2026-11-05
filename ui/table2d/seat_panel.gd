@@ -22,6 +22,7 @@ var _info: VBoxContainer = VBoxContainer.new()
 var _back: TextureRect = TextureRect.new()
 var _count_row: HBoxContainer = HBoxContainer.new()
 var _row: HBoxContainer = HBoxContainer.new()
+var _mood: String = ""
 
 
 func _init() -> void:
@@ -97,5 +98,15 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 		_role.text = tr("table.role.peasant").to_upper()
 
 
-func say(text: String) -> void:
+## Shows a line; mood is the line's mood tag, kept for the voice (P3B.13).
+func say(text: String, mood: String = "") -> void:
 	_speech.text = text
+	_mood = mood
+
+
+func speech() -> String:
+	return _speech.text
+
+
+func mood() -> String:
+	return _mood
