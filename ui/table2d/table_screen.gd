@@ -45,7 +45,10 @@ var _landlord: int = Seats.NONE
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	_place(_backdrop(RAIL_EDGE), Vector2.ZERO, Vector2(1920, 1080))
+	var rail: ColorRect = ColorRect.new()
+	rail.color = RAIL_EDGE
+	rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_place(rail, Vector2.ZERO, Vector2(1920, 1080))
 	var surface: TextureRect = ScreenKit.cover(ScreenKit.ART.table_surface)
 	_place(surface, Vector2(0, 72), Vector2(1920, 1008))
 	_place(_atmosphere, Vector2(0, 72), Vector2(1920, 1008))
@@ -87,6 +90,7 @@ func open(app: DemoApp) -> void:
 	_player.step = app.motion_step()
 	_player.motion = _motion
 	_motion.setup(self, bool(Settings.value("reduced_motion")))
+	Settings.changed.connect(_on_setting)
 	for lane: PlayLane in _plays.values():
 		lane.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
@@ -220,7 +224,7 @@ func _on_round_event(event: RoundEvent) -> void:
 			_plays[event.seat].clear()
 			_say(event.seat, tr("table.say.pass"))
 		RoundEvent.Type.TRICK_WON:
-			_clear_all_plays()
+			_sweep_plays(event.seat)
 		RoundEvent.Type.ROUND_ENDED:
 			var landlord_won: bool = event.seat == _landlord
 			var key: String = "banner.landlord_wins" if landlord_won else "banner.peasants_win"
@@ -260,6 +264,22 @@ func _on_drained() -> void:
 	_refresh_actions()
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
+
+
+## The trick's cards slide off toward whoever won it.
+func _sweep_plays(winner: int) -> void:
+	var toward: Control = _hand_view if winner == 0 else _seats.get(winner, null)
+	if toward == null:
+		_clear_all_plays()
+		return
+	var center: Vector2 = toward.global_position + toward.size / 2.0
+	for lane: PlayLane in _plays.values():
+		lane.sweep(center)
+
+
+func _on_setting(key: String) -> void:
+	if key == "reduced_motion":
+		_motion.set_reduced(bool(Settings.value("reduced_motion")))
 
 
 func _clear_all_plays() -> void:
@@ -378,10 +398,3 @@ func _place(node: Control, at: Vector2, extent: Vector2) -> void:
 	add_child(node)
 	node.position = at
 	node.size = extent
-
-
-static func _backdrop(color: Color) -> ColorRect:
-	var rect: ColorRect = ColorRect.new()
-	rect.color = color
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return rect

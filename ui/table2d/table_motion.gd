@@ -19,7 +19,15 @@ var _stopped_until: int = 0
 func setup(shaken: Control, reduced_motion: bool) -> void:
 	target = shaken
 	_origin = shaken.position
-	reduced = reduced_motion
+	set_reduced(reduced_motion)
+
+
+## Turning reduced motion on also stops any shake or hit-stop under way.
+func set_reduced(on: bool) -> void:
+	reduced = on
+	if on:
+		_trauma = 0.0
+		_stopped_until = 0
 
 
 ## Seconds for a preset duration, shortened under reduced motion.

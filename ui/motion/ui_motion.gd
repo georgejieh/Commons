@@ -50,16 +50,18 @@ static func enter(controls: Array[Control]) -> void:
 		tween.tween_property(control, "scale", Vector2.ONE, PRESETS.enter_time).set_delay(delay)
 
 
-## Rolls a label's number from one value to another; shown formats each step.
-static func count(label: Label, from: float, to: float, shown: Callable) -> void:
+## Rolls a label's number from one value to another; shown formats each step. Returns
+## the tween, or null when the number was set at once.
+static func count(label: Label, from: float, to: float, shown: Callable) -> Tween:
 	if reduced() or is_equal_approx(from, to):
 		label.text = shown.call(to)
-		return
+		return null
 	var tween: Tween = label.create_tween()
 	tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	tween.tween_method(
 		func(value: float) -> void: label.text = shown.call(value), from, to, PRESETS.count_time
 	)
+	return tween
 
 
 ## Lands a control like an ink stamp: from large and tilted down to its place.

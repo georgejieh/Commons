@@ -1,7 +1,8 @@
 class_name Ledger
 extends VBoxContainer
 ## The work-point ledger: one row per scored play, newest at the bottom. Rows are made
-## once and reused, so scoring a play instances nothing.
+## once and reused, so scoring a play instances nothing. The newest score counts up
+## from zero as its row is stamped in (P3B.6).
 
 const MAX_ROWS: int = 9
 ## Rows wrap inside the ledger's paper.
@@ -12,6 +13,7 @@ const STAMP: Color = Color("b02a17")
 var _pending_type: String = ""
 var _texts: PackedStringArray = []
 var _labels: Array[Label] = []
+var _counting: Tween = null
 
 
 func _ready() -> void:
@@ -40,13 +42,16 @@ func set_pending(type_text: String) -> void:
 
 func add_row(who: String, total: float) -> void:
 	# Two lines per entry: who and the score, then the hand type indented beneath.
-	var head: String = tr("ledger.row").format({"who": who, "total": Strings.score(total)})
-	_texts.append("%s\n  %s" % [head, _pending_type])
+	var type_text: String = _pending_type
+	_texts.append(_row_text(who, total, type_text))
 	if _texts.size() > MAX_ROWS:
 		_texts.remove_at(0)
 	_show()
 	var newest: Label = _labels[mini(_texts.size(), _labels.size()) - 1]
 	UiMotion.stamp(newest)
+	_counting = UiMotion.count(
+		newest, 0.0, total, func(shown: float) -> String: return _row_text(who, shown, type_text)
+	)
 
 
 func clear_rows() -> void:
@@ -58,6 +63,20 @@ func row_texts() -> PackedStringArray:
 	return _texts
 
 
+## Whether the newest score is still counting up.
+func is_counting() -> bool:
+	return _counting != null and _counting.is_running()
+
+
+func _row_text(who: String, total: float, type_text: String) -> String:
+	var head: String = tr("ledger.row").format({"who": who, "total": Strings.score(total)})
+	return "%s\n  %s" % [head, type_text]
+
+
 func _show() -> void:
+	# A count still rolling would write over a row that has moved up.
+	if _counting != null and _counting.is_valid():
+		_counting.kill()
+	_counting = null
 	for index: int in _labels.size():
 		_labels[index].text = _texts[index] if index < _texts.size() else ""
