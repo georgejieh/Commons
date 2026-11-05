@@ -82,3 +82,14 @@ godot --path . --script res://tools/table_perf.gd -- --seconds 30 --horror-ab
 | Dread layers, ms of GPU per frame | 0.093 | 0.064 | 0.048 | -0.160 | 0.046 | 0.048 |
 
 Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is noise. Together with the print pass (median 0.223 ms), the full-screen work costs about 0.27 ms, inside P3B.7's 1 ms budget.
+
+## Texture memory (P3C.4)
+
+`tools/texture_budget.gd` loads a seeded run on the table with every Cadre slot filled and reads the profiler's texture-memory monitor (`Performance.RENDER_TEXTURE_MEM_USED`). It runs in the cloud playtest (software OpenGL under xvfb) and fails the step when over the 128 MB budget.
+
+| Build | Texture memory | Result |
+| --- | --- | --- |
+| Before (every asset at full size) | 170.4 MB | Over |
+| Large art capped at 512 px on import, icons packed into one atlas | 89.2 MB | Pass |
+
+The art library preloads every texture, so this is the whole resident set, not just what one screen shows.
