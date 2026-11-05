@@ -19,7 +19,7 @@ modifier.cultural_revolution.text,"After any bomb, rank order inverts until the 
 modifier.promotion_of_the_masses.name,Promotion of the Masses
 modifier.promotion_of_the_masses.text,"3s rank above 2s, below the jokers."
 modifier.criticism_meeting.name,Criticism Meeting
-modifier.criticism_meeting.text,Your 2s rank as 3s this round.
+modifier.criticism_meeting.text,Your 2s rank as 3s.
 modifier.inverted_order.name,Inverted Order
 modifier.inverted_order.text,Rank order is reversed for your plays only.
 score.suffix.thousand,K
@@ -28,3 +28,205 @@ score.suffix.billion,B
 score.suffix.trillion,T
 save.restored_from_backup,"The latest save was damaged, so the save before it was loaded."
 save.unreadable,"Neither save could be read, so this run can't continue."
+pattern.pass,Pass
+pattern.single,Single
+pattern.pair,Pair
+pattern.trio,Trio
+pattern.trio_single,Trio with Single
+pattern.trio_pair,Trio with Pair
+pattern.straight,Straight
+pattern.pair_chain,Pair Run
+pattern.airplane,Airplane
+pattern.airplane_singles,Airplane with Singles
+pattern.airplane_pairs,Airplane with Pairs
+pattern.four_two_singles,Four with Two Singles
+pattern.four_two_pairs,Four with Two Pairs
+pattern.bomb,Bomb
+pattern.rocket,Rocket
+hand.reason.select,Choose cards to play.
+hand.reason.wait,Wait for your turn.
+hand.reason.does_not_beat,Doesn't beat the play on the table.
+hand.reason.empty,Choose cards to play.
+hand.reason.unknown_shape,These cards don't make a legal play.
+hand.reason.chain_too_short,This chain is too short.
+hand.reason.unchainable_rank,One of these ranks can't join a chain.
+hand.reason.bad_kickers,The kickers don't fit this play.
+hand.reason.bad_wings,These wings don't fit the Airplane.
+hand.reason.rocket_as_kicker,The Rocket can't be used as a kicker.
+card.rank.3,3
+card.rank.4,4
+card.rank.5,5
+card.rank.6,6
+card.rank.7,7
+card.rank.8,8
+card.rank.9,9
+card.rank.10,10
+card.rank.j,J
+card.rank.q,Q
+card.rank.k,K
+card.rank.a,A
+card.rank.2,2
+card.rank.small_joker,Small
+card.rank.big_joker,Big
+card.stamp.yours,Yours
+modifier.iron_rice_bowl.name,Iron Rice Bowl
+modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Zeal can't go above {zeal_cap}."
+modifier.stakhanovite.name,Stakhanovite
+modifier.stakhanovite.text,Your Straights gain {zeal_per_card} Zeal for each card past {base_length}.
+modifier.hidden_reserves.name,Hidden Reserves
+modifier.hidden_reserves.text,Your kickers score their base Grain.
+modifier.landlords_ledger.name,Landlord's Ledger
+modifier.landlords_ledger.text,"While you are landlord, kitty cards score their Grain twice."
+modifier.ration_cut.name,Ration Cut
+modifier.ration_cut.text,Your plays lose {zeal} Zeal.
+modifier.paperwork.name,Paperwork
+modifier.paperwork.text,Your Pairs score {percent}% of their Grain.
+modifier.morning_meeting.name,Morning Meeting
+modifier.morning_meeting.text,Your first play each round scores nothing.
+modifier.straightened_lines.name,Straightened Lines
+modifier.straightened_lines.text,Your Straights score {percent}% of their total.
+game.title,Commons
+title.subtitle,"Fight the Landlord, one Year at a time. Demo build."
+title.new_run,New Run
+title.continue,Continue
+title.settings,Settings
+title.quit,Quit
+seat.you,You
+villager.wang,Wang
+villager.zhao,Zhao
+table.landlord,LANDLORD
+table.cards_left,{count} cards
+table.role.landlord,Landlord
+table.role.teammate,Your teammate
+table.role.peasant,Peasant
+table.say.call,I'll call.
+table.say.pass,Pass.
+table.say.cards_left,{count} left.
+table.status,Year {year} · {set} · Round {round} of {rounds} · {progress} / {target}
+table.coupons,{count} coupons
+table.coupons.one,1 coupon
+set.type.0,Small Quota
+set.type.1,Large Quota
+set.type.2,Boss Quota
+meter.famine,Famine
+meter.denunciation,Denunciation
+ledger.title,Work-Point Ledger
+ledger.row,{who} · {total}
+action.play,Play
+action.pass,Pass
+action.hint,Hint
+action.sort,Sort
+action.rules,Rules
+action.call,Call
+action.decline,Pass
+board.empty,Empty
+need.prompt,Declare your need. The Commons is split by declared need.
+need.declare,Declare
+cheat.title,Hand types
+cheat.active,In play now
+cheat.none,Nothing changes the rules right now.
+cheat.order,"Rank order, low to high: {order}"
+cheat.example.single,7
+cheat.example.pair,7 7
+cheat.example.trio,7 7 7
+cheat.example.trio_single,7 7 7 + 3
+cheat.example.trio_pair,7 7 7 + 3 3
+cheat.example.straight,3 4 5 6 7
+cheat.example.pair_chain,3 3 4 4 5 5
+cheat.example.airplane,7 7 7 8 8 8
+cheat.example.airplane_singles,7 7 7 8 8 8 + 3 4
+cheat.example.airplane_pairs,7 7 7 8 8 8 + 3 3 4 4
+cheat.example.four_two_singles,7 7 7 7 + 3 4
+cheat.example.four_two_pairs,7 7 7 7 + 3 3 4 4
+cheat.example.bomb,7 7 7 7
+cheat.example.rocket,Small + Big
+intro.where,Year {year} · Quota {set} of 3
+intro.target,Score {target} in up to {rounds} rounds.
+intro.ladder,Later rounds add debuffs. They stack.
+intro.round,Round {round}
+intro.clean,Clean
+intro.clean_text,No debuff.
+intro.none_new,No new debuff
+intro.none_new_text,Earlier debuffs still apply.
+intro.begin,Begin
+summary.met,Quota met
+summary.missed,Quota missed
+summary.progress,{progress} of {target}
+summary.coupons,Coupons: {count}
+summary.famine,Famine: {value}
+summary.to_store,To the Store
+summary.to_year,End the Year
+store.title,State Store
+store.coupons,{count} coupons
+store.coupons.one,1 coupon
+store.reroll,Reroll · {price} coupons
+store.owned,Your Cadres: {names}
+store.none,none
+store.leave,Next Quota
+store.sold,Sold
+store.buy,Buy · {price} coupons
+year.title,Year {year} done
+year.coupons,Coupons left: {count}
+year.famine,Famine: {value}
+year.cadres,Cadres held: {count}
+year.next,Continue
+demo.done,End of the demo
+demo.done_text,The full game runs eight Years.
+demo.to_title,Back to Title
+settings.title,Settings
+settings.music_volume,Music
+settings.effects_volume,Effects
+settings.voice_volume,Voice
+settings.reduced_motion,Reduced motion
+settings.back,Back
+table.you.bidding,"Bidding for the landlord seat."
+table.you.landlord,"You are the landlord. You bank everything you score."
+table.you.peasant,"You are a peasant. Your score goes into the Commons."
+settings.post_process,Print grain and film effects
+title.eyebrow,A Fight the Landlord roguelike
+store.eyebrow,Between Quotas
+store.balance,Your coupons
+store.cadre,Cadre
+summary.scored,Scored
+summary.target,Target
+summary.coupons_label,Coupons
+summary.famine_label,Famine
+year.eyebrow,Year's end
+year.coupons_label,Coupons left
+year.cadres_label,Cadres held
+year.famine_label,Famine
+year.denunciation_label,Denunciation
+demo.eyebrow,Thank you for playing
+settings.eyebrow,Preferences
+settings.audio,Sound
+settings.display,Display
+banner.landlord_you,You take the landlord seat
+banner.landlord_other,{name} takes the landlord seat
+banner.bomb,Bomb
+banner.rocket,Rocket
+banner.landlord_wins,The landlord wins the round
+banner.peasants_win,The peasants win the round
+sort.rank,Rank
+sort.suit,Suit
+sort.groups,Groups
+action.sort_by,Sort: {mode}
+action.sort_tip,Sorted by {mode}. Click to change.
+action.hint_tip,Selects the play a careful player would make.
+hand.hint.pass,Passing is the best move here.
+cheat.eyebrow,Rules of the table
+cheat.close,Close
+pause.open,Menu
+pause.open_tip,"Pause, settings, or leave the table (Esc)"
+pause.eyebrow,Paused
+pause.title,The table waits
+pause.resume,Resume
+pause.settings,Settings
+pause.to_title,Return to title
+pause.quit,Quit game
+pause.saved,Your run saves after every move. Continue on the title screen picks up here.
+table.card_left,{count} card
+table.say.no_call,No call.
+table.bid_prompt,Call the landlord seat?
+summary.paid,The Quota paid {count} coupons.
+summary.paid.one,The Quota paid 1 coupon.
+summary.cost,"Famine rose by {rise}, to {famine}. At 100, the village starves."

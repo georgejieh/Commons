@@ -1,0 +1,66 @@
+name: Playtest
+
+# Plays the demo through its real UI on a cloud machine with a virtual display, and
+# uploads the screenshots and log, so visual testing never opens a window on a
+# developer's computer. Start it by pushing a tag on the commit to test:
+#   git tag playtest/<name> && git push origin playtest/<name>
+# or, once this file is on main: gh workflow run playtest.yml --ref <branch>
+# Download the results with: gh run download <run id> -n playtest
+on:
+  push:
+    tags: ["playtest/*"]
+  workflow_dispatch:
+    inputs:
+      rounds:
+        description: Rounds to play
+        default: "8"
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  playtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    container:
+      image: barichello/godot-ci:4.7.2@sha256:cdcca31e9194fd59a68a63f4b1b9c3981716819c520cd6f7966c5d72ca7246bd
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Install a virtual display and software OpenGL
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq xvfb xauth libgl1-mesa-dri libglx-mesa0 libgl1             libfontconfig1 libxcursor1 libxinerama1 libxrandr2 libxi6 libxkbcommon0             libxrender1 libxext6 libasound2t64 libpulse0 > /dev/null ||           apt-get install -y -qq xvfb xauth libgl1-mesa-dri libglx-mesa0 libgl1             libfontconfig1 libxcursor1 libxinerama1 libxrandr2 libxi6 libxkbcommon0             libxrender1 libxext6 libasound2 libpulse0 > /dev/null
+      - name: Import
+        run: godot --headless --path . --import
+      - name: Play through the UI
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          mkdir -p reports
+          xvfb-run -a -s "-screen 0 1920x1080x24" \
+            godot --path . --rendering-driver opengl3 --resolution 1920x1080 \
+            --script res://tools/playtest.gd -- --rounds "${{ inputs.rounds || '8' }}" \
+            --out reports/playtest 2>&1 | tee reports/playtest.log
+          grep -E 'rounds=' reports/playtest.log
+          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR' reports/playtest.log
+      - name: Screens
+        if: always()
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          xvfb-run -a -s "-screen 0 1920x1080x24" \
+            godot --path . --rendering-driver opengl3 --resolution 1920x1080 \
+            --script res://tools/demo_screenshots.gd -- --out reports/shots
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: playtest
+          path: |
+            reports/playtest
+            reports/shots
+            reports/playtest.log
+          retention-days: 14

@@ -3,7 +3,11 @@
 [ext_resource type="Script" path="res://data/run/debuff_pool.gd" id="1"]
 [ext_resource type="Resource" path="res://data/modifiers/criticism_meeting.tres" id="2"]
 [ext_resource type="Resource" path="res://data/modifiers/inverted_order.tres" id="3"]
+[ext_resource type="Resource" path="res://data/modifiers/ration_cut.tres" id="4"]
+[ext_resource type="Resource" path="res://data/modifiers/paperwork.tres" id="5"]
+[ext_resource type="Resource" path="res://data/modifiers/morning_meeting.tres" id="6"]
+[ext_resource type="Resource" path="res://data/modifiers/straightened_lines.tres" id="7"]
 
 [resource]
 script = ExtResource("1")
-debuffs = Array[Resource]([ExtResource("2"), ExtResource("3")])
+debuffs = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7")])

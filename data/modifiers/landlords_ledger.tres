@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "landlords_ledger"
+kind = 0
+tag = 1
+lever = 2
+tier = 0
+hooks = Array[String](["on_deal", "card_scored"])
+parameters = Dictionary[String, int]({})
+rarity = 1
+cost = 5
+name_key = "modifier.landlords_ledger.name"
+text_key = "modifier.landlords_ledger.text"

@@ -2,7 +2,8 @@ class_name Scorer
 extends RefCounted
 ## Scores a play as Grain × Zeal. Grain is the hand type's base plus each scored card.
 ## Hooks then apply additive Grain, additive Zeal and multiplicative Zeal, in that order.
-## Each bomb or rocket doubles Zeal. Kickers don't score.
+## Each bomb or rocket doubles Zeal, and a hook's Zeal cap applies last. Kickers don't
+## score.
 
 const DEFAULT_PARAMS: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 ## Largest value the display can show. NaN and infinity clamp to it.
@@ -16,7 +17,8 @@ static func score_play(
 	seat: int,
 	is_landlord: bool,
 	stack: ModifierStack,
-	params: ScoreParams = DEFAULT_PARAMS
+	params: ScoreParams = DEFAULT_PARAMS,
+	plays_before: int = 0
 ) -> ScoreBreakdown:
 	var scored: int = 0
 	for card: CardInstance in cards:
@@ -37,19 +39,25 @@ static func score_play(
 	var zeal: float = params.zeal_for(pattern.type, level)
 	breakdown.add_step(ScoreBreakdown.Step.BASE_ZEAL, zeal)
 	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, 0.0, 1.0)
+	play.plays_before = plays_before
+	play.grain = grain
+	play.card_grain = params.card_grain
 	stack.run_play_scored(play)
 	grain += play.add_grain
-	zeal = (zeal + play.add_zeal) * play.mul_zeal
+	zeal = maxf(params.min_zeal, (zeal + play.add_zeal) * play.mul_zeal)
 	breakdown.add_step(ScoreBreakdown.Step.ADD_GRAIN, play.add_grain)
 	breakdown.add_step(ScoreBreakdown.Step.ADD_ZEAL, play.add_zeal)
 	breakdown.add_step(ScoreBreakdown.Step.MUL_ZEAL, play.mul_zeal)
 	if pattern.type == Pattern.Type.BOMB or pattern.type == Pattern.Type.ROCKET:
 		zeal *= params.bomb_zeal_multiplier
 		breakdown.add_step(ScoreBreakdown.Step.BOMB_ZEAL, params.bomb_zeal_multiplier)
+	if zeal > play.zeal_cap:
+		zeal = play.zeal_cap
+		breakdown.add_step(ScoreBreakdown.Step.ZEAL_CAP, play.zeal_cap)
 
 	breakdown.grain = clamp_score(grain)
 	breakdown.zeal = clamp_score(zeal)
-	breakdown.total = clamp_score(grain * zeal)
+	breakdown.total = clamp_score(grain * zeal * play.total_scale)
 	return breakdown
 
 

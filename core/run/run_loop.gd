@@ -1,3 +1,5 @@
+# gdlint: disable=max-file-lines
+# Over 400 lines: the loop is the one command surface RunRecord replays, kept in one file.
 class_name RunLoop
 extends RefCounted
 ## Plays a run's Sets round by round: deal, bidding, plot swaps, play, scoring, banking,
@@ -5,18 +7,23 @@ extends RefCounted
 ## acts through commands; bots act in advance(). A Set is rebuilt from the RunState at
 ## its start plus the player's commands, which is how saves inside a Set resume.
 
-enum Awaiting { NOTHING, PLAYER_BID, PLAYER_SWAP, PLAYER_PLAY, PLAYER_NEED, SET_OVER, RUN_OVER }
+enum Awaiting {NOTHING, PLAYER_BID, PLAYER_SWAP, PLAYER_PLAY, PLAYER_NEED, SET_OVER, SHOP, RUN_OVER}
 enum Reason { OK, NOT_AWAITED, ILLEGAL }
 
 const PLAYER: int = 0
 const DEFAULT_PARAMS: RunParams = preload("res://data/run/default_run.tres")
 const DEFAULT_POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
+const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
+const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
 
 var state: RunState
 var flow: RunFlow
 var record: RunRecord = RunRecord.new()
 ## Called with the loop after every state move, for autosaves.
 var on_boundary: Callable = Callable()
+var set_log: SetLog = SetLog.new()
+## The state store between Sets. Read it freely; buy and reroll through the commands.
+var shop: RunShop
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -26,14 +33,12 @@ var _pool_by_id: Dictionary[String, ModifierDef] = {}
 var _stack: ModifierStack = ModifierStack.new()
 var _table: SeatRules
 var _seat: LandlordSeat = LandlordSeat.new()
-var _levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
-var _log: SetLog = SetLog.new()
+var _scoring: RoundScoring
 var _awaiting: Awaiting = Awaiting.NOTHING
 var _deal: DealResult
 var _bidding: Bidding
 var _round: RoundState
 var _round_seen: int = 0
-var _scores: PackedFloat64Array = PackedFloat64Array()
 
 
 ## configs has one entry per seat; the player's entry is unused.
@@ -50,9 +55,11 @@ func _init(
 	_sets = sets
 	_params = params
 	_pool = pool
-	for definition: ModifierDef in pool:
+	for definition: ModifierDef in pool + DEFAULT_CADRES.cadres:
 		_pool_by_id[definition.id] = definition
+	shop = RunShop.new(state, DEFAULT_SHOP, DEFAULT_CADRES.cadres)
 	_table = SeatRules.new(_stack)
+	_scoring = RoundScoring.new(HandLevels.new(Scorer.DEFAULT_PARAMS.max_level), _stack)
 
 
 func awaiting() -> Awaiting:
@@ -60,7 +67,7 @@ func awaiting() -> Awaiting:
 
 
 func events() -> Array[RunEvent]:
-	return _log.events()
+	return set_log.events()
 
 
 ## The current round, for views. Null between rounds.
@@ -68,18 +75,22 @@ func round_state() -> RoundState:
 	return _round
 
 
-## The player's cards: the dealt hand before play, the round's hand during it.
+## The player's cards: the dealt hand before play, the round's hand during it, and none
+## between deals.
 func player_cards() -> Array[CardInstance]:
 	if _round != null:
 		return _round.view_for(PLAYER).own_cards
 	var cards: Array[CardInstance] = []
+	if _deal == null:
+		return cards
 	for card: CardInstance in _deal.hands[PLAYER].cards():
 		cards.append(card.snapshot())
 	return cards
 
 
-func player_counts() -> PackedByteArray:
-	return _deal.hands[PLAYER].counts()
+## What the player's cards would score if played now, through the real scoring path.
+func preview_play(card_ids: Array[int]) -> PlayPreview:
+	return _scoring.preview(_round, PLAYER, card_ids)
 
 
 ## What the seat's rules and rank order are, for bots and hints.
@@ -97,7 +108,7 @@ func start_set() -> Reason:
 	if not RunFlow.allows(flow.state(), RunFlow.State.SET_INTRO):
 		return Reason.NOT_AWAITED
 	record.mark(state)
-	_log.start_set(state, set_number())
+	set_log.start_set(state, set_number())
 	_move(RunFlow.State.SET_INTRO)
 	state.round_index = 0
 	state.set_progress = 0.0
@@ -106,7 +117,7 @@ func start_set() -> Reason:
 		_pool, state.set_type, _sets.max_rounds(), state.streams.stream(RandomStreams.DEBUFF)
 	)
 	var ladder_text: String = ",".join(state.debuff_ladder.slice(1))
-	_log.add(
+	set_log.add(
 		RunEvent.new(RunEvent.Type.SET_STARTED, Seats.NONE, set_number(), target(), ladder_text)
 	)
 	_start_round()
@@ -126,8 +137,8 @@ func resume_at_checkpoint() -> void:
 
 ## Starts the round state.round_index names.
 func _start_round() -> void:
-	_log.start_round()
-	_rebuild_debuffs()
+	set_log.start_round()
+	_rebuild_modifiers()
 	_seat = LandlordSeat.new()
 	_seat.assign(state.landlord_seat)
 	_deal_cards()
@@ -170,7 +181,7 @@ func player_swap(hand_ids: Array[int], plot_ids: Array[int]) -> Reason:
 		return Reason.ILLEGAL
 	record.add({"type": "swap", "hand": hand_ids.duplicate(), "plot": plot_ids.duplicate()})
 	PlotSwap.apply(_deal.hands[PLAYER], state.inventory, hand_ids, plot_ids)
-	_log.add(RunEvent.new(RunEvent.Type.SWAPPED, PLAYER, hand_ids.size()))
+	set_log.add(RunEvent.new(RunEvent.Type.SWAPPED, PLAYER, hand_ids.size()))
 	_awaiting = Awaiting.NOTHING
 	_create_round()
 	advance()
@@ -200,12 +211,33 @@ func player_need(need: int) -> Reason:
 	return Reason.OK
 
 
-## Moves past a finished Set: the shop, a Year's end after the boss, then the next Set.
-func next_set() -> Reason:
+## Leaves a finished Set for the state store.
+func open_shop() -> Reason:
 	if _awaiting != Awaiting.SET_OVER:
 		return Reason.NOT_AWAITED
-	_awaiting = Awaiting.NOTHING
+	record.add({"type": "shop"})
 	_move(RunFlow.State.SHOP)
+	shop.open()
+	_awaiting = Awaiting.SHOP
+	return Reason.OK
+
+
+func player_buy(slot: int) -> Reason:
+	return _shop_command({"type": "buy", "slot": slot}, shop.buy.bind(slot))
+
+
+func player_reroll() -> Reason:
+	return _shop_command({"type": "reroll"}, shop.reroll)
+
+
+## Moves past a finished Set or the shop: a Year's end after the boss, then the next Set.
+## From a finished Set it passes through the shop without stopping.
+func next_set() -> Reason:
+	if _awaiting != Awaiting.SET_OVER and _awaiting != Awaiting.SHOP:
+		return Reason.NOT_AWAITED
+	if _awaiting == Awaiting.SET_OVER:
+		_move(RunFlow.State.SHOP)
+	_awaiting = Awaiting.NOTHING
 	if state.set_type == RunState.SetType.BOSS:
 		_move(RunFlow.State.YEAR_END)
 		if state.year == _sets.years():
@@ -218,20 +250,27 @@ func next_set() -> Reason:
 	return start_set()
 
 
+func sets() -> SetConfig:
+	return _sets
+
+
 ## Counts Sets across the run from 0.
 func set_number() -> int:
 	return (state.year - 1) * SetConfig.SETS_PER_YEAR + state.set_index
 
 
-func _rebuild_debuffs() -> void:
+## Cadres in slot order, then the ladder's debuffs so far, as the hook order says.
+func _rebuild_modifiers() -> void:
 	_stack.clear()
+	for cadre_id: String in state.inventory.cadres:
+		_stack.add(_pool_by_id[cadre_id], PLAYER)
 	for round_index: int in range(1, state.round_index + 1):
 		var id: String = state.debuff_ladder[round_index]
 		if id == RunState.NO_DEBUFF:
 			continue
 		_stack.add(_pool_by_id[id], PLAYER)
 		if round_index == state.round_index:
-			_log.add(RunEvent.new(RunEvent.Type.DEBUFF_ADDED, PLAYER, round_index, 0.0, id))
+			set_log.add(RunEvent.new(RunEvent.Type.DEBUFF_ADDED, PLAYER, round_index, 0.0, id))
 
 
 func _deal_cards() -> void:
@@ -240,7 +279,7 @@ func _deal_cards() -> void:
 		cards.append(CardInstance.from_deck_id(deck_id))
 	_deal = Dealer.deal(cards, state.streams.stream(RandomStreams.DEAL))
 	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal))
-	_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
+	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
 
 
 func _bot_bid() -> void:
@@ -261,18 +300,18 @@ func _bot_bid() -> void:
 
 func _record_bid(seat: int, claim: bool) -> void:
 	_bidding.act(seat, claim)
-	_log.add(RunEvent.new(RunEvent.Type.BID, seat, 1 if claim else 0))
+	set_log.add(RunEvent.new(RunEvent.Type.BID, seat, 1 if claim else 0))
 	if _bidding.phase() != Bidding.Phase.DONE:
 		return
 	if _bidding.needs_redeal():
-		_log.add(RunEvent.new(RunEvent.Type.REDEALT))
+		set_log.add(RunEvent.new(RunEvent.Type.REDEALT))
 		_move(RunFlow.State.BIDDING)
 		_deal_cards()
 		_bidding = Bidding.new(state.round_index % Seats.COUNT)
 		return
 	_seat.assign(_bidding.landlord())
 	state.landlord_seat = _bidding.landlord()
-	_log.add(RunEvent.new(RunEvent.Type.LANDLORD_CHOSEN, _bidding.landlord(), _bidding.stake()))
+	set_log.add(RunEvent.new(RunEvent.Type.LANDLORD_CHOSEN, _bidding.landlord(), _bidding.stake()))
 	_bidding = null
 	_begin_play()
 
@@ -288,8 +327,7 @@ func _begin_play() -> void:
 func _create_round() -> void:
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
-	_scores = PackedFloat64Array()
-	_scores.resize(Seats.COUNT)
+	_scoring.start(state.landlord_seat)
 	_stack.run_round_start(RoundContext.new(state.landlord_seat, Seats.NONE, 0))
 	_collect_round_events()
 
@@ -325,11 +363,10 @@ func _collect_round_events() -> void:
 	var round_events: Array[RoundEvent] = _round.events()
 	for index: int in range(_round_seen, round_events.size()):
 		var event: RoundEvent = round_events[index]
-		_log.add(RunEvent.wrap(event))
+		set_log.add(RunEvent.wrap(event))
 		if event.type == RoundEvent.Type.PLAYED:
-			var total: float = RoundTotals.play_score(event, _levels, state.landlord_seat, _stack)
-			_scores[event.seat] += total
-			_log.add(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total))
+			var total: float = _scoring.score(event)
+			set_log.add(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total))
 	_round_seen = round_events.size()
 
 
@@ -340,9 +377,9 @@ func _finish_round() -> void:
 	var landlord: int = state.landlord_seat
 	_stack.run_round_end(RoundContext.new(landlord, winner, finish))
 	var totals: PackedFloat64Array = RoundTotals.totals(
-		_scores, landlord, winner, finish, _table.rules_for(landlord)
+		_scoring.scores(), landlord, winner, finish, _table.rules_for(landlord)
 	)
-	RoundBanking.bank(state, totals, PLAYER, _log.events())
+	RoundBanking.bank(state, totals, PLAYER, set_log.events())
 	if landlord != PLAYER:
 		_awaiting = Awaiting.PLAYER_NEED
 		return
@@ -350,17 +387,17 @@ func _finish_round() -> void:
 
 
 func _split_commons(player_need: int) -> void:
-	RoundBanking.split(state, PLAYER, player_need, _configs, _params, _log.events())
+	RoundBanking.split(state, PLAYER, player_need, _configs, _params, set_log.events())
 	_end_round()
 
 
 func _end_round() -> void:
-	_log.end_round(state, PLAYER)
+	set_log.end_round(state, PLAYER)
 	var landlord_won: bool = _round.landlord_won()
 	_seat.record_round(landlord_won)
 	state.landlord_seat = _seat.holder()
 	var kept: RunEvent.Type = RunEvent.Type.SEAT_KEPT if landlord_won else RunEvent.Type.SEAT_LOST
-	_log.add(RunEvent.new(kept, _round.landlord()))
+	set_log.add(RunEvent.new(kept, _round.landlord()))
 	_round = null
 	_deal = null
 	state.round_index += 1
@@ -377,13 +414,24 @@ func _end_set() -> void:
 		state.coupons += _sets.reward(state.set_type)
 	else:
 		RunMeters.raise_famine(
-			state, _params.famine_on_missed_target, _stack, _params, PLAYER, _log.events()
+			state, _params.famine_on_missed_target, _stack, _params, PLAYER, set_log.events()
 		)
 	_stack.clear()
 	state.landlord_seat = Seats.NONE
-	_log.add(RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1 if met else 0, state.set_progress))
+	set_log.add(
+		RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1 if met else 0, state.set_progress)
+	)
 	_move(RunFlow.State.SET_END, true)
 	_awaiting = Awaiting.SET_OVER
+
+
+func _shop_command(command: Dictionary, act: Callable) -> Reason:
+	if _awaiting != Awaiting.SHOP:
+		return Reason.NOT_AWAITED
+	if act.call() != RunShop.Reason.OK:
+		return Reason.ILLEGAL
+	record.add(command)
+	return Reason.OK
 
 
 ## Every move the loop makes is in the table, so a refusal is a bug. A checkpoint move

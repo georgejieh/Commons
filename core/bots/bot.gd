@@ -58,3 +58,13 @@ static func declare_need(
 		return true_need
 	var extra: int = roundi(true_need * config.lie_share)
 	return true_need + maxi(extra, BotConfig.TABLE.lie_floor)
+
+
+## A hand split into its fewest plays (P2.2), for a view that sorts cards by group.
+static func suggest_groups(
+	counts: PackedByteArray, table: BotTable, config: BotConfig
+) -> Array[Pattern]:
+	var search: HandDecomposer = HandDecomposer.new(
+		table.rules, table.rank_map, config.weights.memo_cap
+	)
+	return search.decompose(counts).groups

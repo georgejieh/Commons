@@ -82,17 +82,17 @@ FOUR_TWO_PAIRS grain=106.0 zeal=7.0 total=742.0
   SPRING first=true total=2226.0
   ANTI_SPRING first=false total=1484.0
   ANTI_SPRING first=true total=2226.0
-BOMB grain=136.0 zeal=16.0 total=2176.0
-  NORMAL first=false total=2176.0
-  NORMAL first=true total=3264.0
-  SPRING first=false total=4352.0
-  SPRING first=true total=6528.0
-  ANTI_SPRING first=false total=4352.0
-  ANTI_SPRING first=true total=6528.0
-ROCKET grain=177.0 zeal=20.0 total=3540.0
-  NORMAL first=false total=3540.0
-  NORMAL first=true total=5310.0
-  SPRING first=false total=7080.0
-  SPRING first=true total=10620.0
-  ANTI_SPRING first=false total=7080.0
-  ANTI_SPRING first=true total=10620.0
+BOMB grain=136.0 zeal=8.0 total=1088.0
+  NORMAL first=false total=1088.0
+  NORMAL first=true total=1632.0
+  SPRING first=false total=2176.0
+  SPRING first=true total=3264.0
+  ANTI_SPRING first=false total=2176.0
+  ANTI_SPRING first=true total=3264.0
+ROCKET grain=177.0 zeal=10.0 total=1770.0
+  NORMAL first=false total=1770.0
+  NORMAL first=true total=2655.0
+  SPRING first=false total=3540.0
+  SPRING first=true total=5310.0
+  ANTI_SPRING first=false total=3540.0
+  ANTI_SPRING first=true total=5310.0

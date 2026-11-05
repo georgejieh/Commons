@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SettingsParams" format=3]
+
+[ext_resource type="Script" path="res://data/settings/settings_params.gd" id="1_params"]
+
+[resource]
+script = ExtResource("1_params")
+music_volume = 0.8
+effects_volume = 0.8
+voice_volume = 0.8
+reduced_motion = false
+post_process = true

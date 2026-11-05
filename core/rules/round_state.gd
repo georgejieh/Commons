@@ -136,6 +136,37 @@ func view_for(seat: int) -> SeatView:
 	return SeatView.new(seat, public_view(), _hands[seat].counts(), cards)
 
 
+## How the seat's cards read against the table, without playing them. A seat other than
+## the one to act gets OUT_OF_TURN with its pattern, so a view can still name it.
+func read_play(seat: int, card_ids: Array[int]) -> PlayReading:
+	if is_over():
+		return PlayReading.new(Reason.ROUND_OVER)
+	_sync_rules()
+	var reading: PlayReading = PlayReading.new(Reason.OK)
+	var seen: Dictionary[int, bool] = {}
+	for card_id: int in card_ids:
+		var card: CardInstance = _hands[seat].find(card_id)
+		if seen.has(card_id) or card == null:
+			reading.reason = Reason.REPEATED_CARD if seen.has(card_id) else Reason.UNKNOWN_CARD
+			return reading
+		seen[card_id] = true
+		reading.cards.append(card)
+	var rules: RuleSet = _table.rules_for(seat)
+	var classified: Classification = CardSelection.classify_cards(
+		reading.cards, rules, _table.map_for(seat)
+	)
+	reading.invalid_reason = classified.reason
+	if not classified.is_valid():
+		reading.reason = Reason.ILLEGAL_PLAY
+		return reading
+	reading.pattern = classified.pattern
+	if seat != _turn:
+		reading.reason = Reason.OUT_OF_TURN
+	elif _current != null and not PlayComparator.beats(reading.pattern, _current, rules):
+		reading.reason = Reason.DOES_NOT_BEAT
+	return reading
+
+
 func _apply_pass() -> Reason:
 	if _current == null:
 		return Reason.CANNOT_PASS_ON_LEAD
@@ -154,26 +185,10 @@ func _apply_pass() -> Reason:
 
 
 func _apply_play(action: RoundAction) -> Reason:
-	var hand: Hand = _hands[_turn]
-	var cards: Array[CardInstance] = []
-	var seen: Dictionary[int, bool] = {}
-	for card_id: int in action.card_ids:
-		if seen.has(card_id):
-			return Reason.REPEATED_CARD
-		seen[card_id] = true
-		var card: CardInstance = hand.find(card_id)
-		if card == null:
-			return Reason.UNKNOWN_CARD
-		cards.append(card)
-
-	var rules: RuleSet = _table.rules_for(_turn)
-	var reading: Classification = CardSelection.classify_cards(cards, rules, _table.map_for(_turn))
-	if not reading.is_valid():
-		return Reason.ILLEGAL_PLAY
-	if _current != null and not PlayComparator.beats(reading.pattern, _current, rules):
-		return Reason.DOES_NOT_BEAT
-	_commit_play(cards, action.card_ids, reading.pattern)
-	return Reason.OK
+	var reading: PlayReading = read_play(_turn, action.card_ids)
+	if reading.reason == Reason.OK:
+		_commit_play(reading.cards, action.card_ids, reading.pattern)
+	return reading.reason
 
 
 func _commit_play(cards: Array[CardInstance], card_ids: Array[int], pattern: Pattern) -> void:

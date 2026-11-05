@@ -7,7 +7,13 @@ extends RefCounted
 ## Each command type and the fields its replay reads.
 ## Array values, because a constant of PackedStringArray values reads garbage in 4.7.2.
 const COMMAND_FIELDS: Dictionary[String, Array] = {
-	"bid": ["claim"], "swap": ["hand", "plot"], "play": ["cards"], "need": ["need"]
+	"bid": ["claim"],
+	"swap": ["hand", "plot"],
+	"play": ["cards"],
+	"need": ["need"],
+	"shop": [],
+	"buy": ["slot"],
+	"reroll": [],
 }
 
 var checkpoint: Dictionary = {}
@@ -50,6 +56,9 @@ static func resume(
 	var loop: RunLoop = RunLoop.new(
 		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool
 	)
+	# The resumed loop's own record starts from the same checkpoint, so its next save
+	# keeps it even when no new Set starts first, as in the store.
+	loop.record.mark(loop.state)
 	loop.resume_at_checkpoint()
 	for command: Dictionary in data["commands"]:
 		if _replay(loop, command) != RunLoop.Reason.OK:
@@ -67,6 +76,12 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_play(_ids(command["cards"]))
 		"need":
 			return loop.player_need(int(command["need"]))
+		"shop":
+			return loop.open_shop()
+		"buy":
+			return loop.player_buy(int(command["slot"]))
+		"reroll":
+			return loop.player_reroll()
 	return RunLoop.Reason.ILLEGAL
 
 
