@@ -229,3 +229,9 @@ static func face_region(size: Vector2, face: Rect2, aspect: float) -> Rect2:
 ## A Cadre's art for the current corruption stage.
 static func cadre_art(cadre_id: String) -> Texture2D:
 	return ArtStages.resolve(ART.cadre(cadre_id))
+
+
+## A Cadre's name over its rules, for its tooltip.
+static func cadre_tip(controller: RunController, cadre_id: String) -> String:
+	var name: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
+	return "%s\n%s" % [name, controller.modifier_text(cadre_id)]
