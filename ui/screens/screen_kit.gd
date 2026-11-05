@@ -139,7 +139,7 @@ static func halo_theme() -> Theme:
 ## A texture that fills its parent, cropped to keep its shape.
 static func cover(texture: Texture2D) -> TextureRect:
 	var rect: TextureRect = TextureRect.new()
-	rect.texture = texture
+	rect.texture = ArtStages.resolve(texture)
 	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -150,7 +150,7 @@ static func cover(texture: Texture2D) -> TextureRect:
 ## Aged card stock with its ink border kept at the edges, for panels drawn by hand.
 static func paper_style(margin: int = 18) -> StyleBoxTexture:
 	var style: StyleBoxTexture = StyleBoxTexture.new()
-	style.texture = ART.panel_paper
+	style.texture = ArtStages.resolve(ART.panel_paper)
 	style.set_texture_margin_all(CommonsTheme.SHEET_BORDER)
 	style.set_content_margin_all(margin)
 	return style
@@ -224,3 +224,8 @@ static func face_region(size: Vector2, face: Rect2, aspect: float) -> Rect2:
 	var corner: Vector2 = head.get_center() - want / 2.0
 	corner = corner.clamp(Vector2.ZERO, size - want)
 	return Rect2(corner, want)
+
+
+## A Cadre's art for the current corruption stage.
+static func cadre_art(cadre_id: String) -> Texture2D:
+	return ArtStages.resolve(ART.cadre(cadre_id))

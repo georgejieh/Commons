@@ -23,6 +23,8 @@ const BOARD_STATES: Dictionary[String, Vector3] = {
 	"landlord": Vector3(10, 10, 1),
 }
 
+## The corruption stage the targets were set for, 0 to 9.
+var stage: int = 0
 var weights: PackedFloat32Array = []
 var targets: PackedFloat32Array = []
 
@@ -37,6 +39,7 @@ func _init(config: HorrorConfig) -> void:
 
 ## New targets from the meters (0 to 100), the player's class and the corruption stage.
 func set_inputs(famine: int, denunciation: int, landlord: bool, corruption_stage: int) -> void:
+	stage = clampi(corruption_stage, 0, CORRUPTION_STAGES - 1)
 	for index: int in _config.layers.size():
 		var layer: HorrorLayer = _config.layers[index]
 		var value: float = input_value(

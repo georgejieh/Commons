@@ -141,7 +141,7 @@ func seat_name(seat: int) -> String:
 func seat_portrait(seat: int, box: Vector2 = Vector2.ZERO) -> Texture2D:
 	if seat >= DEMO.portraits.size() or DEMO.portraits[seat] == null:
 		return null
-	var picture: Texture2D = DEMO.portraits[seat]
+	var picture: Texture2D = ArtStages.resolve(DEMO.portraits[seat])
 	if box == Vector2.ZERO or seat >= DEMO.portrait_faces.size():
 		return picture
 	return ScreenKit.face_crop(picture, DEMO.portrait_faces[seat], box.x / box.y)

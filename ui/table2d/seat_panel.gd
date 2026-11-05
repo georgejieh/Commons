@@ -66,7 +66,7 @@ func _init() -> void:
 	_speech.custom_minimum_size = Vector2(200, 0)
 	_speech.max_lines_visible = 2
 	_row.add_child(_portrait)
-	_back.texture = ScreenKit.ART.card_back
+	_back.texture = ArtStages.resolve(ScreenKit.ART.card_back)
 	_back.custom_minimum_size = Vector2(30, 42)
 	_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT

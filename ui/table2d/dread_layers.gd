@@ -59,7 +59,7 @@ func setup(
 	_materials = materials
 	_slots = slots
 	for slot: String in slots:
-		_slot_clean[slot] = slots[slot].texture
+		_slot_clean[slot] = ArtStages.base_of(slots[slot].texture)
 	_dressing = dressing
 	_seats = seats
 	_rng.seed = FLICKER_SEED
@@ -106,16 +106,9 @@ func force(famine: int, denunciation: int, landlord: bool, stage: int = 0) -> vo
 	apply()
 
 
-## The hidden corruption stage. It stays 0 until the profile save holds it (ADR 0018);
-## a development build can set it with --corruption-stage N to check each stage.
+## The hidden corruption stage (ADR 0018), from ArtStages.
 static func corruption() -> int:
-	if not OS.is_debug_build():
-		return 0
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = args.find("--corruption-stage")
-	if at >= 0 and at + 1 < args.size():
-		return clampi(args[at + 1].to_int(), 0, BoardState.CORRUPTION_STAGES - 1)
-	return 0
+	return ArtStages.stage()
 
 
 ## Writes the current weights into every material and piece.
@@ -148,11 +141,11 @@ func clear() -> void:
 		_param_material[index].set_shader_parameter(_param_name[index], _param_clean[index])
 
 
-## Each slot shows the last layer's swap whose weight has reached SWAP_AT, or its own
-## texture. Assigning the same texture again costs nothing.
+## Each slot shows its art for the board's corruption stage, unless a layer's swap has
+## reached SWAP_AT; the last such layer wins. Assigning the same texture costs nothing.
 func _apply_swaps(intensity: float) -> void:
 	for slot: String in _slots:
-		var shown: Texture2D = _slot_clean[slot]
+		var shown: Texture2D = ArtStages.resolve(_slot_clean[slot], board.stage)
 		for index: int in config.layers.size():
 			var layer: HorrorLayer = config.layers[index]
 			if (

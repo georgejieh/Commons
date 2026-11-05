@@ -30,7 +30,7 @@ func _entry(definition: ModifierDef) -> Control:
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
 	var art: TextureRect = TextureRect.new()
-	art.texture = ScreenKit.ART.cadre(definition.id)
+	art.texture = ScreenKit.cadre_art(definition.id)
 	art.custom_minimum_size = ART_SIZE
 	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED

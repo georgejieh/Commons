@@ -86,7 +86,7 @@ func _item(slot: int, cadre_id: String) -> Control:
 		UiMotion.stamp(sold)
 		return ScreenKit.card_panel(card)
 	var controller: RunController = _app.controller
-	var picture: TextureRect = ScreenKit.cover(ScreenKit.ART.cadre(cadre_id))
+	var picture: TextureRect = ScreenKit.cover(ScreenKit.cadre_art(cadre_id))
 	picture.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	picture.custom_minimum_size = Vector2(0, 190)
 	card.add_child(picture)

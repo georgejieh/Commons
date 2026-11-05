@@ -47,4 +47,4 @@ func show_cadres(cadre_ids: Array[String]) -> void:
 		_labels[index].text = tr("modifier.%s.name" % cadre_ids[index]) if held else ""
 		# An empty slot is a faint pin mark on the board, so it doesn't pull the eye.
 		_cards[index].modulate.a = 1.0 if held else EMPTY_ALPHA
-		_pictures[index].texture = ScreenKit.ART.cadre(cadre_ids[index]) if held else null
+		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null
