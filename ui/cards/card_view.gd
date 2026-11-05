@@ -1,15 +1,15 @@
 class_name CardView
 extends Control
-## One card drawn from layers: frame, rank glyph, suit icon, enhancement overlay, seal
-## and owner stamp. bind() is the only way to show a card; views come from CardPool and
-## are reused, never instanced during a round.
+## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
+## a middle picture (court or joker art, or the suit), enhancement overlay, seal and
+## owner stamp. The parts come from CardArt, so no face is baked. bind() is the only
+## way to show a card; views come from CardPool and are reused, never instanced during
+## a round.
 
 signal pressed(card_id: int)
 signal hovered(card_id: int)
 
-const SUIT_GLYPHS: PackedStringArray = ["♠", "♥", "♣", "♦"]
 const RED_SUITS: Array[int] = [1, 3]
-const JOKER_GLYPH: String = "★"
 const INK: Color = Color("1e1a16")
 const RED: Color = Color("b02a17")
 const HINT: Color = Color("c9a227")
@@ -20,8 +20,9 @@ const CURSOR_BAR: float = 8.0
 const GLYPH_SIZE: int = 40
 const JOKER_SIZE: int = 24
 const TILT_SHADER: Shader = preload("res://shaders/card_tilt.gdshader")
-## Aged card stock under every face; the scene's flat style is the fallback.
-const FACE: Texture2D = preload("res://art/cards/card_face.png")
+const ART: CardArt = preload("res://data/ui/card_art.tres")
+## How strongly a pip card's middle suit shows, so the corner rank stays the focus.
+const PIP_ALPHA: float = 0.35
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -40,6 +41,9 @@ const RANK_KEYS: PackedStringArray = [
 	"card.rank.big_joker",
 ]
 
+## Tests may swap the parts; null means the shipped art.
+static var art_override: CardArt = null
+
 var card_id: int = -1
 
 var _cursor_mark: ColorRect = ColorRect.new()
@@ -49,7 +53,8 @@ var _tweens: Array[Tween] = []
 
 @onready var _frame: Panel = $Frame
 @onready var _rank: Label = $Frame/Rank
-@onready var _suit: Label = $Frame/Suit
+@onready var _suit: TextureRect = $Frame/Suit
+@onready var _picture: TextureRect = $Frame/Picture
 @onready var _enhancement: ColorRect = $Frame/Enhancement
 @onready var _seal: Label = $Frame/Seal
 @onready var _stamp: Label = $Frame/Stamp
@@ -60,7 +65,7 @@ func _ready() -> void:
 	# The scene shares one LabelSettings; each card sizes its own glyphs.
 	_rank.label_settings = _rank.label_settings.duplicate()
 	var stock: StyleBoxTexture = StyleBoxTexture.new()
-	stock.texture = ArtStages.resolve(FACE)
+	stock.texture = ArtStages.resolve(parts().frame)
 	_frame.add_theme_stylebox_override("panel", stock)
 	var tilt: ShaderMaterial = ShaderMaterial.new()
 	tilt.shader = TILT_SHADER
@@ -72,6 +77,11 @@ func _ready() -> void:
 	_cursor_mark.offset_top = CURSOR_BAR
 	_cursor_mark.offset_bottom = CURSOR_BAR * 2.0
 	add_child(_cursor_mark)
+
+
+## The card parts in use.
+static func parts() -> CardArt:
+	return art_override if art_override != null else ART
 
 
 ## A tween on this view that settle() can stop.
@@ -107,10 +117,15 @@ func bind(card: CardInstance) -> void:
 	_rank.text = tr(RANK_KEYS[rank])
 	var joker: bool = rank >= Ranks.SMALL_JOKER
 	_rank.label_settings.font_size = JOKER_SIZE if joker else GLYPH_SIZE
-	_suit.text = JOKER_GLYPH if joker else SUIT_GLYPHS[card.suit()]
+	var art: CardArt = parts()
+	_suit.visible = not joker
+	if not joker:
+		_suit.texture = ArtStages.resolve(art.suits[card.suit()])
+	_picture.texture = ArtStages.resolve(art.picture(rank, card.suit()))
+	var pip: bool = rank < Ranks.JACK or (rank > Ranks.KING and not joker)
+	_picture.modulate.a = PIP_ALPHA if pip else 1.0
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
 	_rank.modulate = RED if red else INK
-	_suit.modulate = _rank.modulate
 	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
 	_stamp.visible = card.owner_stamp() != CardInstance.NO_OWNER
