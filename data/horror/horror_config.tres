@@ -3,6 +3,12 @@
 [ext_resource type="Script" path="res://data/horror/horror_config.gd" id="1"]
 [ext_resource type="Script" path="res://data/horror/horror_layer.gd" id="2"]
 [ext_resource type="Script" path="res://data/horror/flicker_def.gd" id="3"]
+[ext_resource type="Script" path="res://data/horror/art_variant.gd" id="4"]
+[ext_resource type="Texture2D" path="res://art/backdrops/table_surface.png" id="5"]
+[ext_resource type="Texture2D" path="res://art/backdrops/stages/table_surface_s0.png" id="6"]
+[ext_resource type="Texture2D" path="res://art/backdrops/stages/table_surface_s4.png" id="7"]
+[ext_resource type="Texture2D" path="res://art/cards/card_back.png" id="8"]
+[ext_resource type="Texture2D" path="res://art/cards/stages/card_back_s0.png" id="9"]
 
 [sub_resource type="Resource" id="layer_famine"]
 script = ExtResource("2")
@@ -68,8 +74,19 @@ min_weight = 0.6
 cooldown = Vector2(30.0, 60.0)
 duration = 0.1
 
+[sub_resource type="Resource" id="art_table_surface"]
+script = ExtResource("4")
+base = ExtResource("5")
+stages = Array[Texture2D]([ExtResource("6"), null, null, null, ExtResource("7"), null, null, ExtResource("5")])
+
+[sub_resource type="Resource" id="art_card_back"]
+script = ExtResource("4")
+base = ExtResource("8")
+stages = Array[Texture2D]([ExtResource("9"), null, null, null, null, ExtResource("8")])
+
 [resource]
 script = ExtResource("1")
 layers = Array[ExtResource("2")]([SubResource("layer_famine"), SubResource("layer_denunciation"), SubResource("layer_struggle"), SubResource("layer_landlord"), SubResource("layer_corruption")])
 flickers = Array[ExtResource("3")]([SubResource("flicker_1"), SubResource("flicker_2"), SubResource("flicker_3")])
 ease_seconds = 4.0
+art = Array[ExtResource("4")]([SubResource("art_table_surface"), SubResource("art_card_back")])

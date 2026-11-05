@@ -60,6 +60,15 @@ func test_the_table_shows_the_stage_art_and_follows_a_stage_change() -> void:
 	assert_object(back.texture).is_same(_early)
 
 
+func test_the_shipped_variants_open_innocent_and_end_on_the_late_art() -> void:
+	ArtStages.variants_override = []
+	for variant: ArtVariant in ArtStages.CONFIG.art:
+		assert_int(variant.stages.size()).is_less_equal(BoardState.CORRUPTION_STAGES)
+		assert_object(ArtStages.resolve(variant.base, 0)).is_not_same(variant.base)
+		var last: int = BoardState.CORRUPTION_STAGES - 1
+		assert_object(ArtStages.resolve(variant.base, last)).is_same(variant.base)
+
+
 func test_screens_built_later_use_the_new_stage() -> void:
 	ArtStages.stage_override = 9
 	var rect: TextureRect = auto_free(ScreenKit.cover(ScreenKit.ART.table_surface))

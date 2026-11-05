@@ -1,6 +1,7 @@
 extends SceneTree
-## Renders the table in each of the Plan's seven board states (P3B.12), plus the last
-## corruption stage, and saves one screenshot per state for checking by eye. Needs a
+## Renders the table in each of the Plan's seven board states (P3B.12), the last
+## corruption stage, and the clean board at every stage, and saves one screenshot per
+## state for checking by eye. Needs a
 ## real window, not --headless:
 ##   godot --path . --script res://tools/board_states.gd -- --out reports/board_states
 ## Development only; tools/ never ships.
@@ -39,6 +40,11 @@ func _run() -> void:
 	dread.call("force", 10, 10, false, LAST_STAGE)
 	await _settle()
 	await _shot("corruption_stage_%d" % LAST_STAGE)
+	# The clean board at every corruption stage, to check the stage art by eye.
+	for stage: int in LAST_STAGE + 1:
+		dread.call("force", 0, 0, false, stage)
+		await _settle()
+		await _shot("clean_stage_%d" % stage)
 	quit(0)
 
 
