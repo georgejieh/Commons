@@ -137,8 +137,14 @@ func seat_name(seat: int) -> String:
 	return tr(DEMO.name_keys[seat])
 
 
-func seat_portrait(seat: int) -> Texture2D:
-	return DEMO.portraits[seat] if seat < DEMO.portraits.size() else null
+## The seat's portrait cropped around its face for a box of the given shape.
+func seat_portrait(seat: int, box: Vector2 = Vector2.ZERO) -> Texture2D:
+	if seat >= DEMO.portraits.size() or DEMO.portraits[seat] == null:
+		return null
+	var picture: Texture2D = DEMO.portraits[seat]
+	if box == Vector2.ZERO or seat >= DEMO.portrait_faces.size():
+		return picture
+	return ScreenKit.face_crop(picture, DEMO.portrait_faces[seat], box.x / box.y)
 
 
 func need_cap() -> int:

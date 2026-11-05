@@ -23,6 +23,8 @@ const HALO_SIZE: int = 10
 ## Page margins and the widest a content column grows.
 const PAGE_MARGIN: int = 88
 const MIN_BUTTON_WIDTH: int = 260
+## Space kept around a face in a portrait box, as a share of the head's size per side.
+const FACE_MARGIN: float = 0.12
 
 
 ## A full-screen page over a backdrop, or over paper when there is none, holding a
@@ -197,3 +199,28 @@ static func reveal(column: VBoxContainer) -> void:
 static func paper_outline(label: Label) -> void:
 	label.add_theme_color_override("font_outline_color", STYLE.paper)
 	label.add_theme_constant_override("outline_size", 8)
+
+
+## A portrait cropped to a box of aspect (width / height), centered on the face.
+static func face_crop(picture: Texture2D, face: Rect2, aspect: float) -> Texture2D:
+	var crop: AtlasTexture = AtlasTexture.new()
+	crop.atlas = picture
+	crop.region = face_region(picture.get_size(), face, aspect)
+	return crop
+
+
+## The pixel region of an image of size that shows the whole face (fractions of the
+## image) with a margin, at the given aspect, centered on the face and kept inside the
+## image.
+static func face_region(size: Vector2, face: Rect2, aspect: float) -> Rect2:
+	var head: Rect2 = Rect2(face.position * size, face.size * size)
+	var want: Vector2 = head.size * (1.0 + 2.0 * FACE_MARGIN)
+	if want.x / want.y < aspect:
+		want.x = want.y * aspect
+	else:
+		want.y = want.x / aspect
+	var fit: float = minf(1.0, minf(size.x / want.x, size.y / want.y))
+	want *= fit
+	var corner: Vector2 = head.get_center() - want / 2.0
+	corner = corner.clamp(Vector2.ZERO, size - want)
+	return Rect2(corner, want)

@@ -188,7 +188,7 @@ func _exit_tree() -> void:
 func _build_seats() -> void:
 	for seat: int in [1, 2]:
 		var panel: SeatPanel = SeatPanel.new()
-		panel.setup(seat, _app.seat_name(seat), _app.seat_portrait(seat))
+		panel.setup(seat, _app.seat_name(seat), _app.seat_portrait(seat, SeatPanel.PICTURE_BOX))
 		var x: float = (
 			PLAY_CENTER + SEAT_OFFSET if seat == 1 else PLAY_CENTER - SEAT_OFFSET - SEAT_WIDTH
 		)

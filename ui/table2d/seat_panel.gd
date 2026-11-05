@@ -8,6 +8,9 @@ const INK: Color = Color("1e1a16")
 const LANDLORD_RED: Color = Color("9e1b16")
 const GOLD: Color = Color("c9a227")
 const PAPER: Color = Color("d9c8a4")
+## The portrait's frame, and the picture inside it after the frame's 4 px edge.
+const PORTRAIT_BOX: Vector2 = Vector2(110, 138)
+const PICTURE_BOX: Vector2 = Vector2(102, 130)
 
 var seat: int = -1
 
@@ -41,7 +44,7 @@ func _init() -> void:
 	tag.content_margin_right = 10
 	_banner.add_theme_stylebox_override("normal", tag)
 	_banner.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_portrait.custom_minimum_size = Vector2(110, 138)
+	_portrait.custom_minimum_size = PORTRAIT_BOX
 	_portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_portrait.color = PAPER
 	_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE

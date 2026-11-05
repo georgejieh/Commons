@@ -40,7 +40,7 @@ func entries(seat: int) -> PackedStringArray:
 func _villager(app: DemoApp, state: RunState, seat: int) -> Control:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(420, 0))
 	var portrait: TextureRect = TextureRect.new()
-	portrait.texture = app.seat_portrait(seat)
+	portrait.texture = app.seat_portrait(seat, PORTRAIT_SIZE)
 	portrait.custom_minimum_size = PORTRAIT_SIZE
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
