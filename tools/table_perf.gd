@@ -4,7 +4,9 @@ extends SceneTree
 ## while a round was in play. Needs a real window, not --headless:
 ##   godot --path . --script res://tools/table_perf.gd -- --seconds 40
 ## With --stress it instead shows all 54 cards at once, moving every frame, from the
-## table's own pool, and reports the same measures.
+## table's own pool, and reports the same measures. With --post-ab it also times the GPU
+## per frame, switching the post-process pass on and off every POST_BLOCK frames, and
+## reports the pass's cost as the difference (P3B.7).
 ## Prints one result line per measure. Development only; tools/ never ships.
 
 const SEED: int = 5151
@@ -14,11 +16,18 @@ const STRESS_COLUMNS: int = 18
 const STRESS_ORIGIN: Vector2 = Vector2(120, 140)
 const STRESS_STEP: Vector2 = Vector2(92, 200)
 const STRESS_SWAY: float = 12.0
+const POST_BLOCK: int = 60
+## Frames skipped after each switch, while the change settles.
+const POST_SETTLE: int = 5
 
 var _seconds: float = 40.0
 var _frame_ms: PackedFloat64Array = []
 var _node_counts: PackedInt64Array = []
 var _stress: bool = false
+var _post_ab: bool = false
+var _gpu_on: PackedFloat64Array = []
+var _gpu_off: PackedFloat64Array = []
+var _post_frame: int = 0
 
 
 func _initialize() -> void:
@@ -27,6 +36,7 @@ func _initialize() -> void:
 	if at >= 0 and at + 1 < args.size():
 		_seconds = float(args[at + 1])
 	_stress = args.has("--stress")
+	_post_ab = args.has("--post-ab")
 	_run.call_deferred()
 
 
@@ -38,6 +48,8 @@ func _run() -> void:
 	root.add_child(app)
 	app.call("new_run", SEED)
 	var table: Node = app.call("show_screen", "table", true)
+	if _post_ab:
+		RenderingServer.viewport_set_measure_render_time(root.get_viewport_rid(), true)
 	for _frame: int in WARMUP_FRAMES:
 		await process_frame
 	if _stress:
@@ -55,6 +67,7 @@ func _run() -> void:
 		var now: int = Time.get_ticks_usec()
 		_frame_ms.append((now - last) / 1000.0)
 		last = now
+		_sample_post()
 		var in_round: bool = controller.call("seat_view") != null
 		if in_round:
 			_node_counts.append(int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
@@ -94,7 +107,55 @@ func _run_stress(table: Node) -> void:
 		var now: int = Time.get_ticks_usec()
 		_frame_ms.append((now - last) / 1000.0)
 		last = now
+		_sample_post()
 		_node_counts.append(int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
+
+
+## Times the GPU for this frame against whether the pass was on, then switches the pass
+## at each block's end.
+func _sample_post() -> void:
+	if not _post_ab:
+		return
+	_post_frame += 1
+	var in_block: int = _post_frame % POST_BLOCK
+	if in_block >= POST_SETTLE:
+		var gpu: float = RenderingServer.viewport_get_measured_render_time_gpu(
+			root.get_viewport_rid()
+		)
+		if _post_on():
+			_gpu_on.append(gpu)
+		else:
+			_gpu_off.append(gpu)
+	if in_block == 0:
+		_set_post(not _post_on())
+
+
+func _report_post() -> void:
+	if not _post_ab:
+		return
+	_set_post(true)
+	var on: float = _median(_gpu_on)
+	var off: float = _median(_gpu_off)
+	print("gpu_samples_on=%d off=%d" % [_gpu_on.size(), _gpu_off.size()])
+	print("gpu_median_ms_on=%.3f off=%.3f" % [on, off])
+	print("post_process_gpu_ms=%.3f" % (on - off))
+
+
+# The Settings autoload is looked up at run time; a --script tool can't name it.
+func _post_on() -> bool:
+	return bool(root.get_node("Settings").call("value", "post_process"))
+
+
+func _set_post(on: bool) -> void:
+	root.get_node("Settings").call("set_value", "post_process", on)
+
+
+static func _median(values: PackedFloat64Array) -> float:
+	if values.is_empty():
+		return 0.0
+	var sorted: PackedFloat64Array = values.duplicate()
+	sorted.sort()
+	return sorted[sorted.size() / 2]
 
 
 func _report() -> void:
@@ -104,6 +165,7 @@ func _report() -> void:
 	for value: float in sorted:
 		total += value
 	var count: int = sorted.size()
+	_report_post()
 	print("frames=%d" % count)
 	print("mean_ms=%.2f" % (total / maxi(1, count)))
 	print("median_ms=%.2f" % sorted[count / 2])

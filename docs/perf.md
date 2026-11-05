@@ -30,7 +30,7 @@ Same machine and command, after the GPT Image art and the full-screen post-proce
 | p99 frame time | 17.72 ms |
 | Scene nodes while a round is in play | 758 at every sample |
 
-The GPU cost of the post-process pass alone was not isolated; P3B.7's under-1 ms check needs a GPU profiler capture.
+The GPU cost of the post-process pass alone is isolated in the P3B.7 section below.
 
 ### 54-card stress case and the 80-view pool (P3B.3)
 
@@ -49,3 +49,22 @@ All 54 deck cards bound to pooled views on the table at once, each moved every f
 | Scene nodes | 807 at every sample |
 
 The normal 40-second Set on the same build: mean 16.66 ms (60.0 fps), p99 16.85 ms, 806 nodes at every sample while a round was in play.
+
+## Post-process GPU cost (P3B.7)
+
+Same machine, 2026-11-04. The tool times the GPU each frame with the viewport's render timer (`RenderingServer.viewport_get_measured_render_time_gpu`) while a seeded Set plays. It turns the pass on and off every 60 frames, skips 5 frames after each switch, and takes the difference of the medians.
+
+```bash
+godot --path . --script res://tools/table_perf.gd -- --seconds 30 --post-ab
+```
+
+Five 30-second runs of each version of the screen sampler, in ms of GPU time per frame:
+
+| Screen texture | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | Median |
+| --- | --- | --- | --- | --- | --- | --- |
+| `filter_linear_mipmap` (before) | 0.962 | 0.745 | 0.364 | 0.924 | 0.748 | 0.748 |
+| `filter_linear` (shipped) | 0.759 | 0.219 | 0.223 | 1.015 | 0.221 | 0.223 |
+
+The pass never samples a lower mip, so building mipmaps of the screen copy each frame was wasted work. Dropping them changes nothing on screen.
+
+Runs 1 and 4 of the shipped version had pass-off baselines of 0.85 ms and 3.26 ms, against about 0.65 ms in the other runs. That points to the GPU running at lower clocks for the whole run, not to the pass. Run 4, at those low clocks, measured 1.015 ms, just over budget. P5.3 re-measures on the real minimum-spec machine.
