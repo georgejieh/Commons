@@ -4,11 +4,25 @@
 [ext_resource type="Script" path="res://data/horror/horror_layer.gd" id="2"]
 [ext_resource type="Script" path="res://data/horror/flicker_def.gd" id="3"]
 [ext_resource type="Script" path="res://data/horror/art_variant.gd" id="4"]
-[ext_resource type="Texture2D" path="res://art/backdrops/table_surface.png" id="5"]
-[ext_resource type="Texture2D" path="res://art/backdrops/stages/table_surface_s0.png" id="6"]
-[ext_resource type="Texture2D" path="res://art/backdrops/stages/table_surface_s4.png" id="7"]
-[ext_resource type="Texture2D" path="res://art/cards/card_back.png" id="8"]
-[ext_resource type="Texture2D" path="res://art/cards/stages/card_back_s0.png" id="9"]
+[ext_resource type="Texture2D" path="res://art/backdrops/table_surface.png" id="art0"]
+[ext_resource type="Texture2D" path="res://art/backdrops/title.png" id="art1"]
+[ext_resource type="Texture2D" path="res://art/backdrops/title_night.png" id="art2"]
+[ext_resource type="Texture2D" path="res://art/backdrops/store.png" id="art3"]
+[ext_resource type="Texture2D" path="res://art/backdrops/notice_wall.png" id="art4"]
+[ext_resource type="Texture2D" path="res://art/cards/card_back.png" id="art5"]
+[ext_resource type="Texture2D" path="res://art/cadres/cadre_cultural_revolution.png" id="art6"]
+[ext_resource type="Texture2D" path="res://art/cadres/cadre_hidden_reserves.png" id="art7"]
+[ext_resource type="Texture2D" path="res://art/cadres/cadre_iron_rice_bowl.png" id="art8"]
+[ext_resource type="Texture2D" path="res://art/cadres/cadre_landlords_ledger.png" id="art9"]
+[ext_resource type="Texture2D" path="res://art/cadres/cadre_promotion_of_the_masses.png" id="art10"]
+[ext_resource type="Texture2D" path="res://art/cadres/cadre_stakhanovite.png" id="art11"]
+[ext_resource type="Texture2D" path="res://art/portraits/portrait_wang_face.png" id="art12"]
+[ext_resource type="Texture2D" path="res://art/portraits/portrait_zhao_face.png" id="art13"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/court_jack.png" id="art14"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/court_queen.png" id="art15"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/court_king.png" id="art16"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/joker_small.png" id="art17"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/joker_big.png" id="art18"]
 
 [sub_resource type="Resource" id="layer_famine"]
 script = ExtResource("2")
@@ -16,7 +30,7 @@ input = "famine"
 response = PackedVector2Array(0, 0, 0.4, 0.15, 0.65, 0.6, 1, 1)
 shader_params = Dictionary[String, Vector2]({"post:dread": Vector2(0.0, 0.5), "post:warmth": Vector2(0.25, 0.0), "lamp:dread": Vector2(0.0, 0.8)})
 dressing = Array[String](["empty_chairs"])
-audio_stems = Array[String](["melody", "chatter"])
+audio_stems = Array[String](["percussion", "counter", "chatter"])
 
 [sub_resource type="Resource" id="layer_denunciation"]
 script = ExtResource("2")
@@ -24,7 +38,7 @@ input = "denunciation"
 response = PackedVector2Array(0, 0, 0.4, 0.15, 0.65, 0.6, 1, 1)
 shader_params = Dictionary[String, Vector2]({"watchers:presence": Vector2(0.0, 0.95), "post:vignette": Vector2(0.55, 0.7)})
 dressing = Array[String](["poster", "redaction"])
-audio_stems = Array[String](["whispers", "clock"])
+audio_stems = Array[String](["melody", "percussion", "whispers", "clock"])
 
 [sub_resource type="Resource" id="layer_struggle"]
 script = ExtResource("2")
@@ -32,7 +46,7 @@ input = "struggle"
 response = PackedVector2Array(0, 0, 0.55, 0.0, 0.8, 0.7, 1, 1)
 shader_params = Dictionary[String, Vector2]({"lamp:darkness": Vector2(0.94, 0.97)})
 dressing = Array[String](["spotlight"])
-audio_stems = Array[String](["crowd"])
+audio_stems = Array[String](["counter", "harmony", "bass", "crowd"])
 
 [sub_resource type="Resource" id="layer_landlord"]
 script = ExtResource("2")
@@ -84,17 +98,102 @@ duration = 0.1
 
 [sub_resource type="Resource" id="art_table_surface"]
 script = ExtResource("4")
-base = ExtResource("5")
-stages = Array[Texture2D]([ExtResource("6"), null, null, null, ExtResource("7"), null, null, ExtResource("5")])
+base = ExtResource("art0")
+stage_paths = Array[String](["res://art/backdrops/stages/table_surface_s0.png", "", "", "", "res://art/backdrops/stages/table_surface_s4.png", "", "", "res://art/backdrops/table_surface.png"])
+
+[sub_resource type="Resource" id="art_title"]
+script = ExtResource("4")
+base = ExtResource("art1")
+stage_paths = Array[String](["res://art/backdrops/stages/title_s0.png", "", "", "", "res://art/backdrops/stages/title_s4.png", "", "", "res://art/backdrops/title.png"])
+
+[sub_resource type="Resource" id="art_title_night"]
+script = ExtResource("4")
+base = ExtResource("art2")
+stage_paths = Array[String](["res://art/backdrops/stages/title_night_s0.png", "", "", "", "", "", "", "res://art/backdrops/title_night.png"])
+
+[sub_resource type="Resource" id="art_store"]
+script = ExtResource("4")
+base = ExtResource("art3")
+stage_paths = Array[String](["res://art/backdrops/stages/store_s0.png", "", "", "", "res://art/backdrops/stages/store_s4.png", "", "", "res://art/backdrops/store.png"])
+
+[sub_resource type="Resource" id="art_notice_wall"]
+script = ExtResource("4")
+base = ExtResource("art4")
+stage_paths = Array[String](["res://art/backdrops/stages/notice_wall_s0.png", "", "", "", "", "", "", "res://art/backdrops/notice_wall.png"])
 
 [sub_resource type="Resource" id="art_card_back"]
 script = ExtResource("4")
-base = ExtResource("8")
-stages = Array[Texture2D]([ExtResource("9"), null, null, null, null, ExtResource("8")])
+base = ExtResource("art5")
+stage_paths = Array[String](["res://art/cards/stages/card_back_s0.png", "", "", "", "res://art/cards/stages/card_back_s4.png", "", "", "res://art/cards/card_back.png"])
+
+[sub_resource type="Resource" id="art_cadre_cultural_revolution"]
+script = ExtResource("4")
+base = ExtResource("art6")
+stage_paths = Array[String](["res://art/cadres/stages/cadre_cultural_revolution_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_cultural_revolution.png"])
+
+[sub_resource type="Resource" id="art_cadre_hidden_reserves"]
+script = ExtResource("4")
+base = ExtResource("art7")
+stage_paths = Array[String](["res://art/cadres/stages/cadre_hidden_reserves_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_hidden_reserves.png"])
+
+[sub_resource type="Resource" id="art_cadre_iron_rice_bowl"]
+script = ExtResource("4")
+base = ExtResource("art8")
+stage_paths = Array[String](["res://art/cadres/stages/cadre_iron_rice_bowl_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_iron_rice_bowl.png"])
+
+[sub_resource type="Resource" id="art_cadre_landlords_ledger"]
+script = ExtResource("4")
+base = ExtResource("art9")
+stage_paths = Array[String](["res://art/cadres/stages/cadre_landlords_ledger_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_landlords_ledger.png"])
+
+[sub_resource type="Resource" id="art_cadre_promotion_of_the_masses"]
+script = ExtResource("4")
+base = ExtResource("art10")
+stage_paths = Array[String](["res://art/cadres/stages/cadre_promotion_of_the_masses_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_promotion_of_the_masses.png"])
+
+[sub_resource type="Resource" id="art_cadre_stakhanovite"]
+script = ExtResource("4")
+base = ExtResource("art11")
+stage_paths = Array[String](["res://art/cadres/stages/cadre_stakhanovite_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_stakhanovite.png"])
+
+[sub_resource type="Resource" id="art_portrait_wang_face"]
+script = ExtResource("4")
+base = ExtResource("art12")
+stage_paths = Array[String](["res://art/portraits/stages/portrait_wang_face_s0.png", "", "", "", "", "", "", "res://art/portraits/portrait_wang_face.png"])
+
+[sub_resource type="Resource" id="art_portrait_zhao_face"]
+script = ExtResource("4")
+base = ExtResource("art13")
+stage_paths = Array[String](["res://art/portraits/stages/portrait_zhao_face_s0.png", "", "", "", "", "", "", "res://art/portraits/portrait_zhao_face.png"])
+
+[sub_resource type="Resource" id="art_court_jack"]
+script = ExtResource("4")
+base = ExtResource("art14")
+stage_paths = Array[String](["res://art/cards/parts/stages/court_jack_s0.png", "", "", "", "", "", "", "res://art/cards/parts/court_jack.png"])
+
+[sub_resource type="Resource" id="art_court_queen"]
+script = ExtResource("4")
+base = ExtResource("art15")
+stage_paths = Array[String](["res://art/cards/parts/stages/court_queen_s0.png", "", "", "", "", "", "", "res://art/cards/parts/court_queen.png"])
+
+[sub_resource type="Resource" id="art_court_king"]
+script = ExtResource("4")
+base = ExtResource("art16")
+stage_paths = Array[String](["res://art/cards/parts/stages/court_king_s0.png", "", "", "", "", "", "", "res://art/cards/parts/court_king.png"])
+
+[sub_resource type="Resource" id="art_joker_small"]
+script = ExtResource("4")
+base = ExtResource("art17")
+stage_paths = Array[String](["res://art/cards/parts/stages/joker_small_s0.png", "", "", "", "", "", "", "res://art/cards/parts/joker_small.png"])
+
+[sub_resource type="Resource" id="art_joker_big"]
+script = ExtResource("4")
+base = ExtResource("art18")
+stage_paths = Array[String](["res://art/cards/parts/stages/joker_big_s0.png", "", "", "", "", "", "", "res://art/cards/parts/joker_big.png"])
 
 [resource]
 script = ExtResource("1")
 layers = Array[ExtResource("2")]([SubResource("layer_famine"), SubResource("layer_denunciation"), SubResource("layer_struggle"), SubResource("layer_landlord"), SubResource("layer_corruption"), SubResource("layer_corruption_watchers")])
 flickers = Array[ExtResource("3")]([SubResource("flicker_1"), SubResource("flicker_2"), SubResource("flicker_3")])
 ease_seconds = 4.0
-art = Array[ExtResource("4")]([SubResource("art_table_surface"), SubResource("art_card_back")])
+art = Array[ExtResource("4")]([SubResource("art_table_surface"), SubResource("art_title"), SubResource("art_title_night"), SubResource("art_store"), SubResource("art_notice_wall"), SubResource("art_card_back"), SubResource("art_cadre_cultural_revolution"), SubResource("art_cadre_hidden_reserves"), SubResource("art_cadre_iron_rice_bowl"), SubResource("art_cadre_landlords_ledger"), SubResource("art_cadre_promotion_of_the_masses"), SubResource("art_cadre_stakhanovite"), SubResource("art_portrait_wang_face"), SubResource("art_portrait_zhao_face"), SubResource("art_court_jack"), SubResource("art_court_queen"), SubResource("art_court_king"), SubResource("art_joker_small"), SubResource("art_joker_big")])

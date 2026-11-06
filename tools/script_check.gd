@@ -5,6 +5,7 @@ extends RefCounted
 
 const SKIPPED_FOLDERS: PackedStringArray = [
 	"res://.godot",
+	"res://.claude",
 	"res://.git",
 	"res://addons",
 	"res://build",

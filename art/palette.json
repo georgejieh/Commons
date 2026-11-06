@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "note": "Commons palette (P3C.1). The cleanup script (P3C.3) quantizes source art to these colors. Named entries are UI roles; the rest are poster print inks sampled from the approved art.",
+  "colors": [
+    {
+      "name": "ink",
+      "hex": "#1e1a16",
+      "use": "Text, outlines and line work"
+    },
+    {
+      "name": "paper",
+      "hex": "#efe3c8",
+      "use": "UI paper ground"
+    },
+    {
+      "name": "paper_light",
+      "hex": "#f6edd9",
+      "use": "Pinned cards and notices"
+    },
+    {
+      "name": "stamp_red",
+      "hex": "#b02a17",
+      "use": "Zeal, the landlord, stamps"
+    },
+    {
+      "name": "gold",
+      "hex": "#e0b84a",
+      "use": "Landlord trim, gilt"
+    },
+    {
+      "name": "coupon_green",
+      "hex": "#3f6338",
+      "use": "Ration coupons only"
+    },
+    {
+      "name": "hill_blue",
+      "hex": "#6f8a9a",
+      "use": "Distant hills and sky shade in early stages"
+    },
+    {
+      "name": "field_green",
+      "hex": "#8a9a4a",
+      "use": "Fields and leaves in early stages"
+    },
+    {
+      "name": "print_01",
+      "hex": "#bd2b19",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_02",
+      "hex": "#9f2819",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_03",
+      "hex": "#ca4a27",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_04",
+      "hex": "#aa683c",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_05",
+      "hex": "#d8733a",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_06",
+      "hex": "#edb06f",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_07",
+      "hex": "#4a271e",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_08",
+      "hex": "#7b4b2f",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_09",
+      "hex": "#b97e4c",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_10",
+      "hex": "#da9d64",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_11",
+      "hex": "#573023",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_12",
+      "hex": "#d28b4f",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_13",
+      "hex": "#efa55d",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_14",
+      "hex": "#f8c583",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_15",
+      "hex": "#e68c47",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_16",
+      "hex": "#a34a2a",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_17",
+      "hex": "#f5bd78",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_18",
+      "hex": "#ed9a51",
+      "use": "Poster print ink"
+    },
+    {
+      "name": "print_19",
+      "hex": "#583d2d",
+      "use": "Poster print ink"
+    }
+  ]
+}

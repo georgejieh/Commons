@@ -59,7 +59,9 @@ func setup(
 	_materials = materials
 	_slots = slots
 	for slot: String in slots:
-		_slot_clean[slot] = ArtStages.base_of(slots[slot].texture)
+		_slot_clean[slot] = ArtStages.base_of(Lighting.diffuse(slots[slot].texture))
+		slots[slot].light_mask = Lighting.MASK
+		slots[slot].texture = Lighting.lit(Lighting.diffuse(slots[slot].texture))
 	_dressing = dressing
 	_seats = seats
 	_rng.seed = FLICKER_SEED
@@ -94,6 +96,7 @@ static func table_materials(
 func refresh(state: RunState, settle_now: bool = false, landlord: Variant = null) -> void:
 	var is_landlord: bool = state.landlord_seat == 0 if landlord == null else bool(landlord)
 	board.set_inputs(state.famine, state.denunciation, is_landlord, corruption())
+	_choose_music(is_landlord)
 	if settle_now:
 		board.settle()
 	apply()
@@ -102,6 +105,7 @@ func refresh(state: RunState, settle_now: bool = false, landlord: Variant = null
 ## Shows a board state at once, for tools and tests: meters 0 to 100.
 func force(famine: int, denunciation: int, landlord: bool, stage: int = 0) -> void:
 	board.set_inputs(famine, denunciation, landlord, stage)
+	_choose_music(landlord)
 	board.settle()
 	apply()
 
@@ -130,6 +134,7 @@ func apply() -> void:
 		_piece_weight[index] = weight
 		_dressing.show_piece(_piece_ids[index], weight)
 	_apply_swaps(intensity)
+	Audio.music.follow(board, config.layers, intensity)
 	if _materials.has("lamp"):
 		var breathe: float = NO_FLASH_BREATHE if bool(Settings.value("no_flash")) else _breathe
 		_materials["lamp"].set_shader_parameter("breathe", breathe)
@@ -139,6 +144,8 @@ func apply() -> void:
 func clear() -> void:
 	for index: int in _param_clean.size():
 		_param_material[index].set_shader_parameter(_param_name[index], _param_clean[index])
+	Audio.music.relax()
+	Audio.music.request(MusicPlayer.SCORE.village)
 
 
 ## Each slot shows its art for the board's corruption stage, unless a layer's swap has
@@ -153,8 +160,8 @@ func _apply_swaps(intensity: float) -> void:
 				and board.shown(index, intensity) >= HorrorLayer.SWAP_AT
 			):
 				shown = layer.texture_swaps[slot]
-		if _slots[slot].texture != shown:
-			_slots[slot].texture = shown
+		if Lighting.diffuse(_slots[slot].texture) != shown:
+			_slots[slot].texture = Lighting.lit(shown)
 
 
 ## The weight a dressing piece shows this frame, for tests.
@@ -260,3 +267,14 @@ func _key(index: int) -> String:
 		if _materials[target] == _param_material[index]:
 			return "%s:%s" % [target, _param_name[index]]
 	return ""
+
+
+## Picks the music cue for the board at a round boundary: the Famine layer's target,
+## scaled by horror intensity, and the landlord seat (P3C.9).
+func _choose_music(landlord: bool) -> void:
+	var famine: float = 0.0
+	for index: int in config.layers.size():
+		if config.layers[index].input == "famine":
+			famine = maxf(famine, board.targets[index])
+	famine *= float(Settings.value("horror_intensity"))
+	Audio.music.request(MusicPlayer.SCORE.cue_for(famine, landlord))

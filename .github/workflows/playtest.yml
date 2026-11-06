@@ -55,12 +55,31 @@ jobs:
           xvfb-run -a -s "-screen 0 1920x1080x24" \
             godot --path . --rendering-driver opengl3 --resolution 1920x1080 \
             --script res://tools/demo_screenshots.gd -- --out reports/shots
+      - name: Texture budget
+        if: always()
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          xvfb-run -a -s "-screen 0 1920x1080x24" \
+            godot --path . --rendering-driver opengl3 --resolution 1920x1080 \
+            --script res://tools/texture_budget.gd 2>&1 | tee reports/texture_budget.log
+          grep -q "PASS" reports/texture_budget.log
+      - name: Card faces
+        if: always()
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          xvfb-run -a -s "-screen 0 1920x1080x24" \
+            godot --path . --rendering-driver opengl3 --resolution 1920x1080 \
+            --script res://tools/card_faces.gd -- --out reports/card_faces
       - name: Board states
         if: always()
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
         run: |
-          xvfb-run -a -s "-screen 0 1920x1080x24"             godot --path . --rendering-driver opengl3 --resolution 1920x1080             --script res://tools/board_states.gd -- --out reports/board_states
+          xvfb-run -a -s "-screen 0 1920x1080x24" \
+            godot --path . --rendering-driver opengl3 --resolution 1920x1080 \
+            --script res://tools/board_states.gd -- --out reports/board_states
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -69,5 +88,7 @@ jobs:
             reports/playtest
             reports/shots
             reports/board_states
+            reports/card_faces
             reports/playtest.log
+            reports/texture_budget.log
           retention-days: 14

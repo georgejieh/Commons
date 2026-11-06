@@ -12,6 +12,6 @@ if command -v gdlint > /dev/null; then
 	gdlint "${files[@]}"
 	gdformat --check "${files[@]}"
 else
-	uvx --from "$(cat requirements-dev.txt)" gdlint "${files[@]}"
-	uvx --from "$(cat requirements-dev.txt)" gdformat --check "${files[@]}"
+	uvx --from "$(grep -m1 "^gdtoolkit" requirements-dev.txt)" gdlint "${files[@]}"
+	uvx --from "$(grep -m1 "^gdtoolkit" requirements-dev.txt)" gdformat --check "${files[@]}"
 fi

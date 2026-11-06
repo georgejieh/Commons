@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardArt" format=3]
+
+[ext_resource type="Script" path="res://data/ui/card_art.gd" id="1"]
+[ext_resource type="Texture2D" path="res://art/cards/card_face.png" id="2"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/suit_spade.png" id="3"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/suit_heart.png" id="4"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/suit_club.png" id="5"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/suit_diamond.png" id="6"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/court_jack.png" id="7"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/court_queen.png" id="8"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/court_king.png" id="9"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/joker_small.png" id="10"]
+[ext_resource type="Texture2D" path="res://art/cards/parts/joker_big.png" id="11"]
+
+[resource]
+script = ExtResource("1")
+frame = ExtResource("2")
+suits = Array[Texture2D]([ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6")])
+court = Array[Texture2D]([ExtResource("7"), ExtResource("8"), ExtResource("9")])
+jokers = Array[Texture2D]([ExtResource("10"), ExtResource("11")])

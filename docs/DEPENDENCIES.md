@@ -6,6 +6,8 @@
 | [awesome-gamedev-agent-skills](https://github.com/gamedev-skills/awesome-gamedev-agent-skills) (16 skills in `.claude/skills`) | `19d93f9` | Apache-2.0 | Godot 4.7 and game-design guidance for agents; not shipped | Nothing |
 | [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4) (`addons/gdUnit4`) | v6.2.2 (`0127a55`) | MIT | Test framework, ADR 0003; development only | Hand-written runner |
 | [gdtoolkit](https://github.com/Scony/godot-gdscript-toolkit) | 4.5.0 | MIT | Lint and format, ADR 0004; development only | Nothing |
+| [Pillow](https://github.com/python-pillow/Pillow) | 12.0.0 | MIT-CMU | Image work in the art cleanup script (P3C.3); development only | Nothing |
+| [pytest](https://github.com/pytest-dev/pytest) | 8.4.1 | MIT | Tests for the Python tools in `tools/`; development only | Nothing |
 | [Oswald](https://github.com/googlefonts/OswaldFont) (`art/fonts/Oswald-Variable.ttf`) | google/fonts `ofl/oswald`, fetched 2026-11-03, SHA-256 in the font note below | SIL OFL 1.1 (`art/fonts/Oswald-OFL.txt`) | Condensed poster face for all UI text, titles and card ranks; ships | Godot's default font |
 | [Courier Prime](https://github.com/quoteunquoteapps/CourierPrime) (`art/fonts/CourierPrime-*.ttf`) | google/fonts `ofl/courierprime`, fetched 2026-11-03 | SIL OFL 1.1 (`art/fonts/CourierPrime-OFL.txt`) | Typewriter face for the work-point ledger; ships | Godot's default font |
 | Godot Engine | 4.7.2-stable | MIT, plus bundled third-party licenses | The engine; ships in every build, and its notices ship as `THIRD-PARTY-NOTICES.txt` | Nothing |

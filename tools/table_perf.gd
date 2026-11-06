@@ -8,7 +8,8 @@ extends SceneTree
 ## per frame, switching the post-process pass on and off every POST_BLOCK frames, and
 ## reports the pass's cost as the difference (P3B.7). --horror-ab does the same with
 ## horror intensity at 0 and 1, the table held still at its worst board state, both
-## meters high and the last corruption stage (P3B.12).
+## meters high and the last corruption stage (P3B.12). --light-ab switches the table's
+## 2D light, which lights the normal-mapped table and cards (P3C.6).
 ## Prints one result line per measure. Development only; tools/ never ships.
 
 const SEED: int = 5151
@@ -32,6 +33,8 @@ var _ab_key: String = "post_process"
 var _gpu_on: PackedFloat64Array = []
 var _gpu_off: PackedFloat64Array = []
 var _post_frame: int = 0
+## The table light, for --light-ab.
+var _light: PointLight2D = null
 
 
 func _initialize() -> void:
@@ -40,9 +43,11 @@ func _initialize() -> void:
 	if at >= 0 and at + 1 < args.size():
 		_seconds = float(args[at + 1])
 	_stress = args.has("--stress")
-	_post_ab = args.has("--post-ab") or args.has("--horror-ab")
+	_post_ab = args.has("--post-ab") or args.has("--horror-ab") or args.has("--light-ab")
 	if args.has("--horror-ab"):
 		_ab_key = "horror_intensity"
+	if args.has("--light-ab"):
+		_ab_key = "table_light"
 	_run.call_deferred()
 
 
@@ -54,6 +59,9 @@ func _run() -> void:
 	root.add_child(app)
 	app.call("new_run", SEED)
 	var table: Node = app.call("show_screen", "table", true)
+	if _ab_key == "table_light":
+		var atmosphere: Node = table.get("_atmosphere")
+		_light = atmosphere.call("light")
 	if _post_ab:
 		RenderingServer.viewport_set_measure_render_time(root.get_viewport_rid(), true)
 	for _frame: int in WARMUP_FRAMES:
@@ -153,10 +161,15 @@ func _report_post() -> void:
 
 # The Settings autoload is looked up at run time; a --script tool can't name it.
 func _post_on() -> bool:
+	if _light != null:
+		return _light.enabled
 	return float(root.get_node("Settings").call("value", _ab_key)) > 0.5
 
 
 func _set_post(on: bool) -> void:
+	if _light != null:
+		_light.enabled = on
+		return
 	var value: Variant = on if _ab_key == "post_process" else (1.0 if on else 0.0)
 	root.get_node("Settings").call("set_value", _ab_key, value)
 
