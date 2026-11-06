@@ -217,10 +217,7 @@ func set_events() -> Array[RunEvent]:
 
 ## The player's seat view of the current round, or null between rounds.
 func seat_view() -> SeatView:
-	var round_state: RoundState = _loop.round_state()
-	if round_state == null:
-		return null
-	return round_state.view_for(RunLoop.PLAYER)
+	return _loop.player_view()
 
 
 ## Copies of the player's cards.
@@ -314,7 +311,9 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	# A replayed loop may hold events banking appended unseen; the view reads those from
 	# set_events(), so the listener starts after them.
 	_loop.set_log.flush()
-	var known: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres
+	var known: Array[ModifierDef] = (
+		RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres + RunLoop.DEFAULT_MARKET.cadres
+	)
 	for definition: ModifierDef in known + RunLoop.DEFAULT_BOSSES.all():
 		_definitions[definition.id] = definition
 	_saves = saves

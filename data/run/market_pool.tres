@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CadrePool" format=3]
+
+[ext_resource type="Script" path="res://data/run/cadre_pool.gd" id="1"]
+[ext_resource type="Resource" path="res://data/modifiers/planned_allocation.tres" id="2"]
+[ext_resource type="Resource" path="res://data/modifiers/red_ink.tres" id="3"]
+[ext_resource type="Resource" path="res://data/modifiers/the_informant.tres" id="4"]
+[ext_resource type="Resource" path="res://data/modifiers/peek.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+cadres = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5")])

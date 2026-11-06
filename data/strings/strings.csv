@@ -408,3 +408,11 @@ modifier.risen_villager.name,Risen Villager
 modifier.risen_villager.text,A villager who held the landlord seat for a whole Set sits at the table and starts this Set as landlord.
 modifier.new_landlord.name,New Landlord
 modifier.new_landlord.text,"Your opponent favors the hand types you played most, and calls the landlord seat about as often as you did, over your last three Sets."
+modifier.planned_allocation.name,Planned Allocation
+modifier.planned_allocation.text,Each 2 is twice as likely to be dealt to you.
+modifier.red_ink.name,Red Ink
+modifier.red_ink.text,"Cards stamped with your mark score +{grain} Grain when you play them. Played by anyone else, they score as usual."
+modifier.the_informant.name,The Informant
+modifier.the_informant.text,Shows the hand types your opponents still hold.
+modifier.peek.name,Peek
+modifier.peek.text,Shows the cards of the other player closest to going out.

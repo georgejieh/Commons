@@ -1,5 +1,6 @@
-# gdlint: disable=max-file-lines
-# Over 400 lines: the loop is the one command surface RunRecord replays, kept in one file.
+# gdlint: disable=max-file-lines,max-public-methods
+# Over 400 lines and 20 public methods: the loop is the one command surface RunRecord
+# replays and the controller reads, kept in one file.
 class_name RunLoop
 extends RefCounted
 ## Plays a run's Sets round by round: deal, bidding, plot swaps, play, scoring, banking,
@@ -24,6 +25,8 @@ const PLAYER: int = 0
 const DEFAULT_PARAMS: RunParams = preload("res://data/run/default_run.tres")
 const DEFAULT_POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
 const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
+## Private items the black market sells (P4.9 effects, P4.10 stock).
+const DEFAULT_MARKET: CadrePool = preload("res://data/run/market_pool.tres")
 const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
 const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
@@ -75,7 +78,8 @@ func _init(
 	_params = params
 	_meters = meters
 	_pool = pool
-	for definition: ModifierDef in pool + DEFAULT_CADRES.cadres + DEFAULT_BOSSES.all():
+	var known: Array[ModifierDef] = pool + DEFAULT_CADRES.cadres + DEFAULT_MARKET.cadres
+	for definition: ModifierDef in known + DEFAULT_BOSSES.all():
 		_pool_by_id[definition.id] = definition
 	shop = RunShop.new(state, DEFAULT_SHOP, DEFAULT_CADRES.cadres, meters.rationing_shop_cut)
 	_table = SeatRules.new(_stack)
@@ -106,6 +110,21 @@ func player_cards() -> Array[CardInstance]:
 	for card: CardInstance in _deal.hands[PLAYER].cards():
 		cards.append(card.snapshot())
 	return cards
+
+
+## The player's view of the round: the public view and their own cards, plus whatever
+## their information upgrades reveal (P4.9). Null between rounds.
+func player_view() -> SeatView:
+	if _round == null:
+		return null
+	var view: SeatView = _round.view_for(PLAYER)
+	var held: Array[ModifierDef] = []
+	for cadre_id: String in state.inventory.cadres:
+		held.append(_pool_by_id[cadre_id])
+	var info_flags: int = InfoReveal.flags(held)
+	if info_flags != 0:
+		view.info = InfoReveal.build(_round, PLAYER, info_flags, seat_table(PLAYER))
+	return view
 
 
 ## What the player's cards would score if played now, through the real scoring path.
@@ -308,7 +327,8 @@ func _deal_cards() -> void:
 	for deck_id: int in Deck.generate():
 		cards.append(CardInstance.from_deck_id(deck_id))
 	_deal = Dealer.deal(cards, state.streams.stream(RandomStreams.DEAL))
-	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal))
+	var stream: RandomStream = state.streams.stream(RandomStreams.DEAL)
+	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream))
 	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
 
 

@@ -47,4 +47,10 @@ static func _build(modifier_id: String) -> ModifierEffect:
 			return GreatLeapEffect.new()
 		"the_purge", "risen_villager", "new_landlord":
 			return BossMarkerEffect.new()
+		"planned_allocation":
+			return PlannedAllocationEffect.new()
+		"red_ink":
+			return OwnerStampEffect.new()
+		"the_informant", "peek":
+			return InfoMarkerEffect.new()
 	return null
