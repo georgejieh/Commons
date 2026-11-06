@@ -30,6 +30,7 @@ const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.
 const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
 const DEFAULT_FREE_RIDE: FreeRideParams = preload("res://data/run/free_ride.tres")
 const DEFAULT_VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
+const DEFAULT_MEMORY: MemoryParams = preload("res://data/villagers/memory.tres")
 
 var state: RunState
 var flow: RunFlow
@@ -466,6 +467,7 @@ func _end_set() -> void:
 	else:
 		_raise(RunMeters.MISSED_TARGET)
 	_reeducate_villagers()
+	state.memory.record(state.summaries[-1])
 	var held: int = Resentment.private_cadres(state.inventory.cadres, DEFAULT_CADRES.cadres)
 	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
 	var owed: int = Resentment.denunciation(state.resentment, DEFAULT_RESENTMENT)
@@ -523,7 +525,7 @@ func _resent(amount: int, cause: String) -> void:
 		Resentment.add(state, amount, cause, DEFAULT_RESENTMENT, set_log.events())
 
 
-## Every bot holds the player's Resentment against them; P4.6 adds family memory to it.
+## Every bot holds the player's Resentment against them, plus its family's memory.
 ## The player's teammate, when they have one, slacks as the player's Commons share grows.
 func _aim_grudges() -> void:
 	var held: float = Resentment.grudge(state.resentment, DEFAULT_RESENTMENT)
@@ -532,7 +534,7 @@ func _aim_grudges() -> void:
 		if seat == PLAYER:
 			continue
 		var memory: PackedFloat32Array = _configs[seat].memory
-		memory[PLAYER] = held
+		memory[PLAYER] = held + state.memory.pull(state.table[seat], DEFAULT_MEMORY)
 		_configs[seat].memory = memory
 		var teammate: bool = state.landlord_seat != PLAYER and state.landlord_seat != seat
 		_configs[seat].effort = 1.0

@@ -39,6 +39,8 @@ var villager_denunciation: Dictionary[String, int] = {}
 ## Commons shares paid to the player, and to every peasant, this run (P4.4).
 var commons_received: int = 0
 var commons_paid: int = 0
+## What each family remembers of the player, carried in from the profile (P4.6).
+var memory: VillageMemory = VillageMemory.new()
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -75,6 +77,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.resentment = int(data["resentment"])
 	state.commons_received = str(data["commons_received"]).to_int()
 	state.commons_paid = str(data["commons_paid"]).to_int()
+	state.memory = VillageMemory.from_dict(data["memory"])
 	for family_id: String in data["villager_denunciation"]:
 		state.villager_denunciation[family_id] = int(data["villager_denunciation"][family_id])
 	state.table.assign(data["table"])
@@ -116,6 +119,7 @@ func to_dict() -> Dictionary:
 		"resentment": resentment,
 		"commons_received": str(commons_received),
 		"commons_paid": str(commons_paid),
+		"memory": memory.to_dict(),
 		"villager_denunciation": villager_denunciation.duplicate(),
 		"roster": roster_data,
 		"table": table.duplicate(),

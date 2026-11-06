@@ -100,12 +100,19 @@ func table_id() -> String:
 
 func new_run(seed_value: int) -> void:
 	controller.start_run(
-		seed_value, _configs(), SetConfig.new(DEMO.sets), Saves.run_service(), DEMO.starting_coupons
+		seed_value,
+		_configs(),
+		SetConfig.new(DEMO.sets),
+		Saves.run_service(),
+		DEMO.starting_coupons,
+		Saves.profile_service()
 	)
 
 
 func continue_run() -> bool:
-	return controller.resume_saved(Saves.run_service(), _configs(), SetConfig.new(DEMO.sets))
+	return controller.resume_saved(
+		Saves.run_service(), _configs(), SetConfig.new(DEMO.sets), Saves.profile_service()
+	)
 
 
 ## Continues the saved run on the screen it stopped at.

@@ -38,6 +38,8 @@ const OK: int = RunLoop.Reason.OK
 
 var _loop: RunLoop
 var _saves: SaveService = null
+## The profile save, which the village's memory outlives runs in (P4.6).
+var _profile: SaveService = null
 var _definitions: Dictionary[String, ModifierDef] = {}
 
 
@@ -47,10 +49,14 @@ func start_run(
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	saves: SaveService = null,
-	starting_coupons: int = 0
+	starting_coupons: int = 0,
+	profile: SaveService = null
 ) -> void:
 	var state: RunState = RunState.new(seed_value)
 	state.coupons = starting_coupons
+	_profile = profile
+	if profile != null:
+		state.memory = Profile.memory(profile).carried(RunLoop.DEFAULT_MEMORY)
 	_attach(RunLoop.new(state, configs, sets), saves)
 	_loop.start_set()
 	_loop.set_log.flush()
@@ -58,13 +64,16 @@ func start_run(
 
 
 ## Takes over a loop that was resumed from a save.
-func resume(loop: RunLoop, saves: SaveService = null) -> void:
+func resume(loop: RunLoop, saves: SaveService = null, profile: SaveService = null) -> void:
+	_profile = profile
 	_attach(loop, saves)
 	awaiting_changed.emit(_loop.awaiting())
 
 
 ## Resumes the run in the save, falling back to its backup. False when neither loads.
-func resume_saved(saves: SaveService, configs: Array[BotConfig], sets: SetConfig) -> bool:
+func resume_saved(
+	saves: SaveService, configs: Array[BotConfig], sets: SetConfig, profile: SaveService = null
+) -> bool:
 	var loaded: SaveLoad = saves.load_save()
 	if (
 		loaded.status != SaveLoad.Status.OK
@@ -74,7 +83,7 @@ func resume_saved(saves: SaveService, configs: Array[BotConfig], sets: SetConfig
 	var loop: RunLoop = RunRecord.resume(loaded.data, configs, sets)
 	if loop == null:
 		return false
-	resume(loop, saves)
+	resume(loop, saves, profile)
 	return true
 
 
@@ -299,7 +308,9 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 		_definitions[definition.id] = definition
 	_saves = saves
 	_loop.set_log.on_add = func(event: RunEvent) -> void: event_emitted.emit(event)
-	_loop.on_boundary = func(_at: RunLoop) -> void: _save()
+	_loop.on_boundary = func(at: RunLoop) -> void:
+		_save()
+		_remember(at.flow.state())
 
 
 func _finish(command: String, reason: RunLoop.Reason) -> int:
@@ -315,3 +326,12 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 func _save() -> void:
 	if _saves != null:
 		_saves.save(_loop.record.to_dict())
+
+
+## Writes the village's memory to the profile once a Set's summary is folded in, so it
+## survives the run whether it ends or is abandoned.
+func _remember(at: RunFlow.State) -> void:
+	if _profile == null:
+		return
+	if at == RunFlow.State.SET_END or at == RunFlow.State.RUN_END:
+		Profile.save_memory(_profile, _loop.state.memory)
