@@ -31,6 +31,8 @@ enum Type {
 	AUDITED,
 	## A villager's own Denunciation changed; value is the change.
 	VILLAGER_DENOUNCED,
+	## A family's roster status changed: value is the status, text the family.
+	ROSTER_CHANGED,
 }
 
 var type: Type

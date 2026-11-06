@@ -29,6 +29,7 @@ const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
 const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
 const DEFAULT_FREE_RIDE: FreeRideParams = preload("res://data/run/free_ride.tres")
+const DEFAULT_VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
 
 var state: RunState
 var flow: RunFlow
@@ -125,6 +126,7 @@ func start_set() -> Reason:
 	if not RunFlow.allows(flow.state(), RunFlow.State.SET_INTRO):
 		return Reason.NOT_AWAITED
 	record.mark(state)
+	_seat_roster()
 	set_log.start_set(state, set_number())
 	_move(RunFlow.State.SET_INTRO)
 	state.round_index = 0
@@ -463,6 +465,7 @@ func _end_set() -> void:
 		state.coupons += _sets.reward(state.set_type)
 	else:
 		_raise(RunMeters.MISSED_TARGET)
+	_reeducate_villagers()
 	var held: int = Resentment.private_cadres(state.inventory.cadres, DEFAULT_CADRES.cadres)
 	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
 	var owed: int = Resentment.denunciation(state.resentment, DEFAULT_RESENTMENT)
@@ -483,6 +486,36 @@ func _end_set() -> void:
 ## Moves a meter by a source in the meter table. Callers check death at a boundary.
 func _raise(source_id: String) -> void:
 	RunMeters.apply(state, source_id, _meters, _stack, _params, PLAYER, set_log.events())
+
+
+## Seats two families from the roster and plays them by their personalities. A run
+## with no roster keeps the seats and configs it was given.
+func _seat_roster() -> void:
+	if state.roster.is_empty():
+		return
+	Roster.prepare_set(state, DEFAULT_VILLAGE, state.streams.stream(RandomStreams.EVENTS))
+	for seat: int in range(1, Seats.COUNT):
+		var entry: RosterEntry = Roster.entry(state, state.table[seat])
+		var seed_value: int = RandomStreams.derive_seed(
+			state.run_seed, "seat:%d:%d" % [set_number(), seat]
+		)
+		_configs[seat] = Roster.config_for(DEFAULT_VILLAGE, entry, seed_value)
+
+
+## A family whose own Denunciation reached mid is sent to reeducation, and its count
+## starts again.
+func _reeducate_villagers() -> void:
+	for family_id: String in state.villager_denunciation.keys():
+		if state.villager_denunciation[family_id] < _meters.denunciation.mid:
+			continue
+		var entry: RosterEntry = Roster.entry(state, family_id)
+		if entry == null or entry.status != RosterEntry.Status.ACTIVE:
+			continue
+		Roster.reeducate(state, family_id, DEFAULT_VILLAGE)
+		state.villager_denunciation[family_id] = 0
+		set_log.add(
+			RunEvent.new(RunEvent.Type.ROSTER_CHANGED, Seats.NONE, entry.status, 0.0, family_id)
+		)
 
 
 func _resent(amount: int, cause: String) -> void:

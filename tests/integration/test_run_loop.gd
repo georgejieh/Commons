@@ -346,3 +346,23 @@ func test_caught_lies_raise_the_liars_denunciation() -> void:
 		assert_int(state.villager_denunciation[family_id]).is_equal(
 			villagers_caught[family_id] * per_lie
 		)
+
+
+## A run with a roster seats two of its families each Set and plays them by personality;
+## a family whose own Denunciation reached mid leaves for reeducation at the Set's end.
+func test_a_roster_run_seats_families_and_reeducates_the_denounced() -> void:
+	var state: RunState = RunState.new(SEEDS[1])
+	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
+	loop.start_set()
+	var seated: Array[String] = state.table.slice(1)
+	assert_str(seated[0]).is_not_equal(seated[1])
+	for family_id: String in seated:
+		assert_int(Roster.entry(state, family_id).status).is_equal(RosterEntry.Status.ACTIVE)
+		assert_int(Roster.entry(state, family_id).sets_seated).is_equal(1)
+	state.villager_denunciation[seated[0]] = RunLoop.DEFAULT_METERS.denunciation.mid
+	RunScript.new().play_until_set_over(loop)
+	assert_int(Roster.entry(state, seated[0]).status).is_equal(RosterEntry.Status.REEDUCATION)
+	assert_int(state.villager_denunciation[seated[0]]).is_equal(0)
+	loop.next_set()
+	assert_bool(state.table.has(seated[0])).is_false()

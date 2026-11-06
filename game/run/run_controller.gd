@@ -264,6 +264,27 @@ func target() -> float:
 	return _loop.target()
 
 
+## A copy of the roster entry in a villager's seat, or null when the run seats no roster.
+func seated(seat: int) -> RosterEntry:
+	var state: RunState = _loop.state
+	if state.roster.is_empty() or seat <= 0 or seat >= state.table.size():
+		return null
+	var entry: RosterEntry = Roster.entry(state, state.table[seat])
+	return null if entry == null else RosterEntry.from_dict(entry.to_dict())
+
+
+## The family in a villager's seat, or null when the run seats no roster.
+func seated_family(seat: int) -> FamilyDef:
+	var entry: RosterEntry = seated(seat)
+	return null if entry == null else Roster.definition(RunLoop.DEFAULT_VILLAGE, entry)
+
+
+## The surname key shown for a villager's seat, or "" when the run seats no roster.
+func seated_name_key(seat: int) -> String:
+	var entry: RosterEntry = seated(seat)
+	return "" if entry == null else Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
+
+
 ## A copy of the run state, for display.
 func state_copy() -> RunState:
 	return RunState.from_dict(_loop.state.to_dict())

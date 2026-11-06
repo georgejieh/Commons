@@ -92,8 +92,6 @@ title.continue,Continue
 title.settings,Settings
 title.quit,Quit
 seat.you,You
-villager.wang,Wang
-villager.zhao,Zhao
 table.landlord,LANDLORD
 table.cards_left,{count} cards
 table.role.landlord,Landlord
@@ -320,3 +318,77 @@ settings.horror_intensity,Horror intensity
 settings.no_flash,No flashes
 dread.notice,"Brigade notice: the threshing floor is swept. Bring your own baskets on Sunday."
 dread.poster,Household under review
+villager.wang,Wang
+villager.li,Li
+villager.zhao,Zhao
+villager.sun,Sun
+villager.chen,Chen
+villager.liu,Liu
+villager.qin,Qin
+villager.gao,Gao
+villager.xu,Xu
+villager.zhou,Zhou
+villager.ma,Ma
+villager.feng,Feng
+villager.tang,Tang
+villager.deng,Deng
+villager.youth.hu,Hu
+villager.youth.lin,Lin
+villager.youth.zhu,Zhu
+villager.youth.he,He
+villager.youth.guo,Guo
+villager.youth.luo,Luo
+villager.youth.song,Song
+villager.youth.xie,Xie
+villager.youth.han,Han
+villager.youth.yang,Yang
+villager.youth.cao,Cao
+villager.youth.peng,Peng
+speech.wang.pass.1,"Go ahead, it's yours."
+speech.wang.bomb.1,"I was saving that. Oh, well."
+speech.wang.won.1,Not bad for old hands.
+speech.li.pass.1,Pass. You go on.
+speech.li.no_call.1,No. I'll sit this one out.
+speech.li.lost.1,I still had two twos.
+speech.zhao.call.1,I'll call. Watch closely.
+speech.zhao.bomb.1,There. That's how it's done.
+speech.zhao.cards_left.1,{count}. Keep up.
+speech.sun.pass.1,"Pass, pass."
+speech.sun.cards_left.1,{count}! Nearly out.
+speech.sun.won.1,Out first. Shuffle up.
+speech.chen.call.1,I'll call. These look lucky.
+speech.chen.bomb.1,Ha! Didn't see that coming.
+speech.chen.lost.1,Next hand's mine.
+speech.liu.pass.1,"Go on, you've got this one."
+speech.liu.pass.2,Mm. Pass.
+speech.liu.won.1,"We did all right, didn't we?"
+speech.qin.no_call.1,No. Pass it on.
+speech.qin.pass.1,I'll wait.
+speech.qin.lost.1,Better luck tomorrow.
+speech.gao.call.1,Sure. Why not.
+speech.gao.pass.1,Is this how it always goes?
+speech.gao.lost.1,"Same as last time, then."
+speech.xu.pass.1,"You take it, you're doing better."
+speech.xu.won.1,"Oh, that's us! Well played."
+speech.xu.cards_left.1,Only {count}! Help me out.
+speech.zhou.pass.1,"Go on, I'm listening."
+speech.zhou.cards_left.1,{count} left? Mm.
+speech.zhou.won.1,Good game. Same again?
+speech.ma.pass.1,Not yet.
+speech.ma.won.1,That'll do.
+speech.ma.bomb.1,Had that one ready a while.
+speech.feng.pass.1,"Go on, finish it."
+speech.feng.call.1,Give it here. I'll manage.
+speech.feng.won.1,Good. Tea after this one.
+speech.tang.call.1,"I'll take it, if no one minds."
+speech.tang.pass.1,Take your time.
+speech.tang.lost.1,It happens.
+speech.deng.call.1,Mine. Let's see you take it back.
+speech.deng.bomb.1,"Your trick, my bomb."
+speech.deng.won.1,Again. Same seats.
+speech.youth_a.pass.1,Should I play that? No. Pass.
+speech.youth_a.won.1,Is that a win? It is!
+speech.youth_a.cards_left.1,"{count} left, I think."
+speech.youth_b.pass.1,Pass. Obviously.
+speech.youth_b.lost.1,Great. Wonderful.
+speech.youth_b.call.1,"Sure, I'll call."

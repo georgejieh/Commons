@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="FamilyDef" format=3]
+
+[ext_resource type="Script" path="res://data/villagers/family_def.gd" id="1"]
+[ext_resource type="Script" path="res://data/bots/personality.gd" id="2"]
+[ext_resource type="Script" path="res://data/ui/speech_book.gd" id="3"]
+[ext_resource type="Script" path="res://data/ui/speech_line.gd" id="4"]
+[ext_resource type="Resource" path="res://data/ui/voices/wang.tres" id="5"]
+[ext_resource type="Texture2D" path="res://art/portraits/portrait_wang_face.png" id="6"]
+
+[sub_resource type="Resource" id="personality"]
+script = ExtResource("2")
+tier = 1
+bomb_aggression = 0
+cooperation = 2
+honesty = 2
+ambition = 0
+grudge = 0
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("4")
+event = "pass"
+text_key = "speech.wang.pass.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("4")
+event = "bomb"
+text_key = "speech.wang.bomb.1"
+mood = "tired"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("4")
+event = "won"
+text_key = "speech.wang.won.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="speech"]
+script = ExtResource("3")
+lines = Array[ExtResource("4")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2")])
+
+[resource]
+script = ExtResource("1")
+id = "wang"
+name_key = "villager.wang"
+hanzi = "王"
+personality = SubResource("personality")
+voice = ExtResource("5")
+portrait = ExtResource("6")
+portrait_face = Rect2(0.21, 0.11, 0.57, 0.53)
+speech = SubResource("speech")
+unlock = 0
+unlock_runs = 0
+rising = false
+mirrors_player = false

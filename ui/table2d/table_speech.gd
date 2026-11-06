@@ -14,10 +14,19 @@ const SEAT_SALT: int = 7
 var _seats: Dictionary[int, SeatPanel] = {}
 var _said: Dictionary[int, int] = {}
 var _landlord: int = Seats.NONE
+## Each seated family's own lines (P4.5), said alongside the shared book's.
+var _books: Dictionary[int, SpeechBook] = {}
 
 
-func setup(seats: Dictionary[int, SeatPanel]) -> void:
+func setup(seats: Dictionary[int, SeatPanel], app: DemoApp = null) -> void:
 	_seats = seats
+	_books.clear()
+	if app == null:
+		return
+	for seat: int in seats:
+		var book: SpeechBook = app.seat_speech(seat)
+		if book != null:
+			_books[seat] = book
 
 
 ## Speaks for event, if anyone would.
@@ -59,8 +68,11 @@ func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 		return
 	var said: int = _said.get(seat, 0)
 	_said[seat] = said + 1
-	var line: SpeechLine = BOOK.pick(event, said + seat * SEAT_SALT)
-	if line == null:
+	var choices: Array[SpeechLine] = BOOK.lines_for(event)
+	if _books.has(seat):
+		choices = _books[seat].lines_for(event) + choices
+	if choices.is_empty():
 		return
+	var line: SpeechLine = choices[posmod(said + seat * SEAT_SALT, choices.size())]
 	_seats[seat].say(tr(line.text_key).format(fields), line.mood)
 	spoke.emit(seat, event, line)

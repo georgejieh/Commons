@@ -136,11 +136,33 @@ func has_saved_run() -> bool:
 
 
 func seat_name(seat: int) -> String:
-	return tr(DEMO.name_keys[seat])
+	var key: String = _controller_call("seated_name_key", seat, "")
+	return tr(key if not key.is_empty() else DEMO.name_keys[seat])
+
+
+## The seated family's own speech lines, or null for the demo's fixed seats.
+func seat_speech(seat: int) -> SpeechBook:
+	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	return null if family == null else family.speech
+
+
+## Asks the controller about a seat, or gives fallback before any run exists.
+func _controller_call(method: String, seat: int, fallback: Variant) -> Variant:
+	if controller == null or not controller.has_run():
+		return fallback
+	return controller.call(method, seat)
 
 
 ## The seat's portrait cropped around its face for a box of the given shape.
 func seat_portrait(seat: int, box: Vector2 = Vector2.ZERO) -> Texture2D:
+	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	if family != null:
+		if family.portrait == null:
+			return null
+		var face: Texture2D = ArtStages.resolve(family.portrait)
+		if box == Vector2.ZERO:
+			return face
+		return ScreenKit.face_crop(face, family.portrait_face, box.x / box.y)
 	if seat >= DEMO.portraits.size() or DEMO.portraits[seat] == null:
 		return null
 	var picture: Texture2D = ArtStages.resolve(DEMO.portraits[seat])

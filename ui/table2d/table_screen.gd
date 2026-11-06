@@ -106,7 +106,7 @@ func open(app: DemoApp) -> void:
 		lane.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
 	_build_seats()
-	_speech.setup(_seats)
+	_speech.setup(_seats, app)
 	_board.setup(_controller.cadre_slots())
 	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
 	_hand_view.setup(_hand, _pool)
