@@ -23,6 +23,8 @@ const HALO_SIZE: int = 10
 ## Page margins and the widest a content column grows.
 const PAGE_MARGIN: int = 88
 const MIN_BUTTON_WIDTH: int = 260
+## Space kept around a face in a portrait box, as a share of the head's size per side.
+const FACE_MARGIN: float = 0.12
 
 
 ## A full-screen page over a backdrop, or over paper when there is none, holding a
@@ -137,7 +139,7 @@ static func halo_theme() -> Theme:
 ## A texture that fills its parent, cropped to keep its shape.
 static func cover(texture: Texture2D) -> TextureRect:
 	var rect: TextureRect = TextureRect.new()
-	rect.texture = texture
+	rect.texture = ArtStages.resolve(texture)
 	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -148,7 +150,7 @@ static func cover(texture: Texture2D) -> TextureRect:
 ## Aged card stock with its ink border kept at the edges, for panels drawn by hand.
 static func paper_style(margin: int = 18) -> StyleBoxTexture:
 	var style: StyleBoxTexture = StyleBoxTexture.new()
-	style.texture = ART.panel_paper
+	style.texture = ArtStages.resolve(ART.panel_paper)
 	style.set_texture_margin_all(CommonsTheme.SHEET_BORDER)
 	style.set_content_margin_all(margin)
 	return style
@@ -190,3 +192,46 @@ static func reveal(column: VBoxContainer) -> void:
 		if piece != null:
 			pieces.append(piece)
 	UiMotion.enter(pieces)
+
+
+## A paper-colored edge around text that sits straight on the table, so it stays
+## readable however dark the room behind it gets (P3B.12).
+static func paper_outline(label: Label) -> void:
+	label.add_theme_color_override("font_outline_color", STYLE.paper)
+	label.add_theme_constant_override("outline_size", 8)
+
+
+## A portrait cropped to a box of aspect (width / height), centered on the face.
+static func face_crop(picture: Texture2D, face: Rect2, aspect: float) -> Texture2D:
+	var crop: AtlasTexture = AtlasTexture.new()
+	crop.atlas = picture
+	crop.region = face_region(picture.get_size(), face, aspect)
+	return crop
+
+
+## The pixel region of an image of size that shows the whole face (fractions of the
+## image) with a margin, at the given aspect, centered on the face and kept inside the
+## image.
+static func face_region(size: Vector2, face: Rect2, aspect: float) -> Rect2:
+	var head: Rect2 = Rect2(face.position * size, face.size * size)
+	var want: Vector2 = head.size * (1.0 + 2.0 * FACE_MARGIN)
+	if want.x / want.y < aspect:
+		want.x = want.y * aspect
+	else:
+		want.y = want.x / aspect
+	var fit: float = minf(1.0, minf(size.x / want.x, size.y / want.y))
+	want *= fit
+	var corner: Vector2 = head.get_center() - want / 2.0
+	corner = corner.clamp(Vector2.ZERO, size - want)
+	return Rect2(corner, want)
+
+
+## A Cadre's art for the current corruption stage.
+static func cadre_art(cadre_id: String) -> Texture2D:
+	return ArtStages.resolve(ART.cadre(cadre_id))
+
+
+## A Cadre's name over its rules, for its tooltip.
+static func cadre_tip(controller: RunController, cadre_id: String) -> String:
+	var name: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
+	return "%s\n%s" % [name, controller.modifier_text(cadre_id)]

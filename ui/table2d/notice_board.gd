@@ -1,14 +1,12 @@
 class_name NoticeBoard
 extends HBoxContainer
-## The player's Cadres as portrait cards pinned in slot order. Slots are made once.
+## The player's Cadres as portrait cards pinned in slot order. Slots are made once. A card
+## shows its art alone; its name and rules are in its tooltip.
 
 ## How faint an empty Cadre slot is.
 const EMPTY_ALPHA: float = 0.22
-const TILE_WIDTH: float = 108.0
-const PAPER: Color = Color("f6edd9")
-const INK: Color = Color("1e1a16")
+const TILE_SIZE: Vector2 = Vector2(108, 140)
 
-var _labels: Array[Label] = []
 var _pictures: Array[TextureRect] = []
 var _cards: Array[Control] = []
 
@@ -18,33 +16,26 @@ func setup(slots: int) -> void:
 	add_theme_constant_override("separation", 14)
 	for _index: int in slots:
 		var card: PanelContainer = PanelContainer.new()
-		card.custom_minimum_size = Vector2(TILE_WIDTH, 140)
+		card.custom_minimum_size = TILE_SIZE
 		card.add_theme_stylebox_override("panel", ScreenKit.paper_style(6))
-		var column: VBoxContainer = VBoxContainer.new()
 		var picture: TextureRect = TextureRect.new()
-		picture.custom_minimum_size = Vector2(0, 78)
 		picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		var label: Label = Label.new()
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_color_override("font_color", INK)
-		label.add_theme_font_size_override("font_size", 13)
-		# Long names break over two lines inside the tile instead of spilling past it.
-		label.custom_minimum_size = Vector2(TILE_WIDTH - 12.0, 0)
-		column.add_child(picture)
-		column.add_child(label)
-		card.add_child(column)
+		picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.add_child(picture)
 		add_child(card)
-		_labels.append(label)
 		_cards.append(card)
 		_pictures.append(picture)
 
 
-func show_cadres(cadre_ids: Array[String]) -> void:
-	for index: int in _labels.size():
+## Shows the Cadres the run holds, each with its name and rules as its tooltip.
+func show_cadres(controller: RunController) -> void:
+	var cadre_ids: Array[String] = controller.state_copy().inventory.cadres
+	for index: int in _cards.size():
 		var held: bool = index < cadre_ids.size()
-		_labels[index].text = tr("modifier.%s.name" % cadre_ids[index]) if held else ""
 		# An empty slot is a faint pin mark on the board, so it doesn't pull the eye.
 		_cards[index].modulate.a = 1.0 if held else EMPTY_ALPHA
-		_pictures[index].texture = ScreenKit.ART.cadre(cadre_ids[index]) if held else null
+		_cards[index].tooltip_text = (
+			ScreenKit.cadre_tip(controller, cadre_ids[index]) if held else ""
+		)
+		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null

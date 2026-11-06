@@ -3,7 +3,8 @@ extends Control
 ## The state store between Sets: three Cadres on the counter, bought with coupons, a
 ## reroll, and what you already hold. Every purchase goes through the run controller.
 
-## Cadre names are long, so they print a step below the title size.
+## Modifier names are long, so they print a step below the title size (the set intro's
+## debuff card uses it).
 const NAME_SIZE: int = 32
 ## The owned-Cadres line wraps at this width on its paper chip.
 const OWNED_WIDTH: float = 900.0
@@ -12,6 +13,8 @@ var _app: DemoApp
 var _counter: HBoxContainer = HBoxContainer.new()
 var _coupons: Label = ScreenKit.styled("", CommonsTheme.TITLE)
 var _owned: Label = ScreenKit.styled("", CommonsTheme.CAPTION)
+## The name and rules of the Cadre under the pointer or focus, for keyboard and gamepad.
+var _reading: Label = ScreenKit.label("", 20)
 var _reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _shown_coupons: float = 0.0
 
@@ -27,6 +30,7 @@ func open(app: DemoApp) -> void:
 	_owned.add_theme_font_size_override("font_size", 22)
 	# The chip shrinks to its content, so a wrapping label needs a set width.
 	_owned.custom_minimum_size = Vector2(OWNED_WIDTH, 0)
+	_reading.custom_minimum_size = Vector2(OWNED_WIDTH, 0)
 	balance.add_child(_coupons)
 	balance.size_flags_vertical = Control.SIZE_SHRINK_END
 	column.add_child(ScreenKit.row([heading, balance], 64))
@@ -39,9 +43,12 @@ func open(app: DemoApp) -> void:
 			app.controller.leave_store()
 			app.show_screen("set_intro", true)
 	)
-	column.add_child(ScreenKit.row([leave, _reroll]))
+	var market: Button = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
+	market.pressed.connect(func() -> void: app.show_screen("black_market"))
+	column.add_child(ScreenKit.row([leave, _reroll, market]))
 	# A paper chip, so the line reads over the mural.
 	var chip: VBoxContainer = ScreenKit.card(Vector2(0, 0))
+	chip.add_child(_reading)
 	chip.add_child(_owned)
 	var chip_panel: Control = ScreenKit.card_panel(chip)
 	chip_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
@@ -57,6 +64,7 @@ func _refresh() -> void:
 	var state: RunState = controller.state_copy()
 	UiMotion.count(_coupons, _shown_coupons, state.coupons, _coupon_text)
 	_shown_coupons = state.coupons
+	_read("")
 	for child: Node in _counter.get_children():
 		_counter.remove_child(child)
 		child.queue_free()
@@ -84,17 +92,13 @@ func _item(slot: int, cadre_id: String) -> Control:
 		UiMotion.stamp(sold)
 		return ScreenKit.card_panel(card)
 	var controller: RunController = _app.controller
-	var picture: TextureRect = ScreenKit.cover(ScreenKit.ART.cadre(cadre_id))
+	var tip: String = ScreenKit.cadre_tip(controller, cadre_id)
+	# The card face is the art alone; its name and rules are in the tooltip.
+	var picture: TextureRect = ScreenKit.cover(ScreenKit.cadre_art(cadre_id))
 	picture.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	picture.custom_minimum_size = Vector2(0, 190)
+	picture.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(picture)
-	card.add_child(ScreenKit.eyebrow(tr("store.cadre")))
-	var name: Label = ScreenKit.styled(tr("modifier.%s.name" % cadre_id), CommonsTheme.TITLE)
-	name.add_theme_font_size_override("font_size", NAME_SIZE)
-	card.add_child(name)
-	var rules: Label = ScreenKit.label(controller.modifier_text(cadre_id), 20)
-	rules.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	card.add_child(rules)
 	var buy: Button = ScreenKit.button(
 		tr("store.buy").format({"price": controller.store_price(slot)}), CommonsTheme.COUPON
 	)
@@ -105,10 +109,20 @@ func _item(slot: int, cadre_id: String) -> Control:
 			controller.buy(slot)
 			_refresh()
 	)
+	buy.tooltip_text = tip
+	buy.focus_entered.connect(_read.bind(tip))
 	card.add_child(buy)
 	var panel: Control = ScreenKit.card_panel(card)
+	panel.tooltip_text = tip
+	panel.mouse_entered.connect(_read.bind(tip))
 	UiMotion.hoverable(panel)
 	return panel
+
+
+## Shows a Cadre's name and rules on the reading line; an empty line takes no space.
+func _read(tip: String) -> void:
+	_reading.text = tip
+	_reading.visible = not tip.is_empty()
 
 
 func _on_reroll() -> void:

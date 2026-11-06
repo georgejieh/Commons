@@ -99,9 +99,6 @@ table.cards_left,{count} cards
 table.role.landlord,Landlord
 table.role.teammate,Your teammate
 table.role.peasant,Peasant
-table.say.call,I'll call.
-table.say.pass,Pass.
-table.say.cards_left,{count} left.
 table.status,Year {year} · {set} · Round {round} of {rounds} · {progress} / {target}
 table.coupons,{count} coupons
 table.coupons.one,1 coupon
@@ -186,7 +183,6 @@ settings.post_process,Print grain and film effects
 title.eyebrow,A Fight the Landlord roguelike
 store.eyebrow,Between Quotas
 store.balance,Your coupons
-store.cadre,Cadre
 summary.scored,Scored
 summary.target,Target
 summary.coupons_label,Coupons
@@ -225,8 +221,99 @@ pause.to_title,Return to title
 pause.quit,Quit game
 pause.saved,Your run saves after every move. Continue on the title screen picks up here.
 table.card_left,{count} card
-table.say.no_call,No call.
 table.bid_prompt,Call the landlord seat?
 summary.paid,The Quota paid {count} coupons.
 summary.paid.one,The Quota paid 1 coupon.
 summary.cost,"Famine rose by {rise}, to {famine}. At 100, the village starves."
+speech.call.1,I'll call.
+speech.call.2,Give me the seat.
+speech.call.3,Fine. I'll take it.
+speech.no_call.1,No call.
+speech.no_call.2,Not with these cards.
+speech.no_call.3,Someone else can have it.
+speech.pass.1,Pass.
+speech.pass.2,Go on.
+speech.pass.3,Nothing for that.
+speech.pass.4,Pass. Again.
+speech.cards_left.1,{count} left.
+speech.cards_left.2,Down to {count}.
+speech.cards_left.3,Only {count} now. Careful.
+speech.bomb.1,Bomb.
+speech.bomb.2,Sorry. I had to.
+speech.bomb.3,Try topping that.
+speech.won.1,Count it up.
+speech.won.2,Good. Deal again.
+speech.lost.1,"Shuffle, then."
+speech.lost.2,Bad cards from the start.
+dossier.open,Dossier
+dossier.eyebrow,Seen at the table
+dossier.title,Dossier
+dossier.calls,Called on {called} of {bids} bid turns
+dossier.bombs,Bombs played: {count}
+dossier.passes,Passes: {count}
+dossier.beat_teammate,Beat a teammate's play: {count}
+dossier.went_out,Went out first: {count}
+dossier.landlord,Rounds as landlord: {count}
+dossier.empty,Nothing seen yet.
+dossier.back,Back
+title.collection,Collection
+title.history,History
+setup.eyebrow,New run
+setup.title,Choose a stake
+setup.stake_base,Base Stake
+setup.stake_base_text,The standard rules. No extra pressure.
+setup.locked,Harder stakes unlock after a won run.
+setup.start,Start
+setup.back,Back
+round.eyebrow,Round {round}
+round.won,Your side won the round
+round.lost,Your side lost the round
+round.none,No round has finished yet
+round.score,Your score
+round.share,Your Commons share
+round.progress,Toward the Quota
+round.back,Back to the table
+pause.last_round,Last round
+market.eyebrow,Behind the store
+market.title,Black market
+market.empty,Nothing for sale today.
+market.open,Black market
+market.back,Back to the store
+plot.eyebrow,Private plot
+plot.title,Swap cards
+plot.hand,Your hand
+plot.plot,Your plot
+plot.empty,Your plot is empty.
+plot.keep,Keep hand
+plot.back,Back
+reed.eyebrow,Reeducation
+reed.title,Sent away for a Set
+reed.body,You sit out the next Set. Your private plot is emptied.
+reed.continue,Continue
+end.eyebrow,The run is over
+end.landlord,You finished as landlord
+end.peasant,You finished as a peasant
+end.famine,Famine
+end.denunciation,Denunciation
+end.coupons,Coupons
+end.table,At the table
+end.to_title,Return to title
+coll.eyebrow,Collection
+coll.title,Cadres
+coll.back,Back
+hist.eyebrow,Village history
+hist.title,This run
+hist.empty,No history yet.
+hist.set,Quota {number}
+hist.row,"{name}: fed {fed}, bombed {bombed}, denounced {denounced}, betrayed {betrayed}"
+hist.back,Back
+note.eyebrow,Before you play
+note.title,Content note
+note.themes,"Commons is set in a farming village under a planned economy. It shows famine, political persecution and surveillance, without gore."
+note.board,The table grows darker and stranger as Famine and Denunciation rise.
+note.settings,"To soften it, lower Horror intensity in Settings. No flashes turns off flickering."
+note.continue,Continue
+settings.horror_intensity,Horror intensity
+settings.no_flash,No flashes
+dread.notice,"Brigade notice: the threshing floor is swept. Bring your own baskets on Sunday."
+dread.poster,Household under review

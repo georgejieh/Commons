@@ -112,6 +112,10 @@ func rank_order_text() -> String:
 	return _order.text
 
 
+func active_text() -> String:
+	return _active.text
+
+
 func _rank_order() -> PackedStringArray:
 	var rank_map: PackedByteArray = _controller.player_table().rank_map
 	var ranks: Array[int] = []

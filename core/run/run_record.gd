@@ -20,6 +20,15 @@ var checkpoint: Dictionary = {}
 var commands: Array[Dictionary] = []
 
 
+## Schema 1 to 2: runs saved before the dossier start with nothing observed.
+static func migrate_from_1(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		if not checkpoint.has("observations"):
+			checkpoint["observations"] = {}
+	return data
+
+
 ## True when data has a checkpoint with every RunState field and well-formed commands,
 ## so a save that parses but lost its shape falls back to the backup.
 static func is_valid(data: Dictionary) -> bool:
@@ -29,6 +38,8 @@ static func is_valid(data: Dictionary) -> bool:
 	for key: String in RunState.new(0).to_dict():
 		if not checkpoint.has(key):
 			return false
+	if not _observations_valid(checkpoint["observations"]):
+		return false
 	var phase: Variant = checkpoint["phase"]
 	if not (phase is int or phase is float) or phase < 0 or phase >= RunFlow.State.size():
 		return false
@@ -104,3 +115,14 @@ func add(command: Dictionary) -> void:
 
 func to_dict() -> Dictionary:
 	return {"checkpoint": checkpoint.duplicate(true), "commands": commands.duplicate(true)}
+
+
+## Observations are a dictionary of family IDs to arrays of counts.
+static func _observations_valid(value: Variant) -> bool:
+	if not value is Dictionary:
+		return false
+	var observations: Dictionary = value
+	for family: Variant in observations:
+		if not family is String or not observations[family] is Array:
+			return false
+	return true

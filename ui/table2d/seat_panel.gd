@@ -8,6 +8,9 @@ const INK: Color = Color("1e1a16")
 const LANDLORD_RED: Color = Color("9e1b16")
 const GOLD: Color = Color("c9a227")
 const PAPER: Color = Color("d9c8a4")
+## The portrait's frame, and the picture inside it after the frame's 4 px edge.
+const PORTRAIT_BOX: Vector2 = Vector2(110, 138)
+const PICTURE_BOX: Vector2 = Vector2(102, 130)
 
 var seat: int = -1
 
@@ -22,6 +25,7 @@ var _info: VBoxContainer = VBoxContainer.new()
 var _back: TextureRect = TextureRect.new()
 var _count_row: HBoxContainer = HBoxContainer.new()
 var _row: HBoxContainer = HBoxContainer.new()
+var _mood: String = ""
 
 
 func _init() -> void:
@@ -40,7 +44,7 @@ func _init() -> void:
 	tag.content_margin_right = 10
 	_banner.add_theme_stylebox_override("normal", tag)
 	_banner.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_portrait.custom_minimum_size = Vector2(110, 138)
+	_portrait.custom_minimum_size = PORTRAIT_BOX
 	_portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_portrait.color = PAPER
 	_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -62,7 +66,7 @@ func _init() -> void:
 	_speech.custom_minimum_size = Vector2(200, 0)
 	_speech.max_lines_visible = 2
 	_row.add_child(_portrait)
-	_back.texture = ScreenKit.ART.card_back
+	_back.texture = ArtStages.resolve(ScreenKit.ART.card_back)
 	_back.custom_minimum_size = Vector2(30, 42)
 	_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
@@ -97,5 +101,23 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 		_role.text = tr("table.role.peasant").to_upper()
 
 
-func say(text: String) -> void:
+## Shows a line; mood is the line's mood tag, kept for the voice (P3B.13).
+func say(text: String, mood: String = "") -> void:
 	_speech.text = text
+	_mood = mood
+
+
+## Dims the portrait for a moment, as a flicker (P3B.12). The tween belongs to the
+## picture, so it dies with it.
+func blink(seconds: float) -> void:
+	var tween: Tween = _picture.create_tween()
+	tween.tween_property(_picture, "modulate:v", 0.1, seconds * 0.3)
+	tween.tween_property(_picture, "modulate:v", 1.0, seconds * 0.7)
+
+
+func speech() -> String:
+	return _speech.text
+
+
+func mood() -> String:
+	return _mood

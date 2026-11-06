@@ -1,18 +1,14 @@
 class_name PostProcess
 extends CanvasLayer
 ## The one full-screen pass over every screen (P3B.7), drawn above the UI. The quality
-## setting turns it off. set_dread() eases the decay value from the meters; it never
-## changes what the player reads, only how the paper looks.
+## setting turns it off. At the table the dread layers (P3B.12) write its parameters;
+## they never change what the player reads, only how the paper looks.
 
 const SHADER: Shader = preload("res://shaders/post_process.gdshader")
 const LAYER: int = 100
-## How fast dread eases toward its target, per second.
-const EASE_RATE: float = 0.4
 
 var _rect: ColorRect = ColorRect.new()
 var _material: ShaderMaterial = ShaderMaterial.new()
-var _dread: float = 0.0
-var _target: float = 0.0
 
 
 func _ready() -> void:
@@ -26,18 +22,13 @@ func _ready() -> void:
 	_apply_quality()
 
 
-## Dread from 0 to 1, eased over a few seconds.
-func set_dread(value: float) -> void:
-	_target = clampf(value, 0.0, 1.0)
+## The pass's material, for the dread layers.
+func material() -> ShaderMaterial:
+	return _material
 
 
 func is_on() -> bool:
 	return _rect.visible
-
-
-func _process(delta: float) -> void:
-	_dread = move_toward(_dread, _target, EASE_RATE * delta)
-	_material.set_shader_parameter("dread", _dread)
 
 
 func _on_setting(key: String) -> void:

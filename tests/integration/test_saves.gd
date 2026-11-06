@@ -136,6 +136,30 @@ func test_a_save_that_parses_but_lost_its_shape_falls_back() -> void:
 	assert_bool(RunRecord.is_valid(broken)).is_false()
 
 
+## A schema 1 run save, from before the dossier, loads with nothing observed.
+func test_a_schema_1_run_save_gains_empty_observations() -> void:
+	var data: Dictionary = _record(4)
+	var checkpoint: Dictionary = data["checkpoint"]
+	checkpoint.erase("observations")
+	var file: FileAccess = FileAccess.open(_service.path(), FileAccess.WRITE)
+	file.store_string(JSON.stringify({"schema_version": 1, "data": data}))
+	file.close()
+	var loaded: SaveLoad = _service.load_save()
+	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
+	assert_int(_turn(loaded.data)).is_equal(4)
+	var migrated: Dictionary = loaded.data["checkpoint"]
+	assert_dict(migrated["observations"]).is_empty()
+
+
+func test_damaged_observations_fail_validation() -> void:
+	var data: Dictionary = _record(5)
+	var checkpoint: Dictionary = data["checkpoint"]
+	checkpoint["observations"] = []
+	assert_bool(RunRecord.is_valid(data)).is_false()
+	checkpoint["observations"] = {"wang": null}
+	assert_bool(RunRecord.is_valid(data)).is_false()
+
+
 func test_a_save_left_mid_rename_loads_the_backup() -> void:
 	_service.save(_record(1))
 	_service.save(_record(2))
@@ -146,7 +170,7 @@ func test_a_save_left_mid_rename_loads_the_backup() -> void:
 
 
 func test_an_old_version_is_migrated_one_step_at_a_time() -> void:
-	_service.save({"turn": 1})
+	SaveService.new(_service.path(), {}, 1).save({"turn": 1})
 	var add_field: Callable = func(data: Dictionary) -> Dictionary:
 		data["added"] = true
 		return data

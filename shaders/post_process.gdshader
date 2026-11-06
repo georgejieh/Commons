@@ -4,7 +4,7 @@
 // board decays as the meters rise. It never moves or hides anything the player reads.
 shader_type canvas_item;
 
-uniform sampler2D screen : hint_screen_texture, filter_linear_mipmap;
+uniform sampler2D screen : hint_screen_texture, filter_linear;
 uniform float grain : hint_range(0.0, 0.3) = 0.035;
 uniform float misregistration : hint_range(0.0, 4.0) = 1.2;
 uniform float vignette : hint_range(0.0, 1.5) = 0.55;

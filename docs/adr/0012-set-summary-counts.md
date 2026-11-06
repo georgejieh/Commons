@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed. P3A.7 is built on these triggers and stays blocked until the project owner accepts or changes them.
+Accepted by the project owner on 2026-11-04, with the triggers as proposed.
 
 ## Context
 

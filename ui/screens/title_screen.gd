@@ -1,6 +1,7 @@
 class_name TitleScreen
 extends Control
-## The title: start a new demo run, continue a saved one, or open the settings.
+## The title: start a new run through run setup, continue a saved one, or open the
+## collection, village history or settings.
 
 
 func open(app: DemoApp) -> void:
@@ -22,11 +23,7 @@ func open(app: DemoApp) -> void:
 	spacer.custom_minimum_size = Vector2(0, 24)
 	column.add_child(spacer)
 	var new_run: Button = ScreenKit.button(tr("title.new_run"), CommonsTheme.PRIMARY)
-	new_run.pressed.connect(
-		func() -> void:
-			app.new_run(int(Time.get_unix_time_from_system()))
-			app.show_screen("set_intro", true)
-	)
+	new_run.pressed.connect(func() -> void: app.show_screen("run_setup"))
 	column.add_child(new_run)
 	if app.has_saved_run():
 		var resume: Button = ScreenKit.button(tr("title.continue"))
@@ -36,6 +33,10 @@ func open(app: DemoApp) -> void:
 	settings.pressed.connect(func() -> void: app.show_screen("settings"))
 	var quit: Button = ScreenKit.button(tr("title.quit"), CommonsTheme.GHOST)
 	quit.pressed.connect(func() -> void: get_tree().quit())
-	column.add_child(ScreenKit.row([settings, quit]))
+	var collection: Button = ScreenKit.button(tr("title.collection"), CommonsTheme.GHOST)
+	collection.pressed.connect(func() -> void: app.show_screen("collection"))
+	var history: Button = ScreenKit.button(tr("title.history"), CommonsTheme.GHOST)
+	history.pressed.connect(func() -> void: app.show_screen("village_history"))
+	column.add_child(ScreenKit.row([collection, history, settings, quit]))
 	ScreenKit.reveal(column)
 	new_run.grab_focus()

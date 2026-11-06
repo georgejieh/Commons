@@ -17,6 +17,16 @@ const SCREENS: Dictionary[String, String] = {
 	"year_summary": "res://ui/screens/year_summary_screen.tscn",
 	"settings": "res://ui/screens/settings_screen.tscn",
 	"demo_complete": "res://ui/screens/demo_complete_screen.tscn",
+	"dossier": "res://ui/screens/dossier_screen.tscn",
+	"content_note": "res://ui/screens/content_note_screen.tscn",
+	"run_setup": "res://ui/screens/run_setup_screen.tscn",
+	"round_summary": "res://ui/screens/round_summary_screen.tscn",
+	"black_market": "res://ui/screens/black_market_screen.tscn",
+	"plot_swap": "res://ui/screens/plot_swap_screen.tscn",
+	"reeducation": "res://ui/screens/reeducation_screen.tscn",
+	"ending": "res://ui/screens/ending_screen.tscn",
+	"collection": "res://ui/screens/collection_screen.tscn",
+	"village_history": "res://ui/screens/village_history_screen.tscn",
 }
 
 var controller: RunController = RunController.new()
@@ -47,7 +57,12 @@ func _ready() -> void:
 		if ResourceLoader.exists(SCREENS[screen_id]):
 			scenes[screen_id] = load(SCREENS[screen_id])
 	switcher.setup(_host, scenes)
-	show_screen("title", true)
+	show_screen(first_screen(), true)
+
+
+## The content note on first launch, then the title ever after.
+func first_screen() -> String:
+	return "title" if bool(Settings.value("content_note_seen")) else "content_note"
 
 
 ## Shows a screen and hands it the app. replace drops the way back.
@@ -69,9 +84,13 @@ func _play_wipe() -> void:
 	tween.tween_property(_wipe, "modulate:a", 0.0, UiMotion.PRESETS.wipe_time)
 
 
-func back() -> void:
-	if switcher.back() and switcher.current().has_method("open"):
+## Goes back one screen. Returns false at the bottom of the stack.
+func back() -> bool:
+	if not switcher.back():
+		return false
+	if switcher.current().has_method("open"):
 		switcher.current().call("open", self)
+	return true
 
 
 ## The table this build plays on.
@@ -105,6 +124,8 @@ func screen_for(awaiting: int) -> String:
 			return "store"
 		RunController.AWAIT_RUN_OVER:
 			return "year_summary"
+		RunController.AWAIT_SWAP:
+			return "plot_swap"
 	return table_id()
 
 
@@ -116,8 +137,14 @@ func seat_name(seat: int) -> String:
 	return tr(DEMO.name_keys[seat])
 
 
-func seat_portrait(seat: int) -> Texture2D:
-	return DEMO.portraits[seat] if seat < DEMO.portraits.size() else null
+## The seat's portrait cropped around its face for a box of the given shape.
+func seat_portrait(seat: int, box: Vector2 = Vector2.ZERO) -> Texture2D:
+	if seat >= DEMO.portraits.size() or DEMO.portraits[seat] == null:
+		return null
+	var picture: Texture2D = ArtStages.resolve(DEMO.portraits[seat])
+	if box == Vector2.ZERO or seat >= DEMO.portrait_faces.size():
+		return picture
+	return ScreenKit.face_crop(picture, DEMO.portrait_faces[seat], box.x / box.y)
 
 
 func need_cap() -> int:
@@ -129,12 +156,6 @@ func sets_per_year() -> int:
 
 
 ## Dread for the post-process: the higher meter, as a share of its range.
-func update_dread() -> void:
-	if controller.has_run():
-		var state: RunState = controller.state_copy()
-		post.set_dread(maxi(state.famine, state.denunciation) / 100.0)
-
-
 func max_rounds() -> int:
 	return DEMO.sets.max_rounds
 

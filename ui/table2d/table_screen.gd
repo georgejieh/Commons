@@ -41,15 +41,28 @@ var _replaying: bool = false
 var _pause: PauseMenu = PauseMenu.new()
 var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
+var _speech: TableSpeech = TableSpeech.new()
+var _input: TableInput = TableInput.new()
+var _dread: DreadLayers = DreadLayers.new()
+var _dressing: DreadDressing = DreadDressing.new()
+var _surface: TextureRect
 
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	_place(_backdrop(RAIL_EDGE), Vector2.ZERO, Vector2(1920, 1080))
-	var surface: TextureRect = ScreenKit.cover(ScreenKit.ART.table_surface)
-	_place(surface, Vector2(0, 72), Vector2(1920, 1008))
-	_place(_atmosphere, Vector2(0, 72), Vector2(1920, 1008))
+	var rail: ColorRect = ColorRect.new()
+	rail.color = RAIL_EDGE
+	rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_surface = ScreenKit.cover(ScreenKit.ART.table_surface)
+	# The room fills the screen below the bar, so a 16:10 screen shows more table, not
+	# a band of nothing (P3B.11).
+	for backdrop: Control in [rail, _surface, _atmosphere]:
+		add_child(backdrop)
+		backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		backdrop.offset_top = 0.0 if backdrop == rail else 72.0
 	_atmosphere.name = "Atmosphere"
+	add_child(_dressing)
+	add_child(_dread)
 	# The ledger sits inside its paper, so its margins come from the sheet.
 	var ledger_paper: PanelContainer = PanelContainer.new()
 	ledger_paper.theme_type_variation = CommonsTheme.SHEET
@@ -61,6 +74,7 @@ func _ready() -> void:
 	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
 	_you.theme_type_variation = CommonsTheme.TITLE
 	_you.add_theme_font_size_override("font_size", 28)
+	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
 	_place(_need_panel, Vector2(720, 420), Vector2(420, 200))
@@ -87,10 +101,12 @@ func open(app: DemoApp) -> void:
 	_player.step = app.motion_step()
 	_player.motion = _motion
 	_motion.setup(self, bool(Settings.value("reduced_motion")))
+	Settings.changed.connect(_on_setting)
 	for lane: PlayLane in _plays.values():
 		lane.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
 	_build_seats()
+	_speech.setup(_seats)
 	_board.setup(_controller.cadre_slots())
 	_need_panel.setup(_controller.base_need(), app.need_cap())
 	_hand_view.setup(_hand, _pool)
@@ -112,6 +128,10 @@ func open(app: DemoApp) -> void:
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
 	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
 	_pause.quit_game.connect(func() -> void: get_tree().quit())
+	_pause.dossier.connect(func() -> void: app.show_screen("dossier"))
+	_pause.last_round.connect(func() -> void: app.show_screen("round_summary"))
+	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
+	_setup_dread(app)
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
 	for event: RunEvent in _controller.set_events():
@@ -139,37 +159,26 @@ func _open_pause() -> void:
 	_pause.open()
 
 
-## Keyboard shortcuts press the same buttons a click does (P3B.11, in part). Escape
-## closes the rules card, or opens the menu.
+## Keyboard and gamepad go through TableInput (P3B.11).
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and not _pause.visible:
-		if _cheat_sheet.visible:
-			_cheat_sheet.visible = false
-		else:
-			_open_pause()
+	if _input.handle(event):
 		get_viewport().set_input_as_handled()
-		return
-	if _pause.visible or _cheat_sheet.visible:
-		return
-	var shortcuts: Dictionary[String, Button] = {
-		"commons_play": _actions.call if _actions.call.visible else _actions.play,
-		"commons_pass": _actions.decline if _actions.decline.visible else _actions.pass_turn,
-		"commons_hint": _actions.hint,
-		"commons_sort": _actions.sort,
-		"commons_rules": _actions.rules,
-	}
-	for action: String in shortcuts:
-		var button: Button = shortcuts[action]
-		if event.is_action_pressed(action) and button.is_visible_in_tree() and not button.disabled:
-			if button.toggle_mode:
-				button.button_pressed = not button.button_pressed
-			else:
-				button.pressed.emit()
-			get_viewport().set_input_as_handled()
-			return
+
+
+## Dread reads the run at round boundaries, and starts settled when the table opens.
+func _setup_dread(app: DemoApp) -> void:
+	var materials: Dictionary[String, ShaderMaterial] = DreadLayers.table_materials(
+		app.post.material(), _atmosphere, _dressing
+	)
+	var panels: Array[SeatPanel] = []
+	panels.assign(_seats.values())
+	var slots: Dictionary[String, TextureRect] = {"table_surface": _surface}
+	_dread.setup(materials, _dressing, panels, slots)
+	_dread.refresh(_controller.state_copy(), true)
 
 
 func _exit_tree() -> void:
+	_dread.clear()
 	if _controller != null and _controller.event_emitted.is_connected(_player.push):
 		_controller.event_emitted.disconnect(_player.push)
 
@@ -179,7 +188,7 @@ func _exit_tree() -> void:
 func _build_seats() -> void:
 	for seat: int in [1, 2]:
 		var panel: SeatPanel = SeatPanel.new()
-		panel.setup(seat, _app.seat_name(seat), _app.seat_portrait(seat))
+		panel.setup(seat, _app.seat_name(seat), _app.seat_portrait(seat, SeatPanel.PICTURE_BOX))
 		var x: float = (
 			PLAY_CENTER + SEAT_OFFSET if seat == 1 else PLAY_CENTER - SEAT_OFFSET - SEAT_WIDTH
 		)
@@ -188,19 +197,24 @@ func _build_seats() -> void:
 
 
 func _on_event(event: RunEvent) -> void:
-	Audio.play(AudioEvents.name_for(event))
+	# Rejoining replays the Set silently: nothing is said or played twice.
+	if not _replaying:
+		Audio.play(AudioEvents.name_for(event))
+		_speech.on_event(event)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
-		RunEvent.Type.BID:
-			_say(event.seat, tr("table.say.call" if event.value == 1 else "table.say.no_call"))
 		RunEvent.Type.PLAY_SCORED:
 			_ledger.add_row(_app.seat_name(event.seat), event.amount)
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			_new_deal()
+			_dread.refresh(_controller.state_copy())
+		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED, RunEvent.Type.ROUND_SCORED:
+			_dread.refresh(_controller.state_copy())
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
 			_announce_landlord(event.seat)
+			_dread.refresh(_controller.state_copy(), false, event.seat == 0)
 	_refresh_status()
 
 
@@ -218,15 +232,12 @@ func _on_round_event(event: RoundEvent) -> void:
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
 		RoundEvent.Type.PASSED:
 			_plays[event.seat].clear()
-			_say(event.seat, tr("table.say.pass"))
 		RoundEvent.Type.TRICK_WON:
-			_clear_all_plays()
+			_sweep_plays(event.seat)
 		RoundEvent.Type.ROUND_ENDED:
 			var landlord_won: bool = event.seat == _landlord
 			var key: String = "banner.landlord_wins" if landlord_won else "banner.peasants_win"
 			_announce(tr(key), ScreenKit.INK)
-		RoundEvent.Type.ANNOUNCED:
-			_say(event.seat, tr("table.say.cards_left").format({"count": event.value}))
 
 
 ## A fresh deal wipes the last round off the table: lanes, ledger, speech, the
@@ -249,7 +260,7 @@ func _new_deal() -> void:
 func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
-	_board.show_cadres(_controller.state_copy().inventory.cadres)
+	_board.show_cadres(_controller)
 	var awaiting: int = _controller.awaiting()
 	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
@@ -260,6 +271,22 @@ func _on_drained() -> void:
 	_refresh_actions()
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
+
+
+## The trick's cards slide off toward whoever won it.
+func _sweep_plays(winner: int) -> void:
+	var toward: Control = _hand_view if winner == 0 else _seats.get(winner, null)
+	if toward == null:
+		_clear_all_plays()
+		return
+	var center: Vector2 = toward.global_position + toward.size / 2.0
+	for lane: PlayLane in _plays.values():
+		lane.sweep(center)
+
+
+func _on_setting(key: String) -> void:
+	if key == "reduced_motion":
+		_motion.set_reduced(bool(Settings.value("reduced_motion")))
 
 
 func _clear_all_plays() -> void:
@@ -277,11 +304,6 @@ func _announce_landlord(seat: int) -> void:
 		_announce(tr("banner.landlord_you"), ScreenKit.RED)
 	else:
 		_announce(tr("banner.landlord_other").format({"name": _app.seat_name(seat)}), ScreenKit.INK)
-
-
-func _say(seat: int, text: String) -> void:
-	if _seats.has(seat):
-		_seats[seat].say(text)
 
 
 func _refresh_seats() -> void:
@@ -303,8 +325,6 @@ func _refresh_seats() -> void:
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
 	_hud.show_state(state, _controller.target(), _app.max_rounds())
-	_app.update_dread()
-	_atmosphere.show_meters(state.famine, state.denunciation)
 
 
 func _refresh_actions() -> void:
@@ -378,10 +398,3 @@ func _place(node: Control, at: Vector2, extent: Vector2) -> void:
 	add_child(node)
 	node.position = at
 	node.size = extent
-
-
-static func _backdrop(color: Color) -> ColorRect:
-	var rect: ColorRect = ColorRect.new()
-	rect.color = color
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return rect

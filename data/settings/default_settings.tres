@@ -9,3 +9,6 @@ effects_volume = 0.8
 voice_volume = 0.8
 reduced_motion = false
 post_process = true
+horror_intensity = 1.0
+no_flash = false
+content_note_seen = false

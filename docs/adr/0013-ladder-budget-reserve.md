@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed. P3A.4 is built on option 2 and stays blocked until the project owner accepts or changes it.
+Accepted by the project owner on 2026-11-04: option 2.
 
 ## Context
 
@@ -18,7 +18,7 @@ Both reviews of Phase 3A flagged that the code resolves this with a rule no docu
 
 ## Choice
 
-Option 2, pending the owner's decision. It keeps every hard rule (cap, no repeats, levers, budget) and comes closest to one debuff per round.
+Option 2. It keeps every hard rule (cap, no repeats, levers, budget) and comes closest to one debuff per round.
 
 ## Consequences
 
