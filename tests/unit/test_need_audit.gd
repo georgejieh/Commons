@@ -4,6 +4,7 @@ extends GdUnitTestSuite
 
 const PARAMS: AuditParams = preload("res://data/run/audit.tres")
 const TRUE_NEED: int = 10
+const SPLITS: int = 10000
 
 
 ## Raises every audit to certain, as the Work-Point Audit debuff will.
@@ -95,3 +96,51 @@ func test_the_split_after_a_caught_lie_uses_honest_needs() -> void:
 		1000, PackedInt64Array([params.base_need, params.base_need])
 	)
 	assert_float(state.set_progress).is_equal(float(honest[0]))
+
+
+## Over 10,000 splits, every bot lies and the player declares above true need. Checked
+## declarations come to the configured chance within one point, the shares paid always
+## equal a split of the needs left standing, and a lone caught liar's share falls.
+func _simulate(chance: float) -> float:
+	var state: RunState = RunState.new(77)
+	state.landlord_seat = 1
+	var configs: Array[BotConfig] = RunScript.bots()
+	for config: BotConfig in configs:
+		config.honesty = 0.0
+	var params: RunParams = RunLoop.DEFAULT_PARAMS
+	var declared: int = 0
+	var checked: int = 0
+	for index: int in SPLITS:
+		state.commons_pool = 10000
+		var events: Array[RunEvent] = []
+		var caught: Array[int] = []
+		RoundBanking.split(state, 0, TRUE_NEED + 20, configs, params, events, chance, caught)
+		var standing: PackedInt64Array = PackedInt64Array()
+		var lied: PackedInt64Array = PackedInt64Array()
+		var paid: PackedInt64Array = PackedInt64Array()
+		for event: RunEvent in events:
+			match event.type:
+				RunEvent.Type.NEED_DECLARED:
+					declared += 1
+					lied.append(event.value)
+					standing.append(event.value)
+				RunEvent.Type.AUDITED:
+					checked += 1
+				RunEvent.Type.SHARE_PAID:
+					paid.append(event.value)
+		var seats: Array[int] = [0, 2]
+		for slot: int in seats.size():
+			if caught.has(seats[slot]):
+				standing[slot] = params.base_need
+		assert_array(Array(paid)).is_equal(Array(Banking.split(10000, standing)))
+		if caught.size() == 1:
+			var slot: int = seats.find(caught[0])
+			assert_int(paid[slot]).is_less(Banking.split(10000, lied)[slot])
+	return float(checked) / declared
+
+
+func test_audit_rates_match_the_configuration_over_10000_splits() -> void:
+	for chance: float in [PARAMS.base_chance, PARAMS.base_chance + PARAMS.informer_chance]:
+		var rate: float = _simulate(chance)
+		print("configured %.3f, audited %.4f" % [chance, rate])
+		assert_float(rate).is_between(chance - 0.01, chance + 0.01)
