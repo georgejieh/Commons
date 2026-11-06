@@ -166,6 +166,11 @@ Resentment acts in two ways:
   - The player: the meter table's `caught_lie` row.
   - A villager: the same amount, added to `RunState.villager_denunciation` for their family.
 
+**Free riding (P4.4).**
+- `RunState` tracks two run-wide totals: the Commons shares paid to the player (`commons_received`) and to every peasant (`commons_paid`).
+- At each round's start, the player's peasant teammate gets an `effort` from `FreeRiding.effort`. Effort stays at 1 up to `free_ride.tres`'s fair share, then falls to the bot's own cooperation at the full share.
+- A bot's decision slacks when its own salted roll lands at or above its effort, kept apart from the cooperation roll. A slacking bot uses `SlackPolicy`: it passes when following and leads its weakest legal move. A slacked decision never reaches the Expert search.
+
 `SetConfig` reads the run's shape from the `SetParams` Resource in `data/run/`: the number of Years, rounds per Set, coupons per Set type, and the target curve, one target per Set in play order. `validate()` rejects a curve that falls anywhere, across Years too.
 
 `DebuffLadder` draws a Set's ladder at Set intro on the debuff stream, in O(rounds × pool size). Round 0 is clean, and a later round's tier is capped at its round number and at `ModifierDef.MAX_TIER`. The tier is drawn by the weights in `LadderParams`, 60/30/10 for the cap, one below and two below, with tiers under 1 dropped. A debuff never repeats or shares a lever with another in the same Set. Each round keeps one severity point of the Set's budget for every round after it, and a draw that would spend more is redrawn a tier lower, down to tier 1 ([ADR 0013](adr/0013-ladder-budget-reserve.md)). A round with nothing left to draw stays clean. With the Plan's pool that happens only in the last round of a small or large Set (5.4% and 2.6% of 100,000 ladders), because the only tier-1 debuffs pull the scoring and economy levers.

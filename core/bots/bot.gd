@@ -23,6 +23,11 @@ static func decide_play(
 ) -> BotPlay:
 	if legal.is_empty():
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.PASS_NOTHING_BEATS)
+	if config.effort < 1.0 and config.tier == BotConfig.Tier.EASY:
+		var scorer: CandidateScorer = CandidateScorer.new(view.own_counts, table, config.weights)
+		var slack: BotPosition = BotPosition.new(view, table, config, scorer)
+		if slack.slacks():
+			return SlackPolicy.choose(slack, legal)
 	if config.tier == BotConfig.Tier.EASY:
 		return GreedyPolicy.choose(view, legal, table, config)
 	var job: BotSearchJob = search_job(view, legal, table, config)
@@ -37,6 +42,9 @@ static func search_job(
 ) -> BotSearchJob:
 	var scorer: CandidateScorer = CandidateScorer.new(view.own_counts, table, config.weights)
 	var position: BotPosition = BotPosition.new(view, table, config, scorer)
+	if position.slacks():
+		var none: Array[Pattern] = []
+		return BotSearchJob.new(position, none, SlackPolicy.choose(position, legal))
 	var play: BotPlay = _by_policy(position, legal)
 	var candidates: Array[Pattern] = []
 	if ExpertSearch.applies(config):

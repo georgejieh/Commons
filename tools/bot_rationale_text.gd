@@ -14,6 +14,8 @@ const TEXT: Dictionary[BotRationale.Code, String] = {
 	BotRationale.Code.BLOCK_OPPONENT: "Stops an opponent going out",
 	BotRationale.Code.BLOCK_FOR_TEAMMATE: "Tops a weak teammate card to block the landlord",
 	BotRationale.Code.SEARCHED: "Clearly beat the policy's play in dealt rollouts",
+	BotRationale.Code.SLACKED:
+	"Not trying: free riding on a teammate who takes most of the Commons",
 	BotRationale.Code.GREEDY: "Lowest play that works",
 	BotRationale.Code.BLOCK_LANDLORD: "Upstream seat blocks the landlord's single",
 }

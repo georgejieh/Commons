@@ -28,6 +28,7 @@ const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
 const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
 const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
+const DEFAULT_FREE_RIDE: FreeRideParams = preload("res://data/run/free_ride.tres")
 
 var state: RunState
 var flow: RunFlow
@@ -490,14 +491,22 @@ func _resent(amount: int, cause: String) -> void:
 
 
 ## Every bot holds the player's Resentment against them; P4.6 adds family memory to it.
+## The player's teammate, when they have one, slacks as the player's Commons share grows.
 func _aim_grudges() -> void:
 	var held: float = Resentment.grudge(state.resentment, DEFAULT_RESENTMENT)
+	var share: float = FreeRiding.share(state)
 	for seat: int in Seats.COUNT:
 		if seat == PLAYER:
 			continue
 		var memory: PackedFloat32Array = _configs[seat].memory
 		memory[PLAYER] = held
 		_configs[seat].memory = memory
+		var teammate: bool = state.landlord_seat != PLAYER and state.landlord_seat != seat
+		_configs[seat].effort = 1.0
+		if teammate:
+			_configs[seat].effort = FreeRiding.effort(
+				share, _configs[seat].cooperation, DEFAULT_FREE_RIDE
+			)
 
 
 ## Ends the run when a meter has reached death. Every caller sits at a state that may

@@ -63,7 +63,9 @@ static func split(
 	var shares: PackedInt64Array = Banking.split(state.commons_pool, needs)
 	for index: int in peasants.size():
 		events.append(RunEvent.new(RunEvent.Type.SHARE_PAID, peasants[index], shares[index]))
+		state.commons_paid = mini(state.commons_paid + shares[index], Banking.MAX_POOL)
 		if peasants[index] == player:
 			state.set_progress += shares[index]
+			state.commons_received = mini(state.commons_received + shares[index], Banking.MAX_POOL)
 	state.commons_pool = 0
 	return short
