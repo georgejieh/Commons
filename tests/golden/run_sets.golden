@@ -660,9 +660,9 @@ BID seat=0 value=1
 BID seat=1 value=0
 BID seat=2 value=1
 LANDLORD_CHOSEN seat=2 value=2
-SWAPPED seat=0 value=1
   ROUND_STARTED seat=2
   KITTY_TAKEN seat=2 cards=[12, 17, 42]
+SWAPPED seat=0 value=1
   PLAYED seat=2 cards=[3, 7, 10, 12, 17, 23, 24] pattern=STRAIGHT main=0 chain=7 kickers=[]
 PLAY_SCORED seat=2 value=0 amount=288.000
   PASSED seat=0
@@ -709,9 +709,9 @@ SHARE_PAID seat=1 value=209
 SEAT_KEPT seat=2 value=0
 DEBUFF_ADDED seat=0 value=1 straightened_lines
 DEALT seat=-1 value=1
-SWAPPED seat=0 value=1
   ROUND_STARTED seat=2
   KITTY_TAKEN seat=2 cards=[9, 14, 37]
+SWAPPED seat=0 value=1
   PLAYED seat=2 cards=[0, 1, 4, 5, 8, 9, 13, 14, 16, 17] pattern=PAIR_CHAIN main=0 chain=5 kickers=[]
 PLAY_SCORED seat=2 value=0 amount=360.000
   PASSED seat=0
@@ -724,7 +724,7 @@ PLAY_SCORED seat=0 value=0 amount=195.000
   PASSED seat=1
   PASSED seat=2
   TRICK_WON seat=0
-  PLAYED seat=0 cards=[1, 6, 10, 15, 18] pattern=STRAIGHT main=0 chain=5 kickers=[]
+  PLAYED seat=0 cards=[6, 10, 15, 18, 1002] pattern=STRAIGHT main=0 chain=5 kickers=[]
 PLAY_SCORED seat=0 value=0 amount=110.000
   PASSED seat=1
   PASSED seat=2

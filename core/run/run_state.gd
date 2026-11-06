@@ -53,6 +53,10 @@ var boss_id: String = NO_BOSS
 var boss_family: String = ""
 ## How the player played their most recent Sets, oldest first.
 var styles: Array[PlayerStyle] = []
+## The next ID for a card entering the plot, and the plot upgrades bought (P4.8).
+var next_plot_id: int = CardInstance.FIRST_PLOT_ID
+var plot_capacity_bonus: int = 0
+var swap_bonus: int = 0
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -95,6 +99,9 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.officials_used.assign(data["officials_used"])
 	state.boss_id = str(data["boss_id"])
 	state.boss_family = str(data["boss_family"])
+	state.next_plot_id = int(data["next_plot_id"])
+	state.plot_capacity_bonus = int(data["plot_capacity_bonus"])
+	state.swap_bonus = int(data["swap_bonus"])
 	for style_data: Dictionary in data["styles"]:
 		state.styles.append(PlayerStyle.from_dict(style_data))
 	for family_id: String in data["villager_denunciation"]:
@@ -143,6 +150,9 @@ func to_dict() -> Dictionary:
 		"risen_used": risen_used.duplicate(),
 		"officials_used": officials_used.duplicate(),
 		"boss_id": boss_id,
+		"next_plot_id": next_plot_id,
+		"plot_capacity_bonus": plot_capacity_bonus,
+		"swap_bonus": swap_bonus,
 		"boss_family": boss_family,
 		"styles": styles.map(func(style: PlayerStyle) -> Dictionary: return style.to_dict()),
 		"villager_denunciation": villager_denunciation.duplicate(),
@@ -155,6 +165,16 @@ func to_dict() -> Dictionary:
 		"summaries": summary_data,
 		"observations": observations.to_dict(),
 	}
+
+
+## A plot ID no card in the run has held. Past every ID in the plot, so plot cards
+## made before the counter existed are never repeated.
+func take_plot_id() -> int:
+	var next: int = next_plot_id
+	for card: CardInstance in inventory.plot:
+		next = maxi(next, card.id() + 1)
+	next_plot_id = next + 1
+	return next
 
 
 ## Halves keep the text unsigned, as RandomStream does.

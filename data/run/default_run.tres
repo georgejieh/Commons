@@ -6,4 +6,5 @@
 script = ExtResource("1")
 base_need = 10
 swaps_per_round = 1
+plot_capacity = 4
 meter_max = 100

@@ -134,13 +134,19 @@ func test_plot_swaps_conserve_cards() -> void:
 	var plot_ids: Array[int] = [state.inventory.plot[0].id()]
 	assert_int(loop.player_swap(hand_ids, [] as Array[int])).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_int(loop.player_swap(hand_ids, plot_ids)).is_equal(RunLoop.Reason.OK)
+	var given: CardInstance = null
+	for card: CardInstance in loop.round_state().view_for(RunLoop.PLAYER).own_cards:
+		given = card if card.id() == plot_ids[0] else given
 	var after: Array[int] = _ids(loop.player_cards()) + _ids(state.inventory.plot)
-	var kitty: int = 3 if state.landlord_seat == RunLoop.PLAYER else 0
-	assert_int(after.size()).is_equal(before.size() + kitty)
+	# The kitty is already in the landlord's hand at the swap, so the count is unchanged.
+	assert_int(after.size()).is_equal(before.size())
 	for card_id: int in before:
-		assert_bool(after.has(card_id)).is_true()
-	assert_bool(_ids(loop.player_cards()).has(plot_ids[0])).is_true()
-	assert_bool(_ids(state.inventory.plot).has(hand_ids[0])).is_true()
+		if card_id != hand_ids[0]:
+			assert_bool(after.has(card_id)).is_true()
+	assert_object(given).is_not_null()
+	# The deck card went into the plot under a new plot ID (ADR 0014).
+	assert_bool(_ids(state.inventory.plot).has(hand_ids[0])).is_false()
+	assert_int(state.inventory.plot[0].origin()).is_equal(CardInstance.Origin.PLOT)
 
 
 func test_commands_out_of_turn_are_refused() -> void:

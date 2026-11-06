@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed. Needed before P4.8. Until then the plot starts empty and nothing fills it, so play never reaches this.
+Accepted, 2026-11-05 (project owner, during Phase 4 planning). Built in P4.8.
 
 ## Context
 
@@ -18,9 +18,13 @@ The kitty question is separate. Either the swap waits until the landlord holds t
 
 ## Choice
 
-None yet. This is a design decision for the project owner, made with P4.8.
+**Option 2, with kitty swaps.**
+
+- A deck card swapped into the plot is reissued as a plot card: a new ID from `RunState.next_plot_id` (1000 and up), with its rank, suit and marks kept. The fresh deck stays at 54 cards, and its IDs never meet a plot card's.
+- The swap runs after the landlord takes the kitty, so a landlord may swap a kitty card. The kitty has already been revealed to the table by then.
 
 ## Consequences
 
-- Until then `PlotSwap.is_valid()` refuses a plot card whose ID is already in the hand, so a swap can't shrink the hand. A duplicate ID in another seat is still possible, and the plot stays empty in play.
-- Whichever option is chosen changes `PlotSwap`, the deal in `RunLoop`, and possibly `RunState`, and P4.8's conservation test has to cover swaps across rounds.
+- `RunLoop._begin_play` creates the round, with the kitty taken, before the swap. `RoundState.exchange` trades cards in the seat's hand before the first play.
+- `PlotSwap.apply` reissues each deck card that enters the plot.
+- `tests/integration/test_private_plot.gd` checks conservation and unique IDs across rounds, kitty swaps, reissue, and the fifth-copy rule.

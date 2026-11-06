@@ -201,15 +201,14 @@ func player_bid(claim: bool) -> Reason:
 func player_swap(hand_ids: Array[int], plot_ids: Array[int]) -> Reason:
 	if _awaiting != Awaiting.PLAYER_SWAP:
 		return Reason.NOT_AWAITED
-	if not PlotSwap.is_valid(
-		_deal.hands[PLAYER], state.inventory, hand_ids, plot_ids, _params.swaps_per_round
-	):
+	var hand: Array[CardInstance] = _round.view_for(PLAYER).own_cards
+	var limit: int = PlotSwap.swaps(state, _params)
+	if not PlotSwap.is_valid(hand, state.inventory, hand_ids, plot_ids, limit):
 		return Reason.ILLEGAL
 	record.add({"type": "swap", "hand": hand_ids.duplicate(), "plot": plot_ids.duplicate()})
-	PlotSwap.apply(_deal.hands[PLAYER], state.inventory, hand_ids, plot_ids)
+	PlotSwap.apply(_round, PLAYER, state, hand_ids, plot_ids)
 	set_log.add(RunEvent.new(RunEvent.Type.SWAPPED, PLAYER, hand_ids.size()))
 	_awaiting = Awaiting.NOTHING
-	_create_round()
 	advance()
 	return Reason.OK
 
@@ -349,10 +348,10 @@ func _record_bid(seat: int, claim: bool) -> void:
 
 func _begin_play() -> void:
 	_move(RunFlow.State.ROUND_PLAY)
-	if not state.inventory.plot.is_empty() and _params.swaps_per_round > 0:
-		_awaiting = Awaiting.PLAYER_SWAP
-		return
+	# The round starts first, so the landlord holds the kitty before the swap (ADR 0014).
 	_create_round()
+	if not state.inventory.plot.is_empty() and PlotSwap.swaps(state, _params) > 0:
+		_awaiting = Awaiting.PLAYER_SWAP
 
 
 func _create_round() -> void:

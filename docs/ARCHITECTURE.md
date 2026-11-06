@@ -218,6 +218,13 @@ The boss's modifier joins the stack after the debuffs, and the Set intro names i
 - **Risen villagers.** A family that held every round's landlord seat in a Set joins `RunState.risen`, read from the Set's `SEAT_KEPT` and `SEAT_LOST` events. As a boss, it takes seat 1 and starts the Set as landlord. That is the reading of the Plan's "villagers who entrenched as landlord".
 - **The New Landlord.** Each Set, the player's style (`PlayerStyle`: hand-type counts, calls and bid turns) is kept for the last three Sets. `PlayerStyle.mirror` turns them into the New Landlord's play: a per-type score bonus (`BotConfig.type_bias`, added in `CandidateScorer.score_play`) and an ambition matching the bid rate. Deng's `mirrors_player` uses the same mirror whenever Deng is seated.
 
+**Private plot (P4.8, [ADR 0014](adr/0014-plot-card-identity.md)).**
+
+- **Timing.** The round starts, with the kitty taken, before the swap step. The player can swap up to `PlotSwap.swaps()` cards (data `swaps_per_round` plus `RunState.swap_bonus`), kitty cards included.
+- **The swap.** `RoundState.exchange` trades cards in the hand before the first play. A deck card that enters the plot is reissued under `RunState.take_plot_id()`, which runs past every plot ID ever held.
+- **Capacity.** `PlotSwap.capacity()` is data `plot_capacity` plus `plot_capacity_bonus`. `PlotSwap.store()` adds a card only below capacity; the P4.10 shop uses it.
+- **Duplicate ranks.** A fifth copy of a rank in hand reads by the RuleSet's `five_plus_is_bomb`.
+
 `SetConfig` reads the run's shape from the `SetParams` Resource in `data/run/`: the number of Years, rounds per Set, coupons per Set type, and the target curve, one target per Set in play order. `validate()` rejects a curve that falls anywhere, across Years too.
 
 `DebuffLadder` draws a Set's ladder at Set intro on the debuff stream, in O(rounds × pool size). Round 0 is clean, and a later round's tier is capped at its round number and at `ModifierDef.MAX_TIER`. The tier is drawn by the weights in `LadderParams`, 60/30/10 for the cap, one below and two below, with tiers under 1 dropped. A debuff never repeats or shares a lever with another in the same Set. Each round keeps one severity point of the Set's budget for every round after it, and a draw that would spend more is redrawn a tier lower, down to tier 1 ([ADR 0013](adr/0013-ladder-budget-reserve.md)). A round with nothing left to draw stays clean. With the Plan's pool that happens only in the last round of a small or large Set (5.4% and 2.6% of 100,000 ladders), because the only tier-1 debuffs pull the scoring and economy levers.

@@ -67,6 +67,18 @@ func apply(action: RoundAction) -> Reason:
 	return _apply_play(action)
 
 
+## Before anyone plays, trades cards in a seat's hand for others one for one: the
+## plot swap (P4.8). Returns the cards taken out, in the order of out_ids.
+func exchange(seat: int, out_ids: Array[int], cards_in: Array[CardInstance]) -> Array[CardInstance]:
+	assert(_history.is_empty(), "Cards change hands only before the first play")
+	var taken: Array[CardInstance] = []
+	for card_id: int in out_ids:
+		taken.append(_hands[seat].remove(card_id))
+	for card: CardInstance in cards_in:
+		_hands[seat].add(card)
+	return taken
+
+
 func is_over() -> bool:
 	return _winner != Seats.NONE
 

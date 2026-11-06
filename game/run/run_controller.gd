@@ -95,6 +95,11 @@ func bid(claim: bool) -> int:
 	return _finish("bid", _loop.player_bid(claim))
 
 
+## The most cards the player may swap this round (P4.8).
+func swap_limit() -> int:
+	return PlotSwap.swaps(_loop.state, RunLoop.DEFAULT_PARAMS)
+
+
 func swap(hand_ids: Array[int], plot_ids: Array[int]) -> int:
 	return _finish("swap", _loop.player_swap(hand_ids.duplicate(), plot_ids.duplicate()))
 

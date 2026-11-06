@@ -287,6 +287,9 @@ plot.hand,Your hand
 plot.plot,Your plot
 plot.empty,Your plot is empty.
 plot.keep,Keep hand
+plot.swap,Swap
+plot.limit,Swap up to {count} cards this round.
+plot.limit.one,Swap up to 1 card this round.
 plot.back,Back
 reed.eyebrow,Reeducation
 reed.title,Sent for reeducation
