@@ -181,6 +181,11 @@ func base_need() -> int:
 	return RunLoop.DEFAULT_PARAMS.base_need
 
 
+## The Denunciation a lie about need costs when an audit catches it.
+func lie_cost() -> int:
+	return RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
+
+
 ## A reroll is worth pressing: affordable, and the board has room for what it draws.
 func can_reroll() -> bool:
 	var state: RunState = _loop.state

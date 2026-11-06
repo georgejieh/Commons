@@ -108,7 +108,7 @@ func open(app: DemoApp) -> void:
 	_build_seats()
 	_speech.setup(_seats)
 	_board.setup(_controller.cadre_slots())
-	_need_panel.setup(_controller.base_need(), app.need_cap())
+	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
 	_hand_view.setup(_hand, _pool)
 	_hand.changed.connect(_refresh_actions)
 	_player.played.connect(_on_event)

@@ -27,6 +27,10 @@ enum Type {
 	REEDUCATED,
 	## value is the change; text names the cause.
 	RESENTMENT,
+	## A declared need was checked: value 1 when it was a lie, 0 when honest.
+	AUDITED,
+	## A villager's own Denunciation changed; value is the change.
+	VILLAGER_DENOUNCED,
 }
 
 var type: Type

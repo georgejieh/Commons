@@ -82,6 +82,7 @@ Each hook takes one typed context:
 | `set_end` | `SetContext` | set_index, target_met |
 | `shop_open` | `ShopContext` | seat |
 | `meter_change` | `MeterContext` | meter, delta |
+| `audit` | `AuditContext` | chance |
 
 ## Scoring
 
@@ -156,6 +157,14 @@ Resentment acts in two ways:
 
 - **Denunciation.** At each Set's end, Denunciation rises by `denunciation.sample(resentment / max)`, through the meter table's `resentment` row. That curve is the only mapping from Resentment to Denunciation.
 - **Grudge.** At each round's start, every bot's `memory[player]` is set to `grudge(resentment)`. A bot's spite (grudge × memory) is added to every answer it scores. It also divides its cooperation, so a resented player's teammate covers for them less often.
+
+**Declared need (P4.3).**
+- **Declaring.** Every peasant declares a need before the split. Bots lie as their honesty says, and the player may declare any value.
+- **Auditing.** `NeedAudit` then checks each declaration on its own `audit` stream. The chance is `audit.tres`'s base, plus its informer chance while an informer family is seated or active on the roster, and the `audit` hook may then change it. Every seat rolls, so the stream moves the same whether anyone lied or not.
+- **Caught lies.** A declaration above true need (`RunParams.base_need` until P4.5) is a lie. A checked lie is replaced by the true need before `Banking.split`.
+- **What a caught lie costs.**
+  - The player: the meter table's `caught_lie` row.
+  - A villager: the same amount, added to `RunState.villager_denunciation` for their family.
 
 `SetConfig` reads the run's shape from the `SetParams` Resource in `data/run/`: the number of Years, rounds per Set, coupons per Set type, and the target curve, one target per Set in play order. `validate()` rejects a curve that falls anywhere, across Years too.
 

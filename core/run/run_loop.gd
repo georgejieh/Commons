@@ -27,6 +27,7 @@ const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
 const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
 const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
+const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
 
 var state: RunState
 var flow: RunFlow
@@ -411,11 +412,31 @@ func _finish_round() -> void:
 
 
 func _split_commons(player_need: int) -> void:
-	if RoundBanking.split(state, PLAYER, player_need, _configs, _params, set_log.events()):
+	var chance: float = NeedAudit.chance(state, DEFAULT_AUDIT, _stack)
+	var caught: Array[int] = []
+	var events: Array[RunEvent] = set_log.events()
+	if RoundBanking.split(state, PLAYER, player_need, _configs, _params, events, chance, caught):
 		_raise(RunMeters.COMMONS_SHORTFALL)
-		if _end_if_dead():
-			return
+	for seat: int in caught:
+		if seat == PLAYER:
+			_raise(RunMeters.CAUGHT_LIE)
+		else:
+			_denounce_villager(seat)
+	if _end_if_dead():
+		return
 	_end_round()
+
+
+## A caught villager's own Denunciation rises by the caught-lie row, as the player's does.
+func _denounce_villager(seat: int) -> void:
+	var family_id: String = state.table[seat]
+	var before: int = state.villager_denunciation.get(family_id, 0)
+	var amount: int = _meters.source(RunMeters.CAUGHT_LIE).amount
+	var after: int = clampi(before + amount, 0, _params.meter_max)
+	state.villager_denunciation[family_id] = after
+	set_log.add(
+		RunEvent.new(RunEvent.Type.VILLAGER_DENOUNCED, seat, after - before, 0.0, family_id)
+	)
 
 
 func _end_round() -> void:

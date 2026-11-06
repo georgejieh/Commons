@@ -267,6 +267,7 @@ ROUND_SCORED seat=2 value=0 amount=1018.500
 BANKED seat=1 value=0 amount=399.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=2 value=10
+AUDITED seat=2 value=0
 SHARE_PAID seat=0 value=556
 SHARE_PAID seat=2 value=462
 SEAT_LOST seat=1 value=0
@@ -353,11 +354,13 @@ ROUND_SCORED seat=2 value=0 amount=799.500
 BANKED seat=1 value=0 amount=661.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=2 value=10
-SHARE_PAID seat=0 value=615
-SHARE_PAID seat=2 value=511
+AUDITED seat=0 value=1
+SHARE_PAID seat=0 value=563
+SHARE_PAID seat=2 value=563
+METER_CHANGED seat=0 value=8 denunciation
 SEAT_LOST seat=1 value=0
-SET_ENDED seat=-1 value=1 amount=1983.000
-end progress=1983.000 coupons=3 famine=0 plot=0
+SET_ENDED seat=-1 value=1 amount=1931.000
+end progress=1931.000 coupons=3 famine=0 plot=0
 set 3503
 SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,,criticism_meeting
 DEALT seat=-1 value=0
@@ -644,6 +647,7 @@ ROUND_SCORED seat=2 value=0 amount=327.000
 BANKED seat=2 value=0 amount=327.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
+AUDITED seat=1 value=0
 SHARE_PAID seat=0 value=876
 SHARE_PAID seat=1 value=729
 SEAT_LOST seat=2 value=0
@@ -824,8 +828,10 @@ ROUND_SCORED seat=2 value=0 amount=826.500
 BANKED seat=1 value=0 amount=462.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=2 value=10
-SHARE_PAID seat=0 value=451
-SHARE_PAID seat=2 value=375
+AUDITED seat=0 value=1
+SHARE_PAID seat=0 value=413
+SHARE_PAID seat=2 value=413
+METER_CHANGED seat=0 value=8 denunciation
 SEAT_LOST seat=1 value=0
 DEBUFF_ADDED seat=0 value=1 straightened_lines
 DEALT seat=-1 value=1
@@ -1065,5 +1071,5 @@ SHARE_PAID seat=0 value=565
 SHARE_PAID seat=1 value=470
 SEAT_LOST seat=2 value=0
 METER_CHANGED seat=0 value=10 famine
-SET_ENDED seat=-1 value=0 amount=1733.000
-end progress=1733.000 coupons=0 famine=10 plot=0
+SET_ENDED seat=-1 value=0 amount=1695.000
+end progress=1695.000 coupons=0 famine=10 plot=0

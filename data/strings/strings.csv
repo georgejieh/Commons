@@ -119,6 +119,7 @@ action.decline,Pass
 board.empty,Empty
 need.prompt,Declare your need. The Commons is split by declared need.
 need.declare,Declare
+need.audit,"Your true need is {need}. Any higher declaration is a lie, and if an audit checks it, you get your true share and {rise} Denunciation."
 cheat.title,Hand types
 cheat.active,In play now
 cheat.none,Nothing changes the rules right now.

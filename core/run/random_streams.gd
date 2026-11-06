@@ -9,7 +9,9 @@ const DEBUFF: String = "debuff"
 const AI: String = "ai"
 const EVENTS: String = "events"
 const COSMETIC: String = "cosmetic"
-const NAMES: PackedStringArray = [DEAL, SHOP, DEBUFF, AI, EVENTS, COSMETIC]
+## Need audits (P4.3), apart from ai so a check never shifts a bot's draws.
+const AUDIT: String = "audit"
+const NAMES: PackedStringArray = [DEAL, SHOP, DEBUFF, AI, EVENTS, COSMETIC, AUDIT]
 
 const FNV_OFFSET_BASIS: int = -3750763034362895579
 const FNV_PRIME: int = 1099511628211
@@ -27,8 +29,10 @@ func _init(run_seed: int) -> void:
 static func from_dict(data: Dictionary) -> RandomStreams:
 	var streams: RandomStreams = RandomStreams.new(str(data["run_seed"]).to_int())
 	var states: Dictionary = data["states"]
+	# A stream added after the save starts fresh from its derived seed.
 	for stream_name: String in NAMES:
-		streams.stream(stream_name).load_state(str(states[stream_name]))
+		if states.has(stream_name):
+			streams.stream(stream_name).load_state(str(states[stream_name]))
 	return streams
 
 

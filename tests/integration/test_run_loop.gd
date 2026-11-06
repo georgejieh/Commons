@@ -316,3 +316,33 @@ func test_rationing_cuts_a_store_slot_until_famine_falls() -> void:
 	loop.open_shop()
 	var cut: int = RunLoop.DEFAULT_METERS.rationing_shop_cut
 	assert_int(loop.shop.stock().size()).is_equal(RunLoop.DEFAULT_SHOP.slots - cut)
+
+
+## Every bot always lies, and the player always declares above true need, so each audit
+## that lands catches someone; an informer at the table makes audits likelier.
+func test_caught_lies_raise_the_liars_denunciation() -> void:
+	var state: RunState = RunState.new(SEEDS[0])
+	state.table.assign(["player", RunLoop.DEFAULT_AUDIT.informer_families[0], "li"])
+	var configs: Array[BotConfig] = RunScript.bots()
+	for config: BotConfig in configs:
+		config.honesty = 0.0
+	var loop: RunLoop = RunLoop.new(state, configs)
+	loop.start_set()
+	RunScript.new().play_until_set_over(loop)
+	var player_caught: int = 0
+	var villagers_caught: Dictionary[String, int] = {}
+	for event: RunEvent in loop.events():
+		if event.type != RunEvent.Type.AUDITED or event.value != 1:
+			continue
+		if event.seat == 0:
+			player_caught += 1
+		else:
+			var family_id: String = state.table[event.seat]
+			villagers_caught[family_id] = villagers_caught.get(family_id, 0) + 1
+	assert_int(player_caught + villagers_caught.size()).is_greater(0)
+	var per_lie: int = RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
+	assert_int(state.denunciation).is_equal(player_caught * per_lie)
+	for family_id: String in villagers_caught:
+		assert_int(state.villager_denunciation[family_id]).is_equal(
+			villagers_caught[family_id] * per_lie
+		)

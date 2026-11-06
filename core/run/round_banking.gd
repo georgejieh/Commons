@@ -23,14 +23,18 @@ static func bank(
 
 
 ## Bots declare on the ai stream. The player's need counts only when they are a peasant.
-## Returns true when the pool fell short of the needs declared, a Commons shortfall.
+## Declarations are then audited at audit_chance (P4.3); caught seats are appended to
+## caught, and their true need replaces the lie. Returns true when the pool fell short
+## of the needs that stand, a Commons shortfall.
 static func split(
 	state: RunState,
 	player: int,
 	player_need: int,
 	configs: Array[BotConfig],
 	params: RunParams,
-	events: Array[RunEvent]
+	events: Array[RunEvent],
+	audit_chance: float = 0.0,
+	caught: Array[int] = []
 ) -> bool:
 	var peasants: Array[int] = []
 	var needs: PackedInt64Array = PackedInt64Array()
@@ -48,6 +52,10 @@ static func split(
 		peasants.append(seat)
 		needs.append(need)
 		events.append(RunEvent.new(RunEvent.Type.NEED_DECLARED, seat, need))
+	var audit: RandomStream = state.streams.stream(RandomStreams.AUDIT)
+	caught.append_array(
+		NeedAudit.run(peasants, needs, params.base_need, audit_chance, audit, events)
+	)
 	var declared: int = 0
 	for need: int in needs:
 		declared += clampi(need, 0, Banking.MAX_NEED)

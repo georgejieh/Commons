@@ -13,6 +13,7 @@ const ROUND_END: String = "round_end"
 const SET_END: String = "set_end"
 const SHOP_OPEN: String = "shop_open"
 const METER_CHANGE: String = "meter_change"
+const AUDIT: String = "audit"
 
 const ALL: PackedStringArray = [
 	BUILD_RULESET,
@@ -26,4 +27,5 @@ const ALL: PackedStringArray = [
 	SET_END,
 	SHOP_OPEN,
 	METER_CHANGE,
+	AUDIT,
 ]
