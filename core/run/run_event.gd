@@ -33,6 +33,10 @@ enum Type {
 	VILLAGER_DENOUNCED,
 	## A family's roster status changed: value is the status, text the family.
 	ROSTER_CHANGED,
+	## A boss Set began: text is the boss ID.
+	BOSS_CHOSEN,
+	## The Purge destroyed a Cadre: text is its ID.
+	CADRE_PURGED,
 }
 
 var type: Type

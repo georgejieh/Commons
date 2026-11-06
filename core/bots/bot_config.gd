@@ -23,6 +23,9 @@ var grudge: float = 0.0
 var memory: PackedFloat32Array = PackedFloat32Array([0.0, 0.0, 0.0])
 ## The chance, from 0 to 1, that this bot tries on a decision; the rest it slacks (P4.4).
 var effort: float = 1.0
+## A bonus per Pattern.Type added to every play the bot scores, so it favors the hand
+## types someone else played (P4.7). Empty for none.
+var type_bias: PackedFloat32Array = PackedFloat32Array()
 
 
 func _init(

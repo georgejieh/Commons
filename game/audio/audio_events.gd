@@ -28,6 +28,8 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.AUDITED: "audited",
 	RunEvent.Type.VILLAGER_DENOUNCED: "villager_denounced",
 	RunEvent.Type.ROSTER_CHANGED: "roster_changed",
+	RunEvent.Type.BOSS_CHOSEN: "boss_chosen",
+	RunEvent.Type.CADRE_PURGED: "cadre_purged",
 }
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",

@@ -109,6 +109,7 @@ stateDiagram-v2
     ROUND_END --> SET_END
     ROUND_END --> RUN_END
     SET_END --> SHOP
+    SET_INTRO --> ROUND_PLAY
     SET_END --> REEDUCATION
     SET_END --> RUN_END
     SHOP --> EVENT
@@ -196,6 +197,26 @@ The UI reads the seated family through `RunController.seated(seat)`: name, portr
 - **Across runs.** `start_run` loads the profile and calls `carried()`, which keeps `kept_per_run` of every count.
 - **At the table.** At each round's start, a seated bot's `memory[player]` is Resentment's grudge plus its family's `pull`: the weighted grudge from `data/villagers/memory.tres`, divided by `full_grudge` and clamped to 0..1. The bot's own grudge parameter then scales it.
 - **Tests.** `Saves.use_run_path` also moves the profile to a file beside the run save, so tests never touch the real profile.
+
+**Bosses (P4.7).** `data/run/boss_pool.tres` (`BossPool`) holds four authored officials as `BOSS_TWIST` modifiers, plus the risen-villager and New Landlord twists:
+
+| Boss | Twist |
+| --- | --- |
+| Struggle Session | `on_deal` swaps your highest card into the kitty for its lowest |
+| Requisition | your Bombs and Rockets score 0 |
+| Great Leap | +Zeal, and `quota_percent` doubles `RunLoop.target()` |
+| The Purge | destroys a Cadre at the Set's start |
+
+At a boss Set's start, `Bosses.choose` picks the boss on the `events` stream:
+
+- the New Landlord in the run's last Year;
+- otherwise an unused risen villager in even Years;
+- otherwise an official, with no repeats until all four have run.
+
+The boss's modifier joins the stack after the debuffs, and the Set intro names it and its rule.
+
+- **Risen villagers.** A family that held every round's landlord seat in a Set joins `RunState.risen`, read from the Set's `SEAT_KEPT` and `SEAT_LOST` events. As a boss, it takes seat 1 and starts the Set as landlord. That is the reading of the Plan's "villagers who entrenched as landlord".
+- **The New Landlord.** Each Set, the player's style (`PlayerStyle`: hand-type counts, calls and bid turns) is kept for the last three Sets. `PlayerStyle.mirror` turns them into the New Landlord's play: a per-type score bonus (`BotConfig.type_bias`, added in `CandidateScorer.score_play`) and an ambition matching the bid rate. Deng's `mirrors_player` uses the same mirror whenever Deng is seated.
 
 `SetConfig` reads the run's shape from the `SetParams` Resource in `data/run/`: the number of Years, rounds per Set, coupons per Set type, and the target curve, one target per Set in play order. `validate()` rejects a curve that falls anywhere, across Years too.
 

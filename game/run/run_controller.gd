@@ -263,6 +263,11 @@ func ladder() -> Array[String]:
 	return _loop.state.debuff_ladder.duplicate()
 
 
+## The current Set's boss twist ID, or an empty string outside boss Sets (P4.7).
+func boss() -> String:
+	return _loop.state.boss_id
+
+
 ## A modifier's rules text with its parameters filled in.
 func modifier_text(modifier_id: String) -> String:
 	var definition: ModifierDef = _definitions[modifier_id]
@@ -304,7 +309,8 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	# A replayed loop may hold events banking appended unseen; the view reads those from
 	# set_events(), so the listener starts after them.
 	_loop.set_log.flush()
-	for definition: ModifierDef in RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres:
+	var known: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres
+	for definition: ModifierDef in known + RunLoop.DEFAULT_BOSSES.all():
 		_definitions[definition.id] = definition
 	_saves = saves
 	_loop.set_log.on_add = func(event: RunEvent) -> void: event_emitted.emit(event)

@@ -145,6 +145,7 @@ intro.clean_text,No debuff.
 intro.none_new,No new debuff
 intro.none_new_text,Earlier debuffs still apply.
 intro.begin,Begin
+intro.boss,{name}: {rule}
 summary.met,Quota met
 summary.missed,Quota missed
 summary.progress,{progress} of {target}
@@ -392,3 +393,15 @@ speech.youth_a.cards_left.1,"{count} left, I think."
 speech.youth_b.pass.1,Pass. Obviously.
 speech.youth_b.lost.1,Great. Wonderful.
 speech.youth_b.call.1,"Sure, I'll call."
+modifier.struggle_session.name,Struggle Session
+modifier.struggle_session.text,"At each deal, your highest card goes into the kitty, and you take the kitty's lowest card."
+modifier.requisition.name,Requisition
+modifier.requisition.text,Your Bombs and Rockets score 0.
+modifier.great_leap.name,Great Leap
+modifier.great_leap.text,The Quota is doubled. Your plays gain +{zeal} Zeal.
+modifier.the_purge.name,The Purge
+modifier.the_purge.text,"When this Set starts, {purge} of your Cadres, drawn at random, is destroyed."
+modifier.risen_villager.name,Risen Villager
+modifier.risen_villager.text,A villager who held the landlord seat for a whole Set sits at the table and starts this Set as landlord.
+modifier.new_landlord.name,New Landlord
+modifier.new_landlord.text,"Your opponent favors the hand types you played most, and calls the landlord seat about as often as you did, over your last three Sets."

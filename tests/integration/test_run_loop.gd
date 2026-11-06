@@ -366,3 +366,26 @@ func test_a_roster_run_seats_families_and_reeducates_the_denounced() -> void:
 	assert_int(state.villager_denunciation[seated[0]]).is_equal(0)
 	loop.next_set()
 	assert_bool(state.table.has(seated[0])).is_false()
+
+
+## An even Year's boss Set with a risen villager seats them as landlord from the start.
+func test_a_risen_villager_runs_an_even_years_boss_set_as_landlord() -> void:
+	var state: RunState = RunState.new(SEEDS[2])
+	state.year = 2
+	state.set_index = 2
+	state.set_type = RunState.SetType.BOSS
+	state.risen.assign(["zhao"])
+	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
+	loop.start_set()
+	assert_str(state.boss_id).is_equal(RunLoop.DEFAULT_BOSSES.risen.id)
+	assert_str(state.table[1]).is_equal("zhao")
+	var chosen: bool = false
+	# The first round has no bidding: it starts with the risen villager already landlord.
+	for event: RunEvent in loop.events():
+		var kept: bool = event.type == RunEvent.Type.SEAT_KEPT
+		if kept or event.type == RunEvent.Type.SEAT_LOST:
+			assert_int(event.seat).is_equal(1)
+			break
+		assert_int(event.type).is_not_equal(RunEvent.Type.BID)
+		chosen = chosen or event.type == RunEvent.Type.BOSS_CHOSEN
+	assert_bool(chosen).is_true()

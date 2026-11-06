@@ -7,6 +7,7 @@ extends RefCounted
 enum SetType { SMALL, LARGE, BOSS }
 
 const NO_DEBUFF: String = ""
+const NO_BOSS: String = ""
 ## Family IDs by seat until P4.5 seats the roster.
 const DEFAULT_TABLE: Array[String] = ["player", "seat_1", "seat_2"]
 
@@ -41,6 +42,17 @@ var commons_received: int = 0
 var commons_paid: int = 0
 ## What each family remembers of the player, carried in from the profile (P4.6).
 var memory: VillageMemory = VillageMemory.new()
+## Families that held the landlord seat for a whole Set this run, and those that have
+## already run a boss Set (P4.7).
+var risen: Array[String] = []
+var risen_used: Array[String] = []
+## Officials that have run a boss Set since the pool last cycled.
+var officials_used: Array[String] = []
+## The current Set's boss, or NO_BOSS, and the risen family seated as it.
+var boss_id: String = NO_BOSS
+var boss_family: String = ""
+## How the player played their most recent Sets, oldest first.
+var styles: Array[PlayerStyle] = []
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -78,6 +90,13 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.commons_received = str(data["commons_received"]).to_int()
 	state.commons_paid = str(data["commons_paid"]).to_int()
 	state.memory = VillageMemory.from_dict(data["memory"])
+	state.risen.assign(data["risen"])
+	state.risen_used.assign(data["risen_used"])
+	state.officials_used.assign(data["officials_used"])
+	state.boss_id = str(data["boss_id"])
+	state.boss_family = str(data["boss_family"])
+	for style_data: Dictionary in data["styles"]:
+		state.styles.append(PlayerStyle.from_dict(style_data))
 	for family_id: String in data["villager_denunciation"]:
 		state.villager_denunciation[family_id] = int(data["villager_denunciation"][family_id])
 	state.table.assign(data["table"])
@@ -120,6 +139,12 @@ func to_dict() -> Dictionary:
 		"commons_received": str(commons_received),
 		"commons_paid": str(commons_paid),
 		"memory": memory.to_dict(),
+		"risen": risen.duplicate(),
+		"risen_used": risen_used.duplicate(),
+		"officials_used": officials_used.duplicate(),
+		"boss_id": boss_id,
+		"boss_family": boss_family,
+		"styles": styles.map(func(style: PlayerStyle) -> Dictionary: return style.to_dict()),
 		"villager_denunciation": villager_denunciation.duplicate(),
 		"roster": roster_data,
 		"table": table.duplicate(),

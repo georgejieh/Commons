@@ -31,7 +31,8 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 
 ## Version 2 saves predate the meter setbacks (P4.1): armed, with none in force, and
 ## Resentment (P4.2) at zero, villagers' Denunciation (P4.3) empty, and no
-## Commons paid yet (P4.4), and no memory carried in (P4.6).
+## Commons paid yet (P4.4), no memory carried in (P4.6), and no
+## bosses or styles yet (P4.7).
 static func migrate_from_2(data: Dictionary) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
 		var checkpoint: Dictionary = data["checkpoint"]
@@ -45,6 +46,12 @@ static func migrate_from_2(data: Dictionary) -> Dictionary:
 			"commons_received": "0",
 			"commons_paid": "0",
 			"memory": {},
+			"risen": [],
+			"risen_used": [],
+			"officials_used": [],
+			"boss_id": "",
+			"boss_family": "",
+			"styles": [],
 		}
 		checkpoint.merge(defaults)
 	return data

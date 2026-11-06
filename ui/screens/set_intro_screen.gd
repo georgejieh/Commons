@@ -16,6 +16,8 @@ func open(app: DemoApp) -> void:
 		{"target": Strings.score(controller.target()), "rounds": app.max_rounds()}
 	)
 	column.add_child(ScreenKit.styled(target, CommonsTheme.TITLE))
+	if not controller.boss().is_empty():
+		column.add_child(_boss_line(controller))
 	column.add_child(ScreenKit.eyebrow(tr("intro.ladder")))
 	var steps: Array[Control] = []
 	var ladder: Array[String] = controller.ladder()
@@ -29,6 +31,19 @@ func open(app: DemoApp) -> void:
 	ScreenKit.reveal(column)
 	UiMotion.enter(steps)
 	begin.grab_focus()
+
+
+## The boss's name and rule, so the twist is never hidden (P4.7).
+func _boss_line(controller: RunController) -> Label:
+	var name_text: String = tr("modifier.%s.name" % controller.boss())
+	var line: Label = ScreenKit.label(
+		tr("intro.boss").format(
+			{"name": name_text, "rule": controller.modifier_text(controller.boss())}
+		),
+		24
+	)
+	line.add_theme_color_override("font_color", ScreenKit.RED)
+	return line
 
 
 func _step(controller: RunController, round_index: int, debuff_id: String) -> Control:

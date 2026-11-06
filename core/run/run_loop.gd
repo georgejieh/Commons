@@ -31,6 +31,7 @@ const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
 const DEFAULT_FREE_RIDE: FreeRideParams = preload("res://data/run/free_ride.tres")
 const DEFAULT_VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
 const DEFAULT_MEMORY: MemoryParams = preload("res://data/villagers/memory.tres")
+const DEFAULT_BOSSES: BossPool = preload("res://data/run/boss_pool.tres")
 
 var state: RunState
 var flow: RunFlow
@@ -74,7 +75,7 @@ func _init(
 	_params = params
 	_meters = meters
 	_pool = pool
-	for definition: ModifierDef in pool + DEFAULT_CADRES.cadres:
+	for definition: ModifierDef in pool + DEFAULT_CADRES.cadres + DEFAULT_BOSSES.all():
 		_pool_by_id[definition.id] = definition
 	shop = RunShop.new(state, DEFAULT_SHOP, DEFAULT_CADRES.cadres, meters.rationing_shop_cut)
 	_table = SeatRules.new(_stack)
@@ -119,7 +120,11 @@ func seat_table(seat: int) -> BotTable:
 
 
 func target() -> float:
-	return _sets.target(state.year, state.set_type)
+	var base: float = _sets.target(state.year, state.set_type)
+	if state.boss_id == RunState.NO_BOSS:
+		return base
+	var percent: int = _pool_by_id[state.boss_id].parameters.get(GreatLeapEffect.QUOTA_PERCENT, 100)
+	return base * percent / 100.0
 
 
 ## Starts the Set the state names. The Set's start is the save checkpoint.
@@ -133,6 +138,7 @@ func start_set() -> Reason:
 	state.round_index = 0
 	state.set_progress = 0.0
 	state.landlord_seat = Seats.NONE
+	_choose_boss()
 	state.debuff_ladder = DebuffLadder.draw(
 		_pool, state.set_type, _sets.max_rounds(), state.streams.stream(RandomStreams.DEBUFF)
 	)
@@ -294,6 +300,8 @@ func _rebuild_modifiers() -> void:
 		_stack.add(_pool_by_id[id], PLAYER)
 		if round_index == state.round_index:
 			set_log.add(RunEvent.new(RunEvent.Type.DEBUFF_ADDED, PLAYER, round_index, 0.0, id))
+	if state.boss_id != RunState.NO_BOSS:
+		_stack.add(_pool_by_id[state.boss_id], PLAYER)
 
 
 func _deal_cards() -> void:
@@ -468,6 +476,7 @@ func _end_set() -> void:
 		_raise(RunMeters.MISSED_TARGET)
 	_reeducate_villagers()
 	state.memory.record(state.summaries[-1])
+	_record_style_and_risen()
 	var held: int = Resentment.private_cadres(state.inventory.cadres, DEFAULT_CADRES.cadres)
 	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
 	var owed: int = Resentment.denunciation(state.resentment, DEFAULT_RESENTMENT)
@@ -490,6 +499,50 @@ func _raise(source_id: String) -> void:
 	RunMeters.apply(state, source_id, _meters, _stack, _params, PLAYER, set_log.events())
 
 
+## A boss Set gets its boss: a Purge destroys Cadres now, a risen villager takes seat 1
+## as landlord, and the New Landlord makes seat 1 play like the player.
+func _choose_boss() -> void:
+	state.boss_id = RunState.NO_BOSS
+	state.boss_family = ""
+	if state.set_type != RunState.SetType.BOSS:
+		return
+	var stream: RandomStream = state.streams.stream(RandomStreams.EVENTS)
+	var boss: ModifierDef = Bosses.choose(state, DEFAULT_BOSSES, _sets.years(), stream)
+	state.boss_id = boss.id
+	set_log.add(RunEvent.new(RunEvent.Type.BOSS_CHOSEN, Seats.NONE, 0, 0.0, boss.id))
+	var purge: int = boss.parameters.get("purge", 0)
+	for cadre_id: String in Bosses.purge(state.inventory, purge, stream):
+		set_log.add(RunEvent.new(RunEvent.Type.CADRE_PURGED, PLAYER, 0, 0.0, cadre_id))
+	if boss == DEFAULT_BOSSES.risen:
+		# The risen family takes seat 1; if the roster already sat it in seat 2, the two
+		# seats trade so no family sits twice.
+		if state.table[2] == state.boss_family:
+			state.table[2] = state.table[1]
+			_configs[2] = _configs[1]
+		state.table[1] = state.boss_family
+		var entry: RosterEntry = Roster.entry(state, state.boss_family)
+		if entry != null:
+			_configs[1] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(1))
+		state.landlord_seat = 1
+	elif boss == DEFAULT_BOSSES.new_landlord:
+		PlayerStyle.mirror(_configs[1], state.styles, DEFAULT_BOSSES)
+
+
+## Keeps the player's last few Sets of play, and marks a villager who held the landlord
+## seat all Set as risen.
+func _record_style_and_risen() -> void:
+	state.styles.append(PlayerStyle.from_events(set_log.events(), PLAYER))
+	while state.styles.size() > DEFAULT_BOSSES.style_sets:
+		state.styles.pop_front()
+	var holder: String = Bosses.full_set_holder(set_log.events(), state.table, PLAYER)
+	if holder != Bosses.NO_FAMILY and not state.risen.has(holder):
+		state.risen.append(holder)
+
+
+func _seat_seed(seat: int) -> int:
+	return RandomStreams.derive_seed(state.run_seed, "seat:%d:%d" % [set_number(), seat])
+
+
 ## Seats two families from the roster and plays them by their personalities. A run
 ## with no roster keeps the seats and configs it was given.
 func _seat_roster() -> void:
@@ -498,10 +551,9 @@ func _seat_roster() -> void:
 	Roster.prepare_set(state, DEFAULT_VILLAGE, state.streams.stream(RandomStreams.EVENTS))
 	for seat: int in range(1, Seats.COUNT):
 		var entry: RosterEntry = Roster.entry(state, state.table[seat])
-		var seed_value: int = RandomStreams.derive_seed(
-			state.run_seed, "seat:%d:%d" % [set_number(), seat]
-		)
-		_configs[seat] = Roster.config_for(DEFAULT_VILLAGE, entry, seed_value)
+		_configs[seat] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(seat))
+		if Roster.definition(DEFAULT_VILLAGE, entry).mirrors_player:
+			PlayerStyle.mirror(_configs[seat], state.styles, DEFAULT_BOSSES)
 
 
 ## A family whose own Denunciation reached mid is sent to reeducation, and its count

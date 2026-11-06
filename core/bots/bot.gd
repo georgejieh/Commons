@@ -40,7 +40,9 @@ static func decide_play(
 static func search_job(
 	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
 ) -> BotSearchJob:
-	var scorer: CandidateScorer = CandidateScorer.new(view.own_counts, table, config.weights)
+	var scorer: CandidateScorer = CandidateScorer.new(
+		view.own_counts, table, config.weights, config.type_bias
+	)
 	var position: BotPosition = BotPosition.new(view, table, config, scorer)
 	if position.slacks():
 		var none: Array[Pattern] = []
