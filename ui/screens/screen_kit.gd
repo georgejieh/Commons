@@ -69,6 +69,28 @@ static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
 	return sheet
 
 
+## A full-screen page over a backdrop with its content on one sheet down the left side,
+## so the art shows beside it and nothing hangs over the art's own paper.
+static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBoxContainer:
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.add_child(cover(backdrop))
+	var shade: ColorRect = ColorRect.new()
+	shade.color = SHADE
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(shade)
+	var sheet: VBoxContainer = card(Vector2(width, 0))
+	sheet.add_theme_constant_override("separation", STYLE.gap + 8)
+	var panel: Control = card_panel(sheet)
+	root.add_child(panel)
+	panel.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+	panel.offset_left = PAGE_MARGIN
+	panel.offset_top = PAGE_MARGIN / 2.0
+	panel.offset_bottom = -PAGE_MARGIN / 2.0
+	panel.offset_right = PAGE_MARGIN + width
+	return sheet
+
+
 ## A small tracked label over a big headline, the way a poster leads.
 static func header(eyebrow_text: String, headline_text: String, color: Color = RED) -> Control:
 	var block: VBoxContainer = VBoxContainer.new()

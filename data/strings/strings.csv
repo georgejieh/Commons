@@ -46,6 +46,8 @@ pattern.rocket,Rocket
 hand.reason.select,Choose cards to play.
 hand.reason.wait,Wait for your turn.
 hand.reason.does_not_beat,Doesn't beat the play on the table.
+hand.reason.does_not_beat_folded,"Doesn't beat the play on the table. A debuff lowers the cards marked in red."
+card.rank_as,as {rank}
 hand.reason.empty,Choose cards to play.
 hand.reason.unknown_shape,These cards don't make a legal play.
 hand.reason.chain_too_short,This chain is too short.

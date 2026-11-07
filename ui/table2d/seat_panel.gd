@@ -1,12 +1,15 @@
 class_name SeatPanel
 extends PanelContainer
-## One villager at the table, on one paper sheet: portrait, name, cards left, role and
-## their last words. The sheet grows with its content, so the portrait always sits
-## inside it. The card count turns red at 2 and 1 cards. A line types out in step with
+## One villager at the table, on one paper sheet: portrait, with name, cards left and
+## role level with its top, and their last words underneath. The landlord tag lies
+## across the portrait's top, so it takes no line of its own. The sheet keeps one height
+## whatever is said. The card count turns red at 2 and 1 cards. A line types out in step with
 ## the villager's voice (P3B.13); clicking it shows the rest at once.
 
 ## The player skipped the line typing out, so its voice should stop.
 signal speech_skipped(seat: int)
+## The line typing out finished or was skipped.
+signal speech_finished(seat: int)
 
 const INK: Color = Color("1e1a16")
 const LANDLORD_RED: Color = Color("9e1b16")
@@ -29,6 +32,7 @@ var _info: VBoxContainer = VBoxContainer.new()
 var _back: TextureRect = TextureRect.new()
 var _count_row: HBoxContainer = HBoxContainer.new()
 var _row: HBoxContainer = HBoxContainer.new()
+var _stack: VBoxContainer = VBoxContainer.new()
 var _mood: String = ""
 ## When each character of the current line shows, and how long it has been typing.
 var _reveal: PackedFloat32Array = PackedFloat32Array()
@@ -39,8 +43,11 @@ func _init() -> void:
 	theme_type_variation = CommonsTheme.SHEET
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_row.add_theme_constant_override("separation", 14)
-	add_child(_row)
-	_info.add_theme_constant_override("separation", 4)
+	_stack.add_theme_constant_override("separation", 6)
+	add_child(_stack)
+	_stack.add_child(_row)
+	_info.add_theme_constant_override("separation", 2)
+	_info.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_banner.text = tr("table.landlord").to_upper()
 	_banner.theme_type_variation = CommonsTheme.EYEBROW
 	_banner.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
@@ -50,7 +57,9 @@ func _init() -> void:
 	tag.content_margin_left = 10
 	tag.content_margin_right = 10
 	_banner.add_theme_stylebox_override("normal", tag)
-	_banner.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_banner.offset_top = 6
 	_portrait.custom_minimum_size = PORTRAIT_BOX
 	_portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_portrait.color = PAPER
@@ -62,6 +71,7 @@ func _init() -> void:
 	_picture.offset_right = -4
 	_picture.offset_bottom = -4
 	_portrait.add_child(_picture)
+	_portrait.add_child(_banner)
 	_name.theme_type_variation = CommonsTheme.TITLE
 	_name.add_theme_font_size_override("font_size", 36)
 	_count.add_theme_font_size_override("font_size", 26)
@@ -70,7 +80,8 @@ func _init() -> void:
 	_speech.add_theme_font_size_override("font_size", 20)
 	_speech.add_theme_color_override("font_color", INK)
 	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_speech.custom_minimum_size = Vector2(200, 0)
+	# Two lines of room, said or not, so the sheet never changes height.
+	_speech.custom_minimum_size = Vector2(200, 54)
 	_speech.max_lines_visible = 2
 	_speech.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	_speech.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -83,9 +94,10 @@ func _init() -> void:
 	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
 	_count_row.add_child(_back)
 	_count_row.add_child(_count)
-	for child: Control in [_banner, _name, _count_row, _role, _speech]:
+	for child: Control in [_name, _count_row, _role]:
 		_info.add_child(child)
 	_row.add_child(_info)
+	_stack.add_child(_speech)
 
 
 func setup(seat_index: int, display_name: String, portrait: Texture2D = null) -> void:
@@ -157,6 +169,7 @@ func _process(delta: float) -> void:
 func _finish_typing() -> void:
 	_speech.visible_characters = -1
 	set_process(false)
+	speech_finished.emit(seat)
 
 
 func _on_speech_input(event: InputEvent) -> void:

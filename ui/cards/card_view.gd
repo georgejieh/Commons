@@ -1,10 +1,12 @@
 class_name CardView
 extends Control
 ## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
-## a middle picture (court or joker art, or the suit), enhancement overlay, seal and
-## owner stamp. The parts come from CardArt, so no face is baked. bind() is the only
-## way to show a card; views come from CardPool and are reused, never instanced during
-## a round.
+## a picture, enhancement overlay, seal and owner stamp. A number card shows its suit
+## faintly in the corner; a court card or joker is a picture card, its art filling the
+## face under a paper corner index, so the fan's edge reads as a picture card at once.
+## A note under the index says when a debuff makes the card rank as another. The parts
+## come from CardArt, so no face is baked. bind() is the only way to show a card; views
+## come from CardPool and are reused, never instanced during a round.
 
 signal pressed(card_id: int)
 signal hovered(card_id: int)
@@ -21,6 +23,15 @@ const GLYPH_SIZE: int = 40
 const JOKER_SIZE: int = 24
 const TILT_SHADER: Shader = preload("res://shaders/card_tilt.gdshader")
 const ART: CardArt = preload("res://data/ui/card_art.tres")
+## Where a number card's faint suit sits, and the inset of a picture card's art, as
+## left, top, right and bottom offsets.
+const PIP_BOX: Vector4 = Vector4(46, 56, 112, 160)
+const ART_BOX: Vector4 = Vector4(5, 5, 115, 163)
+## The paper index behind a picture card's rank and suit, and a joker's word.
+const INDEX_BOTTOM: float = 96.0
+const JOKER_INDEX_BOTTOM: float = 50.0
+const INDEX_PAD: float = 8.0
+const NOTE_COLOR: Color = Color("9e1b16")
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -53,6 +64,8 @@ var _tweens: Array[Tween] = []
 @onready var _rank: Label = $Frame/Rank
 @onready var _suit: TextureRect = $Frame/Suit
 @onready var _picture: TextureRect = $Frame/Picture
+@onready var _index: Panel = $Frame/Index
+@onready var _rank_note: Label = $Frame/RankNote
 @onready var _enhancement: ColorRect = $Frame/Enhancement
 @onready var _seal: Label = $Frame/Seal
 @onready var _stamp: Label = $Frame/Stamp
@@ -76,6 +89,10 @@ func _ready() -> void:
 	_cursor_mark.offset_top = CURSOR_BAR
 	_cursor_mark.offset_bottom = CURSOR_BAR * 2.0
 	add_child(_cursor_mark)
+	var tag: StyleBoxFlat = StyleBoxFlat.new()
+	tag.bg_color = NOTE_COLOR
+	tag.set_corner_radius_all(4)
+	_rank_note.add_theme_stylebox_override("normal", tag)
 
 
 ## The card parts in use.
@@ -123,12 +140,48 @@ func bind(card: CardInstance) -> void:
 	_picture.texture = ArtStages.resolve(art.picture(rank, card.suit()))
 	var pip: bool = rank < Ranks.JACK or (rank > Ranks.KING and not joker)
 	_picture.modulate.a = art.pip_alpha if pip else 1.0
+	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
 	_rank.modulate = RED if red else INK
 	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
 	_stamp.visible = card.owner_stamp() != CardInstance.NO_OWNER
+	set_rank_note("")
 	set_marked(false, false)
+
+
+## Says the card ranks as another, such as "as 3", or hides the note when text is empty.
+func set_rank_note(text: String) -> void:
+	_rank_note.text = text
+	_rank_note.visible = not text.is_empty()
+
+
+func rank_note() -> String:
+	return _rank_note.text if _rank_note.visible else ""
+
+
+## True when the face is a picture card: art over the whole face under a corner index.
+func is_picture_card() -> bool:
+	return _index.visible
+
+
+## A number card shows its suit faintly in the corner; a picture card's art fills the
+## face, with the rank and suit on a paper index sized to the rank.
+func _lay_out_face(pip: bool, joker: bool) -> void:
+	var box: Vector4 = PIP_BOX if pip else ART_BOX
+	_picture.offset_left = box.x
+	_picture.offset_top = box.y
+	_picture.offset_right = box.z
+	_picture.offset_bottom = box.w
+	_picture.stretch_mode = (
+		TextureRect.STRETCH_KEEP_ASPECT_CENTERED if pip else TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	)
+	_index.visible = not pip
+	if pip:
+		return
+	var glyph_right: float = _rank.offset_left + _rank.get_minimum_size().x
+	_index.offset_right = maxf(glyph_right, _suit.offset_right) + INDEX_PAD
+	_index.offset_bottom = JOKER_INDEX_BOTTOM if joker else INDEX_BOTTOM
 
 
 ## Selected cards lift and get a red edge; hinted cards get a gold edge. The keyboard

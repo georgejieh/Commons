@@ -51,14 +51,14 @@ func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	var pool: CardPool = table.get("_pool")
-	var lane: PlayLane = _lane(table)
+	var pile: TrickPile = table.get("_pile")
 	var free_before: int = pool.free_count()
-	lane.show_play(_cards(3))
+	pile.show_play(_cards(3), Vector2.ZERO)
 	assert_int(pool.free_count()).is_equal(free_before - 3)
-	lane.sweep(Vector2.ZERO)
-	assert_int(lane.card_count()).is_equal(3)
+	pile.sweep(Vector2.ZERO)
+	assert_int(pile.card_count()).is_equal(3)
 	await await_millis(int((TableMotion.PRESETS.sweep + 0.3) * 1000.0))
-	assert_int(lane.card_count()).is_equal(0)
+	assert_int(pile.card_count()).is_equal(0)
 	assert_int(pool.free_count()).is_equal(free_before)
 
 
@@ -101,10 +101,10 @@ func test_reduced_motion_clears_a_sweep_at_once() -> void:
 	Settings.set_value("reduced_motion", true)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var lane: PlayLane = _lane(table)
-	lane.show_play(_cards(2))
-	lane.sweep(Vector2.ZERO)
-	assert_int(lane.card_count()).is_equal(0)
+	var pile: TrickPile = table.get("_pile")
+	pile.show_play(_cards(2), Vector2.ZERO)
+	pile.sweep(Vector2.ZERO)
+	assert_int(pile.card_count()).is_equal(0)
 
 
 ## A deal, a play dropped and swept, a ledger count and a bomb's shake, all at once.
@@ -112,9 +112,9 @@ func _start_every_motion(table: TableScreen) -> void:
 	var hand_view: HandView = table.get("_hand_view")
 	hand_view.show_cards()
 	hand_view.deal_in()
-	var lane: PlayLane = _lane(table)
-	lane.show_play(_cards(4))
-	lane.sweep(Vector2.ZERO)
+	var pile: TrickPile = table.get("_pile")
+	pile.show_play(_cards(4), Vector2.ZERO)
+	pile.sweep(Vector2.ZERO)
 	var ledger: Ledger = table.get("_ledger")
 	ledger.add_row("Wang", 300.0)
 	var motion: TableMotion = table.get("_motion")
@@ -125,11 +125,6 @@ func _slow_presets() -> void:
 	for key: String in ["fly_time", "sweep", "count_time", "stamp_time"]:
 		_saved_presets[key] = float(TableMotion.PRESETS.get(key))
 		TableMotion.PRESETS.set(key, SLOW)
-
-
-func _lane(table: TableScreen) -> PlayLane:
-	var plays: Dictionary[int, PlayLane] = table.get("_plays")
-	return plays[1]
 
 
 func _cards(count: int) -> Array[CardInstance]:

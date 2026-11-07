@@ -2,7 +2,11 @@ class_name TableSpeech
 extends RefCounted
 ## Turns run events into what villagers say at the table (P3B.8). Lines come from the
 ## SpeechBook by event. Each seat cycles through a salt, so the same events in the same
-## order always give the same lines, with no global random.
+## order always give the same lines, with no global random. One villager talks at a
+## time: a line for another seat waits in a short queue until the one typing out ends.
+## A seat's newer line for the same event replaces its older one, and when the queue
+## overflows, idle chatter goes before announcements. Skipping shows every waiting line
+## at once, silently.
 
 ## A villager said a line: the voice (P3B.13) listens here.
 signal spoke(seat: int, event: String, line: SpeechLine)
@@ -10,6 +14,12 @@ signal spoke(seat: int, event: String, line: SpeechLine)
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
 ## Spreads the seats' salts so two villagers rarely say the same line together.
 const SEAT_SALT: int = 7
+## The most lines that wait at once, and the events that are only chatter.
+const QUEUE_MAX: int = 3
+const CHATTER: Array[String] = ["pass", "call", "no_call"]
+
+## True while the table skips ahead: every line shows at once, with no voice.
+var hurry: bool = false
 
 var _seats: Dictionary[int, SeatPanel] = {}
 var _said: Dictionary[int, int] = {}
@@ -19,10 +29,16 @@ var _books: Dictionary[int, SpeechBook] = {}
 ## Each seat's voice and letter bank (P3B.13). A seat with none speaks silently.
 var _voices: Dictionary[int, VoiceProfile] = {}
 var _voice_banks: Dictionary[int, String] = {}
+## Lines waiting for the table to fall quiet, oldest first: seat, event and fields.
+var _waiting: Array[Dictionary] = []
 
 
 func setup(seats: Dictionary[int, SeatPanel], app: DemoApp = null) -> void:
 	_seats = seats
+	_waiting.clear()
+	for seat: int in seats:
+		if not seats[seat].speech_finished.is_connected(_on_finished):
+			seats[seat].speech_finished.connect(_on_finished)
 	_books.clear()
 	_voices.clear()
 	_voice_banks.clear()
@@ -76,6 +92,9 @@ func lines_said() -> int:
 func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	if not _seats.has(seat):
 		return
+	if not hurry and _talking_besides(seat):
+		_wait({"seat": seat, "event": event, "fields": fields})
+		return
 	var said: int = _said.get(seat, 0)
 	_said[seat] = said + 1
 	var choices: Array[SpeechLine] = BOOK.lines_for(event)
@@ -91,10 +110,52 @@ func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 		reveal = Audio.voice.speak(seat, text, line.mood, voice, _voice_banks[seat]).reveal
 	_seats[seat].say(text, line.mood, reveal)
 	spoke.emit(seat, event, line)
+	if hurry:
+		_seats[seat].skip_speech()
 
 
-## Shows every line still typing out and stops every voice.
+## Shows every line still typing out, then every waiting line, and stops every voice.
 func skip_all() -> void:
+	hurry = true
 	for seat: int in _seats:
 		_seats[seat].skip_speech()
+	while not _waiting.is_empty():
+		var line: Dictionary = _waiting.pop_front()
+		say(line.seat, line.event, line.fields)
+	hurry = false
 	Audio.voice.stop_all()
+
+
+func waiting_count() -> int:
+	return _waiting.size()
+
+
+func _wait(line: Dictionary) -> void:
+	for index: int in _waiting.size():
+		if _waiting[index].seat == line.seat and _waiting[index].event == line.event:
+			_waiting.remove_at(index)
+			break
+	_waiting.append(line)
+	if _waiting.size() <= QUEUE_MAX:
+		return
+	var dropped: int = 0
+	for index: int in _waiting.size():
+		if CHATTER.has(_waiting[index].event):
+			dropped = index
+			break
+	_waiting.remove_at(dropped)
+
+
+## True while a seat other than seat is typing out a line.
+func _talking_besides(seat: int) -> bool:
+	for other: int in _seats:
+		if other != seat and _seats[other].is_typing():
+			return true
+	return false
+
+
+func _on_finished(_seat: int) -> void:
+	if _waiting.is_empty():
+		return
+	var line: Dictionary = _waiting.pop_front()
+	say(line.seat, line.event, line.fields)

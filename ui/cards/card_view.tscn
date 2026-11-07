@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://ui/cards/card_view.gd" id="1_card"]
 
@@ -33,6 +33,14 @@ expand_margin_top = 3.0
 expand_margin_right = 3.0
 expand_margin_bottom = 3.0
 
+[sub_resource type="StyleBoxFlat" id="index"]
+bg_color = Color(0.984, 0.965, 0.918, 0.94)
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.118, 0.102, 0.086, 1)
+corner_radius_top_left = 7
+corner_radius_bottom_right = 10
+
 [sub_resource type="LabelSettings" id="glyph"]
 font_size = 40
 font_color = Color(1, 1, 1, 1)
@@ -55,15 +63,6 @@ anchor_bottom = 1.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("paper")
 
-[node name="Rank" type="Label" parent="Frame"]
-layout_mode = 0
-offset_left = 12.0
-offset_top = 6.0
-offset_right = 108.0
-offset_bottom = 58.0
-mouse_filter = 2
-label_settings = SubResource("glyph")
-
 [node name="Picture" type="TextureRect" parent="Frame"]
 layout_mode = 0
 offset_left = 46.0
@@ -73,6 +72,25 @@ offset_bottom = 160.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Index" type="Panel" parent="Frame"]
+visible = false
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 54.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("index")
+
+[node name="Rank" type="Label" parent="Frame"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 6.0
+offset_right = 108.0
+offset_bottom = 58.0
+mouse_filter = 2
+label_settings = SubResource("glyph")
 
 [node name="Suit" type="TextureRect" parent="Frame"]
 layout_mode = 0
@@ -115,6 +133,20 @@ rotation = -0.12
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.69, 0.165, 0.09, 1)
 text = "card.stamp.yours"
+
+[node name="RankNote" type="Label" parent="Frame"]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 98.0
+offset_right = 72.0
+offset_bottom = 124.0
+rotation = -0.1
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.984, 0.965, 0.918, 1)
+theme_override_font_sizes/font_size = 18
+text = "card.rank_as"
+horizontal_alignment = 1
 
 [node name="Highlight" type="Panel" parent="."]
 visible = false

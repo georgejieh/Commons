@@ -24,12 +24,13 @@ var _hand: HandModel
 var _pool: CardPool = CardPool.new()
 var _player: EventPlayer = EventPlayer.new()
 var _seats: Dictionary[int, SeatPanel] = {}
-var _plays: Dictionary[int, PlayLane] = {}
+var _pile: TrickPile = TrickPile.new()
 
 var _hand_view: HandView = HandView.new()
 var _hud: TableHud = TableHud.new()
 var _ledger: Ledger = Ledger.new()
 var _board: NoticeBoard = NoticeBoard.new()
+var _debuffs: DebuffStrip = DebuffStrip.new()
 var _actions: ActionBar = ActionBar.new()
 var _need_panel: NeedPanel = NeedPanel.new()
 var _cheat_sheet: CheatSheet = CheatSheet.new()
@@ -71,6 +72,7 @@ func _ready() -> void:
 	ledger_paper.add_child(_ledger)
 	_place(_hud, Vector2.ZERO, Vector2(1920, 72))
 	_place(_board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
+	_place(_debuffs, Vector2(PLAY_CENTER - 298.0, 284), Vector2(596, 0))
 	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
 	_you.theme_type_variation = CommonsTheme.TITLE
 	_you.add_theme_font_size_override("font_size", 28)
@@ -83,11 +85,9 @@ func _ready() -> void:
 	_place(_banner, Vector2(PLAY_CENTER - 380.0, 480), Vector2(760, 0))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
-	for seat: int in Seats.COUNT:
-		_plays[seat] = PlayLane.new()
-	_place(_plays[0], Vector2(520, 560), Vector2(560, 130))
-	_place(_plays[1], Vector2(900, 360), Vector2(520, 130))
-	_place(_plays[2], Vector2(140, 360), Vector2(520, 130))
+	_place(_pile, Vector2(PLAY_CENTER - 460.0, 380), Vector2(920, 300))
+	# The need panel, sheets and banner all lie over the pile.
+	move_child(_pile, _need_panel.get_index())
 
 
 func open(app: DemoApp) -> void:
@@ -102,8 +102,7 @@ func open(app: DemoApp) -> void:
 	_player.motion = _motion
 	_motion.setup(self, bool(Settings.value("reduced_motion")))
 	Settings.changed.connect(_on_setting)
-	for lane: PlayLane in _plays.values():
-		lane.setup(_pool, _pool_parent, _motion)
+	_pile.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
 	_build_seats()
 	_speech.setup(_seats, app)
@@ -142,6 +141,7 @@ func open(app: DemoApp) -> void:
 
 ## Plays every queued event at once, skipping the pacing.
 func skip_events() -> void:
+	_speech.hurry = true
 	_player.flush()
 	_speech.skip_all()
 
@@ -222,7 +222,7 @@ func _on_event(event: RunEvent) -> void:
 func _on_round_event(event: RoundEvent) -> void:
 	match event.type:
 		RoundEvent.Type.PLAYED:
-			_plays[event.seat].show_play(event.cards)
+			_show_play(event)
 			if event.seat == 0:
 				_hand.refresh()
 				_hand_view.show_cards()
@@ -231,10 +231,8 @@ func _on_round_event(event: RoundEvent) -> void:
 				var rocket: bool = event.pattern.type == Pattern.Type.ROCKET
 				_announce(tr("banner.rocket" if rocket else "banner.bomb"), ScreenKit.RED)
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
-		RoundEvent.Type.PASSED:
-			_plays[event.seat].clear()
 		RoundEvent.Type.TRICK_WON:
-			_sweep_plays(event.seat)
+			_pile.sweep(_seat_center(event.seat))
 		RoundEvent.Type.ROUND_ENDED:
 			var landlord_won: bool = event.seat == _landlord
 			var key: String = "banner.landlord_wins" if landlord_won else "banner.peasants_win"
@@ -245,10 +243,11 @@ func _on_round_event(event: RoundEvent) -> void:
 ## round's banner and the landlord tag, and every villager back to a full hand. Your
 ## new hand rises in now, not after the bots' first plays.
 func _new_deal() -> void:
-	_clear_all_plays()
+	_pile.clear()
 	_ledger.clear_rows()
 	_banner.dismiss()
 	_landlord = Seats.NONE
+	_speech.skip_all()
 	for panel: SeatPanel in _seats.values():
 		panel.set_count(Dealer.HAND_SIZE)
 		panel.set_role(false, false)
@@ -262,6 +261,7 @@ func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
 	_board.show_cadres(_controller)
+	_debuffs.show_debuffs(_controller)
 	var awaiting: int = _controller.awaiting()
 	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
@@ -274,25 +274,23 @@ func _on_drained() -> void:
 		_app.show_screen("set_summary", true)
 
 
-## The trick's cards slide off toward whoever won it.
-func _sweep_plays(winner: int) -> void:
-	var toward: Control = _hand_view if winner == 0 else _seats.get(winner, null)
-	if toward == null:
-		_clear_all_plays()
-		return
-	var center: Vector2 = toward.global_position + toward.size / 2.0
-	for lane: PlayLane in _plays.values():
-		lane.sweep(center)
+## A play flies to the pile from the seat that made it; yours leaves from your hand.
+func _show_play(event: RoundEvent) -> void:
+	var origins: Array[Vector2] = []
+	if event.seat == 0:
+		for card: CardInstance in event.cards:
+			origins.append(_hand_view.card_center(card.id()))
+	_pile.show_play(event.cards, _seat_center(event.seat), origins)
+
+
+func _seat_center(seat: int) -> Vector2:
+	var at: Control = _hand_view if seat == 0 else _seats[seat]
+	return at.global_position + at.size / 2.0
 
 
 func _on_setting(key: String) -> void:
 	if key == "reduced_motion":
 		_motion.set_reduced(bool(Settings.value("reduced_motion")))
-
-
-func _clear_all_plays() -> void:
-	for lane: PlayLane in _plays.values():
-		lane.clear()
 
 
 func _announce(text: String, color: Color) -> void:

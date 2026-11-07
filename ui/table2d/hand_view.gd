@@ -54,6 +54,7 @@ func show_cards() -> void:
 		if view.get_parent() != self:
 			view.reparent(self, false)
 		view.bind(card)
+		_note_fold(view, card)
 		view.pressed.connect(_on_pressed)
 		view.hovered.connect(_on_hovered)
 		_views.append(view)
@@ -85,6 +86,15 @@ func cursor_card() -> int:
 	if _cursor < 0 or _cursor >= _views.size():
 		return -1
 	return _views[_cursor].card_id
+
+
+## Where a card in the fan sits on screen, its middle, or the fan's middle when the
+## card isn't shown.
+func card_center(card_id: int) -> Vector2:
+	for view: CardView in _views:
+		if view.card_id == card_id:
+			return view.get_global_transform() * (view.size / 2.0)
+	return global_position + size / 2.0
 
 
 ## Lights these cards with the hint edge until the hand next changes.
@@ -187,6 +197,13 @@ func _input(event: InputEvent) -> void:
 	var button: InputEventMouseButton = event as InputEventMouseButton
 	if button != null and not button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		_dragging = false
+
+
+## Marks a card a debuff makes rank as another, such as "as 3" on a 2.
+func _note_fold(view: CardView, card: CardInstance) -> void:
+	var folded: int = _model.folded_rank(card)
+	if folded >= 0:
+		view.set_rank_note(tr("card.rank_as").format({"rank": tr(CardView.RANK_KEYS[folded])}))
 
 
 func _disconnect(view: CardView) -> void:

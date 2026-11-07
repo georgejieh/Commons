@@ -1,13 +1,18 @@
 class_name SetIntroScreen
 extends Control
 ## Before a Set: its type, its target and reward, and the debuff ladder drawn for it,
-## one card per round, with round 1 always clean.
+## one card per round, with round 1 always clean. Everything sits on one sheet at the
+## left, the rounds two by two.
+
+const SHEET_WIDTH: float = 800.0
+const STEP_SIZE: Vector2 = Vector2(370, 170)
 
 
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
 	var state: RunState = controller.state_copy()
-	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
+	var art: Texture2D = ScreenKit.ART.notice_wall
+	var column: VBoxContainer = ScreenKit.side_sheet(self, art, SHEET_WIDTH)
 	var where: String = tr("intro.where").format(
 		{"year": state.year, "set": state.set_index + 1, "sets": app.sets_per_year()}
 	)
@@ -23,8 +28,13 @@ func open(app: DemoApp) -> void:
 	var ladder: Array[String] = controller.ladder()
 	for round_index: int in ladder.size():
 		steps.append(_step(controller, round_index, ladder[round_index]))
-	var row: HBoxContainer = ScreenKit.row(steps, 20)
-	column.add_child(row)
+	var grid: GridContainer = GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 20)
+	grid.add_theme_constant_override("v_separation", 20)
+	for step: Control in steps:
+		grid.add_child(step)
+	column.add_child(grid)
 	var begin: Button = ScreenKit.button(tr("intro.begin"), CommonsTheme.PRIMARY)
 	begin.pressed.connect(func() -> void: app.show_screen(app.table_id(), true))
 	column.add_child(begin)
@@ -47,7 +57,7 @@ func _boss_line(controller: RunController) -> Label:
 
 
 func _step(controller: RunController, round_index: int, debuff_id: String) -> Control:
-	var card: VBoxContainer = ScreenKit.card(Vector2(330, 250))
+	var card: VBoxContainer = ScreenKit.card(STEP_SIZE)
 	card.add_child(ScreenKit.eyebrow(tr("intro.round").format({"round": round_index + 1})))
 	if debuff_id.is_empty():
 		# A later round with nothing left to draw still carries the earlier debuffs.

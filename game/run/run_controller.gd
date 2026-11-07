@@ -252,8 +252,15 @@ func preview_play(card_ids: Array[int]) -> PlayPreview:
 
 ## The modifiers in play now: Cadres in slot order, then this Set's debuffs so far.
 func active_modifier_ids() -> Array[String]:
+	var ids: Array[String] = _loop.state.inventory.cadres.duplicate()
+	ids.append_array(active_debuff_ids())
+	return ids
+
+
+## This Set's debuffs so far, in the order they arrived.
+func active_debuff_ids() -> Array[String]:
 	var state: RunState = _loop.state
-	var ids: Array[String] = state.inventory.cadres.duplicate()
+	var ids: Array[String] = []
 	for round_index: int in range(1, mini(state.round_index + 1, state.debuff_ladder.size())):
 		if state.debuff_ladder[round_index] != RunState.NO_DEBUFF:
 			ids.append(state.debuff_ladder[round_index])
