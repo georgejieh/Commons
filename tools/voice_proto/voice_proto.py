@@ -11,8 +11,9 @@ recordings. Standard library only.
 What to listen for:
 - Each voice is recognizable, and the three are told apart.
 - The babble follows the words: long words take longer, spaces and punctuation pause.
-- Each sentence's end shapes its pitch: questions rise, statements fall, exclamations
-  come faster and louder, and lines ending in "..." trail off.
+- Each word steps its own pitch and the sentence drifts down. Only the last word
+  carries the ending: questions rise, statements fall, exclamations come faster and
+  louder, and lines ending in "..." trail off.
 - It must not read as imitation Mandarin: every letter holds one flat pitch with no
   per-letter tone shapes, and the sounds come from English letters.
 
@@ -120,34 +121,77 @@ def sentences(text):
 
 
 def contour(ending):
-    """Pitch multipliers at a sentence's start and end, and a loudness and pace scale."""
+    """The last word's pitch at its start and end, and the sentence's loudness and pace.
+
+    Only the last word carries the ending, as in speech: a long question stays level
+    until its last word rises.
+    """
     if ending == "...":
-        return (1.0, 0.55, 0.8, 0.75)
+        return (0.95, 0.6, 0.8, 0.75)
     if ending == "?":
-        return (0.95, 1.3, 1.0, 1.0)
+        return (1.0, 1.35, 1.0, 1.0)
     if ending == "!":
-        return (1.15, 1.0, 1.25, 1.2)
-    return (1.05, 0.85, 1.0, 1.0)
+        return (1.18, 1.0, 1.25, 1.2)
+    return (1.0, 0.85, 1.0, 1.0)
+
+
+# The whole sentence drifts down by this much from its first word to its last.
+DECLINATION = 0.1
+# Per-word pitch steps: longer words tend to carry the stress and step up.
+LONG_WORD = 4
+LONG_ACCENT = (0.04, 0.14)
+SHORT_ACCENT = (-0.07, 0.04)
+
+
+def word_accent(word):
+    """A fixed pitch step for a word, so the same word always sounds the same."""
+    rng = random.Random(line_seed(word))
+    low, high = LONG_ACCENT if len(word) >= LONG_WORD else SHORT_ACCENT
+    return rng.uniform(low, high)
+
+
+def _words(sentence):
+    """Each word as its spoken letters, with the pause characters that follow it."""
+    words = []
+    letters = ""
+    for char in sentence.lower():
+        if char in LETTERS:
+            letters += char
+        elif char in PAUSES:
+            if letters:
+                words.append((letters, []))
+                letters = ""
+            if words:
+                words[-1][1].append(PAUSES[char])
+    if letters:
+        words.append((letters, []))
+    return words
 
 
 def events_for(text):
-    """The line as a sequence of ("letter", letter, position) and ("pause", lengths).
+    """The line as ("letter", letter, bend, ending) and ("pause", lengths, 1.0, ending).
 
-    Position runs 0 to 1 across each sentence's letters, for its pitch contour.
+    Bend is the letter's pitch multiplier before the mood's range is applied: a slow
+    drift down across the sentence, a step per word, and the ending on the last word.
     """
     events = []
     for sentence, ending in sentences(spoken_text(text)):
-        letters = [c for c in sentence.lower() if c in LETTERS]
-        count = max(1, len(letters) - 1)
-        seen = 0
-        for char in sentence.lower():
-            if char in LETTERS:
-                events.append(("letter", char, seen / count, ending))
-                seen += 1
-            elif char in PAUSES:
-                events.append(("pause", PAUSES[char], 0.0, ending))
+        words = _words(sentence)
+        last_start, last_end = contour(ending)[:2]
+        for index, (word, pauses) in enumerate(words):
+            drift = 1.0 + DECLINATION / 2 - DECLINATION * index / max(1, len(words) - 1)
+            final = index == len(words) - 1
+            for position, char in enumerate(word):
+                if final:
+                    along = position / max(1, len(word) - 1)
+                    bend = drift * (last_start + (last_end - last_start) * along)
+                else:
+                    bend = drift * (1.0 + word_accent(word))
+                events.append(("letter", char, bend, ending))
+            for length in pauses:
+                events.append(("pause", length, 1.0, ending))
         if ending == "...":
-            events.append(("pause", TRAIL_PAUSE, 0.0, ending))
+            events.append(("pause", TRAIL_PAUSE, 1.0, ending))
     return events
 
 
@@ -215,13 +259,12 @@ def render_line(text, mood, voice_name):
     out = []
     letters = []
     pitches = []
-    for kind, value, position, ending in events_for(text):
-        start, end, loud_line, pace_line = contour(ending)
+    for kind, value, bend, ending in events_for(text):
+        loud_line, pace_line = contour(ending)[2:]
         voice["pace_now"] = voice["pace"] * pace * pace_line
         if kind == "pause":
             out.extend([0.0] * int(RATE * letter_seconds(voice) * value))
             continue
-        bend = start + (end - start) * position
         wobble = 1.0 + 0.04 * rng.uniform(-1, 1)
         f0 = voice["pitch"] * shift * (1.0 + (bend - 1.0) * span) * wobble
         render_letter(value, f0, voice, loud_mood * loud_line, rng, out)

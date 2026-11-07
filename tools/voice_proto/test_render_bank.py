@@ -73,3 +73,17 @@ def test_each_sentence_takes_its_own_contour_and_a_line_is_repeatable():
     assert pitches[-1] < pitches[0] * 0.75
     first = voice_proto.render_line("Pass.", "calm", "wang")[0]
     assert first == voice_proto.render_line("Pass.", "calm", "wang")[0]
+
+
+def test_a_long_question_stays_level_until_its_last_word_rises():
+    import voice_proto
+
+    line = "You going to play that, or hold it till the thaw?"
+    _out, letters, pitches = voice_proto.render_line(line, "", "zhao")
+    last = len("thaw")
+    body = pitches[:-last]
+    base = voice_proto.VOICES["zhao"]["pitch"]
+    assert max(body) < base * 1.2
+    assert min(body) > base * 0.85
+    assert len({round(p) for p in body}) > 5
+    assert pitches[-1] > max(body)
