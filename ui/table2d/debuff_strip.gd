@@ -5,13 +5,15 @@ extends PanelContainer
 ## debuff applies.
 
 const NAME_HEX: String = "9e1b16"
-const FONT_SIZE: int = 18
+const FONT_SIZE: int = 20
+## Room inside the paper's printed border.
+const PADDING: int = 22
 
 var _lines: RichTextLabel = RichTextLabel.new()
 
 
 func _init() -> void:
-	add_theme_stylebox_override("panel", ScreenKit.paper_style(6))
+	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_lines.bbcode_enabled = true
 	_lines.fit_content = true
