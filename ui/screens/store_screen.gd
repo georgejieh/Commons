@@ -109,6 +109,7 @@ func _item(slot: int, cadre_id: String) -> Control:
 	buy.pressed.connect(
 		func() -> void:
 			controller.buy(slot)
+			Audio.play(AudioEvents.STORE_BUY)
 			_refresh()
 	)
 	buy.tooltip_text = tip

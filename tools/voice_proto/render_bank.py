@@ -8,10 +8,13 @@ only, and deterministic: the same profile always gives byte-identical files.
     python tools/voice_proto/render_bank.py
 
 Every family and sent-down youth in data/villagers gets a bank named by its file, in
-audio/voices/<id>/<letter>.wav. The owner approved the voices by ear on 2026-11-06.
+audio/voices/<id>/<letter>.wav, and is logged in audio/sources/manifest.csv. The
+owner approved the voices by ear on 2026-11-06.
 """
 
 import argparse
+import csv
+import datetime
 import os
 import random
 import re
@@ -21,6 +24,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import voice_proto  # noqa: E402
 
 PROFILE_DIR = os.path.join("data", "ui", "voices")
+MANIFEST = os.path.join("audio", "sources", "manifest.csv")
+VOICE_PREFIX = "audio/voices/"
 FAMILY_DIRS = [os.path.join("data", "villagers", "families"), os.path.join("data", "villagers", "youth")]
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PROFILE_SCRIPT = os.path.join(ROOT, "data", "ui", "voice_profile.gd")
@@ -121,11 +126,29 @@ def render_bank(name, profile):
     return bank
 
 
+def log_banks(names, manifest, date):
+    """Replaces the manifest's voice rows with one row per rendered letter."""
+    with open(manifest, encoding="utf-8", newline="") as handle:
+        rows = list(csv.reader(handle))
+    header, kept = rows[0], [row for row in rows[1:] if not row[0].startswith(VOICE_PREFIX)]
+    for name in names:
+        for letter in bank_letters():
+            kept.append([
+                f"{VOICE_PREFIX}{name}/{letter}.wav", "voice", "Synthesis",
+                "tools/voice_proto/render_bank.py", "project", "Original", "", "",
+                f"{name} VoiceProfile", date, "", f"letter {letter}",
+            ])
+    with open(manifest, "w", encoding="utf-8", newline="") as handle:
+        csv.writer(handle, lineterminator=chr(10)).writerows([header] + kept)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", default=os.path.join(ROOT, "audio", "voices"))
+    parser.add_argument("--date", default=datetime.date.today().isoformat())
     args = parser.parse_args()
-    for name, profile in family_profiles().items():
+    profiles = family_profiles()
+    for name, profile in profiles.items():
         bank = render_bank(name, profile)
         peak = max(1e-6, max(max(abs(s) for s in samples) for samples in bank.values()))
         folder = os.path.join(args.out, name)
@@ -133,6 +156,9 @@ def main():
         for letter, samples in bank.items():
             voice_proto.write_wav(os.path.join(folder, letter + ".wav"), samples, peak)
         print(f"{folder}: {len(bank)} letters")
+    if os.path.abspath(args.out) == os.path.join(ROOT, "audio", "voices"):
+        log_banks(profiles, os.path.join(ROOT, MANIFEST), args.date)
+        print(f"logged {len(profiles) * len(bank_letters())} rows in {MANIFEST}")
 
 
 if __name__ == "__main__":

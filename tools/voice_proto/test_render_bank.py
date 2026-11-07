@@ -97,3 +97,17 @@ def test_a_long_question_stays_level_until_its_last_word_rises():
     assert min(body) > base * 0.85
     assert len({round(p) for p in body}) > 5
     assert pitches[-1] > max(body)
+
+
+def test_logging_replaces_only_the_voice_rows(tmp_path):
+    manifest = tmp_path / "manifest.csv"
+    manifest.write_text(
+        "file,type,license\naudio/sfx/a.wav,sfx,CC0\naudio/voices/old/a.wav,voice,Original\n",
+        encoding="utf-8",
+    )
+    render_bank.log_banks(["wang"], str(manifest), "2026-11-06")
+    lines = manifest.read_text(encoding="utf-8").splitlines()
+    assert lines[1] == "audio/sfx/a.wav,sfx,CC0"
+    assert not any("voices/old" in line for line in lines)
+    voice_rows = [line for line in lines if line.startswith("audio/voices/wang/")]
+    assert len(voice_rows) == 26

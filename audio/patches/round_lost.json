@@ -1,0 +1,5 @@
+{"name": "round_lost", "description": "Round lost: a pencil struck through the ledger line (Freesound CC0, ani_music), a little dull. The won round is a stamp; the lost one is crossed out.",
+ "layers": [{"wave": "sample", "file": "../sources/raw/wav_freesound/632473_Pencil_writing_on_paper_1_stroke_Take_A.wav", "start": 0.014, "length": 0.28,
+   "env": {"attack": 0.003, "hold": 0.2, "release": 0.08, "curve": 2}, "filters": [{"type": "lowpass", "cutoff": 2600, "q": 0.6}]}],
+ "master": {"lufs": -21, "peak_db": -1, "highpass": 200},
+ "expect": {"duration": [0.2, 0.32]}}

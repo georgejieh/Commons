@@ -200,7 +200,7 @@ func _build_seats() -> void:
 func _on_event(event: RunEvent) -> void:
 	# Rejoining replays the Set silently: nothing is said or played twice.
 	if not _replaying:
-		Audio.play(AudioEvents.name_for(event))
+		TableSounds.play(event, _landlord, _controller)
 		_speech.on_event(event)
 	match event.type:
 		RunEvent.Type.ROUND:
