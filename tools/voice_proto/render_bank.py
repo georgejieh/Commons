@@ -1,7 +1,6 @@
-"""Renders each villager's syllable bank from its voice profile (P3B.13).
+"""Renders each villager's letter bank from its voice profile (P3B.13).
 
-Every onset and vowel pair of the invented palette becomes one WAV per voice, at the
-voice's base pitch and pace. The in-game player sequences these and shifts their
+Each of the 26 letters becomes one WAV per voice, at the voice's base pitch and pace. The in-game player sequences these and shifts their
 pitch for the line's contour, so nothing is synthesized live. Uses the prototype's
 synthesis, so a change approved by ear there changes the bank too. Standard library
 only, and deterministic: the same profile always gives byte-identical files.
@@ -54,20 +53,20 @@ def read_profile(path):
     return values
 
 
-def bank_syllables():
-    return [onset + vowel for onset in voice_proto.ONSETS for vowel in voice_proto.VOWEL_KEYS]
+def bank_letters():
+    return sorted(voice_proto.LETTERS)
 
 
 def render_bank(name, profile):
-    """Every syllable for one voice, as {syllable: samples}."""
+    """Every letter for one voice, as {letter: samples}."""
     voice = dict(profile)
     voice["pace_now"] = voice["pace"]
     bank = {}
-    for syllable in bank_syllables():
-        rng = random.Random(voice_proto.line_seed(name + ":" + syllable))
+    for letter in bank_letters():
+        rng = random.Random(voice_proto.line_seed(name + ":" + letter))
         samples = []
-        voice_proto.render_syllable(syllable, voice["pitch"], voice, 1.0, rng, samples)
-        bank[syllable] = samples
+        voice_proto.render_letter(letter, voice["pitch"], voice, 1.0, rng, samples)
+        bank[letter] = samples
     return bank
 
 
@@ -84,10 +83,9 @@ def main():
         peak = max(1e-6, max(max(abs(s) for s in samples) for samples in bank.values()))
         folder = os.path.join(args.out, name)
         os.makedirs(folder, exist_ok=True)
-        for syllable, samples in bank.items():
-            label = syllable if syllable[0] not in voice_proto.VOWELS else "_" + syllable
-            voice_proto.write_wav(os.path.join(folder, label + ".wav"), samples, peak)
-        print(f"{folder}: {len(bank)} syllables")
+        for letter, samples in bank.items():
+            voice_proto.write_wav(os.path.join(folder, letter + ".wav"), samples, peak)
+        print(f"{folder}: {len(bank)} letters")
 
 
 if __name__ == "__main__":

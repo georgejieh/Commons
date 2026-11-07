@@ -1,21 +1,23 @@
 """Villager voice prototype (P3B.13), to judge by ear before anything enters the game.
 
-Renders about ten table lines in three voices as WAV files, by formant synthesis:
-a buzzing glottal source shaped by three vowel resonators, with short consonant
-onsets. No TTS and no recordings. Standard library only.
+Renders about ten table lines in three voices as WAV files. Each letter of the line
+plays one short sound as it would type out, in the way of Animalese-style babble: a
+consonant onset and a vowel taken from how the letter sounds in English, by formant
+synthesis (a buzzing glottal source shaped by three vowel resonators). No TTS and no
+recordings. Standard library only.
 
     python tools/voice_proto/voice_proto.py --out reports/voice_proto
 
 What to listen for:
 - Each voice is recognizable, and the three are told apart.
-- Questions rise, statements fall, exclamations come faster and louder, and lines
-  ending in "..." trail off.
-- The syllables sound invented. They must not read as imitation Mandarin: every
-  syllable holds one flat pitch with no per-syllable tone shapes, and the line's
-  contour comes only from its punctuation and mood.
+- The babble follows the words: long words take longer, spaces and punctuation pause.
+- Each sentence's end shapes its pitch: questions rise, statements fall, exclamations
+  come faster and louder, and lines ending in "..." trail off.
+- It must not read as imitation Mandarin: every letter holds one flat pitch with no
+  per-letter tone shapes, and the sounds come from English letters.
 
-The same line always gives the same syllables, because the choice comes from the
-line's letters and a seed derived from the line.
+The same line always gives the same sounds: letters map to fixed sounds, and the small
+pitch wobble comes from a seed derived from the line.
 """
 
 import argparse
@@ -27,9 +29,6 @@ import wave
 import zlib
 
 RATE = 22050
-# The invented palette: soft onsets and five plain vowels, with no retroflex, tonal or
-# aspirated sets that would suggest Mandarin.
-ONSETS = ["b", "d", "m", "n", "l", "w", "p", "t", "v", ""]
 VOWELS = {
     # F1, F2, F3 in Hz for a mid-size voice.
     "a": (750, 1250, 2550),
@@ -38,7 +37,25 @@ VOWELS = {
     "o": (520, 950, 2450),
     "u": (360, 850, 2350),
 }
-VOWEL_KEYS = sorted(VOWELS)
+# Each letter's sound: its onset consonant ("" for none) and its vowel, close to how
+# the letter is said in English words.
+LETTERS = {
+    "a": ("", "a"), "b": ("b", "i"), "c": ("k", "a"), "d": ("d", "e"), "e": ("", "e"),
+    "f": ("f", "e"), "g": ("g", "o"), "h": ("h", "a"), "i": ("", "i"), "j": ("j", "a"),
+    "k": ("k", "e"), "l": ("l", "a"), "m": ("m", "a"), "n": ("n", "e"), "o": ("", "o"),
+    "p": ("p", "i"), "q": ("k", "u"), "r": ("r", "o"), "s": ("s", "e"), "t": ("t", "i"),
+    "u": ("", "u"), "v": ("v", "i"), "w": ("w", "u"), "x": ("k", "e"), "y": ("w", "i"),
+    "z": ("z", "i"),
+}
+# Onset kinds: a short noise puff, a longer hiss, or a voiced hum.
+PLOSIVES = "bdgkpt"
+FRICATIVES = "fhjsvz"
+DIGITS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+# Profiles give pace in syllables per second; a syllable is about this many letters.
+LETTERS_PER_SYLLABLE = 2.6
+# Pauses, in letter lengths.
+PAUSES = {" ": 0.5, ",": 2.5, ".": 4.0, "!": 4.0, "?": 4.0, ";": 3.0, ":": 3.0}
+TRAIL_PAUSE = 6.0
 
 # Voice profiles: base pitch in Hz, formant scale, syllables per second, roughness 0-1.
 VOICES = {
@@ -75,33 +92,63 @@ def line_seed(text):
     return zlib.crc32(text.encode("utf-8"))
 
 
-def syllables_for(text):
-    """Invented syllables from the line's letters: one or two per word."""
-    rng = random.Random(line_seed(text))
+def spoken_text(text):
+    """The line with digits spelled out, so "Down to 2." babbles "two"."""
+    return "".join(DIGITS[int(c)] if c.isdigit() else c for c in text)
+
+
+def sentences(text):
+    """Splits the line into (sentence, ending) pairs; the ending sets its contour."""
     result = []
-    for word in text.split():
-        letters = [c for c in word.lower() if c.isalpha() or c.isdigit()]
-        if not letters:
+    current = ""
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if text.startswith("...", index):
+            result.append((current, "..."))
+            current = ""
+            index += 3
             continue
-        count = 1 if len(letters) <= 4 else 2
-        for index in range(count):
-            code = sum(ord(c) for c in letters[index::count]) + rng.randrange(7)
-            onset = ONSETS[code % len(ONSETS)]
-            vowel = VOWEL_KEYS[(code // len(ONSETS)) % len(VOWEL_KEYS)]
-            result.append(onset + vowel)
+        current += char
+        if char in ".?!":
+            result.append((current, char))
+            current = ""
+        index += 1
+    if current.strip():
+        result.append((current, "."))
     return result
 
 
-def contour(text):
-    """Pitch multipliers at the line's start and end, and a loudness and pace scale."""
-    stripped = text.rstrip()
-    if stripped.endswith("..."):
+def contour(ending):
+    """Pitch multipliers at a sentence's start and end, and a loudness and pace scale."""
+    if ending == "...":
         return (1.0, 0.55, 0.8, 0.75)
-    if stripped.endswith("?"):
+    if ending == "?":
         return (0.95, 1.3, 1.0, 1.0)
-    if stripped.endswith("!"):
+    if ending == "!":
         return (1.15, 1.0, 1.25, 1.2)
     return (1.05, 0.85, 1.0, 1.0)
+
+
+def events_for(text):
+    """The line as a sequence of ("letter", letter, position) and ("pause", lengths).
+
+    Position runs 0 to 1 across each sentence's letters, for its pitch contour.
+    """
+    events = []
+    for sentence, ending in sentences(spoken_text(text)):
+        letters = [c for c in sentence.lower() if c in LETTERS]
+        count = max(1, len(letters) - 1)
+        seen = 0
+        for char in sentence.lower():
+            if char in LETTERS:
+                events.append(("letter", char, seen / count, ending))
+                seen += 1
+            elif char in PAUSES:
+                events.append(("pause", PAUSES[char], 0.0, ending))
+        if ending == "...":
+            events.append(("pause", TRAIL_PAUSE, 0.0, ending))
+    return events
 
 
 class Resonator:
@@ -121,25 +168,36 @@ class Resonator:
         return y
 
 
-def render_syllable(syllable, f0, voice, loud, rng, out):
-    """Appends one syllable: a short onset, then a flat-pitched vowel."""
-    onset, vowel = syllable[:-1], syllable[-1]
-    seconds = 1.0 / voice["pace_now"]
+def letter_seconds(voice):
+    return 1.0 / (voice["pace_now"] * LETTERS_PER_SYLLABLE)
+
+
+def _onset_length(onset):
+    if not onset:
+        return 0
+    if onset in FRICATIVES:
+        return int(RATE * 0.03)
+    return int(RATE * 0.018)
+
+
+def render_letter(letter, f0, voice, loud, rng, out):
+    """Appends one letter's sound: a short onset, then a flat-pitched vowel."""
+    onset, vowel = LETTERS[letter]
     tone = voice["tone"]
     formants = [Resonator(f * tone, 80 + 40 * i) for i, f in enumerate(VOWELS[vowel])]
     rough = voice["roughness"]
-    onset_len = int(RATE * 0.035) if onset else 0
-    total = int(RATE * seconds)
+    onset_len = _onset_length(onset)
+    total = max(onset_len + int(RATE * 0.03), int(RATE * letter_seconds(voice)))
     phase = 0.0
     for n in range(total):
-        envelope = min(1.0, n / (RATE * 0.012)) * min(1.0, (total - n) / (RATE * 0.03))
+        envelope = min(1.0, n / (RATE * 0.006)) * min(1.0, (total - n) / (RATE * 0.015))
         if n < onset_len:
-            # Plosives are a puff of noise; nasals and glides a low hum.
-            if onset in "bdpt":
-                source = rng.uniform(-1, 1) * 0.5
+            if onset in PLOSIVES:
+                sample = rng.uniform(-1, 1) * 0.5
+            elif onset in FRICATIVES:
+                sample = rng.uniform(-1, 1) * 0.3
             else:
-                source = math.sin(2 * math.pi * f0 * n / RATE) * 0.6
-            sample = source
+                sample = math.sin(2 * math.pi * f0 * n / RATE) * 0.6
         else:
             jitter = 1.0 + rough * 0.03 * rng.uniform(-1, 1)
             phase += f0 * jitter / RATE
@@ -153,21 +211,23 @@ def render_syllable(syllable, f0, voice, loud, rng, out):
 def render_line(text, mood, voice_name):
     voice = dict(VOICES[voice_name])
     span, pace, loud_mood, shift = MOODS[mood]
-    start, end, loud_line, pace_line = contour(text)
-    syllables = syllables_for(text)
     rng = random.Random(line_seed(text) ^ line_seed(voice_name))
     out = []
-    count = max(1, len(syllables) - 1)
+    letters = []
     pitches = []
-    for index, syllable in enumerate(syllables):
-        position = index / count
-        bend = start + (end - start) * position
-        f0 = voice["pitch"] * shift * (1.0 + (bend - 1.0) * span)
+    for kind, value, position, ending in events_for(text):
+        start, end, loud_line, pace_line = contour(ending)
         voice["pace_now"] = voice["pace"] * pace * pace_line
-        render_syllable(syllable, f0, voice, loud_mood * loud_line, rng, out)
+        if kind == "pause":
+            out.extend([0.0] * int(RATE * letter_seconds(voice) * value))
+            continue
+        bend = start + (end - start) * position
+        wobble = 1.0 + 0.04 * rng.uniform(-1, 1)
+        f0 = voice["pitch"] * shift * (1.0 + (bend - 1.0) * span) * wobble
+        render_letter(value, f0, voice, loud_mood * loud_line, rng, out)
+        letters.append(value)
         pitches.append(f0)
-        out.extend([0.0] * int(RATE * 0.02))
-    return out, syllables, pitches
+    return out, letters, pitches
 
 
 def write_wav(path, samples, peak):
@@ -190,11 +250,11 @@ def main():
         for number, (text, mood) in enumerate(LINES, 1):
             rendered.append((voice_name, number, text) + render_line(text, mood, voice_name))
     peak = max(1e-6, max(max(abs(s) for s in item[3]) for item in rendered))
-    for voice_name, number, text, samples, syllables, pitches in rendered:
+    for voice_name, number, text, samples, letters, _pitches in rendered:
         path = os.path.join(args.out, f"{voice_name}_{number:02d}.wav")
         write_wav(path, samples, peak)
-        rise = pitches[-1] / pitches[0] if pitches else 1.0
-        print(f"{path}: {' '.join(syllables)} | end/start pitch {rise:.2f} | {text}")
+        seconds = len(samples) / RATE
+        print(f"{path}: {len(letters)} letters, {seconds:.2f} s | {text}")
 
 
 if __name__ == "__main__":
