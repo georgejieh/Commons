@@ -12,10 +12,13 @@ const BUSES: Dictionary[String, String] = {
 var last_played: String = ""
 ## The music cues and their stems (P3C.9).
 var music: MusicPlayer = MusicPlayer.new()
+## Villager voices (P3B.13).
+var voice: VoicePlayer = VoicePlayer.new()
 
 
 func _init() -> void:
 	add_child(music)
+	add_child(voice)
 
 
 func _ready() -> void:

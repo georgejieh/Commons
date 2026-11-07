@@ -40,6 +40,16 @@ def test_the_bank_covers_every_letter_and_is_byte_identical(tmp_path):
         assert not mismatch and not errors
 
 
+def test_every_family_and_youth_has_a_voice():
+    profiles = render_bank.family_profiles()
+    assert len(profiles) == 16
+    assert profiles["wang"] == render_bank.read_profile(
+        os.path.join(ROOT, render_bank.PROFILE_DIR, "wang.tres")
+    )
+    for profile in profiles.values():
+        assert set(profile) == set(render_bank.FIELDS)
+
+
 def test_a_profile_saved_with_default_values_still_reads(tmp_path):
     defaults = render_bank.profile_defaults()
     assert set(defaults) == set(render_bank.FIELDS)

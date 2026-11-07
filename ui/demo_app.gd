@@ -5,6 +5,8 @@ extends Control
 ## its controller. The table scene is the 2D or the 3D one, chosen at export.
 
 const DEMO: DemoParams = preload("res://data/run/demo.tres")
+## The demo seats' voices, by villager name.
+const DEMO_VOICE: String = "res://data/ui/voices/%s.tres"
 const MOTION: MotionPresets = preload("res://data/ui/motion_presets.tres")
 const TABLE_3D_FEATURE: String = "table_3d"
 const SCREENS: Dictionary[String, String] = {
@@ -151,6 +153,25 @@ func seat_name(seat: int) -> String:
 func seat_speech(seat: int) -> SpeechBook:
 	var family: FamilyDef = _controller_call("seated_family", seat, null)
 	return null if family == null else family.speech
+
+
+## The seated family's voice (P3B.13), or the demo seat's by its villager name.
+func seat_voice(seat: int) -> VoiceProfile:
+	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	if family != null:
+		return family.voice
+	var path: String = DEMO_VOICE % seat_voice_bank(seat)
+	return load(path) if ResourceLoader.exists(path) else null
+
+
+## The name of the seat's letter bank under audio/voices: the family's id.
+func seat_voice_bank(seat: int) -> String:
+	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	if family != null:
+		return family.id
+	if seat >= DEMO.name_keys.size():
+		return ""
+	return DEMO.name_keys[seat].trim_prefix("villager.")
 
 
 ## Asks the controller about a seat, or gives fallback before any run exists.

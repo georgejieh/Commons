@@ -143,6 +143,7 @@ func open(app: DemoApp) -> void:
 ## Plays every queued event at once, skipping the pacing.
 func skip_events() -> void:
 	_player.flush()
+	_speech.skip_all()
 
 
 ## The buttons, for scripted UI tests.
@@ -390,8 +391,7 @@ func _on_hint() -> void:
 
 
 static func _type_name(pattern: Pattern) -> String:
-	var name: String = Pattern.Type.keys()[pattern.type]
-	return name.to_lower()
+	return String(Pattern.Type.keys()[pattern.type]).to_lower()
 
 
 func _place(node: Control, at: Vector2, extent: Vector2) -> void:

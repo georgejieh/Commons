@@ -5,9 +5,10 @@ pitch for the line's contour, so nothing is synthesized live. Uses the prototype
 synthesis, so a change approved by ear there changes the bank too. Standard library
 only, and deterministic: the same profile always gives byte-identical files.
 
-    python tools/voice_proto/render_bank.py --out reports/voice_bank
+    python tools/voice_proto/render_bank.py
 
-The bank stays in reports/ until the owner approves the voices by ear.
+Every family and sent-down youth in data/villagers gets a bank named by its file, in
+audio/voices/<id>/<letter>.wav. The owner approved the voices by ear on 2026-11-06.
 """
 
 import argparse
@@ -20,6 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import voice_proto  # noqa: E402
 
 PROFILE_DIR = os.path.join("data", "ui", "voices")
+FAMILY_DIRS = [os.path.join("data", "villagers", "families"), os.path.join("data", "villagers", "youth")]
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PROFILE_SCRIPT = os.path.join(ROOT, "data", "ui", "voice_profile.gd")
 FIELDS = ("pitch", "tone", "pace", "roughness")
@@ -53,6 +55,55 @@ def read_profile(path):
     return values
 
 
+SECTION = re.compile(r"^\[(\w+)(.*)\]$")
+ATTRIBUTE = re.compile(r'(\w+)="([^"]*)"')
+VOICE_REF = re.compile(r'^voice\s*=\s*(Sub|Ext)Resource\("([^"]+)"\)')
+
+
+def family_profile(path):
+    """The voice of a family file: its embedded voice, or the profile file it points at."""
+    sections = {}
+    current = None
+    reference = None
+    with open(path, encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            header = SECTION.match(line)
+            if header:
+                attributes = dict(ATTRIBUTE.findall(header.group(2)))
+                current = (header.group(1), attributes.get("id", ""))
+                sections[current] = {"attributes": attributes, "lines": []}
+                continue
+            if current is not None:
+                sections[current]["lines"].append(line)
+            found = VOICE_REF.match(line)
+            if found:
+                reference = found.groups()
+    if reference is None:
+        raise ValueError(f"{path}: no voice")
+    kind, ident = reference
+    if kind == "Ext":
+        target = sections[("ext_resource", ident)]["attributes"]["path"]
+        return read_profile(os.path.join(ROOT, target.replace("res://", "")))
+    values = dict(profile_defaults())
+    for line in sections[("sub_resource", ident)]["lines"]:
+        match = FIELD_LINE.match(line)
+        if match:
+            values[match.group(1)] = float(match.group(2))
+    return values
+
+
+def family_profiles():
+    """Every family and youth template's voice, by file name."""
+    profiles = {}
+    for folder in FAMILY_DIRS:
+        for file_name in sorted(os.listdir(os.path.join(ROOT, folder))):
+            if file_name.endswith(".tres"):
+                name = file_name[: -len(".tres")]
+                profiles[name] = family_profile(os.path.join(ROOT, folder, file_name))
+    return profiles
+
+
 def bank_letters():
     return sorted(voice_proto.LETTERS)
 
@@ -72,14 +123,10 @@ def render_bank(name, profile):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--out", default="reports/voice_bank")
-    parser.add_argument("--profiles", default=PROFILE_DIR)
+    parser.add_argument("--out", default=os.path.join(ROOT, "audio", "voices"))
     args = parser.parse_args()
-    for file_name in sorted(os.listdir(args.profiles)):
-        if not file_name.endswith(".tres"):
-            continue
-        name = file_name[: -len(".tres")]
-        bank = render_bank(name, read_profile(os.path.join(args.profiles, file_name)))
+    for name, profile in family_profiles().items():
+        bank = render_bank(name, profile)
         peak = max(1e-6, max(max(abs(s) for s in samples) for samples in bank.values()))
         folder = os.path.join(args.out, name)
         os.makedirs(folder, exist_ok=True)

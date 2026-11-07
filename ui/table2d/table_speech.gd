@@ -16,17 +16,27 @@ var _said: Dictionary[int, int] = {}
 var _landlord: int = Seats.NONE
 ## Each seated family's own lines (P4.5), said alongside the shared book's.
 var _books: Dictionary[int, SpeechBook] = {}
+## Each seat's voice and letter bank (P3B.13). A seat with none speaks silently.
+var _voices: Dictionary[int, VoiceProfile] = {}
+var _voice_banks: Dictionary[int, String] = {}
 
 
 func setup(seats: Dictionary[int, SeatPanel], app: DemoApp = null) -> void:
 	_seats = seats
 	_books.clear()
+	_voices.clear()
+	_voice_banks.clear()
 	if app == null:
 		return
 	for seat: int in seats:
 		var book: SpeechBook = app.seat_speech(seat)
 		if book != null:
 			_books[seat] = book
+		var voice: VoiceProfile = app.seat_voice(seat)
+		if voice != null:
+			_voices[seat] = voice
+			_voice_banks[seat] = app.seat_voice_bank(seat)
+		seats[seat].speech_skipped.connect(Audio.voice.stop)
 
 
 ## Speaks for event, if anyone would.
@@ -74,5 +84,17 @@ func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	if choices.is_empty():
 		return
 	var line: SpeechLine = choices[posmod(said + seat * SEAT_SALT, choices.size())]
-	_seats[seat].say(tr(line.text_key).format(fields), line.mood)
+	var text: String = tr(line.text_key).format(fields)
+	var reveal: PackedFloat32Array = PackedFloat32Array()
+	if _voices.has(seat):
+		var voice: VoiceProfile = _voices[seat]
+		reveal = Audio.voice.speak(seat, text, line.mood, voice, _voice_banks[seat]).reveal
+	_seats[seat].say(text, line.mood, reveal)
 	spoke.emit(seat, event, line)
+
+
+## Shows every line still typing out and stops every voice.
+func skip_all() -> void:
+	for seat: int in _seats:
+		_seats[seat].skip_speech()
+	Audio.voice.stop_all()

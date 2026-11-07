@@ -2,7 +2,11 @@ class_name SeatPanel
 extends PanelContainer
 ## One villager at the table, on one paper sheet: portrait, name, cards left, role and
 ## their last words. The sheet grows with its content, so the portrait always sits
-## inside it. The card count turns red at 2 and 1 cards.
+## inside it. The card count turns red at 2 and 1 cards. A line types out in step with
+## the villager's voice (P3B.13); clicking it shows the rest at once.
+
+## The player skipped the line typing out, so its voice should stop.
+signal speech_skipped(seat: int)
 
 const INK: Color = Color("1e1a16")
 const LANDLORD_RED: Color = Color("9e1b16")
@@ -26,6 +30,9 @@ var _back: TextureRect = TextureRect.new()
 var _count_row: HBoxContainer = HBoxContainer.new()
 var _row: HBoxContainer = HBoxContainer.new()
 var _mood: String = ""
+## When each character of the current line shows, and how long it has been typing.
+var _reveal: PackedFloat32Array = PackedFloat32Array()
+var _typed: float = 0.0
 
 
 func _init() -> void:
@@ -65,6 +72,10 @@ func _init() -> void:
 	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_speech.custom_minimum_size = Vector2(200, 0)
 	_speech.max_lines_visible = 2
+	_speech.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
+	_speech.mouse_filter = Control.MOUSE_FILTER_STOP
+	_speech.gui_input.connect(_on_speech_input)
+	set_process(false)
 	_row.add_child(_portrait)
 	_back.texture = ArtStages.resolve(ScreenKit.ART.card_back)
 	_back.custom_minimum_size = Vector2(30, 42)
@@ -101,10 +112,58 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 		_role.text = tr("table.role.peasant").to_upper()
 
 
-## Shows a line; mood is the line's mood tag, kept for the voice (P3B.13).
-func say(text: String, mood: String = "") -> void:
+## Shows a line; mood is the line's mood tag. With reveal times from the voice plan
+## (P3B.13) it types out, one character at each time; without, it shows at once.
+func say(
+	text: String, mood: String = "", reveal: PackedFloat32Array = PackedFloat32Array()
+) -> void:
 	_speech.text = text
 	_mood = mood
+	_reveal = reveal
+	_typed = 0.0
+	_speech.visible_characters = -1 if reveal.is_empty() else 0
+	set_process(not reveal.is_empty())
+
+
+## Shows the rest of a line still typing out. True if one was.
+func skip_speech() -> bool:
+	if not is_typing():
+		return false
+	_finish_typing()
+	speech_skipped.emit(seat)
+	return true
+
+
+func is_typing() -> bool:
+	return is_processing()
+
+
+## Characters of the current line shown so far.
+func shown_characters() -> int:
+	return _speech.text.length() if _speech.visible_characters < 0 else _speech.visible_characters
+
+
+func _process(delta: float) -> void:
+	_typed += delta
+	var shown: int = maxi(0, _speech.visible_characters)
+	while shown < _reveal.size() and _reveal[shown] <= _typed:
+		shown += 1
+	if shown >= _reveal.size():
+		_finish_typing()
+	else:
+		_speech.visible_characters = shown
+
+
+func _finish_typing() -> void:
+	_speech.visible_characters = -1
+	set_process(false)
+
+
+func _on_speech_input(event: InputEvent) -> void:
+	var click: InputEventMouseButton = event as InputEventMouseButton
+	if click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
+		if skip_speech():
+			_speech.accept_event()
 
 
 ## Dims the portrait for a moment, as a flicker (P3B.12). The tween belongs to the
