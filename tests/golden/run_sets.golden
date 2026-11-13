@@ -1,10 +1,11 @@
 set 3501
 SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,criticism_meeting,
 DEALT seat=-1 value=0
+BID seat=1 value=1
+BID seat=2 value=0
 BID seat=0 value=1
 BID seat=1 value=0
-BID seat=2 value=0
-LANDLORD_CHOSEN seat=0 value=1
+LANDLORD_CHOSEN seat=0 value=2
   ROUND_STARTED seat=0
   KITTY_TAKEN seat=0 cards=[0, 11, 32]
   PLAYED seat=0 cards=[0, 2, 4, 7, 9, 11] pattern=PAIR_CHAIN main=0 chain=3 kickers=[]
@@ -56,9 +57,9 @@ SHARE_PAID seat=2 value=568
 SEAT_LOST seat=0 value=0
 DEBUFF_ADDED seat=0 value=1 paperwork
 DEALT seat=-1 value=1
-BID seat=1 value=0
 BID seat=2 value=0
 BID seat=0 value=1
+BID seat=1 value=0
 LANDLORD_CHOSEN seat=0 value=1
   ROUND_STARTED seat=0
   KITTY_TAKEN seat=0 cards=[40, 49, 53]
@@ -136,9 +137,9 @@ end progress=3593.500 coupons=3 famine=0 plot=0
 set 3502
 SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,criticism_meeting,
 DEALT seat=-1 value=0
-BID seat=0 value=0
 BID seat=1 value=1
 BID seat=2 value=0
+BID seat=0 value=0
 LANDLORD_CHOSEN seat=1 value=1
   ROUND_STARTED seat=1
   KITTY_TAKEN seat=1 cards=[1, 25, 43]
@@ -208,9 +209,9 @@ SHARE_PAID seat=2 value=676
 SEAT_LOST seat=1 value=0
 DEBUFF_ADDED seat=0 value=1 paperwork
 DEALT seat=-1 value=1
-BID seat=1 value=1
 BID seat=2 value=0
 BID seat=0 value=0
+BID seat=1 value=1
 LANDLORD_CHOSEN seat=1 value=1
   ROUND_STARTED seat=1
   KITTY_TAKEN seat=1 cards=[19, 22, 40]
@@ -273,10 +274,10 @@ SHARE_PAID seat=2 value=462
 SEAT_LOST seat=1 value=0
 DEBUFF_ADDED seat=0 value=2 criticism_meeting
 DEALT seat=-1 value=2
-BID seat=2 value=1
 BID seat=0 value=0
 BID seat=1 value=1
-LANDLORD_CHOSEN seat=1 value=2
+BID seat=2 value=0
+LANDLORD_CHOSEN seat=1 value=1
   ROUND_STARTED seat=1
   KITTY_TAKEN seat=1 cards=[17, 24, 37]
   PLAYED seat=1 cards=[9, 15, 16, 21, 24, 28, 32, 37, 41] pattern=STRAIGHT main=2 chain=9 kickers=[]
@@ -364,9 +365,9 @@ end progress=1931.000 coupons=3 famine=0 plot=0
 set 3503
 SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,,criticism_meeting
 DEALT seat=-1 value=0
-BID seat=0 value=1
 BID seat=1 value=0
 BID seat=2 value=0
+BID seat=0 value=1
 LANDLORD_CHOSEN seat=0 value=1
   ROUND_STARTED seat=0
   KITTY_TAKEN seat=0 cards=[12, 31, 32]
@@ -438,9 +439,10 @@ SHARE_PAID seat=2 value=469
 SEAT_LOST seat=0 value=0
 DEBUFF_ADDED seat=0 value=1 paperwork
 DEALT seat=-1 value=1
-BID seat=1 value=0
 BID seat=2 value=1
 BID seat=0 value=1
+BID seat=1 value=0
+BID seat=2 value=0
 LANDLORD_CHOSEN seat=0 value=2
   ROUND_STARTED seat=0
   KITTY_TAKEN seat=0 cards=[16, 42, 47]
@@ -514,9 +516,9 @@ SHARE_PAID seat=1 value=504
 SHARE_PAID seat=2 value=503
 SEAT_LOST seat=0 value=0
 DEALT seat=-1 value=2
-BID seat=2 value=1
 BID seat=0 value=0
 BID seat=1 value=0
+BID seat=2 value=1
 LANDLORD_CHOSEN seat=2 value=1
   ROUND_STARTED seat=2
   KITTY_TAKEN seat=2 cards=[7, 13, 43]
@@ -656,10 +658,11 @@ end progress=1725.000 coupons=3 famine=0 plot=0
 set 3504
 SET_STARTED seat=-1 value=0 amount=1500.000 straightened_lines,,criticism_meeting
 DEALT seat=-1 value=0
-BID seat=0 value=1
 BID seat=1 value=0
 BID seat=2 value=1
-LANDLORD_CHOSEN seat=2 value=2
+BID seat=0 value=1
+BID seat=2 value=1
+LANDLORD_CHOSEN seat=2 value=4
   ROUND_STARTED seat=2
   KITTY_TAKEN seat=2 cards=[12, 17, 42]
 SWAPPED seat=0 value=1
@@ -763,9 +766,9 @@ end progress=2096.000 coupons=3 famine=0 plot=2
 set 3505
 SET_STARTED seat=-1 value=0 amount=1000000000.000 straightened_lines,,criticism_meeting
 DEALT seat=-1 value=0
-BID seat=0 value=0
 BID seat=1 value=1
 BID seat=2 value=0
+BID seat=0 value=0
 LANDLORD_CHOSEN seat=1 value=1
   ROUND_STARTED seat=1
   KITTY_TAKEN seat=1 cards=[23, 26, 45]
@@ -835,10 +838,10 @@ METER_CHANGED seat=0 value=8 denunciation
 SEAT_LOST seat=1 value=0
 DEBUFF_ADDED seat=0 value=1 straightened_lines
 DEALT seat=-1 value=1
-BID seat=1 value=1
 BID seat=2 value=1
 BID seat=0 value=0
-LANDLORD_CHOSEN seat=2 value=2
+BID seat=1 value=0
+LANDLORD_CHOSEN seat=2 value=1
   ROUND_STARTED seat=2
   KITTY_TAKEN seat=2 cards=[9, 33, 42]
   PLAYED seat=2 cards=[0, 5, 9, 14, 17, 20, 24] pattern=STRAIGHT main=0 chain=7 kickers=[]
@@ -922,9 +925,9 @@ SHARE_PAID seat=0 value=648
 SHARE_PAID seat=1 value=540
 SEAT_LOST seat=2 value=0
 DEALT seat=-1 value=2
-BID seat=2 value=1
 BID seat=0 value=0
 BID seat=1 value=0
+BID seat=2 value=1
 LANDLORD_CHOSEN seat=2 value=1
   ROUND_STARTED seat=2
   KITTY_TAKEN seat=2 cards=[26, 31, 47]

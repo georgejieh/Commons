@@ -189,7 +189,7 @@ func _start_round() -> void:
 	_deal_cards()
 	if _seat.needs_bidding():
 		_move(RunFlow.State.BIDDING)
-		_bidding = Bidding.new(state.round_index % Seats.COUNT)
+		_bidding = Bidding.new(_first_bidder())
 	else:
 		_begin_play()
 	advance()
@@ -337,6 +337,12 @@ func _deal_cards() -> void:
 	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
 
 
+## Who bids first moves round the table with the year, Set and round, so no seat always
+## opens a Set's bidding.
+func _first_bidder() -> int:
+	return (state.year + state.set_index + state.round_index) % Seats.COUNT
+
+
 func _bot_bid() -> void:
 	var seat: int = _bidding.seat_to_act()
 	if seat == PLAYER:
@@ -362,7 +368,7 @@ func _record_bid(seat: int, claim: bool) -> void:
 		set_log.add(RunEvent.new(RunEvent.Type.REDEALT))
 		_move(RunFlow.State.BIDDING)
 		_deal_cards()
-		_bidding = Bidding.new(state.round_index % Seats.COUNT)
+		_bidding = Bidding.new(_first_bidder())
 		return
 	_seat.assign(_bidding.landlord())
 	state.landlord_seat = _bidding.landlord()
