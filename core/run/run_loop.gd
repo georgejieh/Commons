@@ -216,7 +216,11 @@ func player_bid(claim: bool) -> Reason:
 		return Reason.NOT_AWAITED
 	_awaiting = Awaiting.NOTHING
 	record.add({"type": "bid", "claim": claim})
+	# Calling an open seat is free. Taking it from a neighbour who holds it is resented.
+	var taken: bool = claim and bid_holder() != Seats.NONE
 	_record_bid(PLAYER, claim)
+	if taken:
+		_resent(DEFAULT_RESENTMENT.grab, Resentment.GRAB)
 	advance()
 	return Reason.OK
 

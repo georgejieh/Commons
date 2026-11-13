@@ -77,7 +77,8 @@ func _show_bid() -> void:
 	_actions.call.text = tr("action.grab" if grabbing else "action.call")
 	if grabbing:
 		var who: String = _names.get(holder, "")
-		_actions.reading.text = tr("table.grab_prompt").format({"name": who})
+		var cost: int = _controller.grab_cost()
+		_actions.reading.text = tr("table.grab_prompt").format({"name": who, "cost": cost})
 	else:
 		_actions.reading.text = tr("table.bid_prompt")
 	_actions.reading.tooltip_text = tr("table.bid_tip")

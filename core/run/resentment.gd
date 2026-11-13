@@ -1,12 +1,14 @@
 class_name Resentment
 extends RefCounted
 ## The village's Resentment of the player's private gains (P4.2). It rises from private
-## purchases, private Cadres and stamped cards scored, feeds Denunciation at each Set's
-## end through one data curve, and sharpens every bot's grudge against the player.
+## purchases, private Cadres, stamped cards scored and grabbing the landlord seat. It
+## feeds Denunciation at each Set's end through one data curve, and sharpens every bot's
+## grudge against the player.
 
 const PRIVATE_PURCHASE: String = "private_purchase"
 const PRIVATE_CADRE: String = "private_cadre"
 const STAMPED_CARD: String = "stamped_card"
+const GRAB: String = "grab"
 
 
 static func add(

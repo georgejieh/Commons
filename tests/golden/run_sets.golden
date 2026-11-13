@@ -4,6 +4,7 @@ DEALT seat=-1 value=0
 BID seat=1 value=1
 BID seat=2 value=0
 BID seat=0 value=1
+RESENTMENT seat=-1 value=4 grab
 BID seat=1 value=0
 LANDLORD_CHOSEN seat=0 value=2
   ROUND_STARTED seat=0
@@ -441,6 +442,7 @@ DEBUFF_ADDED seat=0 value=1 paperwork
 DEALT seat=-1 value=1
 BID seat=2 value=1
 BID seat=0 value=1
+RESENTMENT seat=-1 value=4 grab
 BID seat=1 value=0
 BID seat=2 value=0
 LANDLORD_CHOSEN seat=0 value=2
@@ -661,6 +663,7 @@ DEALT seat=-1 value=0
 BID seat=1 value=0
 BID seat=2 value=1
 BID seat=0 value=1
+RESENTMENT seat=-1 value=4 grab
 BID seat=2 value=1
 LANDLORD_CHOSEN seat=2 value=4
   ROUND_STARTED seat=2

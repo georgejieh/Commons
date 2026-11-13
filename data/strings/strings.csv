@@ -433,8 +433,8 @@ ledger.sum,{grain} Grain × {zeal} Zeal = {total}
 ledger.final,Round total
 hand.sum,{type}  ·  {grain} Grain × {zeal} Zeal = {total}
 action.grab,Grab
-table.grab_prompt,{name} holds the landlord seat. Grab it?
-table.bid_tip,"The first to call holds the landlord seat. Anyone who hasn't passed may then grab it once, and a caller who was grabbed from may grab it back. Who bids first moves round the table. The landlord keeps the seat until they lose a round."
+table.grab_prompt,"{name} holds the landlord seat. Grabbing it adds {cost} Resentment."
+table.bid_tip,"The first to call holds the landlord seat. Anyone who hasn't passed may then grab it once, and a caller who was grabbed from may grab it back. Calling an open seat is free. Grabbing a held seat adds Resentment, which makes the villagers play harder against you. Who bids first moves round the table. The landlord keeps the seat until they lose a round."
 need.title,Split the Commons
 need.pool,The Commons holds {pool} this round.
 need.rule,"It is split in proportion to declared need. Your true need is {need}."

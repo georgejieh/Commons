@@ -8,6 +8,8 @@ extends Resource
 @export var private_cadre: int = 2
 ## Added for each card the player scores that carries their own stamp.
 @export var stamped_card: int = 1
+## Added when the player grabs the landlord seat from a villager who held it.
+@export var grab: int = 4
 ## Denunciation added at each Set's end, sampled at Resentment as a share of max. This
 ## is the one mapping from Resentment to Denunciation.
 @export var denunciation: Curve

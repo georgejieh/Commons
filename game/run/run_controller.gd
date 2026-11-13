@@ -202,6 +202,11 @@ func base_need() -> int:
 
 
 ## The Denunciation a lie about need costs when an audit catches it.
+## The Resentment the player's grab of a held landlord seat adds.
+func grab_cost() -> int:
+	return RunLoop.DEFAULT_RESENTMENT.grab
+
+
 func lie_cost() -> int:
 	return RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
 
