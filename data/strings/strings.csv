@@ -418,7 +418,7 @@ modifier.the_informant.text,Shows the hand types your opponents still hold.
 modifier.peek.name,Peek
 modifier.peek.text,Shows the cards of the other player closest to going out.
 keyword.grain.name,Grain
-keyword.grain.text,"Grain: a play's base points, from its cards and its hand type."
+keyword.grain.text,Grain: a play's base points. They come from its cards and its hand type.
 keyword.zeal.name,Zeal
 keyword.zeal.text,"Zeal: what a play's Grain is multiplied by. A play scores Grain × Zeal."
 keyword.commons.name,Commons

@@ -147,10 +147,17 @@ func test_the_need_panel_says_what_a_declaration_pays() -> void:
 
 func test_keywords_explain_themselves() -> void:
 	var marked: String = Keywords.mark("Your plays gain 5 Grain and lose 1 Zeal.")
-	assert_str(marked).contains("[hint=" + tr("keyword.grain.text"))
-	assert_str(marked).contains("[hint=" + tr("keyword.zeal.text"))
+	assert_str(marked).contains('[hint="Grain:')
+	assert_str(marked).contains('[hint="Zeal:')
 	assert_str(Keywords.tip("Your plays lose 1 Zeal.")).is_equal(tr("keyword.zeal.text"))
 	assert_str(Keywords.tip("Pass.")).is_empty()
+	# Every keyword's markup parses: nothing of the tags is left in the shown text.
+	var shown: RichTextLabel = auto_free(RichTextLabel.new())
+	shown.bbcode_enabled = true
+	add_child(shown)
+	var plain: String = "Grain × Zeal goes to the Commons."
+	shown.text = Keywords.mark(plain)
+	assert_str(shown.get_parsed_text()).is_equal(plain)
 
 
 func test_court_cards_and_jokers_are_picture_cards() -> void:

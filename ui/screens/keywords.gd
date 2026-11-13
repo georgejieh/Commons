@@ -23,7 +23,9 @@ static func mark(text: String) -> String:
 	for id: String in INKS:
 		var word: String = TranslationServer.translate("keyword.%s.name" % id)
 		var tip: String = TranslationServer.translate("keyword.%s.text" % id)
-		var styled: String = "[hint=%s][color=#%s]%s[/color][/hint]" % [tip, INKS[id], word]
+		# The hint is quoted, so only a quote or a bracket could end it early.
+		tip = tip.replace('"', "'").replace("[", "(").replace("]", ")")
+		var styled: String = '[hint="%s"][color=#%s]%s[/color][/hint]' % [tip, INKS[id], word]
 		marked = marked.replace("<<%s>>" % id, styled)
 	return marked
 

@@ -16,7 +16,7 @@ extends Resource
 @export var shadow: Color = Color(0.08, 0.05, 0.03, 0.55)
 ## The inks that dye a ticket button's card stock: vermilion for the main action, kraft
 ## brown for the others, ration green for buying.
-@export var ticket_red: Color = Color("e04a30")
+@export var ticket_red: Color = Color("cf3d25")
 @export var ticket_kraft: Color = Color("8a745c")
 @export var ticket_green: Color = Color("86b878")
 

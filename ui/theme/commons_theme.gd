@@ -23,10 +23,15 @@ const SHEET_BORDER: float = 26.0
 ## How much a hovered face lightens, and a disabled one fades.
 const HOVER_LIGHTEN: float = 0.12
 const PRESS_DARKEN: float = 0.15
+## A ticket is the sheet's card stock at this scale, so its ruled border stays clear of
+## a small button's label.
+const TICKET_SCALE: float = 0.4
 ## Pixel sizes of the drawn slider knob and check box.
 const KNOB: int = 26
 const BOX: int = 26
 const DISABLED_ALPHA: float = 0.45
+
+static var _stock: ImageTexture = null
 
 
 static func build() -> Theme:
@@ -72,8 +77,8 @@ static func _buttons(theme: Theme) -> void:
 ## kind's ink. A pressed ticket sits lower, so the label sinks with it.
 static func _ticket(ink: Color, pressed: bool) -> StyleBoxTexture:
 	var box: StyleBoxTexture = StyleBoxTexture.new()
-	box.texture = PANEL_PAPER
-	box.set_texture_margin_all(SHEET_BORDER)
+	box.texture = _ticket_stock()
+	box.set_texture_margin_all(SHEET_BORDER * TICKET_SCALE)
 	box.modulate_color = ink
 	var sink: int = STYLE.shadow_drop - STYLE.pressed_drop if pressed else 0
 	box.content_margin_left = STYLE.pad_x
@@ -210,3 +215,15 @@ static func _check_box(checked: bool) -> ImageTexture:
 				color = STYLE.vermilion
 			image.set_pixel(x, y, color)
 	return ImageTexture.create_from_image(image)
+
+
+## The sheet's card stock scaled down for buttons, made once.
+static func _ticket_stock() -> ImageTexture:
+	if _stock == null:
+		var image: Image = PANEL_PAPER.get_image()
+		if image.is_compressed():
+			image.decompress()
+		var small: Vector2i = Vector2i(Vector2(image.get_size()) * TICKET_SCALE)
+		image.resize(small.x, small.y, Image.INTERPOLATE_LANCZOS)
+		_stock = ImageTexture.create_from_image(image)
+	return _stock
