@@ -38,6 +38,9 @@ func _ready() -> void:
 		var claim: Label = ScreenKit.label("", 24)
 		claim.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var paid: Label = ScreenKit.label("", 26, HONEST)
+		# A wrapping label in a row shrinks to one letter a line.
+		claim.autowrap_mode = TextServer.AUTOWRAP_OFF
+		paid.autowrap_mode = TextServer.AUTOWRAP_OFF
 		var top: HBoxContainer = HBoxContainer.new()
 		top.add_child(claim)
 		top.add_child(paid)
@@ -45,6 +48,8 @@ func _ready() -> void:
 		seal.custom_minimum_size = Vector2(SEAL, SEAL)
 		seal.pivot_offset = Vector2(SEAL, SEAL) / 2.0
 		var result: Label = ScreenKit.label("", 22)
+		result.autowrap_mode = TextServer.AUTOWRAP_OFF
+		seal.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		var bottom: HBoxContainer = HBoxContainer.new()
 		bottom.add_theme_constant_override("separation", 12)
 		bottom.add_child(seal)

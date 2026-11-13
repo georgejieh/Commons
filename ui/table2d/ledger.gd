@@ -6,6 +6,8 @@ extends VBoxContainer
 ## seat's total counts up as its play is stamped in (P3B.6).
 
 const MAX_PLAYS: int = 5
+## A play's Grain × Rate × Zeal line is smaller than its heading, to fit on one line.
+const SUM_SIZE: int = 15
 ## Rows wrap inside the ledger's paper.
 const ROW_WIDTH: float = 270.0
 const INK: Color = Color("1e1a16")
@@ -117,7 +119,7 @@ func add_play(seat: int, grain: float, rate: float, zeal: float, total: float) -
 	var before: float = _totals[seat]
 	_totals[seat] += total
 	var head: String = tr("ledger.play").format(
-		{"who": _names.get(seat, ""), "type": _pending_type}
+		{"who": _names.get(seat, ""), "type": _pending_type, "total": Strings.score(total)}
 	)
 	var sum: String = (
 		tr("ledger.sum")
@@ -126,11 +128,11 @@ func add_play(seat: int, grain: float, rate: float, zeal: float, total: float) -
 				"grain": Strings.score(grain),
 				"rate": Strings.factor(rate),
 				"zeal": Strings.factor(zeal),
-				"total": Strings.score(total),
 			}
 		)
 	)
-	_texts.append("[b]%s[/b]\n  %s" % [head.replace("[", "[lb]"), Keywords.mark(sum)])
+	var line: String = "[font_size=%d]%s[/font_size]" % [SUM_SIZE, Keywords.mark(sum)]
+	_texts.append("[b]%s[/b]\n%s" % [head.replace("[", "[lb]"), line])
 	if _texts.size() > MAX_PLAYS:
 		_texts.remove_at(0)
 	_show()

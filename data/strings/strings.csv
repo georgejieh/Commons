@@ -430,8 +430,8 @@ ledger.landlord,Landlord
 ledger.commons,Commons pool
 ledger.you,You
 ledger.plays,Plays
-ledger.play,{who} · {type}
-ledger.sum,{grain} Grain × {rate} Rate × {zeal} Zeal = {total}
+ledger.play,{who} · {type} · {total}
+ledger.sum,{grain} Grain × {rate} Rate × {zeal} Zeal
 ledger.final,Round total
 hand.sum,{type}  ·  {grain} Grain × {rate} Rate × {zeal} Zeal = {total}
 action.grab,Grab
