@@ -71,5 +71,8 @@ func _step(controller: RunController, round_index: int, debuff_id: String) -> Co
 		name.add_theme_font_size_override("font_size", StoreScreen.NAME_SIZE)
 		name.add_theme_color_override("font_color", ScreenKit.RED)
 		card.add_child(name)
-		card.add_child(ScreenKit.label(controller.modifier_text(debuff_id), 20))
+		var rule: Label = ScreenKit.label(controller.modifier_text(debuff_id), 20)
+		rule.tooltip_text = Keywords.tip(rule.text)
+		rule.mouse_filter = Control.MOUSE_FILTER_STOP
+		card.add_child(rule)
 	return ScreenKit.card_panel(card)

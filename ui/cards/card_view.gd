@@ -3,7 +3,8 @@ extends Control
 ## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
 ## a picture, enhancement overlay, seal and owner stamp. A number card shows its suit
 ## faintly in the corner; a court card or joker is a picture card, its art filling the
-## face under a paper corner index, so the fan's edge reads as a picture card at once.
+## face and fading to bare card stock in the corner, where the rank and suit are printed
+## straight on, as on a playing card.
 ## A note under the index says when a debuff makes the card rank as another. The parts
 ## come from CardArt, so no face is baked. bind() is the only way to show a card; views
 ## come from CardPool and are reused, never instanced during a round.
@@ -27,10 +28,14 @@ const ART: CardArt = preload("res://data/ui/card_art.tres")
 ## left, top, right and bottom offsets.
 const PIP_BOX: Vector4 = Vector4(46, 56, 112, 160)
 const ART_BOX: Vector4 = Vector4(5, 5, 115, 163)
-## The paper index behind a picture card's rank and suit, and a joker's word.
-const INDEX_BOTTOM: float = 96.0
-const JOKER_INDEX_BOTTOM: float = 50.0
-const INDEX_PAD: float = 8.0
+## The corner of a picture card where the art fades to card stock: its size for a court
+## card and for a joker's word, the stock's color, and how far in the fade stays solid.
+const FADE_SIZE: Vector2 = Vector2(92, 136)
+const JOKER_FADE_SIZE: Vector2 = Vector2(120, 78)
+const STOCK: Color = Color("f6e6c4")
+const FADE_SOLID: float = 0.45
+## A paper edge around a picture card's rank, so it reads over any art.
+const RANK_OUTLINE: int = 6
 const NOTE_COLOR: Color = Color("9e1b16")
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
@@ -64,7 +69,7 @@ var _tweens: Array[Tween] = []
 @onready var _rank: Label = $Frame/Rank
 @onready var _suit: TextureRect = $Frame/Suit
 @onready var _picture: TextureRect = $Frame/Picture
-@onready var _index: Panel = $Frame/Index
+@onready var _index: TextureRect = $Frame/Index
 @onready var _rank_note: Label = $Frame/RankNote
 @onready var _enhancement: ColorRect = $Frame/Enhancement
 @onready var _seal: Label = $Frame/Seal
@@ -93,6 +98,8 @@ func _ready() -> void:
 	tag.bg_color = NOTE_COLOR
 	tag.set_corner_radius_all(4)
 	_rank_note.add_theme_stylebox_override("normal", tag)
+	_index.texture = _corner_fade()
+	_rank.label_settings.outline_color = STOCK
 
 
 ## The card parts in use.
@@ -142,7 +149,7 @@ func bind(card: CardInstance) -> void:
 	_picture.modulate.a = art.pip_alpha if pip else 1.0
 	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
-	_rank.modulate = RED if red else INK
+	_rank.label_settings.font_color = RED if red else INK
 	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
 	_stamp.visible = card.owner_stamp() != CardInstance.NO_OWNER
@@ -177,11 +184,24 @@ func _lay_out_face(pip: bool, joker: bool) -> void:
 		TextureRect.STRETCH_KEEP_ASPECT_CENTERED if pip else TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	)
 	_index.visible = not pip
-	if pip:
-		return
-	var glyph_right: float = _rank.offset_left + _rank.get_minimum_size().x
-	_index.offset_right = maxf(glyph_right, _suit.offset_right) + INDEX_PAD
-	_index.offset_bottom = JOKER_INDEX_BOTTOM if joker else INDEX_BOTTOM
+	_rank.label_settings.outline_size = 0 if pip else RANK_OUTLINE
+	_index.size = JOKER_FADE_SIZE if joker else FADE_SIZE
+
+
+## Card stock that is solid in the top left corner and fades out toward the art.
+static func _corner_fade() -> GradientTexture2D:
+	var fade: Gradient = Gradient.new()
+	fade.set_color(0, STOCK)
+	fade.set_color(1, Color(STOCK, 0.0))
+	fade.add_point(FADE_SOLID, Color(STOCK, 0.92))
+	var corner: GradientTexture2D = GradientTexture2D.new()
+	corner.gradient = fade
+	corner.fill = GradientTexture2D.FILL_RADIAL
+	corner.fill_from = Vector2.ZERO
+	corner.fill_to = Vector2(1.0, 1.0)
+	corner.width = 64
+	corner.height = 64
+	return corner
 
 
 ## Selected cards lift and get a red edge; hinted cards get a gold edge. The keyboard

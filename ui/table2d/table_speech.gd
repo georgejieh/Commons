@@ -55,14 +55,18 @@ func setup(seats: Dictionary[int, SeatPanel], app: DemoApp = null) -> void:
 		seats[seat].speech_skipped.connect(Audio.voice.stop)
 
 
-## Speaks for event, if anyone would.
+## Speaks for event, if anyone would. A villager's last line goes when they act again,
+## so nothing said about an earlier play stays up beside a later one.
 func on_event(event: RunEvent) -> void:
 	if event.type == RunEvent.Type.BID:
+		_hush(event.seat)
 		say(event.seat, "call" if event.value == 1 else "no_call")
 		return
 	if event.type != RunEvent.Type.ROUND:
 		return
 	var played: RoundEvent = event.round_event
+	if played.type == RoundEvent.Type.PLAYED or played.type == RoundEvent.Type.PASSED:
+		_hush(played.seat)
 	match played.type:
 		RoundEvent.Type.ROUND_STARTED:
 			_landlord = played.seat
@@ -124,6 +128,19 @@ func skip_all() -> void:
 		say(line.seat, line.event, line.fields)
 	hurry = false
 	Audio.voice.stop_all()
+
+
+## Clears what seat last said, stops its voice and drops its waiting lines. If that
+## leaves the table quiet, the next waiting line starts.
+func _hush(seat: int) -> void:
+	if not _seats.has(seat):
+		return
+	_waiting = _waiting.filter(func(line: Dictionary) -> bool: return line.seat != seat)
+	if _voices.has(seat):
+		Audio.voice.stop(seat)
+	_seats[seat].say("")
+	if not _waiting.is_empty() and not _talking_besides(Seats.NONE):
+		_on_finished(seat)
 
 
 func waiting_count() -> int:

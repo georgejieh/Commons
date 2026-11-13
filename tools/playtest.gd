@@ -115,7 +115,9 @@ func _table_step() -> void:
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
 		4:
-			await _press_node(table.call("need_panel"))
+			var need_panel: Node = table.call("need_panel")
+			var declare: Button = need_panel.get("_declare")
+			await _press(declare)
 		3:
 			await _play_turn(table, controller)
 

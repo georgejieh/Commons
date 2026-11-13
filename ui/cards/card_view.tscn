@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://ui/cards/card_view.gd" id="1_card"]
 
@@ -33,14 +33,6 @@ expand_margin_top = 3.0
 expand_margin_right = 3.0
 expand_margin_bottom = 3.0
 
-[sub_resource type="StyleBoxFlat" id="index"]
-bg_color = Color(0.984, 0.965, 0.918, 0.94)
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.118, 0.102, 0.086, 1)
-corner_radius_top_left = 7
-corner_radius_bottom_right = 10
-
 [sub_resource type="LabelSettings" id="glyph"]
 font_size = 40
 font_color = Color(1, 1, 1, 1)
@@ -73,15 +65,16 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Index" type="Panel" parent="Frame"]
+[node name="Index" type="TextureRect" parent="Frame"]
 visible = false
 layout_mode = 0
 offset_left = 4.0
 offset_top = 4.0
-offset_right = 54.0
-offset_bottom = 96.0
+offset_right = 92.0
+offset_bottom = 132.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("index")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Rank" type="Label" parent="Frame"]
 layout_mode = 0

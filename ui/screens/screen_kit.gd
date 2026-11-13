@@ -256,4 +256,7 @@ static func cadre_art(cadre_id: String) -> Texture2D:
 ## A Cadre's name over its rules, for its tooltip.
 static func cadre_tip(controller: RunController, cadre_id: String) -> String:
 	var name: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
-	return "%s\n%s" % [name, controller.modifier_text(cadre_id)]
+	var rule: String = controller.modifier_text(cadre_id)
+	var words: String = Keywords.tip(rule)
+	var tip: String = "%s\n%s" % [name, rule]
+	return tip if words.is_empty() else tip + "\n\n" + words

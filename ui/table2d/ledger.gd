@@ -1,66 +1,161 @@
 class_name Ledger
 extends VBoxContainer
-## The work-point ledger: one row per scored play, newest at the bottom. Rows are made
-## once and reused, so scoring a play instances nothing. The newest score counts up
-## from zero as its row is stamped in (P3B.6).
+## The round's work points, as a scoreboard: the landlord's running total, then the
+## Commons pool with each peasant's part of it, then the last few plays written out as
+## Grain × Zeal. Rows are made once and reused, so scoring a play instances nothing. A
+## seat's total counts up as its play is stamped in (P3B.6).
 
-const MAX_ROWS: int = 9
+const MAX_PLAYS: int = 5
 ## Rows wrap inside the ledger's paper.
 const ROW_WIDTH: float = 270.0
 const INK: Color = Color("1e1a16")
-const STAMP: Color = Color("b02a17")
+const SOFT: Color = Color("5a4a36")
 
 var _pending_type: String = ""
+var _names: Dictionary[int, String] = {}
+var _totals: PackedFloat64Array = PackedFloat64Array()
+var _landlord: int = Seats.NONE
+var _rows: Array[HBoxContainer] = []
+var _amounts: Array[Label] = []
+var _landlord_head: Label = Label.new()
+var _commons_head: HBoxContainer = HBoxContainer.new()
+var _pool: Label = Label.new()
+var _rule: HSeparator = HSeparator.new()
+var _plays_head: Label = Label.new()
+var _plays: RichTextLabel = RichTextLabel.new()
 var _texts: PackedStringArray = []
-var _labels: Array[Label] = []
 var _counting: Tween = null
 
 
 func _ready() -> void:
+	add_theme_constant_override("separation", 6)
+	custom_minimum_size = Vector2(ROW_WIDTH, 0)
 	var title: Label = Label.new()
 	title.text = tr("ledger.title")
-	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_font_size_override("font_size", 26)
 	title.add_theme_font_override("font", ScreenKit.TYPEWRITER_BOLD)
 	title.add_theme_color_override("font_color", INK)
 	add_child(title)
-	for _index: int in MAX_ROWS:
-		var row: Label = Label.new()
-		row.add_theme_font_size_override("font_size", 20)
-		row.add_theme_font_override("font", ScreenKit.TYPEWRITER)
-		row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		row.custom_minimum_size = Vector2(ROW_WIDTH, 0)
-		row.add_theme_color_override("font_color", INK)
-		row.add_theme_constant_override("line_spacing", -2)
+	_as_head(_landlord_head, "ledger.landlord")
+	_as_head(_plays_head, "ledger.plays")
+	_as_amount(_pool)
+	add_child(_landlord_head)
+	var commons: Label = Label.new()
+	_as_head(commons, "ledger.commons")
+	commons.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	commons.tooltip_text = tr("keyword.commons.text")
+	commons.mouse_filter = Control.MOUSE_FILTER_STOP
+	_commons_head.add_child(commons)
+	_commons_head.add_child(_pool)
+	add_child(_commons_head)
+	_totals.resize(Seats.COUNT)
+	for seat: int in Seats.COUNT:
+		var row: HBoxContainer = HBoxContainer.new()
+		var who: Label = Label.new()
+		_as_text(who)
+		who.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(who)
+		var amount: Label = Label.new()
+		_as_amount(amount)
+		row.add_child(amount)
 		add_child(row)
-		_labels.append(row)
+		_rows.append(row)
+		_amounts.append(amount)
+	add_child(_rule)
+	add_child(_plays_head)
+	_plays.bbcode_enabled = true
+	_plays.fit_content = true
+	_plays.scroll_active = false
+	_plays.custom_minimum_size = Vector2(ROW_WIDTH, 0)
+	_plays.add_theme_font_override("normal_font", ScreenKit.TYPEWRITER)
+	_plays.add_theme_font_override("bold_font", ScreenKit.TYPEWRITER_BOLD)
+	_plays.add_theme_font_size_override("normal_font_size", 18)
+	_plays.add_theme_font_size_override("bold_font_size", 18)
+	_plays.add_theme_color_override("default_color", INK)
+	add_child(_plays)
+	start_round(Seats.NONE)
 
 
-## The next row's hand type, from the play event that comes before its score.
+## Names each seat's row.
+func setup(names: Dictionary[int, String]) -> void:
+	_names = names
+	for seat: int in _rows.size():
+		var who: Label = _rows[seat].get_child(0)
+		who.text = names.get(seat, "")
+
+
+## A new round: every total back to zero, and the rows set out by side. With no
+## landlord yet, the seats are simply listed.
+func start_round(landlord: int) -> void:
+	_landlord = landlord
+	_totals.fill(0.0)
+	_texts.clear()
+	_pending_type = ""
+	var sided: bool = landlord != Seats.NONE
+	_landlord_head.visible = sided
+	_commons_head.visible = sided
+	var next: int = _landlord_head.get_index() + 1
+	if sided:
+		move_child(_rows[landlord], next)
+		next += 1
+		move_child(_commons_head, next)
+		next += 1
+	for seat: int in _rows.size():
+		if seat != landlord:
+			move_child(_rows[seat], next)
+			next += 1
+	_show()
+
+
+## The next play's hand type, from the play event that comes before its score.
 func set_pending(type_text: String) -> void:
 	_pending_type = type_text
 
 
-func add_row(who: String, total: float) -> void:
-	# Two lines per entry: who and the score, then the hand type indented beneath.
-	var type_text: String = _pending_type
-	_texts.append(_row_text(who, total, type_text))
-	if _texts.size() > MAX_ROWS:
+## Adds a scored play: its seat's total counts up, and the play is written under Plays.
+func add_play(seat: int, grain: float, zeal: float, total: float) -> void:
+	var before: float = _totals[seat]
+	_totals[seat] += total
+	var head: String = tr("ledger.play").format(
+		{"who": _names.get(seat, ""), "type": _pending_type}
+	)
+	var sum: String = tr("ledger.sum").format(
+		{"grain": Strings.score(grain), "zeal": Strings.score(zeal), "total": Strings.score(total)}
+	)
+	_texts.append("[b]%s[/b]\n  %s" % [head.replace("[", "[lb]"), Keywords.mark(sum)])
+	if _texts.size() > MAX_PLAYS:
 		_texts.remove_at(0)
 	_show()
-	var newest: Label = _labels[mini(_texts.size(), _labels.size()) - 1]
-	UiMotion.stamp(newest)
-	_counting = UiMotion.count(
-		newest, 0.0, total, func(shown: float) -> String: return _row_text(who, shown, type_text)
-	)
+	UiMotion.stamp(_amounts[seat])
+	_counting = UiMotion.count(_amounts[seat], before, _totals[seat], Strings.score)
+
+
+## The seat's total once the round's end multipliers are in.
+func set_final(seat: int, total: float) -> void:
+	_totals[seat] = total
+	_show()
 
 
 func clear_rows() -> void:
-	_texts.clear()
-	_show()
+	start_round(Seats.NONE)
 
 
+## The plays written out, oldest first, as plain text.
 func row_texts() -> PackedStringArray:
 	return _texts
+
+
+func total_of(seat: int) -> float:
+	return _totals[seat]
+
+
+## What the peasants have scored between them this round.
+func pool() -> float:
+	var sum: float = 0.0
+	for seat: int in _totals.size():
+		if seat != _landlord:
+			sum += _totals[seat]
+	return sum if _landlord != Seats.NONE else 0.0
 
 
 ## Whether the newest score is still counting up.
@@ -68,15 +163,32 @@ func is_counting() -> bool:
 	return _counting != null and _counting.is_running()
 
 
-func _row_text(who: String, total: float, type_text: String) -> String:
-	var head: String = tr("ledger.row").format({"who": who, "total": Strings.score(total)})
-	return "%s\n  %s" % [head, type_text]
-
-
 func _show() -> void:
-	# A count still rolling would write over a row that has moved up.
+	# A count still rolling would write over a total that has since changed.
 	if _counting != null and _counting.is_valid():
 		_counting.kill()
 	_counting = null
-	for index: int in _labels.size():
-		_labels[index].text = _texts[index] if index < _texts.size() else ""
+	for seat: int in _amounts.size():
+		_amounts[seat].text = Strings.score(_totals[seat])
+	_pool.text = Strings.score(pool())
+	_plays_head.visible = not _texts.is_empty()
+	_rule.visible = not _texts.is_empty()
+	_plays.text = "\n".join(_texts)
+
+
+func _as_head(label: Label, key: String) -> void:
+	label.text = tr(key).to_upper()
+	label.theme_type_variation = CommonsTheme.EYEBROW
+	label.add_theme_color_override("font_color", SOFT)
+
+
+func _as_text(label: Label) -> void:
+	label.add_theme_font_size_override("font_size", 22)
+	label.add_theme_font_override("font", ScreenKit.TYPEWRITER)
+	label.add_theme_color_override("font_color", INK)
+
+
+func _as_amount(label: Label) -> void:
+	_as_text(label)
+	label.add_theme_font_override("font", ScreenKit.TYPEWRITER_BOLD)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT

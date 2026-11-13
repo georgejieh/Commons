@@ -19,7 +19,7 @@ modifier.cultural_revolution.text,"After any bomb, rank order inverts until the 
 modifier.promotion_of_the_masses.name,Promotion of the Masses
 modifier.promotion_of_the_masses.text,"3s rank above 2s, below the jokers."
 modifier.criticism_meeting.name,Criticism Meeting
-modifier.criticism_meeting.text,Your 2s rank as 3s.
+modifier.criticism_meeting.text,"Your 2s rank lowest, level with 3s. They still pair only with other 2s."
 modifier.inverted_order.name,Inverted Order
 modifier.inverted_order.text,Rank order is reversed for your plays only.
 score.suffix.thousand,K
@@ -107,7 +107,7 @@ set.type.1,Large Quota
 set.type.2,Boss Quota
 meter.famine,Famine
 meter.denunciation,Denunciation
-ledger.title,Work-Point Ledger
+ledger.title,Work Points
 ledger.row,{who} · {total}
 action.play,Play
 action.pass,Pass
@@ -117,9 +117,7 @@ action.rules,Rules
 action.call,Call
 action.decline,Pass
 board.empty,Empty
-need.prompt,Declare your need. The Commons is split by declared need.
 need.declare,Declare
-need.audit,"Your true need is {need}. Any higher declaration is a lie, and if an audit checks it, you get your true share and {rise} Denunciation."
 cheat.title,Hand types
 cheat.active,In play now
 cheat.none,Nothing changes the rules right now.
@@ -140,7 +138,8 @@ cheat.example.bomb,7 7 7 7
 cheat.example.rocket,Small + Big
 intro.where,Year {year} · Quota {set} of 3
 intro.target,Score {target} in up to {rounds} rounds.
-intro.ladder,Later rounds add debuffs. They stack.
+intro.ladder,"Later rounds add debuffs. They stack, and they apply only to you."
+table.debuffs,Debuffs on you only
 intro.round,Round {round}
 intro.clean,Clean
 intro.clean_text,No debuff.
@@ -418,3 +417,28 @@ modifier.the_informant.name,The Informant
 modifier.the_informant.text,Shows the hand types your opponents still hold.
 modifier.peek.name,Peek
 modifier.peek.text,Shows the cards of the other player closest to going out.
+keyword.grain.name,Grain
+keyword.grain.text,"Grain: a play's base points, from its cards and its hand type."
+keyword.zeal.name,Zeal
+keyword.zeal.text,"Zeal: what a play's Grain is multiplied by. A play scores Grain × Zeal."
+keyword.commons.name,Commons
+keyword.commons.text,"Commons: the pool both peasants' scores go into. When the round ends it is split by declared need."
+cheat.keywords,Scoring words
+ledger.landlord,Landlord
+ledger.commons,Commons pool
+ledger.you,You
+ledger.plays,Plays
+ledger.play,{who} · {type}
+ledger.sum,{grain} Grain × {zeal} Zeal = {total}
+ledger.final,Round total
+hand.sum,{type}  ·  {grain} Grain × {zeal} Zeal = {total}
+action.grab,Grab
+table.grab_prompt,{name} called the landlord seat. Grab it?
+table.bid_tip,"The first to call holds the landlord seat. Anyone who hasn't passed may then grab it once. The landlord keeps the seat until they lose a round."
+need.title,Split the Commons
+need.pool,The Commons holds {pool} this round.
+need.rule,"It is split in proportion to declared need. Your true need is {need}."
+need.preview,"If {name} declares {base}: you get {yours}, {name} gets {theirs}."
+need.honest,An honest declaration.
+need.lie,"A lie. If an audit checks it, you get your true share and {rise} Denunciation."
+need.less,Less than you need. {name} gets more of the pool.

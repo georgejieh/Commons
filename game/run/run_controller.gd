@@ -91,6 +91,12 @@ func has_run() -> bool:
 	return _loop != null
 
 
+## The seat that has called or grabbed the landlord seat in the bidding under way, or
+## Seats.NONE while nobody has, or outside bidding.
+func bid_holder() -> int:
+	return _loop.bid_holder()
+
+
 func bid(claim: bool) -> int:
 	return _finish("bid", _loop.player_bid(claim))
 

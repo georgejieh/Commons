@@ -1,6 +1,6 @@
 class_name CommonsTheme
 extends RefCounted
-## Builds the demo's component theme from UiStyle tokens: tactile buttons in four kinds,
+## Builds the demo's component theme from UiStyle tokens: ticket buttons in four kinds,
 ## a gold focus ring, paper sheets, meters, form controls and a type scale. Screens pick
 ## a kind with theme_type_variation; nothing styles itself by hand.
 
@@ -21,7 +21,11 @@ const SHEET: String = "Sheet"
 ## The card stock's border, in texture pixels, that a sheet never stretches.
 const SHEET_BORDER: float = 26.0
 ## How much a hovered face lightens, and a disabled one fades.
-const HOVER_LIGHTEN: float = 0.1
+const HOVER_LIGHTEN: float = 0.12
+const PRESS_DARKEN: float = 0.15
+## Pixel sizes of the drawn slider knob and check box.
+const KNOB: int = 26
+const BOX: int = 26
 const DISABLED_ALPHA: float = 0.45
 
 
@@ -38,27 +42,22 @@ static func build() -> Theme:
 
 static func _buttons(theme: Theme) -> void:
 	var kinds: Array[Array] = [
-		[SECONDARY, STYLE.ink_soft, STYLE.ink, STYLE.paper_bright],
-		[PRIMARY, STYLE.vermilion, STYLE.vermilion_dark, STYLE.paper_bright],
-		[COUPON, STYLE.ration_green, STYLE.ration_green_dark, STYLE.paper_bright],
-		[GHOST, Color(STYLE.paper_bright, 0.9), STYLE.ink_soft, STYLE.ink],
+		[SECONDARY, STYLE.ticket_kraft, STYLE.paper_bright],
+		[PRIMARY, STYLE.ticket_red, STYLE.paper_bright],
+		[COUPON, STYLE.ticket_green, STYLE.paper_bright],
+		[GHOST, Color.WHITE, STYLE.ink],
 	]
 	for kind: Array in kinds:
 		var name: String = kind[0]
-		var face: Color = kind[1]
-		var edge: Color = kind[2]
-		var text: Color = kind[3]
+		var ink: Color = kind[1]
+		var text: Color = kind[2]
 		if name != SECONDARY:
 			theme.set_type_variation(name, "Button")
-		theme.set_stylebox("normal", name, _key(face, edge, STYLE.shadow_drop))
-		theme.set_stylebox(
-			"hover", name, _key(face.lightened(HOVER_LIGHTEN), edge, STYLE.shadow_drop)
-		)
-		theme.set_stylebox("pressed", name, _key(face.darkened(0.08), edge, STYLE.pressed_drop))
-		theme.set_stylebox("hover_pressed", name, _key(face, edge, STYLE.pressed_drop))
-		var off: StyleBoxFlat = _key(Color(STYLE.paper_bright, 0.35), Color(edge, 0.5), 2)
-		off.shadow_size = 0
-		theme.set_stylebox("disabled", name, off)
+		theme.set_stylebox("normal", name, _ticket(ink, false))
+		theme.set_stylebox("hover", name, _ticket(ink.lightened(HOVER_LIGHTEN), false))
+		theme.set_stylebox("pressed", name, _ticket(ink.darkened(PRESS_DARKEN), true))
+		theme.set_stylebox("hover_pressed", name, _ticket(ink.darkened(PRESS_DARKEN), true))
+		theme.set_stylebox("disabled", name, _ticket(Color(ink, DISABLED_ALPHA), false))
 		theme.set_stylebox("focus", name, _focus_ring())
 		theme.set_font("font", name, BOLD)
 		theme.set_font_size("font_size", name, STYLE.button_size)
@@ -66,26 +65,21 @@ static func _buttons(theme: Theme) -> void:
 			theme.set_color(state, name, text)
 		theme.set_color("font_hover_pressed_color", name, text)
 		theme.set_color("font_focus_color", name, text)
-		theme.set_color("font_disabled_color", name, Color(STYLE.ink, DISABLED_ALPHA))
+		theme.set_color("font_disabled_color", name, Color(text, DISABLED_ALPHA + 0.2))
 
 
-## A raised key: a flat face over a thicker bottom edge that shrinks when pressed, so the
-## label sinks with it.
-static func _key(face: Color, edge: Color, drop: int) -> StyleBoxFlat:
-	var box: StyleBoxFlat = StyleBoxFlat.new()
-	box.bg_color = face
-	box.border_color = edge
-	box.set_border_width_all(STYLE.border)
-	box.border_width_bottom = STYLE.border + drop
-	box.set_corner_radius_all(STYLE.radius)
+## A printed ticket: the panels' own card stock with its ruled border, dyed with the
+## kind's ink. A pressed ticket sits lower, so the label sinks with it.
+static func _ticket(ink: Color, pressed: bool) -> StyleBoxTexture:
+	var box: StyleBoxTexture = StyleBoxTexture.new()
+	box.texture = PANEL_PAPER
+	box.set_texture_margin_all(SHEET_BORDER)
+	box.modulate_color = ink
+	var sink: int = STYLE.shadow_drop - STYLE.pressed_drop if pressed else 0
 	box.content_margin_left = STYLE.pad_x
 	box.content_margin_right = STYLE.pad_x
-	box.content_margin_top = STYLE.pad_y + (STYLE.shadow_drop - drop)
-	box.content_margin_bottom = STYLE.pad_y
-	box.shadow_color = STYLE.shadow
-	box.shadow_size = 4 if drop > STYLE.pressed_drop else 1
-	box.shadow_offset = Vector2(0, 3 if drop > STYLE.pressed_drop else 1)
-	box.anti_aliasing = true
+	box.content_margin_top = STYLE.pad_y + sink
+	box.content_margin_bottom = STYLE.pad_y - sink
 	return box
 
 
@@ -144,11 +138,21 @@ static func _controls(theme: Theme) -> void:
 	fill.bg_color = STYLE.gold
 	fill.set_corner_radius_all(STYLE.radius)
 	theme.set_stylebox("fill", "ProgressBar", fill)
-	theme.set_stylebox("slider", "HSlider", track)
+	var rail: StyleBoxFlat = track.duplicate()
+	rail.content_margin_top = 4
+	rail.content_margin_bottom = 4
+	theme.set_stylebox("slider", "HSlider", rail)
 	var grabbed: StyleBoxFlat = fill.duplicate()
 	grabbed.bg_color = STYLE.vermilion
 	theme.set_stylebox("grabber_area", "HSlider", grabbed)
 	theme.set_stylebox("grabber_area_highlight", "HSlider", grabbed)
+	var knob: ImageTexture = _seal(STYLE.vermilion)
+	theme.set_icon("grabber", "HSlider", knob)
+	theme.set_icon("grabber_highlight", "HSlider", _seal(STYLE.vermilion.lightened(0.15)))
+	theme.set_icon("grabber_disabled", "HSlider", _seal(STYLE.ink_soft))
+	theme.set_icon("unchecked", "CheckBox", _check_box(false))
+	theme.set_icon("checked", "CheckBox", _check_box(true))
+	theme.set_constant("h_separation", "CheckBox", 12)
 	theme.set_stylebox("focus", "HSlider", _focus_ring())
 	theme.set_stylebox("focus", "CheckBox", _focus_ring())
 	# CheckBox inherits Button's look; it reads as a plain line of text with a box.
@@ -173,3 +177,36 @@ static func _controls(theme: Theme) -> void:
 	theme.set_stylebox("normal", "LineEdit", field)
 	theme.set_stylebox("focus", "LineEdit", _focus_ring())
 	theme.set_color("font_color", "LineEdit", STYLE.ink)
+
+
+## A round ink seal with a paper rim, for the slider's knob.
+static func _seal(ink: Color) -> ImageTexture:
+	var image: Image = Image.create(KNOB, KNOB, false, Image.FORMAT_RGBA8)
+	var middle: Vector2 = Vector2(KNOB, KNOB) / 2.0
+	for y: int in KNOB:
+		for x: int in KNOB:
+			var far: float = (Vector2(x + 0.5, y + 0.5) - middle).length()
+			var color: Color = Color(0, 0, 0, 0)
+			if far < KNOB / 2.0 - 4.0:
+				color = ink
+			elif far < KNOB / 2.0 - 2.0:
+				color = STYLE.paper_bright
+			elif far < KNOB / 2.0:
+				color = STYLE.ink
+			image.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(image)
+
+
+## An inked box on paper; checked, it is filled with a vermilion stamp.
+static func _check_box(checked: bool) -> ImageTexture:
+	var image: Image = Image.create(BOX, BOX, false, Image.FORMAT_RGBA8)
+	for y: int in BOX:
+		for x: int in BOX:
+			var edge: int = mini(mini(x, y), mini(BOX - 1 - x, BOX - 1 - y))
+			var color: Color = STYLE.paper_bright
+			if edge < 3:
+				color = STYLE.ink
+			elif checked and edge >= 6:
+				color = STYLE.vermilion
+			image.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(image)

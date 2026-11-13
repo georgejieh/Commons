@@ -46,6 +46,9 @@ var amount: float
 var text: String
 ## Set only for ROUND events.
 var round_event: RoundEvent
+## Set only for PLAY_SCORED: the play's Grain and Zeal, whose product is amount.
+var grain: float = 0.0
+var zeal: float = 0.0
 
 
 func _init(

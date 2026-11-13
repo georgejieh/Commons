@@ -98,6 +98,11 @@ func label_key() -> String:
 	return KEY_PATTERN_PREFIX + type_name.to_lower()
 
 
+## How the selection reads and scores now, or null with nothing chosen.
+func preview() -> PlayPreview:
+	return _preview
+
+
 ## What the selection would score if played now, or 0 when it forms no pattern.
 func projected_score() -> float:
 	return 0.0 if _preview == null else _preview.score

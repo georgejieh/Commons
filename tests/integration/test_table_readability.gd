@@ -108,6 +108,51 @@ func test_a_second_villager_waits_until_the_first_finishes() -> void:
 	assert_str(second.speech()).is_not_empty()
 
 
+func test_a_villagers_line_goes_when_they_act_again() -> void:
+	var first: SeatPanel = auto_free(SeatPanel.new())
+	var second: SeatPanel = auto_free(SeatPanel.new())
+	add_child(first)
+	add_child(second)
+	first.seat = 1
+	second.seat = 2
+	var speech: TableSpeech = TableSpeech.new()
+	var seats: Dictionary[int, SeatPanel] = {1: first, 2: second}
+	speech.setup(seats)
+	speech.say(1, "bomb")
+	speech.say(2, "won")
+	assert_str(first.speech()).is_not_empty()
+	var single: Pattern = Pattern.new(
+		Pattern.Type.SINGLE, Ranks.FIVE, 1, 1, PackedByteArray(), Ranks.FIVE
+	)
+	var ids: Array[int] = [0]
+	speech.on_event(RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PLAYED, 1, ids, single)))
+	assert_str(first.speech()).is_empty()
+	assert_str(second.speech()).is_not_empty()
+
+
+func test_the_need_panel_says_what_a_declaration_pays() -> void:
+	var panel: NeedPanel = auto_free(NeedPanel.new())
+	add_child(panel)
+	panel.setup(10, 40, 5)
+	panel.ask(1200, "Zhao")
+	assert_int(panel.preview_share()).is_equal(600)
+	var more: Button = panel.get("_more")
+	for _step: int in 10:
+		more.pressed.emit()
+	assert_int(panel.value()).is_equal(20)
+	assert_int(panel.preview_share()).is_equal(800)
+	var note: Label = panel.get("_note")
+	assert_str(note.text).is_equal(tr("need.lie").format({"rise": 5}))
+
+
+func test_keywords_explain_themselves() -> void:
+	var marked: String = Keywords.mark("Your plays gain 5 Grain and lose 1 Zeal.")
+	assert_str(marked).contains("[hint=" + tr("keyword.grain.text"))
+	assert_str(marked).contains("[hint=" + tr("keyword.zeal.text"))
+	assert_str(Keywords.tip("Your plays lose 1 Zeal.")).is_equal(tr("keyword.zeal.text"))
+	assert_str(Keywords.tip("Pass.")).is_empty()
+
+
 func test_court_cards_and_jokers_are_picture_cards() -> void:
 	var view: CardView = auto_free(CARD_SCENE.instantiate())
 	add_child(view)

@@ -44,6 +44,7 @@ var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
 var _speech: TableSpeech = TableSpeech.new()
 var _input: TableInput = TableInput.new()
+var _commands: TableCommands = TableCommands.new()
 var _dread: DreadLayers = DreadLayers.new()
 var _dressing: DreadDressing = DreadDressing.new()
 var _surface: TextureRect
@@ -79,7 +80,7 @@ func _ready() -> void:
 	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
-	_place(_need_panel, Vector2(720, 420), Vector2(420, 200))
+	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
 	_place(_cheat_sheet, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_banner, Vector2(PLAY_CENTER - 380.0, 480), Vector2(760, 0))
@@ -109,20 +110,16 @@ func open(app: DemoApp) -> void:
 	_board.setup(_controller.cadre_slots())
 	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
 	_hand_view.setup(_hand, _pool)
-	_hand.changed.connect(_refresh_actions)
+	_commands.setup(_controller, _hand, _hand_view, _actions, _need_panel, _player)
+	_actions.rules.pressed.connect(_cheat_sheet.toggle.bind(_controller))
 	_player.played.connect(_on_event)
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)
-	_player.queued.connect(_refresh_actions)
-	_actions.play.pressed.connect(_on_play)
-	_actions.pass_turn.pressed.connect(_on_pass)
-	_actions.hint.pressed.connect(_on_hint)
-	_show_sort()
-	_actions.sort.pressed.connect(_toggle_sort)
-	_actions.rules.pressed.connect(_cheat_sheet.toggle.bind(_controller))
-	_actions.call.pressed.connect(_on_bid.bind(true))
-	_actions.decline.pressed.connect(_on_bid.bind(false))
-	_need_panel.declared.connect(_on_need)
+	var names: Dictionary[int, String] = {
+		0: tr("ledger.you"), 1: app.seat_name(1), 2: app.seat_name(2)
+	}
+	_ledger.setup(names)
+	_commands.set_names(names)
 	_hud.menu.pressed.connect(_open_pause)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
 	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
@@ -206,11 +203,14 @@ func _on_event(event: RunEvent) -> void:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
 		RunEvent.Type.PLAY_SCORED:
-			_ledger.add_row(_app.seat_name(event.seat), event.amount)
+			_ledger.add_play(event.seat, event.grain, event.zeal, event.amount)
+		RunEvent.Type.ROUND_SCORED:
+			_ledger.set_final(event.seat, event.amount)
+			_dread.refresh(_controller.state_copy())
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			_new_deal()
 			_dread.refresh(_controller.state_copy())
-		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED, RunEvent.Type.ROUND_SCORED:
+		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED:
 			_dread.refresh(_controller.state_copy())
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
@@ -221,6 +221,10 @@ func _on_event(event: RunEvent) -> void:
 
 func _on_round_event(event: RoundEvent) -> void:
 	match event.type:
+		RoundEvent.Type.ROUND_STARTED:
+			# A kept seat is never bid for again, so the round itself names the landlord.
+			_landlord = event.seat
+			_ledger.start_round(event.seat)
 		RoundEvent.Type.PLAYED:
 			_show_play(event)
 			if event.seat == 0:
@@ -266,10 +270,10 @@ func _on_drained() -> void:
 	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
 	if awaiting == RunController.AWAIT_NEED:
-		_need_panel.ask()
+		_need_panel.ask(_controller.state_copy().commons_pool, _app.seat_name(3 - _landlord))
 	_hand.refresh()
 	_hand_view.show_cards()
-	_refresh_actions()
+	_commands.refresh()
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
 
@@ -324,68 +328,6 @@ func _refresh_seats() -> void:
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
 	_hud.show_state(state, _controller.target(), _app.max_rounds())
-
-
-func _refresh_actions() -> void:
-	var my_turn: bool = _player.is_idle() and _controller.awaiting() == RunController.AWAIT_PLAY
-	_actions.play.disabled = not (my_turn and _hand.can_play())
-	_actions.pass_turn.disabled = not (my_turn and _hand.can_pass())
-	if _controller.awaiting() == RunController.AWAIT_BID:
-		_actions.reading.text = tr("table.bid_prompt")
-		return
-	var text: String = tr(_hand.label_key())
-	if _hand.can_play() or _hand.projected_score() > 0.0:
-		text += "  ·  " + Strings.score(_hand.projected_score())
-	_actions.reading.text = text
-
-
-## Every command fills the event queue, so the buttons go off until it drains.
-func _on_play() -> void:
-	if _controller.play(_hand.selected_ids()) == RunController.OK:
-		_hand.clear()
-	_refresh_actions()
-
-
-func _on_pass() -> void:
-	_controller.pass_turn()
-	_hand.clear()
-	_refresh_actions()
-
-
-func _on_bid(claim: bool) -> void:
-	_actions.show_bidding(false)
-	_controller.bid(claim)
-	_refresh_actions()
-
-
-func _on_need(need: int) -> void:
-	_need_panel.visible = false
-	_controller.declare_need(need)
-	_refresh_actions()
-
-
-## Cycles rank, suit and groups, and names the current sort on the button.
-func _toggle_sort() -> void:
-	var next: int = (_hand_view.sort_mode + 1) % HandView.Sort.size()
-	_hand_view.set_sort(next as HandView.Sort)
-	_show_sort()
-
-
-func _show_sort() -> void:
-	var mode: String = tr(HandView.SORT_KEYS[_hand_view.sort_mode])
-	_actions.sort.text = tr("action.sort_by").format({"mode": mode})
-	_actions.sort.tooltip_text = tr("action.sort_tip").format({"mode": mode})
-
-
-## Selects the play a Medium villager would make, and lights it.
-func _on_hint() -> void:
-	if _controller.awaiting() != RunController.AWAIT_PLAY:
-		return
-	var ids: Array[int] = _hand.suggested_ids()
-	_hand.select_only(ids)
-	_hand_view.show_hint(ids)
-	if ids.is_empty():
-		_actions.reading.text = tr("hand.hint.pass")
 
 
 static func _type_name(pattern: Pattern) -> String:

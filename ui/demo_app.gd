@@ -31,12 +31,18 @@ const SCREENS: Dictionary[String, String] = {
 	"village_history": "res://ui/screens/village_history_screen.tscn",
 }
 
+## Screens of a run, off the table, where Escape opens the menu. The table has its own.
+const MENU_SCREENS: Array[String] = [
+	"set_intro", "set_summary", "store", "black_market", "year_summary", "plot_swap"
+]
+
 var controller: RunController = RunController.new()
 var hand: HandModel
 var switcher: SceneSwitcher = SceneSwitcher.new()
 var post: PostProcess = PostProcess.new()
 var _wipe: ColorRect = ColorRect.new()
 var _wipe_layer: CanvasLayer = CanvasLayer.new()
+var _menu: PauseMenu = PauseMenu.new()
 
 @onready var _host: Control = $Screens
 
@@ -53,6 +59,11 @@ func _ready() -> void:
 	_wipe_layer.layer = PostProcess.LAYER - 1
 	_wipe_layer.add_child(_wipe)
 	add_child(_wipe_layer)
+	add_child(_menu)
+	_menu.to_title.connect(func() -> void: show_screen("title", true))
+	_menu.quit_game.connect(func() -> void: get_tree().quit())
+	_menu.dossier.connect(func() -> void: show_screen("dossier"))
+	_menu.last_round.connect(func() -> void: show_screen("round_summary"))
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
 	for screen_id: String in SCREENS:
@@ -60,6 +71,20 @@ func _ready() -> void:
 			scenes[screen_id] = load(SCREENS[screen_id])
 	switcher.setup(_host, scenes)
 	show_screen(first_screen(), true)
+
+
+## Escape opens the menu on a run's screens away from the table (the table handles its
+## own, first).
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel") or _menu.visible:
+		return
+	if MENU_SCREENS.has(switcher.current_id()):
+		_menu.open()
+		get_viewport().set_input_as_handled()
+
+
+func menu_is_open() -> bool:
+	return _menu.visible
 
 
 ## The content note on first launch, then the title ever after.

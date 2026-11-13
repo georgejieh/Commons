@@ -100,6 +100,12 @@ func _init() -> void:
 	_stack.add_child(_speech)
 
 
+## Entering the tree turns processing back on, and a panel that has said nothing is
+## not typing.
+func _ready() -> void:
+	set_process(false)
+
+
 func setup(seat_index: int, display_name: String, portrait: Texture2D = null) -> void:
 	seat = seat_index
 	_name.text = display_name

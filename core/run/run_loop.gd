@@ -206,6 +206,11 @@ func advance() -> void:
 			return
 
 
+## Who holds the seat in the bidding under way: Seats.NONE until someone calls.
+func bid_holder() -> int:
+	return Seats.NONE if _bidding == null else _bidding.landlord()
+
+
 func player_bid(claim: bool) -> Reason:
 	if _awaiting != Awaiting.PLAYER_BID:
 		return Reason.NOT_AWAITED
@@ -422,7 +427,10 @@ func _collect_round_events() -> void:
 					Resentment.stamped(event.cards, PLAYER) * DEFAULT_RESENTMENT.stamped_card,
 					Resentment.STAMPED_CARD
 				)
-			set_log.add(RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total))
+			var scored: RunEvent = RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total)
+			scored.grain = _scoring.last_grain()
+			scored.zeal = _scoring.last_zeal()
+			set_log.add(scored)
 	_round_seen = round_events.size()
 
 
