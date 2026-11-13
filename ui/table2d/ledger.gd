@@ -2,7 +2,7 @@ class_name Ledger
 extends VBoxContainer
 ## The round's work points, as a scoreboard: the landlord's running total, then the
 ## Commons pool with each peasant's part of it, then the last few plays written out as
-## Grain × Zeal. Rows are made once and reused, so scoring a play instances nothing. A
+## Grain × Rate × Zeal. Rows are made once and reused, so scoring a play instances nothing. A
 ## seat's total counts up as its play is stamped in (P3B.6).
 
 const MAX_PLAYS: int = 5
@@ -113,14 +113,22 @@ func set_pending(type_text: String) -> void:
 
 
 ## Adds a scored play: its seat's total counts up, and the play is written under Plays.
-func add_play(seat: int, grain: float, zeal: float, total: float) -> void:
+func add_play(seat: int, grain: float, rate: float, zeal: float, total: float) -> void:
 	var before: float = _totals[seat]
 	_totals[seat] += total
 	var head: String = tr("ledger.play").format(
 		{"who": _names.get(seat, ""), "type": _pending_type}
 	)
-	var sum: String = tr("ledger.sum").format(
-		{"grain": Strings.score(grain), "zeal": Strings.score(zeal), "total": Strings.score(total)}
+	var sum: String = (
+		tr("ledger.sum")
+		. format(
+			{
+				"grain": Strings.score(grain),
+				"rate": Strings.factor(rate),
+				"zeal": Strings.factor(zeal),
+				"total": Strings.score(total),
+			}
+		)
 	)
 	_texts.append("[b]%s[/b]\n  %s" % [head.replace("[", "[lb]"), Keywords.mark(sum)])
 	if _texts.size() > MAX_PLAYS:

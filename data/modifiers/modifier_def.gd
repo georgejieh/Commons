@@ -8,6 +8,9 @@ enum Lever { RULE, RANK, SCORING, ECONOMY, HAND, METERS, INFO }
 
 ## Debuffs have four severity tiers. Other kinds leave tier at 0.
 const MAX_TIER: int = 4
+## Parameters named with this prefix hold Zeal in hundredths, so text shows 50 as 0.5.
+const ZEAL_PERCENT_PREFIX: String = "zeal_percent"
+const PERCENT: float = 100.0
 
 @export var id: String
 @export var kind: Kind
@@ -23,3 +26,15 @@ const MAX_TIER: int = 4
 @export var text_key: String
 ## True when the effect changes every seat's play, not only its holder's.
 @export var table_wide: bool = false
+
+
+## The values that fill text_key's placeholders: the parameters, with Zeal in
+## hundredths written as a decimal.
+func text_values() -> Dictionary[String, Variant]:
+	var values: Dictionary[String, Variant] = {}
+	for key: String in parameters:
+		if key.begins_with(ZEAL_PERCENT_PREFIX):
+			values[key] = String.num(parameters[key] / PERCENT)
+		else:
+			values[key] = parameters[key]
+	return values

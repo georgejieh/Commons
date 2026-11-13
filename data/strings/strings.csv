@@ -72,15 +72,15 @@ card.rank.small_joker,Small
 card.rank.big_joker,Big
 card.stamp.yours,Yours
 modifier.iron_rice_bowl.name,Iron Rice Bowl
-modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Zeal can't go above {zeal_cap}."
+modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Rate can't go above ×{rate_cap}."
 modifier.stakhanovite.name,Stakhanovite
-modifier.stakhanovite.text,Your Straights gain {zeal_per_card} Zeal for each card past {base_length}.
+modifier.stakhanovite.text,Your Straights gain +{zeal_percent_per_card} Zeal for each card past {base_length}.
 modifier.hidden_reserves.name,Hidden Reserves
 modifier.hidden_reserves.text,Your kickers score their base Grain.
 modifier.landlords_ledger.name,Landlord's Ledger
 modifier.landlords_ledger.text,"While you are landlord, kitty cards score their Grain twice."
 modifier.ration_cut.name,Ration Cut
-modifier.ration_cut.text,Your plays lose {zeal} Zeal.
+modifier.ration_cut.text,Your plays lose {zeal_percent} Zeal.
 modifier.paperwork.name,Paperwork
 modifier.paperwork.text,Your Pairs score {percent}% of their Grain.
 modifier.morning_meeting.name,Morning Meeting
@@ -402,7 +402,7 @@ modifier.struggle_session.text,"At each deal, your highest card goes into the ki
 modifier.requisition.name,Requisition
 modifier.requisition.text,Your Bombs and Rockets score 0.
 modifier.great_leap.name,Great Leap
-modifier.great_leap.text,The Quota is doubled. Your plays gain +{zeal} Zeal.
+modifier.great_leap.text,The Quota is doubled. Your plays gain +{zeal_percent} Zeal.
 modifier.the_purge.name,The Purge
 modifier.the_purge.text,"When this Set starts, {purge} of your Cadres, drawn at random, is destroyed."
 modifier.risen_villager.name,Risen Villager
@@ -418,9 +418,11 @@ modifier.the_informant.text,Shows the hand types your opponents still hold.
 modifier.peek.name,Peek
 modifier.peek.text,Shows the cards of the other player closest to going out.
 keyword.grain.name,Grain
-keyword.grain.text,Grain: a play's base points. They come from its cards and its hand type.
+keyword.grain.text,"Grain: the sum of the ranks of the cards that score. J is 11, Q 12, K 13, A 14, a 2 is 15, the jokers 16 and 17."
+keyword.rate.name,Rate
+keyword.rate.text,Rate: what the hand type multiplies Grain by. Bigger hand types have a higher Rate.
 keyword.zeal.name,Zeal
-keyword.zeal.text,"Zeal: what a play's Grain is multiplied by. A play scores Grain × Zeal."
+keyword.zeal.text,"Zeal: an extra multiplier from Cadres, debuffs and bosses. It starts at 1. A play scores Grain × Rate × Zeal."
 keyword.commons.name,Commons
 keyword.commons.text,"Commons: the pool both peasants' scores go into. When the round ends it is split by declared need."
 cheat.keywords,Scoring words
@@ -429,9 +431,9 @@ ledger.commons,Commons pool
 ledger.you,You
 ledger.plays,Plays
 ledger.play,{who} · {type}
-ledger.sum,{grain} Grain × {zeal} Zeal = {total}
+ledger.sum,{grain} Grain × {rate} Rate × {zeal} Zeal = {total}
 ledger.final,Round total
-hand.sum,{type}  ·  {grain} Grain × {zeal} Zeal = {total}
+hand.sum,{type}  ·  {grain} Grain × {rate} Rate × {zeal} Zeal = {total}
 action.grab,Grab
 table.grab_prompt,"{name} holds the landlord seat. Grabbing it adds {cost} Resentment."
 table.bid_tip,"The first to call holds the landlord seat. Anyone who hasn't passed may then grab it once, and a caller who was grabbed from may grab it back. Calling an open seat is free. Grabbing a held seat adds Resentment, which makes the villagers play harder against you. Who bids first moves round the table. The landlord keeps the seat until they lose a round."

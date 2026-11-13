@@ -31,7 +31,8 @@ func _lines() -> String:
 		var cards: Array[CardInstance] = RoundScript.stacked_deal([text], "").hands[0].cards()
 		var score: ScoreBreakdown = Scorer.score_play(cards, pattern, 1, 0, false, stack)
 		var name: String = Pattern.Type.keys()[pattern.type]
-		lines.append("%s grain=%s zeal=%s total=%s" % [name, score.grain, score.zeal, score.total])
+		var shown: Array[Variant] = [name, score.grain, score.rate, score.zeal, score.total]
+		lines.append("%s grain=%s rate=%s zeal=%s total=%s" % shown)
 		for finish: int in RoundEvent.Finish.values():
 			for first: bool in [false, true]:
 				var multiplier: float = Scorer.round_multiplier(finish, first, true, rules)

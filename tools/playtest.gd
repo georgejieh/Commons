@@ -115,7 +115,7 @@ func _table_step() -> void:
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
 			if _rounds_seen <= 2:
-				await _frames(25)
+				await _frames(5)
 				await _shot("round%d_bid_stamps" % _rounds_seen)
 		4:
 			var need_panel: Node = table.call("need_panel")
@@ -125,7 +125,7 @@ func _table_step() -> void:
 			await _frames(6)
 			await _shot("round%d_need" % _rounds_seen)
 			await _press(declare)
-			await _frames(70)
+			await _frames(14)
 			await _shot("round%d_audit" % _rounds_seen)
 		3:
 			await _play_turn(table, controller)
@@ -294,7 +294,7 @@ func _click_first_button() -> void:
 func _click_button_with_text(text: String) -> void:
 	var switcher: Object = _app.get("switcher")
 	var screen: Node = switcher.call("current")
-	await _frames(25)
+	await _frames(5)
 	for child: Node in screen.find_children("*", "Button", true, false):
 		var button: Button = child as Button
 		if button.text == text:

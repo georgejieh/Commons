@@ -220,7 +220,7 @@ func _on_event(event: RunEvent) -> void:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
 		RunEvent.Type.PLAY_SCORED:
-			_ledger.add_play(event.seat, event.grain, event.zeal, event.amount)
+			_ledger.add_play(event.seat, event.grain, event.rate, event.zeal, event.amount)
 		RunEvent.Type.ROUND_SCORED:
 			_ledger.set_final(event.seat, event.amount)
 			_dread.refresh(_controller.state_copy())

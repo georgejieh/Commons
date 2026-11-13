@@ -439,6 +439,7 @@ func _collect_round_events() -> void:
 				)
 			var scored: RunEvent = RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total)
 			scored.grain = _scoring.last_grain()
+			scored.rate = _scoring.last_rate()
 			scored.zeal = _scoring.last_zeal()
 			set_log.add(scored)
 	_round_seen = round_events.size()

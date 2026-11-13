@@ -46,8 +46,10 @@ var amount: float
 var text: String
 ## Set only for ROUND events.
 var round_event: RoundEvent
-## Set only for PLAY_SCORED: the play's Grain and Zeal, whose product is amount.
+## Set only for PLAY_SCORED: the play's Grain, Rate and Zeal. amount is their product,
+## times any total scale a hook set.
 var grain: float = 0.0
+var rate: float = 0.0
 var zeal: float = 0.0
 
 

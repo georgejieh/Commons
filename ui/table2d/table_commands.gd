@@ -61,7 +61,8 @@ func refresh() -> void:
 				{
 					"type": text,
 					"grain": Strings.score(preview.grain),
-					"zeal": Strings.score(preview.zeal),
+					"rate": Strings.factor(preview.rate),
+					"zeal": Strings.factor(preview.zeal),
 					"total": Strings.score(preview.score),
 				}
 			)

@@ -302,7 +302,7 @@ func is_table_wide(modifier_id: String) -> bool:
 
 func modifier_text(modifier_id: String) -> String:
 	var definition: ModifierDef = _definitions[modifier_id]
-	return tr(definition.text_key).format(definition.parameters)
+	return tr(definition.text_key).format(definition.text_values())
 
 
 func target() -> float:

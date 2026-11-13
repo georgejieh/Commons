@@ -7,6 +7,7 @@ extends RefCounted
 ## Every keyword ID, in glossary order.
 const TERMS: PackedStringArray = [
 	"grain",
+	"rate",
 	"zeal",
 	"commons",
 	"landlord",
@@ -21,10 +22,11 @@ const TERMS: PackedStringArray = [
 	"denunciation",
 	"famine",
 ]
-## Scoring words print in their own inks: Grain in wheat ochre, Zeal in stamp
-## vermilion, the Commons in ration green. Every other keyword uses LINK.
+## Scoring words print in their own inks: Grain in wheat ochre, Rate in indigo, Zeal
+## in stamp vermilion, the Commons in ration green. Every other keyword uses LINK.
 const INKS: Dictionary[String, String] = {
 	"grain": "8a5a12",
+	"rate": "5b3f8a",
 	"zeal": "b02a17",
 	"commons": "3f6338",
 }
@@ -72,11 +74,12 @@ static func tip(text: String) -> String:
 	return glossary(found(text))
 
 
-## The meanings of these keywords, one per line, wrapped for a plain tooltip.
-static func glossary(ids: PackedStringArray) -> String:
+## The meanings of these keywords, one per line, wrapped for a plain tooltip unless
+## the label showing them wraps by itself.
+static func glossary(ids: PackedStringArray, wrap_lines: bool = true) -> String:
 	var lines: PackedStringArray = []
 	for id: String in ids:
-		lines.append(wrapped(meaning(id)))
+		lines.append(wrapped(meaning(id)) if wrap_lines else meaning(id))
 	return "\n".join(lines)
 
 

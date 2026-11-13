@@ -29,7 +29,9 @@ func test_requisition_zeroes_bombs_and_rockets_only() -> void:
 
 
 func test_great_leap_adds_zeal_and_doubles_the_quota() -> void:
-	assert_float(_score("99", _stack(GREAT_LEAP))).is_greater(_score("99", ModifierStack.new()))
+	# A pair of 9s: 18 Grain × 3 Rate, with 1 + 0.5 Zeal under the boss.
+	assert_float(_score("99", ModifierStack.new())).is_equal(54.0)
+	assert_float(_score("99", _stack(GREAT_LEAP))).is_equal(81.0)
 	var state: RunState = RunState.new(1)
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	var plain: float = loop.target()

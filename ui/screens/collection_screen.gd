@@ -38,7 +38,7 @@ func _entry(definition: ModifierDef) -> Control:
 	var words: VBoxContainer = VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	words.add_child(ScreenKit.styled(tr(definition.name_key), CommonsTheme.TITLE))
-	var rules: Label = ScreenKit.label(tr(definition.text_key).format(definition.parameters), 20)
+	var rules: Label = ScreenKit.label(tr(definition.text_key).format(definition.text_values()), 20)
 	rules.custom_minimum_size = Vector2(340, 0)
 	words.add_child(rules)
 	row.add_child(words)
