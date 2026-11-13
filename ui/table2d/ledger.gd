@@ -22,7 +22,7 @@ var _commons_head: HBoxContainer = HBoxContainer.new()
 var _pool: Label = Label.new()
 var _rule: HSeparator = HSeparator.new()
 var _plays_head: Label = Label.new()
-var _plays: RichTextLabel = RichTextLabel.new()
+var _plays: KeywordText = KeywordText.new()
 var _texts: PackedStringArray = []
 var _counting: Tween = null
 
@@ -156,6 +156,12 @@ func pool() -> float:
 		if seat != _landlord:
 			sum += _totals[seat]
 	return sum if _landlord != Seats.NONE else 0.0
+
+
+## Where a seat's total sits on screen, its middle.
+func amount_center(seat: int) -> Vector2:
+	var amount: Label = _amounts[seat]
+	return amount.global_position + amount.size / 2.0
 
 
 ## Whether the newest score is still counting up.

@@ -40,7 +40,8 @@ func test_store_cards_show_art_and_put_name_and_rules_in_the_tooltip() -> void:
 		var tip: String = ScreenKit.cadre_tip(_app.controller, stock[slot])
 		assert_str(panel.tooltip_text).is_equal(tip)
 		assert_str(tip).contains(tr("modifier.%s.name" % stock[slot]))
-		assert_str(tip).contains(_app.controller.modifier_text(stock[slot]))
+		var rule: String = _app.controller.modifier_text(stock[slot])
+		assert_str(tip.replace("\n", " ")).contains(rule)
 		assert_int(_labels(panel).size()).is_equal(0)
 
 
@@ -67,8 +68,9 @@ func test_the_notice_board_cards_carry_the_tooltip() -> void:
 	add_child(board)
 	board.setup(3)
 	board.show_cadres(_app.controller)
-	var cards: Array[Control] = board.get("_cards")
-	assert_str(cards[0].tooltip_text).is_equal(ScreenKit.cadre_tip(_app.controller, first))
+	var cards: Array[TipHost] = board.get("_cards")
+	assert_str(cards[0].tooltip_text).contains(tr("modifier.%s.name" % first))
+	assert_str(cards[0].tip_rule()).is_equal(ScreenKit.rule_text(_app.controller, first))
 	assert_str(cards[1].tooltip_text).is_empty()
 	assert_int(_labels(board).size()).is_equal(0)
 

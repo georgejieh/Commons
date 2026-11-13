@@ -130,6 +130,12 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 		_role.text = tr("table.role.peasant").to_upper()
 
 
+## Says what the seat did in the bidding, in place of its role, until a landlord is
+## chosen and every seat has a role to show.
+func set_bid(text: String) -> void:
+	_role.text = text.to_upper()
+
+
 ## Shows a line; mood is the line's mood tag. With reveal times from the voice plan
 ## (P3B.13) it types out, one character at each time; without, it shows at once.
 func say(

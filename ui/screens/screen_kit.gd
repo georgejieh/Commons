@@ -253,10 +253,15 @@ static func cadre_art(cadre_id: String) -> Texture2D:
 	return ArtStages.resolve(ART.cadre(cadre_id))
 
 
-## A Cadre's name over its rules, for its tooltip.
+## A modifier's rules, saying so when it changes the whole table and not only you.
+static func rule_text(controller: RunController, modifier_id: String) -> String:
+	var rule: String = controller.modifier_text(modifier_id)
+	if controller.is_table_wide(modifier_id):
+		rule += " " + TranslationServer.translate("modifier.table_wide")
+	return rule
+
+
+## A Cadre's name over its rules, wrapped for a plain tooltip.
 static func cadre_tip(controller: RunController, cadre_id: String) -> String:
 	var name: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
-	var rule: String = controller.modifier_text(cadre_id)
-	var words: String = Keywords.tip(rule)
-	var tip: String = "%s\n%s" % [name, rule]
-	return tip if words.is_empty() else tip + "\n\n" + words
+	return "%s\n%s" % [name, Keywords.wrapped(rule_text(controller, cadre_id))]

@@ -1,21 +1,22 @@
 class_name NoticeBoard
 extends HBoxContainer
 ## The player's Cadres as portrait cards pinned in slot order. Slots are made once. A card
-## shows its art alone; its name and rules are in its tooltip.
+## shows its art alone; its name and rules are in its tooltip, a slip that also says
+## what each keyword in the rules means.
 
 ## How faint an empty Cadre slot is.
 const EMPTY_ALPHA: float = 0.22
 const TILE_SIZE: Vector2 = Vector2(108, 140)
 
 var _pictures: Array[TextureRect] = []
-var _cards: Array[Control] = []
+var _cards: Array[TipHost] = []
 
 
 ## Makes one slot per Cadre the player can hold.
 func setup(slots: int) -> void:
 	add_theme_constant_override("separation", 14)
 	for _index: int in slots:
-		var card: PanelContainer = PanelContainer.new()
+		var card: TipHost = TipHost.new()
 		card.custom_minimum_size = TILE_SIZE
 		card.add_theme_stylebox_override("panel", ScreenKit.paper_style(6))
 		var picture: TextureRect = TextureRect.new()
@@ -35,7 +36,9 @@ func show_cadres(controller: RunController) -> void:
 		var held: bool = index < cadre_ids.size()
 		# An empty slot is a faint pin mark on the board, so it doesn't pull the eye.
 		_cards[index].modulate.a = 1.0 if held else EMPTY_ALPHA
-		_cards[index].tooltip_text = (
-			ScreenKit.cadre_tip(controller, cadre_ids[index]) if held else ""
-		)
+		if held:
+			var name: String = tr("modifier.%s.name" % cadre_ids[index])
+			_cards[index].set_tip(name, ScreenKit.rule_text(controller, cadre_ids[index]))
+		else:
+			_cards[index].set_tip("", "")
 		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null

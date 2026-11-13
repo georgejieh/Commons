@@ -460,8 +460,13 @@ func _finish_round() -> void:
 	_split_commons(0)
 
 
+## The chance that each declared need is audited at this round's split.
+func audit_chance() -> float:
+	return NeedAudit.chance(state, DEFAULT_AUDIT, _stack)
+
+
 func _split_commons(player_need: int) -> void:
-	var chance: float = NeedAudit.chance(state, DEFAULT_AUDIT, _stack)
+	var chance: float = audit_chance()
 	var caught: Array[int] = []
 	var events: Array[RunEvent] = set_log.events()
 	if RoundBanking.split(state, PLAYER, player_need, _configs, _params, events, chance, caught):

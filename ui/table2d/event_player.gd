@@ -11,6 +11,8 @@ signal drained
 ## Seconds between events, and the pause after a round ends so its banner can be read.
 var step: float = 0.55
 var round_end_hold: float = 1.6
+## Seconds to wait after an event of a run type, where that differs from a step.
+var holds: Dictionary[int, float] = {}
 ## Holds the queue still during a hit-stop.
 var motion: TableMotion = null
 
@@ -45,6 +47,8 @@ func _process(delta: float) -> void:
 		played.emit(event)
 		if _shows(event):
 			_wait = step
+		if holds.has(event.type):
+			_wait = holds[event.type]
 		if _ends_round(event):
 			_wait = round_end_hold
 	if _queue.is_empty():

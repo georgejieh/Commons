@@ -115,6 +115,11 @@ func folded_rank(card: CardInstance) -> int:
 	return HandModel.fold(card.base_rank(), _controller.player_table().rank_map)
 
 
+## Where the card ranks now, after any Cadre or debuff has re-ranked it.
+func rank_value(card: CardInstance) -> int:
+	return _controller.player_table().rank_map[card.base_rank()]
+
+
 static func fold(rank: int, rank_map: PackedByteArray) -> int:
 	if rank >= rank_map.size() or rank_map[rank] == rank:
 		return -1

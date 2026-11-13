@@ -78,8 +78,6 @@ var _tweens: Array[Tween] = []
 
 
 func _ready() -> void:
-	# The scene shares one LabelSettings; each card sizes its own glyphs.
-	_rank.label_settings = _rank.label_settings.duplicate()
 	var stock: StyleBoxTexture = StyleBoxTexture.new()
 	stock.texture = Lighting.lit(ArtStages.resolve(parts().frame))
 	_frame.add_theme_stylebox_override("panel", stock)
@@ -99,7 +97,7 @@ func _ready() -> void:
 	tag.set_corner_radius_all(4)
 	_rank_note.add_theme_stylebox_override("normal", tag)
 	_index.texture = _corner_fade()
-	_rank.label_settings.outline_color = STOCK
+	_rank.add_theme_color_override("font_outline_color", STOCK)
 
 
 ## The card parts in use.
@@ -139,7 +137,7 @@ func bind(card: CardInstance) -> void:
 	var rank: int = card.base_rank()
 	_rank.text = tr(RANK_KEYS[rank])
 	var joker: bool = rank >= Ranks.SMALL_JOKER
-	_rank.label_settings.font_size = JOKER_SIZE if joker else GLYPH_SIZE
+	_rank.add_theme_font_size_override("font_size", JOKER_SIZE if joker else GLYPH_SIZE)
 	var art: CardArt = parts()
 	_suit.visible = not joker
 	if not joker:
@@ -149,7 +147,7 @@ func bind(card: CardInstance) -> void:
 	_picture.modulate.a = art.pip_alpha if pip else 1.0
 	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
-	_rank.label_settings.font_color = RED if red else INK
+	_rank.add_theme_color_override("font_color", RED if red else INK)
 	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
 	_stamp.visible = card.owner_stamp() != CardInstance.NO_OWNER
@@ -184,7 +182,7 @@ func _lay_out_face(pip: bool, joker: bool) -> void:
 		TextureRect.STRETCH_KEEP_ASPECT_CENTERED if pip else TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	)
 	_index.visible = not pip
-	_rank.label_settings.outline_size = 0 if pip else RANK_OUTLINE
+	_rank.add_theme_constant_override("outline_size", 0 if pip else RANK_OUTLINE)
 	_index.size = JOKER_FADE_SIZE if joker else FADE_SIZE
 
 

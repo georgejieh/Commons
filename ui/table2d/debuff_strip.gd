@@ -1,8 +1,9 @@
 class_name DebuffStrip
 extends PanelContainer
-## The debuffs in force this round, on a paper slip under the Cadre board, so a rule
-## that changes play is always in view, not only on the rules sheet. Hidden while no
-## debuff applies.
+## The rules in force this round, on a paper slip under the Cadre board, so a rule
+## that changes play is always in view, not only on the rules sheet: first the debuffs
+## that bind only the player, then anything, debuff or Cadre, that changes play for the
+## whole table. Hidden while neither applies.
 
 const NAME_HEX: String = "9e1b16"
 const FONT_SIZE: int = 20
@@ -10,7 +11,7 @@ const HEAD_SIZE: int = 14
 ## Room inside the paper's printed border.
 const PADDING: int = 22
 
-var _lines: RichTextLabel = RichTextLabel.new()
+var _lines: KeywordText = KeywordText.new()
 
 
 func _init() -> void:
@@ -29,16 +30,32 @@ func _init() -> void:
 
 
 func show_debuffs(controller: RunController) -> void:
+	var yours: PackedStringArray = []
+	var everyone: PackedStringArray = []
+	var ids: Array[String] = controller.active_debuff_ids()
+	for cadre_id: String in controller.state_copy().inventory.cadres:
+		if controller.is_table_wide(cadre_id):
+			ids.append(cadre_id)
+	for modifier_id: String in ids:
+		var name: String = _escape(tr("modifier.%s.name" % modifier_id))
+		var rule: String = Keywords.mark(controller.modifier_text(modifier_id))
+		var row: String = "[b][color=#%s]%s[/color][/b]  %s" % [NAME_HEX, name, rule]
+		if controller.is_table_wide(modifier_id):
+			everyone.append(row)
+		else:
+			yours.append(row)
 	var rows: PackedStringArray = []
-	for debuff_id: String in controller.active_debuff_ids():
-		var name: String = _escape(tr("modifier.%s.name" % debuff_id))
-		var rule: String = Keywords.mark(controller.modifier_text(debuff_id))
-		rows.append("[b][color=#%s]%s[/color][/b]  %s" % [NAME_HEX, name, rule])
-	if not rows.is_empty():
-		var head: String = tr("table.debuffs").to_upper()
-		rows.insert(0, "[font_size=%d]%s[/font_size]" % [HEAD_SIZE, head])
+	_add_group(rows, "table.debuffs", yours)
+	_add_group(rows, "table.rules_everyone", everyone)
 	_lines.text = "\n".join(rows)
 	visible = not rows.is_empty()
+
+
+func _add_group(rows: PackedStringArray, head_key: String, group: PackedStringArray) -> void:
+	if group.is_empty():
+		return
+	rows.append("[font_size=%d]%s[/font_size]" % [HEAD_SIZE, tr(head_key).to_upper()])
+	rows.append_array(group)
 
 
 ## The plain text shown, for tests.

@@ -437,8 +437,47 @@ table.grab_prompt,"{name} holds the landlord seat. Grabbing it adds {cost} Resen
 table.bid_tip,"The first to call holds the landlord seat. Anyone who hasn't passed may then grab it once, and a caller who was grabbed from may grab it back. Calling an open seat is free. Grabbing a held seat adds Resentment, which makes the villagers play harder against you. Who bids first moves round the table. The landlord keeps the seat until they lose a round."
 need.title,Split the Commons
 need.pool,The Commons holds {pool} this round.
-need.rule,"It is split in proportion to declared need. Your true need is {need}."
-need.preview,"If {name} declares {base}: you get {yours}, {name} gets {theirs}."
-need.honest,An honest declaration.
-need.lie,"A lie. If an audit checks it, you get your true share and {rise} Denunciation."
-need.less,Less than you need. {name} gets more of the pool.
+need.rule,You and {name} each claim a share of it. Equal claims split it evenly.
+need.preview,"If {name} claims a fair half: you get {yours}, {name} gets {theirs}."
+need.honest,A fair claim. Audit chance: {chance}%.
+need.lie,"More than your half. Audit chance: {chance}%. If caught, you get your fair half and {rise} Denunciation."
+need.less,Less than your half. {name} gets more of the pool.
+need.percent,{percent}%
+table.rules_everyone,Rules for the whole table
+modifier.table_wide,This applies to everyone at the table.
+keyword.landlord.name,Landlord
+keyword.landlord.text,"Landlord: plays alone against the other two, takes the kitty and leads first. A landlord banks their own score."
+keyword.peasant.name,Peasant
+keyword.peasant.text,Peasant: one of the two players against the landlord. Their scores go into the Commons.
+keyword.kitty.name,Kitty
+keyword.kitty.text,Kitty: the three cards left over after the deal. The landlord takes them.
+keyword.kicker.name,Kicker
+keyword.kicker.text,"Kicker: a spare card carried by a Trio, an Airplane or four of a kind. It adds no Grain and never decides which play is higher."
+keyword.bomb.name,Bomb
+keyword.bomb.text,Bomb: four of a kind. It beats any play except a higher Bomb or the Rocket.
+keyword.rocket.name,Rocket
+keyword.rocket.text,Rocket: both jokers together. It beats every play.
+keyword.quota.name,Quota
+keyword.quota.text,Quota: the work points you must reach over a set of rounds. Meeting it pays coupons.
+keyword.audit.name,Audit
+keyword.audit.text,"Audit: a check of one claim on the Commons. Every claim runs the same chance of one. A claim caught above its fair share is cut back to it, and adds Denunciation."
+keyword.resentment.name,Resentment
+keyword.resentment.text,"Resentment: what the village holds against your private gains. Villagers play harder against you as it rises, and it adds Denunciation when a Quota ends."
+keyword.denunciation.name,Denunciation
+keyword.denunciation.text,"Denunciation: the case building against you. Private purchases, caught lies and Resentment raise it. If it fills, the run ends."
+keyword.famine.name,Famine
+keyword.famine.text,"Famine: the village's hunger. A missed Quota raises it, and so does a Commons too small for what was claimed. If it fills, the run ends."
+bid.call,Called the seat
+bid.grab,Grabbed the seat
+bid.pass,Passed on the seat
+stamp.call,Calls landlord
+stamp.grab,Grabs the seat
+stamp.no_call,No call
+stamp.pass,Pass
+audit.title,The Commons is split
+audit.claim,{name} claimed {percent}%
+audit.rolling,Audit?
+audit.clear,Not audited
+audit.honest,Audited: a fair claim
+audit.caught,Audited: lie caught
+audit.paid,+{amount}

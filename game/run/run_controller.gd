@@ -201,12 +201,17 @@ func base_need() -> int:
 	return RunLoop.DEFAULT_PARAMS.base_need
 
 
-## The Denunciation a lie about need costs when an audit catches it.
 ## The Resentment the player's grab of a held landlord seat adds.
 func grab_cost() -> int:
 	return RunLoop.DEFAULT_RESENTMENT.grab
 
 
+## The chance, 0 to 1, that each claim on the Commons is audited this round.
+func audit_chance() -> float:
+	return _loop.audit_chance()
+
+
+## The Denunciation a lie about need costs when an audit catches it.
 func lie_cost() -> int:
 	return RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
 
@@ -289,6 +294,12 @@ func boss() -> String:
 
 
 ## A modifier's rules text with its parameters filled in.
+## True when a modifier changes every seat's play, not only the player's.
+func is_table_wide(modifier_id: String) -> bool:
+	var definition: ModifierDef = _definitions[modifier_id]
+	return definition.table_wide
+
+
 func modifier_text(modifier_id: String) -> String:
 	var definition: ModifierDef = _definitions[modifier_id]
 	return tr(definition.text_key).format(definition.parameters)

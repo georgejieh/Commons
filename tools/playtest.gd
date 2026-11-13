@@ -114,10 +114,19 @@ func _table_step() -> void:
 				return
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
+			if _rounds_seen <= 2:
+				await _frames(25)
+				await _shot("round%d_bid_stamps" % _rounds_seen)
 		4:
 			var need_panel: Node = table.call("need_panel")
 			var declare: Button = need_panel.get("_declare")
+			var more: Button = need_panel.get("_more")
+			await _press(more)
+			await _frames(6)
+			await _shot("round%d_need" % _rounds_seen)
 			await _press(declare)
+			await _frames(70)
+			await _shot("round%d_audit" % _rounds_seen)
 		3:
 			await _play_turn(table, controller)
 

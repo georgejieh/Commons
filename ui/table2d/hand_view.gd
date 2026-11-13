@@ -176,7 +176,13 @@ func _by_suit(a: CardInstance, b: CardInstance) -> bool:
 	return _before(a, b)
 
 
+## Lowest first, by where each card ranks now: a Cadre or debuff that re-ranks a card
+## moves it in the fan too.
 func _before(a: CardInstance, b: CardInstance) -> bool:
+	var a_value: int = _model.rank_value(a)
+	var b_value: int = _model.rank_value(b)
+	if a_value != b_value:
+		return a_value < b_value
 	if a.base_rank() != b.base_rank():
 		return a.base_rank() < b.base_rank()
 	return a.id() < b.id()

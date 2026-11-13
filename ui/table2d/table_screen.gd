@@ -17,6 +17,10 @@ const RED: Color = Color("9e1b16")
 const PLAY_CENTER: float = 790.0
 const SEAT_WIDTH: float = 380.0
 const SEAT_OFFSET: float = 330.0
+## The height the need panel and the audit slip center on, between seats and hand.
+const SHEET_MIDDLE: float = 520.0
+## How far above the hand's middle the player's own stamps land.
+const OWN_STAMP_RISE: float = 170.0
 
 var _app: DemoApp
 var _controller: RunController
@@ -48,6 +52,9 @@ var _commands: TableCommands = TableCommands.new()
 var _dread: DreadLayers = DreadLayers.new()
 var _dressing: DreadDressing = DreadDressing.new()
 var _surface: TextureRect
+var _fx: TableFx = TableFx.new()
+var _slip: AuditSlip = AuditSlip.new()
+var _moments: TableMoments = TableMoments.new()
 
 
 func _ready() -> void:
@@ -81,6 +88,10 @@ func _ready() -> void:
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
+	_place(_slip, Vector2(PLAY_CENTER - 300.0, 400), Vector2(600, 0))
+	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
+	_slip.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
+	_place(_fx, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_cheat_sheet, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_banner, Vector2(PLAY_CENTER - 380.0, 480), Vector2(760, 0))
@@ -120,6 +131,11 @@ func open(app: DemoApp) -> void:
 	}
 	_ledger.setup(names)
 	_commands.set_names(names)
+	_slip.setup(names)
+	_moments.setup(_fx, _slip, _ledger, _seats, _stamp_spot, _pile_center)
+	_player.holds = {
+		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
+	}
 	_hud.menu.pressed.connect(_open_pause)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
 	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
@@ -199,6 +215,7 @@ func _on_event(event: RunEvent) -> void:
 	if not _replaying:
 		TableSounds.play(event, _landlord, _controller)
 		_speech.on_event(event)
+	_moments.on_event(event, _replaying)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
@@ -270,7 +287,8 @@ func _on_drained() -> void:
 	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
 	if awaiting == RunController.AWAIT_NEED:
-		_need_panel.ask(_controller.state_copy().commons_pool, _app.seat_name(3 - _landlord))
+		var pool: int = _controller.state_copy().commons_pool
+		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.audit_chance())
 	_hand.refresh()
 	_hand_view.show_cards()
 	_commands.refresh()
@@ -290,6 +308,16 @@ func _show_play(event: RoundEvent) -> void:
 func _seat_center(seat: int) -> Vector2:
 	var at: Control = _hand_view if seat == 0 else _seats[seat]
 	return at.global_position + at.size / 2.0
+
+
+## Where a seat's stamps land: over a villager's panel, or just above your hand.
+func _stamp_spot(seat: int) -> Vector2:
+	var spot: Vector2 = _seat_center(seat)
+	return spot - Vector2(0, OWN_STAMP_RISE) if seat == 0 else spot
+
+
+func _pile_center() -> Vector2:
+	return _pile.global_position + _pile.size / 2.0
 
 
 func _on_setting(key: String) -> void:
@@ -319,6 +347,9 @@ func _refresh_seats() -> void:
 			landlord = view.public.landlord
 		var teammate: bool = landlord != Seats.NONE and landlord != seat and landlord != 0
 		panel.set_role(landlord == seat, teammate)
+		var bid: String = _moments.bid_key(seat)
+		if landlord == Seats.NONE and not bid.is_empty():
+			panel.set_bid(tr(bid))
 	if landlord == Seats.NONE:
 		_you.text = tr("table.you.bidding")
 	else:

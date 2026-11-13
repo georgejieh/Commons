@@ -21,3 +21,5 @@ const MAX_TIER: int = 4
 @export var cost: int
 @export var name_key: String
 @export var text_key: String
+## True when the effect changes every seat's play, not only its holder's.
+@export var table_wide: bool = false

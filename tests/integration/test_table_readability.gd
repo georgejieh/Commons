@@ -134,28 +134,118 @@ func test_the_need_panel_says_what_a_declaration_pays() -> void:
 	var panel: NeedPanel = auto_free(NeedPanel.new())
 	add_child(panel)
 	panel.setup(10, 40, 5)
-	panel.ask(1200, "Zhao")
+	panel.ask(1200, "Zhao", 0.15)
+	assert_int(panel.percent()).is_equal(50)
 	assert_int(panel.preview_share()).is_equal(600)
+	var shown: Label = panel.get("_value")
+	assert_str(shown.text).is_equal("50%")
 	var more: Button = panel.get("_more")
 	for _step: int in 10:
 		more.pressed.emit()
 	assert_int(panel.value()).is_equal(20)
+	assert_int(panel.percent()).is_equal(67)
 	assert_int(panel.preview_share()).is_equal(800)
 	var note: Label = panel.get("_note")
-	assert_str(note.text).is_equal(tr("need.lie").format({"rise": 5}))
+	assert_str(note.text).is_equal(tr("need.lie").format({"rise": 5, "chance": 15}))
+
+
+func test_the_need_panel_stays_on_screen_and_centered() -> void:
+	var panel: NeedPanel = auto_free(NeedPanel.new())
+	add_child(panel)
+	panel.center = Vector2(790, 520)
+	panel.setup(10, 40, 5)
+	panel.ask(1900, "Zhao", 0.15)
+	await await_millis(200)
+	assert_float(panel.position.y + panel.size.y).is_less(760.0)
+	assert_float(panel.position.x + panel.size.x / 2.0).is_equal_approx(790.0, 1.0)
+	var declare: Button = panel.get("_declare")
+	assert_float(declare.size.x).is_less(panel.size.x * 0.7)
+
+
+func test_every_bid_is_stamped_and_stays_on_its_seat() -> void:
+	var fx: TableFx = auto_free(TableFx.new())
+	var slip: AuditSlip = auto_free(AuditSlip.new())
+	var ledger: Ledger = auto_free(Ledger.new())
+	var wang: SeatPanel = auto_free(SeatPanel.new())
+	var zhao: SeatPanel = auto_free(SeatPanel.new())
+	for node: Node in [fx, slip, ledger, wang, zhao]:
+		add_child(node)
+	var seats: Dictionary[int, SeatPanel] = {1: wang, 2: zhao}
+	var moments: TableMoments = TableMoments.new()
+	var spot: Callable = func(_seat: int) -> Vector2: return Vector2(400, 300)
+	moments.setup(fx, slip, ledger, seats, spot, func() -> Vector2: return Vector2(700, 500))
+	moments.on_event(RunEvent.new(RunEvent.Type.BID, 1, 1))
+	moments.on_event(RunEvent.new(RunEvent.Type.BID, 2, 1))
+	moments.on_event(RunEvent.new(RunEvent.Type.BID, 0, 0))
+	moments.on_event(RunEvent.new(RunEvent.Type.BID, 1, 1))
+	assert_str(moments.bid_key(1)).is_equal("bid.grab")
+	assert_str(moments.bid_key(2)).is_equal("bid.grab")
+	assert_str(moments.bid_key(0)).is_equal("bid.pass")
+	var role: Label = wang.get("_role")
+	assert_str(role.text).is_equal(tr("bid.grab").to_upper())
+	var words: PackedStringArray = fx.stamped()
+	assert_array(Array(words)).contains(
+		[tr("stamp.call").to_upper(), tr("stamp.grab").to_upper(), tr("stamp.no_call").to_upper()]
+	)
+	moments.on_event(RunEvent.new(RunEvent.Type.LANDLORD_CHOSEN, 1, 0))
+	assert_str(moments.bid_key(1)).is_empty()
+
+
+func test_the_audit_slip_shows_each_claim_its_verdict_and_its_pay() -> void:
+	var slip: AuditSlip = auto_free(AuditSlip.new())
+	add_child(slip)
+	var names: Dictionary[int, String] = {0: "You", 2: "Zhao"}
+	slip.setup(names)
+	slip.claim(0, 20)
+	slip.claim(2, 10)
+	assert_bool(slip.visible).is_true()
+	assert_str(slip.row_text(0)).contains(tr("audit.claim").format({"name": "You", "percent": 67}))
+	assert_str(slip.row_text(2)).contains(tr("audit.rolling"))
+	slip.audited(0, true)
+	slip.paid(0, 600)
+	slip.paid(2, 600)
+	assert_str(slip.row_text(0)).contains(tr("audit.caught"))
+	assert_str(slip.row_text(0)).contains(tr("audit.paid").format({"amount": Strings.score(600)}))
+	assert_str(slip.row_text(2)).contains(tr("audit.clear"))
+	slip.clear()
+	assert_bool(slip.visible).is_false()
+
+
+func test_a_rule_for_the_whole_table_says_so() -> void:
+	assert_bool(_app.controller.is_table_wide("promotion_of_the_masses")).is_true()
+	assert_bool(_app.controller.is_table_wide(RANK_DEBUFF)).is_false()
+	var rule: String = ScreenKit.rule_text(_app.controller, "promotion_of_the_masses")
+	assert_str(rule).contains(tr("modifier.table_wide"))
+	assert_str(ScreenKit.rule_text(_app.controller, RANK_DEBUFF)).not_contains(
+		tr("modifier.table_wide")
+	)
 
 
 func test_keywords_explain_themselves() -> void:
 	var marked: String = Keywords.mark("Your plays gain 5 Grain and lose 1 Zeal.")
 	assert_str(marked).contains('[hint="Grain:')
 	assert_str(marked).contains('[hint="Zeal:')
-	assert_str(Keywords.tip("Your plays lose 1 Zeal.")).is_equal(tr("keyword.zeal.text"))
+	var zeal: String = Keywords.wrapped(tr("keyword.zeal.text"))
+	assert_str(Keywords.tip("Your plays lose 1 Zeal.")).is_equal(zeal)
 	assert_str(Keywords.tip("Pass.")).is_empty()
+	# A keyword reads as a link, in any case and in the plural, as it was written.
+	var kickers: String = Keywords.mark("Your kickers score.")
+	assert_str(kickers).contains('[hint="Kicker:')
+	assert_str(kickers).contains("[u]kickers[/u]")
+	assert_array(Array(Keywords.found("While you are landlord, kitty cards count."))).is_equal(
+		["landlord", "kitty"]
+	)
+	for line: String in Keywords.wrapped(tr("keyword.audit.text")).split("\n"):
+		assert_int(line.length()).is_less_equal(Keywords.WRAP_COLUMNS)
+	# Every keyword has a name and a meaning in the string table.
+	for id: String in Keywords.TERMS:
+		assert_str(tr("keyword.%s.name" % id)).is_not_equal("keyword.%s.name" % id)
+		assert_str(Keywords.meaning(id)).is_not_equal("keyword.%s.text" % id)
 	# Every keyword's markup parses: nothing of the tags is left in the shown text.
 	var shown: RichTextLabel = auto_free(RichTextLabel.new())
 	shown.bbcode_enabled = true
 	add_child(shown)
-	var plain: String = "Grain × Zeal goes to the Commons."
+	var plain: String = "Grain × Zeal goes to the Commons; Bombs and kickers, the kitty, an Audit."
 	shown.text = Keywords.mark(plain)
 	assert_str(shown.get_parsed_text()).is_equal(plain)
 
@@ -248,6 +338,14 @@ func _twos_marked(hand_view: HandView) -> bool:
 		twos += 1
 		if view.rank_note() != note:
 			return false
+		# A 2 that ranks as a 3 is sorted with the 3s: only 3s and 2s sit to its left.
+		for other: Node in hand_view.get_children():
+			var left: CardView = other as CardView
+			if left == null or not left.visible or left.get_index() >= view.get_index():
+				continue
+			var rank: int = ranks.get(left.card_id, -1)
+			if rank != Ranks.THREE and rank != Ranks.TWO:
+				return false
 	return twos > 0
 
 
