@@ -7,6 +7,7 @@ extends RefCounted
 enum SetType { SMALL, LARGE, BOSS }
 
 const NO_DEBUFF: String = ""
+const NO_BOSS: String = ""
 ## Family IDs by seat until P4.5 seats the roster.
 const DEFAULT_TABLE: Array[String] = ["player", "seat_1", "seat_2"]
 
@@ -24,6 +25,41 @@ var set_progress: float = 0.0
 var debuff_ladder: Array[String] = []
 var famine: int = 0
 var denunciation: int = 0
+## Setback state (P4.1). A meter's setback is armed until it fires, and re-arms once the
+## meter falls back below its margin.
+var famine_armed: bool = true
+var denunciation_armed: bool = true
+## Rationing holds while true.
+var rationed: bool = false
+## Reeducation replaces the next shop visit while true.
+var reeducation_due: bool = false
+## The village's Resentment of the player (P4.2).
+var resentment: int = 0
+## Each villager family's own Denunciation, from lies caught at audit (P4.3).
+var villager_denunciation: Dictionary[String, int] = {}
+## Commons shares paid to the player, and to every peasant, this run (P4.4).
+var commons_received: int = 0
+var commons_paid: int = 0
+## What each family remembers of the player, carried in from the profile (P4.6).
+var memory: VillageMemory = VillageMemory.new()
+## Families that held the landlord seat for a whole Set this run, and those that have
+## already run a boss Set (P4.7).
+var risen: Array[String] = []
+var risen_used: Array[String] = []
+## Officials that have run a boss Set since the pool last cycled.
+var officials_used: Array[String] = []
+## The current Set's boss, or NO_BOSS, and the risen family seated as it.
+var boss_id: String = NO_BOSS
+var boss_family: String = ""
+## How the player played their most recent Sets, oldest first.
+var styles: Array[PlayerStyle] = []
+## The next ID for a card entering the plot, and the plot upgrades bought (P4.8).
+var next_plot_id: int = CardInstance.FIRST_PLOT_ID
+var plot_capacity_bonus: int = 0
+var swap_bonus: int = 0
+## How many of each item the state store has sold this run, against its limited stock
+## (P4.10).
+var store_sold: Dictionary[String, int] = {}
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -53,6 +89,28 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.debuff_ladder.assign(data["debuff_ladder"])
 	state.famine = int(data["famine"])
 	state.denunciation = int(data["denunciation"])
+	state.famine_armed = bool(data["famine_armed"])
+	state.denunciation_armed = bool(data["denunciation_armed"])
+	state.rationed = bool(data["rationed"])
+	state.reeducation_due = bool(data["reeducation_due"])
+	state.resentment = int(data["resentment"])
+	state.commons_received = str(data["commons_received"]).to_int()
+	state.commons_paid = str(data["commons_paid"]).to_int()
+	state.memory = VillageMemory.from_dict(data["memory"])
+	state.risen.assign(data["risen"])
+	state.risen_used.assign(data["risen_used"])
+	state.officials_used.assign(data["officials_used"])
+	state.boss_id = str(data["boss_id"])
+	state.boss_family = str(data["boss_family"])
+	state.next_plot_id = int(data["next_plot_id"])
+	state.plot_capacity_bonus = int(data["plot_capacity_bonus"])
+	state.swap_bonus = int(data["swap_bonus"])
+	for item_id: String in data["store_sold"]:
+		state.store_sold[item_id] = int(data["store_sold"][item_id])
+	for style_data: Dictionary in data["styles"]:
+		state.styles.append(PlayerStyle.from_dict(style_data))
+	for family_id: String in data["villager_denunciation"]:
+		state.villager_denunciation[family_id] = int(data["villager_denunciation"][family_id])
 	state.table.assign(data["table"])
 	for entry_data: Dictionary in data["roster"]:
 		state.roster.append(RosterEntry.from_dict(entry_data))
@@ -85,6 +143,25 @@ func to_dict() -> Dictionary:
 		"debuff_ladder": debuff_ladder.duplicate(),
 		"famine": famine,
 		"denunciation": denunciation,
+		"famine_armed": famine_armed,
+		"denunciation_armed": denunciation_armed,
+		"rationed": rationed,
+		"reeducation_due": reeducation_due,
+		"resentment": resentment,
+		"commons_received": str(commons_received),
+		"commons_paid": str(commons_paid),
+		"memory": memory.to_dict(),
+		"risen": risen.duplicate(),
+		"risen_used": risen_used.duplicate(),
+		"officials_used": officials_used.duplicate(),
+		"boss_id": boss_id,
+		"next_plot_id": next_plot_id,
+		"plot_capacity_bonus": plot_capacity_bonus,
+		"swap_bonus": swap_bonus,
+		"store_sold": store_sold.duplicate(),
+		"boss_family": boss_family,
+		"styles": styles.map(func(style: PlayerStyle) -> Dictionary: return style.to_dict()),
+		"villager_denunciation": villager_denunciation.duplicate(),
 		"roster": roster_data,
 		"table": table.duplicate(),
 		"inventory": inventory.to_dict(),
@@ -94,6 +171,16 @@ func to_dict() -> Dictionary:
 		"summaries": summary_data,
 		"observations": observations.to_dict(),
 	}
+
+
+## A plot ID no card in the run has held. Past every ID in the plot, so plot cards
+## made before the counter existed are never repeated.
+func take_plot_id() -> int:
+	var next: int = next_plot_id
+	for card: CardInstance in inventory.plot:
+		next = maxi(next, card.id() + 1)
+	next_plot_id = next + 1
+	return next
 
 
 ## Halves keep the text unsigned, as RandomStream does.

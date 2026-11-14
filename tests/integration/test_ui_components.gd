@@ -21,10 +21,13 @@ func test_every_button_kind_has_every_state() -> void:
 
 func test_a_pressed_button_sinks_toward_its_edge() -> void:
 	var theme: Theme = CommonsTheme.build()
-	var resting: StyleBoxFlat = theme.get_stylebox("normal", CommonsTheme.PRIMARY)
-	var pressed: StyleBoxFlat = theme.get_stylebox("pressed", CommonsTheme.PRIMARY)
-	assert_int(pressed.border_width_bottom).is_less(resting.border_width_bottom)
+	var resting: StyleBoxTexture = theme.get_stylebox("normal", CommonsTheme.PRIMARY)
+	var pressed: StyleBoxTexture = theme.get_stylebox("pressed", CommonsTheme.PRIMARY)
+	# A ticket keeps its size when pressed: the label sinks and the stock darkens.
 	assert_float(pressed.content_margin_top).is_greater(resting.content_margin_top)
+	var height: float = resting.content_margin_top + resting.content_margin_bottom
+	assert_float(pressed.content_margin_top + pressed.content_margin_bottom).is_equal(height)
+	assert_float(pressed.modulate_color.v).is_less(resting.modulate_color.v)
 
 
 func test_focus_is_a_visible_ring() -> void:

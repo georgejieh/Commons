@@ -1,13 +1,15 @@
 class_name Scorer
 extends RefCounted
-## Scores a play as Grain × Zeal. Grain is the hand type's base plus each scored card.
-## Hooks then apply additive Grain, additive Zeal and multiplicative Zeal, in that order.
-## Each bomb or rocket doubles Zeal, and a hook's Zeal cap applies last. Kickers don't
-## score.
+## Scores a play as Grain × Rate × Zeal (ADR 0020). Grain is the scored cards' values
+## plus additive Grain from hooks; kickers don't score. Rate comes from the hand type and
+## its level alone, under a hook's Rate cap. Zeal starts at 1 and changes only through
+## hooks: additive Zeal, then multiplicative Zeal, never below the data's minimum.
 
 const DEFAULT_PARAMS: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 ## Largest value the display can show. NaN and infinity clamp to it.
 const MAX_SCORE: float = 1e300
+## Every play's Zeal before hooks change it.
+const STARTING_ZEAL: float = 1.0
 
 
 static func score_play(
@@ -25,9 +27,7 @@ static func score_play(
 		if _is_scored(card, pattern):
 			scored += 1
 	var breakdown: ScoreBreakdown = ScoreBreakdown.new(scored)
-	var grain: float = params.grain_for(pattern.type, level)
-	breakdown.add_step(ScoreBreakdown.Step.BASE_GRAIN, grain)
-
+	var grain: float = 0.0
 	for card: CardInstance in cards:
 		if _is_scored(card, pattern):
 			var base: float = params.card_grain[card.base_rank()]
@@ -36,28 +36,28 @@ static func score_play(
 			breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)
 			grain += context.grain
 
-	var zeal: float = params.zeal_for(pattern.type, level)
-	breakdown.add_step(ScoreBreakdown.Step.BASE_ZEAL, zeal)
 	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, 0.0, 1.0)
 	play.plays_before = plays_before
 	play.grain = grain
 	play.card_grain = params.card_grain
 	stack.run_play_scored(play)
 	grain += play.add_grain
-	zeal = maxf(params.min_zeal, (zeal + play.add_zeal) * play.mul_zeal)
 	breakdown.add_step(ScoreBreakdown.Step.ADD_GRAIN, play.add_grain)
+
+	var rate: float = params.rate_for(pattern.type, level)
+	breakdown.add_step(ScoreBreakdown.Step.RATE, rate)
+	if rate > play.rate_cap:
+		rate = play.rate_cap
+		breakdown.add_step(ScoreBreakdown.Step.RATE_CAP, play.rate_cap)
+
+	var zeal: float = maxf(params.min_zeal, (STARTING_ZEAL + play.add_zeal) * play.mul_zeal)
 	breakdown.add_step(ScoreBreakdown.Step.ADD_ZEAL, play.add_zeal)
 	breakdown.add_step(ScoreBreakdown.Step.MUL_ZEAL, play.mul_zeal)
-	if pattern.type == Pattern.Type.BOMB or pattern.type == Pattern.Type.ROCKET:
-		zeal *= params.bomb_zeal_multiplier
-		breakdown.add_step(ScoreBreakdown.Step.BOMB_ZEAL, params.bomb_zeal_multiplier)
-	if zeal > play.zeal_cap:
-		zeal = play.zeal_cap
-		breakdown.add_step(ScoreBreakdown.Step.ZEAL_CAP, play.zeal_cap)
 
 	breakdown.grain = clamp_score(grain)
+	breakdown.rate = clamp_score(rate)
 	breakdown.zeal = clamp_score(zeal)
-	breakdown.total = clamp_score(grain * zeal * play.total_scale)
+	breakdown.total = clamp_score(grain * rate * zeal * play.total_scale)
 	return breakdown
 
 
@@ -89,6 +89,11 @@ static func clamp_score(value: float) -> float:
 	if is_nan(value) or value > MAX_SCORE:
 		return MAX_SCORE
 	return maxf(value, -MAX_SCORE)
+
+
+## True when a card of a play scores Grain: its body, not its kickers.
+static func is_scored(card: CardInstance, pattern: Pattern) -> bool:
+	return _is_scored(card, pattern)
 
 
 static func _is_scored(card: CardInstance, pattern: Pattern) -> bool:

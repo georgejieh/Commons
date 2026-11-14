@@ -1,10 +1,13 @@
 class_name CardView
 extends Control
 ## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
-## a middle picture (court or joker art, or the suit), enhancement overlay, seal and
-## owner stamp. The parts come from CardArt, so no face is baked. bind() is the only
-## way to show a card; views come from CardPool and are reused, never instanced during
-## a round.
+## a picture, enhancement overlay, seal and owner stamp. A number card shows its suit
+## faintly in the corner; a court card or joker is a picture card, its art filling the
+## face and fading to bare card stock in the corner, where the rank and suit are printed
+## straight on, as on a playing card.
+## A note under the index says when a debuff makes the card rank as another. The parts
+## come from CardArt, so no face is baked. bind() is the only way to show a card; views
+## come from CardPool and are reused, never instanced during a round.
 
 signal pressed(card_id: int)
 signal hovered(card_id: int)
@@ -13,6 +16,8 @@ const RED_SUITS: Array[int] = [1, 3]
 const INK: Color = Color("1e1a16")
 const RED: Color = Color("b02a17")
 const HINT: Color = Color("c9a227")
+## The edge of a selection that makes a legal play: ready to throw.
+const ARMED: Color = Color("f2c94c")
 const CURSOR: Color = Color("f4ecd8")
 ## Height of the cursor's bar under the card.
 const CURSOR_BAR: float = 8.0
@@ -21,6 +26,19 @@ const GLYPH_SIZE: int = 40
 const JOKER_SIZE: int = 24
 const TILT_SHADER: Shader = preload("res://shaders/card_tilt.gdshader")
 const ART: CardArt = preload("res://data/ui/card_art.tres")
+## Where a number card's faint suit sits, and the inset of a picture card's art, as
+## left, top, right and bottom offsets.
+const PIP_BOX: Vector4 = Vector4(46, 56, 112, 160)
+const ART_BOX: Vector4 = Vector4(5, 5, 115, 163)
+## The corner of a picture card where the art fades to card stock: its size for a court
+## card and for a joker's word, the stock's color, and how far in the fade stays solid.
+const FADE_SIZE: Vector2 = Vector2(92, 136)
+const JOKER_FADE_SIZE: Vector2 = Vector2(120, 78)
+const STOCK: Color = Color("f6e6c4")
+const FADE_SOLID: float = 0.45
+## A paper edge around a picture card's rank, so it reads over any art.
+const RANK_OUTLINE: int = 6
+const NOTE_COLOR: Color = Color("9e1b16")
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -53,6 +71,8 @@ var _tweens: Array[Tween] = []
 @onready var _rank: Label = $Frame/Rank
 @onready var _suit: TextureRect = $Frame/Suit
 @onready var _picture: TextureRect = $Frame/Picture
+@onready var _index: TextureRect = $Frame/Index
+@onready var _rank_note: Label = $Frame/RankNote
 @onready var _enhancement: ColorRect = $Frame/Enhancement
 @onready var _seal: Label = $Frame/Seal
 @onready var _stamp: Label = $Frame/Stamp
@@ -60,8 +80,6 @@ var _tweens: Array[Tween] = []
 
 
 func _ready() -> void:
-	# The scene shares one LabelSettings; each card sizes its own glyphs.
-	_rank.label_settings = _rank.label_settings.duplicate()
 	var stock: StyleBoxTexture = StyleBoxTexture.new()
 	stock.texture = Lighting.lit(ArtStages.resolve(parts().frame))
 	_frame.add_theme_stylebox_override("panel", stock)
@@ -76,6 +94,12 @@ func _ready() -> void:
 	_cursor_mark.offset_top = CURSOR_BAR
 	_cursor_mark.offset_bottom = CURSOR_BAR * 2.0
 	add_child(_cursor_mark)
+	var tag: StyleBoxFlat = StyleBoxFlat.new()
+	tag.bg_color = NOTE_COLOR
+	tag.set_corner_radius_all(4)
+	_rank_note.add_theme_stylebox_override("normal", tag)
+	_index.texture = _corner_fade()
+	_rank.add_theme_color_override("font_outline_color", STOCK)
 
 
 ## The card parts in use.
@@ -115,7 +139,7 @@ func bind(card: CardInstance) -> void:
 	var rank: int = card.base_rank()
 	_rank.text = tr(RANK_KEYS[rank])
 	var joker: bool = rank >= Ranks.SMALL_JOKER
-	_rank.label_settings.font_size = JOKER_SIZE if joker else GLYPH_SIZE
+	_rank.add_theme_font_size_override("font_size", JOKER_SIZE if joker else GLYPH_SIZE)
 	var art: CardArt = parts()
 	_suit.visible = not joker
 	if not joker:
@@ -123,20 +147,70 @@ func bind(card: CardInstance) -> void:
 	_picture.texture = ArtStages.resolve(art.picture(rank, card.suit()))
 	var pip: bool = rank < Ranks.JACK or (rank > Ranks.KING and not joker)
 	_picture.modulate.a = art.pip_alpha if pip else 1.0
+	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
-	_rank.modulate = RED if red else INK
+	_rank.add_theme_color_override("font_color", RED if red else INK)
 	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
 	_stamp.visible = card.owner_stamp() != CardInstance.NO_OWNER
+	set_rank_note("")
 	set_marked(false, false)
 
 
-## Selected cards lift and get a red edge; hinted cards get a gold edge. The keyboard
+## Says the card ranks as another, such as "as 3", or hides the note when text is empty.
+func set_rank_note(text: String) -> void:
+	_rank_note.text = text
+	_rank_note.visible = not text.is_empty()
+
+
+func rank_note() -> String:
+	return _rank_note.text if _rank_note.visible else ""
+
+
+## True when the face is a picture card: art over the whole face under a corner index.
+func is_picture_card() -> bool:
+	return _index.visible
+
+
+## A number card shows its suit faintly in the corner; a picture card's art fills the
+## face, with the rank and suit on a paper index sized to the rank.
+func _lay_out_face(pip: bool, joker: bool) -> void:
+	var box: Vector4 = PIP_BOX if pip else ART_BOX
+	_picture.offset_left = box.x
+	_picture.offset_top = box.y
+	_picture.offset_right = box.z
+	_picture.offset_bottom = box.w
+	_picture.stretch_mode = (
+		TextureRect.STRETCH_KEEP_ASPECT_CENTERED if pip else TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	)
+	_index.visible = not pip
+	_rank.add_theme_constant_override("outline_size", 0 if pip else RANK_OUTLINE)
+	_index.size = JOKER_FADE_SIZE if joker else FADE_SIZE
+
+
+## Card stock that is solid in the top left corner and fades out toward the art.
+static func _corner_fade() -> GradientTexture2D:
+	var fade: Gradient = Gradient.new()
+	fade.set_color(0, STOCK)
+	fade.set_color(1, Color(STOCK, 0.0))
+	fade.add_point(FADE_SOLID, Color(STOCK, 0.92))
+	var corner: GradientTexture2D = GradientTexture2D.new()
+	corner.gradient = fade
+	corner.fill = GradientTexture2D.FILL_RADIAL
+	corner.fill_from = Vector2.ZERO
+	corner.fill_to = Vector2(1.0, 1.0)
+	corner.width = 64
+	corner.height = 64
+	return corner
+
+
+## Selected cards lift and get a red edge, which turns bright gold once the selection
+## is a play that can be made; hinted cards get a gold edge. The keyboard
 ## and gamepad cursor gets its own paper-white bar under the card, so it shows on a
 ## selected card too.
-func set_marked(selected: bool, hinted: bool, cursor: bool = false) -> void:
+func set_marked(selected: bool, hinted: bool, cursor: bool = false, armed: bool = false) -> void:
 	_highlight.visible = selected or hinted
-	_highlight.modulate = RED if selected else HINT
+	_highlight.modulate = (ARMED if armed else RED) if selected else HINT
 	_cursor_mark.visible = cursor
 
 

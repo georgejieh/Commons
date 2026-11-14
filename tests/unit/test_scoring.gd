@@ -23,6 +23,22 @@ class Adder:
 		context.grain += 1.0
 
 
+## Takes more Zeal than any play has.
+class Drain:
+	extends ModifierEffect
+
+	func play_scored(context: PlayContext) -> void:
+		context.add_zeal -= 5.0
+
+
+## Caps Rate at 2.
+class Capper:
+	extends ModifierEffect
+
+	func play_scored(context: PlayContext) -> void:
+		context.rate_cap = minf(context.rate_cap, 2.0)
+
+
 ## Sends a huge value through the hooks.
 class Overflow:
 	extends ModifierEffect
@@ -52,34 +68,49 @@ func _score(text: String, stack: ModifierStack = _stack) -> ScoreBreakdown:
 	return Scorer.score_play(_cards(text), _pattern(text), 1, 0, false, stack)
 
 
-func test_a_pair_scores_base_plus_cards_times_zeal() -> void:
+func test_a_pair_scores_card_grain_times_rate_times_zeal() -> void:
 	var result: ScoreBreakdown = _score("99")
-	assert_float(result.grain).is_equal(10.0 + 9.0 + 9.0)
-	assert_float(result.zeal).is_equal(2.0)
-	assert_float(result.total).is_equal(56.0)
+	assert_float(result.grain).is_equal(9.0 + 9.0)
+	assert_float(result.rate).is_equal(3.0)
+	assert_float(result.zeal).is_equal(1.0)
+	assert_float(result.total).is_equal(54.0)
+
+
+func test_face_cards_and_twos_count_their_rank() -> void:
+	# J 11, Q 12, K 13, A 14, 2 15.
+	assert_float(_score("J").grain).is_equal(11.0)
+	assert_float(_score("KK").grain).is_equal(26.0)
+	assert_float(_score("A").grain).is_equal(14.0)
+	assert_float(_score("22").grain).is_equal(30.0)
 
 
 func test_kickers_do_not_score() -> void:
-	assert_float(_score("9993").grain).is_equal(35.0 + 27.0)
-	assert_float(_score("999A").grain).is_equal(35.0 + 27.0)
+	assert_float(_score("9993").grain).is_equal(27.0)
+	assert_float(_score("999A").grain).is_equal(27.0)
+	assert_float(_score("9993").total).is_equal(27.0 * 7.0)
 
 
-func test_a_bomb_doubles_zeal() -> void:
-	# Bomb base Zeal 4 at level 1, doubled.
-	assert_float(_score("9999").zeal).is_equal(8.0)
+func test_a_bomb_scores_its_rate_with_no_extra_zeal() -> void:
+	var result: ScoreBreakdown = _score("9999")
+	assert_float(result.rate).is_equal(32.0)
+	assert_float(result.zeal).is_equal(1.0)
+	assert_float(result.total).is_equal(36.0 * 32.0)
 
 
-func test_a_rocket_doubles_zeal_and_both_jokers_score() -> void:
+func test_a_rocket_scores_both_jokers() -> void:
 	var result: ScoreBreakdown = _score("sb")
-	assert_float(result.zeal).is_equal(10.0)
-	assert_float(result.grain).is_equal(150.0 + 13.0 + 14.0)
+	assert_float(result.grain).is_equal(16.0 + 17.0)
+	assert_float(result.rate).is_equal(50.0)
+	assert_float(result.total).is_equal(33.0 * 50.0)
 
 
-func test_hooks_apply_grain_then_added_zeal_then_multiplied_zeal() -> void:
+func test_hooks_apply_grain_then_rate_then_added_then_multiplied_zeal() -> void:
 	var stack: ModifierStack = _scoring_stack(Adder.new())
 	var result: ScoreBreakdown = _score("9", stack)
-	assert_float(result.grain).is_equal(5.0 + 9.0 + 1.0 + 10.0)
+	assert_float(result.grain).is_equal(9.0 + 1.0 + 10.0)
+	assert_float(result.rate).is_equal(1.0)
 	assert_float(result.zeal).is_equal((1.0 + 2.0) * 3.0)
+	assert_float(result.total).is_equal(20.0 * 9.0)
 	var kinds: Array[int] = []
 	for index: int in result.step_count:
 		kinds.append(result.step_kind(index))
@@ -87,10 +118,9 @@ func test_hooks_apply_grain_then_added_zeal_then_multiplied_zeal() -> void:
 		assert_array(kinds)
 		. is_equal(
 			[
-				ScoreBreakdown.Step.BASE_GRAIN,
 				ScoreBreakdown.Step.CARD_GRAIN,
-				ScoreBreakdown.Step.BASE_ZEAL,
 				ScoreBreakdown.Step.ADD_GRAIN,
+				ScoreBreakdown.Step.RATE,
 				ScoreBreakdown.Step.ADD_ZEAL,
 				ScoreBreakdown.Step.MUL_ZEAL,
 			]
@@ -98,9 +128,28 @@ func test_hooks_apply_grain_then_added_zeal_then_multiplied_zeal() -> void:
 	)
 
 
-func test_a_bomb_doubles_after_the_hooks() -> void:
-	var result: ScoreBreakdown = _score("9999", _scoring_stack(Adder.new()))
-	assert_float(result.zeal).is_equal((4.0 + 2.0) * 3.0 * 2.0)
+func test_zeal_never_falls_below_the_minimum() -> void:
+	var result: ScoreBreakdown = _score("99", _scoring_stack(Drain.new()))
+	assert_float(result.zeal).is_equal(Scorer.DEFAULT_PARAMS.min_zeal)
+	assert_float(result.zeal).is_equal(0.5)
+	assert_float(result.total).is_equal(18.0 * 3.0 * 0.5)
+
+
+func test_a_rate_cap_limits_the_rate_and_shows_as_a_step() -> void:
+	var result: ScoreBreakdown = _score("9999", _scoring_stack(Capper.new()))
+	assert_float(result.rate).is_equal(2.0)
+	assert_float(result.total).is_equal(36.0 * 2.0)
+	var kinds: Array[int] = []
+	for index: int in result.step_count:
+		kinds.append(result.step_kind(index))
+	assert_array(kinds).contains([ScoreBreakdown.Step.RATE_CAP])
+
+
+func test_a_rate_under_the_cap_is_left_alone() -> void:
+	var result: ScoreBreakdown = _score("9", _scoring_stack(Capper.new()))
+	assert_float(result.rate).is_equal(1.0)
+	for index: int in result.step_count:
+		assert_int(result.step_kind(index)).is_not_equal(ScoreBreakdown.Step.RATE_CAP)
 
 
 func test_hooks_receive_the_seat_and_role() -> void:
@@ -110,13 +159,16 @@ func test_hooks_receive_the_seat_and_role() -> void:
 	assert_bool(effect.seen_landlord).is_true()
 
 
-func test_multipliers_come_from_the_params() -> void:
+func test_rates_come_from_the_params() -> void:
 	var params: ScoreParams = Scorer.DEFAULT_PARAMS.duplicate()
-	params.bomb_zeal_multiplier = 5.0
+	var rates: Array[int] = params.hand_rate.duplicate()
+	rates[Pattern.Type.BOMB * params.max_level] = 5
+	params.hand_rate = rates
 	var result: ScoreBreakdown = Scorer.score_play(
 		_cards("9999"), _pattern("9999"), 1, 0, false, _stack, params
 	)
-	assert_float(result.zeal).is_equal(4.0 * 5.0)
+	assert_float(result.rate).is_equal(5.0)
+	assert_float(result.total).is_equal(36.0 * 5.0)
 
 
 func test_a_score_through_the_hooks_clamps() -> void:

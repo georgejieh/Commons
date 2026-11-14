@@ -23,6 +23,10 @@ const COMMANDS: Array[String] = [
 	"finish_set",
 	"buy",
 	"reroll",
+	"market_buy",
+	"market_reroll",
+	"upgrade",
+	"plot_card",
 	"leave_store",
 ]
 ## What the run waits on, for views that may not name the loop.
@@ -33,10 +37,13 @@ const AWAIT_NEED: int = RunLoop.Awaiting.PLAYER_NEED
 const AWAIT_SET_OVER: int = RunLoop.Awaiting.SET_OVER
 const AWAIT_STORE: int = RunLoop.Awaiting.SHOP
 const AWAIT_RUN_OVER: int = RunLoop.Awaiting.RUN_OVER
+const AWAIT_REEDUCATION: int = RunLoop.Awaiting.REEDUCATION
 const OK: int = RunLoop.Reason.OK
 
 var _loop: RunLoop
 var _saves: SaveService = null
+## The profile save, which the village's memory outlives runs in (P4.6).
+var _profile: SaveService = null
 var _definitions: Dictionary[String, ModifierDef] = {}
 
 
@@ -46,10 +53,14 @@ func start_run(
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	saves: SaveService = null,
-	starting_coupons: int = 0
+	starting_coupons: int = 0,
+	profile: SaveService = null
 ) -> void:
 	var state: RunState = RunState.new(seed_value)
 	state.coupons = starting_coupons
+	_profile = profile
+	if profile != null:
+		state.memory = Profile.memory(profile).carried(RunLoop.DEFAULT_MEMORY)
 	_attach(RunLoop.new(state, configs, sets), saves)
 	_loop.start_set()
 	_loop.set_log.flush()
@@ -57,13 +68,16 @@ func start_run(
 
 
 ## Takes over a loop that was resumed from a save.
-func resume(loop: RunLoop, saves: SaveService = null) -> void:
+func resume(loop: RunLoop, saves: SaveService = null, profile: SaveService = null) -> void:
+	_profile = profile
 	_attach(loop, saves)
 	awaiting_changed.emit(_loop.awaiting())
 
 
 ## Resumes the run in the save, falling back to its backup. False when neither loads.
-func resume_saved(saves: SaveService, configs: Array[BotConfig], sets: SetConfig) -> bool:
+func resume_saved(
+	saves: SaveService, configs: Array[BotConfig], sets: SetConfig, profile: SaveService = null
+) -> bool:
 	var loaded: SaveLoad = saves.load_save()
 	if (
 		loaded.status != SaveLoad.Status.OK
@@ -73,7 +87,7 @@ func resume_saved(saves: SaveService, configs: Array[BotConfig], sets: SetConfig
 	var loop: RunLoop = RunRecord.resume(loaded.data, configs, sets)
 	if loop == null:
 		return false
-	resume(loop, saves)
+	resume(loop, saves, profile)
 	return true
 
 
@@ -81,8 +95,19 @@ func has_run() -> bool:
 	return _loop != null
 
 
+## The seat that has called or grabbed the landlord seat in the bidding under way, or
+## Seats.NONE while nobody has, or outside bidding.
+func bid_holder() -> int:
+	return _loop.bid_holder()
+
+
 func bid(claim: bool) -> int:
 	return _finish("bid", _loop.player_bid(claim))
+
+
+## The most cards the player may swap this round (P4.8).
+func swap_limit() -> int:
+	return PlotSwap.swaps(_loop.state, RunLoop.DEFAULT_PARAMS)
 
 
 func swap(hand_ids: Array[int], plot_ids: Array[int]) -> int:
@@ -117,9 +142,46 @@ func reroll() -> int:
 	return _finish("reroll", _loop.player_reroll())
 
 
+## Buys from the black market, which adds Resentment.
+func market_buy(slot: int) -> int:
+	return _finish("market_buy", _loop.player_market_buy(slot))
+
+
+func market_reroll() -> int:
+	return _finish("market_reroll", _loop.player_market_reroll())
+
+
+## Buys one step of a private-plot upgrade at the black market.
+func upgrade(kind: String) -> int:
+	return _finish("upgrade", _loop.player_upgrade(kind))
+
+
+## Buys a card for the private plot at the black market.
+func plot_card(slot: int) -> int:
+	return _finish("plot_card", _loop.player_plot_card(slot))
+
+
+## The state store's counter, or the black market's, for a screen to read.
+func desk(market: bool) -> ShopDesk:
+	if market:
+		var upgrades: PlotUpgradeParams = RunLoop.DEFAULT_PLOT_UPGRADES
+		return ShopDesk.new(_loop.market, _loop.state, upgrades, _loop.stall)
+	return ShopDesk.new(_loop.shop, _loop.state)
+
+
+## The Resentment every black market purchase adds.
+func purchase_resentment() -> int:
+	return RunLoop.DEFAULT_RESENTMENT.private_purchase
+
+
 ## Leaves the store for the next Set, or the run's end.
 func leave_store() -> int:
 	return _finish("leave_store", _loop.next_set())
+
+
+## Returns from reeducation to the next Set, or the run's end.
+func leave_reeducation() -> int:
+	return _finish("leave_reeducation", _loop.next_set())
 
 
 func awaiting() -> int:
@@ -136,14 +198,6 @@ func store_stock() -> Array[String]:
 	return _loop.shop.stock()
 
 
-func store_price(slot: int) -> int:
-	return _loop.shop.price(slot)
-
-
-func reroll_price() -> int:
-	return _loop.shop.reroll_price()
-
-
 ## Coupons the current Set pays when its Quota is met.
 func quota_reward() -> int:
 	return _loop.sets().reward(_loop.state.set_type)
@@ -151,7 +205,18 @@ func quota_reward() -> int:
 
 ## How much Famine a missed Quota adds.
 func famine_per_miss() -> int:
-	return RunLoop.DEFAULT_PARAMS.famine_on_missed_target
+	return RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount
+
+
+## True while high Famine cuts the store's slots.
+func is_rationed() -> bool:
+	return _loop.state.rationed
+
+
+## The Famine value rationing must fall below to lift.
+func rationing_lifts_below() -> int:
+	var bands: MeterBands = RunLoop.DEFAULT_METERS.famine
+	return bands.mid - bands.rearm_margin
 
 
 ## Cadres the player can hold at once.
@@ -164,10 +229,19 @@ func base_need() -> int:
 	return RunLoop.DEFAULT_PARAMS.base_need
 
 
-## A reroll is worth pressing: affordable, and the board has room for what it draws.
-func can_reroll() -> bool:
-	var state: RunState = _loop.state
-	return state.coupons >= reroll_price() and state.inventory.cadres.size() < cadre_slots()
+## The Resentment the player's grab of a held landlord seat adds.
+func grab_cost() -> int:
+	return RunLoop.DEFAULT_RESENTMENT.grab
+
+
+## The chance, 0 to 1, that each claim on the Commons is audited this round.
+func audit_chance() -> float:
+	return _loop.audit_chance()
+
+
+## The Denunciation a lie about need costs when an audit catches it.
+func lie_cost() -> int:
+	return RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
 
 
 func can_buy(slot: int) -> bool:
@@ -181,10 +255,7 @@ func set_events() -> Array[RunEvent]:
 
 ## The player's seat view of the current round, or null between rounds.
 func seat_view() -> SeatView:
-	var round_state: RoundState = _loop.round_state()
-	if round_state == null:
-		return null
-	return round_state.view_for(RunLoop.PLAYER)
+	return _loop.player_view()
 
 
 ## Copies of the player's cards.
@@ -219,8 +290,15 @@ func preview_play(card_ids: Array[int]) -> PlayPreview:
 
 ## The modifiers in play now: Cadres in slot order, then this Set's debuffs so far.
 func active_modifier_ids() -> Array[String]:
+	var ids: Array[String] = _loop.state.inventory.cadres.duplicate()
+	ids.append_array(active_debuff_ids())
+	return ids
+
+
+## This Set's debuffs so far, in the order they arrived.
+func active_debuff_ids() -> Array[String]:
 	var state: RunState = _loop.state
-	var ids: Array[String] = state.inventory.cadres.duplicate()
+	var ids: Array[String] = []
 	for round_index: int in range(1, mini(state.round_index + 1, state.debuff_ladder.size())):
 		if state.debuff_ladder[round_index] != RunState.NO_DEBUFF:
 			ids.append(state.debuff_ladder[round_index])
@@ -232,14 +310,46 @@ func ladder() -> Array[String]:
 	return _loop.state.debuff_ladder.duplicate()
 
 
+## The current Set's boss twist ID, or an empty string outside boss Sets (P4.7).
+func boss() -> String:
+	return _loop.state.boss_id
+
+
 ## A modifier's rules text with its parameters filled in.
+## True when a modifier changes every seat's play, not only the player's.
+func is_table_wide(modifier_id: String) -> bool:
+	var definition: ModifierDef = _definitions[modifier_id]
+	return definition.table_wide
+
+
 func modifier_text(modifier_id: String) -> String:
 	var definition: ModifierDef = _definitions[modifier_id]
-	return tr(definition.text_key).format(definition.parameters)
+	return tr(definition.text_key).format(definition.text_values())
 
 
 func target() -> float:
 	return _loop.target()
+
+
+## A copy of the roster entry in a villager's seat, or null when the run seats no roster.
+func seated(seat: int) -> RosterEntry:
+	var state: RunState = _loop.state
+	if state.roster.is_empty() or seat <= 0 or seat >= state.table.size():
+		return null
+	var entry: RosterEntry = Roster.entry(state, state.table[seat])
+	return null if entry == null else RosterEntry.from_dict(entry.to_dict())
+
+
+## The family in a villager's seat, or null when the run seats no roster.
+func seated_family(seat: int) -> FamilyDef:
+	var entry: RosterEntry = seated(seat)
+	return null if entry == null else Roster.definition(RunLoop.DEFAULT_VILLAGE, entry)
+
+
+## The surname key shown for a villager's seat, or "" when the run seats no roster.
+func seated_name_key(seat: int) -> String:
+	var entry: RosterEntry = seated(seat)
+	return "" if entry == null else Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
 
 
 ## A copy of the run state, for display.
@@ -252,11 +362,16 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	# A replayed loop may hold events banking appended unseen; the view reads those from
 	# set_events(), so the listener starts after them.
 	_loop.set_log.flush()
-	for definition: ModifierDef in RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres:
+	var known: Array[ModifierDef] = (
+		RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres + RunLoop.DEFAULT_MARKET.cadres
+	)
+	for definition: ModifierDef in known + RunLoop.DEFAULT_BOSSES.all():
 		_definitions[definition.id] = definition
 	_saves = saves
 	_loop.set_log.on_add = func(event: RunEvent) -> void: event_emitted.emit(event)
-	_loop.on_boundary = func(_at: RunLoop) -> void: _save()
+	_loop.on_boundary = func(at: RunLoop) -> void:
+		_save()
+		_remember(at.flow.state())
 
 
 func _finish(command: String, reason: RunLoop.Reason) -> int:
@@ -272,3 +387,12 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 func _save() -> void:
 	if _saves != null:
 		_saves.save(_loop.record.to_dict())
+
+
+## Writes the village's memory to the profile once a Set's summary is folded in, so it
+## survives the run whether it ends or is abandoned.
+func _remember(at: RunFlow.State) -> void:
+	if _profile == null:
+		return
+	if at == RunFlow.State.SET_END or at == RunFlow.State.RUN_END:
+		Profile.save_memory(_profile, _loop.state.memory)

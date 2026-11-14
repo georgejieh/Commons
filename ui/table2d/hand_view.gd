@@ -13,6 +13,8 @@ const MAX_SPACING: float = 64.0
 const ARC_DROP: float = 0.6
 const TILT_PER_CARD: float = 0.025
 const LIFT: float = 32.0
+## A selection that can be played rises this much more, ready to throw.
+const ARMED_LIFT: float = 12.0
 ## How far below the fan a freshly dealt card starts.
 const DEAL_RISE: float = 260.0
 ## Jokers have no suit, so suit sorting puts them after the four suits.
@@ -54,6 +56,7 @@ func show_cards() -> void:
 		if view.get_parent() != self:
 			view.reparent(self, false)
 		view.bind(card)
+		_note_fold(view, card)
 		view.pressed.connect(_on_pressed)
 		view.hovered.connect(_on_hovered)
 		_views.append(view)
@@ -85,6 +88,15 @@ func cursor_card() -> int:
 	if _cursor < 0 or _cursor >= _views.size():
 		return -1
 	return _views[_cursor].card_id
+
+
+## Where a card in the fan sits on screen, its middle, or the fan's middle when the
+## card isn't shown.
+func card_center(card_id: int) -> Vector2:
+	for view: CardView in _views:
+		if view.card_id == card_id:
+			return view.get_global_transform() * (view.size / 2.0)
+	return global_position + size / 2.0
 
 
 ## Lights these cards with the hint edge until the hand next changes.
@@ -137,12 +149,14 @@ func _layout() -> void:
 
 func _mark() -> void:
 	var hinted: Array[int] = _hinted
+	var armed: bool = _model.can_play()
+	var lift: float = LIFT + (ARMED_LIFT if armed else 0.0)
 	for index: int in _views.size():
 		var view: CardView = _views[index]
 		var selected: bool = _model.is_selected(view.card_id)
-		view.set_marked(selected, hinted.has(view.card_id), index == _cursor)
+		view.set_marked(selected, hinted.has(view.card_id), index == _cursor, armed)
 		var slot: Vector3 = fan_slot(index, _views.size(), size.x)
-		var to: Vector2 = Vector2(view.position.x, slot.y - (LIFT if selected else 0.0))
+		var to: Vector2 = Vector2(view.position.x, slot.y - (lift if selected else 0.0))
 		if motion == null:
 			view.position = to
 		else:
@@ -166,7 +180,13 @@ func _by_suit(a: CardInstance, b: CardInstance) -> bool:
 	return _before(a, b)
 
 
+## Lowest first, by where each card ranks now: a Cadre or debuff that re-ranks a card
+## moves it in the fan too.
 func _before(a: CardInstance, b: CardInstance) -> bool:
+	var a_value: int = _model.rank_value(a)
+	var b_value: int = _model.rank_value(b)
+	if a_value != b_value:
+		return a_value < b_value
 	if a.base_rank() != b.base_rank():
 		return a.base_rank() < b.base_rank()
 	return a.id() < b.id()
@@ -187,6 +207,13 @@ func _input(event: InputEvent) -> void:
 	var button: InputEventMouseButton = event as InputEventMouseButton
 	if button != null and not button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
 		_dragging = false
+
+
+## Marks a card a debuff makes rank as another, such as "as 3" on a 2.
+func _note_fold(view: CardView, card: CardInstance) -> void:
+	var folded: int = _model.folded_rank(card)
+	if folded >= 0:
+		view.set_rank_note(tr("card.rank_as").format({"rank": tr(CardView.RANK_KEYS[folded])}))
 
 
 func _disconnect(view: CardView) -> void:

@@ -40,15 +40,51 @@ func test_every_suffix_key_is_in_the_string_table() -> void:
 		assert_str(table).contains(key)
 
 
-func test_the_table_has_a_value_for_every_type_and_level() -> void:
+func test_factor_format_shows_decimals_only_when_needed() -> void:
+	assert_str(ScoreFormat.factor(1.0, SUFFIXES)).is_equal("1")
+	assert_str(ScoreFormat.factor(32.0, SUFFIXES)).is_equal("32")
+	assert_str(ScoreFormat.factor(1.5, SUFFIXES)).is_equal("1.5")
+	assert_str(ScoreFormat.factor(0.5, SUFFIXES)).is_equal("0.5")
+	assert_str(ScoreFormat.factor(0.75, SUFFIXES)).is_equal("0.75")
+	assert_str(ScoreFormat.factor(1026.0, SUFFIXES)).is_equal("1.0K")
+
+
+func test_the_table_has_a_rate_for_every_type_and_level() -> void:
 	var params: ScoreParams = Scorer.DEFAULT_PARAMS
 	var cells: int = Pattern.Type.size() * params.max_level
-	assert_int(params.hand_grain.size()).is_equal(cells)
-	assert_int(params.hand_zeal.size()).is_equal(cells)
+	assert_int(params.hand_rate.size()).is_equal(cells)
 	assert_int(params.card_grain.size()).is_equal(Ranks.COUNT)
 	for type: int in range(Pattern.Type.SINGLE, Pattern.Type.size()):
 		for level: int in range(2, params.max_level + 1):
-			assert_bool(params.grain_for(type, level) > params.grain_for(type, level - 1)).is_true()
+			assert_bool(params.rate_for(type, level) > params.rate_for(type, level - 1)).is_true()
+
+
+func test_level_one_rates_match_the_design() -> void:
+	var params: ScoreParams = Scorer.DEFAULT_PARAMS
+	var expected: Dictionary[Pattern.Type, int] = {
+		Pattern.Type.SINGLE: 1,
+		Pattern.Type.PAIR: 3,
+		Pattern.Type.TRIO: 6,
+		Pattern.Type.TRIO_SINGLE: 7,
+		Pattern.Type.TRIO_PAIR: 10,
+		Pattern.Type.STRAIGHT: 7,
+		Pattern.Type.PAIR_CHAIN: 7,
+		Pattern.Type.AIRPLANE: 11,
+		Pattern.Type.AIRPLANE_SINGLES: 12,
+		Pattern.Type.AIRPLANE_PAIRS: 15,
+		Pattern.Type.FOUR_TWO_SINGLES: 20,
+		Pattern.Type.FOUR_TWO_PAIRS: 22,
+		Pattern.Type.BOMB: 32,
+		Pattern.Type.ROCKET: 50,
+	}
+	for type: Pattern.Type in expected:
+		assert_int(params.rate_for(type, 1)).is_equal(expected[type])
+
+
+func test_card_grain_is_the_rank_value() -> void:
+	var params: ScoreParams = Scorer.DEFAULT_PARAMS
+	for rank: int in Ranks.COUNT:
+		assert_int(params.card_grain[rank]).is_equal(rank + 3)
 
 
 func test_a_level_change_shows_in_the_next_play() -> void:
@@ -57,14 +93,16 @@ func test_a_level_change_shows_in_the_next_play() -> void:
 	var before: ScoreBreakdown = Scorer.score_play(
 		_cards("99"), _pattern("99"), levels.level_of(pair), 0, false, _stack
 	)
-	assert_float(before.total).is_equal(56.0)
+	assert_float(before.total).is_equal(18.0 * 3.0)
 	levels.raise(pair)
 	var after: ScoreBreakdown = Scorer.score_play(
 		_cards("99"), _pattern("99"), levels.level_of(pair), 0, false, _stack
 	)
-	assert_float(after.grain).is_equal(25.0 + 18.0)
-	assert_float(after.zeal).is_equal(3.0)
-	assert_float(after.total).is_equal(129.0)
+	# A level raises Rate only: Grain stays the cards' values.
+	assert_float(after.grain).is_equal(18.0)
+	assert_float(after.rate).is_equal(8.0)
+	assert_float(after.zeal).is_equal(1.0)
+	assert_float(after.total).is_equal(144.0)
 	assert_int(levels.level_of(Pattern.Type.TRIO)).is_equal(1)
 
 

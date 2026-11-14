@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ResentmentParams" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://data/run/resentment_params.gd" id="1"]
+
+[sub_resource type="Curve" id="denunciation"]
+max_value = 10.0
+_data = [Vector2(0, 0), 0.0, 4.0, 0, 1, Vector2(0.5, 2), 4.0, 12.0, 1, 1, Vector2(1, 8), 12.0, 0.0, 1, 0]
+point_count = 3
+
+[resource]
+script = ExtResource("1")
+max = 100
+private_purchase = 5
+private_cadre = 2
+stamped_card = 1
+grab = 4
+denunciation = SubResource("denunciation")
+grudge_at_max = 1.0

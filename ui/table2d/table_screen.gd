@@ -17,6 +17,8 @@ const RED: Color = Color("9e1b16")
 const PLAY_CENTER: float = 790.0
 const SEAT_WIDTH: float = 380.0
 const SEAT_OFFSET: float = 330.0
+## The height the need panel and the audit slip center on, between seats and hand.
+const SHEET_MIDDLE: float = 520.0
 
 var _app: DemoApp
 var _controller: RunController
@@ -24,28 +26,32 @@ var _hand: HandModel
 var _pool: CardPool = CardPool.new()
 var _player: EventPlayer = EventPlayer.new()
 var _seats: Dictionary[int, SeatPanel] = {}
-var _plays: Dictionary[int, PlayLane] = {}
+var _pile: TrickPile = TrickPile.new()
 
 var _hand_view: HandView = HandView.new()
 var _hud: TableHud = TableHud.new()
 var _ledger: Ledger = Ledger.new()
 var _board: NoticeBoard = NoticeBoard.new()
+var _debuffs: DebuffStrip = DebuffStrip.new()
 var _actions: ActionBar = ActionBar.new()
 var _need_panel: NeedPanel = NeedPanel.new()
 var _cheat_sheet: CheatSheet = CheatSheet.new()
 var _pool_parent: Control = Control.new()
 var _you: Label = Label.new()
 var _motion: TableMotion = TableMotion.new()
-var _banner: TableBanner = TableBanner.new()
 var _replaying: bool = false
 var _pause: PauseMenu = PauseMenu.new()
 var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
 var _speech: TableSpeech = TableSpeech.new()
 var _input: TableInput = TableInput.new()
+var _commands: TableCommands = TableCommands.new()
 var _dread: DreadLayers = DreadLayers.new()
 var _dressing: DreadDressing = DreadDressing.new()
 var _surface: TextureRect
+var _moments: TableMoments = TableMoments.new()
+## Each villager's card count as the events played so far leave it.
+var _counts: Dictionary[int, int] = {}
 
 
 func _ready() -> void:
@@ -71,23 +77,23 @@ func _ready() -> void:
 	ledger_paper.add_child(_ledger)
 	_place(_hud, Vector2.ZERO, Vector2(1920, 72))
 	_place(_board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
+	_place(_debuffs, Vector2(PLAY_CENTER - 298.0, 284), Vector2(596, 0))
 	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
 	_you.theme_type_variation = CommonsTheme.TITLE
 	_you.add_theme_font_size_override("font_size", 28)
 	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
-	_place(_need_panel, Vector2(720, 420), Vector2(420, 200))
+	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
+	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
+	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_cheat_sheet, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
-	_place(_banner, Vector2(PLAY_CENTER - 380.0, 480), Vector2(760, 0))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
-	for seat: int in Seats.COUNT:
-		_plays[seat] = PlayLane.new()
-	_place(_plays[0], Vector2(520, 560), Vector2(560, 130))
-	_place(_plays[1], Vector2(900, 360), Vector2(520, 130))
-	_place(_plays[2], Vector2(140, 360), Vector2(520, 130))
+	_place(_pile, Vector2(PLAY_CENTER - 460.0, 380), Vector2(920, 300))
+	# The need panel, sheets and banner all lie over the pile.
+	move_child(_pile, _need_panel.get_index())
 
 
 func open(app: DemoApp) -> void:
@@ -102,28 +108,34 @@ func open(app: DemoApp) -> void:
 	_player.motion = _motion
 	_motion.setup(self, bool(Settings.value("reduced_motion")))
 	Settings.changed.connect(_on_setting)
-	for lane: PlayLane in _plays.values():
-		lane.setup(_pool, _pool_parent, _motion)
+	_pile.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
 	_build_seats()
-	_speech.setup(_seats)
+	# The moments layer lies over everything, seats included, so a takeover dims it all.
+	move_child(_moments, -1)
+	_speech.setup(_seats, app)
 	_board.setup(_controller.cadre_slots())
-	_need_panel.setup(_controller.base_need(), app.need_cap())
+	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
 	_hand_view.setup(_hand, _pool)
-	_hand.changed.connect(_refresh_actions)
+	_commands.setup(_controller, _hand, _hand_view, _actions, _need_panel, _player)
+	_actions.rules.pressed.connect(_cheat_sheet.toggle.bind(_controller))
 	_player.played.connect(_on_event)
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)
-	_player.queued.connect(_refresh_actions)
-	_actions.play.pressed.connect(_on_play)
-	_actions.pass_turn.pressed.connect(_on_pass)
-	_actions.hint.pressed.connect(_on_hint)
-	_show_sort()
-	_actions.sort.pressed.connect(_toggle_sort)
-	_actions.rules.pressed.connect(_cheat_sheet.toggle.bind(_controller))
-	_actions.call.pressed.connect(_on_bid.bind(true))
-	_actions.decline.pressed.connect(_on_bid.bind(false))
-	_need_panel.declared.connect(_on_need)
+	var names: Dictionary[int, String] = {
+		0: tr("ledger.you"), 1: app.seat_name(1), 2: app.seat_name(2)
+	}
+	_ledger.setup(names)
+	_commands.set_names(names)
+	var faces: Dictionary[int, Texture2D] = {}
+	for seat: int in _seats:
+		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
+	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
+	_moments.hud = _hud
+	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
+	_player.holds = {
+		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
+	}
 	_hud.menu.pressed.connect(_open_pause)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
 	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
@@ -134,15 +146,29 @@ func open(app: DemoApp) -> void:
 	_setup_dread(app)
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
+	_still(true)
 	for event: RunEvent in _controller.set_events():
 		_player.push(event)
 	_player.flush()
+	_still(false)
 	_replaying = false
+	_hud.sync(_controller.state_copy(), _controller.target())
 
 
 ## Plays every queued event at once, skipping the pacing.
 func skip_events() -> void:
+	_speech.hurry = true
+	_still(true)
 	_player.flush()
+	_still(false)
+	_speech.skip_all()
+
+
+## While the queue is played at once, nothing moves: cards land where they lie and a
+## won trick is cleared, not swept, so no tween outlives the catch-up and clears a
+## later play.
+func _still(on: bool) -> void:
+	_motion.set_reduced(on or bool(Settings.value("reduced_motion")))
 
 
 ## The buttons, for scripted UI tests.
@@ -199,55 +225,63 @@ func _build_seats() -> void:
 func _on_event(event: RunEvent) -> void:
 	# Rejoining replays the Set silently: nothing is said or played twice.
 	if not _replaying:
-		Audio.play(AudioEvents.name_for(event))
+		TableSounds.play(event, _landlord, _controller)
 		_speech.on_event(event)
+	_moments.on_event(event, _replaying or _player.flushing)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
-		RunEvent.Type.PLAY_SCORED:
-			_ledger.add_row(_app.seat_name(event.seat), event.amount)
+		RunEvent.Type.ROUND_SCORED:
+			_ledger.set_final(event.seat, event.amount)
+			_dread.refresh(_controller.state_copy())
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			_new_deal()
 			_dread.refresh(_controller.state_copy())
-		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED, RunEvent.Type.ROUND_SCORED:
+		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED:
 			_dread.refresh(_controller.state_copy())
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
-			_announce_landlord(event.seat)
 			_dread.refresh(_controller.state_copy(), false, event.seat == 0)
 	_refresh_status()
 
 
 func _on_round_event(event: RoundEvent) -> void:
 	match event.type:
+		RoundEvent.Type.ROUND_STARTED:
+			# A kept seat is never bid for again, so the round itself names the landlord.
+			_landlord = event.seat
+			_ledger.start_round(event.seat)
+			_show_roles(event.seat)
+		RoundEvent.Type.KITTY_TAKEN:
+			_count_cards(event.seat, event.card_ids.size())
 		RoundEvent.Type.PLAYED:
-			_plays[event.seat].show_play(event.cards)
+			_show_play(event)
+			_count_cards(event.seat, -event.cards.size())
 			if event.seat == 0:
 				_hand.refresh()
 				_hand_view.show_cards()
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
-				var rocket: bool = event.pattern.type == Pattern.Type.ROCKET
-				_announce(tr("banner.rocket" if rocket else "banner.bomb"), ScreenKit.RED)
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
-		RoundEvent.Type.PASSED:
-			_plays[event.seat].clear()
 		RoundEvent.Type.TRICK_WON:
-			_sweep_plays(event.seat)
-		RoundEvent.Type.ROUND_ENDED:
-			var landlord_won: bool = event.seat == _landlord
-			var key: String = "banner.landlord_wins" if landlord_won else "banner.peasants_win"
-			_announce(tr(key), ScreenKit.INK)
+			# A replayed or skipped trick is cleared at once: a sweep still running would
+			# clear the plays that come after it.
+			if _replaying or _player.flushing:
+				_pile.clear()
+			else:
+				_pile.sweep(_seat_center(event.seat))
 
 
 ## A fresh deal wipes the last round off the table: lanes, ledger, speech, the
 ## round's banner and the landlord tag, and every villager back to a full hand. Your
 ## new hand rises in now, not after the bots' first plays.
 func _new_deal() -> void:
-	_clear_all_plays()
+	_pile.clear()
 	_ledger.clear_rows()
-	_banner.dismiss()
 	_landlord = Seats.NONE
+	_speech.skip_all()
+	for seat: int in _seats:
+		_counts[seat] = Dealer.HAND_SIZE
 	for panel: SeatPanel in _seats.values():
 		panel.set_count(Dealer.HAND_SIZE)
 		panel.set_role(false, false)
@@ -260,28 +294,37 @@ func _new_deal() -> void:
 func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
+	_hud.sync(_controller.state_copy(), _controller.target())
 	_board.show_cadres(_controller)
+	_debuffs.show_debuffs(_controller)
 	var awaiting: int = _controller.awaiting()
 	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
 	if awaiting == RunController.AWAIT_NEED:
-		_need_panel.ask()
+		var pool: int = _controller.state_copy().commons_pool
+		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.audit_chance())
 	_hand.refresh()
 	_hand_view.show_cards()
-	_refresh_actions()
+	_commands.refresh()
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
+	elif awaiting == RunController.AWAIT_SWAP:
+		# The plot swap has its own screen, over the table; it comes back here.
+		_app.show_screen("plot_swap")
 
 
-## The trick's cards slide off toward whoever won it.
-func _sweep_plays(winner: int) -> void:
-	var toward: Control = _hand_view if winner == 0 else _seats.get(winner, null)
-	if toward == null:
-		_clear_all_plays()
-		return
-	var center: Vector2 = toward.global_position + toward.size / 2.0
-	for lane: PlayLane in _plays.values():
-		lane.sweep(center)
+## A play flies to the pile from the seat that made it; yours leaves from your hand.
+func _show_play(event: RoundEvent) -> void:
+	var origins: Array[Vector2] = []
+	if event.seat == 0:
+		for card: CardInstance in event.cards:
+			origins.append(_hand_view.card_center(card.id()))
+	_pile.show_play(event.cards, _seat_center(event.seat), origins)
+
+
+func _seat_center(seat: int) -> Vector2:
+	var at: Control = _hand_view if seat == 0 else _seats[seat]
+	return at.global_position + at.size / 2.0
 
 
 func _on_setting(key: String) -> void:
@@ -289,21 +332,17 @@ func _on_setting(key: String) -> void:
 		_motion.set_reduced(bool(Settings.value("reduced_motion")))
 
 
-func _clear_all_plays() -> void:
-	for lane: PlayLane in _plays.values():
-		lane.clear()
+## The seats take their roles as the round starts, and their card counts tick as cards
+## are taken and played, without waiting for the queue to drain.
+func _show_roles(landlord: int) -> void:
+	for seat: int in _seats:
+		_seats[seat].set_role(landlord == seat, landlord != seat and landlord != 0)
 
 
-func _announce(text: String, color: Color) -> void:
-	if not _replaying:
-		_banner.announce(text, color)
-
-
-func _announce_landlord(seat: int) -> void:
-	if seat == 0:
-		_announce(tr("banner.landlord_you"), ScreenKit.RED)
-	else:
-		_announce(tr("banner.landlord_other").format({"name": _app.seat_name(seat)}), ScreenKit.INK)
+func _count_cards(seat: int, change: int) -> void:
+	if _seats.has(seat):
+		_counts[seat] = maxi(int(_counts.get(seat, Dealer.HAND_SIZE)) + change, 0)
+		_seats[seat].set_count(_counts[seat])
 
 
 func _refresh_seats() -> void:
@@ -313,9 +352,14 @@ func _refresh_seats() -> void:
 		var panel: SeatPanel = _seats[seat]
 		if view != null:
 			panel.set_count(view.public.remaining[seat])
+			_counts[seat] = view.public.remaining[seat]
 			landlord = view.public.landlord
 		var teammate: bool = landlord != Seats.NONE and landlord != seat and landlord != 0
 		panel.set_role(landlord == seat, teammate)
+		panel.set_intel(IntelText.for_seat(view.info if view != null else null, seat))
+		var bid: String = _moments.bid_key(seat)
+		if landlord == Seats.NONE and not bid.is_empty():
+			panel.set_bid(tr(bid))
 	if landlord == Seats.NONE:
 		_you.text = tr("table.you.bidding")
 	else:
@@ -324,74 +368,11 @@ func _refresh_seats() -> void:
 
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
-	_hud.show_state(state, _controller.target(), _app.max_rounds())
-
-
-func _refresh_actions() -> void:
-	var my_turn: bool = _player.is_idle() and _controller.awaiting() == RunController.AWAIT_PLAY
-	_actions.play.disabled = not (my_turn and _hand.can_play())
-	_actions.pass_turn.disabled = not (my_turn and _hand.can_pass())
-	if _controller.awaiting() == RunController.AWAIT_BID:
-		_actions.reading.text = tr("table.bid_prompt")
-		return
-	var text: String = tr(_hand.label_key())
-	if _hand.can_play() or _hand.projected_score() > 0.0:
-		text += "  ·  " + Strings.score(_hand.projected_score())
-	_actions.reading.text = text
-
-
-## Every command fills the event queue, so the buttons go off until it drains.
-func _on_play() -> void:
-	if _controller.play(_hand.selected_ids()) == RunController.OK:
-		_hand.clear()
-	_refresh_actions()
-
-
-func _on_pass() -> void:
-	_controller.pass_turn()
-	_hand.clear()
-	_refresh_actions()
-
-
-func _on_bid(claim: bool) -> void:
-	_actions.show_bidding(false)
-	_controller.bid(claim)
-	_refresh_actions()
-
-
-func _on_need(need: int) -> void:
-	_need_panel.visible = false
-	_controller.declare_need(need)
-	_refresh_actions()
-
-
-## Cycles rank, suit and groups, and names the current sort on the button.
-func _toggle_sort() -> void:
-	var next: int = (_hand_view.sort_mode + 1) % HandView.Sort.size()
-	_hand_view.set_sort(next as HandView.Sort)
-	_show_sort()
-
-
-func _show_sort() -> void:
-	var mode: String = tr(HandView.SORT_KEYS[_hand_view.sort_mode])
-	_actions.sort.text = tr("action.sort_by").format({"mode": mode})
-	_actions.sort.tooltip_text = tr("action.sort_tip").format({"mode": mode})
-
-
-## Selects the play a Medium villager would make, and lights it.
-func _on_hint() -> void:
-	if _controller.awaiting() != RunController.AWAIT_PLAY:
-		return
-	var ids: Array[int] = _hand.suggested_ids()
-	_hand.select_only(ids)
-	_hand_view.show_hint(ids)
-	if ids.is_empty():
-		_actions.reading.text = tr("hand.hint.pass")
+	_hud.show_state(state, _app.max_rounds())
 
 
 static func _type_name(pattern: Pattern) -> String:
-	var name: String = Pattern.Type.keys()[pattern.type]
-	return name.to_lower()
+	return String(Pattern.Type.keys()[pattern.type]).to_lower()
 
 
 func _place(node: Control, at: Vector2, extent: Vector2) -> void:

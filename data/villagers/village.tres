@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="VillageBook" format=3]
+
+[ext_resource type="Script" path="res://data/villagers/village_book.gd" id="1"]
+[ext_resource type="Resource" path="res://data/villagers/families/wang.tres" id="2"]
+[ext_resource type="Resource" path="res://data/villagers/families/li.tres" id="3"]
+[ext_resource type="Resource" path="res://data/villagers/families/zhao.tres" id="4"]
+[ext_resource type="Resource" path="res://data/villagers/families/sun.tres" id="5"]
+[ext_resource type="Resource" path="res://data/villagers/families/chen.tres" id="6"]
+[ext_resource type="Resource" path="res://data/villagers/families/liu.tres" id="7"]
+[ext_resource type="Resource" path="res://data/villagers/families/qin.tres" id="8"]
+[ext_resource type="Resource" path="res://data/villagers/families/gao.tres" id="9"]
+[ext_resource type="Resource" path="res://data/villagers/families/xu.tres" id="10"]
+[ext_resource type="Resource" path="res://data/villagers/families/zhou.tres" id="11"]
+[ext_resource type="Resource" path="res://data/villagers/families/ma.tres" id="12"]
+[ext_resource type="Resource" path="res://data/villagers/families/feng.tres" id="13"]
+[ext_resource type="Resource" path="res://data/villagers/families/tang.tres" id="14"]
+[ext_resource type="Resource" path="res://data/villagers/families/deng.tres" id="15"]
+[ext_resource type="Resource" path="res://data/villagers/youth/youth_a.tres" id="16"]
+[ext_resource type="Resource" path="res://data/villagers/youth/youth_b.tres" id="17"]
+
+[resource]
+script = ExtResource("1")
+families = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15")])
+youth_templates = Array[Resource]([ExtResource("16"), ExtResource("17")])
+youth_surnames = Array[String](["villager.youth.hu", "villager.youth.lin", "villager.youth.zhu", "villager.youth.he", "villager.youth.guo", "villager.youth.luo", "villager.youth.song", "villager.youth.xie", "villager.youth.han", "villager.youth.yang", "villager.youth.cao", "villager.youth.peng"])
+reeducation_sets = 1
+rise_sets = 2
+opponents = 2

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PlotUpgradeParams" format=3]
+
+[ext_resource type="Script" path="res://data/run/plot_upgrade_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+capacity_cost = 6
+capacity_max = 2
+swap_cost = 8
+swap_max = 1
+card_offers = 2
+card_ranks = Array[int]([10, 11, 12])
+card_costs = Array[int]([3, 4, 6])

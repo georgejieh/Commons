@@ -4,10 +4,7 @@
 [ext_resource type="Resource" path="res://data/modifiers/cultural_revolution.tres" id="2"]
 [ext_resource type="Resource" path="res://data/modifiers/promotion_of_the_masses.tres" id="3"]
 [ext_resource type="Resource" path="res://data/modifiers/iron_rice_bowl.tres" id="4"]
-[ext_resource type="Resource" path="res://data/modifiers/stakhanovite.tres" id="5"]
-[ext_resource type="Resource" path="res://data/modifiers/hidden_reserves.tres" id="6"]
-[ext_resource type="Resource" path="res://data/modifiers/landlords_ledger.tres" id="7"]
 
 [resource]
 script = ExtResource("1")
-cadres = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7")])
+cadres = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4")])

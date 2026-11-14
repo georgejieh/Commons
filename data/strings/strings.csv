@@ -19,7 +19,7 @@ modifier.cultural_revolution.text,"After any bomb, rank order inverts until the 
 modifier.promotion_of_the_masses.name,Promotion of the Masses
 modifier.promotion_of_the_masses.text,"3s rank above 2s, below the jokers."
 modifier.criticism_meeting.name,Criticism Meeting
-modifier.criticism_meeting.text,Your 2s rank as 3s.
+modifier.criticism_meeting.text,"Your 2s rank lowest, level with 3s. They still pair only with other 2s."
 modifier.inverted_order.name,Inverted Order
 modifier.inverted_order.text,Rank order is reversed for your plays only.
 score.suffix.thousand,K
@@ -46,6 +46,8 @@ pattern.rocket,Rocket
 hand.reason.select,Choose cards to play.
 hand.reason.wait,Wait for your turn.
 hand.reason.does_not_beat,Doesn't beat the play on the table.
+hand.reason.does_not_beat_folded,"Doesn't beat the play on the table. A debuff lowers the cards marked in red."
+card.rank_as,as {rank}
 hand.reason.empty,Choose cards to play.
 hand.reason.unknown_shape,These cards don't make a legal play.
 hand.reason.chain_too_short,This chain is too short.
@@ -70,15 +72,15 @@ card.rank.small_joker,Small
 card.rank.big_joker,Big
 card.stamp.yours,Yours
 modifier.iron_rice_bowl.name,Iron Rice Bowl
-modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Zeal can't go above {zeal_cap}."
+modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Rate can't go above ×{rate_cap}."
 modifier.stakhanovite.name,Stakhanovite
-modifier.stakhanovite.text,Your Straights gain {zeal_per_card} Zeal for each card past {base_length}.
+modifier.stakhanovite.text,Your Straights gain +{zeal_percent_per_card} Zeal for each card past {base_length}.
 modifier.hidden_reserves.name,Hidden Reserves
 modifier.hidden_reserves.text,Your kickers score their base Grain.
 modifier.landlords_ledger.name,Landlord's Ledger
 modifier.landlords_ledger.text,"While you are landlord, kitty cards score their Grain twice."
 modifier.ration_cut.name,Ration Cut
-modifier.ration_cut.text,Your plays lose {zeal} Zeal.
+modifier.ration_cut.text,Your plays lose {zeal_percent} Zeal.
 modifier.paperwork.name,Paperwork
 modifier.paperwork.text,Your Pairs score {percent}% of their Grain.
 modifier.morning_meeting.name,Morning Meeting
@@ -92,14 +94,12 @@ title.continue,Continue
 title.settings,Settings
 title.quit,Quit
 seat.you,You
-villager.wang,Wang
-villager.zhao,Zhao
 table.landlord,LANDLORD
 table.cards_left,{count} cards
 table.role.landlord,Landlord
 table.role.teammate,Your teammate
 table.role.peasant,Peasant
-table.status,Year {year} · {set} · Round {round} of {rounds} · {progress} / {target}
+table.status,Year {year} · {set} · Round {round} of {rounds}
 table.coupons,{count} coupons
 table.coupons.one,1 coupon
 set.type.0,Small Quota
@@ -107,7 +107,7 @@ set.type.1,Large Quota
 set.type.2,Boss Quota
 meter.famine,Famine
 meter.denunciation,Denunciation
-ledger.title,Work-Point Ledger
+ledger.title,Work Points
 ledger.row,{who} · {total}
 action.play,Play
 action.pass,Pass
@@ -117,7 +117,6 @@ action.rules,Rules
 action.call,Call
 action.decline,Pass
 board.empty,Empty
-need.prompt,Declare your need. The Commons is split by declared need.
 need.declare,Declare
 cheat.title,Hand types
 cheat.active,In play now
@@ -139,13 +138,15 @@ cheat.example.bomb,7 7 7 7
 cheat.example.rocket,Small + Big
 intro.where,Year {year} · Quota {set} of 3
 intro.target,Score {target} in up to {rounds} rounds.
-intro.ladder,Later rounds add debuffs. They stack.
+intro.ladder,"Later rounds add debuffs. They stack, and they apply only to you."
+table.debuffs,Debuffs on you only
 intro.round,Round {round}
 intro.clean,Clean
 intro.clean_text,No debuff.
 intro.none_new,No new debuff
 intro.none_new_text,Earlier debuffs still apply.
 intro.begin,Begin
+intro.boss,{name}: {rule}
 summary.met,Quota met
 summary.missed,Quota missed
 summary.progress,{progress} of {target}
@@ -157,11 +158,11 @@ store.title,State Store
 store.coupons,{count} coupons
 store.coupons.one,1 coupon
 store.reroll,Reroll · {price} coupons
-store.owned,Your Cadres: {names}
-store.none,none
 store.leave,Next Quota
 store.sold,Sold
 store.buy,Buy · {price} coupons
+store.rationed,Rationing: {count} Cadres on the counter until Famine falls below {below}.
+store.rationed.one,Rationing: 1 Cadre on the counter until Famine falls below {below}.
 year.title,Year {year} done
 year.coupons,Coupons left: {count}
 year.famine,Famine: {value}
@@ -183,8 +184,6 @@ settings.post_process,Print grain and film effects
 title.eyebrow,A Fight the Landlord roguelike
 store.eyebrow,Between Quotas
 store.balance,Your coupons
-summary.scored,Scored
-summary.target,Target
 summary.coupons_label,Coupons
 summary.famine_label,Famine
 year.eyebrow,Year's end
@@ -196,10 +195,6 @@ demo.eyebrow,Thank you for playing
 settings.eyebrow,Preferences
 settings.audio,Sound
 settings.display,Display
-banner.landlord_you,You take the landlord seat
-banner.landlord_other,{name} takes the landlord seat
-banner.bomb,Bomb
-banner.rocket,Rocket
 banner.landlord_wins,The landlord wins the round
 banner.peasants_win,The peasants win the round
 sort.rank,Rank
@@ -285,10 +280,13 @@ plot.hand,Your hand
 plot.plot,Your plot
 plot.empty,Your plot is empty.
 plot.keep,Keep hand
+plot.swap,Swap
+plot.limit,Swap up to {count} cards this round.
+plot.limit.one,Swap up to 1 card this round.
 plot.back,Back
 reed.eyebrow,Reeducation
-reed.title,Sent away for a Set
-reed.body,You sit out the next Set. Your private plot is emptied.
+reed.title,Sent for reeducation
+reed.body,"You miss this visit to the State Store. Your private plot is emptied. If you hold a Cadre, one is exchanged for a Cadre you don't hold."
 reed.continue,Continue
 end.eyebrow,The run is over
 end.landlord,You finished as landlord
@@ -317,3 +315,194 @@ settings.horror_intensity,Horror intensity
 settings.no_flash,No flashes
 dread.notice,"Brigade notice: the threshing floor is swept. Bring your own baskets on Sunday."
 dread.poster,Household under review
+villager.wang,Wang
+villager.li,Li
+villager.zhao,Zhao
+villager.sun,Sun
+villager.chen,Chen
+villager.liu,Liu
+villager.qin,Qin
+villager.gao,Gao
+villager.xu,Xu
+villager.zhou,Zhou
+villager.ma,Ma
+villager.feng,Feng
+villager.tang,Tang
+villager.deng,Deng
+villager.youth.hu,Hu
+villager.youth.lin,Lin
+villager.youth.zhu,Zhu
+villager.youth.he,He
+villager.youth.guo,Guo
+villager.youth.luo,Luo
+villager.youth.song,Song
+villager.youth.xie,Xie
+villager.youth.han,Han
+villager.youth.yang,Yang
+villager.youth.cao,Cao
+villager.youth.peng,Peng
+speech.wang.pass.1,"Go ahead, it's yours."
+speech.wang.bomb.1,"I was saving that. Oh, well."
+speech.wang.won.1,Not bad for old hands.
+speech.li.pass.1,Pass. You go on.
+speech.li.no_call.1,No. I'll sit this one out.
+speech.li.lost.1,I still had two twos.
+speech.zhao.call.1,I'll call. Watch closely.
+speech.zhao.bomb.1,There. That's how it's done.
+speech.zhao.cards_left.1,{count}. Keep up.
+speech.sun.pass.1,"Pass, pass."
+speech.sun.cards_left.1,{count}! Nearly out.
+speech.sun.won.1,Out first. Shuffle up.
+speech.chen.call.1,I'll call. These look lucky.
+speech.chen.bomb.1,Ha! Didn't see that coming.
+speech.chen.lost.1,Next hand's mine.
+speech.liu.pass.1,"Go on, you've got this one."
+speech.liu.pass.2,Mm. Pass.
+speech.liu.won.1,"We did all right, didn't we?"
+speech.qin.no_call.1,No. Pass it on.
+speech.qin.pass.1,I'll wait.
+speech.qin.lost.1,Better luck tomorrow.
+speech.gao.call.1,Sure. Why not.
+speech.gao.pass.1,Is this how it always goes?
+speech.gao.lost.1,"Same as last time, then."
+speech.xu.pass.1,"You take it, you're doing better."
+speech.xu.won.1,"Oh, that's us! Well played."
+speech.xu.cards_left.1,Only {count}! Help me out.
+speech.zhou.pass.1,"Go on, I'm listening."
+speech.zhou.cards_left.1,{count} left? Mm.
+speech.zhou.won.1,Good game. Same again?
+speech.ma.pass.1,Not yet.
+speech.ma.won.1,That'll do.
+speech.ma.bomb.1,Had that one ready a while.
+speech.feng.pass.1,"Go on, finish it."
+speech.feng.call.1,Give it here. I'll manage.
+speech.feng.won.1,Good. Tea after this one.
+speech.tang.call.1,"I'll take it, if no one minds."
+speech.tang.pass.1,Take your time.
+speech.tang.lost.1,It happens.
+speech.deng.call.1,Mine. Let's see you take it back.
+speech.deng.bomb.1,"Your trick, my bomb."
+speech.deng.won.1,Again. Same seats.
+speech.youth_a.pass.1,Should I play that? No. Pass.
+speech.youth_a.won.1,Is that a win? It is!
+speech.youth_a.cards_left.1,"{count} left, I think."
+speech.youth_b.pass.1,Pass. Obviously.
+speech.youth_b.lost.1,Great. Wonderful.
+speech.youth_b.call.1,"Sure, I'll call."
+modifier.struggle_session.name,Struggle Session
+modifier.struggle_session.text,"At each deal, your highest card goes into the kitty, and you take the kitty's lowest card."
+modifier.requisition.name,Requisition
+modifier.requisition.text,Your Bombs and Rockets score 0.
+modifier.great_leap.name,Great Leap
+modifier.great_leap.text,The Quota is doubled. Your plays gain +{zeal_percent} Zeal.
+modifier.the_purge.name,The Purge
+modifier.the_purge.text,"When this Set starts, {purge} of your Cadres, drawn at random, is destroyed."
+modifier.risen_villager.name,Risen Villager
+modifier.risen_villager.text,A villager who held the landlord seat for a whole Set sits at the table and starts this Set as landlord.
+modifier.new_landlord.name,New Landlord
+modifier.new_landlord.text,"Your opponent favors the hand types you played most, and calls the landlord seat about as often as you did, over your last three Sets."
+modifier.planned_allocation.name,Planned Allocation
+modifier.planned_allocation.text,Each 2 is twice as likely to be dealt to you.
+modifier.red_ink.name,Red Ink
+modifier.red_ink.text,"Cards stamped with your mark score +{grain} Grain when you play them. Played by anyone else, they score as usual."
+modifier.the_informant.name,The Informant
+modifier.the_informant.text,Shows the hand types your opponents still hold.
+modifier.peek.name,Peek
+modifier.peek.text,Shows the cards of the other player closest to going out.
+keyword.grain.name,Grain
+keyword.grain.text,"Grain: the sum of the ranks of the cards that score. J is 11, Q 12, K 13, A 14, a 2 is 15, the jokers 16 and 17."
+keyword.rate.name,Rate
+keyword.rate.text,Rate: what the hand type multiplies Grain by. Bigger hand types have a higher Rate.
+keyword.zeal.name,Zeal
+keyword.zeal.text,"Zeal: an extra multiplier from Cadres, debuffs and bosses. It starts at 1. A play scores Grain × Rate × Zeal."
+keyword.commons.name,Commons
+keyword.commons.text,"Commons: the pool both peasants' scores go into. When the round ends it is split by declared need."
+cheat.keywords,Scoring words
+ledger.landlord,Landlord
+ledger.commons,Commons pool
+ledger.you,You
+ledger.plays,Plays
+ledger.play,{who} · {type} · {total}
+ledger.sum,{grain} Grain × {rate} Rate × {zeal} Zeal
+ledger.final,Round total
+hand.sum,{type}  ·  {grain} Grain × {rate} Rate × {zeal} Zeal = {total}
+action.grab,Grab
+table.grab_prompt,"{name} holds the landlord seat. Grabbing it adds {cost} Resentment."
+table.bid_tip,"The first to call holds the landlord seat. Anyone who hasn't passed may then grab it once, and a caller who was grabbed from may grab it back. Calling an open seat is free. Grabbing a held seat adds Resentment, which makes the villagers play harder against you. Who bids first moves round the table. The landlord keeps the seat until they lose a round."
+need.title,Split the Commons
+need.pool,The Commons holds {pool} this round.
+need.rule,You and {name} each claim a share of it. Equal claims split it evenly.
+need.preview,"If {name} claims a fair half: you get {yours}, {name} gets {theirs}."
+need.honest,A fair claim. Audit chance: {chance}%.
+need.lie,"More than your half. Audit chance: {chance}%. If caught, you get your fair half and {rise} Denunciation."
+need.less,Less than your half. {name} gets more of the pool.
+need.percent,{percent}%
+table.rules_everyone,Rules for the whole table
+modifier.table_wide,This applies to everyone at the table.
+keyword.landlord.name,Landlord
+keyword.landlord.text,"Landlord: plays alone against the other two, takes the kitty and leads first. A landlord banks their own score."
+keyword.peasant.name,Peasant
+keyword.peasant.text,Peasant: one of the two players against the landlord. Their scores go into the Commons.
+keyword.kitty.name,Kitty
+keyword.kitty.text,Kitty: the three cards left over after the deal. The landlord takes them.
+keyword.kicker.name,Kicker
+keyword.kicker.text,"Kicker: a spare card carried by a Trio, an Airplane or four of a kind. It adds no Grain and never decides which play is higher."
+keyword.bomb.name,Bomb
+keyword.bomb.text,Bomb: four of a kind. It beats any play except a higher Bomb or the Rocket.
+keyword.rocket.name,Rocket
+keyword.rocket.text,Rocket: both jokers together. It beats every play.
+keyword.quota.name,Quota
+keyword.quota.text,Quota: the work points you must reach over a set of rounds. Meeting it pays coupons.
+keyword.audit.name,Audit
+keyword.audit.text,"Audit: a check of one claim on the Commons. Every claim runs the same chance of one. A claim caught above its fair share is cut back to it, and adds Denunciation."
+keyword.resentment.name,Resentment
+keyword.resentment.text,"Resentment: what the village holds against your private gains. Villagers play harder against you as it rises, and it adds Denunciation when a Quota ends."
+keyword.denunciation.name,Denunciation
+keyword.denunciation.text,"Denunciation: the case building against you. Private purchases, caught lies and Resentment raise it. If it fills, the run ends."
+keyword.famine.name,Famine
+keyword.famine.text,"Famine: the village's hunger. A missed Quota raises it, and so does a Commons too small for what was claimed. If it fills, the run ends."
+bid.call,Called the seat
+bid.grab,Grabbed the seat
+bid.pass,Passed on the seat
+stamp.pass,Pass
+audit.title,The Commons is split
+audit.claim,{name} claimed {percent}%
+audit.rolling,Audit?
+audit.clear,Not audited
+audit.honest,Audited: a fair claim
+audit.caught,Audited: lie caught
+audit.paid,+{amount}
+callout.call,Call!
+callout.call.sub,{name} calls the landlord seat
+callout.call.you,You call the landlord seat
+callout.grab,Grab!
+callout.grab.sub,{name} grabs the landlord seat
+callout.grab.you,You grab the landlord seat
+callout.bomb,Bomb!
+callout.rocket,Rocket!
+callout.won,Round won
+callout.lost,Round lost
+tally.total,Work points
+table.quota,{progress} / {target}
+table.quota_met,Met
+callout.quota.met,Quota met
+callout.quota.missed,Quota missed
+callout.quota.sub,{progress} of {target} work points
+store.approved,Approved
+store.shelf,Your Cadres
+market.paid,Paid
+market.warning,Nothing here is on the books. Every purchase adds {rise} Resentment.
+market.upgrade.capacity,Enlarge your plot · {price} coupons
+market.upgrade.capacity.out,Your plot is as large as it gets
+market.upgrade.capacity.tip,Your private plot holds one more card.
+market.upgrade.swaps,One more swap a round · {price} coupons
+market.upgrade.swaps.out,No more swaps to buy
+market.upgrade.swaps.tip,"Each round, you may swap one more card between your hand and your private plot."
+summary.short,Short
+market.plot,For your private plot · {held} of {room}
+market.plot.tip,"This card goes into your private plot. Each round, after the landlord is chosen, you may swap plot cards into your hand."
+intel.types,Holds: {list}
+intel.cards,Cards: {list}
+tally.scaled,× {percent}% =
+ledger.scaled,× {percent}%
+hand.scaled,(after × {percent}%)

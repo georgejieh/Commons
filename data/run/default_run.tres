@@ -6,5 +6,5 @@
 script = ExtResource("1")
 base_need = 10
 swaps_per_round = 1
-famine_on_missed_target = 10
+plot_capacity = 4
 meter_max = 100

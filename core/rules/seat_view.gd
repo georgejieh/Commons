@@ -6,6 +6,8 @@ var seat: int
 var public: PublicView
 var own_counts: PackedByteArray
 var own_cards: Array[CardInstance]
+## Information upgrades for the player only (P4.9). Bots' views never have one.
+var info: InfoView = null
 
 
 func _init(

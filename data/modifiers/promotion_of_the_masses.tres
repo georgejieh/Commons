@@ -14,3 +14,4 @@ rarity = 1
 cost = 5
 name_key = "modifier.promotion_of_the_masses.name"
 text_key = "modifier.promotion_of_the_masses.text"
+table_wide = true

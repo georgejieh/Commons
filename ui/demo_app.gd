@@ -5,6 +5,8 @@ extends Control
 ## its controller. The table scene is the 2D or the 3D one, chosen at export.
 
 const DEMO: DemoParams = preload("res://data/run/demo.tres")
+## The demo seats' voices, by villager name.
+const DEMO_VOICE: String = "res://data/ui/voices/%s.tres"
 const MOTION: MotionPresets = preload("res://data/ui/motion_presets.tres")
 const TABLE_3D_FEATURE: String = "table_3d"
 const SCREENS: Dictionary[String, String] = {
@@ -29,12 +31,18 @@ const SCREENS: Dictionary[String, String] = {
 	"village_history": "res://ui/screens/village_history_screen.tscn",
 }
 
+## Screens of a run, off the table, where Escape opens the menu. The table has its own.
+const MENU_SCREENS: Array[String] = [
+	"set_intro", "set_summary", "store", "black_market", "year_summary", "plot_swap"
+]
+
 var controller: RunController = RunController.new()
 var hand: HandModel
 var switcher: SceneSwitcher = SceneSwitcher.new()
 var post: PostProcess = PostProcess.new()
 var _wipe: ColorRect = ColorRect.new()
 var _wipe_layer: CanvasLayer = CanvasLayer.new()
+var _menu: PauseMenu = PauseMenu.new()
 
 @onready var _host: Control = $Screens
 
@@ -51,6 +59,11 @@ func _ready() -> void:
 	_wipe_layer.layer = PostProcess.LAYER - 1
 	_wipe_layer.add_child(_wipe)
 	add_child(_wipe_layer)
+	add_child(_menu)
+	_menu.to_title.connect(func() -> void: show_screen("title", true))
+	_menu.quit_game.connect(func() -> void: get_tree().quit())
+	_menu.dossier.connect(func() -> void: show_screen("dossier"))
+	_menu.last_round.connect(func() -> void: show_screen("round_summary"))
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
 	for screen_id: String in SCREENS:
@@ -58,6 +71,20 @@ func _ready() -> void:
 			scenes[screen_id] = load(SCREENS[screen_id])
 	switcher.setup(_host, scenes)
 	show_screen(first_screen(), true)
+
+
+## Escape opens the menu on a run's screens away from the table (the table handles its
+## own, first).
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel") or _menu.visible:
+		return
+	if MENU_SCREENS.has(switcher.current_id()):
+		_menu.open()
+		get_viewport().set_input_as_handled()
+
+
+func menu_is_open() -> bool:
+	return _menu.visible
 
 
 ## The content note on first launch, then the title ever after.
@@ -100,12 +127,19 @@ func table_id() -> String:
 
 func new_run(seed_value: int) -> void:
 	controller.start_run(
-		seed_value, _configs(), SetConfig.new(DEMO.sets), Saves.run_service(), DEMO.starting_coupons
+		seed_value,
+		_configs(),
+		SetConfig.new(DEMO.sets),
+		Saves.run_service(),
+		DEMO.starting_coupons,
+		Saves.profile_service()
 	)
 
 
 func continue_run() -> bool:
-	return controller.resume_saved(Saves.run_service(), _configs(), SetConfig.new(DEMO.sets))
+	return controller.resume_saved(
+		Saves.run_service(), _configs(), SetConfig.new(DEMO.sets), Saves.profile_service()
+	)
 
 
 ## Continues the saved run on the screen it stopped at.
@@ -122,6 +156,8 @@ func screen_for(awaiting: int) -> String:
 			return "set_summary"
 		RunController.AWAIT_STORE:
 			return "store"
+		RunController.AWAIT_REEDUCATION:
+			return "reeducation"
 		RunController.AWAIT_RUN_OVER:
 			return "year_summary"
 		RunController.AWAIT_SWAP:
@@ -134,11 +170,52 @@ func has_saved_run() -> bool:
 
 
 func seat_name(seat: int) -> String:
-	return tr(DEMO.name_keys[seat])
+	var key: String = _controller_call("seated_name_key", seat, "")
+	return tr(key if not key.is_empty() else DEMO.name_keys[seat])
+
+
+## The seated family's own speech lines, or null for the demo's fixed seats.
+func seat_speech(seat: int) -> SpeechBook:
+	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	return null if family == null else family.speech
+
+
+## The seated family's voice (P3B.13), or the demo seat's by its villager name.
+func seat_voice(seat: int) -> VoiceProfile:
+	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	if family != null:
+		return family.voice
+	var path: String = DEMO_VOICE % seat_voice_bank(seat)
+	return load(path) if ResourceLoader.exists(path) else null
+
+
+## The name of the seat's letter bank under audio/voices: the family's id.
+func seat_voice_bank(seat: int) -> String:
+	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	if family != null:
+		return family.id
+	if seat >= DEMO.name_keys.size():
+		return ""
+	return DEMO.name_keys[seat].trim_prefix("villager.")
+
+
+## Asks the controller about a seat, or gives fallback before any run exists.
+func _controller_call(method: String, seat: int, fallback: Variant) -> Variant:
+	if controller == null or not controller.has_run():
+		return fallback
+	return controller.call(method, seat)
 
 
 ## The seat's portrait cropped around its face for a box of the given shape.
 func seat_portrait(seat: int, box: Vector2 = Vector2.ZERO) -> Texture2D:
+	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	if family != null:
+		if family.portrait == null:
+			return null
+		var face: Texture2D = ArtStages.resolve(family.portrait)
+		if box == Vector2.ZERO:
+			return face
+		return ScreenKit.face_crop(face, family.portrait_face, box.x / box.y)
 	if seat >= DEMO.portraits.size() or DEMO.portraits[seat] == null:
 		return null
 	var picture: Texture2D = ArtStages.resolve(DEMO.portraits[seat])

@@ -10,6 +10,8 @@ const SEED: int = 4242
 const SHOT_EVERY: int = 5
 const STEP_FRAMES: int = 4
 const SETTLE_SECONDS: float = 1.2
+## Seconds between pictures of a moment in motion.
+const SNAP_SECONDS: float = 0.22
 const SAVE_PATH: String = "user://playtest/run.json"
 
 var _out: String = "res://reports/playtest"
@@ -83,6 +85,9 @@ func _step() -> void:
 		"store":
 			await _shot("store")
 			await _buy_one()
+			await _click_button_with_text(tr("market.open"))
+			await _shot("black_market")
+			await _click_button_with_text(tr("market.back"))
 			await _click_button_with_text(tr("store.leave"))
 		"set_intro":
 			await _shot("set_intro")
@@ -114,8 +119,19 @@ func _table_step() -> void:
 				return
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
+			if _rounds_seen <= 2:
+				await _frames(5)
+				await _shot("round%d_bid_stamps" % _rounds_seen)
 		4:
-			await _press_node(table.call("need_panel"))
+			var need_panel: Node = table.call("need_panel")
+			var declare: Button = need_panel.get("_declare")
+			var more: Button = need_panel.get("_more")
+			await _press(more)
+			await _frames(6)
+			await _shot("round%d_need" % _rounds_seen)
+			await _press(declare)
+			await _frames(14)
+			await _shot("round%d_audit" % _rounds_seen)
 		3:
 			await _play_turn(table, controller)
 
@@ -157,7 +173,17 @@ func _buy_one() -> void:
 	for child: Node in screen.find_children("*", "Button", true, false):
 		var button: Button = child as Button
 		if button.theme_type_variation == "CouponButton" and not button.disabled:
+			# The seal as it lands on a card, pressed by hand so it can be photographed.
+			var seal: Control = screen.get("_seal")
+			var counter: Control = screen.get("_counter")
+			var card: Control = counter.get_child(0)
+			seal.position = card.global_position + card.size / 2.0 - seal.size / 2.0
+			seal.call("press")
+			await _snap("store_seal")
+			seal.hide()
 			await _press(button)
+			for frame: int in 3:
+				await _snap("store_buying_%d" % frame)
 			await _frames(30)
 			_bought += 1
 			await _shot("store_bought")
@@ -182,8 +208,43 @@ func _leave_and_continue(table: Node) -> void:
 		print("RESUME WRONG STATE %d" % controller.call("awaiting"))
 
 
+## Plays the table's big moments by hand and photographs each a few frames apart, so
+## their look can be checked without watching them move.
+func _moment_frames(table: Node) -> void:
+	var moments: Object = table.get("_moments")
+	var callout: Object = moments.get("callout")
+	var face: Texture2D = _app.call("seat_portrait", 1, Vector2.ONE)
+	var red: Color = Color("b02a17")
+	callout.call("shout", "Call!", 0, red, "Wang calls the landlord seat", face, false)
+	for frame: int in 4:
+		await _snap("moment_cut_in_%d" % frame)
+	await create_timer(2.0).timeout
+	callout.call("shout", "Bomb!", 1, red, "Zhao", null, true)
+	for frame: int in 4:
+		await _snap("moment_takeover_%d" % frame)
+	await create_timer(2.0).timeout
+	moments.call("_show_kitty", 1, [3, 20, 51] as Array[int])
+	for frame: int in 3:
+		await _snap("moment_kitty_%d" % frame)
+	await create_timer(2.0).timeout
+	var hud: Object = table.get("_hud")
+	hud.call("add_progress", 1600.0, 0.0)
+	callout.call("shout", "Quota met", 1, red, "1.6K of 1.5K work points", null, true)
+	for frame: int in 3:
+		await _snap("moment_quota_%d" % frame)
+	await create_timer(2.0).timeout
+	var controller: Node = _app.get("controller")
+	hud.call("sync", controller.call("state_copy"), controller.call("target"))
+	var tally: Object = moments.get("tally")
+	tally.call("show_score", 54.0, 7.0, 1.5, 567.0, 1.0)
+	for frame: int in 4:
+		await _snap("moment_tally_%d" % frame)
+	await create_timer(2.0).timeout
+
+
 ## Presses every table control once and photographs the result.
 func _tour(table: Node) -> void:
+	await _moment_frames(table)
 	var actions: Object = table.call("actions")
 	for mode: int in 3:
 		await _press(actions.get("sort"))
@@ -283,7 +344,7 @@ func _click_first_button() -> void:
 func _click_button_with_text(text: String) -> void:
 	var switcher: Object = _app.get("switcher")
 	var screen: Node = switcher.call("current")
-	await _frames(25)
+	await _frames(5)
 	for child: Node in screen.find_children("*", "Button", true, false):
 		var button: Button = child as Button
 		if button.text == text:
@@ -310,6 +371,15 @@ func _mouse_click(at: Vector2) -> void:
 func _frames(count: int) -> void:
 	for _frame: int in count:
 		await process_frame
+
+
+## A picture of a moment in motion: a short beat on, with no wait for things to settle.
+func _snap(name: String) -> void:
+	await create_timer(SNAP_SECONDS).timeout
+	await RenderingServer.frame_post_draw
+	_shots += 1
+	var path: String = _out.path_join("%02d_%s.png" % [_shots, name])
+	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(path))
 
 
 func _shot(name: String) -> void:

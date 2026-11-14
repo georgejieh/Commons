@@ -5,7 +5,19 @@ extends GdUnitTestSuite
 const FIXTURES: String = "res://tests/fixtures/ui_boundary/"
 const SEED: int = 3701
 const UI_ACTIONS: Array[String] = [
-	"bid", "swap", "play", "pass", "declare_need", "finish_set", "buy", "reroll", "leave_store"
+	"bid",
+	"swap",
+	"play",
+	"pass",
+	"declare_need",
+	"finish_set",
+	"buy",
+	"reroll",
+	"market_buy",
+	"market_reroll",
+	"upgrade",
+	"plot_card",
+	"leave_store",
 ]
 
 

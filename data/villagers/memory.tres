@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MemoryParams" format=3]
+
+[ext_resource type="Script" path="res://data/villagers/memory_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+fed_weight = -1.0
+bombed_weight = 2.0
+denounced_weight = 4.0
+betrayed_weight = 1.0
+kept_per_run = 0.5
+full_grudge = 10.0
