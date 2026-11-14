@@ -99,7 +99,7 @@ table.cards_left,{count} cards
 table.role.landlord,Landlord
 table.role.teammate,Your teammate
 table.role.peasant,Peasant
-table.status,Year {year} · {set} · Round {round} of {rounds} · {progress} / {target}
+table.status,Year {year} · {set} · Round {round} of {rounds}
 table.coupons,{count} coupons
 table.coupons.one,1 coupon
 set.type.0,Small Quota
@@ -158,8 +158,6 @@ store.title,State Store
 store.coupons,{count} coupons
 store.coupons.one,1 coupon
 store.reroll,Reroll · {price} coupons
-store.owned,Your Cadres: {names}
-store.none,none
 store.leave,Next Quota
 store.sold,Sold
 store.buy,Buy · {price} coupons
@@ -487,3 +485,10 @@ callout.rocket,Rocket!
 callout.won,Round won
 callout.lost,Round lost
 tally.total,Work points
+table.quota,{progress} / {target}
+table.quota_met,Met
+callout.quota.met,Quota met
+callout.quota.missed,Quota missed
+callout.quota.sub,{progress} of {target} work points
+store.approved,Approved
+store.shelf,Your Cadres

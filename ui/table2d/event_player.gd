@@ -22,6 +22,9 @@ var motion: TableMotion = null
 
 var _queue: Array[RunEvent] = []
 var _wait: float = 0.0
+## True when the last event asked for a hold: drained then waits for it to pass.
+var _held: bool = false
+var _draining: bool = false
 
 
 func push(event: RunEvent) -> void:
@@ -29,8 +32,9 @@ func push(event: RunEvent) -> void:
 	queued.emit()
 
 
+## True when nothing is queued and no moment is still playing out.
 func is_idle() -> bool:
-	return _queue.is_empty()
+	return _queue.is_empty() and not _draining
 
 
 ## Plays every queued event now, for tests and skipping.
@@ -40,16 +44,19 @@ func flush() -> void:
 		played.emit(_queue.pop_front())
 	flushing = false
 	_wait = 0.0
+	_held = false
+	_draining = false
 	drained.emit()
 
 
 ## Keeps the queue still for at least this long from now, while a moment plays out.
 func hold(seconds: float) -> void:
 	_wait = maxf(_wait, seconds)
+	_held = true
 
 
 func _process(delta: float) -> void:
-	if _queue.is_empty():
+	if _queue.is_empty() and not _draining:
 		return
 	if motion != null and motion.is_stopped():
 		return
@@ -58,6 +65,7 @@ func _process(delta: float) -> void:
 		var event: RunEvent = _queue.pop_front()
 		# A handler may hold the queue, so every wait below only ever lengthens it.
 		_wait = 0.0
+		_held = false
 		played.emit(event)
 		if _shows(event):
 			_wait = maxf(_wait, _step_for(event))
@@ -65,7 +73,12 @@ func _process(delta: float) -> void:
 			_wait = maxf(_wait, holds[event.type])
 		if _ends_round(event):
 			_wait = maxf(_wait, round_end_hold)
-	if _queue.is_empty():
+	if not _queue.is_empty():
+		return
+	# A moment still playing out finishes before the table moves on.
+	_draining = _held and _wait > 0.0
+	if not _draining:
+		_held = false
 		drained.emit()
 
 

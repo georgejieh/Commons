@@ -129,6 +129,7 @@ func open(app: DemoApp) -> void:
 	for seat: int in _seats:
 		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
 	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
+	_moments.hud = _hud
 	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
 	_player.holds = {
 		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
@@ -147,6 +148,7 @@ func open(app: DemoApp) -> void:
 		_player.push(event)
 	_player.flush()
 	_replaying = false
+	_hud.sync(_controller.state_copy(), _controller.target())
 
 
 ## Plays every queued event at once, skipping the pacing.
@@ -268,6 +270,7 @@ func _new_deal() -> void:
 func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
+	_hud.sync(_controller.state_copy(), _controller.target())
 	_board.show_cadres(_controller)
 	_debuffs.show_debuffs(_controller)
 	var awaiting: int = _controller.awaiting()
@@ -323,7 +326,7 @@ func _refresh_seats() -> void:
 
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
-	_hud.show_state(state, _controller.target(), _app.max_rounds())
+	_hud.show_state(state, _app.max_rounds())
 
 
 static func _type_name(pattern: Pattern) -> String:

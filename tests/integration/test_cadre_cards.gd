@@ -77,3 +77,27 @@ func test_the_notice_board_cards_carry_the_tooltip() -> void:
 
 func _labels(node: Node) -> Array[Node]:
 	return node.find_children("*", "Label", true, false)
+
+
+func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
+	var store: StoreScreen = _app.show_screen("store")
+	await await_idle_frame()
+	var stock: Array[String] = _app.controller.store_stock()
+	var slot: int = range(stock.size()).filter(_app.controller.can_buy).front()
+	var bought: String = stock[slot]
+	var held: int = _app.controller.state_copy().inventory.cadres.size()
+	var counter: HBoxContainer = store.get("_counter")
+	var buy: Button = counter.get_child(slot).find_children("*", "Button", true, false)[0]
+	buy.pressed.emit()
+	# The purchase is made at once; only its show takes time.
+	assert_array(_app.controller.state_copy().inventory.cadres).contains([bought])
+	assert_bool(store.is_buying()).is_true()
+	var seal: InkSeal = store.get("_seal")
+	assert_bool(seal.visible).is_true()
+	assert_str(seal.word()).is_equal(tr("store.approved").to_upper())
+	await await_millis(int((StoreScreen.SEAL_HOLD + StoreScreen.PIN_TIME) * 1000.0) + 300)
+	assert_bool(store.is_buying()).is_false()
+	assert_bool(seal.visible).is_false()
+	var board: NoticeBoard = store.get("_board")
+	var cards: Array[TipHost] = board.get("_cards")
+	assert_str(cards[held].tip_rule()).is_equal(ScreenKit.rule_text(_app.controller, bought))

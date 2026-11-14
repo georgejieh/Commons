@@ -139,3 +139,53 @@ func _moments(seats: Dictionary[int, SeatPanel]) -> TableMoments:
 	var faces: Dictionary[int, Texture2D] = {}
 	moments.setup(ledger, pile, motion, player, seats, names, faces)
 	return moments
+
+
+func test_the_quota_bar_fills_as_points_arrive_and_is_sealed_when_met() -> void:
+	var hud: TableHud = auto_free(TableHud.new())
+	add_child(hud)
+	Settings.set_value("reduced_motion", true)
+	hud.start_quota(1000.0)
+	assert_bool(hud.is_met()).is_false()
+	hud.add_progress(400.0)
+	assert_float(hud.goal(TableHud.QUOTA)).is_equal(400.0)
+	assert_float(hud.quota.value).is_equal(400.0)
+	assert_bool(hud.is_met()).is_false()
+	hud.add_progress(700.0)
+	assert_float(hud.quota.value).is_equal(1000.0)
+	assert_bool(hud.is_met()).is_true()
+	hud.nudge_meter(TableHud.FAMINE, 10.0)
+	assert_float(hud.famine.value).is_equal(10.0)
+	# A new Quota empties the bar and lifts the seal.
+	hud.start_quota(2000.0)
+	assert_float(hud.quota.value).is_equal(0.0)
+	assert_bool(hud.is_met()).is_false()
+	Settings.set_value("reduced_motion", false)
+
+
+func test_a_moment_that_holds_the_queue_finishes_before_the_table_moves_on() -> void:
+	var player: EventPlayer = auto_free(EventPlayer.new())
+	add_child(player)
+	var drains: Array[int] = [0]
+	player.drained.connect(func() -> void: drains[0] += 1)
+	player.played.connect(func(_event: RunEvent) -> void: player.hold(0.4))
+	player.push(RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1, 10.0))
+	await await_millis(150)
+	assert_int(drains[0]).is_equal(0)
+	assert_bool(player.is_idle()).is_false()
+	await await_millis(500)
+	assert_int(drains[0]).is_equal(1)
+	assert_bool(player.is_idle()).is_true()
+
+
+func test_the_end_of_a_quota_takes_the_screen() -> void:
+	var seats: Dictionary[int, SeatPanel] = {}
+	var moments: TableMoments = _moments(seats)
+	moments.on_event(RunEvent.new(RunEvent.Type.SET_STARTED, Seats.NONE, 0, 1500.0))
+	moments.on_event(RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1, 1600.0))
+	assert_str(moments.callout.shown_word()).is_equal(tr("callout.quota.met").to_upper())
+	assert_str(moments.callout.shown_sub()).is_equal(
+		tr("callout.quota.sub").format({"progress": "1.6K", "target": "1.5K"})
+	)
+	moments.on_event(RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 0, 900.0))
+	assert_str(moments.callout.shown_word()).is_equal(tr("callout.quota.missed").to_upper())

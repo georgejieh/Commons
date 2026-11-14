@@ -171,6 +171,8 @@ func _buy_one() -> void:
 		var button: Button = child as Button
 		if button.theme_type_variation == "CouponButton" and not button.disabled:
 			await _press(button)
+			for frame: int in 3:
+				await _snap("store_buying_%d" % frame)
 			await _frames(30)
 			_bought += 1
 			await _shot("store_bought")
@@ -210,6 +212,18 @@ func _moment_frames(table: Node) -> void:
 	for frame: int in 4:
 		await _snap("moment_takeover_%d" % frame)
 	await create_timer(2.0).timeout
+	moments.call("_show_kitty", 1, [3, 20, 51] as Array[int])
+	for frame: int in 3:
+		await _snap("moment_kitty_%d" % frame)
+	await create_timer(2.0).timeout
+	var hud: Object = table.get("_hud")
+	hud.call("add_progress", 1600.0, 0.0)
+	callout.call("shout", "Quota met", 1, red, "1.6K of 1.5K work points", null, true)
+	for frame: int in 3:
+		await _snap("moment_quota_%d" % frame)
+	await create_timer(2.0).timeout
+	var controller: Node = _app.get("controller")
+	hud.call("sync", controller.call("state_copy"), controller.call("target"))
 	var tally: Object = moments.get("tally")
 	tally.call("show_score", 54.0, 7.0, 1.5, 567.0, 1.0)
 	for frame: int in 4:

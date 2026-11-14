@@ -1,18 +1,28 @@
 class_name StoreScreen
 extends Control
 ## The state store between Sets: three Cadres on the counter, bought with coupons, a
-## reroll, and what you already hold. Every purchase goes through the run controller.
+## reroll, and what you already hold, pinned on a board. Every purchase goes through
+## the run controller. A purchase is acted out: the card is sealed "approved", then
+## flies down to its place on your board.
 
 ## Modifier names are long, so they print a step below the title size (the set intro's
 ## debuff card uses it).
 const NAME_SIZE: int = 32
 ## The owned-Cadres line wraps at this width on its paper chip.
 const OWNED_WIDTH: float = 900.0
+const SEAL_WIDTH: float = 250.0
+## Seconds the seal sits on a bought card, and the card takes to reach the board.
+const SEAL_HOLD: float = 0.42
+const PIN_TIME: float = 0.3
+const PIN_SCALE: float = 0.3
 
 var _app: DemoApp
 var _counter: HBoxContainer = HBoxContainer.new()
 var _coupons: Label = ScreenKit.styled("", CommonsTheme.TITLE)
-var _owned: Label = ScreenKit.styled("", CommonsTheme.CAPTION)
+var _board: NoticeBoard = NoticeBoard.new()
+var _seal: InkSeal = InkSeal.new()
+## True while a purchase is being acted out: the counter takes no second one.
+var _busy: bool = false
 ## The name and rules of the Cadre under the pointer or focus, for keyboard and gamepad.
 var _reading: Label = ScreenKit.label("", 20)
 var _reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
@@ -27,10 +37,9 @@ func open(app: DemoApp) -> void:
 	balance.add_child(ScreenKit.eyebrow(tr("store.balance")))
 	_coupons.add_theme_color_override("font_color", ScreenKit.COUPON)
 	_coupons.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_owned.add_theme_font_size_override("font_size", 22)
 	# The chip shrinks to its content, so a wrapping label needs a set width.
-	_owned.custom_minimum_size = Vector2(OWNED_WIDTH, 0)
 	_reading.custom_minimum_size = Vector2(OWNED_WIDTH, 0)
+	_board.setup(app.controller.cadre_slots())
 	balance.add_child(_coupons)
 	balance.size_flags_vertical = Control.SIZE_SHRINK_END
 	column.add_child(ScreenKit.row([heading, balance], 64))
@@ -51,10 +60,13 @@ func open(app: DemoApp) -> void:
 	# A paper chip, so the line reads over the mural.
 	var chip: VBoxContainer = ScreenKit.card(Vector2(0, 0))
 	chip.add_child(_reading)
-	chip.add_child(_owned)
+	chip.add_child(ScreenKit.eyebrow(tr("store.shelf")))
+	chip.add_child(_board)
 	var chip_panel: Control = ScreenKit.card_panel(chip)
 	chip_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	column.add_child(chip_panel)
+	_seal.prepare(tr("store.approved"), ScreenKit.RED, SEAL_WIDTH)
+	add_child(_seal)
 	_shown_coupons = app.controller.state_copy().coupons
 	_refresh()
 	ScreenKit.reveal(column)
@@ -75,12 +87,7 @@ func _refresh() -> void:
 		_counter.add_child(_item(slot, stock[slot]))
 	_reroll.text = tr("store.reroll").format({"price": controller.reroll_price()})
 	_reroll.disabled = not controller.can_reroll()
-	var names: PackedStringArray = []
-	for cadre_id: String in state.inventory.cadres:
-		names.append(tr("modifier.%s.name" % cadre_id))
-	_owned.text = tr("store.owned").format(
-		{"names": ", ".join(names) if not names.is_empty() else tr("store.none")}
-	)
+	_board.show_cadres(controller)
 
 
 func _item(slot: int, cadre_id: String) -> Control:
@@ -106,20 +113,62 @@ func _item(slot: int, cadre_id: String) -> Control:
 	)
 	buy.size_flags_horizontal = Control.SIZE_FILL
 	buy.disabled = not controller.can_buy(slot)
-	buy.pressed.connect(
-		func() -> void:
-			controller.buy(slot)
-			Audio.play(AudioEvents.STORE_BUY)
-			_refresh()
-	)
 	buy.tooltip_text = tip
 	buy.focus_entered.connect(_read.bind(tip))
 	card.add_child(buy)
 	var panel: Control = ScreenKit.card_panel(card)
+	buy.pressed.connect(_buy.bind(slot, panel))
 	panel.tooltip_text = tip
 	panel.mouse_entered.connect(_read.bind(tip))
 	UiMotion.hoverable(panel)
 	return panel
+
+
+## Buys the Cadre in a slot and acts it out: the coupons roll down, the card is sealed,
+## then it shrinks away to its place on the board. Reduced motion skips to the result.
+func _buy(slot: int, panel: Control) -> void:
+	if _busy:
+		return
+	var controller: RunController = _app.controller
+	var held: int = controller.state_copy().inventory.cadres.size()
+	controller.buy(slot)
+	var state: RunState = controller.state_copy()
+	if state.inventory.cadres.size() == held:
+		_refresh()
+		return
+	Audio.play(AudioEvents.STORE_BUY)
+	if UiMotion.reduced():
+		_refresh()
+		return
+	_busy = true
+	UiMotion.count(_coupons, _shown_coupons, state.coupons, _coupon_text)
+	_shown_coupons = state.coupons
+	UiMotion.pulse(_coupons)
+	var middle: Vector2 = panel.global_position + panel.size / 2.0
+	_seal.position = middle - global_position - _seal.size / 2.0
+	move_child(_seal, -1)
+	_seal.press()
+	panel.z_index = 1
+	var to: Vector2 = panel.position + _board.slot_center(held) - middle
+	var tween: Tween = create_tween()
+	tween.tween_interval(SEAL_HOLD)
+	tween.tween_callback(_seal.hide)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(panel, "position", to, PIN_TIME)
+	tween.parallel().tween_property(panel, "scale", Vector2.ONE * PIN_SCALE, PIN_TIME)
+	tween.tween_callback(_pinned.bind(held))
+
+
+## The bought card has reached the board: the counter shows the gap, the board the card.
+func _pinned(slot: int) -> void:
+	_busy = false
+	_refresh()
+	_board.pulse_slot(slot)
+
+
+## True while a purchase is being acted out, for tests.
+func is_buying() -> bool:
+	return _busy
 
 
 ## Shows a Cadre's name and rules on the reading line; an empty line takes no space.

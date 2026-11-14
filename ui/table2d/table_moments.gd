@@ -17,6 +17,12 @@ const SLIP_AT: Vector2 = Vector2(790, 520)
 const VILLAGER_PACE: float = 0.55
 ## Seconds the ledger waits after the total lands, while it flies over.
 const FLIGHT: float = 0.35
+## The kitty lies face up this long before the landlord takes it, and where it is
+## dealt from and labelled.
+const KITTY_SHOW: float = 0.9
+const KITTY_FROM: Vector2 = Vector2(790, 200)
+const KITTY_LABEL_AT: Vector2 = Vector2(790, 420)
+const HAND_AT: Vector2 = Vector2(660, 940)
 ## Shake from a play landing, per card, and the most a plain play gives.
 const THUMP_PER_CARD: float = 0.025
 const THUMP_MAX: float = 0.2
@@ -26,6 +32,8 @@ var callout: Callout = Callout.new()
 var tally: ScoreTally = ScoreTally.new()
 var slip: AuditSlip = AuditSlip.new()
 var fx: TableFx = TableFx.new()
+## The bar the Quota and meters are shown on, when the table has one.
+var hud: TableHud = null
 
 var _ledger: Ledger
 var _pile: TrickPile
@@ -40,6 +48,9 @@ var _holder: int = Seats.NONE
 var _bids: Dictionary[int, String] = {}
 ## The seat whose score the tally is counting.
 var _scoring: int = Seats.NONE
+var _target: float = 0.0
+var _kitty_label: Label = Label.new()
+var _kitty: Tween = null
 
 
 func _ready() -> void:
@@ -49,6 +60,15 @@ func _ready() -> void:
 	for layer: Control in [fx, callout]:
 		layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	slip.center = SLIP_AT
+	_kitty_label.text = tr("keyword.kitty.name").to_upper()
+	_kitty_label.theme_type_variation = CommonsTheme.TITLE
+	_kitty_label.add_theme_font_size_override("font_size", 34)
+	_kitty_label.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
+	_kitty_label.add_theme_color_override("font_outline_color", ScreenKit.INK)
+	_kitty_label.add_theme_constant_override("outline_size", 10)
+	_kitty_label.visible = false
+	add_child(_kitty_label)
+	move_child(_kitty_label, 0)
 	tally.resized.connect(_center_tally)
 	tally.landed.connect(_on_landed)
 
@@ -77,12 +97,17 @@ func setup(
 func on_event(event: RunEvent, quiet: bool = false) -> void:
 	match event.type:
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
+			if event.type == RunEvent.Type.SET_STARTED:
+				_target = event.amount
+				if hud != null and not quiet:
+					hud.start_quota(_target)
 			_holder = Seats.NONE
 			_landlord = Seats.NONE
 			_bids.clear()
 			slip.clear()
 			tally.clear()
 			callout.dismiss()
+			_kitty_label.visible = false
 		RunEvent.Type.BID:
 			_on_bid(event.seat, event.value == 1, quiet)
 		RunEvent.Type.LANDLORD_CHOSEN:
@@ -100,6 +125,17 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 		RunEvent.Type.SHARE_PAID:
 			if not quiet:
 				slip.paid(event.seat, event.value)
+				if event.seat == 0:
+					_gain(float(event.value), SLIP_AT)
+		RunEvent.Type.BANKED:
+			if not quiet and event.seat == 0:
+				_gain(event.amount, _ledger.amount_center(0))
+		RunEvent.Type.METER_CHANGED:
+			if hud != null and not quiet:
+				hud.nudge_meter(event.text, event.value)
+		RunEvent.Type.SET_ENDED:
+			if not quiet:
+				_on_set_ended(event.value == 1, event.amount)
 
 
 ## What a seat last did in the bidding, as a string key, or "" outside it.
@@ -128,6 +164,9 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 	match event.type:
 		RoundEvent.Type.ROUND_STARTED:
 			_landlord = event.seat
+		RoundEvent.Type.KITTY_TAKEN:
+			if not quiet:
+				_show_kitty(event.seat, event.card_ids)
 		RoundEvent.Type.PASSED:
 			if not quiet and _seats.has(event.seat):
 				_seats[event.seat].flash(tr("stamp.pass"))
@@ -171,6 +210,52 @@ func _on_landed(total_text: String) -> void:
 	if _scoring == Seats.NONE or _ledger == null:
 		return
 	fx.fly("+" + total_text, tally.total_center(), _ledger.amount_center(_scoring), GRAIN)
+
+
+## Work points reach the player: the number flies to the Quota bar, which fills as it
+## lands.
+func _gain(amount: float, from: Vector2) -> void:
+	if hud == null or amount <= 0.0:
+		return
+	fx.fly("+" + Strings.score(amount), from, hud.progress_center(), GRAIN)
+	hud.add_progress(amount, TableFx.FLY_TIME)
+
+
+## The Quota is met or missed across the whole screen, before the table is left.
+func _on_set_ended(met: bool, progress: float) -> void:
+	slip.clear()
+	var line: String = tr("callout.quota.sub").format(
+		{"progress": Strings.score(progress), "target": Strings.score(_target)}
+	)
+	var word: String = tr("callout.quota.met" if met else "callout.quota.missed")
+	_shout(word, Callout.Tier.TAKEOVER, ScreenKit.RED if met else LOSS, line, Seats.NONE)
+
+
+## The kitty is dealt face up in the middle for everyone to see, then goes to the
+## landlord.
+func _show_kitty(seat: int, card_ids: Array[int]) -> void:
+	var cards: Array[CardInstance] = []
+	for card_id: int in card_ids:
+		if card_id < Deck.SIZE:
+			cards.append(CardInstance.from_deck_id(card_id))
+	if cards.is_empty() or _player.step <= 0.0:
+		return
+	_pile.clear()
+	_pile.show_play(cards, KITTY_FROM)
+	_kitty_label.reset_size()
+	_kitty_label.position = KITTY_LABEL_AT - _kitty_label.size / 2.0
+	_kitty_label.visible = true
+	UiMotion.stamp(_kitty_label)
+	var to: Vector2 = HAND_AT
+	if _seats.has(seat):
+		to = _seats[seat].global_position + _seats[seat].size / 2.0
+	if _kitty != null and _kitty.is_valid():
+		_kitty.kill()
+	_kitty = create_tween()
+	_kitty.tween_interval(KITTY_SHOW)
+	_kitty.tween_callback(_pile.sweep.bind(to))
+	_kitty.tween_callback(_kitty_label.hide)
+	_player.hold(KITTY_SHOW + TableMotion.PRESETS.sweep)
 
 
 ## A play lands with a thump that grows with its size.

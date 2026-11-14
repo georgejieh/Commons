@@ -29,6 +29,18 @@ func setup(slots: int) -> void:
 		_pictures.append(picture)
 
 
+## Where a slot's card sits on screen, its middle.
+func slot_center(index: int) -> Vector2:
+	var card: TipHost = _cards[clampi(index, 0, _cards.size() - 1)]
+	return card.global_position + card.size / 2.0
+
+
+## Swells a slot's card, as when a Cadre is pinned to it.
+func pulse_slot(index: int) -> void:
+	if index >= 0 and index < _cards.size():
+		UiMotion.pulse(_cards[index])
+
+
 ## Shows the Cadres the run holds, each with its name and rules as its tooltip.
 func show_cadres(controller: RunController) -> void:
 	var cadre_ids: Array[String] = controller.state_copy().inventory.cadres

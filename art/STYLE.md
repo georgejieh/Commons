@@ -73,7 +73,7 @@ Rules:
 - **Motion never carries a fact alone.** The ledger, seats and meters show the same thing at rest, and reduced motion keeps every fact.
 - **Decay comes later.** As corruption rises the same moves should smear, stutter and thin out. Build the clean version first.
 
-Still to build in this language: the Quota bar filling and being met, coupons torn off and a Cadre stamped and pinned when bought, sealed envelopes for packs, the kitty turned over for the landlord, meters rising.
+Built so far: callouts, the score tally, thrown cards, seat tags, the Quota bar and its seal (`InkSeal`), meters that swell as they move, the kitty turned face up, and a purchase sealed "approved" and pinned to the board. Still to build in this language: coupons torn off as they are spent, sealed envelopes for packs, the black market, and the screens between Quotas.
 
 ## Files, sizes and atlases
 
