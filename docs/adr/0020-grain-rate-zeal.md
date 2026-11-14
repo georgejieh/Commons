@@ -1,4 +1,4 @@
-# ADR 0019: Scoring as Grain × Rate × Zeal
+# ADR 0020: Scoring as Grain × Rate × Zeal
 
 ## Status
 

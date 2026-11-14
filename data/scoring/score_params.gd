@@ -1,7 +1,7 @@
 class_name ScoreParams
 extends Resource
 ## Every scoring number. hand_rate holds max_level rows for each Pattern.Type
-## (ADR 0019).
+## (ADR 0020).
 
 @export var max_level: int
 ## Each hand type's Rate by level, the multiplier that comes from the hand type alone.

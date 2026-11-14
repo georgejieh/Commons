@@ -1,6 +1,6 @@
 class_name Scorer
 extends RefCounted
-## Scores a play as Grain × Rate × Zeal (ADR 0019). Grain is the scored cards' values
+## Scores a play as Grain × Rate × Zeal (ADR 0020). Grain is the scored cards' values
 ## plus additive Grain from hooks; kickers don't score. Rate comes from the hand type and
 ## its level alone, under a hook's Rate cap. Zeal starts at 1 and changes only through
 ## hooks: additive Zeal, then multiplicative Zeal, never below the data's minimum.
