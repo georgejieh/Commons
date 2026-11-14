@@ -5,11 +5,11 @@ extends Control
 ## tumble, turning and changing faces, and settle on the faces rolled. Chinese dice: the
 ## one is a single large red pip, the four is four red pips, the rest are black. Each die
 ## is tinted for the seat it belongs to, with that person's name on a tag in the same
-## tint. A die at or below the audit faces gets a red ring and a hop; the others fade a
-## little. Then the bowl lifts away. Reduced motion shows the settled dice at once.
+## tint. A die at or below the audit faces gets a red ring and a hop; the others stay
+## as they landed. Then the bowl lifts away. Reduced motion shows the settled dice at once.
 
 const SIDES: int = 6
-const RADIUS: float = 220.0
+const RADIUS: float = 190.0
 const DIE: float = 70.0
 ## Seconds for the bowl to drop in, the dice to tumble, the settled dice to hold, the
 ## audited die to hop within that hold, and the bowl to lift away.
@@ -24,7 +24,7 @@ const DIM: float = 0.3
 ## Face changes while a die tumbles, and the bounces it makes.
 const FLIPS: int = 9
 const BOUNCES: float = 3.5
-const FADED: float = 0.55
+const FADED: float = 1.0
 const PORCELAIN: Color = Color("f5f7f9")
 const GLAZE: Color = Color("dfe6f0")
 const COBALT: Color = Color("1f3f8f")

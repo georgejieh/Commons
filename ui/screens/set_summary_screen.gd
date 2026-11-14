@@ -11,6 +11,8 @@ const SEAL_WIDTH: float = 150.0
 ## The overfulfilled seal is wider for its longer word, and sits left of the met seal.
 const OVER_WIDTH: float = 176.0
 const OVER_GAP: float = 12.0
+## A deeper gold than the bar's, so the second seal reads on paper.
+const OVER_INK: Color = Color("a8791a")
 ## Seconds before the bar starts, the bar takes to fill, and between the lines after.
 const START: float = 0.2
 const FILL: float = 0.7
@@ -38,7 +40,7 @@ func open(app: DemoApp) -> void:
 	_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	sheet.add_child(_bar)
 	_steps = controller.over_steps() if _met else 0
-	_over.prepare(tr("summary.over"), ScreenKit.GOLD, OVER_WIDTH)
+	_over.prepare(tr("summary.over"), OVER_INK, OVER_WIDTH)
 	var met_left: float = BAR.x - SEAL_WIDTH * 0.6
 	_over.position = Vector2(met_left - OVER_WIDTH - OVER_GAP, (BAR.y - OVER_WIDTH) / 2.0)
 	_bar.add_child(_over)

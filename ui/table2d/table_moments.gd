@@ -13,6 +13,9 @@ const LOSS: Color = Color("3a322b")
 ## Where the tally and the audit slip sit, as their middles.
 const TALLY_AT: Vector2 = Vector2(790, 660)
 const SLIP_AT: Vector2 = Vector2(790, 520)
+## The bowl lands beside the slip, in the open table between it and the ledger, so the
+## claims stay readable while their dice roll.
+const BOWL_AT: Vector2 = Vector2(1312, 575)
 ## How fast a villager's score is counted, against the player's own at 1.
 const VILLAGER_PACE: float = 0.55
 ## Seconds the ledger waits after the total lands, while it flies over.
@@ -66,7 +69,7 @@ func _ready() -> void:
 	for layer: Control in [dice, fx, callout]:
 		layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	slip.center = SLIP_AT
-	dice.center = SLIP_AT
+	dice.center = BOWL_AT
 	_kitty_label.text = tr("keyword.kitty.name").to_upper()
 	_kitty_label.theme_type_variation = CommonsTheme.TITLE
 	_kitty_label.add_theme_font_size_override("font_size", 34)
