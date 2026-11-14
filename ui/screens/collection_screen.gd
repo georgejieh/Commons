@@ -4,6 +4,7 @@ extends Control
 ## Unlocks arrive with P4.14; until then every Cadre shows.
 
 const POOL: CadrePool = preload("res://data/run/cadre_pool.tres")
+const MARKET_POOL: CadrePool = preload("res://data/run/market_pool.tres")
 const ART_SIZE: Vector2 = Vector2(120, 150)
 const COLUMNS: int = 3
 
@@ -15,7 +16,7 @@ func open(app: DemoApp) -> void:
 	grid.columns = COLUMNS
 	grid.add_theme_constant_override("h_separation", 20)
 	grid.add_theme_constant_override("v_separation", 20)
-	for definition: ModifierDef in POOL.cadres:
+	for definition: ModifierDef in POOL.cadres + MARKET_POOL.cadres:
 		grid.add_child(_entry(definition))
 	column.add_child(grid)
 	var back: Button = ScreenKit.button(tr("coll.back"), CommonsTheme.PRIMARY)

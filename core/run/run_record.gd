@@ -17,6 +17,7 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"market_buy": ["slot"],
 	"market_reroll": [],
 	"upgrade": ["kind"],
+	"plot_card": ["slot"],
 }
 
 var checkpoint: Dictionary = {}
@@ -39,41 +40,48 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 static func migrate_from_2(data: Dictionary) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
 		var checkpoint: Dictionary = data["checkpoint"]
-		var defaults: Dictionary = {
-			"famine_armed": true,
-			"denunciation_armed": true,
-			"rationed": false,
-			"reeducation_due": false,
-			"resentment": 0,
-			"villager_denunciation": {},
-			"commons_received": "0",
-			"commons_paid": "0",
-			"memory": {},
-			"risen": [],
-			"risen_used": [],
-			"officials_used": [],
-			"boss_id": "",
-			"next_plot_id": CardInstance.FIRST_PLOT_ID,
-			"plot_capacity_bonus": 0,
-			"swap_bonus": 0,
-			"boss_family": "",
-			"styles": [],
-		}
-		checkpoint.merge(defaults)
+		checkpoint.merge(_phase_4_defaults())
 	return data
+
+
+## Version 3 saves predate the state store's limited stock (P4.10): nothing sold yet.
+## Schema 3 was written all through Phase 4 while its fields were still being added, so
+## a save from the middle of it may lack some: every Phase 4 field missing gets the
+## value a run starts with.
+static func migrate_from_3(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge(_phase_4_defaults())
+	return data
+
+
+## Every field Phase 4 added to a run, at the value a run starts with.
+static func _phase_4_defaults() -> Dictionary:
+	return {
+		"famine_armed": true,
+		"denunciation_armed": true,
+		"rationed": false,
+		"reeducation_due": false,
+		"resentment": 0,
+		"villager_denunciation": {},
+		"commons_received": "0",
+		"commons_paid": "0",
+		"memory": {},
+		"risen": [],
+		"risen_used": [],
+		"officials_used": [],
+		"boss_id": "",
+		"next_plot_id": CardInstance.FIRST_PLOT_ID,
+		"plot_capacity_bonus": 0,
+		"swap_bonus": 0,
+		"boss_family": "",
+		"styles": [],
+		"store_sold": {},
+	}
 
 
 ## True when data has a checkpoint with every RunState field and well-formed commands,
 ## so a save that parses but lost its shape falls back to the backup.
-## Version 3 saves predate the state store's limited stock (P4.10): nothing sold yet.
-static func migrate_from_3(data: Dictionary) -> Dictionary:
-	if data.get("checkpoint") is Dictionary:
-		var checkpoint: Dictionary = data["checkpoint"]
-		if not checkpoint.has("store_sold"):
-			checkpoint["store_sold"] = {}
-	return data
-
-
 static func is_valid(data: Dictionary) -> bool:
 	if not data.get("checkpoint") is Dictionary or not data.get("commands") is Array:
 		return false
@@ -82,6 +90,8 @@ static func is_valid(data: Dictionary) -> bool:
 		if not checkpoint.has(key):
 			return false
 	if not _observations_valid(checkpoint["observations"]):
+		return false
+	if not _shapes_valid(checkpoint):
 		return false
 	var phase: Variant = checkpoint["phase"]
 	if not (phase is int or phase is float) or phase < 0 or phase >= RunFlow.State.size():
@@ -143,7 +153,22 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_market_reroll()
 		"upgrade":
 			return loop.player_upgrade(str(command["kind"]))
+		"plot_card":
+			return loop.player_plot_card(int(command["slot"]))
 	return RunLoop.Reason.ILLEGAL
+
+
+## Every saved field holds the kind of value a fresh run's does: a dictionary where one
+## belongs, an array where one belongs. A save that fails here is damaged, and the save
+## service falls back to its backup instead of loading it.
+static func _shapes_valid(checkpoint: Dictionary) -> bool:
+	var fresh: Dictionary = RunState.new(0).to_dict()
+	for key: String in fresh:
+		if fresh[key] is Dictionary and not checkpoint[key] is Dictionary:
+			return false
+		if fresh[key] is Array and not checkpoint[key] is Array:
+			return false
+	return true
 
 
 ## JSON reads every number as a float.

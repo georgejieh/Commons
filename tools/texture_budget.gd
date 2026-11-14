@@ -51,12 +51,14 @@ func _run() -> void:
 
 ## Puts every Cadre's art on the notice board, as a full board would show it.
 func _show_all_cadres(board: Node) -> void:
-	var pool: CadrePool = load("res://data/run/cadre_pool.tres")
+	var store: CadrePool = load("res://data/run/cadre_pool.tres")
+	var market: CadrePool = load("res://data/run/market_pool.tres")
+	var cadres: Array[ModifierDef] = store.cadres + market.cadres
 	var pictures: Array[TextureRect] = []
 	pictures.assign(board.get("_pictures"))
 	var kit: GDScript = load("res://ui/screens/screen_kit.gd")
-	for index: int in mini(pictures.size(), pool.cadres.size()):
-		pictures[index].texture = kit.call("cadre_art", pool.cadres[index].id)
+	for index: int in mini(pictures.size(), cadres.size()):
+		pictures[index].texture = kit.call("cadre_art", cadres[index].id)
 
 
 ## Binds the whole deck to free views from the table's own pool.

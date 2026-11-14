@@ -499,3 +499,10 @@ market.upgrade.swaps,One more swap a round · {price} coupons
 market.upgrade.swaps.out,No more swaps to buy
 market.upgrade.swaps.tip,"Each round, you may swap one more card between your hand and your private plot."
 summary.short,Short
+market.plot,For your private plot · {held} of {room}
+market.plot.tip,"This card goes into your private plot. Each round, after the landlord is chosen, you may swap plot cards into your hand."
+intel.types,Holds: {list}
+intel.cards,Cards: {list}
+tally.scaled,× {percent}% =
+ledger.scaled,× {percent}%
+hand.scaled,(after × {percent}%)

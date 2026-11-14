@@ -62,6 +62,16 @@ func reroll_price() -> int:
 	return _params.reroll_base + _rerolls * _params.reroll_step
 
 
+## True when a reroll could put something else on the counter: there is more to offer
+## than the counter has slots.
+func reroll_changes() -> bool:
+	var open: int = 0
+	for definition: ModifierDef in _pool:
+		if not _state.inventory.cadres.has(definition.id) and left(definition.id) != 0:
+			open += 1
+	return open > slot_count()
+
+
 ## True while the player's board can take another Cadre.
 func has_room() -> bool:
 	return _state.inventory.cadres.size() < _params.cadre_slots

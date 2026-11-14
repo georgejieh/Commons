@@ -30,6 +30,8 @@ var _name: Label = Label.new()
 var _count: Label = Label.new()
 var _role: Label = Label.new()
 var _speech: Label = Label.new()
+## What an information Cadre shows about this villager's hand; empty without one.
+var _intel: Label = Label.new()
 var _info: VBoxContainer = VBoxContainer.new()
 var _back: TextureRect = TextureRect.new()
 var _count_row: HBoxContainer = HBoxContainer.new()
@@ -99,7 +101,12 @@ func _init() -> void:
 	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
 	_count_row.add_child(_back)
 	_count_row.add_child(_count)
-	for child: Control in [_name, _count_row, _role]:
+	_intel.add_theme_font_size_override("font_size", 17)
+	_intel.add_theme_color_override("font_color", LANDLORD_RED)
+	_intel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_intel.custom_minimum_size = Vector2(220, 0)
+	_intel.visible = false
+	for child: Control in [_name, _count_row, _role, _intel]:
 		_info.add_child(child)
 	_row.add_child(_info)
 	_stack.add_child(_speech)
@@ -141,6 +148,16 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 	if is_landlord and not was_landlord:
 		UiMotion.stamp(_banner)
 		bump()
+
+
+## Shows what an information Cadre reveals about this hand, or nothing.
+func set_intel(text: String) -> void:
+	_intel.text = text
+	_intel.visible = not text.is_empty()
+
+
+func intel() -> String:
+	return _intel.text if _intel.visible else ""
 
 
 ## Says what the seat did in the bidding, in place of its role, until a landlord is

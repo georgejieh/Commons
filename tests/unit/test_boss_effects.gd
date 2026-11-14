@@ -74,3 +74,34 @@ func test_struggle_session_swaps_the_highest_card_into_the_kitty() -> void:
 		. is_true()
 	)
 	assert_int(after_high).is_less_equal(highest)
+
+
+func test_landlords_ledger_doubles_the_kitty_as_a_later_deal_hook_left_it() -> void:
+	var cards: Array[CardInstance] = []
+	for deck_id: int in Deck.generate():
+		cards.append(CardInstance.from_deck_id(deck_id))
+	var deal: DealResult = Dealer.deal(cards, RandomStream.new(7))
+	var ledger: LandlordsLedgerEffect = LandlordsLedgerEffect.new()
+	ledger.holder_seat = 0
+	ledger.on_deal(DealContext.new(Seats.NONE, deal))
+	# Struggle Session runs after the Cadre and trades a card into the kitty.
+	var before: Array[int] = []
+	for card: CardInstance in deal.kitty:
+		before.append(card.id())
+	_stack(STRUGGLE).run_on_deal(DealContext.new(Seats.NONE, deal))
+	var entered: CardInstance = null
+	for card: CardInstance in deal.kitty:
+		if not before.has(card.id()):
+			entered = card
+	assert_object(entered).is_not_null()
+	var left: CardInstance = null
+	for card: CardInstance in deal.hands[0].cards():
+		if before.has(card.id()):
+			left = card
+	assert_object(left).is_not_null()
+	var in_kitty: CardContext = CardContext.new(0, true, entered, 10.0)
+	ledger.card_scored(in_kitty)
+	assert_float(in_kitty.grain).is_equal(20.0)
+	var traded_out: CardContext = CardContext.new(0, true, left, 10.0)
+	ledger.card_scored(traded_out)
+	assert_float(traded_out.grain).is_equal(10.0)

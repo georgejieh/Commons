@@ -26,6 +26,7 @@ const COMMANDS: Array[String] = [
 	"market_buy",
 	"market_reroll",
 	"upgrade",
+	"plot_card",
 	"leave_store",
 ]
 ## What the run waits on, for views that may not name the loop.
@@ -155,10 +156,16 @@ func upgrade(kind: String) -> int:
 	return _finish("upgrade", _loop.player_upgrade(kind))
 
 
+## Buys a card for the private plot at the black market.
+func plot_card(slot: int) -> int:
+	return _finish("plot_card", _loop.player_plot_card(slot))
+
+
 ## The state store's counter, or the black market's, for a screen to read.
 func desk(market: bool) -> ShopDesk:
 	if market:
-		return ShopDesk.new(_loop.market, _loop.state, RunLoop.DEFAULT_PLOT_UPGRADES)
+		var upgrades: PlotUpgradeParams = RunLoop.DEFAULT_PLOT_UPGRADES
+		return ShopDesk.new(_loop.market, _loop.state, upgrades, _loop.stall)
 	return ShopDesk.new(_loop.shop, _loop.state)
 
 

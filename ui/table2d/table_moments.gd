@@ -20,6 +20,7 @@ const FLIGHT: float = 0.35
 ## The kitty lies face up this long before the landlord takes it, and where it is
 ## dealt from and labelled.
 const KITTY_SHOW: float = 0.9
+const KITTY_MARGIN: float = 0.12
 const KITTY_FROM: Vector2 = Vector2(790, 200)
 const KITTY_LABEL_AT: Vector2 = Vector2(790, 420)
 const HAND_AT: Vector2 = Vector2(660, 940)
@@ -255,7 +256,8 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 	_kitty.tween_interval(KITTY_SHOW)
 	_kitty.tween_callback(_pile.sweep.bind(to))
 	_kitty.tween_callback(_kitty_label.hide)
-	_player.hold(KITTY_SHOW + TableMotion.PRESETS.sweep)
+	# A little past the sweep, so the landlord's first play never lands under it.
+	_player.hold(KITTY_SHOW + TableMotion.PRESETS.sweep + KITTY_MARGIN)
 
 
 ## A play lands with a thump that grows with its size.

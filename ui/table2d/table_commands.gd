@@ -71,6 +71,12 @@ func refresh() -> void:
 				}
 			)
 		)
+		# A debuff that cuts the total is shown as a last factor, so the sum adds up.
+		var percent: int = ScoreTally.scale_percent(
+			preview.grain, preview.rate, preview.zeal, preview.score
+		)
+		if percent != ScoreTally.WHOLE:
+			text += " " + tr("hand.scaled").format({"percent": percent})
 	_actions.reading.text = text
 	_actions.reading.tooltip_text = Keywords.tip(text)
 

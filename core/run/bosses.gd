@@ -16,7 +16,7 @@ static func choose(
 		return pool.new_landlord
 	var fresh: Array[String] = []
 	for family_id: String in state.risen:
-		if not state.risen_used.has(family_id):
+		if not state.risen_used.has(family_id) and _can_sit(state, family_id):
 			fresh.append(family_id)
 	if state.year % 2 == 0 and not fresh.is_empty():
 		var family_id: String = fresh[stream.next_int(0, fresh.size() - 1)]
@@ -24,6 +24,15 @@ static func choose(
 		state.boss_family = family_id
 		return pool.risen
 	return _official(state, pool, stream)
+
+
+## A risen family can be the boss only while it is active in the village: not dead,
+## deposed or away in reeducation. A run with no roster seats anyone.
+static func _can_sit(state: RunState, family_id: String) -> bool:
+	if state.roster.is_empty():
+		return true
+	var entry: RosterEntry = Roster.entry(state, family_id)
+	return entry != null and entry.status == RosterEntry.Status.ACTIVE
 
 
 ## The family that held every round's landlord seat in a Set, or NO_FAMILY. A round's

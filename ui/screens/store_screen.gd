@@ -25,6 +25,7 @@ const NIGHT_SHADE: Color = Color(0.03, 0.02, 0.09, 0.62)
 const CARD: Vector2 = Vector2(360, 470)
 const MARKET_CARD: Vector2 = Vector2(360, 390)
 const MARKET_INK: Color = Color("1e1a16")
+const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 
 ## True for the black market. Set on the scene.
 @export var market: bool = false
@@ -41,6 +42,7 @@ var _desk: ShopDesk
 var _resentment: Label = null
 var _shown_resentment: float = 0.0
 var _upgrades: HBoxContainer = null
+var _stall: VBoxContainer = null
 ## The name and rules of the Cadre under the pointer or focus, for keyboard and gamepad.
 var _reading: Label = ScreenKit.label("", 20)
 var _reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
@@ -74,7 +76,12 @@ func open(app: DemoApp) -> void:
 	if market:
 		column.add_child(_warning())
 	_counter.add_theme_constant_override("separation", 28)
-	column.add_child(_counter)
+	if market:
+		_stall = VBoxContainer.new()
+		_stall.add_theme_constant_override("separation", 10)
+		column.add_child(ScreenKit.row([_counter, _stall], 48))
+	else:
+		column.add_child(_counter)
 	_reroll.pressed.connect(_on_reroll)
 	var leave: Button = ScreenKit.button(
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
@@ -130,6 +137,7 @@ func _refresh() -> void:
 			UiMotion.pulse(_resentment)
 		_shown_resentment = state.resentment
 		_show_upgrades()
+		_show_stall()
 	_board.show_cadres(controller)
 
 
@@ -274,6 +282,50 @@ func _show_upgrades() -> void:
 		_upgrades.add_child(ticket)
 
 
+## The cards for the private plot on offer: each as a card over its price.
+func _show_stall() -> void:
+	for child: Node in _stall.get_children():
+		_stall.remove_child(child)
+		child.queue_free()
+	var head: Label = ScreenKit.eyebrow(
+		tr("market.plot").format({"held": _desk.plot_size(), "room": _desk.plot_capacity()})
+	)
+	head.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
+	_stall.add_child(head)
+	var cards: HBoxContainer = HBoxContainer.new()
+	cards.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
+	# In the tree first: a card view is only ready to show a card once it is in it.
+	_stall.add_child(cards)
+	for slot: int in _desk.plot_card_count():
+		var card: CardInstance = _desk.plot_card(slot)
+		var item: VBoxContainer = VBoxContainer.new()
+		item.add_theme_constant_override("separation", 8)
+		cards.add_child(item)
+		var view: CardView = CARD_SCENE.instantiate()
+		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		item.add_child(view)
+		view.bind(card)
+		view.visible = true
+		view.modulate.a = 1.0 if card != null else 0.0
+		var text: String = tr("store.sold")
+		if card != null:
+			text = Strings.count("store.coupons", _desk.plot_card_price(slot))
+		var buy: Button = ScreenKit.button(text, CommonsTheme.COUPON)
+		buy.custom_minimum_size = Vector2(view.custom_minimum_size.x, 0)
+		buy.disabled = card == null or not _desk.can_buy_plot_card(slot)
+		buy.tooltip_text = Keywords.wrapped(tr("market.plot.tip"))
+		buy.pressed.connect(_buy_card.bind(slot))
+		item.add_child(buy)
+
+
+func _buy_card(slot: int) -> void:
+	if _busy:
+		return
+	_app.controller.plot_card(slot)
+	Audio.play(AudioEvents.STORE_BUY)
+	_refresh()
+
+
 func _upgrade(kind: String) -> void:
 	if _busy:
 		return
@@ -283,6 +335,9 @@ func _upgrade(kind: String) -> void:
 
 
 func _on_reroll() -> void:
+	# A reroll frees the counter's cards, so it waits for a purchase being acted out.
+	if _busy:
+		return
 	if market:
 		_app.controller.market_reroll()
 	else:

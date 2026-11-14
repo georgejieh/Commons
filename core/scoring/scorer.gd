@@ -91,6 +91,11 @@ static func clamp_score(value: float) -> float:
 	return maxf(value, -MAX_SCORE)
 
 
+## True when a card of a play scores Grain: its body, not its kickers.
+static func is_scored(card: CardInstance, pattern: Pattern) -> bool:
+	return _is_scored(card, pattern)
+
+
 static func _is_scored(card: CardInstance, pattern: Pattern) -> bool:
 	if pattern.type == Pattern.Type.ROCKET:
 		return true

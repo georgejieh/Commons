@@ -192,3 +192,82 @@ func _costing(cost: int) -> ModifierDef:
 func test_a_private_cadre_from_the_market_is_counted_at_the_sets_end() -> void:
 	var held: Array[String] = [MARKET_POOL.cadres[0].id, STORE_POOL.cadres[0].id]
 	assert_int(Resentment.private_cadres(held, RunLoop.all_cadres())).is_equal(1)
+
+
+func test_the_market_sells_cards_for_the_plot_the_same_for_the_same_seed() -> void:
+	for seed_value: int in 60:
+		var first: RunLoop = _at_the_shops(seed_value)
+		var second: RunLoop = _at_the_shops(seed_value)
+		assert_int(first.stall.count()).is_equal(UPGRADES.card_offers)
+		for slot: int in first.stall.count():
+			assert_int(first.stall.rank(slot)).is_equal(second.stall.rank(slot))
+			assert_int(first.stall.suit(slot)).is_equal(second.stall.suit(slot))
+			assert_array(UPGRADES.card_ranks).contains([first.stall.rank(slot)])
+
+
+func test_a_bought_plot_card_enters_the_plot_and_raises_resentment() -> void:
+	var loop: RunLoop = _at_the_shops(16)
+	var rank: int = loop.stall.rank(0)
+	var before: int = loop.state.resentment
+	var coupons: int = loop.state.coupons
+	var price: int = loop.stall.price(0)
+	assert_int(loop.player_plot_card(0)).is_equal(RunLoop.Reason.OK)
+	assert_int(loop.state.inventory.plot.size()).is_equal(1)
+	var card: CardInstance = loop.state.inventory.plot[0]
+	assert_int(card.base_rank()).is_equal(rank)
+	assert_int(card.id()).is_greater_equal(CardInstance.FIRST_PLOT_ID)
+	assert_int(card.origin()).is_equal(CardInstance.Origin.PLOT)
+	assert_int(loop.state.coupons).is_equal(coupons - price)
+	assert_int(loop.state.resentment).is_greater(before)
+	# Sold once, and refused without changing anything.
+	var after: int = loop.state.resentment
+	assert_int(loop.player_plot_card(0)).is_equal(RunLoop.Reason.ILLEGAL)
+	assert_int(loop.state.resentment).is_equal(after)
+	# The purchase replays from a save.
+	var record: Dictionary = loop.record.to_dict()
+	var checkpoint: Dictionary = record["checkpoint"]
+	checkpoint["coupons"] = RICH
+	var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
+	assert_object(resumed).is_not_null()
+	assert_int(resumed.state.inventory.plot.size()).is_equal(1)
+	assert_int(resumed.state.inventory.plot[0].id()).is_equal(card.id())
+
+
+func test_a_full_plot_takes_no_more_cards() -> void:
+	var loop: RunLoop = _at_the_shops(17)
+	var room: int = PlotSwap.capacity(loop.state, RunLoop.DEFAULT_PARAMS)
+	for index: int in room:
+		loop.state.inventory.plot.append(
+			CardInstance.new(loop.state.take_plot_id(), 12, 0, CardInstance.Origin.PLOT)
+		)
+	assert_int(loop.stall.check_buy(0)).is_equal(PlotStall.Reason.PLOT_FULL)
+	assert_int(loop.player_plot_card(0)).is_equal(RunLoop.Reason.ILLEGAL)
+	assert_int(loop.state.inventory.plot.size()).is_equal(room)
+
+
+func test_reeducation_can_exchange_for_a_private_cadre() -> void:
+	var state: RunState = RunState.new(18)
+	for definition: ModifierDef in STORE_POOL.cadres:
+		state.inventory.cadres.append(definition.id)
+	var change: PackedStringArray = Reeducation.change_cadre(
+		state.inventory, RunLoop.all_cadres(), state.streams.stream(RandomStreams.EVENTS)
+	)
+	assert_int(change.size()).is_equal(2)
+	assert_bool(MARKET_POOL.cadres.any(_is(change[1]))).is_true()
+
+
+func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
+	var loop: RunLoop = _at_the_shops(19)
+	# The state store has as many Cadres as slots, so a reroll would only reorder them.
+	assert_int(STORE_POOL.cadres.size()).is_less_equal(STORE.slots)
+	assert_bool(loop.shop.reroll_changes()).is_false()
+	assert_bool(loop.market.reroll_changes()).is_true()
+
+
+func test_a_save_from_the_middle_of_phase_4_gains_every_missing_field() -> void:
+	var data: Dictionary = RunState.new(3).to_dict()
+	for field: String in ["store_sold", "styles", "boss_family", "swap_bonus", "memory", "risen"]:
+		data.erase(field)
+	var record: Dictionary = {"checkpoint": data, "commands": []}
+	assert_bool(RunRecord.is_valid(record)).is_false()
+	assert_bool(RunRecord.is_valid(RunRecord.migrate_from_3(record))).is_true()

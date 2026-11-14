@@ -50,6 +50,8 @@ var _dread: DreadLayers = DreadLayers.new()
 var _dressing: DreadDressing = DreadDressing.new()
 var _surface: TextureRect
 var _moments: TableMoments = TableMoments.new()
+## Each villager's card count as the events played so far leave it.
+var _counts: Dictionary[int, int] = {}
 
 
 func _ready() -> void:
@@ -144,9 +146,11 @@ func open(app: DemoApp) -> void:
 	_setup_dread(app)
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
+	_still(true)
 	for event: RunEvent in _controller.set_events():
 		_player.push(event)
 	_player.flush()
+	_still(false)
 	_replaying = false
 	_hud.sync(_controller.state_copy(), _controller.target())
 
@@ -154,8 +158,17 @@ func open(app: DemoApp) -> void:
 ## Plays every queued event at once, skipping the pacing.
 func skip_events() -> void:
 	_speech.hurry = true
+	_still(true)
 	_player.flush()
+	_still(false)
 	_speech.skip_all()
+
+
+## While the queue is played at once, nothing moves: cards land where they lie and a
+## won trick is cleared, not swept, so no tween outlives the catch-up and clears a
+## later play.
+func _still(on: bool) -> void:
+	_motion.set_reduced(on or bool(Settings.value("reduced_motion")))
 
 
 ## The buttons, for scripted UI tests.
@@ -238,8 +251,12 @@ func _on_round_event(event: RoundEvent) -> void:
 			# A kept seat is never bid for again, so the round itself names the landlord.
 			_landlord = event.seat
 			_ledger.start_round(event.seat)
+			_show_roles(event.seat)
+		RoundEvent.Type.KITTY_TAKEN:
+			_count_cards(event.seat, event.card_ids.size())
 		RoundEvent.Type.PLAYED:
 			_show_play(event)
+			_count_cards(event.seat, -event.cards.size())
 			if event.seat == 0:
 				_hand.refresh()
 				_hand_view.show_cards()
@@ -247,7 +264,12 @@ func _on_round_event(event: RoundEvent) -> void:
 				_motion.impact()
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
 		RoundEvent.Type.TRICK_WON:
-			_pile.sweep(_seat_center(event.seat))
+			# A replayed or skipped trick is cleared at once: a sweep still running would
+			# clear the plays that come after it.
+			if _replaying or _player.flushing:
+				_pile.clear()
+			else:
+				_pile.sweep(_seat_center(event.seat))
 
 
 ## A fresh deal wipes the last round off the table: lanes, ledger, speech, the
@@ -258,6 +280,8 @@ func _new_deal() -> void:
 	_ledger.clear_rows()
 	_landlord = Seats.NONE
 	_speech.skip_all()
+	for seat: int in _seats:
+		_counts[seat] = Dealer.HAND_SIZE
 	for panel: SeatPanel in _seats.values():
 		panel.set_count(Dealer.HAND_SIZE)
 		panel.set_role(false, false)
@@ -284,6 +308,9 @@ func _on_drained() -> void:
 	_commands.refresh()
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
+	elif awaiting == RunController.AWAIT_SWAP:
+		# The plot swap has its own screen, over the table; it comes back here.
+		_app.show_screen("plot_swap")
 
 
 ## A play flies to the pile from the seat that made it; yours leaves from your hand.
@@ -305,6 +332,19 @@ func _on_setting(key: String) -> void:
 		_motion.set_reduced(bool(Settings.value("reduced_motion")))
 
 
+## The seats take their roles as the round starts, and their card counts tick as cards
+## are taken and played, without waiting for the queue to drain.
+func _show_roles(landlord: int) -> void:
+	for seat: int in _seats:
+		_seats[seat].set_role(landlord == seat, landlord != seat and landlord != 0)
+
+
+func _count_cards(seat: int, change: int) -> void:
+	if _seats.has(seat):
+		_counts[seat] = maxi(int(_counts.get(seat, Dealer.HAND_SIZE)) + change, 0)
+		_seats[seat].set_count(_counts[seat])
+
+
 func _refresh_seats() -> void:
 	var view: SeatView = _controller.seat_view()
 	var landlord: int = _controller.state_copy().landlord_seat
@@ -312,9 +352,11 @@ func _refresh_seats() -> void:
 		var panel: SeatPanel = _seats[seat]
 		if view != null:
 			panel.set_count(view.public.remaining[seat])
+			_counts[seat] = view.public.remaining[seat]
 			landlord = view.public.landlord
 		var teammate: bool = landlord != Seats.NONE and landlord != seat and landlord != 0
 		panel.set_role(landlord == seat, teammate)
+		panel.set_intel(IntelText.for_seat(view.info if view != null else null, seat))
 		var bid: String = _moments.bid_key(seat)
 		if landlord == Seats.NONE and not bid.is_empty():
 			panel.set_bid(tr(bid))

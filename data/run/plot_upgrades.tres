@@ -8,3 +8,6 @@ capacity_cost = 6
 capacity_max = 2
 swap_cost = 8
 swap_max = 1
+card_offers = 2
+card_ranks = Array[int]([10, 11, 12])
+card_costs = Array[int]([3, 4, 6])

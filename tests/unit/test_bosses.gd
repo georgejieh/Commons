@@ -134,3 +134,26 @@ func test_the_players_style_is_read_from_a_sets_log() -> void:
 	assert_int(style.calls).is_equal(1)
 	assert_int(style.type_counts[Pattern.Type.PAIR]).is_equal(1)
 	assert_dict(PlayerStyle.from_dict(style.to_dict()).to_dict()).is_equal(style.to_dict())
+
+
+func test_a_risen_villager_away_in_reeducation_is_not_seated_as_the_boss() -> void:
+	var state: RunState = RunState.new(21)
+	state.risen.assign(["zhao"])
+	var away: RosterEntry = RosterEntry.new("zhao")
+	away.status = RosterEntry.Status.REEDUCATION
+	state.roster.append(away)
+	assert_object(_boss_for(state, 4)).is_not_same(POOL.risen)
+	assert_str(state.boss_family).is_empty()
+	away.status = RosterEntry.Status.ACTIVE
+	assert_object(_boss_for(state, 4)).is_same(POOL.risen)
+	assert_str(state.boss_family).is_equal("zhao")
+
+
+func test_the_new_landlord_plays_at_medium_or_above_so_the_mirror_shows() -> void:
+	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.EASY)
+	var styles: Array[PlayerStyle] = [_style(8, 1, 2, 4)]
+	PlayerStyle.mirror(config, styles, POOL)
+	assert_int(config.tier).is_equal(BotConfig.Tier.MEDIUM)
+	var hard: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.HARD)
+	PlayerStyle.mirror(hard, styles, POOL)
+	assert_int(hard.tier).is_equal(BotConfig.Tier.HARD)

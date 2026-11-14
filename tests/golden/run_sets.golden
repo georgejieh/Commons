@@ -3,8 +3,8 @@ SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,criticism_meeting,
 DEALT seat=-1 value=0
 BID seat=1 value=1
 BID seat=2 value=0
-BID seat=0 value=1
 RESENTMENT seat=-1 value=4 grab
+BID seat=0 value=1
 BID seat=1 value=0
 LANDLORD_CHOSEN seat=0 value=2
   ROUND_STARTED seat=0
@@ -441,8 +441,8 @@ SEAT_LOST seat=0 value=0
 DEBUFF_ADDED seat=0 value=1 paperwork
 DEALT seat=-1 value=1
 BID seat=2 value=1
-BID seat=0 value=1
 RESENTMENT seat=-1 value=4 grab
+BID seat=0 value=1
 BID seat=1 value=0
 BID seat=2 value=0
 LANDLORD_CHOSEN seat=0 value=2
@@ -662,8 +662,8 @@ SET_STARTED seat=-1 value=0 amount=1500.000 straightened_lines,,criticism_meetin
 DEALT seat=-1 value=0
 BID seat=1 value=0
 BID seat=2 value=1
-BID seat=0 value=1
 RESENTMENT seat=-1 value=4 grab
+BID seat=0 value=1
 BID seat=2 value=1
 LANDLORD_CHOSEN seat=2 value=4
   ROUND_STARTED seat=2

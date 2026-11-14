@@ -301,3 +301,15 @@ func _string_keys() -> Dictionary[String, bool]:
 		if not row.is_empty():
 			keys[row[0]] = true
 	return keys
+
+
+## A field holding the wrong kind of value would crash the load, so it counts as damage
+## and the backup is used instead.
+func test_a_save_with_a_field_of_the_wrong_kind_is_damaged() -> void:
+	assert_bool(RunRecord.is_valid(_record(2))).is_true()
+	var wrong: Dictionary[String, Variant] = {"memory": [], "styles": {}, "store_sold": []}
+	for field: String in wrong:
+		var data: Dictionary = _record(2)
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint[field] = wrong[field]
+		assert_bool(RunRecord.is_valid(data)).override_failure_message(field).is_false()

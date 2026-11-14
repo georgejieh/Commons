@@ -48,6 +48,8 @@ var set_log: SetLog = SetLog.new()
 var shop: RunShop
 ## The black market's counter, open for the same visit as the state store.
 var market: RunShop
+## The black market's cards for the private plot.
+var stall: PlotStall
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -87,6 +89,7 @@ func _init(
 		_pool_by_id[definition.id] = definition
 	shop = RunShop.new(state, DEFAULT_SHOP, DEFAULT_CADRES.cadres, meters.rationing_shop_cut)
 	market = RunShop.new(state, DEFAULT_BLACK_MARKET, DEFAULT_MARKET.cadres)
+	stall = PlotStall.new(state, DEFAULT_PLOT_UPGRADES, params)
 	_table = SeatRules.new(_stack)
 	_scoring = RoundScoring.new(HandLevels.new(Scorer.DEFAULT_PARAMS.max_level), _stack)
 
@@ -227,10 +230,11 @@ func player_bid(claim: bool) -> Reason:
 	_awaiting = Awaiting.NOTHING
 	record.add({"type": "bid", "claim": claim})
 	# Calling an open seat is free. Taking it from a neighbour who holds it is resented.
-	var taken: bool = claim and bid_holder() != Seats.NONE
-	_record_bid(PLAYER, claim)
-	if taken:
+	# It is charged before the bid is recorded: a grab can end the bidding and start the
+	# round, and the villagers' grudge for that round must already count it.
+	if claim and bid_holder() != Seats.NONE:
 		_resent(DEFAULT_RESENTMENT.grab, Resentment.GRAB)
+	_record_bid(PLAYER, claim)
 	advance()
 	return Reason.OK
 
@@ -285,6 +289,7 @@ func open_shop() -> Reason:
 	_move(RunFlow.State.SHOP)
 	shop.open()
 	market.open()
+	stall.open()
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -308,6 +313,17 @@ func player_market_buy(slot: int) -> Reason:
 
 func player_market_reroll() -> Reason:
 	return _shop_command({"type": "market_reroll"}, market.reroll)
+
+
+## Buys a card for the private plot at the black market: a private purchase too.
+func player_plot_card(slot: int) -> Reason:
+	var act: Callable = func() -> RunShop.Reason:
+		var bought: bool = stall.buy(slot) == PlotStall.Reason.OK
+		return RunShop.Reason.OK if bought else RunShop.Reason.TOO_POOR
+	var reason: Reason = _shop_command({"type": "plot_card", "slot": slot}, act)
+	if reason == Reason.OK:
+		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+	return reason
 
 
 ## Buys a private-plot upgrade at the black market: a private purchase like any other.
@@ -469,7 +485,10 @@ func _collect_round_events() -> void:
 			var total: float = _scoring.score(event)
 			if event.seat == PLAYER:
 				_resent(
-					Resentment.stamped(event.cards, PLAYER) * DEFAULT_RESENTMENT.stamped_card,
+					(
+						Resentment.stamped(event.cards, PLAYER, event.pattern)
+						* DEFAULT_RESENTMENT.stamped_card
+					),
 					Resentment.STAMPED_CARD
 				)
 			var scored: RunEvent = RunEvent.new(RunEvent.Type.PLAY_SCORED, event.seat, 0, total)
@@ -596,7 +615,9 @@ func _choose_boss() -> void:
 		# seats trade so no family sits twice.
 		if state.table[2] == state.boss_family:
 			state.table[2] = state.table[1]
-			_configs[2] = _configs[1]
+			var moved: BotConfig = _configs[1]
+			_configs[1] = _configs[2]
+			_configs[2] = moved
 		state.table[1] = state.boss_family
 		var entry: RosterEntry = Roster.entry(state, state.boss_family)
 		if entry != null:
@@ -637,7 +658,10 @@ func _seat_roster() -> void:
 ## A family whose own Denunciation reached mid is sent to reeducation, and its count
 ## starts again.
 func _reeducate_villagers() -> void:
-	for family_id: String in state.villager_denunciation.keys():
+	# In name order: a save sorts its keys, so insertion order would not survive one.
+	var families: Array = state.villager_denunciation.keys()
+	families.sort()
+	for family_id: String in families:
 		if state.villager_denunciation[family_id] < _meters.denunciation.mid:
 			continue
 		var entry: RosterEntry = Roster.entry(state, family_id)
@@ -676,6 +700,16 @@ func _aim_grudges() -> void:
 
 ## Ends the run when a meter has reached death. Every caller sits at a state that may
 ## move to the run's end.
+## A run that dies mid-Set still remembers that Set: the round in play is folded into
+## the Set's summary, and the summary into the village's memory, as a finished Set's is.
+func _remember_cut_short() -> void:
+	# With no round in play the Set has ended, and its memory is already recorded.
+	if _round == null or state.summaries.is_empty():
+		return
+	set_log.end_round(state, PLAYER)
+	state.memory.record(state.summaries[-1])
+
+
 func _end_if_dead() -> bool:
 	if not RunMeters.dead(state, _meters):
 		return false
@@ -683,6 +717,7 @@ func _end_if_dead() -> bool:
 	if state.denunciation >= _meters.denunciation.death:
 		meter = RunMeters.DENUNCIATION
 	set_log.add(RunEvent.new(RunEvent.Type.RUN_DIED, PLAYER, 0, 0.0, meter))
+	_remember_cut_short()
 	_round = null
 	_deal = null
 	_stack.clear()
@@ -698,7 +733,7 @@ func _reeducate() -> void:
 	state.reeducation_due = false
 	state.inventory.plot.clear()
 	var change: PackedStringArray = Reeducation.change_cadre(
-		state.inventory, DEFAULT_CADRES.cadres, state.streams.stream(RandomStreams.EVENTS)
+		state.inventory, all_cadres(), state.streams.stream(RandomStreams.EVENTS)
 	)
 	set_log.add(RunEvent.new(RunEvent.Type.REEDUCATED, PLAYER, 0, 0.0, ">".join(change)))
 	_awaiting = Awaiting.REEDUCATION

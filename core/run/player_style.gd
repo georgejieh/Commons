@@ -74,3 +74,7 @@ static func mirror(config: BotConfig, styles: Array[PlayerStyle], pool: BossPool
 		bias[type] = shares[type] * pool.style_bias
 	config.type_bias = bias
 	config.ambition = (bid_rate(styles) - 0.5) * pool.ambition_span
+	# An Easy bot plays greedily and never reads a type bias, so the mirror plays at
+	# Medium or above.
+	if config.tier < BotConfig.Tier.MEDIUM:
+		config.tier = BotConfig.Tier.MEDIUM

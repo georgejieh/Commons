@@ -62,3 +62,38 @@ func test_a_bombed_family_opens_the_next_run_more_hostile() -> void:
 	var remembered: int = _zhao_answers(profile)
 	print("zhao answers the player's tricks: %d fresh, %d after being bombed" % [calm, remembered])
 	assert_int(remembered).is_greater(calm)
+
+
+func test_a_run_that_dies_mid_set_still_remembers_that_set() -> void:
+	var remembered: int = 0
+	for seed_value: int in range(3600, 3620):
+		var state: RunState = RunState.new(seed_value)
+		var loop: RunLoop = RunLoop.new(state, RunScript.bots(), _unmeetable())
+		var script: RunScript = RunScript.new()
+		loop.start_set()
+		while loop.awaiting() != RunLoop.Awaiting.PLAYER_NEED:
+			if loop.awaiting() == RunLoop.Awaiting.SET_OVER or not script.act(loop):
+				break
+		if loop.awaiting() != RunLoop.Awaiting.PLAYER_NEED:
+			continue
+		# One point short of starving, then a claim the Commons can't cover.
+		state.famine = RunLoop.DEFAULT_METERS.famine.death - 1
+		loop.player_need(Banking.MAX_NEED)
+		if loop.awaiting() != RunLoop.Awaiting.RUN_OVER:
+			continue
+		var summary: SetSummary = state.summaries[-1]
+		for family_id: String in summary.counts:
+			for kind: int in SetSummary.KIND_COUNT:
+				var kept: float = state.memory.count(family_id, kind as SetSummary.Kind)
+				assert_float(kept).is_equal_approx(float(summary.counts[family_id][kind]), 0.001)
+				if summary.counts[family_id][kind] > 0.0:
+					remembered += 1
+	assert_int(remembered).is_greater(0)
+
+
+## Sets whose Quota can't be met, so a Set never ends early.
+func _unmeetable() -> SetConfig:
+	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
+	params.targets = params.targets.duplicate()
+	params.targets.fill(1e9)
+	return SetConfig.new(params)

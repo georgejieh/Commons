@@ -134,6 +134,9 @@ func add_play(
 			}
 		)
 	)
+	var percent: int = ScoreTally.scale_percent(grain, rate, zeal, total)
+	if percent != ScoreTally.WHOLE:
+		sum += " " + tr("ledger.scaled").format({"percent": percent})
 	var line: String = "[font_size=%d]%s[/font_size]" % [SUM_SIZE, Keywords.mark(sum)]
 	_texts.append("[b]%s[/b]\n%s" % [head.replace("[", "[lb]"), line])
 	if _texts.size() > MAX_PLAYS:

@@ -65,3 +65,16 @@ func test_denunciation_follows_the_single_curve() -> void:
 func test_grudge_rises_with_resentment() -> void:
 	assert_float(Resentment.grudge(0, PARAMS)).is_equal(0.0)
 	assert_float(Resentment.grudge(PARAMS.max, PARAMS)).is_equal(PARAMS.grudge_at_max)
+
+
+func test_a_stamped_kicker_breeds_no_resentment() -> void:
+	var rules: RuleSet = RuleSet.default_rules()
+	var pattern: Pattern = (
+		Classifier.classify(RankText.counts("9993"), rules, Ranks.identity_map()).pattern
+	)
+	var cards: Array[CardInstance] = RoundScript.stacked_deal(["9993"], "").hands[0].cards()
+	for card: CardInstance in cards:
+		card.set_owner_stamp(0)
+	assert_int(Resentment.stamped(cards, 0)).is_equal(4)
+	assert_int(Resentment.stamped(cards, 0, pattern)).is_equal(3)
+	assert_int(Resentment.stamped(cards, 1, pattern)).is_equal(0)

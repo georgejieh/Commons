@@ -18,7 +18,7 @@ A play scores **Grain × Rate × Zeal**, and each part has one source.
 
 1. **Grain** is the sum of the scored cards' rank values, plus additive Grain from modifiers. Card values by rank are 3 to 10 at face value, J 11, Q 12, K 13, A 14, 2 15, Small Joker 16 and Big Joker 17. Kickers still score no Grain unless a modifier (Hidden Reserves) scores them. There is no hand-type base Grain.
 2. **Rate** comes only from the hand type and its level, from `ScoreParams.hand_rate`. Hand levels raise Rate and nothing else. The bomb and rocket doubling is folded into their Rates. A modifier may cap Rate (`PlayContext.rate_cap`).
-3. **Zeal** starts at 1 for every play and changes only through modifiers: `max(min_zeal, (1 + add_zeal) × mul_zeal)`. `min_zeal` is 0.5. Zeal can be fractional and is shown to one decimal when it is not whole.
+3. **Zeal** starts at 1 for every play and changes only through modifiers: `max(min_zeal, (1 + add_zeal) × mul_zeal)`. `min_zeal` is 0.5. Zeal can be fractional and is shown to the hundredth when it is not whole, so 0.75 never reads as 0.8.
 
 Level 1 Rates are the owner's. For levels 2 to 10 each Rate keeps a reference play close to its old total: `rate(L) = round(old_total(L) / new_grain)`, where the reference play is the hand type's scored cards all valued 8 (a Single 8, a Pair of 8s, a 5-card Straight 6 to 10, 3 pairs, 2 trios, a bomb of 8s), at the minimum legal chain length, and the Rocket's two jokers (old 13 + 14, new 16 + 17). Where rounding would tie a level with the one below, the Rate goes up by one, so every row strictly increases. The numbers are written in the data file, not computed at runtime.
 

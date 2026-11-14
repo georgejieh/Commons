@@ -21,11 +21,13 @@ const STAMP_SCALE: float = 1.35
 const TOTAL_INK: Color = Color("9e1b16")
 const IDLE: Color = Color("8a745c")
 const WORDS: PackedStringArray = ["grain", "rate", "zeal"]
+const WHOLE: int = 100
 
 var _values: Array[Label] = []
 var _tiles: Array[Control] = []
 var _total: Label = Label.new()
 var _total_tile: Control
+var _equals: Label
 var _tween: Tween = null
 
 
@@ -40,7 +42,8 @@ func _ready() -> void:
 		var ink: Color = Color(Keywords.INKS[WORDS[index]])
 		_tiles.append(_tile(value, tr("keyword.%s.name" % WORDS[index]), ink, VALUE_SIZE))
 		_values.append(value)
-	add_child(_sign("="))
+	_equals = _sign("=")
+	add_child(_equals)
 	_total_tile = _tile(_total, tr("tally.total"), TOTAL_INK, TOTAL_SIZE)
 	visible = false
 
@@ -55,6 +58,9 @@ func show_score(grain: float, rate: float, zeal: float, total: float, pace: floa
 		Strings.score(grain), Strings.factor(rate), Strings.factor(zeal)
 	]
 	var total_text: String = Strings.score(total)
+	# A debuff that cuts the total shows as a last factor, so the sum still adds up.
+	var percent: int = ScoreTally.scale_percent(grain, rate, zeal, total)
+	_equals.text = "=" if percent == WHOLE else tr("tally.scaled").format({"percent": percent})
 	# A Zeal of 1 changes nothing, so its chit stays quiet.
 	_values[2].add_theme_color_override(
 		"font_color", IDLE if is_equal_approx(zeal, 1.0) else Color(Keywords.INKS["zeal"])
@@ -93,6 +99,15 @@ func clear() -> void:
 	visible = false
 
 
+## What a hook left of a play's total, in percent of Grain × Rate × Zeal: 100 when the
+## total is the plain product, 50 under a debuff that halves it, 0 when it scores nothing.
+static func scale_percent(grain: float, rate: float, zeal: float, total: float) -> int:
+	var product: float = grain * rate * zeal
+	if product <= 0.0 or is_equal_approx(product, total):
+		return WHOLE
+	return roundi(WHOLE * total / product)
+
+
 ## Where the total sits on screen, its middle.
 func total_center() -> Vector2:
 	return _total_tile.global_position + _total_tile.size / 2.0
@@ -102,7 +117,10 @@ func total_center() -> Vector2:
 func shown() -> String:
 	if not visible:
 		return ""
-	return "%s × %s × %s = %s" % [_values[0].text, _values[1].text, _values[2].text, _total.text]
+	var parts: Array[String] = [
+		_values[0].text, _values[1].text, _values[2].text, _equals.text, _total.text
+	]
+	return "%s × %s × %s %s %s" % parts
 
 
 func _count(value: float, label: Label) -> void:

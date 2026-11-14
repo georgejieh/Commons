@@ -249,3 +249,30 @@ func test_the_ledger_counts_each_play_once() -> void:
 	var ledger: Ledger = table.get("_ledger")
 	for seat: int in scored:
 		assert_float(ledger.total_of(seat)).is_equal_approx(scored[seat], 0.001)
+
+
+func test_a_stocked_plot_opens_the_swap_screen_from_the_table() -> void:
+	var loop: RunLoop = _app.controller.get("_loop")
+	loop.state.inventory.plot.append(
+		CardInstance.new(CardInstance.FIRST_PLOT_ID, 12, 0, CardInstance.Origin.PLOT)
+	)
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	for _turn: int in 40:
+		if _app.switcher.current_id() != "table":
+			break
+		table.skip_events()
+		if _app.controller.awaiting() == RunController.AWAIT_BID:
+			table.actions().decline.pressed.emit()
+		await await_idle_frame()
+	assert_str(_app.switcher.current_id()).is_equal("plot_swap")
+	# Keeping the hand goes back to the table, with the round ready to play.
+	var swap_screen: Control = _app.switcher.current()
+	for child: Node in swap_screen.find_children("*", "Button", true, false):
+		var button: Button = child as Button
+		if button.text == tr("plot.keep"):
+			button.pressed.emit()
+			break
+	await await_idle_frame()
+	assert_str(_app.switcher.current_id()).is_equal("table")
+	assert_int(_app.controller.awaiting()).is_not_equal(RunController.AWAIT_SWAP)

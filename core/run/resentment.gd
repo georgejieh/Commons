@@ -33,9 +33,16 @@ static func private_cadres(cadres: Array[String], pool: Array[ModifierDef]) -> i
 	return count
 
 
-## Cards in a play that carry the seat's own stamp.
-static func stamped(cards: Array[CardInstance], seat: int) -> int:
-	return cards.filter(func(card: CardInstance) -> bool: return card.owner_stamp() == seat).size()
+## Cards a play scores that carry the seat's own stamp. Kickers score nothing, so a
+## stamped kicker breeds no Resentment.
+static func stamped(cards: Array[CardInstance], seat: int, pattern: Pattern = null) -> int:
+	var count: int = 0
+	for card: CardInstance in cards:
+		if card.owner_stamp() != seat:
+			continue
+		if pattern == null or Scorer.is_scored(card, pattern):
+			count += 1
+	return count
 
 
 ## The Denunciation a Set's end adds at this Resentment.

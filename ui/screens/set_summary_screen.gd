@@ -32,7 +32,7 @@ func open(app: DemoApp) -> void:
 	_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	sheet.add_child(_bar)
 	var paid: int = controller.quota_reward() if _met else 0
-	var cost: int = 0 if _met else controller.famine_per_miss()
+	var cost: int = _famine_rise(controller)
 	var tiles: Array[Control] = [
 		_stat(tr("summary.coupons_label"), state.coupons - paid, state.coupons, ScreenKit.COUPON),
 		_stat(tr("summary.famine_label"), state.famine - cost, state.famine, ScreenKit.RED),
@@ -61,6 +61,18 @@ func open(app: DemoApp) -> void:
 	for piece: Control in _after:
 		piece.modulate.a = 0.0
 	_bar.fill_to(state.set_progress, FILL, START)
+
+
+## How much Famine the Quota's end added: every Famine change logged after the last
+## round was scored. Read from the log, because a rise can be cut off at the top.
+func _famine_rise(controller: RunController) -> int:
+	var rise: int = 0
+	for event: RunEvent in controller.set_events():
+		if event.type == RunEvent.Type.ROUND_SCORED:
+			rise = 0
+		elif event.type == RunEvent.Type.METER_CHANGED and event.text == TableHud.FAMINE:
+			rise += event.value
+	return rise
 
 
 ## The bar and its count, for tests.
@@ -106,7 +118,7 @@ func _consequence(controller: RunController, famine: int) -> Label:
 	if _met:
 		text = Strings.count("summary.paid", controller.quota_reward())
 	else:
-		text = tr("summary.cost").format({"rise": controller.famine_per_miss(), "famine": famine})
+		text = tr("summary.cost").format({"rise": _famine_rise(controller), "famine": famine})
 	var line: Label = ScreenKit.styled(text, CommonsTheme.TITLE)
 	line.add_theme_font_size_override("font_size", 26)
 	line.add_theme_color_override("font_color", ScreenKit.INK if _met else ScreenKit.RED)

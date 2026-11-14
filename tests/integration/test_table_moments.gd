@@ -189,3 +189,44 @@ func test_the_end_of_a_quota_takes_the_screen() -> void:
 	)
 	moments.on_event(RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 0, 900.0))
 	assert_str(moments.callout.shown_word()).is_equal(tr("callout.quota.missed").to_upper())
+
+
+func test_information_cadres_show_what_they_reveal_on_the_seat() -> void:
+	var info: InfoView = InfoView.new()
+	var types: PackedInt32Array = PackedInt32Array()
+	types.resize(Pattern.Type.size())
+	types[Pattern.Type.PAIR] = 2
+	types[Pattern.Type.BOMB] = 1
+	info.opponent_types[1] = types
+	info.closest_seat = 2
+	var counts: PackedByteArray = PackedByteArray()
+	counts.resize(Ranks.COUNT)
+	counts[Ranks.THREE] = 2
+	counts[Ranks.KING] = 1
+	info.closest_counts = counts
+	var bomb: String = tr("pattern.bomb")
+	var pair: String = tr("pattern.pair")
+	assert_str(IntelText.for_seat(info, 1)).is_equal(
+		tr("intel.types").format({"list": "1 %s, 2 %s" % [bomb, pair]})
+	)
+	assert_str(IntelText.for_seat(info, 2)).is_equal(tr("intel.cards").format({"list": "3 3 K"}))
+	assert_str(IntelText.for_seat(null, 1)).is_empty()
+	var panel: SeatPanel = auto_free(SeatPanel.new())
+	add_child(panel)
+	panel.set_intel(IntelText.for_seat(info, 2))
+	assert_str(panel.intel()).contains("3 3 K")
+	panel.set_intel("")
+	assert_str(panel.intel()).is_empty()
+
+
+func test_a_cut_total_still_adds_up_on_the_tally() -> void:
+	assert_int(ScoreTally.scale_percent(25.0, 7.0, 1.0, 175.0)).is_equal(100)
+	assert_int(ScoreTally.scale_percent(25.0, 7.0, 1.0, 87.5)).is_equal(50)
+	assert_int(ScoreTally.scale_percent(25.0, 7.0, 1.0, 0.0)).is_equal(0)
+	assert_int(ScoreTally.scale_percent(0.0, 7.0, 1.0, 0.0)).is_equal(100)
+	var tally: ScoreTally = auto_free(ScoreTally.new())
+	add_child(tally)
+	Settings.set_value("reduced_motion", true)
+	tally.show_score(25.0, 7.0, 1.0, 87.5)
+	assert_str(tally.shown()).contains(tr("tally.scaled").format({"percent": 50}))
+	Settings.set_value("reduced_motion", false)

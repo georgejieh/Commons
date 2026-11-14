@@ -130,3 +130,29 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	var after: RunState = _app.controller.state_copy()
 	assert_int(after.plot_capacity_bonus).is_equal(1)
 	assert_int(after.resentment).is_equal(before + 2 * _app.controller.purchase_resentment())
+
+
+func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
+	var loop: RunLoop = _app.controller.get("_loop")
+	loop.state.coupons = 100
+	var store: StoreScreen = _app.show_screen("store")
+	await await_idle_frame()
+	var counter: HBoxContainer = store.get("_counter")
+	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
+	buy.pressed.emit()
+	assert_bool(store.is_buying()).is_true()
+	var stock: Array[String] = _app.controller.store_stock()
+	var coupons: int = _app.controller.state_copy().coupons
+	var reroll: Button = store.get("_reroll")
+	reroll.pressed.emit()
+	assert_array(_app.controller.store_stock()).is_equal(stock)
+	assert_int(_app.controller.state_copy().coupons).is_equal(coupons)
+	await await_millis(int((StoreScreen.SEAL_HOLD + StoreScreen.PIN_TIME) * 1000.0) + 300)
+	assert_bool(store.is_buying()).is_false()
+
+
+func test_the_collection_lists_the_cadres_of_both_shops() -> void:
+	var collection: Control = _app.show_screen("collection")
+	await await_idle_frame()
+	var grid: GridContainer = collection.find_children("*", "GridContainer", true, false)[0]
+	assert_int(grid.get_child_count()).is_equal(RunLoop.all_cadres().size())

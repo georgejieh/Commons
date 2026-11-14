@@ -79,6 +79,9 @@ func _process(delta: float) -> void:
 	_draining = _held and _wait > 0.0
 	if not _draining:
 		_held = false
+		# Nothing is left to space out, so the next event, the player's own play, shows
+		# at once.
+		_wait = 0.0
 		drained.emit()
 
 
