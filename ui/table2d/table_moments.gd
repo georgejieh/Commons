@@ -11,7 +11,7 @@ extends Control
 const GRAIN: Color = Color("8a5a12")
 const LOSS: Color = Color("3a322b")
 ## Where the tally and the audit slip sit, as their middles.
-const TALLY_AT: Vector2 = Vector2(790, 706)
+const TALLY_AT: Vector2 = Vector2(790, 660)
 const SLIP_AT: Vector2 = Vector2(790, 520)
 ## How fast a villager's score is counted, against the player's own at 1.
 const VILLAGER_PACE: float = 0.55

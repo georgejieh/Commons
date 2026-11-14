@@ -109,6 +109,8 @@ func open(app: DemoApp) -> void:
 	_pile.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
 	_build_seats()
+	# The moments layer lies over everything, seats included, so a takeover dims it all.
+	move_child(_moments, -1)
 	_speech.setup(_seats, app)
 	_board.setup(_controller.cadre_slots())
 	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
