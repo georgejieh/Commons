@@ -218,3 +218,24 @@ func test_rejoining_the_table_raises_no_old_banner() -> void:
 	var moments: TableMoments = table.get("_moments")
 	await await_millis(400)
 	assert_bool(moments.callout.is_showing()).is_false()
+
+
+func test_the_ledger_counts_each_play_once() -> void:
+	var table: TableScreen = _app.show_screen("table", true)
+	var scored: Dictionary[int, float] = {}
+	var plays: Array[int] = [0]
+	_app.controller.event_emitted.connect(
+		func(event: RunEvent) -> void:
+			if event.type == RunEvent.Type.PLAY_SCORED:
+				scored[event.seat] = scored.get(event.seat, 0.0) + event.amount
+				plays[0] += 1
+	)
+	var driver: ControllerScript = ControllerScript.new()
+	while plays[0] < 3:
+		if not driver.act(_app.controller):
+			break
+	table.skip_events()
+	assert_int(plays[0]).is_greater_equal(3)
+	var ledger: Ledger = table.get("_ledger")
+	for seat: int in scored:
+		assert_float(ledger.total_of(seat)).is_equal_approx(scored[seat], 0.001)

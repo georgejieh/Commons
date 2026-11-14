@@ -10,6 +10,8 @@ const SEED: int = 4242
 const SHOT_EVERY: int = 5
 const STEP_FRAMES: int = 4
 const SETTLE_SECONDS: float = 1.2
+## Seconds between pictures of a moment in motion.
+const SNAP_SECONDS: float = 0.22
 const SAVE_PATH: String = "user://playtest/run.json"
 
 var _out: String = "res://reports/playtest"
@@ -202,20 +204,17 @@ func _moment_frames(table: Node) -> void:
 	var red: Color = Color("b02a17")
 	callout.call("shout", "Call!", 0, red, "Wang calls the landlord seat", face, false)
 	for frame: int in 4:
-		await _frames(3)
-		await _shot("moment_cut_in_%d" % frame)
-	await _frames(90)
+		await _snap("moment_cut_in_%d" % frame)
+	await create_timer(2.0).timeout
 	callout.call("shout", "Bomb!", 1, red, "Zhao", null, true)
 	for frame: int in 4:
-		await _frames(3)
-		await _shot("moment_takeover_%d" % frame)
-	await _frames(90)
+		await _snap("moment_takeover_%d" % frame)
+	await create_timer(2.0).timeout
 	var tally: Object = moments.get("tally")
 	tally.call("show_score", 54.0, 7.0, 1.5, 567.0, 1.0)
 	for frame: int in 4:
-		await _frames(3)
-		await _shot("moment_tally_%d" % frame)
-	await _frames(60)
+		await _snap("moment_tally_%d" % frame)
+	await create_timer(2.0).timeout
 
 
 ## Presses every table control once and photographs the result.
@@ -347,6 +346,15 @@ func _mouse_click(at: Vector2) -> void:
 func _frames(count: int) -> void:
 	for _frame: int in count:
 		await process_frame
+
+
+## A picture of a moment in motion: a short beat on, with no wait for things to settle.
+func _snap(name: String) -> void:
+	await create_timer(SNAP_SECONDS).timeout
+	await RenderingServer.frame_post_draw
+	_shots += 1
+	var path: String = _out.path_join("%02d_%s.png" % [_shots, name])
+	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(path))
 
 
 func _shot(name: String) -> void:
