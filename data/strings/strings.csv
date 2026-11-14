@@ -492,3 +492,11 @@ callout.quota.missed,Quota missed
 callout.quota.sub,{progress} of {target} work points
 store.approved,Approved
 store.shelf,Your Cadres
+market.paid,Paid
+market.warning,Nothing here is on the books. Every purchase adds {rise} Resentment.
+market.upgrade.capacity,Enlarge your plot · {price} coupons
+market.upgrade.capacity.out,Your plot is as large as it gets
+market.upgrade.capacity.tip,Your private plot holds one more card.
+market.upgrade.swaps,One more swap a round · {price} coupons
+market.upgrade.swaps.out,No more swaps to buy
+market.upgrade.swaps.tip,"Each round, you may swap one more card between your hand and your private plot."

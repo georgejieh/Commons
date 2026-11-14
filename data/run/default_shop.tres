@@ -9,3 +9,5 @@ cadre_slots = 5
 reroll_base = 2
 reroll_step = 1
 rarity_weights = Array[int]([60, 30, 10])
+price_percent = 100
+stock_per_item = 1

@@ -28,6 +28,8 @@ const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
 ## Private items the black market sells (P4.9 effects, P4.10 stock).
 const DEFAULT_MARKET: CadrePool = preload("res://data/run/market_pool.tres")
 const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
+const DEFAULT_BLACK_MARKET: ShopParams = preload("res://data/run/black_market.tres")
+const DEFAULT_PLOT_UPGRADES: PlotUpgradeParams = preload("res://data/run/plot_upgrades.tres")
 const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
 const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
@@ -44,6 +46,8 @@ var on_boundary: Callable = Callable()
 var set_log: SetLog = SetLog.new()
 ## The state store between Sets. Read it freely; buy and reroll through the commands.
 var shop: RunShop
+## The black market's counter, open for the same visit as the state store.
+var market: RunShop
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -78,12 +82,18 @@ func _init(
 	_params = params
 	_meters = meters
 	_pool = pool
-	var known: Array[ModifierDef] = pool + DEFAULT_CADRES.cadres + DEFAULT_MARKET.cadres
+	var known: Array[ModifierDef] = pool + all_cadres()
 	for definition: ModifierDef in known + DEFAULT_BOSSES.all():
 		_pool_by_id[definition.id] = definition
 	shop = RunShop.new(state, DEFAULT_SHOP, DEFAULT_CADRES.cadres, meters.rationing_shop_cut)
+	market = RunShop.new(state, DEFAULT_BLACK_MARKET, DEFAULT_MARKET.cadres)
 	_table = SeatRules.new(_stack)
 	_scoring = RoundScoring.new(HandLevels.new(Scorer.DEFAULT_PARAMS.max_level), _stack)
+
+
+## Every Cadre either shop sells: the collective ones and the private ones.
+static func all_cadres() -> Array[ModifierDef]:
+	return DEFAULT_CADRES.cadres + DEFAULT_MARKET.cadres
 
 
 func awaiting() -> Awaiting:
@@ -274,6 +284,7 @@ func open_shop() -> Reason:
 		return Reason.OK
 	_move(RunFlow.State.SHOP)
 	shop.open()
+	market.open()
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -284,6 +295,30 @@ func player_buy(slot: int) -> Reason:
 
 func player_reroll() -> Reason:
 	return _shop_command({"type": "reroll"}, shop.reroll)
+
+
+## Buys from the black market. Every purchase there is a private one, and adds
+## Resentment.
+func player_market_buy(slot: int) -> Reason:
+	var reason: Reason = _shop_command({"type": "market_buy", "slot": slot}, market.buy.bind(slot))
+	if reason == Reason.OK:
+		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+	return reason
+
+
+func player_market_reroll() -> Reason:
+	return _shop_command({"type": "market_reroll"}, market.reroll)
+
+
+## Buys a private-plot upgrade at the black market: a private purchase like any other.
+func player_upgrade(kind: String) -> Reason:
+	var act: Callable = func() -> RunShop.Reason:
+		var bought: bool = PlotUpgrades.buy(state, kind, DEFAULT_PLOT_UPGRADES)
+		return RunShop.Reason.OK if bought else RunShop.Reason.TOO_POOR
+	var reason: Reason = _shop_command({"type": "upgrade", "kind": kind}, act)
+	if reason == Reason.OK:
+		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+	return reason
 
 
 ## Moves past a finished Set or the shop: a Year's end after the boss, then the next Set.
@@ -520,7 +555,7 @@ func _end_set() -> void:
 	_reeducate_villagers()
 	state.memory.record(state.summaries[-1])
 	_record_style_and_risen()
-	var held: int = Resentment.private_cadres(state.inventory.cadres, DEFAULT_CADRES.cadres)
+	var held: int = Resentment.private_cadres(state.inventory.cadres, all_cadres())
 	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
 	var owed: int = Resentment.denunciation(state.resentment, DEFAULT_RESENTMENT)
 	if owed > 0:

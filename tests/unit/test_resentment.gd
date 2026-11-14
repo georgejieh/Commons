@@ -21,7 +21,7 @@ func test_a_private_purchase_adds_its_amount() -> void:
 
 
 func test_only_private_cadres_count() -> void:
-	var pool: Array[ModifierDef] = RunLoop.DEFAULT_CADRES.cadres
+	var pool: Array[ModifierDef] = RunLoop.all_cadres()
 	var held: Array[String] = []
 	var private: int = 0
 	for definition: ModifierDef in pool:

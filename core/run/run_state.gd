@@ -57,6 +57,9 @@ var styles: Array[PlayerStyle] = []
 var next_plot_id: int = CardInstance.FIRST_PLOT_ID
 var plot_capacity_bonus: int = 0
 var swap_bonus: int = 0
+## How many of each item the state store has sold this run, against its limited stock
+## (P4.10).
+var store_sold: Dictionary[String, int] = {}
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -102,6 +105,8 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.next_plot_id = int(data["next_plot_id"])
 	state.plot_capacity_bonus = int(data["plot_capacity_bonus"])
 	state.swap_bonus = int(data["swap_bonus"])
+	for item_id: String in data["store_sold"]:
+		state.store_sold[item_id] = int(data["store_sold"][item_id])
 	for style_data: Dictionary in data["styles"]:
 		state.styles.append(PlayerStyle.from_dict(style_data))
 	for family_id: String in data["villager_denunciation"]:
@@ -153,6 +158,7 @@ func to_dict() -> Dictionary:
 		"next_plot_id": next_plot_id,
 		"plot_capacity_bonus": plot_capacity_bonus,
 		"swap_bonus": swap_bonus,
+		"store_sold": store_sold.duplicate(),
 		"boss_family": boss_family,
 		"styles": styles.map(func(style: PlayerStyle) -> Dictionary: return style.to_dict()),
 		"villager_denunciation": villager_denunciation.duplicate(),

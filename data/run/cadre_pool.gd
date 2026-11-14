@@ -1,5 +1,6 @@
 class_name CadrePool
 extends Resource
-## The Cadres the state store can stock.
+## The Cadres one counter can stock: collective ones at the state store, private ones at
+## the black market.
 
 @export var cadres: Array[ModifierDef]

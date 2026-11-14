@@ -85,6 +85,9 @@ func _step() -> void:
 		"store":
 			await _shot("store")
 			await _buy_one()
+			await _click_button_with_text(tr("market.open"))
+			await _shot("black_market")
+			await _click_button_with_text(tr("market.back"))
 			await _click_button_with_text(tr("store.leave"))
 		"set_intro":
 			await _shot("set_intro")

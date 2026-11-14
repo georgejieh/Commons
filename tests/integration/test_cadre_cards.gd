@@ -101,3 +101,32 @@ func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
 	var board: NoticeBoard = store.get("_board")
 	var cards: Array[TipHost] = board.get("_cards")
 	assert_str(cards[held].tip_rule()).is_equal(ScreenKit.rule_text(_app.controller, bought))
+
+
+func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> void:
+	# Coupons enough for the market's prices, handed out behind the controller.
+	var loop: RunLoop = _app.controller.get("_loop")
+	loop.state.coupons = 100
+	var market: StoreScreen = _app.show_screen("black_market")
+	await await_idle_frame()
+	assert_bool(market.market).is_true()
+	var stock: Array[String] = _app.controller.desk(true).stock()
+	assert_int(stock.size()).is_greater(0)
+	var before: int = _app.controller.state_copy().resentment
+	var counter: HBoxContainer = market.get("_counter")
+	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
+	buy.pressed.emit()
+	var state: RunState = _app.controller.state_copy()
+	assert_array(state.inventory.cadres).contains([stock[0]])
+	assert_int(state.resentment).is_equal(before + _app.controller.purchase_resentment())
+	var seal: InkSeal = market.get("_seal")
+	assert_str(seal.word()).is_equal(tr("market.paid").to_upper())
+	await await_millis(int((StoreScreen.SEAL_HOLD + StoreScreen.PIN_TIME) * 1000.0) + 300)
+	# The plot upgrades are on the counter too, and each is a private purchase.
+	var tickets: HBoxContainer = market.get("_upgrades")
+	assert_int(tickets.get_child_count()).is_equal(PlotUpgrades.KINDS.size())
+	var enlarge: Button = tickets.get_child(0)
+	enlarge.pressed.emit()
+	var after: RunState = _app.controller.state_copy()
+	assert_int(after.plot_capacity_bonus).is_equal(1)
+	assert_int(after.resentment).is_equal(before + 2 * _app.controller.purchase_resentment())

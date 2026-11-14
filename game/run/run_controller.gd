@@ -23,6 +23,9 @@ const COMMANDS: Array[String] = [
 	"finish_set",
 	"buy",
 	"reroll",
+	"market_buy",
+	"market_reroll",
+	"upgrade",
 	"leave_store",
 ]
 ## What the run waits on, for views that may not name the loop.
@@ -138,6 +141,32 @@ func reroll() -> int:
 	return _finish("reroll", _loop.player_reroll())
 
 
+## Buys from the black market, which adds Resentment.
+func market_buy(slot: int) -> int:
+	return _finish("market_buy", _loop.player_market_buy(slot))
+
+
+func market_reroll() -> int:
+	return _finish("market_reroll", _loop.player_market_reroll())
+
+
+## Buys one step of a private-plot upgrade at the black market.
+func upgrade(kind: String) -> int:
+	return _finish("upgrade", _loop.player_upgrade(kind))
+
+
+## The state store's counter, or the black market's, for a screen to read.
+func desk(market: bool) -> ShopDesk:
+	if market:
+		return ShopDesk.new(_loop.market, _loop.state, RunLoop.DEFAULT_PLOT_UPGRADES)
+	return ShopDesk.new(_loop.shop, _loop.state)
+
+
+## The Resentment every black market purchase adds.
+func purchase_resentment() -> int:
+	return RunLoop.DEFAULT_RESENTMENT.private_purchase
+
+
 ## Leaves the store for the next Set, or the run's end.
 func leave_store() -> int:
 	return _finish("leave_store", _loop.next_set())
@@ -160,14 +189,6 @@ func is_last_set() -> bool:
 ## The store's stock per slot, an empty ID for a sold slot.
 func store_stock() -> Array[String]:
 	return _loop.shop.stock()
-
-
-func store_price(slot: int) -> int:
-	return _loop.shop.price(slot)
-
-
-func reroll_price() -> int:
-	return _loop.shop.reroll_price()
 
 
 ## Coupons the current Set pays when its Quota is met.
@@ -214,12 +235,6 @@ func audit_chance() -> float:
 ## The Denunciation a lie about need costs when an audit catches it.
 func lie_cost() -> int:
 	return RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
-
-
-## A reroll is worth pressing: affordable, and the board has room for what it draws.
-func can_reroll() -> bool:
-	var state: RunState = _loop.state
-	return state.coupons >= reroll_price() and state.inventory.cadres.size() < cadre_slots()
 
 
 func can_buy(slot: int) -> bool:

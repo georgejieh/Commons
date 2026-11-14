@@ -14,6 +14,9 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"shop": [],
 	"buy": ["slot"],
 	"reroll": [],
+	"market_buy": ["slot"],
+	"market_reroll": [],
+	"upgrade": ["kind"],
 }
 
 var checkpoint: Dictionary = {}
@@ -62,6 +65,15 @@ static func migrate_from_2(data: Dictionary) -> Dictionary:
 
 ## True when data has a checkpoint with every RunState field and well-formed commands,
 ## so a save that parses but lost its shape falls back to the backup.
+## Version 3 saves predate the state store's limited stock (P4.10): nothing sold yet.
+static func migrate_from_3(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		if not checkpoint.has("store_sold"):
+			checkpoint["store_sold"] = {}
+	return data
+
+
 static func is_valid(data: Dictionary) -> bool:
 	if not data.get("checkpoint") is Dictionary or not data.get("commands") is Array:
 		return false
@@ -125,6 +137,12 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_buy(int(command["slot"]))
 		"reroll":
 			return loop.player_reroll()
+		"market_buy":
+			return loop.player_market_buy(int(command["slot"]))
+		"market_reroll":
+			return loop.player_market_reroll()
+		"upgrade":
+			return loop.player_upgrade(str(command["kind"]))
 	return RunLoop.Reason.ILLEGAL
 
 
