@@ -8,8 +8,8 @@ extends Control
 ## Modifier names are long, so they print a step below the title size (the set intro's
 ## debuff card uses it).
 const NAME_SIZE: int = 32
-## The owned-Cadres line wraps at this width on its paper chip.
-const OWNED_WIDTH: float = 900.0
+## The reading line wraps at this width, beside the board on its paper chip.
+const READING_WIDTH: float = 520.0
 const SEAL_WIDTH: float = 250.0
 ## Seconds the seal sits on a bought card, and the card takes to reach the board.
 const SEAL_HOLD: float = 0.42
@@ -38,7 +38,7 @@ func open(app: DemoApp) -> void:
 	_coupons.add_theme_color_override("font_color", ScreenKit.COUPON)
 	_coupons.autowrap_mode = TextServer.AUTOWRAP_OFF
 	# The chip shrinks to its content, so a wrapping label needs a set width.
-	_reading.custom_minimum_size = Vector2(OWNED_WIDTH, 0)
+	_reading.custom_minimum_size = Vector2(READING_WIDTH, 0)
 	_board.setup(app.controller.cadre_slots())
 	balance.add_child(_coupons)
 	balance.size_flags_vertical = Control.SIZE_SHRINK_END
@@ -59,9 +59,8 @@ func open(app: DemoApp) -> void:
 		column.add_child(_rationing_note(app.controller))
 	# A paper chip, so the line reads over the mural.
 	var chip: VBoxContainer = ScreenKit.card(Vector2(0, 0))
-	chip.add_child(_reading)
 	chip.add_child(ScreenKit.eyebrow(tr("store.shelf")))
-	chip.add_child(_board)
+	chip.add_child(ScreenKit.row([_board, _reading], 24))
 	var chip_panel: Control = ScreenKit.card_panel(chip)
 	chip_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	column.add_child(chip_panel)

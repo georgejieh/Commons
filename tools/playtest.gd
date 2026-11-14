@@ -170,6 +170,13 @@ func _buy_one() -> void:
 	for child: Node in screen.find_children("*", "Button", true, false):
 		var button: Button = child as Button
 		if button.theme_type_variation == "CouponButton" and not button.disabled:
+			# The seal as it lands on a card, pressed by hand so it can be photographed.
+			var seal: Control = screen.get("_seal")
+			var card: Control = (screen.get("_counter") as Control).get_child(0)
+			seal.position = card.global_position + card.size / 2.0 - seal.size / 2.0
+			seal.call("press")
+			await _snap("store_seal")
+			seal.hide()
 			await _press(button)
 			for frame: int in 3:
 				await _snap("store_buying_%d" % frame)

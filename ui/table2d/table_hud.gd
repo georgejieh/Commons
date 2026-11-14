@@ -89,7 +89,9 @@ func show_state(state: RunState, rounds: int) -> void:
 
 ## Puts every bar where the run says it is, at once, unless it is already heading there.
 func sync(state: RunState, target: float) -> void:
-	_target = maxf(target, 1.0)
+	if not is_equal_approx(_target, maxf(target, 1.0)):
+		_target = maxf(target, 1.0)
+		_show_quota(maxf(_goals[QUOTA], 0.0))
 	_move(QUOTA, state.set_progress, false)
 	_move(FAMINE, state.famine, false)
 	_move(DENUNCIATION, state.denunciation, false)
