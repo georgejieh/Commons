@@ -54,6 +54,27 @@ The player never sees which stage they are in. Each stage keeps the one before i
 
 **Horror rules.** Absence over spectacle: no blood, wounds or bodies, ever. The horror is in the eye, the hands, and smiles held too long. Each stage stays readable as the same poster, so the player notices the change rather than watching it happen.
 
+## Motion
+
+Everything on screen is paper, cloth and ink in a brigade office, and it moves like those things. Three materials carry all motion, so every screen feels like one game.
+
+| Material | How it moves | Used for |
+| --- | --- | --- |
+| Paper | Has weight. It is thrown, turns in the air, lands with a knock and hops when counted | Cards, chits, coupons, sheets |
+| Red cloth | Whips across the whole screen and off again, like a banner pulled taut | Calls, bombs, round ends: the `Callout` |
+| Ink | Is pressed down from large to its place, and stays | Stamps, seals, verdicts, totals landing |
+
+Rules:
+
+- **Size follows weight.** A beat is either local or total. A pass is tagged on the seat that passed. A call, a bomb and a round's end take the whole screen for under a second and a half. Nothing floats at medium size over the table.
+- **The poster's sun rays are the speed lines.** They turn behind a takeover and nowhere else.
+- **Every score is counted where the player can watch.** Grain counts up as the cards hop, Rate and Zeal are stamped on, the total rolls and flies to the ledger.
+- **A choice that is ready looks ready.** A playable selection rises and its edge turns gold; the Play ticket swells.
+- **Motion never carries a fact alone.** The ledger, seats and meters show the same thing at rest, and reduced motion keeps every fact.
+- **Decay comes later.** As corruption rises the same moves should smear, stutter and thin out. Build the clean version first.
+
+Still to build in this language: the Quota bar filling and being met, coupons torn off and a Cadre stamped and pinned when bought, sealed envelopes for packs, the kitty turned over for the landlord, meters rising.
+
 ## Files, sizes and atlases
 
 - **Names** follow `category_name_variant`: `cadre_stakhanovite`, `portrait_wang_face`, `icon_grain`. A corruption-stage version adds `_sN`, as in `table_surface_s4`, and lives in a `stages/` folder next to its base asset.

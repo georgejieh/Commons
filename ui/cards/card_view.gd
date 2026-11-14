@@ -16,6 +16,8 @@ const RED_SUITS: Array[int] = [1, 3]
 const INK: Color = Color("1e1a16")
 const RED: Color = Color("b02a17")
 const HINT: Color = Color("c9a227")
+## The edge of a selection that makes a legal play: ready to throw.
+const ARMED: Color = Color("f2c94c")
 const CURSOR: Color = Color("f4ecd8")
 ## Height of the cursor's bar under the card.
 const CURSOR_BAR: float = 8.0
@@ -202,12 +204,13 @@ static func _corner_fade() -> GradientTexture2D:
 	return corner
 
 
-## Selected cards lift and get a red edge; hinted cards get a gold edge. The keyboard
+## Selected cards lift and get a red edge, which turns bright gold once the selection
+## is a play that can be made; hinted cards get a gold edge. The keyboard
 ## and gamepad cursor gets its own paper-white bar under the card, so it shows on a
 ## selected card too.
-func set_marked(selected: bool, hinted: bool, cursor: bool = false) -> void:
+func set_marked(selected: bool, hinted: bool, cursor: bool = false, armed: bool = false) -> void:
 	_highlight.visible = selected or hinted
-	_highlight.modulate = RED if selected else HINT
+	_highlight.modulate = (ARMED if armed else RED) if selected else HINT
 	_cursor_mark.visible = cursor
 
 

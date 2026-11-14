@@ -215,6 +215,6 @@ func test_rejoining_the_table_raises_no_old_banner() -> void:
 		if not driver.act(_app.controller):
 			return
 	var table: TableScreen = _app.show_screen("table", true)
-	var banner: Control = table.get("_banner")
+	var moments: TableMoments = table.get("_moments")
 	await await_millis(400)
-	assert_float(banner.modulate.a).is_equal(0.0)
+	assert_bool(moments.callout.is_showing()).is_false()

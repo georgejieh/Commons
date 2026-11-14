@@ -19,8 +19,6 @@ const SEAT_WIDTH: float = 380.0
 const SEAT_OFFSET: float = 330.0
 ## The height the need panel and the audit slip center on, between seats and hand.
 const SHEET_MIDDLE: float = 520.0
-## How far above the hand's middle the player's own stamps land.
-const OWN_STAMP_RISE: float = 170.0
 
 var _app: DemoApp
 var _controller: RunController
@@ -41,7 +39,6 @@ var _cheat_sheet: CheatSheet = CheatSheet.new()
 var _pool_parent: Control = Control.new()
 var _you: Label = Label.new()
 var _motion: TableMotion = TableMotion.new()
-var _banner: TableBanner = TableBanner.new()
 var _replaying: bool = false
 var _pause: PauseMenu = PauseMenu.new()
 var _atmosphere: TableAtmosphere = TableAtmosphere.new()
@@ -52,8 +49,6 @@ var _commands: TableCommands = TableCommands.new()
 var _dread: DreadLayers = DreadLayers.new()
 var _dressing: DreadDressing = DreadDressing.new()
 var _surface: TextureRect
-var _fx: TableFx = TableFx.new()
-var _slip: AuditSlip = AuditSlip.new()
 var _moments: TableMoments = TableMoments.new()
 
 
@@ -88,13 +83,10 @@ func _ready() -> void:
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
-	_place(_slip, Vector2(PLAY_CENTER - 300.0, 400), Vector2(600, 0))
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
-	_slip.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
-	_place(_fx, Vector2.ZERO, Vector2(1920, 1080))
+	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_cheat_sheet, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
-	_place(_banner, Vector2(PLAY_CENTER - 380.0, 480), Vector2(760, 0))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
 	_place(_pile, Vector2(PLAY_CENTER - 460.0, 380), Vector2(920, 300))
@@ -131,8 +123,11 @@ func open(app: DemoApp) -> void:
 	}
 	_ledger.setup(names)
 	_commands.set_names(names)
-	_slip.setup(names)
-	_moments.setup(_fx, _slip, _ledger, _seats, _stamp_spot, _pile_center)
+	var faces: Dictionary[int, Texture2D] = {}
+	for seat: int in _seats:
+		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
+	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
+	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
 	_player.holds = {
 		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
 	}
@@ -215,7 +210,7 @@ func _on_event(event: RunEvent) -> void:
 	if not _replaying:
 		TableSounds.play(event, _landlord, _controller)
 		_speech.on_event(event)
-	_moments.on_event(event, _replaying)
+	_moments.on_event(event, _replaying or _player.flushing)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
@@ -231,7 +226,6 @@ func _on_event(event: RunEvent) -> void:
 			_dread.refresh(_controller.state_copy())
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
-			_announce_landlord(event.seat)
 			_dread.refresh(_controller.state_copy(), false, event.seat == 0)
 	_refresh_status()
 
@@ -249,15 +243,9 @@ func _on_round_event(event: RoundEvent) -> void:
 				_hand_view.show_cards()
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
-				var rocket: bool = event.pattern.type == Pattern.Type.ROCKET
-				_announce(tr("banner.rocket" if rocket else "banner.bomb"), ScreenKit.RED)
 			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
 		RoundEvent.Type.TRICK_WON:
 			_pile.sweep(_seat_center(event.seat))
-		RoundEvent.Type.ROUND_ENDED:
-			var landlord_won: bool = event.seat == _landlord
-			var key: String = "banner.landlord_wins" if landlord_won else "banner.peasants_win"
-			_announce(tr(key), ScreenKit.INK)
 
 
 ## A fresh deal wipes the last round off the table: lanes, ledger, speech, the
@@ -266,7 +254,6 @@ func _on_round_event(event: RoundEvent) -> void:
 func _new_deal() -> void:
 	_pile.clear()
 	_ledger.clear_rows()
-	_banner.dismiss()
 	_landlord = Seats.NONE
 	_speech.skip_all()
 	for panel: SeatPanel in _seats.values():
@@ -310,31 +297,9 @@ func _seat_center(seat: int) -> Vector2:
 	return at.global_position + at.size / 2.0
 
 
-## Where a seat's stamps land: over a villager's panel, or just above your hand.
-func _stamp_spot(seat: int) -> Vector2:
-	var spot: Vector2 = _seat_center(seat)
-	return spot - Vector2(0, OWN_STAMP_RISE) if seat == 0 else spot
-
-
-func _pile_center() -> Vector2:
-	return _pile.global_position + _pile.size / 2.0
-
-
 func _on_setting(key: String) -> void:
 	if key == "reduced_motion":
 		_motion.set_reduced(bool(Settings.value("reduced_motion")))
-
-
-func _announce(text: String, color: Color) -> void:
-	if not _replaying:
-		_banner.announce(text, color)
-
-
-func _announce_landlord(seat: int) -> void:
-	if seat == 0:
-		_announce(tr("banner.landlord_you"), ScreenKit.RED)
-	else:
-		_announce(tr("banner.landlord_other").format({"name": _app.seat_name(seat)}), ScreenKit.INK)
 
 
 func _refresh_seats() -> void:

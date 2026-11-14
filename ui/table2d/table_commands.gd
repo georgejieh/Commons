@@ -47,7 +47,11 @@ func set_names(names: Dictionary[int, String]) -> void:
 ## Sets the buttons and the reading for the turn, the bid or the selection.
 func refresh() -> void:
 	var my_turn: bool = _player.is_idle() and _controller.awaiting() == RunController.AWAIT_PLAY
+	var was_off: bool = _actions.play.disabled
 	_actions.play.disabled = not (my_turn and _hand.can_play())
+	# The Play ticket swells the moment a selection becomes playable.
+	if was_off and not _actions.play.disabled:
+		UiMotion.pulse(_actions.play)
 	_actions.pass_turn.disabled = not (my_turn and _hand.can_pass())
 	if _controller.awaiting() == RunController.AWAIT_BID:
 		_show_bid()

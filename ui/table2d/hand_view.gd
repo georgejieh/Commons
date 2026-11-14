@@ -13,6 +13,8 @@ const MAX_SPACING: float = 64.0
 const ARC_DROP: float = 0.6
 const TILT_PER_CARD: float = 0.025
 const LIFT: float = 32.0
+## A selection that can be played rises this much more, ready to throw.
+const ARMED_LIFT: float = 12.0
 ## How far below the fan a freshly dealt card starts.
 const DEAL_RISE: float = 260.0
 ## Jokers have no suit, so suit sorting puts them after the four suits.
@@ -147,12 +149,14 @@ func _layout() -> void:
 
 func _mark() -> void:
 	var hinted: Array[int] = _hinted
+	var armed: bool = _model.can_play()
+	var lift: float = LIFT + (ARMED_LIFT if armed else 0.0)
 	for index: int in _views.size():
 		var view: CardView = _views[index]
 		var selected: bool = _model.is_selected(view.card_id)
-		view.set_marked(selected, hinted.has(view.card_id), index == _cursor)
+		view.set_marked(selected, hinted.has(view.card_id), index == _cursor, armed)
 		var slot: Vector3 = fan_slot(index, _views.size(), size.x)
-		var to: Vector2 = Vector2(view.position.x, slot.y - (LIFT if selected else 0.0))
+		var to: Vector2 = Vector2(view.position.x, slot.y - (lift if selected else 0.0))
 		if motion == null:
 			view.position = to
 		else:

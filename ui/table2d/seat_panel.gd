@@ -18,6 +18,8 @@ const PAPER: Color = Color("d9c8a4")
 ## The portrait's frame, and the picture inside it after the frame's 4 px edge.
 const PORTRAIT_BOX: Vector2 = Vector2(110, 138)
 const PICTURE_BOX: Vector2 = Vector2(102, 130)
+## Seconds a flashed word stays on the role line.
+const FLASH_HOLD: float = 0.9
 
 var seat: int = -1
 
@@ -34,6 +36,9 @@ var _count_row: HBoxContainer = HBoxContainer.new()
 var _row: HBoxContainer = HBoxContainer.new()
 var _stack: VBoxContainer = VBoxContainer.new()
 var _mood: String = ""
+## What the role line says at rest, and the tween that puts it back after a flash.
+var _role_text: String = ""
+var _flash: Tween = null
 ## When each character of the current line shows, and how long it has been typing.
 var _reveal: PackedFloat32Array = PackedFloat32Array()
 var _typed: float = 0.0
@@ -114,26 +119,56 @@ func setup(seat_index: int, display_name: String, portrait: Texture2D = null) ->
 
 func set_count(cards: int) -> void:
 	var key: String = "table.card_left" if cards == 1 else "table.cards_left"
-	_count.text = tr(key).format({"count": cards})
+	var text: String = tr(key).format({"count": cards})
+	if _count.text != text and not _count.text.is_empty():
+		UiMotion.pulse(_count)
+	_count.text = text
 	_count.add_theme_color_override("font_color", LANDLORD_RED if cards <= 2 else INK)
 
 
 func set_role(is_landlord: bool, teammate: bool) -> void:
 	# The tag keeps its space either way, so the seat never changes height.
+	var was_landlord: bool = _banner.modulate.a > 0.5
 	_banner.modulate.a = 1.0 if is_landlord else 0.0
 	_portrait.color = GOLD if is_landlord else PAPER
 	if is_landlord:
-		_role.text = tr("table.role.landlord").to_upper()
+		_rest_role(tr("table.role.landlord"))
 	elif teammate:
-		_role.text = tr("table.role.teammate").to_upper()
+		_rest_role(tr("table.role.teammate"))
 	else:
-		_role.text = tr("table.role.peasant").to_upper()
+		_rest_role(tr("table.role.peasant"))
+	# Taking the seat is stamped onto the portrait.
+	if is_landlord and not was_landlord:
+		UiMotion.stamp(_banner)
+		bump()
 
 
 ## Says what the seat did in the bidding, in place of its role, until a landlord is
 ## chosen and every seat has a role to show.
 func set_bid(text: String) -> void:
+	_rest_role(text)
+
+
+## Shows text on the role line for a moment, such as a pass, then the role again.
+func flash(text: String) -> void:
 	_role.text = text.to_upper()
+	UiMotion.pulse(_role)
+	if _flash != null and _flash.is_valid():
+		_flash.kill()
+	_flash = create_tween()
+	_flash.tween_interval(FLASH_HOLD)
+	_flash.tween_callback(func() -> void: _role.text = _role_text)
+
+
+## A small swell of the whole sheet, when its villager does something.
+func bump() -> void:
+	UiMotion.pulse(self)
+
+
+func _rest_role(text: String) -> void:
+	_role_text = text.to_upper()
+	if _flash == null or not _flash.is_running():
+		_role.text = _role_text
 
 
 ## Shows a line; mood is the line's mood tag. With reveal times from the voice plan

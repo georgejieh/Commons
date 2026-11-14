@@ -193,8 +193,34 @@ func _leave_and_continue(table: Node) -> void:
 		print("RESUME WRONG STATE %d" % controller.call("awaiting"))
 
 
+## Plays the table's big moments by hand and photographs each a few frames apart, so
+## their look can be checked without watching them move.
+func _moment_frames(table: Node) -> void:
+	var moments: Object = table.get("_moments")
+	var callout: Object = moments.get("callout")
+	var face: Texture2D = _app.call("seat_portrait", 1, Vector2.ONE)
+	var red: Color = Color("b02a17")
+	callout.call("shout", "Call!", 0, red, "Wang calls the landlord seat", face, false)
+	for frame: int in 4:
+		await _frames(3)
+		await _shot("moment_cut_in_%d" % frame)
+	await _frames(90)
+	callout.call("shout", "Bomb!", 1, red, "Zhao", null, true)
+	for frame: int in 4:
+		await _frames(3)
+		await _shot("moment_takeover_%d" % frame)
+	await _frames(90)
+	var tally: Object = moments.get("tally")
+	tally.call("show_score", 54.0, 7.0, 1.5, 567.0, 1.0)
+	for frame: int in 4:
+		await _frames(3)
+		await _shot("moment_tally_%d" % frame)
+	await _frames(60)
+
+
 ## Presses every table control once and photographs the result.
 func _tour(table: Node) -> void:
+	await _moment_frames(table)
 	var actions: Object = table.call("actions")
 	for mode: int in 3:
 		await _press(actions.get("sort"))

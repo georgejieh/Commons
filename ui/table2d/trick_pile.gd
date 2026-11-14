@@ -6,6 +6,9 @@ extends Control
 ## the play to beat is plain. A won trick sweeps off toward the winner. Cards are pooled
 ## views; the pile takes no clicks.
 
+## A play's last card has landed; count is how many cards it had.
+signal landed(count: int)
+
 const PLAY_SCALE: float = 0.8
 ## A card view's size at full scale.
 const CARD: Vector2 = Vector2(120, 168)
@@ -22,6 +25,10 @@ const BURIED: float = 0.6
 const LAUNCH_SCALE: float = 0.45
 ## How much of the way to the winner a swept card travels before it fades out.
 const SWEEP_REACH: float = 0.55
+## A thrown card starts turned by up to this much, in radians, and straightens as it
+## lands; a counted card hops this far.
+const THROW_SPIN: float = 0.7
+const HOP: float = 14.0
 
 var _pool: CardPool
 var _pool_parent: Control
@@ -66,8 +73,14 @@ func show_play(cards: Array[CardInstance], from: Vector2, origins: Array[Vector2
 		var rest: Vector2 = corner + Vector2(along, along * sin(tilt))
 		var angle: float = tilt + _unit(noise, 10 + order) * CARD_TILT
 		var start: Vector2 = origins[order] if order < origins.size() else from
-		_fly(view, start, rest, angle, order)
+		view.rotation = angle + _unit(noise, 30 + order) * THROW_SPIN
+		var flight: Tween = _fly(view, start, rest, angle, order)
 		_views.append(view)
+		if order == cards.size() - 1:
+			if flight == null:
+				landed.emit(cards.size())
+			else:
+				flight.chain().tween_callback(landed.emit.bind(cards.size()))
 
 
 ## Slides the pile toward a point on screen, fading, then gives the views back. Under
@@ -129,12 +142,12 @@ func top_views() -> Array[CardView]:
 
 ## Moves a card from start, a point on screen, to rest on the pile, growing from launch
 ## size, a beat after the card before it. Under reduced motion it lands at once.
-func _fly(view: CardView, start: Vector2, rest: Vector2, angle: float, order: int) -> void:
+func _fly(view: CardView, start: Vector2, rest: Vector2, angle: float, order: int) -> Tween:
 	if _motion.reduced:
 		view.position = rest
 		view.rotation = angle
 		view.scale = Vector2.ONE * PLAY_SCALE
-		return
+		return null
 	var launch: Vector2 = start - global_position - view.size * LAUNCH_SCALE / 2.0
 	view.position = launch
 	view.scale = Vector2.ONE * LAUNCH_SCALE
@@ -145,6 +158,22 @@ func _fly(view: CardView, start: Vector2, rest: Vector2, angle: float, order: in
 	tween.tween_property(view, "position", rest, seconds).set_delay(delay)
 	tween.tween_property(view, "rotation", angle, seconds).set_delay(delay)
 	tween.tween_property(view, "scale", Vector2.ONE * PLAY_SCALE, seconds).set_delay(delay)
+	return tween
+
+
+## Hops each card of the top play in turn, over seconds in all, as its Grain is counted.
+func pulse_top(seconds: float) -> void:
+	var top: Array[CardView] = top_views()
+	if _motion.reduced or top.is_empty() or seconds <= 0.0:
+		return
+	var each: float = seconds / top.size()
+	for order: int in top.size():
+		var view: CardView = top[order]
+		var rest: float = view.position.y
+		var hop: Tween = view.tween()
+		hop.tween_interval(order * each)
+		hop.tween_property(view, "position:y", rest - HOP, each * 0.4)
+		hop.tween_property(view, "position:y", rest, each * 0.6)
 
 
 ## Dims every play already on the pile.

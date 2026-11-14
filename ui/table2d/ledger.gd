@@ -115,7 +115,10 @@ func set_pending(type_text: String) -> void:
 
 
 ## Adds a scored play: its seat's total counts up, and the play is written under Plays.
-func add_play(seat: int, grain: float, rate: float, zeal: float, total: float) -> void:
+## With a delay, the total holds its old value until the score arrives from the table.
+func add_play(
+	seat: int, grain: float, rate: float, zeal: float, total: float, delay: float = 0.0
+) -> void:
 	var before: float = _totals[seat]
 	_totals[seat] += total
 	var head: String = tr("ledger.play").format(
@@ -136,8 +139,21 @@ func add_play(seat: int, grain: float, rate: float, zeal: float, total: float) -
 	if _texts.size() > MAX_PLAYS:
 		_texts.remove_at(0)
 	_show()
-	UiMotion.stamp(_amounts[seat])
-	_counting = UiMotion.count(_amounts[seat], before, _totals[seat], Strings.score)
+	var amount: Label = _amounts[seat]
+	if delay <= 0.0 or UiMotion.reduced():
+		UiMotion.stamp(amount)
+		_counting = UiMotion.count(amount, before, _totals[seat], Strings.score)
+		return
+	amount.text = Strings.score(before)
+	_counting = amount.create_tween()
+	_counting.tween_interval(delay)
+	_counting.tween_callback(UiMotion.stamp.bind(amount))
+	_counting.tween_method(
+		func(value: float) -> void: amount.text = Strings.score(value),
+		before,
+		_totals[seat],
+		UiMotion.PRESETS.count_time
+	)
 
 
 ## The seat's total once the round's end multipliers are in.

@@ -199,10 +199,6 @@ demo.eyebrow,Thank you for playing
 settings.eyebrow,Preferences
 settings.audio,Sound
 settings.display,Display
-banner.landlord_you,You take the landlord seat
-banner.landlord_other,{name} takes the landlord seat
-banner.bomb,Bomb
-banner.rocket,Rocket
 banner.landlord_wins,The landlord wins the round
 banner.peasants_win,The peasants win the round
 sort.rank,Rank
@@ -472,9 +468,6 @@ keyword.famine.text,"Famine: the village's hunger. A missed Quota raises it, and
 bid.call,Called the seat
 bid.grab,Grabbed the seat
 bid.pass,Passed on the seat
-stamp.call,Calls landlord
-stamp.grab,Grabs the seat
-stamp.no_call,No call
 stamp.pass,Pass
 audit.title,The Commons is split
 audit.claim,{name} claimed {percent}%
@@ -483,3 +476,14 @@ audit.clear,Not audited
 audit.honest,Audited: a fair claim
 audit.caught,Audited: lie caught
 audit.paid,+{amount}
+callout.call,Call!
+callout.call.sub,{name} calls the landlord seat
+callout.call.you,You call the landlord seat
+callout.grab,Grab!
+callout.grab.sub,{name} grabs the landlord seat
+callout.grab.you,You grab the landlord seat
+callout.bomb,Bomb!
+callout.rocket,Rocket!
+callout.won,Round won
+callout.lost,Round lost
+tally.total,Work points
