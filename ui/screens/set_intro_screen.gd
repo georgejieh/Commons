@@ -1,6 +1,7 @@
 class_name SetIntroScreen
 extends Control
-## Before a Set: its type, its target and reward, and the debuff ladder drawn for it,
+## Before a Set: its type, its target and reward, how far the norm has raised it, and the
+## debuff ladder drawn for it,
 ## one card per round, with round 1 always clean. Everything sits on one sheet at the
 ## left, the rounds two by two.
 
@@ -21,6 +22,12 @@ func open(app: DemoApp) -> void:
 		{"target": Strings.score(controller.target()), "rounds": app.max_rounds()}
 	)
 	column.add_child(ScreenKit.styled(target, CommonsTheme.TITLE))
+	if controller.norm_percent() > 0:
+		var norm: Label = ScreenKit.label(
+			tr("intro.norm").format({"percent": controller.norm_percent()}), 24
+		)
+		norm.add_theme_color_override("font_color", ScreenKit.RED)
+		column.add_child(norm)
 	if not controller.boss().is_empty():
 		column.add_child(_boss_line(controller))
 	column.add_child(ScreenKit.eyebrow(tr("intro.ladder")))

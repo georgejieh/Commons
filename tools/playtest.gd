@@ -1,3 +1,5 @@
+# gdlint: disable=max-file-lines
+# Over 400 lines: one script walks every screen and moment the playtest photographs.
 extends SceneTree
 ## Plays the demo through its real UI, the way a person would: clicks the visible part of
 ## each card with mouse events, presses Play, Pass, Call and the store's buttons, and goes
@@ -130,7 +132,7 @@ func _table_step() -> void:
 			await _frames(6)
 			await _shot("round%d_need" % _rounds_seen)
 			await _press(declare)
-			await _frames(14)
+			await _dice_frames(table)
 			await _shot("round%d_audit" % _rounds_seen)
 		3:
 			await _play_turn(table, controller)
@@ -206,6 +208,24 @@ func _leave_and_continue(table: Node) -> void:
 	if controller.call("awaiting") != 1:
 		_misclicks += 1
 		print("RESUME WRONG STATE %d" % controller.call("awaiting"))
+
+
+## Photographs the audit dice as they tumble and once they have settled, when the bowl
+## drops in after a claim; the claims on the slip come first, a step apart.
+func _dice_frames(table: Node) -> void:
+	var moments: Object = table.get("_moments")
+	var bowl: Object = moments.get("dice")
+	var waited: int = 0
+	while not bool(bowl.call("is_rolling")) and waited < 240:
+		await _frames(1)
+		waited += 1
+	if not bool(bowl.call("is_rolling")):
+		return
+	for frame: int in 3:
+		await _snap("round%d_dice_roll_%d" % [_rounds_seen, frame])
+	while bool(bowl.call("is_rolling")):
+		await _frames(1)
+	await _snap("round%d_dice_settled" % _rounds_seen)
 
 
 ## Plays the table's big moments by hand and photographs each a few frames apart, so

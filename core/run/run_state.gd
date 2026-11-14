@@ -60,6 +60,11 @@ var swap_bonus: int = 0
 ## How many of each item the state store has sold this run, against its limited stock
 ## (P4.10).
 var store_sold: Dictionary[String, int] = {}
+## Overfulfilment steps earned this run, which raise every later target, and the steps
+## the Set just finished earned, 0 again once the next Set starts. The target in force
+## for a Set counts norm_steps less over_steps.
+var norm_steps: int = 0
+var over_steps: int = 0
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -107,6 +112,8 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.swap_bonus = int(data["swap_bonus"])
 	for item_id: String in data["store_sold"]:
 		state.store_sold[item_id] = int(data["store_sold"][item_id])
+	state.norm_steps = int(data["norm_steps"])
+	state.over_steps = int(data["over_steps"])
 	for style_data: Dictionary in data["styles"]:
 		state.styles.append(PlayerStyle.from_dict(style_data))
 	for family_id: String in data["villager_denunciation"]:
@@ -159,6 +166,8 @@ func to_dict() -> Dictionary:
 		"plot_capacity_bonus": plot_capacity_bonus,
 		"swap_bonus": swap_bonus,
 		"store_sold": store_sold.duplicate(),
+		"norm_steps": norm_steps,
+		"over_steps": over_steps,
 		"boss_family": boss_family,
 		"styles": styles.map(func(style: PlayerStyle) -> Dictionary: return style.to_dict()),
 		"villager_denunciation": villager_denunciation.duplicate(),

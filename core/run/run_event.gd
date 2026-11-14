@@ -37,6 +37,11 @@ enum Type {
 	BOSS_CHOSEN,
 	## The Purge destroyed a Cadre: text is its ID.
 	CADRE_PURGED,
+	## A declaring seat rolled the audit die: value is the face shown, amount the number
+	## of faces that mean an audit. Every roll comes before any AUDITED.
+	AUDIT_ROLLED,
+	## A met Quota beat its target by a step or more: value is the steps earned.
+	OVERFULFILLED,
 }
 
 var type: Type

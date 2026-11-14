@@ -158,7 +158,7 @@ func _run_every_hook(stack: ModifierStack) -> void:
 	stack.run_set_end(SetContext.new(0, true))
 	stack.run_shop_open(ShopContext.new(0))
 	stack.run_meter_change(MeterContext.new("famine", 1))
-	stack.run_audit(AuditContext.new(0.0))
+	stack.run_audit(AuditContext.new(0))
 
 
 func test_every_hook_runs_cadres_then_debuffs_then_the_boss() -> void:

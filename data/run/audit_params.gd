@@ -1,10 +1,15 @@
 class_name AuditParams
 extends Resource
-## How often declared needs are checked before a Commons split (P4.3). The audit hook
-## can raise the chance further, as the Work-Point Audit debuff does.
+## How declared needs are checked before a Commons split (P4.3). Each declaring seat
+## rolls one die; a face at or below the audit faces means its claim is checked. The
+## audit hook can add faces, as the Work-Point Audit debuff does.
 
-## Chance, from 0 to 1, that each declaration is checked.
-@export var base_chance: float = 0.15
+## Sides on the audit die.
+@export var die_sides: int = 6
+## Faces that mean an audit, before the informer and the hook.
+@export var base_faces: int = 1
 ## Added while a family in informer_families is in the village.
-@export var informer_chance: float = 0.2
+@export var informer_faces: int = 1
+## The most faces an audit can have, below die_sides, so an audit is never certain.
+@export var max_faces: int = 5
 @export var informer_families: Array[String] = ["zhou"]

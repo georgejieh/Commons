@@ -1,5 +1,6 @@
-# gdlint: disable=max-public-methods
-# Over 20 public methods: this is the UI's whole command and query surface, kept in one place.
+# gdlint: disable=max-public-methods,max-file-lines
+# Over 20 public methods and 400 lines: this is the UI's whole command and query surface,
+# kept in one place.
 class_name RunController
 extends Node
 ## The one way the UI touches a run. It owns the run loop and its state, takes the UI's
@@ -201,6 +202,27 @@ func store_stock() -> Array[String]:
 ## Coupons the current Set pays when its Quota is met.
 func quota_reward() -> int:
 	return _loop.sets().reward(_loop.state.set_type)
+
+
+## Overfulfilment steps the Set just finished earned, 0 while a Set is in play.
+func over_steps() -> int:
+	return _loop.state.over_steps
+
+
+## The extra coupons those steps paid, on top of quota_reward().
+func over_bonus() -> int:
+	return _loop.sets().over_bonus(_loop.state.over_steps)
+
+
+## How far the norm has raised targets this run, in percent of each base target. After a
+## Set ends, it already counts that Set's steps, which raise the Quotas to come.
+func norm_percent() -> int:
+	return _loop.sets().norm_percent(_loop.state.norm_steps)
+
+
+## How far the Set just finished raised the norm, in percent.
+func norm_added_percent() -> int:
+	return _loop.sets().norm_percent(_loop.state.over_steps)
 
 
 ## How much Famine a missed Quota adds.

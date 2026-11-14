@@ -109,6 +109,8 @@ func _fill_phase_4(rng: RandomNumberGenerator, state: RunState) -> void:
 	state.swap_bonus = rng.randi_range(0, 1)
 	for i: int in rng.randi_range(0, 3):
 		state.store_sold["cadre_%d" % i] = rng.randi_range(1, 2)
+	state.norm_steps = rng.randi_range(0, 40)
+	state.over_steps = rng.randi_range(0, 4)
 
 
 func _fill_inventory(rng: RandomNumberGenerator, inventory: RunInventory) -> void:

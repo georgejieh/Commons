@@ -78,7 +78,8 @@ func test_a_set_ends_by_target_or_by_rounds() -> void:
 		assert_bool(met or rounds == SetConfig.new().max_rounds()).is_true()
 		assert_bool(rounds <= SetConfig.new().max_rounds()).is_true()
 		if met:
-			assert_int(state.coupons).is_equal(SetConfig.new().reward(state.set_type))
+			var bonus: int = SetConfig.new().over_bonus(state.over_steps)
+			assert_int(state.coupons).is_equal(SetConfig.new().reward(state.set_type) + bonus)
 		else:
 			assert_int(state.famine).is_greater(0)
 

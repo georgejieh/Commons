@@ -53,6 +53,8 @@ ROUND_SCORED seat=2 value=0 amount=10.000
 BANKED seat=0 value=0 amount=189.000
 NEED_DECLARED seat=1 value=10
 NEED_DECLARED seat=2 value=10
+AUDIT_ROLLED seat=1 value=6 amount=1.000
+AUDIT_ROLLED seat=2 value=3 amount=1.000
 SHARE_PAID seat=1 value=625
 SHARE_PAID seat=2 value=625
 SEAT_LOST seat=0 value=0
@@ -130,11 +132,17 @@ ROUND_SCORED seat=2 value=0 amount=422.000
 BANKED seat=0 value=0 amount=3133.500
 NEED_DECLARED seat=1 value=10
 NEED_DECLARED seat=2 value=10
+AUDIT_ROLLED seat=1 value=1 amount=1.000
+AUDIT_ROLLED seat=2 value=1 amount=1.000
+AUDITED seat=1 value=0
+AUDITED seat=2 value=0
 SHARE_PAID seat=1 value=347
 SHARE_PAID seat=2 value=346
 SEAT_KEPT seat=0 value=0
+RESENTMENT seat=-1 value=4 overfulfilment
 SET_ENDED seat=-1 value=1 amount=3322.500
-end progress=3322.500 coupons=3 famine=0 plot=0
+OVERFULFILLED seat=0 value=4
+end progress=3322.500 coupons=7 famine=0 plot=0
 set 3502
 SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,criticism_meeting,
 DEALT seat=-1 value=0
@@ -205,8 +213,12 @@ ROUND_SCORED seat=2 value=0 amount=666.000
 BANKED seat=1 value=0 amount=655.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=2 value=10
-SHARE_PAID seat=0 value=896
-SHARE_PAID seat=2 value=745
+AUDIT_ROLLED seat=0 value=1 amount=1.000
+AUDIT_ROLLED seat=2 value=3 amount=1.000
+AUDITED seat=0 value=1
+SHARE_PAID seat=0 value=821
+SHARE_PAID seat=2 value=820
+METER_CHANGED seat=0 value=8 denunciation
 SEAT_LOST seat=1 value=0
 DEBUFF_ADDED seat=0 value=1 paperwork
 DEALT seat=-1 value=1
@@ -269,7 +281,8 @@ ROUND_SCORED seat=2 value=0 amount=817.500
 BANKED seat=1 value=0 amount=503.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=2 value=10
-AUDITED seat=2 value=0
+AUDIT_ROLLED seat=0 value=4 amount=1.000
+AUDIT_ROLLED seat=2 value=5 amount=1.000
 SHARE_PAID seat=0 value=446
 SHARE_PAID seat=2 value=371
 SEAT_LOST seat=1 value=0
@@ -356,13 +369,15 @@ ROUND_SCORED seat=2 value=0 amount=859.500
 BANKED seat=1 value=0 amount=805.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=2 value=10
-AUDITED seat=0 value=1
-SHARE_PAID seat=0 value=557
-SHARE_PAID seat=2 value=556
-METER_CHANGED seat=0 value=8 denunciation
+AUDIT_ROLLED seat=0 value=5 amount=1.000
+AUDIT_ROLLED seat=2 value=2 amount=1.000
+SHARE_PAID seat=0 value=608
+SHARE_PAID seat=2 value=505
 SEAT_LOST seat=1 value=0
-SET_ENDED seat=-1 value=1 amount=1899.000
-end progress=1899.000 coupons=3 famine=0 plot=0
+RESENTMENT seat=-1 value=1 overfulfilment
+SET_ENDED seat=-1 value=1 amount=1875.000
+OVERFULFILLED seat=0 value=1
+end progress=1875.000 coupons=4 famine=0 plot=0
 set 3503
 SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,,criticism_meeting
 DEALT seat=-1 value=0
@@ -435,6 +450,8 @@ ROUND_SCORED seat=2 value=0 amount=39.000
 BANKED seat=0 value=0 amount=201.000
 NEED_DECLARED seat=1 value=10
 NEED_DECLARED seat=2 value=10
+AUDIT_ROLLED seat=1 value=6 amount=1.000
+AUDIT_ROLLED seat=2 value=5 amount=1.000
 SHARE_PAID seat=1 value=512
 SHARE_PAID seat=2 value=511
 SEAT_LOST seat=0 value=0
@@ -514,6 +531,8 @@ ROUND_SCORED seat=2 value=0 amount=38.000
 BANKED seat=0 value=0 amount=382.000
 NEED_DECLARED seat=1 value=10
 NEED_DECLARED seat=2 value=10
+AUDIT_ROLLED seat=1 value=3 amount=1.000
+AUDIT_ROLLED seat=2 value=4 amount=1.000
 SHARE_PAID seat=1 value=492
 SHARE_PAID seat=2 value=491
 SEAT_LOST seat=0 value=0
@@ -586,6 +605,8 @@ ROUND_SCORED seat=2 value=0 amount=1116.000
 BANKED seat=2 value=0 amount=1116.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
+AUDIT_ROLLED seat=0 value=5 amount=1.000
+AUDIT_ROLLED seat=1 value=4 amount=1.000
 SHARE_PAID seat=0 value=212
 SHARE_PAID seat=1 value=175
 SEAT_KEPT seat=2 value=0
@@ -651,7 +672,8 @@ ROUND_SCORED seat=2 value=0 amount=224.000
 BANKED seat=2 value=0 amount=224.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
-AUDITED seat=1 value=0
+AUDIT_ROLLED seat=0 value=2 amount=1.000
+AUDIT_ROLLED seat=1 value=4 amount=1.000
 SHARE_PAID seat=0 value=1014
 SHARE_PAID seat=1 value=844
 SEAT_LOST seat=2 value=0
@@ -710,6 +732,8 @@ ROUND_SCORED seat=2 value=0 amount=1572.000
 BANKED seat=2 value=0 amount=1572.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
+AUDIT_ROLLED seat=0 value=3 amount=1.000
+AUDIT_ROLLED seat=1 value=4 amount=1.000
 SHARE_PAID seat=0 value=266
 SHARE_PAID seat=1 value=221
 SEAT_KEPT seat=2 value=0
@@ -761,11 +785,16 @@ ROUND_SCORED seat=2 value=0 amount=584.000
 BANKED seat=2 value=0 amount=584.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
+AUDIT_ROLLED seat=0 value=4 amount=1.000
+AUDIT_ROLLED seat=1 value=1 amount=1.000
+AUDITED seat=1 value=0
 SHARE_PAID seat=0 value=1807
 SHARE_PAID seat=1 value=1505
 SEAT_LOST seat=2 value=0
+RESENTMENT seat=-1 value=1 overfulfilment
 SET_ENDED seat=-1 value=1 amount=2073.000
-end progress=2073.000 coupons=3 famine=0 plot=2
+OVERFULFILLED seat=0 value=1
+end progress=2073.000 coupons=4 famine=0 plot=2
 set 3505
 SET_STARTED seat=-1 value=0 amount=1000000000.000 straightened_lines,,criticism_meeting
 DEALT seat=-1 value=0
@@ -834,10 +863,11 @@ ROUND_SCORED seat=2 value=0 amount=820.500
 BANKED seat=1 value=0 amount=501.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=2 value=10
-AUDITED seat=0 value=1
-SHARE_PAID seat=0 value=410
-SHARE_PAID seat=2 value=410
-METER_CHANGED seat=0 value=8 denunciation
+AUDIT_ROLLED seat=0 value=6 amount=1.000
+AUDIT_ROLLED seat=2 value=1 amount=1.000
+AUDITED seat=2 value=0
+SHARE_PAID seat=0 value=448
+SHARE_PAID seat=2 value=372
 SEAT_LOST seat=1 value=0
 DEBUFF_ADDED seat=0 value=1 straightened_lines
 DEALT seat=-1 value=1
@@ -924,6 +954,8 @@ ROUND_SCORED seat=2 value=0 amount=1016.000
 BANKED seat=2 value=0 amount=1016.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
+AUDIT_ROLLED seat=0 value=6 amount=1.000
+AUDIT_ROLLED seat=1 value=4 amount=1.000
 SHARE_PAID seat=0 value=670
 SHARE_PAID seat=1 value=558
 SEAT_LOST seat=2 value=0
@@ -980,6 +1012,9 @@ ROUND_SCORED seat=2 value=0 amount=1644.000
 BANKED seat=2 value=0 amount=1644.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
+AUDIT_ROLLED seat=0 value=2 amount=1.000
+AUDIT_ROLLED seat=1 value=1 amount=1.000
+AUDITED seat=1 value=0
 SHARE_PAID seat=0 value=74
 SHARE_PAID seat=1 value=61
 SEAT_KEPT seat=2 value=0
@@ -1073,9 +1108,11 @@ ROUND_SCORED seat=2 value=0 amount=716.000
 BANKED seat=2 value=0 amount=716.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
+AUDIT_ROLLED seat=0 value=2 amount=1.000
+AUDIT_ROLLED seat=1 value=6 amount=1.000
 SHARE_PAID seat=0 value=577
 SHARE_PAID seat=1 value=480
 SEAT_LOST seat=2 value=0
 METER_CHANGED seat=0 value=10 famine
-SET_ENDED seat=-1 value=0 amount=1731.000
-end progress=1731.000 coupons=0 famine=10 plot=0
+SET_ENDED seat=-1 value=0 amount=1769.000
+end progress=1769.000 coupons=0 famine=10 plot=0

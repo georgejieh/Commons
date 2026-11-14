@@ -93,7 +93,7 @@ func shout(
 		_tween.tween_interval(hold)
 		_tween.chain().tween_callback(_rest)
 		queue_redraw()
-		return hold
+		return seconds_for(tier)
 	_word.scale = Vector2.ONE * SLAM_FROM
 	_word.modulate.a = 0.0
 	_sub.modulate.a = 0.0
@@ -119,6 +119,14 @@ func shout(
 		_tween.tween_property(part, "modulate:a", 0.0, WHIP_OUT * 0.7)
 		_tween.tween_property(part, "position:x", part.position.x - side * 260.0, WHIP_OUT)
 	_tween.chain().tween_callback(_rest)
+	return seconds_for(tier)
+
+
+## The seconds a shout of this tier takes the screen, so a moment can plan around one.
+static func seconds_for(tier: Tier) -> float:
+	var hold: float = UiMotion.seconds(HOLD[tier])
+	if UiMotion.reduced():
+		return hold
 	return WHIP_IN + SLAM + hold + WHIP_OUT
 
 

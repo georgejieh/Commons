@@ -307,9 +307,40 @@ func _string_keys() -> Dictionary[String, bool]:
 ## and the backup is used instead.
 func test_a_save_with_a_field_of_the_wrong_kind_is_damaged() -> void:
 	assert_bool(RunRecord.is_valid(_record(2))).is_true()
-	var wrong: Dictionary[String, Variant] = {"memory": [], "styles": {}, "store_sold": []}
+	var wrong: Dictionary[String, Variant] = {
+		"memory": [], "styles": {}, "store_sold": [], "norm_steps": "x", "over_steps": []
+	}
 	for field: String in wrong:
 		var data: Dictionary = _record(2)
 		var checkpoint: Dictionary = data["checkpoint"]
 		checkpoint[field] = wrong[field]
 		assert_bool(RunRecord.is_valid(data)).override_failure_message(field).is_false()
+
+
+## A schema 4 run save, from before overfulfilment, loads with no norm raised, and a
+## raised norm survives a save and a load.
+func test_a_schema_4_run_save_gains_the_norm_and_the_norm_is_saved() -> void:
+	var data: Dictionary = _record(6)
+	var checkpoint: Dictionary = data["checkpoint"]
+	checkpoint.erase("norm_steps")
+	checkpoint.erase("over_steps")
+	assert_bool(RunRecord.is_valid(data)).is_false()
+	var file: FileAccess = FileAccess.open(_service.path(), FileAccess.WRITE)
+	file.store_string(JSON.stringify({"schema_version": 4, "data": data}))
+	file.close()
+	var loaded: SaveLoad = _service.load_save()
+	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
+	assert_int(_turn(loaded.data)).is_equal(6)
+	var migrated: RunState = RunState.from_dict(loaded.data["checkpoint"])
+	assert_int(migrated.norm_steps).is_equal(0)
+	assert_int(migrated.over_steps).is_equal(0)
+	var state: RunState = RunState.new(SEED)
+	state.norm_steps = 5
+	state.over_steps = 2
+	var record: RunRecord = RunRecord.new()
+	record.mark(state)
+	_service.save(record.to_dict())
+	var saved: RunState = RunState.from_dict(_service.load_save().data["checkpoint"])
+	assert_int(saved.norm_steps).is_equal(5)
+	assert_int(saved.over_steps).is_equal(2)
+	assert_int(SaveService.SCHEMA_VERSION).is_equal(5)

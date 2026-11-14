@@ -4,6 +4,8 @@ extends RefCounted
 ## the Commons pool, which is then split by declared need and emptied. Only what reaches
 ## the player counts toward the Set's target.
 
+const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
+
 
 ## Records each seat's total, banks the landlord and fills the pool.
 static func bank(
@@ -23,9 +25,10 @@ static func bank(
 
 
 ## Bots declare on the ai stream. The player's need counts only when they are a peasant.
-## Declarations are then audited at audit_chance (P4.3); caught seats are appended to
-## caught, and their true need replaces the lie. Returns true when the pool fell short
-## of the needs that stand, a Commons shortfall.
+## Declarations are then audited (P4.3): each seat rolls the audit die, and a face at or
+## below audit_faces checks its claim. Caught seats are appended to caught, and their
+## true need replaces the lie. Returns true when the pool fell short of the needs that
+## stand, a Commons shortfall.
 static func split(
 	state: RunState,
 	player: int,
@@ -33,8 +36,9 @@ static func split(
 	configs: Array[BotConfig],
 	params: RunParams,
 	events: Array[RunEvent],
-	audit_chance: float = 0.0,
-	caught: Array[int] = []
+	audit_faces: int = 0,
+	caught: Array[int] = [],
+	audit: AuditParams = DEFAULT_AUDIT
 ) -> bool:
 	var peasants: Array[int] = []
 	var needs: PackedInt64Array = PackedInt64Array()
@@ -52,9 +56,11 @@ static func split(
 		peasants.append(seat)
 		needs.append(need)
 		events.append(RunEvent.new(RunEvent.Type.NEED_DECLARED, seat, need))
-	var audit: RandomStream = state.streams.stream(RandomStreams.AUDIT)
+	var stream: RandomStream = state.streams.stream(RandomStreams.AUDIT)
 	caught.append_array(
-		NeedAudit.run(peasants, needs, params.base_need, audit_chance, audit, events)
+		NeedAudit.run(
+			peasants, needs, params.base_need, audit_faces, audit.die_sides, stream, events
+		)
 	)
 	var declared: int = 0
 	for need: int in needs:

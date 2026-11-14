@@ -454,7 +454,7 @@ keyword.rocket.text,Rocket: both jokers together. It beats every play.
 keyword.quota.name,Quota
 keyword.quota.text,Quota: the work points you must reach over a set of rounds. Meeting it pays coupons.
 keyword.audit.name,Audit
-keyword.audit.text,"Audit: a check of one claim on the Commons. Every claim runs the same chance of one. A claim caught above its fair share is cut back to it, and adds Denunciation."
+keyword.audit.text,"Audit: a check of one claim on the Commons. Each claim rolls a die. A 1 means an audit. With an informer in the village, so does a 2. A claim caught above its fair share is cut back to it, and adds Denunciation."
 keyword.resentment.name,Resentment
 keyword.resentment.text,"Resentment: what the village holds against your private gains. Villagers play harder against you as it rises, and it adds Denunciation when a Quota ends."
 keyword.denunciation.name,Denunciation
@@ -506,3 +506,9 @@ intel.cards,Cards: {list}
 tally.scaled,× {percent}% =
 ledger.scaled,× {percent}%
 hand.scaled,(after × {percent}%)
+callout.audit,Audit!
+summary.over,Overfulfilled
+summary.norm_raised,The norm is raised {percent}% for every Quota to come.
+intro.norm,Norm raised {percent}%
+keyword.norm.name,Norm
+keyword.norm.text,Norm: beating a Quota by a quarter or more pays extra coupons and raises every later Quota.

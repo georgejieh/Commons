@@ -151,12 +151,15 @@ func seat_table(seat: int) -> BotTable:
 	return BotTable.new(_table.rules_for(seat), _table.map_for(seat))
 
 
+## The current Set's target: the curve's, any boss's change, then the norm in force for
+## this Set, which leaves out what the Set itself earned once it is over.
 func target() -> float:
 	var base: float = _sets.target(state.year, state.set_type)
-	if state.boss_id == RunState.NO_BOSS:
-		return base
-	var percent: int = _pool_by_id[state.boss_id].parameters.get(GreatLeapEffect.QUOTA_PERCENT, 100)
-	return base * percent / 100.0
+	if state.boss_id != RunState.NO_BOSS:
+		var boss: ModifierDef = _pool_by_id[state.boss_id]
+		var percent: int = boss.parameters.get(GreatLeapEffect.QUOTA_PERCENT, 100)
+		base = base * percent / 100.0
+	return _sets.normed(base, state.norm_steps - state.over_steps)
 
 
 ## Starts the Set the state names. The Set's start is the save checkpoint.
@@ -169,6 +172,7 @@ func start_set() -> Reason:
 	_move(RunFlow.State.SET_INTRO)
 	state.round_index = 0
 	state.set_progress = 0.0
+	state.over_steps = 0
 	state.landlord_seat = Seats.NONE
 	_choose_boss()
 	state.debuff_ladder = DebuffLadder.draw(
@@ -515,16 +519,19 @@ func _finish_round() -> void:
 	_split_commons(0)
 
 
-## The chance that each declared need is audited at this round's split.
+## The chance that each declared need is audited at this round's split: the audit faces
+## over the die's sides.
 func audit_chance() -> float:
 	return NeedAudit.chance(state, DEFAULT_AUDIT, _stack)
 
 
 func _split_commons(player_need: int) -> void:
-	var chance: float = audit_chance()
+	var faces: int = NeedAudit.faces(state, DEFAULT_AUDIT, _stack)
 	var caught: Array[int] = []
 	var events: Array[RunEvent] = set_log.events()
-	if RoundBanking.split(state, PLAYER, player_need, _configs, _params, events, chance, caught):
+	if RoundBanking.split(
+		state, PLAYER, player_need, _configs, _params, events, faces, caught, DEFAULT_AUDIT
+	):
 		_raise(RunMeters.COMMONS_SHORTFALL)
 	for seat: int in caught:
 		if seat == PLAYER:
@@ -567,8 +574,10 @@ func _end_round() -> void:
 func _end_set() -> void:
 	var met: bool = state.set_progress >= target()
 	_stack.run_set_end(SetContext.new(state.set_index, met))
+	var steps: int = 0
 	if met:
 		state.coupons += _sets.reward(state.set_type)
+		steps = _overfulfil()
 	else:
 		_raise(RunMeters.MISSED_TARGET)
 	_reeducate_villagers()
@@ -576,6 +585,7 @@ func _end_set() -> void:
 	_record_style_and_risen()
 	var held: int = Resentment.private_cadres(state.inventory.cadres, all_cadres())
 	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
+	_resent(steps * DEFAULT_RESENTMENT.overfulfilment, Resentment.OVERFULFILMENT)
 	var owed: int = Resentment.denunciation(state.resentment, DEFAULT_RESENTMENT)
 	if owed > 0:
 		RunMeters.apply_amount(
@@ -586,9 +596,23 @@ func _end_set() -> void:
 	set_log.add(
 		RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1 if met else 0, state.set_progress)
 	)
+	if steps > 0:
+		set_log.add(RunEvent.new(RunEvent.Type.OVERFULFILLED, PLAYER, steps))
 	_move(RunFlow.State.SET_END, true)
 	_awaiting = Awaiting.SET_OVER
 	_end_if_dead()
+
+
+## A met Quota beaten by a step or more pays the bonus and raises the norm for every
+## later Set. The steps are counted against the target in force for this Set, and stay
+## in over_steps until the next Set starts, so target() still reads this Set's. Returns
+## the steps.
+func _overfulfil() -> int:
+	var steps: int = _sets.over_steps(state.set_progress, target())
+	state.coupons += _sets.over_bonus(steps)
+	state.norm_steps += steps
+	state.over_steps = steps
+	return steps
 
 
 ## Moves a meter by a source in the meter table. Callers check death at a boundary.

@@ -55,6 +55,18 @@ static func migrate_from_3(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 4 saves predate overfulfilment: no norm raised yet, and none earned by the
+## Set they stand at. A schema 4 save from inside a Set replays its commands under the
+## dice audit and may audit differently from the run it was saved from; as with the
+## scoring change in ADR 0020, no attempt is made to keep the old rule. A saved command
+## the loop no longer waits for makes resume() return null, so that save is not resumed.
+static func migrate_from_4(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"norm_steps": 0, "over_steps": 0})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -159,14 +171,18 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 
 
 ## Every saved field holds the kind of value a fresh run's does: a dictionary where one
-## belongs, an array where one belongs. A save that fails here is damaged, and the save
-## service falls back to its backup instead of loading it.
+## belongs, an array where one belongs, a number where one belongs. A save that fails
+## here is damaged, and the save service falls back to its backup instead of loading it.
 static func _shapes_valid(checkpoint: Dictionary) -> bool:
 	var fresh: Dictionary = RunState.new(0).to_dict()
 	for key: String in fresh:
 		if fresh[key] is Dictionary and not checkpoint[key] is Dictionary:
 			return false
 		if fresh[key] is Array and not checkpoint[key] is Array:
+			return false
+		# JSON reads every number as a float.
+		var number: bool = checkpoint[key] is int or checkpoint[key] is float
+		if fresh[key] is int and not number:
 			return false
 	return true
 

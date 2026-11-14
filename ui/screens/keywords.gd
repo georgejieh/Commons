@@ -17,6 +17,7 @@ const TERMS: PackedStringArray = [
 	"bomb",
 	"rocket",
 	"quota",
+	"norm",
 	"audit",
 	"resentment",
 	"denunciation",

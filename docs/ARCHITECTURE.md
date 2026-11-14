@@ -82,7 +82,7 @@ Each hook takes one typed context:
 | `set_end` | `SetContext` | set_index, target_met |
 | `shop_open` | `ShopContext` | seat |
 | `meter_change` | `MeterContext` | meter, delta |
-| `audit` | `AuditContext` | chance |
+| `audit` | `AuditContext` | faces |
 
 ## Scoring
 
@@ -146,7 +146,7 @@ The two setbacks:
 - **Rationing** holds while Famine stays up. `RunShop.slot_count()` cuts the store's slots for as long as it lasts.
 - **Reeducation** is owed once. `open_shop()` serves it in place of the store: the run moves to `REEDUCATION`, the plot is emptied, and one held Cadre is exchanged ([ADR 0019](adr/0019-reeducation-setback.md)).
 
-Death is checked after each meter move, at a state that may go to `RUN_END`: Set end, or round end for a shortfall. The run log gets `RUN_DIED`, naming the meter. Run saves are schema 4 (`RunRecord.migrate_from_3` adds `store_sold`, P4.10); `RunRecord.migrate_from_2` added the setback flags and Resentment for schema 3.
+Death is checked after each meter move, at a state that may go to `RUN_END`: Set end, or round end for a shortfall. The run log gets `RUN_DIED`, naming the meter. Run saves are schema 5 (`RunRecord.migrate_from_4` adds the norm, P4.11; `RunRecord.migrate_from_3` added `store_sold`, P4.10); `RunRecord.migrate_from_2` added the setback flags and Resentment for schema 3.
 
 **Resentment (P4.2).** `RunState.resentment` runs from 0 to 100. `Resentment` and `data/run/resentment.tres` define what raises it:
 
@@ -161,7 +161,8 @@ Resentment acts in two ways:
 
 **Declared need (P4.3).**
 - **Declaring.** Every peasant declares a need before the split. Bots lie as their honesty says, and the player may declare any value.
-- **Auditing.** `NeedAudit` then checks each declaration on its own `audit` stream. The chance is `audit.tres`'s base, plus its informer chance while an informer family is seated or active on the roster, and the `audit` hook may then change it. Every seat rolls, so the stream moves the same whether anyone lied or not.
+- **Auditing.** `NeedAudit` then checks each declaration on its own `audit` stream. Each declaring seat rolls one die (`audit.tres`: six sides), and a face at or below the audit faces means its claim is checked. The faces are the base of one, plus one while an informer family is seated or active on the roster, then whatever the `audit` hook adds, capped at `max_faces` so a check is never certain. Every seat rolls once, so the stream moves the same whether anyone lied or not. Each roll is logged as `AUDIT_ROLLED` with the face shown, before any `AUDITED`, and the table plays it as two dice in a bowl (`DiceBowl`), so the chance the need panel shows is the die's ([ADR 0021](adr/0021-starter-content-set.md)).
+- **Overfulfilment and the norm.** At a met Set's end `RunLoop._overfulfil` counts one step for each full `over_step_percent` the Set beat its target by, up to `over_max_steps` (`SetParams`). Each step pays a coupon, adds Resentment and adds to `RunState.norm_steps`, logged as `OVERFULFILLED`. `RunLoop.target()` is the curve's target, then any boss's change, then the norm: `norm_percent_per_step` for every step earned in earlier Sets. `RunState.over_steps` holds the finished Set's own steps until the next Set starts, so the Quota report still reads the target that Set was played against.
 - **Caught lies.** A declaration above true need (`RunParams.base_need` until P4.5) is a lie. A checked lie is replaced by the true need before `Banking.split`.
 - **What a caught lie costs.**
   - The player: the meter table's `caught_lie` row.
