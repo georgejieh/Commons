@@ -8,9 +8,9 @@ extends Control
 const BAR: Vector2 = Vector2(960, 54)
 const SEAL_WIDTH: float = 150.0
 ## Seconds before the bar starts, the bar takes to fill, and between the lines after.
-const START: float = 0.35
-const FILL: float = 0.9
-const BEAT: float = 0.25
+const START: float = 0.2
+const FILL: float = 0.7
+const BEAT: float = 0.18
 
 var _bar: QuotaBar = QuotaBar.new()
 var _met: bool = false

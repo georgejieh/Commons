@@ -84,6 +84,11 @@ func test_the_table_plays_a_set_to_its_summary() -> void:
 	assert_bool(report.bar().is_met()).is_equal(met)
 	var word: String = tr("table.quota_met" if met else "summary.short").to_upper()
 	assert_str(report.bar().seal_word()).is_equal(word)
+	# Then what it paid or cost is counted in.
+	await await_millis(int(SetSummaryScreen.BEAT * 4000.0) + 300)
+	var after: Array[Control] = report.get("_after")
+	for piece: Control in after:
+		assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
 
 
 ## Takes the player's turn through the table's own buttons and hand model.
