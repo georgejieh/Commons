@@ -50,13 +50,14 @@ static func entry(state: RunState, family_id: String) -> RosterEntry:
 	return null
 
 
-## Sends a family away for book.reeducation_sets Sets.
+## Sends a family away: it misses book.reeducation_sets Sets and is back for the one after.
+## The timer is one longer, because the preparation that brings a family back counts too.
 static func reeducate(state: RunState, family_id: String, book: VillageBook) -> void:
 	var found: RosterEntry = entry(state, family_id)
 	if found == null:
 		return
 	found.status = RosterEntry.Status.REEDUCATION
-	found.return_timer = book.reeducation_sets
+	found.return_timer = book.reeducation_sets + 1
 
 
 ## The definition behind a roster entry: its family, or the youth template it came from.

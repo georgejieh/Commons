@@ -55,7 +55,7 @@ func test_reeducation_returns_after_its_sets() -> void:
 	Roster.start(state, VILLAGE, [])
 	Roster.reeducate(state, "li", VILLAGE)
 	var stream: RandomStream = RandomStream.new(2)
-	for index: int in VILLAGE.reeducation_sets - 1:
+	for index: int in VILLAGE.reeducation_sets:
 		Roster.prepare_set(state, VILLAGE, stream)
 		assert_int(Roster.entry(state, "li").status).is_equal(RosterEntry.Status.REEDUCATION)
 		assert_bool(state.table.has("li")).is_false()
@@ -109,7 +109,7 @@ func test_10000_runs_never_seat_fewer_than_two_opponents() -> void:
 				if harm.next_float() < HARM_CHANCE:
 					var status: RosterEntry.Status = statuses[harm.next_int(0, statuses.size() - 1)]
 					found.status = status
-					found.return_timer = VILLAGE.reeducation_sets
+					found.return_timer = VILLAGE.reeducation_sets + 1
 			Roster.prepare_set(state, VILLAGE, stream)
 			if not _seated_two(state):
 				short_sets += 1

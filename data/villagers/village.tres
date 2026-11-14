@@ -23,6 +23,6 @@ script = ExtResource("1")
 families = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15")])
 youth_templates = Array[Resource]([ExtResource("16"), ExtResource("17")])
 youth_surnames = Array[String](["villager.youth.hu", "villager.youth.lin", "villager.youth.zhu", "villager.youth.he", "villager.youth.guo", "villager.youth.luo", "villager.youth.song", "villager.youth.xie", "villager.youth.han", "villager.youth.yang", "villager.youth.cao", "villager.youth.peng"])
-reeducation_sets = 2
+reeducation_sets = 1
 rise_sets = 2
 opponents = 2

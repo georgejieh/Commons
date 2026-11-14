@@ -7,8 +7,8 @@ extends Resource
 @export var youth_templates: Array[FamilyDef] = []
 ## Surname keys for arriving youth. A draw skips surnames already in the village.
 @export var youth_surnames: Array[String] = []
-## Sets a family spends in reeducation before it returns.
-@export var reeducation_sets: int = 2
+## Sets a family misses while in reeducation.
+@export var reeducation_sets: int = 1
 ## Sets seated per tier gained, for rising families.
 @export var rise_sets: int = 2
 ## Opponents every Set must have.

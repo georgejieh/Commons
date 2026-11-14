@@ -248,7 +248,7 @@ def village_tres(family_paths, youth_paths):
         "families = Array[Resource]([%s])" % family_refs,
         "youth_templates = Array[Resource]([%s])" % youth_refs,
         "youth_surnames = Array[String]([%s])" % surnames,
-        "reeducation_sets = 2",
+        "reeducation_sets = 1",
         "rise_sets = 2",
         "opponents = 2",
         "",
