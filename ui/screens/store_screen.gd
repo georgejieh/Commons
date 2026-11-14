@@ -19,6 +19,11 @@ const PIN_TIME: float = 0.3
 const PIN_SCALE: float = 0.3
 ## The black market is the store after dark, sealed in black ink.
 const NIGHT: Color = Color(0.36, 0.34, 0.46)
+const NIGHT_SHADE: Color = Color(0.03, 0.02, 0.09, 0.62)
+## A card on the counter. The black market's are shorter, to leave room for its
+## warning and its tickets.
+const CARD: Vector2 = Vector2(360, 470)
+const MARKET_CARD: Vector2 = Vector2(360, 390)
 const MARKET_INK: Color = Color("1e1a16")
 
 ## True for the black market. Set on the scene.
@@ -51,6 +56,8 @@ func open(app: DemoApp) -> void:
 	if market:
 		# The backdrop is the page's first child.
 		(get_child(0) as Control).modulate = NIGHT
+		# The page's shade is its second child: deepened to night.
+		(get_child(1) as ColorRect).color = NIGHT_SHADE
 	var balance: VBoxContainer = VBoxContainer.new()
 	balance.add_child(ScreenKit.eyebrow(tr("store.balance")))
 	_coupons.add_theme_color_override("font_color", ScreenKit.COUPON)
@@ -74,10 +81,9 @@ func open(app: DemoApp) -> void:
 	)
 	if market:
 		leave.pressed.connect(app.back)
-		column.add_child(ScreenKit.row([leave, _reroll]))
 		_upgrades = HBoxContainer.new()
 		_upgrades.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
-		column.add_child(_upgrades)
+		column.add_child(ScreenKit.row([leave, _reroll, _upgrades]))
 	else:
 		leave.pressed.connect(_leave)
 		var door: Button = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
@@ -128,7 +134,7 @@ func _refresh() -> void:
 
 
 func _item(slot: int, cadre_id: String) -> Control:
-	var card: VBoxContainer = ScreenKit.card(Vector2(360, 470))
+	var card: VBoxContainer = ScreenKit.card(MARKET_CARD if market else CARD)
 	if cadre_id.is_empty():
 		var sold: Label = ScreenKit.styled(tr("store.sold"), CommonsTheme.HEADLINE)
 		sold.size_flags_vertical = Control.SIZE_EXPAND_FILL

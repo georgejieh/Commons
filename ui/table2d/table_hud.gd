@@ -10,8 +10,7 @@ const GRAIN: Color = Color("c8952b")
 const ZEAL: Color = Color("c8341e")
 const COUPON: Color = Color("6f9a62")
 
-## The Quota bar's fill once the Quota is met, and the sizes of the bars.
-const QUOTA_MET: Color = Color("e0b23c")
+## The sizes of the bars.
 const QUOTA_BAR: Vector2 = Vector2(300, 30)
 const METER_BAR: Vector2 = Vector2(150, 18)
 const SEAL_WIDTH: float = 92.0
@@ -23,14 +22,11 @@ const DENUNCIATION: String = "denunciation"
 
 var status: Label = Label.new()
 var coupons: Label = Label.new()
-var quota: ProgressBar = ProgressBar.new()
+var quota: QuotaBar = QuotaBar.new()
 var famine: ProgressBar = ProgressBar.new()
 var denunciation: ProgressBar = ProgressBar.new()
 var menu: Button = Button.new()
 
-var _quota_text: Label = Label.new()
-var _quota_fill: StyleBoxFlat = StyleBoxFlat.new()
-var _seal: InkSeal = InkSeal.new()
 var _target: float = 1.0
 ## Where each bar is heading: the Quota's progress and both meters.
 var _goals: Dictionary[String, float] = {QUOTA: 0.0, FAMINE: 0.0, DENUNCIATION: 0.0}
@@ -91,7 +87,7 @@ func show_state(state: RunState, rounds: int) -> void:
 func sync(state: RunState, target: float) -> void:
 	if not is_equal_approx(_target, maxf(target, 1.0)):
 		_target = maxf(target, 1.0)
-		_show_quota(maxf(_goals[QUOTA], 0.0))
+		quota.set_target(_target)
 	_move(QUOTA, state.set_progress, false)
 	_move(FAMINE, state.famine, false)
 	_move(DENUNCIATION, state.denunciation, false)
@@ -100,6 +96,7 @@ func sync(state: RunState, target: float) -> void:
 ## A new Quota: the bar empties and takes its target.
 func start_quota(target: float) -> void:
 	_target = maxf(target, 1.0)
+	quota.set_target(_target)
 	_goals[QUOTA] = -1.0
 	_move(QUOTA, 0.0, false)
 
@@ -127,7 +124,7 @@ func goal(bar: String) -> float:
 
 
 func is_met() -> bool:
-	return _seal.visible
+	return quota.is_met()
 
 
 func _move(bar: String, value: float, animate: bool, delay: float = 0.0) -> void:
@@ -154,21 +151,7 @@ func _show(value: float, bar: String) -> void:
 	elif bar == DENUNCIATION:
 		denunciation.value = value
 	else:
-		_show_quota(value)
-
-
-func _show_quota(value: float) -> void:
-	var met: bool = value >= _target
-	quota.max_value = _target
-	quota.value = minf(value, _target)
-	_quota_fill.bg_color = QUOTA_MET if met else GRAIN
-	_quota_text.text = tr("table.quota").format(
-		{"progress": Strings.score(value), "target": Strings.score(_target)}
-	)
-	if met and not _seal.visible:
-		_seal.press()
-	elif not met:
-		_seal.visible = false
+		quota.show_value(value)
 
 
 func _swell(bar: String) -> void:
@@ -180,37 +163,16 @@ func _swell(bar: String) -> void:
 	UiMotion.pulse(moved.get_parent() as Control)
 
 
-## The Quota as a bar of grain with the count written on it, and the seal that marks
-## it met.
+## The Quota bar under its label.
 func _quota_box() -> Control:
 	var box: HBoxContainer = HBoxContainer.new()
 	var label: Label = Label.new()
 	label.theme_type_variation = CommonsTheme.EYEBROW
 	label.text = tr("keyword.quota.name").to_upper()
 	label.add_theme_color_override("font_color", PAPER)
-	quota.custom_minimum_size = QUOTA_BAR
-	quota.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	quota.show_percentage = false
-	var ground: StyleBoxFlat = StyleBoxFlat.new()
-	ground.bg_color = Color("4a4239")
-	quota.add_theme_stylebox_override("background", ground)
-	_quota_fill.bg_color = GRAIN
-	quota.add_theme_stylebox_override("fill", _quota_fill)
-	_quota_text.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_quota_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_quota_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_quota_text.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_quota_text.add_theme_font_size_override("font_size", 20)
-	_quota_text.add_theme_color_override("font_color", PAPER)
-	_quota_text.add_theme_color_override("font_outline_color", INK)
-	_quota_text.add_theme_constant_override("outline_size", 6)
-	quota.add_child(_quota_text)
-	_seal.prepare(tr("table.quota_met"), ScreenKit.RED, SEAL_WIDTH)
-	_seal.position = Vector2(QUOTA_BAR.x - SEAL_WIDTH * 0.6, (QUOTA_BAR.y - SEAL_WIDTH) / 2.0)
-	quota.add_child(_seal)
+	quota.setup(QUOTA_BAR, SEAL_WIDTH, 20)
 	box.add_child(label)
 	box.add_child(quota)
-	_show_quota(0.0)
 	return box
 
 

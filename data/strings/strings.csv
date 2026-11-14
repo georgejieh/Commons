@@ -184,8 +184,6 @@ settings.post_process,Print grain and film effects
 title.eyebrow,A Fight the Landlord roguelike
 store.eyebrow,Between Quotas
 store.balance,Your coupons
-summary.scored,Scored
-summary.target,Target
 summary.coupons_label,Coupons
 summary.famine_label,Famine
 year.eyebrow,Year's end
@@ -500,3 +498,4 @@ market.upgrade.capacity.tip,Your private plot holds one more card.
 market.upgrade.swaps,One more swap a round · {price} coupons
 market.upgrade.swaps.out,No more swaps to buy
 market.upgrade.swaps.tip,"Each round, you may swap one more card between your hand and your private plot."
+summary.short,Short

@@ -74,6 +74,16 @@ func test_the_table_plays_a_set_to_its_summary() -> void:
 		_press(table, driver)
 		await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("set_summary")
+	# The report fills its Quota bar to what was scored and seals it met or short.
+	var report: SetSummaryScreen = _app.switcher.current()
+	var state: RunState = _app.controller.state_copy()
+	var target: float = _app.controller.target()
+	await await_millis(int((SetSummaryScreen.START + SetSummaryScreen.FILL) * 1000.0) + 400)
+	assert_float(report.bar().value).is_equal_approx(minf(state.set_progress, target), 0.5)
+	var met: bool = state.set_progress >= target
+	assert_bool(report.bar().is_met()).is_equal(met)
+	var word: String = tr("table.quota_met" if met else "summary.short").to_upper()
+	assert_str(report.bar().seal_word()).is_equal(word)
 
 
 ## Takes the player's turn through the table's own buttons and hand model.
