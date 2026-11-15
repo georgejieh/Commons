@@ -533,6 +533,7 @@ func next_set() -> Reason:
 			return Reason.OK
 		state.year += 1
 		state.cadre_memos.new_year(state.inventory.cadres)
+		YearClass.new_year(state)
 	state.set_index = (state.set_index + 1) % SetConfig.SETS_PER_YEAR
 	state.set_type = state.set_index as RunState.SetType
 	return start_set()
@@ -806,6 +807,7 @@ func _denounce_villager(seat: int) -> void:
 
 func _end_round() -> void:
 	set_log.end_round(state, PLAYER)
+	YearClass.count_round(state, _round.landlord(), PLAYER)
 	var landlord_won: bool = _round.landlord_won()
 	_seat.record_round(landlord_won)
 	state.landlord_seat = _seat.holder()

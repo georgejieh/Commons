@@ -89,6 +89,10 @@ var landlord_seat: int = Seats.NONE
 var summaries: Array[SetSummary] = []
 ## What the player has seen each villager do this run, for the dossier.
 var observations: Observations = Observations.new()
+## The rounds played in the current Year, and those the player held the landlord seat in,
+## which give the run's final class (ADR 0024). Both start again with each Year.
+var year_rounds: int = 0
+var year_landlord_rounds: int = 0
 
 
 func _init(seed_value: int) -> void:
@@ -150,6 +154,8 @@ static func from_dict(data: Dictionary) -> RunState:
 	for summary_data: Dictionary in data["summaries"]:
 		state.summaries.append(SetSummary.from_dict(summary_data))
 	state.observations = Observations.from_dict(data["observations"])
+	state.year_rounds = int(data["year_rounds"])
+	state.year_landlord_rounds = int(data["year_landlord_rounds"])
 	return state
 
 
@@ -207,6 +213,8 @@ func to_dict() -> Dictionary:
 		"landlord_seat": landlord_seat,
 		"summaries": summary_data,
 		"observations": observations.to_dict(),
+		"year_rounds": year_rounds,
+		"year_landlord_rounds": year_landlord_rounds,
 	}
 
 

@@ -289,13 +289,15 @@ reed.title,Sent for reeducation
 reed.body,"You miss this visit to the State Store. Your private plot is emptied. If you hold a Cadre, one is exchanged for a Cadre you don't hold."
 reed.continue,Continue
 end.eyebrow,The run is over
-end.landlord,You finished as landlord
-end.peasant,You finished as a peasant
+end.class,Class
+end.class.landlord,Landlord
+end.class.peasant,Peasant
 end.famine,Famine
 end.denunciation,Denunciation
-end.coupons,Coupons
-end.table,At the table
+end.village,The village
+end.show_all,Show all
 end.to_title,Return to title
+player.surname,Zhang
 coll.eyebrow,Collection
 coll.title,Cadres
 coll.back,Back
@@ -736,3 +738,46 @@ store.short_supply,Short Supply: {count} fewer Cadres on the counter.
 store.short_supply.one,Short Supply: 1 fewer Cadre on the counter.
 round.taxed,Grain Tax took {amount} of what you banked.
 round.voided,"Overtime: your side lost, so you banked nothing."
+ending.secret_contract.title,The Secret Contract
+ending.secret_contract.text,"That winter the households met after dark and divided the brigade's land between them. They marked the paper with thumbprints and seals. The next harvest was the largest the village had brought in, and the report to the commune did not say why. The paper also said who would raise the leaders' children if the leaders were taken away."
+ending.the_commons.title,The Commons
+ending.the_commons.text,"Nobody divided the land. The households farmed it together for eight years, split what there was, and wrote down true figures. Some years that was enough. The {surname} family ended the eighth year owning what it had owned in the first."
+ending.lean_years.title,Lean Years
+ending.lean_years.text,The {surname} family gave to the Commons every year and took what was handed back. In the eighth winter the granary was swept to the boards before the solstice. The brigade cut the ration twice more before spring.
+ending.labeled.title,Labeled
+ending.labeled.text,"In the eighth year the {surname} name went up on the wall outside the brigade office. The family kept its house and its place in the fields. The label went into the household register, under every name in the family."
+ending.benevolent_landlord.title,The Benevolent Landlord
+ending.benevolent_landlord.text,"By the eighth year the {surname} family held the land and the village ate. Rent came due after harvest and was paid in grain. People took off their caps at the gate. They called the {surname} family landlord, which was what they had called the last family to hold the land."
+ending.full_granary.title,"Full Granary, Empty Village"
+ending.full_granary.text,The {surname} storehouse was full in the eighth winter. It had two locks and a man paid to sleep against the door. Nothing left it before spring.
+ending.struggled.title,Struggled
+ending.struggled.text,"In the eighth year the village came to the {surname} gate together. They carried the ledgers out and read from them in the square. Every household still in the village was called on to speak. The land was divided again by autumn, and the {surname} family was given the share furthest from the well."
+death.famine.title,The Granary Is Empty
+death.famine.text,The village ran out of grain in Year {year}. The {surname} household was not on the next roll.
+death.denunciation.title,Taken Away
+death.denunciation.text,The work team came for the {surname} family in Year {year}. By spring the house had been given to another household.
+epilogue.secret_contract.warm,{name} signed below you.
+epilogue.secret_contract.wary,{name} signed last.
+epilogue.secret_contract.bitter,"{name} did not sign, and did not report it."
+epilogue.the_commons.warm,{name} kept the granary key in the eighth year.
+epilogue.the_commons.wary,{name} checked the scales every autumn and found them true.
+epilogue.the_commons.bitter,{name} took a full share every year and ate apart.
+epilogue.lean_years.warm,{name} shared a pot with your household through the winter.
+epilogue.lean_years.wary,{name} answered at roll call and went home.
+epilogue.lean_years.bitter,{name} said the {surname} family had always given away what was not theirs to give.
+epilogue.labeled.warm,{name} still left the gate between your yards unlatched.
+epilogue.labeled.wary,{name} crossed to the other side of the lane.
+epilogue.labeled.bitter,{name} told the work team what they had seen.
+epilogue.benevolent_landlord.warm,{name} farmed your best field at the old rent.
+epilogue.benevolent_landlord.wary,{name} paid the rent in full every autumn.
+epilogue.benevolent_landlord.bitter,{name} paid on time and never came past the gate.
+epilogue.full_granary.warm,{name} was given work in your storehouse.
+epilogue.full_granary.wary,{name} came to the gate once and was sent round to the back.
+epilogue.full_granary.bitter,{name} stopped coming to the gate.
+epilogue.struggled.warm,{name} was asked to speak and said the weather had been bad.
+epilogue.struggled.wary,{name} spoke for as long as the others had.
+epilogue.struggled.bitter,"{name} spoke first, and had brought notes."
+epilogue.state.reeducation,{name} was away at study.
+epilogue.state.deposed,{name} had been put out of the seat and worked a plot like anyone.
+epilogue.missing,Not at roll call: {names}.
+ending.note.xiaogang,"In the winter of 1978, the heads of eighteen households in Xiaogang, a village in Fengyang County, Anhui, secretly agreed to farm their production team's land by household. In 1982 the central government endorsed the practice, and it spread across the country."

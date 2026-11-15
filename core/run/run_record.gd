@@ -114,6 +114,15 @@ static func migrate_from_8(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 9 saves predate the Year's class counters (ADR 0024): no round counted yet, so
+## a run picked up mid-Year counts from there, and a Year with no rounds is a peasant's.
+static func migrate_from_9(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"year_rounds": 0, "year_landlord_rounds": 0})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -260,7 +269,18 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 	for reform_id: Variant in checkpoint["reforms"]:
 		if not reform_id is String:
 			return false
+	if not _counters_valid(checkpoint["year_rounds"], checkpoint["year_landlord_rounds"]):
+		return false
 	return _levels_valid(checkpoint["hand_levels"])
+
+
+## The Year's class counters are whole and in order: no fewer than none, and never more
+## rounds as landlord than rounds played.
+static func _counters_valid(rounds: Variant, landlord: Variant) -> bool:
+	for value: Variant in [rounds, landlord]:
+		if not (value is int or value is float) or value < 0 or value != floorf(value):
+			return false
+	return landlord <= rounds
 
 
 ## Hand levels are one number per hand type.

@@ -159,7 +159,8 @@ func screen_for(awaiting: int) -> String:
 		RunController.AWAIT_REEDUCATION:
 			return "reeducation"
 		RunController.AWAIT_RUN_OVER:
-			return "year_summary"
+			# A full run ends on its ending; the demo keeps its Year summary and closing page.
+			return "ending" if controller.has_village() else "year_summary"
 		RunController.AWAIT_SWAP:
 			return "plot_swap"
 	return table_id()

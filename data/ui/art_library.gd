@@ -21,7 +21,17 @@ extends Resource
 @export var icon_grain: Texture2D
 ## Cadre portraits by modifier ID.
 @export var cadres: Dictionary[String, Texture2D] = {}
+## Ending pictures by ending ID (ADR 0024). An ending with none shows its title in type.
+@export var endings: Dictionary[String, Texture2D] = {}
+## A face holding the Chinese characters drawn as decoration, such as Struggled's seal.
+## Without one, or without the characters, the decoration is left out, never drawn as
+## missing-glyph boxes.
+@export var hanzi_font: Font
 
 
 func cadre(cadre_id: String) -> Texture2D:
 	return cadres.get(cadre_id, null)
+
+
+func ending(ending_id: String) -> Texture2D:
+	return endings.get(ending_id, null)

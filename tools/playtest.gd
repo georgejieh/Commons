@@ -19,6 +19,19 @@ const SNAP_SECONDS: float = 0.22
 const SAVE_PATH: String = "user://playtest/run.json"
 ## Corruption stages the dice bowl is photographed at, settled on a 1 and a 4.
 const BOWL_STAGES: Array[int] = [0, 3, 6, 9]
+## Each ending and death the playtest finishes a run on (ADR 0024): Famine, Denunciation,
+## Resentment and rounds as landlord of the final Year's four.
+const ENDING_RUNS: Dictionary[String, Array] = {
+	"secret_contract": [30, 20, 40, 0],
+	"the_commons": [10, 10, 0, 0],
+	"lean_years": [80, 20, 40, 1],
+	"labeled": [20, 80, 40, 1],
+	"benevolent_landlord": [30, 30, 40, 3],
+	"full_granary": [85, 40, 40, 4],
+	"struggled": [40, 90, 40, 2],
+	"death_famine": [100, 40, 40, 1],
+	"death_denunciation": [40, 100, 40, 1],
+}
 
 var _out: String = "res://reports/playtest"
 var _rounds_wanted: int = 6
@@ -93,6 +106,7 @@ func _run() -> void:
 		guard += 1
 		await _frames(STEP_FRAMES)
 		await _step()
+	await _ending_frames()
 	print("rounds=%d clicks=%d misclicks=%d shots=%d" % [_rounds_seen, _clicks, _misclicks, _shots])
 	quit(0)
 
@@ -649,6 +663,106 @@ func _first_keep(papers: Array, overlay: Object) -> Button:
 		if not keep.disabled:
 			return keep
 	return overlay.call("nothing_button")
+
+
+## Every ending and both deaths, once, in a sandbox put back after: a finished run with a
+## full village is saved at the run's end and continued, so the ending screen opens the
+## way a real run's end opens it. The Secret Contract's epilogue is photographed as it
+## arrives; every page is then shown whole with an accept press, and Struggled once more
+## at corruption stage 9. Last, Return to title is clicked, the save taken before is
+## written back and the run resumed.
+func _ending_frames() -> void:
+	var controller: Object = _app.get("controller")
+	var loop: RunLoop = controller.get("_loop")
+	var snapshot: Dictionary = loop.record.to_dict()
+	var saves: Object = root.get_node("Saves").call("run_service")
+	for outcome: String in ENDING_RUNS:
+		var screen: Node = await _open_ending(outcome, saves)
+		if outcome == "secret_contract":
+			await create_timer(0.5).timeout
+			for frame: int in 3:
+				await _snap("ending_secret_contract_epilogue_%d" % frame)
+				await create_timer(1.1).timeout
+		await _accept_epilogue(screen)
+		var death: bool = outcome.begins_with("death_")
+		await _shot(outcome if death else "ending_" + outcome)
+	var was: int = ArtStages.stage_override
+	ArtStages.stage_override = BOWL_STAGES[-1]
+	var worn: Node = await _open_ending("struggled", saves)
+	await _accept_epilogue(worn)
+	await _shot("ending_struggled_stage_9")
+	ArtStages.stage_override = was
+	await _press(worn.call("home_button"))
+	await _frames(20)
+	var switcher: Object = _app.get("switcher")
+	if switcher.call("current_id") != "title":
+		_misclicks += 1
+		print("ENDING DID NOT GO HOME")
+	saves.call("save", snapshot)
+	_app.call("resume_to_screen")
+	await _frames(30)
+
+
+## Saves a run finished as outcome and continues it, which opens its ending.
+func _open_ending(outcome: String, saves: Object) -> Node:
+	var record: RunRecord = RunRecord.new()
+	record.mark(_finished_run(ENDING_RUNS[outcome]))
+	saves.call("save", record.to_dict())
+	_app.call("resume_to_screen")
+	await _frames(20)
+	var switcher: Object = _app.get("switcher")
+	if switcher.call("current_id") != "ending":
+		_misclicks += 1
+		print("NO ENDING SCREEN FOR %s" % outcome)
+	return switcher.call("current")
+
+
+## A run at its end with the given meters, Resentment and rounds as landlord, and every
+## family of the village: some warm, some wary, some bitter, one in reeducation, one
+## deposed and two dead.
+func _finished_run(values: Array) -> RunState:
+	var state: RunState = RunState.new(SEED)
+	state.phase = RunFlow.State.RUN_END
+	state.year = 8
+	state.famine = values[0]
+	state.denunciation = values[1]
+	state.resentment = values[2]
+	state.year_rounds = 4
+	state.year_landlord_rounds = values[3]
+	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+		state.roster.append(RosterEntry.new(family.id))
+	state.roster[1].status = RosterEntry.Status.REEDUCATION
+	state.roster[4].status = RosterEntry.Status.DEPOSED
+	state.roster[6].status = RosterEntry.Status.DEAD
+	state.roster[11].status = RosterEntry.Status.DEAD
+	var summary: SetSummary = SetSummary.new(0)
+	for warm: int in [0, 5, 9]:
+		summary.add(state.roster[warm].family_id, SetSummary.Kind.FED, 4)
+	for bitter: int in [2, 8, 12]:
+		summary.add(state.roster[bitter].family_id, SetSummary.Kind.DENOUNCED, 3)
+	summary.add(state.roster[3].family_id, SetSummary.Kind.BOMBED, 1)
+	state.memory.record(summary)
+	return state
+
+
+## Presses Enter, as any accept press shows the whole epilogue, and checks that it did.
+## A page without an epilogue, or one already whole, is left alone: there Enter would
+## press Return to title.
+func _accept_epilogue(screen: Node) -> void:
+	if screen.call("epilogue") == null or not bool(screen.call("is_revealing")):
+		return
+	for pressed: bool in [true, false]:
+		var key: InputEventKey = InputEventKey.new()
+		key.keycode = KEY_ENTER
+		key.physical_keycode = KEY_ENTER
+		key.pressed = pressed
+		root.push_input(key, true)
+		await _frames(2)
+	var epilogue: Object = screen.call("epilogue")
+	var lines: Array = epilogue.call("line_labels")
+	if bool(screen.call("is_revealing")) or int(epilogue.call("shown_count")) != lines.size():
+		_misclicks += 1
+		print("EPILOGUE NOT SHOWN WHOLE")
 
 
 ## A picture of whatever node shows at corruption stage 9, the override put back after.

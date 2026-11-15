@@ -54,3 +54,5 @@ extends Resource
 @export var banner_hold: float = 1.1
 ## Screen changes cross through an ink wipe this long.
 @export var wipe_time: float = 0.22
+## Each epilogue line arrives this long after the one before (ADR 0024).
+@export var epilogue_beat: float = 0.45

@@ -54,6 +54,8 @@ const TAKE_NOTHING: int = EnvelopeCounter.NOTHING
 ## Suit names in suit order: spade, heart, club, diamond.
 const SUIT_KEYS: Array[String] = ["suit.spades", "suit.hearts", "suit.clubs", "suit.diamonds"]
 const OK: int = RunLoop.Reason.OK
+## The player's family name until the profile holds the one they choose (P4.17).
+const PLAYER_SURNAME: String = "player.surname"
 
 var _loop: RunLoop
 var _saves: SaveService = null
@@ -648,6 +650,17 @@ func seated_family(seat: int) -> FamilyDef:
 func seated_name_key(seat: int) -> String:
 	var entry: RosterEntry = seated(seat)
 	return "" if entry == null else Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
+
+
+## How the run ended, for the ending screen (ADR 0024), worked out from its state alone.
+func ending() -> EndingView:
+	return EndingView.of(_loop.state, tr(PLAYER_SURNAME))
+
+
+## True when the run seats the village's roster, as a full run does. The demo seats its
+## two fixed villagers and ends on its own closing screen instead of an ending.
+func has_village() -> bool:
+	return not _loop.state.roster.is_empty()
 
 
 ## A copy of the run state, for display.

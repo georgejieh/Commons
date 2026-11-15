@@ -80,7 +80,7 @@ func test_a_schema_8_save_gains_no_slogan() -> void:
 	assert_bool(RunRecord.is_valid(migrated)).is_true()
 	var state: RunState = RunState.from_dict(migrated["checkpoint"])
 	assert_int(state.slogan_type).is_equal(RunState.NO_SLOGAN)
-	assert_int(SaveService.SCHEMA_VERSION).is_equal(9)
+	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(9)
 
 
 ## Bots never choose an action the round refuses, under every debuff that changes hands.

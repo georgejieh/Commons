@@ -24,4 +24,4 @@ func _leave(app: DemoApp) -> void:
 		return
 	app.controller.leave_reeducation()
 	var over: bool = app.controller.awaiting() == RunController.AWAIT_RUN_OVER
-	app.show_screen("year_summary" if over else "set_intro", true)
+	app.show_screen(app.screen_for(RunController.AWAIT_RUN_OVER) if over else "set_intro", true)
