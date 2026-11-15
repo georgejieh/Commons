@@ -8,7 +8,7 @@ extends RefCounted
 ## Wear at stage 0, and the stage from which the 1 becomes an eye.
 const BASE_WEAR: float = 0.3
 const EYE_STAGE: int = 7
-const BONE: Color = Color("d9cba6")
+const BONE: Color = Color("dcc79a")
 const CLAY: Color = Color("7d6248")
 const CRACK: Color = Color("3a2c1e")
 const TEA: Color = Color("5a3d1e")
@@ -34,7 +34,7 @@ static func watching() -> bool:
 
 ## A clean colour as it looks after years of handling: pulled toward bone and dulled.
 static func aged(clean: Color, worn: float) -> Color:
-	return clean.lerp(BONE, 0.22 + 0.38 * worn).darkened(0.04 + 0.2 * worn)
+	return clean.lerp(BONE, 0.42 + 0.3 * worn).darkened(0.02 + 0.2 * worn)
 
 
 ## The bowl's grime over its glaze: tea stains in the well, crazing through the glaze,
@@ -46,7 +46,12 @@ static func bowl(canvas: CanvasItem, at: Vector2, radius: float, alpha: float, w
 	canvas.draw_arc(at, radius * 0.47, 0.0, TAU, 72, stain, radius * 0.07, true)
 	for _blotch: int in _count(BLOTCHES, worn):
 		var spot: Vector2 = at + _in_disc(rng, radius * 0.8)
-		canvas.draw_circle(spot, radius * rng.randf_range(0.04, 0.13), stain)
+		var reach: float = radius * rng.randf_range(0.04, 0.12)
+		# Two offset washes, so a stain has a soft, uneven edge and is not a disc.
+		canvas.draw_circle(spot, reach, Color(stain, stain.a * 0.6))
+		canvas.draw_circle(
+			spot + _in_disc(rng, reach * 0.6), reach * 0.7, Color(stain, stain.a * 0.6)
+		)
 	var hair: Color = Color(CRACK, alpha * (0.22 + 0.45 * worn))
 	for _crack: int in _count(CRACKS, worn):
 		canvas.draw_polyline(_crack_line(rng, at, radius), hair, 1.0 + worn, true)
@@ -54,8 +59,10 @@ static func bowl(canvas: CanvasItem, at: Vector2, radius: float, alpha: float, w
 	for _speck: int in _count(SPECKS, worn):
 		canvas.draw_circle(at + _in_disc(rng, radius * 0.97), rng.randf_range(0.8, 2.6), dirt)
 	for _chip: int in _count(CHIPS, worn):
-		var edge: Vector2 = at + Vector2.from_angle(rng.randf() * TAU) * radius
-		canvas.draw_circle(edge, radius * rng.randf_range(0.02, 0.05), Color(CLAY, alpha))
+		# A chip bites into the rim from just inside its edge, down to the clay.
+		var bite: float = radius * rng.randf_range(0.015, 0.035)
+		var edge: Vector2 = at + Vector2.from_angle(rng.randf() * TAU) * (radius - bite * 0.7)
+		canvas.draw_circle(edge, bite, Color(CLAY, alpha))
 	var dried: float = clampf((worn - 0.6) / 0.4, 0.0, 1.0)
 	if dried > 0.0:
 		var ring: Color = Color(DRIED, alpha * 0.5 * dried)
