@@ -24,6 +24,7 @@ Blue and green leave the art as corruption rises. By stage 6 the art is printed 
 - **Line.** One ink weight per asset: about 3 px at 1080p for the main contours, and about half that for hatching. No soft airbrush outlines.
 - **Fill.** Flat silkscreen blocks with two or three tones per color. Gradients appear only in sun rays and halos.
 - **Texture.** Aged poster paper: fold lines, foxing, tea rings and torn edges. Print misregistration of 1 to 3 px on large red blocks. The paper ages with each stage, but the play area always stays calm and low in contrast, so the cards read clearly.
+- **Nothing is clean.** Even at stage 0 there is a little grime on everything, and it worsens with every stage. This holds for things drawn in code as much as for painted art: no pure white, no fresh colour, no perfect edge. The dice bowl is the model (`BowlGrime`): its glaze is yellowed, crazed and tea-stained from the start, each stage adds cracks, chips and dirt, and at the deep stages the red 1 on the die is an eye.
 - **Light.** One warm source, top center, where the sun or eye sits in each poster. On the table, the lamp sits in the same place.
 - **Composition.** Heroic upward poses, crowds in rows, banners on the diagonal, the sun at the top. Key detail goes at the edges, never under where cards lie.
 
@@ -100,6 +101,7 @@ The private board in `design/reference/` is never used as image input.
 | Use invented, unreadable stamp shapes | Use Chinese characters or any lettering in the art |
 | Keep the corruption in the eye, the hands and the smiles | Use gore, bodies, or suffering played for shock |
 | Keep the play area calm and low in contrast | Put detail where cards lie |
+| Wear, stain and yellow anything drawn in code | Draw a clean, new-looking object at any stage |
 | Keep each villager's whole head inside the frame, centered in 4:5 | Crop a face at the frame edge |
 | Treat red as the poster's ink | Use red to mean anything but Zeal or the landlord in the UI |
 | Make stage variants by editing the existing asset | Regenerate a stage from scratch, which breaks the continuity between stages |

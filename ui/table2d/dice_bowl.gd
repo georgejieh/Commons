@@ -225,27 +225,34 @@ func _draw() -> void:
 
 
 ## A porcelain bowl from above: a cobalt band of pearls round the rim, a glazed wall
-## shading inward, the foot ring inside and a flower at the bottom.
+## shading inward, the foot ring inside and a flower at the bottom. It is never clean:
+## BowlGrime ages its colours and lays the stains, cracks and chips over it.
 func _draw_bowl(at: Vector2, radius: float, alpha: float) -> void:
+	var worn: float = BowlGrime.wear()
+	var white: Color = Color(BowlGrime.aged(PORCELAIN, worn), alpha)
+	var blue: Color = Color(BowlGrime.aged(COBALT, worn * 0.6), alpha)
+	var pale: Color = Color(BowlGrime.aged(COBALT_SOFT, worn * 0.6), alpha)
+	var glaze: Color = BowlGrime.aged(GLAZE, worn)
 	draw_circle(at + Vector2(10, 16), radius * 1.02, Color(SHADOW, SHADOW.a * alpha))
-	draw_circle(at, radius, Color(PORCELAIN, alpha))
+	draw_circle(at, radius, white)
 	var band: float = radius * 0.07
-	draw_arc(at, radius * 0.92, 0.0, TAU, 96, Color(COBALT, alpha), band, true)
+	draw_arc(at, radius * 0.92, 0.0, TAU, 96, blue, band, true)
 	for index: int in 28:
 		var angle: float = TAU * index / 28.0
 		var pearl: Vector2 = at + Vector2.from_angle(angle) * radius * 0.92
-		draw_circle(pearl, band * 0.26, Color(PORCELAIN, alpha))
-	draw_arc(at, radius * 0.855, 0.0, TAU, 96, Color(COBALT, alpha), 2.0, true)
+		draw_circle(pearl, band * 0.26, white)
+	draw_arc(at, radius * 0.855, 0.0, TAU, 96, blue, 2.0, true)
 	for step: int in 6:
 		var wall: float = radius * lerpf(0.84, 0.56, step / 5.0)
-		draw_circle(at, wall, Color(GLAZE.lerp(PORCELAIN, step / 5.0), alpha))
-	draw_arc(at, radius * 0.5, 0.0, TAU, 72, Color(COBALT, alpha), 3.0, true)
-	draw_arc(at, radius * 0.46, 0.0, TAU, 72, Color(COBALT_SOFT, alpha), 1.5, true)
+		draw_circle(at, wall, Color(glaze.lerp(Color(white, 1.0), step / 5.0), alpha))
+	draw_arc(at, radius * 0.5, 0.0, TAU, 72, blue, 3.0, true)
+	draw_arc(at, radius * 0.46, 0.0, TAU, 72, pale, 1.5, true)
 	for petal: int in 6:
 		var spot: Vector2 = at + Vector2.from_angle(TAU * petal / 6.0) * radius * 0.11
-		draw_circle(spot, radius * 0.065, Color(COBALT_SOFT, alpha * 0.8))
-	draw_circle(at, radius * 0.05, Color(COBALT, alpha))
-	var shine: Color = Color(1, 1, 1, 0.7 * alpha)
+		draw_circle(spot, radius * 0.065, Color(pale, alpha * 0.8))
+	draw_circle(at, radius * 0.05, blue)
+	BowlGrime.bowl(self, at, radius, alpha, worn)
+	var shine: Color = Color(1, 1, 1, (0.5 - 0.35 * worn) * alpha)
 	draw_arc(at, radius * 0.97, PI * 1.08, PI * 1.55, 32, shine, 4.0, true)
 
 
@@ -286,6 +293,7 @@ func _draw_die(index: int, middle: Vector2, scale_now: float, alpha: float) -> v
 	var body: StyleBoxFlat = _body(_seats[index], alpha * faded)
 	draw_style_box(body, Rect2(-half, half * 2.0))
 	_draw_pips(_shown_face(index), alpha * faded)
+	BowlGrime.die(self, DIE, alpha * faded, BowlGrime.wear(), index)
 	draw_set_transform(Vector2.ZERO, 0.0)
 	if audited and tumble >= 1.0:
 		var ring: Color = Color(RING, alpha)
@@ -299,6 +307,8 @@ func _draw_pips(face: int, alpha: float) -> void:
 	var ink: Color = Color(PIP_RED if red else PIP_BLACK, alpha)
 	for place: Vector2 in PIPS.get(face, []):
 		draw_circle(place * DIE, radius, ink)
+	if face == 1 and BowlGrime.watching():
+		BowlGrime.eye(self, radius, alpha)
 
 
 ## The seat's name on a tag of its tint, under where its die comes to rest.
@@ -338,6 +348,7 @@ func _body(seat: int, alpha: float) -> StyleBoxFlat:
 		made.anti_aliasing = true
 		_bodies[seat] = made
 	var body: StyleBoxFlat = _bodies[seat]
-	body.bg_color = Color(tint_for(seat), alpha)
-	body.border_color = Color(tint_for(seat).darkened(0.4), alpha)
+	var bone: Color = BowlGrime.aged(tint_for(seat), BowlGrime.wear())
+	body.bg_color = Color(bone, alpha)
+	body.border_color = Color(bone.darkened(0.45), alpha)
 	return body
