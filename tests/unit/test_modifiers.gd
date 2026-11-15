@@ -104,12 +104,20 @@ func _load_def(name: String) -> ModifierDef:
 func test_every_definition_in_data_is_valid() -> void:
 	var keys: Dictionary[String, bool] = _string_keys()
 	var checked: int = 0
+	var directives: int = 0
 	for path: String in _resources_under(DATA):
-		var definition: ModifierDef = ResourceLoader.load(path) as ModifierDef
+		var resource: Resource = ResourceLoader.load(path)
+		var definition: ModifierDef = resource as ModifierDef
 		if definition != null:
 			checked += 1
 			assert_array(Array(ModifierValidator.validate(definition, keys))).is_empty()
+		var directive: DirectiveDef = resource as DirectiveDef
+		if directive != null:
+			directives += 1
+			assert_array(Array(ModifierValidator.validate_directive(directive, keys))).is_empty()
 	assert_bool(checked >= 4).is_true()
+	# ADR 0021's six Directives (P4.11).
+	assert_int(directives).is_equal(6)
 
 
 func test_the_validator_catches_each_kind_of_bad_definition() -> void:

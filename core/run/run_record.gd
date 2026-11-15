@@ -18,6 +18,7 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"market_reroll": [],
 	"upgrade": ["kind"],
 	"plot_card": ["slot"],
+	"directive": ["slot"],
 }
 
 var checkpoint: Dictionary = {}
@@ -64,6 +65,18 @@ static func migrate_from_4(data: Dictionary) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
 		var checkpoint: Dictionary = data["checkpoint"]
 		checkpoint.merge({"norm_steps": 0, "over_steps": 0})
+	return data
+
+
+## Version 5 saves predate saved marks and hand levels (P4.11): no card marked, and
+## every hand type at its first level.
+static func migrate_from_5(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		var fresh: RunState = RunState.new(0)
+		checkpoint.merge(
+			{"hand_levels": fresh.hand_levels.to_array(), "card_marks": fresh.card_marks.to_dict()}
+		)
 	return data
 
 
@@ -167,6 +180,8 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_upgrade(str(command["kind"]))
 		"plot_card":
 			return loop.player_plot_card(int(command["slot"]))
+		"directive":
+			return loop.player_directive(int(command["slot"]))
 	return RunLoop.Reason.ILLEGAL
 
 
@@ -183,6 +198,21 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 		# JSON reads every number as a float.
 		var number: bool = checkpoint[key] is int or checkpoint[key] is float
 		if fresh[key] is int and not number:
+			return false
+	if not CardMarks.is_valid(checkpoint["card_marks"]):
+		return false
+	return _levels_valid(checkpoint["hand_levels"])
+
+
+## Hand levels are one number per hand type.
+static func _levels_valid(value: Variant) -> bool:
+	if not value is Array:
+		return false
+	var levels: Array = value
+	if levels.size() != Pattern.Type.size():
+		return false
+	for level: Variant in levels:
+		if not (level is int or level is float):
 			return false
 	return true
 

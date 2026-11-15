@@ -39,3 +39,26 @@ static func validate(
 		if Hooks.ALL.has(hook) and own_methods.count(hook) < 2:
 			problems.append("%s: does not implement %s" % [definition.id, hook])
 	return problems
+
+
+## Checks a Directive (ADR 0021): its strings, a cost, an unlock tier, and a family of
+## real hand types, none twice.
+static func validate_directive(
+	definition: DirectiveDef, string_keys: Dictionary[String, bool]
+) -> PackedStringArray:
+	var problems: PackedStringArray = []
+	for key: String in [definition.name_key, definition.text_key]:
+		if not string_keys.has(key):
+			problems.append("%s: missing string key %s" % [definition.id, key])
+	if definition.cost <= 0:
+		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
+	if definition.unlock_tier < 0:
+		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	if definition.hand_types.is_empty():
+		problems.append("%s: raises no hand type" % definition.id)
+	var seen: Dictionary[int, bool] = {}
+	for type: int in definition.hand_types:
+		if type <= Pattern.Type.PASS or type >= Pattern.Type.size() or seen.has(type):
+			problems.append("%s: bad hand type %d" % [definition.id, type])
+		seen[type] = true
+	return problems

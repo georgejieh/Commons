@@ -4,6 +4,8 @@ extends Resource
 
 ## Cadres offered per visit.
 @export var slots: int = 3
+## Directives offered per visit, beside the Cadres (ADR 0021).
+@export var directive_slots: int = 0
 ## Cadres the player can hold at once.
 @export var cadre_slots: int = 5
 ## Coupons for the first reroll, and how much each later one adds.

@@ -28,6 +28,7 @@ const COMMANDS: Array[String] = [
 	"market_reroll",
 	"upgrade",
 	"plot_card",
+	"directive",
 	"leave_store",
 ]
 ## What the run waits on, for views that may not name the loop.
@@ -46,6 +47,7 @@ var _saves: SaveService = null
 ## The profile save, which the village's memory outlives runs in (P4.6).
 var _profile: SaveService = null
 var _definitions: Dictionary[String, ModifierDef] = {}
+var _directives: Dictionary[String, DirectiveDef] = {}
 
 
 ## Starts a new run from seed, with one bot config per seat.
@@ -160,6 +162,37 @@ func upgrade(kind: String) -> int:
 ## Buys a card for the private plot at the black market.
 func plot_card(slot: int) -> int:
 	return _finish("plot_card", _loop.player_plot_card(slot))
+
+
+## Issues a Directive from the state store: its hand types rise a level at once.
+func directive(slot: int) -> int:
+	return _finish("directive", _loop.player_directive(slot))
+
+
+## A Directive's name and rules, and the hand types it raises, as Pattern.Type values.
+func directive_name(directive_id: String) -> String:
+	return tr(_directives[directive_id].name_key)
+
+
+func directive_text(directive_id: String) -> String:
+	return tr(_directives[directive_id].text_key)
+
+
+func directive_types(directive_id: String) -> Array[int]:
+	return _directives[directive_id].hand_types.duplicate()
+
+
+## A hand type's level in this run, and its Rate at a level, from the scorer's table.
+func hand_level(type: int) -> int:
+	return _loop.state.hand_levels.level_of(type as Pattern.Type)
+
+
+func hand_rate(type: int, level: int) -> int:
+	return Scorer.DEFAULT_PARAMS.rate_for(type, level)
+
+
+func max_hand_level() -> int:
+	return Scorer.DEFAULT_PARAMS.max_level
 
 
 ## The state store's counter, or the black market's, for a screen to read.
@@ -389,6 +422,8 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	)
 	for definition: ModifierDef in known + RunLoop.DEFAULT_BOSSES.all():
 		_definitions[definition.id] = definition
+	for directive_def: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+		_directives[directive_def.id] = directive_def
 	_saves = saves
 	_loop.set_log.on_add = func(event: RunEvent) -> void: event_emitted.emit(event)
 	_loop.on_boundary = func(at: RunLoop) -> void:

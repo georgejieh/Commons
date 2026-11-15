@@ -17,6 +17,7 @@ const UI_ACTIONS: Array[String] = [
 	"market_reroll",
 	"upgrade",
 	"plot_card",
+	"directive",
 	"leave_store",
 ]
 

@@ -512,3 +512,26 @@ summary.norm_raised,The norm is raised {percent}% for every Quota to come.
 intro.norm,Norm raised {percent}%
 keyword.norm.name,Norm
 keyword.norm.text,Norm: beating a Quota by a quarter or more pays extra coupons and raises every later Quota.
+keyword.stamp.name,Stamp
+keyword.stamp.text,"Stamp: a card marked as yours. Red Ink and Class Label act on it, and scoring one adds 1 Resentment."
+keyword.model.name,Model
+keyword.model.text,Model: a card that scores double Grain for whoever scores it.
+directive.on_hand_tools.name,On Hand Tools
+directive.on_hand_tools.text,Raises Single and Pair by one level.
+directive.on_work_teams.name,On Work Teams
+directive.on_work_teams.text,"Raises Trio, Trio with Single and Trio with Pair by one level."
+directive.on_deep_ploughing.name,On Deep Ploughing
+directive.on_deep_ploughing.text,Raises Straight by one level.
+directive.on_close_planting.name,On Close Planting
+directive.on_close_planting.text,Raises Pair Run by one level.
+directive.on_combined_brigades.name,On Combined Brigades
+directive.on_combined_brigades.text,"Raises Airplane, Airplane with Singles and Airplane with Pairs by one level."
+directive.on_launching_satellites.name,On Launching Satellites
+directive.on_launching_satellites.text,"Raises Four with Two Singles, Four with Two Pairs, Bomb and Rocket by one level."
+directive.eyebrow,Directive
+directive.rate,{type}: Rate {from} to {to}
+directive.rate.top,"{type}: Rate {rate}, top level"
+directive.issued,Issued
+cheat.rate,Rate {rate}
+cheat.rate.level,"Rate {rate}, level {level}"
+directive.rate.now,{type}: Rate {rate}

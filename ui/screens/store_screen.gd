@@ -5,7 +5,8 @@ extends Control
 ## with market set, the black market behind it: the room goes dark, prices are higher,
 ## the plot can be enlarged, and every purchase adds Resentment, which the screen
 ## counts. Every purchase goes through the run controller. A purchase is acted out: the
-## card is sealed, then flies down to its place on your board.
+## card is sealed, then flies down to its place on your board. The state store also
+## issues Directives, in their own column beside the Cadres.
 
 ## Modifier names are long, so they print a step below the title size (the set intro's
 ## debuff card uses it).
@@ -47,6 +48,8 @@ var _stall: VBoxContainer = null
 var _reading: Label = ScreenKit.label("", 20)
 var _reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _shown_coupons: float = 0.0
+## The state store's Directives; the black market issues none.
+var _directives: DirectiveRow = null
 
 
 func open(app: DemoApp) -> void:
@@ -81,7 +84,12 @@ func open(app: DemoApp) -> void:
 		_stall.add_theme_constant_override("separation", 10)
 		column.add_child(ScreenKit.row([_counter, _stall], 48))
 	else:
-		column.add_child(_counter)
+		# Beside the Cadres, as the market's plot cards are: below them is no room at 16:9.
+		_directives = DirectiveRow.new()
+		_directives.setup(app.controller, _desk, is_buying)
+		_directives.spent.connect(_on_directive_spent)
+		_directives.settled.connect(_refresh)
+		column.add_child(ScreenKit.row([_counter, _directives], 48))
 	_reroll.pressed.connect(_on_reroll)
 	var leave: Button = ScreenKit.button(
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
@@ -138,6 +146,8 @@ func _refresh() -> void:
 		_shown_resentment = state.resentment
 		_show_upgrades()
 		_show_stall()
+	else:
+		_directives.show_offers()
 	_board.show_cadres(controller)
 
 
@@ -188,7 +198,7 @@ func _item(slot: int, cadre_id: String) -> Control:
 ## Buys the Cadre in a slot and acts it out: the coupons roll down, the card is sealed,
 ## then it shrinks away to its place on the board. Reduced motion skips to the result.
 func _buy(slot: int, panel: Control) -> void:
-	if _busy:
+	if is_issuing():
 		return
 	var controller: RunController = _app.controller
 	var held: int = controller.state_copy().inventory.cadres.size()
@@ -233,6 +243,19 @@ func _pinned(slot: int) -> void:
 ## True while a purchase is being acted out, for tests.
 func is_buying() -> bool:
 	return _busy
+
+
+## True while a Cadre purchase or a Directive's issue is being acted out.
+func is_issuing() -> bool:
+	return _busy or (_directives != null and _directives.is_busy())
+
+
+## A Directive was paid for: the coupons roll down while its document is acted out.
+func _on_directive_spent() -> void:
+	var coupons: int = _app.controller.state_copy().coupons
+	UiMotion.count(_coupons, _shown_coupons, coupons, _coupon_text)
+	_shown_coupons = coupons
+	UiMotion.pulse(_coupons)
 
 
 ## Shows a Cadre's name and rules on the reading line; an empty line takes no space.
@@ -319,7 +342,7 @@ func _show_stall() -> void:
 
 
 func _buy_card(slot: int) -> void:
-	if _busy:
+	if is_issuing():
 		return
 	_app.controller.plot_card(slot)
 	Audio.play(AudioEvents.STORE_BUY)
@@ -327,7 +350,7 @@ func _buy_card(slot: int) -> void:
 
 
 func _upgrade(kind: String) -> void:
-	if _busy:
+	if is_issuing():
 		return
 	_app.controller.upgrade(kind)
 	Audio.play(AudioEvents.STORE_BUY)
@@ -336,7 +359,7 @@ func _upgrade(kind: String) -> void:
 
 func _on_reroll() -> void:
 	# A reroll frees the counter's cards, so it waits for a purchase being acted out.
-	if _busy:
+	if is_issuing():
 		return
 	if market:
 		_app.controller.market_reroll()
@@ -346,6 +369,10 @@ func _on_reroll() -> void:
 	var fresh: Array[Control] = []
 	for child: Node in _counter.get_children():
 		fresh.append(child as Control)
+	if _directives != null:
+		for child: Node in _directives.get_children():
+			if child is PanelContainer:
+				fresh.append(child as Control)
 	UiMotion.enter(fresh)
 
 

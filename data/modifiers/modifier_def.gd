@@ -22,6 +22,8 @@ const PERCENT: float = 100.0
 @export var parameters: Dictionary[String, int]
 @export var rarity: int
 @export var cost: int
+## Finished runs needed before it is offered (ADR 0021, read from P4.14).
+@export var unlock_tier: int = 0
 @export var name_key: String
 @export var text_key: String
 ## True when the effect changes every seat's play, not only its holder's.

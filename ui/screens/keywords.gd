@@ -16,6 +16,8 @@ const TERMS: PackedStringArray = [
 	"kicker",
 	"bomb",
 	"rocket",
+	"stamp",
+	"model",
 	"quota",
 	"norm",
 	"audit",

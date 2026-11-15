@@ -28,6 +28,8 @@ const FORBIDDEN_WORDS: PackedStringArray = [
 	"player_market_reroll",
 	"player_upgrade",
 	"player_plot_card",
+	"player_directive",
+	"CardMarks",
 	"RunShop",
 	"PlotStall",
 	"PlotUpgrades",

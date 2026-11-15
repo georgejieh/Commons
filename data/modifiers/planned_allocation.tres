@@ -13,5 +13,6 @@ hooks = Array[String](["on_deal"])
 parameters = Dictionary[String, int]({"rank": 12, "percent": 200})
 rarity = 1
 cost = 5
+unlock_tier = 2
 name_key = "modifier.planned_allocation.name"
 text_key = "modifier.planned_allocation.text"

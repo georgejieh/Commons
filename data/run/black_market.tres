@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 slots = 3
+directive_slots = 0
 cadre_slots = 5
 reroll_base = 3
 reroll_step = 2

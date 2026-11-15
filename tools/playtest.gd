@@ -28,6 +28,7 @@ var _driver: Object
 var _toured: bool = false
 var _resumed: bool = false
 var _bought: int = 0
+var _issued: bool = false
 
 
 func _initialize() -> void:
@@ -87,6 +88,7 @@ func _step() -> void:
 		"store":
 			await _shot("store")
 			await _buy_one()
+			await _issue_one()
 			await _click_button_with_text(tr("market.open"))
 			await _shot("black_market")
 			await _click_button_with_text(tr("market.back"))
@@ -189,6 +191,36 @@ func _buy_one() -> void:
 			await _frames(30)
 			_bought += 1
 			await _shot("store_bought")
+			return
+
+
+## Photographs the Directive column, its "Issued" seal pressed by hand on the first
+## document, then issues the first Directive the coupons allow and photographs the seal,
+## the Rates ticking and the document leaving. Once a run.
+func _issue_one() -> void:
+	if _issued:
+		return
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	var row: Control = screen.get("_directives")
+	if row == null or row.get_child_count() < 2:
+		return
+	_issued = true
+	await _shot("store_directives")
+	var seal: Control = row.call("seal")
+	var first: Control = row.get_child(1)
+	seal.global_position = first.global_position + first.size / 2.0 - seal.size / 2.0
+	seal.call("press")
+	await _snap("store_directive_seal")
+	seal.hide()
+	for child: Node in row.find_children("*", "Button", true, false):
+		var button: Button = child as Button
+		if button.theme_type_variation == "CouponButton" and not button.disabled:
+			await _press(button)
+			for frame: int in 5:
+				await _snap("store_issuing_%d" % frame)
+			await _frames(30)
+			await _shot("store_issued")
 			return
 
 

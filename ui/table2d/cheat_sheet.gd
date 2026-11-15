@@ -1,6 +1,7 @@
 class_name CheatSheet
 extends Control
-## The always-available rules card (P3B.5): every hand type with a small example, the
+## The always-available rules card (P3B.5): every hand type with a small example and its
+## Rate at the run's level for it, naming the level once a Directive has raised it, the
 ## rule changes active now, and the current rank order, low to high. While open it
 ## redraws on every run event, so a changed rule shows the frame it changes.
 
@@ -28,6 +29,8 @@ const DIM: Color = Color(0.05, 0.03, 0.02, 0.72)
 
 var _controller: RunController
 var _types: GridContainer = GridContainer.new()
+## Each hand type's Rate, in TYPES order.
+var _rates: Array[Label] = []
 var _active: Label = Label.new()
 var _order: Label = Label.new()
 
@@ -44,10 +47,10 @@ func _ready() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(center)
-	var sheet: VBoxContainer = ScreenKit.card(Vector2(900, 0))
+	var sheet: VBoxContainer = ScreenKit.card(Vector2(1100, 0))
 	sheet.add_theme_constant_override("separation", 14)
 	sheet.add_child(ScreenKit.header(tr("cheat.eyebrow"), tr("cheat.title"), ScreenKit.INK))
-	_types.columns = 4
+	_types.columns = 6
 	_types.add_theme_constant_override("h_separation", 28)
 	_types.add_theme_constant_override("v_separation", 6)
 	sheet.add_child(_types)
@@ -100,6 +103,12 @@ func refresh() -> void:
 			example.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 			example.autowrap_mode = TextServer.AUTOWRAP_OFF
 			_types.add_child(example)
+			var rate: Label = ScreenKit.label("", 20, Color(Keywords.INKS["rate"]))
+			rate.autowrap_mode = TextServer.AUTOWRAP_OFF
+			_types.add_child(rate)
+			_rates.append(rate)
+	for index: int in TYPES.size():
+		_rates[index].text = _rate_text(index + 1)
 	var active: PackedStringArray = []
 	for modifier_id: String in _controller.active_modifier_ids():
 		active.append(
@@ -112,6 +121,21 @@ func refresh() -> void:
 		active.append(tr("cheat.none"))
 	_active.text = "\n".join(active)
 	_order.text = tr("cheat.order").format({"order": " < ".join(_rank_order())})
+
+
+## A hand type's Rate at the run's level for it, with the level once it is above the
+## first. type is a Pattern.Type value.
+func _rate_text(type: int) -> String:
+	var level: int = _controller.hand_level(type)
+	var rate: int = _controller.hand_rate(type, level)
+	if level > 1:
+		return tr("cheat.rate.level").format({"rate": rate, "level": level})
+	return tr("cheat.rate").format({"rate": rate})
+
+
+## The Rate shown for a hand type, a Pattern.Type value, for tests.
+func rate_text(type: int) -> String:
+	return _rates[type - 1].text
 
 
 func rank_order_text() -> String:

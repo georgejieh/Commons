@@ -258,9 +258,14 @@ func test_reeducation_can_exchange_for_a_private_cadre() -> void:
 
 func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
 	var loop: RunLoop = _at_the_shops(19)
-	# The state store has as many Cadres as slots, so a reroll would only reorder them.
+	# The state store has as many Cadres as slots, so a reroll would only reorder them,
+	# but it has more Directives than their slots, and those it redraws.
 	assert_int(STORE_POOL.cadres.size()).is_less_equal(STORE.slots)
-	assert_bool(loop.shop.reroll_changes()).is_false()
+	var cadres_only: RunShop = RunShop.new(loop.state, STORE, STORE_POOL.cadres)
+	cadres_only.open()
+	assert_bool(cadres_only.reroll_changes()).is_false()
+	assert_int(RunLoop.DEFAULT_DIRECTIVES.directives.size()).is_greater(STORE.directive_slots)
+	assert_bool(loop.shop.reroll_changes()).is_true()
 	assert_bool(loop.market.reroll_changes()).is_true()
 
 

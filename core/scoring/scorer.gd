@@ -1,7 +1,9 @@
 class_name Scorer
 extends RefCounted
 ## Scores a play as Grain × Rate × Zeal (ADR 0020). Grain is the scored cards' values
-## plus additive Grain from hooks; kickers don't score. Rate comes from the hand type and
+## plus additive Grain from hooks; kickers don't score. A Model card's own value is
+## raised by the data's percent before any hook sees it, for whoever scores it
+## (ADR 0021). Rate comes from the hand type and
 ## its level alone, under a hook's Rate cap. Zeal starts at 1 and changes only through
 ## hooks: additive Zeal, then multiplicative Zeal, never below the data's minimum.
 
@@ -10,6 +12,7 @@ const DEFAULT_PARAMS: ScoreParams = preload("res://data/scoring/default_scoring.
 const MAX_SCORE: float = 1e300
 ## Every play's Zeal before hooks change it.
 const STARTING_ZEAL: float = 1.0
+const PERCENT: float = 100.0
 
 
 static func score_play(
@@ -31,6 +34,8 @@ static func score_play(
 	for card: CardInstance in cards:
 		if _is_scored(card, pattern):
 			var base: float = params.card_grain[card.base_rank()]
+			if card.enhancement_id() == CardInstance.MODEL:
+				base = base * params.model_grain_percent / PERCENT
 			var context: CardContext = CardContext.new(seat, is_landlord, card, base)
 			stack.run_card_scored(context)
 			breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)

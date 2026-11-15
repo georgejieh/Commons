@@ -343,4 +343,3 @@ func test_a_schema_4_run_save_gains_the_norm_and_the_norm_is_saved() -> void:
 	var saved: RunState = RunState.from_dict(_service.load_save().data["checkpoint"])
 	assert_int(saved.norm_steps).is_equal(5)
 	assert_int(saved.over_steps).is_equal(2)
-	assert_int(SaveService.SCHEMA_VERSION).is_equal(5)

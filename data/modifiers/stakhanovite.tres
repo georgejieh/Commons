@@ -13,5 +13,6 @@ hooks = Array[String](["play_scored"])
 parameters = Dictionary[String, int]({"zeal_percent_per_card": 50, "base_length": 5})
 rarity = 1
 cost = 5
+unlock_tier = 0
 name_key = "modifier.stakhanovite.name"
 text_key = "modifier.stakhanovite.text"

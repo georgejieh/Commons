@@ -29,6 +29,8 @@ const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
 const DEFAULT_MARKET: CadrePool = preload("res://data/run/market_pool.tres")
 const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
 const DEFAULT_BLACK_MARKET: ShopParams = preload("res://data/run/black_market.tres")
+## The Directives the state store sells (ADR 0021).
+const DEFAULT_DIRECTIVES: DirectivePool = preload("res://data/run/directive_pool.tres")
 const DEFAULT_PLOT_UPGRADES: PlotUpgradeParams = preload("res://data/run/plot_upgrades.tres")
 const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
@@ -87,11 +89,17 @@ func _init(
 	var known: Array[ModifierDef] = pool + all_cadres()
 	for definition: ModifierDef in known + DEFAULT_BOSSES.all():
 		_pool_by_id[definition.id] = definition
-	shop = RunShop.new(state, DEFAULT_SHOP, DEFAULT_CADRES.cadres, meters.rationing_shop_cut)
+	shop = RunShop.new(
+		state,
+		DEFAULT_SHOP,
+		DEFAULT_CADRES.cadres,
+		meters.rationing_shop_cut,
+		DEFAULT_DIRECTIVES.directives
+	)
 	market = RunShop.new(state, DEFAULT_BLACK_MARKET, DEFAULT_MARKET.cadres)
 	stall = PlotStall.new(state, DEFAULT_PLOT_UPGRADES, params)
 	_table = SeatRules.new(_stack)
-	_scoring = RoundScoring.new(HandLevels.new(Scorer.DEFAULT_PARAMS.max_level), _stack)
+	_scoring = RoundScoring.new(state.hand_levels, _stack)
 
 
 ## Every Cadre either shop sells: the collective ones and the private ones.
@@ -294,6 +302,8 @@ func open_shop() -> Reason:
 	shop.open()
 	market.open()
 	stall.open()
+	# Last on the shop stream, so Directives change none of the stock drawn before them.
+	shop.stock_directives()
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -304,6 +314,11 @@ func player_buy(slot: int) -> Reason:
 
 func player_reroll() -> Reason:
 	return _shop_command({"type": "reroll"}, shop.reroll)
+
+
+## Issues a Directive from the state store: its hand types rise a level at once.
+func player_directive(slot: int) -> Reason:
+	return _shop_command({"type": "directive", "slot": slot}, shop.buy_directive.bind(slot))
 
 
 ## Buys from the black market. Every purchase there is a private one, and adds
@@ -390,6 +405,8 @@ func _deal_cards() -> void:
 	var cards: Array[CardInstance] = []
 	for deck_id: int in Deck.generate():
 		cards.append(CardInstance.from_deck_id(deck_id))
+	# The deck is built fresh, so the marks saved on its cards go back on (ADR 0021).
+	state.card_marks.apply(cards)
 	_deal = Dealer.deal(cards, state.streams.stream(RandomStreams.DEAL))
 	var stream: RandomStream = state.streams.stream(RandomStreams.DEAL)
 	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream))

@@ -13,5 +13,6 @@ hooks = Array[String](["play_scored"])
 parameters = Dictionary[String, int]({"grain": 30, "rate_cap": 20})
 rarity = 0
 cost = 4
+unlock_tier = 0
 name_key = "modifier.iron_rice_bowl.name"
 text_key = "modifier.iron_rice_bowl.text"

@@ -1,10 +1,11 @@
 class_name CardView
 extends Control
 ## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
-## a picture, enhancement overlay, seal and owner stamp. A number card shows its suit
-## faintly in the corner; a court card or joker is a picture card, its art filling the
-## face and fading to bare card stock in the corner, where the rank and suit are printed
-## straight on, as on a playing card.
+## a picture, enhancement overlay, seal, and the marks that outlast a round: a red
+## chop in the bottom left for an owner's stamp, a gold rosette top right for a Model
+## card. A number card shows its suit faintly in the corner; a court card or joker is a
+## picture card, its art filling the face and fading to bare card stock in the corner,
+## where the rank and suit are printed straight on, as on a playing card.
 ## A note under the index says when a debuff makes the card rank as another. The parts
 ## come from CardArt, so no face is baked. bind() is the only way to show a card; views
 ## come from CardPool and are reused, never instanced during a round.
@@ -39,6 +40,10 @@ const FADE_SOLID: float = 0.45
 ## A paper edge around a picture card's rank, so it reads over any art.
 const RANK_OUTLINE: int = 6
 const NOTE_COLOR: Color = Color("9e1b16")
+## Where the marks sit: the chop below the rank note, the rosette in the corner the rank
+## glyph leaves free, both inside the selection edge.
+const CHOP_AT: Vector2 = Vector2(9, 130)
+const ROSETTE_AT: Vector2 = Vector2(84, 9)
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -63,6 +68,8 @@ static var art_override: CardArt = null
 var card_id: int = -1
 
 var _cursor_mark: ColorRect = ColorRect.new()
+var _chop: CardMark = CardMark.new(CardMark.Kind.STAMP)
+var _rosette: CardMark = CardMark.new(CardMark.Kind.MODEL)
 
 ## Every tween moving this view, so a reused view can stop them all.
 var _tweens: Array[Tween] = []
@@ -75,7 +82,6 @@ var _tweens: Array[Tween] = []
 @onready var _rank_note: Label = $Frame/RankNote
 @onready var _enhancement: ColorRect = $Frame/Enhancement
 @onready var _seal: Label = $Frame/Seal
-@onready var _stamp: Label = $Frame/Stamp
 @onready var _highlight: Panel = $Highlight
 
 
@@ -100,6 +106,10 @@ func _ready() -> void:
 	_rank_note.add_theme_stylebox_override("normal", tag)
 	_index.texture = _corner_fade()
 	_rank.add_theme_color_override("font_outline_color", STOCK)
+	for mark: CardMark in [_chop, _rosette]:
+		_frame.add_child(mark)
+	_chop.position = CHOP_AT
+	_rosette.position = ROSETTE_AT
 
 
 ## The card parts in use.
@@ -150,9 +160,11 @@ func bind(card: CardInstance) -> void:
 	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
 	_rank.add_theme_color_override("font_color", RED if red else INK)
-	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID
+	var model: bool = card.enhancement_id() == CardInstance.MODEL
+	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID and not model
+	_rosette.visible = model
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
-	_stamp.visible = card.owner_stamp() != CardInstance.NO_OWNER
+	_chop.visible = card.owner_stamp() != CardInstance.NO_OWNER
 	set_rank_note("")
 	set_marked(false, false)
 
@@ -165,6 +177,15 @@ func set_rank_note(text: String) -> void:
 
 func rank_note() -> String:
 	return _rank_note.text if _rank_note.visible else ""
+
+
+## The marks shown, for tests and playtests: a stamp's chop, a Model card's rosette.
+func shows_stamp() -> bool:
+	return _chop.visible
+
+
+func shows_model() -> bool:
+	return _rosette.visible
 
 
 ## True when the face is a picture card: art over the whole face under a corner index.
