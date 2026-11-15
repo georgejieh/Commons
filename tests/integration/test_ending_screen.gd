@@ -271,12 +271,61 @@ func test_the_runs_end_reaches_the_ending_and_the_demo_keeps_its_closing() -> vo
 	assert_str(_app.screen_for(RunController.AWAIT_RUN_OVER)).is_equal("ending")
 
 
+## Every ending and death shows its picture whole, at its own shape, inside the printed
+## frame, with the title under the frame, at both screen sizes.
+func test_every_ending_hangs_its_picture_in_the_frame_with_the_title_below() -> void:
+	Settings.set_value("reduced_motion", true)
+	for screen_size: Vector2i in SIZES:
+		get_tree().root.size = screen_size
+		for outcome: String in CASES:
+			var screen: EndingScreen = _finish(outcome)
+			await await_idle_frame()
+			await await_idle_frame()
+			var where: String = "%s %s" % [outcome, screen_size]
+			assert_bool(ScreenKit.ART.has_ending(outcome)).override_failure_message(where).is_true()
+			var pictures: Array[Node] = screen.find_children(
+				"EndingPicture", "TextureRect", true, false
+			)
+			assert_int(pictures.size()).override_failure_message(where).is_equal(1)
+			var art: TextureRect = pictures[0]
+			assert_object(art.texture).override_failure_message(where).is_not_null()
+			var frames: Array[Node] = screen.find_children("*", "ArtFrame", true, false)
+			assert_int(frames.size()).override_failure_message(where).is_equal(1)
+			var frame: Rect2 = (frames[0] as Control).get_global_rect()
+			var shown: Rect2 = art.get_global_rect()
+			assert_bool(frame.grow(SLACK).encloses(shown)).override_failure_message(where).is_true()
+			var picture: Vector2 = Vector2(art.texture.get_size())
+			var box: float = shown.size.x / shown.size.y
+			# The frame fits the picture, so the picture fills it at its own shape.
+			assert_float(box).override_failure_message(where).is_equal_approx(
+				picture.x / picture.y, 0.06
+			)
+			var title: Label = _title_label(screen, _app.controller.ending().title)
+			(
+				assert_float(title.get_global_rect().position.y)
+				. override_failure_message(where)
+				. is_greater_equal(frame.end.y - SLACK)
+			)
+
+
+func _title_label(screen: EndingScreen, text: String) -> Label:
+	for label: Label in _labels(screen):
+		if label.text == text:
+			return label
+	return null
+
+
 ## Until an ending has its picture, its title sits in the printed frame at the top.
 func test_an_ending_without_art_sets_its_title_in_the_frame() -> void:
 	Settings.set_value("reduced_motion", true)
+	var art: ArtLibrary = ScreenKit.ART
+	var endings: Dictionary[String, String] = art.endings
+	var kept: String = endings["full_granary"]
+	endings.erase("full_granary")
 	var screen: EndingScreen = _finish("full_granary")
 	await await_idle_frame()
-	assert_object(ScreenKit.ART.ending("full_granary")).is_null()
+	endings["full_granary"] = kept
+	assert_int(screen.find_children("EndingPicture", "TextureRect", true, false).size()).is_equal(0)
 	assert_int(screen.find_children("*", "ArtFrame", true, false).size()).is_equal(1)
 	# No face here holds the seal's characters, so Struggled's seal is left out, not boxed.
 	assert_bool(HanziSeal.can_draw("斗地主")).is_equal(ScreenKit.ART.hanzi_font != null)

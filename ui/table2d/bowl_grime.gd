@@ -21,15 +21,16 @@ const BLOTCHES: Vector2i = Vector2i(4, 11)
 const SCRATCHES: Vector2i = Vector2i(2, 7)
 
 
-## How worn things are now, from BASE_WEAR at stage 0 to 1 at the last stage.
+## How worn things are now, from BASE_WEAR at stage 0 to 1 at the last stage, for the
+## stage the art shows (capped by the horror-intensity setting).
 static func wear() -> float:
 	var last: float = maxf(BoardState.CORRUPTION_STAGES - 1.0, 1.0)
-	return lerpf(BASE_WEAR, 1.0, clampf(ArtStages.stage() / last, 0.0, 1.0))
+	return lerpf(BASE_WEAR, 1.0, clampf(ArtStages.art_stage() / last, 0.0, 1.0))
 
 
 ## True once the stage is deep enough for the 1 to be an eye.
 static func watching() -> bool:
-	return ArtStages.stage() >= EYE_STAGE
+	return ArtStages.art_stage() >= EYE_STAGE
 
 
 ## A clean colour as it looks after years of handling: pulled toward bone and dulled.

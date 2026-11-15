@@ -6,6 +6,8 @@ extends RefCounted
 
 const HISTORY_CAP: int = 50
 const CORRUPTION_MAX: float = 100.0
+## A key written since schema 2 began: a profile from before it reads it from its history.
+const LANDLORD_ENDINGS_KEY: String = "landlord_endings"
 ## Keys every schema 2 profile holds.
 const KEYS: Array[String] = [
 	"memory",
@@ -28,6 +30,9 @@ var generation: int = 0
 ## Full runs that reached an ending or a death, and those that survived the last Year.
 var finished_runs: int = 0
 var wins: int = 0
+## Full runs that ended in a landlord's ending, not a death. Kept as a count, so an unlock
+## that depends on one outlives the history's cap.
+var landlord_endings: int = 0
 ## One entry per finished full run, newest last, at most HISTORY_CAP.
 var history: Array[HistoryEntry] = []
 ## What the last finished run left the next one: a kind and its values, empty for none.
@@ -56,6 +61,9 @@ static func from_dict(data: Dictionary) -> ProfileData:
 	profile.wins = int(data["wins"])
 	for entry: Dictionary in data["history"]:
 		profile.history.append(HistoryEntry.from_dict(entry))
+	profile.landlord_endings = int(
+		data.get(LANDLORD_ENDINGS_KEY, profile.history_landlord_endings())
+	)
 	var lineage: Dictionary = data["lineage"]
 	var values: Dictionary = lineage["values"]
 	profile.lineage_kind = str(lineage["kind"])
@@ -79,6 +87,7 @@ func to_dict() -> Dictionary:
 		"generation": generation,
 		"finished_runs": finished_runs,
 		"wins": wins,
+		"landlord_endings": landlord_endings,
 		"history": entries,
 		"lineage": {"kind": lineage_kind, "values": lineage_values.duplicate(true)},
 		"stake": stake,
@@ -101,6 +110,16 @@ func add_history(entry: HistoryEntry) -> void:
 		history.pop_front()
 
 
+## The landlord endings the history holds, which a profile from before the count began
+## starts from.
+func history_landlord_endings() -> int:
+	var count: int = 0
+	for entry: HistoryEntry in history:
+		if entry.class_id == HistoryEntry.LANDLORD and not Endings.is_death(entry.outcome):
+			count += 1
+	return count
+
+
 ## A whole number from 0, as JSON reads one.
 static func is_count(value: Variant) -> bool:
 	return (value is int or value is float) and value >= 0 and value == floorf(value)
@@ -116,6 +135,8 @@ static func is_valid(data: Dictionary) -> bool:
 	for key: String in ["generation", "finished_runs", "wins", "stake"]:
 		if not is_count(data[key]):
 			return false
+	if data.has(LANDLORD_ENDINGS_KEY) and not is_count(data[LANDLORD_ENDINGS_KEY]):
+		return false
 	if not _history_valid(data["history"]):
 		return false
 	if not _lineage_valid(data["lineage"]) or not _committed_valid(data["committed"]):

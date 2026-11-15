@@ -8,7 +8,9 @@ extends RefCounted
 ## finished runs, wins, history, lineage and stake; any run that writes the profile keeps
 ## its memory. The lineage is taken the same way: the run that inherits it clears it in
 ## the write that makes it the next generation, so no run takes it twice, and a new one
-## is written only with the finished run's record.
+## is written only with the finished run's record. Corruption goes with the memory: a
+## full run's Quota adds its events once, and The Commons sets it to 0 with the run's
+## record, after the last Quota, so nothing of that run outlives the reset (ADR 0025).
 
 
 ## A full run starting is the family's next generation. Writes the profile, and the
@@ -51,8 +53,12 @@ static func _take_quota(data: ProfileData, state: RunState) -> bool:
 	var quota: int = quota_number(state)
 	if data.committed_run == state.identity.id and quota <= data.committed_quota:
 		return false
+	# A run already recorded has nothing more to give, so a reset is never undone.
+	if data.has_run(state.identity.id):
+		return false
 	data.memory = VillageMemory.from_dict(state.memory.to_dict())
-	# Corruption's events for the Quota are applied here once they exist (ADR 0025, step 5).
+	if state.identity.is_full():
+		data.corruption = CorruptionEvents.added(data.corruption, state.quota_corruption)
 	data.committed_run = state.identity.id
 	data.committed_quota = quota
 	return true
@@ -61,6 +67,11 @@ static func _take_quota(data: ProfileData, state: RunState) -> bool:
 static func _record(data: ProfileData, state: RunState) -> void:
 	var outcome: String = Endings.outcome(state, RunLoop.DEFAULT_METERS)
 	data.finished_runs += 1
+	if outcome == Endings.THE_COMMONS:
+		data.corruption = 0.0
+	var landlord: bool = YearClass.is_landlord(state)
+	if landlord and not Endings.is_death(outcome):
+		data.landlord_endings += 1
 	if not Endings.is_death(outcome):
 		data.wins += 1
 		# A win at the highest stake unlocked opens the next, up to the last.
@@ -73,7 +84,7 @@ static func _record(data: ProfileData, state: RunState) -> void:
 	entry.run_id = state.identity.id
 	entry.generation = state.identity.generation
 	entry.outcome = outcome
-	entry.class_id = HistoryEntry.LANDLORD if YearClass.is_landlord(state) else HistoryEntry.PEASANT
+	entry.class_id = HistoryEntry.LANDLORD if landlord else HistoryEntry.PEASANT
 	entry.year = state.year
 	entry.household = state.identity.household
 	entry.stake = state.identity.stake

@@ -18,6 +18,13 @@ const STEP_FRAMES: int = 4
 const SETTLE_SECONDS: float = 1.2
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
+## The longest a wait on something the table does may take, in real seconds: generous,
+## since a headless run and a software-rendered one go at different paces.
+const WAIT_SECONDS: float = 20.0
+## The profile corruption values the table is photographed at: stages 0, 3, 6 and 9.
+const CORRUPTION_VALUES: Array[int] = [5, 35, 65, 95]
+## How many rounds the Night Shift sandbox's Quota may run, so its refusal comes.
+const NIGHT_SHIFT_ROUNDS: int = 12
 const SAVE_PATH: String = "user://playtest/run.json"
 ## Corruption stages the dice bowl is photographed at, settled on a 1 and a 4.
 const BOWL_STAGES: Array[int] = [0, 3, 6, 9]
@@ -223,8 +230,7 @@ func _play_turn(table: Node, controller: Node) -> void:
 		await _click_card(table, card_id)
 		_clicks += 1
 		if not hand.call("is_selected", card_id):
-			_misclicks += 1
-			print("MISCLICK round %d turn %d card %d" % [_rounds_seen, _turns_in_round, card_id])
+			_fail("MISCLICK round %d turn %d card %d" % [_rounds_seen, _turns_in_round, card_id])
 	await _frames(2)
 	var play: Button = actions.get("play")
 	if play.disabled:
@@ -440,8 +446,7 @@ func _envelope_frames() -> void:
 		await _snap("envelope_opening_%d" % frame)
 	var overlay: Object = stall.call("overlay")
 	if overlay == null:
-		_misclicks += 1
-		print("ENVELOPE DID NOT OPEN")
+		_fail("ENVELOPE DID NOT OPEN")
 		return
 	await _settled(overlay)
 	await _shot("envelope_choices")
@@ -458,8 +463,7 @@ func _envelope_frames() -> void:
 	await _snap("envelope_kept")
 	await create_timer(2.6).timeout
 	if bool(stall.call("is_busy")):
-		_misclicks += 1
-		print("ENVELOPE STILL OPEN")
+		_fail("ENVELOPE STILL OPEN")
 
 
 ## The black market's Parcel, once a run, in a sandbox put back after: its offer with
@@ -556,6 +560,12 @@ func _debuff_frames() -> void:
 		var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
 		params.targets = params.targets.duplicate()
 		params.targets.fill(1e9)
+		if debuff_id == "night_shift":
+			# Night Shift needs a round where the player's first chance to pass meets a play
+			# they can beat; a long Quota makes sure one comes.
+			params.max_rounds = NIGHT_SHIFT_ROUNDS
+			while loop.state.debuff_ladder.size() < NIGHT_SHIFT_ROUNDS:
+				loop.state.debuff_ladder.append(RunState.NO_DEBUFF)
 		loop.set("_sets", SetConfig.new(params))
 		_force_debuff(loop, debuff_id)
 		await _debuff_beat(debuff_id, controller)
@@ -590,16 +600,11 @@ func _debuff_beat(debuff_id: String, controller: Object) -> void:
 		await _snap("table_confiscation_0")
 		await _shot("table_confiscation")
 		return
-	for _bid: int in 12:
-		if int(controller.call("awaiting")) != 1:
-			break
-		var actions: Object = _table_part("actions")
-		if actions != null:
-			await _press(actions.get("decline"))
-		await _frames(2)
+	var before: Array[int] = _beats_now()
+	await _decline_bids(controller, debuff_id)
 	match debuff_id:
 		"levy", "redistribution", "plot_seized":
-			if not await _beat_seen(debuff_id):
+			if not await _until(_beat_counted.bind(before)):
 				_fail("NO BEAT %s" % debuff_id)
 				return
 			for frame: int in 3:
@@ -611,21 +616,49 @@ func _debuff_beat(debuff_id: String, controller: Object) -> void:
 			await _night_shift_frame(controller)
 
 
-## Waits, a few seconds at most, until the table plays the debuff's beat: cards in flight,
-## or the seized card torn. The table is looked up each frame, as a round may build it
-## afresh.
-func _beat_seen(debuff_id: String) -> bool:
-	for _frame: int in 900:
-		var beats: Object = _table_part("_debuff_beats")
-		if beats != null:
-			var torn: CanvasItem = beats.get("torn")
-			var seen: bool = bool(beats.call("is_playing"))
-			if debuff_id == "plot_seized":
-				seen = torn.visible
-			if seen:
-				return true
-		await _frames(1)
-	return false
+## Declines every bid put to the player until the round is in play, each once the bid
+## bar shows, waiting on conditions in real seconds.
+func _decline_bids(controller: Object, debuff_id: String) -> void:
+	var deadline: int = Time.get_ticks_msec() + int(WAIT_SECONDS * 1000.0)
+	while int(controller.call("awaiting")) == 1 and Time.get_ticks_msec() < deadline:
+		await _until(_decline_ready.bind(controller))
+		var actions: Object = _table_part("actions")
+		if actions != null and int(controller.call("awaiting")) == 1:
+			await _press(actions.get("decline"))
+		await _frames(2)
+	if int(controller.call("awaiting")) == 1:
+		_fail("BID NOT DECLINED %s" % debuff_id)
+
+
+## True once the bid is no longer the player's, or its bar shows with the table at rest.
+func _decline_ready(controller: Object) -> bool:
+	if int(controller.call("awaiting")) != 1:
+		return true
+	var actions: Object = _table_part("actions")
+	if actions == null or not _events_idle():
+		return false
+	var decline: Button = actions.get("decline")
+	return decline != null and decline.is_visible_in_tree()
+
+
+## The table on screen and how many debuff beats it has acted out: [its ID, the count],
+## or [0, 0] off the table.
+func _beats_now() -> Array[int]:
+	var beats: Object = _table_part("_debuff_beats")
+	var switcher: Object = _app.get("switcher")
+	var screen: Object = switcher.call("current")
+	if beats == null:
+		return [0, 0]
+	return [screen.get_instance_id(), int(beats.get("beats_played"))]
+
+
+## True once a beat has played since before was taken, on that table or a new one. A beat
+## counts when it starts, so one that has already ended is still seen.
+func _beat_counted(before: Array[int]) -> bool:
+	var now: Array[int] = _beats_now()
+	if now[0] == 0:
+		return false
+	return now[1] > (before[1] if now[0] == before[0] else 0)
 
 
 ## Plays on, round after round, until the player's first chance to pass meets something
@@ -676,27 +709,30 @@ func _struck_on_board() -> bool:
 
 ## Counts a step the tool could not take, with its reason, so the run fails on it.
 func _fail(reason: String) -> void:
-	print(reason)
+	print("MISS %s" % reason)
 	_misclicks += 1
 
 
-## Waits until ready says so, a few seconds at most. ready looks up what it reads each
-## time, so it never holds a node a new round may free.
-func _until(ready: Callable) -> void:
-	var waited: int = 0
-	while ready.is_valid() and not bool(ready.call()) and waited < 400:
+## Waits until ready says so, at most seconds of real time, and says whether it did.
+## ready looks up what it reads each time, so it never holds a node a new round may free.
+func _until(ready: Callable, seconds: float = WAIT_SECONDS) -> bool:
+	var deadline: int = Time.get_ticks_msec() + int(seconds * 1000.0)
+	while ready.is_valid() and not bool(ready.call()):
+		if Time.get_ticks_msec() > deadline:
+			return false
 		await _frames(1)
-		waited += 1
 	if not ready.is_valid():
 		_fail("WAIT LOST ITS SUBJECT")
+		return false
+	return true
 
 
 ## Waits until an opened envelope's papers are at rest.
 func _settled(overlay: Object) -> void:
-	var waited: int = 0
-	while overlay != null and bool(overlay.call("is_busy")) and waited < 600:
-		await _frames(1)
-		waited += 1
+	if overlay == null:
+		return
+	if not await _until(func() -> bool: return not bool(overlay.call("is_busy"))):
+		_fail("ENVELOPE NEVER SETTLED")
 
 
 ## The first Keep that can be pressed, or Take Nothing.
@@ -739,8 +775,7 @@ func _ending_frames() -> void:
 	await _frames(20)
 	var switcher: Object = _app.get("switcher")
 	if switcher.call("current_id") != "title":
-		_misclicks += 1
-		print("ENDING DID NOT GO HOME")
+		_fail("ENDING DID NOT GO HOME")
 	saves.call("save", snapshot)
 	_app.call("resume_to_screen")
 	await _frames(30)
@@ -760,6 +795,9 @@ func _full_run_frames() -> void:
 	var profile: SaveService = root.get_node("Saves").call("profile_service")
 	var kept: Dictionary[String, String] = _keep_files(profile)
 	await _meta_frames(profile)
+	await _history_frames(profile)
+	await _card_back_frames(profile)
+	await _corruption_frames(profile)
 	Profile.write(profile, ProfileData.new())
 	_app.call("show_screen", "title", true)
 	await _frames(20)
@@ -836,6 +874,77 @@ func _meta_frames(profile: SaveService) -> void:
 	await _click_button_with_text(tr("coll.back"))
 
 
+## The village history for a profile handed four finished runs, newest first: one with
+## families dead, one a death, both classes.
+func _history_frames(profile: SaveService) -> void:
+	var data: ProfileData = ProfileData.new()
+	var runs: Array[Array] = [
+		[1, Endings.SECRET_CONTRACT, HistoryEntry.PEASANT, []],
+		[2, Endings.LEAN_YEARS, HistoryEntry.PEASANT, [0, 3]],
+		[3, Endings.DEATH_FAMINE, HistoryEntry.LANDLORD, []],
+		[4, Endings.BENEVOLENT_LANDLORD, HistoryEntry.LANDLORD, [5]],
+	]
+	for values: Array in runs:
+		var entry: HistoryEntry = HistoryEntry.new()
+		entry.run_id = "playtest-%d" % values[0]
+		entry.generation = values[0]
+		entry.outcome = values[1]
+		entry.class_id = values[2]
+		entry.year = 3 if Endings.is_death(entry.outcome) else 8
+		for family: int in values[3]:
+			entry.dead.append(RunLoop.DEFAULT_VILLAGE.families[family].name_key)
+		data.add_history(entry)
+	data.finished_runs = runs.size()
+	Profile.write(profile, data)
+	_app.call("show_screen", "title", true)
+	await _frames(20)
+	await _click_button_with_text(tr("title.history"))
+	var switcher: Object = _app.get("switcher")
+	var page: Object = switcher.call("current")
+	var records: Array = page.call("records")
+	_expect(records.size() == runs.size(), "HISTORY HOLDS THE WRONG COUNT")
+	await _shot("history_generations")
+	await _click_button_with_text(tr("hist.back"))
+
+
+## Settings with the card back row: the open design chosen, the others blank sheets.
+func _card_back_frames(profile: SaveService) -> void:
+	var data: ProfileData = ProfileData.new()
+	data.finished_runs = 2
+	Profile.write(profile, data)
+	_app.call("show_screen", "title", true)
+	await _frames(20)
+	await _click_button_with_text(tr("title.settings"))
+	var switcher: Object = _app.get("switcher")
+	var page: Object = switcher.call("current")
+	var row: Object = page.call("card_backs")
+	var swatches: Array = [] if row == null else row.call("swatches")
+	_expect(swatches.size() == 3, "NO CARD BACK ROW")
+	await _shot("settings_card_backs")
+	await _click_button_with_text(tr("settings.back"))
+
+
+## The table at stages 0, 3, 6 and 9, each from a profile handed that corruption and read
+## the way a run's start reads it, with no stage override.
+func _corruption_frames(profile: SaveService) -> void:
+	var saves: Object = root.get_node("Saves").call("run_service")
+	for value: int in CORRUPTION_VALUES:
+		var data: ProfileData = ProfileData.new()
+		data.corruption = value
+		Profile.write(profile, data)
+		saves.call("delete")
+		_app.call("show_screen", "title", true)
+		await _frames(10)
+		_expect(bool(_app.call("new_run", SEED + value)), "NO RUN AT CORRUPTION %d" % value)
+		_app.call("show_screen", "table", true)
+		await _frames(30)
+		var stage: int = ArtStages.stage()
+		var wanted: int = ArtStages.stage_of(value)
+		_expect(stage == wanted, "STAGE %d AT CORRUPTION %d" % [stage, value])
+		await _shot("table_corruption_%02d" % value)
+	saves.call("delete")
+
+
 ## The profile's files as they are, to put back after the sandbox; a missing file is kept
 ## as missing.
 func _keep_files(profile: SaveService) -> Dictionary[String, String]:
@@ -877,8 +986,7 @@ func _abandon_frames(table: Node, saves: Object) -> void:
 ## Counts a step that went wrong as a misclick, and says what it was.
 func _expect(held: bool, failure: String) -> void:
 	if not held:
-		_misclicks += 1
-		print("MISCLICK %s" % failure)
+		_fail(failure)
 
 
 ## Saves a run finished as outcome and continues it, which opens its ending.
@@ -890,8 +998,7 @@ func _open_ending(outcome: String, saves: Object) -> Node:
 	await _frames(20)
 	var switcher: Object = _app.get("switcher")
 	if switcher.call("current_id") != "ending":
-		_misclicks += 1
-		print("NO ENDING SCREEN FOR %s" % outcome)
+		_fail("NO ENDING SCREEN FOR %s" % outcome)
 	return switcher.call("current")
 
 
@@ -939,8 +1046,7 @@ func _accept_epilogue(screen: Node) -> void:
 	var epilogue: Object = screen.call("epilogue")
 	var lines: Array = epilogue.call("line_labels")
 	if bool(screen.call("is_revealing")) or int(epilogue.call("shown_count")) != lines.size():
-		_misclicks += 1
-		print("EPILOGUE NOT SHOWN WHOLE")
+		_fail("EPILOGUE NOT SHOWN WHOLE")
 
 
 ## A picture of whatever node shows at corruption stage 9, the override put back after.
@@ -1076,8 +1182,7 @@ func _leave_and_continue(table: Node) -> void:
 	await _shot("resume_table")
 	var controller: Node = _app.get("controller")
 	if controller.call("awaiting") != 1:
-		_misclicks += 1
-		print("RESUME WRONG STATE %d" % controller.call("awaiting"))
+		_fail("RESUME WRONG STATE %d" % controller.call("awaiting"))
 
 
 ## Photographs the audit dice as they tumble and once they have settled, when the bowl
@@ -1085,16 +1190,12 @@ func _leave_and_continue(table: Node) -> void:
 func _dice_frames(table: Node) -> void:
 	var moments: Object = table.get("_moments")
 	var bowl: Object = moments.get("dice")
-	var waited: int = 0
-	while not bool(bowl.call("is_rolling")) and waited < 240:
-		await _frames(1)
-		waited += 1
-	if not bool(bowl.call("is_rolling")):
+	if not await _until(func() -> bool: return bool(bowl.call("is_rolling")), 4.0):
 		return
 	for frame: int in 3:
 		await _snap("round%d_dice_roll_%d" % [_rounds_seen, frame])
-	while bool(bowl.call("is_rolling")):
-		await _frames(1)
+	if not await _until(func() -> bool: return not bool(bowl.call("is_rolling"))):
+		_fail("DICE NEVER SETTLED round %d" % _rounds_seen)
 	await _snap("round%d_dice_settled" % _rounds_seen)
 
 
@@ -1184,8 +1285,7 @@ func _check_fan(table: Node, controller: Node) -> void:
 		if view.visible:
 			shown[view.get("card_id")] = true
 	if shown.size() != held.size() or views.size() != held.size():
-		_misclicks += 1
-		print(
+		_fail(
 			(
 				"FAN MISMATCH round %d turn %d: holds %d, shows %d"
 				% [_rounds_seen, _turns_in_round, held.size(), shown.size()]

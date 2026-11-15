@@ -197,6 +197,35 @@ func test_run_setup_fits_both_screens() -> void:
 			)
 
 
+## Every stake ticket's words are 16 px or more, on one or two lines, never broken inside
+## a word, on the rank picker's warm paper with its red band; a locked ticket past the
+## first stays blank. At both screen sizes, fresh and veteran.
+func test_stake_tickets_read_at_16_px_on_warm_paper() -> void:
+	for profile: bool in [false, true]:
+		if profile:
+			_veteran()
+		for screen_size: Vector2i in SIZES:
+			get_tree().root.size = screen_size
+			var screen: RunSetupScreen = await _setup()
+			for ticket: StakeTicket in screen.tickets():
+				var words: Label = ticket.get("_words")
+				var where: String = "%s %s %s" % [profile, screen_size, ticket.words()]
+				assert_object(ticket.BAND).is_equal(RankChip.BAND)
+				if ticket.words().is_empty():
+					continue
+				(
+					assert_int(words.get_theme_font_size("font_size"))
+					. override_failure_message(where)
+					. is_greater_equal(16)
+				)
+				assert_int(words.get_line_count()).override_failure_message(where).is_less_equal(2)
+				assert_bool(NameFit.label_fits(words)).override_failure_message(where).is_true()
+				var shown: float = words.get_line_count() * words.get_line_height()
+				assert_float(shown).override_failure_message(where).is_less_equal(
+					words.size.y + SLACK
+				)
+
+
 func test_the_collection_fits_both_screens_and_counts_whats_open() -> void:
 	for profile: bool in [false, true]:
 		if profile:

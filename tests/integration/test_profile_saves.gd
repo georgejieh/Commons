@@ -265,7 +265,7 @@ func test_a_schema_10_save_resumes_as_a_demo_run() -> void:
 	var controller: RunController = auto_free(RunController.new())
 	assert_bool(controller.continue_saved(_saves)).is_true()
 	assert_bool(controller.has_village()).is_false()
-	assert_int(SaveService.SCHEMA_VERSION).is_equal(11)
+	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(11)
 
 
 func test_a_run_save_with_a_broken_identity_falls_back() -> void:

@@ -68,13 +68,11 @@ static func _cadre(cadre_id: String) -> ModifierDef:
 
 ## The families the profile has unlocked beyond those every village starts with (ADR
 ## 0025): those that join after enough finished runs, by their own threshold, and those
-## that join after any landlord ending in the history that was not a death.
+## that join after any landlord ending that was not a death, by the profile's count of
+## them, which outlives the history's cap.
 static func unlocked_families(data: ProfileData) -> Array[String]:
 	var unlocked: Array[String] = []
-	var landlord: bool = data.history.any(
-		func(entry: HistoryEntry) -> bool:
-			return entry.class_id == HistoryEntry.LANDLORD and not Endings.is_death(entry.outcome)
-	)
+	var landlord: bool = data.landlord_endings > 0
 	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
 		match family.unlock:
 			FamilyDef.Unlock.RUNS:

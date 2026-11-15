@@ -828,3 +828,12 @@ lineage.heirloom,Inherited: a Model {card}.
 lineage.loyal,Inherited: the {name} family remembers a kindness.
 lineage.loyal_many,Inherited: the {names} families remember a kindness.
 lineage.label,Inherited: the label. Denunciation starts {amount} higher.
+hist.past,Earlier generations
+hist.generation,Generation {number}. {ending}. {class}. Year {year}.
+hist.not_at_roll_call,Not at roll call: {names}.
+hist.no_generations,No generation has finished a run yet.
+settings.card_back,Card back
+cardback.sunrise.name,Sunrise
+cardback.wheat.name,Wheat
+cardback.lattice.name,Lattice
+cardback.pending,Coming with its art

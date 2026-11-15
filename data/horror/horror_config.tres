@@ -10,12 +10,6 @@
 [ext_resource type="Texture2D" path="res://art/backdrops/store.png" id="art3"]
 [ext_resource type="Texture2D" path="res://art/backdrops/notice_wall.png" id="art4"]
 [ext_resource type="Texture2D" path="res://art/cards/card_back.png" id="art5"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_cultural_revolution.png" id="art6"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_hidden_reserves.png" id="art7"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_iron_rice_bowl.png" id="art8"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_landlords_ledger.png" id="art9"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_promotion_of_the_masses.png" id="art10"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_stakhanovite.png" id="art11"]
 [ext_resource type="Texture2D" path="res://art/portraits/portrait_wang_face.png" id="art12"]
 [ext_resource type="Texture2D" path="res://art/portraits/portrait_zhao_face.png" id="art13"]
 [ext_resource type="Texture2D" path="res://art/cards/parts/court_jack.png" id="art14"]
@@ -23,24 +17,6 @@
 [ext_resource type="Texture2D" path="res://art/cards/parts/court_king.png" id="art16"]
 [ext_resource type="Texture2D" path="res://art/cards/parts/joker_small.png" id="art17"]
 [ext_resource type="Texture2D" path="res://art/cards/parts/joker_big.png" id="art18"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_planned_allocation.png" id="art19"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_the_informant.png" id="art20"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_peek.png" id="art21"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_red_ink.png" id="art22"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_rehabilitation.png" id="art23"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_class_label.png" id="art24"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_collective_farm.png" id="art25"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_show_trial.png" id="art26"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_model_commune.png" id="art27"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_ration_coupon.png" id="art28"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_shock_brigade.png" id="art29"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_canteen.png" id="art30"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_red_banner.png" id="art31"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_poor_peasants_association.png" id="art32"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_seed_grain.png" id="art33"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_the_bookkeeper.png" id="art34"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_last_sheaf.png" id="art35"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_steel_target.png" id="art36"]
 
 [sub_resource type="Resource" id="layer_famine"]
 script = ExtResource("2")
@@ -146,122 +122,122 @@ stage_paths = Array[String](["res://art/cards/stages/card_back_s0.png", "", "", 
 
 [sub_resource type="Resource" id="art_cadre_cultural_revolution"]
 script = ExtResource("4")
-base = ExtResource("art6")
+base_path = "res://art/cadres/cadre_cultural_revolution.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_cultural_revolution_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_cultural_revolution.png"])
 
 [sub_resource type="Resource" id="art_cadre_hidden_reserves"]
 script = ExtResource("4")
-base = ExtResource("art7")
+base_path = "res://art/cadres/cadre_hidden_reserves.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_hidden_reserves_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_hidden_reserves.png"])
 
 [sub_resource type="Resource" id="art_cadre_iron_rice_bowl"]
 script = ExtResource("4")
-base = ExtResource("art8")
+base_path = "res://art/cadres/cadre_iron_rice_bowl.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_iron_rice_bowl_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_iron_rice_bowl.png"])
 
 [sub_resource type="Resource" id="art_cadre_landlords_ledger"]
 script = ExtResource("4")
-base = ExtResource("art9")
+base_path = "res://art/cadres/cadre_landlords_ledger.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_landlords_ledger_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_landlords_ledger.png"])
 
 [sub_resource type="Resource" id="art_cadre_promotion_of_the_masses"]
 script = ExtResource("4")
-base = ExtResource("art10")
+base_path = "res://art/cadres/cadre_promotion_of_the_masses.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_promotion_of_the_masses_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_promotion_of_the_masses.png"])
 
 [sub_resource type="Resource" id="art_cadre_stakhanovite"]
 script = ExtResource("4")
-base = ExtResource("art11")
+base_path = "res://art/cadres/cadre_stakhanovite.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_stakhanovite_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_stakhanovite.png"])
 
 [sub_resource type="Resource" id="art_cadre_planned_allocation"]
 script = ExtResource("4")
-base = ExtResource("art19")
+base_path = "res://art/cadres/cadre_planned_allocation.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_planned_allocation_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_planned_allocation.png"])
 
 [sub_resource type="Resource" id="art_cadre_the_informant"]
 script = ExtResource("4")
-base = ExtResource("art20")
+base_path = "res://art/cadres/cadre_the_informant.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_the_informant_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_the_informant.png"])
 
 [sub_resource type="Resource" id="art_cadre_peek"]
 script = ExtResource("4")
-base = ExtResource("art21")
+base_path = "res://art/cadres/cadre_peek.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_peek_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_peek.png"])
 
 [sub_resource type="Resource" id="art_cadre_red_ink"]
 script = ExtResource("4")
-base = ExtResource("art22")
+base_path = "res://art/cadres/cadre_red_ink.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_red_ink_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_red_ink.png"])
 
 [sub_resource type="Resource" id="art_cadre_rehabilitation"]
 script = ExtResource("4")
-base = ExtResource("art23")
+base_path = "res://art/cadres/cadre_rehabilitation.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_rehabilitation_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_rehabilitation.png"])
 
 [sub_resource type="Resource" id="art_cadre_class_label"]
 script = ExtResource("4")
-base = ExtResource("art24")
+base_path = "res://art/cadres/cadre_class_label.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_class_label_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_class_label.png"])
 
 [sub_resource type="Resource" id="art_cadre_collective_farm"]
 script = ExtResource("4")
-base = ExtResource("art25")
+base_path = "res://art/cadres/cadre_collective_farm.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_collective_farm_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_collective_farm.png"])
 
 [sub_resource type="Resource" id="art_cadre_show_trial"]
 script = ExtResource("4")
-base = ExtResource("art26")
+base_path = "res://art/cadres/cadre_show_trial.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_show_trial_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_show_trial.png"])
 
 [sub_resource type="Resource" id="art_cadre_model_commune"]
 script = ExtResource("4")
-base = ExtResource("art27")
+base_path = "res://art/cadres/cadre_model_commune.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_model_commune_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_model_commune.png"])
 
 [sub_resource type="Resource" id="art_cadre_ration_coupon"]
 script = ExtResource("4")
-base = ExtResource("art28")
+base_path = "res://art/cadres/cadre_ration_coupon.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_ration_coupon_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_ration_coupon.png"])
 
 [sub_resource type="Resource" id="art_cadre_shock_brigade"]
 script = ExtResource("4")
-base = ExtResource("art29")
+base_path = "res://art/cadres/cadre_shock_brigade.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_shock_brigade_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_shock_brigade.png"])
 
 [sub_resource type="Resource" id="art_cadre_canteen"]
 script = ExtResource("4")
-base = ExtResource("art30")
+base_path = "res://art/cadres/cadre_canteen.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_canteen_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_canteen.png"])
 
 [sub_resource type="Resource" id="art_cadre_red_banner"]
 script = ExtResource("4")
-base = ExtResource("art31")
+base_path = "res://art/cadres/cadre_red_banner.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_red_banner_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_red_banner.png"])
 
 [sub_resource type="Resource" id="art_cadre_poor_peasants_association"]
 script = ExtResource("4")
-base = ExtResource("art32")
+base_path = "res://art/cadres/cadre_poor_peasants_association.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_poor_peasants_association_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_poor_peasants_association.png"])
 
 [sub_resource type="Resource" id="art_cadre_seed_grain"]
 script = ExtResource("4")
-base = ExtResource("art33")
+base_path = "res://art/cadres/cadre_seed_grain.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_seed_grain_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_seed_grain.png"])
 
 [sub_resource type="Resource" id="art_cadre_the_bookkeeper"]
 script = ExtResource("4")
-base = ExtResource("art34")
+base_path = "res://art/cadres/cadre_the_bookkeeper.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_the_bookkeeper_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_the_bookkeeper.png"])
 
 [sub_resource type="Resource" id="art_cadre_last_sheaf"]
 script = ExtResource("4")
-base = ExtResource("art35")
+base_path = "res://art/cadres/cadre_last_sheaf.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_last_sheaf_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_last_sheaf.png"])
 
 [sub_resource type="Resource" id="art_cadre_steel_target"]
 script = ExtResource("4")
-base = ExtResource("art36")
+base_path = "res://art/cadres/cadre_steel_target.png"
 stage_paths = Array[String](["res://art/cadres/stages/cadre_steel_target_s0.png", "", "", "", "", "", "", "res://art/cadres/cadre_steel_target.png"])
 
 [sub_resource type="Resource" id="art_portrait_wang_face"]
@@ -299,9 +275,54 @@ script = ExtResource("4")
 base = ExtResource("art18")
 stage_paths = Array[String](["res://art/cards/parts/stages/joker_big_s0.png", "", "", "", "", "", "", "res://art/cards/parts/joker_big.png"])
 
+[sub_resource type="Resource" id="art_ending_secret_contract"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_secret_contract.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_secret_contract_s0.png", "", "", "", "", "", "", "res://art/endings/ending_secret_contract.png"])
+
+[sub_resource type="Resource" id="art_ending_the_commons"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_the_commons.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_the_commons_s0.png", "", "", "", "", "", "", "res://art/endings/ending_the_commons.png"])
+
+[sub_resource type="Resource" id="art_ending_lean_years"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_lean_years.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_lean_years_s0.png", "", "", "", "", "", "", "res://art/endings/ending_lean_years.png"])
+
+[sub_resource type="Resource" id="art_ending_labeled"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_labeled.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_labeled_s0.png", "", "", "", "", "", "", "res://art/endings/ending_labeled.png"])
+
+[sub_resource type="Resource" id="art_ending_benevolent_landlord"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_benevolent_landlord.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_benevolent_landlord_s0.png", "", "", "", "", "", "", "res://art/endings/ending_benevolent_landlord.png"])
+
+[sub_resource type="Resource" id="art_ending_full_granary"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_full_granary.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_full_granary_s0.png", "", "", "", "", "", "", "res://art/endings/ending_full_granary.png"])
+
+[sub_resource type="Resource" id="art_ending_struggled"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_struggled.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_struggled_s0.png", "", "", "", "", "", "", "res://art/endings/ending_struggled.png"])
+
+[sub_resource type="Resource" id="art_ending_death_famine"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_death_famine.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_death_famine_s0.png", "", "", "", "", "", "", "res://art/endings/ending_death_famine.png"])
+
+[sub_resource type="Resource" id="art_ending_death_denunciation"]
+script = ExtResource("4")
+base_path = "res://art/endings/ending_death_denunciation.png"
+stage_paths = Array[String](["res://art/endings/stages/ending_death_denunciation_s0.png", "", "", "", "", "", "", "res://art/endings/ending_death_denunciation.png"])
+
 [resource]
 script = ExtResource("1")
 layers = Array[ExtResource("2")]([SubResource("layer_famine"), SubResource("layer_denunciation"), SubResource("layer_struggle"), SubResource("layer_landlord"), SubResource("layer_corruption"), SubResource("layer_corruption_watchers")])
 flickers = Array[ExtResource("3")]([SubResource("flicker_1"), SubResource("flicker_2"), SubResource("flicker_3")])
 ease_seconds = 4.0
-art = Array[ExtResource("4")]([SubResource("art_table_surface"), SubResource("art_title"), SubResource("art_title_night"), SubResource("art_store"), SubResource("art_notice_wall"), SubResource("art_card_back"), SubResource("art_cadre_cultural_revolution"), SubResource("art_cadre_hidden_reserves"), SubResource("art_cadre_iron_rice_bowl"), SubResource("art_cadre_landlords_ledger"), SubResource("art_cadre_promotion_of_the_masses"), SubResource("art_cadre_stakhanovite"), SubResource("art_cadre_planned_allocation"), SubResource("art_cadre_the_informant"), SubResource("art_cadre_peek"), SubResource("art_cadre_red_ink"), SubResource("art_cadre_rehabilitation"), SubResource("art_cadre_class_label"), SubResource("art_cadre_collective_farm"), SubResource("art_cadre_show_trial"), SubResource("art_cadre_model_commune"), SubResource("art_cadre_ration_coupon"), SubResource("art_cadre_shock_brigade"), SubResource("art_cadre_canteen"), SubResource("art_cadre_red_banner"), SubResource("art_cadre_poor_peasants_association"), SubResource("art_cadre_seed_grain"), SubResource("art_cadre_the_bookkeeper"), SubResource("art_cadre_last_sheaf"), SubResource("art_cadre_steel_target"), SubResource("art_portrait_wang_face"), SubResource("art_portrait_zhao_face"), SubResource("art_court_jack"), SubResource("art_court_queen"), SubResource("art_court_king"), SubResource("art_joker_small"), SubResource("art_joker_big")])
+art = Array[ExtResource("4")]([SubResource("art_table_surface"), SubResource("art_title"), SubResource("art_title_night"), SubResource("art_store"), SubResource("art_notice_wall"), SubResource("art_card_back"), SubResource("art_cadre_cultural_revolution"), SubResource("art_cadre_hidden_reserves"), SubResource("art_cadre_iron_rice_bowl"), SubResource("art_cadre_landlords_ledger"), SubResource("art_cadre_promotion_of_the_masses"), SubResource("art_cadre_stakhanovite"), SubResource("art_cadre_planned_allocation"), SubResource("art_cadre_the_informant"), SubResource("art_cadre_peek"), SubResource("art_cadre_red_ink"), SubResource("art_cadre_rehabilitation"), SubResource("art_cadre_class_label"), SubResource("art_cadre_collective_farm"), SubResource("art_cadre_show_trial"), SubResource("art_cadre_model_commune"), SubResource("art_cadre_ration_coupon"), SubResource("art_cadre_shock_brigade"), SubResource("art_cadre_canteen"), SubResource("art_cadre_red_banner"), SubResource("art_cadre_poor_peasants_association"), SubResource("art_cadre_seed_grain"), SubResource("art_cadre_the_bookkeeper"), SubResource("art_cadre_last_sheaf"), SubResource("art_cadre_steel_target"), SubResource("art_portrait_wang_face"), SubResource("art_portrait_zhao_face"), SubResource("art_court_jack"), SubResource("art_court_queen"), SubResource("art_court_king"), SubResource("art_joker_small"), SubResource("art_joker_big"), SubResource("art_ending_secret_contract"), SubResource("art_ending_the_commons"), SubResource("art_ending_lean_years"), SubResource("art_ending_labeled"), SubResource("art_ending_benevolent_landlord"), SubResource("art_ending_full_granary"), SubResource("art_ending_struggled"), SubResource("art_ending_death_famine"), SubResource("art_ending_death_denunciation")])

@@ -248,10 +248,8 @@ func test_families_join_the_village_by_finished_runs() -> void:
 
 func test_deng_joins_after_a_landlord_ending_and_not_a_landlords_death() -> void:
 	var data: ProfileData = ProfileData.new()
-	data.history.append(_entry(HistoryEntry.LANDLORD, Endings.DEATH_FAMINE))
-	data.history.append(_entry(HistoryEntry.PEASANT, Endings.SECRET_CONTRACT))
 	assert_array(RunStarter.unlocked_families(data)).not_contains(["deng"])
-	data.history.append(_entry(HistoryEntry.LANDLORD, Endings.FULL_GRANARY))
+	data.landlord_endings = 1
 	assert_array(RunStarter.unlocked_families(data)).contains(["deng"])
 	# The roster a full run starts with holds what the profile unlocked.
 	data.finished_runs = 1
@@ -260,6 +258,57 @@ func test_deng_joins_after_a_landlord_ending_and_not_a_landlords_death() -> void
 	assert_object(Roster.entry(state, "deng")).is_not_null()
 	assert_object(Roster.entry(state, "xu")).is_not_null()
 	assert_object(Roster.entry(state, "zhou")).is_null()
+
+
+## The count is raised by a finished full run's landlord ending, never by a landlord's
+## death or a peasant's ending, and it outlives the history's cap.
+func test_a_landlord_ending_is_counted_and_outlives_the_history() -> void:
+	var cases: Dictionary[String, Array] = {
+		"landlord_death": [4, 100, 0],
+		"peasant_ending": [0, 10, 0],
+		"landlord_ending": [4, 10, 1],
+	}
+	for name: String in cases:
+		_profile.delete()
+		var state: RunState = RunState.new(6700)
+		state.identity.id = "run-" + name
+		state.identity.kind = RunIdentity.Kind.FULL
+		state.phase = RunFlow.State.RUN_END
+		state.year = 8
+		state.year_rounds = 4
+		state.year_landlord_rounds = cases[name][0]
+		state.famine = cases[name][1]
+		ProfileCommits.commit(_profile, state, true)
+		var counted: int = Profile.read(_profile).landlord_endings
+		assert_int(counted).override_failure_message(name).is_equal(cases[name][2])
+	var data: ProfileData = Profile.read(_profile)
+	for index: int in ProfileData.HISTORY_CAP:
+		var later: HistoryEntry = _entry(HistoryEntry.PEASANT, Endings.SECRET_CONTRACT)
+		later.run_id = "later-%d" % index
+		data.add_history(later)
+	Profile.write(_profile, data)
+	var capped: ProfileData = Profile.read(_profile)
+	assert_int(capped.history_landlord_endings()).is_equal(0)
+	assert_array(RunStarter.unlocked_families(capped)).contains(["deng"])
+
+
+## A schema 2 profile written before the count existed reads it from its history, and the
+## rest of its validation stays strict.
+func test_a_profile_from_before_the_count_reads_it_from_its_history() -> void:
+	var data: ProfileData = ProfileData.new()
+	data.history.append(_entry(HistoryEntry.LANDLORD, Endings.DEATH_FAMINE))
+	data.history.append(_entry(HistoryEntry.PEASANT, Endings.SECRET_CONTRACT))
+	data.history.append(_entry(HistoryEntry.LANDLORD, Endings.FULL_GRANARY))
+	var old: Dictionary = data.to_dict()
+	old.erase(ProfileData.LANDLORD_ENDINGS_KEY)
+	assert_bool(Profile.is_valid(old)).is_true()
+	var read: ProfileData = ProfileData.from_dict(old)
+	assert_int(read.landlord_endings).is_equal(1)
+	assert_array(RunStarter.unlocked_families(read)).contains(["deng"])
+	old[ProfileData.LANDLORD_ENDINGS_KEY] = -1
+	assert_bool(Profile.is_valid(old)).is_false()
+	old[ProfileData.LANDLORD_ENDINGS_KEY] = 1.5
+	assert_bool(Profile.is_valid(old)).is_false()
 
 
 func _entry(class_id: String, outcome: String) -> HistoryEntry:

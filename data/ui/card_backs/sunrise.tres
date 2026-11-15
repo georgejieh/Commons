@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardBackDef" format=3]
+
+[ext_resource type="Script" path="res://data/ui/card_backs/card_back_def.gd" id="1"]
+[ext_resource type="Texture2D" path="res://art/cards/card_back.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "sunrise"
+name_key = "cardback.sunrise.name"
+finished_runs = 0
+art = ExtResource("2")
+art_pending = false
+paper = Color(0.9254902, 0.84313726, 0.63529414, 1)
+border = Color(0.6901961, 0.16470589, 0.09019608, 1)
+lattice = Color(0.6901961, 0.16470589, 0.09019608, 1)

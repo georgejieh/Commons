@@ -5,6 +5,8 @@ extends Control
 
 
 func open(app: DemoApp) -> void:
+	# The title reads the art's stage afresh, as a run's start does (ADR 0025).
+	ArtStages.latch(Saves.profile_service())
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title_night)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(ScreenKit.eyebrow(tr("title.eyebrow")))

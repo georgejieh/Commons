@@ -135,7 +135,7 @@ func _entry(sheet: UnlockSheet) -> Control:
 
 ## The Cadre's art, or the printed frame it will fill while it has none.
 func _art(cadre_id: String) -> Control:
-	if ScreenKit.ART.cadre(cadre_id) == null:
+	if not ScreenKit.ART.has_cadre(cadre_id):
 		return ArtFrame.new(ART_SIZE)
 	var art: TextureRect = TextureRect.new()
 	art.texture = ScreenKit.cadre_art(cadre_id)

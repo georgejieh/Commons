@@ -205,6 +205,7 @@ func start_set() -> Reason:
 		return Reason.NOT_AWAITED
 	# A Quota's first round is always shuffled, Unplanned Economy or not.
 	state.deck_order.clear()
+	state.quota_corruption.clear()
 	record.mark(state)
 	_seat_roster()
 	set_log.start_set(state, set_number())
@@ -369,7 +370,7 @@ func player_market_campaign(slot: int) -> Reason:
 	var act: Callable = market.campaigns.buy.bind(slot)
 	var reason: Reason = _shop_command({"type": "market_campaign", "slot": slot}, act)
 	if reason == Reason.OK:
-		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+		_market_bought()
 	return reason
 
 
@@ -390,7 +391,7 @@ func player_market_envelope(slot: int) -> Reason:
 	var act: Callable = market.envelopes.buy.bind(slot)
 	var reason: Reason = _shop_command({"type": "market_envelope", "slot": slot}, act)
 	if reason == Reason.OK:
-		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+		_market_bought()
 	return reason
 
 
@@ -479,7 +480,7 @@ func player_market_buy(slot: int, rank: int = Ranks.INVALID) -> Reason:
 	var reason: Reason = _shop_command(command, market.buy.bind(slot))
 	if reason == Reason.OK:
 		RunCadres.bought(state, bought, rank)
-		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+		_market_bought()
 	return reason
 
 
@@ -502,7 +503,7 @@ func player_plot_card(slot: int) -> Reason:
 		return RunShop.Reason.OK if bought else RunShop.Reason.TOO_POOR
 	var reason: Reason = _shop_command({"type": "plot_card", "slot": slot}, act)
 	if reason == Reason.OK:
-		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+		_market_bought()
 	return reason
 
 
@@ -513,7 +514,7 @@ func player_upgrade(kind: String) -> Reason:
 		return RunShop.Reason.OK if bought else RunShop.Reason.TOO_POOR
 	var reason: Reason = _shop_command({"type": "upgrade", "kind": kind}, act)
 	if reason == Reason.OK:
-		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+		_market_bought()
 	return reason
 
 
@@ -862,6 +863,7 @@ func _end_set() -> void:
 	_reeducate_villagers()
 	state.memory.record(state.summaries[-1])
 	_record_style_and_risen()
+	CorruptionEvents.close_quota(state, set_log.events(), _params.base_need)
 	var held: int = Resentment.private_cadres(state.inventory.cadres, all_cadres())
 	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
 	_resent(steps * DEFAULT_RESENTMENT.overfulfilment, Resentment.OVERFULFILMENT)
@@ -979,6 +981,12 @@ func _reeducate_villagers() -> void:
 		)
 
 
+## Every black-market purchase is resented, and counted when it comes in a famine.
+func _market_bought() -> void:
+	_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+	CorruptionEvents.note_purchase(state, _meters.famine)
+
+
 func _resent(amount: int, cause: String) -> void:
 	if amount != 0:
 		Resentment.add(state, amount, cause, DEFAULT_RESENTMENT, set_log.events())
@@ -1018,6 +1026,7 @@ func _remember_cut_short() -> void:
 		return
 	set_log.end_round(state, PLAYER)
 	state.memory.record(state.summaries[-1])
+	CorruptionEvents.close_quota(state, set_log.events(), _params.base_need)
 
 
 func _end_if_dead() -> bool:

@@ -16,3 +16,5 @@ extends Resource
 @export var no_flash: bool = false
 ## Set once the first-launch content note has been read.
 @export var content_note_seen: bool = false
+## The card back design chosen (ADR 0025): cosmetic, per player.
+@export var card_back: String = "sunrise"

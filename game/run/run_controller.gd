@@ -736,10 +736,21 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	for directive_def: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
 		_directives[directive_def.id] = directive_def
 	_saves = saves
-	_loop.set_log.on_add = func(event: RunEvent) -> void: event_emitted.emit(event)
+	_latch_stage()
+	_loop.set_log.on_add = func(event: RunEvent) -> void:
+		# The art's stage is read from the profile at each round's start, before the table
+		# hears of it, and never inside a round (ADR 0025).
+		if event.type == RunEvent.Type.SET_STARTED or event.type == RunEvent.Type.DEALT:
+			_latch_stage()
+		event_emitted.emit(event)
 	_loop.on_boundary = func(at: RunLoop) -> void:
 		_save()
 		_remember(at.flow.state())
+
+
+func _latch_stage() -> void:
+	if _profile != null:
+		ArtStages.latch(_profile)
 
 
 func _campaign(campaign_id: String) -> CampaignDef:

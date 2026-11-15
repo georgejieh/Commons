@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArtLibrary" load_steps=40 format=3]
+[gd_resource type="Resource" script_class="ArtLibrary" load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://data/ui/art_library.gd" id="1"]
 [ext_resource type="Texture2D" path="res://art/backdrops/table_surface.png" id="2"]
@@ -12,33 +12,9 @@
 [ext_resource type="Texture2D" path="res://data/ui/atlas/icon_denunciation.tres" id="10"]
 [ext_resource type="Texture2D" path="res://data/ui/atlas/icon_coupon.tres" id="11"]
 [ext_resource type="Texture2D" path="res://data/ui/atlas/icon_grain.tres" id="12"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_cultural_revolution.png" id="13"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_promotion_of_the_masses.png" id="14"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_iron_rice_bowl.png" id="15"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_stakhanovite.png" id="16"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_hidden_reserves.png" id="17"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_landlords_ledger.png" id="18"]
 [ext_resource type="Texture2D" path="res://art/ui/panel_paper.png" id="19"]
 [ext_resource type="Texture2D" path="res://art/backdrops/title_night.png" id="20"]
 [ext_resource type="Texture2D" path="res://art/backdrops/watchers.png" id="21"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_planned_allocation.png" id="22"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_the_informant.png" id="23"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_peek.png" id="24"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_red_ink.png" id="25"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_rehabilitation.png" id="26"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_class_label.png" id="27"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_collective_farm.png" id="28"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_show_trial.png" id="29"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_model_commune.png" id="30"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_ration_coupon.png" id="31"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_shock_brigade.png" id="32"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_canteen.png" id="33"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_red_banner.png" id="34"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_poor_peasants_association.png" id="35"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_seed_grain.png" id="36"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_the_bookkeeper.png" id="37"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_last_sheaf.png" id="38"]
-[ext_resource type="Texture2D" path="res://art/cadres/cadre_steel_target.png" id="39"]
 
 [resource]
 script = ExtResource("1")
@@ -56,29 +32,40 @@ icon_famine = ExtResource("9")
 icon_denunciation = ExtResource("10")
 icon_coupon = ExtResource("11")
 icon_grain = ExtResource("12")
-cadres = Dictionary[String, Texture2D]({
-"cultural_revolution": ExtResource("13"),
-"promotion_of_the_masses": ExtResource("14"),
-"iron_rice_bowl": ExtResource("15"),
-"stakhanovite": ExtResource("16"),
-"hidden_reserves": ExtResource("17"),
-"landlords_ledger": ExtResource("18"),
-"planned_allocation": ExtResource("22"),
-"the_informant": ExtResource("23"),
-"peek": ExtResource("24"),
-"red_ink": ExtResource("25"),
-"rehabilitation": ExtResource("26"),
-"class_label": ExtResource("27"),
-"collective_farm": ExtResource("28"),
-"show_trial": ExtResource("29"),
-"model_commune": ExtResource("30"),
-"ration_coupon": ExtResource("31"),
-"shock_brigade": ExtResource("32"),
-"canteen": ExtResource("33"),
-"red_banner": ExtResource("34"),
-"poor_peasants_association": ExtResource("35"),
-"seed_grain": ExtResource("36"),
-"the_bookkeeper": ExtResource("37"),
-"last_sheaf": ExtResource("38"),
-"steel_target": ExtResource("39")
+cadres = Dictionary[String, String]({
+"cultural_revolution": "res://art/cadres/cadre_cultural_revolution.png",
+"promotion_of_the_masses": "res://art/cadres/cadre_promotion_of_the_masses.png",
+"iron_rice_bowl": "res://art/cadres/cadre_iron_rice_bowl.png",
+"stakhanovite": "res://art/cadres/cadre_stakhanovite.png",
+"hidden_reserves": "res://art/cadres/cadre_hidden_reserves.png",
+"landlords_ledger": "res://art/cadres/cadre_landlords_ledger.png",
+"planned_allocation": "res://art/cadres/cadre_planned_allocation.png",
+"the_informant": "res://art/cadres/cadre_the_informant.png",
+"peek": "res://art/cadres/cadre_peek.png",
+"red_ink": "res://art/cadres/cadre_red_ink.png",
+"rehabilitation": "res://art/cadres/cadre_rehabilitation.png",
+"class_label": "res://art/cadres/cadre_class_label.png",
+"collective_farm": "res://art/cadres/cadre_collective_farm.png",
+"show_trial": "res://art/cadres/cadre_show_trial.png",
+"model_commune": "res://art/cadres/cadre_model_commune.png",
+"ration_coupon": "res://art/cadres/cadre_ration_coupon.png",
+"shock_brigade": "res://art/cadres/cadre_shock_brigade.png",
+"canteen": "res://art/cadres/cadre_canteen.png",
+"red_banner": "res://art/cadres/cadre_red_banner.png",
+"poor_peasants_association": "res://art/cadres/cadre_poor_peasants_association.png",
+"seed_grain": "res://art/cadres/cadre_seed_grain.png",
+"the_bookkeeper": "res://art/cadres/cadre_the_bookkeeper.png",
+"last_sheaf": "res://art/cadres/cadre_last_sheaf.png",
+"steel_target": "res://art/cadres/cadre_steel_target.png"
+})
+endings = Dictionary[String, String]({
+"secret_contract": "res://art/endings/ending_secret_contract.png",
+"the_commons": "res://art/endings/ending_the_commons.png",
+"lean_years": "res://art/endings/ending_lean_years.png",
+"labeled": "res://art/endings/ending_labeled.png",
+"benevolent_landlord": "res://art/endings/ending_benevolent_landlord.png",
+"full_granary": "res://art/endings/ending_full_granary.png",
+"struggled": "res://art/endings/ending_struggled.png",
+"death_famine": "res://art/endings/ending_death_famine.png",
+"death_denunciation": "res://art/endings/ending_death_denunciation.png"
 })

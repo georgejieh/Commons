@@ -70,7 +70,7 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 			var framed: int = card.find_children("*", "ArtFrame", true, false).size()
 			var pictured: int = card.find_children("*", "TextureRect", true, false).size()
 			assert_int(framed + pictured).is_greater_equal(1)
-			if ScreenKit.ART.cadre(stock[slot]) == null:
+			if not ScreenKit.ART.has_cadre(stock[slot]):
 				assert_int(framed).is_equal(1)
 			var name: String = tr("modifier.%s.name" % stock[slot])
 			var shown: bool = false
@@ -193,7 +193,7 @@ func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 	var frames: int = collection.find_children("*", "ArtFrame", true, false).size()
 	var bare: int = 0
 	for cadre: ModifierDef in RunLoop.all_cadres():
-		if ScreenKit.ART.cadre(cadre.id) == null:
+		if not ScreenKit.ART.has_cadre(cadre.id):
 			bare += 1
 	assert_int(frames).is_equal(bare)
 	for node: Node in collection.find_children("*", "Label", true, false):

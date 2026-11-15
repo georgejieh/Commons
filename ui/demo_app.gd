@@ -76,6 +76,11 @@ func _ready() -> void:
 	show_screen(first_screen(), true)
 
 
+## The art held for the session goes with the app.
+func _exit_tree() -> void:
+	ArtStages.release()
+
+
 ## Escape opens the menu on a run's screens away from the table (the table handles its
 ## own, first).
 func _unhandled_input(event: InputEvent) -> void:

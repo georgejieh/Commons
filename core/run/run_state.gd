@@ -98,6 +98,11 @@ var year_landlord_rounds: int = 0
 var year_starved: int = 0
 ## Which run this is, of which kind, and what it began with (ADR 0025).
 var identity: RunIdentity = RunIdentity.new()
+## The last Quota's corruption events, in order (CorruptionEvents), kept until the next
+## Quota starts so the profile can take them from a save at the Quota's end; and the
+## black-market purchases made in high Famine since the last Quota ended (ADR 0025).
+var quota_corruption: Array[String] = []
+var famine_market_buys: int = 0
 
 
 func _init(seed_value: int) -> void:
@@ -163,6 +168,8 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.year_landlord_rounds = int(data["year_landlord_rounds"])
 	state.year_starved = int(data["year_starved"])
 	state.identity = RunIdentity.from_dict(data["identity"])
+	state.quota_corruption.assign(data["quota_corruption"])
+	state.famine_market_buys = int(data["famine_market_buys"])
 	return state
 
 
@@ -224,6 +231,8 @@ func to_dict() -> Dictionary:
 		"year_landlord_rounds": year_landlord_rounds,
 		"year_starved": year_starved,
 		"identity": identity.to_dict(),
+		"quota_corruption": quota_corruption.duplicate(),
+		"famine_market_buys": famine_market_buys,
 	}
 
 

@@ -135,6 +135,15 @@ static func migrate_from_10(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 11 saves predate corruption (ADR 0025): no Quota's events kept, and no
+## purchase in a famine counted yet.
+static func migrate_from_11(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"quota_corruption": [], "famine_market_buys": 0})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -287,6 +296,11 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 		return false
 	if not _counters_valid(checkpoint["year_starved"], 0):
 		return false
+	if not _counters_valid(checkpoint["famine_market_buys"], 0):
+		return false
+	for event_id: Variant in checkpoint["quota_corruption"]:
+		if not event_id is String:
+			return false
 	return _levels_valid(checkpoint["hand_levels"])
 
 

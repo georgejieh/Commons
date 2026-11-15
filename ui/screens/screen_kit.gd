@@ -250,12 +250,12 @@ static func face_region(size: Vector2, face: Rect2, aspect: float) -> Rect2:
 
 ## A Cadre's art for the current corruption stage.
 static func cadre_art(cadre_id: String) -> Texture2D:
-	return ArtStages.resolve(ART.cadre(cadre_id))
+	return ArtStages.picture(ART.cadre_path(cadre_id))
 
 
 ## An ending's picture for the current corruption stage, or null while it has none.
 static func ending_art(ending_id: String) -> Texture2D:
-	return ArtStages.resolve(ART.ending(ending_id))
+	return ArtStages.picture(ART.ending_path(ending_id))
 
 
 ## A modifier's rules, saying so when it changes the whole table and not only you.

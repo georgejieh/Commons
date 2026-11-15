@@ -8,6 +8,9 @@ extends Resource
 
 ## The asset as the game references it, such as art/backdrops/table_surface.png.
 @export var base: Texture2D
+## The asset by its file instead, for pictures loaded only when shown (Cadres, endings),
+## so the variant never loads its base at start. Used when base is empty.
+@export var base_path: String = ""
 ## Art files by corruption stage, 0 to 9; "" means no art of its own for that stage.
 @export var stage_paths: Array[String] = []
 
@@ -23,3 +26,10 @@ func path_at(stage: int) -> String:
 
 func has_path(path: String) -> bool:
 	return not path.is_empty() and stage_paths.has(path)
+
+
+## The base asset's file, from the texture or the path.
+func base_file() -> String:
+	if base != null:
+		return base.resource_path
+	return base_path

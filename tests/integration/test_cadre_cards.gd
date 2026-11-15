@@ -51,7 +51,7 @@ func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void
 		var rules: KeywordText = panel.find_children("*", "KeywordText", true, false)[0]
 		var rule: String = _app.controller.modifier_text(stock[slot])
 		assert_str(rules.get_parsed_text()).contains(rule)
-		var bare: bool = ScreenKit.ART.cadre(stock[slot]) == null
+		var bare: bool = not ScreenKit.ART.has_cadre(stock[slot])
 		assert_int(panel.find_children("*", "ArtFrame", true, false).size()).is_equal(
 			1 if bare else 0
 		)

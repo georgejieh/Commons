@@ -26,6 +26,9 @@ var glass: GlassPane = GlassPane.new()
 var torn: TornCard = TornCard.new()
 ## What moved and why, while cards are in flight.
 var note: PanelContainer = PanelContainer.new()
+## Beats acted out so far, cards passed or a card torn, so a beat that has already ended
+## can still be counted.
+var beats_played: int = 0
 
 var _controller: RunController
 var _hand: HandModel
@@ -42,8 +45,10 @@ var _note_text: Label = Label.new()
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var design: CardBackDef = CardBacks.current()
 	for _index: int in BACKS:
 		var back: CardBack = CardBack.new()
+		back.design = design
 		back.visible = false
 		add_child(back)
 		_backs.append(back)
@@ -218,6 +223,7 @@ func _seize(event: RunEvent) -> void:
 	var wide: float = torn.shown_size().x
 	var middle: Vector2 = Vector2(words.position.x - TORN_GAP - wide / 2.0, words.get_center().y)
 	middle.x = maxf(middle.x, wide / 2.0)
+	beats_played += 1
 	_player.hold(maxf(shout, torn.tear(card, middle)))
 
 
@@ -245,6 +251,7 @@ func _show_hand() -> void:
 
 func _start_beat() -> Tween:
 	_end_beat()
+	beats_played += 1
 	_beat = create_tween()
 	return _beat
 

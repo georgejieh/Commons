@@ -9,6 +9,10 @@ extends Control
 
 const MARGIN: Vector2 = Vector2(56, 36)
 const FRAME_HEIGHT: float = 340.0
+## The title card's height with a picture hung in it, which leaves the title under the
+## frame, and the picture's margin inside its printed frame.
+const PICTURE_HEIGHT: float = 320.0
+const PICTURE_INSET: float = 10.0
 ## The title's largest and smallest size: it shrinks to fit its card on one line.
 const TITLE_MAX: int = 84
 const TITLE_MIN: int = 48
@@ -97,9 +101,14 @@ func _title_card() -> Control:
 	frame.custom_minimum_size = Vector2(0, FRAME_HEIGHT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(frame)
+	var picture: Texture2D = ScreenKit.ending_art(_view.id)
 	var printed: ArtFrame = ArtFrame.new()
 	printed.set_anchors_preset(Control.PRESET_FULL_RECT)
-	frame.add_child(printed)
+	if picture != null:
+		frame.custom_minimum_size.y = PICTURE_HEIGHT
+		frame.add_child(_hung(picture, printed))
+	else:
+		frame.add_child(printed)
 	_title = ScreenKit.label(_view.title, TITLE_MAX, TITLE_INK)
 	_title.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
@@ -108,15 +117,7 @@ func _title_card() -> Control:
 	heading.alignment = BoxContainer.ALIGNMENT_CENTER
 	if HanziSeal.can_draw(_view.seal):
 		heading.add_child(HanziSeal.new(_view.seal, SEAL_WIDTH))
-	var picture: Texture2D = ScreenKit.ending_art(_view.id)
 	if picture != null:
-		var art: TextureRect = ScreenKit.cover(picture)
-		art.set_anchors_preset(Control.PRESET_FULL_RECT)
-		art.offset_left = 10
-		art.offset_top = 10
-		art.offset_right = -10
-		art.offset_bottom = -10
-		frame.add_child(art)
 		card.add_child(heading)
 	else:
 		var center: CenterContainer = CenterContainer.new()
@@ -126,6 +127,33 @@ func _title_card() -> Control:
 		frame.add_child(center)
 	frame.resized.connect(_fit_title.bind(frame))
 	return card
+
+
+## The ending's picture hung whole in the middle of the title card's space, at its own
+## shape, inside the printed frame drawn tight around it: never stretched, never cropped.
+func _hung(picture: Texture2D, printed: ArtFrame) -> AspectRatioContainer:
+	var hanger: AspectRatioContainer = AspectRatioContainer.new()
+	hanger.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hanger.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hanger.stretch_mode = AspectRatioContainer.STRETCH_FIT
+	hanger.ratio = picture.get_width() / maxf(1.0, picture.get_height())
+	var print_area: Control = Control.new()
+	print_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hanger.add_child(print_area)
+	print_area.add_child(printed)
+	var art: TextureRect = TextureRect.new()
+	art.name = "EndingPicture"
+	art.texture = picture
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	for side: String in ["offset_left", "offset_top"]:
+		art.set(side, PICTURE_INSET)
+	for side: String in ["offset_right", "offset_bottom"]:
+		art.set(side, -PICTURE_INSET)
+	print_area.add_child(art)
+	return hanger
 
 
 ## The title keeps to one line: it shrinks from its largest size until it fits its card,

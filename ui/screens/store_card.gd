@@ -54,7 +54,7 @@ static func make(
 ## The Cadre's art across the card's top, or the empty frame it will fill.
 static func face(cadre_id: String, wide: float) -> Control:
 	var extent: Vector2 = Vector2(wide - 48.0, ART_HEIGHT)
-	if ScreenKit.ART.cadre(cadre_id) == null:
+	if not ScreenKit.ART.has_cadre(cadre_id):
 		return ArtFrame.new(extent)
 	var picture: TextureRect = TextureRect.new()
 	picture.texture = ScreenKit.cadre_art(cadre_id)

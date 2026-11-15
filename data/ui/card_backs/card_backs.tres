@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CardBackPool" format=3]
+
+[ext_resource type="Script" path="res://data/ui/card_backs/card_back_pool.gd" id="1"]
+[ext_resource type="Resource" path="res://data/ui/card_backs/sunrise.tres" id="2"]
+[ext_resource type="Resource" path="res://data/ui/card_backs/wheat.tres" id="3"]
+[ext_resource type="Resource" path="res://data/ui/card_backs/lattice.tres" id="4"]
+
+[resource]
+script = ExtResource("1")
+backs = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4")])

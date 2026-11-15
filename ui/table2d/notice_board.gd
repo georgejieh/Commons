@@ -131,6 +131,6 @@ func show_cadres(controller: RunController) -> void:
 		else:
 			_cards[index].set_tip("", "")
 		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null
-		var bare: bool = held and ScreenKit.ART.cadre(cadre_ids[index]) == null
+		var bare: bool = held and not ScreenKit.ART.has_cadre(cadre_ids[index])
 		_badges[index].show_name(tr("modifier.%s.name" % cadre_ids[index]) if bare else "")
 		_badges[index].show_count(controller.cadre_standing(cadre_ids[index]).count if held else "")
