@@ -1,7 +1,7 @@
 class_name TornCard
 extends Control
-## Plot Seized at the table (ADR 0023): the destroyed plot card is held up in the middle
-## of the table, torn in two down a ragged line, and its halves fall away. Two clipped
+## Plot Seized at the table (ADR 0023): the destroyed plot card is held up beside the
+## cut-in's words, torn in two down a ragged line, and its halves fall away from them. Two clipped
 ## copies of the real face make the halves; the torn edge is old paper, worn with
 ## BowlGrime.wear(). Reduced motion and quiet replays show nothing: the card is gone.
 
@@ -38,7 +38,17 @@ func _ready() -> void:
 	visible = false
 
 
-## Tears card at the middle of the screen, then lets the halves fall. Returns how long the
+## The card's size as it is held up, before it tears.
+func shown_size() -> Vector2:
+	return _faces[0].custom_minimum_size * SCALE
+
+
+## The halves on screen, for tests.
+func halves() -> Array[Control]:
+	return _halves.duplicate()
+
+
+## Tears card held up with its middle at middle, then lets the halves fall. Returns how long the
 ## beat lasts, 0 when nothing is shown.
 func tear(card: CardInstance, middle: Vector2) -> float:
 	if UiMotion.reduced():
@@ -66,7 +76,8 @@ func tear(card: CardInstance, middle: Vector2) -> float:
 	tween.tween_interval(SHOW_TIME)
 	for side: int in 2:
 		var half: Control = _halves[side]
-		var away: float = -1.0 if side == 0 else 1.0
+		# Both halves fall away from the words at the card's right, never across them.
+		var away: float = -1.0 if side == 0 else -0.25
 		tween.parallel().tween_property(half, "rotation", away * 0.5, TEAR_TIME).set_delay(
 			SHOW_TIME
 		)

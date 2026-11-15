@@ -91,8 +91,9 @@ func _ready() -> void:
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
-	_place(_cheat_sheet, Vector2.ZERO, Vector2(1920, 1080))
-	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
+	for sheet: Control in [_cheat_sheet, _pause]:
+		add_child(sheet)
+		sheet.set_deferred("size", Vector2(1920, 1080))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
 	# Narrower than the table, so the Campaign tray has the room at its left.
@@ -279,7 +280,7 @@ func _on_round_event(event: RoundEvent) -> void:
 				_hand_view.show_cards()
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
-			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
+			_ledger.set_pending(DirectiveSheet.type_name(event.pattern.type))
 		RoundEvent.Type.TRICK_WON:
 			# A replayed or skipped trick is cleared at once: a sweep still running would
 			# clear the plays that come after it.
@@ -355,6 +356,13 @@ func _on_setting(key: String) -> void:
 func _show_roles(landlord: int) -> void:
 	for seat: int in _seats:
 		_seats[seat].set_role(landlord == seat, landlord != seat and landlord != 0)
+	_show_you(landlord)
+
+
+## The line over your hand says your role, from the moment the round starts.
+func _show_you(landlord: int) -> void:
+	var role: String = "landlord" if landlord == 0 else "peasant"
+	_you.text = tr("table.you." + ("bidding" if landlord == Seats.NONE else role))
 
 
 func _count_cards(seat: int, change: int) -> void:
@@ -378,19 +386,12 @@ func _refresh_seats() -> void:
 		var bid: String = _moments.bid_key(seat)
 		if landlord == Seats.NONE and not bid.is_empty():
 			panel.set_bid(tr(bid))
-	if landlord == Seats.NONE:
-		_you.text = tr("table.you.bidding")
-	else:
-		_you.text = tr("table.you.landlord" if landlord == 0 else "table.you.peasant")
+	_show_you(landlord)
 
 
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
 	_hud.show_state(state, _app.max_rounds())
-
-
-static func _type_name(pattern: Pattern) -> String:
-	return String(Pattern.Type.keys()[pattern.type]).to_lower()
 
 
 func _place(node: Control, at: Vector2, extent: Vector2) -> void:

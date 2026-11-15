@@ -195,6 +195,13 @@ func _draw_rays(middle: Vector2) -> void:
 		draw_colored_polygon(points, ink)
 
 
+## Where the shout's words lie on screen once they land, so a piece set beside them stays
+## clear: their resting places, whatever scale the slam has them at now.
+func text_rect() -> Rect2:
+	var words: Rect2 = Rect2(_word.position, _word.size).merge(Rect2(_sub.position, _sub.size))
+	return Rect2(global_position + words.position, words.size)
+
+
 func _lay_out(word: String, sub: String, face: Texture2D) -> void:
 	var middle: Vector2 = size / 2.0
 	var tall: float = BAND_HEIGHT[_tier]

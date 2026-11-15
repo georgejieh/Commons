@@ -4,7 +4,9 @@ extends Control
 ## beat (art/STYLE.md, Motion): cards a Levy or Redistribution moves slide to the seat on
 ## the left, the player's own face up and a villager's face down; a confiscated Cadre's
 ## card is struck through and stamped on the notice board; a seized plot card is torn in
-## two under a cut-in. Glass Walls lays its glass over the hand while it is in force.
+## two beside a cut-in's words. A slip of paper by the moving cards says which debuff
+## moved them and what moved. Glass Walls lays its glass over the hand while it is in
+## force.
 ## Reduced motion and quiet events, from a replay or a skip, leave only the end state.
 ## It listens to the table's event player itself, after the table has rendered each
 ## event.
@@ -13,10 +15,17 @@ const FLY_TIME: float = 0.5
 const FLY_STAGGER: float = 0.1
 const BOT_SCALE: float = 0.6
 const BACKS: int = 4
+const NOTE_SIZE: int = 18
+const NOTE_PADDING: int = 22
+const NOTE_LIFT: float = 110.0
+## Room between a seized card and the cut-in's words.
+const TORN_GAP: float = 48.0
 
 ## Over the hand, while the villagers see it.
 var glass: GlassPane = GlassPane.new()
 var torn: TornCard = TornCard.new()
+## What moved and why, while cards are in flight.
+var note: PanelContainer = PanelContainer.new()
 
 var _controller: RunController
 var _hand: HandModel
@@ -28,6 +37,7 @@ var _board: NoticeBoard
 var _backs: Array[CardBack] = []
 var _fliers: Array[CardView] = []
 var _beat: Tween = null
+var _note_text: Label = Label.new()
 
 
 func _ready() -> void:
@@ -38,6 +48,14 @@ func _ready() -> void:
 		add_child(back)
 		_backs.append(back)
 	add_child(torn)
+	note.add_theme_stylebox_override("panel", ScreenKit.paper_style(NOTE_PADDING))
+	note.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	note.visible = false
+	_note_text.add_theme_font_size_override("font_size", NOTE_SIZE)
+	_note_text.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	_note_text.add_theme_color_override("font_color", ScreenKit.INK)
+	note.add_child(_note_text)
+	add_child(note)
 
 
 ## Puts the glass just over the hand, under every sheet and menu, and this layer over the
@@ -136,9 +154,36 @@ func _pass_cards(event: RunEvent) -> void:
 		tween.parallel().tween_property(flier, "scale", Vector2.ONE * landing, FLY_TIME).set_delay(
 			delay
 		)
+	_say(event, card_ids)
 	tween.chain().tween_callback(_show_hand)
 	tween.tween_callback(_put_away)
 	_player.hold(FLY_TIME + card_ids.size() * FLY_STAGGER)
+
+
+## The slip by the moving cards: which debuff moved them, and what moved, in plain words.
+func _say(event: RunEvent, card_ids: Array[int]) -> void:
+	var names: Dictionary[int, String] = _table.names()
+	var text: String = tr("beat.redistribution").format({"count": card_ids.size()})
+	if _controller.active_debuff_ids().has("levy") and not card_ids.is_empty():
+		var card: CardInstance = _card(card_ids[0])
+		var shown: String = _controller.card_name(card) if card != null else ""
+		var from_you: bool = event.seat == 0
+		var key: String = "beat.levy.given" if from_you else "beat.levy.taken"
+		var other: String = names.get(event.value if from_you else event.seat, "")
+		text = tr(key).format({"card": shown, "name": other})
+	_note_text.text = text
+	note.reset_size()
+	var middle: Vector2 = (_point(event.seat, -1) + _point(event.value, -1)) / 2.0
+	var at: Vector2 = middle - Vector2(note.size.x / 2.0, NOTE_LIFT) - global_position
+	var room: Vector2 = get_viewport_rect().size - note.size
+	note.position = at.clamp(Vector2.ZERO, room.max(Vector2.ZERO))
+	note.visible = true
+	move_child(note, -1)
+
+
+## The note's words while it shows, for tests.
+func note_text() -> String:
+	return _note_text.text if note.visible else ""
 
 
 ## A face from the pool, or a face-down back for a card the player may not see.
@@ -168,7 +213,11 @@ func _seize(event: RunEvent) -> void:
 	var shout: float = _table.callout.shout(
 		tr("callout.plot_seized"), Callout.Tier.CUT_IN, TableMoments.LOSS, sub
 	)
-	var middle: Vector2 = get_viewport_rect().size / 2.0
+	# The card is held up at the left end of the cloth, clear of the words.
+	var words: Rect2 = _table.callout.text_rect()
+	var wide: float = torn.shown_size().x
+	var middle: Vector2 = Vector2(words.position.x - TORN_GAP - wide / 2.0, words.get_center().y)
+	middle.x = maxf(middle.x, wide / 2.0)
 	_player.hold(maxf(shout, torn.tear(card, middle)))
 
 
@@ -208,6 +257,7 @@ func _end_beat() -> void:
 
 
 func _put_away() -> void:
+	note.visible = false
 	for back: CardBack in _backs:
 		back.visible = false
 	for view: CardView in _fliers:

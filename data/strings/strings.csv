@@ -781,3 +781,6 @@ epilogue.state.reeducation,{name} was away at study.
 epilogue.state.deposed,{name} had been put out of the seat and worked a plot like anyone.
 epilogue.missing,Not at roll call: {names}.
 ending.note.xiaogang,"In the winter of 1978, the heads of eighteen households in Xiaogang, a village in Fengyang County, Anhui, secretly agreed to farm their production team's land by household. In 1982 the central government endorsed the practice, and it spread across the country."
+beat.levy.given,Levy: your {card} goes to {name}.
+beat.levy.taken,Levy: you take {name}'s {card}.
+beat.redistribution,Redistribution: everyone passes {count} cards to the left.

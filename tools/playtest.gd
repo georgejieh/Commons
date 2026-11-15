@@ -528,9 +528,10 @@ func _slogan_frame() -> void:
 
 
 ## Each table beat of ADR 0023's debuffs, at a round's bid, in a sandbox put back after:
-## the debuff is put in force for this round through the run's state, with the Cadres or
-## plot cards it needs, the bid is declined so the round starts and the beat plays, and
-## the save taken before is written back and resumed.
+## the debuff is put in force for the rest of the Quota through the run's state, with the
+## Cadres or plot cards it needs, in a Quota no one can meet so the sandbox plays on as
+## long as a beat needs; the bid is declined so the round starts after the kitty and the
+## beat plays; then the save taken before is written back and resumed.
 func _debuff_frames() -> void:
 	for debuff_id: String in [
 		"levy", "redistribution", "confiscation", "glass_walls", "plot_seized", "night_shift"
@@ -538,6 +539,7 @@ func _debuff_frames() -> void:
 		var controller: Object = _app.get("controller")
 		var loop: RunLoop = controller.get("_loop")
 		var snapshot: Dictionary = loop.record.to_dict()
+		loop.state.inventory.plot.clear()
 		if debuff_id == "confiscation":
 			loop.state.inventory.cadres.assign(["ration_coupon", "red_banner"])
 		if debuff_id == "plot_seized":
@@ -546,6 +548,10 @@ func _debuff_frames() -> void:
 					loop.state.take_plot_id(), Ranks.KING - index, index, CardInstance.Origin.PLOT
 				)
 				loop.state.inventory.plot.append(card)
+		var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
+		params.targets = params.targets.duplicate()
+		params.targets.fill(1e9)
+		loop.set("_sets", SetConfig.new(params))
 		_force_debuff(loop, debuff_id)
 		await _debuff_beat(debuff_id, controller)
 		var saves_hub: Object = root.get_node("Saves")
@@ -555,13 +561,14 @@ func _debuff_frames() -> void:
 		await _frames(30)
 
 
-## Puts a debuff in force for the round under way, as if it had arrived with it. A Set's
-## first round is always clean, so there the stack takes it straight.
+## Puts a debuff in force from the round under way to the Quota's end, as if it had
+## arrived with this round. A Set's first round is always clean, so there the stack takes
+## it straight and the ladder's next step carries it on.
 func _force_debuff(loop: RunLoop, debuff_id: String) -> void:
 	var round_index: int = loop.state.round_index
+	loop.state.debuff_ladder[maxi(round_index, 1)] = debuff_id
+	loop.call("_rebuild_modifiers")
 	if round_index >= 1:
-		loop.state.debuff_ladder[round_index] = debuff_id
-		loop.call("_rebuild_modifiers")
 		return
 	var stack: ModifierStack = loop.get("_stack")
 	for definition: ModifierDef in RunLoop.DEFAULT_POOL.debuffs:
@@ -571,44 +578,40 @@ func _force_debuff(loop: RunLoop, debuff_id: String) -> void:
 
 
 func _debuff_beat(debuff_id: String, controller: Object) -> void:
-	var switcher: Object = _app.get("switcher")
-	var table: Node = switcher.call("current")
 	if debuff_id == "confiscation":
+		await _until(_struck_on_board)
+		if not _struck_on_board():
+			_fail("NO CONFISCATION MARK")
 		await _snap("table_confiscation_0")
 		await _shot("table_confiscation")
 		return
 	for _bid: int in 12:
 		if int(controller.call("awaiting")) != 1:
 			break
-		var bidding: Node = switcher.call("current")
-		var actions: Object = bidding.call("actions")
-		await _press(actions.get("decline"))
+		var actions: Object = _table_part("actions")
+		if actions != null:
+			await _press(actions.get("decline"))
 		await _frames(2)
 	match debuff_id:
 		"levy", "redistribution", "plot_seized":
 			if not await _beat_seen(debuff_id):
-				print("NO BEAT %s" % debuff_id)
-				_misclicks += 1
+				_fail("NO BEAT %s" % debuff_id)
 				return
 			for frame: int in 3:
 				await _snap("table_%s_%d" % [debuff_id, frame])
 		"glass_walls":
-			table = switcher.call("current")
-			var events: Object = table.get("_player")
-			await _until(func() -> bool: return bool(events.call("is_idle")))
+			await _until(_events_idle)
 			await _shot("table_glass_walls")
 		"night_shift":
-			await _night_shift_frame(switcher.call("current"), controller)
+			await _night_shift_frame(controller)
 
 
 ## Waits, a few seconds at most, until the table plays the debuff's beat: cards in flight,
 ## or the seized card torn. The table is looked up each frame, as a round may build it
 ## afresh.
 func _beat_seen(debuff_id: String) -> bool:
-	var switcher: Object = _app.get("switcher")
 	for _frame: int in 900:
-		var table: Node = switcher.call("current")
-		var beats: Object = table.get("_debuff_beats")
+		var beats: Object = _table_part("_debuff_beats")
 		if beats != null:
 			var torn: CanvasItem = beats.get("torn")
 			var seen: bool = bool(beats.call("is_playing"))
@@ -620,32 +623,67 @@ func _beat_seen(debuff_id: String) -> bool:
 	return false
 
 
-## Plays on until the player's first chance to pass meets something they hold that beats
-## the table, then presses Pass and photographs the refusal.
-func _night_shift_frame(table: Node, controller: Object) -> void:
-	var events: Object = table.get("_player")
-	var actions: Object = table.call("actions")
-	for _turn: int in 120:
-		# A new round builds the table afresh; the refusal is looked for in this one.
-		if not is_instance_valid(table):
-			break
-		await _until(func() -> bool: return bool(events.call("is_idle")))
+## Plays on, round after round, until the player's first chance to pass meets something
+## they hold that beats the table, then presses Pass and photographs the refusal. Every
+## part of the table is looked up afresh on every turn, as each round builds it anew.
+func _night_shift_frame(controller: Object) -> void:
+	for _turn: int in 400:
+		await _until(_events_idle)
 		if not str(controller.call("pass_refusal")).is_empty():
-			await _press(actions.get("pass_turn"))
-			await _shot("table_night_shift")
-			return
+			var actions: Object = _table_part("actions")
+			if actions != null:
+				await _press(actions.get("pass_turn"))
+				await _shot("table_night_shift")
+				return
 		if not bool(_driver.call("act", controller)):
-			break
-	print("NO NIGHT SHIFT REFUSAL")
+			await _frames(5)
+	_fail("NO NIGHT SHIFT REFUSAL")
+
+
+## A part of the table now on screen, by its property or method name, or null when the
+## screen is not the table.
+func _table_part(part: String) -> Object:
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	if screen == null or not is_instance_valid(screen) or screen.get("_player") == null:
+		return null
+	if screen.has_method(part):
+		return screen.call(part)
+	return screen.get(part)
+
+
+## True once the table's events have all played, or when the table is not on screen.
+func _events_idle() -> bool:
+	var events: Object = _table_part("_player")
+	return events == null or bool(events.call("is_idle"))
+
+
+## True while a Cadre on the notice board is struck out for the round.
+func _struck_on_board() -> bool:
+	var board: Object = _table_part("_board")
+	if board == null:
+		return false
+	for index: int in int(board.call("slot_count")):
+		if bool(board.call("is_struck", index)):
+			return true
+	return false
+
+
+## Counts a step the tool could not take, with its reason, so the run fails on it.
+func _fail(reason: String) -> void:
+	print(reason)
 	_misclicks += 1
 
 
-## Waits until ready says so, a few seconds at most.
+## Waits until ready says so, a few seconds at most. ready looks up what it reads each
+## time, so it never holds a node a new round may free.
 func _until(ready: Callable) -> void:
 	var waited: int = 0
-	while not bool(ready.call()) and waited < 400:
+	while ready.is_valid() and not bool(ready.call()) and waited < 400:
 		await _frames(1)
 		waited += 1
+	if not ready.is_valid():
+		_fail("WAIT LOST ITS SUBJECT")
 
 
 ## Waits until an opened envelope's papers are at rest.
