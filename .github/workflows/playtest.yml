@@ -22,7 +22,7 @@ permissions:
 jobs:
   playtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 50
     container:
       image: barichello/godot-ci:4.7.2@sha256:cdcca31e9194fd59a68a63f4b1b9c3981716819c520cd6f7966c5d72ca7246bd
     steps:
@@ -37,6 +37,8 @@ jobs:
       - name: Import
         run: godot --headless --path . --import
       - name: Play through the UI
+        # Its own limit, well inside the job's, so a hang still uploads its log and frames.
+        timeout-minutes: 28
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
         run: |
