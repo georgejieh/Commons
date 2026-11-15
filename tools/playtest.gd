@@ -301,17 +301,18 @@ func _campaign_turn(table: Node, controller: Node) -> void:
 ## corruption stages 0, 3, 6 and 9. The stage override is put back after.
 func _bowl_frames(table: Node) -> void:
 	var moments: Object = table.get("_moments")
-	var bowl: DiceBowl = moments.get("dice")
+	# Named by Object: a UI class named here fails to compile when the tool runs with --script.
+	var bowl: Object = moments.get("dice")
 	var seats: Array[int] = [1, 2]
 	var faces: Array[int] = [1, 4]
 	var names: Array[String] = ["Wang", "Zhao"]
 	var was: int = ArtStages.stage_override
 	for stage: int in BOWL_STAGES:
 		ArtStages.stage_override = stage
-		var seconds: float = bowl.roll(seats, faces, 1, names)
+		var seconds: float = float(bowl.call("roll", seats, faces, 1, names))
 		await create_timer(seconds + 0.2).timeout
 		await _snap("moment_bowl_stage_%d" % stage)
-		bowl.dismiss()
+		bowl.call("dismiss")
 	ArtStages.stage_override = was
 
 
