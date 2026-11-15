@@ -44,7 +44,7 @@ Soviet-type planners often set the next target partly from the last result. Econ
 
 An audit was a hidden 15% roll. It is now a die the player can see: two dice thrown into a bowl together, one per villager who declared, each in that seat's colour. A 1 means that villager is audited. They are drawn as traditional Chinese dice, with a large red 1, a red 4 and the other faces black.
 
-- One face of six is 17%. An informer in the village adds a face (33%). Work-Point Audit (P4.12) adds another.
+- One face of six is 17%. An informer in the village adds a face (33%). Work-Point Audit (P4.12) adds two more ([ADR 0023](0023-debuff-pool.md)).
 - At most 5 faces audit, so a check is never certain.
 - The shown chance and the die always agree, because the die is the rule.
 
