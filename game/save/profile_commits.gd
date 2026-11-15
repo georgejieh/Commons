@@ -5,19 +5,28 @@ extends RefCounted
 ## run is recorded only while history does not hold its ID, and a Quota's memory is taken
 ## only when it is later than the last Quota taken from the same run. A crash between the
 ## run save and the profile then repeats nothing. Only a full run moves the generation,
-## finished runs, wins and history; any run that writes the profile keeps its memory.
+## finished runs, wins, history, lineage and stake; any run that writes the profile keeps
+## its memory. The lineage is taken the same way: the run that inherits it clears it in
+## the write that makes it the next generation, so no run takes it twice, and a new one
+## is written only with the finished run's record.
 
 
 ## A full run starting is the family's next generation. Writes the profile, and the
-## generation and finished runs it started from into the run's identity.
-static func start_run(profile: SaveService, state: RunState) -> void:
+## generation and finished runs it started from into the run's identity. Returns the
+## lineage the run inherits, {"kind", "values"}, taken out of the profile in the same
+## write; a run that is not full inherits nothing.
+static func start_run(profile: SaveService, state: RunState) -> Dictionary:
 	var data: ProfileData = Profile.read(profile)
 	state.identity.finished_runs = data.finished_runs
 	if not state.identity.is_full():
-		return
+		return RunLineage.make(RunLineage.NONE)
 	data.generation += 1
 	state.identity.generation = data.generation
+	var taken: Dictionary = RunLineage.make(data.lineage_kind, data.lineage_values.duplicate(true))
+	data.lineage_kind = RunLineage.NONE
+	data.lineage_values = {}
 	Profile.write(profile, data)
+	return taken
 
 
 ## Takes what the run has reached: the Quota just ended, and at the run's end its record.
@@ -54,6 +63,12 @@ static func _record(data: ProfileData, state: RunState) -> void:
 	data.finished_runs += 1
 	if not Endings.is_death(outcome):
 		data.wins += 1
+		# A win at the highest stake unlocked opens the next, up to the last.
+		if state.identity.stake == data.stake:
+			data.stake = mini(data.stake + 1, RunStakes.last())
+	var left: Dictionary = RunLineage.left_by(state, RunLoop.DEFAULT_METERS, RunLoop.DEFAULT_MEMORY)
+	data.lineage_kind = left["kind"]
+	data.lineage_values = left["values"]
 	var entry: HistoryEntry = HistoryEntry.new()
 	entry.run_id = state.identity.id
 	entry.generation = state.identity.generation

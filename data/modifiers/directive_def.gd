@@ -7,7 +7,7 @@ extends Resource
 ## Pattern.Type values. Data does not name core enums, so the numbers stand for them.
 @export var hand_types: Array[int]
 @export var cost: int
-## Finished runs needed before it is offered (P4.14). Nothing reads it yet.
+## Finished runs needed before it is offered; RunUnlocks reads it (ADR 0025).
 @export var unlock_tier: int = 0
 @export var name_key: String
 @export var text_key: String

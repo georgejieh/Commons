@@ -17,7 +17,7 @@ enum When {
 @export var id: String
 @export var tag: ModifierDef.Tag
 @export var cost: int
-## Finished runs needed before it is offered (P4.14). Nothing reads it yet.
+## Finished runs needed before it is offered; RunUnlocks reads it (ADR 0025).
 @export var unlock_tier: int = 0
 @export var when: When
 ## How many of the player's hand cards it asks for: from min_cards to max_cards.

@@ -83,12 +83,16 @@ func start_run(
 
 
 ## Starts the run a request asks for, with the Sets and seats of its kind (ADR 0025).
-## The profile is written only when the request allows it.
-func start(request: RunRequest, saves: SaveService = null, profile: SaveService = null) -> void:
+## The profile is written only when the request allows it. False, with nothing started,
+## for a household or stake the profile has not unlocked.
+func start(request: RunRequest, saves: SaveService = null, profile: SaveService = null) -> bool:
 	var used: SaveService = profile if request.writes_profile else null
 	var state: RunState = RunStarter.state(request, used)
+	if state == null:
+		return false
 	var kind: int = request.kind
 	_begin(state, RunStarter.configs(kind), RunStarter.sets(kind), saves, used)
+	return true
 
 
 func _begin(
@@ -407,12 +411,7 @@ func reform_name(reform_id: String) -> String:
 
 ## A Reform's rules with its numbers filled in, the limits it raises included.
 func reform_text(reform_id: String) -> String:
-	var definition: ReformDef = RunReforms.definition(reform_id)
-	var values: Dictionary[String, Variant] = definition.text_values()
-	var limits: ShopParams = RunReforms.LIMITS
-	values["cadre_limit"] = limits.cadre_slots + definition.parameters.get("cadres", 0)
-	values["campaign_limit"] = limits.campaign_slots + definition.parameters.get("campaigns", 0)
-	return tr(definition.text_key).format(values)
+	return ItemText.reform(RunReforms.definition(reform_id))
 
 
 ## The state store's counter, or the black market's, for a screen to read.

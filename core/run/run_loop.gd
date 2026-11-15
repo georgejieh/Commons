@@ -62,6 +62,8 @@ var campaigns: RunCampaigns
 var debuffs: RunDebuffs
 ## Bot actions the round refused, which a bot must never choose. Tests read it.
 var refused_bot_actions: int = 0
+## What this run may be offered, and its stake's numbers (ADR 0025).
+var pools: RunPools
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -92,7 +94,8 @@ func _init(
 	state = run_state
 	flow = RunFlow.new(run_state.phase)
 	_configs = configs
-	_sets = sets
+	pools = RunPools.new(run_state.identity)
+	_sets = sets.under_stake(pools.stake)
 	_params = params
 	_meters = meters
 	_pool = pool
@@ -101,23 +104,23 @@ func _init(
 		_pool_by_id[definition.id] = definition
 	shop = RunShop.new(
 		state,
-		DEFAULT_SHOP,
-		DEFAULT_CADRES.cadres,
+		pools.store,
+		pools.store_cadres,
 		meters.rationing_shop_cut,
-		DEFAULT_DIRECTIVES.directives,
-		RunCampaigns.STORE_POOL.campaigns,
-		RunReforms.all(),
+		pools.directives,
+		pools.store_campaigns,
+		pools.reforms,
 		params
 	)
 	var no_directives: Array[DirectiveDef] = []
 	var no_reforms: Array[ReformDef] = []
 	market = RunShop.new(
 		state,
-		DEFAULT_BLACK_MARKET,
-		DEFAULT_MARKET.cadres,
+		pools.market,
+		pools.market_cadres,
 		0,
 		no_directives,
-		RunCampaigns.MARKET_POOL.campaigns,
+		pools.market_campaigns,
 		no_reforms,
 		params
 	)
@@ -213,7 +216,7 @@ func start_set() -> Reason:
 	_choose_boss()
 	var ladder_stream: RandomStream = state.streams.stream(RandomStreams.DEBUFF)
 	state.debuff_ladder = DebuffLadder.draw(
-		_pool, state.set_type, _sets.max_rounds(), ladder_stream
+		_pool, state.set_type, _sets.max_rounds(), ladder_stream, pools.ladder
 	)
 	state.slogan_type = RunDebuffs.draw_slogan(state.debuff_ladder, ladder_stream)
 	var ladder_text: String = ",".join(state.debuff_ladder.slice(1))
@@ -764,11 +767,11 @@ func _finish_round() -> void:
 ## The chance that each declared need is audited at this round's split: the audit faces
 ## over the die's sides.
 func audit_chance() -> float:
-	return NeedAudit.chance(state, DEFAULT_AUDIT, _stack)
+	return NeedAudit.chance(state, pools.audit, _stack)
 
 
 func _split_commons(player_need: int) -> void:
-	var faces: int = NeedAudit.faces(state, DEFAULT_AUDIT, _stack)
+	var faces: int = NeedAudit.faces(state, pools.audit, _stack)
 	var caught: Array[int] = []
 	var events: Array[RunEvent] = set_log.events()
 	if RoundBanking.split(
@@ -780,7 +783,7 @@ func _split_commons(player_need: int) -> void:
 		events,
 		faces,
 		caught,
-		DEFAULT_AUDIT,
+		pools.audit,
 		debuffs.cut
 	):
 		_raise(RunMeters.COMMONS_SHORTFALL)
@@ -1040,7 +1043,7 @@ func _reeducate() -> void:
 	state.reeducation_due = false
 	state.inventory.plot.clear()
 	var change: PackedStringArray = Reeducation.change_cadre(
-		state.inventory, all_cadres(), state.streams.stream(RandomStreams.EVENTS)
+		state.inventory, pools.exchange(), state.streams.stream(RandomStreams.EVENTS)
 	)
 	state.cadre_memos.keep_only(state.inventory.cadres)
 	set_log.add(RunEvent.new(RunEvent.Type.REEDUCATED, PLAYER, 0, 0.0, ">".join(change)))

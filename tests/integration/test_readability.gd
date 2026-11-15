@@ -34,6 +34,7 @@ func before_test() -> void:
 func after_test() -> void:
 	get_tree().root.size = _was_size
 	Saves.run_service().delete()
+	Saves.profile_service().delete()
 
 
 func _to_store() -> void:
@@ -173,7 +174,15 @@ func test_the_rank_picker_stands_over_a_scrim() -> void:
 	picker.close()
 
 
+## A profile with every tier open, so the collection shows every item.
+func _open_everything() -> void:
+	var data: ProfileData = Profile.read(Saves.profile_service())
+	data.finished_runs = 3
+	Profile.write(Saves.profile_service(), data)
+
+
 func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
+	_open_everything()
 	var collection: CollectionScreen = _app.show_screen("collection")
 	await await_idle_frame()
 	await await_idle_frame()
@@ -245,6 +254,7 @@ func _check_cadres() -> void:
 			. override_failure_message(name)
 			. is_true()
 		)
+	_open_everything()
 	var collection: CollectionScreen = _app.show_screen("collection")
 	await await_idle_frame()
 	await await_idle_frame()

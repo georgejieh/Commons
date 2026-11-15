@@ -6,7 +6,7 @@ extends Resource
 
 @export var id: String
 @export var cost: int
-## Finished runs needed before it is offered (P4.14). Nothing reads it yet.
+## Finished runs needed before it is offered; RunUnlocks reads it (ADR 0025).
 @export var unlock_tier: int = 0
 @export var parameters: Dictionary[String, int]
 ## Kept out of the state store's draw while set, for a Reform whose rule waits on

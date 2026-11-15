@@ -12,9 +12,12 @@ var seed_value: int = 0
 ## Seconds since the epoch when the run starts, which with the seed makes its ID. 0 takes
 ## the clock's.
 var start_time: int = 0
-## Empty or 0 until households, stakes and lineage arrive (ADR 0025, step 4).
+## The household's ID, or empty for none, and the stake, from 0 (ADR 0025). RunStarter
+## refuses a household or stake the profile has not unlocked.
 var household: String = ""
 var stake: int = 0
+## The lineage a run outside the profile inherits. A run that reads the profile takes the
+## profile's lineage instead, so it is never taken twice.
 var lineage_kind: String = ""
 var lineage_values: Dictionary = {}
 ## False for a run that must leave the profile as it was, such as the balance harness.

@@ -171,7 +171,6 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 func test_the_collection_lists_the_cadres_of_both_shops() -> void:
 	var collection: Control = _app.show_screen("collection")
 	await await_idle_frame()
-	var listed: int = 0
-	for grid: Node in collection.find_children("*", "GridContainer", true, false):
-		listed += grid.get_child_count()
-	assert_int(listed).is_equal(RunLoop.all_cadres().size())
+	var flows: Array[Node] = collection.find_children("*", "HFlowContainer", true, false)
+	var cadres: int = flows[0].get_child_count() + flows[1].get_child_count()
+	assert_int(cadres).is_equal(RunLoop.all_cadres().size())

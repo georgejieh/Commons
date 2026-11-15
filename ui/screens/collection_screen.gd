@@ -1,26 +1,31 @@
 class_name CollectionScreen
 extends Control
-## The collection (P3B.9): every Cadre in both pools, with its art and rules text, under
-## two headings, collective Cadres from the state store and private ones from the black
-## market. The grids scroll, and the scroll follows keyboard and gamepad focus from card
-## to card. The whole page sits on one paper sheet, so the heading reads as the shops'
-## do. A Cadre with no art yet shows the empty frame its picture will fill. Unlocks
-## arrive with P4.14; until then every Cadre shows.
+## The collection (ADR 0025): every Cadre, Campaign, Directive, Reform and envelope either
+## shop sells, under one heading per kind, with a line at the top saying how many are
+## open. An open item shows its name and rules, a Cadre its art too; a locked one is a
+## blank aged sheet with only the line saying when it opens, and nothing in its text,
+## tooltip or accessible name names it. The sections flow to the screen's width and
+## scroll, and the scroll follows keyboard and gamepad focus from sheet to sheet. The
+## whole page sits on one paper sheet, so the heading reads as the shops' do. A Cadre
+## with no art yet shows the empty frame its picture will fill.
 
-const POOL: CadrePool = preload("res://data/run/cadre_pool.tres")
-const MARKET_POOL: CadrePool = preload("res://data/run/market_pool.tres")
 const ART_SIZE: Vector2 = Vector2(128, 168)
-const COLUMNS: int = 3
-const CARD_WIDTH: float = 540.0
-const RULES_WIDTH: float = 340.0
+const CARD_WIDTH: float = 480.0
+const RULES_WIDTH: float = 280.0
+## Rules beside no art take the card's whole width, less its padding.
+const WIDE_RULES: float = 420.0
+const LOCKED_HEIGHT: float = 150.0
 const FOCUS_RING: Color = Color("b98a2c")
 const SHEET_PADDING: int = 28
+const GAP: int = 20
 
 var _entries: Array[Control] = []
 var _scroll: ScrollContainer = ScrollContainer.new()
+var _open_line: Label
 
 
 func open(app: DemoApp) -> void:
+	var view: CollectionView = CollectionView.of(Saves.profile_service())
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
 	var sheet: PanelContainer = PanelContainer.new()
 	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
@@ -30,13 +35,15 @@ func open(app: DemoApp) -> void:
 	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
 	sheet.add_child(column)
 	column.add_child(ScreenKit.header(tr("coll.eyebrow"), tr("coll.title")))
+	_open_line = ScreenKit.label(view.open_line(), 22)
+	column.add_child(_open_line)
 	var sections: VBoxContainer = VBoxContainer.new()
 	sections.add_theme_constant_override("separation", 18)
 	sections.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sections.add_child(_heading(tr("coll.collective")))
-	sections.add_child(_grid(POOL.cadres))
-	sections.add_child(_heading(tr("coll.private")))
-	sections.add_child(_grid(MARKET_POOL.cadres))
+	var keys: Array[String] = view.section_keys()
+	for section: int in keys.size():
+		sections.add_child(_heading(tr(keys[section])))
+		sections.add_child(_flow(view.sheets(section)))
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.follow_focus = true
@@ -49,7 +56,7 @@ func open(app: DemoApp) -> void:
 	back.grab_focus()
 
 
-## The cards in order, collective then private, for tests.
+## Every sheet in order, section by section, open and locked, for tests.
 func entries() -> Array[Control]:
 	return _entries.duplicate()
 
@@ -58,50 +65,61 @@ func scroll() -> ScrollContainer:
 	return _scroll
 
 
+## The line saying how many are open.
+func open_line() -> String:
+	return _open_line.text
+
+
 func _heading(text: String) -> Label:
 	var heading: Label = ScreenKit.styled(text, CommonsTheme.TITLE)
 	ScreenKit.paper_outline(heading)
 	return heading
 
 
-func _grid(cadres: Array[ModifierDef]) -> GridContainer:
-	var grid: GridContainer = GridContainer.new()
-	grid.columns = COLUMNS
-	grid.add_theme_constant_override("h_separation", 20)
-	grid.add_theme_constant_override("v_separation", 20)
-	for definition: ModifierDef in cadres:
-		var entry: Control = _entry(definition)
-		grid.add_child(entry)
+func _flow(sheets: Array[UnlockSheet]) -> HFlowContainer:
+	var flow: HFlowContainer = HFlowContainer.new()
+	flow.add_theme_constant_override("h_separation", GAP)
+	flow.add_theme_constant_override("v_separation", GAP)
+	for sheet: UnlockSheet in sheets:
+		var entry: Control = _entry(sheet) if sheet.open else _blank(sheet)
+		flow.add_child(entry)
 		_entries.append(entry)
-	return grid
+	return flow
 
 
-## One Cadre's card. It takes focus, so the arrows and the d-pad walk the grid and the
-## scroll follows; a faded gold ring shows where focus is.
-func _entry(definition: ModifierDef) -> Control:
-	var sheet: VBoxContainer = ScreenKit.card(Vector2(CARD_WIDTH, 0))
+## A locked item: a blank sheet that takes focus and says only when it opens.
+func _blank(sheet: UnlockSheet) -> Control:
+	var size_wanted: Vector2 = Vector2(CARD_WIDTH, LOCKED_HEIGHT)
+	return AgedSheet.blank(sheet.locked_line, size_wanted, _entries.size())
+
+
+## One open item's card. It takes focus, so the arrows and the d-pad walk the sheets and
+## the scroll follows; a faded gold ring shows where focus is.
+func _entry(sheet: UnlockSheet) -> Control:
+	var card: VBoxContainer = ScreenKit.card(Vector2(CARD_WIDTH, 0))
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
-	row.add_child(_art(definition.id))
+	var width: float = WIDE_RULES
+	if not sheet.art_id.is_empty():
+		row.add_child(_art(sheet.art_id))
+		width = RULES_WIDTH
 	var words: VBoxContainer = VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name: Label = ScreenKit.styled("", CommonsTheme.TITLE)
 	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	name.custom_minimum_size = Vector2(RULES_WIDTH, 0)
-	var title: String = tr(definition.name_key)
-	NameFit.apply(name, title, RULES_WIDTH, ScreenKit.STYLE.title_size, NameFit.LEAST)
+	name.custom_minimum_size = Vector2(width, 0)
+	NameFit.apply(name, sheet.name, width, ScreenKit.STYLE.title_size, NameFit.LEAST)
 	words.add_child(name)
-	var text: String = CadreText.rules(definition)
-	if definition.table_wide:
-		text += " " + tr("modifier.table_wide")
-	var rules: Label = ScreenKit.label(text, 20)
-	rules.custom_minimum_size = Vector2(RULES_WIDTH, 0)
+	var rules: Label = ScreenKit.label(sheet.text, 20)
+	rules.custom_minimum_size = Vector2(width, 0)
 	words.add_child(rules)
 	row.add_child(words)
-	sheet.add_child(row)
-	var panel: Control = ScreenKit.card_panel(sheet)
+	card.add_child(row)
+	var panel: Control = ScreenKit.card_panel(card)
 	panel.focus_mode = Control.FOCUS_ALL
-	panel.tooltip_text = Keywords.wrapped("%s\n%s" % [tr(definition.name_key), text])
+	panel.tooltip_text = Keywords.wrapped("%s\n%s" % [sheet.name, sheet.text])
+	panel.accessibility_name = sheet.name
+	panel.accessibility_description = sheet.text
 	var ring: ReferenceRect = ReferenceRect.new()
 	ring.editor_only = false
 	ring.border_color = Color(BowlGrime.aged(FOCUS_RING, BowlGrime.wear() * 0.5), 0.9)

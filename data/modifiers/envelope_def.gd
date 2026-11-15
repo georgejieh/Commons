@@ -30,7 +30,7 @@ enum Wrapping {
 
 @export var id: String
 @export var cost: int
-## Finished runs needed before it is offered (P4.14). Nothing reads it yet.
+## Finished runs needed before it is offered; RunUnlocks reads it (ADR 0025).
 @export var unlock_tier: int = 0
 ## Items it shows to choose from, before a Reform adds more.
 @export var choices: int = 3

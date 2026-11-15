@@ -128,10 +128,16 @@ func table_id() -> String:
 	return "table_3d" if OS.has_feature(TABLE_3D_FEATURE) else "table"
 
 
-## Starts the demo, or with full the eight-Year run with the village's roster.
-func new_run(seed_value: int, full: bool = false) -> void:
+## Starts the demo, or with full the eight-Year run with the village's roster, as the
+## household and at the stake run setup chose. False when the profile has not unlocked
+## them, and nothing starts.
+func new_run(seed_value: int, full: bool = false, household: String = "", stake: int = 0) -> bool:
 	var kind: int = RunRequest.FULL if full else RunRequest.DEMO
-	controller.start(RunRequest.new(kind, seed_value), Saves.run_service(), Saves.profile_service())
+	var request: RunRequest = RunRequest.new(kind, seed_value)
+	if full:
+		request.household = household
+		request.stake = stake
+	return controller.start(request, Saves.run_service(), Saves.profile_service())
 
 
 ## Continues the saved run as the kind it was saved as.

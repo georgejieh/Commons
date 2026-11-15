@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
 ## ADR 0021's Cadres on screen: the rank picker in the black market, counts on the
-## notice board, The Bookkeeper in the Quota report, and the collection's two grids
-## that scroll with focus.
+## notice board, The Bookkeeper in the Quota report, and the collection's sections, the
+## Cadres of both shops first, that scroll with focus.
 
 const SEED: int = 4301
 const SAVE_PATH: String = "user://test_cadre_ui/run.json"
@@ -136,15 +136,15 @@ func test_the_quota_report_counts_the_bookkeepers_coupons_in_the_paid_line() -> 
 		assert_str(kept.text).is_equal(text)
 
 
-func test_the_collection_has_two_grids_whose_scroll_follows_focus() -> void:
+func test_the_collections_sections_scroll_with_focus() -> void:
 	var collection: CollectionScreen = _app.show_screen("collection")
 	await await_idle_frame()
-	var grids: Array[Node] = collection.find_children("*", "GridContainer", true, false)
-	assert_int(grids.size()).is_equal(2)
-	assert_int(grids[0].get_child_count()).is_equal(RunLoop.DEFAULT_CADRES.cadres.size())
-	assert_int(grids[1].get_child_count()).is_equal(RunLoop.DEFAULT_MARKET.cadres.size())
+	var flows: Array[Node] = collection.find_children("*", "HFlowContainer", true, false)
+	assert_int(flows.size()).is_equal(CollectionView.SECTION_KEYS.size())
+	assert_int(flows[0].get_child_count()).is_equal(RunLoop.DEFAULT_CADRES.cadres.size())
+	assert_int(flows[1].get_child_count()).is_equal(RunLoop.DEFAULT_MARKET.cadres.size())
 	var entries: Array[Control] = collection.entries()
-	assert_int(entries.size()).is_equal(24)
+	assert_int(entries.size()).is_equal(CollectionView.for_runs(0).total())
 	for entry: Control in entries:
 		assert_int(entry.focus_mode).is_equal(Control.FOCUS_ALL)
 	assert_bool(collection.scroll().follow_focus).is_true()

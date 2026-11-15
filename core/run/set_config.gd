@@ -49,6 +49,14 @@ static func validate(params: SetParams) -> Reason:
 	return Reason.OK
 
 
+## This shape under a stake's numbers (ADR 0025): a new config whose targets are raised,
+## or this one when the stake raises none.
+func under_stake(sum: StakeDef) -> SetConfig:
+	if sum.target_percent == 0:
+		return self
+	return SetConfig.new(RunStakes.sets(_params, sum))
+
+
 func years() -> int:
 	return _params.years
 

@@ -757,6 +757,10 @@ func _full_run_frames() -> void:
 	var loop: RunLoop = controller.get("_loop")
 	var snapshot: Dictionary = loop.record.to_dict()
 	_app.set("demo", false)
+	var profile: SaveService = root.get_node("Saves").call("profile_service")
+	var kept: Dictionary[String, String] = _keep_files(profile)
+	await _meta_frames(profile)
+	Profile.write(profile, ProfileData.new())
 	_app.call("show_screen", "title", true)
 	await _frames(20)
 	await _click_button_with_text(tr("title.new_run"))
@@ -777,10 +781,79 @@ func _full_run_frames() -> void:
 	_expect(bool(controller.call("has_village")), "RESUME WRONG KIND")
 	_expect(switcher.call("current_id") == "table", "RESUME WRONG SCREEN")
 	await _abandon_frames(switcher.call("current"), saves)
+	_put_back_files(kept)
 	saves.call("save", snapshot)
 	_app.set("demo", true)
 	_app.call("resume_to_screen")
 	await _frames(30)
+
+
+## Run setup and the collection for a fresh profile and for one handed three finished
+## runs, the third stake and an heirloom (ADR 0025): one household and one stake open,
+## then all four households, three stakes and the inherited line; every item locked but
+## tier 0's, then every item open. A click on The Old Family picks it.
+func _meta_frames(profile: SaveService) -> void:
+	Profile.write(profile, ProfileData.new())
+	_app.call("show_screen", "title", true)
+	await _frames(20)
+	await _click_button_with_text(tr("title.collection"))
+	await _shot("collection_locked")
+	var switcher: Object = _app.get("switcher")
+	var page: Node = switcher.call("current")
+	var shown: String = page.call("open_line")
+	_expect(shown == CollectionView.for_runs(0).open_line(), "COLLECTION COUNT WRONG")
+	await _click_button_with_text(tr("coll.back"))
+	await _click_button_with_text(tr("title.new_run"))
+	await _shot("run_setup_full")
+	var setup: Node = switcher.call("current")
+	var open: int = 0
+	for paper: Control in setup.call("papers"):
+		open += 1 if bool(paper.get("choosable")) else 0
+	_expect(open == 1, "FRESH SETUP OPENS %d HOUSEHOLDS" % open)
+	await _click_button_with_text(tr("setup.back"))
+	var veteran: ProfileData = ProfileData.new()
+	veteran.finished_runs = 3
+	veteran.generation = 3
+	veteran.stake = 2
+	veteran.lineage_kind = "heirloom"
+	veteran.lineage_values = {"rank": Ranks.KING, "suit": 1}
+	Profile.write(profile, veteran)
+	await _click_button_with_text(tr("title.new_run"))
+	setup = switcher.call("current")
+	var papers: Array = setup.call("papers")
+	var old_family: Control = papers[3]
+	await _mouse_click(old_family.get_global_transform_with_canvas() * (old_family.size / 2.0))
+	await _frames(10)
+	_expect(setup.call("household") == "old_family", "HOUSEHOLD CLICK MISSED")
+	await _shot("run_setup_veteran")
+	_expect(int(setup.call("stake")) == 2, "VETERAN STAKE WRONG")
+	await _click_button_with_text(tr("setup.back"))
+	await _click_button_with_text(tr("title.collection"))
+	await _shot("collection_open")
+	page = switcher.call("current")
+	shown = page.call("open_line")
+	_expect(shown == CollectionView.for_runs(3).open_line(), "OPEN COLLECTION COUNT WRONG")
+	await _click_button_with_text(tr("coll.back"))
+
+
+## The profile's files as they are, to put back after the sandbox; a missing file is kept
+## as missing.
+func _keep_files(profile: SaveService) -> Dictionary[String, String]:
+	var kept: Dictionary[String, String] = {}
+	var path: String = profile.path()
+	for file: String in [path, path + SaveService.BACKUP_SUFFIX]:
+		kept[file] = FileAccess.get_file_as_string(file) if FileAccess.file_exists(file) else ""
+	return kept
+
+
+func _put_back_files(kept: Dictionary[String, String]) -> void:
+	for file: String in kept:
+		if kept[file].is_empty():
+			DirAccess.remove_absolute(file)
+			continue
+		var out: FileAccess = FileAccess.open(file, FileAccess.WRITE)
+		out.store_string(kept[file])
+		out.close()
 
 
 ## The table's menu, Abandon run, and its question, then Abandon: the title, with no save.

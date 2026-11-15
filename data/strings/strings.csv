@@ -299,7 +299,7 @@ end.show_all,Show all
 end.to_title,Return to title
 player.surname,Zhang
 coll.eyebrow,Collection
-coll.title,Cadres
+coll.title,What the shops sell
 coll.back,Back
 hist.eyebrow,Village history
 hist.title,This run
@@ -637,8 +637,8 @@ summary.cadre_paid,{cadre} paid {count} coupons.
 summary.cadre_paid.one,{cadre} paid 1 coupon.
 keyword.coupon.name,Coupon
 keyword.coupon.text,Coupon: what the stores take. A met Quota pays them. Some Cadres pay them too.
-coll.collective,Collective: sold at the state store
-coll.private,Private: sold at the black market
+coll.collective,Collective Cadres: sold at the state store
+coll.private,Private Cadres: sold at the black market
 reform.supply_cooperative.name,Supply Cooperative
 reform.supply_cooperative.text,Every envelope you open holds {choices} more item to choose from.
 reform.work_point_reform.name,Work-Point Reform
@@ -793,3 +793,38 @@ epilogue.missing,Not at roll call: {names}.
 ending.note.xiaogang,"In the winter of 1978, the heads of eighteen households in Xiaogang, a village in Fengyang County, Anhui, secretly agreed to farm their production team's land by household. In 1982 the central government endorsed the practice, and it spread across the country."
 list.pair,{a} and {b}
 list.last,{rest} and {last}
+coll.campaigns,Campaigns
+coll.directives,Directives
+coll.reforms,Reforms
+coll.envelopes,Envelopes
+coll.open,{open} of {total} open
+unlock.runs_one,Opens after 1 more run
+unlock.runs,Opens after {count} more runs
+unlock.win_at,Opens when you win at {stake}
+setup.household,Household
+setup.stake,Stake
+setup.generation,Generation {number}
+household.poor_peasants.name,Poor Peasants
+household.poor_peasants.text,Start with {coupons} coupons.
+household.middle_peasants.name,Middle Peasants
+household.middle_peasants.text,"Start with {coupons} coupons and {cards} cards in your private plot, ranked 10 to K. The village holds {resentment} Resentment against you."
+household.shopkeepers.name,Shopkeepers
+household.shopkeepers.text,Start with {coupons} coupons. The village holds {resentment} Resentment against you.
+household.old_family.name,The Old Family
+household.old_family.text,"Start with {coupons} coupons and Landlord's Ledger. The village holds {resentment} Resentment against you, and Denunciation starts at {denunciation}."
+stake.base.name,Base
+stake.base.text,The rules as written.
+stake.second_harvest.name,Second Harvest
+stake.second_harvest.text,Every Quota's target is {percent}% higher.
+stake.tight_books.name,Tight Books
+stake.tight_books.text,The state store offers {slots} fewer Cadre.
+stake.short_rations.name,Short Rations
+stake.short_rations.text,Famine starts at {famine}.
+stake.watchful_eyes.name,Watchful Eyes
+stake.watchful_eyes.text,"Denunciation starts at {denunciation}, and {faces} more face of the die means an audit."
+stake.third_year.name,The Third Year
+stake.third_year.text,Every debuff ladder has {severity} more point of severity to spend.
+lineage.heirloom,Inherited: a Model {card}.
+lineage.loyal,Inherited: the {name} family remembers a kindness.
+lineage.loyal_many,Inherited: the {names} families remember a kindness.
+lineage.label,Inherited: the label. Denunciation starts {amount} higher.
