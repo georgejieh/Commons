@@ -74,7 +74,7 @@ card.stamp.yours,Yours
 modifier.iron_rice_bowl.name,Iron Rice Bowl
 modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Rate can't go above ×{rate_cap}."
 modifier.stakhanovite.name,Stakhanovite
-modifier.stakhanovite.text,Your Straights gain +{zeal_percent_per_card} Zeal for each card past {base_length}.
+modifier.stakhanovite.text,"Your Straights gain +{zeal_percent_per_card} Zeal for each card past {base_length}. Each Straight of {growth_length} or more cards you play adds +{zeal_percent_growth} to that, for the run."
 modifier.hidden_reserves.name,Hidden Reserves
 modifier.hidden_reserves.text,Your kickers score their base Grain.
 modifier.landlords_ledger.name,Landlord's Ledger
@@ -402,7 +402,7 @@ modifier.risen_villager.text,A villager who held the landlord seat for a whole S
 modifier.new_landlord.name,New Landlord
 modifier.new_landlord.text,"Your opponent favors the hand types you played most, and calls the landlord seat about as often as you did, over your last three Sets."
 modifier.planned_allocation.name,Planned Allocation
-modifier.planned_allocation.text,Each 2 is twice as likely to be dealt to you.
+modifier.planned_allocation.text,Pick a rank when you buy this. Each card of that rank is twice as likely to be dealt to you.
 modifier.red_ink.name,Red Ink
 modifier.red_ink.text,"Cards stamped with your mark score +{grain} Grain when you play them. Played by anyone else, they score as usual."
 modifier.the_informant.name,The Informant
@@ -539,13 +539,13 @@ campaign.model_harvest.name,Model Harvest
 campaign.model_harvest.text,"Mark {min_cards} or {max_cards} cards in your hand as Model, for the rest of the run. Use on your turn."
 campaign.model_harvest.prompt,Choose {min_cards} or {max_cards} cards to make Model.
 campaign.mutual_aid.name,Mutual Aid
-campaign.mutual_aid.text,"As a peasant, before the first play: give your teammate {max_cards} cards. They give you their {max_cards} lowest cards that are not in a pair or better."
+campaign.mutual_aid.text,"As a peasant, before the first play: give your teammate {max_cards} cards. They give you their {max_cards} lowest cards, singles first."
 campaign.mutual_aid.prompt,Choose {max_cards} cards to give your teammate.
 campaign.overfulfillment.name,Overfulfillment
-campaign.overfulfillment.text,"As landlord, after you take the kitty and before the first play: win this round and your total is multiplied by {win_times}. Lose it and you score nothing for the round."
+campaign.overfulfillment.text,"As landlord, after you take the kitty and before the first play: win this round and what you bank is multiplied by {win_times}. Lose it and you bank nothing."
 campaign.overfulfillment.prompt,Press Use to stake this round.
 campaign.appeal.name,Appeal
-campaign.appeal.text,"Before the first play: lifts this round's debuff. A boss's rule stays."
+campaign.appeal.text,"Before the first play: lifts this round's debuff. A Landlord boss's rule is not a debuff and stays."
 campaign.appeal.prompt,Press Use to lift this round's debuff.
 campaign.grain_loan.name,Grain Loan
 campaign.grain_loan.text,"Gain {coupons} coupons. Famine rises {famine}. Use on your turn, or in either shop."
@@ -554,7 +554,7 @@ campaign.registration_drive.name,Registration Drive
 campaign.registration_drive.text,"Stamp {min_cards} to {max_cards} cards in your hand as yours, for the rest of the run. Use on your turn."
 campaign.registration_drive.prompt,Choose {min_cards} to {max_cards} cards to stamp as yours.
 campaign.seizure_notice.name,Seizure Notice
-campaign.seizure_notice.text,"Take the highest card from the opponent holding the most cards, and give them your lowest. Adds {resentment} Resentment. Use on your turn. Both hands must hold 2 or more cards."
+campaign.seizure_notice.text,"Take the highest card from the opponent holding the most cards, and give them your lowest. On a tie, it is the opponent who plays next. Adds {resentment} Resentment. Use on your turn. Both hands must hold 2 or more cards."
 campaign.seizure_notice.prompt,Press Use to seize a card.
 campaign.anonymous_letter.name,Anonymous Letter
 campaign.anonymous_letter.text,"Use on your turn, before you play: the next player must pass on your play. If you pass, or your play ends the round, it is wasted. Adds {resentment} Resentment."
@@ -565,8 +565,8 @@ campaign.reason.not_peasant,Only a peasant can use it.
 campaign.reason.not_landlord,Only the landlord can use it.
 campaign.reason.play_started,The round's first play has been made.
 campaign.reason.no_debuff,This round has no debuff to lift.
-campaign.reason.already_used,One is already in use.
-campaign.reason.card_count,Choose as many cards as it asks for.
+campaign.reason.already_used,This Campaign is already in use.
+campaign.reason.card_count,Choose the number of cards it asks for.
 campaign.reason.not_in_hand,Choose cards from your hand.
 campaign.reason.already_marked,A chosen card already carries that mark.
 campaign.reason.hand_too_small,Both hands in the trade must hold 2 or more cards.
@@ -585,11 +585,55 @@ action.play_on,Play on
 callout.seizure,Seized!
 callout.seizure.sub,You take {name}'s highest card
 callout.overfulfil,Overfulfil!
-callout.overfulfil.sub,Win and your bank is multiplied by {times}. Lose and you bank nothing.
+callout.overfulfil.sub,Win and what you bank is multiplied by {times}. Lose and you bank nothing.
 callout.stake.won,Plan overfulfilled
 callout.stake.won.sub,You bank {amount}
 callout.stake.lost,Bank voided
 callout.stake.lost.sub,You bank nothing this round
-round.stake.won,Overfulfillment multiplied your bank to {amount}.
-round.stake.lost,Overfulfillment voided your bank. You banked nothing.
+round.stake.won,Overfulfillment raised what you banked to {amount}.
+round.stake.lost,Overfulfillment: you lost the round and banked nothing.
 table.debuff_lifted,lifted by Appeal
+modifier.rehabilitation.name,Rehabilitation
+modifier.rehabilitation.text,"Pick a rank when you buy this. Your cards of that rank move up {first_steps} rank in the Year you buy it and {steps_per_year} more each Year after, stopping below the jokers. Moved up 1, a 7 beats an 8 and loses to a 9."
+modifier.rehabilitation.state,Your {rank}s have moved up {steps}.
+modifier.planned_allocation.state,You picked {rank}s.
+modifier.class_label.name,Class Label
+modifier.class_label.text,"While you are landlord, your stamped cards rank above 2s and below the jokers, in their printed order. This applies to a rank only while every card of that rank in your hand is stamped."
+modifier.collective_farm.name,Collective Farm
+modifier.collective_farm.text,A peasant's Pair also scores the Grain of the last hand their teammate played this round. Nothing if the teammate has only passed.
+modifier.show_trial.name,Show Trial
+modifier.show_trial.text,Your Bombs and Rockets score ×{times_percent_zeal} Zeal. Each one you play adds {resentment} Resentment.
+modifier.model_commune.name,Model Commune
+modifier.model_commune.text,"When you are a peasant, the peasants win the round and your teammate went out first, the round's Commons is multiplied by {times_percent_commons} before it is split."
+modifier.ration_coupon.name,Ration Coupon
+modifier.ration_coupon.text,"Every {passes}th pass you make in a Quota earns {coupons} coupon, up to {cap} coupons a Quota. Forced passes count."
+modifier.ration_coupon.state,"This Quota: {earned} of {cap} coupons earned, after {passed} passes."
+modifier.shock_brigade.name,Shock Brigade
+modifier.shock_brigade.text,Straights may be as short as {length} cards.
+modifier.canteen.name,Canteen
+modifier.canteen.text,"Every Trio, Trio with a Single and Trio with a Pair gains +{zeal_percent} Zeal."
+modifier.red_banner.name,Red Banner
+modifier.red_banner.text,Each heart and diamond that scores adds +{grain} Grain. Jokers have no suit.
+modifier.poor_peasants_association.name,Poor Peasants' Association
+modifier.poor_peasants_association.text,Each scored card printed {low_rank} to {high_rank} scores its own Grain ×{times_percent_grain}.
+modifier.seed_grain.name,Seed Grain
+modifier.seed_grain.text,Every play scores +{grain} Grain for each Quota met while you hold this.
+modifier.seed_grain.state,Now +{grain} Grain on every play.
+modifier.the_bookkeeper.name,The Bookkeeper
+modifier.the_bookkeeper.text,"At a Quota's end, before it pays, earn {coupons} coupon for every {per} coupons you hold, up to {cap} coupons."
+modifier.last_sheaf.name,Last Sheaf
+modifier.last_sheaf.text,The play that empties your hand scores ×{times_percent_zeal} Zeal.
+modifier.steel_target.name,Steel Target
+modifier.steel_target.text,Each Bomb or Rocket you play gives all your later plays +{zeal_percent} Zeal for the run. Each adds {resentment} Resentment.
+modifier.steel_target.state,"Now +{zeal} Zeal on all your plays, from {bombs} Bombs and Rockets."
+modifier.stakhanovite.state,Now +{zeal} Zeal for each card past {base_length}.
+cadre.rank_badge,{rank}s
+store.pick_rank,Pick the rank {name} works on.
+store.pick_cancel,Cancel
+summary.paid_with,"The Quota paid {count} coupons, {kept} of them from {cadre}."
+summary.cadre_paid,{cadre} paid {count} coupons.
+summary.cadre_paid.one,{cadre} paid 1 coupon.
+keyword.coupon.name,Coupon
+keyword.coupon.text,Coupon: what the stores take. A met Quota pays them. Some Cadres pay them too.
+coll.collective,Collective: sold at the state store
+coll.private,Private: sold at the black market

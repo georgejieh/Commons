@@ -84,6 +84,16 @@ static func migrate_from_5(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 6 saves predate each Cadre's own run state (ADR 0021): no Cadre has any, so a
+## Rehabilitation or Planned Allocation held then uses its data's rank, and every growth
+## and count starts at nothing.
+static func migrate_from_6(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"cadre_memos": {}})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -177,7 +187,9 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 		"reroll":
 			return loop.player_reroll()
 		"market_buy":
-			return loop.player_market_buy(int(command["slot"]))
+			# A rank arrived with ADR 0021's picker; older records have none.
+			var rank: int = int(command.get("rank", Ranks.INVALID))
+			return loop.player_market_buy(int(command["slot"]), rank)
 		"market_reroll":
 			return loop.player_market_reroll()
 		"upgrade":
@@ -212,6 +224,8 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 		if fresh[key] is int and not number:
 			return false
 	if not CardMarks.is_valid(checkpoint["card_marks"]):
+		return false
+	if not CadreMemos.is_valid(checkpoint["cadre_memos"]):
 		return false
 	return _levels_valid(checkpoint["hand_levels"])
 

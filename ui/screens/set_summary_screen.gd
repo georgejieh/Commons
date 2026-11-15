@@ -5,6 +5,8 @@ extends Control
 ## overfulfilled in gold beside it. Then what it paid or cost is counted in, with the
 ## norm it raised, and the way on opens: to the store or, after the run's last Set, to
 ## the Year's summary. The button works from the start, so the report can be skipped.
+## Coupons The Bookkeeper paid at the Quota's end are counted in with the reward, and
+## the paid line says so (ADR 0021).
 
 const BAR: Vector2 = Vector2(960, 54)
 const SEAL_WIDTH: float = 150.0
@@ -17,6 +19,9 @@ const OVER_INK: Color = Color("a8791a")
 const START: float = 0.2
 const FILL: float = 0.7
 const BEAT: float = 0.18
+## The Cadre that pays coupons at a Quota's end, before the Quota pays.
+const BOOKKEEPER: String = "the_bookkeeper"
+const BOOKKEEPER_NAME: String = "modifier.the_bookkeeper.name"
 
 var _bar: QuotaBar = QuotaBar.new()
 var _met: bool = false
@@ -24,6 +29,8 @@ var _over: InkSeal = InkSeal.new()
 var _steps: int = 0
 ## What is counted in once the bar is sealed: tiles, then the line saying what it means.
 var _after: Array[Control] = []
+## Coupons The Bookkeeper paid at this Quota's end.
+var _kept: int = 0
 
 
 func open(app: DemoApp) -> void:
@@ -44,7 +51,8 @@ func open(app: DemoApp) -> void:
 	var met_left: float = BAR.x - SEAL_WIDTH * 0.6
 	_over.position = Vector2(met_left - OVER_WIDTH - OVER_GAP, (BAR.y - OVER_WIDTH) / 2.0)
 	_bar.add_child(_over)
-	var paid: int = controller.quota_reward() + controller.over_bonus() if _met else 0
+	_kept = _bookkeeper_paid(controller)
+	var paid: int = _kept + (controller.quota_reward() + controller.over_bonus() if _met else 0)
 	var cost: int = _famine_rise(controller)
 	var tiles: Array[Control] = [
 		_stat(tr("summary.coupons_label"), state.coupons - paid, state.coupons, ScreenKit.COUPON),
@@ -55,6 +63,11 @@ func open(app: DemoApp) -> void:
 	var line: Label = _consequence(controller, state.famine)
 	sheet.add_child(line)
 	_after = [row, line]
+	if _kept > 0 and not _met:
+		var kept: String = Strings.count("summary.cadre_paid", _kept)
+		var kept_line: Label = _line(kept.format({"cadre": tr(BOOKKEEPER_NAME)}), ScreenKit.INK)
+		sheet.add_child(kept_line)
+		_after.append(kept_line)
 	if _steps > 0:
 		var norm: Label = _line(
 			tr("summary.norm_raised").format({"percent": controller.norm_added_percent()}),
@@ -93,6 +106,18 @@ func _famine_rise(controller: RunController) -> int:
 		elif event.type == RunEvent.Type.METER_CHANGED and event.text == TableHud.FAMINE:
 			rise += event.value
 	return rise
+
+
+## What The Bookkeeper paid as this Quota ended: its fired events after the last round
+## was scored.
+func _bookkeeper_paid(controller: RunController) -> int:
+	var paid: int = 0
+	for event: RunEvent in controller.set_events():
+		if event.type == RunEvent.Type.ROUND_SCORED:
+			paid = 0
+		elif event.type == RunEvent.Type.CADRE_FIRED and event.text == BOOKKEEPER:
+			paid += event.value
+	return paid
 
 
 ## The bar and its count, for tests.
@@ -147,7 +172,10 @@ func _stat(caption: String, from: int, to: int, ink: Color) -> Control:
 ## what Famine does.
 func _consequence(controller: RunController, famine: int) -> Label:
 	if _met:
-		var paid: int = controller.quota_reward() + controller.over_bonus()
+		var paid: int = controller.quota_reward() + controller.over_bonus() + _kept
+		if _kept > 0:
+			var words: Dictionary = {"count": paid, "kept": _kept, "cadre": tr(BOOKKEEPER_NAME)}
+			return _line(tr("summary.paid_with").format(words), ScreenKit.INK)
 		return _line(Strings.count("summary.paid", paid), ScreenKit.INK)
 	var text: String = tr("summary.cost").format(
 		{"rise": _famine_rise(controller), "famine": famine}

@@ -36,6 +36,7 @@ var _issued: bool = false
 var _campaign_bought: bool = false
 var _campaign_used: bool = false
 var _opening_shot: bool = false
+var _market_shot: bool = false
 
 
 func _initialize() -> void:
@@ -67,6 +68,7 @@ func _run() -> void:
 		await _click_button_with_text(tr("note.continue"))
 		await _frames(20)
 	await _shot("title")
+	await _collection_frames()
 	await _click_button_with_text(tr("title.new_run"))
 	await _frames(30)
 	await _shot("run_setup")
@@ -99,6 +101,7 @@ func _step() -> void:
 			await _buy_campaign()
 			await _click_button_with_text(tr("market.open"))
 			await _shot("black_market")
+			await _market_frames()
 			await _click_button_with_text(tr("market.back"))
 			await _click_button_with_text(tr("store.leave"))
 		"set_intro":
@@ -211,6 +214,78 @@ func _buy_one() -> void:
 			_bought += 1
 			await _shot("store_bought")
 			return
+
+
+## The collection from the title: both grids, then scrolled to its last card by focus,
+## as a gamepad would.
+func _collection_frames() -> void:
+	await _click_button_with_text(tr("title.collection"))
+	await _frames(30)
+	await _shot("collection")
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	var entries: Array = screen.call("entries")
+	if not entries.is_empty():
+		var last: Control = entries[-1]
+		last.grab_focus()
+		await _frames(10)
+		await _shot("collection_scrolled")
+	await _click_button_with_text(tr("coll.back"))
+	await _frames(20)
+
+
+## In the black market, once a run: the rank picker open over the counter with a ticket
+## in focus, then the notice board holding Cadres that show counts, one of them firing.
+## The stock, Cadres and counts are handed over through the run's state, which only this
+## tool does, and put back after, so the run's record still replays.
+func _market_frames() -> void:
+	if _market_shot:
+		return
+	_market_shot = true
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	var controller: Node = _app.get("controller")
+	var loop: Object = controller.get("_loop")
+	var state: RunState = loop.get("state")
+	var market: Object = loop.get("market")
+	var held: Array[String] = state.inventory.cadres.duplicate()
+	var memos: Dictionary = state.cadre_memos.to_dict()
+	var stock: Array[String] = market.get("_stock")
+	var coupons: int = state.coupons
+	var offered: Array[String] = ["rehabilitation", "steel_target", "last_sheaf"]
+	market.set("_stock", offered)
+	state.coupons = maxi(coupons, 40)
+	screen.call("_refresh")
+	await _frames(10)
+	var counter: Node = screen.get("_counter")
+	await _press_node(counter.get_child(0))
+	var picker: Object = screen.get("_picker")
+	var chips: Array = picker.call("chips")
+	await _shot("black_market_rank_picker")
+	if chips.size() > Ranks.SEVEN:
+		var seven: Control = chips[Ranks.SEVEN]
+		seven.grab_focus()
+		await _snap("black_market_rank_focus")
+	await _press(picker.get("_cancel"))
+	state.inventory.cadres.assign(
+		["rehabilitation", "ration_coupon", "seed_grain", "steel_target", "stakhanovite"]
+	)
+	state.cadre_memos.entry("rehabilitation").put(CadreMemo.RANK, Ranks.SEVEN)
+	state.cadre_memos.entry("ration_coupon").put(RationCouponEffect.EARNED, 2)
+	state.cadre_memos.entry("seed_grain").put(SeedGrainEffect.MET, 3)
+	state.cadre_memos.entry("steel_target").put(SteelTargetEffect.BOMBS, 2)
+	state.cadre_memos.entry("stakhanovite").put(StakhanoviteEffect.LONG_STRAIGHTS, 1)
+	screen.call("_refresh")
+	await _shot("notice_board_counts")
+	var board: Object = screen.get("_board")
+	board.call("fired", controller, "seed_grain", 3)
+	await _snap("notice_board_fired")
+	state.inventory.cadres.assign(held)
+	state.cadre_memos = CadreMemos.from_dict(memos)
+	state.coupons = coupons
+	market.set("_stock", stock)
+	screen.call("_refresh")
+	await _frames(10)
 
 
 ## Photographs the Directive column, its "Issued" seal pressed by hand on the first

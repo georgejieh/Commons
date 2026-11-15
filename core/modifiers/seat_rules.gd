@@ -12,6 +12,8 @@ var _rules: Array[RuleSet] = []
 var _maps: Array[PackedByteArray] = []
 var _landlord: int = Seats.NONE
 var _trick_bombed: bool = false
+## Per seat, a bit per rank whose every card in hand carries that seat's own stamp.
+var _stamped: PackedInt32Array = PackedInt32Array()
 var _seen_revision: int = -1
 var _dirty: bool = true
 ## A uniform table never rebuilds.
@@ -21,6 +23,7 @@ var _fixed: bool = false
 func _init(stack: ModifierStack, base_params: RuleParams = RuleSet.DEFAULT_PARAMS) -> void:
 	_stack = stack
 	_base_params = base_params
+	_stamped.resize(Seats.COUNT)
 	refresh()
 
 
@@ -45,6 +48,7 @@ func map_for(seat: int) -> PackedByteArray:
 func start_round(landlord: int) -> void:
 	_landlord = landlord
 	_trick_bombed = false
+	_stamped.fill(0)
 	_dirty = true
 	refresh()
 
@@ -54,6 +58,14 @@ func set_trick_bombed(bombed: bool) -> void:
 		_trick_bombed = bombed
 		_dirty = true
 		refresh()
+
+
+## Which ranks the seat holds only its own stamped cards of (ADR 0021). The round sets
+## it before each action; a change marks the cache stale.
+func set_stamped(seat: int, mask: int) -> void:
+	if _stamped[seat] != mask:
+		_stamped[seat] = mask
+		_dirty = true
 
 
 ## Rebuilds if the flag is set or the stack has changed. Returns true if it rebuilt.
@@ -71,6 +83,8 @@ func refresh() -> bool:
 		_stack.run_build_ruleset(RulesetContext.new(seat, _landlord, params))
 		_rules.append(RuleSet.new(params))
 		var rank_map: PackedByteArray = Ranks.identity_map()
-		_stack.run_build_rank_map(RankMapContext.new(seat, _landlord, _trick_bombed, rank_map))
+		var context: RankMapContext = RankMapContext.new(seat, _landlord, _trick_bombed, rank_map)
+		context.stamped = _stamped[seat]
+		_stack.run_build_rank_map(context)
 		_maps.append(rank_map)
 	return true

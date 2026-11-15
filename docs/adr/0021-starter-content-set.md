@@ -87,7 +87,7 @@ The Plan's remaining six:
 | Cadre | Tag | Effect | Cost |
 | --- | --- | --- | --- |
 | Rehabilitation | Private | You pick a rank when you buy it. Your cards of that rank beat one more rank for each Year since. It stops below the jokers. | 6 |
-| Class Label | Private | While you are landlord, your stamped cards rank above 2s and below the jokers. | 5 |
+| Class Label | Private | While you are landlord, your stamped cards rank above 2s and below the jokers. A rank counts only while every card of it in your hand is stamped, because ranks are compared by rank, not by card. | 5 |
 | Collective Farm | Collective | A peasant's Pair also scores the Grain of their teammate's last play this round. | 5 |
 | Show Trial | Private | Your Bombs and Rockets score double Zeal. Each one adds 3 Resentment. | 6 |
 | Model Commune | Collective | When the peasants win and your teammate went out first, the round's Commons is multiplied by 1.5. | 5 |
@@ -102,7 +102,7 @@ Eight new ones, so that each way of playing has something to build on:
 | Red Banner | Collective | Each heart and diamond scores 2 more Grain. | Suits | 4 |
 | Poor Peasants' Association | Collective | Cards ranked 3 to 7 score double Grain. | Low cards | 5 |
 | Seed Grain | Collective | Every play scores 3 more Grain for each Quota met while it is held. | Scaling | 6 |
-| The Bookkeeper | Private | At a Quota's end, earn 1 coupon for every 5 you hold, up to 3. | Coupons | 4 |
+| The Bookkeeper | Private | At a Quota's end, met or missed, earn 1 coupon for every 5 you hold, up to 3. | Coupons | 4 |
 | Last Sheaf | Private | The play that empties your hand scores triple Zeal. | Going out | 5 |
 | Steel Target | Private | Each Bomb or Rocket you play adds 0.1 Zeal to all your plays, for the run. Each adds 2 Resentment. | Scaling, bombs | 6 |
 

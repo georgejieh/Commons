@@ -6,6 +6,8 @@ var landlord: int
 ## Seats.NONE at round start.
 var winner: int
 var finish: RoundEvent.Finish
+## At round end: multiplies the peasants' totals before they fill the Commons, to edit.
+var commons_scale: float = 1.0
 
 
 func _init(

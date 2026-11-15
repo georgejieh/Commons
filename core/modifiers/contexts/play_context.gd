@@ -1,6 +1,7 @@
 class_name PlayContext
 extends RefCounted
-## Passed to the play scored hook.
+## Passed to the play scored hook. It runs for previews too, so an effect only reads its
+## CadreMemo here; counting belongs in the turn taken hook.
 
 var seat: int
 var is_landlord: bool
@@ -21,6 +22,14 @@ var card_grain: Array[int] = []
 var rate_cap: float = INF
 ## Multiplies the finished total, after every other step and the cap.
 var total_scale: float = 1.0
+## The round's landlord, or Seats.NONE outside a round.
+var landlord: int = Seats.NONE
+## Cards left in the seat's hand once this play is made, or -1 when unknown.
+var cards_left: int = -1
+## Each seat's plays so far this round, and the Grain its last one scored. Empty when
+## the scorer was not given the round.
+var seat_plays: PackedInt32Array = PackedInt32Array()
+var seat_grain: PackedFloat64Array = PackedFloat64Array()
 
 
 func _init(
@@ -37,3 +46,18 @@ func _init(
 	add_grain = add_grain_value
 	add_zeal = add_zeal_value
 	mul_zeal = mul_zeal_value
+
+
+## The other peasant's seat when this seat is a peasant, else Seats.NONE.
+func teammate() -> int:
+	if landlord == Seats.NONE or seat == landlord:
+		return Seats.NONE
+	for other: int in Seats.COUNT:
+		if other != seat and other != landlord:
+			return other
+	return Seats.NONE
+
+
+## True for a Bomb or a Rocket.
+func is_bomb() -> bool:
+	return pattern.type == Pattern.Type.BOMB or pattern.type == Pattern.Type.ROCKET

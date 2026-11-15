@@ -69,6 +69,8 @@ var over_steps: int = 0
 ## (P4.11).
 var hand_levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
 var card_marks: CardMarks = CardMarks.new()
+## Each held Cadre's own run state, such as a picked rank or a count it keeps (ADR 0021).
+var cadre_memos: CadreMemos = CadreMemos.new()
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
@@ -121,6 +123,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	var max_level: int = Scorer.DEFAULT_PARAMS.max_level
 	state.hand_levels = HandLevels.from_array(data["hand_levels"], max_level)
 	state.card_marks = CardMarks.from_dict(data["card_marks"])
+	state.cadre_memos = CadreMemos.from_dict(data["cadre_memos"])
 	for style_data: Dictionary in data["styles"]:
 		state.styles.append(PlayerStyle.from_dict(style_data))
 	for family_id: String in data["villager_denunciation"]:
@@ -177,6 +180,7 @@ func to_dict() -> Dictionary:
 		"over_steps": over_steps,
 		"hand_levels": hand_levels.to_array(),
 		"card_marks": card_marks.to_dict(),
+		"cadre_memos": cadre_memos.to_dict(),
 		"boss_family": boss_family,
 		"styles": styles.map(func(style: PlayerStyle) -> Dictionary: return style.to_dict()),
 		"villager_denunciation": villager_denunciation.duplicate(),

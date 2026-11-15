@@ -38,6 +38,32 @@ static func validate(
 		# The list repeats a method the script overrides, once per class that defines it.
 		if Hooks.ALL.has(hook) and own_methods.count(hook) < 2:
 			problems.append("%s: does not implement %s" % [definition.id, hook])
+	problems.append_array(_cadre_problems(definition, effect, string_keys))
+	return problems
+
+
+## A Cadre needs an unlock tier, and one that keeps run state needs the line that says
+## where it stands (ADR 0021). A Cadre that asks for a rank must have one in its data,
+## for a run where none was picked.
+static func _cadre_problems(
+	definition: ModifierDef, effect: ModifierEffect, string_keys: Dictionary[String, bool]
+) -> PackedStringArray:
+	var problems: PackedStringArray = []
+	if definition.kind != ModifierDef.Kind.CADRE:
+		return problems
+	if definition.unlock_tier < 0:
+		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	# State is read through the parameters, which the checks above already report.
+	for parameter: String in effect.required_parameters():
+		if not definition.parameters.has(parameter):
+			return problems
+	var keeps_state: bool = not effect.state_values().is_empty()
+	if keeps_state and not string_keys.has(definition.state_key):
+		problems.append("%s: missing state key %s" % [definition.id, definition.state_key])
+	if not keeps_state and not definition.state_key.is_empty():
+		problems.append("%s: state key without state" % definition.id)
+	if definition.needs_rank and not definition.parameters.has(CadreMemo.RANK):
+		problems.append("%s: needs a rank but has no rank to fall back on" % definition.id)
 	return problems
 
 

@@ -249,6 +249,9 @@ func _on_event(event: RunEvent) -> void:
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
 			_dread.refresh(_controller.state_copy(), false, event.seat == 0)
+		RunEvent.Type.CADRE_FIRED:
+			if not (_replaying or _player.flushing):
+				_board.fired(_controller, event.text, event.value)
 	_refresh_status()
 
 

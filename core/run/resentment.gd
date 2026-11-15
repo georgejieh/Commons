@@ -12,6 +12,8 @@ const GRAB: String = "grab"
 const OVERFULFILMENT: String = "overfulfilment"
 ## A private Campaign used (ADR 0021).
 const CAMPAIGN: String = "campaign"
+## A Cadre that adds it, such as Show Trial or Steel Target (ADR 0021).
+const CADRE: String = "cadre"
 
 
 static func add(

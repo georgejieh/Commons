@@ -19,6 +19,7 @@ const TERMS: PackedStringArray = [
 	"stamp",
 	"model",
 	"quota",
+	"coupon",
 	"norm",
 	"audit",
 	"resentment",

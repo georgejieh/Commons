@@ -151,9 +151,24 @@ func reroll() -> int:
 	return _finish("reroll", _loop.player_reroll())
 
 
-## Buys from the black market, which adds Resentment.
-func market_buy(slot: int) -> int:
-	return _finish("market_buy", _loop.player_market_buy(slot))
+## Buys from the black market, which adds Resentment. A Cadre that needs a rank is
+## refused without one (Ranks.THREE to Ranks.TWO).
+func market_buy(slot: int, rank: int = Ranks.INVALID) -> int:
+	return _finish("market_buy", _loop.player_market_buy(slot, rank))
+
+
+## True when buying the Cadre asks for a rank first (ADR 0021).
+func needs_rank(cadre_id: String) -> bool:
+	return _definitions.has(cadre_id) and _definitions[cadre_id].needs_rank
+
+
+## Where a held Cadre stands in the run: its state line and badge count, both empty when
+## it keeps no state or is not held.
+func cadre_standing(cadre_id: String) -> CadreStanding:
+	var state: RunState = _loop.state
+	if not _definitions.has(cadre_id) or not state.inventory.cadres.has(cadre_id):
+		return CadreStanding.new()
+	return CadreStanding.of(_definitions[cadre_id], state.cadre_memos.peek(cadre_id))
 
 
 func market_reroll() -> int:
@@ -461,8 +476,7 @@ func is_table_wide(modifier_id: String) -> bool:
 
 
 func modifier_text(modifier_id: String) -> String:
-	var definition: ModifierDef = _definitions[modifier_id]
-	return tr(definition.text_key).format(definition.text_values())
+	return CadreText.rules(_definitions[modifier_id])
 
 
 func target() -> float:

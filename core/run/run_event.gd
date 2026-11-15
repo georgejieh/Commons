@@ -60,6 +60,9 @@ enum Type {
 	DEBUFF_LIFTED,
 	## The player gained coupons outside a Set's reward: value is how many.
 	COUPONS_GAINED,
+	## A held Cadre fired in a way the player should see (ADR 0021): value is what it
+	## fired for, such as coupons paid or 1 for a count that grew; text is its ID.
+	CADRE_FIRED,
 }
 
 var type: Type

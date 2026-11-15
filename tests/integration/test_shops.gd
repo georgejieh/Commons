@@ -64,7 +64,8 @@ func test_buying_from_the_black_market_always_raises_resentment() -> void:
 				continue
 			var before: int = loop.state.resentment
 			var events: int = _resentment_events(loop)
-			assert_int(loop.player_market_buy(slot)).is_equal(RunLoop.Reason.OK)
+			# A rank for the Cadres that ask for one; the others ignore it (ADR 0021).
+			assert_int(loop.player_market_buy(slot, Ranks.SEVEN)).is_equal(RunLoop.Reason.OK)
 			assert_int(loop.state.resentment).is_greater(before)
 			assert_int(_resentment_events(loop)).is_equal(events + 1)
 			assert_str(loop.events()[-1].text).is_equal(Resentment.PRIVATE_PURCHASE)
@@ -258,10 +259,11 @@ func test_reeducation_can_exchange_for_a_private_cadre() -> void:
 
 func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
 	var loop: RunLoop = _at_the_shops(19)
-	# The state store has as many Cadres as slots, so a reroll would only reorder them,
-	# but it has more Directives than their slots, and those it redraws.
-	assert_int(STORE_POOL.cadres.size()).is_less_equal(STORE.slots)
-	var cadres_only: RunShop = RunShop.new(loop.state, STORE, STORE_POOL.cadres)
+	# A counter with no more Cadres than slots would only reorder them on a reroll. The
+	# state store has more Cadres than slots since ADR 0021, and more Directives than
+	# their slots, and it redraws both.
+	var few: Array[ModifierDef] = STORE_POOL.cadres.slice(0, STORE.slots)
+	var cadres_only: RunShop = RunShop.new(loop.state, STORE, few)
 	cadres_only.open()
 	assert_bool(cadres_only.reroll_changes()).is_false()
 	assert_int(RunLoop.DEFAULT_DIRECTIVES.directives.size()).is_greater(STORE.directive_slots)

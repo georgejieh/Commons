@@ -23,7 +23,8 @@ static func score_play(
 	is_landlord: bool,
 	stack: ModifierStack,
 	params: ScoreParams = DEFAULT_PARAMS,
-	plays_before: int = 0
+	plays_before: int = 0,
+	facts: PlayFacts = null
 ) -> ScoreBreakdown:
 	var scored: int = 0
 	for card: CardInstance in cards:
@@ -43,6 +44,11 @@ static func score_play(
 
 	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, 0.0, 1.0)
 	play.plays_before = plays_before
+	if facts != null:
+		play.landlord = facts.landlord
+		play.cards_left = facts.cards_left
+		play.seat_plays = facts.seat_plays
+		play.seat_grain = facts.seat_grain
 	play.grain = grain
 	play.card_grain = params.card_grain
 	stack.run_play_scored(play)

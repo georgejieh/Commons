@@ -16,3 +16,5 @@ cost = 5
 unlock_tier = 2
 name_key = "modifier.planned_allocation.name"
 text_key = "modifier.planned_allocation.text"
+needs_rank = true
+state_key = "modifier.planned_allocation.state"

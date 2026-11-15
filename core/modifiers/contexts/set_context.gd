@@ -4,6 +4,9 @@ extends RefCounted
 
 var set_index: int
 var target_met: bool
+## The player's coupons before the Quota pays, and coupons to add to them, to edit.
+var coupons: int = 0
+var add_coupons: int = 0
 
 
 func _init(

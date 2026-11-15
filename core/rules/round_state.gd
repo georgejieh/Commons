@@ -289,8 +289,30 @@ func _rekey_current() -> void:
 
 
 func _sync_rules() -> void:
+	_sync_stamps()
 	if _table.refresh():
 		_rekey_current()
+
+
+## Tells the rules which ranks each seat holds only its own stamped cards of, for Class
+## Label (ADR 0021). The seat whose play is on the table keeps the mask it played
+## under, so emptying a rank by playing it never re-ranks the play it just made.
+func _sync_stamps() -> void:
+	for seat: int in Seats.COUNT:
+		if _current != null and seat == _trick_leader:
+			continue
+		_table.set_stamped(seat, _stamp_mask(seat))
+
+
+func _stamp_mask(seat: int) -> int:
+	var stamped: int = 0
+	var plain: int = 0
+	for card: CardInstance in _hands[seat].cards():
+		if card.owner_stamp() == seat:
+			stamped |= 1 << card.base_rank()
+		else:
+			plain |= 1 << card.base_rank()
+	return stamped & ~plain
 
 
 func _finish(seat: int) -> void:

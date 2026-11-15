@@ -53,6 +53,9 @@ class Recorder:
 	func audit(_context: AuditContext) -> void:
 		log.append(label)
 
+	func turn_taken(_context: TurnContext) -> void:
+		log.append(label)
+
 
 ## A rules effect of the kind later items will add.
 class WildForHolder:
@@ -126,6 +129,54 @@ func test_every_definition_in_data_is_valid() -> void:
 	assert_int(campaigns).is_equal(8)
 
 
+## ADR 0021's 24 Cadres: 11 collective at the state store and 13 private at the black
+## market, each with its effect, its parameters, its strings, an unlock tier and, where
+## it keeps run state, the line that says where it stands.
+func test_both_pools_hold_adr_0021s_cadres_each_complete() -> void:
+	var keys: Dictionary[String, bool] = _string_keys()
+	var store: CadrePool = load(DATA + "run/cadre_pool.tres")
+	var market: CadrePool = load(DATA + "run/market_pool.tres")
+	assert_int(store.cadres.size()).is_equal(11)
+	assert_int(market.cadres.size()).is_equal(13)
+	var seen: Dictionary[String, bool] = {}
+	for definition: ModifierDef in store.cadres + market.cadres:
+		assert_bool(seen.has(definition.id)).override_failure_message(definition.id).is_false()
+		seen[definition.id] = true
+		var problems: PackedStringArray = ModifierValidator.validate(definition, keys)
+		assert_array(Array(problems)).override_failure_message(definition.id).is_empty()
+		assert_int(definition.kind).is_equal(ModifierDef.Kind.CADRE)
+		assert_bool(EffectRegistry.has_effect(definition.id)).is_true()
+		assert_bool(definition.unlock_tier >= 0 and definition.unlock_tier <= 3).is_true()
+		assert_int(definition.cost).is_greater(0)
+	for definition: ModifierDef in store.cadres:
+		assert_int(definition.tag).is_equal(ModifierDef.Tag.COLLECTIVE)
+	for definition: ModifierDef in market.cadres:
+		assert_int(definition.tag).is_equal(ModifierDef.Tag.PRIVATE)
+	# Only the two rank pickers ask for a rank.
+	var picking: Array[String] = []
+	for definition: ModifierDef in store.cadres + market.cadres:
+		if definition.needs_rank:
+			picking.append(definition.id)
+	picking.sort()
+	assert_array(picking).is_equal(["planned_allocation", "rehabilitation"])
+
+
+func test_the_validator_catches_a_cadre_missing_its_state_line_or_rank() -> void:
+	var keys: Dictionary[String, bool] = _string_keys()
+	var no_state: ModifierDef = _load_def("seed_grain").duplicate()
+	no_state.state_key = ""
+	assert_array(Array(ModifierValidator.validate(no_state, keys))).is_not_empty()
+	var stray: ModifierDef = _load_def("canteen").duplicate()
+	stray.state_key = "modifier.canteen.text"
+	assert_array(Array(ModifierValidator.validate(stray, keys))).is_not_empty()
+	var no_rank: ModifierDef = _load_def("planned_allocation").duplicate()
+	no_rank.parameters = {"percent": 200}
+	assert_array(Array(ModifierValidator.validate(no_rank, keys))).is_not_empty()
+	var no_tier: ModifierDef = _load_def("canteen").duplicate()
+	no_tier.unlock_tier = -1
+	assert_array(Array(ModifierValidator.validate(no_tier, keys))).is_not_empty()
+
+
 ## Each reason a Campaign can be refused has its own line for the tray to show.
 func test_every_campaign_refusal_has_a_reason_string() -> void:
 	var keys: Dictionary[String, bool] = _string_keys()
@@ -173,7 +224,7 @@ func test_the_validator_catches_each_kind_of_bad_definition() -> void:
 
 
 func test_the_hook_list_is_complete_and_each_hook_is_a_method() -> void:
-	assert_int(Hooks.ALL.size()).is_equal(12)
+	assert_int(Hooks.ALL.size()).is_equal(13)
 	var effect: ModifierEffect = ModifierEffect.new()
 	for hook: String in Hooks.ALL:
 		assert_bool(effect.has_method(hook)).is_true()
@@ -201,6 +252,7 @@ func _run_every_hook(stack: ModifierStack) -> void:
 	stack.run_shop_open(ShopContext.new(0))
 	stack.run_meter_change(MeterContext.new("famine", 1))
 	stack.run_audit(AuditContext.new(0))
+	stack.run_turn_taken(TurnContext.new(0, 0, null, 0, 0))
 
 
 func test_every_hook_runs_cadres_then_debuffs_then_the_boss() -> void:

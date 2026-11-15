@@ -289,6 +289,20 @@ func test_cadres_carry_their_unlock_tiers() -> void:
 		"the_informant": 1,
 		"planned_allocation": 2,
 		"red_ink": 2,
+		"collective_farm": 0,
+		"ration_coupon": 0,
+		"canteen": 0,
+		"red_banner": 0,
+		"the_bookkeeper": 0,
+		"model_commune": 1,
+		"shock_brigade": 1,
+		"show_trial": 1,
+		"last_sheaf": 1,
+		"poor_peasants_association": 2,
+		"seed_grain": 2,
+		"class_label": 2,
+		"rehabilitation": 3,
+		"steel_target": 3,
 	}
 	var cadres: Array[ModifierDef] = RunLoop.all_cadres()
 	cadres.append(preload("res://data/modifiers/red_ink.tres"))

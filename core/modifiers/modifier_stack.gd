@@ -15,9 +15,10 @@ func _init() -> void:
 	_changed()
 
 
-func add(definition: ModifierDef, holder_seat: int) -> ActiveModifier:
+## memo is the Cadre's saved run state; without one the effect keeps a fresh one.
+func add(definition: ModifierDef, holder_seat: int, memo: CadreMemo = null) -> ActiveModifier:
 	var entry: ActiveModifier = ActiveModifier.new(
-		definition, EffectRegistry.create(definition, holder_seat)
+		definition, EffectRegistry.create(definition, holder_seat, memo)
 	)
 	add_entry(entry)
 	return entry
@@ -107,6 +108,11 @@ func run_meter_change(context: MeterContext) -> void:
 func run_audit(context: AuditContext) -> void:
 	for entry: ActiveModifier in _by_hook[Hooks.AUDIT]:
 		entry.effect.audit(context)
+
+
+func run_turn_taken(context: TurnContext) -> void:
+	for entry: ActiveModifier in _by_hook[Hooks.TURN_TAKEN]:
+		entry.effect.turn_taken(context)
 
 
 func _changed() -> void:

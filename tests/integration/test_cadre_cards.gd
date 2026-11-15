@@ -42,7 +42,9 @@ func test_store_cards_show_art_and_put_name_and_rules_in_the_tooltip() -> void:
 		assert_str(tip).contains(tr("modifier.%s.name" % stock[slot]))
 		var rule: String = _app.controller.modifier_text(stock[slot])
 		assert_str(tip.replace("\n", " ")).contains(rule)
-		assert_int(_labels(panel).size()).is_equal(0)
+		# A Cadre with no art yet shows its name on the stock, and only that.
+		var bare: bool = ScreenKit.ART.cadre(stock[slot]) == null
+		assert_int(_labels(panel).size()).is_equal(1 if bare else 0)
 
 
 func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
@@ -154,5 +156,7 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 func test_the_collection_lists_the_cadres_of_both_shops() -> void:
 	var collection: Control = _app.show_screen("collection")
 	await await_idle_frame()
-	var grid: GridContainer = collection.find_children("*", "GridContainer", true, false)[0]
-	assert_int(grid.get_child_count()).is_equal(RunLoop.all_cadres().size())
+	var listed: int = 0
+	for grid: Node in collection.find_children("*", "GridContainer", true, false):
+		listed += grid.get_child_count()
+	assert_int(listed).is_equal(RunLoop.all_cadres().size())

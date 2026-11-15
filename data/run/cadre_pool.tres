@@ -4,7 +4,15 @@
 [ext_resource type="Resource" path="res://data/modifiers/cultural_revolution.tres" id="2"]
 [ext_resource type="Resource" path="res://data/modifiers/promotion_of_the_masses.tres" id="3"]
 [ext_resource type="Resource" path="res://data/modifiers/iron_rice_bowl.tres" id="4"]
+[ext_resource type="Resource" path="res://data/modifiers/collective_farm.tres" id="5"]
+[ext_resource type="Resource" path="res://data/modifiers/model_commune.tres" id="6"]
+[ext_resource type="Resource" path="res://data/modifiers/ration_coupon.tres" id="7"]
+[ext_resource type="Resource" path="res://data/modifiers/shock_brigade.tres" id="8"]
+[ext_resource type="Resource" path="res://data/modifiers/canteen.tres" id="9"]
+[ext_resource type="Resource" path="res://data/modifiers/red_banner.tres" id="10"]
+[ext_resource type="Resource" path="res://data/modifiers/poor_peasants_association.tres" id="11"]
+[ext_resource type="Resource" path="res://data/modifiers/seed_grain.tres" id="12"]
 
 [resource]
 script = ExtResource("1")
-cadres = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4")])
+cadres = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12")])

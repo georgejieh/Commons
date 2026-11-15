@@ -52,6 +52,8 @@ var _shown_coupons: float = 0.0
 ## The state store's Directives; the black market issues none.
 var _directives: DirectiveRow = null
 var _campaign_stall: CampaignStall = CampaignStall.new()
+## Asks for a rank before a Cadre that needs one is bought (ADR 0021).
+var _picker: RankPicker = RankPicker.new()
 
 
 func open(app: DemoApp) -> void:
@@ -79,7 +81,7 @@ func open(app: DemoApp) -> void:
 		top.append(_resentment_box())
 	column.add_child(ScreenKit.row(top, 64))
 	if market:
-		column.add_child(_warning())
+		column.add_child(StoreNotes.warning(app.controller, READING_WIDTH * 2.0))
 	_counter.add_theme_constant_override("separation", 28)
 	_campaign_stall.setup(app, market, is_issuing)
 	_campaign_stall.spent.connect(_on_directive_spent)
@@ -109,7 +111,7 @@ func open(app: DemoApp) -> void:
 		door.pressed.connect(func() -> void: app.show_screen("black_market"))
 		column.add_child(ScreenKit.row([leave, _reroll, door]))
 		if app.controller.is_rationed():
-			column.add_child(_rationing_note(app.controller))
+			column.add_child(StoreNotes.rationing(app.controller))
 	# A paper chip, so the line reads over the mural.
 	var chip: VBoxContainer = ScreenKit.card(Vector2(0, 0))
 	chip.add_child(ScreenKit.eyebrow(tr("store.shelf")))
@@ -120,6 +122,7 @@ func open(app: DemoApp) -> void:
 	var word: String = tr("market.paid" if market else "store.approved")
 	_seal.prepare(word, MARKET_INK if market else ScreenKit.RED, SEAL_WIDTH)
 	add_child(_seal)
+	add_child(_picker)
 	_shown_coupons = app.controller.state_copy().coupons
 	_shown_resentment = app.controller.state_copy().resentment
 	_refresh()
@@ -201,14 +204,20 @@ func _item(slot: int, cadre_id: String) -> Control:
 
 
 ## Buys the Cadre in a slot and acts it out: the coupons roll down, the card is sealed,
-## then it shrinks away to its place on the board. Reduced motion skips to the result.
-func _buy(slot: int, panel: Control) -> void:
+## then it shrinks away to its place on the board. Reduced motion skips to the result. A
+## Cadre that needs a rank asks for one over the counter first.
+func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
 	if is_issuing():
 		return
 	var controller: RunController = _app.controller
+	if rank == Ranks.INVALID and market and controller.needs_rank(_desk.stock()[slot]):
+		var name: String = tr("modifier.%s.name" % _desk.stock()[slot])
+		var then: Callable = func(picked: int) -> void: _buy(slot, panel, picked)
+		_picker.ask(tr("store.pick_rank").format({"name": name}), _counter, then)
+		return
 	var held: int = controller.state_copy().inventory.cadres.size()
 	if market:
-		controller.market_buy(slot)
+		controller.market_buy(slot, rank)
 	else:
 		controller.buy(slot)
 	var state: RunState = controller.state_copy()
@@ -252,7 +261,8 @@ func is_buying() -> bool:
 
 ## True while a Cadre purchase or a Directive's issue is being acted out.
 func is_issuing() -> bool:
-	return _busy or _campaign_stall.is_busy() or (_directives != null and _directives.is_busy())
+	var directing: bool = _directives != null and _directives.is_busy()
+	return _busy or _picker.is_open() or _campaign_stall.is_busy() or directing
 
 
 ## A Directive was paid for: the coupons roll down while its document is acted out.
@@ -267,16 +277,6 @@ func _on_directive_spent() -> void:
 func _read(tip: String) -> void:
 	_reading.text = tip
 	_reading.visible = not tip.is_empty()
-
-
-## The black market's warning: what every purchase there costs beyond coupons.
-func _warning() -> Control:
-	var note: KeywordText = KeywordText.new()
-	note.add_theme_font_size_override("normal_font_size", 24)
-	note.add_theme_color_override("default_color", ScreenKit.STYLE.paper_bright)
-	note.custom_minimum_size = Vector2(READING_WIDTH * 2.0, 0)
-	note.set_rule(tr("market.warning").format({"rise": _app.controller.purchase_resentment()}))
-	return note
 
 
 func _resentment_box() -> Control:
@@ -382,14 +382,3 @@ func _leave() -> void:
 
 func _coupon_text(value: float) -> String:
 	return Strings.count("store.coupons", roundi(value))
-
-
-## Why the counter is short while rationing holds.
-func _rationing_note(controller: RunController) -> Label:
-	var slots: int = controller.store_stock().size()
-	var text: String = Strings.count("store.rationed", slots).format(
-		{"below": controller.rationing_lifts_below()}
-	)
-	var note: Label = ScreenKit.label(text, 22)
-	note.add_theme_color_override("font_color", ScreenKit.RED)
-	return note

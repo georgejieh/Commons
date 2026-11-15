@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "shock_brigade"
+kind = 0
+tag = 0
+lever = 0
+tier = 0
+hooks = Array[String](["build_ruleset"])
+parameters = Dictionary[String, int]({"length": 4})
+rarity = 1
+cost = 5
+unlock_tier = 1
+name_key = "modifier.shock_brigade.name"
+text_key = "modifier.shock_brigade.text"
+table_wide = true

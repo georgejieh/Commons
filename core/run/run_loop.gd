@@ -387,7 +387,11 @@ func open_shop() -> Reason:
 
 
 func player_buy(slot: int) -> Reason:
-	return _shop_command({"type": "buy", "slot": slot}, shop.buy.bind(slot))
+	var bought: ModifierDef = _stocked(shop, slot)
+	var reason: Reason = _shop_command({"type": "buy", "slot": slot}, shop.buy.bind(slot))
+	if reason == Reason.OK:
+		RunCadres.bought(state, bought, Ranks.INVALID)
+	return reason
 
 
 func player_reroll() -> Reason:
@@ -400,12 +404,27 @@ func player_directive(slot: int) -> Reason:
 
 
 ## Buys from the black market. Every purchase there is a private one, and adds
-## Resentment.
-func player_market_buy(slot: int) -> Reason:
-	var reason: Reason = _shop_command({"type": "market_buy", "slot": slot}, market.buy.bind(slot))
+## Resentment. A Cadre that needs a rank is refused without one from 3 to 2 (ADR 0021).
+func player_market_buy(slot: int, rank: int = Ranks.INVALID) -> Reason:
+	var bought: ModifierDef = _stocked(market, slot)
+	if _awaiting == Awaiting.SHOP and not RunCadres.rank_fits(bought, rank):
+		return Reason.ILLEGAL
+	var command: Dictionary = {"type": "market_buy", "slot": slot}
+	if rank != Ranks.INVALID:
+		command["rank"] = rank
+	var reason: Reason = _shop_command(command, market.buy.bind(slot))
 	if reason == Reason.OK:
+		RunCadres.bought(state, bought, rank)
 		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
 	return reason
+
+
+## The Cadre on a counter's slot, or null for an empty or sold one.
+func _stocked(counter: RunShop, slot: int) -> ModifierDef:
+	var stock: Array[String] = counter.stock()
+	if slot < 0 or slot >= stock.size() or stock[slot] == RunShop.SOLD:
+		return null
+	return _pool_by_id[stock[slot]]
 
 
 func player_market_reroll() -> Reason:
@@ -449,6 +468,7 @@ func next_set() -> Reason:
 			_awaiting = Awaiting.RUN_OVER
 			return Reason.OK
 		state.year += 1
+		state.cadre_memos.new_year(state.inventory.cadres)
 	state.set_index = (state.set_index + 1) % SetConfig.SETS_PER_YEAR
 	state.set_type = state.set_index as RunState.SetType
 	return start_set()
@@ -467,7 +487,7 @@ func set_number() -> int:
 func _rebuild_modifiers() -> void:
 	_stack.clear()
 	for cadre_id: String in state.inventory.cadres:
-		_stack.add(_pool_by_id[cadre_id], PLAYER)
+		_stack.add(_pool_by_id[cadre_id], PLAYER, state.cadre_memos.entry(cadre_id))
 	for round_index: int in range(1, state.round_index + 1):
 		var id: String = state.debuff_ladder[round_index]
 		if id == RunState.NO_DEBUFF:
@@ -606,7 +626,7 @@ func _collect_round_events() -> void:
 		var event: RoundEvent = round_events[index]
 		set_log.add(RunEvent.wrap(event))
 		if event.type == RoundEvent.Type.PLAYED:
-			var total: float = _scoring.score(event)
+			var total: float = _scoring.score(event, _round.remaining()[event.seat])
 			if event.seat == PLAYER:
 				_resent(
 					(
@@ -620,7 +640,17 @@ func _collect_round_events() -> void:
 			scored.rate = _scoring.last_rate()
 			scored.zeal = _scoring.last_zeal()
 			set_log.add(scored)
+			_take_turn(event)
+		elif event.type == RoundEvent.Type.PASSED:
+			_take_turn(event)
 	_round_seen = round_events.size()
+
+
+## Hands a real play or pass to the Cadres that count them (ADR 0021).
+func _take_turn(event: RoundEvent) -> void:
+	var turn: TurnContext = RunCadres.take_turn(_stack, state, event, _round, PLAYER)
+	_resent(turn.resentment, Resentment.CADRE)
+	RunCadres.announce(state, set_log, PLAYER)
 
 
 func _finish_round() -> void:
@@ -628,10 +658,13 @@ func _finish_round() -> void:
 	var finish: RoundEvent.Finish = _round.events()[-1].value as RoundEvent.Finish
 	var winner: int = _round.winner()
 	var landlord: int = state.landlord_seat
-	_stack.run_round_end(RoundContext.new(landlord, winner, finish))
+	var ending: RoundContext = RoundContext.new(landlord, winner, finish)
+	_stack.run_round_end(ending)
 	var totals: PackedFloat64Array = RoundTotals.totals(
 		_scoring.scores(), landlord, winner, finish, _table.rules_for(landlord)
 	)
+	RunCadres.scale_commons(totals, landlord, ending.commons_scale)
+	RunCadres.announce(state, set_log, PLAYER)
 	campaigns.settle(totals, landlord, winner)
 	RoundBanking.bank(state, totals, PLAYER, set_log.events())
 	if landlord != PLAYER:
@@ -696,7 +729,12 @@ func _end_round() -> void:
 
 func _end_set() -> void:
 	var met: bool = state.set_progress >= target()
-	_stack.run_set_end(SetContext.new(state.set_index, met))
+	# Cadres that pay at a Quota's end are paid before the Quota is.
+	var ending: SetContext = SetContext.new(state.set_index, met)
+	ending.coupons = state.coupons
+	_stack.run_set_end(ending)
+	state.coupons += ending.add_coupons
+	RunCadres.announce(state, set_log, PLAYER)
 	var steps: int = 0
 	if met:
 		state.coupons += _sets.reward(state.set_type)
@@ -757,6 +795,7 @@ func _choose_boss() -> void:
 	var purge: int = boss.parameters.get("purge", 0)
 	for cadre_id: String in Bosses.purge(state.inventory, purge, stream):
 		set_log.add(RunEvent.new(RunEvent.Type.CADRE_PURGED, PLAYER, 0, 0.0, cadre_id))
+	state.cadre_memos.keep_only(state.inventory.cadres)
 	if boss == DEFAULT_BOSSES.risen:
 		# The risen family takes seat 1; if the roster already sat it in seat 2, the two
 		# seats trade so no family sits twice.
@@ -882,6 +921,7 @@ func _reeducate() -> void:
 	var change: PackedStringArray = Reeducation.change_cadre(
 		state.inventory, all_cadres(), state.streams.stream(RandomStreams.EVENTS)
 	)
+	state.cadre_memos.keep_only(state.inventory.cadres)
 	set_log.add(RunEvent.new(RunEvent.Type.REEDUCATED, PLAYER, 0, 0.0, ">".join(change)))
 	_awaiting = Awaiting.REEDUCATION
 

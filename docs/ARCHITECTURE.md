@@ -75,11 +75,12 @@ Each hook takes one typed context:
 | `build_rank_map` | `RankMapContext` | seat, landlord, trick_bombed, rank_map |
 | `on_deal` | `DealContext` | landlord, deal |
 | `round_start` | `RoundContext` | landlord, winner, finish |
-| `play_scored` | `PlayContext` | seat, is_landlord, pattern, add_grain, add_zeal, mul_zeal, rate_cap, total_scale |
-| `card_scored` | `CardContext` | seat, is_landlord, card, grain |
+| `play_scored` | `PlayContext` | seat, is_landlord, landlord, pattern, cards_left, seat_plays, seat_grain, add_grain, add_zeal, mul_zeal, rate_cap, total_scale |
+| `card_scored` | `CardContext` | seat, is_landlord, card, own_grain, grain |
+| `turn_taken` | `TurnContext` | seat, landlord, pattern (null for a pass), cards_left, player, resentment, coupons |
 | `trick_won` | `TrickContext` | winner, landlord |
-| `round_end` | `RoundContext` | landlord, winner, finish |
-| `set_end` | `SetContext` | set_index, target_met |
+| `round_end` | `RoundContext` | landlord, winner, finish, commons_scale |
+| `set_end` | `SetContext` | set_index, target_met, coupons, add_coupons |
 | `shop_open` | `ShopContext` | seat |
 | `meter_change` | `MeterContext` | meter, delta |
 | `audit` | `AuditContext` | faces |
@@ -146,7 +147,7 @@ The two setbacks:
 - **Rationing** holds while Famine stays up. `RunShop.slot_count()` cuts the store's slots for as long as it lasts.
 - **Reeducation** is owed once. `open_shop()` serves it in place of the store: the run moves to `REEDUCATION`, the plot is emptied, and one held Cadre is exchanged ([ADR 0019](adr/0019-reeducation-setback.md)).
 
-Death is checked after each meter move, at a state that may go to `RUN_END`: Set end, or round end for a shortfall. The run log gets `RUN_DIED`, naming the meter. Run saves are schema 6 (`RunRecord.migrate_from_5` adds card marks and hand levels, and `RunRecord.migrate_from_4` added the norm, both P4.11; `RunRecord.migrate_from_3` added `store_sold`, P4.10); `RunRecord.migrate_from_2` added the setback flags and Resentment for schema 3.
+Death is checked after each meter move, at a state that may go to `RUN_END`: Set end, or round end for a shortfall. The run log gets `RUN_DIED`, naming the meter. Run saves are schema 7 (`RunRecord.migrate_from_6` adds the Cadres' run state; `RunRecord.migrate_from_5` added card marks and hand levels, and `RunRecord.migrate_from_4` added the norm, both P4.11; `RunRecord.migrate_from_3` added `store_sold`, P4.10); `RunRecord.migrate_from_2` added the setback flags and Resentment for schema 3.
 
 **Resentment (P4.2).** `RunState.resentment` runs from 0 to 100. `Resentment` and `data/run/resentment.tres` define what raises it:
 
@@ -167,9 +168,15 @@ Resentment acts in two ways:
 - **Hand levels and Directives.** Each hand type's level is saved in `RunState.hand_levels`, and the loop scores with it. A `DirectiveDef` (`data/modifiers/directives/`, pooled in `data/run/directive_pool.tres`) names the hand types it raises. The state store draws `directive_slots` of them on the shop stream after every other shop draw, leaving out a family already at the top level, and a reroll redraws them. Buying one is the `directive` command (`RunLoop.player_directive`): it costs its price and raises each of its types one level at once. `ModifierDef` and `DirectiveDef` carry an `unlock_tier` that nothing reads until P4.14.
 - **Campaigns.** A `CampaignDef` (`data/modifiers/campaigns/`) is a one-use item held in `RunInventory.consumables`, up to `campaign_slots`. Its behaviour is a `CampaignEffect` in `core/campaigns/effects/`, registered by ID in `CampaignRegistry`. Each shop draws `campaign_offers` from its own pool (`CampaignCounter`) at the very end of `open_shop()`, and a reroll redraws them. Two saved commands drive them: `campaign_buy`, and `campaign` (the held slot and the chosen card IDs, `RunLoop.player_campaign`). A refused use changes nothing; `campaign_reason` gives the code the UI explains.
   - **When.** Most are used on the player's turn. Mutual Aid and Appeal need a moment before the landlord's first play, which a peasant never has, so the loop stops at `Awaiting.PLAYER_OPENING`, after the plot swap, only while a peasant holds a Campaign usable there. The `begin` command ends the wait. It sits inside the round's play state, so the run-state table is unchanged.
-  - **Round effects** (the doubled-or-nothing stake, the forced pass, the lifted debuff) live in `CampaignRound`, reset at each round's start and end and rebuilt by replaying the Set's commands, so nothing is added to the save. Run saves stay at schema 6.
+  - **Round effects** (the doubled-or-nothing stake, the forced pass, the lifted debuff) live in `CampaignRound`, reset at each round's start and end and rebuilt by replaying the Set's commands, so nothing is added to the save.
   - **Hands.** `RoundState.trade()` swaps cards one for one between two seats mid-round and `RoundState.mark()` marks a live card. A kitty card that leaves the landlord's hand is dropped from the public kitty, because the Expert bot deals the unplayed kitty to the landlord when it samples hands. Bots never use Campaigns; `AidChoice` picks what a teammate gives in Mutual Aid.
   - **Meters.** Grain Loan's Famine goes through the `campaign_famine` row. In a shop a death ends the run at once; at the table it is found at the round's end, where every round already checks.
+- **What a Cadre remembers.** `RunState.cadre_memos` (`CadreMemos`: Cadre ID to a `CadreMemo` of named ints) holds a Cadre's run state: a picked rank, Years held, growth and counts. The stack binds the memo onto the effect when it is built (`ModifierStack.add(def, seat, memo)`), as it binds `parameters` and `holder_seat`, so no effect touches `RunState`. Buying a Cadre resets its memo, and losing one (reeducation, The Purge) drops it. An effect that pays or grows calls `memo.fire(amount)`, which the loop logs as `CADRE_FIRED`, and the table pulses that Cadre's card and shows its count.
+  - **`turn_taken`** runs after every real play or pass and never for a preview, because `play_scored` also runs for previews and must stay read-only. All counting happens there, and so does the Resentment a Cadre adds.
+  - **Stacking on one card.** Model doubles the printed Grain before any hook. `CardContext.own_grain` is that value, fixed before hooks, and a hook that multiplies (Poor Peasants' Association) adds a multiple of it, while flat Grain (Red Banner, Red Ink) is added and never multiplied. The order of hooks then does not matter, with one old exception: Landlord's Ledger doubles the running Grain.
+  - **Zeal** is the floor, or (1 + the flat Zeal added) times every multiplier. Multipliers sit inside Zeal, so a total cut by a debuff still shows as a last factor.
+  - **A picked rank.** A `ModifierDef` with `needs_rank` takes a rank at purchase (`market_buy` carries it), kept in the memo. Without one, the data's rank is the fallback.
+  - **Class Label** is per rank, because the rank map is: while the holder is landlord, a rank is raised only while every card of it in the holder's hand carries their stamp. `RoundState` works out that mask before each action, and the seat whose play is on the table keeps the mask it played under.
   - **Events.** Eight run events (`CAMPAIGN_USED`, `CARDS_MARKED`, `CARDS_MOVED`, `PASS_FORCED`, `LETTER_LAPSED`, `STAKE_SETTLED`, `DEBUFF_LIFTED`, `COUPONS_GAINED`) let the table play each use from the log. The tray is `ui/screens/campaign_tray.gd`, and the beats are in `ui/table2d/campaign_moments.gd`. `commons_campaign` (C, or d-pad up) reaches the tray.
 - **Caught lies.** A declaration above true need (`RunParams.base_need` until P4.5) is a lie. A checked lie is replaced by the true need before `Banking.split`.
 - **What a caught lie costs.**

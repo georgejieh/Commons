@@ -17,7 +17,7 @@ if [ $# -eq 0 ]; then
 fi
 # The unbound debug port stops a parse error from hanging in the interactive debugger.
 "$godot" --headless --path . -s -d --remote-debug tcp://127.0.0.1:0 \
-	res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode "$@" 2>&1 | tee "$log"
+	res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode --continue "$@" 2>&1 | tee "$log"
 
 if grep -q 'No test cases found' "$log"; then
 	echo "No tests ran." >&2

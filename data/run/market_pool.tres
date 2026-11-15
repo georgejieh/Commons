@@ -8,7 +8,13 @@
 [ext_resource type="Resource" path="res://data/modifiers/stakhanovite.tres" id="6"]
 [ext_resource type="Resource" path="res://data/modifiers/hidden_reserves.tres" id="7"]
 [ext_resource type="Resource" path="res://data/modifiers/landlords_ledger.tres" id="8"]
+[ext_resource type="Resource" path="res://data/modifiers/rehabilitation.tres" id="9"]
+[ext_resource type="Resource" path="res://data/modifiers/class_label.tres" id="10"]
+[ext_resource type="Resource" path="res://data/modifiers/show_trial.tres" id="11"]
+[ext_resource type="Resource" path="res://data/modifiers/the_bookkeeper.tres" id="12"]
+[ext_resource type="Resource" path="res://data/modifiers/last_sheaf.tres" id="13"]
+[ext_resource type="Resource" path="res://data/modifiers/steel_target.tres" id="14"]
 
 [resource]
 script = ExtResource("1")
-cadres = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8")])
+cadres = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13"), ExtResource("14")])

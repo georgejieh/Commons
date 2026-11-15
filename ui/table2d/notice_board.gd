@@ -1,8 +1,10 @@
 class_name NoticeBoard
 extends HBoxContainer
 ## The player's Cadres as portrait cards pinned in slot order. Slots are made once. A card
-## shows its art alone; its name and rules are in its tooltip, a slip that also says
-## what each keyword in the rules means.
+## shows its art; its name and rules are in its tooltip, a slip that also says what each
+## keyword in the rules means. A Cadre with run state carries a short count on a ticket
+## at its foot, and a Cadre with no art yet has its name inked on the stock (ADR 0021).
+## When a Cadre fires, its card swells and its count changes there, not over the table.
 
 ## How faint an empty Cadre slot is.
 const EMPTY_ALPHA: float = 0.22
@@ -10,6 +12,8 @@ const TILE_SIZE: Vector2 = Vector2(108, 140)
 
 var _pictures: Array[TextureRect] = []
 var _cards: Array[TipHost] = []
+var _badges: Array[CadreBadge] = []
+var _ids: Array[String] = []
 
 
 ## Makes one slot per Cadre the player can hold.
@@ -24,9 +28,12 @@ func setup(slots: int) -> void:
 		picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		card.add_child(picture)
+		var badge: CadreBadge = CadreBadge.new()
+		card.add_child(badge)
 		add_child(card)
 		_cards.append(card)
 		_pictures.append(picture)
+		_badges.append(badge)
 
 
 ## Where a slot's card sits on screen, its middle.
@@ -41,9 +48,26 @@ func pulse_slot(index: int) -> void:
 		UiMotion.pulse(_cards[index])
 
 
+## A held Cadre fired: its card swells, and its count shows what it is now, or what it
+## paid for a Cadre that keeps no count.
+func fired(controller: RunController, cadre_id: String, amount: int) -> void:
+	var index: int = _ids.find(cadre_id)
+	if index < 0:
+		return
+	var count: String = controller.cadre_standing(cadre_id).count
+	_badges[index].show_count(count if not count.is_empty() else "+%d" % amount)
+	pulse_slot(index)
+
+
+## The count a slot's card shows, for tests.
+func count_at(index: int) -> String:
+	return _badges[index].count()
+
+
 ## Shows the Cadres the run holds, each with its name and rules as its tooltip.
 func show_cadres(controller: RunController) -> void:
 	var cadre_ids: Array[String] = controller.state_copy().inventory.cadres
+	_ids = cadre_ids
 	for index: int in _cards.size():
 		var held: bool = index < cadre_ids.size()
 		# An empty slot is a faint pin mark on the board, so it doesn't pull the eye.
@@ -54,3 +78,6 @@ func show_cadres(controller: RunController) -> void:
 		else:
 			_cards[index].set_tip("", "")
 		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null
+		var bare: bool = held and ScreenKit.ART.cadre(cadre_ids[index]) == null
+		_badges[index].show_name(tr("modifier.%s.name" % cadre_ids[index]) if bare else "")
+		_badges[index].show_count(controller.cadre_standing(cadre_ids[index]).count if held else "")

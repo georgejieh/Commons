@@ -258,6 +258,10 @@ static func rule_text(controller: RunController, modifier_id: String) -> String:
 	var rule: String = controller.modifier_text(modifier_id)
 	if controller.is_table_wide(modifier_id):
 		rule += " " + TranslationServer.translate("modifier.table_wide")
+	# A held Cadre with run state says where it stands (ADR 0021).
+	var standing: String = controller.cadre_standing(modifier_id).line
+	if not standing.is_empty():
+		rule += " " + standing
 	return rule
 
 
