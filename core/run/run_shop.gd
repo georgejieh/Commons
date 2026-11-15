@@ -36,6 +36,9 @@ const PERCENT: int = 100
 var campaigns: CampaignCounter
 var reforms: ReformCounter
 var envelopes: EnvelopeCounter
+## Cadre slots lost this visit to a debuff of the Quota just finished (Short Supply,
+## ADR 0023). Set before the visit opens; it stacks with rationing.
+var short_cut: int = 0
 
 var _state: RunState
 var _params: ShopParams
@@ -68,9 +71,10 @@ func _init(
 	envelopes = EnvelopeCounter.new(state, params, directives, offered, run)
 
 
-## Slots this visit offers: fewer while rationing is in force.
+## Slots this visit offers: fewer while rationing is in force, and fewer under Short
+## Supply.
 func slot_count() -> int:
-	return maxi(_params.slots - (_ration_cut if _state.rationed else 0), 0)
+	return maxi(_params.slots - (_ration_cut if _state.rationed else 0) - short_cut, 0)
 
 
 ## Starts a visit with fresh Cadres. The Directives, Campaigns, Reforms and envelopes are

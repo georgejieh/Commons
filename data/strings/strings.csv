@@ -683,3 +683,56 @@ suit.hearts,Hearts
 suit.clubs,Clubs
 suit.diamonds,Diamonds
 campaign.not_now,Not now
+modifier.short_supply.name,Short Supply
+modifier.short_supply.text,The next state store offers {cadres} fewer Cadre. This stacks with rationing.
+modifier.slogan_of_the_week.name,Slogan of the Week
+modifier.slogan_of_the_week.named,Slogan of the Week: {type}
+modifier.slogan_of_the_week.text,"Your {type} score at {rate_percent}% of their Rate, rounded up, before any Rate cap."
+modifier.slogan_of_the_week.no_type,plays of the named hand type
+modifier.levy.name,Levy
+modifier.levy.text,"Each round, after the kitty is taken, your highest card goes to the player on your left, and you take their lowest."
+modifier.work_point_audit.name,Work-Point Audit
+modifier.work_point_audit.text,"For every claim, yours too, {faces} more faces of the die mean an audit."
+modifier.night_shift.name,Night Shift
+modifier.night_shift.text,"Each round, the first time you could pass, you must play if you hold anything that beats the table. With nothing that beats it, you pass and this is spent for the round."
+modifier.grain_tax.name,Grain Tax
+modifier.grain_tax.text,"Each round, {percent}% of what you bank is taken before it counts toward the Quota, rounded against you."
+modifier.shared_kitchen.name,Shared Kitchen
+modifier.shared_kitchen.text,You may make only {swaps} private-plot swap each round.
+modifier.confiscation.name,Confiscation
+modifier.confiscation.text,"Each round, one of your Cadres, drawn at the round's start, does nothing that round. It keeps what it has counted."
+modifier.glass_walls.name,Glass Walls
+modifier.glass_walls.text,Both other players see your hand.
+modifier.redistribution.name,Redistribution
+modifier.redistribution.text,"Each round, after the kitty is taken, every player passes {cards} cards drawn at random to the player on their left."
+modifier.overtime.name,Overtime
+modifier.overtime.text,You bank a round's score only if your side goes out first.
+modifier.big_character_poster.name,Big-Character Poster
+modifier.big_character_poster.text,"Each round your side loses, Denunciation rises by {amount}."
+modifier.hungry_winter.name,Hungry Winter
+modifier.hungry_winter.text,"Each round your side loses, Famine rises by {amount}."
+modifier.plot_seized.name,Plot Seized
+modifier.plot_seized.text,"You can't swap with your private plot. When this first comes into force, one card in your plot, drawn at random, is destroyed for the run."
+pattern.plural.single,Singles
+pattern.plural.pair,Pairs
+pattern.plural.trio,Trios
+pattern.plural.trio_single,Trios with a Single
+pattern.plural.trio_pair,Trios with a Pair
+pattern.plural.straight,Straights
+pattern.plural.pair_chain,Pair Runs
+pattern.plural.airplane,Airplanes
+pattern.plural.airplane_singles,Airplanes with Singles
+pattern.plural.airplane_pairs,Airplanes with Pairs
+pattern.plural.four_two_singles,Fours with Two Singles
+pattern.plural.four_two_pairs,Fours with Two Pairs
+pattern.plural.bomb,Bombs
+table.must_play,Night Shift: you can't pass yet. You hold a play that beats the table.
+table.glass_walls,Glass Walls: both other players see your hand
+table.confiscated,Confiscated
+table.confiscated_tip,Confiscated. It does nothing this round.
+callout.plot_seized,Plot Seized
+callout.plot_seized.sub,The {card} in your plot is destroyed for the run
+store.short_supply,Short Supply: {count} fewer Cadres on the counter.
+store.short_supply.one,Short Supply: 1 fewer Cadre on the counter.
+round.taxed,Grain Tax took {amount} of what you banked.
+round.voided,"Overtime: your side lost, so you banked nothing."

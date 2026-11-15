@@ -12,6 +12,9 @@ enum Reason {
 	REPEATED_CARD,
 	ILLEGAL_PLAY,
 	DOES_NOT_BEAT,
+	## A pass refused on the seat's first chance to pass while it holds a play that beats
+	## the table (Night Shift, ADR 0023).
+	MUST_PLAY,
 }
 
 const PASSES_TO_RESET: int = 2
@@ -32,6 +35,8 @@ var _winner: int = Seats.NONE
 var _events: Array[RoundEvent] = []
 var _history: Array[PublicPlay] = []
 var _announced: PackedInt32Array = PackedInt32Array()
+## 1 once a seat has answered a play on the table this round, played or passed.
+var _answered: PackedByteArray = PackedByteArray()
 
 
 ## The landlord takes the kitty and leads.
@@ -44,6 +49,7 @@ func _init(deal: DealResult, landlord: int, table: SeatRules) -> void:
 	_kitty = deal.kitty.duplicate()
 	_plays_by_seat.resize(Seats.COUNT)
 	_announced.resize(Seats.COUNT)
+	_answered.resize(Seats.COUNT)
 	_landlord = landlord
 	_table = table
 	_table.start_round(landlord)
@@ -62,9 +68,26 @@ func apply(action: RoundAction) -> Reason:
 	_sync_rules()
 	if action.seat != _turn:
 		return Reason.OUT_OF_TURN
-	if action.card_ids.is_empty():
-		return _apply_pass()
-	return _apply_play(action)
+	var answering: bool = _current != null
+	var reason: Reason = _apply_pass() if action.card_ids.is_empty() else _apply_play(action)
+	if reason == Reason.OK and answering:
+		_answered[action.seat] = 1
+	return reason
+
+
+## Whether the seat to act may pass now: OK, or why not. A seat whose rules make it
+## answer once must play on its first chance to pass when anything beats the table; with
+## nothing that does, it passes as usual and the rule is spent for the round.
+func pass_reason() -> Reason:
+	if is_over():
+		return Reason.ROUND_OVER
+	if _current == null:
+		return Reason.CANNOT_PASS_ON_LEAD
+	_sync_rules()
+	if _table.rules_for(_turn).must_answer_once() and _answered[_turn] == 0:
+		if not legal_moves().is_empty():
+			return Reason.MUST_PLAY
+	return Reason.OK
 
 
 ## Before anyone plays, trades cards in a seat's hand for others one for one: the
@@ -188,12 +211,17 @@ func public_view() -> PublicView:
 	)
 
 
-## What one seat may know: the public view plus its own hand.
+## What one seat may know: the public view plus its own hand, and any other hand whose
+## rules show it to the table.
 func view_for(seat: int) -> SeatView:
 	var cards: Array[CardInstance] = []
 	for card: CardInstance in _hands[seat].cards():
 		cards.append(card.snapshot())
-	return SeatView.new(seat, public_view(), _hands[seat].counts(), cards)
+	var view: SeatView = SeatView.new(seat, public_view(), _hands[seat].counts(), cards)
+	for other: int in Seats.COUNT:
+		if other != seat and _table.rules_for(other).hand_shown():
+			view.exposed[other] = _hands[other].counts()
+	return view
 
 
 ## How the seat's cards read against the table, without playing them. A seat other than
@@ -228,8 +256,9 @@ func read_play(seat: int, card_ids: Array[int]) -> PlayReading:
 
 
 func _apply_pass() -> Reason:
-	if _current == null:
-		return Reason.CANNOT_PASS_ON_LEAD
+	var allowed: Reason = pass_reason()
+	if allowed != Reason.OK:
+		return allowed
 	var seat: int = _turn
 	_events.append(RoundEvent.new(RoundEvent.Type.PASSED, seat))
 	_history.append(PublicPlay.new(seat, Pattern.pass_play(), PackedByteArray()))

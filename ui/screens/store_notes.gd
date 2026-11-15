@@ -31,6 +31,15 @@ static func rationing(controller: RunController) -> Control:
 	return note
 
 
+## The state store's note of the Cadres Short Supply keeps off its counter (ADR 0023).
+static func short_supply(controller: RunController) -> Control:
+	var text: String = Strings.count("store.short_supply", controller.short_supply())
+	var note: Label = ScreenKit.label(text, NOTE_SIZE)
+	note.autowrap_mode = TextServer.AUTOWRAP_OFF
+	note.add_theme_color_override("font_color", ScreenKit.RED)
+	return note
+
+
 ## The note on a slip of aged paper, which keeps to its own width at the right.
 static func on_paper(note: Control) -> Control:
 	var slip: PanelContainer = PanelContainer.new()

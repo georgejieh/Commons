@@ -114,7 +114,15 @@ func _on_play() -> void:
 	refresh()
 
 
+## Night Shift refuses the pass (ADR 0023): the Pass ticket is knocked back like a
+## stamp and the reading says why, and the turn stays the player's.
 func _on_pass() -> void:
+	var refusal: String = _controller.pass_refusal()
+	if not refusal.is_empty():
+		_actions.reading.text = tr(refusal)
+		_actions.reading.tooltip_text = tr(refusal)
+		UiMotion.stamp(_actions.pass_turn)
+		return
 	_controller.pass_turn()
 	_hand.clear()
 	refresh()

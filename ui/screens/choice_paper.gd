@@ -21,11 +21,15 @@ const CAPTION_HEIGHT: float = 76.0
 const KEEP_HEIGHT: float = 50.0
 const GAP: float = 8.0
 const NAME_SIZE: int = 26
-const LINE_SIZE: int = 15
+## A Directive's Rate lines, never under 16 px.
+const LINE_SIZE: int = 16
 const CAPTION_SIZE: int = 17
 const CAPTION_PADDING: int = 14
-## Room a Directive document's border and padding take from its name.
-const DOCUMENT_INSET: float = 48.0
+## A Directive document's padding inside its printed border, and the room its border
+## and padding take from its name.
+const DOCUMENT_PADDING: int = 14
+const DOCUMENT_INSET: float = 32.0
+const DOCUMENT_NAME_LEAST: int = 18
 ## A refusal is dark red ink, a caption dark ink.
 const REFUSED_INK: Color = Color("7a160d")
 const GOLD: Color = Color("c9a227")
@@ -88,30 +92,46 @@ func setup(at: int, place: Vector2) -> void:
 	keep.pressed.connect(func() -> void: kept.emit(index))
 
 
-## A Directive: its typed document, a name over one Rate line per hand type it raises.
-## It has no caption, so it may use the caption's room too.
+## A Directive: its typed document, a name over one Rate line per hand type it raises,
+## filling the item's place exactly as a leaflet or card does, its text from the top.
 func show_directive(controller: RunController, directive_id: String) -> void:
 	title = controller.directive_name(directive_id)
 	rule = controller.directive_text(directive_id)
-	_place.custom_minimum_size = item_size + Vector2(0, GAP + CAPTION_HEIGHT)
-	_holder.visible = false
-	var sheet: VBoxContainer = ScreenKit.card(Vector2(item_size.x, 0))
-	sheet.add_theme_constant_override("separation", 4)
+	var sheet: VBoxContainer = ScreenKit.card(item_size)
+	sheet.add_theme_constant_override("separation", 2)
+	sheet.alignment = BoxContainer.ALIGNMENT_BEGIN
 	sheet.add_child(ScreenKit.eyebrow(tr(DirectiveSheet.EYEBROW)))
 	var name: Label = ScreenKit.label(title, NAME_SIZE)
 	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	NameFit.apply(name, title, item_size.x - DOCUMENT_INSET, NAME_SIZE, NameFit.LEAST)
+	_fit_one_line(name, item_size.x - DOCUMENT_INSET)
 	sheet.add_child(name)
 	sheet.add_child(HSeparator.new())
 	for type: int in controller.directive_types(directive_id):
 		var line: Label = ScreenKit.label(DirectiveSheet.rate_line(controller, type), LINE_SIZE)
-		line.add_theme_font_override("font", ScreenKit.TYPEWRITER)
+		# The condensed face keeps each Rate line to two lines at 16 px in the small place.
 		line.autowrap_mode = TextServer.AUTOWRAP_WORD
+		line.add_theme_constant_override("line_spacing", -2)
 		sheet.add_child(line)
 		lines.append(line)
 	item = ScreenKit.card_panel(sheet)
-	item.custom_minimum_size.x = item_size.x
+	item.add_theme_stylebox_override("panel", ScreenKit.paper_style(DOCUMENT_PADDING))
+	item.custom_minimum_size = item_size
+	item.clip_contents = true
 	_place.add_child(item)
+
+
+## Sets a Directive's name on one line where a size from NAME_SIZE down to
+## DOCUMENT_NAME_LEAST allows, so its Rate lines keep the room; a longer name wraps
+## between words at the least size.
+func _fit_one_line(name: Label, wide: float) -> void:
+	var font: Font = name.get_theme_font("font")
+	var font_size: int = NAME_SIZE
+	while (
+		font_size > DOCUMENT_NAME_LEAST
+		and font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > wide
+	):
+		font_size -= 1
+	NameFit.apply(name, title, wide, font_size, NameFit.LEAST)
 
 
 ## A Campaign: its leaflet, as the tray holds it, as large as the place allows.

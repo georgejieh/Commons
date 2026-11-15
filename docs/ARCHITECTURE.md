@@ -74,14 +74,14 @@ Each hook takes one typed context:
 | `build_ruleset` | `RulesetContext` | seat, landlord, params |
 | `build_rank_map` | `RankMapContext` | seat, landlord, trick_bombed, rank_map |
 | `on_deal` | `DealContext` | landlord, deal |
-| `round_start` | `RoundContext` | landlord, winner, finish |
-| `play_scored` | `PlayContext` | seat, is_landlord, landlord, pattern, cards_left, seat_plays, seat_grain, add_grain, add_zeal, mul_zeal, rate_cap, total_scale |
+| `round_start` | `RoundContext` | landlord, round_state, table, stream, arrived, swap_cap, seize_plot, moves |
+| `play_scored` | `PlayContext` | seat, is_landlord, landlord, pattern, cards_left, seat_plays, seat_grain, add_grain, add_zeal, mul_zeal, rate_percent, rate_cap, total_scale |
 | `card_scored` | `CardContext` | seat, is_landlord, card, own_grain, grain |
 | `turn_taken` | `TurnContext` | seat, landlord, pattern (null for a pass), cards_left, player, resentment, coupons |
 | `trick_won` | `TrickContext` | winner, landlord |
-| `round_end` | `RoundContext` | landlord, winner, finish, commons_scale |
+| `round_end` | `RoundContext` | landlord, winner, finish, commons_scale, bank_voided, tax_percent, meter_sources |
 | `set_end` | `SetContext` | set_index, target_met, coupons, add_coupons |
-| `shop_open` | `ShopContext` | seat |
+| `shop_open` | `ShopContext` | seat, cadre_cut |
 | `meter_change` | `MeterContext` | meter, delta |
 | `audit` | `AuditContext` | faces |
 
@@ -147,7 +147,7 @@ The two setbacks:
 - **Rationing** holds while Famine stays up. `RunShop.slot_count()` cuts the store's slots for as long as it lasts.
 - **Reeducation** is owed once. `open_shop()` serves it in place of the store: the run moves to `REEDUCATION`, the plot is emptied, and one held Cadre is exchanged ([ADR 0019](adr/0019-reeducation-setback.md)).
 
-Death is checked after each meter move, at a state that may go to `RUN_END`: Set end, or round end for a shortfall. The run log gets `RUN_DIED`, naming the meter. Run saves are schema 8 (`RunRecord.migrate_from_7` adds the Reforms and the gathered deck; `RunRecord.migrate_from_6` added the Cadres' run state; `RunRecord.migrate_from_5` added card marks and hand levels, and `RunRecord.migrate_from_4` added the norm, both P4.11; `RunRecord.migrate_from_3` added `store_sold`, P4.10); `RunRecord.migrate_from_2` added the setback flags and Resentment for schema 3.
+Death is checked after each meter move, at a state that may go to `RUN_END`: Set end, or round end for a shortfall. The run log gets `RUN_DIED`, naming the meter. Run saves are schema 9 (`RunRecord.migrate_from_8` adds the Slogan's hand type; `RunRecord.migrate_from_7` added the Reforms and the gathered deck; `RunRecord.migrate_from_6` added the Cadres' run state; `RunRecord.migrate_from_5` added card marks and hand levels, and `RunRecord.migrate_from_4` added the norm, both P4.11; `RunRecord.migrate_from_3` added `store_sold`, P4.10); `RunRecord.migrate_from_2` added the setback flags and Resentment for schema 3.
 
 **Resentment (P4.2).** `RunState.resentment` runs from 0 to 100. `Resentment` and `data/run/resentment.tres` define what raises it:
 
@@ -176,6 +176,16 @@ Resentment acts in two ways:
   - **The offer.** `ReformCounter` draws `reform_offers` (state store 1, black market 0) last of all in `open_shop()`, after the Campaigns, so a Reform changes no stock drawn before it. It never offers one that is held, or one whose `held_back` flag is set (none is, today). A reroll redraws it. The saved command is `reform` (`RunLoop.player_reform`).
   - **Unplanned Economy** deals without a shuffle between the rounds of a Quota. At a round's end `DeckOrder.gather` takes the cards in the order they were played, then each seat's unplayed cards in seat order, then the unplayed kitty, into `RunState.deck_order`. The next deal cuts that order once on the deal stream and deals it in blocks through `Dealer.deal_in_order`, so cards played together tend to land in one hand. The order is cleared at a Set's start and end and before a redeal, so a Quota's first round and every redeal are shuffled. A deck card that went into the plot goes back at the end of the order. Measured over about 3,000 deals each way, it raises four-of-a-kinds from 0.29 to 1.32 a deal, for every seat; P4.16 tunes it.
   - **Grain Reserve** takes its relief off the missed Quota's Famine before the meter-change hook runs.
+- **Debuffs.** All 20 of the Plan's debuffs are `ModifierDef`s in `data/run/debuff_pool.tres`, built to [ADR 0023](adr/0023-debuff-pool.md). A debuff stays in force for the rest of its Quota. Most are plain hook effects. `RunDebuffs` (`core/run/`, beside the loop as `RunCampaigns` is) holds what a round's debuffs do outside their hooks, for one round, rebuilt by replay:
+  - **Slogan of the Week.** Its hand type is drawn on the debuff stream after the ladder's own draws, only when the ladder holds it, and saved as `RunState.slogan_type` (schema 9). It is bound onto the effect when the stack is built. `PlayContext.rate_percent` halves the Rate, rounded up, before any Rate cap.
+  - **Confiscation** draws one held Cadre on the debuff stream when the round's stack is built and disables it for the round, memo untouched. Appeal hands it back at once.
+  - **Cards that move.** Levy and Redistribution run in `round_start`, after the kitty and before the plot swap, through `RoundContext.trade()` onto `RoundState.trade()`, and are logged as `CARDS_PASSED`. "Left" is the previous seat in turn order, which is the seat drawn on the player's left. Redistribution draws on the deal stream.
+  - **Plot.** Shared Kitchen caps the round's swaps (`RoundContext.swap_cap`, read through `RunLoop.swap_limit()`). Plot Seized destroys one plot card, drawn on the deal stream, in the round it arrives (`PLOT_SEIZED`), and allows no swap after.
+  - **Banking.** Grain Tax and Overtime set `tax_percent` and `bank_voided` at `round_end`; `BankCut` applies them to what the player banks, after any Campaign stake, and logs `GRAIN_TAXED` or `BANK_VOIDED`. Only progress toward the Quota is cut.
+  - **Meters.** Big-Character Poster and Hungry Winter name a meter table row in `RoundContext.meter_sources` when the player's side loses.
+  - **Rules.** Night Shift sets `RuleSet.must_answer_once`: `RoundState` refuses the player's first pass against a play they can beat (`Reason.MUST_PLAY`). Glass Walls sets `hand_shown`: `RoundState.view_for` then gives the other seats `SeatView.exposed`, `BotPosition.threats` narrows to what an opponent can really hold, and the Expert bot deals the shown hand exactly when it samples.
+  - **Short Supply** runs the `shop_open` hook over the finished Quota's debuffs that came into force, and its `ShopContext.cadre_cut` shortens the next state store only.
+  - **Work-Point Audit** adds two faces through the `audit` hook, under the cap.
 - **Envelopes.** An `EnvelopeDef` (`data/modifiers/envelopes/`) is a pack: bought, opened at once, and the player keeps one of its items or nothing. `ShopParams.envelopes` lists the kinds a shop sells and `envelope_offers` how many it shows (one each): the state store a Directive or a Campaign envelope, the black market a Parcel.
   - **The offer.** `EnvelopeCounter` draws it last of all in `open_shop()`, after the Reforms. A kind with nothing to show is not offered. A reroll redraws it, and a bought one stays sold for the visit.
   - **Contents** are drawn when the envelope is bought, by `EnvelopeContents`, on a stream seeded from the run seed, the Set number and the envelope's ID. So the same purchase always holds the same items, nothing is added to the save, and opening one shifts no other draw. An envelope holds `choices` items plus `RunReforms.extra_envelope_choices`, none twice, fewer if fewer can be drawn. A Directive at its top level is never drawn. A Parcel draws each place by `weights` from private Campaigns, stamped plot cards and Model plot cards.

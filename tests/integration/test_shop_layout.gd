@@ -200,6 +200,7 @@ func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
 				assert_int(overlay.papers().size()).is_equal(3 + reforms.size())
 				_check_inside(overlay, label)
 				_check_apart(overlay, label)
+				_check_aligned(overlay, label)
 				overlay.nothing_button().pressed.emit()
 				await await_idle_frame()
 	Settings.set_value("reduced_motion", false)
@@ -258,3 +259,57 @@ func _check_paper(paper: ChoicePaper, count: int, where: String) -> void:
 				1.0
 			)
 		node = node.get_parent()
+
+
+## Every choice in one envelope is one size with one top: the papers, and the items on
+## them, a Directive's document as tall as a leaflet or a card, its whole text inside it
+## with its Rate lines at 16 px or more.
+func _check_aligned(overlay: EnvelopeOverlay, where: String) -> void:
+	var papers: Array[ChoicePaper] = overlay.papers()
+	var first: Rect2 = papers[0].get_global_rect()
+	var first_item: Rect2 = EnvelopeOverlay.shown_rect(papers[0].item)
+	for paper: ChoicePaper in papers:
+		var rect: Rect2 = paper.get_global_rect()
+		var item: Rect2 = EnvelopeOverlay.shown_rect(paper.item)
+		var same: bool = (
+			rect.size.is_equal_approx(first.size)
+			and absf(rect.position.y - first.position.y) < 1.0
+			and absf(item.size.y - first_item.size.y) < 1.0
+			and absf(item.position.y - first_item.position.y) < 1.0
+		)
+		(
+			assert_bool(same)
+			. override_failure_message("%s: %s / %s, first %s" % [where, rect, item, first_item])
+			. is_true()
+		)
+		if paper.lines.is_empty():
+			continue
+		var sheet: Control = paper.item.get_child(0) as Control
+		(
+			assert_bool(sheet.get_combined_minimum_size().y <= paper.item_size.y + 0.5)
+			. override_failure_message("%s: %s overflows its document" % [where, paper.title])
+			. is_true()
+		)
+		for line: Label in paper.lines:
+			assert_int(line.get_theme_font_size("font_size")).is_greater_equal(16)
+
+
+## Every Directive's document fits an envelope's smaller place whole: no Rate line, at
+## 16 px or more, runs past its bottom.
+func test_every_directive_document_fits_the_smaller_place() -> void:
+	for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+		var paper: ChoicePaper = auto_free(ChoicePaper.new())
+		# Under the app, so the game's theme sets its type.
+		_app.add_child(paper)
+		paper.setup(0, ChoicePaper.ITEM_MANY)
+		paper.show_directive(_app.controller, directive.id)
+		await await_idle_frame()
+		var sheet: Control = paper.item.get_child(0) as Control
+		(
+			assert_float(sheet.get_combined_minimum_size().y)
+			. override_failure_message(directive.id)
+			. is_less_equal(ChoicePaper.ITEM_MANY.y + 0.5)
+		)
+		assert_vector(paper.item.size).is_equal(ChoicePaper.ITEM_MANY)
+		for line: Label in paper.lines:
+			assert_int(line.get_theme_font_size("font_size")).is_greater_equal(16)

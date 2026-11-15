@@ -139,8 +139,11 @@ func _header_row(app: DemoApp) -> Control:
 	notes.add_theme_constant_override("separation", 8)
 	if market:
 		_reform_stall.strip.add_note(StoreNotes.warning(app.controller, NOTE_WIDTH))
-	elif app.controller.is_rationed():
-		_reform_stall.strip.add_note(StoreNotes.rationing(app.controller))
+	else:
+		if app.controller.is_rationed():
+			_reform_stall.strip.add_note(StoreNotes.rationing(app.controller))
+		if app.controller.short_supply() > 0:
+			_reform_stall.strip.add_note(StoreNotes.short_supply(app.controller))
 	notes.add_child(_reform_stall.strip)
 	top.append(notes)
 	_blocks["heading"] = heading

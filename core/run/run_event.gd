@@ -63,6 +63,19 @@ enum Type {
 	## A held Cadre fired in a way the player should see (ADR 0021): value is what it
 	## fired for, such as coupons paid or 1 for a count that grew; text is its ID.
 	CADRE_FIRED,
+	## A debuff moved cards before play (ADR 0023): from seat to the seat in value; text
+	## is their IDs, joined by commas.
+	CARDS_PASSED,
+	## Confiscation left a held Cadre out of the round: value is its slot, text its ID.
+	CADRE_CONFISCATED,
+	## Plot Seized destroyed a plot card for the run: value is its ID, text its rank and
+	## suit, joined by a comma.
+	PLOT_SEIZED,
+	## Grain Tax took from what the player banked: value is the percent, amount what was
+	## taken.
+	GRAIN_TAXED,
+	## Overtime voided the player's bank for a lost round: amount is what was voided.
+	BANK_VOIDED,
 }
 
 var type: Type

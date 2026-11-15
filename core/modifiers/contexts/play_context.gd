@@ -18,6 +18,9 @@ var plays_before: int = 0
 var grain: float = 0.0
 ## Grain per base rank, for effects that score cards the play doesn't.
 var card_grain: Array[int] = []
+## The share of its Rate the play keeps, in percent, rounded up (ADR 0023). Applied before
+## the cap.
+var rate_percent: int = 100
 ## The most Rate the play may score with, whatever its hand type and level.
 var rate_cap: float = INF
 ## Multiplies the finished total, after every other step and the cap.

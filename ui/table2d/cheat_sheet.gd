@@ -114,7 +114,7 @@ func refresh() -> void:
 		active.append(
 			(
 				"%s: %s"
-				% [tr("modifier.%s.name" % modifier_id), _controller.modifier_text(modifier_id)]
+				% [_controller.modifier_name(modifier_id), _controller.modifier_text(modifier_id)]
 			)
 		)
 	if active.is_empty():

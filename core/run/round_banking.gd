@@ -25,6 +25,7 @@ static func bank(
 
 
 ## Bots declare on the ai stream. The player's need counts only when they are a peasant.
+## A debuff's cut takes from the player's share before it counts (ADR 0023).
 ## Declarations are then audited (P4.3): each seat rolls the audit die, and a face at or
 ## below audit_faces checks its claim. Caught seats are appended to caught, and their
 ## true need replaces the lie. Returns true when the pool fell short of the needs that
@@ -38,7 +39,8 @@ static func split(
 	events: Array[RunEvent],
 	audit_faces: int = 0,
 	caught: Array[int] = [],
-	audit: AuditParams = DEFAULT_AUDIT
+	audit: AuditParams = DEFAULT_AUDIT,
+	cut: BankCut = null
 ) -> bool:
 	var peasants: Array[int] = []
 	var needs: PackedInt64Array = PackedInt64Array()
@@ -71,7 +73,10 @@ static func split(
 		events.append(RunEvent.new(RunEvent.Type.SHARE_PAID, peasants[index], shares[index]))
 		state.commons_paid = mini(state.commons_paid + shares[index], Banking.MAX_POOL)
 		if peasants[index] == player:
-			state.set_progress += shares[index]
+			var kept: float = shares[index]
+			if cut != null:
+				kept = cut.apply(kept, player, events)
+			state.set_progress += kept
 			state.commons_received = mini(state.commons_received + shares[index], Banking.MAX_POOL)
 	state.commons_pool = 0
 	return short

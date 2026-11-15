@@ -123,7 +123,7 @@ func bid(claim: bool) -> int:
 
 ## The most cards the player may swap this round (P4.8).
 func swap_limit() -> int:
-	return PlotSwap.swaps(_loop.state, RunLoop.DEFAULT_PARAMS)
+	return _loop.swap_limit()
 
 
 func swap(hand_ids: Array[int], plot_ids: Array[int]) -> int:
@@ -561,7 +561,68 @@ func is_table_wide(modifier_id: String) -> bool:
 
 
 func modifier_text(modifier_id: String) -> String:
-	return CadreText.rules(_definitions[modifier_id])
+	return CadreText.rules(_definitions[modifier_id], _run_values(modifier_id))
+
+
+## A modifier's name; a Slogan's names the hand type it was drawn with (ADR 0023).
+func modifier_name(modifier_id: String) -> String:
+	var type: int = _loop.state.slogan_type
+	if modifier_id == RunDebuffs.SLOGAN_ID and type != RunState.NO_SLOGAN:
+		return tr("modifier.slogan_of_the_week.named").format({"type": _type_plural(type)})
+	return tr(_definitions[modifier_id].name_key)
+
+
+## Why the player may not pass now, as a string key, or "" when they may (Night Shift).
+func pass_refusal() -> String:
+	if _loop.awaiting() != RunLoop.Awaiting.PLAYER_PLAY:
+		return ""
+	var reason: RoundState.Reason = _loop.round_state().pass_reason()
+	return "table.must_play" if reason == RoundState.Reason.MUST_PLAY else ""
+
+
+## The held Cadres a Confiscation left out of this round.
+func confiscated_cadres() -> Array[String]:
+	return _loop.debuffs.confiscated_ids()
+
+
+## True while the villagers see the player's hand (Glass Walls).
+func hand_shown() -> bool:
+	return _loop.round_state() != null and player_table().rules.hand_shown()
+
+
+## Copies of the plot cards Plot Seized destroyed this round.
+func seized_cards() -> Array[CardInstance]:
+	var cards: Array[CardInstance] = []
+	for card: CardInstance in _loop.debuffs.seized:
+		cards.append(card.snapshot())
+	return cards
+
+
+## Cadres Short Supply keeps off the state store's counter this visit.
+func short_supply() -> int:
+	return _loop.shop.short_cut
+
+
+## Values a modifier's text takes from the run: the Slogan's hand type, and the meter rise
+## a lost round costs.
+func _run_values(modifier_id: String) -> Dictionary[String, Variant]:
+	var values: Dictionary[String, Variant] = {}
+	if modifier_id == RunDebuffs.SLOGAN_ID:
+		var type: int = _loop.state.slogan_type
+		values["type"] = (
+			tr("modifier.slogan_of_the_week.no_type")
+			if type == RunState.NO_SLOGAN
+			else _type_plural(type)
+		)
+	var effect: ModifierEffect = EffectRegistry.create(_definitions[modifier_id], RunLoop.PLAYER)
+	if effect is LossMeterEffect:
+		var source: String = (effect as LossMeterEffect).source()
+		values["amount"] = RunLoop.DEFAULT_METERS.source(source).amount
+	return values
+
+
+func _type_plural(type: int) -> String:
+	return tr("pattern.plural." + String(Pattern.Type.keys()[type]).to_lower())
 
 
 func target() -> float:

@@ -63,6 +63,9 @@ func _play(loop: RunLoop) -> bool:
 	var ids: Array[int] = []
 	if not play.is_pass():
 		ids = round_state.action_for(play.pattern).card_ids
+	elif round_state.pass_reason() == RoundState.Reason.MUST_PLAY:
+		# Night Shift refuses the pass: the lowest legal play goes instead (ADR 0023).
+		ids = round_state.action_for(round_state.legal_moves()[0]).card_ids
 	commands.append("play %s" % str(ids))
 	return loop.player_play(ids) == RunLoop.Reason.OK
 

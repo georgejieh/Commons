@@ -5,10 +5,13 @@ extends RefCounted
 ## "rank" or ends with "_rank".
 
 
-## The modifier's rules with its parameters filled in.
-static func rules(definition: ModifierDef) -> String:
+## The modifier's rules with its parameters filled in, and any values the run supplies,
+## such as the hand type a Slogan names.
+static func rules(definition: ModifierDef, extra: Dictionary[String, Variant] = {}) -> String:
 	var text: String = TranslationServer.translate(definition.text_key)
-	return text.format(words(definition.text_values()))
+	var values: Dictionary[String, Variant] = definition.text_values()
+	values.merge(extra, true)
+	return text.format(words(values))
 
 
 ## The values with every rank written as its label and every decimal as text.

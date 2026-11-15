@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "work_point_audit"
+kind = 4
+tag = 1
+lever = 5
+tier = 2
+hooks = Array[String](["audit"])
+parameters = Dictionary[String, int]({"faces": 2})
+rarity = 0
+cost = 0
+name_key = "modifier.work_point_audit.name"
+text_key = "modifier.work_point_audit.text"

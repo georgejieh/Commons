@@ -41,6 +41,7 @@ var _opening_granted: bool = false
 var _reform_shot: bool = false
 var _envelope_shot: bool = false
 var _parcel_shot: bool = false
+var _debuffs_shot: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
 
@@ -85,6 +86,7 @@ func _run() -> void:
 	await _click_button_with_text(tr("setup.start"))
 	await _frames(30)
 	await _shot("set_intro")
+	await _slogan_frame()
 	await _click_button_with_text(tr("intro.begin"))
 	var guard: int = 0
 	while _rounds_seen <= _rounds_wanted and guard < 3000:
@@ -149,6 +151,10 @@ func _table_step() -> void:
 			if _rounds_seen == 3 and not _resumed:
 				_resumed = true
 				await _leave_and_continue(table)
+				return
+			if _rounds_seen == 2 and not _debuffs_shot:
+				_debuffs_shot = true
+				await _debuff_frames()
 				return
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
@@ -488,6 +494,144 @@ func _parcel_frames() -> void:
 	saves.call("save", snapshot)
 	_app.call("resume_to_screen")
 	await _frames(30)
+
+
+## The Set intro with a Slogan of the Week on its ladder, naming Pairs, put there through
+## the run's state for the picture and taken off again before the Set begins.
+func _slogan_frame() -> void:
+	var controller: Object = _app.get("controller")
+	var loop: RunLoop = controller.get("_loop")
+	var ladder: Array[String] = loop.state.debuff_ladder.duplicate()
+	var slogan: int = loop.state.slogan_type
+	loop.state.debuff_ladder[1] = "slogan_of_the_week"
+	loop.state.slogan_type = Pattern.Type.PAIR
+	_app.call("show_screen", "set_intro", true)
+	await _shot("set_intro_slogan")
+	loop.state.debuff_ladder = ladder
+	loop.state.slogan_type = slogan
+	_app.call("show_screen", "set_intro", true)
+	await _frames(20)
+
+
+## Each table beat of ADR 0023's debuffs, at a round's bid, in a sandbox put back after:
+## the debuff is put in force for this round through the run's state, with the Cadres or
+## plot cards it needs, the bid is declined so the round starts and the beat plays, and
+## the save taken before is written back and resumed.
+func _debuff_frames() -> void:
+	for debuff_id: String in [
+		"levy", "redistribution", "confiscation", "glass_walls", "plot_seized", "night_shift"
+	]:
+		var controller: Object = _app.get("controller")
+		var loop: RunLoop = controller.get("_loop")
+		var snapshot: Dictionary = loop.record.to_dict()
+		if debuff_id == "confiscation":
+			loop.state.inventory.cadres.assign(["ration_coupon", "red_banner"])
+		if debuff_id == "plot_seized":
+			for index: int in 2:
+				var card: CardInstance = CardInstance.new(
+					loop.state.take_plot_id(), Ranks.KING - index, index, CardInstance.Origin.PLOT
+				)
+				loop.state.inventory.plot.append(card)
+		_force_debuff(loop, debuff_id)
+		await _debuff_beat(debuff_id, controller)
+		var saves_hub: Object = root.get_node("Saves")
+		var saves: Object = saves_hub.call("run_service")
+		saves.call("save", snapshot)
+		_app.call("resume_to_screen")
+		await _frames(30)
+
+
+## Puts a debuff in force for the round under way, as if it had arrived with it. A Set's
+## first round is always clean, so there the stack takes it straight.
+func _force_debuff(loop: RunLoop, debuff_id: String) -> void:
+	var round_index: int = loop.state.round_index
+	if round_index >= 1:
+		loop.state.debuff_ladder[round_index] = debuff_id
+		loop.call("_rebuild_modifiers")
+		return
+	var stack: ModifierStack = loop.get("_stack")
+	for definition: ModifierDef in RunLoop.DEFAULT_POOL.debuffs:
+		if definition.id == debuff_id:
+			loop.campaigns.flags.round_debuff = stack.add(definition, RunLoop.PLAYER)
+	loop.debuffs.rebuilt()
+
+
+func _debuff_beat(debuff_id: String, controller: Object) -> void:
+	var switcher: Object = _app.get("switcher")
+	var table: Node = switcher.call("current")
+	if debuff_id == "confiscation":
+		await _snap("table_confiscation_0")
+		await _shot("table_confiscation")
+		return
+	for _bid: int in 12:
+		if int(controller.call("awaiting")) != 1:
+			break
+		var bidding: Node = switcher.call("current")
+		var actions: Object = bidding.call("actions")
+		await _press(actions.get("decline"))
+		await _frames(2)
+	match debuff_id:
+		"levy", "redistribution", "plot_seized":
+			if not await _beat_seen(debuff_id):
+				print("NO BEAT %s" % debuff_id)
+				_misclicks += 1
+				return
+			for frame: int in 3:
+				await _snap("table_%s_%d" % [debuff_id, frame])
+		"glass_walls":
+			table = switcher.call("current")
+			var events: Object = table.get("_player")
+			await _until(func() -> bool: return bool(events.call("is_idle")))
+			await _shot("table_glass_walls")
+		"night_shift":
+			await _night_shift_frame(switcher.call("current"), controller)
+
+
+## Waits, a few seconds at most, until the table plays the debuff's beat: cards in flight,
+## or the seized card torn. The table is looked up each frame, as a round may build it
+## afresh.
+func _beat_seen(debuff_id: String) -> bool:
+	var switcher: Object = _app.get("switcher")
+	for _frame: int in 900:
+		var table: Node = switcher.call("current")
+		var beats: Object = table.get("_debuff_beats")
+		if beats != null:
+			var torn: CanvasItem = beats.get("torn")
+			var seen: bool = bool(beats.call("is_playing"))
+			if debuff_id == "plot_seized":
+				seen = torn.visible
+			if seen:
+				return true
+		await _frames(1)
+	return false
+
+
+## Plays on until the player's first chance to pass meets something they hold that beats
+## the table, then presses Pass and photographs the refusal.
+func _night_shift_frame(table: Node, controller: Object) -> void:
+	var events: Object = table.get("_player")
+	var actions: Object = table.call("actions")
+	for _turn: int in 120:
+		# A new round builds the table afresh; the refusal is looked for in this one.
+		if not is_instance_valid(table):
+			break
+		await _until(func() -> bool: return bool(events.call("is_idle")))
+		if not str(controller.call("pass_refusal")).is_empty():
+			await _press(actions.get("pass_turn"))
+			await _shot("table_night_shift")
+			return
+		if not bool(_driver.call("act", controller)):
+			break
+	print("NO NIGHT SHIFT REFUSAL")
+	_misclicks += 1
+
+
+## Waits until ready says so, a few seconds at most.
+func _until(ready: Callable) -> void:
+	var waited: int = 0
+	while not bool(ready.call()) and waited < 400:
+		await _frames(1)
+		waited += 1
 
 
 ## Waits until an opened envelope's papers are at rest.

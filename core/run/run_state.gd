@@ -8,6 +8,7 @@ enum SetType { SMALL, LARGE, BOSS }
 
 const NO_DEBUFF: String = ""
 const NO_BOSS: String = ""
+const NO_SLOGAN: int = -1
 ## Family IDs by seat until P4.5 seats the roster.
 const DEFAULT_TABLE: Array[String] = ["player", "seat_1", "seat_2"]
 
@@ -23,6 +24,9 @@ var round_index: int = 0
 var set_progress: float = 0.0
 ## One debuff ID per round of the current Set; round 0 is always NO_DEBUFF.
 var debuff_ladder: Array[String] = []
+## The hand type Slogan of the Week names, drawn and saved with the ladder, or
+## NO_SLOGAN while the ladder has none (ADR 0023).
+var slogan_type: int = NO_SLOGAN
 var famine: int = 0
 var denunciation: int = 0
 ## Setback state (P4.1). A meter's setback is armed until it fires, and re-arms once the
@@ -102,6 +106,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.round_index = int(data["round_index"])
 	state.set_progress = float_from_text(str(data["set_progress"]))
 	state.debuff_ladder.assign(data["debuff_ladder"])
+	state.slogan_type = int(data["slogan_type"])
 	state.famine = int(data["famine"])
 	state.denunciation = int(data["denunciation"])
 	state.famine_armed = bool(data["famine_armed"])
@@ -165,6 +170,7 @@ func to_dict() -> Dictionary:
 		"round_index": round_index,
 		"set_progress": float_text(set_progress),
 		"debuff_ladder": debuff_ladder.duplicate(),
+		"slogan_type": slogan_type,
 		"famine": famine,
 		"denunciation": denunciation,
 		"famine_armed": famine_armed,

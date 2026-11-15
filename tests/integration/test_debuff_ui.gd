@@ -1,0 +1,216 @@
+extends GdUnitTestSuite
+## The debuffs of ADR 0023 on screen: every debuff's name and full rules on the Set intro
+## ladder and in the table's debuff strip, dark type at 16 px or more inside the screen
+## at 1920x1080 and 1280x800, the Slogan naming its hand type; and the table's beats for
+## Levy, Redistribution, Confiscation, Glass Walls, Plot Seized and Night Shift, each
+## leaving only its end state under reduced motion.
+
+const SEED: int = 4242
+const SAVE_PATH: String = "user://test_debuff_ui/run.json"
+const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
+const READABLE: int = 16
+const SLACK: float = 1.5
+
+var _app: DemoApp
+var _was_size: Vector2i
+
+
+func before_test() -> void:
+	_was_size = get_tree().root.size
+	Saves.use_run_path(SAVE_PATH)
+	Saves.run_service().delete()
+	var scene: PackedScene = load("res://ui/main.tscn")
+	_app = auto_free(scene.instantiate())
+	add_child(_app)
+	_app.new_run(SEED)
+
+
+func after_test() -> void:
+	get_tree().root.size = _was_size
+	Settings.set_value("reduced_motion", false)
+	Saves.run_service().delete()
+
+
+func _loop() -> RunLoop:
+	return _app.controller.get("_loop")
+
+
+## Puts one debuff in the ladder's second round, a Slogan naming Pairs.
+func _ladder(debuff_id: String) -> void:
+	var state: RunState = _loop().state
+	state.debuff_ladder.assign(["", debuff_id, "", ""])
+	state.slogan_type = Pattern.Type.PAIR
+
+
+func _inside(control: Control, where: String) -> void:
+	var screen: Rect2 = Rect2(Vector2.ZERO, Vector2(1920, 1080)).grow(SLACK)
+	var rect: Rect2 = control.get_global_rect()
+	(
+		assert_bool(screen.encloses(rect))
+		. override_failure_message("%s: %s off screen" % [where, rect])
+		. is_true()
+	)
+
+
+func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
+	for screen_size: Vector2i in SIZES:
+		get_tree().root.size = screen_size
+		for debuff: ModifierDef in DebuffScript.POOL.debuffs:
+			_ladder(debuff.id)
+			var intro: Control = _app.show_screen("set_intro", true)
+			await await_idle_frame()
+			await await_idle_frame()
+			var where: String = "%s %s" % [debuff.id, screen_size]
+			var name: String = _app.controller.modifier_name(debuff.id)
+			var rule: String = _app.controller.modifier_text(debuff.id)
+			var named: bool = false
+			for node: Node in intro.find_children("*", "Label", true, false):
+				var label: Label = node
+				if label.text == name:
+					named = true
+					assert_int(label.get_theme_font_size("font_size")).is_greater_equal(READABLE)
+					_inside(label, where)
+			assert_bool(named).override_failure_message(where).is_true()
+			var ruled: bool = false
+			for node: Node in intro.find_children("*", "KeywordText", true, false):
+				var text: KeywordText = node
+				if text.get_parsed_text() == rule:
+					ruled = true
+					assert_int(text.get_theme_font_size("normal_font_size")).is_greater_equal(
+						READABLE
+					)
+					var ink: Color = text.get_theme_color("default_color")
+					assert_float(ink.get_luminance()).override_failure_message(where).is_less(0.3)
+					_inside(text, where)
+			assert_bool(ruled).override_failure_message(where).is_true()
+	assert_str(_app.controller.modifier_name("slogan_of_the_week")).is_equal(
+		"Slogan of the Week: Pairs"
+	)
+
+
+func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
+	for screen_size: Vector2i in SIZES:
+		get_tree().root.size = screen_size
+		for debuff: ModifierDef in DebuffScript.POOL.debuffs:
+			_ladder(debuff.id)
+			_loop().state.round_index = 1
+			var table: TableScreen = _app.show_screen("table", true)
+			await await_idle_frame()
+			var strip: DebuffStrip = table.get("_debuffs")
+			strip.show_debuffs(_app.controller)
+			await await_idle_frame()
+			var where: String = "%s %s" % [debuff.id, screen_size]
+			var shown: String = strip.shown_text()
+			assert_str(shown).override_failure_message(where).contains(
+				_app.controller.modifier_name(debuff.id)
+			)
+			assert_str(shown).override_failure_message(where).contains(
+				_app.controller.modifier_text(debuff.id)
+			)
+			assert_int(DebuffStrip.FONT_SIZE).is_greater_equal(READABLE)
+			_inside(strip, where)
+			_loop().state.round_index = 0
+
+
+## Plays the player's seat through the table until check returns true, at most turns times.
+func _play_until(check: Callable, turns: int = 600) -> bool:
+	var driver: ControllerScript = ControllerScript.new()
+	# A Quota no one meets, so the Set plays on into the debuff's round.
+	_loop().set("_sets", DebuffScript.hard_sets())
+	_app.show_screen("table", true)
+	await await_idle_frame()
+	for _turn: int in turns:
+		if _app.switcher.current_id() != "table":
+			return false
+		var table: TableScreen = _app.switcher.current()
+		table.skip_events()
+		await await_idle_frame()
+		# A new round builds the table afresh.
+		if _app.switcher.current() != table:
+			continue
+		if bool(check.call(table)):
+			return true
+		if not driver.act(_app.controller):
+			return false
+	return false
+
+
+func test_levy_and_redistribution_slide_cards_left_or_leave_the_end_state() -> void:
+	for reduced: bool in [false, true]:
+		Settings.set_value("reduced_motion", reduced)
+		_app.show_screen("table", true)
+		await await_idle_frame()
+		var table: TableScreen = _app.switcher.current()
+		var beats: DebuffMoments = table.get("_debuff_beats")
+		var mine: int = _app.controller.player_cards()[0].id()
+		beats.on_event(RunEvent.new(RunEvent.Type.CARDS_PASSED, 0, 2, 0.0, str(mine)), false)
+		assert_bool(beats.is_playing()).is_equal(not reduced)
+		# Between two villagers the cards fly face down.
+		beats.on_event(RunEvent.new(RunEvent.Type.CARDS_PASSED, 2, 1, 0.0, "40,41"), false)
+		var backs: int = 0
+		for node: Node in beats.find_children("*", "CardBack", true, false):
+			backs += 1 if (node as CanvasItem).visible else 0
+		assert_int(backs).is_equal(0 if reduced else 2)
+
+
+func test_a_confiscated_cadre_is_struck_on_the_board_for_its_round() -> void:
+	_loop().state.inventory.cadres.assign(["ration_coupon"])
+	_ladder("confiscation")
+	var struck: Array[bool] = []
+	var reached: bool = await _play_until(
+		func(table: TableScreen) -> bool:
+			if _loop().state.round_index != 1:
+				return false
+			var board: NoticeBoard = table.get("_board")
+			struck.append(board.is_struck(0))
+			return true
+	)
+	assert_bool(reached).is_true()
+	assert_array(struck).is_equal([true])
+
+
+func test_glass_walls_lay_glass_over_the_hand_while_in_force() -> void:
+	_ladder("glass_walls")
+	var shown: Dictionary[int, String] = {}
+	var reached: bool = await _play_until(
+		func(table: TableScreen) -> bool:
+			var beats: DebuffMoments = table.get("_debuff_beats")
+			if _app.controller.awaiting() == RunController.AWAIT_PLAY:
+				shown[_loop().state.round_index] = beats.glass.shown_text()
+			return _loop().state.round_index == 1 and shown.has(1)
+	)
+	assert_bool(reached).is_true()
+	assert_str(shown[0]).is_empty()
+	assert_str(shown[1]).is_equal(tr("table.glass_walls"))
+
+
+func test_a_seized_plot_card_is_torn_unless_motion_is_reduced() -> void:
+	for reduced: bool in [false, true]:
+		Settings.set_value("reduced_motion", reduced)
+		_app.show_screen("table", true)
+		await await_idle_frame()
+		var table: TableScreen = _app.switcher.current()
+		var beats: DebuffMoments = table.get("_debuff_beats")
+		var seized: RunEvent = RunEvent.new(
+			RunEvent.Type.PLOT_SEIZED, 0, CardInstance.FIRST_PLOT_ID, 0.0, "11,1"
+		)
+		beats.on_event(seized, false)
+		assert_bool(beats.torn.visible).is_equal(not reduced)
+		beats.on_event(seized, true)
+
+
+func test_night_shift_refuses_the_pass_and_says_why() -> void:
+	_ladder("night_shift")
+	var said: Array[String] = []
+	var reached: bool = await _play_until(
+		func(table: TableScreen) -> bool:
+			if _app.controller.pass_refusal().is_empty():
+				return false
+			var turn: int = _loop().round_state().public_view().history.size()
+			table.actions().pass_turn.pressed.emit()
+			said.append(table.actions().reading.text)
+			assert_int(_loop().round_state().public_view().history.size()).is_equal(turn)
+			return true
+	)
+	assert_bool(reached).is_true()
+	assert_array(said).is_equal([tr("table.must_play")])

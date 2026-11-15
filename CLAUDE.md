@@ -74,7 +74,7 @@ Plays Expert against Hard through `ExpertRunner` at its real deadline, 300 ms un
 godot --headless --path . --script res://tools/ladder_report.gd -- --ladders 100000
 ```
 
-Draws seeded debuff ladders and writes the tier share per Set type and round to `reports/ladder_tiers.csv`. Add `--seed N` or `--out PATH`. It uses the Plan's 20 debuffs, from `tests/fixtures/ladder/`, until P4.12 adds the real pool.
+Draws seeded debuff ladders and writes the tier share per Set type and round to `reports/ladder_tiers.csv`. Add `--seed N` or `--out PATH`. It draws from the real pool, `data/run/debuff_pool.tres`.
 
 ```bash
 git tag playtest/<name> && git push origin playtest/<name>

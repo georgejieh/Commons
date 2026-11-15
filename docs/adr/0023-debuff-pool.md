@@ -25,7 +25,7 @@ Debuffs are the game's roadblocks. They never build toward anything, and the pla
 | --- | --- | --- | --- |
 | 1 | Short Supply | Economy | The next state store shows one fewer Cadre. It stacks with rationing. |
 | 1 | Slogan of the Week | Scoring | One hand type, named with the ladder, scores at half its Rate, rounded up. Rocket is never named. |
-| 2 | Levy | Hand | Each round, before play, your highest card goes to the opponent on your left and you get their lowest. After the kitty, before the plot swap. |
+| 2 | Levy | Hand | Each round, before play, your highest card goes to the player on your left, teammate or not, and you get their lowest. After the kitty, before the plot swap. |
 | 2 | Work-Point Audit | Meters | Two more faces of the die mean an audit, for every claim, yours too. |
 | 2 | Night Shift | Hand | Each round, the first time you could pass, you must play if you hold anything that beats the table. |
 | 2 | Grain Tax | Economy | 20% of what you bank each round is taken before it counts toward the Quota, rounded against you. |

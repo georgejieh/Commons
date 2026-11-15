@@ -6,7 +6,8 @@ extends HBoxContainer
 ## at its foot, and a Cadre with no art yet has its name inked on the stock (ADR 0021).
 ## When a Cadre fires, its card swells and its count changes there, not over the table.
 ## There is a slot for every Cadre the player can hold; the cards shrink to keep the
-## board inside its box when a Reform adds one.
+## board inside its box when a Reform adds one. A Cadre a Confiscation leaves out of the
+## round is struck through and stamped for that round (ADR 0023).
 
 ## How faint an empty Cadre slot is.
 const EMPTY_ALPHA: float = 0.22
@@ -16,6 +17,7 @@ const GAP: int = 14
 var _pictures: Array[TextureRect] = []
 var _cards: Array[TipHost] = []
 var _badges: Array[CadreBadge] = []
+var _marks: Array[ConfiscatedMark] = []
 var _ids: Array[String] = []
 ## The most room the board may take; zero for none, which keeps full-size cards.
 var _box: Vector2 = Vector2.ZERO
@@ -51,6 +53,9 @@ func _grow(slots: int) -> void:
 		card.add_child(picture)
 		var badge: CadreBadge = CadreBadge.new()
 		card.add_child(badge)
+		var mark: ConfiscatedMark = ConfiscatedMark.new()
+		card.add_child(mark)
+		_marks.append(mark)
 		add_child(card)
 		_cards.append(card)
 		_pictures.append(picture)
@@ -87,6 +92,17 @@ func fired(controller: RunController, cadre_id: String, amount: int) -> void:
 	pulse_slot(index)
 
 
+## Strikes a slot's card out for the round; animate presses the stamp on like ink.
+func strike(index: int, animate: bool) -> void:
+	if index >= 0 and index < _marks.size():
+		_marks[index].strike(animate)
+
+
+## True while a slot's card is struck out, for tests.
+func is_struck(index: int) -> bool:
+	return _marks[index].visible
+
+
 ## The count a slot's card shows, for tests.
 func count_at(index: int) -> String:
 	return _badges[index].count()
@@ -96,14 +112,22 @@ func count_at(index: int) -> String:
 func show_cadres(controller: RunController) -> void:
 	_grow(controller.cadre_slots())
 	var cadre_ids: Array[String] = controller.state_copy().inventory.cadres
+	var confiscated: Array[String] = controller.confiscated_cadres()
 	_ids = cadre_ids
 	for index: int in _cards.size():
 		var held: bool = index < cadre_ids.size()
 		# An empty slot is a faint pin mark on the board, so it doesn't pull the eye.
 		_cards[index].modulate.a = 1.0 if held else EMPTY_ALPHA
+		var struck: bool = held and confiscated.has(cadre_ids[index])
+		if struck and not _marks[index].visible:
+			_marks[index].strike(false)
+		_marks[index].visible = struck
 		if held:
 			var name: String = tr("modifier.%s.name" % cadre_ids[index])
-			_cards[index].set_tip(name, ScreenKit.rule_text(controller, cadre_ids[index]))
+			var rule: String = ScreenKit.rule_text(controller, cadre_ids[index])
+			if struck:
+				rule = tr("table.confiscated_tip") + " " + rule
+			_cards[index].set_tip(name, rule)
 		else:
 			_cards[index].set_tip("", "")
 		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null

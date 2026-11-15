@@ -54,19 +54,19 @@ func choose_play(controller: RunController) -> Array[int]:
 	var play: BotPlay = Bot.decide_play(
 		view, controller.legal_moves(), controller.player_table(), config, BotBudget.unlimited()
 	)
+	if play.is_pass() and not controller.pass_refusal().is_empty():
+		# Night Shift refuses the pass: the first legal play goes instead (ADR 0023).
+		return controller.card_ids_for(controller.legal_moves()[0])
 	if play.is_pass():
 		return []
 	return controller.card_ids_for(play.pattern)
 
 
 func _play(controller: RunController) -> bool:
-	var view: SeatView = controller.seat_view()
-	var play: BotPlay = Bot.decide_play(
-		view, controller.legal_moves(), controller.player_table(), config, BotBudget.unlimited()
-	)
-	if play.is_pass():
+	var ids: Array[int] = choose_play(controller)
+	if ids.is_empty():
 		return controller.pass_turn() == RunController.OK
-	return controller.play(controller.card_ids_for(play.pattern)) == RunController.OK
+	return controller.play(ids) == RunController.OK
 
 
 static func counts(cards: Array[CardInstance]) -> PackedByteArray:

@@ -16,6 +16,9 @@ var teammate: int = Seats.NONE
 var opponent_cards: int = NO_CARDS
 var teammate_cards: int = NO_CARDS
 var unseen: PackedByteArray
+## The unseen cards an opponent could hold: all of them, unless a hand shown to the table
+## (Glass Walls) tells the bot which of them a teammate holds or which seat holds what.
+var threats: PackedByteArray
 var groups: Array[Pattern]
 var controls: Controls
 
@@ -30,9 +33,10 @@ func _init(
 	seat = view.seat
 	_read_seats()
 	unseen = UnseenCards.from_view(view)
+	threats = _threats()
 	groups = scorer.decompose_own_hand().groups
 	var counts_cards: bool = config.reads_the_table()
-	controls = Controls.new(groups, unseen, _largest_opposing_hand(), table, counts_cards)
+	controls = Controls.new(groups, threats, _largest_opposing_hand(), table, counts_cards)
 
 
 func hand_size() -> int:
@@ -95,7 +99,7 @@ func going_out(legal: Array[Pattern]) -> Pattern:
 ## holding back every group nothing unseen beats costs it about five points of win rate.
 func read_groups(other: Array[Pattern]) -> Controls:
 	var counts_cards: bool = config.reads_the_table() and not is_landlord()
-	return Controls.new(other, unseen, _largest_opposing_hand(), table, counts_cards)
+	return Controls.new(other, threats, _largest_opposing_hand(), table, counts_cards)
 
 
 ## A repeatable roll for this decision, from 0 to 1.
@@ -129,6 +133,28 @@ func _read_seats() -> void:
 			teammate_cards = view.public.remaining[other]
 		elif other != seat:
 			opponent_cards = mini(opponent_cards, view.public.remaining[other])
+
+
+## With no hand shown, every unseen card. Otherwise a shown opponent's cards, plus the
+## cards nobody showed when the seat that holds them is an opponent too.
+func _threats() -> PackedByteArray:
+	if view.exposed.is_empty():
+		return unseen
+	var hidden: PackedByteArray = unseen.duplicate()
+	var opposing: PackedByteArray = PackedByteArray()
+	opposing.resize(Ranks.COUNT)
+	for shown_seat: int in view.exposed:
+		var shown: PackedByteArray = view.exposed[shown_seat]
+		for rank: int in Ranks.COUNT:
+			hidden[rank] -= mini(hidden[rank], shown[rank])
+			if is_opponent(shown_seat):
+				opposing[rank] += shown[rank]
+	for other: int in Seats.COUNT:
+		if other != seat and not view.exposed.has(other) and is_opponent(other):
+			for rank: int in Ranks.COUNT:
+				opposing[rank] += hidden[rank]
+			break
+	return opposing
 
 
 func _largest_opposing_hand() -> int:

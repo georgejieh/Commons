@@ -106,6 +106,14 @@ static func migrate_from_7(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 8 saves predate Slogan of the Week (ADR 0023): no ladder named a hand type.
+static func migrate_from_8(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"slogan_type": RunState.NO_SLOGAN})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {

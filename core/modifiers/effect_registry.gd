@@ -92,4 +92,38 @@ static func _build_starter(modifier_id: String) -> ModifierEffect:
 			return LastSheafEffect.new()
 		"steel_target":
 			return SteelTargetEffect.new()
+	return _build_debuff(modifier_id)
+
+
+## The debuffs ADR 0023 adds.
+static func _build_debuff(modifier_id: String) -> ModifierEffect:
+	match modifier_id:
+		"short_supply":
+			return ShortSupplyEffect.new()
+		"slogan_of_the_week":
+			return SloganEffect.new()
+		"levy":
+			return LevyEffect.new()
+		"work_point_audit":
+			return AuditFacesEffect.new()
+		"night_shift":
+			return NightShiftEffect.new()
+		"grain_tax":
+			return GrainTaxEffect.new()
+		"shared_kitchen":
+			return SharedKitchenEffect.new()
+		"confiscation":
+			return ConfiscationEffect.new()
+		"glass_walls":
+			return GlassWallsEffect.new()
+		"redistribution":
+			return RedistributionEffect.new()
+		"overtime":
+			return OvertimeEffect.new()
+		"big_character_poster":
+			return LossMeterEffect.new(RunMeters.DEBUFF_DENUNCIATION)
+		"hungry_winter":
+			return LossMeterEffect.new(RunMeters.DEBUFF_FAMINE)
+		"plot_seized":
+			return PlotSeizedEffect.new()
 	return null

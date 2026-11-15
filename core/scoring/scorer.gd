@@ -3,9 +3,9 @@ extends RefCounted
 ## Scores a play as Grain × Rate × Zeal (ADR 0020). Grain is the scored cards' values
 ## plus additive Grain from hooks; kickers don't score. A Model card's own value is
 ## raised by the data's percent before any hook sees it, for whoever scores it
-## (ADR 0021). Rate comes from the hand type and
-## its level alone, under a hook's Rate cap. Zeal starts at 1 and changes only through
-## hooks: additive Zeal, then multiplicative Zeal, never below the data's minimum.
+## (ADR 0021). Rate comes from the hand type and its level, then a hook's share of it
+## rounded up (ADR 0023), then a hook's Rate cap. Zeal starts at 1 and changes only
+## through hooks: additive Zeal, then multiplicative Zeal, never below the data's minimum.
 
 const DEFAULT_PARAMS: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 ## Largest value the display can show. NaN and infinity clamp to it.
@@ -56,6 +56,8 @@ static func score_play(
 	breakdown.add_step(ScoreBreakdown.Step.ADD_GRAIN, play.add_grain)
 
 	var rate: float = params.rate_for(pattern.type, level)
+	if play.rate_percent != PERCENT:
+		rate = ceilf(rate * play.rate_percent / PERCENT)
 	breakdown.add_step(ScoreBreakdown.Step.RATE, rate)
 	if rate > play.rate_cap:
 		rate = play.rate_cap

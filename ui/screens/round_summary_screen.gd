@@ -23,6 +23,9 @@ func open(app: DemoApp) -> void:
 	# Overfulfillment's stake is part of the result: the bank multiplied, or voided.
 	if last.has("stake"):
 		sheet.add_child(ScreenKit.label(stake_line(last), 24, ScreenKit.RED))
+	# What debuffs took from the bank is part of the result too (ADR 0023).
+	for line: String in debuff_lines(last):
+		sheet.add_child(ScreenKit.label(line, 24, ScreenKit.RED))
 	var back: Button = ScreenKit.button(tr("round.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(app.back)
 	sheet.add_child(back)
@@ -36,6 +39,17 @@ static func stake_line(last: Dictionary) -> String:
 		var amount: String = Strings.score(float(last["banked"]))
 		return TranslationServer.translate("round.stake.won").format({"amount": amount})
 	return TranslationServer.translate("round.stake.lost")
+
+
+## Overtime's and Grain Tax's lines, for a result they cut.
+static func debuff_lines(last: Dictionary) -> PackedStringArray:
+	var lines: PackedStringArray = []
+	if last.has("voided"):
+		lines.append(TranslationServer.translate("round.voided"))
+	if last.has("taxed"):
+		var amount: String = Strings.score(float(last["taxed"]))
+		lines.append(TranslationServer.translate("round.taxed").format({"amount": amount}))
+	return lines
 
 
 ## The player's result in the Set's last finished round, or empty when none has.
@@ -58,6 +72,10 @@ static func last_round(events: Array[RunEvent]) -> Dictionary:
 		elif event.type == RunEvent.Type.STAKE_SETTLED and event.seat == 0:
 			result["stake"] = event.value == 1
 			result["banked"] = event.amount
+		elif event.type == RunEvent.Type.GRAIN_TAXED and event.seat == 0:
+			result["taxed"] = event.amount
+		elif event.type == RunEvent.Type.BANK_VOIDED and event.seat == 0:
+			result["voided"] = event.amount
 		if result.has("won"):
 			finished = result
 	return finished

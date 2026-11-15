@@ -53,6 +53,7 @@ var _dressing: DreadDressing = DreadDressing.new()
 var _surface: TextureRect
 var _moments: TableMoments = TableMoments.new()
 var _campaigns: TableCampaigns = TableCampaigns.new()
+var _debuff_beats: DebuffMoments = DebuffMoments.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -98,6 +99,7 @@ func _ready() -> void:
 	var pile_at: Vector2 = Vector2(PLAY_CENTER - PILE_HALF_WIDTH, 380)
 	_place(_pile, pile_at, Vector2(PILE_HALF_WIDTH * 2.0, 300))
 	_campaigns.place(self)
+	_debuff_beats.place(self, _hand_view)
 	# The need panel, sheets and banner all lie over the pile.
 	move_child(_pile, _need_panel.get_index())
 
@@ -140,6 +142,7 @@ func open(app: DemoApp) -> void:
 	_moments.hud = _hud
 	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
 	_campaigns.attach(_pool, _debuffs)
+	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
 	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
 	_player.holds = {
 		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6

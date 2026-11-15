@@ -1,11 +1,36 @@
 extends GdUnitTestSuite
-## Ladders never break a draw rule, over random pools and over the Plan's pool.
+## Ladders never break a draw rule, over random pools and over the real pool, which holds
+## ADR 0023's twenty debuffs at their tiers and levers.
 
 const LADDERS: int = 100000
 const SEED: int = 3401
 const MAX_POOL: int = 30
 const MAX_ROUNDS: int = 6
 const PLAN_LADDERS: int = 10000
+const POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
+## ADR 0023's table and the six built before it: ID, tier, lever.
+const TABLE: Array[Array] = [
+	["ration_cut", 1, ModifierDef.Lever.SCORING],
+	["paperwork", 1, ModifierDef.Lever.SCORING],
+	["morning_meeting", 1, ModifierDef.Lever.SCORING],
+	["short_supply", 1, ModifierDef.Lever.ECONOMY],
+	["slogan_of_the_week", 1, ModifierDef.Lever.SCORING],
+	["levy", 2, ModifierDef.Lever.HAND],
+	["work_point_audit", 2, ModifierDef.Lever.METERS],
+	["night_shift", 2, ModifierDef.Lever.HAND],
+	["grain_tax", 2, ModifierDef.Lever.ECONOMY],
+	["straightened_lines", 2, ModifierDef.Lever.SCORING],
+	["shared_kitchen", 2, ModifierDef.Lever.HAND],
+	["criticism_meeting", 3, ModifierDef.Lever.RANK],
+	["confiscation", 3, ModifierDef.Lever.SCORING],
+	["glass_walls", 3, ModifierDef.Lever.HAND],
+	["redistribution", 3, ModifierDef.Lever.HAND],
+	["overtime", 3, ModifierDef.Lever.SCORING],
+	["big_character_poster", 4, ModifierDef.Lever.METERS],
+	["hungry_winter", 4, ModifierDef.Lever.METERS],
+	["plot_seized", 4, ModifierDef.Lever.HAND],
+	["inverted_order", 4, ModifierDef.Lever.RANK],
+]
 
 var _params: LadderParams = DebuffLadder.DEFAULT_PARAMS
 
@@ -26,10 +51,23 @@ func test_random_ladders_never_break_a_rule() -> void:
 	assert_int(violations).is_equal(0)
 
 
+func test_the_real_pool_holds_every_debuff_at_its_tier_and_lever() -> void:
+	var found: Dictionary[String, ModifierDef] = {}
+	for definition: ModifierDef in POOL.debuffs:
+		assert_int(definition.kind).is_equal(ModifierDef.Kind.DEBUFF)
+		found[definition.id] = definition
+	assert_int(found.size()).is_equal(TABLE.size())
+	for row: Array in TABLE:
+		var definition: ModifierDef = found.get(row[0])
+		assert_object(definition).override_failure_message(row[0]).is_not_null()
+		assert_int(definition.tier).override_failure_message(row[0]).is_equal(row[1])
+		assert_int(definition.lever).override_failure_message(row[0]).is_equal(row[2])
+
+
 ## A round can stay clean when the budget and levers leave nothing; the report shows how often.
-func test_the_plan_pool_never_breaks_a_rule() -> void:
+func test_the_real_pool_never_breaks_a_rule() -> void:
 	var stream: RandomStream = RandomStream.new(SEED)
-	var pool: Array[ModifierDef] = PlanDebuffs.pool()
+	var pool: Array[ModifierDef] = POOL.debuffs
 	var violations: int = 0
 	for index: int in PLAN_LADDERS:
 		var set_type: RunState.SetType = (index % 3) as RunState.SetType
@@ -40,11 +78,11 @@ func test_the_plan_pool_never_breaks_a_rule() -> void:
 
 func test_round_two_draws_only_tiers_one_and_two_weighted_to_two() -> void:
 	var stream: RandomStream = RandomStream.new(SEED)
-	var tiers: Dictionary[String, int] = _tiers(PlanDebuffs.pool())
+	var tiers: Dictionary[String, int] = _tiers(POOL.debuffs)
 	var tier_two: int = 0
 	for _i: int in PLAN_LADDERS:
 		var ladder: Array[String] = DebuffLadder.draw(
-			PlanDebuffs.pool(), RunState.SetType.BOSS, 4, stream
+			POOL.debuffs, RunState.SetType.BOSS, 4, stream
 		)
 		assert_int(tiers[ladder[1]]).is_between(1, 2)
 		if tiers[ladder[1]] == 2:
@@ -55,10 +93,10 @@ func test_round_two_draws_only_tiers_one_and_two_weighted_to_two() -> void:
 
 func test_same_stream_state_gives_the_same_ladder() -> void:
 	var first: Array[String] = DebuffLadder.draw(
-		PlanDebuffs.pool(), RunState.SetType.LARGE, 4, RandomStream.new(SEED)
+		POOL.debuffs, RunState.SetType.LARGE, 4, RandomStream.new(SEED)
 	)
 	var second: Array[String] = DebuffLadder.draw(
-		PlanDebuffs.pool(), RunState.SetType.LARGE, 4, RandomStream.new(SEED)
+		POOL.debuffs, RunState.SetType.LARGE, 4, RandomStream.new(SEED)
 	)
 	assert_array(second).is_equal(first)
 
@@ -95,7 +133,7 @@ func _violations(
 func _random_pool(rng: RandomNumberGenerator) -> Array[ModifierDef]:
 	var pool: Array[ModifierDef] = []
 	for index: int in rng.randi_range(0, MAX_POOL):
-		var definition: ModifierDef = PlanDebuffs.make(
+		var definition: ModifierDef = _make(
 			"debuff_%d" % index,
 			rng.randi_range(1, ModifierDef.MAX_TIER),
 			rng.randi_range(0, ModifierDef.Lever.size() - 1) as ModifierDef.Lever
@@ -111,3 +149,12 @@ func _tiers(pool: Array[ModifierDef]) -> Dictionary[String, int]:
 	for definition: ModifierDef in pool:
 		tiers[definition.id] = definition.tier
 	return tiers
+
+
+static func _make(id: String, tier: int, lever: ModifierDef.Lever) -> ModifierDef:
+	var definition: ModifierDef = ModifierDef.new()
+	definition.id = id
+	definition.kind = ModifierDef.Kind.DEBUFF
+	definition.tier = tier
+	definition.lever = lever
+	return definition

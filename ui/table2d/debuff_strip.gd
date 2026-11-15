@@ -37,7 +37,7 @@ func show_debuffs(controller: RunController) -> void:
 		if controller.is_table_wide(cadre_id):
 			ids.append(cadre_id)
 	for modifier_id: String in ids:
-		var name: String = _escape(tr("modifier.%s.name" % modifier_id))
+		var name: String = _escape(controller.modifier_name(modifier_id))
 		var rule: String = Keywords.mark(controller.modifier_text(modifier_id))
 		var row: String = "[b][color=#%s]%s[/color][/b]  %s" % [NAME_HEX, name, rule]
 		# Appeal lifts this round's debuff: it stays listed, struck through (ADR 0021).

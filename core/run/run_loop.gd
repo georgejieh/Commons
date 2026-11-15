@@ -58,6 +58,10 @@ var stall: PlotStall
 ## The player's Campaigns and what they hold in force this round. Use them through the
 ## commands.
 var campaigns: RunCampaigns
+## What the round's debuffs hold outside their hooks (ADR 0023).
+var debuffs: RunDebuffs
+## Bot actions the round refused, which a bot must never choose. Tests read it.
+var refused_bot_actions: int = 0
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -120,6 +124,7 @@ func _init(
 	stall = PlotStall.new(state, DEFAULT_PLOT_UPGRADES, params)
 	_table = SeatRules.new(_stack)
 	campaigns = RunCampaigns.new(state, _stack, _table, meters, params, set_log, PLAYER)
+	debuffs = RunDebuffs.new(state, _stack, set_log, PLAYER)
 	_scoring = RoundScoring.new(state.hand_levels, _stack)
 
 
@@ -206,9 +211,11 @@ func start_set() -> Reason:
 	state.over_steps = 0
 	state.landlord_seat = Seats.NONE
 	_choose_boss()
+	var ladder_stream: RandomStream = state.streams.stream(RandomStreams.DEBUFF)
 	state.debuff_ladder = DebuffLadder.draw(
-		_pool, state.set_type, _sets.max_rounds(), state.streams.stream(RandomStreams.DEBUFF)
+		_pool, state.set_type, _sets.max_rounds(), ladder_stream
 	)
+	state.slogan_type = RunDebuffs.draw_slogan(state.debuff_ladder, ladder_stream)
 	var ladder_text: String = ",".join(state.debuff_ladder.slice(1))
 	set_log.add(
 		RunEvent.new(RunEvent.Type.SET_STARTED, Seats.NONE, set_number(), target(), ladder_text)
@@ -280,7 +287,7 @@ func player_swap(hand_ids: Array[int], plot_ids: Array[int]) -> Reason:
 	if _awaiting != Awaiting.PLAYER_SWAP:
 		return Reason.NOT_AWAITED
 	var hand: Array[CardInstance] = _round.view_for(PLAYER).own_cards
-	var limit: int = PlotSwap.swaps(state, _params)
+	var limit: int = swap_limit()
 	if not PlotSwap.is_valid(hand, state.inventory, hand_ids, plot_ids, limit):
 		return Reason.ILLEGAL
 	record.add({"type": "swap", "hand": hand_ids.duplicate(), "plot": plot_ids.duplicate()})
@@ -318,6 +325,7 @@ func player_campaign(slot: int, card_ids: Array[int]) -> Reason:
 		return Reason.ILLEGAL
 	record.add({"type": "campaign", "slot": slot, "cards": card_ids.duplicate()})
 	campaigns.use(slot, card_ids, moment, _round)
+	debuffs.after_campaign(campaigns.flags.round_debuff)
 	if moment == CampaignContext.Moment.SHOP:
 		_end_if_dead()
 	elif moment == CampaignContext.Moment.OPENING and not campaigns.wants_opening(_round):
@@ -422,6 +430,7 @@ func open_shop() -> Reason:
 		_reeducate()
 		return Reason.OK
 	_move(RunFlow.State.SHOP)
+	shop.short_cut = RunDebuffs.store_cut(state, _pool_by_id, PLAYER)
 	shop.open()
 	market.open()
 	stall.open()
@@ -553,6 +562,7 @@ func _rebuild_modifiers() -> void:
 			set_log.add(RunEvent.new(RunEvent.Type.DEBUFF_ADDED, PLAYER, round_index, 0.0, id))
 	if state.boss_id != RunState.NO_BOSS:
 		_stack.add(_pool_by_id[state.boss_id], PLAYER)
+	debuffs.rebuilt()
 
 
 ## Shuffles a fresh deck, or under Unplanned Economy cuts the one the last round left
@@ -617,10 +627,16 @@ func _begin_play() -> void:
 	_move(RunFlow.State.ROUND_PLAY)
 	# The round starts first, so the landlord holds the kitty before the swap (ADR 0014).
 	_create_round()
-	if not state.inventory.plot.is_empty() and PlotSwap.swaps(state, _params) > 0:
+	if not state.inventory.plot.is_empty() and swap_limit() > 0:
 		_awaiting = Awaiting.PLAYER_SWAP
 	else:
 		_awaiting = _opening()
+
+
+## The most plot swaps the player may make this round: the run's own, under any debuff's
+## cap (ADR 0023).
+func swap_limit() -> int:
+	return debuffs.swaps(PlotSwap.swaps(state, _params))
 
 
 ## A peasant player holding a Campaign for the opening is asked before the first play.
@@ -647,7 +663,10 @@ func _create_round() -> void:
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
 	_scoring.start(state.landlord_seat)
-	_stack.run_round_start(RoundContext.new(state.landlord_seat, Seats.NONE, 0))
+	# Debuffs move cards here, after the kitty and before the plot swap (ADR 0023).
+	var opening: RoundContext = debuffs.round_context(_round, _table, campaigns.flags.round_debuff)
+	_stack.run_round_start(opening)
+	debuffs.started(opening)
 	_collect_round_events()
 
 
@@ -671,6 +690,7 @@ func _bot_play() -> void:
 		play.is_pass() or legal.any(func(move: Pattern) -> bool: return move.equals(play.pattern))
 	)
 	if not offered or _round.apply(action) != RoundState.Reason.OK:
+		refused_bot_actions += 1
 		assert(false, "A bot chose an illegal action")
 		_round.apply(_round.action_for(legal[0]))
 	_after_action()
@@ -722,13 +742,17 @@ func _finish_round() -> void:
 	var landlord: int = state.landlord_seat
 	var ending: RoundContext = RoundContext.new(landlord, winner, finish)
 	_stack.run_round_end(ending)
+	debuffs.ended(ending)
 	var totals: PackedFloat64Array = RoundTotals.totals(
 		_scoring.scores(), landlord, winner, finish, _table.rules_for(landlord)
 	)
 	RunCadres.scale_commons(totals, landlord, ending.commons_scale)
 	RunCadres.announce(state, set_log, PLAYER)
 	campaigns.settle(totals, landlord, winner)
+	debuffs.settle(totals, landlord)
 	RoundBanking.bank(state, totals, PLAYER, set_log.events())
+	for source: String in debuffs.meter_sources:
+		_raise(source)
 	if landlord != PLAYER:
 		_awaiting = Awaiting.PLAYER_NEED
 		return
@@ -746,7 +770,16 @@ func _split_commons(player_need: int) -> void:
 	var caught: Array[int] = []
 	var events: Array[RunEvent] = set_log.events()
 	if RoundBanking.split(
-		state, PLAYER, player_need, _configs, _params, events, faces, caught, DEFAULT_AUDIT
+		state,
+		PLAYER,
+		player_need,
+		_configs,
+		_params,
+		events,
+		faces,
+		caught,
+		DEFAULT_AUDIT,
+		debuffs.cut
 	):
 		_raise(RunMeters.COMMONS_SHORTFALL)
 	for seat: int in caught:

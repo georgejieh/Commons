@@ -54,7 +54,8 @@ static func _safe_moves(position: BotPosition, legal: Array[Pattern]) -> Array[P
 	return moves
 
 
-## Drops plays of the type that unseen cards beat. With nothing else, plays the highest.
+## Drops plays of the type that cards an opponent could hold beat. With nothing else,
+## plays the highest.
 static func _without_low(
 	position: BotPosition, moves: Array[Pattern], type: Pattern.Type, width: int
 ) -> Array[Pattern]:
@@ -78,7 +79,7 @@ static func _without_low(
 
 static func _is_top(position: BotPosition, rank: int, width: int) -> bool:
 	for other: int in Ranks.COUNT:
-		var could_answer: bool = position.unseen[other] >= width
+		var could_answer: bool = position.threats[other] >= width
 		if could_answer and position.rank_of(other) > position.rank_of(rank):
 			return false
 	return true
