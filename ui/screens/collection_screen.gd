@@ -3,7 +3,9 @@ extends Control
 ## The collection (P3B.9): every Cadre in both pools, with its art and rules text, under
 ## two headings, collective Cadres from the state store and private ones from the black
 ## market. The grids scroll, and the scroll follows keyboard and gamepad focus from card
-## to card. Unlocks arrive with P4.14; until then every Cadre shows.
+## to card. The whole page sits on one paper sheet, so the heading reads as the shops'
+## do. A Cadre with no art yet shows the empty frame its picture will fill. Unlocks
+## arrive with P4.14; until then every Cadre shows.
 
 const POOL: CadrePool = preload("res://data/run/cadre_pool.tres")
 const MARKET_POOL: CadrePool = preload("res://data/run/market_pool.tres")
@@ -12,14 +14,22 @@ const COLUMNS: int = 3
 const CARD_WIDTH: float = 540.0
 const RULES_WIDTH: float = 340.0
 const FOCUS_RING: Color = Color("b98a2c")
+const SHEET_PADDING: int = 28
 
 var _entries: Array[Control] = []
 var _scroll: ScrollContainer = ScrollContainer.new()
 
 
 func open(app: DemoApp) -> void:
-	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
-	column.add_child(ScreenKit.header(tr("coll.eyebrow"), tr("coll.title"), ScreenKit.GOLD))
+	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
+	var sheet: PanelContainer = PanelContainer.new()
+	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
+	sheet.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	page.add_child(sheet)
+	var column: VBoxContainer = VBoxContainer.new()
+	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
+	sheet.add_child(column)
+	column.add_child(ScreenKit.header(tr("coll.eyebrow"), tr("coll.title")))
 	var sections: VBoxContainer = VBoxContainer.new()
 	sections.add_theme_constant_override("separation", 18)
 	sections.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -72,12 +82,7 @@ func _entry(definition: ModifierDef) -> Control:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(CARD_WIDTH, 0))
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
-	var art: TextureRect = TextureRect.new()
-	art.texture = ScreenKit.cadre_art(definition.id)
-	art.custom_minimum_size = ART_SIZE
-	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	row.add_child(art)
+	row.add_child(_art(definition.id))
 	var words: VBoxContainer = VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name: Label = ScreenKit.styled(tr(definition.name_key), CommonsTheme.TITLE)
@@ -106,3 +111,15 @@ func _entry(definition: ModifierDef) -> Control:
 	panel.focus_exited.connect(ring.set_visible.bind(false))
 	UiMotion.hoverable(panel)
 	return panel
+
+
+## The Cadre's art, or the printed frame it will fill while it has none.
+func _art(cadre_id: String) -> Control:
+	if ScreenKit.ART.cadre(cadre_id) == null:
+		return ArtFrame.new(ART_SIZE)
+	var art: TextureRect = TextureRect.new()
+	art.texture = ScreenKit.cadre_art(cadre_id)
+	art.custom_minimum_size = ART_SIZE
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	return art

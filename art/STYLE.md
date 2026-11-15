@@ -24,7 +24,9 @@ Blue and green leave the art as corruption rises. By stage 6 the art is printed 
 - **Line.** One ink weight per asset: about 3 px at 1080p for the main contours, and about half that for hatching. No soft airbrush outlines.
 - **Fill.** Flat silkscreen blocks with two or three tones per color. Gradients appear only in sun rays and halos.
 - **Texture.** Aged poster paper: fold lines, foxing, tea rings and torn edges. Print misregistration of 1 to 3 px on large red blocks. The paper ages with each stage, but the play area always stays calm and low in contrast, so the cards read clearly.
-- **Nothing is clean.** Even at stage 0 there is a little grime on everything, and it worsens with every stage. This holds for things drawn in code as much as for painted art: no pure white, no fresh colour, no perfect edge. The dice bowl is the model (`BowlGrime`): its glaze is yellowed, crazed and tea-stained from the start, each stage adds cracks, chips and dirt, and at the deep stages the red 1 on the die is an eye.
+- **Grime never costs readability.** A name or a rule the player must read is drawn in dark ink over the stains, at 16 px or more on a 1080-high screen, at every corruption stage. Wear the paper, not the words.
+
+**Nothing is clean.** Even at stage 0 there is a little grime on everything, and it worsens with every stage. This holds for things drawn in code as much as for painted art: no pure white, no fresh colour, no perfect edge. The dice bowl is the model (`BowlGrime`): its glaze is yellowed, crazed and tea-stained from the start, each stage adds cracks, chips and dirt, and at the deep stages the red 1 on the die is an eye.
 - **Light.** One warm source, top center, where the sun or eye sits in each poster. On the table, the lamp sits in the same place.
 - **Composition.** Heroic upward poses, crowds in rows, banners on the diagonal, the sun at the top. Key detail goes at the edges, never under where cards lie.
 

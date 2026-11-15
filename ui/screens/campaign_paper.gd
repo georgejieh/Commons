@@ -6,7 +6,8 @@ extends RefCounted
 ## corner; every stage adds more, by BowlGrime.wear(). Each sheet draws from its own
 ## fixed seed, so the same leaflet always looks the same.
 
-const PAPER: Color = Color("e8d9b4")
+## Warm, like the other village papers, so a leaflet never reads as greyed out.
+const PAPER: Color = Color("ecd7a2")
 const SHADE: Color = Color("c9b68a")
 const FOLD: Color = Color("8a7653")
 const EDGE: Color = Color("4a3a26")
@@ -22,9 +23,9 @@ static func paper(worn: float) -> Color:
 	return BowlGrime.aged(PAPER, worn)
 
 
-## A band or ink colour, faded the same way.
+## A band or ink colour, faded a little: printing outlasts the paper it is on.
 static func ink(clean: Color, worn: float) -> Color:
-	return BowlGrime.aged(clean, worn * 0.8)
+	return BowlGrime.aged(clean, worn * 0.3)
 
 
 ## A leaflet sheet filling rect: aged paper with a coloured head band, a fold across the

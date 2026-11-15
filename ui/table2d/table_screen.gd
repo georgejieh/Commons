@@ -15,6 +15,8 @@ const RED: Color = Color("9e1b16")
 ## The play area's middle in x, and the seats' width and gap from that middle. The
 ## Cadre board centers on it between the seats.
 const PLAY_CENTER: float = 790.0
+## Half the trick's width about its centre: clear of the Campaign tray at its left.
+const PILE_HALF_WIDTH: float = 320.0
 const SEAT_WIDTH: float = 380.0
 const SEAT_OFFSET: float = 330.0
 ## The height the need panel and the audit slip center on, between seats and hand.
@@ -92,7 +94,9 @@ func _ready() -> void:
 	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
-	_place(_pile, Vector2(PLAY_CENTER - 460.0, 380), Vector2(920, 300))
+	# Narrower than the table, so the Campaign tray has the room at its left.
+	var pile_at: Vector2 = Vector2(PLAY_CENTER - PILE_HALF_WIDTH, 380)
+	_place(_pile, pile_at, Vector2(PILE_HALF_WIDTH * 2.0, 300))
 	_campaigns.place(self)
 	# The need panel, sheets and banner all lie over the pile.
 	move_child(_pile, _need_panel.get_index())

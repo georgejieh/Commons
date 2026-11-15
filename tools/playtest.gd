@@ -6,7 +6,9 @@ extends SceneTree
 ## through several rounds and Sets. Logs any click that selects the wrong card or does
 ## nothing, and saves a screenshot at each round's first turn and every few turns.
 ##   godot --path . --script res://tools/playtest.gd -- --rounds 6 --out reports/playtest
-## Needs a real window. Development only; tools/ never ships.
+## Needs a real window for its pictures. Run with --headless it walks the same steps and
+## prints each frame's name instead, which checks its clicks without a window.
+## Development only; tools/ never ships.
 
 const SEED: int = 4242
 const SHOT_EVERY: int = 5
@@ -37,9 +39,17 @@ var _opening_shot: bool = false
 var _market_shot: bool = false
 var _opening_granted: bool = false
 var _reform_shot: bool = false
+var _envelope_shot: bool = false
+var _parcel_shot: bool = false
+## No window to photograph: frames are named, not saved.
+var _headless: bool = false
 
 
 func _initialize() -> void:
+	_headless = DisplayServer.get_name() == "headless"
+	if _headless:
+		# Paced like a window, so the step guard lasts as long as the moments it waits on.
+		Engine.max_fps = 60
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	for flag: String in ["--out", "--rounds"]:
 		var at: int = args.find(flag)
@@ -100,8 +110,13 @@ func _step() -> void:
 			await _buy_one()
 			await _issue_one()
 			await _buy_campaign()
+			await _envelope_frames()
 			await _click_button_with_text(tr("market.open"))
 			await _shot("black_market")
+			await _parcel_frames()
+			# The Parcel's sandbox resumes the saved run, which lands in the state store.
+			if switcher.call("current_id") != "black_market":
+				await _click_button_with_text(tr("market.open"))
 			await _market_frames()
 			await _click_button_with_text(tr("market.back"))
 			await _click_button_with_text(tr("store.leave"))
@@ -255,11 +270,13 @@ func _market_frames() -> void:
 	var memos: Dictionary = state.cadre_memos.to_dict()
 	var stock: Array[String] = market.get("_stock")
 	var coupons: int = state.coupons
-	var offered: Array[String] = ["rehabilitation", "steel_target", "last_sheaf"]
+	# One Cadre with art between two without, each with its full rules.
+	var offered: Array[String] = ["rehabilitation", "hidden_reserves", "last_sheaf"]
 	market.set("_stock", offered)
 	state.coupons = maxi(coupons, 40)
 	screen.call("_refresh")
 	await _frames(10)
+	await _shot("black_market_cadre_rules")
 	var counter: Node = screen.get("_counter")
 	await _press_node(counter.get_child(0))
 	var picker: Object = screen.get("_picker")
@@ -374,6 +391,134 @@ func _reform_frames() -> void:
 		await _snap("store_reform_strip_slip")
 
 
+## The state store's envelope, once a run: its offer with the slip, a few frames through
+## the opening beat, the papers at rest, one focused, the same at corruption stage 9 with
+## the override put back, and one kept under its seal. The coupons are handed over in the
+## record too, so the purchase and the pick replay.
+func _envelope_frames() -> void:
+	if _envelope_shot:
+		return
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	var stall: Object = screen.get("_envelope_stall")
+	if stall == null or stall.call("panel", 0) == null:
+		return
+	_envelope_shot = true
+	_grant_coupons(8)
+	screen.call("_refresh")
+	await _frames(10)
+	var offer: Control = stall.call("panel", 0)
+	await _hover(offer)
+	await _shot("store_envelope_offer")
+	await _press(offer.get("buy"))
+	for frame: int in 4:
+		await _snap("envelope_opening_%d" % frame)
+	var overlay: Object = stall.call("overlay")
+	if overlay == null:
+		_misclicks += 1
+		print("ENVELOPE DID NOT OPEN")
+		return
+	await _settled(overlay)
+	await _shot("envelope_choices")
+	var papers: Array = overlay.call("papers")
+	if papers.size() > 1:
+		var second: Object = papers[1]
+		var focused: Button = second.get("keep")
+		focused.grab_focus()
+		await _snap("envelope_choice_focused")
+	await _stage_9(overlay, "envelope_choices_stage_9")
+	var keep: Button = _first_keep(papers, overlay)
+	await _press(keep)
+	await create_timer(0.45).timeout
+	await _snap("envelope_kept")
+	await create_timer(1.6).timeout
+	if bool(stall.call("is_busy")):
+		_misclicks += 1
+		print("ENVELOPE STILL OPEN")
+
+
+## The black market's Parcel, once a run, in a sandbox put back after: its offer with
+## the slip, then a Parcel holding a private Campaign, a stamped court card and a Model
+## card, handed over through the run's state as only this tool does, and the stamped card
+## kept. The save taken before is written back and resumed, so the run and its record go
+## on as they were.
+func _parcel_frames() -> void:
+	if _parcel_shot:
+		return
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	var stall: Object = screen.get("_envelope_stall")
+	if stall == null or stall.call("panel", 0) == null:
+		return
+	_parcel_shot = true
+	var controller: Object = _app.get("controller")
+	var loop: RunLoop = controller.get("_loop")
+	var snapshot: Dictionary = loop.record.to_dict()
+	loop.state.coupons += 12
+	loop.state.inventory.plot.clear()
+	screen.call("_refresh")
+	await _frames(10)
+	var offer: Control = stall.call("panel", 0)
+	await _hover(offer)
+	await _shot("market_parcel_offer")
+	await _press(offer.get("buy"))
+	await _settled(stall.call("overlay"))
+	var handed: Array[EnvelopeItem] = [
+		EnvelopeItem.new(EnvelopeDef.Content.CAMPAIGN, "registration_drive"),
+		EnvelopeItem.new(EnvelopeDef.Content.STAMPED_CARD, "", Ranks.KING, 1),
+		EnvelopeItem.new(EnvelopeDef.Content.MODEL_CARD, "", Ranks.SEVEN, 3),
+	]
+	loop.market.envelopes.set("_items", handed)
+	var first: Node = stall.call("overlay")
+	first.queue_free()
+	stall.set("_overlay", null)
+	stall.call("resume")
+	await _frames(10)
+	var overlay: Object = stall.call("overlay")
+	await _shot("parcel_choices")
+	var papers: Array = overlay.call("papers")
+	var stamped: Object = papers[1]
+	var keep_card: Button = stamped.get("keep")
+	await _press(keep_card)
+	await create_timer(0.45).timeout
+	await _snap("parcel_kept")
+	await create_timer(1.6).timeout
+	var saves_hub: Object = root.get_node("Saves")
+	var saves: Object = saves_hub.call("run_service")
+	saves.call("save", snapshot)
+	_app.call("resume_to_screen")
+	await _frames(30)
+
+
+## Waits until an opened envelope's papers are at rest.
+func _settled(overlay: Object) -> void:
+	var waited: int = 0
+	while overlay != null and bool(overlay.call("is_busy")) and waited < 600:
+		await _frames(1)
+		waited += 1
+
+
+## The first Keep that can be pressed, or Take Nothing.
+func _first_keep(papers: Array, overlay: Object) -> Button:
+	for paper: Object in papers:
+		var keep: Button = paper.get("keep")
+		if not keep.disabled:
+			return keep
+	return overlay.call("nothing_button")
+
+
+## A picture of whatever node shows at corruption stage 9, the override put back after.
+func _stage_9(shown: Object, name: String) -> void:
+	var was: int = ArtStages.stage_override
+	ArtStages.stage_override = BOWL_STAGES[-1]
+	for node: Node in (shown as Node).find_children("*", "CanvasItem", true, false):
+		(node as CanvasItem).queue_redraw()
+	await _snap(name)
+	ArtStages.stage_override = was
+	for node: Node in (shown as Node).find_children("*", "CanvasItem", true, false):
+		(node as CanvasItem).queue_redraw()
+
+
 ## Hands the player Mutual Aid at the run's first bid, in the state and in the Set's
 ## record, before anything could read it, so the pause before the first play comes the
 ## first time the player is a peasant, and still replays. The playtest never calls, so
@@ -402,8 +547,9 @@ func _grant_coupons(amount: int) -> void:
 ## On the first turn after a Campaign was bought, in a sandbox put back after: the tray
 ## holding two leaflets, Model Harvest armed with cards chosen, its rosettes pressed on,
 ## Registration Drive's chops after it, a court card among the marked, and then the tray
-## and the marked hand at corruption stage 9. The Campaigns are handed over through the
-## run's state, which only this development tool does; then the save taken before is
+## alone at corruption stage 9 (the table's own art keeps the stage it was drawn at, so
+## the frame is named for the tray). The Campaigns are handed over through the run's
+## state, which only this development tool does; then the save taken before is
 ## written back and resumed, so the run and its record go on as they were.
 func _campaign_turn(table: Node, controller: Node) -> void:
 	var loop: RunLoop = controller.get("_loop")
@@ -430,7 +576,7 @@ func _campaign_turn(table: Node, controller: Node) -> void:
 	campaigns.call("refresh")
 	for node: Node in table.find_children("*", "CanvasItem", true, false):
 		(node as CanvasItem).queue_redraw()
-	await _shot("table_campaign_stage_9")
+	await _shot("table_campaign_tray_stage_9")
 	ArtStages.stage_override = was
 	var saves_hub: Object = root.get_node("Saves")
 	var saves: Object = saves_hub.call("run_service")
@@ -693,6 +839,9 @@ func _frames(count: int) -> void:
 ## A picture of a moment in motion: a short beat on, with no wait for things to settle.
 func _snap(name: String) -> void:
 	await create_timer(SNAP_SECONDS).timeout
+	if _headless:
+		_named(name)
+		return
 	await RenderingServer.frame_post_draw
 	_shots += 1
 	var path: String = _out.path_join("%02d_%s.png" % [_shots, name])
@@ -703,7 +852,16 @@ func _shot(name: String) -> void:
 	# Count-ups and entrances run on the clock, and software rendering is slow, so wait
 	# on time, not frames, before a picture.
 	await create_timer(SETTLE_SECONDS).timeout
+	if _headless:
+		_named(name)
+		return
 	await RenderingServer.frame_post_draw
 	_shots += 1
 	var path: String = _out.path_join("%02d_%s.png" % [_shots, name])
 	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(path))
+
+
+## A frame taken without a window: counted and named.
+func _named(name: String) -> void:
+	_shots += 1
+	print("FRAME %02d_%s" % [_shots, name])

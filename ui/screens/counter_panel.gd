@@ -1,15 +1,16 @@
 class_name CounterPanel
 extends PanelContainer
-## One offer "On the counter" in a shop (ADR 0021): a compact sheet of village paper,
-## a Campaign's leaflet or a Reform's decree, with the item's kind as an eyebrow, its name
-## and its Buy button. Its full rules are in the screen's DetailSlip, which it asks for
-## while it is hovered or its button holds focus. Every panel on the counter is one size.
+## One offer "On the counter" in a shop (ADR 0021): a compact sheet of village paper, a
+## Campaign's leaflet, a Reform's decree or a sealed envelope, with the item's kind as an
+## eyebrow, its name and its Buy button, all in dark type over the grime. Its full rules
+## are in the screen's DetailSlip, which it asks for while it is hovered or its button
+## holds focus. Every panel on the counter is one size.
 
 ## Hovered or focused: the slip should explain this panel. Left: it may stop.
 signal described(panel: CounterPanel)
 signal left(panel: CounterPanel)
 
-enum Look { LEAFLET, DECREE }
+enum Look { LEAFLET, DECREE, ENVELOPE }
 
 const SIZE: Vector2 = Vector2(195, 122)
 const NAME_SIZE: int = 21
@@ -26,6 +27,8 @@ var rule: String = ""
 
 var _look: Look = Look.LEAFLET
 var _private: bool = false
+## An envelope's wrapping, one of EnvelopePaper's.
+var _wrapping: int = EnvelopePaper.STRING_TIE
 var _which: int = 0
 var _kind: Label = Label.new()
 var _name: Label = Label.new()
@@ -118,6 +121,16 @@ func sold(look: Look, word: String) -> void:
 	queue_redraw()
 
 
+## How an envelope is wrapped, one of EnvelopePaper's wrappings.
+func set_wrapping(wrapping: int) -> void:
+	_wrapping = wrapping
+	queue_redraw()
+
+
+func wrapping() -> int:
+	return _wrapping
+
+
 ## A private Campaign's leaflet has a black band, as its leaflet in the tray does.
 func set_private(on: bool) -> void:
 	_private = on
@@ -136,11 +149,14 @@ func shown_name() -> String:
 	return _name.text
 
 
+## Dark ink with a paper halo, over any grime and at any stage.
 func _ink() -> void:
-	var ink: Color = CampaignPaper.ink(ScreenKit.INK, BowlGrime.wear())
-	for label: Label in [_kind, _name]:
-		label.add_theme_color_override("font_color", ink)
-	_sold.add_theme_color_override("font_color", CampaignPaper.ink(ScreenKit.RED, BowlGrime.wear()))
+	var halo: Color = CampaignPaper.paper(BowlGrime.wear())
+	for label: Label in [_kind, _name, _sold]:
+		label.add_theme_color_override("font_color", ScreenKit.INK)
+		label.add_theme_color_override("font_outline_color", halo)
+		label.add_theme_constant_override("outline_size", CampaignLeaflet.HALO)
+	_sold.add_theme_color_override("font_color", ScreenKit.RED)
 
 
 func _draw() -> void:
@@ -148,5 +164,7 @@ func _draw() -> void:
 	var sheet: Rect2 = Rect2(Vector2.ZERO, size)
 	if _look == Look.DECREE:
 		DecreePaper.poster(self, sheet, worn, _which)
+	elif _look == Look.ENVELOPE:
+		EnvelopePaper.draw(self, sheet, _wrapping, worn, _which)
 	else:
 		CampaignPaper.leaflet(self, sheet, _private, worn, _which)

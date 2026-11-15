@@ -24,6 +24,9 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"campaign_buy": ["slot"],
 	"market_campaign": ["slot"],
 	"reform": ["slot"],
+	"envelope_buy": ["slot"],
+	"market_envelope": ["slot"],
+	"envelope_pick": ["index"],
 }
 
 var checkpoint: Dictionary = {}
@@ -217,6 +220,12 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_market_campaign(int(command["slot"]))
 		"reform":
 			return loop.player_reform(int(command["slot"]))
+		"envelope_buy":
+			return loop.player_envelope_buy(int(command["slot"]))
+		"market_envelope":
+			return loop.player_market_envelope(int(command["slot"]))
+		"envelope_pick":
+			return loop.player_envelope_pick(int(command["index"]))
 	return RunLoop.Reason.ILLEGAL
 
 

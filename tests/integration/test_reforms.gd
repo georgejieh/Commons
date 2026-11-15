@@ -1,8 +1,8 @@
 extends GdUnitTestSuite
 ## Reforms (ADR 0021): the state store offers one a visit, the same for the same seed,
-## never one held or held back, redrawn by a reroll; buying one needs the coupons and is a
-## saved command; and each of the six does what its rule says, up to its limit, in every
-## place that reads it.
+## never one held or held back (none is, now that envelopes exist), redrawn by a reroll;
+## buying one needs the coupons and is a saved command; and each of the six does what
+## its rule says, up to its limit, in every place that reads it.
 
 const POOL: ReformPool = preload("res://data/run/reform_pool.tres")
 const STORE: ShopParams = preload("res://data/run/default_shop.tres")
@@ -74,13 +74,12 @@ func test_the_store_offers_one_reform_the_same_for_the_same_seed() -> void:
 		assert_int(offer.size()).is_equal(1)
 		assert_array(offer).is_equal(second.shop.reforms.stock())
 		assert_array(first.market.reforms.stock()).is_empty()
-		assert_str(offer[0]).is_not_equal("supply_cooperative")
 		assert_int(first.player_reroll()).is_equal(RunLoop.Reason.OK)
 		assert_int(second.player_reroll()).is_equal(RunLoop.Reason.OK)
 		assert_array(first.shop.reforms.stock()).is_equal(second.shop.reforms.stock())
 		seen[offer[0]] = true
-	# Every Reform but the held-back one turns up across the seeds.
-	assert_int(seen.size()).is_equal(POOL.reforms.size() - 1)
+	# Every Reform turns up across the seeds, Supply Cooperative too.
+	assert_int(seen.size()).is_equal(POOL.reforms.size())
 
 
 ## The draw comes last on the shop stream, so every other draw is as it was.
@@ -108,11 +107,17 @@ func test_a_held_or_held_back_reform_is_never_offered() -> void:
 		for _reroll: int in 3:
 			var offer: Array[String] = loop.shop.reforms.stock()
 			assert_bool(held.has(offer[0])).is_false()
-			assert_str(offer[0]).is_not_equal("supply_cooperative")
 			loop.player_reroll()
+	# A Reform held back in data is never offered.
+	var held_back: ReformDef = RunReforms.definition("work_point_reform").duplicate()
+	held_back.held_back = true
+	var one: Array[ReformDef] = [held_back]
+	var withheld: ReformCounter = ReformCounter.new(RunState.new(1), STORE, one)
+	withheld.draw()
+	assert_array(withheld.stock()).is_empty()
 	var state: RunState = RunState.new(1)
 	state.reforms.assign(["work_point_reform", "enlarged_committee", "grain_reserve"])
-	state.reforms.append_array(["couriers_bag", "unplanned_economy"])
+	state.reforms.append_array(["couriers_bag", "unplanned_economy", "supply_cooperative"])
 	var counter: ReformCounter = ReformCounter.new(state, STORE, POOL.reforms)
 	counter.draw()
 	assert_array(counter.stock()).is_empty()
@@ -248,7 +253,8 @@ func test_supply_cooperative_reports_its_extra_envelope_choice() -> void:
 	var choices: int = RunReforms.definition("supply_cooperative").parameters["choices"]
 	assert_int(choices).is_equal(1)
 	assert_int(RunReforms.extra_envelope_choices(state)).is_equal(choices)
-	assert_bool(RunReforms.definition("supply_cooperative").held_back).is_true()
+	# Envelopes exist, so the state store can offer it.
+	assert_bool(RunReforms.definition("supply_cooperative").held_back).is_false()
 	# Its only effect is the envelope accessor: no limit, payment or deal changes.
 	assert_int(RunReforms.cadre_slots(state)).is_equal(STORE.cadre_slots)
 	assert_int(RunReforms.quota_coupons(state)).is_equal(0)

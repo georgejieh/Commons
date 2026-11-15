@@ -102,16 +102,20 @@ func _init(
 		meters.rationing_shop_cut,
 		DEFAULT_DIRECTIVES.directives,
 		RunCampaigns.STORE_POOL.campaigns,
-		RunReforms.all()
+		RunReforms.all(),
+		params
 	)
 	var no_directives: Array[DirectiveDef] = []
+	var no_reforms: Array[ReformDef] = []
 	market = RunShop.new(
 		state,
 		DEFAULT_BLACK_MARKET,
 		DEFAULT_MARKET.cadres,
 		0,
 		no_directives,
-		RunCampaigns.MARKET_POOL.campaigns
+		RunCampaigns.MARKET_POOL.campaigns,
+		no_reforms,
+		params
 	)
 	stall = PlotStall.new(state, DEFAULT_PLOT_UPGRADES, params)
 	_table = SeatRules.new(_stack)
@@ -363,6 +367,42 @@ func player_reform(slot: int) -> Reason:
 	return _shop_command({"type": "reform", "slot": slot}, shop.reforms.buy.bind(slot))
 
 
+## Buys the state store's envelope, which opens it at once (ADR 0021). Until the player
+## keeps one of its items or nothing, every other shop command is refused.
+func player_envelope_buy(slot: int) -> Reason:
+	var act: Callable = shop.envelopes.buy.bind(slot)
+	return _shop_command({"type": "envelope_buy", "slot": slot}, act)
+
+
+## Buys the black market's Parcel: a private purchase, resented when it is bought.
+func player_market_envelope(slot: int) -> Reason:
+	var act: Callable = market.envelopes.buy.bind(slot)
+	var reason: Reason = _shop_command({"type": "market_envelope", "slot": slot}, act)
+	if reason == Reason.OK:
+		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+	return reason
+
+
+## Keeps the open envelope's item at index, or nothing with EnvelopeCounter.NOTHING, and
+## closes it. A refused pick changes nothing and leaves it open.
+func player_envelope_pick(index: int) -> Reason:
+	var opened: EnvelopeCounter = open_envelope()
+	if _awaiting != Awaiting.SHOP or opened == null:
+		return Reason.NOT_AWAITED
+	if opened.pick(index, PLAYER) != RunShop.Reason.OK:
+		return Reason.ILLEGAL
+	record.add({"type": "envelope_pick", "index": index})
+	return Reason.OK
+
+
+## The counter whose envelope is open now, or null.
+func open_envelope() -> EnvelopeCounter:
+	for counter: RunShop in [shop, market]:
+		if counter.envelopes.is_open():
+			return counter.envelopes
+	return null
+
+
 func player_need(need: int) -> Reason:
 	if _awaiting != Awaiting.PLAYER_NEED:
 		return Reason.NOT_AWAITED
@@ -391,6 +431,9 @@ func open_shop() -> Reason:
 	shop.campaigns.draw()
 	market.campaigns.draw()
 	shop.reforms.draw()
+	# The envelopes last of all, so they leave every draw before them as it was.
+	shop.envelopes.draw()
+	market.envelopes.draw()
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -466,6 +509,9 @@ func player_upgrade(kind: String) -> Reason:
 ## From a finished Set it passes through the shop without stopping.
 func next_set() -> Reason:
 	if not [Awaiting.SET_OVER, Awaiting.SHOP, Awaiting.REEDUCATION].has(_awaiting):
+		return Reason.NOT_AWAITED
+	# An open envelope is answered before the shops are left.
+	if open_envelope() != null:
 		return Reason.NOT_AWAITED
 	if _awaiting == Awaiting.SET_OVER:
 		_move(RunFlow.State.SHOP)
@@ -591,7 +637,8 @@ func _campaign_moment() -> CampaignContext.Moment:
 		Awaiting.PLAYER_PLAY:
 			return CampaignContext.Moment.TURN
 		Awaiting.SHOP:
-			return CampaignContext.Moment.SHOP
+			if open_envelope() == null:
+				return CampaignContext.Moment.SHOP
 	return CampaignContext.Moment.ELSEWHERE
 
 
@@ -956,7 +1003,7 @@ func _reeducate() -> void:
 
 
 func _shop_command(command: Dictionary, act: Callable) -> Reason:
-	if _awaiting != Awaiting.SHOP:
+	if _awaiting != Awaiting.SHOP or open_envelope() != null:
 		return Reason.NOT_AWAITED
 	if act.call() != RunShop.Reason.OK:
 		return Reason.ILLEGAL

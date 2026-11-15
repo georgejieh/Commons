@@ -9,8 +9,8 @@ extends Resource
 ## Finished runs needed before it is offered (P4.14). Nothing reads it yet.
 @export var unlock_tier: int = 0
 @export var parameters: Dictionary[String, int]
-## Kept out of the state store's draw while set. Supply Cooperative waits here until
-## envelopes exist (P4.11g), since its rule is about them.
+## Kept out of the state store's draw while set, for a Reform whose rule waits on
+## something not built yet. None is held back now.
 @export var held_back: bool = false
 @export var name_key: String
 @export var text_key: String

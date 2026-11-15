@@ -168,3 +168,62 @@ func test_the_rank_picker_opens_on_the_screen() -> void:
 		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
 		assert_bool(screen.encloses(picker.get_global_rect())).is_true()
 		picker.close()
+
+
+## An envelope open over each shop fits both screens with three choices and with four,
+## Supply Cooperative's: every visible piece on screen, no two papers overlapping, and
+## the heading, row, explanation and Take Nothing apart.
+func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
+	Settings.set_value("reduced_motion", true)
+	for reforms: Array[String] in [[] as Array[String], ["supply_cooperative"] as Array[String]]:
+		_loop().state.reforms.assign(reforms)
+		for screen_size: Vector2i in SIZES:
+			get_tree().root.size = screen_size
+			for kind: String in ["directive_envelope", "campaign_envelope", "parcel"]:
+				var screen_id: String = "black_market" if kind == "parcel" else "store"
+				_loop().state.coupons = 60
+				_loop().shop.envelopes.clear()
+				_loop().market.envelopes.clear()
+				var stock: Array[String] = [kind]
+				var counter: EnvelopeCounter = _loop().market.envelopes
+				if kind != "parcel":
+					counter = _loop().shop.envelopes
+				counter.set("_stock", stock)
+				var store: StoreScreen = _app.show_screen(screen_id, true)
+				await await_idle_frame()
+				var stall: EnvelopeStall = store.get("_envelope_stall")
+				stall.panel(0).buy.pressed.emit()
+				await await_idle_frame()
+				await await_idle_frame()
+				var overlay: EnvelopeOverlay = stall.overlay()
+				var label: String = "%s %s %d" % [kind, screen_size, 3 + reforms.size()]
+				assert_int(overlay.papers().size()).is_equal(3 + reforms.size())
+				_check_inside(overlay, label)
+				_check_apart(overlay, label)
+				overlay.nothing_button().pressed.emit()
+				await await_idle_frame()
+	Settings.set_value("reduced_motion", false)
+
+
+func _check_apart(overlay: EnvelopeOverlay, where: String) -> void:
+	var pieces: Array[Control] = []
+	for paper: ChoicePaper in overlay.papers():
+		pieces.append(paper)
+		var item: Rect2 = paper.item.get_global_rect()
+		(
+			assert_bool(paper.get_global_rect().grow(SLACK).encloses(item))
+			. override_failure_message("%s: item %s outside its paper" % [where, item])
+			. is_true()
+		)
+	var blocks: Dictionary[String, Control] = overlay.blocks()
+	for name: String in ["heading", "detail", "button"]:
+		pieces.append(blocks[name])
+	for first: int in pieces.size():
+		for second: int in range(first + 1, pieces.size()):
+			var a: Rect2 = pieces[first].get_global_rect().grow(-SLACK)
+			var b: Rect2 = pieces[second].get_global_rect().grow(-SLACK)
+			(
+				assert_bool(a.intersects(b))
+				. override_failure_message("%s: %s overlaps %s" % [where, a, b])
+				. is_false()
+			)

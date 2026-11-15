@@ -1,8 +1,9 @@
 class_name CardMark
 extends Control
-## A mark that outlasts its round, drawn small in a card's corner (ADR 0021): a stamped
+## A mark that outlasts its round, drawn small on a card's left edge (ADR 0021): a stamped
 ## card carries a red seal chop, the square of a name seal pressed in vermilion, and a
-## Model card a gold rosette with two ribbon tails, like a prize pinned on a worker.
+## Model card a red and gold rosette with two ribbon tails, like a prize pinned on a
+## worker.
 ## Both are drawn, so they need no art, and both have a dark edge to read over pictures.
 ## Neither is ever fresh (art/STYLE.md): the chop prints with gaps where the ink did not
 ## take and the rosette is tarnished, a little at stage 0 and more with every stage.
@@ -10,7 +11,10 @@ extends Control
 enum Kind { STAMP, MODEL }
 
 ## Each mark's box, in card pixels.
-const SIZE: Vector2 = Vector2(28, 30)
+const SIZE: Vector2 = Vector2(30, 32)
+## How far the ink and gold age with the stage: they wear, but stay solid enough to read
+## at hand size at every stage.
+const INK_WEAR: float = 0.3
 const VERMILION: Color = Color("b02a17")
 const GOLD: Color = Color("e0b84a")
 const GOLD_DARK: Color = Color("8a5a12")
@@ -44,12 +48,12 @@ func _draw() -> void:
 ## the way a carved name seal prints.
 func _draw_chop() -> void:
 	var worn: float = BowlGrime.wear()
-	var red: Color = BowlGrime.aged(VERMILION, worn * 0.7)
+	var red: Color = BowlGrime.aged(VERMILION, worn * INK_WEAR)
 	var paper: Color = BowlGrime.aged(PAPER, worn)
 	var side: float = minf(size.x, size.y) - 4.0
 	draw_set_transform(size / 2.0, CHOP_TILT)
 	var square: Rect2 = Rect2(Vector2.ONE * -side / 2.0, Vector2.ONE * side)
-	draw_rect(square.grow(1.0), Color(EDGE, 0.6))
+	draw_rect(square.grow(1.5), Color(EDGE, 0.85))
 	draw_rect(square, red)
 	draw_rect(square.grow(-3.0), paper, false, 1.5)
 	var inner: float = side / 2.0 - 7.0
@@ -61,7 +65,7 @@ func _draw_chop() -> void:
 	rng.seed = SEED
 	for _gap: int in roundi(lerpf(GAPS.x, GAPS.y, worn)):
 		var at: Vector2 = Vector2(rng.randf_range(-1, 1), rng.randf_range(-1, 1)) * side * 0.45
-		draw_circle(at, rng.randf_range(0.8, 1.6 + worn), Color(paper, 0.8))
+		draw_circle(at, rng.randf_range(0.6, 1.1 + worn * 0.6), Color(paper, 0.7))
 	draw_set_transform(Vector2.ZERO, 0.0)
 
 
@@ -76,16 +80,19 @@ func _draw_rosette() -> void:
 			center + Vector2(side * 8.0, size.y - center.y),
 			center + Vector2(side * 3.0, size.y - center.y - 3.0),
 		]
-		draw_colored_polygon(tail, BowlGrime.aged(VERMILION, worn * 0.7))
-	var gold: Color = BowlGrime.aged(GOLD, worn)
-	var dark: Color = BowlGrime.aged(GOLD_DARK, worn)
+		draw_colored_polygon(tail, BowlGrime.aged(VERMILION, worn * INK_WEAR))
+	var gold: Color = BowlGrime.aged(GOLD, worn * INK_WEAR)
+	var dark: Color = BowlGrime.aged(GOLD_DARK, worn * INK_WEAR)
+	var red: Color = BowlGrime.aged(VERMILION, worn * INK_WEAR)
+	# A dark edge round the whole rosette, so it reads over stock and art alike.
+	draw_circle(center, radius * 1.08, Color(EDGE, 0.8))
 	for petal: int in PETALS:
 		var at: Vector2 = center + Vector2.from_angle(TAU * petal / PETALS) * radius * 0.62
-		draw_circle(at, radius * 0.42, dark)
-		draw_circle(at, radius * 0.34, gold)
-	draw_circle(center, radius * 0.5, dark)
-	draw_circle(center, radius * 0.38, gold)
-	draw_circle(center, radius * 0.16, BowlGrime.aged(VERMILION, worn * 0.7))
+		draw_circle(at, radius * 0.42, red if petal % 2 == 0 else dark)
+		draw_circle(at, radius * 0.32, gold)
+	draw_circle(center, radius * 0.5, red)
+	draw_circle(center, radius * 0.36, gold)
+	draw_circle(center, radius * 0.16, red)
 	# Tarnish creeps round the boss from one side.
 	var tarnish: Color = Color(BowlGrime.TEA, 0.25 + 0.45 * worn)
 	draw_arc(center, radius * 0.44, 0.6, 0.6 + PI * (0.4 + 0.8 * worn), 16, tarnish, 1.5, true)

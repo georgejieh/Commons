@@ -13,8 +13,8 @@ extends Control
 ##   Directives or the black market's cards for the plot;
 ## - the buttons;
 ## - your board (Cadres and held Campaigns), and "On the counter": a Campaign, the state
-##   store's Reform, and a place kept for an envelope, each a compact paper whose full
-##   rules show in one shared DetailSlip. All text sits on paper.
+##   store's Reform, and an envelope, each a compact paper whose full rules show in one
+##   shared DetailSlip. All text sits on paper. A bought envelope opens over the page.
 
 ## Modifier names are long, so they print a step below the title size (the set intro's
 ## debuff card uses it).
@@ -37,7 +37,7 @@ const HEADER_GAP: int = 40
 const MAIN_GAP: int = 24
 const SHELF_GAP: int = 20
 ## The most room the Cadre board takes; its cards shrink to fit six.
-const BOARD_BOX: Vector2 = Vector2(640, 122)
+const BOARD_BOX: Vector2 = Vector2(612, 122)
 const SHEET_PADDING: int = 8
 ## The warning's width at the right of the black market's heading.
 const NOTE_WIDTH: float = 640.0
@@ -66,8 +66,8 @@ var _campaign_stall: CampaignStall = CampaignStall.new()
 var _reform_stall: ReformStall = ReformStall.new()
 ## Explains what is hovered or focused on the counter, the board and the strip.
 var _slip: DetailSlip = DetailSlip.new()
-## Kept for the envelope offer (P4.11g): sized, with nothing in it yet.
-var _envelope: Control = Control.new()
+## The envelope on the counter, and the envelope opened over the page (ADR 0021).
+var _envelope_stall: EnvelopeStall = EnvelopeStall.new()
 ## Asks for a rank before a Cadre that needs one is bought (ADR 0021).
 var _picker: RankPicker = RankPicker.new()
 ## The page's main blocks by name, for the layout test.
@@ -87,10 +87,13 @@ func open(app: DemoApp) -> void:
 	_campaign_stall.spent.connect(_on_spent)
 	_reform_stall.setup(app, _slip, is_issuing, not market)
 	_reform_stall.spent.connect(_on_spent)
+	_envelope_stall.setup(app, market, _slip, is_issuing, self)
+	_envelope_stall.spent.connect(_on_spent)
+	_envelope_stall.settled.connect(_on_envelope_settled)
 	_board.setup(app.controller.cadre_slots(), BOARD_BOX)
 	column.add_child(_header_row(app))
 	column.add_child(_main_row(app))
-	var leave: Button = _button_row(app, column)
+	var leave: Button = _button_row(column)
 	column.add_child(_bottom_row())
 	var word: String = tr("market.paid" if market else "store.approved")
 	_seal.prepare(word, MARKET_INK if market else ScreenKit.RED, SEAL_WIDTH)
@@ -102,6 +105,8 @@ func open(app: DemoApp) -> void:
 	_refresh()
 	ScreenKit.reveal(column)
 	leave.grab_focus()
+	# An envelope left open, as by a save taken while choosing, is shown open again.
+	_envelope_stall.resume()
 
 
 ## The page's main blocks by name, each a rectangle that must fit the screen without
@@ -126,15 +131,16 @@ func _header_row(app: DemoApp) -> Control:
 	balance.size_flags_vertical = Control.SIZE_SHRINK_END
 	var top: Array[Control] = [heading, balance]
 	if market:
-		top.append(_resentment_box())
+		_resentment = ScreenKit.styled("", CommonsTheme.TITLE)
+		top.append(StoreNotes.resentment_box(_resentment))
 	var notes: VBoxContainer = VBoxContainer.new()
 	notes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	notes.alignment = BoxContainer.ALIGNMENT_END
 	notes.add_theme_constant_override("separation", 8)
 	if market:
-		notes.add_child(StoreNotes.warning(app.controller, NOTE_WIDTH))
+		_reform_stall.strip.add_note(StoreNotes.warning(app.controller, NOTE_WIDTH))
 	elif app.controller.is_rationed():
-		notes.add_child(StoreNotes.rationing(app.controller))
+		_reform_stall.strip.add_note(StoreNotes.rationing(app.controller))
 	notes.add_child(_reform_stall.strip)
 	top.append(notes)
 	_blocks["heading"] = heading
@@ -165,19 +171,19 @@ func _main_row(app: DemoApp) -> Control:
 
 ## The leave, reroll and door buttons, or the black market's upgrade tickets. Returns the
 ## button that takes focus first.
-func _button_row(app: DemoApp, column: VBoxContainer) -> Button:
+func _button_row(column: VBoxContainer) -> Button:
 	_reroll.pressed.connect(_on_reroll)
 	var leave: Button = ScreenKit.button(
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
 	)
 	var buttons: HBoxContainer
 	if market:
-		leave.pressed.connect(app.back)
+		leave.pressed.connect(_back)
 		buttons = ScreenKit.row([leave, _reroll, _upgrades])
 	else:
 		leave.pressed.connect(_leave)
 		var door: Button = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
-		door.pressed.connect(func() -> void: app.show_screen("black_market"))
+		door.pressed.connect(_to_market)
 		buttons = ScreenKit.row([leave, _reroll, door])
 	_blocks["buttons"] = buttons
 	column.add_child(buttons)
@@ -191,9 +197,9 @@ func _bottom_row() -> Control:
 	cadres.add_child(ScreenKit.eyebrow(tr("store.shelf")))
 	cadres.add_child(_board)
 	var board: PanelContainer = _sheet(ScreenKit.row([cadres, _campaign_stall.tray], SHELF_GAP))
-	_envelope.custom_minimum_size = CounterPanel.SIZE
-	_envelope.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var offers: Array[Control] = [_campaign_stall.offers(), _reform_stall.offers, _envelope]
+	var offers: Array[Control] = [
+		_campaign_stall.offers(), _reform_stall.offers, _envelope_stall.offers
+	]
 	var on_counter: VBoxContainer = VBoxContainer.new()
 	on_counter.add_theme_constant_override("separation", 4)
 	on_counter.add_child(ScreenKit.eyebrow(tr("store.counter")))
@@ -232,7 +238,7 @@ func _refresh() -> void:
 	_reroll.text = tr("store.reroll").format({"price": _desk.reroll_price()})
 	_reroll.disabled = not _desk.can_reroll()
 	if market:
-		UiMotion.count(_resentment, _shown_resentment, state.resentment, _resentment_text)
+		UiMotion.count(_resentment, _shown_resentment, state.resentment, StoreNotes.whole)
 		if state.resentment > _shown_resentment:
 			UiMotion.pulse(_resentment)
 		_shown_resentment = state.resentment
@@ -242,6 +248,7 @@ func _refresh() -> void:
 	_board.show_cadres(controller)
 	_campaign_stall.show_offer()
 	_reform_stall.show_offer()
+	_envelope_stall.show_offer()
 
 
 func _item(slot: int, cadre_id: String) -> Control:
@@ -310,6 +317,7 @@ func is_buying() -> bool:
 func is_issuing() -> bool:
 	var directing: bool = _directives != null and _directives.is_busy()
 	var stalls: bool = _campaign_stall.is_busy() or _reform_stall.is_busy()
+	stalls = stalls or _envelope_stall.is_busy()
 	return _busy or _picker.is_open() or stalls or directing
 
 
@@ -320,21 +328,6 @@ func _on_spent() -> void:
 	_shown_coupons = coupons
 	UiMotion.pulse(_coupons)
 	_reroll.disabled = not _desk.can_reroll()
-
-
-func _resentment_box() -> Control:
-	var box: VBoxContainer = VBoxContainer.new()
-	box.add_child(ScreenKit.eyebrow(tr("keyword.resentment.name")))
-	_resentment = ScreenKit.styled("", CommonsTheme.TITLE)
-	_resentment.add_theme_color_override("font_color", ScreenKit.RED)
-	_resentment.autowrap_mode = TextServer.AUTOWRAP_OFF
-	box.add_child(_resentment)
-	box.size_flags_vertical = Control.SIZE_SHRINK_END
-	return box
-
-
-func _resentment_text(value: float) -> String:
-	return str(roundi(value))
 
 
 ## A plot card or an upgrade from the black market, bought by act.
@@ -359,7 +352,9 @@ func _on_reroll() -> void:
 	var fresh: Array[Control] = []
 	for child: Node in _counter.get_children():
 		fresh.append(child as Control)
-	var shelves: Array[Node] = [_campaign_stall.offers(), _reform_stall.offers]
+	var shelves: Array[Node] = [
+		_campaign_stall.offers(), _reform_stall.offers, _envelope_stall.offers
+	]
 	if _directives != null:
 		shelves.append(_directives)
 	for shelf: Node in shelves:
@@ -369,8 +364,28 @@ func _on_reroll() -> void:
 	UiMotion.enter(fresh)
 
 
-## Leaves the store for the next Quota.
+## An envelope was answered: the page shows what it gave, wherever that went.
+func _on_envelope_settled() -> void:
+	_refresh()
+	(_blocks["buttons"].get_child(0) as Button).grab_focus()
+
+
+## Back to the state store, and through the door to the black market, once nothing is
+## being acted out or chosen.
+func _back() -> void:
+	if not is_issuing():
+		_app.back()
+
+
+func _to_market() -> void:
+	if not is_issuing():
+		_app.show_screen("black_market")
+
+
+## Leaves the store for the next Quota, once nothing is being acted out or chosen.
 func _leave() -> void:
+	if is_issuing():
+		return
 	_app.controller.leave_store()
 	_app.show_screen("set_intro", true)
 

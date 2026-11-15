@@ -96,7 +96,7 @@ func _document(slot: int, directive_id: String) -> Control:
 	sheet.add_child(HSeparator.new())
 	var lines: Array[Label] = []
 	for type: int in _controller.directive_types(directive_id):
-		var line: Label = ScreenKit.label(_rate_line(type), LINE_SIZE)
+		var line: Label = ScreenKit.label(DirectiveSheet.rate_line(_controller, type), LINE_SIZE)
 		line.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 		line.autowrap_mode = TextServer.AUTOWRAP_OFF
 		sheet.add_child(line)
@@ -115,21 +115,6 @@ func _document(slot: int, directive_id: String) -> Control:
 	return panel
 
 
-## "Pair: Rate 3 to 8", or the Rate alone once the type is at the top level.
-func _rate_line(type: int) -> String:
-	var level: int = _controller.hand_level(type)
-	var rate: int = _controller.hand_rate(type, level)
-	if level >= _controller.max_hand_level():
-		return tr("directive.rate.top").format({"type": _type_name(type), "rate": rate})
-	var next: int = _controller.hand_rate(type, level + 1)
-	return tr("directive.rate").format({"type": _type_name(type), "from": rate, "to": next})
-
-
-static func _type_name(type: int) -> String:
-	var key: String = String(Pattern.Type.keys()[type]).to_lower()
-	return TranslationServer.translate("pattern." + key)
-
-
 ## Issues the Directive and acts it out: sealed, each Rate ticked from what it was to what
 ## it is now, then filed away. Reduced motion skips to the result.
 func _issue(
@@ -137,10 +122,7 @@ func _issue(
 ) -> void:
 	if _busy or (_screen_busy.is_valid() and _screen_busy.call()):
 		return
-	var types: Array[int] = _controller.directive_types(directive_id)
-	var before: Array[int] = []
-	for type: int in types:
-		before.append(_controller.hand_rate(type, _controller.hand_level(type)))
+	var before: Array[int] = DirectiveSheet.rates(_controller, directive_id)
 	if _controller.directive(slot) != RunController.OK:
 		show_offers()
 		return
@@ -155,14 +137,7 @@ func _issue(
 	panel.pivot_offset = panel.size / 2.0
 	var tween: Tween = panel.create_tween()
 	tween.tween_interval(SEAL_HOLD)
-	for index: int in types.size():
-		var type: int = types[index]
-		var after: int = _controller.hand_rate(type, _controller.hand_level(type))
-		var line: Label = lines[index]
-		var from: int = before[index]
-		var shown: Callable = _ticked.bind(type)
-		tween.tween_callback(func() -> void: UiMotion.count(line, from, after, shown))
-		tween.tween_interval(TICK_STAGGER)
+	DirectiveSheet.tick(tween, _controller, directive_id, lines, before, TICK_STAGGER)
 	tween.tween_interval(UiMotion.PRESETS.count_time)
 	tween.tween_callback(_seal.hide)
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
@@ -190,14 +165,6 @@ static func name_right(name: Label) -> float:
 	var font_size: int = name.get_theme_font_size("font_size")
 	var wide: float = font.get_string_size(name.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 	return name.global_position.x + wide
-
-
-## A Rate line while it ticks: the Rate alone, as the type now stands.
-func _ticked(value: float, type: int) -> String:
-	var key: String = "directive.rate.now"
-	if _controller.hand_level(type) >= _controller.max_hand_level():
-		key = "directive.rate.top"
-	return tr(key).format({"type": _type_name(type), "rate": roundi(value)})
 
 
 func _filed() -> void:

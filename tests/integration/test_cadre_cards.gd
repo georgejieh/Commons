@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
-## A Cadre card shows its art alone; its name and rules are in its tooltip, on the
-## store counter and on the table's notice board.
+## On the store counter a Cadre card prints its art, or the empty frame for it, its name
+## and its full rules, and its Buy button carries the tooltip; on the table's notice board
+## a card shows its art and keeps its name and rules in its tooltip.
 
 const SEED: int = 4301
 const SAVE_PATH: String = "user://test_cadre_cards/run.json"
@@ -28,7 +29,7 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
-func test_store_cards_show_art_and_put_name_and_rules_in_the_tooltip() -> void:
+func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void:
 	var store: Control = _app.show_screen("store")
 	await await_idle_frame()
 	var counter: HBoxContainer = store.get("_counter")
@@ -38,13 +39,22 @@ func test_store_cards_show_art_and_put_name_and_rules_in_the_tooltip() -> void:
 	for slot: int in stock.size():
 		var panel: Control = counter.get_child(slot) as Control
 		var tip: String = ScreenKit.cadre_tip(_app.controller, stock[slot])
-		assert_str(panel.tooltip_text).is_equal(tip)
-		assert_str(tip).contains(tr("modifier.%s.name" % stock[slot]))
+		var buy: Button = panel.find_children("*", "Button", true, false)[0]
+		assert_str(buy.tooltip_text).is_equal(tip)
+		var name: String = tr("modifier.%s.name" % stock[slot])
+		assert_str(tip).contains(name)
+		# The name is printed once, and the full rules under it.
+		var names: Array[Node] = _labels(panel).filter(
+			func(label: Node) -> bool: return (label as Label).text == name
+		)
+		assert_int(names.size()).is_equal(1)
+		var rules: KeywordText = panel.find_children("*", "KeywordText", true, false)[0]
 		var rule: String = _app.controller.modifier_text(stock[slot])
-		assert_str(tip.replace("\n", " ")).contains(rule)
-		# A Cadre with no art yet shows its name on the stock, and only that.
+		assert_str(rules.get_parsed_text()).contains(rule)
 		var bare: bool = ScreenKit.ART.cadre(stock[slot]) == null
-		assert_int(_labels(panel).size()).is_equal(1 if bare else 0)
+		assert_int(panel.find_children("*", "ArtFrame", true, false).size()).is_equal(
+			1 if bare else 0
+		)
 
 
 func test_focusing_a_buy_button_reads_the_cadre_out() -> void:

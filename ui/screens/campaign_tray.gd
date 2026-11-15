@@ -14,7 +14,10 @@ signal changed
 signal used(slot: int, campaign_id: String)
 
 const GAP: float = 14.0
+## Room for the head over a compact row, and over full-size leaflets, whose armed one
+## lifts by CampaignLeaflet.LIFT and must stay clear of the head.
 const HEAD: float = 26.0
+const HEAD_FULL: float = 36.0
 const BUTTON: Vector2 = Vector2(118, 44)
 
 ## Off while the table is acting events out, so nothing is armed mid-moment.
@@ -88,12 +91,13 @@ static func tray_size(
 	slots: int, beside: bool = false, small: bool = false, column: bool = false
 ) -> Vector2:
 	var leaf: Vector2 = CampaignLeaflet.leaf_size(small)
+	var head: float = HEAD if small else HEAD_FULL
 	if column:
-		return Vector2(leaf.x, HEAD + slots * leaf.y + (slots - 1) * GAP)
+		return Vector2(leaf.x, head + slots * leaf.y + (slots - 1) * GAP)
 	var wide: float = slots * leaf.x + (slots - 1) * GAP
 	if beside:
-		return Vector2(wide + GAP + BUTTON.x, HEAD + leaf.y)
-	return Vector2(wide, HEAD + leaf.y + GAP + BUTTON.y)
+		return Vector2(wide + GAP + BUTTON.x, head + leaf.y)
+	return Vector2(maxf(wide, BUTTON.x * 2.0 + GAP), head + leaf.y + GAP + BUTTON.y)
 
 
 ## Shows what is held now, dims each leaflet that cannot be used with its reason, and
@@ -241,8 +245,12 @@ func _held_id(slot: int) -> String:
 
 func _place(slot: int) -> Vector2:
 	if vertical:
-		return Vector2(0, HEAD + slot * (_leaf().y + GAP))
-	return Vector2(slot * (_leaf().x + GAP), HEAD)
+		return Vector2(0, _head_height() + slot * (_leaf().y + GAP))
+	return Vector2(slot * (_leaf().x + GAP), _head_height())
+
+
+func _head_height() -> float:
+	return HEAD if compact else HEAD_FULL
 
 
 func _leaf() -> Vector2:
@@ -258,17 +266,17 @@ func _show_marks() -> void:
 			_place(slot) + (Vector2(lift, 0) if vertical else Vector2(0, -lift))
 		)
 		_leaflets[slot].set_cursor(slot == _cursor)
-	var row: float = HEAD + _leaf().y + GAP
+	var row: float = _head_height() + _leaf().y + GAP
 	use.position = Vector2(0, row)
 	cancel.position = Vector2(BUTTON.x + GAP, row)
 	if side_buttons:
 		var column: float = _place(_leaflets.size()).x
-		use.position = Vector2(column, HEAD)
-		cancel.position = Vector2(column, HEAD + BUTTON.y + GAP)
+		use.position = Vector2(column, _head_height())
+		cancel.position = Vector2(column, _head_height() + BUTTON.y + GAP)
 	if vertical:
 		var beside: float = _leaf().x + GAP + CampaignLeaflet.LIFT
-		use.position = Vector2(beside, HEAD)
-		cancel.position = Vector2(beside, HEAD + BUTTON.y + GAP)
+		use.position = Vector2(beside, _head_height())
+		cancel.position = Vector2(beside, _head_height() + BUTTON.y + GAP)
 	for button: Button in [use, cancel]:
 		button.visible = _armed >= 0
 		# Sized once in the tree, where the button's own minimum is known.

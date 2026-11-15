@@ -1,21 +1,26 @@
 class_name ReformStrip
 extends PanelContainer
-## The Reforms in force (ADR 0021), on a short paper strip that both shops show: each
-## enacted Reform a small pinned decree slip with its name, in the order enacted, so the
-## player can always see what they hold. Hovering a slip or giving it focus asks the
+## The Reforms in force (ADR 0021), on a paper strip across the notes column that both
+## shops show: each enacted Reform a pinned decree slip with its name, in the order
+## enacted, wrapping onto a second line when they will not fit one, so the player can
+## always see what they hold. Hovering a slip or giving it focus asks the
 ## screen's DetailSlip for its rules. A newly pinned one swells as it lands.
 
 ## A slip is hovered or focused, or no longer is.
 signal described(tag: Control, reform_id: String)
 signal left(tag: Control)
 
-const TAG_HEIGHT: float = 34.0
+const TAG_HEIGHT: float = 38.0
 const TAG_PADDING: float = 22.0
-const NAME_SIZE: int = 13
-const GAP: int = 6
-const INK: Color = Color("2b2119")
+const NAME_SIZE: int = 16
+const HEAD_SIZE: int = 16
+const GAP: int = 8
+const INK: Color = Color("1e1a16")
+## Clear of the paper's printed border.
+const PADDING: int = 18
 
-var _row: HBoxContainer = HBoxContainer.new()
+var _row: HFlowContainer = HFlowContainer.new()
+var _column: VBoxContainer = VBoxContainer.new()
 var _none: Label = ScreenKit.label("", NAME_SIZE)
 var _tags: Array[Control] = []
 var _ids: Array[String] = []
@@ -23,22 +28,32 @@ var _names: Array[String] = []
 
 
 func _init() -> void:
-	add_theme_stylebox_override("panel", ScreenKit.paper_style(10))
-	size_flags_horizontal = Control.SIZE_SHRINK_END
-	var column: VBoxContainer = VBoxContainer.new()
+	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var column: VBoxContainer = _column
 	column.add_theme_constant_override("separation", 4)
-	var head: Label = ScreenKit.eyebrow("")
-	head.text = TranslationServer.translate("reform.strip").to_upper()
-	head.add_theme_font_size_override("font_size", 14)
-	column.add_child(head)
-	_row.add_theme_constant_override("separation", GAP)
+	_row.add_theme_constant_override("h_separation", GAP)
+	_row.add_theme_constant_override("v_separation", GAP)
 	_row.custom_minimum_size = Vector2(0, TAG_HEIGHT)
 	column.add_child(_row)
+	# The head leads the row of slips, so the strip keeps to one line while they fit.
+	var head: Label = ScreenKit.eyebrow("")
+	head.text = TranslationServer.translate("reform.strip").to_upper()
+	head.add_theme_font_size_override("font_size", HEAD_SIZE)
+	for label: Label in [head, _none]:
+		label.custom_minimum_size = Vector2(0, TAG_HEIGHT)
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_row.add_child(label)
 	_none.text = TranslationServer.translate("reform.strip.none")
 	_none.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_none.add_theme_color_override("font_color", ScreenKit.STYLE.ink_soft)
-	_row.add_child(_none)
+	_none.add_theme_color_override("font_color", INK)
 	add_child(column)
+
+
+## Prints a shop's note on the strip's sheet, above the slips: one sheet, one border.
+func add_note(note: Control) -> void:
+	_column.add_child(note)
+	_column.move_child(note, 0)
 
 
 ## Shows the Reforms the run holds, one slip each.
@@ -83,7 +98,7 @@ func held_count() -> int:
 func next_center() -> Vector2:
 	var count: int = _ids.size()
 	if count == 0 or count > _tags.size():
-		return _row.global_position + Vector2(TAG_PADDING, TAG_HEIGHT / 2.0)
+		return _none.global_position + Vector2(TAG_PADDING, TAG_HEIGHT / 2.0)
 	var last: Control = _tags[count - 1]
 	return last.global_position + Vector2(last.size.x + GAP + TAG_PADDING, TAG_HEIGHT / 2.0)
 
@@ -112,7 +127,7 @@ func _draw_tag(tag: Control) -> void:
 	var worn: float = BowlGrime.wear()
 	DecreePaper.tag(tag, Rect2(Vector2.ZERO, tag.size), worn, _ids[index].hash() & 0xFF)
 	var font: Font = get_theme_default_font()
-	var ink: Color = CampaignPaper.ink(INK, worn * 0.5)
+	var ink: Color = BowlGrime.aged(INK, worn * 0.15)
 	var baseline: Vector2 = Vector2(TAG_PADDING * 0.62, tag.size.y * 0.5 + NAME_SIZE * 0.42)
 	tag.draw_string(font, baseline, _names[index], HORIZONTAL_ALIGNMENT_LEFT, -1, NAME_SIZE, ink)
 	if tag.has_focus():

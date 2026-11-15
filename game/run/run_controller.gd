@@ -33,6 +33,8 @@ const COMMANDS: Array[String] = [
 	"begin_round",
 	"campaign_buy",
 	"reform",
+	"envelope_buy",
+	"envelope_pick",
 	"leave_store",
 ]
 ## What the run waits on, for views that may not name the loop.
@@ -47,6 +49,10 @@ const AWAIT_REEDUCATION: int = RunLoop.Awaiting.REEDUCATION
 const AWAIT_OPENING: int = RunLoop.Awaiting.PLAYER_OPENING
 ## A Campaign that can be used now (CampaignEffect.Reason.OK).
 const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
+## The envelope pick that keeps nothing.
+const TAKE_NOTHING: int = EnvelopeCounter.NOTHING
+## Suit names in suit order: spade, heart, club, diamond.
+const SUIT_KEYS: Array[String] = ["suit.spades", "suit.hearts", "suit.clubs", "suit.diamonds"]
 const OK: int = RunLoop.Reason.OK
 
 var _loop: RunLoop
@@ -302,6 +308,54 @@ func reform(slot: int) -> int:
 ## The Reform on the state store's counter, for a screen to read.
 func reform_shelf() -> ReformShelf:
 	return ReformShelf.new(_loop.shop.reforms)
+
+
+## Buys the envelope on the state store's counter, or the black market's Parcel, and
+## opens it at once (ADR 0021).
+func envelope_buy(slot: int, market: bool = false) -> int:
+	if market:
+		return _finish("envelope_buy", _loop.player_market_envelope(slot))
+	return _finish("envelope_buy", _loop.player_envelope_buy(slot))
+
+
+## Keeps the open envelope's item at index, or nothing with TAKE_NOTHING.
+func envelope_pick(index: int) -> int:
+	return _finish("envelope_pick", _loop.player_envelope_pick(index))
+
+
+## The envelope on the state store's counter, or the black market's, for a screen to read.
+func envelope_shelf(market: bool) -> EnvelopeShelf:
+	var counter: RunShop = _loop.market if market else _loop.shop
+	return EnvelopeShelf.new(counter.envelopes, RunLoop.PLAYER, market)
+
+
+## The shelf whose envelope is open now, or null when none is.
+func opened_envelope() -> EnvelopeShelf:
+	for market: bool in [false, true]:
+		var shelf: EnvelopeShelf = envelope_shelf(market)
+		if shelf.is_open():
+			return shelf
+	return null
+
+
+## A plot card's name, "7 of Hearts", and what a card from an envelope is: its name, text
+## or caption by key, with its mark's numbers from data. kind is one of EnvelopeShelf's
+## card kinds.
+func card_name(card: CardInstance) -> String:
+	var rank: String = tr(Ranks.label_key(card.base_rank()))
+	var suit: String = tr(SUIT_KEYS[card.suit()])
+	return tr("card.name").format({"rank": rank, "suit": suit})
+
+
+func envelope_card_text(kind: int, key: String, card: CardInstance) -> String:
+	var mark: String = "stamped" if kind == EnvelopeShelf.KIND_STAMPED else "model"
+	var model: float = Scorer.DEFAULT_PARAMS.model_grain_percent / 100.0
+	var values: Dictionary[String, Variant] = {
+		"resentment": RunLoop.DEFAULT_RESENTMENT.stamped_card,
+		"model_times": String.num(model),
+		"card": card_name(card),
+	}
+	return tr("envelope.card.%s.%s" % [mark, key]).format(values)
 
 
 ## The Reforms in force, in the order they were enacted.

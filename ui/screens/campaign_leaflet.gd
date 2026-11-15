@@ -1,17 +1,23 @@
 class_name CampaignLeaflet
 extends TipHost
 ## One held Campaign as a paper leaflet (ADR 0021): its kind on a printed band, its name
-## set in type, aged like all village paper. Hover shows its rule; a leaflet that cannot
-## be used now is dimmed and its slip says why. Armed, it lifts and its edge turns gold;
-## under the keyboard or gamepad cursor it carries the focus ring.
+## set in dark type over the grime, aged like all village paper. Hover shows its rule. A
+## leaflet that cannot be used now stays at full strength and says so in a red line at
+## its foot, and its slip says why. Armed, it lifts and its edge turns gold; under the
+## keyboard or gamepad cursor it carries the focus ring.
 
 signal chosen(slot: int)
 
-const SIZE: Vector2 = Vector2(118, 156)
+const SIZE: Vector2 = Vector2(118, 150)
 ## A shop's shelf has less height: its leaflets are this much smaller.
-const COMPACT: float = 0.72
+const COMPACT: float = 0.8
 const NAME_SIZE: int = 19
-const DIM: float = 0.42
+## The smallest a name is ever set, compact or not, so it reads on a 1080 screen.
+const LEAST_NAME: int = 16
+const KIND_SIZE: int = 12
+const STATUS_SIZE: int = 14
+## A paper-coloured halo round the type, so stains never cross a letter.
+const HALO: int = 4
 const LIFT: float = 14.0
 const GOLD: Color = Color("c9a227")
 const RING: float = 3.0
@@ -26,6 +32,7 @@ var cursor: bool = false
 var _private: bool = false
 var _eyebrow: Label = Label.new()
 var _name: Label = Label.new()
+var _status: Label = Label.new()
 
 
 func _init() -> void:
@@ -44,7 +51,7 @@ func _init() -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_theme_constant_override("separation", 4)
 	_eyebrow.theme_type_variation = CommonsTheme.EYEBROW
-	_eyebrow.add_theme_font_size_override("font_size", 12)
+	_eyebrow.add_theme_font_size_override("font_size", KIND_SIZE)
 	_eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_name.add_theme_font_size_override("font_size", NAME_SIZE)
@@ -54,8 +61,14 @@ func _init() -> void:
 	_name.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# A fixed width, so the wrapped name never makes the leaflet grow.
 	_name.custom_minimum_size = Vector2(SIZE.x - 20.0, 0)
-	for label: Label in [_eyebrow, _name]:
+	_status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	_status.add_theme_font_size_override("font_size", STATUS_SIZE)
+	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status.text = TranslationServer.translate("campaign.not_now")
+	_status.visible = false
+	for label: Label in [_eyebrow, _name, _status]:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		label.add_theme_constant_override("outline_size", HALO)
 		column.add_child(label)
 	add_child(column)
 
@@ -71,17 +84,20 @@ func show_campaign(
 	_eyebrow.text = tr("campaign.eyebrow.private" if private else "campaign.eyebrow.collective")
 	_eyebrow.text = _eyebrow.text.to_upper()
 	_name.text = title
-	var ink: Color = CampaignPaper.ink(ScreenKit.INK, BowlGrime.wear())
-	_name.add_theme_color_override("font_color", ink)
-	_eyebrow.add_theme_color_override("font_color", ink)
+	var paper: Color = CampaignPaper.paper(BowlGrime.wear())
+	for label: Label in [_eyebrow, _name, _status]:
+		label.add_theme_color_override("font_color", ScreenKit.INK)
+		label.add_theme_color_override("font_outline_color", paper)
+	_status.add_theme_color_override("font_color", ScreenKit.RED)
 	set_tip(title, rule)
 	queue_redraw()
 
 
-## Dims the leaflet with the reason it cannot be used, or lights it when reason is 0.
+## Marks the leaflet with the reason it cannot be used, or clears it when reason is 0.
+## It stays at full strength either way.
 func set_reason(refusal: int, why: String) -> void:
 	reason = refusal
-	modulate.a = 1.0 if refusal == 0 else DIM
+	_status.visible = refusal != 0
 	var rule: String = tip_rule()
 	var base: String = rule.split("\n\n")[0]
 	set_tip(_name.text, base if refusal == 0 else "%s\n\n%s" % [base, why])
@@ -95,13 +111,14 @@ func set_compact(on: bool) -> void:
 	update_minimum_size()
 	size = extent
 	pivot_offset = extent / 2.0
-	_name.custom_minimum_size = Vector2(extent.x - 20.0, 0)
-	_name.add_theme_font_size_override("font_size", roundi(NAME_SIZE * (COMPACT if on else 1.0)))
+	_name.custom_minimum_size = Vector2(extent.x - (12.0 if on else 20.0), 0)
+	var name_size: int = maxi(roundi(NAME_SIZE * (COMPACT if on else 1.0)), LEAST_NAME)
+	_name.add_theme_font_size_override("font_size", name_size)
 	var margins: StyleBoxEmpty = get_theme_stylebox("panel") as StyleBoxEmpty
 	if margins != null:
 		margins.content_margin_top = 14 if on else 18
-		margins.content_margin_left = 6 if on else 10
-		margins.content_margin_right = 6 if on else 10
+		margins.content_margin_left = 4 if on else 10
+		margins.content_margin_right = 4 if on else 10
 	queue_redraw()
 
 
@@ -117,6 +134,11 @@ func set_armed(on: bool) -> void:
 func set_cursor(on: bool) -> void:
 	cursor = on
 	queue_redraw()
+
+
+## True while its red line says it cannot be used now.
+func says_not_now() -> bool:
+	return _status.visible
 
 
 func is_private() -> bool:

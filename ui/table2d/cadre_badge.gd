@@ -5,10 +5,14 @@ extends Control
 ## this Quota, and, on a Cadre with no art yet, its name inked on the stock. Drawn, not
 ## labelled, so the card stays one picture.
 
-const TICKET: Vector2 = Vector2(58, 26)
-const COUNT_SIZE: int = 17
-const NAME_SIZE: int = 15
-const INK: Color = Color("2b2119")
+const TICKET: Vector2 = Vector2(72, 32)
+const COUNT_SIZE: int = 21
+## A name is set at NAME_SIZE, smaller only as far as its longest word needs to fit the
+## card's width, and never below LEAST_NAME. Nothing is abbreviated or clipped.
+const NAME_SIZE: int = 16
+const LEAST_NAME: int = 13
+const NAME_MARGIN: float = 5.0
+const INK: Color = Color("1e1a16")
 const BAND: Color = Color("3f6338")
 
 var _count: String = ""
@@ -35,14 +39,32 @@ func count() -> String:
 	return _count
 
 
+## The size a name is set at to fit wide: each word on one line.
+static func name_size(font: Font, text: String, wide: float) -> int:
+	var font_size: int = NAME_SIZE
+	while font_size > LEAST_NAME:
+		var fits: bool = true
+		for word: String in text.split(" "):
+			var width: float = (
+				font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+			)
+			fits = fits and width <= wide
+		if fits:
+			break
+		font_size -= 1
+	return font_size
+
+
 func _draw() -> void:
 	var worn: float = BowlGrime.wear()
-	var ink: Color = BowlGrime.aged(INK, worn * 0.4)
+	var ink: Color = BowlGrime.aged(INK, worn * 0.15)
 	var font: Font = get_theme_default_font()
 	if not _name.is_empty():
-		var top: Vector2 = Vector2(6, size.y * 0.32)
+		var wide: float = size.x - NAME_MARGIN * 2.0
+		var font_size: int = name_size(font, _name, wide)
+		var top: Vector2 = Vector2(NAME_MARGIN, size.y * 0.3)
 		draw_multiline_string(
-			font, top, _name, HORIZONTAL_ALIGNMENT_CENTER, size.x - 12, NAME_SIZE, 4, ink
+			font, top, _name, HORIZONTAL_ALIGNMENT_CENTER, wide, font_size, 4, ink
 		)
 	if _count.is_empty():
 		return

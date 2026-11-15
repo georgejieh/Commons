@@ -15,6 +15,10 @@ extends Resource
 @export var campaign_slots: int = 2
 ## Reforms offered per visit (ADR 0021).
 @export var reform_offers: int = 0
+## Envelopes offered per visit, and the kinds this counter sells, drawn evenly from those
+## with something to show (ADR 0021).
+@export var envelope_offers: int = 0
+@export var envelopes: Array[EnvelopeDef] = []
 ## Coupons for the first reroll, and how much each later one adds.
 @export var reroll_base: int = 2
 @export var reroll_step: int = 1

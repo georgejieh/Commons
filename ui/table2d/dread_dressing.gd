@@ -14,7 +14,7 @@ const RED: Color = Color("9e1b16")
 const GILT: Color = Color("c9a227")
 ## Where the pieces sit, in the table's 1920x1080 frame: wall space clear of the seats,
 ## play lanes, hand, buttons and ledger.
-const NOTICE_AT: Rect2 = Rect2(150, 540, 280, 150)
+const NOTICE_AT: Rect2 = Rect2(150, 622, 280, 124)
 const POSTER_AT: Rect2 = Rect2(1190, 520, 200, 200)
 const CHAIR_SPOTS: Array[Vector2] = [Vector2(36, 560), Vector2(1440, 590)]
 const EXTRA_CHAIR_SPOT: Vector2 = Vector2(740, 330)

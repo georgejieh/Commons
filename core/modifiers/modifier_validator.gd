@@ -135,3 +135,35 @@ static func validate_reform(
 		if not definition.parameters.has(parameter):
 			problems.append("%s: missing parameter %s" % [definition.id, parameter])
 	return problems
+
+
+## Checks an envelope kind (ADR 0021): its strings, a cost, an unlock tier, a number of
+## choices, and contents of real kinds, none twice, each with a weight above 0.
+static func validate_envelope(
+	definition: EnvelopeDef, string_keys: Dictionary[String, bool]
+) -> PackedStringArray:
+	var problems: PackedStringArray = []
+	for key: String in [definition.name_key, definition.text_key]:
+		if not string_keys.has(key):
+			problems.append("%s: missing string key %s" % [definition.id, key])
+	if definition.cost <= 0:
+		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
+	if definition.unlock_tier < 0:
+		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	if definition.choices <= 0:
+		problems.append("%s: bad choices %d" % [definition.id, definition.choices])
+	if definition.contents.is_empty():
+		problems.append("%s: holds nothing" % definition.id)
+	if definition.weights.size() != definition.contents.size():
+		problems.append("%s: one weight per content needed" % definition.id)
+	var seen: Dictionary[int, bool] = {}
+	for index: int in definition.contents.size():
+		var kind: int = definition.contents[index]
+		if kind < 0 or kind >= EnvelopeDef.Content.size() or seen.has(kind):
+			problems.append("%s: bad content %d" % [definition.id, kind])
+		seen[kind] = true
+		if index < definition.weights.size() and definition.weights[index] <= 0:
+			problems.append("%s: bad weight for content %d" % [definition.id, kind])
+	if definition.wrapping < 0 or definition.wrapping >= EnvelopeDef.Wrapping.size():
+		problems.append("%s: bad wrapping %d" % [definition.id, definition.wrapping])
+	return problems

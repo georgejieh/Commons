@@ -655,3 +655,31 @@ reform.strip,Reforms in force
 reform.strip.none,None yet
 reform.held_line,Reforms in force: {names}
 store.counter,On the counter
+envelope.eyebrow,Envelope
+envelope.directive_envelope.name,Directive Envelope
+envelope.directive_envelope.text,"Opens at once and shows {choices} Directives. Keep one, or take nothing."
+envelope.campaign_envelope.name,Campaign Envelope
+envelope.campaign_envelope.text,"Opens at once and shows {choices} collective Campaigns. Keep one, or take nothing."
+envelope.parcel.name,Parcel
+envelope.parcel.text,"Opens at once and shows {choices} items, each a private Campaign, a stamped plot card or a Model plot card. Keep one, or take nothing."
+envelope.opened,Opened
+envelope.keep,Keep
+envelope.nothing,Take Nothing
+envelope.nothing.confirm,Press again to take nothing.
+envelope.choose,"Keep one, or take nothing."
+envelope.kept,Kept
+envelope.refused.campaigns_full,You hold as many Campaigns as you can.
+envelope.refused.plot_full,Your private plot is full.
+envelope.refused.other,This cannot be kept now.
+envelope.card.stamped.name,Stamped Plot Card
+envelope.card.stamped.text,"A {card} for your private plot, carrying your stamp. Each stamped card you score adds {resentment} Resentment."
+envelope.card.stamped.caption,Your stamp. Adds {resentment} Resentment when scored.
+envelope.card.model.name,Model Plot Card
+envelope.card.model.text,"A {card} for your private plot, marked Model. A Model card scores {model_times} times its Grain."
+envelope.card.model.caption,Model. Scores {model_times} times its Grain.
+card.name,{rank} of {suit}
+suit.spades,Spades
+suit.hearts,Hearts
+suit.clubs,Clubs
+suit.diamonds,Diamonds
+campaign.not_now,Not now

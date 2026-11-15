@@ -1,11 +1,12 @@
 class_name CardView
 extends Control
 ## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
-## a picture, enhancement overlay, seal, and the marks that outlast a round: a red
-## chop in the bottom left for an owner's stamp, a gold rosette top right for a Model
-## card. A number card shows its suit faintly in the corner; a court card or joker is a
-## picture card, its art filling the face and fading to bare card stock in the corner,
-## where the rank and suit are printed straight on, as on a playing card.
+## a picture, enhancement overlay, seal, and the marks that outlast a round, both on the
+## left edge a fan leaves showing: a red and gold rosette under the suit pip for a Model
+## card, a red chop at the foot for an owner's stamp. A number card shows its suit
+## faintly in the corner; a court card or joker is a picture card, its art filling the
+## face and fading to bare card stock in the corner, where the rank and suit are printed
+## straight on, as on a playing card.
 ## A note under the index says when a debuff makes the card rank as another. The parts
 ## come from CardArt, so no face is baked. bind() is the only way to show a card; views
 ## come from CardPool and are reused, never instanced during a round.
@@ -40,10 +41,12 @@ const FADE_SOLID: float = 0.45
 ## A paper edge around a picture card's rank, so it reads over any art.
 const RANK_OUTLINE: int = 6
 const NOTE_COLOR: Color = Color("9e1b16")
-## Where the marks sit: the chop below the rank note, the rosette in the corner the rank
-## glyph leaves free, both inside the selection edge.
-const CHOP_AT: Vector2 = Vector2(9, 130)
-const ROSETTE_AT: Vector2 = Vector2(84, 9)
+## Where the marks sit: both down the left edge, the strip a fanned hand leaves showing,
+## the rosette under the suit pip and the chop at the foot, inside the selection edge.
+const CHOP_AT: Vector2 = Vector2(9, 128)
+const ROSETTE_AT: Vector2 = Vector2(13, 92)
+## Under a rank note the rosette moves down beside the chop, clear of the note.
+const ROSETTE_BY_NOTE: Vector2 = Vector2(40, 128)
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -173,6 +176,7 @@ func bind(card: CardInstance) -> void:
 func set_rank_note(text: String) -> void:
 	_rank_note.text = text
 	_rank_note.visible = not text.is_empty()
+	_rosette.position = ROSETTE_BY_NOTE if _rank_note.visible else ROSETTE_AT
 
 
 func rank_note() -> String:

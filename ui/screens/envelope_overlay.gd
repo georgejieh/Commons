@@ -1,0 +1,366 @@
+class_name EnvelopeOverlay
+extends Control
+## An envelope opened over the shop page (ADR 0021). A Scrim dims the page and takes its
+## clicks, the envelope comes to the middle and is opened in one beat, and its papers
+## slide out into a row. Under them the pointed paper's name and full rules, with each
+## keyword's meaning (EnvelopeDetail), and one Take Nothing. Keeping a paper lifts it
+## under a seal, Kept, or Issued with each Rate ticking for a Directive, while the others
+## fall away; taking nothing lets them all fall. Then the overlay closes and frees
+## everything it made. Reduced motion skips to each end.
+##
+## Keyboard and gamepad: focus lands on the first paper that can be kept, left and right
+## move, accept keeps. Cancel never throws an envelope away at once: it moves focus to
+## Take Nothing, and a second cancel there confirms it.
+
+## The envelope is answered and the overlay is gone.
+signal closed
+
+const GAP: int = 20
+const ROW_GAP: int = 14
+## The envelope's size once it reaches the middle.
+const FIGURE: Vector2 = Vector2(360, 230)
+## Seconds: the envelope's arrival, its opening beat, each paper's slide and the gap
+## between papers, the kept paper's lift, the seal's hold, the others' fall and the close.
+const ARRIVE_TIME: float = 0.3
+const OPEN_TIME: float = 0.5
+const FAN_TIME: float = 0.32
+const FAN_STAGGER: float = 0.07
+const KEEP_TIME: float = 0.2
+const SEAL_HOLD: float = 0.55
+const FALL_TIME: float = 0.38
+const CLOSE_TIME: float = 0.22
+const TICK_STAGGER: float = 0.12
+## A paper leaves the envelope at this scale and settles at full size.
+const FAN_FROM: float = 0.35
+const KEEP_RISE: float = 26.0
+const KEEP_SCALE: float = 1.06
+const FALL: float = 340.0
+const FALL_TURN: float = 0.3
+const SEAL_WIDTH: float = 150.0
+
+var _controller: RunController
+var _shelf: EnvelopeShelf
+var _dim: Scrim = Scrim.new()
+var _figure: EnvelopeFigure = EnvelopeFigure.new()
+var _column: VBoxContainer = VBoxContainer.new()
+var _row: HBoxContainer = HBoxContainer.new()
+var _papers: Array[ChoicePaper] = []
+var _detail: EnvelopeDetail = EnvelopeDetail.new()
+var _nothing: Button = ScreenKit.button("", CommonsTheme.GHOST)
+var _seal: InkSeal = InkSeal.new()
+var _busy: bool = true
+var _blocks: Dictionary[String, Control] = {}
+
+
+func _init() -> void:
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	z_index = 4
+
+
+## Opens shelf's envelope over the page, from where its offer stood. Without animate, or
+## under reduced motion, the papers are laid out at once, as after a load.
+func open(controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate: bool) -> void:
+	_controller = controller
+	_shelf = shelf
+	add_child(_dim)
+	var center: CenterContainer = CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(center)
+	_column.add_theme_constant_override("separation", ROW_GAP)
+	_column.alignment = BoxContainer.ALIGNMENT_CENTER
+	center.add_child(_column)
+	_column.add_child(_heading())
+	_row.add_theme_constant_override("separation", GAP)
+	_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_column.add_child(_row)
+	_fill_row()
+	_column.add_child(_detail)
+	_blocks["detail"] = _detail
+	_nothing.text = tr("envelope.nothing")
+	_nothing.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_nothing.pressed.connect(_take_nothing)
+	_nothing.focus_entered.connect(_point.bind(-1))
+	_column.add_child(_nothing)
+	_blocks["row"] = _row
+	_blocks["button"] = _nothing
+	_figure.wrapping = shelf.wrapping(shelf.opened_id())
+	_figure.visible = false
+	add_child(_figure)
+	_seal.z_index = 1
+	add_child(_seal)
+	_wire_focus()
+	if animate and not UiMotion.reduced():
+		_play_open(from)
+	else:
+		_settle()
+
+
+## The papers in order, for tests and playtests.
+func papers() -> Array[ChoicePaper]:
+	return _papers.duplicate()
+
+
+func nothing_button() -> Button:
+	return _nothing
+
+
+## True while the opening, a keeping or a falling away is acted out.
+func is_busy() -> bool:
+	return _busy
+
+
+## The line that asks for a second cancel, shown after the first.
+func asks_to_confirm() -> bool:
+	return _detail.asks_to_confirm()
+
+
+func seal() -> InkSeal:
+	return _seal
+
+
+func figure() -> EnvelopeFigure:
+	return _figure
+
+
+## The name and rules shown under the row now.
+func shown_title() -> String:
+	return _detail.shown_title()
+
+
+## The overlay's main pieces by name, which must fit the screen without overlapping.
+func blocks() -> Dictionary[String, Control]:
+	return _blocks.duplicate()
+
+
+func _heading() -> Control:
+	var sheet: PanelContainer = PanelContainer.new()
+	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(10))
+	sheet.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	var lines: VBoxContainer = VBoxContainer.new()
+	lines.add_theme_constant_override("separation", 0)
+	lines.add_child(ScreenKit.eyebrow(tr("envelope.eyebrow")))
+	var name: Label = ScreenKit.styled(_shelf.envelope_name(_shelf.opened_id()), CommonsTheme.TITLE)
+	name.autowrap_mode = TextServer.AUTOWRAP_OFF
+	var ask: Label = ScreenKit.styled(tr("envelope.choose"), CommonsTheme.CAPTION)
+	ask.autowrap_mode = TextServer.AUTOWRAP_OFF
+	ask.size_flags_vertical = Control.SIZE_SHRINK_END
+	lines.add_child(ScreenKit.row([name, ask], 18))
+	sheet.add_child(lines)
+	_blocks["heading"] = sheet
+	return sheet
+
+
+## One paper per item, each in a place of its own so it can move while the row holds.
+func _fill_row() -> void:
+	for index: int in _shelf.count():
+		var place: Control = Control.new()
+		place.custom_minimum_size = ChoicePaper.SIZE
+		place.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_row.add_child(place)
+		var paper: ChoicePaper = ChoicePaper.new()
+		paper.index = index
+		# In the tree first: a card view is only ready to show a card once it is in it.
+		place.add_child(paper)
+		var kind: int = _shelf.kind(index)
+		if kind == EnvelopeShelf.KIND_DIRECTIVE:
+			paper.show_directive(_controller, _shelf.item_id(index))
+		elif kind == EnvelopeShelf.KIND_CAMPAIGN:
+			paper.show_campaign(_controller, _shelf.item_id(index))
+		else:
+			paper.show_card(_controller, kind, _shelf.card(index))
+		var why: String = _shelf.refusal_key(index)
+		paper.set_takeable(why.is_empty(), "" if why.is_empty() else tr(why))
+		paper.pointed.connect(_point)
+		paper.kept.connect(_keep)
+		_papers.append(paper)
+
+
+## Left and right move along the Keep buttons, down goes to Take Nothing and up comes
+## back; nothing leads out of the overlay.
+func _wire_focus() -> void:
+	var keeps: Array[Button] = []
+	for paper: ChoicePaper in _papers:
+		keeps.append(paper.keep)
+	for index: int in keeps.size():
+		var keep: Button = keeps[index]
+		var left: Button = keeps[maxi(index - 1, 0)]
+		var right: Button = keeps[mini(index + 1, keeps.size() - 1)]
+		keep.focus_neighbor_left = keep.get_path_to(left)
+		keep.focus_neighbor_right = keep.get_path_to(right)
+		keep.focus_neighbor_top = keep.get_path_to(keep)
+		keep.focus_neighbor_bottom = keep.get_path_to(_nothing)
+		keep.focus_previous = keep.get_path_to(left)
+		keep.focus_next = keep.get_path_to(right if index + 1 < keeps.size() else _nothing)
+	var back: Button = _nothing if keeps.is_empty() else keeps[0]
+	for neighbour: String in ["focus_neighbor_left", "focus_neighbor_right"]:
+		_nothing.set(neighbour, _nothing.get_path_to(_nothing))
+	_nothing.focus_neighbor_bottom = _nothing.get_path_to(_nothing)
+	_nothing.focus_neighbor_top = _nothing.get_path_to(back)
+	_nothing.focus_next = _nothing.get_path_to(back)
+	_nothing.focus_previous = _nothing.get_path_to(keeps[-1] if not keeps.is_empty() else back)
+
+
+## The envelope arrives from its offer, opens in one beat, and its papers fan out of it.
+func _play_open(from: Rect2) -> void:
+	_busy = true
+	_dim.modulate.a = 0.0
+	_column.modulate.a = 0.0
+	_figure.visible = true
+	_figure.position = from.position - global_position
+	_figure.size = from.size
+	# The overlay covers the page, which may not have been laid out yet: aim by the screen.
+	var middle: Vector2 = get_viewport_rect().size / 2.0 - global_position
+	var target: Vector2 = middle - FIGURE / 2.0 + Vector2(0, -40)
+	var tween: Tween = create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_dim, "modulate:a", 1.0, ARRIVE_TIME)
+	tween.parallel().tween_property(_figure, "position", target, ARRIVE_TIME)
+	tween.parallel().tween_property(_figure, "size", FIGURE, ARRIVE_TIME)
+	tween.tween_property(_figure, "opened", 1.0, OPEN_TIME).set_trans(Tween.TRANS_SINE)
+	tween.tween_callback(_fan)
+	tween.tween_interval(FAN_TIME + FAN_STAGGER * _papers.size())
+	tween.tween_property(_figure, "modulate:a", 0.0, CLOSE_TIME)
+	tween.tween_callback(_settle)
+
+
+## Each paper slides out of the open envelope to its place in the row, one after another.
+func _fan() -> void:
+	var mouth: Vector2 = _figure.global_position + _figure.size / 2.0
+	var heading: Tween = _column.create_tween()
+	heading.tween_property(_column, "modulate:a", 1.0, FAN_TIME)
+	for index: int in _papers.size():
+		var paper: ChoicePaper = _papers[index]
+		var place: Control = paper.get_parent() as Control
+		paper.position = mouth - place.global_position - ChoicePaper.SIZE / 2.0
+		paper.scale = Vector2.ONE * FAN_FROM
+		paper.rotation = (index - (_papers.size() - 1) / 2.0) * 0.12
+		var tween: Tween = paper.create_tween().set_parallel(true)
+		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		var delay: float = index * FAN_STAGGER
+		tween.tween_property(paper, "position", Vector2.ZERO, FAN_TIME).set_delay(delay)
+		tween.tween_property(paper, "scale", Vector2.ONE, FAN_TIME).set_delay(delay)
+		tween.tween_property(paper, "rotation", 0.0, FAN_TIME).set_delay(delay)
+
+
+## Everything at rest and ready to choose.
+func _settle() -> void:
+	_figure.visible = false
+	_dim.modulate.a = 1.0
+	_column.modulate.a = 1.0
+	for paper: ChoicePaper in _papers:
+		paper.position = Vector2.ZERO
+		paper.scale = Vector2.ONE
+		paper.rotation = 0.0
+	_busy = false
+	for paper: ChoicePaper in _papers:
+		if paper.is_takeable():
+			paper.keep.grab_focus()
+			return
+	_nothing.grab_focus()
+
+
+## Shows the pointed paper's name and rules, with why it cannot be kept when it cannot.
+func _point(index: int) -> void:
+	for paper: ChoicePaper in _papers:
+		paper.set_cursor(paper.index == index)
+	if index < 0:
+		return
+	var paper: ChoicePaper = _papers[index]
+	var rule: String = paper.rule
+	if not paper.is_takeable():
+		rule += "\n\n" + paper.caption()
+	_detail.explain(paper.title, rule)
+
+
+func _input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	get_viewport().set_input_as_handled()
+	if _busy:
+		return
+	if _nothing.has_focus() and _detail.asks_to_confirm():
+		_take_nothing()
+		return
+	_nothing.grab_focus()
+	_detail.ask_to_confirm(true)
+
+
+## Keeps the paper: the pick is sent now, then acted out.
+func _keep(index: int) -> void:
+	if _busy or not _papers[index].is_takeable():
+		return
+	var paper: ChoicePaper = _papers[index]
+	var directive: bool = _shelf.kind(index) == EnvelopeShelf.KIND_DIRECTIVE
+	var issued: String = _shelf.item_id(index) if directive else ""
+	var before: Array[int] = []
+	if directive:
+		before = DirectiveSheet.rates(_controller, issued)
+	if _controller.envelope_pick(index) != RunController.OK:
+		return
+	Audio.play(AudioEvents.STORE_BUY)
+	if UiMotion.reduced():
+		_finish()
+		return
+	_busy = true
+	var others: Array[ChoicePaper] = _papers.filter(
+		func(other: ChoicePaper) -> bool: return other != paper
+	)
+	_fall(others)
+	paper.z_index = 1
+	var word: String = tr("directive.issued" if directive else "envelope.kept")
+	var tween: Tween = create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(paper, "position:y", -KEEP_RISE, KEEP_TIME)
+	tween.parallel().tween_property(paper, "scale", Vector2.ONE * KEEP_SCALE, KEEP_TIME)
+	tween.tween_callback(_press_seal.bind(paper, word))
+	if directive:
+		DirectiveSheet.tick(tween, _controller, issued, paper.lines, before, TICK_STAGGER)
+		tween.tween_interval(UiMotion.PRESETS.count_time)
+	tween.tween_interval(SEAL_HOLD)
+	tween.tween_property(self, "modulate:a", 0.0, CLOSE_TIME)
+	tween.tween_callback(_finish)
+
+
+func _press_seal(paper: ChoicePaper, word: String) -> void:
+	_seal.prepare(word, ScreenKit.RED, SEAL_WIDTH)
+	var middle: Vector2 = paper.item.get_global_rect().get_center()
+	_seal.position = middle - global_position - _seal.size / 2.0
+	_seal.press()
+
+
+## Takes nothing: every paper falls away, then the overlay closes.
+func _take_nothing() -> void:
+	if _busy:
+		return
+	if _controller.envelope_pick(RunController.TAKE_NOTHING) != RunController.OK:
+		return
+	if UiMotion.reduced():
+		_finish()
+		return
+	_busy = true
+	_fall(_papers)
+	var tween: Tween = create_tween()
+	tween.tween_interval(FALL_TIME + FAN_STAGGER * _papers.size())
+	tween.tween_property(self, "modulate:a", 0.0, CLOSE_TIME)
+	tween.tween_callback(_finish)
+
+
+func _fall(falling: Array[ChoicePaper]) -> void:
+	for index: int in falling.size():
+		var paper: ChoicePaper = falling[index]
+		paper.keep.disabled = true
+		var tween: Tween = paper.create_tween().set_parallel(true)
+		tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		var delay: float = index * FAN_STAGGER
+		var turn: float = FALL_TURN * (1.0 if index % 2 == 0 else -1.0)
+		tween.tween_property(paper, "position:y", FALL, FALL_TIME).set_delay(delay)
+		tween.tween_property(paper, "rotation", turn, FALL_TIME).set_delay(delay)
+		tween.tween_property(paper, "modulate:a", 0.0, FALL_TIME).set_delay(delay)
+
+
+func _finish() -> void:
+	_busy = true
+	closed.emit()
+	queue_free()

@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
 ## Campaigns at the table and in the shops (ADR 0021): the tray shows the held leaflets
 ## clear of the hand, the buttons, the notice and the prompt line; arming and cancelling
-## leave nothing behind; a leaflet that cannot be used is dimmed with its reason; a use
+## leave nothing behind; a leaflet that cannot be used says so at full strength; a use
 ## plays out and leaves no node behind; a quiet replay shows only the end state; the
 ## keyboard reaches the tray; every Campaign paper is aged at stage 0 and more at the
 ## last stage; and the shops offer a Campaign and its tray without passing 1080.
@@ -134,14 +134,17 @@ func test_arming_then_cancelling_leaves_no_state_behind() -> void:
 	assert_int(_record_size()).is_equal(commands)
 
 
-func test_a_leaflet_that_cannot_be_used_is_dimmed_with_its_reason() -> void:
+## A leaflet that cannot be used now stays at full strength, so it never reads as gone,
+## and says so in its own red line, with the reason in its slip.
+func test_a_leaflet_that_cannot_be_used_says_so_at_full_strength() -> void:
 	_hold(["mutual_aid", "grain_loan"])
 	assert_bool(_drive_to(RunController.AWAIT_BID)).is_true()
 	var table: TableScreen = await _open_table()
 	var tray: CampaignTray = _campaigns(table).tray
 	for slot: int in 2:
 		var leaflet: CampaignLeaflet = tray.leaflet(slot)
-		assert_float(leaflet.modulate.a).is_less(1.0)
+		assert_float(leaflet.modulate.a).is_equal(1.0)
+		assert_bool(leaflet.says_not_now()).is_true()
 		assert_str(leaflet.tip_rule()).contains(tr("campaign.reason.not_now"))
 		leaflet.chosen.emit(slot)
 		assert_int(tray.armed_slot()).is_equal(-1)
@@ -154,9 +157,11 @@ func test_a_leaflet_that_cannot_be_used_is_dimmed_with_its_reason() -> void:
 			continue
 		var why: String = tr(RunController.campaign_reason_key(reason))
 		sample.set_reason(reason, why)
-		assert_float(sample.modulate.a).is_less(1.0)
+		assert_float(sample.modulate.a).is_equal(1.0)
+		assert_bool(sample.says_not_now()).is_true()
 		assert_str(sample.tip_rule()).contains(why)
 		sample.set_reason(0, "")
+		assert_bool(sample.says_not_now()).is_false()
 		assert_str(sample.tip_rule()).is_equal("rule")
 
 

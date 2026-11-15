@@ -11,17 +11,31 @@ extends RefCounted
 ## Campaign offers draws them last of all, evenly from its pool, and the same reroll
 ## redraws them; a Campaign is refused while the player holds as many as they can. A
 ## counter with Reform offers draws them after its Campaigns, and the reroll redraws
-## them too. How many Cadres the player can hold is RunReforms.cadre_slots().
+## them too. A counter with envelope offers draws them after everything else, and the
+## reroll redraws them until one is bought (EnvelopeCounter). How many Cadres the player
+## can hold is RunReforms.cadre_slots().
 
-enum Reason { OK, NO_SUCH_SLOT, SOLD_OUT, TOO_POOR, CADRES_FULL, LEVELS_MAXED, CAMPAIGNS_FULL }
+enum Reason {
+	OK,
+	NO_SUCH_SLOT,
+	SOLD_OUT,
+	TOO_POOR,
+	CADRES_FULL,
+	LEVELS_MAXED,
+	CAMPAIGNS_FULL,
+	## An envelope's plot card while the plot is full, and a pick with no envelope open.
+	PLOT_FULL,
+	NO_ENVELOPE,
+}
 
 const SOLD: String = ""
 const PERCENT: int = 100
 
 ## The counter's Campaigns, drawn after everything else on the shop stream but its
-## Reforms, which are drawn last.
+## Reforms and envelopes, which are drawn last.
 var campaigns: CampaignCounter
 var reforms: ReformCounter
+var envelopes: EnvelopeCounter
 
 var _state: RunState
 var _params: ShopParams
@@ -41,7 +55,8 @@ func _init(
 	ration_cut: int = 0,
 	directives: Array[DirectiveDef] = [],
 	offered: Array[CampaignDef] = [],
-	reformed: Array[ReformDef] = []
+	reformed: Array[ReformDef] = [],
+	run: RunParams = null
 ) -> void:
 	_state = state
 	_params = params
@@ -50,6 +65,7 @@ func _init(
 	_directives = directives
 	campaigns = CampaignCounter.new(state, params, offered)
 	reforms = ReformCounter.new(state, params, reformed)
+	envelopes = EnvelopeCounter.new(state, params, directives, offered, run)
 
 
 ## Slots this visit offers: fewer while rationing is in force.
@@ -57,13 +73,14 @@ func slot_count() -> int:
 	return maxi(_params.slots - (_ration_cut if _state.rationed else 0), 0)
 
 
-## Starts a visit with fresh Cadres. The Directives, Campaigns and Reforms are drawn by
-## stock_directives(), campaigns.draw() and reforms.draw().
+## Starts a visit with fresh Cadres. The Directives, Campaigns, Reforms and envelopes are
+## drawn by stock_directives(), campaigns.draw(), reforms.draw() and envelopes.draw().
 func open() -> void:
 	_rerolls = 0
 	_directive_stock.clear()
 	campaigns.clear()
 	reforms.clear()
+	envelopes.clear()
 	_restock()
 
 
@@ -99,7 +116,7 @@ func reroll_changes() -> bool:
 			open += 1
 	if has_room() and open > slot_count():
 		return true
-	if campaigns.reroll_changes() or reforms.reroll_changes():
+	if campaigns.reroll_changes() or reforms.reroll_changes() or envelopes.reroll_changes():
 		return true
 	return _open_directives().size() > _params.directive_slots
 
@@ -142,6 +159,7 @@ func reroll() -> Reason:
 	stock_directives()
 	campaigns.draw()
 	reforms.draw()
+	envelopes.draw()
 	return Reason.OK
 
 
@@ -173,10 +191,15 @@ func buy_directive(slot: int) -> Reason:
 	if reason != Reason.OK:
 		return reason
 	_state.coupons -= directive_price(slot)
-	for type: int in _directive(_directive_stock[slot]).hand_types:
-		_state.hand_levels.raise(type as Pattern.Type)
+	issue(_state, _directive(_directive_stock[slot]))
 	_directive_stock[slot] = SOLD
 	return Reason.OK
+
+
+## Issues a Directive however it was got: each hand type in its family rises a level.
+static func issue(state: RunState, directive: DirectiveDef) -> void:
+	for type: int in directive.hand_types:
+		state.hand_levels.raise(type as Pattern.Type)
 
 
 ## Draws the visit's Directives. The run loop calls it once every counter has drawn its
