@@ -99,6 +99,23 @@ func card_center(card_id: int) -> Vector2:
 	return global_position + size / 2.0
 
 
+## Where a point on a card in the fan sits on screen, in the card's own pixels, or the
+## fan's middle when the card isn't shown.
+func card_at(card_id: int, point: Vector2) -> Vector2:
+	for view: CardView in _views:
+		if view.card_id == card_id:
+			return view.get_global_transform() * point
+	return global_position + size / 2.0
+
+
+## Hides these cards in the fan while copies of them are in flight; the next show_cards()
+## brings the hand back as it stands.
+func hide_cards(ids: Array[int]) -> void:
+	for view: CardView in _views:
+		if ids.has(view.card_id):
+			view.modulate.a = 0.0
+
+
 ## Lights these cards with the hint edge until the hand next changes.
 func show_hint(ids: Array[int]) -> void:
 	_hinted = ids.duplicate()

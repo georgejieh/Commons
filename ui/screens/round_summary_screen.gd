@@ -20,11 +20,22 @@ func open(app: DemoApp) -> void:
 		ScreenKit.stat(tr("round.progress"), state.set_progress),
 	]
 	sheet.add_child(ScreenKit.row(tiles, 20))
+	# Overfulfillment's stake is part of the result: the bank multiplied, or voided.
+	if last.has("stake"):
+		sheet.add_child(ScreenKit.label(stake_line(last), 24, ScreenKit.RED))
 	var back: Button = ScreenKit.button(tr("round.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(app.back)
 	sheet.add_child(back)
 	ScreenKit.reveal(sheet)
 	back.grab_focus()
+
+
+## What Overfulfillment did to the round's bank, for a result that carries a stake.
+static func stake_line(last: Dictionary) -> String:
+	if bool(last["stake"]):
+		var amount: String = Strings.score(float(last["banked"]))
+		return TranslationServer.translate("round.stake.won").format({"amount": amount})
+	return TranslationServer.translate("round.stake.lost")
 
 
 ## The player's result in the Set's last finished round, or empty when none has.
@@ -44,6 +55,9 @@ static func last_round(events: Array[RunEvent]) -> Dictionary:
 			result["score"] = event.amount
 		elif event.type == RunEvent.Type.SHARE_PAID and event.seat == 0:
 			result["share"] = event.value
+		elif event.type == RunEvent.Type.STAKE_SETTLED and event.seat == 0:
+			result["stake"] = event.value == 1
+			result["banked"] = event.amount
 		if result.has("won"):
 			finished = result
 	return finished

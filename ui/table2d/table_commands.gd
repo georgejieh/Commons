@@ -4,6 +4,10 @@ extends RefCounted
 ## the sort toggle. It wires the action bar and need panel to the run controller, and
 ## keeps the bar's reading and buttons in step with the hand and the turn.
 
+## What the prompt line says in place of the hand's reading, such as an armed Campaign's
+## ask, or "" to leave the reading.
+var prompt: Callable = Callable()
+
 var _controller: RunController
 var _hand: HandModel
 var _hand_view: HandView
@@ -53,6 +57,14 @@ func refresh() -> void:
 	if was_off and not _actions.play.disabled:
 		UiMotion.pulse(_actions.play)
 	_actions.pass_turn.disabled = not (my_turn and _hand.can_pass())
+	var asked: String = prompt.call() if prompt.is_valid() else ""
+	if not asked.is_empty():
+		# The selection is the Campaign's while one is armed, so it is not played.
+		_actions.play.disabled = true
+		_actions.pass_turn.disabled = true
+		_actions.reading.text = asked
+		_actions.reading.tooltip_text = Keywords.tip(asked)
+		return
 	if _controller.awaiting() == RunController.AWAIT_BID:
 		_show_bid()
 		return

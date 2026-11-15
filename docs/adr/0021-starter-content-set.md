@@ -110,7 +110,7 @@ Planned Allocation gets the same rank picker as Rehabilitation. It is fixed at 2
 
 ## Campaigns (8)
 
-One use each. A Campaign is used on your turn, or at the moment its text names.
+One use each. A Campaign is used on your turn, or at the moment its text names. A peasant has no turn before the landlord's first play, so when a peasant holds Mutual Aid or Appeal the round pauses once before that play, until the player uses one or plays on.
 
 | Campaign | Tag | Effect | Cost |
 | --- | --- | --- | --- |
@@ -120,7 +120,7 @@ One use each. A Campaign is used on your turn, or at the moment its text names.
 | Appeal | Collective | Before the first play: this round's debuff is lifted. | 4 |
 | Grain Loan | Collective | Gain 5 coupons. Famine rises 3. | 2 |
 | Registration Drive | Private | Stamp up to 3 cards in your hand as yours. | 3 |
-| Seizure Notice | Private | Take the highest card from the opponent holding the most cards, and give them your lowest. Adds 4 Resentment. | 4 |
+| Seizure Notice | Private | Take the highest card from the opponent holding the most cards, and give them your lowest. Adds 4 Resentment. Both hands must hold 2 or more cards. | 4 |
 | Anonymous Letter | Private | The next player must pass. Adds 2 Resentment. | 3 |
 
 ## Directives (6)
@@ -173,7 +173,7 @@ The strongest scaling pieces sit in the late tiers, so a veteran's runs can reac
 
 ## Consequences
 
-- `RunState` gains the norm steps, marks per deck card, hand levels, per-Cadre state (Rehabilitation's rank and Year, Stakhanovite's growth, Steel Target's count, Seed Grain's count), Reforms held, and the last round's play order. Run saves go to schema 5.
+- `RunState` gains the norm steps, marks per deck card, hand levels, per-Cadre state (Rehabilitation's rank and Year, Stakhanovite's growth, Steel Target's count, Seed Grain's count), Reforms held, and the last round's play order. Run saves go to schema 6.
 - New engine pieces: using a Campaign as a command that saves and replays, envelopes, a Reform slot in the state store, a pass counter, the rank picker, and the audit die.
 - The bots do not use Campaigns. They must stay legal when Seizure Notice, Anonymous Letter, Mutual Aid, Appeal or a 4-card Straight happens to them.
 - Every item ships with a golden test and its string keys. New art: 14 Cadres, plus Planned Allocation, The Informant, Peek and Red Ink, which have none. Campaigns, Directives, Reforms and envelopes get one frame each, with the name set in type.

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CampaignPool" format=3]
+
+[ext_resource type="Script" path="res://data/run/campaign_pool.gd" id="1"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/model_harvest.tres" id="2"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/mutual_aid.tres" id="3"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/overfulfillment.tres" id="4"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/appeal.tres" id="5"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/grain_loan.tres" id="6"]
+
+[resource]
+script = ExtResource("1")
+campaigns = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6")])

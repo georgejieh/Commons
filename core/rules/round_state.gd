@@ -79,6 +79,54 @@ func exchange(seat: int, out_ids: Array[int], cards_in: Array[CardInstance]) -> 
 	return taken
 
 
+## Moves cards between two seats one for one at any point of the round (a Campaign's
+## trade or seizure), so no hand changes size and the public counts stay true. A kitty
+## card that leaves the landlord's hand is no longer known to be there, so it leaves the
+## public kitty too. Returns UNKNOWN_CARD or REPEATED_CARD and changes nothing when a
+## card is not in its seat's hand.
+func trade(seat_a: int, ids_a: Array[int], seat_b: int, ids_b: Array[int]) -> Reason:
+	if is_over():
+		return Reason.ROUND_OVER
+	if ids_a.size() != ids_b.size() or seat_a == seat_b:
+		return Reason.ILLEGAL_PLAY
+	for side: Array in [[seat_a, ids_a], [seat_b, ids_b]]:
+		var seen: Dictionary[int, bool] = {}
+		for card_id: int in side[1]:
+			if seen.has(card_id):
+				return Reason.REPEATED_CARD
+			if _hands[side[0]].find(card_id) == null:
+				return Reason.UNKNOWN_CARD
+			seen[card_id] = true
+	var from_a: Array[CardInstance] = _take(seat_a, ids_a)
+	var from_b: Array[CardInstance] = _take(seat_b, ids_b)
+	for card: CardInstance in from_a:
+		_hands[seat_b].add(card)
+	for card: CardInstance in from_b:
+		_hands[seat_a].add(card)
+	return Reason.OK
+
+
+## Hands the live card in a seat's hand to edit, which marks it through CardModifiers.
+## False when the seat does not hold the card.
+func mark(seat: int, card_id: int, edit: Callable) -> bool:
+	var card: CardInstance = _hands[seat].find(card_id)
+	if card == null:
+		return false
+	edit.call(card)
+	return true
+
+
+func _take(seat: int, card_ids: Array[int]) -> Array[CardInstance]:
+	var taken: Array[CardInstance] = []
+	for card_id: int in card_ids:
+		taken.append(_hands[seat].remove(card_id))
+		if seat == _landlord:
+			for index: int in range(_kitty.size() - 1, -1, -1):
+				if _kitty[index].id() == card_id:
+					_kitty.remove_at(index)
+	return taken
+
+
 func is_over() -> bool:
 	return _winner != Seats.NONE
 

@@ -15,9 +15,13 @@ const ISSUE_SECONDS: float = 4.0
 const EDGE_INSET: float = 6.0
 
 var _app: DemoApp
+var _was_size: Vector2i
 
 
 func before_test() -> void:
+	# The layout is measured at the size the store is drawn for.
+	_was_size = get_tree().root.size
+	get_tree().root.size = Vector2i(1920, 1080)
 	Saves.use_run_path(SAVE_PATH)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
@@ -31,6 +35,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	get_tree().root.size = _was_size
 	Settings.set_value("reduced_motion", false)
 	Saves.run_service().delete()
 
@@ -122,6 +127,7 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 	assert_bool(store.is_issuing()).is_true()
 	assert_bool(row.seal().visible).is_true()
 	assert_str(row.seal().word()).is_equal(tr("directive.issued").to_upper())
+	_check_seal_clear(row, ticket)
 	# A reroll waits for the issue: the counter keeps its stock and its coupons.
 	var coupons: int = _app.controller.state_copy().coupons
 	store.call("_on_reroll")
@@ -137,6 +143,28 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 	await await_idle_frame()
 	assert_array(Array(_texts(row))).contains([tr("directive.issued")])
 	assert_int(_documents(row).size()).is_equal(stock.size())
+
+
+## At 1920x1080 the seal presses on the spent Buy ticket, at the document's top right,
+## and covers neither the name nor a Rate line.
+func _check_seal_clear(row: DirectiveRow, ticket: Button) -> void:
+	assert_vector(get_tree().root.get_visible_rect().size).is_equal(Vector2(1920, 1080))
+	var seal: Rect2 = row.seal().get_global_rect()
+	var middle: Vector2 = ticket.get_global_rect().get_center()
+	assert_bool(seal.has_point(middle)).is_true()
+	var document: Control = ticket.get_parent()
+	while not document is PanelContainer:
+		document = document.get_parent()
+	var labels: Array[Node] = document.find_children("*", "Label", true, false)
+	for node: Node in labels:
+		var label: Label = node as Label
+		if label.text.is_empty() or label.get_parent() == ticket:
+			continue
+		var font: Font = label.get_theme_font("font")
+		var font_size: int = label.get_theme_font_size("font_size")
+		var wide: float = font.get_string_size(label.text, 0, -1, font_size).x
+		var printed: Rect2 = Rect2(label.global_position, Vector2(wide, label.size.y))
+		assert_bool(seal.intersects(printed)).override_failure_message(label.text).is_false()
 
 
 func test_reduced_motion_issues_at_once() -> void:

@@ -45,6 +45,9 @@ func act(loop: RunLoop) -> bool:
 		RunLoop.Awaiting.PLAYER_NEED:
 			commands.append("need %d" % NEED)
 			return loop.player_need(NEED) == RunLoop.Reason.OK
+		RunLoop.Awaiting.PLAYER_OPENING:
+			commands.append("begin")
+			return loop.player_begin() == RunLoop.Reason.OK
 	return false
 
 

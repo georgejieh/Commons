@@ -40,6 +40,9 @@ func show_debuffs(controller: RunController) -> void:
 		var name: String = _escape(tr("modifier.%s.name" % modifier_id))
 		var rule: String = Keywords.mark(controller.modifier_text(modifier_id))
 		var row: String = "[b][color=#%s]%s[/color][/b]  %s" % [NAME_HEX, name, rule]
+		# Appeal lifts this round's debuff: it stays listed, struck through (ADR 0021).
+		if modifier_id == controller.lifted_debuff():
+			row = "[s]%s[/s]  %s" % [row, _escape(tr("table.debuff_lifted"))]
 		if controller.is_table_wide(modifier_id):
 			everyone.append(row)
 		else:
@@ -56,6 +59,13 @@ func _add_group(rows: PackedStringArray, head_key: String, group: PackedStringAr
 		return
 	rows.append("[font_size=%d]%s[/font_size]" % [HEAD_SIZE, tr(head_key).to_upper()])
 	rows.append_array(group)
+
+
+## Strikes the lifted debuff off the strip now, pressed like ink when animate is set.
+func strike(controller: RunController, animate: bool) -> void:
+	show_debuffs(controller)
+	if animate:
+		UiMotion.stamp(self)
 
 
 ## The plain text shown, for tests.

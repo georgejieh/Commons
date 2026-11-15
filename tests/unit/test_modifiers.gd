@@ -105,6 +105,7 @@ func test_every_definition_in_data_is_valid() -> void:
 	var keys: Dictionary[String, bool] = _string_keys()
 	var checked: int = 0
 	var directives: int = 0
+	var campaigns: int = 0
 	for path: String in _resources_under(DATA):
 		var resource: Resource = ResourceLoader.load(path)
 		var definition: ModifierDef = resource as ModifierDef
@@ -115,9 +116,42 @@ func test_every_definition_in_data_is_valid() -> void:
 		if directive != null:
 			directives += 1
 			assert_array(Array(ModifierValidator.validate_directive(directive, keys))).is_empty()
+		var campaign: CampaignDef = resource as CampaignDef
+		if campaign != null:
+			campaigns += 1
+			assert_array(Array(ModifierValidator.validate_campaign(campaign, keys))).is_empty()
 	assert_bool(checked >= 4).is_true()
-	# ADR 0021's six Directives (P4.11).
+	# ADR 0021's six Directives and eight Campaigns (P4.11).
 	assert_int(directives).is_equal(6)
+	assert_int(campaigns).is_equal(8)
+
+
+## Each reason a Campaign can be refused has its own line for the tray to show.
+func test_every_campaign_refusal_has_a_reason_string() -> void:
+	var keys: Dictionary[String, bool] = _string_keys()
+	for reason: int in CampaignEffect.Reason.values():
+		if reason == CampaignEffect.Reason.OK:
+			continue
+		var key: String = RunController.campaign_reason_key(reason)
+		assert_bool(keys.has(key)).override_failure_message(key).is_true()
+
+
+func test_the_campaign_validator_catches_each_kind_of_bad_definition() -> void:
+	var keys: Dictionary[String, bool] = _string_keys()
+	var good: CampaignDef = ResourceLoader.load(DATA + "modifiers/campaigns/grain_loan.tres")
+	var cases: Dictionary[String, Callable] = {
+		"missing string key": func(bad: CampaignDef) -> void: bad.prompt_key = "nope",
+		"bad cost": func(bad: CampaignDef) -> void: bad.cost = 0,
+		"bad unlock tier": func(bad: CampaignDef) -> void: bad.unlock_tier = -1,
+		"bad card count": func(bad: CampaignDef) -> void: bad.min_cards = 3,
+		"missing parameter": func(bad: CampaignDef) -> void: bad.parameters = {},
+		"no effect script": func(bad: CampaignDef) -> void: bad.id = "nope",
+	}
+	for problem: String in cases:
+		var bad: CampaignDef = good.duplicate()
+		cases[problem].call(bad)
+		var found: String = "\n".join(ModifierValidator.validate_campaign(bad, keys))
+		assert_str(found).contains(problem)
 
 
 func test_the_validator_catches_each_kind_of_bad_definition() -> void:

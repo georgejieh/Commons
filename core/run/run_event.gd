@@ -42,6 +42,24 @@ enum Type {
 	AUDIT_ROLLED,
 	## A met Quota beat its target by a step or more: value is the steps earned.
 	OVERFULFILLED,
+	## The player used a held Campaign (ADR 0021): value is its slot, text its ID.
+	CAMPAIGN_USED,
+	## Cards in the player's hand took a mark for the run: value 1 for Model, 0 for the
+	## player's stamp; text is the card IDs, joined by commas.
+	CARDS_MARKED,
+	## Cards moved from seat to the seat in value mid-round; text is their IDs.
+	CARDS_MOVED,
+	## An Anonymous Letter makes seat pass the play it was answering.
+	PASS_FORCED,
+	## An Anonymous Letter was spent for nothing: seat is the seat it was sent to.
+	LETTER_LAPSED,
+	## Overfulfillment settled the landlord's bank: value 1 when it doubled, 0 when it was
+	## voided; amount is what is banked.
+	STAKE_SETTLED,
+	## Appeal lifted this round's debuff: value is the round, text the debuff ID.
+	DEBUFF_LIFTED,
+	## The player gained coupons outside a Set's reward: value is how many.
+	COUPONS_GAINED,
 }
 
 var type: Type

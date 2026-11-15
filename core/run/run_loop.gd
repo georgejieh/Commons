@@ -18,6 +18,9 @@ enum Awaiting {
 	SHOP,
 	RUN_OVER,
 	REEDUCATION,
+	## Before the first play, a peasant player holding a Campaign for that moment may use
+	## it, then plays on with player_begin() (ADR 0021).
+	PLAYER_OPENING,
 }
 enum Reason { OK, NOT_AWAITED, ILLEGAL }
 
@@ -52,6 +55,9 @@ var shop: RunShop
 var market: RunShop
 ## The black market's cards for the private plot.
 var stall: PlotStall
+## The player's Campaigns and what they hold in force this round. Use them through the
+## commands.
+var campaigns: RunCampaigns
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -94,11 +100,21 @@ func _init(
 		DEFAULT_SHOP,
 		DEFAULT_CADRES.cadres,
 		meters.rationing_shop_cut,
-		DEFAULT_DIRECTIVES.directives
+		DEFAULT_DIRECTIVES.directives,
+		RunCampaigns.STORE_POOL.campaigns
 	)
-	market = RunShop.new(state, DEFAULT_BLACK_MARKET, DEFAULT_MARKET.cadres)
+	var no_directives: Array[DirectiveDef] = []
+	market = RunShop.new(
+		state,
+		DEFAULT_BLACK_MARKET,
+		DEFAULT_MARKET.cadres,
+		0,
+		no_directives,
+		RunCampaigns.MARKET_POOL.campaigns
+	)
 	stall = PlotStall.new(state, DEFAULT_PLOT_UPGRADES, params)
 	_table = SeatRules.new(_stack)
+	campaigns = RunCampaigns.new(state, _stack, _table, meters, params, set_log, PLAYER)
 	_scoring = RoundScoring.new(state.hand_levels, _stack)
 
 
@@ -208,6 +224,7 @@ func resume_at_checkpoint() -> void:
 ## Starts the round state.round_index names.
 func _start_round() -> void:
 	set_log.start_round()
+	campaigns.start_round()
 	_rebuild_modifiers()
 	_seat = LandlordSeat.new()
 	_seat.assign(state.landlord_seat)
@@ -262,7 +279,7 @@ func player_swap(hand_ids: Array[int], plot_ids: Array[int]) -> Reason:
 	record.add({"type": "swap", "hand": hand_ids.duplicate(), "plot": plot_ids.duplicate()})
 	PlotSwap.apply(_round, PLAYER, state, hand_ids, plot_ids)
 	set_log.add(RunEvent.new(RunEvent.Type.SWAPPED, PLAYER, hand_ids.size()))
-	_awaiting = Awaiting.NOTHING
+	_awaiting = _opening()
 	advance()
 	return Reason.OK
 
@@ -275,9 +292,67 @@ func player_play(card_ids: Array[int]) -> Reason:
 		return Reason.ILLEGAL
 	record.add({"type": "play", "cards": card_ids.duplicate()})
 	_awaiting = Awaiting.NOTHING
-	_after_action()
+	_collect_round_events()
+	# An Anonymous Letter in force acts on this play before the round can end.
+	campaigns.after_player_play(card_ids.is_empty(), _round)
+	if _round.is_over():
+		_finish_round()
 	advance()
 	return Reason.OK
+
+
+## Uses the held Campaign in slot, on the chosen hand cards when it asks for any. A
+## refused use changes nothing; campaign_reason() says why.
+func player_campaign(slot: int, card_ids: Array[int]) -> Reason:
+	var moment: CampaignContext.Moment = _campaign_moment()
+	if moment == CampaignContext.Moment.ELSEWHERE:
+		return Reason.NOT_AWAITED
+	if campaigns.check(slot, card_ids, moment, _round) != CampaignEffect.Reason.OK:
+		return Reason.ILLEGAL
+	record.add({"type": "campaign", "slot": slot, "cards": card_ids.duplicate()})
+	campaigns.use(slot, card_ids, moment, _round)
+	if moment == CampaignContext.Moment.SHOP:
+		_end_if_dead()
+	elif moment == CampaignContext.Moment.OPENING and not campaigns.wants_opening(_round):
+		_awaiting = Awaiting.NOTHING
+		advance()
+	return Reason.OK
+
+
+## Why the held Campaign in slot cannot be used now on these cards, or OK. With
+## check_cards false the cards are left aside, for a tray that has not chosen yet.
+func campaign_reason(
+	slot: int, card_ids: Array[int] = [], check_cards: bool = true
+) -> CampaignEffect.Reason:
+	var moment: CampaignContext.Moment = _campaign_moment()
+	if not check_cards:
+		return campaigns.availability(slot, moment, _round)
+	return campaigns.check(slot, card_ids, moment, _round)
+
+
+## Leaves the opening for the round's first play.
+func player_begin() -> Reason:
+	if _awaiting != Awaiting.PLAYER_OPENING:
+		return Reason.NOT_AWAITED
+	record.add({"type": "begin"})
+	_awaiting = Awaiting.NOTHING
+	advance()
+	return Reason.OK
+
+
+## Buys the state store's Campaign, or the black market's, which adds Resentment as any
+## purchase there does.
+func player_campaign_buy(slot: int) -> Reason:
+	var act: Callable = shop.campaigns.buy.bind(slot)
+	return _shop_command({"type": "campaign_buy", "slot": slot}, act)
+
+
+func player_market_campaign(slot: int) -> Reason:
+	var act: Callable = market.campaigns.buy.bind(slot)
+	var reason: Reason = _shop_command({"type": "market_campaign", "slot": slot}, act)
+	if reason == Reason.OK:
+		_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+	return reason
 
 
 func player_need(need: int) -> Reason:
@@ -302,8 +377,11 @@ func open_shop() -> Reason:
 	shop.open()
 	market.open()
 	stall.open()
-	# Last on the shop stream, so Directives change none of the stock drawn before them.
+	# Last on the shop stream, so Directives and Campaigns change none of the stock drawn
+	# before them.
 	shop.stock_directives()
+	shop.campaigns.draw()
+	market.campaigns.draw()
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -394,8 +472,9 @@ func _rebuild_modifiers() -> void:
 		var id: String = state.debuff_ladder[round_index]
 		if id == RunState.NO_DEBUFF:
 			continue
-		_stack.add(_pool_by_id[id], PLAYER)
+		var entry: ActiveModifier = _stack.add(_pool_by_id[id], PLAYER)
 		if round_index == state.round_index:
+			campaigns.flags.round_debuff = entry
 			set_log.add(RunEvent.new(RunEvent.Type.DEBUFF_ADDED, PLAYER, round_index, 0.0, id))
 	if state.boss_id != RunState.NO_BOSS:
 		_stack.add(_pool_by_id[state.boss_id], PLAYER)
@@ -459,6 +538,26 @@ func _begin_play() -> void:
 	_create_round()
 	if not state.inventory.plot.is_empty() and PlotSwap.swaps(state, _params) > 0:
 		_awaiting = Awaiting.PLAYER_SWAP
+	else:
+		_awaiting = _opening()
+
+
+## A peasant player holding a Campaign for the opening is asked before the first play.
+func _opening() -> Awaiting:
+	return Awaiting.PLAYER_OPENING if campaigns.wants_opening(_round) else Awaiting.NOTHING
+
+
+## Where the run stands for a Campaign: the opening, the player's turn, a shop or
+## elsewhere.
+func _campaign_moment() -> CampaignContext.Moment:
+	match _awaiting:
+		Awaiting.PLAYER_OPENING:
+			return CampaignContext.Moment.OPENING
+		Awaiting.PLAYER_PLAY:
+			return CampaignContext.Moment.TURN
+		Awaiting.SHOP:
+			return CampaignContext.Moment.SHOP
+	return CampaignContext.Moment.ELSEWHERE
 
 
 func _create_round() -> void:
@@ -474,6 +573,10 @@ func _bot_play() -> void:
 	var seat: int = _round.seat_to_act()
 	if seat == PLAYER:
 		_awaiting = Awaiting.PLAYER_PLAY
+		return
+	if campaigns.forces_pass(seat, _round):
+		_round.apply(RoundAction.new(seat))
+		_after_action()
 		return
 	var legal: Array[Pattern] = _round.legal_moves()
 	var play: BotPlay = Bot.decide_play(
@@ -529,6 +632,7 @@ func _finish_round() -> void:
 	var totals: PackedFloat64Array = RoundTotals.totals(
 		_scoring.scores(), landlord, winner, finish, _table.rules_for(landlord)
 	)
+	campaigns.settle(totals, landlord, winner)
 	RoundBanking.bank(state, totals, PLAYER, set_log.events())
 	if landlord != PLAYER:
 		_awaiting = Awaiting.PLAYER_NEED
@@ -579,6 +683,8 @@ func _end_round() -> void:
 	state.landlord_seat = _seat.holder()
 	var kept: RunEvent.Type = RunEvent.Type.SEAT_KEPT if landlord_won else RunEvent.Type.SEAT_LOST
 	set_log.add(RunEvent.new(kept, _round.landlord()))
+	# What a Campaign held in force ends with its round, whatever comes next.
+	campaigns.start_round()
 	_round = null
 	_deal = null
 	state.round_index += 1

@@ -15,6 +15,10 @@ const SETTLE_SECONDS: float = 1.2
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
 const SAVE_PATH: String = "user://playtest/run.json"
+## The Campaigns that mark cards, one of which the table photographs in use.
+const MARKING: Array[String] = ["model_harvest", "registration_drive"]
+## Corruption stages the dice bowl is photographed at, settled on a 1 and a 4.
+const BOWL_STAGES: Array[int] = [0, 3, 6, 9]
 
 var _out: String = "res://reports/playtest"
 var _rounds_wanted: int = 6
@@ -29,6 +33,9 @@ var _toured: bool = false
 var _resumed: bool = false
 var _bought: int = 0
 var _issued: bool = false
+var _campaign_bought: bool = false
+var _campaign_used: bool = false
+var _opening_shot: bool = false
 
 
 func _initialize() -> void:
@@ -89,6 +96,7 @@ func _step() -> void:
 			await _shot("store")
 			await _buy_one()
 			await _issue_one()
+			await _buy_campaign()
 			await _click_button_with_text(tr("market.open"))
 			await _shot("black_market")
 			await _click_button_with_text(tr("market.back"))
@@ -138,6 +146,13 @@ func _table_step() -> void:
 			await _shot("round%d_audit" % _rounds_seen)
 		3:
 			await _play_turn(table, controller)
+		9:
+			# The opening before the first play, when a held Campaign could be used.
+			if not _opening_shot:
+				_opening_shot = true
+				await _shot("round%d_opening" % _rounds_seen)
+			var opening_bar: Object = table.call("actions")
+			await _press(opening_bar.get("play_on"))
 
 
 func _play_turn(table: Node, controller: Node) -> void:
@@ -148,6 +163,10 @@ func _play_turn(table: Node, controller: Node) -> void:
 	if not _toured:
 		_toured = true
 		await _tour(table)
+	if _campaign_bought and not _campaign_used:
+		_campaign_used = true
+		await _campaign_turn(table, controller)
+		return
 	var ids: Array[int] = _driver.call("choose_play", controller)
 	var actions: Object = table.call("actions")
 	if ids.is_empty():
@@ -207,12 +226,6 @@ func _issue_one() -> void:
 		return
 	_issued = true
 	await _shot("store_directives")
-	var seal: Control = row.call("seal")
-	var first: Control = row.get_child(1)
-	seal.global_position = first.global_position + first.size / 2.0 - seal.size / 2.0
-	seal.call("press")
-	await _snap("store_directive_seal")
-	seal.hide()
 	for child: Node in row.find_children("*", "Button", true, false):
 		var button: Button = child as Button
 		if button.theme_type_variation == "CouponButton" and not button.disabled:
@@ -222,6 +235,84 @@ func _issue_one() -> void:
 			await _frames(30)
 			await _shot("store_issued")
 			return
+
+
+## Buys the state store's Campaign and photographs its leaflet flying into the tray on
+## the shelf. Once a run.
+func _buy_campaign() -> void:
+	if _campaign_bought:
+		return
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	var stall: Object = screen.get("_campaign_stall")
+	var offers: Control = stall.get("_offers")
+	for child: Node in offers.find_children("*", "Button", true, false):
+		var button: Button = child as Button
+		if not button.disabled:
+			await _shot("store_campaign_offer")
+			await _press(button)
+			for frame: int in 3:
+				await _snap("store_campaign_buying_%d" % frame)
+			await _frames(30)
+			_campaign_bought = true
+			await _shot("store_campaign_tray")
+			return
+
+
+## On the first turn after a Campaign was bought: the tray, a marking Campaign armed with
+## two cards chosen, the marks pressed on, and the marked hand. The store sells whatever
+## it draws, so when the bought one marks no cards this hands the player a Model Harvest
+## through the run's state, which only this development tool does.
+func _campaign_turn(table: Node, controller: Node) -> void:
+	var held: Array = controller.call("held_campaigns")
+	var slot: int = -1
+	for index: int in held.size():
+		if MARKING.has(held[index]):
+			slot = index
+	if slot < 0:
+		var loop: Object = controller.get("_loop")
+		var state: Object = loop.get("state")
+		var inventory: Object = state.get("inventory")
+		var consumables: Array[String] = inventory.get("consumables")
+		if consumables.size() >= int(controller.call("campaign_slots")):
+			consumables.pop_back()
+		consumables.append("model_harvest")
+		slot = consumables.size() - 1
+		var campaigns_now: Object = table.get("_campaigns")
+		campaigns_now.call("refresh")
+	var campaigns: Object = table.get("_campaigns")
+	var tray: Object = campaigns.get("tray")
+	await _shot("table_campaign_tray")
+	await _mouse_click(tray.call("slot_center", slot))
+	var hand: Object = _app.get("hand")
+	var cards: Array = hand.call("cards")
+	for index: int in mini(2, cards.size()):
+		var card: CardInstance = cards[index]
+		await _click_card(table, card.id())
+	await _shot("table_campaign_armed")
+	await _press(tray.get("use"))
+	for frame: int in 4:
+		await _snap("table_campaign_marking_%d" % frame)
+	await create_timer(2.0).timeout
+	await _shot("table_campaign_marked")
+
+
+## The dice bowl settled on a 1 and a 4, so the red 1 and its audit ring show, at
+## corruption stages 0, 3, 6 and 9. The stage override is put back after.
+func _bowl_frames(table: Node) -> void:
+	var moments: Object = table.get("_moments")
+	var bowl: DiceBowl = moments.get("dice")
+	var seats: Array[int] = [1, 2]
+	var faces: Array[int] = [1, 4]
+	var names: Array[String] = ["Wang", "Zhao"]
+	var was: int = ArtStages.stage_override
+	for stage: int in BOWL_STAGES:
+		ArtStages.stage_override = stage
+		var seconds: float = bowl.roll(seats, faces, 1, names)
+		await create_timer(seconds + 0.2).timeout
+		await _snap("moment_bowl_stage_%d" % stage)
+		bowl.dismiss()
+	ArtStages.stage_override = was
 
 
 ## Menu, Return to title, then Continue: the run must pick up on the same bid.
@@ -292,6 +383,7 @@ func _moment_frames(table: Node) -> void:
 	for frame: int in 4:
 		await _snap("moment_tally_%d" % frame)
 	await create_timer(2.0).timeout
+	await _bowl_frames(table)
 
 
 ## Presses every table control once and photographs the result.

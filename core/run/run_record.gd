@@ -19,6 +19,10 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"upgrade": ["kind"],
 	"plot_card": ["slot"],
 	"directive": ["slot"],
+	"campaign": ["slot", "cards"],
+	"begin": [],
+	"campaign_buy": ["slot"],
+	"market_campaign": ["slot"],
 }
 
 var checkpoint: Dictionary = {}
@@ -182,6 +186,14 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_plot_card(int(command["slot"]))
 		"directive":
 			return loop.player_directive(int(command["slot"]))
+		"campaign":
+			return loop.player_campaign(int(command["slot"]), _ids(command["cards"]))
+		"begin":
+			return loop.player_begin()
+		"campaign_buy":
+			return loop.player_campaign_buy(int(command["slot"]))
+		"market_campaign":
+			return loop.player_market_campaign(int(command["slot"]))
 	return RunLoop.Reason.ILLEGAL
 
 

@@ -10,6 +10,8 @@ const PRIVATE_CADRE: String = "private_cadre"
 const STAMPED_CARD: String = "stamped_card"
 const GRAB: String = "grab"
 const OVERFULFILMENT: String = "overfulfilment"
+## A private Campaign used (ADR 0021).
+const CAMPAIGN: String = "campaign"
 
 
 static func add(

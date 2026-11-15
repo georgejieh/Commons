@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CampaignDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/campaign_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "seizure_notice"
+tag = 1
+cost = 4
+unlock_tier = 3
+when = 0
+min_cards = 0
+max_cards = 0
+parameters = Dictionary[String, int]({"resentment": 4})
+name_key = "campaign.seizure_notice.name"
+text_key = "campaign.seizure_notice.text"
+prompt_key = "campaign.seizure_notice.prompt"

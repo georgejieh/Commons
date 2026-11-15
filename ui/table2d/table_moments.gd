@@ -39,6 +39,8 @@ var dice: DiceBowl = DiceBowl.new()
 var fx: TableFx = TableFx.new()
 ## The bar the Quota and meters are shown on, when the table has one.
 var hud: TableHud = null
+## A seat an Anonymous Letter makes pass next: its pass is tagged as forced.
+var forced_seat: int = Seats.NONE
 
 var _ledger: Ledger
 var _pile: TrickPile
@@ -155,6 +157,15 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 				_on_set_ended(event.value == 1, event.amount)
 
 
+## The villagers' seats and every seat's name, for the moments played beside these.
+func seats() -> Dictionary[int, SeatPanel]:
+	return _seats
+
+
+func names() -> Dictionary[int, String]:
+	return _names
+
+
 ## What a seat last did in the bidding, as a string key, or "" outside it.
 func bid_key(seat: int) -> String:
 	return _bids.get(seat, "")
@@ -185,8 +196,10 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 			if not quiet:
 				_show_kitty(event.seat, event.card_ids)
 		RoundEvent.Type.PASSED:
+			var forced: bool = event.seat == forced_seat
+			forced_seat = Seats.NONE
 			if not quiet and _seats.has(event.seat):
-				_seats[event.seat].flash(tr("stamp.pass"))
+				_seats[event.seat].flash(tr("campaign.forced" if forced else "stamp.pass"))
 		RoundEvent.Type.PLAYED:
 			var type: Pattern.Type = event.pattern.type
 			if quiet or (type != Pattern.Type.BOMB and type != Pattern.Type.ROCKET):
@@ -328,6 +341,11 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 	_kitty.tween_callback(_kitty_label.hide)
 	# A little past the sweep, so the landlord's first play never lands under it.
 	_player.hold(KITTY_SHOW + TableMotion.PRESETS.sweep + KITTY_MARGIN)
+
+
+## Shakes the table a little, for a beat played on it.
+func bump(trauma: float) -> void:
+	_motion.bump(trauma)
 
 
 ## A play lands with a thump that grows with its size.

@@ -6,7 +6,8 @@ extends Control
 ## the plot can be enlarged, and every purchase adds Resentment, which the screen
 ## counts. Every purchase goes through the run controller. A purchase is acted out: the
 ## card is sealed, then flies down to its place on your board. The state store also
-## issues Directives, in their own column beside the Cadres.
+## issues Directives, in their own column beside the Cadres, and each shop offers a
+## Campaign, held in a tray on the shelf beside the board (CampaignStall).
 
 ## Modifier names are long, so they print a step below the title size (the set intro's
 ## debuff card uses it).
@@ -50,6 +51,7 @@ var _reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _shown_coupons: float = 0.0
 ## The state store's Directives; the black market issues none.
 var _directives: DirectiveRow = null
+var _campaign_stall: CampaignStall = CampaignStall.new()
 
 
 func open(app: DemoApp) -> void:
@@ -79,17 +81,19 @@ func open(app: DemoApp) -> void:
 	if market:
 		column.add_child(_warning())
 	_counter.add_theme_constant_override("separation", 28)
+	_campaign_stall.setup(app, market, is_issuing)
+	_campaign_stall.spent.connect(_on_directive_spent)
 	if market:
 		_stall = VBoxContainer.new()
 		_stall.add_theme_constant_override("separation", 10)
-		column.add_child(ScreenKit.row([_counter, _stall], 48))
+		column.add_child(ScreenKit.row([_counter, _campaign_stall.beside(_stall)], 48))
 	else:
 		# Beside the Cadres, as the market's plot cards are: below them is no room at 16:9.
 		_directives = DirectiveRow.new()
 		_directives.setup(app.controller, _desk, is_buying)
 		_directives.spent.connect(_on_directive_spent)
 		_directives.settled.connect(_refresh)
-		column.add_child(ScreenKit.row([_counter, _directives], 48))
+		column.add_child(ScreenKit.row([_counter, _campaign_stall.beside(_directives)], 48))
 	_reroll.pressed.connect(_on_reroll)
 	var leave: Button = ScreenKit.button(
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
@@ -109,7 +113,7 @@ func open(app: DemoApp) -> void:
 	# A paper chip, so the line reads over the mural.
 	var chip: VBoxContainer = ScreenKit.card(Vector2(0, 0))
 	chip.add_child(ScreenKit.eyebrow(tr("store.shelf")))
-	chip.add_child(ScreenKit.row([_board, _reading], 24))
+	chip.add_child(ScreenKit.row([_board, _campaign_stall.tray, _reading], 24))
 	var chip_panel: Control = ScreenKit.card_panel(chip)
 	chip_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	column.add_child(chip_panel)
@@ -149,6 +153,7 @@ func _refresh() -> void:
 	else:
 		_directives.show_offers()
 	_board.show_cadres(controller)
+	_campaign_stall.show_offer()
 
 
 func _item(slot: int, cadre_id: String) -> Control:
@@ -247,7 +252,7 @@ func is_buying() -> bool:
 
 ## True while a Cadre purchase or a Directive's issue is being acted out.
 func is_issuing() -> bool:
-	return _busy or (_directives != null and _directives.is_busy())
+	return _busy or _campaign_stall.is_busy() or (_directives != null and _directives.is_busy())
 
 
 ## A Directive was paid for: the coupons roll down while its document is acted out.
@@ -301,7 +306,7 @@ func _show_upgrades() -> void:
 		var ticket: Button = ScreenKit.button(text, CommonsTheme.COUPON)
 		ticket.disabled = not _desk.can_upgrade(kind)
 		ticket.tooltip_text = Keywords.wrapped(tr("market.upgrade.%s.tip" % kind))
-		ticket.pressed.connect(_upgrade.bind(kind))
+		ticket.pressed.connect(_market_buy.bind(_app.controller.upgrade.bind(kind)))
 		_upgrades.add_child(ticket)
 
 
@@ -337,22 +342,15 @@ func _show_stall() -> void:
 		buy.custom_minimum_size = Vector2(view.custom_minimum_size.x, 0)
 		buy.disabled = card == null or not _desk.can_buy_plot_card(slot)
 		buy.tooltip_text = Keywords.wrapped(tr("market.plot.tip"))
-		buy.pressed.connect(_buy_card.bind(slot))
+		buy.pressed.connect(_market_buy.bind(_app.controller.plot_card.bind(slot)))
 		item.add_child(buy)
 
 
-func _buy_card(slot: int) -> void:
+## A plot card or an upgrade from the black market, bought by act.
+func _market_buy(act: Callable) -> void:
 	if is_issuing():
 		return
-	_app.controller.plot_card(slot)
-	Audio.play(AudioEvents.STORE_BUY)
-	_refresh()
-
-
-func _upgrade(kind: String) -> void:
-	if is_issuing():
-		return
-	_app.controller.upgrade(kind)
+	act.call()
 	Audio.play(AudioEvents.STORE_BUY)
 	_refresh()
 

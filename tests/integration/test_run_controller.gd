@@ -18,6 +18,9 @@ const UI_ACTIONS: Array[String] = [
 	"upgrade",
 	"plot_card",
 	"directive",
+	"campaign",
+	"begin_round",
+	"campaign_buy",
 	"leave_store",
 ]
 

@@ -50,6 +50,7 @@ var _dread: DreadLayers = DreadLayers.new()
 var _dressing: DreadDressing = DreadDressing.new()
 var _surface: TextureRect
 var _moments: TableMoments = TableMoments.new()
+var _campaigns: TableCampaigns = TableCampaigns.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -92,6 +93,7 @@ func _ready() -> void:
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
 	_place(_pile, Vector2(PLAY_CENTER - 460.0, 380), Vector2(920, 300))
+	_campaigns.place(self)
 	# The need panel, sheets and banner all lie over the pile.
 	move_child(_pile, _need_panel.get_index())
 
@@ -132,6 +134,8 @@ func open(app: DemoApp) -> void:
 		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
 	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
 	_moments.hud = _hud
+	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
+	_campaigns.attach(_pool, _debuffs)
 	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
 	_player.holds = {
 		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
@@ -143,6 +147,7 @@ func open(app: DemoApp) -> void:
 	_pause.dossier.connect(func() -> void: app.show_screen("dossier"))
 	_pause.last_round.connect(func() -> void: app.show_screen("round_summary"))
 	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
+	_input.tray = _campaigns.tray
 	_setup_dread(app)
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
@@ -227,6 +232,8 @@ func _on_event(event: RunEvent) -> void:
 	if not _replaying:
 		TableSounds.play(event, _landlord, _controller)
 		_speech.on_event(event)
+	# Campaigns first, so a forced pass is tagged as one when its pass arrives.
+	_campaigns.on_event(event, _replaying or _player.flushing)
 	_moments.on_event(event, _replaying or _player.flushing)
 	match event.type:
 		RunEvent.Type.ROUND:
@@ -305,6 +312,7 @@ func _on_drained() -> void:
 		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.audit_chance())
 	_hand.refresh()
 	_hand_view.show_cards()
+	_campaigns.refresh()
 	_commands.refresh()
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)

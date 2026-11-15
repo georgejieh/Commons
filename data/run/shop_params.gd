@@ -8,6 +8,10 @@ extends Resource
 @export var directive_slots: int = 0
 ## Cadres the player can hold at once.
 @export var cadre_slots: int = 5
+## Campaigns offered per visit from this counter's pool, and how many the player can
+## hold at once (ADR 0021).
+@export var campaign_offers: int = 0
+@export var campaign_slots: int = 2
 ## Coupons for the first reroll, and how much each later one adds.
 @export var reroll_base: int = 2
 @export var reroll_step: int = 1

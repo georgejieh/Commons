@@ -513,7 +513,7 @@ intro.norm,Norm raised {percent}%
 keyword.norm.name,Norm
 keyword.norm.text,Norm: beating a Quota by a quarter or more pays extra coupons and raises every later Quota.
 keyword.stamp.name,Stamp
-keyword.stamp.text,"Stamp: a card marked as yours. Red Ink and Class Label act on it, and scoring one adds 1 Resentment."
+keyword.stamp.text,"Stamp: a card marked as yours. Red Ink and Class Label act on it, and scoring one adds Resentment."
 keyword.model.name,Model
 keyword.model.text,Model: a card that scores double Grain for whoever scores it.
 directive.on_hand_tools.name,On Hand Tools
@@ -535,3 +535,61 @@ directive.issued,Issued
 cheat.rate,Rate {rate}
 cheat.rate.level,"Rate {rate}, level {level}"
 directive.rate.now,{type}: Rate {rate}
+campaign.model_harvest.name,Model Harvest
+campaign.model_harvest.text,"Mark {min_cards} or {max_cards} cards in your hand as Model, for the rest of the run. Use on your turn."
+campaign.model_harvest.prompt,Choose {min_cards} or {max_cards} cards to make Model.
+campaign.mutual_aid.name,Mutual Aid
+campaign.mutual_aid.text,"As a peasant, before the first play: give your teammate {max_cards} cards. They give you their {max_cards} lowest cards that are not in a pair or better."
+campaign.mutual_aid.prompt,Choose {max_cards} cards to give your teammate.
+campaign.overfulfillment.name,Overfulfillment
+campaign.overfulfillment.text,"As landlord, after you take the kitty and before the first play: win this round and your total is multiplied by {win_times}. Lose it and you score nothing for the round."
+campaign.overfulfillment.prompt,Press Use to stake this round.
+campaign.appeal.name,Appeal
+campaign.appeal.text,"Before the first play: lifts this round's debuff. A boss's rule stays."
+campaign.appeal.prompt,Press Use to lift this round's debuff.
+campaign.grain_loan.name,Grain Loan
+campaign.grain_loan.text,"Gain {coupons} coupons. Famine rises {famine}. Use on your turn, or in either shop."
+campaign.grain_loan.prompt,Press Use to take {coupons} coupons for {famine} Famine.
+campaign.registration_drive.name,Registration Drive
+campaign.registration_drive.text,"Stamp {min_cards} to {max_cards} cards in your hand as yours, for the rest of the run. Use on your turn."
+campaign.registration_drive.prompt,Choose {min_cards} to {max_cards} cards to stamp as yours.
+campaign.seizure_notice.name,Seizure Notice
+campaign.seizure_notice.text,"Take the highest card from the opponent holding the most cards, and give them your lowest. Adds {resentment} Resentment. Use on your turn. Both hands must hold 2 or more cards."
+campaign.seizure_notice.prompt,Press Use to seize a card.
+campaign.anonymous_letter.name,Anonymous Letter
+campaign.anonymous_letter.text,"Use on your turn, before you play: the next player must pass on your play. If you pass, or your play ends the round, it is wasted. Adds {resentment} Resentment."
+campaign.anonymous_letter.prompt,"Press Use, then play. The next player must pass."
+campaign.reason.no_such_slot,This Campaign is no longer held.
+campaign.reason.not_now,It cannot be used at this moment.
+campaign.reason.not_peasant,Only a peasant can use it.
+campaign.reason.not_landlord,Only the landlord can use it.
+campaign.reason.play_started,The round's first play has been made.
+campaign.reason.no_debuff,This round has no debuff to lift.
+campaign.reason.already_used,One is already in use.
+campaign.reason.card_count,Choose as many cards as it asks for.
+campaign.reason.not_in_hand,Choose cards from your hand.
+campaign.reason.already_marked,A chosen card already carries that mark.
+campaign.reason.hand_too_small,Both hands in the trade must hold 2 or more cards.
+campaign.tray,Campaigns
+campaign.use,Use
+campaign.cancel,Cancel
+campaign.empty,Empty
+campaign.eyebrow.collective,Campaign
+campaign.eyebrow.private,Private
+campaign.sealed,Launched
+campaign.opening,"You may use a Campaign before the first play, or play on."
+campaign.forced,Must pass
+campaign.held,You hold {held} of {room} Campaigns.
+campaign.full,You hold as many Campaigns as you can.
+action.play_on,Play on
+callout.seizure,Seized!
+callout.seizure.sub,You take {name}'s highest card
+callout.overfulfil,Overfulfil!
+callout.overfulfil.sub,Win and your bank is multiplied by {times}. Lose and you bank nothing.
+callout.stake.won,Plan overfulfilled
+callout.stake.won.sub,You bank {amount}
+callout.stake.lost,Bank voided
+callout.stake.lost.sub,You bank nothing this round
+round.stake.won,Overfulfillment multiplied your bank to {amount}.
+round.stake.lost,Overfulfillment voided your bank. You banked nothing.
+table.debuff_lifted,lifted by Appeal

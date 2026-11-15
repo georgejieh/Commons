@@ -62,3 +62,28 @@ static func validate_directive(
 			problems.append("%s: bad hand type %d" % [definition.id, type])
 		seen[type] = true
 	return problems
+
+
+## Checks a Campaign (ADR 0021): its strings, a cost, an unlock tier, a card count that
+## a hand can give, an effect script and the parameters it needs.
+static func validate_campaign(
+	definition: CampaignDef, string_keys: Dictionary[String, bool]
+) -> PackedStringArray:
+	var problems: PackedStringArray = []
+	for key: String in [definition.name_key, definition.text_key, definition.prompt_key]:
+		if not string_keys.has(key):
+			problems.append("%s: missing string key %s" % [definition.id, key])
+	if definition.cost <= 0:
+		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
+	if definition.unlock_tier < 0:
+		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	var counts_ok: bool = definition.min_cards >= 0 and definition.min_cards <= definition.max_cards
+	if not counts_ok or definition.max_cards > Dealer.HAND_SIZE:
+		problems.append("%s: bad card count" % definition.id)
+	if not CampaignRegistry.has_effect(definition.id):
+		problems.append("%s: no effect script" % definition.id)
+		return problems
+	for parameter: String in CampaignRegistry.create(definition).required_parameters():
+		if not definition.parameters.has(parameter):
+			problems.append("%s: missing parameter %s" % [definition.id, parameter])
+	return problems

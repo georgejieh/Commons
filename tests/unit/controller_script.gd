@@ -25,6 +25,8 @@ func act(controller: RunController) -> bool:
 			return _play(controller)
 		RunController.AWAIT_NEED:
 			return controller.declare_need(NEED) == RunController.OK
+		RunController.AWAIT_OPENING:
+			return controller.begin_round() == RunController.OK
 	return false
 
 

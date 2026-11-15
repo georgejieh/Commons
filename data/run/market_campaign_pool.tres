@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CampaignPool" format=3]
+
+[ext_resource type="Script" path="res://data/run/campaign_pool.gd" id="1"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/registration_drive.tres" id="2"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/seizure_notice.tres" id="3"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/anonymous_letter.tres" id="4"]
+
+[resource]
+script = ExtResource("1")
+campaigns = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4")])

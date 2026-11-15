@@ -70,6 +70,11 @@ static func declare_need(
 	return true_need + maxi(extra, BotConfig.TABLE.lie_floor)
 
 
+## The card IDs the bot hands its teammate when the player calls Mutual Aid on it.
+static func choose_gift(view: SeatView, table: BotTable, count: int) -> Array[int]:
+	return AidChoice.choose(view, table.rank_map, count)
+
+
 ## A hand split into its fewest plays (P2.2), for a view that sorts cards by group.
 static func suggest_groups(
 	counts: PackedByteArray, table: BotTable, config: BotConfig

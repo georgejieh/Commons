@@ -29,6 +29,9 @@ const COMMANDS: Array[String] = [
 	"upgrade",
 	"plot_card",
 	"directive",
+	"campaign",
+	"begin_round",
+	"campaign_buy",
 	"leave_store",
 ]
 ## What the run waits on, for views that may not name the loop.
@@ -40,6 +43,9 @@ const AWAIT_SET_OVER: int = RunLoop.Awaiting.SET_OVER
 const AWAIT_STORE: int = RunLoop.Awaiting.SHOP
 const AWAIT_RUN_OVER: int = RunLoop.Awaiting.RUN_OVER
 const AWAIT_REEDUCATION: int = RunLoop.Awaiting.REEDUCATION
+const AWAIT_OPENING: int = RunLoop.Awaiting.PLAYER_OPENING
+## A Campaign that can be used now (CampaignEffect.Reason.OK).
+const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
 const OK: int = RunLoop.Reason.OK
 
 var _loop: RunLoop
@@ -193,6 +199,83 @@ func hand_rate(type: int, level: int) -> int:
 
 func max_hand_level() -> int:
 	return Scorer.DEFAULT_PARAMS.max_level
+
+
+## Uses the held Campaign in slot, on the chosen hand cards when it asks for any.
+func campaign(slot: int, card_ids: Array[int] = []) -> int:
+	return _finish("campaign", _loop.player_campaign(slot, card_ids.duplicate()))
+
+
+## Leaves the opening, where a Campaign could be used, for the round's first play.
+func begin_round() -> int:
+	return _finish("begin_round", _loop.player_begin())
+
+
+## Buys the Campaign on the state store's counter, or the black market's.
+func campaign_buy(slot: int, market: bool = false) -> int:
+	if market:
+		return _finish("campaign_buy", _loop.player_market_campaign(slot))
+	return _finish("campaign_buy", _loop.player_campaign_buy(slot))
+
+
+## The Campaigns the player holds, in slot order, and how many they can hold.
+func held_campaigns() -> Array[String]:
+	return _loop.state.inventory.consumables.duplicate()
+
+
+func campaign_slots() -> int:
+	return RunLoop.DEFAULT_SHOP.campaign_slots
+
+
+## Why the held Campaign in slot cannot be used now, as a CampaignEffect.Reason, or
+## CAMPAIGN_OK. With check_cards false the chosen cards are left aside.
+func campaign_reason(slot: int, card_ids: Array[int] = [], check_cards: bool = false) -> int:
+	return _loop.campaign_reason(slot, card_ids.duplicate(), check_cards)
+
+
+## The string key that says why a Campaign is refused, one per reason.
+static func campaign_reason_key(reason: int) -> String:
+	return "campaign.reason." + String(CampaignEffect.Reason.keys()[reason]).to_lower()
+
+
+## A Campaign's name, rules, prompt and card counts, with its numbers filled in.
+func campaign_name(campaign_id: String) -> String:
+	return tr(_campaign(campaign_id).name_key)
+
+
+func campaign_text(campaign_id: String) -> String:
+	var definition: CampaignDef = _campaign(campaign_id)
+	return tr(definition.text_key).format(definition.text_values())
+
+
+func campaign_prompt(campaign_id: String) -> String:
+	var definition: CampaignDef = _campaign(campaign_id)
+	return tr(definition.prompt_key).format(definition.text_values())
+
+
+## The fewest and most hand cards a Campaign asks for, as x and y.
+func campaign_cards(campaign_id: String) -> Vector2i:
+	var definition: CampaignDef = _campaign(campaign_id)
+	return Vector2i(definition.min_cards, definition.max_cards)
+
+
+## One of a Campaign's numbers from its data, or 0.
+func campaign_parameter(campaign_id: String, key: String) -> int:
+	return _campaign(campaign_id).parameters.get(key, 0)
+
+
+func is_private_campaign(campaign_id: String) -> bool:
+	return _campaign(campaign_id).tag == ModifierDef.Tag.PRIVATE
+
+
+## The debuff Appeal lifted this round, or an empty ID.
+func lifted_debuff() -> String:
+	return _loop.campaigns.flags.lifted
+
+
+## The Campaigns on the state store's counter, or the black market's.
+func campaign_shelf(market: bool) -> CampaignShelf:
+	return CampaignShelf.new(_loop.market.campaigns if market else _loop.shop.campaigns)
 
 
 ## The state store's counter, or the black market's, for a screen to read.
@@ -429,6 +512,10 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	_loop.on_boundary = func(at: RunLoop) -> void:
 		_save()
 		_remember(at.flow.state())
+
+
+func _campaign(campaign_id: String) -> CampaignDef:
+	return _loop.campaigns.definition(campaign_id)
 
 
 func _finish(command: String, reason: RunLoop.Reason) -> int:
