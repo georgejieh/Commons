@@ -52,8 +52,9 @@ static func of(
 		var names: PackedStringArray = []
 		for name_key: String in line.name_keys:
 			names.append(_t(name_key))
+		# The dead line lists its names with commas, as it always has.
 		var values: Dictionary[String, Variant] = {
-			"name": _t(line.name_key), "surname": surname, "names": ", ".join(names)
+			"name": joined(names), "surname": surname, "names": ", ".join(names)
 		}
 		view.line_keys.append(line.key)
 		view.line_values.append(values)
@@ -63,6 +64,16 @@ static func of(
 		view.note = _t(view.note_key)
 	view.seal = params.seals.get(view.id, "")
 	return view
+
+
+## Surnames joined for one line, in roster order: "Sun", "Sun and Gao", "Sun, Gao and Ma".
+static func joined(names: PackedStringArray) -> String:
+	if names.size() <= 1:
+		return "" if names.is_empty() else names[0]
+	if names.size() == 2:
+		return _t("list.pair").format({"a": names[0], "b": names[1]})
+	var rest: String = ", ".join(names.slice(0, names.size() - 1))
+	return _t("list.last").format({"rest": rest, "last": names[-1]})
 
 
 static func _t(key: String) -> String:

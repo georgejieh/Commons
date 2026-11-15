@@ -76,6 +76,12 @@ enum Type {
 	GRAIN_TAXED,
 	## Overtime voided the player's bank for a lost round: amount is what was voided.
 	BANK_VOIDED,
+	## A seated family starved at a Quota's end (ADR 0025): seat is where it sat, value
+	## its fed count that Quota, text its family ID. It is dead for the rest of the run.
+	STARVED,
+	## A risen villager whose boss Quota the player met was put out of the landlord's seat
+	## (ADR 0025): seat is where it sat, text its family ID.
+	DEPOSED,
 }
 
 var type: Type

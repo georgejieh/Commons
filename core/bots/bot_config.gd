@@ -6,6 +6,8 @@ enum Tier { EASY, MEDIUM, HARD, EXPERT }
 
 const DEFAULT_WEIGHTS: BotWeights = preload("res://data/bots/default_weights.tres")
 const TABLE: PersonalityTable = preload("res://data/bots/personality_table.tres")
+## Cooperation is a chance, so loyalty never lifts it past certain.
+const MAX_COOPERATION: float = 1.0
 
 var weights: BotWeights
 var tier: Tier
@@ -14,6 +16,9 @@ var search_seed: int
 ## Neutral until a personality sets them.
 var bomb_shift: float = 0.0
 var cooperation: float = 1.0
+## What a warm family's memory of the player adds to its cooperation while the player is
+## its teammate (ADR 0025). The run sets it each round; 0 for everyone else.
+var loyalty: float = 0.0
 var honesty: float = 1.0
 ## The share of true need a lie adds.
 var lie_share: float = 0.0
@@ -46,6 +51,11 @@ static func from_personality(personality: Personality, seed_value: int = 0) -> B
 	config.ambition = TABLE.ambition[personality.ambition]
 	config.grudge = TABLE.grudge[personality.grudge]
 	return config
+
+
+## Cooperation with loyalty added, never past MAX_COOPERATION, nor below its own.
+func team_cooperation() -> float:
+	return maxf(cooperation, minf(cooperation + loyalty, MAX_COOPERATION))
 
 
 func search_candidates() -> int:

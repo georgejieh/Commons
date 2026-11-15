@@ -26,3 +26,4 @@ youth_surnames = Array[String](["villager.youth.hu", "villager.youth.lin", "vill
 reeducation_sets = 1
 rise_sets = 2
 opponents = 2
+starvations_per_year = 1

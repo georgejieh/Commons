@@ -30,7 +30,8 @@ func act(controller: RunController) -> bool:
 	return false
 
 
-## Plays Sets until the run is over, buying the first Cadre it can afford at each store.
+## Plays Sets until the run is over, buying the first Cadre it can afford at each store,
+## and going back from reeducation when it is owed.
 func play_run(controller: RunController) -> void:
 	while true:
 		while act(controller):
@@ -44,6 +45,8 @@ func play_run(controller: RunController) -> void:
 						controller.buy(slot)
 						break
 				controller.leave_store()
+			RunController.AWAIT_REEDUCATION:
+				controller.leave_reeducation()
 			_:
 				return
 

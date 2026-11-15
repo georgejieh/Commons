@@ -46,6 +46,8 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.PLOT_SEIZED: "plot_seized",
 	RunEvent.Type.GRAIN_TAXED: "grain_taxed",
 	RunEvent.Type.BANK_VOIDED: "bank_voided",
+	RunEvent.Type.STARVED: "family_starved",
+	RunEvent.Type.DEPOSED: "family_deposed",
 }
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",

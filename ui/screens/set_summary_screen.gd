@@ -6,7 +6,8 @@ extends Control
 ## norm it raised, and the way on opens: to the store or, after the run's last Set, to
 ## the Year's summary. The button works from the start, so the report can be skipped.
 ## Coupons The Bookkeeper paid at the Quota's end are counted in with the reward, and
-## the paid line says so (ADR 0021).
+## the paid line says so (ADR 0021). A family that starved, or was put out of the
+## landlord's seat, gets one plain line in ink at the foot, and nothing more (ADR 0025).
 
 const BAR: Vector2 = Vector2(960, 54)
 const SEAL_WIDTH: float = 150.0
@@ -31,6 +32,9 @@ var _steps: int = 0
 var _after: Array[Control] = []
 ## Coupons The Bookkeeper paid at this Quota's end.
 var _kept: int = 0
+## The families the Quota's end took, faded in last with no pulse: a quiet beat.
+var _quiet: Array[Control] = []
+var _fate_texts: PackedStringArray = []
 
 
 func open(app: DemoApp) -> void:
@@ -75,6 +79,9 @@ func open(app: DemoApp) -> void:
 		)
 		sheet.add_child(norm)
 		_after.append(norm)
+	for fate: Label in _fates(controller):
+		sheet.add_child(fate)
+		_quiet.append(fate)
 	var last: bool = controller.is_last_set()
 	var next: Button = ScreenKit.button(
 		tr("summary.to_year" if last else "summary.to_store"), CommonsTheme.PRIMARY
@@ -91,7 +98,7 @@ func open(app: DemoApp) -> void:
 	if UiMotion.reduced():
 		_bar.fill_to(state.set_progress, 0.0)
 		return
-	for piece: Control in _after:
+	for piece: Control in _after + _quiet:
 		piece.modulate.a = 0.0
 	_bar.fill_to(state.set_progress, FILL, START)
 
@@ -118,6 +125,31 @@ func _bookkeeper_paid(controller: RunController) -> int:
 		elif event.type == RunEvent.Type.CADRE_FIRED and event.text == BOOKKEEPER:
 			paid += event.value
 	return paid
+
+
+## One line per family this Quota's end took from the village: starved, or deposed.
+func _fates(controller: RunController) -> Array[Label]:
+	var lines: Array[Label] = []
+	for event: RunEvent in controller.set_events():
+		var key: String = ""
+		if event.type == RunEvent.Type.STARVED:
+			key = "summary.starved"
+		elif event.type == RunEvent.Type.DEPOSED:
+			key = "summary.deposed"
+		if key.is_empty():
+			continue
+		var name: String = tr(controller.family_name_key(event.text))
+		var text: String = tr(key).format({"name": name})
+		var line: Label = ScreenKit.label(text, 22, ScreenKit.INK)
+		line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lines.append(line)
+		_fate_texts.append(text)
+	return lines
+
+
+## The lines naming who the village lost this Quota, for tests.
+func fate_lines() -> PackedStringArray:
+	return _fate_texts
 
 
 ## The bar and its count, for tests.
@@ -147,6 +179,9 @@ func _on_filled() -> void:
 		tween.tween_interval(BEAT)
 		tween.tween_property(piece, "modulate:a", 1.0, BEAT)
 		tween.parallel().tween_callback(UiMotion.pulse.bind(piece))
+	for piece: Control in _quiet:
+		tween.tween_interval(BEAT)
+		tween.tween_property(piece, "modulate:a", 1.0, BEAT * 2.0)
 
 
 ## A tile whose number rolls from what it was before the Quota ended to what it is now,

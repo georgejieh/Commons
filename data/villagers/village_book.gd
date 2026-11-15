@@ -13,6 +13,9 @@ extends Resource
 @export var rise_sets: int = 2
 ## Opponents every Set must have.
 @export var opponents: int = 2
+## The most families that may starve in one Year (ADR 0025), so a long famine does not
+## empty the village in a season.
+@export var starvations_per_year: int = 1
 
 
 func family(family_id: String) -> FamilyDef:

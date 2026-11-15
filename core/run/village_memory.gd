@@ -67,3 +67,9 @@ func grudge(family_id: String, params: MemoryParams) -> float:
 ## How strongly the family holds the player in mind at the table, from 0 to 1.
 func pull(family_id: String, params: MemoryParams) -> float:
 	return clampf(grudge(family_id, params) / params.full_grudge, 0.0, 1.0)
+
+
+## How warmly the family holds the player, from 0 to 1: its negative grudge over the full
+## grudge, the mirror of pull (ADR 0025).
+func warmth(family_id: String, params: MemoryParams) -> float:
+	return clampf(-grudge(family_id, params) / params.full_grudge, 0.0, 1.0)

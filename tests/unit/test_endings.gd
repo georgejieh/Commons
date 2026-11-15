@@ -97,7 +97,9 @@ func test_both_deaths_and_denunciation_first_when_both_are_at_death() -> void:
 	assert_str(Endings.text_key(Endings.DEATH_DENUNCIATION)).is_equal("death.denunciation.text")
 
 
-func test_every_family_not_dead_gets_exactly_one_line_in_roster_order() -> void:
+## Every family not dead is named in exactly one line, no two lines share a key, and the
+## lines run in the roster order of each one's first family.
+func test_every_family_not_dead_is_named_in_exactly_one_line() -> void:
 	for ending_id: String in Endings.ENDINGS:
 		var state: RunState = _state(0, 0, 0)
 		var ids: Array[String] = []
@@ -108,21 +110,61 @@ func test_every_family_not_dead_gets_exactly_one_line_in_roster_order() -> void:
 		state.roster[7].status = RosterEntry.Status.DEAD
 		state.roster[5].status = RosterEntry.Status.REEDUCATION
 		state.roster[9].status = RosterEntry.Status.DEPOSED
+		_add(state.memory, ids[2], SetSummary.Kind.FED, 3.0)
+		_add(state.memory, ids[4], SetSummary.Kind.DENOUNCED, 3.0)
 		var lines: Array[EpilogueLine] = Endings.epilogue(state, ending_id, BOOK, MEMORY, PARAMS)
 		var families: Array[String] = []
+		var keys: Array[String] = []
+		var firsts: Array[int] = []
 		for line: EpilogueLine in lines:
-			if not line.family_id.is_empty():
-				families.append(line.family_id)
+			assert_bool(keys.has(line.key)).override_failure_message(ending_id).is_false()
+			keys.append(line.key)
+			assert_int(line.name_keys.size()).is_greater(0)
+			if line.key == Endings.MISSING_KEY:
+				continue
+			assert_int(line.family_ids.size()).is_equal(line.name_keys.size())
+			firsts.append(ids.find(line.family_ids[0]))
+			families.append_array(line.family_ids)
 		var living: Array[String] = ids.filter(
 			func(id: String) -> bool: return id != ids[3] and id != ids[7]
 		)
+		families.sort_custom(func(a: String, b: String) -> bool: return ids.find(a) < ids.find(b))
 		assert_array(families).override_failure_message(ending_id).is_equal(living)
+		var ordered: Array[int] = firsts.duplicate()
+		ordered.sort()
+		assert_array(firsts).override_failure_message(ending_id).is_equal(ordered)
+		# Warm, wary, bitter, reeducation and deposed: five lines for twelve families.
 		var roll_call: bool = Endings.ROLL_CALL.has(ending_id)
-		assert_int(lines.size()).is_equal(living.size() + (1 if roll_call else 0))
+		assert_int(lines.size()).is_equal(5 + (1 if roll_call else 0))
 		if roll_call:
 			assert_str(lines[-1].key).is_equal(Endings.MISSING_KEY)
 			var dead: Array[String] = [BOOK.families[3].name_key, BOOK.families[7].name_key]
 			assert_array(lines[-1].name_keys).is_equal(dead)
+
+
+## Names on one line join with commas and "and", through the string table.
+func test_names_join_with_commas_and_and() -> void:
+	assert_str(EndingView.joined(PackedStringArray())).is_empty()
+	assert_str(EndingView.joined(PackedStringArray(["Sun"]))).is_equal("Sun")
+	assert_str(EndingView.joined(PackedStringArray(["Sun", "Gao"]))).is_equal("Sun and Gao")
+	var three: PackedStringArray = PackedStringArray(["Sun", "Gao", "Ma"])
+	assert_str(EndingView.joined(three)).is_equal("Sun, Gao and Ma")
+	var line: String = tr("epilogue.secret_contract.wary").format(
+		{"name": EndingView.joined(three)}
+	)
+	assert_str(line).is_equal("Sun, Gao and Ma signed last.")
+
+
+## Families on one line keep roster order among themselves.
+func test_families_on_one_line_keep_roster_order() -> void:
+	var state: RunState = _state(0, 0, 0)
+	_roster(state, ["wang", "li", "sun", "chen"])
+	_add(state.memory, "li", SetSummary.Kind.FED, 3.0)
+	var lines: Array[EpilogueLine] = Endings.epilogue(state, Endings.LABELED, BOOK, MEMORY, PARAMS)
+	assert_int(lines.size()).is_equal(2)
+	assert_str(lines[0].key).is_equal("epilogue.labeled.wary")
+	assert_array(lines[0].family_ids).is_equal(["wang", "sun", "chen"])
+	assert_array(lines[1].family_ids).is_equal(["li"])
 
 
 func test_the_state_lines_replace_the_ending_line() -> void:
@@ -134,7 +176,7 @@ func test_the_state_lines_replace_the_ending_line() -> void:
 	assert_str(lines[0].key).is_equal(Endings.REEDUCATION_KEY)
 	assert_str(lines[1].key).is_equal(Endings.DEPOSED_KEY)
 	assert_str(lines[2].key).is_equal("epilogue.struggled.wary")
-	assert_str(lines[0].name_key).is_equal("villager.wang")
+	assert_array(lines[0].name_keys).is_equal(["villager.wang"])
 
 
 func test_dispositions_at_their_boundaries() -> void:
@@ -174,7 +216,9 @@ func test_the_dead_line_only_on_the_two_endings_and_only_with_someone_dead() -> 
 	_roster(state, ["wang", "li"])
 	for ending_id: String in Endings.ENDINGS:
 		var lines: Array[EpilogueLine] = Endings.epilogue(state, ending_id, BOOK, MEMORY, PARAMS)
-		assert_int(lines.size()).override_failure_message(ending_id).is_equal(2)
+		# Both wary, so both on one line.
+		assert_int(lines.size()).override_failure_message(ending_id).is_equal(1)
+		assert_int(lines[0].name_keys.size()).is_equal(2)
 	state.roster[1].status = RosterEntry.Status.DEAD
 	for ending_id: String in Endings.ENDINGS:
 		var lines: Array[EpilogueLine] = Endings.epilogue(state, ending_id, BOOK, MEMORY, PARAMS)
@@ -205,7 +249,7 @@ func test_a_sent_down_youth_is_named_by_the_surname_it_arrived_with() -> void:
 	youth.name_key = "villager.youth.hu"
 	state.roster.append(youth)
 	var lines: Array[EpilogueLine] = Endings.epilogue(state, Endings.LABELED, BOOK, MEMORY)
-	assert_str(lines[0].name_key).is_equal("villager.youth.hu")
+	assert_array(lines[0].name_keys).is_equal(["villager.youth.hu"])
 
 
 func test_working_out_the_ending_never_changes_the_state() -> void:

@@ -534,6 +534,7 @@ func next_set() -> Reason:
 		state.year += 1
 		state.cadre_memos.new_year(state.inventory.cadres)
 		YearClass.new_year(state)
+		VillageFates.new_year(state, set_log)
 	state.set_index = (state.set_index + 1) % SetConfig.SETS_PER_YEAR
 	state.set_type = state.set_index as RunState.SetType
 	return start_set()
@@ -851,6 +852,10 @@ func _end_set() -> void:
 			PLAYER,
 			set_log.events()
 		)
+	# A family that starves is dead before reeducation could take it (ADR 0025).
+	VillageFates.starve(state, _meters.famine, DEFAULT_VILLAGE.starvations_per_year, set_log)
+	if met:
+		VillageFates.depose(state, DEFAULT_BOSSES.risen.id, set_log)
 	_reeducate_villagers()
 	state.memory.record(state.summaries[-1])
 	_record_style_and_risen()
@@ -977,7 +982,8 @@ func _resent(amount: int, cause: String) -> void:
 
 
 ## Every bot holds the player's Resentment against them, plus its family's memory.
-## The player's teammate, when they have one, slacks as the player's Commons share grows.
+## The player's teammate, when they have one, slacks as the player's Commons share grows,
+## and covers for the player more as its family's warmth grows.
 func _aim_grudges() -> void:
 	var held: float = Resentment.grudge(state.resentment, DEFAULT_RESENTMENT)
 	var share: float = FreeRiding.share(state)
@@ -989,9 +995,13 @@ func _aim_grudges() -> void:
 		_configs[seat].memory = memory
 		var teammate: bool = state.landlord_seat != PLAYER and state.landlord_seat != seat
 		_configs[seat].effort = 1.0
+		# Loyalty is for the player's teammate only: it never throws a game (ADR 0025).
+		_configs[seat].loyalty = 0.0
 		if teammate:
+			var warmth: float = state.memory.warmth(state.table[seat], DEFAULT_MEMORY)
+			_configs[seat].loyalty = warmth * DEFAULT_MEMORY.loyal_cooperation
 			_configs[seat].effort = FreeRiding.effort(
-				share, _configs[seat].cooperation, DEFAULT_FREE_RIDE
+				share, _configs[seat].team_cooperation(), DEFAULT_FREE_RIDE
 			)
 
 

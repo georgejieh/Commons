@@ -150,10 +150,7 @@ func open(app: DemoApp) -> void:
 	}
 	_hud.menu.pressed.connect(_open_pause)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
-	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
-	_pause.quit_game.connect(func() -> void: get_tree().quit())
-	_pause.dossier.connect(func() -> void: app.show_screen("dossier"))
-	_pause.last_round.connect(func() -> void: app.show_screen("round_summary"))
+	_pause.wire(app)
 	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
 	_input.tray = _campaigns.tray
 	_setup_dread(app)

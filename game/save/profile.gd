@@ -1,47 +1,53 @@
 class_name Profile
 extends RefCounted
-## The profile save, which outlives every run (P4.6). It is a separate file from the run
-## save, with its own schema version. For now it holds only the village's memory of the
-## player; P4.14 adds unlocks, history, lineage, stakes and corruption.
+## The profile save, which outlives every run (P4.6, ADR 0025). It is a separate file from
+## the run save, with its own schema version, and deleting the run save never touches
+## it. Its fields are ProfileData's; ProfileCommits decides what a run writes to it.
 
-const SCHEMA_VERSION: int = 1
+const SCHEMA_VERSION: int = 2
 const MEMORY_KEY: String = "memory"
 
 
 static func service(path: String = SaveService.PROFILE_PATH) -> SaveService:
-	return SaveService.new(path, {}, SCHEMA_VERSION, is_valid)
+	var migrations: Dictionary[int, Callable] = {1: migrate_from_1}
+	return SaveService.new(path, migrations, SCHEMA_VERSION, is_valid)
 
 
-## True when the profile's memory is a map of families to four counts each.
+## Schema 1 to 2: the memory stays, and every field ADR 0025 adds starts empty.
+static func migrate_from_1(data: Dictionary) -> Dictionary:
+	var fresh: Dictionary = ProfileData.new().to_dict()
+	if data.has(MEMORY_KEY):
+		fresh[MEMORY_KEY] = data[MEMORY_KEY]
+	return fresh
+
+
+## True when the data is a whole profile, every field of its kind.
 static func is_valid(data: Dictionary) -> bool:
-	if not data.get(MEMORY_KEY, {}) is Dictionary:
-		return false
-	var memory: Dictionary = data.get(MEMORY_KEY, {})
-	for row: Variant in memory.values():
-		if not row is Array:
-			return false
-		var counts: Array = row
-		if counts.size() != SetSummary.KIND_COUNT:
-			return false
-	return true
+	return ProfileData.is_valid(data)
 
 
-## What the saved village remembers, or nothing for a new or damaged profile.
-static func memory(profile: SaveService) -> VillageMemory:
+## The saved profile, or an empty one for a new or damaged profile.
+static func read(profile: SaveService) -> ProfileData:
 	var loaded: SaveLoad = profile.load_save()
 	var usable: bool = (
 		loaded.status == SaveLoad.Status.OK or loaded.status == SaveLoad.Status.RESTORED_FROM_BACKUP
 	)
 	if not usable:
-		return VillageMemory.new()
-	return VillageMemory.from_dict(loaded.data.get(MEMORY_KEY, {}))
+		return ProfileData.new()
+	return ProfileData.from_dict(loaded.data)
+
+
+static func write(profile: SaveService, data: ProfileData) -> Error:
+	return profile.save(data.to_dict())
+
+
+## What the saved village remembers, or nothing for a new or damaged profile.
+static func memory(profile: SaveService) -> VillageMemory:
+	return read(profile).memory
 
 
 ## Writes the memory, keeping whatever else the profile holds.
 static func save_memory(profile: SaveService, memory: VillageMemory) -> Error:
-	var data: Dictionary = {}
-	var loaded: SaveLoad = profile.load_save()
-	if loaded.status == SaveLoad.Status.OK or loaded.status == SaveLoad.Status.RESTORED_FROM_BACKUP:
-		data = loaded.data
-	data[MEMORY_KEY] = memory.to_dict()
-	return profile.save(data)
+	var data: ProfileData = read(profile)
+	data.memory = memory
+	return write(profile, data)

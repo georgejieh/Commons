@@ -137,9 +137,10 @@ func test_every_ending_and_death_fits_both_screens_with_a_full_village() -> void
 			if view.death:
 				assert_object(list).override_failure_message(where).is_null()
 				continue
-			# Twelve living families, and the dead named on the two roll-call endings.
+			# Twelve living families on five shared lines (warm, wary, bitter and the two
+			# states), and the dead named on the two roll-call endings.
 			var roll_call: bool = outcome == "lean_years" or outcome == "full_granary"
-			assert_int(list.line_labels().size()).is_equal(12 + (1 if roll_call else 0))
+			assert_int(list.line_labels().size()).is_equal(5 + (1 if roll_call else 0))
 			var bar: VScrollBar = list.get_v_scroll_bar()
 			if bar.max_value > bar.page + 1.0:
 				assert_bool(list.can_scroll()).override_failure_message(where).is_true()
@@ -209,6 +210,25 @@ func test_a_death_has_its_record_and_the_way_home_only() -> void:
 	var buttons: Array[Node] = screen.find_children("*", "Button", true, false)
 	assert_int(buttons.size()).is_equal(1)
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(screen.home_button())
+
+
+## A death's page has no epilogue beside it, so its column sits in the middle of the
+## sheet both ways: as much room above its title card as below its last line.
+func test_a_deaths_column_is_centred_on_the_sheet() -> void:
+	Settings.set_value("reduced_motion", true)
+	get_tree().root.size = SIZES[0]
+	var screen: EndingScreen = _finish("death_famine")
+	for frame: int in 4:
+		await await_idle_frame()
+	var heading: Control = screen.get("_heading")
+	var story: Control = heading
+	while story != null and not (story.get_parent() is HBoxContainer):
+		story = story.get_parent() as Control
+	var columns: Control = story.get_parent() as Control
+	var above: float = story.global_position.y - columns.global_position.y
+	var below: float = columns.get_global_rect().end.y - story.get_global_rect().end.y
+	assert_float(above).is_greater(0.0)
+	assert_float(absf(above - below)).is_less_equal(2.0)
 
 
 func test_a_long_epilogue_scrolls_by_keyboard_from_its_focus() -> void:

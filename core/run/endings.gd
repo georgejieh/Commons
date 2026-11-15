@@ -97,9 +97,11 @@ static func collective(state: RunState, meters: MeterTable, params: EndingParams
 	)
 
 
-## One line for every family not dead, in roster order: its state's line in reeducation
-## or deposed, otherwise the ending's line for its disposition. Lean Years and Full
-## Granary add one line naming the dead, when there are any. A death has no epilogue.
+## Every family not dead is named in exactly one line: its state's line in reeducation or
+## deposed, otherwise the ending's line for its disposition. Families that would get the
+## same line share it, and the lines run in the roster order of each one's first family.
+## Lean Years and Full Granary add one line naming the dead, when there are any. A death
+## has no epilogue.
 static func epilogue(
 	state: RunState,
 	outcome_id: String,
@@ -110,13 +112,14 @@ static func epilogue(
 	var lines: Array[EpilogueLine] = []
 	if is_death(outcome_id):
 		return lines
-	var dead: Array[String] = []
+	var by_key: Dictionary[String, EpilogueLine] = {}
+	var missing: EpilogueLine = EpilogueLine.new(MISSING_KEY)
 	for entry: RosterEntry in state.roster:
 		var surname: String = _name_key(book, entry)
 		var key: String = ""
 		match entry.status:
 			RosterEntry.Status.DEAD:
-				dead.append(surname)
+				missing.name_keys.append(surname)
 				continue
 			RosterEntry.Status.REEDUCATION:
 				key = REEDUCATION_KEY
@@ -125,10 +128,11 @@ static func epilogue(
 			_:
 				var feeling: String = disposition(state.memory, entry.family_id, memory, params)
 				key = line_key(outcome_id, feeling)
-		lines.append(EpilogueLine.new(entry.family_id, key, surname))
-	if ROLL_CALL.has(outcome_id) and not dead.is_empty():
-		var missing: EpilogueLine = EpilogueLine.new("", MISSING_KEY, "")
-		missing.name_keys = dead
+		if not by_key.has(key):
+			by_key[key] = EpilogueLine.new(key)
+			lines.append(by_key[key])
+		by_key[key].add(entry.family_id, surname)
+	if ROLL_CALL.has(outcome_id) and not missing.name_keys.is_empty():
 		lines.append(missing)
 	return lines
 

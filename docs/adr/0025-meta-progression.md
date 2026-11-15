@@ -46,9 +46,9 @@ One file, `user://profile.json`, separate from the run save, as today. Its schem
 
 Both are needed here and neither exists.
 
-- **Starvation.** At a Quota's end, if Famine is in its high band, one of the two families seated that Quota dies: the one fed less often at the Commons split in that Quota, by its `fed` count in the Quota's summary, the later seat on a tie. Its roster state becomes dead for the rest of the run, and the log records it. A sent-down youth fills the seat when fewer than two families can sit, as the roster already rules. A boss never dies this way.
+- **Starvation.** At a Quota's end, if Famine is in its high band and no family has starved yet this Year, one of the two families seated that Quota dies: the one fed less often at the Commons split in that Quota, by its `fed` count in the Quota's summary, the later seat on a tie. Its roster state becomes dead for the rest of the run, and the log records it. A sent-down youth fills the seat when fewer than two families can sit, as the roster already rules. A boss never dies this way. One death a Year (data) keeps a long famine from emptying the village in a season.
 - **Deposing.** A risen villager who comes back as a boss and whose Quota the player meets is deposed: out of the boss pool for the run, and out of the village until the next Year starts.
-- **Denouncing.** A villager caught by an audit that the player's Anonymous Letter forced counts as denounced by the player. This fills the memory's `DENOUNCED` count, which nothing fills today.
+- **Denouncing.** The Anonymous Letter is the denunciation: the family it forces to pass counts as denounced by the player, teammate or not. A Letter that is wasted denounces nobody. This fills the memory's `DENOUNCED` count, which nothing fills today.
 
 The next run's roster starts whole again: death and deposing last one run. The family that died is the previous generation, and its heirs remember (the memory carries).
 

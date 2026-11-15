@@ -93,6 +93,11 @@ var observations: Observations = Observations.new()
 ## which give the run's final class (ADR 0024). Both start again with each Year.
 var year_rounds: int = 0
 var year_landlord_rounds: int = 0
+## Families that have starved this Year, against the village's limit (ADR 0025). It
+## starts again with each Year.
+var year_starved: int = 0
+## Which run this is, of which kind, and what it began with (ADR 0025).
+var identity: RunIdentity = RunIdentity.new()
 
 
 func _init(seed_value: int) -> void:
@@ -156,6 +161,8 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.observations = Observations.from_dict(data["observations"])
 	state.year_rounds = int(data["year_rounds"])
 	state.year_landlord_rounds = int(data["year_landlord_rounds"])
+	state.year_starved = int(data["year_starved"])
+	state.identity = RunIdentity.from_dict(data["identity"])
 	return state
 
 
@@ -215,6 +222,8 @@ func to_dict() -> Dictionary:
 		"observations": observations.to_dict(),
 		"year_rounds": year_rounds,
 		"year_landlord_rounds": year_landlord_rounds,
+		"year_starved": year_starved,
+		"identity": identity.to_dict(),
 	}
 
 

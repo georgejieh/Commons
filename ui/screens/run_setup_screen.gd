@@ -1,7 +1,7 @@
 class_name RunSetupScreen
 extends Control
-## Run setup (P3B.9): choose a stake, then start. Only the base stake exists until
-## stakes unlock with meta-progression (P4.14).
+## Run setup (P3B.9): choose a stake, then start: the full run, or the demo when the app
+## runs with --demo. Only the base stake exists until stakes unlock (P4.14).
 
 
 func open(app: DemoApp) -> void:
@@ -16,7 +16,8 @@ func open(app: DemoApp) -> void:
 	var start: Button = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
 	start.pressed.connect(
 		func() -> void:
-			app.new_run(int(Time.get_unix_time_from_system()))
+			# The full run, or the demo when the app runs with --demo.
+			app.new_run(int(Time.get_unix_time_from_system()), not app.demo)
 			app.show_screen("set_intro", true)
 	)
 	var back: Button = ScreenKit.button(tr("setup.back"), CommonsTheme.GHOST)

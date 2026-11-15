@@ -123,6 +123,18 @@ static func migrate_from_9(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 10 saves predate run identity (ADR 0025): every run then was the demo, so a
+## migrated save is a demo run, with an ID made from its seed alone, and no family has
+## starved in its Year.
+static func migrate_from_10(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		var identity: RunIdentity = RunIdentity.new()
+		identity.id = RunIdentity.make_id(str(checkpoint.get("seed", "0")).to_int(), 0)
+		checkpoint.merge({"identity": identity.to_dict(), "year_starved": 0})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -270,6 +282,10 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 		if not reform_id is String:
 			return false
 	if not _counters_valid(checkpoint["year_rounds"], checkpoint["year_landlord_rounds"]):
+		return false
+	if not RunIdentity.is_valid(checkpoint["identity"]):
+		return false
+	if not _counters_valid(checkpoint["year_starved"], 0):
 		return false
 	return _levels_valid(checkpoint["hand_levels"])
 

@@ -59,11 +59,14 @@ func test_memory_round_trips_through_the_profile_save() -> void:
 	memory.record(_summary("zhao", SetSummary.Kind.BOMBED, 3))
 	memory = memory.carried(PARAMS)
 	var profile: SaveService = Profile.service(PATH)
-	profile.save({"other": 7})
+	# The rest of the profile stays as it was when the memory is written (ADR 0025).
+	var kept: ProfileData = ProfileData.new()
+	kept.generation = 7
+	Profile.write(profile, kept)
 	assert_int(Profile.save_memory(profile, memory)).is_equal(OK)
 	var loaded: VillageMemory = Profile.memory(profile)
 	assert_dict(loaded.to_dict()).is_equal(memory.to_dict())
-	assert_int(int(profile.load_save().data["other"])).is_equal(7)
+	assert_int(Profile.read(profile).generation).is_equal(7)
 
 
 func test_a_missing_or_damaged_profile_remembers_nothing() -> void:

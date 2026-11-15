@@ -1,10 +1,14 @@
 class_name DemoApp
 extends Control
-## The demo's root (ADR 0017): the run controller, the hand model, the scene switcher
+## The game's root (ADR 0017): the run controller, the hand model, the scene switcher
 ## and the screen host. Screens get the app in open() and reach the run only through
-## its controller. The table scene is the 2D or the 3D one, chosen at export.
+## its controller. The table scene is the 2D or the 3D one, chosen at export. New Run
+## starts the full eight-Year run, or the one-Year demo when the app was launched with
+## --demo after -- on the command line (ADR 0025).
 
 const DEMO: DemoParams = preload("res://data/run/demo.tres")
+## The command-line flag that makes New Run start the demo.
+const DEMO_FLAG: String = "--demo"
 ## The demo seats' voices, by villager name.
 const DEMO_VOICE: String = "res://data/ui/voices/%s.tres"
 const MOTION: MotionPresets = preload("res://data/ui/motion_presets.tres")
@@ -36,6 +40,8 @@ const MENU_SCREENS: Array[String] = [
 	"set_intro", "set_summary", "store", "black_market", "year_summary", "plot_swap"
 ]
 
+## True when New Run starts the demo. Tools set it before the app enters the tree.
+var demo: bool = OS.get_cmdline_user_args().has(DEMO_FLAG)
 var controller: RunController = RunController.new()
 var hand: HandModel
 var switcher: SceneSwitcher = SceneSwitcher.new()
@@ -60,10 +66,7 @@ func _ready() -> void:
 	_wipe_layer.add_child(_wipe)
 	add_child(_wipe_layer)
 	add_child(_menu)
-	_menu.to_title.connect(func() -> void: show_screen("title", true))
-	_menu.quit_game.connect(func() -> void: get_tree().quit())
-	_menu.dossier.connect(func() -> void: show_screen("dossier"))
-	_menu.last_round.connect(func() -> void: show_screen("round_summary"))
+	_menu.wire(self)
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
 	for screen_id: String in SCREENS:
@@ -125,21 +128,23 @@ func table_id() -> String:
 	return "table_3d" if OS.has_feature(TABLE_3D_FEATURE) else "table"
 
 
-func new_run(seed_value: int) -> void:
-	controller.start_run(
-		seed_value,
-		_configs(),
-		SetConfig.new(DEMO.sets),
-		Saves.run_service(),
-		DEMO.starting_coupons,
-		Saves.profile_service()
-	)
+## Starts the demo, or with full the eight-Year run with the village's roster.
+func new_run(seed_value: int, full: bool = false) -> void:
+	var kind: int = RunRequest.FULL if full else RunRequest.DEMO
+	controller.start(RunRequest.new(kind, seed_value), Saves.run_service(), Saves.profile_service())
 
 
+## Continues the saved run as the kind it was saved as.
 func continue_run() -> bool:
-	return controller.resume_saved(
-		Saves.run_service(), _configs(), SetConfig.new(DEMO.sets), Saves.profile_service()
-	)
+	return controller.continue_saved(Saves.run_service(), Saves.profile_service())
+
+
+## Leaves the run for good, for the title: abandoned from the menu, or finished on its
+## ending. Its save is cleared and nothing more is recorded (ADR 0025); the memory of
+## the Quotas it finished, and a finished run's record, are already in the profile.
+func leave_run() -> void:
+	Saves.run_service().delete()
+	show_screen("title", true)
 
 
 ## Continues the saved run on the screen it stopped at.
@@ -166,8 +171,9 @@ func screen_for(awaiting: int) -> String:
 	return table_id()
 
 
+## True when a run save, or its backup, holds a run Continue can pick up.
 func has_saved_run() -> bool:
-	return FileAccess.file_exists(Saves.run_service().path())
+	return RunStarter.resumable(Saves.run_service())
 
 
 func seat_name(seat: int) -> String:
@@ -233,8 +239,10 @@ func sets_per_year() -> int:
 	return SetConfig.SETS_PER_YEAR
 
 
-## Dread for the post-process: the higher meter, as a share of its range.
+## The most rounds a Set of the run in play takes.
 func max_rounds() -> int:
+	if controller != null and controller.has_run():
+		return controller.max_rounds()
 	return DEMO.sets.max_rounds
 
 
@@ -242,10 +250,3 @@ func max_rounds() -> int:
 func motion_step() -> float:
 	var reduced: bool = bool(Settings.value("reduced_motion"))
 	return MOTION.event_step * (MOTION.reduced_scale if reduced else 1.0)
-
-
-func _configs() -> Array[BotConfig]:
-	var configs: Array[BotConfig] = []
-	for tier: int in DEMO.tiers:
-		configs.append(BotConfig.new(BotConfig.DEFAULT_WEIGHTS, tier as BotConfig.Tier))
-	return configs

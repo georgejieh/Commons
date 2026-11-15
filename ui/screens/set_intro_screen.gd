@@ -1,7 +1,7 @@
 class_name SetIntroScreen
 extends Control
-## Before a Set: its type, its target and reward, how far the norm has raised it, and the
-## debuff ladder drawn for it,
+## Before a Set: its type, its target and reward, how far the norm has raised it, who
+## of the village sits at the table in a full run, and the debuff ladder drawn for it,
 ## one card per round, with round 1 always clean. Everything sits on one sheet at the
 ## left, the rounds two by two.
 
@@ -28,6 +28,9 @@ func open(app: DemoApp) -> void:
 		)
 		norm.add_theme_color_override("font_color", ScreenKit.RED)
 		column.add_child(norm)
+	if controller.has_village():
+		var names: String = ", ".join([app.seat_name(1), app.seat_name(2)])
+		column.add_child(ScreenKit.label(tr("intro.seated").format({"names": names}), 24))
 	if not controller.boss().is_empty():
 		column.add_child(_boss_line(controller))
 	var reforms: Label = reforms_line(controller)

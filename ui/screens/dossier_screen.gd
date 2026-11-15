@@ -23,7 +23,9 @@ func open(app: DemoApp) -> void:
 	column.add_child(ScreenKit.header(tr("dossier.eyebrow"), tr("dossier.title")))
 	var cards: Array[Control] = []
 	for seat: int in range(1, Seats.COUNT):
-		cards.append(_villager(app, state, seat))
+		# A family gone from the village is not shown again this run (ADR 0025).
+		if not app.controller.seat_gone(seat):
+			cards.append(_villager(app, state, seat))
 	column.add_child(ScreenKit.row(cards, 28))
 	var back: Button = ScreenKit.button(tr("dossier.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(app.back)

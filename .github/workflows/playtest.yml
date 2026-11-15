@@ -43,7 +43,7 @@ jobs:
           mkdir -p reports
           xvfb-run -a -s "-screen 0 1920x1080x24" \
             godot --path . --rendering-driver opengl3 --resolution 1920x1080 \
-            --script res://tools/playtest.gd -- --rounds "${{ inputs.rounds || '8' }}" \
+            --script res://tools/playtest.gd -- --demo --rounds "${{ inputs.rounds || '8' }}" \
             --out reports/playtest 2>&1 | tee reports/playtest.log
           grep -E 'rounds=' reports/playtest.log
           ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR' reports/playtest.log

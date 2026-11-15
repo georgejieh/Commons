@@ -54,7 +54,10 @@ func open(app: DemoApp) -> void:
 	var story: VBoxContainer = _story()
 	columns.add_child(story)
 	if _view.death:
+		# A death has no epilogue beside it: its column sits in the middle of the sheet,
+		# both ways, so the page has no empty half.
 		story.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		story.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		story.custom_minimum_size.x = DEATH_WIDTH
 		columns.alignment = BoxContainer.ALIGNMENT_CENTER
 	else:
@@ -174,7 +177,8 @@ func _buttons(app: DemoApp) -> HBoxContainer:
 		_show_all.pressed.connect(skip)
 		bar.add_child(_show_all)
 	_home = ScreenKit.button(tr("end.to_title"), CommonsTheme.PRIMARY)
-	_home.pressed.connect(func() -> void: app.show_screen("title", true))
+	# The run is over: going home clears its save (ADR 0025).
+	_home.pressed.connect(app.leave_run)
 	bar.add_child(_home)
 	return bar
 

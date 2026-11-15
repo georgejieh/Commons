@@ -4,8 +4,10 @@ extends SceneTree
 ## Plays the demo through its real UI, the way a person would: clicks the visible part of
 ## each card with mouse events, presses Play, Pass, Call and the store's buttons, and goes
 ## through several rounds and Sets. Logs any click that selects the wrong card or does
-## nothing, and saves a screenshot at each round's first turn and every few turns.
-##   godot --path . --script res://tools/playtest.gd -- --rounds 6 --out reports/playtest
+## nothing, and saves a screenshot at each round's first turn and every few turns. It
+## starts the app as --demo does, so New Run is the demo, and at the end starts a full
+## run once for its frames (ADR 0025).
+##   godot --path . --script res://tools/playtest.gd -- --demo --rounds 6 --out reports/playtest
 ## Needs a real window for its pictures. Run with --headless it walks the same steps and
 ## prints each frame's name instead, which checks its clicks without a window.
 ## Development only; tools/ never ships.
@@ -82,6 +84,8 @@ func _run() -> void:
 	saves.call("use_run_path", SAVE_PATH)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = scene.instantiate()
+	# The demo flow, as --demo on the command line gives it, whether or not it was passed.
+	_app.set("demo", true)
 	root.add_child(_app)
 	var script: GDScript = load("res://tests/unit/controller_script.gd")
 	_driver = script.new()
@@ -107,6 +111,7 @@ func _run() -> void:
 		await _frames(STEP_FRAMES)
 		await _step()
 	await _ending_frames()
+	await _full_run_frames()
 	print("rounds=%d clicks=%d misclicks=%d shots=%d" % [_rounds_seen, _clicks, _misclicks, _shots])
 	quit(0)
 
@@ -739,6 +744,68 @@ func _ending_frames() -> void:
 	saves.call("save", snapshot)
 	_app.call("resume_to_screen")
 	await _frames(30)
+
+
+## A full run once, in a sandbox put back after (ADR 0025): New Run without --demo starts
+## the eight-Year run, whose first Set intro names the families at the table; the title
+## then offers Continue for it, and Continue picks it up as a full run; the pause menu's
+## Abandon asks first, with the focus on Keep playing, and clears the save. Then the
+## demo's save is written back and the demo flow resumed.
+func _full_run_frames() -> void:
+	var saves: Object = root.get_node("Saves").call("run_service")
+	var controller: Object = _app.get("controller")
+	var loop: RunLoop = controller.get("_loop")
+	var snapshot: Dictionary = loop.record.to_dict()
+	_app.set("demo", false)
+	_app.call("show_screen", "title", true)
+	await _frames(20)
+	await _click_button_with_text(tr("title.new_run"))
+	await _click_button_with_text(tr("setup.start"))
+	await _frames(20)
+	_expect(bool(controller.call("has_village")), "FULL RUN NOT STARTED")
+	await _shot("full_run_set_intro")
+	var menu: Node = _app.get("_menu")
+	menu.call("open")
+	await _frames(10)
+	await _press(_button_in(menu, tr("pause.to_title")))
+	await _frames(30)
+	await _shot("title_full_run")
+	var switcher: Object = _app.get("switcher")
+	_expect(_button_in(switcher.call("current"), tr("title.continue")) != null, "NO CONTINUE")
+	await _click_button_with_text(tr("title.continue"))
+	await _frames(40)
+	_expect(bool(controller.call("has_village")), "RESUME WRONG KIND")
+	_expect(switcher.call("current_id") == "table", "RESUME WRONG SCREEN")
+	await _abandon_frames(switcher.call("current"), saves)
+	saves.call("save", snapshot)
+	_app.set("demo", true)
+	_app.call("resume_to_screen")
+	await _frames(30)
+
+
+## The table's menu, Abandon run, and its question, then Abandon: the title, with no save.
+func _abandon_frames(table: Node, saves: Object) -> void:
+	var hud: Object = table.get("_hud")
+	await _press(hud.get("menu"))
+	await _frames(20)
+	var pause: Node = table.get("_pause")
+	await _press(_button_in(pause, tr("menu.abandon")))
+	await _frames(20)
+	await _shot("pause_abandon_confirm")
+	var keep: Button = pause.call("keep_button")
+	_expect(bool(pause.call("is_confirming")) and keep.has_focus(), "ABANDON FOCUS WRONG")
+	await _press(pause.call("abandon_button"))
+	await _frames(30)
+	var switcher: Object = _app.get("switcher")
+	_expect(switcher.call("current_id") == "title", "ABANDON DID NOT GO HOME")
+	_expect(not FileAccess.file_exists(str(saves.call("path"))), "ABANDON KEPT THE SAVE")
+
+
+## Counts a step that went wrong as a misclick, and says what it was.
+func _expect(held: bool, failure: String) -> void:
+	if not held:
+		_misclicks += 1
+		print("MISCLICK %s" % failure)
 
 
 ## Saves a run finished as outcome and continues it, which opens its ending.

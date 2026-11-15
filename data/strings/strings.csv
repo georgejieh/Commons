@@ -738,6 +738,16 @@ store.short_supply,Short Supply: {count} fewer Cadres on the counter.
 store.short_supply.one,Short Supply: 1 fewer Cadre on the counter.
 round.taxed,Grain Tax took {amount} of what you banked.
 round.voided,"Overtime: your side lost, so you banked nothing."
+beat.levy.given,Levy: your {card} goes to {name}.
+beat.levy.taken,Levy: you take {name}'s {card}.
+beat.redistribution,Redistribution: everyone passes {count} cards to the left.
+summary.starved,The {name} household did not come to the Commons.
+summary.deposed,{name} was put out of the landlord's seat.
+menu.abandon,Abandon run
+menu.abandon.confirm,Abandon this run? It will not be recorded.
+menu.abandon.yes,Abandon
+menu.abandon.no,Keep playing
+intro.seated,At the table: {names}.
 ending.secret_contract.title,The Secret Contract
 ending.secret_contract.text,"That winter the households met after dark and divided the brigade's land between them. They marked the paper with thumbprints and seals. The next harvest was the largest the village had brought in, and the report to the commune did not say why. The paper also said who would raise the leaders' children if the leaders were taken away."
 ending.the_commons.title,The Commons
@@ -771,16 +781,15 @@ epilogue.labeled.bitter,{name} told the work team what they had seen.
 epilogue.benevolent_landlord.warm,{name} farmed your best field at the old rent.
 epilogue.benevolent_landlord.wary,{name} paid the rent in full every autumn.
 epilogue.benevolent_landlord.bitter,{name} paid on time and never came past the gate.
-epilogue.full_granary.warm,{name} was given work in your storehouse.
-epilogue.full_granary.wary,{name} came to the gate once and was sent round to the back.
+epilogue.full_granary.warm,{name} worked in your storehouse.
+epilogue.full_granary.wary,{name} came to the gate once and left by the back.
 epilogue.full_granary.bitter,{name} stopped coming to the gate.
-epilogue.struggled.warm,{name} was asked to speak and said the weather had been bad.
+epilogue.struggled.warm,"{name}, asked to speak, said the weather had been bad."
 epilogue.struggled.wary,{name} spoke for as long as the others had.
 epilogue.struggled.bitter,"{name} spoke first, and had brought notes."
-epilogue.state.reeducation,{name} was away at study.
+epilogue.state.reeducation,{name} had been sent away to study.
 epilogue.state.deposed,{name} had been put out of the seat and worked a plot like anyone.
 epilogue.missing,Not at roll call: {names}.
 ending.note.xiaogang,"In the winter of 1978, the heads of eighteen households in Xiaogang, a village in Fengyang County, Anhui, secretly agreed to farm their production team's land by household. In 1982 the central government endorsed the practice, and it spread across the country."
-beat.levy.given,Levy: your {card} goes to {name}.
-beat.levy.taken,Levy: you take {name}'s {card}.
-beat.redistribution,Redistribution: everyone passes {count} cards to the left.
+list.pair,{a} and {b}
+list.last,{rest} and {last}

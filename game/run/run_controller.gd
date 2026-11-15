@@ -65,7 +65,8 @@ var _definitions: Dictionary[String, ModifierDef] = {}
 var _directives: Dictionary[String, DirectiveDef] = {}
 
 
-## Starts a new run from seed, with one bot config per seat.
+## Starts a new run from seed, with one bot config per seat. It begins as a demo run
+## through RunStarter, as every run does; tests use it to choose their own seats and Sets.
 func start_run(
 	seed_value: int,
 	configs: Array[BotConfig],
@@ -74,22 +75,57 @@ func start_run(
 	starting_coupons: int = 0,
 	profile: SaveService = null
 ) -> void:
-	var state: RunState = RunState.new(seed_value)
+	var request: RunRequest = RunRequest.new(RunRequest.DEMO, seed_value)
+	request.writes_profile = profile != null
+	var state: RunState = RunStarter.state(request, profile)
 	state.coupons = starting_coupons
+	_begin(state, configs, sets, saves, profile)
+
+
+## Starts the run a request asks for, with the Sets and seats of its kind (ADR 0025).
+## The profile is written only when the request allows it.
+func start(request: RunRequest, saves: SaveService = null, profile: SaveService = null) -> void:
+	var used: SaveService = profile if request.writes_profile else null
+	var state: RunState = RunStarter.state(request, used)
+	var kind: int = request.kind
+	_begin(state, RunStarter.configs(kind), RunStarter.sets(kind), saves, used)
+
+
+func _begin(
+	state: RunState,
+	configs: Array[BotConfig],
+	sets: SetConfig,
+	saves: SaveService,
+	profile: SaveService
+) -> void:
 	_profile = profile
-	if profile != null:
-		state.memory = Profile.memory(profile).carried(RunLoop.DEFAULT_MEMORY)
 	_attach(RunLoop.new(state, configs, sets), saves)
 	_loop.start_set()
 	_loop.set_log.flush()
 	awaiting_changed.emit(_loop.awaiting())
 
 
-## Takes over a loop that was resumed from a save.
+## Takes over a loop that was resumed from a save. A save written just before a crash
+## may stand past a boundary the profile never took, so the profile is offered it again;
+## it takes nothing twice.
 func resume(loop: RunLoop, saves: SaveService = null, profile: SaveService = null) -> void:
 	_profile = profile
 	_attach(loop, saves)
+	_remember(_loop.flow.state())
 	awaiting_changed.emit(_loop.awaiting())
+
+
+## Continues the saved run as the kind it was saved as, with that kind's Sets and seats.
+## False when neither the save nor its backup loads.
+func continue_saved(saves: SaveService, profile: SaveService = null) -> bool:
+	var loaded: SaveLoad = saves.load_save()
+	if (
+		loaded.status != SaveLoad.Status.OK
+		and loaded.status != SaveLoad.Status.RESTORED_FROM_BACKUP
+	):
+		return false
+	var kind: int = RunStarter.saved_kind(loaded.data)
+	return resume_saved(saves, RunStarter.configs(kind), RunStarter.sets(kind), profile)
 
 
 ## Resumes the run in the save, falling back to its backup. False when neither loads.
@@ -657,6 +693,26 @@ func ending() -> EndingView:
 	return EndingView.of(_loop.state, tr(PLAYER_SURNAME))
 
 
+## The surname key of a family in the run's roster, or "" for one it does not hold.
+func family_name_key(family_id: String) -> String:
+	var entry: RosterEntry = Roster.entry(_loop.state, family_id)
+	return "" if entry == null else Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
+
+
+## True when the family in a villager's seat is gone from the village: dead, or deposed
+## until the next Year. Its panel is not shown again (ADR 0025).
+func seat_gone(seat: int) -> bool:
+	var state: RunState = _loop.state
+	if seat <= 0 or seat >= state.table.size():
+		return false
+	return VillageFates.is_gone(state, state.table[seat])
+
+
+## The most rounds a Set of this run plays.
+func max_rounds() -> int:
+	return _loop.sets().max_rounds()
+
+
 ## True when the run seats the village's roster, as a full run does. The demo seats its
 ## two fixed villagers and ends on its own closing screen instead of an ending.
 func has_village() -> bool:
@@ -707,9 +763,10 @@ func _save() -> void:
 
 
 ## Writes the village's memory to the profile once a Set's summary is folded in, so it
-## survives the run whether it ends or is abandoned.
+## survives the run whether it ends or is abandoned, and at the run's end its record.
+## ProfileCommits takes each only once.
 func _remember(at: RunFlow.State) -> void:
 	if _profile == null:
 		return
 	if at == RunFlow.State.SET_END or at == RunFlow.State.RUN_END:
-		Profile.save_memory(_profile, _loop.state.memory)
+		ProfileCommits.commit(_profile, _loop.state, at == RunFlow.State.RUN_END)

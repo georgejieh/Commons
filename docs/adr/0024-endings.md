@@ -31,7 +31,7 @@ An ending is for a run that survives its last Year. It is chosen from three fact
 
 ## Epilogues
 
-Every family in the roster that is not dead gets exactly one line, in roster order.
+Every family in the roster that is not dead is named in exactly one line. Families that would get the same line share it, their surnames joined in roster order ("Sun, Gao and Ma signed last."), and the lines run in the roster order of each one's first family. A village of fourteen then reads as a short record, not the same sentence four times.
 
 - A family in reeducation, or deposed, gets the line for that state.
 - Every other family gets a line chosen by the ending and by its **disposition**, read from the family's memory of the player (`VillageMemory`, with `MemoryParams`), which carries over from earlier runs at a reduced weight:
@@ -40,7 +40,7 @@ Every family in the roster that is not dead gets exactly one line, in roster ord
   - **wary**: everything else, including a family with no history.
 - Lean Years and Full Granary, Empty Village add one line naming the dead families, if there are any.
 
-Lines are templates with `{name}` (the family's surname) and `{surname}` (the player's). They never assume a fact the game cannot guarantee.
+Lines are templates with `{name}` (one surname, or several joined with commas and "and") and `{surname}` (the player's). Every line reads the same for one family or several, so none uses "was" or "has" of the families. They never assume a fact the game cannot guarantee.
 
 ## Text
 
@@ -77,10 +77,10 @@ Voice: a plain record in the past tense. Names and facts carry it. No moral. Eac
 | Lean Years | {name} shared a pot with your household through the winter. | {name} answered at roll call and went home. | {name} said the {surname} family had always given away what was not theirs to give. |
 | Labeled | {name} still left the gate between your yards unlatched. | {name} crossed to the other side of the lane. | {name} told the work team what they had seen. |
 | The Benevolent Landlord | {name} farmed your best field at the old rent. | {name} paid the rent in full every autumn. | {name} paid on time and never came past the gate. |
-| Full Granary, Empty Village | {name} was given work in your storehouse. | {name} came to the gate once and was sent round to the back. | {name} stopped coming to the gate. |
-| Struggled | {name} was asked to speak and said the weather had been bad. | {name} spoke for as long as the others had. | {name} spoke first, and had brought notes. |
+| Full Granary, Empty Village | {name} worked in your storehouse. | {name} came to the gate once and left by the back. | {name} stopped coming to the gate. |
+| Struggled | {name}, asked to speak, said the weather had been bad. | {name} spoke for as long as the others had. | {name} spoke first, and had brought notes. |
 
-- In reeducation: {name} was away at study.
+- In reeducation: {name} had been sent away to study.
 - Deposed: {name} had been put out of the seat and worked a plot like anyone.
 - The dead, on Lean Years and Full Granary: Not at roll call: {names}.
 
