@@ -35,7 +35,7 @@ static func make(
 	var title: String = _tr("modifier.%s.name" % cadre_id)
 	var rule: String = ScreenKit.rule_text(controller, cadre_id)
 	card.add_child(face(cadre_id, StoreScreen.CARD.x))
-	card.add_child(_words(title, rule))
+	card.add_child(words(title, rule))
 	var button: Button = ScreenKit.button(
 		_tr("store.buy").format({"price": desk.price(slot)}), CommonsTheme.COUPON
 	)
@@ -66,12 +66,13 @@ static func face(cadre_id: String, wide: float) -> Control:
 
 
 ## The name in dark type, then the rules with their keywords marked.
-static func _words(title: String, rule: String) -> Control:
+static func words(title: String, rule: String) -> Control:
 	var words: VBoxContainer = VBoxContainer.new()
 	words.add_theme_constant_override("separation", 2)
 	words.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var name: Label = ScreenKit.label(title, NAME_SIZE)
 	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	NameFit.apply(name, title, StoreScreen.CARD.x - 48.0, NAME_SIZE, NameFit.LEAST)
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	words.add_child(name)
 	var rules: KeywordText = KeywordText.new()

@@ -5,12 +5,19 @@ extends RefCounted
 ## thumbed from corruption stage 0, and worse at every stage by BowlGrime.wear(). Each
 ## ticket draws from its own fixed seed, so the same ticket always looks the same.
 
-const PAPER: Color = Color("e2d1a6")
+## Warm, like the other village papers, and aged gently, so a row of tickets never reads
+## as grey.
+const PAPER: Color = Color("ecd29a")
 const EDGE: Color = Color("4a3a26")
 const PERFORATION: Color = Color("7a6446")
 const SEED: int = 6143
 const NOTCH: float = 5.0
 const SPECKS: Vector2i = Vector2i(4, 26)
+
+
+## The ticket's paper at a wear: a little darker and duller as the stage deepens.
+static func paper(worn: float) -> Color:
+	return PAPER.lerp(BowlGrime.BONE, 0.2 * worn).darkened(0.02 + 0.15 * worn)
 
 
 ## The ticket filling rect, with a coloured band down its left end.
@@ -20,7 +27,7 @@ static func draw(
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = SEED + 97 * which
 	var body: PackedVector2Array = _outline(rect, rng, worn)
-	canvas.draw_colored_polygon(body, Color(BowlGrime.aged(PAPER, worn), alpha))
+	canvas.draw_colored_polygon(body, Color(paper(worn), alpha))
 	var strip: Rect2 = Rect2(rect.position + Vector2(3, 4), Vector2(5, rect.size.y - 8))
 	canvas.draw_rect(strip, Color(BowlGrime.aged(band, worn * 0.8), alpha * 0.85))
 	_perforate(canvas, rect, worn, alpha)

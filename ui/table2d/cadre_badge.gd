@@ -41,23 +41,12 @@ func count() -> String:
 
 ## The size a name is set at to fit wide: each word on one line.
 static func name_size(font: Font, text: String, wide: float) -> int:
-	var font_size: int = NAME_SIZE
-	while font_size > LEAST_NAME:
-		var fits: bool = true
-		for word: String in text.split(" "):
-			var width: float = (
-				font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-			)
-			fits = fits and width <= wide
-		if fits:
-			break
-		font_size -= 1
-	return font_size
+	return NameFit.size_for(font, text, wide, NAME_SIZE, LEAST_NAME)
 
 
 func _draw() -> void:
 	var worn: float = BowlGrime.wear()
-	var ink: Color = BowlGrime.aged(INK, worn * 0.15)
+	var ink: Color = BowlGrime.faded(INK, worn)
 	var font: Font = get_theme_default_font()
 	if not _name.is_empty():
 		var wide: float = size.x - NAME_MARGIN * 2.0

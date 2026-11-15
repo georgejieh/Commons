@@ -14,6 +14,10 @@ enum Look { LEAFLET, DECREE, ENVELOPE }
 
 const SIZE: Vector2 = Vector2(195, 122)
 const NAME_SIZE: int = 21
+## A name shrinks this far to stay on one line, then wraps between words.
+const LEAST_NAME: int = 16
+## The name's width: the panel less its side margins.
+const NAME_WIDTH: float = 171.0
 const BUY_SIZE: int = 18
 const KIND_SIZE: int = 13
 ## How much less padding the compact Buy ticket has above and below its label.
@@ -52,8 +56,8 @@ func _init() -> void:
 	_kind.add_theme_font_size_override("font_size", KIND_SIZE)
 	_name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_name.add_theme_font_size_override("font_size", NAME_SIZE)
-	_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_name.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_name.custom_minimum_size = Vector2(NAME_WIDTH, 0)
 	_sold.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_sold.add_theme_font_size_override("font_size", NAME_SIZE + 4)
 	_sold.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -64,6 +68,7 @@ func _init() -> void:
 		label.autowrap_mode = TextServer.AUTOWRAP_OFF
 		label.clip_text = true
 		column.add_child(label)
+	_name.clip_text = false
 	buy.custom_minimum_size = Vector2.ZERO
 	buy.size_flags_horizontal = Control.SIZE_FILL
 	buy.add_theme_font_size_override("font_size", BUY_SIZE)
@@ -96,7 +101,7 @@ func offer(
 	rule = rule_text
 	_which = id.hash() & 0xFF
 	_kind.text = kind.to_upper()
-	_name.text = name_text
+	_fit_name(name_text)
 	buy.text = price
 	_kind.visible = true
 	_name.visible = true
@@ -143,6 +148,23 @@ func is_private() -> bool:
 
 func look() -> Look:
 	return _look
+
+
+## The name as set, for tests.
+func name_label() -> Label:
+	return _name
+
+
+## The name on one line, smaller as far as LEAST_NAME, then wrapped between words.
+func _fit_name(name_text: String) -> void:
+	var font: Font = ScreenKit.DISPLAY_BOLD
+	var font_size: int = NAME_SIZE
+	while (
+		font_size > LEAST_NAME
+		and font.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > NAME_WIDTH
+	):
+		font_size -= 1
+	NameFit.apply(_name, name_text, NAME_WIDTH, font_size, LEAST_NAME)
 
 
 func shown_name() -> String:

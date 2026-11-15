@@ -43,10 +43,10 @@ func _draw() -> void:
 	PaperTicket.draw(self, rect, BowlGrime.wear(), rank, BAND)
 	var font: Font = get_theme_default_font()
 	var ink: Color = RED_INK if rank == Ranks.TWO else INK
-	var faded: Color = BowlGrime.aged(ink, BowlGrime.wear() * 0.15)
+	var faded: Color = BowlGrime.faded(ink, BowlGrime.wear())
 	var width: float = rect.size.x
 	var baseline: Vector2 = rect.position + Vector2(0, rect.size.y * 0.58)
 	draw_string(font, baseline, _label, HORIZONTAL_ALIGNMENT_CENTER, width, FONT_SIZE, faded)
 	if lifted:
 		var ring: Rect2 = rect.grow(2.5)
-		draw_rect(ring, BowlGrime.aged(RING, BowlGrime.wear() * 0.2), false, RING_WIDTH)
+		draw_rect(ring, BowlGrime.faded(RING, BowlGrime.wear()), false, RING_WIDTH)

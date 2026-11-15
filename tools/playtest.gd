@@ -429,9 +429,9 @@ func _envelope_frames() -> void:
 	await _stage_9(overlay, "envelope_choices_stage_9")
 	var keep: Button = _first_keep(papers, overlay)
 	await _press(keep)
-	await create_timer(0.45).timeout
+	await create_timer(0.25).timeout
 	await _snap("envelope_kept")
-	await create_timer(1.6).timeout
+	await create_timer(2.6).timeout
 	if bool(stall.call("is_busy")):
 		_misclicks += 1
 		print("ENVELOPE STILL OPEN")
@@ -480,9 +480,9 @@ func _parcel_frames() -> void:
 	var stamped: Object = papers[1]
 	var keep_card: Button = stamped.get("keep")
 	await _press(keep_card)
-	await create_timer(0.45).timeout
+	await create_timer(0.25).timeout
 	await _snap("parcel_kept")
-	await create_timer(1.6).timeout
+	await create_timer(2.6).timeout
 	var saves_hub: Object = root.get_node("Saves")
 	var saves: Object = saves_hub.call("run_service")
 	saves.call("save", snapshot)

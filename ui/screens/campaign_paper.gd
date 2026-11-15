@@ -25,7 +25,7 @@ static func paper(worn: float) -> Color:
 
 ## A band or ink colour, faded a little: printing outlasts the paper it is on.
 static func ink(clean: Color, worn: float) -> Color:
-	return BowlGrime.aged(clean, worn * 0.3)
+	return BowlGrime.faded(clean, worn)
 
 
 ## A leaflet sheet filling rect: aged paper with a coloured head band, a fold across the

@@ -209,12 +209,13 @@ func _check_apart(overlay: EnvelopeOverlay, where: String) -> void:
 	var pieces: Array[Control] = []
 	for paper: ChoicePaper in overlay.papers():
 		pieces.append(paper)
-		var item: Rect2 = paper.item.get_global_rect()
+		var item: Rect2 = EnvelopeOverlay.shown_rect(paper.item)
 		(
 			assert_bool(paper.get_global_rect().grow(SLACK).encloses(item))
 			. override_failure_message("%s: item %s outside its paper" % [where, item])
 			. is_true()
 		)
+		_check_paper(paper, overlay.papers().size(), where)
 	var blocks: Dictionary[String, Control] = overlay.blocks()
 	for name: String in ["heading", "detail", "button"]:
 		pieces.append(blocks[name])
@@ -227,3 +228,33 @@ func _check_apart(overlay: EnvelopeOverlay, where: String) -> void:
 				. override_failure_message("%s: %s overlaps %s" % [where, a, b])
 				. is_false()
 			)
+
+
+## A choice is the main thing on the screen: its item fills its place along one side, at
+## the size the count of choices gives, and Keep is exactly as wide as the paper; a
+## caption sits on paper at a readable size, and nothing in a choice is faded.
+func _check_paper(paper: ChoicePaper, count: int, where: String) -> void:
+	var place: Vector2 = ChoicePaper.item_for(count)
+	assert_bool(place.x >= (200.0 if count <= 3 else 190.0)).is_true()
+	var item: Vector2 = EnvelopeOverlay.shown_rect(paper.item).size
+	var fills: bool = item.x >= place.x * 0.85 or item.y >= place.y * 0.85
+	(
+		assert_bool(fills)
+		. override_failure_message("%s: item %s in %s" % [where, item, place])
+		. is_true()
+	)
+	var keep: float = paper.keep.get_global_rect().size.x
+	assert_float(absf(keep - paper.size.x)).override_failure_message(where).is_less(2.0)
+	if not paper.caption().is_empty():
+		var label: Label = paper.caption_label()
+		assert_int(label.get_theme_font_size("font_size")).is_greater_equal(16)
+		assert_bool(paper.caption_strip().is_visible_in_tree()).is_true()
+		var strip: Rect2 = paper.caption_strip().get_global_rect().grow(SLACK)
+		assert_bool(strip.encloses(label.get_global_rect())).is_true()
+	var node: Node = paper.item
+	while node != null and node != paper.get_parent():
+		if node is CanvasItem:
+			assert_float((node as CanvasItem).modulate.a).override_failure_message(where).is_equal(
+				1.0
+			)
+		node = node.get_parent()

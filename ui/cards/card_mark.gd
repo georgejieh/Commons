@@ -12,9 +12,8 @@ enum Kind { STAMP, MODEL }
 
 ## Each mark's box, in card pixels.
 const SIZE: Vector2 = Vector2(30, 32)
-## How far the ink and gold age with the stage: they wear, but stay solid enough to read
-## at hand size at every stage.
-const INK_WEAR: float = 0.3
+## The ink and gold only fade a little with the stage (BowlGrime.faded), so a mark reads at
+## hand size at every stage.
 const VERMILION: Color = Color("b02a17")
 const GOLD: Color = Color("e0b84a")
 const GOLD_DARK: Color = Color("8a5a12")
@@ -48,7 +47,7 @@ func _draw() -> void:
 ## the way a carved name seal prints.
 func _draw_chop() -> void:
 	var worn: float = BowlGrime.wear()
-	var red: Color = BowlGrime.aged(VERMILION, worn * INK_WEAR)
+	var red: Color = BowlGrime.faded(VERMILION, worn)
 	var paper: Color = BowlGrime.aged(PAPER, worn)
 	var side: float = minf(size.x, size.y) - 4.0
 	draw_set_transform(size / 2.0, CHOP_TILT)
@@ -80,10 +79,10 @@ func _draw_rosette() -> void:
 			center + Vector2(side * 8.0, size.y - center.y),
 			center + Vector2(side * 3.0, size.y - center.y - 3.0),
 		]
-		draw_colored_polygon(tail, BowlGrime.aged(VERMILION, worn * INK_WEAR))
-	var gold: Color = BowlGrime.aged(GOLD, worn * INK_WEAR)
-	var dark: Color = BowlGrime.aged(GOLD_DARK, worn * INK_WEAR)
-	var red: Color = BowlGrime.aged(VERMILION, worn * INK_WEAR)
+		draw_colored_polygon(tail, BowlGrime.faded(VERMILION, worn))
+	var gold: Color = BowlGrime.faded(GOLD, worn)
+	var dark: Color = BowlGrime.faded(GOLD_DARK, worn)
+	var red: Color = BowlGrime.faded(VERMILION, worn)
 	# A dark edge round the whole rosette, so it reads over stock and art alike.
 	draw_circle(center, radius * 1.08, Color(EDGE, 0.8))
 	for petal: int in PETALS:

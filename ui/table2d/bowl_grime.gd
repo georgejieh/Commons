@@ -37,6 +37,12 @@ static func aged(clean: Color, worn: float) -> Color:
 	return clean.lerp(BONE, 0.42 + 0.3 * worn).darkened(0.02 + 0.2 * worn)
 
 
+## Ink or print after handling: it fades a little toward the paper, never so far that a
+## word or a numeral stops reading at a glance.
+static func faded(clean: Color, worn: float) -> Color:
+	return clean.lerp(BONE, 0.12 * worn)
+
+
 ## The bowl's grime over its glaze: tea stains in the well, crazing through the glaze,
 ## dirt, chips out of the rim down to the clay, and at the worst stages a dried ring.
 static func bowl(canvas: CanvasItem, at: Vector2, radius: float, alpha: float, worn: float) -> void:

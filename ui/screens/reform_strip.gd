@@ -127,7 +127,7 @@ func _draw_tag(tag: Control) -> void:
 	var worn: float = BowlGrime.wear()
 	DecreePaper.tag(tag, Rect2(Vector2.ZERO, tag.size), worn, _ids[index].hash() & 0xFF)
 	var font: Font = get_theme_default_font()
-	var ink: Color = BowlGrime.aged(INK, worn * 0.15)
+	var ink: Color = BowlGrime.faded(INK, worn)
 	var baseline: Vector2 = Vector2(TAG_PADDING * 0.62, tag.size.y * 0.5 + NAME_SIZE * 0.42)
 	tag.draw_string(font, baseline, _names[index], HORIZONTAL_ALIGNMENT_LEFT, -1, NAME_SIZE, ink)
 	if tag.has_focus():

@@ -191,3 +191,114 @@ func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 		var label: Label = node
 		if label.text == tr("coll.title"):
 			assert_object(label.get_theme_color("font_color")).is_equal(ScreenKit.RED)
+
+
+## Every name, through every paper that prints it, breaks only between words: a word
+## wider than its paper shrinks the name instead.
+func test_no_name_breaks_inside_a_word() -> void:
+	for campaign: CampaignDef in RunCampaigns.all():
+		var name: String = tr(campaign.name_key)
+		for compact: bool in [false, true]:
+			var leaflet: CampaignLeaflet = auto_free(CampaignLeaflet.new())
+			add_child(leaflet)
+			leaflet.set_compact(compact)
+			leaflet.show_campaign(0, campaign.id, name, "", false)
+			await await_idle_frame()
+			_assert_fits(leaflet.name_label(), "leaflet %s" % compact)
+		await _check_panel(name)
+		for count: int in [3, 4]:
+			var paper: ChoicePaper = await _choice(count)
+			paper.show_campaign(_app.controller, campaign.id)
+			await await_idle_frame()
+			_assert_fits(_named(paper, name), "campaign choice %d" % count)
+	for reform: ReformDef in RunReforms.all():
+		await _check_panel(tr(reform.name_key))
+	for params: ShopParams in [RunLoop.DEFAULT_SHOP, RunLoop.DEFAULT_BLACK_MARKET]:
+		for envelope: EnvelopeDef in params.envelopes:
+			await _check_panel(tr(envelope.name_key))
+	for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+		for count: int in [3, 4]:
+			var paper: ChoicePaper = await _choice(count)
+			paper.show_directive(_app.controller, directive.id)
+			await await_idle_frame()
+			_assert_fits(_named(paper, tr(directive.name_key)), "directive %d" % count)
+	await _check_cadres()
+
+
+func _check_cadres() -> void:
+	var board: NoticeBoard = auto_free(NoticeBoard.new())
+	add_child(board)
+	board.setup(6, StoreScreen.BOARD_BOX)
+	var tile: float = board.tile_size(6).x - CadreBadge.NAME_MARGIN * 2.0
+	var font: Font = board.get_theme_default_font()
+	for cadre: ModifierDef in RunLoop.all_cadres():
+		var name: String = tr(cadre.name_key)
+		var words: VBoxContainer = auto_free(VBoxContainer.new())
+		words.custom_minimum_size = Vector2(StoreScreen.CARD.x - 48.0, 0)
+		add_child(words)
+		words.add_child(StoreCard.words(name, "rule"))
+		await await_idle_frame()
+		_assert_fits(_named(words, name), "store card")
+		var fitted: int = CadreBadge.name_size(font, name, tile)
+		(
+			assert_bool(NameFit.words_fit(font, name, tile, fitted))
+			. override_failure_message(name)
+			. is_true()
+		)
+	var collection: CollectionScreen = _app.show_screen("collection")
+	await await_idle_frame()
+	await await_idle_frame()
+	for cadre: ModifierDef in RunLoop.all_cadres():
+		_assert_fits(_named(collection, tr(cadre.name_key)), "collection")
+
+
+func _check_panel(name: String) -> void:
+	var panel: CounterPanel = auto_free(CounterPanel.new())
+	add_child(panel)
+	panel.offer(CounterPanel.Look.LEAFLET, "KIND", "id", name, "rule", "Buy")
+	await await_idle_frame()
+	_assert_fits(panel.name_label(), "counter panel")
+
+
+func _choice(count: int) -> ChoicePaper:
+	var paper: ChoicePaper = auto_free(ChoicePaper.new())
+	paper.setup(0, ChoicePaper.item_for(count))
+	add_child(paper)
+	await await_idle_frame()
+	return paper
+
+
+## The label under root that prints name.
+func _named(root: Node, name: String) -> Label:
+	for node: Node in root.find_children("*", "Label", true, false):
+		if (node as Label).text == name:
+			return node as Label
+	return null
+
+
+func _assert_fits(label: Label, where: String) -> void:
+	assert_object(label).override_failure_message(where).is_not_null()
+	if label == null:
+		return
+	(
+		assert_bool(NameFit.label_fits(label))
+		. override_failure_message(
+			(
+				"%s: %s at %d px in %s"
+				% [where, label.text, label.get_theme_font_size("font_size"), label.size]
+			)
+		)
+		. is_true()
+	)
+
+
+## Multiples print as rules text has them: a whole one with no decimal.
+func test_whole_multiples_print_without_a_decimal() -> void:
+	assert_str(ModifierDef.multiple(2.0)).is_equal("2")
+	assert_str(ModifierDef.multiple(1.5)).is_equal("1.5")
+	var card: CardInstance = CardInstance.from_deck_id(20)
+	var caption: String = _app.controller.envelope_card_text(
+		EnvelopeShelf.KIND_MODEL, "caption", card
+	)
+	assert_str(caption).contains("2 times")
+	assert_str(caption).not_contains("2.0")

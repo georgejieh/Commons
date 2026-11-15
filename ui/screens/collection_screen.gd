@@ -85,9 +85,11 @@ func _entry(definition: ModifierDef) -> Control:
 	row.add_child(_art(definition.id))
 	var words: VBoxContainer = VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var name: Label = ScreenKit.styled(tr(definition.name_key), CommonsTheme.TITLE)
-	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var name: Label = ScreenKit.styled("", CommonsTheme.TITLE)
+	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	name.custom_minimum_size = Vector2(RULES_WIDTH, 0)
+	var title: String = tr(definition.name_key)
+	NameFit.apply(name, title, RULES_WIDTH, ScreenKit.STYLE.title_size, NameFit.LEAST)
 	words.add_child(name)
 	var text: String = CadreText.rules(definition)
 	if definition.table_wide:

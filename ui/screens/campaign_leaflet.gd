@@ -14,6 +14,11 @@ const COMPACT: float = 0.8
 const NAME_SIZE: int = 19
 ## The smallest a name is ever set, compact or not, so it reads on a 1080 screen.
 const LEAST_NAME: int = 16
+## A compact leaflet's name may shrink this far to fit its longest word.
+const LEAST_COMPACT_NAME: int = 13
+## The name's side margins, full and compact.
+const SIDE: float = 6.0
+const SIDE_COMPACT: float = 4.0
 const KIND_SIZE: int = 12
 const STATUS_SIZE: int = 14
 ## A paper-coloured halo round the type, so stains never cross a letter.
@@ -32,6 +37,7 @@ var cursor: bool = false
 var _private: bool = false
 var _eyebrow: Label = Label.new()
 var _name: Label = Label.new()
+var _compact: bool = false
 var _status: Label = Label.new()
 
 
@@ -42,8 +48,8 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	var margins: StyleBoxEmpty = StyleBoxEmpty.new()
-	margins.content_margin_left = 10
-	margins.content_margin_right = 10
+	margins.content_margin_left = SIDE
+	margins.content_margin_right = SIDE
 	margins.content_margin_top = 18
 	margins.content_margin_bottom = 10
 	add_theme_stylebox_override("panel", margins)
@@ -55,12 +61,12 @@ func _init() -> void:
 	_eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_name.add_theme_font_size_override("font_size", NAME_SIZE)
-	_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_name.autowrap_mode = TextServer.AUTOWRAP_WORD
 	_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_name.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# A fixed width, so the wrapped name never makes the leaflet grow.
-	_name.custom_minimum_size = Vector2(SIZE.x - 20.0, 0)
+	_name.custom_minimum_size = Vector2(SIZE.x - SIDE * 2.0, 0)
 	_status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_status.add_theme_font_size_override("font_size", STATUS_SIZE)
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -83,7 +89,7 @@ func show_campaign(
 	_private = private
 	_eyebrow.text = tr("campaign.eyebrow.private" if private else "campaign.eyebrow.collective")
 	_eyebrow.text = _eyebrow.text.to_upper()
-	_name.text = title
+	_fit_name(title)
 	var paper: Color = CampaignPaper.paper(BowlGrime.wear())
 	for label: Label in [_eyebrow, _name, _status]:
 		label.add_theme_color_override("font_color", ScreenKit.INK)
@@ -111,15 +117,28 @@ func set_compact(on: bool) -> void:
 	update_minimum_size()
 	size = extent
 	pivot_offset = extent / 2.0
-	_name.custom_minimum_size = Vector2(extent.x - (12.0 if on else 20.0), 0)
-	var name_size: int = maxi(roundi(NAME_SIZE * (COMPACT if on else 1.0)), LEAST_NAME)
-	_name.add_theme_font_size_override("font_size", name_size)
+	_compact = on
+	_name.custom_minimum_size = Vector2(extent.x - (SIDE_COMPACT if on else SIDE) * 2.0, 0)
+	_fit_name(_name.text)
 	var margins: StyleBoxEmpty = get_theme_stylebox("panel") as StyleBoxEmpty
 	if margins != null:
 		margins.content_margin_top = 14 if on else 18
-		margins.content_margin_left = 4 if on else 10
-		margins.content_margin_right = 4 if on else 10
+		margins.content_margin_left = SIDE_COMPACT if on else SIDE
+		margins.content_margin_right = SIDE_COMPACT if on else SIDE
 	queue_redraw()
+
+
+## The name at its size, smaller only as far as its longest word needs to fit, so a line
+## breaks only between words.
+func _fit_name(title: String) -> void:
+	var base: int = maxi(roundi(NAME_SIZE * (COMPACT if _compact else 1.0)), LEAST_NAME)
+	var least: int = LEAST_COMPACT_NAME if _compact else LEAST_NAME
+	NameFit.apply(_name, title, _name.custom_minimum_size.x, base, least)
+
+
+## The name as set, for tests.
+func name_label() -> Label:
+	return _name
 
 
 static func leaf_size(compact: bool) -> Vector2:

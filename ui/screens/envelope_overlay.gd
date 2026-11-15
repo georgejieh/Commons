@@ -18,7 +18,7 @@ signal closed
 const GAP: int = 20
 const ROW_GAP: int = 14
 ## The envelope's size once it reaches the middle.
-const FIGURE: Vector2 = Vector2(360, 230)
+const FIGURE: Vector2 = Vector2(540, 340)
 ## Seconds: the envelope's arrival, its opening beat, each paper's slide and the gap
 ## between papers, the kept paper's lift, the seal's hold, the others' fall and the close.
 const ARRIVE_TIME: float = 0.3
@@ -26,7 +26,7 @@ const OPEN_TIME: float = 0.5
 const FAN_TIME: float = 0.32
 const FAN_STAGGER: float = 0.07
 const KEEP_TIME: float = 0.2
-const SEAL_HOLD: float = 0.55
+const SEAL_HOLD: float = 0.9
 const FALL_TIME: float = 0.38
 const CLOSE_TIME: float = 0.22
 const TICK_STAGGER: float = 0.12
@@ -36,7 +36,12 @@ const KEEP_RISE: float = 26.0
 const KEEP_SCALE: float = 1.06
 const FALL: float = 340.0
 const FALL_TURN: float = 0.3
-const SEAL_WIDTH: float = 150.0
+## The seal's width as a share of the kept item's, and how much of it overhangs the
+## item's bottom right corner, so it never covers the name.
+const SEAL_SHARE: float = 0.62
+const SEAL_OVERHANG: float = 0.4
+## The instruction under the envelope's name.
+const ASK_SIZE: int = 18
 
 var _controller: RunController
 var _shelf: EnvelopeShelf
@@ -143,10 +148,10 @@ func _heading() -> Control:
 	lines.add_child(ScreenKit.eyebrow(tr("envelope.eyebrow")))
 	var name: Label = ScreenKit.styled(_shelf.envelope_name(_shelf.opened_id()), CommonsTheme.TITLE)
 	name.autowrap_mode = TextServer.AUTOWRAP_OFF
-	var ask: Label = ScreenKit.styled(tr("envelope.choose"), CommonsTheme.CAPTION)
+	lines.add_child(name)
+	var ask: Label = ScreenKit.label(tr("envelope.choose"), ASK_SIZE)
 	ask.autowrap_mode = TextServer.AUTOWRAP_OFF
-	ask.size_flags_vertical = Control.SIZE_SHRINK_END
-	lines.add_child(ScreenKit.row([name, ask], 18))
+	lines.add_child(ask)
 	sheet.add_child(lines)
 	_blocks["heading"] = sheet
 	return sheet
@@ -154,13 +159,14 @@ func _heading() -> Control:
 
 ## One paper per item, each in a place of its own so it can move while the row holds.
 func _fill_row() -> void:
+	var item: Vector2 = ChoicePaper.item_for(_shelf.count())
 	for index: int in _shelf.count():
 		var place: Control = Control.new()
-		place.custom_minimum_size = ChoicePaper.SIZE
+		place.custom_minimum_size = ChoicePaper.size_for(item)
 		place.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_row.add_child(place)
 		var paper: ChoicePaper = ChoicePaper.new()
-		paper.index = index
+		paper.setup(index, item)
 		# In the tree first: a card view is only ready to show a card once it is in it.
 		place.add_child(paper)
 		var kind: int = _shelf.kind(index)
@@ -233,7 +239,7 @@ func _fan() -> void:
 	for index: int in _papers.size():
 		var paper: ChoicePaper = _papers[index]
 		var place: Control = paper.get_parent() as Control
-		paper.position = mouth - place.global_position - ChoicePaper.SIZE / 2.0
+		paper.position = mouth - place.global_position - paper.size / 2.0
 		paper.scale = Vector2.ONE * FAN_FROM
 		paper.rotation = (index - (_papers.size() - 1) / 2.0) * 0.12
 		var tween: Tween = paper.create_tween().set_parallel(true)
@@ -323,9 +329,19 @@ func _keep(index: int) -> void:
 	tween.tween_callback(_finish)
 
 
+## Where a control is drawn on screen, its scale counted, which get_global_rect leaves out.
+static func shown_rect(control: Control) -> Rect2:
+	var shown: Transform2D = control.get_global_transform()
+	return Rect2(shown.origin, control.size * shown.get_scale())
+
+
+## The seal lands on the kept item's bottom right corner, part of it off the paper, so
+## the name and the mark stay in sight.
 func _press_seal(paper: ChoicePaper, word: String) -> void:
-	_seal.prepare(word, ScreenKit.RED, SEAL_WIDTH)
-	var middle: Vector2 = paper.item.get_global_rect().get_center()
+	var shown: Rect2 = shown_rect(paper.item)
+	var wide: float = shown.size.x * SEAL_SHARE
+	_seal.prepare(word, ScreenKit.RED, wide)
+	var middle: Vector2 = shown.end - Vector2.ONE * wide * (0.5 - SEAL_OVERHANG)
 	_seal.position = middle - global_position - _seal.size / 2.0
 	_seal.press()
 

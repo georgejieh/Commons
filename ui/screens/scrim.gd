@@ -4,7 +4,8 @@ extends ColorRect
 ## and an opened envelope. It covers the whole screen and takes every click, so nothing on
 ## the page behind can be pressed, and nothing behind shows through around the question.
 
-const DIM: Color = Color(0.03, 0.02, 0.02, 0.74)
+## Dark enough that whatever stands over it is plainly in front of the page.
+const DIM: Color = Color(0.02, 0.015, 0.01, 0.86)
 
 
 func _init() -> void:

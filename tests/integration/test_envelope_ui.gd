@@ -179,7 +179,9 @@ func test_focus_moves_along_the_row_and_one_cancel_never_throws_it_away() -> voi
 	assert_bool(_stall(store).is_busy()).is_false()
 
 
-func test_a_choice_that_cannot_be_kept_is_dimmed_and_says_why() -> void:
+## A choice that cannot be kept stays at full strength, its Keep off, with its reason on
+## a paper strip in dark red at a readable size.
+func test_a_choice_that_cannot_be_kept_says_why_at_full_strength() -> void:
 	Settings.set_value("reduced_motion", true)
 	_offer("campaign_envelope")
 	_loop().state.inventory.consumables.assign(["grain_loan", "appeal"])
@@ -190,6 +192,12 @@ func test_a_choice_that_cannot_be_kept_is_dimmed_and_says_why() -> void:
 		assert_bool(paper.is_takeable()).is_false()
 		assert_bool(paper.keep.disabled).is_true()
 		assert_str(paper.caption()).is_equal(tr("envelope.refused.campaigns_full"))
+		assert_float(paper.modulate.a).is_equal(1.0)
+		assert_float(paper.item.modulate.a).is_equal(1.0)
+		assert_bool(paper.caption_strip().is_visible_in_tree()).is_true()
+		var reason: Label = paper.caption_label()
+		assert_int(reason.get_theme_font_size("font_size")).is_greater_equal(16)
+		assert_object(reason.get_theme_color("font_color")).is_equal(ChoicePaper.REFUSED_INK)
 	assert_bool(overlay.nothing_button().has_focus()).is_true()
 	overlay.papers()[0].keep.pressed.emit()
 	assert_object(_app.controller.opened_envelope()).is_not_null()

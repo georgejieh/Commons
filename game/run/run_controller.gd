@@ -352,7 +352,7 @@ func envelope_card_text(kind: int, key: String, card: CardInstance) -> String:
 	var model: float = Scorer.DEFAULT_PARAMS.model_grain_percent / 100.0
 	var values: Dictionary[String, Variant] = {
 		"resentment": RunLoop.DEFAULT_RESENTMENT.stamped_card,
-		"model_times": String.num(model),
+		"model_times": ModifierDef.multiple(model),
 		"card": card_name(card),
 	}
 	return tr("envelope.card.%s.%s" % [mark, key]).format(values)
