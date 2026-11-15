@@ -154,6 +154,7 @@ func _on_used(event: RunEvent, quiet: bool) -> void:
 		return
 	var tween: Tween = _start_beat()
 	var slot: int = event.value
+	_leaflet.set_compact(tray.compact)
 	_leaflet.show_campaign(
 		slot,
 		event.text,

@@ -116,7 +116,7 @@ func open(app: DemoApp) -> void:
 	# The moments layer lies over everything, seats included, so a takeover dims it all.
 	move_child(_moments, -1)
 	_speech.setup(_seats, app)
-	_board.setup(_controller.cadre_slots())
+	_board.setup(_controller.cadre_slots(), _board.size)
 	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
 	_hand_view.setup(_hand, _pool)
 	_commands.setup(_controller, _hand, _hand_view, _actions, _need_panel, _player)

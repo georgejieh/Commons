@@ -5,7 +5,8 @@ extends Control
 ## hand's selection, and Use spends it; one that asks for none waits for Use to confirm.
 ## Cancel, or arming nothing, leaves no state behind. Keyboard and gamepad step a cursor
 ## through the leaflets with commons_campaign, arm with commons_play and cancel with
-## commons_pass or ui_cancel. Every use goes through the run controller.
+## commons_pass or ui_cancel. Every use goes through the run controller. The tray has a
+## place for every Campaign the player can hold, and grows when a Reform raises that.
 
 ## Armed, cursor or prompt changed, so the screen can update its prompt line.
 signal changed
@@ -25,6 +26,12 @@ var selection: Callable = Callable()
 var side_buttons: bool = false
 ## Smaller leaflets, for a shop's shelf. Set before setup().
 var compact: bool = false
+## Leaflets stack in a column with Use and Cancel beside the top one, for the table's
+## left edge, which has more height than width. Set before setup().
+var vertical: bool = false
+## Faint places for the Campaigns that could still be held, so a shop shows the room
+## left. The table shows only what is held. Set before setup().
+var show_empty: bool = true
 
 var use: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 var cancel: Button = ScreenKit.button("", CommonsTheme.SECONDARY)
@@ -59,20 +66,30 @@ func _ready() -> void:
 
 func setup(controller: RunController) -> void:
 	_controller = controller
-	for slot: int in controller.campaign_slots():
+	refresh()
+
+
+## A place for every Campaign the player can hold. Leaflets are only ever added: the
+## limit rises with a Reform and never falls.
+func _grow() -> void:
+	while _leaflets.size() < _controller.campaign_slots():
 		var leaflet: CampaignLeaflet = CampaignLeaflet.new()
 		leaflet.set_compact(compact)
 		leaflet.chosen.connect(_on_chosen)
 		add_child(leaflet)
 		_leaflets.append(leaflet)
-	custom_minimum_size = tray_size(controller.campaign_slots(), side_buttons, compact)
-	size = custom_minimum_size
-	refresh()
+		custom_minimum_size = tray_size(_leaflets.size(), side_buttons, compact, vertical)
+		size = custom_minimum_size
 
 
-## The tray's size for a number of slots: the head, a row of leaflets, the buttons.
-static func tray_size(slots: int, beside: bool = false, small: bool = false) -> Vector2:
+## The tray's size for a number of slots: the head, a row of leaflets, the buttons. A
+## vertical tray is its column alone; its buttons stand to its right.
+static func tray_size(
+	slots: int, beside: bool = false, small: bool = false, column: bool = false
+) -> Vector2:
 	var leaf: Vector2 = CampaignLeaflet.leaf_size(small)
+	if column:
+		return Vector2(leaf.x, HEAD + slots * leaf.y + (slots - 1) * GAP)
 	var wide: float = slots * leaf.x + (slots - 1) * GAP
 	if beside:
 		return Vector2(wide + GAP + BUTTON.x, HEAD + leaf.y)
@@ -82,6 +99,7 @@ static func tray_size(slots: int, beside: bool = false, small: bool = false) -> 
 ## Shows what is held now, dims each leaflet that cannot be used with its reason, and
 ## drops an armed one the run no longer holds.
 func refresh() -> void:
+	_grow()
 	var held: Array[String] = _controller.held_campaigns()
 	for slot: int in _leaflets.size():
 		var leaflet: CampaignLeaflet = _leaflets[slot]
@@ -222,6 +240,8 @@ func _held_id(slot: int) -> String:
 
 
 func _place(slot: int) -> Vector2:
+	if vertical:
+		return Vector2(0, HEAD + slot * (_leaf().y + GAP))
 	return Vector2(slot * (_leaf().x + GAP), HEAD)
 
 
@@ -231,8 +251,12 @@ func _leaf() -> Vector2:
 
 func _show_marks() -> void:
 	for slot: int in _leaflets.size():
+		var lift: float = CampaignLeaflet.LIFT if slot == _armed else 0.0
 		_leaflets[slot].set_armed(slot == _armed)
-		_leaflets[slot].position.y = HEAD - (CampaignLeaflet.LIFT if slot == _armed else 0.0)
+		# A leaflet in a column lifts out sideways, toward its buttons.
+		_leaflets[slot].position = (
+			_place(slot) + (Vector2(lift, 0) if vertical else Vector2(0, -lift))
+		)
 		_leaflets[slot].set_cursor(slot == _cursor)
 	var row: float = HEAD + _leaf().y + GAP
 	use.position = Vector2(0, row)
@@ -241,6 +265,10 @@ func _show_marks() -> void:
 		var column: float = _place(_leaflets.size()).x
 		use.position = Vector2(column, HEAD)
 		cancel.position = Vector2(column, HEAD + BUTTON.y + GAP)
+	if vertical:
+		var beside: float = _leaf().x + GAP + CampaignLeaflet.LIFT
+		use.position = Vector2(beside, HEAD)
+		cancel.position = Vector2(beside, HEAD + BUTTON.y + GAP)
 	for button: Button in [use, cancel]:
 		button.visible = _armed >= 0
 		# Sized once in the tree, where the button's own minimum is known.
@@ -250,6 +278,8 @@ func _show_marks() -> void:
 
 
 func _draw() -> void:
+	if not show_empty:
+		return
 	var worn: float = BowlGrime.wear()
 	var held: int = 0 if _controller == null else _controller.held_campaigns().size()
 	for slot: int in range(held, _leaflets.size()):

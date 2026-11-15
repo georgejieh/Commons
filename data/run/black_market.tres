@@ -9,6 +9,7 @@ directive_slots = 0
 cadre_slots = 5
 campaign_offers = 1
 campaign_slots = 2
+reform_offers = 0
 reroll_base = 3
 reroll_step = 2
 rarity_weights = Array[int]([50, 35, 15])

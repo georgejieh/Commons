@@ -1,13 +1,16 @@
 class_name TableCampaigns
 extends RefCounted
-## The player's Campaigns at the table (ADR 0021): the tray of held leaflets on the open
-## table left of the trick, clear of the hand, the buttons, the Cadre notice and the
-## prompt line; the Play on button at the opening before the first play; and the layer
+## The player's Campaigns at the table (ADR 0021): the held leaflets in a column down the
+## table's left edge, under the left seat and clear of the brigade notice, the trick, the
+## hand, the buttons and the prompt line, and not shown at all while none is held; the
+## Play on button at the opening before the first play; and the layer
 ## that acts each use out. While a leaflet is armed the action bar's reading says what
 ## to choose, and the hand's selection is the Campaign's.
 
-## Where the tray's top left corner sits at 1920x1080.
-const TRAY_AT: Vector2 = Vector2(48, 456)
+## Where the tray's top left corner sits at 1920x1080: under the left seat, which ends
+## at y 354, left of the trick, which starts at x 330, with its buttons above the notice
+## at y 540, and an armed leaflet clear of the line at x 120 that says your role.
+const TRAY_AT: Vector2 = Vector2(16, 372)
 
 var tray: CampaignTray = CampaignTray.new()
 var moments: CampaignMoments = CampaignMoments.new()
@@ -44,7 +47,11 @@ func setup(
 	_actions = actions
 	_player = player
 	_table = table
+	tray.compact = true
+	tray.vertical = true
+	tray.show_empty = false
 	tray.setup(controller)
+	tray.visible = not controller.held_campaigns().is_empty()
 	tray.selection = hand.selected_ids
 	tray.changed.connect(_on_tray_changed.bind(commands))
 	commands.prompt = _prompt
@@ -80,6 +87,7 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 func refresh() -> void:
 	tray.enabled = _player.is_idle()
 	tray.refresh()
+	tray.visible = not _controller.held_campaigns().is_empty()
 	_actions.show_opening(_controller.awaiting() == RunController.AWAIT_OPENING)
 
 

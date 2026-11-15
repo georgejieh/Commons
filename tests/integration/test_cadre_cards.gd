@@ -48,17 +48,22 @@ func test_store_cards_show_art_and_put_name_and_rules_in_the_tooltip() -> void:
 
 
 func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
-	var store: Control = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
 	var counter: HBoxContainer = store.get("_counter")
-	var idle: Label = store.get("_reading")
-	assert_bool(idle.visible).is_false()
-	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
+	var slip: DetailSlip = store.slip()
+	assert_bool(slip.visible).is_false()
+	var card: Control = counter.get_child(0)
+	var buy: Button = card.find_children("*", "Button", true, false)[0]
 	buy.focus_entered.emit()
-	var reading: Label = store.get("_reading")
-	assert_bool(reading.visible).is_true()
+	await await_idle_frame()
+	# The shared slip reads it out, under the card and clear of it.
+	assert_bool(slip.visible).is_true()
 	var first: String = _app.controller.store_stock()[0]
-	assert_str(reading.text).is_equal(ScreenKit.cadre_tip(_app.controller, first))
+	assert_str(slip.shown_rule()).is_equal(ScreenKit.rule_text(_app.controller, first))
+	assert_bool(slip.get_global_rect().intersects(card.get_global_rect())).is_false()
+	buy.focus_exited.emit()
+	assert_bool(slip.visible).is_false()
 
 
 func test_the_notice_board_cards_carry_the_tooltip() -> void:

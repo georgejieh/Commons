@@ -113,3 +113,25 @@ static func validate_campaign(
 		if not definition.parameters.has(parameter):
 			problems.append("%s: missing parameter %s" % [definition.id, parameter])
 	return problems
+
+
+## Checks a Reform (ADR 0021): its strings, a cost, an unlock tier, an effect script and
+## the parameters it needs.
+static func validate_reform(
+	definition: ReformDef, string_keys: Dictionary[String, bool]
+) -> PackedStringArray:
+	var problems: PackedStringArray = []
+	for key: String in [definition.name_key, definition.text_key]:
+		if not string_keys.has(key):
+			problems.append("%s: missing string key %s" % [definition.id, key])
+	if definition.cost <= 0:
+		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
+	if definition.unlock_tier < 0:
+		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	if not ReformRegistry.has_effect(definition.id):
+		problems.append("%s: no effect script" % definition.id)
+		return problems
+	for parameter: String in ReformRegistry.create(definition).required_parameters():
+		if not definition.parameters.has(parameter):
+			problems.append("%s: missing parameter %s" % [definition.id, parameter])
+	return problems

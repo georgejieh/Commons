@@ -9,15 +9,19 @@ extends RefCounted
 ## (ADR 0021), drawn evenly after every Cadre on the stream and redrawn by the same
 ## reroll; one whose whole family is at the top level is not offered. A counter with
 ## Campaign offers draws them last of all, evenly from its pool, and the same reroll
-## redraws them; a Campaign is refused while the player holds as many as they can.
+## redraws them; a Campaign is refused while the player holds as many as they can. A
+## counter with Reform offers draws them after its Campaigns, and the reroll redraws
+## them too. How many Cadres the player can hold is RunReforms.cadre_slots().
 
 enum Reason { OK, NO_SUCH_SLOT, SOLD_OUT, TOO_POOR, CADRES_FULL, LEVELS_MAXED, CAMPAIGNS_FULL }
 
 const SOLD: String = ""
 const PERCENT: int = 100
 
-## The counter's Campaigns, drawn last on the shop stream.
+## The counter's Campaigns, drawn after everything else on the shop stream but its
+## Reforms, which are drawn last.
 var campaigns: CampaignCounter
+var reforms: ReformCounter
 
 var _state: RunState
 var _params: ShopParams
@@ -36,7 +40,8 @@ func _init(
 	pool: Array[ModifierDef],
 	ration_cut: int = 0,
 	directives: Array[DirectiveDef] = [],
-	offered: Array[CampaignDef] = []
+	offered: Array[CampaignDef] = [],
+	reformed: Array[ReformDef] = []
 ) -> void:
 	_state = state
 	_params = params
@@ -44,6 +49,7 @@ func _init(
 	_ration_cut = ration_cut
 	_directives = directives
 	campaigns = CampaignCounter.new(state, params, offered)
+	reforms = ReformCounter.new(state, params, reformed)
 
 
 ## Slots this visit offers: fewer while rationing is in force.
@@ -51,12 +57,13 @@ func slot_count() -> int:
 	return maxi(_params.slots - (_ration_cut if _state.rationed else 0), 0)
 
 
-## Starts a visit with fresh Cadres. The Directives and Campaigns are drawn by
-## stock_directives() and campaigns.draw().
+## Starts a visit with fresh Cadres. The Directives, Campaigns and Reforms are drawn by
+## stock_directives(), campaigns.draw() and reforms.draw().
 func open() -> void:
 	_rerolls = 0
 	_directive_stock.clear()
 	campaigns.clear()
+	reforms.clear()
 	_restock()
 
 
@@ -82,8 +89,9 @@ func reroll_price() -> int:
 
 
 ## True when a reroll could put something else on the counter: more Cadres to offer
-## than slots while the board has room for one, more Directives than their slots, or
-## more Campaigns than their offers while the player has room for one.
+## than slots while the board has room for one, more Directives than their slots, more
+## Campaigns than their offers while the player has room for one, or more Reforms open
+## than their offers.
 func reroll_changes() -> bool:
 	var open: int = 0
 	for definition: ModifierDef in _pool:
@@ -91,14 +99,14 @@ func reroll_changes() -> bool:
 			open += 1
 	if has_room() and open > slot_count():
 		return true
-	if campaigns.reroll_changes():
+	if campaigns.reroll_changes() or reforms.reroll_changes():
 		return true
 	return _open_directives().size() > _params.directive_slots
 
 
 ## True while the player's board can take another Cadre.
 func has_room() -> bool:
-	return _state.inventory.cadres.size() < _params.cadre_slots
+	return _state.inventory.cadres.size() < RunReforms.cadre_slots(_state)
 
 
 func check_buy(slot: int) -> Reason:
@@ -133,6 +141,7 @@ func reroll() -> Reason:
 	_restock()
 	stock_directives()
 	campaigns.draw()
+	reforms.draw()
 	return Reason.OK
 
 

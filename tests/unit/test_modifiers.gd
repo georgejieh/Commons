@@ -109,6 +109,7 @@ func test_every_definition_in_data_is_valid() -> void:
 	var checked: int = 0
 	var directives: int = 0
 	var campaigns: int = 0
+	var reforms: int = 0
 	for path: String in _resources_under(DATA):
 		var resource: Resource = ResourceLoader.load(path)
 		var definition: ModifierDef = resource as ModifierDef
@@ -123,10 +124,32 @@ func test_every_definition_in_data_is_valid() -> void:
 		if campaign != null:
 			campaigns += 1
 			assert_array(Array(ModifierValidator.validate_campaign(campaign, keys))).is_empty()
+		var reform: ReformDef = resource as ReformDef
+		if reform != null:
+			reforms += 1
+			assert_array(Array(ModifierValidator.validate_reform(reform, keys))).is_empty()
 	assert_bool(checked >= 4).is_true()
 	# ADR 0021's six Directives and eight Campaigns (P4.11).
 	assert_int(directives).is_equal(6)
 	assert_int(campaigns).is_equal(8)
+	assert_int(reforms).is_equal(6)
+
+
+## A Reform missing its strings, cost, effect or parameters is caught.
+func test_a_broken_reform_is_caught() -> void:
+	var keys: Dictionary[String, bool] = _string_keys()
+	var good: ReformDef = load(DATA + "modifiers/reforms/grain_reserve.tres")
+	var bad: ReformDef = good.duplicate()
+	bad.parameters = {}
+	bad.cost = 0
+	bad.name_key = "reform.nothing.name"
+	var problems: String = "\n".join(ModifierValidator.validate_reform(bad, keys))
+	assert_str(problems).contains("missing parameter famine")
+	assert_str(problems).contains("bad cost")
+	assert_str(problems).contains("missing string key")
+	var stray: ReformDef = good.duplicate()
+	stray.id = "no_such_reform"
+	assert_str("\n".join(ModifierValidator.validate_reform(stray, keys))).contains("no effect")
 
 
 ## ADR 0021's 24 Cadres: 11 collective at the state store and 13 private at the black

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ReformDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/reform_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "grain_reserve"
+cost = 8
+unlock_tier = 1
+parameters = Dictionary[String, int]({"famine": 3})
+held_back = false
+name_key = "reform.grain_reserve.name"
+text_key = "reform.grain_reserve.text"

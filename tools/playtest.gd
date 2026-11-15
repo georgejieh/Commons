@@ -15,8 +15,6 @@ const SETTLE_SECONDS: float = 1.2
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
 const SAVE_PATH: String = "user://playtest/run.json"
-## The Campaigns that mark cards, one of which the table photographs in use.
-const MARKING: Array[String] = ["model_harvest", "registration_drive"]
 ## Corruption stages the dice bowl is photographed at, settled on a 1 and a 4.
 const BOWL_STAGES: Array[int] = [0, 3, 6, 9]
 
@@ -37,6 +35,8 @@ var _campaign_bought: bool = false
 var _campaign_used: bool = false
 var _opening_shot: bool = false
 var _market_shot: bool = false
+var _opening_granted: bool = false
+var _reform_shot: bool = false
 
 
 func _initialize() -> void:
@@ -96,6 +96,7 @@ func _step() -> void:
 			await _click_first_button()
 		"store":
 			await _shot("store")
+			await _reform_frames()
 			await _buy_one()
 			await _issue_one()
 			await _buy_campaign()
@@ -127,6 +128,8 @@ func _table_step() -> void:
 		1:
 			_rounds_seen += 1
 			_turns_in_round = 0
+			if not _opening_granted:
+				_grant_opening()
 			await _shot("round%d_bid" % _rounds_seen)
 			if _rounds_seen == 3 and not _resumed:
 				_resumed = true
@@ -312,64 +315,150 @@ func _issue_one() -> void:
 			return
 
 
-## Buys the state store's Campaign and photographs its leaflet flying into the tray on
-## the shelf. Once a run.
+## Buys the state store's Campaign and photographs its offer with the slip that explains
+## it, then its leaflet flying into the tray on the board. Coupons for it are handed over
+## at the Set's end in the record too, so the purchase still replays. Once a run.
 func _buy_campaign() -> void:
 	if _campaign_bought:
 		return
 	var switcher: Object = _app.get("switcher")
 	var screen: Node = switcher.call("current")
 	var stall: Object = screen.get("_campaign_stall")
-	var offers: Control = stall.get("_offers")
-	for child: Node in offers.find_children("*", "Button", true, false):
-		var button: Button = child as Button
-		if not button.disabled:
-			await _shot("store_campaign_offer")
-			await _press(button)
-			for frame: int in 3:
-				await _snap("store_campaign_buying_%d" % frame)
-			await _frames(30)
-			_campaign_bought = true
-			await _shot("store_campaign_tray")
-			return
+	if stall.call("panel", 0) == null:
+		return
+	_grant_coupons(12)
+	screen.call("_refresh")
+	await _frames(10)
+	var offer: Control = stall.call("panel", 0)
+	var buy: Button = offer.get("buy")
+	if buy == null or not buy.visible or buy.disabled:
+		return
+	await _hover(offer)
+	await _shot("store_campaign_offer")
+	await _press(buy)
+	for frame: int in 3:
+		await _snap("store_campaign_buying_%d" % frame)
+	await _frames(30)
+	_campaign_bought = true
+	await _shot("store_campaign_tray")
 
 
-## On the first turn after a Campaign was bought: the tray, a marking Campaign armed with
-## two cards chosen, the marks pressed on, and the marked hand. The store sells whatever
-## it draws, so when the bought one marks no cards this hands the player a Model Harvest
-## through the run's state, which only this development tool does.
+## The state store's Reform, once a run: its decree on the counter with the slip, the
+## "Enacted" stamp and its flight, the strip it is pinned to and a pinned slip read out
+## by focus. Its coupons are handed over in the record too, so the purchase replays.
+func _reform_frames() -> void:
+	if _reform_shot:
+		return
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	var stall: Object = screen.get("_reform_stall")
+	if stall == null or stall.call("panel", 0) == null:
+		return
+	_reform_shot = true
+	_grant_coupons(12)
+	screen.call("_refresh")
+	await _frames(10)
+	var offer: Control = stall.call("panel", 0)
+	await _hover(offer)
+	await _shot("store_reform_offer")
+	await _press(offer.get("buy"))
+	for frame: int in 4:
+		await _snap("store_reform_enacting_%d" % frame)
+	# On the clock: the stamp and the flight take longer than a fast frame count.
+	await create_timer(1.2).timeout
+	await _shot("store_reform_strip")
+	var strip: Object = stall.get("strip")
+	if int(strip.call("held_count")) > 0:
+		var pinned: Control = strip.call("tag", 0)
+		pinned.grab_focus()
+		await _snap("store_reform_strip_slip")
+
+
+## Hands the player Mutual Aid at the run's first bid, in the state and in the Set's
+## record, before anything could read it, so the pause before the first play comes the
+## first time the player is a peasant, and still replays. The playtest never calls, so
+## that is every round.
+func _grant_opening() -> void:
+	_opening_granted = true
+	var controller: Object = _app.get("controller")
+	var loop: RunLoop = controller.get("_loop")
+	if loop.state.round_index != 0 or not loop.record.commands.is_empty():
+		return
+	loop.state.inventory.consumables.append("mutual_aid")
+	var inventory: Dictionary = loop.record.checkpoint["inventory"]
+	var held: Array = inventory["consumables"]
+	held.append("mutual_aid")
+
+
+## Coupons for a frame's purchase, in the state and in the record's checkpoint at the
+## Set's end, so the purchase replays from the save.
+func _grant_coupons(amount: int) -> void:
+	var controller: Object = _app.get("controller")
+	var loop: RunLoop = controller.get("_loop")
+	loop.state.coupons += amount
+	loop.record.checkpoint["coupons"] = int(loop.record.checkpoint["coupons"]) + amount
+
+
+## On the first turn after a Campaign was bought, in a sandbox put back after: the tray
+## holding two leaflets, Model Harvest armed with cards chosen, its rosettes pressed on,
+## Registration Drive's chops after it, a court card among the marked, and then the tray
+## and the marked hand at corruption stage 9. The Campaigns are handed over through the
+## run's state, which only this development tool does; then the save taken before is
+## written back and resumed, so the run and its record go on as they were.
 func _campaign_turn(table: Node, controller: Node) -> void:
-	var held: Array = controller.call("held_campaigns")
-	var slot: int = -1
-	for index: int in held.size():
-		if MARKING.has(held[index]):
-			slot = index
-	if slot < 0:
-		var loop: Object = controller.get("_loop")
-		var state: Object = loop.get("state")
-		var inventory: Object = state.get("inventory")
-		var consumables: Array[String] = inventory.get("consumables")
-		if consumables.size() >= int(controller.call("campaign_slots")):
-			consumables.pop_back()
-		consumables.append("model_harvest")
-		slot = consumables.size() - 1
-		var campaigns_now: Object = table.get("_campaigns")
-		campaigns_now.call("refresh")
+	var loop: RunLoop = controller.get("_loop")
+	var snapshot: Dictionary = loop.record.to_dict()
+	loop.state.inventory.consumables.assign(["model_harvest", "registration_drive"])
 	var campaigns: Object = table.get("_campaigns")
+	campaigns.call("refresh")
 	var tray: Object = campaigns.get("tray")
 	await _shot("table_campaign_tray")
-	await _mouse_click(tray.call("slot_center", slot))
-	var hand: Object = _app.get("hand")
-	var cards: Array = hand.call("cards")
-	for index: int in mini(2, cards.size()):
-		var card: CardInstance = cards[index]
-		await _click_card(table, card.id())
+	var chosen: Array[int] = _marking_picks(2, [])
+	await _arm_and_choose(table, tray, chosen)
 	await _shot("table_campaign_armed")
 	await _press(tray.get("use"))
 	for frame: int in 4:
 		await _snap("table_campaign_marking_%d" % frame)
 	await create_timer(2.0).timeout
+	await _arm_and_choose(table, tray, _marking_picks(3, chosen))
+	await _press(tray.get("use"))
+	await create_timer(2.0).timeout
 	await _shot("table_campaign_marked")
+	var was: int = ArtStages.stage_override
+	ArtStages.stage_override = BOWL_STAGES[-1]
+	loop.state.inventory.consumables.assign(["grain_loan", "anonymous_letter"])
+	campaigns.call("refresh")
+	for node: Node in table.find_children("*", "CanvasItem", true, false):
+		(node as CanvasItem).queue_redraw()
+	await _shot("table_campaign_stage_9")
+	ArtStages.stage_override = was
+	var saves_hub: Object = root.get_node("Saves")
+	var saves: Object = saves_hub.call("run_service")
+	saves.call("save", snapshot)
+	_app.call("resume_to_screen")
+	await _frames(30)
+
+
+## Arms the tray's first leaflet and clicks the cards for it.
+func _arm_and_choose(table: Node, tray: Object, card_ids: Array[int]) -> void:
+	await _mouse_click(tray.call("slot_center", 0))
+	for card_id: int in card_ids:
+		await _click_card(table, card_id)
+
+
+## Up to count cards of the hand to mark, court cards first, none of them already taken.
+func _marking_picks(count: int, taken: Array[int]) -> Array[int]:
+	var hand: Object = _app.get("hand")
+	var cards: Array = hand.call("cards")
+	var picks: Array[int] = []
+	var court: Array[int] = [Ranks.JACK, Ranks.QUEEN, Ranks.KING]
+	for want_court: bool in [true, false]:
+		for card: CardInstance in cards:
+			if picks.size() >= count or taken.has(card.id()) or picks.has(card.id()):
+				continue
+			if court.has(card.base_rank()) == want_court:
+				picks.append(card.id())
+	return picks
 
 
 ## The dice bowl settled on a 1 and a 4, so the red 1 and its audit ring show, at
@@ -572,6 +661,14 @@ func _click_button_with_text(text: String) -> void:
 			await _frames(20)
 			return
 	print("NO BUTTON '%s'" % text)
+
+
+## Rests the pointer over a control, as a person reading it would.
+func _hover(control: Control) -> void:
+	var move: InputEventMouseMotion = InputEventMouseMotion.new()
+	move.position = control.get_global_transform_with_canvas() * (control.size / 2.0)
+	root.push_input(move, true)
+	await _frames(6)
 
 
 func _mouse_click(at: Vector2) -> void:

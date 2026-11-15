@@ -32,6 +32,7 @@ const COMMANDS: Array[String] = [
 	"campaign",
 	"begin_round",
 	"campaign_buy",
+	"reform",
 	"leave_store",
 ]
 ## What the run waits on, for views that may not name the loop.
@@ -239,7 +240,7 @@ func held_campaigns() -> Array[String]:
 
 
 func campaign_slots() -> int:
-	return RunLoop.DEFAULT_SHOP.campaign_slots
+	return RunReforms.campaign_slots(_loop.state)
 
 
 ## Why the held Campaign in slot cannot be used now, as a CampaignEffect.Reason, or
@@ -293,6 +294,35 @@ func campaign_shelf(market: bool) -> CampaignShelf:
 	return CampaignShelf.new(_loop.market.campaigns if market else _loop.shop.campaigns)
 
 
+## Enacts the state store's Reform for the rest of the run (ADR 0021).
+func reform(slot: int) -> int:
+	return _finish("reform", _loop.player_reform(slot))
+
+
+## The Reform on the state store's counter, for a screen to read.
+func reform_shelf() -> ReformShelf:
+	return ReformShelf.new(_loop.shop.reforms)
+
+
+## The Reforms in force, in the order they were enacted.
+func held_reforms() -> Array[String]:
+	return _loop.state.reforms.duplicate()
+
+
+func reform_name(reform_id: String) -> String:
+	return tr(RunReforms.definition(reform_id).name_key)
+
+
+## A Reform's rules with its numbers filled in, the limits it raises included.
+func reform_text(reform_id: String) -> String:
+	var definition: ReformDef = RunReforms.definition(reform_id)
+	var values: Dictionary[String, Variant] = definition.text_values()
+	var limits: ShopParams = RunReforms.LIMITS
+	values["cadre_limit"] = limits.cadre_slots + definition.parameters.get("cadres", 0)
+	values["campaign_limit"] = limits.campaign_slots + definition.parameters.get("campaigns", 0)
+	return tr(definition.text_key).format(values)
+
+
 ## The state store's counter, or the black market's, for a screen to read.
 func desk(market: bool) -> ShopDesk:
 	if market:
@@ -330,9 +360,9 @@ func store_stock() -> Array[String]:
 	return _loop.shop.stock()
 
 
-## Coupons the current Set pays when its Quota is met.
+## Coupons the current Set pays when its Quota is met, a Reform's extra included.
 func quota_reward() -> int:
-	return _loop.sets().reward(_loop.state.set_type)
+	return _loop.sets().reward(_loop.state.set_type) + RunReforms.quota_coupons(_loop.state)
 
 
 ## Overfulfilment steps the Set just finished earned, 0 while a Set is in play.
@@ -356,9 +386,10 @@ func norm_added_percent() -> int:
 	return _loop.sets().norm_percent(_loop.state.over_steps)
 
 
-## How much Famine a missed Quota adds.
+## How much Famine a missed Quota adds, after any Reform's relief.
 func famine_per_miss() -> int:
-	return RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount
+	var amount: int = RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount
+	return RunReforms.missed_famine(_loop.state, amount)
 
 
 ## True while high Famine cuts the store's slots.
@@ -372,9 +403,9 @@ func rationing_lifts_below() -> int:
 	return bands.mid - bands.rearm_margin
 
 
-## Cadres the player can hold at once.
+## Cadres the player can hold at once, Reforms included.
 func cadre_slots() -> int:
-	return RunLoop.DEFAULT_SHOP.cadre_slots
+	return RunReforms.cadre_slots(_loop.state)
 
 
 ## What every villager declares by default, a fair need to start the player's choice.

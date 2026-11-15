@@ -97,25 +97,7 @@ func test_the_tray_shows_held_leaflets_clear_of_the_table() -> void:
 	assert_str(tray.leaflet(0).shown_name()).is_equal(tr("campaign.model_harvest.name"))
 	assert_bool(tray.leaflet(1).is_private()).is_true()
 	assert_str(tray.leaflet(0).tip_rule()).is_equal(_app.controller.campaign_text("model_harvest"))
-	var area: Rect2 = tray.get_global_rect()
-	var actions: ActionBar = table.actions()
-	var keep_clear: Array[Control] = [
-		table.get("_hand_view"),
-		actions,
-		table.get("_board"),
-		table.get("_you"),
-		table.get("_pile"),
-		table.get("_ledger"),
-	]
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
-	keep_clear.append_array(seats.values())
-	for control: Control in keep_clear:
-		(
-			assert_bool(area.intersects(control.get_global_rect()))
-			. override_failure_message(str(control.get_path()))
-			. is_false()
-		)
-	assert_bool(Rect2(Vector2.ZERO, Vector2(SCREEN)).encloses(area)).is_true()
+	CampaignTrayLayout.check_clear(self, table, Vector2(SCREEN))
 
 
 func test_arming_then_cancelling_leaves_no_state_behind() -> void:

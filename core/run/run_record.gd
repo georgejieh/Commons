@@ -23,6 +23,7 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"begin": [],
 	"campaign_buy": ["slot"],
 	"market_campaign": ["slot"],
+	"reform": ["slot"],
 }
 
 var checkpoint: Dictionary = {}
@@ -91,6 +92,14 @@ static func migrate_from_6(data: Dictionary) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
 		var checkpoint: Dictionary = data["checkpoint"]
 		checkpoint.merge({"cadre_memos": {}})
+	return data
+
+
+## Version 7 saves predate Reforms (ADR 0021): none enacted, so no gathered deck either.
+static func migrate_from_7(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"reforms": [], "deck_order": []})
 	return data
 
 
@@ -206,6 +215,8 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_campaign_buy(int(command["slot"]))
 		"market_campaign":
 			return loop.player_market_campaign(int(command["slot"]))
+		"reform":
+			return loop.player_reform(int(command["slot"]))
 	return RunLoop.Reason.ILLEGAL
 
 
@@ -227,6 +238,11 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 		return false
 	if not CadreMemos.is_valid(checkpoint["cadre_memos"]):
 		return false
+	if not DeckOrder.is_valid(checkpoint["deck_order"]):
+		return false
+	for reform_id: Variant in checkpoint["reforms"]:
+		if not reform_id is String:
+			return false
 	return _levels_valid(checkpoint["hand_levels"])
 
 

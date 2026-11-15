@@ -5,23 +5,44 @@ extends HBoxContainer
 ## keyword in the rules means. A Cadre with run state carries a short count on a ticket
 ## at its foot, and a Cadre with no art yet has its name inked on the stock (ADR 0021).
 ## When a Cadre fires, its card swells and its count changes there, not over the table.
+## There is a slot for every Cadre the player can hold; the cards shrink to keep the
+## board inside its box when a Reform adds one.
 
 ## How faint an empty Cadre slot is.
 const EMPTY_ALPHA: float = 0.22
 const TILE_SIZE: Vector2 = Vector2(108, 140)
+const GAP: int = 14
 
 var _pictures: Array[TextureRect] = []
 var _cards: Array[TipHost] = []
 var _badges: Array[CadreBadge] = []
 var _ids: Array[String] = []
+## The most room the board may take; zero for none, which keeps full-size cards.
+var _box: Vector2 = Vector2.ZERO
 
 
-## Makes one slot per Cadre the player can hold.
-func setup(slots: int) -> void:
-	add_theme_constant_override("separation", 14)
-	for _index: int in slots:
+## Makes one slot per Cadre the player can hold, sized to fit box when one is given.
+func setup(slots: int, box: Vector2 = Vector2.ZERO) -> void:
+	_box = box
+	add_theme_constant_override("separation", GAP)
+	alignment = BoxContainer.ALIGNMENT_CENTER
+	_grow(slots)
+
+
+## The size of each card for a number of slots: full size, or smaller to fit the box.
+func tile_size(slots: int) -> Vector2:
+	if _box == Vector2.ZERO or slots <= 0:
+		return TILE_SIZE
+	var wide: float = (_box.x - (slots - 1) * GAP) / slots
+	var fit: float = minf(1.0, minf(wide / TILE_SIZE.x, _box.y / TILE_SIZE.y))
+	return (TILE_SIZE * fit).floor()
+
+
+## Adds slots up to the count, and sizes every card for it.
+func _grow(slots: int) -> void:
+	while _cards.size() < slots:
 		var card: TipHost = TipHost.new()
-		card.custom_minimum_size = TILE_SIZE
+		card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		card.add_theme_stylebox_override("panel", ScreenKit.paper_style(6))
 		var picture: TextureRect = TextureRect.new()
 		picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -34,6 +55,13 @@ func setup(slots: int) -> void:
 		_cards.append(card)
 		_pictures.append(picture)
 		_badges.append(badge)
+	for card: TipHost in _cards:
+		card.custom_minimum_size = tile_size(_cards.size())
+
+
+## How many slots the board has.
+func slot_count() -> int:
+	return _cards.size()
 
 
 ## Where a slot's card sits on screen, its middle.
@@ -66,6 +94,7 @@ func count_at(index: int) -> String:
 
 ## Shows the Cadres the run holds, each with its name and rules as its tooltip.
 func show_cadres(controller: RunController) -> void:
+	_grow(controller.cadre_slots())
 	var cadre_ids: Array[String] = controller.state_copy().inventory.cadres
 	_ids = cadre_ids
 	for index: int in _cards.size():

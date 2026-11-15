@@ -21,6 +21,8 @@ func _ready() -> void:
 	visible = false
 	z_index = 2
 	add_theme_stylebox_override("panel", ScreenKit.paper_style(14))
+	# One line: a wrapping prompt is measured at no width, which makes the strip tall.
+	_prompt.autowrap_mode = TextServer.AUTOWRAP_OFF
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", 10)
 	column.add_child(_prompt)
@@ -48,7 +50,8 @@ func ask(prompt: String, over: Control, then: Callable) -> void:
 	visible = true
 	reset_size()
 	var middle: Vector2 = over.global_position + over.size / 2.0
-	global_position = middle - size / 2.0
+	var screen: Rect2 = get_viewport_rect()
+	global_position = (middle - size / 2.0).clamp(screen.position, screen.end - size)
 	_chips[0].grab_focus()
 	var pieces: Array[Control] = [self]
 	UiMotion.enter(pieces)

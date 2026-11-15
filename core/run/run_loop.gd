@@ -101,7 +101,8 @@ func _init(
 		DEFAULT_CADRES.cadres,
 		meters.rationing_shop_cut,
 		DEFAULT_DIRECTIVES.directives,
-		RunCampaigns.STORE_POOL.campaigns
+		RunCampaigns.STORE_POOL.campaigns,
+		RunReforms.all()
 	)
 	var no_directives: Array[DirectiveDef] = []
 	market = RunShop.new(
@@ -190,6 +191,8 @@ func target() -> float:
 func start_set() -> Reason:
 	if not RunFlow.allows(flow.state(), RunFlow.State.SET_INTRO):
 		return Reason.NOT_AWAITED
+	# A Quota's first round is always shuffled, Unplanned Economy or not.
+	state.deck_order.clear()
 	record.mark(state)
 	_seat_roster()
 	set_log.start_set(state, set_number())
@@ -355,6 +358,11 @@ func player_market_campaign(slot: int) -> Reason:
 	return reason
 
 
+## Enacts the state store's Reform: it lasts the rest of the run (ADR 0021).
+func player_reform(slot: int) -> Reason:
+	return _shop_command({"type": "reform", "slot": slot}, shop.reforms.buy.bind(slot))
+
+
 func player_need(need: int) -> Reason:
 	if _awaiting != Awaiting.PLAYER_NEED:
 		return Reason.NOT_AWAITED
@@ -377,11 +385,12 @@ func open_shop() -> Reason:
 	shop.open()
 	market.open()
 	stall.open()
-	# Last on the shop stream, so Directives and Campaigns change none of the stock drawn
-	# before them.
+	# Last on the shop stream, so Directives, Campaigns and Reforms change none of the
+	# stock drawn before them.
 	shop.stock_directives()
 	shop.campaigns.draw()
 	market.campaigns.draw()
+	shop.reforms.draw()
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -500,14 +509,18 @@ func _rebuild_modifiers() -> void:
 		_stack.add(_pool_by_id[state.boss_id], PLAYER)
 
 
+## Shuffles a fresh deck, or under Unplanned Economy cuts the one the last round left
+## (DeckOrder). Either way the marks saved on deck cards go back on (ADR 0021).
 func _deal_cards() -> void:
-	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
-	# The deck is built fresh, so the marks saved on its cards go back on (ADR 0021).
-	state.card_marks.apply(cards)
-	_deal = Dealer.deal(cards, state.streams.stream(RandomStreams.DEAL))
 	var stream: RandomStream = state.streams.stream(RandomStreams.DEAL)
+	if RunReforms.gathers_deck(state) and not state.deck_order.is_empty():
+		_deal = DeckOrder.deal(state.deck_order, state.card_marks, stream)
+	else:
+		var cards: Array[CardInstance] = []
+		for deck_id: int in Deck.generate():
+			cards.append(CardInstance.from_deck_id(deck_id))
+		state.card_marks.apply(cards)
+		_deal = Dealer.deal(cards, stream)
 	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream))
 	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
 
@@ -542,6 +555,8 @@ func _record_bid(seat: int, claim: bool) -> void:
 	if _bidding.needs_redeal():
 		set_log.add(RunEvent.new(RunEvent.Type.REDEALT))
 		_move(RunFlow.State.BIDDING)
+		# A deal nobody bid on was never played, so a redeal is shuffled.
+		state.deck_order.clear()
 		_deal_cards()
 		_bidding = Bidding.new(_first_bidder())
 		return
@@ -718,6 +733,9 @@ func _end_round() -> void:
 	set_log.add(RunEvent.new(kept, _round.landlord()))
 	# What a Campaign held in force ends with its round, whatever comes next.
 	campaigns.start_round()
+	state.deck_order.clear()
+	if RunReforms.gathers_deck(state):
+		state.deck_order = DeckOrder.gather(_round)
 	_round = null
 	_deal = null
 	state.round_index += 1
@@ -737,10 +755,20 @@ func _end_set() -> void:
 	RunCadres.announce(state, set_log, PLAYER)
 	var steps: int = 0
 	if met:
-		state.coupons += _sets.reward(state.set_type)
+		state.coupons += _sets.reward(state.set_type) + RunReforms.quota_coupons(state)
 		steps = _overfulfil()
 	else:
-		_raise(RunMeters.MISSED_TARGET)
+		var famine: int = _meters.source(RunMeters.MISSED_TARGET).amount
+		RunMeters.apply_amount(
+			state,
+			RunMeters.MISSED_TARGET,
+			RunReforms.missed_famine(state, famine),
+			_meters,
+			_stack,
+			_params,
+			PLAYER,
+			set_log.events()
+		)
 	_reeducate_villagers()
 	state.memory.record(state.summaries[-1])
 	_record_style_and_risen()
@@ -754,6 +782,7 @@ func _end_set() -> void:
 		)
 	_stack.clear()
 	state.landlord_seat = Seats.NONE
+	state.deck_order.clear()
 	set_log.add(
 		RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1 if met else 0, state.set_progress)
 	)

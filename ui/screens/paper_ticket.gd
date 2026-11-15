@@ -30,7 +30,8 @@ static func draw(
 
 ## Corners out of true, a notch out of each end, and the top right thumbed round.
 static func _outline(rect: Rect2, rng: RandomNumberGenerator, worn: float) -> PackedVector2Array:
-	var jitter: float = 0.6 + 1.4 * worn
+	# Less than a third of a notch, so the notched ends never cross at the deep stages.
+	var jitter: float = minf(0.6 + 1.4 * worn, NOTCH * 0.3)
 	var middle: float = rect.position.y + rect.size.y / 2.0
 	var thumb: float = 3.0 + 6.0 * worn
 	var points: PackedVector2Array = [

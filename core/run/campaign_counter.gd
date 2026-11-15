@@ -30,7 +30,7 @@ func price(slot: int) -> int:
 
 ## True while the player can hold another Campaign.
 func has_room() -> bool:
-	return _state.inventory.consumables.size() < _params.campaign_slots
+	return _state.inventory.consumables.size() < RunReforms.campaign_slots(_state)
 
 
 ## True when a reroll could offer another Campaign the player has room for.

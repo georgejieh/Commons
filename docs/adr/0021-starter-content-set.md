@@ -142,7 +142,7 @@ Three names use real Great Leap terms: deep ploughing and close planting were fa
 
 | Reform | Effect | Cost |
 | --- | --- | --- |
-| Supply Cooperative | The state store shows one more item on every visit. | 8 |
+| Supply Cooperative | Every envelope holds one more item to choose from. | 8 |
 | Work-Point Reform | Every Quota you meet pays 1 more coupon. | 8 |
 | Enlarged Committee | You can hold one more Cadre (6, up from 5). | 10 |
 | Grain Reserve | A missed Quota adds 3 less Famine. | 8 |

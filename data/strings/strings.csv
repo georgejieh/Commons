@@ -637,3 +637,21 @@ keyword.coupon.name,Coupon
 keyword.coupon.text,Coupon: what the stores take. A met Quota pays them. Some Cadres pay them too.
 coll.collective,Collective: sold at the state store
 coll.private,Private: sold at the black market
+reform.supply_cooperative.name,Supply Cooperative
+reform.supply_cooperative.text,Every envelope you open holds {choices} more item to choose from.
+reform.work_point_reform.name,Work-Point Reform
+reform.work_point_reform.text,Every Quota you meet pays {coupons} more coupon.
+reform.enlarged_committee.name,Enlarged Committee
+reform.enlarged_committee.text,"You can hold {cadres} more Cadre, {cadre_limit} in all."
+reform.grain_reserve.name,Grain Reserve
+reform.grain_reserve.text,"A missed Quota adds {famine} less Famine, down to none."
+reform.couriers_bag.name,Courier's Bag
+reform.couriers_bag.text,"You can hold {campaigns} more Campaign, {campaign_limit} in all."
+reform.unplanned_economy.name,Unplanned Economy
+reform.unplanned_economy.text,"Between the rounds of a Quota the deck is not shuffled. The cards are gathered as they were played, then the unplayed hands, then the kitty. The deck is cut once and dealt a whole hand at a time, so cards played together tend to stay together. A Quota's first round is shuffled."
+reform.eyebrow,Reform
+reform.enacted,Enacted
+reform.strip,Reforms in force
+reform.strip.none,None yet
+reform.held_line,Reforms in force: {names}
+store.counter,On the counter

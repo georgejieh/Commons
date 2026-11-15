@@ -30,6 +30,9 @@ func open(app: DemoApp) -> void:
 		column.add_child(norm)
 	if not controller.boss().is_empty():
 		column.add_child(_boss_line(controller))
+	var reforms: Label = reforms_line(controller)
+	if reforms != null:
+		column.add_child(reforms)
 	column.add_child(ScreenKit.eyebrow(tr("intro.ladder")))
 	var steps: Array[Control] = []
 	var ladder: Array[String] = controller.ladder()
@@ -48,6 +51,18 @@ func open(app: DemoApp) -> void:
 	ScreenKit.reveal(column)
 	UiMotion.enter(steps)
 	begin.grab_focus()
+
+
+## The Reforms in force, named in one line, or null while none is (ADR 0021).
+static func reforms_line(controller: RunController) -> Label:
+	var names: PackedStringArray = []
+	for reform_id: String in controller.held_reforms():
+		names.append(controller.reform_name(reform_id))
+	if names.is_empty():
+		return null
+	var text: String = TranslationServer.translate("reform.held_line")
+	var line: Label = ScreenKit.label(text.format({"names": ", ".join(names)}), 24)
+	return line
 
 
 ## The boss's name and rule, so the twist is never hidden (P4.7).
