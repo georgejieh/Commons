@@ -39,9 +39,9 @@ For each strategy over the same list of seeds: the share of runs that survive th
 
 ## How the target is read
 
-"Mixed > private > collective > 0" is judged on survival of the eighth Year, over at least 300 seeds a strategy in the nightly run, and holds only when each gap is larger than the sampling error: the lower end of one strategy's 90% interval must clear the upper end of the next. A local check may use fewer seeds and says so.
+"Mixed > private > collective > 0" is judged on survival of the eighth Year, and holds only when each gap is larger than the sampling error: the lower end of one strategy's 90% interval must clear the upper end of the next. The report always says how many seeds it stands on.
 
-The nightly workflow runs it and fails when the ordering does not hold.
+The nightly workflow runs it in a job of its own for five hours, with Expert villagers sampling 12 deals, and fails when the ordering does not hold. This ADR first asked for at least 300 seeds a strategy; a hosted runner does not finish that many in the six hours a job may take, so the nightly takes as many as its budget gives. At the levels measured on 2026-11-16 (mixed 51%, private 21%, collective 7%) the narrowest gap, private over collective, needs about 150 seeds to hold on most nights, and at 61 seeds it held by a fraction of a point.
 
 ## Tuning
 
