@@ -10,7 +10,7 @@ The checklist gives the shape: surname plus a generated given name, era pools ke
 ## Naming
 
 - A person is a given name and a surname, shown given name first in pinyin without tone marks: "Jianguo Wang". At the table, in the epilogue and in the history a villager is called by surname alone, as today. The full name is shown where a person is introduced: the dossier, the Quota page's "At the table" line, the run setup page (the player's own name), and the ending page's heading line.
-- Given names are drawn when a run starts, on the events stream: one for the player and one for every family in the roster. A sent-down youth gets one when they arrive. A run never holds two people with the same full name, and never two with the same given name either, so a name alone identifies a person.
+- Given names are drawn when a run starts, on a stream of their own (`names`), so naming a run moves no deal, bid or event: one for the player and one for every family in the roster. A sent-down youth gets one when they arrive. A run never holds two people with the same full name, and never two with the same given name either, so a name alone identifies a person.
 - Names are stored in the run save. The profile keeps only the surname the player chose.
 - Nothing in the game states or implies a person's gender. The pools mix names of every kind and a name is never tied to a portrait.
 
@@ -39,7 +39,7 @@ Each pool holds 40 names, and a run names at most about 20 people.
 
 ## Names the game never produces
 
-Two lists, both data. A drawn name that hits either is drawn again.
+Two lists, both data. A draw takes one name from those of the pool that nobody in the run holds and that neither list blocks with the person's surname, so a blocked name is never drawn at all. A pool with no such name left hands on to the next pool, and the last hands on to the first.
 
 **Given names blocked with every surname.** Some of these point at one person by themselves and some are ordinary names; blocking all of them everywhere is the cautious choice, and costs nothing: Zedong, Enlai, Xiaoping, Shaoqi, Dehuai, Guofeng, Ziyang, Yaobang, Jieshi, Zhongshan, Zemin, Jintao, Jinping, Keqiang, Jiabao, Rongji, Chunqiao, Wenyuan, Hongwen, Anying, Yonggui, Jinxi, Hulan, Yulu, Cunrui, Jiguang, Shaoyun, Hongchang, Junchang, Xiangqian, Yingchao, Guangmei.
 
@@ -57,8 +57,8 @@ The first list also covers the two Xiaogang farmers the game's historical note r
 ## From one generation to the next
 
 - **What stays.** A family keeps its surname, its place in the village, its memory of the player's family (which fades, as today) and its personality.
-- **What drifts.** A family's personality is five levels: bomb aggression, cooperation, honesty, ambition and grudge. Each generation, each of the five moves one level, up or down with equal chance, with a probability of 15% (data), and stays within the scale of low, mid and high. With three levels that is slow on purpose: a family is recognisably itself for several generations. A family's bot tier does not drift. The drift is kept in the profile as an offset per family and trait, so it accumulates, and it is drawn on a stream seeded from the profile's generation so the same profile always produces the same village.
-- **The voice** drifts too: each generation shifts a family's base pitch by up to 4% either way (data), from the same stream, never more than 12% from the family's own voice.
+- **What drifts.** A family's personality is five levels: bomb aggression, cooperation, honesty, ambition and grudge. Each generation, each of the five moves one level, up or down with equal chance, with a probability of 15% (data), and stays within the scale of low, mid and high. With three levels that is slow on purpose: a family is recognisably itself for several generations. A family's bot tier does not drift. The drift is kept in the profile as an offset per family and trait, so it accumulates, and it is drawn on a stream seeded from the generation's number so the same profile always produces the same village. The first generation is the village as it is defined; drift starts with the second. Every village family is drawn for, in the book's order, whether or not the profile has unlocked it, so unlocking a family never changes another's drift. The drift is copied into the run when it starts, so a saved run keeps the village it began with.
+- **The voice** drifts too: each generation shifts a family's base pitch by up to 4% either way (data), from the same stream, never more than 12% from the family's own voice. The letters of a voice are rendered ahead of time, so the shift is applied when a line is played and never to the rendered bank.
 - Sent-down youth have no generations: each is new.
 
 ## The surname step
@@ -69,12 +69,14 @@ On first launch, after the content note and before the Arrival page: one page.
 - The 24: Zhang, Yang, Huang, Wu, Lin, Zhu, He, Guo, Luo, Song, Xie, Han, Cao, Peng, Hu, Jiang, Cai, Ding, Shen, Ye, Tian, Pan, Yuan, Dong. None is a roster family's surname.
 - A surname that a village family holds (Wang, Li, Zhao, Sun, Chen, Liu, Qin, Gao, Xu, Zhou, Ma, Feng, Tang, Deng) is refused: "The {name} family already lives here." A sent-down youth who would share the player's surname is given another.
 - The page opens with the field focused and a default already in it, so one press of Confirm is enough.
-- The surname is held until the tutorial ends or is skipped and is written with the profile's first save (ADR 0026). **Settings** shows it and can change it between runs.
+- The surname is held until the tutorial ends or is skipped and is written with the profile's first save (ADR 0026). **Settings** shows it and can change it between runs, on the same page; while a run is saved or the arrival is playing it says so instead.
 - The player's given name is drawn each run like everyone else's, and is never one that, with the chosen surname, is on the blocked lists.
 
 ## Consequences
 
 - The profile gains the per-family drift, which changes its shape: it moves to schema 3 with a migration.
-- The run save gains the given names: it moves up a schema with a migration that names a saved run from its seed.
+- The run save gains the given names and the drift: it moves to schema 15 with a migration that names a saved full run from its seed and generation, the same way every time, under the surname Zhang, the only one a profile could hold before this, and with no drift.
+- A run started without a profile (the balance harness, tests) is named by the surname its request carries, or Zhang, from the first pool, and has no drift. No sent-down youth is called Zhang, so the harness's event draws are as they were.
+- A player whose surname is one of the twelve the youth use never meets a youth of that name, which changes which youth arrive in those runs.
 - `player.surname`, the placeholder, goes away.
 - A test simulates 10,000 runs across generations 1 to 6 and finds no duplicate name within a run and no blocked name, including with every listed surname as the player's.

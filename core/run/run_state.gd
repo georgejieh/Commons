@@ -105,6 +105,10 @@ var identity: RunIdentity = RunIdentity.new()
 ## black-market purchases made in high Famine since the last Quota ended (ADR 0025).
 var quota_corruption: Array[String] = []
 var famine_market_buys: int = 0
+## Who is who: the player's and every family's given name (ADR 0028).
+var names: RunNames = RunNames.new()
+## How far the village has drifted by this generation, from the profile (ADR 0028).
+var drift: VillageDrift = VillageDrift.new()
 
 
 func _init(seed_value: int) -> void:
@@ -173,6 +177,8 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.identity = RunIdentity.from_dict(data["identity"])
 	state.quota_corruption.assign(data["quota_corruption"])
 	state.famine_market_buys = int(data["famine_market_buys"])
+	state.names = RunNames.from_dict(data["names"])
+	state.drift = VillageDrift.from_dict(data["drift"])
 	return state
 
 
@@ -237,6 +243,8 @@ func to_dict() -> Dictionary:
 		"identity": identity.to_dict(),
 		"quota_corruption": quota_corruption.duplicate(),
 		"famine_market_buys": famine_market_buys,
+		"names": names.to_dict(),
+		"drift": drift.to_dict(),
 	}
 
 

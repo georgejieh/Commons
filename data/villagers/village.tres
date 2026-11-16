@@ -27,3 +27,6 @@ reeducation_sets = 1
 rise_sets = 2
 opponents = 2
 starvations_per_year = 1
+drift_chance = 0.15
+pitch_step = 0.04
+pitch_limit = 0.12

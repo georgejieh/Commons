@@ -111,6 +111,11 @@ func _run() -> void:
 		await _shot("content_note")
 		await _click_button_with_text(tr("note.continue"))
 		await _frames(20)
+	# With no profile the family's name comes first (ADR 0028): the default is taken.
+	if switcher.call("current_id") == "surname":
+		var naming: Node = switcher.call("current")
+		await _press(naming.call("confirm_button"))
+		await _frames(20)
 	# With no profile the arrival is offered first (ADR 0026); the demo skips it.
 	if switcher.call("current_id") == "arrival":
 		await _click_button_with_text(tr("tutorial.skip"))
@@ -828,10 +833,16 @@ func _full_run_frames() -> void:
 	_app.call("show_screen", "title", true)
 	await _frames(20)
 	await _click_button_with_text(tr("title.new_run"))
+	var shown: Object = _app.get("switcher")
+	var setup: Node = shown.call("current")
+	var promised: String = setup.call("player_name")
 	await _click_button_with_text(tr("setup.start"))
 	await _frames(20)
 	_expect(bool(controller.call("has_village")), "FULL RUN NOT STARTED")
+	var named: String = controller.call("player_name")
+	_expect(named == promised, "RUN NAME %s IS NOT SETUP'S %s" % [named, promised])
 	await _shot("full_run_set_intro")
+	await _dossier_names()
 	var menu: Node = _app.get("_menu")
 	menu.call("open")
 	await _frames(10)
@@ -852,6 +863,31 @@ func _full_run_frames() -> void:
 	await _frames(30)
 
 
+## The dossier names each seated villager in full, given name first (ADR 0028).
+func _dossier_names() -> void:
+	_app.call("show_screen", "dossier")
+	await _frames(20)
+	await _shot("dossier_names")
+	var shown: Object = _app.get("switcher")
+	var page: Node = shown.call("current")
+	for seat: int in [1, 2]:
+		var controller: Object = _app.get("controller")
+		var full: String = controller.call("seated_full_name", seat)
+		var whole: bool = full.split(" ").size() == 2 and _shows_text(page, full)
+		_expect(whole, "DOSSIER SEAT %d NAMED %s" % [seat, full])
+	_app.call("back")
+	await _frames(20)
+
+
+## True when a label under node shows text.
+func _shows_text(node: Node, text: String) -> bool:
+	for found: Node in node.find_children("*", "Label", true, false):
+		var shown: Label = found as Label
+		if shown.is_visible_in_tree() and shown.text.contains(text):
+			return true
+	return false
+
+
 ## Run setup and the collection for a fresh profile and for one handed three finished
 ## runs, the third stake and an heirloom (ADR 0025): one household and one stake open,
 ## then all four households, three stakes and the inherited line; every item locked but
@@ -870,6 +906,9 @@ func _meta_frames(profile: SaveService) -> void:
 	await _click_button_with_text(tr("title.new_run"))
 	await _shot("run_setup_full")
 	var setup: Node = switcher.call("current")
+	var player: String = setup.call("player_name")
+	var full: bool = player.split(" ").size() == 2 and _shows_text(setup, player)
+	_expect(full, "RUN SETUP SHOWS NO FULL NAME %s" % player)
 	var open: int = 0
 	for paper: Control in setup.call("papers"):
 		open += 1 if bool(paper.get("choosable")) else 0

@@ -25,6 +25,8 @@ var note_key: String = ""
 var note: String = ""
 ## Decorative Chinese for the title card, or empty.
 var seal: String = ""
+## The player's full name in this run, for the line under the eyebrow (ADR 0028).
+var player_name: String = ""
 
 
 ## surname is the player's family name, as the endings call them.
@@ -63,6 +65,9 @@ static func of(
 		view.note_key = Endings.NOTE_KEY
 		view.note = _t(view.note_key)
 	view.seal = params.seals.get(view.id, "")
+	view.player_name = _t("end.name").format(
+		{"name": Surnames.full_name(state.names.player_given_name(), surname)}
+	)
 	return view
 
 

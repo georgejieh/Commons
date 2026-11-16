@@ -25,3 +25,14 @@ static func mark(profile: SaveService, id: String) -> Error:
 		return OK
 	data.seen.append(id)
 	return Profile.write(profile, data)
+
+
+## The arrival's end or skip on a first launch: one write of the profile with the arrival
+## seen and the surname chosen before it (ADR 0028), which stays as it was when "".
+static func arrive(profile: SaveService, surname: String) -> Error:
+	var data: ProfileData = Profile.read(profile)
+	if not data.seen.has(TUTORIAL):
+		data.seen.append(TUTORIAL)
+	if not surname.is_empty():
+		data.surname = surname
+	return Profile.write(profile, data)

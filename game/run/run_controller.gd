@@ -54,8 +54,6 @@ const TAKE_NOTHING: int = EnvelopeCounter.NOTHING
 ## Suit names in suit order: spade, heart, club, diamond.
 const SUIT_KEYS: Array[String] = ["suit.spades", "suit.hearts", "suit.clubs", "suit.diamonds"]
 const OK: int = RunLoop.Reason.OK
-## The player's family name until the profile holds the one they choose (P4.17).
-const PLAYER_SURNAME: String = "player.surname"
 
 ## True while the run's searching villagers decide under the ExpertRunner's deadline, as
 ## the live game plays (ADR 0030). A tool or test that must stay repeatable sets it false
@@ -697,9 +695,25 @@ func seated_name_key(seat: int) -> String:
 	return "" if entry == null else Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
 
 
+## The full name of the family in a villager's seat, "Jianguo Wang", or its surname
+## alone in a run that names nobody, as the demo's villagers are (ADR 0028).
+func seated_full_name(seat: int) -> String:
+	return RunPeople.seat_full_name(_loop.state, seat)
+
+
+## The seated family's voice as this generation has it, or null with no roster.
+func seated_voice(seat: int) -> VoiceProfile:
+	return RunPeople.seat_voice(_loop.state, seat)
+
+
+## The player's full name in this run, or their surname alone in one that names nobody.
+func player_name() -> String:
+	return RunPeople.player_full_name(_loop.state)
+
+
 ## How the run ended, for the ending screen (ADR 0024), worked out from its state alone.
 func ending() -> EndingView:
-	return EndingView.of(_loop.state, tr(PLAYER_SURNAME))
+	return EndingView.of(_loop.state, RunPeople.player_surname(_loop.state))
 
 
 ## The surname key of a family in the run's roster, or "" for one it does not hold.

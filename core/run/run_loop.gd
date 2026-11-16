@@ -945,7 +945,7 @@ func _choose_boss() -> void:
 		state.table[1] = state.boss_family
 		var entry: RosterEntry = Roster.entry(state, state.boss_family)
 		if entry != null:
-			_configs[1] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(1))
+			_configs[1] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(1), state.drift)
 		state.landlord_seat = 1
 	elif boss == DEFAULT_BOSSES.new_landlord:
 		PlayerStyle.mirror(_configs[1], state.styles, DEFAULT_BOSSES)
@@ -996,7 +996,7 @@ func _seat_roster() -> void:
 	Roster.prepare_set(state, DEFAULT_VILLAGE, state.streams.stream(RandomStreams.EVENTS))
 	for seat: int in range(1, Seats.COUNT):
 		var entry: RosterEntry = Roster.entry(state, state.table[seat])
-		_configs[seat] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(seat))
+		_configs[seat] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(seat), state.drift)
 		if Roster.definition(DEFAULT_VILLAGE, entry).mirrors_player:
 			PlayerStyle.mirror(_configs[seat], state.styles, DEFAULT_BOSSES)
 

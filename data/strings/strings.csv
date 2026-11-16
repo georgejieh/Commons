@@ -297,7 +297,6 @@ end.denunciation,Denunciation
 end.village,The village
 end.show_all,Show all
 end.to_title,Return to title
-player.surname,Zhang
 coll.eyebrow,Collection
 coll.title,What the shops sell
 coll.back,Back
@@ -813,7 +812,6 @@ unlock.runs,Opens after {count} more runs
 unlock.win_at,Opens when you win at {stake}
 setup.household,Household
 setup.stake,Stake
-setup.generation,Generation {number}
 household.poor_peasants.name,Poor Peasants
 household.poor_peasants.text,Start with {coupons} coupons.
 household.middle_peasants.name,Middle Peasants
@@ -900,3 +898,15 @@ tutorial.begin,Begin your first year
 tip.got_it,Got it
 settings.replay_arrival,Replay the arrival
 summary.continue,Continue
+surname.eyebrow,Household register
+surname.title,Your family's name
+surname.random,Random
+surname.confirm,Confirm
+surname.length,1 to 12 letters.
+surname.refused,The {name} family already lives here.
+setup.named,"{name}, generation {number}"
+end.name,{name}
+name.full,{given} {surname}
+settings.family_name,Family name
+settings.change_name,Change
+settings.name_locked,Finish or abandon your run to change it.

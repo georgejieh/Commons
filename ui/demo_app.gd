@@ -5,8 +5,9 @@ extends Control
 ## its controller. The table scene is the 2D or the 3D one, chosen at export. New Run
 ## starts the full eight-Year run, or the one-Year demo when the app was launched with
 ## --demo after -- on the command line (ADR 0025). On a first launch, with no profile save,
-## it offers the arrival (ADR 0026): a scripted first evening at the table, played over
-## its own layer, never saved, that writes the profile's first save when it ends.
+## it asks the family's name (ADR 0028), then offers the arrival (ADR 0026): a scripted
+## first evening at the table, played over its own layer, never saved, that writes the
+## profile's first save, with that name, when it ends.
 
 const DEMO: DemoParams = preload("res://data/run/demo.tres")
 ## The command-line flag that makes New Run start the demo.
@@ -36,6 +37,7 @@ const SCREENS: Dictionary[String, String] = {
 	"collection": "res://ui/screens/collection_screen.tscn",
 	"village_history": "res://ui/screens/village_history_screen.tscn",
 	"arrival": "res://ui/screens/arrival_screen.tscn",
+	"surname": "res://ui/screens/surname_screen.tscn",
 }
 
 ## Screens of a run, off the table, where Escape opens the menu. The table has its own.
@@ -209,6 +211,7 @@ func has_saved_run() -> bool:
 	return RunStarter.resumable(Saves.run_service())
 
 
+## The seat's surname, as the table and speech call a villager.
 func seat_name(seat: int) -> String:
 	var key: String = _controller_call("seated_name_key", seat, "")
 	return tr(key if not key.is_empty() else DEMO.name_keys[seat])
@@ -220,11 +223,12 @@ func seat_speech(seat: int) -> SpeechBook:
 	return null if family == null else family.speech
 
 
-## The seated family's voice (P3B.13), or the demo seat's by its villager name.
+## The seated family's voice (P3B.13) as its generation has drifted it, or the demo
+## seat's by its villager name.
 func seat_voice(seat: int) -> VoiceProfile:
 	var family: FamilyDef = _controller_call("seated_family", seat, null)
 	if family != null:
-		return family.voice
+		return _controller_call("seated_voice", seat, family.voice)
 	var path: String = DEMO_VOICE % seat_voice_bank(seat)
 	return load(path) if ResourceLoader.exists(path) else null
 

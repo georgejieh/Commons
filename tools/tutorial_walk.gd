@@ -1,8 +1,10 @@
 extends RefCounted
-## The playtest's --tutorial mode (ADR 0026): starts with no profile, takes the Arrival
-## page, then plays every step of the arrival with real clicks on what each step rings,
-## at the table's own pace, taking a frame at each prompt, at both board previews, once
-## after a refused action, and at run setup. A step that does not advance prints a
+## The playtest's --tutorial mode (ADR 0026): starts with no profile, names the family on
+## the surname page (ADR 0028), a village name refused first and then a ticket picked
+## with a real click, takes the Arrival page, then plays every step of the arrival with
+## real clicks on what each step rings, at the table's own pace, taking a frame at each
+## prompt, at both board previews while they are on screen, once after a refused action,
+## and at run setup. A step that does not advance prints a
 ## MISCLICK line, which the cloud workflow fails on. Loaded at run time by playtest.gd,
 ## so it reaches every UI node as Object, Node or Control, never by a ui/ class name.
 ## Development only; tools/ never ships.
@@ -31,6 +33,8 @@ var _app: Node
 var _out: String
 var _headless: bool
 var _refused: bool = false
+## The surname picked on the surname page, which the profile's first save must hold.
+var _surname: String = ""
 
 
 ## Plays the arrival through and returns when it has reached run setup or failed.
@@ -51,7 +55,9 @@ func run(tree: SceneTree, out: String, headless: bool) -> void:
 		await _shot("tutorial_content_note")
 		await _press(_buttons(_screen())[0])
 		await _frames(20)
-	_expect(_screen_id() == "arrival", "MISCLICK no Arrival page with no profile")
+	_expect(_screen_id() == "surname", "MISCLICK no surname page with no profile")
+	await _surname_page()
+	_expect(_screen_id() == "arrival", "MISCLICK no Arrival page after the surname page")
 	await _shot("tutorial_arrival")
 	await _press(_screen().call("sit_in_button"))
 	await _frames(20)
@@ -74,8 +80,32 @@ func run(tree: SceneTree, out: String, headless: bool) -> void:
 		await _shot("tutorial_run_setup")
 	else:
 		_fail("MISCLICK the arrival did not end at run setup")
-	var seen: Array = Profile.read(saves.call("profile_service")).seen
+	var first: ProfileData = Profile.read(saves.call("profile_service"))
+	var seen: Array = first.seen
 	_expect(seen == ["tutorial"], "MISCLICK the profile's first save is %s" % str(seen))
+	_expect(first.surname == _surname, "MISCLICK the profile holds surname %s" % first.surname)
+
+
+## The surname page: a village family's name is refused and the page stays; then a ticket
+## clicked fills the field and Confirm takes it to the Arrival page.
+func _surname_page() -> void:
+	var page: Node = _screen()
+	await _shot("surname_page")
+	var field: LineEdit = page.call("field")
+	field.text = tr("villager.wang")
+	await _press(page.call("confirm_button"))
+	await _frames(4)
+	var refused: bool = not str(page.call("note")).is_empty() and _screen_id() == "surname"
+	_expect(refused, "MISCLICK a village surname was taken")
+	await _shot("surname_refused")
+	var tickets: Array = page.call("tickets")
+	var ticket: Button = tickets[int(tickets.size() / 2.0)]
+	await _press(ticket)
+	clicks += 1
+	_surname = field.text
+	_expect(_surname == ticket.get("surname"), "MISCLICK the ticket left %s" % _surname)
+	await _press(page.call("confirm_button"))
+	await _frames(20)
 
 
 ## A disallowed action, once: Pass while a play is asked for. Nothing moves and the slip
@@ -148,10 +178,23 @@ func _button(step: Resource, actions: Object) -> void:
 	if not preview.is_empty():
 		var room: Control = _layer().call("preview")
 		if await _until(func() -> bool: return room.visible):
-			await _frames(30)
-			await _shot("tutorial_%s_preview" % preview)
+			# Taken at once: the room holds for two seconds, which a slow renderer's
+			# settling wait would outlast.
+			await _frames(3)
+			await _shot("tutorial_%s_preview" % preview, 0.0)
+			_expect(_room_shown(room, preview), "MISCLICK no %s preview on screen" % preview)
 		else:
 			_fail("MISCLICK no %s preview" % preview)
+
+
+## True while the room covers the whole screen with the meter's caption, over the page,
+## and the next step's prompt has not come.
+func _room_shown(room: Control, meter: String) -> bool:
+	var whole: bool = room.get_global_rect().encloses(_root.get_visible_rect())
+	var layer: Control = _layer()
+	var over: bool = layer.z_index > 4 and room.is_visible_in_tree()
+	var waiting: bool = int(_director().call("phase")) != PROMPT
+	return whole and over and waiting and str(room.call("meter")) == meter
 
 
 ## The button inside what the screen shown rings for key.
@@ -186,7 +229,7 @@ func _director() -> Object:
 	return arrival.get("director")
 
 
-func _layer() -> Object:
+func _layer() -> Control:
 	var arrival: Object = _app.get("arrival")
 	return arrival.get("layer")
 
@@ -266,8 +309,9 @@ func _frames(count: int) -> void:
 		await _tree.process_frame
 
 
-func _shot(name: String) -> void:
-	await _tree.create_timer(SETTLE_SECONDS).timeout
+func _shot(name: String, settle: float = SETTLE_SECONDS) -> void:
+	if settle > 0.0:
+		await _tree.create_timer(settle).timeout
 	shots += 1
 	if _headless:
 		print("FRAME %02d_%s" % [shots, name])

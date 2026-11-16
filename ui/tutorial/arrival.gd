@@ -13,6 +13,9 @@ const SCREENS: Array[String] = [
 	"table", "set_summary", "store", "black_market", "dossier", "round_summary"
 ]
 
+## The surname chosen on the first launch's surname page (ADR 0028), held until the
+## arrival's end or skip writes it with the profile's first save; "" before it.
+var surname: String = ""
 ## The arrival under way, or null.
 var director: TutorialDirector = null
 ## True when no profile save was on disk as the app started.
@@ -30,11 +33,13 @@ func _init(app: DemoApp, first: bool) -> void:
 	first_launch = first
 
 
-## Where the content note leads: the Arrival page on a first launch, else the title.
-## P4.17's surname step goes here, before the Arrival page: it keeps the chosen surname
-## in hand and writes no profile, which the arrival's end or skip then writes.
+## Where the content note leads: on a first launch the surname page (ADR 0028), then the
+## Arrival page once a surname is in hand; else the title. The surname page writes no
+## profile: the arrival's end or skip writes the surname with the profile's first save.
 func next_screen() -> String:
-	return "arrival" if first_launch else "title"
+	if not first_launch:
+		return "title"
+	return "surname" if surname.is_empty() else "arrival"
 
 
 func is_running() -> bool:
@@ -104,9 +109,10 @@ func _on_finished() -> void:
 	_app.show_screen("title" if replay else "run_setup", true)
 
 
-## Writes the profile's first save, with the arrival seen, on a first launch only.
+## Writes the profile's first save, with the arrival seen and the surname chosen, on a
+## first launch only.
 func _remember() -> void:
 	if _replay or not first_launch:
 		return
-	ProfileSeen.mark(Saves.profile_service(), ProfileSeen.TUTORIAL)
+	ProfileSeen.arrive(Saves.profile_service(), surname)
 	first_launch = false

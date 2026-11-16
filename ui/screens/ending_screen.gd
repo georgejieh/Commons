@@ -8,22 +8,25 @@ extends Control
 ## on the historical note. A run that died shows the record of its death and no epilogue.
 
 const MARGIN: Vector2 = Vector2(56, 36)
-const FRAME_HEIGHT: float = 340.0
+const FRAME_HEIGHT: float = 308.0
 ## The title card's height with a picture hung in it, which leaves the title under the
 ## frame, and the picture's margin inside its printed frame.
-const PICTURE_HEIGHT: float = 320.0
+const PICTURE_HEIGHT: float = 288.0
 const PICTURE_INSET: float = 10.0
 ## The title's largest and smallest size: it shrinks to fit its card on one line.
 const TITLE_MAX: int = 84
 const TITLE_MIN: int = 48
 const TEXT_SIZE: int = 22
 const NOTE_SIZE: int = 16
+const NAME_SIZE: int = 26
 const SEAL_WIDTH: float = 92.0
 ## The text column's width on a death's page, which has no epilogue beside it.
 const DEATH_WIDTH: float = 1180.0
 const TITLE_INK: Color = Color("9a2a1a")
 
 var _view: EndingView
+## The line under the eyebrow naming the player (ADR 0028).
+var _name: Label
 var _title: Label
 var _heading: HBoxContainer
 var _list: EpilogueList = null
@@ -79,7 +82,14 @@ func _story() -> VBoxContainer:
 	story.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	story.size_flags_stretch_ratio = 1.15
 	story.add_theme_constant_override("separation", 18)
-	story.add_child(ScreenKit.eyebrow(tr("end.eyebrow")))
+	# The eyebrow and the player's name under it sit tight, as a header's lines do.
+	var heading: VBoxContainer = VBoxContainer.new()
+	heading.add_theme_constant_override("separation", 0)
+	heading.add_child(ScreenKit.eyebrow(tr("end.eyebrow")))
+	_name = ScreenKit.label(_view.player_name, NAME_SIZE, ScreenKit.INK)
+	_name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	heading.add_child(_name)
+	story.add_child(heading)
 	story.add_child(_title_card())
 	var text: Label = ScreenKit.label(_view.text, TEXT_SIZE, ScreenKit.INK)
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -247,6 +257,11 @@ func _unhandled_input(event: InputEvent) -> void:
 ## What a test or the playtest reads: the epilogue, the way home and Show all.
 func epilogue() -> EpilogueList:
 	return _list
+
+
+## The line naming the player, for tests.
+func name_label() -> Label:
+	return _name
 
 
 func home_button() -> Button:

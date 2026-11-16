@@ -29,7 +29,9 @@ func open(app: DemoApp) -> void:
 		norm.add_theme_color_override("font_color", ScreenKit.RED)
 		column.add_child(norm)
 	if controller.has_village():
-		var names: String = ", ".join([app.seat_name(1), app.seat_name(2)])
+		var names: String = ", ".join(
+			[controller.seated_full_name(1), controller.seated_full_name(2)]
+		)
 		column.add_child(ScreenKit.label(tr("intro.seated").format({"names": names}), 24))
 	if not controller.boss().is_empty():
 		column.add_child(_boss_line(controller))

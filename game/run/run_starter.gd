@@ -2,8 +2,9 @@ class_name RunStarter
 extends RefCounted
 ## The one place a run begins (ADR 0025). From a RunRequest it builds the run's opening
 ## state: its identity, starting coupons, the village's memory carried in, and for a full
-## run the village roster and the family's next generation; then the lineage it inherits,
-## its household and its stake's starting meters. It also names the Sets and seat configs
+## run the village roster, the family's next generation and the village's drift, and
+## everyone's given names (ADR 0028); then the lineage it inherits, its household and its
+## stake's starting meters. It also names the Sets and seat configs
 ## each kind plays with, so Continue rebuilds exactly the kind that was saved. The
 ## arrival (ADR 0026) plays its script's one Quota and is never saved.
 
@@ -20,6 +21,7 @@ static func state(request: RunRequest, profile: SaveService = null) -> RunState:
 	if request.all_open and profile != null:
 		return null
 	var data: ProfileData = ProfileData.new() if profile == null else Profile.read(profile)
+	var surname: String = request.surname if profile == null else data.surname
 	if request.all_open:
 		data = everything_open()
 	if not allows(request, data):
@@ -41,8 +43,19 @@ static func state(request: RunRequest, profile: SaveService = null) -> RunState:
 		lineage = ProfileCommits.start_run(profile, opening)
 	if request.kind == RunRequest.FULL:
 		Roster.start(opening, RunLoop.DEFAULT_VILLAGE, unlocked_families(data))
+	var generation: int = request.generation if profile == null else opening.identity.generation
+	_name(opening, request.kind, Surnames.or_fallback(surname), generation)
 	_open(opening, request, lineage)
 	return opening
+
+
+## A full run names the player and every family; the demo and the arrival name nobody
+## new, and keep only the player's surname.
+static func _name(opening: RunState, kind: int, surname: String, generation: int) -> void:
+	if kind != RunRequest.FULL:
+		opening.names.player_surname = surname
+		return
+	RunNames.start(opening, RunLoop.DEFAULT_VILLAGE, surname, generation, Surnames.texts())
 
 
 ## True when the profile allows what the request asks: no household or one whose tier is

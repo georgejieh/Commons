@@ -14,9 +14,10 @@ extends RefCounted
 
 
 ## A full run starting is the family's next generation. Writes the profile, and the
-## generation and finished runs it started from into the run's identity. Returns the
-## lineage the run inherits, {"kind", "values"}, taken out of the profile in the same
-## write; a run that is not full inherits nothing.
+## generation and finished runs it started from into the run's identity, and the
+## village's drift for that generation into both (ADR 0028). Returns the lineage the run
+## inherits, {"kind", "values"}, taken out of the profile in the same write; a run that
+## is not full inherits nothing and drifts nothing.
 static func start_run(profile: SaveService, state: RunState) -> Dictionary:
 	var data: ProfileData = Profile.read(profile)
 	state.identity.finished_runs = data.finished_runs
@@ -24,6 +25,8 @@ static func start_run(profile: SaveService, state: RunState) -> Dictionary:
 		return RunLineage.make(RunLineage.NONE)
 	data.generation += 1
 	state.identity.generation = data.generation
+	data.drift = VillageDrift.next(data.drift, data.generation, RunLoop.DEFAULT_VILLAGE)
+	state.drift = VillageDrift.from_dict(data.drift.to_dict())
 	var taken: Dictionary = RunLineage.make(data.lineage_kind, data.lineage_values.duplicate(true))
 	data.lineage_kind = RunLineage.NONE
 	data.lineage_values = {}

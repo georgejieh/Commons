@@ -1,11 +1,12 @@
 class_name RunSetupScreen
 extends Control
-## Run setup (ADR 0025). For a full run, on one sheet of aged paper: the generation this
-## run will be, what the last generation left, the households as papers to pick (a locked
-## one is a blank sheet saying when it opens), the unlocked stakes as tickets to pick with
-## the rules the chosen one plays under (its own and every lower stake's), then Start and
-## Back. It opens on Poor Peasants and the highest unlocked stake every time. Keyboard and
-## gamepad reach everything, and the sheet scrolls with focus where the screen is short.
+## Run setup (ADR 0025). For a full run, on one sheet of aged paper: the player's name
+## and the generation this run will be (ADR 0028), what the last generation left, the
+## households as papers to pick (a locked one is a blank sheet saying when it opens), the
+## unlocked stakes as tickets to pick with the rules the chosen one plays under (its own
+## and every lower stake's), then Start and Back. It opens on Poor Peasants and the
+## highest unlocked stake every time. Keyboard and gamepad reach everything, and the
+## sheet scrolls with focus where the screen is short.
 ## With --demo it keeps its simple form and starts the demo.
 
 const PAGE_MARGIN: int = 40
@@ -19,6 +20,9 @@ var _app: DemoApp
 var _view: SetupView
 var _household: String = ""
 var _stake: int = 0
+## Chosen as the page opens, so the name it shows is the one the run started with Start
+## will use.
+var _seed: int = 0
 var _papers: Array[AgedSheet] = []
 var _tickets: Array[StakeTicket] = []
 ## Made only for a full run's page, so the demo's leaves nothing outside the tree.
@@ -33,7 +37,8 @@ func open(app: DemoApp) -> void:
 	if app.demo:
 		_open_demo(app)
 		return
-	_view = SetupView.of(Saves.profile_service())
+	_seed = int(Time.get_unix_time_from_system())
+	_view = SetupView.of(Saves.profile_service(), _seed)
 	_household = _view.default_household()
 	_stake = _view.top_stake
 	_rules = ScreenKit.label("", RULES_SIZE)
@@ -42,8 +47,10 @@ func open(app: DemoApp) -> void:
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap + 4)
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var generation: String = tr("setup.generation").format({"number": _view.generation})
-	column.add_child(ScreenKit.header(tr("setup.eyebrow"), generation))
+	var values: Dictionary[String, Variant] = {
+		"name": _view.player_name, "number": _view.generation
+	}
+	column.add_child(ScreenKit.header(tr("setup.eyebrow"), tr("setup.named").format(values)))
 	if not _view.inherited.is_empty():
 		column.add_child(ScreenKit.label(_view.inherited, LINE_SIZE))
 	column.add_child(_heading(tr("setup.household")))
@@ -95,6 +102,15 @@ func scroll() -> ScrollContainer:
 
 func start_button() -> Button:
 	return _start
+
+
+## The seed Start will begin the run with, and the name the page gives the player.
+func run_seed() -> int:
+	return _seed
+
+
+func player_name() -> String:
+	return _view.player_name if _view != null else ""
 
 
 func _page() -> VBoxContainer:
@@ -192,7 +208,7 @@ func _show_choice() -> void:
 
 
 func _begin() -> void:
-	if _app.new_run(int(Time.get_unix_time_from_system()), true, _household, _stake):
+	if _app.new_run(_seed, true, _household, _stake):
 		_app.show_screen("set_intro", true)
 
 

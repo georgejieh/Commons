@@ -22,6 +22,11 @@ var stake: int = 0
 ## profile's lineage instead, so it is never taken twice.
 var lineage_kind: String = ""
 var lineage_values: Dictionary = {}
+## The surname and generation a run outside the profile is named by (ADR 0028); an empty
+## surname takes the fallback, and generation 0 names it as the first. A run that reads
+## the profile takes the profile's.
+var surname: String = ""
+var generation: int = 0
 ## False for a run that must leave the profile as it was, such as the balance harness.
 var writes_profile: bool = true
 ## Every unlock tier, family and stake open, as if no profile limited the run (ADR 0027).

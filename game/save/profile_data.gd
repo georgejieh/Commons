@@ -8,7 +8,7 @@ const HISTORY_CAP: int = 50
 const CORRUPTION_MAX: float = 100.0
 ## A key written since schema 2 began: a profile from before it reads it from its history.
 const LANDLORD_ENDINGS_KEY: String = "landlord_endings"
-## Keys every schema 2 profile holds.
+## Keys every schema 3 profile holds.
 const KEYS: Array[String] = [
 	"memory",
 	"generation",
@@ -21,6 +21,7 @@ const KEYS: Array[String] = [
 	"seen",
 	"surname",
 	"committed",
+	"drift",
 ]
 
 ## The village's memory of the player.
@@ -51,6 +52,9 @@ var surname: String = ""
 ## Quota is never taken twice (ADR 0025).
 var committed_run: String = ""
 var committed_quota: int = -1
+## How far each family has drifted over the generations (ADR 0028), written with the
+## generation each full run starts.
+var drift: VillageDrift = VillageDrift.new()
 
 
 static func from_dict(data: Dictionary) -> ProfileData:
@@ -75,6 +79,7 @@ static func from_dict(data: Dictionary) -> ProfileData:
 	var committed: Dictionary = data["committed"]
 	profile.committed_run = str(committed["run_id"])
 	profile.committed_quota = int(committed["quota"])
+	profile.drift = VillageDrift.from_dict(data["drift"])
 	return profile
 
 
@@ -95,6 +100,7 @@ func to_dict() -> Dictionary:
 		"seen": seen.duplicate(),
 		"surname": surname,
 		"committed": {"run_id": committed_run, "quota": committed_quota},
+		"drift": drift.to_dict(),
 	}
 
 
@@ -125,7 +131,7 @@ static func is_count(value: Variant) -> bool:
 	return (value is int or value is float) and value >= 0 and value == floorf(value)
 
 
-## True when data is a whole schema 2 profile: every field, each of its kind.
+## True when data is a whole schema 3 profile: every field, each of its kind.
 static func is_valid(data: Dictionary) -> bool:
 	for key: String in KEYS:
 		if not data.has(key):
@@ -142,6 +148,8 @@ static func is_valid(data: Dictionary) -> bool:
 	if not _lineage_valid(data["lineage"]) or not _committed_valid(data["committed"]):
 		return false
 	if not _float_text_valid(data["corruption"]) or not data["surname"] is String:
+		return false
+	if not VillageDrift.is_valid(data["drift"]):
 		return false
 	return _strings_valid(data["seen"])
 

@@ -3,7 +3,7 @@ extends RefCounted
 ## The village's households during a run (P4.5). Before every Set, families in
 ## reeducation count down and may return, sent-down youth arrive while fewer than two
 ## opponents are available, and two available families are seated. All draws are on
-## the events stream.
+## the events stream, but an arriving youth's given name, which is on the names stream.
 
 const YOUTH_PREFIX: String = "youth_"
 
@@ -74,10 +74,16 @@ static func name_key(book: VillageBook, found: RosterEntry) -> String:
 	return definition(book, found).name_key
 
 
-## How a seated family plays this Set. Rising families gain a tier per rise_sets Sets.
-static func config_for(book: VillageBook, found: RosterEntry, seed_value: int) -> BotConfig:
+## How a seated family plays this Set. Rising families gain a tier per rise_sets Sets. A
+## village family plays by its personality as drift has moved it; youth never drift.
+static func config_for(
+	book: VillageBook, found: RosterEntry, seed_value: int, drift: VillageDrift = null
+) -> BotConfig:
 	var family: FamilyDef = definition(book, found)
-	var config: BotConfig = BotConfig.from_personality(family.personality, seed_value)
+	var personality: Personality = family.personality
+	if drift != null and found.template_id.is_empty():
+		personality = drift.personality(family)
+	var config: BotConfig = BotConfig.from_personality(personality, seed_value)
 	if family.rising:
 		@warning_ignore("integer_division")
 		var gained: int = maxi(found.sets_seated - 1, 0) / book.rise_sets
@@ -97,19 +103,25 @@ static func _spawn_youth(state: RunState, book: VillageBook, stream: RandomStrea
 	arrival.template_id = template.id
 	arrival.name_key = _free_surname(state, book, stream)
 	state.roster.append(arrival)
+	RunNames.name_arrival(state, arrival)
 	return arrival
 
 
-## A youth surname nobody living in the village holds, or any when all are taken.
+## A youth surname nobody living in the village holds, or any when all are taken; never
+## the player's own (ADR 0028).
 static func _free_surname(state: RunState, book: VillageBook, stream: RandomStream) -> String:
 	var held: Array[String] = []
 	for found: RosterEntry in state.roster:
 		if found.status != RosterEntry.Status.DEAD:
 			held.append(found.name_key)
-	var free: Array[String] = []
+	var others: Array[String] = []
 	for key: String in book.youth_surnames:
+		if not state.names.shares_player_surname(key):
+			others.append(key)
+	var free: Array[String] = []
+	for key: String in others:
 		if not held.has(key):
 			free.append(key)
 	if free.is_empty():
-		free = book.youth_surnames
+		free = others
 	return free[stream.next_int(0, free.size() - 1)]

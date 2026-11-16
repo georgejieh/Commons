@@ -5,7 +5,10 @@ extends GdUnitTestSuite
 ## 1280x800; finishing writes the profile's first save once, with the arrival seen, then
 ## run setup; skipping writes the same and goes to the title; quitting part-way writes
 ## nothing; a replay ends at the title and leaves the profile and a real run save as they
-## were; a refused action pulses the slip.
+## were; a refused action pulses the slip. Since the first cloud frames: each board
+## preview covers the whole screen over the page, its meter's name large on paper with
+## Wang's line under it, and no prompt comes until it has gone; the slip keeps clear of
+## the brigade notice; and the store's detail slip stays closed while the arrival runs.
 
 const SAVE_PATH: String = "user://test_tutorial_ui/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
@@ -19,6 +22,8 @@ const WAIT_MSEC: int = 20000
 var _app: DemoApp = null
 var _was_size: Vector2i
 var _saved: Dictionary[String, Variant] = {}
+## Board previews checked on screen during a walk.
+var _previews: int = 0
 
 
 func before_test() -> void:
@@ -50,6 +55,13 @@ func _launch() -> DemoApp:
 	return _app
 
 
+## Takes the surname page's default with one press of Enter, for the Arrival page.
+func _past_surname() -> void:
+	assert_str(_app.switcher.current_id()).is_equal("surname")
+	await _key(KEY_ENTER)
+	await await_idle_frame()
+
+
 func _profile_bytes() -> String:
 	var path: String = Saves.profile_service().path()
 	return FileAccess.get_file_as_string(path) if FileAccess.file_exists(path) else ""
@@ -57,6 +69,7 @@ func _profile_bytes() -> String:
 
 func test_no_profile_offers_the_arrival_and_a_profile_the_title() -> void:
 	await _launch()
+	await _past_surname()
 	assert_str(_app.switcher.current_id()).is_equal("arrival")
 	var page: ArrivalScreen = _app.switcher.current()
 	assert_str(page.text()).starts_with("The cart leaves you at the brigade office.")
@@ -74,6 +87,7 @@ func test_the_content_note_leads_to_the_arrival_on_a_first_launch() -> void:
 		(node as Button).pressed.emit()
 		break
 	await await_idle_frame()
+	await _past_surname()
 	assert_str(_app.switcher.current_id()).is_equal("arrival")
 	assert_bool(ProfileSeen.exists(Saves.profile_service())).is_false()
 	# The note's Continue saved the settings this test changed: put the saved file back.
@@ -84,6 +98,7 @@ func test_the_content_note_leads_to_the_arrival_on_a_first_launch() -> void:
 
 func test_skip_asks_once_then_writes_the_profile_and_goes_to_the_title() -> void:
 	await _launch()
+	await _past_surname()
 	var page: ArrivalScreen = _app.switcher.current()
 	page.skip_button().pressed.emit()
 	assert_bool(page.confirm().is_asking()).is_true()
@@ -121,7 +136,7 @@ func test_quitting_part_way_writes_nothing_and_offers_it_again() -> void:
 	assert_bool(ProfileSeen.exists(Saves.profile_service())).is_false()
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_false()
 	await _launch()
-	assert_str(_app.switcher.current_id()).is_equal("arrival")
+	assert_str(_app.switcher.current_id()).is_equal("surname")
 
 
 func test_a_refused_action_changes_nothing_and_marks_the_slip() -> void:
@@ -142,6 +157,9 @@ func test_a_refused_action_changes_nothing_and_marks_the_slip() -> void:
 func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
 	get_tree().root.size = SIZES[0]
 	await _launch()
+	var naming: SurnameScreen = _app.switcher.current()
+	var surname: String = naming.field().text
+	await _past_surname()
 	(_app.switcher.current() as ArrivalScreen).sit_in_button().grab_focus()
 	await _key(KEY_ENTER)
 	await _walk("1080")
@@ -150,7 +168,9 @@ func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
 	assert_array(data.seen).is_equal(["tutorial"])
 	var fresh: Dictionary = ProfileData.new().to_dict()
 	fresh["seen"] = ["tutorial"]
+	fresh["surname"] = surname
 	assert_dict(data.to_dict()).is_equal(fresh)
+	assert_int(_previews).is_equal(2)
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_false()
 
 
@@ -213,8 +233,51 @@ func _answer(step: TutorialStep) -> void:
 				await _until_prompt()
 				await _check_slip("black market")
 				await _key(KEY_ENTER)
+				if not step.preview.is_empty():
+					await _check_preview(step)
 			else:
 				await _key(KEY_ENTER)
+				if not step.preview.is_empty():
+					await _check_preview(step)
+
+
+## The room is shown over the whole screen, above every piece the page lifts, with the
+## meter's name on paper and Wang's follow-up under it, for the script's seconds; the next
+## prompt waits until it has gone.
+func _check_preview(step: TutorialStep) -> void:
+	var layer: TutorialLayer = _app.arrival.layer
+	var room: RoomPreview = layer.preview()
+	var where: String = "preview " + step.preview
+	assert_bool(room.is_visible_in_tree()).override_failure_message(where).is_true()
+	var screen: Rect2 = get_tree().root.get_visible_rect()
+	var covered: String = "%s: %s over %s" % [where, room.get_global_rect(), screen]
+	assert_bool(room.get_global_rect().encloses(screen)).override_failure_message(covered).is_true()
+	assert_int(layer.z_index).is_greater(_highest_lift(_app.switcher.current()))
+	assert_str(room.caption()).is_equal(tr("meter." + step.preview))
+	var caption: Rect2 = room.caption_rect()
+	assert_float(caption.size.y).is_greater(RoomPreview.CAPTION_SIZE)
+	var slip: TutorialSlip = layer.slip()
+	assert_str(slip.line()).is_equal(tr(step.then_key))
+	assert_bool(slip.is_visible_in_tree()).override_failure_message(where + " slip").is_true()
+	assert_bool(slip.get_global_rect().position.y >= caption.end.y).is_true()
+	var started: int = Time.get_ticks_msec()
+	var director: TutorialDirector = _app.arrival.director
+	while room.visible and Time.get_ticks_msec() - started < WAIT_MSEC:
+		assert_int(director.phase()).override_failure_message(where).is_equal(
+			TutorialDirector.Phase.PREVIEW
+		)
+		await await_idle_frame()
+	var held: float = (Time.get_ticks_msec() - started) / 1000.0
+	assert_float(held).is_greater_equal(director.preview_seconds() - 0.1)
+	_previews += 1
+
+
+## The highest draw order any piece of a screen is lifted to.
+func _highest_lift(screen: Node) -> int:
+	var highest: int = 0
+	for found: Node in screen.find_children("*", "CanvasItem", true, false):
+		highest = maxi(highest, (found as CanvasItem).z_index)
+	return highest
 
 
 ## Waits until the step is done: the director moved past it, or the arrival ended.
@@ -270,8 +333,13 @@ func _check_slip(where: String) -> void:
 	assert_bool(rect.intersects(target)).override_failure_message(where + " target").is_false()
 	var table: TableScreen = _app.switcher.current() as TableScreen
 	if table != null:
+		# The hand, and the brigade notice on the wall behind the table.
 		for hand: Rect2 in table.tutorial().tutorial_avoid():
 			assert_bool(rect.intersects(hand)).override_failure_message(where + " hand").is_false()
+	var store: StoreScreen = _app.switcher.current() as StoreScreen
+	if store != null:
+		# Wang's slip is the only explanation on screen while the arrival runs.
+		assert_bool(store.slip().visible).override_failure_message(where + " detail").is_false()
 
 
 func _key(code: Key) -> void:
@@ -284,3 +352,46 @@ func _key(code: Key) -> void:
 		Input.flush_buffered_events()
 	await await_idle_frame()
 	await await_idle_frame()
+
+
+## The slip keeps clear of the brigade notice at step 7's cards, where it once covered
+## it: the notice, the hand and the cards as they stood in the first cloud frames.
+func test_the_slip_keeps_clear_of_the_brigade_notice() -> void:
+	var cards: Rect2 = Rect2(330, 790, 330, 200)
+	var hand: Rect2 = Rect2(320, 780, 690, 230)
+	var notice: Rect2 = Rect2(150, 622, 280, 124)
+	var extent: Vector2 = Vector2(TutorialSlip.WIDTH, 140)
+	var at: Vector2 = TutorialSlip.spot(extent, cards, [hand, notice], Vector2(1920, 1080))
+	var slip: Rect2 = Rect2(at, extent)
+	for kept: Rect2 in [cards, hand, notice]:
+		assert_bool(slip.intersects(kept)).is_false()
+	# Still beside its target, not across the room.
+	assert_float(slip.get_center().distance_to(cards.get_center())).is_less(700.0)
+
+
+## The table names the brigade notice among what the slip must keep clear of.
+func test_the_table_names_the_notice_to_keep_clear_of() -> void:
+	await _launch()
+	await _past_surname()
+	_app.arrival.start()
+	await _until_prompt()
+	var table: TableScreen = _app.switcher.current()
+	var notice: bool = table.tutorial().tutorial_avoid().any(
+		func(rect: Rect2) -> bool: return rect.size.is_equal_approx(DreadDressing.NOTICE_AT.size)
+	)
+	assert_bool(notice).is_true()
+
+
+## The store's detail slip stays closed while the arrival runs, and opens again after.
+func test_the_detail_slip_stays_closed_through_the_arrival() -> void:
+	var slip: DetailSlip = auto_free(DetailSlip.new())
+	var piece: Control = auto_free(Control.new())
+	add_child(piece)
+	add_child(slip)
+	var running: Array[bool] = [true]
+	slip.quiet = func() -> bool: return running[0]
+	slip.show_for(piece, "Iron Rice Bowl", "rule")
+	assert_bool(slip.visible).is_false()
+	running[0] = false
+	slip.show_for(piece, "Iron Rice Bowl", "rule")
+	assert_bool(slip.visible).is_true()

@@ -4,12 +4,13 @@ extends RefCounted
 ## the run save, with its own schema version, and deleting the run save never touches
 ## it. Its fields are ProfileData's; ProfileCommits decides what a run writes to it.
 
-const SCHEMA_VERSION: int = 2
+const SCHEMA_VERSION: int = 3
 const MEMORY_KEY: String = "memory"
+const DRIFT_KEY: String = "drift"
 
 
 static func service(path: String = SaveService.PROFILE_PATH) -> SaveService:
-	var migrations: Dictionary[int, Callable] = {1: migrate_from_1}
+	var migrations: Dictionary[int, Callable] = {1: migrate_from_1, 2: migrate_from_2}
 	return SaveService.new(path, migrations, SCHEMA_VERSION, is_valid)
 
 
@@ -19,6 +20,13 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 	if data.has(MEMORY_KEY):
 		fresh[MEMORY_KEY] = data[MEMORY_KEY]
 	return fresh
+
+
+## Schema 2 to 3: no family has drifted yet (ADR 0028).
+static func migrate_from_2(data: Dictionary) -> Dictionary:
+	if not data.has(DRIFT_KEY):
+		data[DRIFT_KEY] = {}
+	return data
 
 
 ## True when the data is a whole profile, every field of its kind.

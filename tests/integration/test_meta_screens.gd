@@ -73,7 +73,8 @@ func test_a_fresh_profile_opens_one_household_and_one_stake() -> void:
 		assert_bool(ticket.open).is_false()
 		assert_str(ticket.words()).is_empty()
 	assert_str(screen.rules_text()).is_equal("The rules as written.")
-	assert_bool(_shows(screen, "Generation 1")).is_true()
+	# The player's name for the run Start begins, then the generation (ADR 0028).
+	assert_bool(_shows(screen, screen.player_name() + ", generation 1")).is_true()
 	assert_bool(_shows(screen, "Inherited:")).is_false()
 	assert_bool(_shows(screen, "Start with 4 coupons.")).is_true()
 	assert_bool(_shows(screen, "Opens after 1 more run")).is_true()
@@ -96,7 +97,7 @@ func test_a_veteran_sees_every_household_three_stakes_and_the_heirloom() -> void
 	assert_str(screen.rules_text()).is_equal(
 		"Every Quota's target is 10% higher.\nThe state store offers 1 fewer Cadre."
 	)
-	assert_bool(_shows(screen, "Generation 4")).is_true()
+	assert_bool(_shows(screen, screen.player_name() + ", generation 4")).is_true()
 	assert_bool(_shows(screen, "Inherited: a Model K of Hearts.")).is_true()
 	var lines: Array[String] = [
 		(

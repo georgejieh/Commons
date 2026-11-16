@@ -68,6 +68,8 @@ const FORBIDDEN_WORDS: PackedStringArray = [
 	"CorruptionEvents",
 	"RunTutorial",
 	"ScriptedVillager",
+	"RunNames",
+	"VillageDrift",
 	"set_log",
 	"set_enhancement",
 	"set_seal",

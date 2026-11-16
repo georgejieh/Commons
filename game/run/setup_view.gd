@@ -2,7 +2,8 @@ class_name SetupView
 extends RefCounted
 ## What run setup offers a full run (ADR 0025), read from the profile: the households,
 ## open or locked by finished runs; the stakes, unlocked up to the profile's highest; the
-## one line saying what the last generation left; and the generation this run will be.
+## one line saying what the last generation left; the generation this run will be, and
+## the player's own name in it, drawn from the seed the run will start with (ADR 0028).
 ## Only the first locked stake says how it opens, since its line names the stake below.
 
 const HOUSEHOLDS: HouseholdPool = preload("res://data/run/households/households.tres")
@@ -17,15 +18,20 @@ var inherited: String = ""
 var generation: int = 1
 ## The highest stake unlocked, which the page opens on.
 var top_stake: int = 0
+## "Jianguo Zhang": the name the player will have in a run started from the seed.
+var player_name: String = ""
 
 
-static func of(profile: SaveService) -> SetupView:
-	return from_data(Profile.read(profile))
+static func of(profile: SaveService, seed_value: int = 0) -> SetupView:
+	return from_data(Profile.read(profile), seed_value)
 
 
-static func from_data(data: ProfileData) -> SetupView:
+static func from_data(data: ProfileData, seed_value: int = 0) -> SetupView:
 	var view: SetupView = SetupView.new()
 	view.generation = data.generation + 1
+	var surname: String = Surnames.or_fallback(data.surname)
+	var given: String = RunNames.player_given(seed_value, view.generation, surname)
+	view.player_name = Surnames.full_name(given, surname)
 	view.top_stake = mini(data.stake, RunStakes.last())
 	var base: int = RunStarter.FULL_RUN.starting_coupons
 	for household: HouseholdDef in HOUSEHOLDS.households:

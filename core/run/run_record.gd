@@ -172,6 +172,18 @@ static func migrate_from_13(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 14 saves predate names and drift (ADR 0028): a full run is named from its seed
+## and generation as it would have been at its start (RunNames.name_saved), the same
+## way every time, and no village drifted. texts gives each surname key's text; the
+## run save's service passes the string table's.
+static func migrate_from_14(data: Dictionary, texts: Dictionary[String, String] = {}) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		RunNames.name_saved(checkpoint, RunLoop.DEFAULT_VILLAGE, texts)
+		checkpoint["drift"] = {}
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -345,6 +357,8 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 	for event_id: Variant in checkpoint["quota_corruption"]:
 		if not event_id is String:
 			return false
+	if not RunNames.is_valid(checkpoint["names"]) or not VillageDrift.is_valid(checkpoint["drift"]):
+		return false
 	return _levels_valid(checkpoint["hand_levels"])
 
 
