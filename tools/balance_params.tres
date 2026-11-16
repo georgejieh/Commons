@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BalanceParams" format=3]
+
+[ext_resource type="Script" path="res://tools/balance_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+kept_back = 4
+resentment_limit = 40
+over_claim_percent = 50
+over_claim_faces = 1
+shunned_campaigns = Array[String](["anonymous_letter", "seizure_notice"])
+giving_campaigns = Array[String](["mutual_aid"])
+max_commands = 50000
+start_time = 1763200000
+household = "poor_peasants"

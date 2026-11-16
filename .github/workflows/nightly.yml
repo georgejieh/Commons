@@ -29,3 +29,16 @@ jobs:
         with:
           name: tournament
           path: reports/tournament.csv
+      # ADR 0027: full runs by the three strategies on the same seeds, for an hour. It
+      # prints how many seeds finished, and fails when mixed > private > collective > 0
+      # does not hold past the 90% intervals, or when any run made an illegal move.
+      - name: Balance
+        timeout-minutes: 90
+        run:godot --headless --path . --script res://tools/balance.gd -- --minutes 60 --jobs "$(nproc)" --check
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: balance
+          path: |
+            reports/balance.md
+            reports/balance_runs.csv

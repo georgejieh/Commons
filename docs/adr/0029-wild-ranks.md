@@ -1,6 +1,6 @@
 # ADR 0029: Wild ranks (P4.18)
 
-- Status: Accepted, 2026-11-16, by the agent under the design authority ADR 0021 records. The owner judges by playtest.
+- Status: Accepted, 2026-11-15, by the agent under the design authority ADR 0021 records. The owner judges by playtest.
 - Scope: what a wild card is, how a play that uses one is read and compared, how it scores, the three items that bring wild ranks in, and what the bots and the screen must do.
 
 ## Why this needs a decision

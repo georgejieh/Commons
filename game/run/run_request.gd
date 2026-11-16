@@ -24,6 +24,10 @@ var lineage_kind: String = ""
 var lineage_values: Dictionary = {}
 ## False for a run that must leave the profile as it was, such as the balance harness.
 var writes_profile: bool = true
+## Every unlock tier, family and stake open, as if no profile limited the run (ADR 0027).
+## Only the balance harness sets it, and only for a run that reads no profile: RunStarter
+## refuses it with one. No menu reaches it.
+var all_open: bool = false
 
 
 func _init(run_kind: int = FULL, seed_in: int = 0, start: int = 0) -> void:

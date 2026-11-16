@@ -88,7 +88,11 @@ godot --headless --path . --script res://tools/playtest.gd -- --tutorial --out r
 
 Plays the arrival (the first-launch tutorial) from no profile to run setup with real clicks, and prints MISCLICK on a step that does not advance. Headless it names its frames without saving them. Its profile lives in `user://playtest_tutorial/`. The cloud playtest runs it after the play-through.
 
-Balance commands arrive with P4.16. Add them here when they work.
+```bash
+godot --headless --path . --script res://tools/balance.gd -- --runs 20 --jobs 4
+```
+
+Plays full runs headless (no profile, every unlock tier open, Poor Peasants) with the collective, private and mixed strategies of [ADR 0027](docs/adr/0027-balance-harness.md) on the same seeds, and writes `reports/balance_runs.csv` and `reports/balance.md`. Add `--minutes M` for a time budget, `--seed S`, `--stake K`, `--strategies a,b`, `--out DIR`, or `--check` to exit 1 unless mixed > private > collective > 0 holds. It exits 1 on any refused command, illegal bot action or script error. A run takes from seconds to several minutes, longest when an Expert family is seated.
 
 ## Layers
 

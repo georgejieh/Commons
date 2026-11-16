@@ -15,8 +15,13 @@ const HOUSEHOLDS: HouseholdPool = preload("res://data/run/households/households.
 ## The run's opening state, or null for a request the profile does not allow: a
 ## household past the open tier, or a stake past the highest unlocked. A profile of null
 ## is left untouched, and the run carries no memory in and takes the request's lineage.
+## A request with all_open plays as if the profile limited nothing, and needs no profile.
 static func state(request: RunRequest, profile: SaveService = null) -> RunState:
+	if request.all_open and profile != null:
+		return null
 	var data: ProfileData = ProfileData.new() if profile == null else Profile.read(profile)
+	if request.all_open:
+		data = everything_open()
 	if not allows(request, data):
 		return null
 	var opening: RunState = RunState.new(request.seed_value)
@@ -27,6 +32,8 @@ static func state(request: RunRequest, profile: SaveService = null) -> RunState:
 	opening.identity.kind = request.kind as RunIdentity.Kind
 	opening.identity.household = request.household
 	opening.identity.stake = request.stake
+	if request.all_open:
+		opening.identity.finished_runs = data.finished_runs
 	opening.coupons = starting_coupons(request.kind)
 	var lineage: Dictionary = RunLineage.make(request.lineage_kind, request.lineage_values)
 	if profile != null:
@@ -47,6 +54,16 @@ static func allows(request: RunRequest, data: ProfileData) -> bool:
 		return true
 	var chosen: HouseholdDef = HOUSEHOLDS.household(request.household)
 	return chosen != null and chosen.unlock_tier <= data.finished_runs
+
+
+## A profile that limits nothing, for a request with all_open (ADR 0027): past every
+## unlock tier, a landlord ending behind it, and the highest stake. It is never saved.
+static func everything_open() -> ProfileData:
+	var data: ProfileData = ProfileData.new()
+	data.finished_runs = RunUnlocks.ALL_OPEN
+	data.landlord_endings = 1
+	data.stake = RunStakes.last()
+	return data
 
 
 ## The lineage first, so the heirloom goes into the plot before the household's cards,

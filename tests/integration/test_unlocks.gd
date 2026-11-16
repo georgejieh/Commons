@@ -311,6 +311,38 @@ func test_a_profile_from_before_the_count_reads_it_from_its_history() -> void:
 	assert_bool(Profile.is_valid(old)).is_false()
 
 
+## ADR 0027: the balance harness's request opens every tier, family and stake with no
+## profile, is off unless asked for, and is refused with a profile.
+func test_an_all_open_request_opens_everything_without_a_profile() -> void:
+	var request: RunRequest = RunRequest.new(RunRequest.FULL, 6800, 1)
+	assert_bool(request.all_open).is_false()
+	request.all_open = true
+	request.household = "old_family"
+	request.stake = RunStakes.last()
+	var state: RunState = RunStarter.state(request)
+	assert_object(state).is_not_null()
+	var loop: RunLoop = _loop(state)
+	assert_int(loop.pools.store_cadres.size()).is_equal(RunLoop.DEFAULT_CADRES.cadres.size())
+	assert_int(loop.pools.market_cadres.size()).is_equal(RunLoop.DEFAULT_MARKET.cadres.size())
+	assert_int(loop.pools.directives.size()).is_equal(RunPools.DIRECTIVES.directives.size())
+	assert_int(loop.pools.reforms.size()).is_equal(RunReforms.all().size())
+	var campaigns: int = loop.pools.store_campaigns.size() + loop.pools.market_campaigns.size()
+	assert_int(campaigns).is_equal(RunCampaigns.all().size())
+	var envelopes: int = loop.pools.store.envelopes.size() + loop.pools.market.envelopes.size()
+	assert_int(envelopes).is_equal(
+		RunPools.STORE.envelopes.size() + RunPools.MARKET.envelopes.size()
+	)
+	assert_int(state.roster.size()).is_equal(RunLoop.DEFAULT_VILLAGE.families.size())
+	assert_int(state.identity.generation).is_equal(0)
+	# The same request without the option is held to a new profile's limits.
+	var limited: RunRequest = RunRequest.new(RunRequest.FULL, 6800, 1)
+	limited.stake = RunStakes.last()
+	assert_object(RunStarter.state(limited)).is_null()
+	# With a profile the option is refused, and the profile is never written.
+	assert_object(RunStarter.state(request, _profile)).is_null()
+	assert_bool(FileAccess.file_exists(PROFILE_PATH)).is_false()
+
+
 func _entry(class_id: String, outcome: String) -> HistoryEntry:
 	var entry: HistoryEntry = HistoryEntry.new()
 	entry.class_id = class_id

@@ -17,7 +17,7 @@ A full run through the same start path the game uses, with no window and no prof
 | --- | --- | --- | --- |
 | The landlord seat | Never calls or grabs | Calls whenever the bot would, and grabs a held seat whenever the bot would call | Calls when the bot would; never grabs a held seat |
 | Need | Claims the true need | Claims the most the panel allows | Claims the true need, or 50% more while one face of the die audits |
-| State store | Buys the dearest Cadre it can afford, then a Reform, then an envelope, then a Campaign | Buys nothing | As collective, keeping 4 coupons back |
+| State store | Each visit: first the cheapest Directive it can afford, once; then, while coupons last, the dearest Cadre, else a Reform, else an envelope, else a Campaign | Each visit: the cheapest Directive it can afford, once, and nothing else | As collective, keeping 4 coupons back |
 | Black market | Never enters | Buys the dearest Cadre it can afford, then a Parcel, then a plot card, then plot upgrades | Buys one thing a visit, the dearest it can afford with what was kept back, while Resentment is under 40 |
 | Rerolls | Never | Once a visit if nothing was affordable | Never |
 | Envelopes | Keeps the first item it can take | The same | The same |
@@ -27,11 +27,13 @@ A full run through the same start path the game uses, with no window and no prof
 
 "The bot would" is the Hard bot's own bidding decision for that hand. Each rule is data where it has a number (the coupons kept back, the Resentment limit, the over-claim).
 
+The first version of this table left Directives out, and no strategy's score grew: Directives are how a hand type's Rate rises, and every real player buys them. All three now buy one a visit. Private still buys nothing else the state sells.
+
 These are caricatures on purpose. Collective is the player who trusts the village, private the one who takes everything, mixed the one who takes what is cheap and stops before it costs. The game's thesis is that the middle path is the only one that lasts, so the harness measures exactly that.
 
 ## What it reports
 
-For each strategy over the same list of seeds: the share of runs that survive the eighth Year, each ending's share, deaths by meter and the Year they came in, the mean Year reached, the share of Quotas met, mean coupons at the end, mean final Famine, Denunciation and Resentment, and the count of villagers who starved. One CSV row per run and one summary in Markdown, in `reports/`. Any illegal action, refused command or script error fails the run, not just the report.
+For each strategy over the same list of seeds: the share of runs that survive the eighth Year, each ending's share, deaths by meter and the Year they came in, the mean Year reached, the share of Quotas met, mean coupons at the end, mean final Famine, Denunciation and Resentment, and the count of villagers who starved. It also reports, for each strategy and each Quota of the run in order, how many runs reached it, the share that met it, and the median score against the target, because the first measurement showed the target curve itself was the question. One CSV row per run and one summary in Markdown, in `reports/`. Any illegal action, refused command or script error fails the run, not just the report.
 
 ## How the target is read
 
@@ -46,5 +48,5 @@ When the ordering does not hold, the numbers move, not the strategies. The order
 ## Consequences
 
 - The harness needs a way to play a run with no profile and every tier open, which the start path gets as an explicit option.
-- A run is about 24 Quotas of Hard-bot play, so the nightly run is sized by time: the harness takes a time budget and reports how many seeds it finished.
+- A run is about 24 Quotas of Hard-bot play, so the nightly run is sized by time: the harness takes a time budget and reports how many seeds it finished. Villagers at the Expert tier search with no deadline here (ADR 0030), which is slow, so the harness may lower how many deals they sample and says so in its report.
 - The strategies are code in `tools/`, never in the game: no shipped build can play itself.
