@@ -57,7 +57,17 @@ const OK: int = RunLoop.Reason.OK
 ## The player's family name until the profile holds the one they choose (P4.17).
 const PLAYER_SURNAME: String = "player.surname"
 
+## True while the run's searching villagers decide under the ExpertRunner's deadline, as
+## the live game plays (ADR 0030). A tool or test that must stay repeatable sets it false
+## before it starts or resumes a run, and they search with no limit.
+var live_search: bool = true
+## Weights a searching villager decides with in place of its own, so a tool can sample
+## fewer deals (ADR 0027); null for its own.
+var search_weights: BotWeights = null
+
 var _loop: RunLoop
+## Decides for the loop's searcher. Every decision blocks until its samples finish.
+var _runner: ExpertRunner = ExpertRunner.new()
 var _saves: SaveService = null
 ## The profile save, which the village's memory outlives runs in (P4.6).
 var _profile: SaveService = null
@@ -753,6 +763,8 @@ func state_copy() -> RunState:
 
 func _attach(loop: RunLoop, saves: SaveService) -> void:
 	_loop = loop
+	_loop.decisions.searcher = _runner.search if live_search else Callable()
+	_loop.decisions.weights = search_weights
 	# A replayed loop may hold events banking appended unseen; the view reads those from
 	# set_events(), so the listener starts after them.
 	_loop.set_log.flush()

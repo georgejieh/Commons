@@ -149,7 +149,9 @@ func test_at_most_one_family_starves_a_year() -> void:
 func test_the_years_count_survives_save_and_load() -> void:
 	var state: RunState = _state(["li", "chen"], [0, 1], METERS.famine.high)
 	VillageFates.starve(state, METERS.famine, VILLAGE.starvations_per_year, SetLog.new())
-	var data: Dictionary = {"checkpoint": state.to_dict(), "commands": []}
+	var record: RunRecord = RunRecord.new()
+	record.mark(state)
+	var data: Dictionary = record.to_dict()
 	assert_bool(RunRecord.is_valid(data)).is_true()
 	var loaded: RunState = RunState.from_dict(JSON.parse_string(JSON.stringify(state.to_dict())))
 	assert_int(loaded.year_starved).is_equal(1)

@@ -1,10 +1,13 @@
 extends SceneTree
 ## The balance harness (ADR 0027): plays full runs headless with each strategy on the same
-## seeds and writes reports/balance_runs.csv and reports/balance.md. Run:
+## seeds and writes reports/balance_runs.csv, reports/balance_quotas.csv (a row per
+## Quota) and reports/balance.md. Run:
 ##   godot --headless --path . --script res://tools/balance.gd -- --runs 20
 ## Options: --runs N seeds a strategy, --seed S the first, --strategies a,b,c, --minutes M
-## a time budget, --out DIR, --stake K, --jobs J worker threads, --check (exit 1 when the
-## ordering does not hold). Exits 1 on any failed run, 2 on bad options.
+## a time budget, --out DIR, --stake K, --jobs J worker threads, --expert-samples N the
+## deals an Expert villager samples (never fewer than a search decides on, ADR 0030),
+## --check (exit 1 when the ordering does not hold). Exits 1 on any failed run, 2 on bad
+## options.
 
 const DEFAULT_OUT: String = "res://reports"
 ## Seeds a strategy when neither --runs nor --minutes limits them.
@@ -15,6 +18,8 @@ var _seeds: int = 0
 var _deadline_msec: int = 0
 var _strategies: Array[String] = []
 var _stake: int = 0
+## The deals an Expert villager samples, or 0 for the game's own number.
+var _expert_samples: int = 0
 var _errors: BalanceErrors = BalanceErrors.new()
 var _mutex: Mutex = Mutex.new()
 var _next: int = 0
@@ -48,9 +53,11 @@ func _initialize() -> void:
 		"minutes": minutes,
 		"jobs": jobs,
 		"wall_seconds": (Time.get_ticks_msec() - began) / 1000.0,
+		"expert_samples": _expert_samples,
 	}
 	var out: String = options.get("out", DEFAULT_OUT)
 	var saved: bool = _save(out.path_join("balance_runs.csv"), _tally.csv())
+	saved = _save(out.path_join("balance_quotas.csv"), _tally.quotas_csv()) and saved
 	saved = _save(out.path_join("balance.md"), BalanceReport.markdown(_tally, setup)) and saved
 	quit(_exit_code(saved, options.has("check")))
 
@@ -70,6 +77,10 @@ func _read(options: Dictionary[String, String]) -> String:
 		return "Needs --runs N of at least 1 and at least one strategy."
 	if _stake < 0 or _stake > RunStakes.last():
 		return "Needs --stake from 0 to %d." % RunStakes.last()
+	_expert_samples = int(options.get("expert-samples", "0"))
+	var fewest: int = BotConfig.DEFAULT_WEIGHTS.expert_min_samples
+	if options.has("expert-samples") and _expert_samples < fewest:
+		return "Needs --expert-samples of at least %d, the fewest a search decides on." % fewest
 	return ""
 
 
@@ -97,10 +108,14 @@ func _work() -> void:
 			_mutex.unlock()
 			return
 		var task: Vector2i = _queue.pop_front()
-		_mutex.unlock()
 		var driver: BalanceDriver = BalanceDriver.new(
 			BalanceDriver.strategy_named(_strategies[task.y]), _stake, _errors
 		)
+		# Each run gets its own copy, made under the lock: duplicating a Resource on many
+		# threads at once is not known to be safe.
+		if _expert_samples > 0:
+			driver.search_weights = BalanceDriver.sampling(_expert_samples)
+		_mutex.unlock()
 		var result: BalanceResult = driver.play(task.x)
 		_mutex.lock()
 		_tally.add(result)

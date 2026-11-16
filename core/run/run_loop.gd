@@ -46,6 +46,8 @@ const DEFAULT_BOSSES: BossPool = preload("res://data/run/boss_pool.tres")
 var state: RunState
 var flow: RunFlow
 var record: RunRecord = RunRecord.new()
+## How searching villagers decide, and their plays written to the record (ADR 0030).
+var decisions: SearchedDecisions = SearchedDecisions.new(record)
 ## Called with the loop after every state move, for autosaves.
 var on_boundary: Callable = Callable()
 var set_log: SetLog = SetLog.new()
@@ -260,9 +262,9 @@ func _start_round() -> void:
 	advance()
 
 
-## Runs bots until the player must act or the Set is over.
+## Runs bots until the player must act or the Set is over, or a replayed decision fails.
 func advance() -> void:
-	while _awaiting == Awaiting.NOTHING:
+	while _awaiting == Awaiting.NOTHING and not decisions.failed():
 		if _bidding != null:
 			_bot_bid()
 		elif _round != null:
@@ -693,10 +695,14 @@ func _bot_play() -> void:
 		_round.apply(RoundAction.new(seat))
 		_after_action()
 		return
+	var config: BotConfig = _configs[seat]
+	if decisions.replays(config):
+		# A written play that no longer fits fails the resume, not the fallback below.
+		if decisions.replay(_round, seat):
+			_after_action()
+		return
 	var legal: Array[Pattern] = _round.legal_moves()
-	var play: BotPlay = Bot.decide_play(
-		_round.view_for(seat), legal, seat_table(seat), _configs[seat], BotBudget.unlimited()
-	)
+	var play: BotPlay = decisions.decide(_round.view_for(seat), legal, seat_table(seat), config)
 	var action: RoundAction = RoundAction.new(seat)
 	if not play.is_pass():
 		action = _round.action_for(play.pattern)
@@ -706,7 +712,9 @@ func _bot_play() -> void:
 	if not offered or _round.apply(action) != RoundState.Reason.OK:
 		refused_bot_actions += 1
 		assert(false, "A bot chose an illegal action")
-		_round.apply(_round.action_for(legal[0]))
+		action = _round.action_for(legal[0])
+		_round.apply(action)
+	decisions.write(seat, config, action.card_ids)
 	_after_action()
 
 

@@ -277,4 +277,5 @@ func test_a_save_from_the_middle_of_phase_4_gains_every_missing_field() -> void:
 		data.erase(field)
 	var record: Dictionary = {"checkpoint": data, "commands": []}
 	assert_bool(RunRecord.is_valid(record)).is_false()
-	assert_bool(RunRecord.is_valid(RunRecord.migrate_from_3(record))).is_true()
+	var migrated: Dictionary = RunRecord.migrate_from_12(RunRecord.migrate_from_3(record))
+	assert_bool(RunRecord.is_valid(migrated)).is_true()

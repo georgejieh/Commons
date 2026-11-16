@@ -7,7 +7,7 @@ extends RefCounted
 
 
 static func applies(config: BotConfig) -> bool:
-	return config.tier == BotConfig.Tier.EXPERT
+	return config.searches()
 
 
 ## Runs a job's samples in turn until the deadline, then decides on those it finished.

@@ -45,5 +45,8 @@ extends Resource
 @export var expert_margin: float
 ## Fewer finished samples than this leave the policy's play standing.
 @export var expert_min_samples: int
+## How long the live game gives one Expert decision, in microseconds: at the deadline the
+## search starts no more samples (ADR 0030, measured at ADR 0011's 300 ms).
+@export var expert_deadline_usec: int
 ## Actions after which a rollout counts as a loss.
 @export var search_step_limit: int

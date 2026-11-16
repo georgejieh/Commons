@@ -61,6 +61,11 @@ func team_cooperation() -> float:
 	return maxf(cooperation, minf(cooperation + loyalty, MAX_COOPERATION))
 
 
+## True for a tier that searches before it plays, Expert today (ADR 0030).
+func searches() -> bool:
+	return tier == Tier.EXPERT
+
+
 func search_candidates() -> int:
 	return weights.expert_candidates
 

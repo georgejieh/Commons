@@ -49,9 +49,21 @@ func swaps() -> bool:
 	return false
 
 
-## The state store as collective buys there: the dearest Cadre it can afford, then a
-## Reform, then an envelope, then a Campaign, with budget coupons to spend.
+## The Directive every strategy issues first (ADR 0027): the cheapest the budget affords,
+## once a visit, or null.
+static func directive_purchase(visit: BalanceVisit, budget: int) -> BalanceOffer:
+	if visit.directive_bought:
+		return null
+	return BalanceOffer.cheapest(visit.store, BalanceOffer.Kind.DIRECTIVE, budget)
+
+
+## The state store as collective buys there: a Directive first, then the dearest Cadre it
+## can afford, then a Reform, then an envelope, then a Campaign, with budget coupons to
+## spend.
 static func store_purchase(visit: BalanceVisit, budget: int) -> BalanceOffer:
+	var directive: BalanceOffer = directive_purchase(visit, budget)
+	if directive != null:
+		return directive
 	for kind: int in [
 		BalanceOffer.Kind.CADRE,
 		BalanceOffer.Kind.REFORM,

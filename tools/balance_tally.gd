@@ -88,6 +88,25 @@ func quotas_met_share(strategy: String) -> float:
 	return float(met) / played_quotas if played_quotas > 0 else 0.0
 
 
+## A strategy's rows for the Quota at index, over its runs played to their end.
+func quota_rows(strategy: String, index: int) -> Array[BalanceQuota]:
+	var rows: Array[BalanceQuota] = []
+	for run: BalanceResult in played(strategy):
+		for row: BalanceQuota in run.ledger.quotas:
+			if row.index == index:
+				rows.append(row)
+	return rows
+
+
+## Every Quota of every run played to its end, a row each, by seed and then strategy.
+func quotas_csv() -> String:
+	var lines: PackedStringArray = PackedStringArray([BalanceQuota.HEADER])
+	for run: BalanceResult in runs():
+		if not run.failed():
+			lines.append_array(run.ledger.csv(run.seed_value, run.strategy))
+	return "\n".join(lines) + "\n"
+
+
 func csv(with_seconds: bool = true) -> String:
 	var lines: PackedStringArray = PackedStringArray([BalanceResult.HEADER])
 	for run: BalanceResult in runs():

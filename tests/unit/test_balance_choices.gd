@@ -56,6 +56,83 @@ func _kind(offer: BalanceOffer) -> int:
 	return -1 if offer == null else offer.kind
 
 
+## The same visit with two Directives at the store, at 3 and 5 coupons.
+func _with_directives(coupons: int, resentment: int = 0) -> BalanceVisit:
+	var visit: BalanceVisit = _visit(coupons, resentment)
+	visit.store.append(_offer(BalanceOffer.Kind.DIRECTIVE, 5, false, 0))
+	visit.store.append(_offer(BalanceOffer.Kind.DIRECTIVE, 3, false, 1))
+	return visit
+
+
+func test_every_strategy_issues_the_cheapest_directive_first_once_a_visit() -> void:
+	for name: String in BalanceDriver.STRATEGIES:
+		var strategy: BalanceStrategy = _strategy(name)
+		var first: BalanceOffer = strategy.purchase(_with_directives(50))
+		assert_int(_kind(first)).override_failure_message(name).is_equal(
+			BalanceOffer.Kind.DIRECTIVE
+		)
+		assert_int(first.slot).override_failure_message(name).is_equal(1)
+		assert_bool(first.market).is_false()
+		var issued: BalanceVisit = _with_directives(50)
+		issued.directive_bought = true
+		assert_int(_kind(strategy.purchase(issued))).override_failure_message(name).is_not_equal(
+			BalanceOffer.Kind.DIRECTIVE
+		)
+	# Private buys nothing else at the state store: with a Directive issued, the market.
+	var private_visit: BalanceVisit = _with_directives(50)
+	private_visit.directive_bought = true
+	assert_bool(_strategy("private").purchase(private_visit).market).is_true()
+	# Collective, with too little for either Directive, buys down its own list.
+	assert_int(_kind(_strategy("collective").purchase(_with_directives(2)))).is_equal(
+		BalanceOffer.Kind.CAMPAIGN
+	)
+
+
+## The coupons mixed keeps back are for the black market, never held from a Directive.
+func test_mixed_keeps_nothing_back_from_its_directive() -> void:
+	var kept: int = _params().kept_back
+	var mixed: BalanceStrategy = _strategy("mixed")
+	var first: BalanceOffer = mixed.purchase(_with_directives(3))
+	assert_int(_kind(first)).is_equal(BalanceOffer.Kind.DIRECTIVE)
+	assert_int(first.slot).is_equal(1)
+	assert_int(_kind(mixed.purchase(_with_directives(2)))).is_not_equal(BalanceOffer.Kind.DIRECTIVE)
+	var issued: BalanceVisit = _with_directives(kept + 2)
+	issued.directive_bought = true
+	assert_int(_kind(mixed.purchase(issued))).is_not_equal(BalanceOffer.Kind.DIRECTIVE)
+	assert_int(_kind(_strategy("collective").purchase(_with_directives(3)))).is_equal(
+		BalanceOffer.Kind.DIRECTIVE
+	)
+
+
+func test_the_cheapest_offer_of_a_kind() -> void:
+	var offers: Array[BalanceOffer] = _with_directives(0).store
+	assert_int(BalanceOffer.cheapest(offers, BalanceOffer.Kind.DIRECTIVE, 9).price).is_equal(3)
+	assert_object(BalanceOffer.cheapest(offers, BalanceOffer.Kind.DIRECTIVE, 2)).is_null()
+	assert_int(BalanceOffer.cheapest(offers, BalanceOffer.Kind.CADRE, 9).price).is_equal(6)
+	var ledger: BalanceLedger = BalanceLedger.new()
+	assert_str(BalanceLedger.category(offers[-1])).is_equal("directives")
+	ledger.shop_step("directives", 9, 6)
+	ledger.shop_step("campaigns", 6, 10)
+	assert_int(ledger.spent["directives"]).is_equal(3)
+	assert_int(ledger.earned[BalanceLedger.OTHER]).is_equal(4)
+
+
+func test_the_percentile_reads_between_values() -> void:
+	var values: PackedFloat64Array = PackedFloat64Array([0.1, 0.2, 0.4, 1.0])
+	assert_float(BalanceCurve.percentile(values, 0.5)).is_equal_approx(0.3, 0.0001)
+	assert_float(BalanceCurve.percentile(values, 0.25)).is_equal_approx(0.175, 0.0001)
+	assert_float(BalanceCurve.percentile(values, 1.0)).is_equal_approx(1.0, 0.0001)
+	assert_float(BalanceCurve.percentile(PackedFloat64Array([0.7]), 0.75)).is_equal(0.7)
+
+
+func test_the_sampled_weights_are_a_copy() -> void:
+	var copy: BotWeights = BalanceDriver.sampling(12)
+	assert_int(copy.expert_samples).is_equal(12)
+	assert_int(copy.expert_min_samples).is_less_equal(12)
+	assert_object(copy).is_not_same(BotConfig.DEFAULT_WEIGHTS)
+	assert_int(BotConfig.DEFAULT_WEIGHTS.expert_samples).is_equal(48)
+
+
 func test_the_seat_by_strategy() -> void:
 	for is_grab: bool in [false, true]:
 		for bot_calls: bool in [false, true]:

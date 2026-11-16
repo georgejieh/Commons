@@ -269,8 +269,9 @@ func test_a_schema_10_save_resumes_as_a_demo_run() -> void:
 
 
 func test_a_run_save_with_a_broken_identity_falls_back() -> void:
-	var state: RunState = RunState.new(SEED)
-	var data: Dictionary = {"checkpoint": state.to_dict(), "commands": []}
+	var record: RunRecord = RunRecord.new()
+	record.mark(RunState.new(SEED))
+	var data: Dictionary = record.to_dict()
 	assert_bool(RunRecord.is_valid(data)).is_true()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint["identity"] = {"id": 4, "kind": 9}

@@ -30,4 +30,5 @@ expert_candidates = 3
 expert_samples = 48
 expert_margin = 0.125
 expert_min_samples = 12
+expert_deadline_usec = 300000
 search_step_limit = 200

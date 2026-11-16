@@ -30,17 +30,21 @@ var seconds: float = 0.0
 ## Why the run failed: a refused command, a refused bot action, a script error or the
 ## command limit. Empty for a run that played to its end.
 var failure: String = ""
+## The run Quota by Quota, and where its coupons came from and went.
+var ledger: BalanceLedger = BalanceLedger.new()
 
 ## What the choices were, for the tests.
 var calls: int = 0
 var grabs: int = 0
 var landlord_rounds: int = 0
 var max_need: int = 0
+## State store purchases besides Directives, and Directives issued.
 var store_buys: int = 0
+var directive_buys: int = 0
 var market_buys: int = 0
 ## Resentment from black market purchases and private Cadres.
 var market_resentment: int = 0
-## The fewest coupons a state store purchase left, or -1 before any.
+## The fewest coupons a state store purchase other than a Directive left, or -1 before any.
 var store_floor: int = -1
 ## Black market purchases made while Resentment stood at the mixed limit or over it.
 var market_buys_over_limit: int = 0

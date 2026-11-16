@@ -17,7 +17,7 @@ A full run through the same start path the game uses, with no window and no prof
 | --- | --- | --- | --- |
 | The landlord seat | Never calls or grabs | Calls whenever the bot would, and grabs a held seat whenever the bot would call | Calls when the bot would; never grabs a held seat |
 | Need | Claims the true need | Claims the most the panel allows | Claims the true need, or 50% more while one face of the die audits |
-| State store | Each visit: first the cheapest Directive it can afford, once; then, while coupons last, the dearest Cadre, else a Reform, else an envelope, else a Campaign | Each visit: the cheapest Directive it can afford, once, and nothing else | As collective, keeping 4 coupons back |
+| State store | Each visit: first the cheapest Directive it can afford, once; then, while coupons last, the dearest Cadre, else a Reform, else an envelope, else a Campaign | Each visit: the cheapest Directive it can afford, once, and nothing else | The cheapest Directive it can afford, once, from everything it holds; then as collective, keeping 4 coupons back |
 | Black market | Never enters | Buys the dearest Cadre it can afford, then a Parcel, then a plot card, then plot upgrades | Buys one thing a visit, the dearest it can afford with what was kept back, while Resentment is under 40 |
 | Rerolls | Never | Once a visit if nothing was affordable | Never |
 | Envelopes | Keeps the first item it can take | The same | The same |
@@ -27,7 +27,7 @@ A full run through the same start path the game uses, with no window and no prof
 
 "The bot would" is the Hard bot's own bidding decision for that hand. Each rule is data where it has a number (the coupons kept back, the Resentment limit, the over-claim).
 
-The first version of this table left Directives out, and no strategy's score grew: Directives are how a hand type's Rate rises, and every real player buys them. All three now buy one a visit. Private still buys nothing else the state sells.
+The first version of this table left Directives out, and no strategy's score grew: Directives are how a hand type's Rate rises, and every real player buys them. All three now buy one a visit. Private still buys nothing else the state sells. The second measurement showed mixed holding its 4 coupons back from the Directive too: with a Quota paying 3 to 5 coupons it almost never had the 7 a Directive then took, and its hand levels stood still (a sum of 15 at the start, 20 by the fifth Year, against collective's 38). The coupons kept back are for the black market, so they now come out of what is left after the Directive.
 
 These are caricatures on purpose. Collective is the player who trusts the village, private the one who takes everything, mixed the one who takes what is cheap and stops before it costs. The game's thesis is that the middle path is the only one that lasts, so the harness measures exactly that.
 

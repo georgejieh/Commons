@@ -3,14 +3,18 @@ extends RefCounted
 ## Plays one full run to its end through RunController, as the app starts one (ADR 0027):
 ## no profile, every unlock tier open, the Poor Peasants, the given stake. It answers
 ## whatever the run awaits: the Hard bot plays the player's cards from the player's seat
-## view, as it would a villager's, and the strategy makes every other choice. A refused
-## command, a bot action the round refused, a script error or a run past the command
-## limit fails the run, named in its result.
+## view, as it would a villager's, and the strategy makes every other choice. Expert
+## villagers search with no limit, so a seed plays the same each time (ADR 0030). A
+## refused command, a bot action the round refused, a script error or a run past the
+## command limit fails the run, named in its result.
 
 const STRATEGIES: Array[String] = ["collective", "private", "mixed"]
 const PARAMS: BalanceParams = preload("res://tools/balance_params.tres")
 
 var result: BalanceResult = BalanceResult.new()
+## Weights Expert villagers search with in place of the game's, from sampling(), or
+## null for the game's own (ADR 0027).
+var search_weights: BotWeights = null
 
 var _strategy: BalanceStrategy
 var _params: BalanceParams
@@ -26,6 +30,7 @@ var _last_hand: PackedByteArray = PackedByteArray()
 var _fresh_deal: bool = false
 var _market_bought: int = 0
 var _rerolled: bool = false
+var _directive_bought: bool = false
 
 
 ## errors, when given, is the logger whose count for this thread fails the run.
@@ -56,6 +61,24 @@ static func strategy_named(
 	return null
 
 
+## A copy of the bots' weights whose Expert samples that many deals, and needs no more
+## of them finished than that; the shared Resource is left as it is.
+static func sampling(samples: int) -> BotWeights:
+	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS.duplicate()
+	weights.expert_samples = samples
+	weights.expert_min_samples = mini(weights.expert_min_samples, samples)
+	return weights
+
+
+## The controller a run plays through: the app's, but with no deadline on a search, and
+## with search_weights when set.
+func new_controller() -> RunController:
+	var controller: RunController = RunController.new()
+	controller.live_search = false
+	controller.search_weights = search_weights
+	return controller
+
+
 ## The request the harness starts every run with.
 func request(seed_value: int) -> RunRequest:
 	var asked: RunRequest = RunRequest.new(RunRequest.FULL, seed_value, _params.start_time)
@@ -74,7 +97,7 @@ func play(seed_value: int) -> BalanceResult:
 	_hard = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.HARD, seed_value)
 	if _errors != null:
 		_errors.take()
-	_controller = RunController.new()
+	_controller = new_controller()
 	_controller.event_emitted.connect(_on_event)
 	if not _controller.start(request(seed_value)):
 		_fail("the run did not start")
@@ -122,6 +145,7 @@ func _step() -> void:
 		RunController.AWAIT_SET_OVER:
 			_market_bought = 0
 			_rerolled = false
+			_directive_bought = false
 			_send("finish_set", _controller.finish_set())
 		RunController.AWAIT_STORE:
 			_shop()
@@ -264,16 +288,28 @@ func _campaign_cards(slot: int, campaign_id: String) -> Array[int]:
 
 
 func _shop() -> void:
+	var state: RunState = _controller.state_copy()
+	var use: String = _shop_step(state)
+	if use.is_empty():
+		result.ledger.left_store(state.coupons)
+		_send("leave_store", _controller.leave_store())
+	else:
+		result.ledger.shop_step(use, state.coupons, _controller.state_copy().coupons)
+
+
+## Takes one step at the shops and names what for, as BalanceLedger does, or returns ""
+## when the strategy is done there.
+func _shop_step(state: RunState) -> String:
 	var opened: EnvelopeShelf = _controller.opened_envelope()
 	if opened != null:
 		_send("envelope_pick", _controller.envelope_pick(BalanceShop.envelope_pick(opened)))
-		return
+		return "envelopes"
 	if _use_campaign():
-		return
-	var state: RunState = _controller.state_copy()
+		return "campaigns"
 	var visit: BalanceVisit = BalanceShop.visit(_controller, state)
 	visit.market_bought = _market_bought
 	visit.rerolled = _rerolled
+	visit.directive_bought = _directive_bought
 	var offer: BalanceOffer = _strategy.purchase(visit)
 	if offer != null:
 		_bought(offer, state)
@@ -281,15 +317,20 @@ func _shop() -> void:
 		if not offer.market or not _controller.needs_rank(offer.item_id):
 			rank = Ranks.INVALID
 		_send("buy", BalanceShop.buy(_controller, offer, rank))
-	elif _strategy.rerolls(visit):
+		return BalanceLedger.category(offer)
+	if _strategy.rerolls(visit):
 		_rerolled = true
 		result.rerolls += 1
 		_send("market_reroll", _controller.market_reroll())
-	else:
-		_send("leave_store", _controller.leave_store())
+		return "rerolls"
+	return ""
 
 
 func _bought(offer: BalanceOffer, state: RunState) -> void:
+	if offer.kind == BalanceOffer.Kind.DIRECTIVE:
+		_directive_bought = true
+		result.directive_buys += 1
+		return
 	if not offer.market:
 		result.store_buys += 1
 		var left: int = state.coupons - offer.price
@@ -311,6 +352,7 @@ func _rank_counts(state: RunState) -> PackedByteArray:
 
 
 func _on_event(event: RunEvent) -> void:
+	result.ledger.heard(event, _controller)
 	match event.type:
 		RunEvent.Type.DEALT:
 			_bids.clear()

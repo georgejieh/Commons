@@ -367,9 +367,9 @@ func test_a_schema_11_save_migrates() -> void:
 	checkpoint.erase("quota_corruption")
 	checkpoint.erase("famine_market_buys")
 	assert_bool(RunRecord.is_valid(data)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_11(data)
+	var migrated: Dictionary = RunRecord.migrate_from_12(RunRecord.migrate_from_11(data))
 	assert_bool(RunRecord.is_valid(migrated)).is_true()
 	var broken: Dictionary = migrated.duplicate(true)
 	broken["checkpoint"]["quota_corruption"] = [3]
 	assert_bool(RunRecord.is_valid(broken)).is_false()
-	assert_int(SaveService.SCHEMA_VERSION).is_equal(12)
+	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(12)

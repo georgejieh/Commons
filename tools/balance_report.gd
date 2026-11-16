@@ -21,12 +21,14 @@ const DEATHS: Array[Array] = [
 ]
 
 
-## setup names the run: seeds, first_seed, stake, minutes, jobs and wall_seconds.
+## setup names the run: seeds, first_seed, stake, minutes, jobs and wall_seconds, and
+## expert_samples when the harness lowered them.
 static func markdown(tally: BalanceTally, setup: Dictionary) -> String:
 	var lines: PackedStringArray = PackedStringArray(["# Balance harness", ""])
 	lines.append_array(_setup(tally, setup))
 	lines.append_array(_table(tally))
 	lines.append_array(_endings(tally))
+	lines.append_array(BalanceCurve.sections(tally))
 	lines.append_array(_verdict(tally, int(setup["seeds"])))
 	lines.append_array(_failures(tally))
 	lines.append_array(_extremes(tally))
@@ -53,6 +55,17 @@ static func _setup(tally: BalanceTally, setup: Dictionary) -> PackedStringArray:
 		)
 	)
 	lines.append("Strategies: %s." % ", ".join(tally.strategies))
+	var own: int = BotConfig.DEFAULT_WEIGHTS.expert_samples
+	var samples: int = int(setup.get("expert_samples", 0))
+	if samples > 0:
+		lines.append(
+			(
+				"Expert villagers sample %d deals (--expert-samples), not the game's %d."
+				% [samples, own]
+			)
+		)
+	else:
+		lines.append("Expert villagers sample the game's own %d deals." % own)
 	lines.append("")
 	return lines
 

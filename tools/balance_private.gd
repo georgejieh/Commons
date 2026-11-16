@@ -1,8 +1,9 @@
 class_name BalancePrivate
 extends BalanceStrategy
 ## The player who takes everything (ADR 0027): calls and grabs whenever the Hard bot
-## would call, claims the most the panel allows, buys nothing from the state store and
-## everything it can at the black market, uses every Campaign and swaps its plot in.
+## would call, claims the most the panel allows, issues a Directive a visit and buys
+## nothing else from the state store, buys everything it can at the black market, uses
+## every Campaign and swaps its plot in.
 
 const MARKET_ORDER: Array[int] = [
 	BalanceOffer.Kind.CADRE,
@@ -25,6 +26,9 @@ func need(_true_need: int, cap: int, _audit_faces: int) -> int:
 
 
 func purchase(visit: BalanceVisit) -> BalanceOffer:
+	var directive: BalanceOffer = directive_purchase(visit, visit.coupons)
+	if directive != null:
+		return directive
 	for kind: int in MARKET_ORDER:
 		var offer: BalanceOffer = BalanceOffer.dearest(visit.market, kind, visit.coupons)
 		if offer != null:

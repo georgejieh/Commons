@@ -92,7 +92,7 @@ Plays the arrival (the first-launch tutorial) from no profile to run setup with 
 godot --headless --path . --script res://tools/balance.gd -- --runs 20 --jobs 4
 ```
 
-Plays full runs headless (no profile, every unlock tier open, Poor Peasants) with the collective, private and mixed strategies of [ADR 0027](docs/adr/0027-balance-harness.md) on the same seeds, and writes `reports/balance_runs.csv` and `reports/balance.md`. Add `--minutes M` for a time budget, `--seed S`, `--stake K`, `--strategies a,b`, `--out DIR`, or `--check` to exit 1 unless mixed > private > collective > 0 holds. It exits 1 on any refused command, illegal bot action or script error. A run takes from seconds to several minutes, longest when an Expert family is seated.
+Plays full runs headless (no profile, every unlock tier open, Poor Peasants) with the collective, private and mixed strategies of [ADR 0027](docs/adr/0027-balance-harness.md) on the same seeds, and writes `reports/balance_runs.csv`, `reports/balance_quotas.csv` (a row per Quota played) and `reports/balance.md`. Add `--minutes M` for a time budget, `--seed S`, `--stake K`, `--strategies a,b`, `--out DIR`, `--expert-samples N` so Expert villagers sample N deals instead of 48 (12 at least; several times faster), or `--check` to exit 1 unless mixed > private > collective > 0 holds. It exits 1 on any refused command, illegal bot action or script error. A run takes from seconds to several minutes, longest when an Expert family is seated.
 
 ## Layers
 

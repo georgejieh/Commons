@@ -17,6 +17,13 @@ static func visit(controller: RunController, state: RunState) -> BalanceVisit:
 
 static func _store(controller: RunController, offers: Array[BalanceOffer]) -> void:
 	var desk: ShopDesk = controller.desk(false)
+	var directives: Array[String] = desk.directive_stock()
+	for slot: int in directives.size():
+		if desk.can_buy_directive(slot):
+			var cost: int = desk.directive_price(slot)
+			offers.append(
+				BalanceOffer.new(BalanceOffer.Kind.DIRECTIVE, slot, cost, false, directives[slot])
+			)
 	var stock: Array[String] = desk.stock()
 	for slot: int in stock.size():
 		if desk.can_buy(slot):
@@ -77,6 +84,8 @@ static func buy(controller: RunController, offer: BalanceOffer, rank: int) -> in
 			if offer.market:
 				return controller.market_buy(offer.slot, rank)
 			return controller.buy(offer.slot)
+		BalanceOffer.Kind.DIRECTIVE:
+			return controller.directive(offer.slot)
 		BalanceOffer.Kind.REFORM:
 			return controller.reform(offer.slot)
 		BalanceOffer.Kind.ENVELOPE:

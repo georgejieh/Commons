@@ -1,8 +1,10 @@
 class_name RunRecord
 extends RefCounted
 ## What a save holds: the RunState where the loop last stood still, at a Set's start or
-## end, and the player's commands since. The loop is deterministic, so replaying the
-## commands on that state rebuilds any moment in between exactly, the Set's log too.
+## end, the player's commands since, and the plays searching villagers made since (ADR
+## 0030). The loop is deterministic but for those searches, so replaying the commands on
+## that state, with the written plays, rebuilds any moment in between exactly, the Set's
+## log too.
 
 ## Each command type and the fields its replay reads.
 ## Array values, because a constant of PackedStringArray values reads garbage in 4.7.2.
@@ -28,9 +30,16 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"market_envelope": ["slot"],
 	"envelope_pick": ["index"],
 }
+## The fields of one written decision: the villager's seat and the card IDs it played,
+## none for a pass.
+const DECISION_FIELDS: Array[String] = ["seat", "cards"]
+## True in every record written since searching villagers' plays were (ADR 0030).
+const WRITTEN_KEY: String = "decisions_written"
 
 var checkpoint: Dictionary = {}
 var commands: Array[Dictionary] = []
+## Every play a searching villager made since the checkpoint, in order.
+var decisions: Array[Dictionary] = []
 
 
 ## Schema 1 to 2: runs saved before the dossier start with nothing observed.
@@ -144,6 +153,14 @@ static func migrate_from_11(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 12 saves predate written decisions (ADR 0030): marked as holding none, so
+## they replay with the unlimited search, as they were made.
+static func migrate_from_12(data: Dictionary) -> Dictionary:
+	data["decisions"] = []
+	data[WRITTEN_KEY] = false
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -174,6 +191,8 @@ static func _phase_4_defaults() -> Dictionary:
 static func is_valid(data: Dictionary) -> bool:
 	if not data.get("checkpoint") is Dictionary or not data.get("commands") is Array:
 		return false
+	if not SearchedDecisions.is_valid(data.get("decisions"), data.get(WRITTEN_KEY)):
+		return false
 	var checkpoint: Dictionary = data["checkpoint"]
 	for key: String in RunState.new(0).to_dict():
 		if not checkpoint.has(key):
@@ -198,14 +217,17 @@ static func is_valid(data: Dictionary) -> bool:
 	return true
 
 
-## Returns null when a saved command no longer applies, so the caller can fall back.
+## Returns null when a saved command or a written decision no longer applies, so the
+## caller can fall back. The searcher decides searching villagers once the replay is
+## over; data without the written marker replays as a record from before it.
 static func resume(
 	data: Dictionary,
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	params: RunParams = RunLoop.DEFAULT_PARAMS,
 	pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs,
-	meters: MeterTable = RunLoop.DEFAULT_METERS
+	meters: MeterTable = RunLoop.DEFAULT_METERS,
+	searcher: Callable = Callable()
 ) -> RunLoop:
 	var loop: RunLoop = RunLoop.new(
 		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool, meters
@@ -213,10 +235,19 @@ static func resume(
 	# The resumed loop's own record starts from the same checkpoint, so its next save
 	# keeps it even when no new Set starts first, as in the store.
 	loop.record.mark(loop.state)
+	loop.decisions.searcher = searcher
+	# Before the checkpoint resumes, since villagers can act before the first command.
+	var written: Array[Dictionary] = []
+	written.assign(data.get("decisions", []))
+	var commands: Array = data["commands"]
+	loop.decisions.begin_replay(written, bool(data.get(WRITTEN_KEY, false)), commands.size())
 	loop.resume_at_checkpoint()
-	for command: Dictionary in data["commands"]:
-		if _replay(loop, command) != RunLoop.Reason.OK:
+	for command: Dictionary in commands:
+		loop.decisions.next_command()
+		if loop.decisions.failed() or _replay(loop, command) != RunLoop.Reason.OK:
 			return null
+	if not loop.decisions.end_replay():
+		return null
 	return loop
 
 
@@ -337,14 +368,25 @@ static func _ids(values: Array) -> Array[int]:
 func mark(state: RunState) -> void:
 	checkpoint = state.to_dict()
 	commands.clear()
+	decisions.clear()
 
 
 func add(command: Dictionary) -> void:
 	commands.append(command)
 
 
+## Writes down a searching villager's play: its seat and card IDs, none for a pass.
+func decide(seat: int, card_ids: Array[int]) -> void:
+	decisions.append({"seat": seat, "cards": card_ids.duplicate()})
+
+
 func to_dict() -> Dictionary:
-	return {"checkpoint": checkpoint.duplicate(true), "commands": commands.duplicate(true)}
+	return {
+		"checkpoint": checkpoint.duplicate(true),
+		"commands": commands.duplicate(true),
+		"decisions": decisions.duplicate(true),
+		WRITTEN_KEY: true,
+	}
 
 
 ## Observations are a dictionary of family IDs to arrays of counts.

@@ -10,5 +10,7 @@ var market: Array[BalanceOffer] = []
 ## Black market purchases made this visit.
 var market_bought: int = 0
 var rerolled: bool = false
+## True once a Directive was issued this visit.
+var directive_bought: bool = false
 ## True when a black market reroll is affordable and could change the counter.
 var can_reroll: bool = false

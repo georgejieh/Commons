@@ -53,6 +53,8 @@ func test_a_seed_plays_the_same_twice() -> void:
 	var first: BalanceResult = _each("collective")[0]
 	var again: BalanceResult = _play("collective", first.seed_value)
 	assert_str(again.csv(false)).is_equal(first.csv(false))
+	var rows: PackedStringArray = first.ledger.csv(first.seed_value, first.strategy)
+	assert_array(again.ledger.csv(again.seed_value, again.strategy)).is_equal(rows)
 
 
 func test_collective_never_calls_and_never_buys_privately() -> void:
@@ -63,6 +65,60 @@ func test_collective_never_calls_and_never_buys_privately() -> void:
 		assert_int(run.market_resentment).is_equal(0)
 		assert_int(run.swapped_cards).is_equal(0)
 		assert_int(run.max_need).is_less_equal(RunLoop.DEFAULT_PARAMS.base_need)
+
+
+func test_every_strategy_issues_directives() -> void:
+	for strategy: String in BalanceDriver.STRATEGIES:
+		var issued: int = 0
+		for run: BalanceResult in _each(strategy):
+			issued += run.directive_buys
+		assert_int(issued).override_failure_message(strategy).is_greater(0)
+
+
+## A row per Quota played to its end, each against the target the run started it with,
+## met as the run itself said.
+func test_each_quota_played_has_its_row() -> void:
+	for strategy: String in BalanceDriver.STRATEGIES:
+		for run: BalanceResult in _each(strategy):
+			var name: String = "%s seed %d" % [strategy, run.seed_value]
+			var rows: Array[BalanceQuota] = run.ledger.quotas
+			assert_int(rows.size()).override_failure_message(name).is_equal(run.quotas_played)
+			var started: Array[RunEvent] = run.ledger.events.filter(
+				func(event: RunEvent) -> bool: return event.type == RunEvent.Type.SET_STARTED
+			)
+			var ended: Array[RunEvent] = run.ledger.events.filter(
+				func(event: RunEvent) -> bool: return event.type == RunEvent.Type.SET_ENDED
+			)
+			assert_int(ended.size()).is_equal(rows.size())
+			for at: int in rows.size():
+				var row: BalanceQuota = rows[at]
+				assert_int(row.index).override_failure_message(name).is_equal(at + 1)
+				assert_float(row.target).is_equal_approx(started[at].amount, 0.001)
+				assert_bool(row.met).override_failure_message(name).is_equal(ended[at].value == 1)
+				assert_float(row.progress).is_equal_approx(ended[at].amount, 0.001)
+				assert_int(row.rounds).is_greater(0)
+				var columns: int = BalanceQuota.HEADER.split(",").size()
+				assert_int(row.csv(run.seed_value, strategy).split(",").size()).is_equal(columns)
+			var lines: PackedStringArray = run.ledger.csv(run.seed_value, strategy)
+			assert_int(lines.size()).is_equal(rows.size())
+
+
+func test_lowered_expert_samples_play_the_same_twice_and_leave_the_game_alone() -> void:
+	var first: BalanceResult = _sampled(SEEDS[0])
+	var again: BalanceResult = _sampled(SEEDS[0])
+	assert_str(again.csv(false)).is_equal(first.csv(false))
+	var rows: PackedStringArray = first.ledger.csv(first.seed_value, first.strategy)
+	assert_array(again.ledger.csv(again.seed_value, again.strategy)).is_equal(rows)
+	assert_int(BotConfig.DEFAULT_WEIGHTS.expert_samples).is_equal(48)
+	assert_int(BotConfig.DEFAULT_WEIGHTS.expert_min_samples).is_equal(12)
+
+
+func _sampled(seed_value: int) -> BalanceResult:
+	var driver: BalanceDriver = BalanceDriver.new(
+		BalanceDriver.strategy_named("collective"), STAKE, _errors
+	)
+	driver.search_weights = BalanceDriver.sampling(12)
+	return driver.play(seed_value)
 
 
 func test_private_enters_the_market_and_over_claims() -> void:
@@ -78,7 +134,8 @@ func test_private_enters_the_market_and_over_claims() -> void:
 func test_mixed_keeps_coupons_back_and_stops_at_the_limit() -> void:
 	var store_buys: int = 0
 	for run: BalanceResult in _each("mixed"):
-		store_buys += run.store_buys
+		# A Directive is issued from everything held; the floor is for what follows it.
+		store_buys += run.store_buys + run.directive_buys
 		assert_int(run.grabs).is_equal(0)
 		if run.store_buys > 0:
 			assert_int(run.store_floor).is_greater_equal(BalanceDriver.PARAMS.kept_back)
