@@ -200,9 +200,12 @@ func test_private_rerolls_once_a_visit_when_nothing_was_affordable() -> void:
 		assert_bool(_strategy(name).rerolls(visit)).is_false()
 
 
+## The rule with coupons kept back, whatever the data keeps today (none, ADR 0027).
 func test_mixed_keeps_coupons_back_then_buys_one_thing_under_the_limit() -> void:
-	var mixed: BalanceStrategy = _strategy("mixed")
-	var kept: int = _params().kept_back
+	var numbers: BalanceParams = _params().duplicate()
+	numbers.kept_back = 4
+	var mixed: BalanceStrategy = BalanceDriver.strategy_named("mixed", numbers)
+	var kept: int = numbers.kept_back
 	# With 10 coupons it spends only what is above the coupons kept back.
 	var store: BalanceOffer = mixed.purchase(_visit(kept + 6))
 	assert_bool(store.market).is_false()
@@ -214,7 +217,7 @@ func test_mixed_keeps_coupons_back_then_buys_one_thing_under_the_limit() -> void
 	var bought: BalanceVisit = _visit(kept + 1)
 	bought.market_bought = 1
 	assert_object(mixed.purchase(bought)).is_null()
-	var limit: int = _params().resentment_limit
+	var limit: int = numbers.resentment_limit
 	assert_object(mixed.purchase(_visit(kept + 1, limit))).is_null()
 	assert_bool(mixed.purchase(_visit(kept + 1, limit - 1)).market).is_true()
 

@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1")
-kept_back = 4
+kept_back = 0
 resentment_limit = 40
 over_claim_percent = 50
 over_claim_faces = 1

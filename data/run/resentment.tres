@@ -4,16 +4,16 @@
 
 [sub_resource type="Curve" id="denunciation"]
 max_value = 10.0
-_data = [Vector2(0, 0), 0.0, 4.0, 0, 1, Vector2(0.5, 2), 4.0, 12.0, 1, 1, Vector2(1, 8), 12.0, 0.0, 1, 0]
+_data = [Vector2(0, 0), 0.0, 2.0, 0, 1, Vector2(0.5, 1), 2.0, 6.0, 1, 1, Vector2(1, 4), 6.0, 0.0, 1, 0]
 point_count = 3
 
 [resource]
 script = ExtResource("1")
-max = 100
-private_purchase = 5
-private_cadre = 2
+max = 200
+private_purchase = 3
+private_cadre = 1
 stamped_card = 1
-grab = 4
+grab = 3
 overfulfilment = 1
 denunciation = SubResource("denunciation")
 grudge_at_max = 1.0

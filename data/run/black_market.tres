@@ -16,5 +16,5 @@ envelopes = Array[Resource]([ExtResource("2")])
 reroll_base = 3
 reroll_step = 2
 rarity_weights = Array[int]([50, 35, 15])
-price_percent = 150
+price_percent = 120
 stock_per_item = 0

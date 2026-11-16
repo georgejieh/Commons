@@ -83,11 +83,13 @@ func test_buying_fills_the_slots_and_a_third_is_refused() -> void:
 	assert_dict(loop.state.to_dict()).is_equal(before)
 
 
-func test_the_market_charges_half_again_rounded_up() -> void:
+func test_the_market_charges_its_percent_rounded_up() -> void:
 	var loop: RunLoop = _at_the_shops(9)
 	var offered: String = loop.market.campaigns.stock()[0]
 	var cost: int = loop.campaigns.definition(offered).cost
-	assert_int(loop.market.campaigns.price(0)).is_equal(ceili(cost * 1.5))
+	assert_int(MARKET.price_percent).is_greater(100)
+	var dear: int = ceili(cost * MARKET.price_percent / 100.0)
+	assert_int(loop.market.campaigns.price(0)).is_equal(dear)
 
 
 ## Plays the player's seat, sometimes trying a held Campaign on random cards first. Every

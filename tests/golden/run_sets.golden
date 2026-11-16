@@ -3,7 +3,7 @@ SET_STARTED seat=-1 value=0 amount=1500.000 morning_meeting,criticism_meeting,sh
 DEALT seat=-1 value=0
 BID seat=1 value=1
 BID seat=2 value=0
-RESENTMENT seat=-1 value=4 grab
+RESENTMENT seat=-1 value=3 grab
 BID seat=0 value=1
 BID seat=1 value=0
 LANDLORD_CHOSEN seat=0 value=2
@@ -142,7 +142,7 @@ SEAT_KEPT seat=0 value=0
 RESENTMENT seat=-1 value=4 overfulfilment
 SET_ENDED seat=-1 value=1 amount=3229.500
 OVERFULFILLED seat=0 value=4
-end progress=3229.500 coupons=7 famine=0 plot=0
+end progress=3229.500 coupons=12 famine=0 plot=0
 set 3502
 SET_STARTED seat=-1 value=0 amount=1500.000 slogan_of_the_week,redistribution,short_supply
 DEALT seat=-1 value=0
@@ -218,7 +218,7 @@ AUDIT_ROLLED seat=2 value=3 amount=1.000
 AUDITED seat=0 value=1
 SHARE_PAID seat=0 value=821
 SHARE_PAID seat=2 value=820
-METER_CHANGED seat=0 value=8 denunciation
+METER_CHANGED seat=0 value=3 denunciation
 SEAT_LOST seat=1 value=0
 DEBUFF_ADDED seat=0 value=1 slogan_of_the_week
 DEALT seat=-1 value=1
@@ -360,7 +360,7 @@ SHARE_PAID seat=0 value=320
 SHARE_PAID seat=2 value=265
 SEAT_KEPT seat=1 value=0
 SET_ENDED seat=-1 value=1 amount=1587.000
-end progress=1587.000 coupons=3 famine=0 plot=0
+end progress=1587.000 coupons=4 famine=0 plot=0
 set 3503
 SET_STARTED seat=-1 value=0 amount=1500.000 paperwork,short_supply,criticism_meeting
 DEALT seat=-1 value=0
@@ -441,7 +441,7 @@ SEAT_LOST seat=0 value=0
 DEBUFF_ADDED seat=0 value=1 paperwork
 DEALT seat=-1 value=1
 BID seat=2 value=1
-RESENTMENT seat=-1 value=4 grab
+RESENTMENT seat=-1 value=3 grab
 BID seat=0 value=1
 BID seat=1 value=0
 BID seat=2 value=0
@@ -662,13 +662,13 @@ SHARE_PAID seat=0 value=1014
 SHARE_PAID seat=1 value=844
 SEAT_LOST seat=2 value=0
 SET_ENDED seat=-1 value=1 amount=1809.000
-end progress=1809.000 coupons=3 famine=0 plot=0
+end progress=1809.000 coupons=4 famine=0 plot=0
 set 3504
 SET_STARTED seat=-1 value=0 amount=1500.000 grain_tax,work_point_audit,paperwork
 DEALT seat=-1 value=0
 BID seat=1 value=0
 BID seat=2 value=1
-RESENTMENT seat=-1 value=4 grab
+RESENTMENT seat=-1 value=3 grab
 BID seat=0 value=1
 BID seat=2 value=1
 LANDLORD_CHOSEN seat=2 value=4
@@ -777,7 +777,7 @@ GRAIN_TAXED seat=0 value=20 amount=376.000
 SHARE_PAID seat=1 value=1565
 SEAT_LOST seat=2 value=0
 SET_ENDED seat=-1 value=1 amount=1769.000
-end progress=1769.000 coupons=3 famine=0 plot=2
+end progress=1769.000 coupons=4 famine=0 plot=2
 set 3505
 SET_STARTED seat=-1 value=0 amount=1000000000.000 grain_tax,levy,slogan_of_the_week
 DEALT seat=-1 value=0

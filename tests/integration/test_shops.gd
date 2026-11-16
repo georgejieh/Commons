@@ -101,11 +101,13 @@ func test_the_market_charges_more_than_the_store_for_the_same_cost() -> void:
 		var across: int = market.stock().find(item_id)
 		if across >= 0:
 			assert_int(market.price(across)).is_greater(store.price(slot))
-	# 150% of 5 is 7.5, rounded up.
-	assert_int(MARKET.price_percent).is_equal(150)
-	var dear: RunShop = RunShop.new(RunState.new(1), MARKET, [_costing(5)])
-	dear.open()
-	assert_int(dear.price(0)).is_equal(8)
+	# The market's percent of the cost, rounded up: 120% of 5 is 6, and of 6 is 7.2, so 8.
+	assert_int(MARKET.price_percent).is_greater(100)
+	for cost: int in [5, 6]:
+		var dear: RunShop = RunShop.new(RunState.new(1), MARKET, [_costing(cost)])
+		dear.open()
+		assert_int(dear.price(0)).is_equal(ceili(cost * MARKET.price_percent / 100.0))
+		assert_int(dear.price(0)).is_greater(cost)
 
 
 func test_the_state_store_runs_out_of_an_item_and_the_market_does_not() -> void:
