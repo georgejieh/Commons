@@ -470,7 +470,7 @@ keyword.resentment.text,"Resentment: what the village holds against your private
 keyword.denunciation.name,Denunciation
 keyword.denunciation.text,"Denunciation: the case building against you. Private purchases, caught lies and Resentment raise it. If it fills, the run ends."
 keyword.famine.name,Famine
-keyword.famine.text,"Famine: the village's hunger. A missed Quota raises it, and so does a Commons too small for what was claimed. If it fills, the run ends."
+keyword.famine.text,"Famine: the village's hunger. It rises for a missed Quota, for a Commons too small for what was claimed, and for each Quota past 3 in a row without the landlord's seat: by 1, then 2, 3 and at most 4. If it fills, the run ends."
 bid.call,Called the seat
 bid.grab,Grabbed the seat
 bid.pass,Passed on the seat
@@ -751,6 +751,8 @@ beat.levy.taken,Levy: you take {name}'s {card}.
 beat.redistribution,Redistribution: everyone passes {count} cards to the left.
 summary.starved,The {name} household did not come to the Commons.
 summary.deposed,{name} was put out of the landlord's seat.
+summary.stood_by,Famine rose by {rise} for {count} Quotas in a row without the landlord's seat.
+summary.stood_by_last,"{count} Quotas in a row without the landlord's seat. Hold it in one round of the next Quota, or Famine rises."
 menu.abandon,Abandon run
 menu.abandon.confirm,Abandon this run? It will not be recorded.
 menu.abandon.yes,Abandon

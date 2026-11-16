@@ -2,7 +2,9 @@ extends GdUnitTestSuite
 ## ADR 0025 in the app: New Run starts the full run unless the app runs as --demo; the
 ## title offers Continue only for a run that loads; Abandon asks first, with the focus on
 ## Keep playing, clears the save and records nothing; the ending's way home clears the
-## save; and a Quota's end that took a family says so in one plain line.
+## save; and a Quota's end that took a family says so in one plain line. ADR 0031: the
+## summary warns on the last free Quota without the landlord's seat and names the Famine
+## each later one cost.
 
 const SEED: int = 7720
 const SAVE_PATH: String = "user://test_full_run_ui/run.json"
@@ -177,6 +179,67 @@ func test_the_summary_names_the_family_that_starved() -> void:
 	var dossier: DossierScreen = _app.show_screen("dossier", true)
 	assert_int(dossier.entries(seat).size()).is_equal(0)
 	assert_int(dossier.entries(3 - seat).size()).is_greater(0)
+
+
+## Plays the first Quota met in its first round, the player passing every bid, from
+## seatless Quotas already in a row. Returns the summary, or null when the player held the
+## seat after all.
+func _seatless_summary(seatless: int) -> SetSummaryScreen:
+	_app.new_run(SEED, true)
+	var loop: RunLoop = _app.controller.get("_loop")
+	loop.state.seatless_sets = seatless
+	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
+	params.targets = params.targets.duplicate()
+	params.targets.fill(1.0)
+	loop.set("_sets", SetConfig.new(params))
+	var script: ControllerScript = ControllerScript.new()
+	while true:
+		if _app.controller.awaiting() == RunController.AWAIT_BID:
+			if _app.controller.bid(false) != RunController.OK:
+				break
+		elif not script.act(_app.controller):
+			break
+	assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_SET_OVER)
+	if YearClass.held_seat(_app.controller.set_events(), RunLoop.PLAYER):
+		return null
+	return _app.show_screen("set_summary", true)
+
+
+## ADR 0031: the last free Quota warns that the next one without the seat costs.
+func test_the_summary_warns_on_the_last_free_quota() -> void:
+	var grace: int = RunLoop.DEFAULT_PARAMS.seat_grace_sets
+	var summary: SetSummaryScreen = _seatless_summary(grace - 1)
+	assert_object(summary).is_not_null()
+	if summary == null:
+		return
+	var line: String = (
+		"%d Quotas in a row without the landlord's seat. Hold it in one round of the next " % grace
+		+ "Quota, or Famine rises."
+	)
+	assert_array(summary.seat_lines()).contains_exactly([line])
+
+
+## ADR 0031: a Quota past the grace says how many in a row, and the Famine they added.
+func test_the_summary_names_the_famine_the_unheld_seat_cost() -> void:
+	var grace: int = RunLoop.DEFAULT_PARAMS.seat_grace_sets
+	var summary: SetSummaryScreen = _seatless_summary(grace + 1)
+	assert_object(summary).is_not_null()
+	if summary == null:
+		return
+	var rise: int = 2 * RunLoop.DEFAULT_METERS.source(RunMeters.STOOD_BY).amount
+	var line: String = (
+		"Famine rose by %d for %d Quotas in a row without the landlord's seat." % [rise, grace + 2]
+	)
+	assert_array(summary.seat_lines()).contains_exactly([line])
+
+
+## Inside the grace the summary says nothing of the seat.
+func test_the_summary_is_silent_inside_the_grace() -> void:
+	var summary: SetSummaryScreen = _seatless_summary(0)
+	assert_object(summary).is_not_null()
+	if summary == null:
+		return
+	assert_array(summary.seat_lines()).is_empty()
 
 
 func _press(text: String) -> void:

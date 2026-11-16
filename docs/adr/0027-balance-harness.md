@@ -47,6 +47,8 @@ The nightly workflow runs it and fails when the ordering does not hold.
 
 When the ordering does not hold, the numbers move, not the strategies. The order of reach: Quota targets and their growth, the meter sources (what a missed Quota, a caught lie, and Resentment cost), shop prices and rewards, then single items that dominate. Each measured set of changes is recorded with its before and after rows, in the message of the commit it lands in.
 
+Ten measurements in, the numbers alone had not given the order: targets, rewards and prices moved all three strategies together, and collective stayed above private. The order came from one new rule, a Famine cost for Quotas in a row without the landlord's seat ([ADR 0031](0031-the-unheld-seat.md)), with the numbers tuned around it. The measurements are in `docs/CHECKLIST.md` under P4.16.
+
 ## Consequences
 
 - The harness needs a way to play a run with no profile and every tier open, which the start path gets as an explicit option.

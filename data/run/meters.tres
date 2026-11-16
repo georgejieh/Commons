@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MeterTable" load_steps=15 format=3]
+[gd_resource type="Resource" script_class="MeterTable" load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://data/run/meter_table.gd" id="1"]
 [ext_resource type="Script" path="res://data/run/meter_bands.gd" id="2"]
@@ -74,9 +74,15 @@ id = "tutorial_denunciation"
 meter = "denunciation"
 amount = 0
 
+[sub_resource type="Resource" id="source_9"]
+script = ExtResource("3")
+id = "stood_by"
+meter = "famine"
+amount = 1
+
 [resource]
 script = ExtResource("1")
 famine = SubResource("famine")
 denunciation = SubResource("denunciation")
-sources = Array[ExtResource("3")]([SubResource("source_0"), SubResource("source_1"), SubResource("source_2"), SubResource("source_3"), SubResource("source_4"), SubResource("source_5"), SubResource("source_6"), SubResource("source_7"), SubResource("source_8")])
+sources = Array[ExtResource("3")]([SubResource("source_0"), SubResource("source_1"), SubResource("source_2"), SubResource("source_3"), SubResource("source_4"), SubResource("source_5"), SubResource("source_6"), SubResource("source_7"), SubResource("source_8"), SubResource("source_9")])
 rationing_shop_cut = 1

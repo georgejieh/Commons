@@ -11,6 +11,9 @@ const MISSED_TARGET: String = "missed_target"
 const COMMONS_SHORTFALL: String = "commons_shortfall"
 const PRIVATE_PURCHASE: String = "private_purchase"
 const CAUGHT_LIE: String = "caught_lie"
+## A Set in a run of Sets the player never held the landlord's seat in (ADR 0031). Its
+## amount is for each step of the run past the grace.
+const STOOD_BY: String = "stood_by"
 const DEBUFF_FAMINE: String = "debuff_famine"
 const DEBUFF_DENUNCIATION: String = "debuff_denunciation"
 ## Its amount comes from the Resentment curve (P4.2), not the row.

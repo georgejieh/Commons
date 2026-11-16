@@ -7,7 +7,7 @@ extends RefCounted
 ## validator, so a file that parses but lost its shape counts as damaged. Run saves and
 ## the profile save are separate files with their own services.
 
-const SCHEMA_VERSION: int = 13
+const SCHEMA_VERSION: int = 14
 const RUN_PATH: String = "user://run.json"
 const PROFILE_PATH: String = "user://profile.json"
 const BACKUP_SUFFIX: String = ".bak"
@@ -50,6 +50,7 @@ static func for_run(path: String = RUN_PATH) -> SaveService:
 		10: RunRecord.migrate_from_10,
 		11: RunRecord.migrate_from_11,
 		12: RunRecord.migrate_from_12,
+		13: RunRecord.migrate_from_13,
 	}
 	return SaveService.new(path, migrations, SCHEMA_VERSION, RunRecord.is_valid)
 

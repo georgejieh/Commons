@@ -1,3 +1,5 @@
+# gdlint: disable=max-file-lines
+# Over 400 lines: each schema's migration stays beside the validator that checks it.
 class_name RunRecord
 extends RefCounted
 ## What a save holds: the RunState where the loop last stood still, at a Set's start or
@@ -158,6 +160,15 @@ static func migrate_from_11(data: Dictionary) -> Dictionary:
 static func migrate_from_12(data: Dictionary) -> Dictionary:
 	data["decisions"] = []
 	data[WRITTEN_KEY] = false
+	return data
+
+
+## Version 13 saves predate the unheld seat (ADR 0031): no Quota counted yet without the
+## landlord's seat, so a run picked up then counts from there.
+static func migrate_from_13(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"seatless_sets": 0})
 	return data
 
 
@@ -328,6 +339,8 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 	if not _counters_valid(checkpoint["year_starved"], 0):
 		return false
 	if not _counters_valid(checkpoint["famine_market_buys"], 0):
+		return false
+	if not _counters_valid(checkpoint["seatless_sets"], 0):
 		return false
 	for event_id: Variant in checkpoint["quota_corruption"]:
 		if not event_id is String:

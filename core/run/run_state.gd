@@ -39,6 +39,8 @@ var rationed: bool = false
 var reeducation_due: bool = false
 ## The village's Resentment of the player (P4.2).
 var resentment: int = 0
+## Sets in a row the player has ended without holding the landlord's seat (ADR 0031).
+var seatless_sets: int = 0
 ## Each villager family's own Denunciation, from lies caught at audit (P4.3).
 var villager_denunciation: Dictionary[String, int] = {}
 ## Commons shares paid to the player, and to every peasant, this run (P4.4).
@@ -128,6 +130,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.rationed = bool(data["rationed"])
 	state.reeducation_due = bool(data["reeducation_due"])
 	state.resentment = int(data["resentment"])
+	state.seatless_sets = int(data["seatless_sets"])
 	state.commons_received = str(data["commons_received"]).to_int()
 	state.commons_paid = str(data["commons_paid"]).to_int()
 	state.memory = VillageMemory.from_dict(data["memory"])
@@ -198,6 +201,7 @@ func to_dict() -> Dictionary:
 		"rationed": rationed,
 		"reeducation_due": reeducation_due,
 		"resentment": resentment,
+		"seatless_sets": seatless_sets,
 		"commons_received": str(commons_received),
 		"commons_paid": str(commons_paid),
 		"memory": memory.to_dict(),

@@ -879,6 +879,7 @@ func _end_set() -> void:
 	_reeducate_villagers()
 	state.memory.record(state.summaries[-1])
 	_record_style_and_risen()
+	_count_standing_by()
 	CorruptionEvents.close_quota(state, set_log.events(), _params.base_need)
 	var held: int = Resentment.private_cadres(state.inventory.cadres, all_cadres())
 	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
@@ -959,6 +960,28 @@ func _record_style_and_risen() -> void:
 	var holder: String = Bosses.full_set_holder(set_log.events(), state.table, PLAYER)
 	if holder != Bosses.NO_FAMILY and not state.risen.has(holder):
 		state.risen.append(holder)
+
+
+## A Set the player never held the landlord's seat in lengthens a run of them, and past
+## the grace each one costs Famine, more for each Set until the most (ADR 0031). The last
+## free Set and every one that costs are logged, so the summary can say which it was.
+func _count_standing_by() -> void:
+	if YearClass.held_seat(set_log.events(), PLAYER):
+		state.seatless_sets = 0
+		return
+	state.seatless_sets += 1
+	var steps: int = mini(state.seatless_sets - _params.seat_grace_sets, _params.seat_max_steps)
+	# Before the last free Set, or past it with no steps to pay (a most of 0).
+	if steps < 0 or (steps == 0 and state.seatless_sets > _params.seat_grace_sets):
+		return
+	var before: int = state.famine
+	if steps > 0:
+		var each: int = _meters.source(RunMeters.STOOD_BY).amount
+		var logged: Array[RunEvent] = set_log.events()
+		RunMeters.apply_amount(
+			state, RunMeters.STOOD_BY, steps * each, _meters, _stack, _params, PLAYER, logged
+		)
+	set_log.add(RunEvent.new(RunEvent.Type.STOOD_BY, PLAYER, steps, float(state.famine - before)))
 
 
 func _seat_seed(seat: int) -> int:

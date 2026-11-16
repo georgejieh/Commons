@@ -19,6 +19,18 @@ static func new_year(state: RunState) -> void:
 	state.year_landlord_rounds = 0
 
 
+## True when seat held the landlord seat in any round of a Set's events: a round's
+## holder is the seat named by its SEAT_KEPT or SEAT_LOST event (ADR 0031).
+static func held_seat(events: Array[RunEvent], seat: int) -> bool:
+	for event: RunEvent in events:
+		var ends_round: bool = (
+			event.type == RunEvent.Type.SEAT_KEPT or event.type == RunEvent.Type.SEAT_LOST
+		)
+		if ends_round and event.seat == seat:
+			return true
+	return false
+
+
 ## A Year with no rounds played is a peasant's.
 static func is_landlord(state: RunState) -> bool:
 	return state.year_rounds > 0 and state.year_landlord_rounds * 2 >= state.year_rounds

@@ -82,6 +82,10 @@ enum Type {
 	## A risen villager whose boss Quota the player met was put out of the landlord's seat
 	## (ADR 0025): seat is where it sat, text its family ID.
 	DEPOSED,
+	## A Quota ended without the player holding the landlord's seat, at or past the grace
+	## (ADR 0031): value is the steps it cost, 0 on the last free Quota, and amount the
+	## Famine it added.
+	STOOD_BY,
 }
 
 var type: Type

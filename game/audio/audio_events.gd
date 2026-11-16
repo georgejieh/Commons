@@ -48,6 +48,8 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.BANK_VOIDED: "bank_voided",
 	RunEvent.Type.STARVED: "family_starved",
 	RunEvent.Type.DEPOSED: "family_deposed",
+	# The Famine it adds sounds as a meter change.
+	RunEvent.Type.STOOD_BY: "",
 }
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",

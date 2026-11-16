@@ -8,6 +8,8 @@ extends Control
 ## Coupons The Bookkeeper paid at the Quota's end are counted in with the reward, and
 ## the paid line says so (ADR 0021). A family that starved, or was put out of the
 ## landlord's seat, gets one plain line in ink at the foot, and nothing more (ADR 0025).
+## A Quota that ended without the player in the landlord's seat says what that cost, or,
+## on the last free one, that the next will cost (ADR 0031).
 
 const BAR: Vector2 = Vector2(960, 54)
 const SEAL_WIDTH: float = 150.0
@@ -35,6 +37,7 @@ var _kept: int = 0
 ## The families the Quota's end took, faded in last with no pulse: a quiet beat.
 var _quiet: Array[Control] = []
 var _fate_texts: PackedStringArray = []
+var _seat_texts: PackedStringArray = []
 var _next: Button
 
 
@@ -80,6 +83,9 @@ func open(app: DemoApp) -> void:
 		)
 		sheet.add_child(norm)
 		_after.append(norm)
+	for seat_line: Label in _seat_lines(controller, state.seatless_sets):
+		sheet.add_child(seat_line)
+		_after.append(seat_line)
 	for fate: Label in _fates(controller):
 		sheet.add_child(fate)
 		_quiet.append(fate)
@@ -150,6 +156,28 @@ func _fates(controller: RunController) -> Array[Label]:
 		lines.append(line)
 		_fate_texts.append(text)
 	return lines
+
+
+## What leaving the landlord's seat to others came to at this Quota's end: the Famine it
+## added, or the warning on the last free Quota. The loop logs both; nothing is worked out
+## here. The run's last Quota has no next one to warn of.
+func _seat_lines(controller: RunController, count: int) -> Array[Label]:
+	var lines: Array[Label] = []
+	for event: RunEvent in controller.set_events():
+		if event.type != RunEvent.Type.STOOD_BY:
+			continue
+		if event.value == 0 and controller.is_last_set():
+			continue
+		var key: String = "summary.stood_by" if event.value > 0 else "summary.stood_by_last"
+		var text: String = tr(key).format({"count": count, "rise": roundi(event.amount)})
+		lines.append(_line(text, ScreenKit.RED if event.value > 0 else ScreenKit.INK))
+		_seat_texts.append(text)
+	return lines
+
+
+## The lines saying what leaving the landlord's seat cost, for tests.
+func seat_lines() -> PackedStringArray:
+	return _seat_texts
 
 
 ## The lines naming who the village lost this Quota, for tests.
