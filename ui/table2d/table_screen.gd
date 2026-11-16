@@ -132,7 +132,7 @@ func open(app: DemoApp) -> void:
 	_commands.setup(_controller, _hand, _hand_view, _actions, _need_panel, _player)
 	_commands.open_rules = _cheat_sheet.toggle.bind(_controller)
 	_commands.gate = app.arrival.allows
-	_tutorial.setup(app, _actions, _hand_view, _need_panel, _cheat_sheet, _pause)
+	_tutorial.setup(app, _actions, _hand_view, _need_panel, _cheat_sheet, _pause, _dressing)
 	_player.played.connect(_on_event)
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)

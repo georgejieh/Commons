@@ -3,7 +3,9 @@ extends PanelContainer
 ## One shared slip that explains whatever a shop's compact pieces point at (ADR 0021):
 ## the item's name over its rules with each keyword's meaning, as the Keywords.slip
 ## tooltip has it, on aged paper. It shows while a piece is hovered or holds focus, and
-## stands above or below that piece, never over it, kept on screen.
+## stands above or below that piece, never over it, kept on screen. While quiet says so,
+## as it does through the arrival, whose slip is the only explanation on screen, it
+## stays closed.
 
 const GAP: float = 10.0
 const MARGIN: float = 16.0
@@ -11,6 +13,8 @@ const PADDING: int = 14
 ## Marks a piece whose leaving the tree already hides the slip.
 const WATCHED: StringName = &"detail_slip_watched"
 
+## Returns true while the slip must stay closed; unset, it never must.
+var quiet: Callable = Callable()
 var _anchor: Control = null
 var _above: bool = true
 var _rule: String = ""
@@ -27,6 +31,9 @@ func _init() -> void:
 
 ## Explains anchor: title over rule, above it or below it.
 func show_for(anchor: Control, title: String, rule: String, above: bool = true) -> void:
+	if quiet.is_valid() and bool(quiet.call()):
+		hide_slip()
+		return
 	_anchor = anchor
 	_above = above
 	_rule = rule

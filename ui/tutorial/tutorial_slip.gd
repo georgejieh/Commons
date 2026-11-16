@@ -63,7 +63,8 @@ func text_size() -> int:
 
 ## Stands beside target, keeping clear of it and of every rect in avoid, on screen. The
 ## first place that fits wins: right, left, then above and below, each centred on the
-## target and then lined up with either of its edges.
+## target and then lined up with either of its edges, then above and below slid just
+## past each rect it must keep clear of, nearest the target first.
 func place(target: Rect2, avoid: Array[Rect2], screen: Vector2) -> void:
 	reset_size()
 	global_position = TutorialSlip.spot(size, target, avoid, screen)
@@ -81,6 +82,16 @@ static func spot(extent: Vector2, target: Rect2, avoid: Array[Rect2], screen: Ve
 	for y: float in [above, below]:
 		for x: float in [middle.x - extent.x / 2.0, target.position.x, target.end.x - extent.x]:
 			tries.append(Vector2(x, y))
+	var slid: Array[Vector2] = []
+	for y: float in [above, below]:
+		for other: Rect2 in avoid:
+			slid.append(Vector2(other.end.x + GAP, y))
+			slid.append(Vector2(other.position.x - GAP - extent.x, y))
+	# Nearest the target first, so the slip stays by what it points at.
+	var near: Callable = func(a: Vector2, b: Vector2) -> bool:
+		return (a + extent / 2.0).distance_to(middle) < (b + extent / 2.0).distance_to(middle)
+	slid.sort_custom(near)
+	tries.append_array(slid)
 	var blocked: Array[Rect2] = avoid.duplicate()
 	if target.has_area():
 		blocked.append(target)

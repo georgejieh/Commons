@@ -75,6 +75,8 @@ func _ready() -> void:
 	add_child(_wipe_layer)
 	add_child(arrival.layer)
 	add_child(_menu)
+	# Over the arrival's layer, which draws above every piece a screen lifts.
+	_menu.z_index = TutorialLayer.DRAW_ORDER + 1
 	_menu.wire(self)
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}

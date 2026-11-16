@@ -3,7 +3,7 @@ extends RefCounted
 ## The table's part in the arrival (ADR 0026): it reports where the run stands once the
 ## table's events have played, puts a play step's cards up as chosen with the cursor on
 ## the first, tells the arrival when the rules card closes, and names what its slip
-## points at and must keep clear of: the player's hand.
+## points at and must keep clear of: the player's hand and the brigade notice.
 
 var _app: DemoApp
 var _actions: ActionBar
@@ -12,6 +12,7 @@ var _hand_view: HandView
 var _need_panel: NeedPanel
 var _cheat_sheet: CheatSheet
 var _pause: PauseMenu
+var _dressing: DreadDressing
 ## The step whose cards were last put up, so a player's own change is kept.
 var _picked_for: int = -1
 
@@ -22,9 +23,11 @@ func setup(
 	hand_view: HandView,
 	need_panel: NeedPanel,
 	cheat_sheet: CheatSheet,
-	pause: PauseMenu
+	pause: PauseMenu,
+	dressing: DreadDressing = null
 ) -> void:
 	_app = app
+	_dressing = dressing
 	_actions = actions
 	_hand = app.hand
 	_hand_view = hand_view
@@ -66,11 +69,14 @@ func tutorial_rect(key: String) -> Rect2:
 	return _visible_rect(buttons.get(key, null))
 
 
-## The player's hand, which the slip never covers, unless the rules card covers it.
+## The player's hand, which the slip never covers, unless the rules card covers it, and
+## the brigade notice on the wall.
 func tutorial_avoid() -> Array[Rect2]:
 	var avoid: Array[Rect2] = []
 	if not _cheat_sheet.visible:
 		avoid.append(_hand_view.get_global_rect())
+	if _dressing != null and _dressing.notice_rect().has_area():
+		avoid.append(_dressing.notice_rect())
 	return avoid
 
 

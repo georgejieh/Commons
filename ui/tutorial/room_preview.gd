@@ -1,14 +1,18 @@
 class_name RoomPreview
 extends Control
 ## The room for a moment as one meter's high band leaves it (ADR 0026): the real board,
-## its table, lamp, watchers and dressing under the dread layers, given that meter at its
-## high band for a few seconds with the meter named in a caption, then eased back to the
-## true state and let go. It changes only what the board shows, never a meter.
+## its table, lamp, watchers and dressing under the dread layers, over the whole screen,
+## given that meter at its high band for a few seconds with the meter's name large on a
+## sheet of paper, then eased back to the true state and let go. It changes only what the
+## board shows, never a meter.
 
 signal done
 
 const RAIL_EDGE: Color = Color("3e2a19")
-const CAPTION_SIZE: int = 64
+const CAPTION_SIZE: int = 72
+## The caption's sheet: its top edge, and the paper's margin round the name.
+const CAPTION_TOP: float = 96.0
+const CAPTION_PADDING: int = 28
 ## Seconds the board takes to come back to the true state before the room goes.
 const RETURN_SECONDS: float = 0.5
 const FADE_SECONDS: float = 0.25
@@ -18,12 +22,13 @@ var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _dressing: DreadDressing = DreadDressing.new()
 var _dread: DreadLayers = DreadLayers.new()
 var _caption: Label = Label.new()
+var _sheet: PanelContainer = PanelContainer.new()
 var _meter: String = ""
 var _set_up: bool = false
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var rail: ColorRect = ColorRect.new()
 	rail.color = RAIL_EDGE
@@ -35,13 +40,12 @@ func _ready() -> void:
 	add_child(_dread)
 	_caption.theme_type_variation = CommonsTheme.HEADLINE
 	_caption.add_theme_font_size_override("font_size", CAPTION_SIZE)
-	_caption.add_theme_color_override("font_color", ScreenKit.STYLE.paper)
-	ScreenKit.paper_outline(_caption)
-	_caption.add_theme_color_override("font_outline_color", ScreenKit.INK)
+	_caption.add_theme_color_override("font_color", ScreenKit.INK)
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_caption.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_caption.position.y = 120.0
-	add_child(_caption)
+	_sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(CAPTION_PADDING))
+	_sheet.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sheet.add_child(_caption)
+	add_child(_sheet)
 	visible = false
 
 
@@ -57,9 +61,8 @@ func play(post: ShaderMaterial, meter: String, value: int, truth: Vector2i, seco
 		_dread.setup(materials, _dressing, panels, slots)
 	_meter = meter
 	_caption.text = tr("meter." + meter)
-	_caption.reset_size()
-	_caption.position.x = (size.x - _caption.size.x) / 2.0
 	visible = true
+	_place_sheet()
 	modulate.a = 1.0
 	var famine: int = value if meter == "famine" else truth.x
 	var denunciation: int = value if meter == "denunciation" else truth.y
@@ -81,6 +84,17 @@ func meter() -> String:
 
 func caption() -> String:
 	return _caption.text
+
+
+## Where the caption's sheet stands on screen, for the slip that goes under it.
+func caption_rect() -> Rect2:
+	return _sheet.get_global_rect()
+
+
+func _place_sheet() -> void:
+	_sheet.reset_size()
+	var wide: float = get_viewport_rect().size.x
+	_sheet.global_position = Vector2((wide - _sheet.size.x) / 2.0, CAPTION_TOP)
 
 
 ## The weight the board shows now for a layer, for tests.

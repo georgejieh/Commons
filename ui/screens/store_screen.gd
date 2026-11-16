@@ -78,6 +78,7 @@ var _blocks: Dictionary[String, Control] = {}
 
 func open(app: DemoApp) -> void:
 	_app = app
+	_slip.quiet = app.arrival.is_running
 	_desk = app.controller.desk(market)
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.store)
 	column.add_theme_constant_override("separation", ROW_GAP)

@@ -5,12 +5,14 @@ extends Control
 ## the question it asks, the "Begin your first year" button for the last step, and the
 ## room shown at a meter's high band. It reads the director and the screen shown; it
 ## sends nothing to the run. Screens name their targets with tutorial_target(key) or,
-## for the table, tutorial_rect(key), and may name what the slip must keep clear of.
+## for the table, tutorial_rect(key), and may name what the slip must keep clear of. It
+## draws above every piece a screen lifts (the store's slips and seals, the envelope),
+## so the room it shows covers the whole page, and below the app's menu.
 
 const CORNER: float = 24.0
 const BEGIN_GAP: float = 16.0
-## Where the slip stands while the room is shown, under the meter's caption.
-const PREVIEW_TARGET: Rect2 = Rect2(760, 100, 400, 110)
+## Above the highest piece a screen lifts, the envelope overlay's 4.
+const DRAW_ORDER: int = 5
 
 var _app: DemoApp = null
 var _director: TutorialDirector = null
@@ -27,8 +29,11 @@ var _beat_for: int = -1
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Offsets too: anchors alone keep the size a new control has, none, and the room
+	# shown under a layer of no size has none either.
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	z_index = DRAW_ORDER
 	for child: Control in [_preview, _ring, _slip, _begin, _skip, _confirm]:
 		add_child(child)
 	_skip.text = tr("tutorial.skip")
@@ -141,13 +146,22 @@ func _layout() -> void:
 	var target: Rect2 = _target_rect(guide, key)
 	_ring.ring(target)
 	if _preview.visible:
-		target = PREVIEW_TARGET
+		_under_caption()
+		return
 	if not target.has_area():
 		return
 	var avoid: Array[Rect2] = []
 	if guide != null and guide.has_method("tutorial_avoid"):
 		avoid.assign(guide.call("tutorial_avoid"))
 	_slip.place(target, avoid, size_now)
+
+
+## While the room is shown, Wang's follow-up stands centred under the meter's name.
+func _under_caption() -> void:
+	_slip.reset_size()
+	var caption: Rect2 = _preview.caption_rect()
+	var x: float = caption.get_center().x - _slip.size.x / 2.0
+	_slip.global_position = Vector2(x, caption.end.y + TutorialSlip.GAP)
 
 
 func _on_its_screen() -> bool:
