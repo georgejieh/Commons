@@ -4,7 +4,8 @@ extends RefCounted
 ## state: its identity, starting coupons, the village's memory carried in, and for a full
 ## run the village roster and the family's next generation; then the lineage it inherits,
 ## its household and its stake's starting meters. It also names the Sets and seat configs
-## each kind plays with, so Continue rebuilds exactly the kind that was saved.
+## each kind plays with, so Continue rebuilds exactly the kind that was saved. The
+## arrival (ADR 0026) plays its script's one Quota and is never saved.
 
 const FULL_RUN: FullRunParams = preload("res://data/run/full_run.tres")
 const DEMO_RUN: DemoParams = preload("res://data/run/demo.tres")
@@ -85,12 +86,30 @@ static func unlocked_families(data: ProfileData) -> Array[String]:
 
 
 static func starting_coupons(kind: int) -> int:
-	return FULL_RUN.starting_coupons if kind == RunRequest.FULL else DEMO_RUN.starting_coupons
+	match kind:
+		RunRequest.FULL:
+			return FULL_RUN.starting_coupons
+		RunRequest.TUTORIAL:
+			return RunTutorial.SCRIPT.starting_coupons
+	return DEMO_RUN.starting_coupons
 
 
-## The Sets a kind of run plays: the full run's eight Years, or the demo's one.
+## The Sets a kind of run plays: the full run's eight Years, the demo's one, or the
+## arrival's one Quota.
 static func sets(kind: int) -> SetConfig:
-	return SetConfig.new(FULL_RUN.sets if kind == RunRequest.FULL else DEMO_RUN.sets)
+	match kind:
+		RunRequest.FULL:
+			return SetConfig.new(FULL_RUN.sets)
+		RunRequest.TUTORIAL:
+			return SetConfig.new(RunTutorial.SCRIPT.sets)
+	return SetConfig.new(DEMO_RUN.sets)
+
+
+## The arrival's request: its own seed, and never the profile.
+static func tutorial() -> RunRequest:
+	var request: RunRequest = RunRequest.new(RunRequest.TUTORIAL, RunTutorial.SCRIPT.seed_value)
+	request.writes_profile = false
+	return request
 
 
 ## One config per seat. A full run seats its roster each Set, which replaces the

@@ -92,6 +92,7 @@ Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is 
 | Before (every asset at full size) | 170.4 MB | Over |
 | Large art capped at 512 px on import, icons packed into one atlas | 89.2 MB | Pass |
 | 18 more Cadres with art (P4.11h), Cadre art capped at 384 px | 125.0 MB peak | Pass |
+| Cadre and ending pictures loaded on demand (P4.14), 18 ending pictures added | 114.3 MB peak | Pass |
 
 The art library preloads backdrops, paper and card art. Cadre and ending pictures load only when shown, through a cache of 12 (P4.14), so the table holds just the Cadres on its board. Stage versions load only when shown, so since the stage art arrived the tool also shows all 54 card faces and measures at stages 0, 4 and 9 in turn, reporting the peak.
 

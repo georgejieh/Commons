@@ -82,6 +82,12 @@ git tag playtest/<name> && git push origin playtest/<name>
 
 Plays the demo through its real UI on a GitHub runner with a virtual display, so no window opens locally (about 10 minutes). It fails on any misclick, hand mismatch, missing button or script error. It also renders the demo screens and every dread board state and corruption stage. Get the screenshots and log with `gh run download <run id> -n playtest`. Use this for any visual check, so nothing opens a window on the owner's screen. Locally, `godot --path . --script res://tools/playtest.gd -- --demo --rounds 6 --out reports/playtest` does the same in a window. The app starts the full eight-Year run unless it is launched with `-- --demo`.
 
+```bash
+godot --headless --path . --script res://tools/playtest.gd -- --tutorial --out reports/tutorial
+```
+
+Plays the arrival (the first-launch tutorial) from no profile to run setup with real clicks, and prints MISCLICK on a step that does not advance. Headless it names its frames without saving them. Its profile lives in `user://playtest_tutorial/`. The cloud playtest runs it after the play-through.
+
 Balance commands arrive with P4.16. Add them here when they work.
 
 ## Layers

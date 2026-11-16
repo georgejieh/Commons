@@ -1,3 +1,5 @@
+# gdlint: disable=max-file-lines
+# Just over 400 lines: the arrival's gate on each way to buy or leave (ADR 0026).
 class_name StoreScreen
 extends Control
 ## A shop between Sets (P4.10): Cadres on the counter, bought with coupons, a reroll,
@@ -118,6 +120,18 @@ func blocks() -> Dictionary[String, Control]:
 ## The shared slip, for tests.
 func slip() -> DetailSlip:
 	return _slip
+
+
+## What the arrival points at here (ADR 0026): the first Cadre, the door, a plot card.
+func tutorial_target(key: String) -> Control:
+	match key:
+		"buy":
+			return _counter.get_child(0) if _counter.get_child_count() > 0 else null
+		"door":
+			return null if market else _blocks["buttons"].get_child(2)
+		"plot_card":
+			return null if _goods == null else _goods.card_button(0)
+	return null
 
 
 func _header_row(app: DemoApp) -> Control:
@@ -263,7 +277,7 @@ func _item(slot: int, cadre_id: String) -> Control:
 ## then it shrinks away to its place on the board. Reduced motion skips to the result. A
 ## Cadre that needs a rank asks for one over the counter first.
 func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
-	if is_issuing():
+	if is_issuing() or (rank == Ranks.INVALID and not _app.arrival.allows("buy", slot)):
 		return
 	var controller: RunController = _app.controller
 	if rank == Ranks.INVALID and market and controller.needs_rank(_desk.stock()[slot]):
@@ -334,8 +348,8 @@ func _on_spent() -> void:
 
 
 ## A plot card or an upgrade from the black market, bought by act.
-func _market_buy(act: Callable) -> void:
-	if is_issuing():
+func _market_buy(act: Callable, action: String, slot: int = -1) -> void:
+	if is_issuing() or not _app.arrival.allows(action, slot):
 		return
 	act.call()
 	Audio.play(AudioEvents.STORE_BUY)
@@ -344,7 +358,7 @@ func _market_buy(act: Callable) -> void:
 
 func _on_reroll() -> void:
 	# A reroll frees the counter's cards, so it waits for a purchase being acted out.
-	if is_issuing():
+	if is_issuing() or not _app.arrival.allows("reroll"):
 		return
 	if market:
 		_app.controller.market_reroll()
@@ -376,18 +390,18 @@ func _on_envelope_settled() -> void:
 ## Back to the state store, and through the door to the black market, once nothing is
 ## being acted out or chosen.
 func _back() -> void:
-	if not is_issuing():
+	if not is_issuing() and _app.arrival.allows("back"):
 		_app.back()
 
 
 func _to_market() -> void:
-	if not is_issuing():
+	if not is_issuing() and _app.arrival.allows("door"):
 		_app.show_screen("black_market")
 
 
 ## Leaves the store for the next Quota, once nothing is being acted out or chosen.
 func _leave() -> void:
-	if is_issuing():
+	if is_issuing() or not _app.arrival.allows("leave"):
 		return
 	_app.controller.leave_store()
 	_app.show_screen("set_intro", true)

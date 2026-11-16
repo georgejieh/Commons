@@ -49,6 +49,20 @@ jobs:
             --out reports/playtest 2>&1 | tee reports/playtest.log
           grep -E 'rounds=' reports/playtest.log
           ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR' reports/playtest.log
+      - name: Play the arrival
+        # Its own short run: the tutorial from a first launch with no profile to run setup.
+        if: always()
+        timeout-minutes: 12
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: |
+          mkdir -p reports
+          xvfb-run -a -s "-screen 0 1920x1080x24" \
+            godot --path . --rendering-driver opengl3 --resolution 1920x1080 \
+            --script res://tools/playtest.gd -- --tutorial \
+            --out reports/tutorial 2>&1 | tee reports/tutorial.log
+          grep -E 'tutorial shots=' reports/tutorial.log
+          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR' reports/tutorial.log
       - name: Screens
         if: always()
         env:
@@ -92,5 +106,7 @@ jobs:
             reports/board_states
             reports/card_faces
             reports/playtest.log
+            reports/tutorial
+            reports/tutorial.log
             reports/texture_budget.log
           retention-days: 14

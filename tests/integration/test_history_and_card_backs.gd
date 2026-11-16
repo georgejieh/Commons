@@ -3,13 +3,16 @@ extends GdUnitTestSuite
 ## 1920x1080 and at 1280x800: every line on screen or in the scroll, which follows focus;
 ## type 18 px or more; the exact record line; locked designs as blank sheets saying when
 ## they open; a chosen design no longer open falling back to the first; and play the same
-## whichever back is chosen.
+## whichever back is chosen. The history page is one ink sheet across the page, and the
+## run in progress reads as a record, one line per family a Quota touched.
 
 const SAVE_PATH: String = "user://test_history_and_card_backs/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.5
 const READABLE: int = 18
 const SEED: int = 9321
+## The darkest a page's ink may be read as light: its luminance stays under this.
+const DARK_INK: float = 0.35
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -138,6 +141,113 @@ func _check_type(root: Node, where: String) -> void:
 			assert_int(used)
 			. override_failure_message("%s: %s %d" % [where, label.text, used])
 			. is_greater_equal(READABLE)
+		)
+
+
+func _summary(number: int, rows: Dictionary) -> SetSummary:
+	var summary: SetSummary = SetSummary.new(number)
+	for family: String in rows:
+		var deeds: Array = rows[family]
+		for kind: int in deeds.size():
+			summary.add(family, kind as SetSummary.Kind, deeds[kind])
+	return summary
+
+
+## Only what happened, in words up to three times, and a Quota that touched nobody.
+func test_the_run_reads_as_a_record() -> void:
+	var summaries: Array[SetSummary] = [
+		_summary(0, {"wang": [2, 0, 0, 0], "zhao": [0, 0, 0, 0]}),
+		_summary(1, {"zhao": [0, 1, 1, 0]}),
+		_summary(2, {}),
+		_summary(3, {"wang": [3, 4, 0, 1]}),
+	]
+	var name_of: Callable = func(family: String) -> String: return family.capitalize()
+	(
+		assert_array(Array(HistoryView.run_lines(summaries, name_of)))
+		. is_equal(
+			[
+				"Quota 1. Wang: fed twice.",
+				"Quota 2. Zhao: bombed once, denounced once.",
+				"Quota 3. Nothing to record.",
+				"Quota 4. Wang: fed three times, bombed 4 times, betrayed once.",
+			]
+		)
+	)
+
+
+## With no run in progress, there is no "This run" section.
+func test_no_run_no_run_section() -> void:
+	var screen: VillageHistoryScreen = await _history()
+	assert_array(Array(screen.run_lines())).is_empty()
+	for node: Node in screen.find_children("*", "Label", true, false):
+		assert_str((node as Label).text).is_not_equal(tr("hist.title"))
+
+
+## The page is one paper sheet across the screen: everything visible sits inside it, in
+## dark ink with no halo, 18 px or more, at both sizes, with a run in progress and fifty
+## generations behind it, and focus still scrolls to the last record.
+func test_the_page_is_one_ink_sheet_at_both_sizes() -> void:
+	var entries: Array[HistoryEntry] = []
+	for index: int in ProfileData.HISTORY_CAP:
+		entries.append(_entry(index + 1, Endings.ENDINGS[index % 7], index % 2 == 0, _keys(2)))
+	_write_history(entries)
+	_app.new_run(SEED)
+	var loop: RunLoop = _app.controller.get("_loop")
+	var family: String = loop.state.table[1]
+	loop.state.summaries.assign([_summary(0, {family: [2, 0, 1, 0]}), _summary(1, {})])
+	for screen_size: Vector2i in SIZES:
+		get_tree().root.size = screen_size
+		var screen: VillageHistoryScreen = await _history()
+		var where: String = str(screen_size)
+		assert_int(screen.run_lines().size()).is_equal(2)
+		assert_str(screen.run_lines()[1]).is_equal("Quota 2. Nothing to record.")
+		var screen_rect: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		var sheet: Rect2 = screen.sheet().get_global_rect()
+		assert_bool(screen_rect.encloses(sheet)).override_failure_message(where).is_true()
+		assert_float(sheet.size.x).is_greater(screen_rect.size.x * 0.8)
+		_check_inside(screen, sheet.grow(SLACK), where)
+		_check_type(screen, where)
+		_check_ink(screen, where)
+		var records: Array[AgedSheet] = screen.records()
+		records[-1].grab_focus()
+		await await_idle_frame()
+		await await_idle_frame()
+		var view: Rect2 = screen.scroll().get_global_rect().grow(SLACK)
+		assert_bool(view.encloses(records[-1].get_global_rect())).is_true()
+
+
+## Every visible control lies inside the sheet: across it always, and down it too unless
+## the scroll holds it.
+func _check_inside(screen: VillageHistoryScreen, sheet: Rect2, where: String) -> void:
+	for node: Node in screen.sheet().find_children("*", "Control", true, false):
+		var control: Control = node as Control
+		if not control.is_visible_in_tree():
+			continue
+		var rect: Rect2 = control.get_global_rect()
+		var inside: bool = rect.position.x >= sheet.position.x and rect.end.x <= sheet.end.x
+		if not screen.scroll().is_ancestor_of(control):
+			inside = sheet.encloses(rect)
+		(
+			assert_bool(inside)
+			. override_failure_message("%s %s" % [where, control.get_path()])
+			. is_true()
+		)
+
+
+func _check_ink(screen: VillageHistoryScreen, where: String) -> void:
+	for node: Node in screen.sheet().find_children("*", "Label", true, false):
+		var label: Label = node as Label
+		if label.text.is_empty() or not label.is_visible_in_tree():
+			continue
+		var ink: Color = label.get_theme_color("font_color")
+		var message: String = "%s: %s" % [where, label.text]
+		if label.get_parent() is Button:
+			continue
+		assert_float(ink.get_luminance()).override_failure_message(message).is_less(DARK_INK)
+		(
+			assert_int(label.get_theme_constant("outline_size"))
+			. override_failure_message(message)
+			. is_equal(0)
 		)
 
 

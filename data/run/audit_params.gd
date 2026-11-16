@@ -13,3 +13,6 @@ extends Resource
 ## The most faces an audit can have, below die_sides, so an audit is never certain.
 @export var max_faces: int = 5
 @export var informer_families: Array[String] = ["zhou"]
+## The face each declaring seat's die shows, in seat order, in place of its roll; empty
+## rolls them all. Only the arrival's own copy sets it, round by round (ADR 0026).
+@export var shown_faces: PackedInt32Array = PackedInt32Array()

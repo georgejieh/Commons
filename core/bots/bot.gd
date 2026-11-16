@@ -1,7 +1,8 @@
 class_name Bot
 extends RefCounted
 ## The only way the game asks a bot for anything. Three pure functions, each with a
-## time budget. A bot sees its SeatView and the legal moves, never another hand.
+## time budget. A bot sees its SeatView and the legal moves, never another hand. A config
+## that carries a scripted villager is answered from its script (ADR 0026).
 
 
 ## True claims the landlord seat. counts is the bot's own dealt hand.
@@ -13,6 +14,8 @@ static func decide_bid(
 	config: BotConfig,
 	_budget: BotBudget
 ) -> bool:
+	if config.scripted != null:
+		return config.scripted.bid()
 	var points: float = BidPolicy.hand_points(counts, table, config.weights)
 	return points >= BidPolicy.threshold(is_grab, is_last, config.weights) - config.ambition
 
@@ -21,6 +24,8 @@ static func decide_bid(
 static func decide_play(
 	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig, budget: BotBudget
 ) -> BotPlay:
+	if config.scripted != null:
+		return config.scripted.play(view, legal)
 	if legal.is_empty():
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.PASS_NOTHING_BEATS)
 	if config.effort < 1.0 and config.tier == BotConfig.Tier.EASY:
@@ -64,6 +69,8 @@ static func _by_policy(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 static func declare_need(
 	true_need: int, config: BotConfig, stream: RandomStream, _budget: BotBudget
 ) -> int:
+	if config.scripted != null:
+		return config.scripted.need(true_need)
 	if stream.next_float() < config.honesty:
 		return true_need
 	var extra: int = roundi(true_need * config.lie_share)

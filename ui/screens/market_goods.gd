@@ -3,7 +3,8 @@ extends RefCounted
 ## What only the black market sells besides Cadres and Campaigns (P4.8, P4.10): cards for
 ## the private plot, on a paper sheet beside the Cadres with how full the plot is, and
 ## the plot upgrades as tickets in the button row. Every purchase is private, so it goes
-## through the screen's buy, which adds the sound and refreshes the page.
+## through the screen's buy, with the action's name and slot for the arrival's gate, which
+## adds the sound and refreshes the page.
 
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 
@@ -14,6 +15,7 @@ var upgrades: HBoxContainer = HBoxContainer.new()
 var _controller: RunController
 var _desk: ShopDesk
 var _buy: Callable
+var _card_buttons: Array[Button] = []
 
 
 func setup(controller: RunController, desk: ShopDesk, buy: Callable) -> void:
@@ -48,7 +50,7 @@ func _show_upgrades() -> void:
 		var ticket: Button = ScreenKit.button(text, CommonsTheme.COUPON)
 		ticket.disabled = not _desk.can_upgrade(kind)
 		ticket.tooltip_text = Keywords.wrapped(_tr("market.upgrade.%s.tip" % kind))
-		ticket.pressed.connect(_buy.bind(_controller.upgrade.bind(kind)))
+		ticket.pressed.connect(_buy.bind(_controller.upgrade.bind(kind), "upgrade"))
 		upgrades.add_child(ticket)
 
 
@@ -57,6 +59,7 @@ func _show_stall() -> void:
 	for child: Node in sheet.get_children():
 		sheet.remove_child(child)
 		child.queue_free()
+	_card_buttons.clear()
 	var head: Label = ScreenKit.eyebrow(
 		_tr("market.plot").format({"held": _desk.plot_size(), "room": _desk.plot_capacity()})
 	)
@@ -83,8 +86,14 @@ func _show_stall() -> void:
 		buy.custom_minimum_size = Vector2(view.custom_minimum_size.x, 0)
 		buy.disabled = card == null or not _desk.can_buy_plot_card(slot)
 		buy.tooltip_text = Keywords.wrapped(_tr("market.plot.tip"))
-		buy.pressed.connect(_buy.bind(_controller.plot_card.bind(slot)))
+		buy.pressed.connect(_buy.bind(_controller.plot_card.bind(slot), "plot_card", slot))
 		item.add_child(buy)
+		_card_buttons.append(buy)
+
+
+## The Buy button under a plot card, or null.
+func card_button(slot: int) -> Button:
+	return _card_buttons[slot] if slot < _card_buttons.size() else null
 
 
 static func _tr(key: String) -> String:

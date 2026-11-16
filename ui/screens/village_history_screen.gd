@@ -1,30 +1,48 @@
 class_name VillageHistoryScreen
 extends Control
-## Village history (P3B.9, ADR 0025): what each Quota of this run left behind, per
-## villager, then the family's past generations from the profile, newest first, one plain
-## line each on a sheet of aged paper. The page scrolls, and the scroll follows keyboard
-## and gamepad focus from sheet to sheet.
+## Village history (P3B.9, ADR 0025): what each Quota of the run in progress left
+## behind, one plain line per family it touched, then the family's past generations from
+## the profile, newest first, one line each on a sheet of aged paper. The whole page sits
+## on one paper sheet across the page, as the collection does, in dark ink with no halo
+## and a red heading. The scroll sits inside the sheet and follows keyboard and gamepad
+## focus from sheet to sheet. With no run in progress there is no "This run" section.
 
 const LINE_SIZE: int = 22
 const RECORD_SIZE: int = 20
 const RECORD_INK: Color = Color("2a2118")
+const SHEET_PADDING: int = 28
+## Text on the paper is ink, so the backdrop's paper halo is taken off it.
+const INKED_TYPES: Array[String] = ["Label", "Eyebrow", "Headline", "Title"]
 
 var _scroll: ScrollContainer = ScrollContainer.new()
+var _sheet: PanelContainer = PanelContainer.new()
 var _records: Array[AgedSheet] = []
+var _run_lines: Array[Label] = []
 var _back: Button
 
 
 func open(app: DemoApp) -> void:
-	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
-	column.add_child(ScreenKit.header(tr("hist.eyebrow"), tr("hist.title"), ScreenKit.GOLD))
+	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
+	_sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
+	_sheet.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_sheet.theme = _no_halo()
+	page.add_child(_sheet)
+	var column: VBoxContainer = VBoxContainer.new()
+	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
+	_sheet.add_child(column)
+	column.add_child(ScreenKit.header("", tr("hist.eyebrow")))
 	var body: VBoxContainer = VBoxContainer.new()
 	body.add_theme_constant_override("separation", 12)
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var lines: PackedStringArray = history_lines(app)
-	if lines.is_empty():
-		lines.append(tr("hist.empty"))
-	for text: String in lines:
-		body.add_child(ScreenKit.label(text, LINE_SIZE, ScreenKit.STYLE.paper))
+	if app.controller.has_run():
+		body.add_child(_heading(tr("hist.title")))
+		var lines: PackedStringArray = history_lines(app)
+		if lines.is_empty():
+			lines.append(tr("hist.empty"))
+		for text: String in lines:
+			var line: Label = ScreenKit.label(text, LINE_SIZE, ScreenKit.INK)
+			body.add_child(line)
+			_run_lines.append(line)
 	body.add_child(_heading(tr("hist.past")))
 	var past: PackedStringArray = HistoryView.generations(Saves.profile_service())
 	if past.is_empty():
@@ -37,6 +55,7 @@ func open(app: DemoApp) -> void:
 	_scroll.add_child(body)
 	column.add_child(_scroll)
 	_back = ScreenKit.button(tr("hist.back"), CommonsTheme.PRIMARY)
+	_back.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_back.pressed.connect(app.back)
 	column.add_child(_back)
 	ScreenKit.reveal(column)
@@ -48,17 +67,37 @@ func records() -> Array[AgedSheet]:
 	return _records.duplicate()
 
 
+## The run in progress's lines, empty when there is no run, for tests.
+func run_lines() -> PackedStringArray:
+	var texts: PackedStringArray = []
+	for line: Label in _run_lines:
+		texts.append(line.text)
+	return texts
+
+
 func scroll() -> ScrollContainer:
 	return _scroll
+
+
+## The paper sheet everything on the page sits on.
+func sheet() -> PanelContainer:
+	return _sheet
 
 
 func back_button() -> Button:
 	return _back
 
 
+static func _no_halo() -> Theme:
+	var theme: Theme = Theme.new()
+	for type: String in INKED_TYPES:
+		theme.set_constant("outline_size", type, 0)
+	return theme
+
+
 func _heading(text: String) -> Label:
 	var heading: Label = ScreenKit.styled(text, CommonsTheme.TITLE)
-	heading.add_theme_color_override("font_color", ScreenKit.GOLD)
+	heading.add_theme_color_override("font_color", ScreenKit.RED)
 	return heading
 
 
@@ -74,29 +113,15 @@ func _record(text: String) -> AgedSheet:
 	return sheet
 
 
-## One heading per Quota, then one line per villager it touched.
+## The run's Quotas as a record, one line per family each Quota touched.
 static func history_lines(app: DemoApp) -> PackedStringArray:
-	var lines: PackedStringArray = []
 	if not app.controller.has_run():
-		return lines
+		return PackedStringArray()
 	var state: RunState = app.controller.state_copy()
-	for summary: SetSummary in state.summaries:
-		if summary.counts.is_empty():
-			continue
-		var heading: String = TranslationServer.translate("hist.set")
-		lines.append(heading.format({"number": summary.set_number + 1}))
-		for family: String in summary.counts:
-			lines.append(_row(app, state, summary, family))
-	return lines
-
-
-static func _row(app: DemoApp, state: RunState, summary: SetSummary, family: String) -> String:
-	var seat: int = state.table.find(family)
-	var fields: Dictionary = {
-		"name": app.seat_name(seat) if seat > 0 else family,
-		"fed": summary.count(family, SetSummary.Kind.FED),
-		"bombed": summary.count(family, SetSummary.Kind.BOMBED),
-		"denounced": summary.count(family, SetSummary.Kind.DENOUNCED),
-		"betrayed": summary.count(family, SetSummary.Kind.BETRAYED),
-	}
-	return TranslationServer.translate("hist.row").format(fields)
+	var name_of: Callable = func(family: String) -> String:
+		var seat: int = state.table.find(family)
+		if seat > 0:
+			return app.seat_name(seat)
+		var key: String = app.controller.family_name_key(family)
+		return TranslationServer.translate(key) if not key.is_empty() else family
+	return HistoryView.run_lines(state.summaries, name_of)

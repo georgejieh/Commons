@@ -1,3 +1,5 @@
+# gdlint: disable=max-file-lines
+# Just over 400 lines: only the table's wiring; what it wires lives in classes beside it.
 class_name TableScreen
 extends Control
 ## The 2D table (ADR 0017), seen as a play area rather than a whole table: a wooden rail
@@ -54,6 +56,7 @@ var _surface: TextureRect
 var _moments: TableMoments = TableMoments.new()
 var _campaigns: TableCampaigns = TableCampaigns.new()
 var _debuff_beats: DebuffMoments = DebuffMoments.new()
+var _tutorial: TableTutorial = TableTutorial.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -127,7 +130,9 @@ func open(app: DemoApp) -> void:
 	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
 	_hand_view.setup(_hand, _pool)
 	_commands.setup(_controller, _hand, _hand_view, _actions, _need_panel, _player)
-	_actions.rules.pressed.connect(_cheat_sheet.toggle.bind(_controller))
+	_commands.open_rules = _cheat_sheet.toggle.bind(_controller)
+	_commands.gate = app.arrival.allows
+	_tutorial.setup(app, _actions, _hand_view, _need_panel, _cheat_sheet, _pause)
 	_player.played.connect(_on_event)
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)
@@ -188,6 +193,11 @@ func actions() -> ActionBar:
 
 func need_panel() -> NeedPanel:
 	return _need_panel
+
+
+## What the arrival's slip points at on the table (ADR 0026).
+func tutorial() -> TableTutorial:
+	return _tutorial
 
 
 func _open_pause() -> void:
@@ -322,6 +332,7 @@ func _on_drained() -> void:
 	_hand_view.show_cards()
 	_campaigns.refresh()
 	_commands.refresh()
+	_tutorial.settled(awaiting)
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
 	elif awaiting == RunController.AWAIT_SWAP:

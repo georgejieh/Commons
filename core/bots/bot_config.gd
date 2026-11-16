@@ -31,6 +31,9 @@ var effort: float = 1.0
 ## A bonus per Pattern.Type added to every play the bot scores, so it favors the hand
 ## types someone else played (P4.7). Empty for none.
 var type_bias: PackedFloat32Array = PackedFloat32Array()
+## The authored villager that answers every decision in place of the tiers, or null for a
+## bot that thinks (ADR 0026). The run that holds the script sets it.
+var scripted: ScriptedVillager = null
 
 
 func _init(

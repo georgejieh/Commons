@@ -12,6 +12,18 @@ if ! "$godot" --headless --path . --import > "$log" 2>&1; then
 	exit 1
 fi
 
+# Tests keep their own settings file, started fresh each run, so no test reads or writes
+# the player's settings.
+export COMMONS_SETTINGS="user://test_run_settings.cfg"
+if [ -n "${APPDATA:-}" ]; then
+	user_dir="$APPDATA/Godot/app_userdata/Commons"
+elif [ "$(uname)" = "Darwin" ]; then
+	user_dir="$HOME/Library/Application Support/Godot/app_userdata/Commons"
+else
+	user_dir="${XDG_DATA_HOME:-$HOME/.local/share}/godot/app_userdata/Commons"
+fi
+rm -f "$user_dir/test_run_settings.cfg"
+
 if [ $# -eq 0 ]; then
 	set -- -a res://tests/unit -a res://tests/integration -a res://tests/golden
 fi

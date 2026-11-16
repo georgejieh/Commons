@@ -64,6 +64,8 @@ var debuffs: RunDebuffs
 var refused_bot_actions: int = 0
 ## What this run may be offered, and its stake's numbers (ADR 0025).
 var pools: RunPools
+## The arrival's script, for a tutorial run only (ADR 0026); null for every other run.
+var tutorial: RunTutorial = null
 
 var _configs: Array[BotConfig]
 var _sets: SetConfig
@@ -124,7 +126,10 @@ func _init(
 		no_reforms,
 		params
 	)
-	stall = PlotStall.new(state, DEFAULT_PLOT_UPGRADES, params)
+	stall = PlotStall.new(state, pools.plot_cards, params)
+	if run_state.identity.is_tutorial():
+		tutorial = RunTutorial.new(RunTutorial.SCRIPT, configs)
+		tutorial.on_fault = func() -> void: refused_bot_actions += 1
 	_table = SeatRules.new(_stack)
 	campaigns = RunCampaigns.new(state, _stack, _table, meters, params, set_log, PLAYER)
 	debuffs = RunDebuffs.new(state, _stack, set_log, PLAYER)
@@ -572,10 +577,13 @@ func _rebuild_modifiers() -> void:
 
 
 ## Shuffles a fresh deck, or under Unplanned Economy cuts the one the last round left
-## (DeckOrder). Either way the marks saved on deck cards go back on (ADR 0021).
+## (DeckOrder). Either way the marks saved on deck cards go back on (ADR 0021). The
+## arrival deals its authored decks (ADR 0026).
 func _deal_cards() -> void:
 	var stream: RandomStream = state.streams.stream(RandomStreams.DEAL)
-	if RunReforms.gathers_deck(state) and not state.deck_order.is_empty():
+	if tutorial != null:
+		_deal = tutorial.deal(state.round_index, pools.audit)
+	elif RunReforms.gathers_deck(state) and not state.deck_order.is_empty():
 		_deal = DeckOrder.deal(state.deck_order, state.card_marks, stream)
 	else:
 		var cards: Array[CardInstance] = []
@@ -982,9 +990,21 @@ func _reeducate_villagers() -> void:
 
 
 ## Every black-market purchase is resented, and counted when it comes in a famine.
+## In the arrival someone sees it, too, and Denunciation rises by its own row (ADR 0026).
 func _market_bought() -> void:
 	_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
 	CorruptionEvents.note_purchase(state, _meters.famine)
+	if tutorial != null:
+		RunMeters.apply_amount(
+			state,
+			RunTutorial.DENUNCIATION_ROW,
+			tutorial.denunciation(),
+			_meters,
+			_stack,
+			_params,
+			PLAYER,
+			set_log.events()
+		)
 
 
 func _resent(amount: int, cause: String) -> void:

@@ -31,9 +31,12 @@ func open() -> void:
 	if _params.card_ranks.is_empty():
 		return
 	var stream: RandomStream = _state.streams.stream(RandomStreams.SHOP)
-	for _offer: int in _params.card_offers:
+	for offer: int in _params.card_offers:
 		_ranks.append(_params.card_ranks[stream.next_int(0, _params.card_ranks.size() - 1)])
-		_suits.append(stream.next_int(0, SUITS - 1))
+		var suit: int = stream.next_int(0, SUITS - 1)
+		if not _params.card_suits.is_empty():
+			suit = _params.card_suits[offer % _params.card_suits.size()]
+		_suits.append(suit)
 
 
 func count() -> int:

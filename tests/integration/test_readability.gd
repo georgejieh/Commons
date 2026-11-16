@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 ## leaflets keep their names large; the Reforms strip and the board's names fit without
 ## clipping; a card's marks sit in the strip a fanned hand leaves showing; the rank picker
 ## stands over a scrim; paper is never shorter than its own printed border; and the
-## collection sits on one sheet with the shops' heading colour.
+## collection and the village history each sit on one sheet with the shops' heading colour.
 
 const SEED: int = 4242
 const SAVE_PATH: String = "user://test_readability/run.json"
@@ -200,6 +200,24 @@ func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 		var label: Label = node
 		if label.text == tr("coll.title"):
 			assert_object(label.get_theme_color("font_color")).is_equal(ScreenKit.RED)
+
+
+func test_the_village_history_sits_on_one_sheet_with_a_red_heading() -> void:
+	var history: VillageHistoryScreen = _app.show_screen("village_history")
+	await await_idle_frame()
+	await await_idle_frame()
+	var sheet: PanelContainer = history.sheet()
+	assert_bool(sheet.get_global_rect().encloses(history.scroll().get_global_rect())).is_true()
+	var headings: int = 0
+	for node: Node in sheet.find_children("*", "Label", true, false):
+		var label: Label = node
+		if label.text in [tr("hist.eyebrow"), tr("hist.title"), tr("hist.past")]:
+			assert_object(label.get_theme_color("font_color")).is_equal(ScreenKit.RED)
+			headings += 1
+		elif not label.text.is_empty() and not label.get_parent() is Button:
+			assert_float(label.get_theme_color("font_color").get_luminance()).is_less(0.35)
+			assert_int(label.get_theme_font_size("font_size")).is_greater_equal(READABLE)
+	assert_int(headings).is_equal(3)
 
 
 ## Every name, through every paper that prints it, breaks only between words: a word

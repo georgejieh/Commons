@@ -35,6 +35,7 @@ var _kept: int = 0
 ## The families the Quota's end took, faded in last with no pulse: a quiet beat.
 var _quiet: Array[Control] = []
 var _fate_texts: PackedStringArray = []
+var _next: Button
 
 
 func open(app: DemoApp) -> void:
@@ -83,17 +84,21 @@ func open(app: DemoApp) -> void:
 		sheet.add_child(fate)
 		_quiet.append(fate)
 	var last: bool = controller.is_last_set()
-	var next: Button = ScreenKit.button(
-		tr("summary.to_year" if last else "summary.to_store"), CommonsTheme.PRIMARY
-	)
-	next.pressed.connect(
+	var way_on: String = "summary.to_year" if last else "summary.to_store"
+	# In the arrival Wang says "Press Continue" (ADR 0026).
+	if app.arrival.is_running():
+		way_on = "summary.continue"
+	_next = ScreenKit.button(tr(way_on), CommonsTheme.PRIMARY)
+	_next.pressed.connect(
 		func() -> void:
+			if not app.arrival.allows("continue"):
+				return
 			controller.finish_set()
 			app.show_screen(app.screen_for(controller.awaiting()), true)
 	)
-	sheet.add_child(next)
+	sheet.add_child(_next)
 	UiMotion.stamp(verdict)
-	next.grab_focus()
+	_next.grab_focus()
 	_bar.filled.connect(_on_filled)
 	if UiMotion.reduced():
 		_bar.fill_to(state.set_progress, 0.0)
@@ -150,6 +155,11 @@ func _fates(controller: RunController) -> Array[Label]:
 ## The lines naming who the village lost this Quota, for tests.
 func fate_lines() -> PackedStringArray:
 	return _fate_texts
+
+
+## What the arrival points at here: the way on.
+func tutorial_target(key: String) -> Control:
+	return _next if key == "continue" else null
 
 
 ## The bar and its count, for tests.

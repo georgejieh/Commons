@@ -54,6 +54,14 @@ func open(app: DemoApp) -> void:
 	ScreenKit.reveal(column)
 	UiMotion.enter(steps)
 	begin.grab_focus()
+	# The first time a Quota lists a debuff, and the first time a family that remembers
+	# the player sits down, a one-time tooltip says what that means (ADR 0026).
+	var tips: Array[String] = []
+	if ladder.any(func(debuff_id: String) -> bool: return not debuff_id.is_empty()):
+		tips.append("tip.debuffs")
+	if controller.remembers_seated():
+		tips.append("tip.memory")
+	TipSlip.offer(self, app, tips)
 
 
 ## The Reforms in force, named in one line, or null while none is (ADR 0021).

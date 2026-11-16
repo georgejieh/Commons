@@ -4,7 +4,9 @@ extends Control
 ## and the screen host. Screens get the app in open() and reach the run only through
 ## its controller. The table scene is the 2D or the 3D one, chosen at export. New Run
 ## starts the full eight-Year run, or the one-Year demo when the app was launched with
-## --demo after -- on the command line (ADR 0025).
+## --demo after -- on the command line (ADR 0025). On a first launch, with no profile save,
+## it offers the arrival (ADR 0026): a scripted first evening at the table, played over
+## its own layer, never saved, that writes the profile's first save when it ends.
 
 const DEMO: DemoParams = preload("res://data/run/demo.tres")
 ## The command-line flag that makes New Run start the demo.
@@ -33,6 +35,7 @@ const SCREENS: Dictionary[String, String] = {
 	"ending": "res://ui/screens/ending_screen.tscn",
 	"collection": "res://ui/screens/collection_screen.tscn",
 	"village_history": "res://ui/screens/village_history_screen.tscn",
+	"arrival": "res://ui/screens/arrival_screen.tscn",
 }
 
 ## Screens of a run, off the table, where Escape opens the menu. The table has its own.
@@ -46,6 +49,9 @@ var controller: RunController = RunController.new()
 var hand: HandModel
 var switcher: SceneSwitcher = SceneSwitcher.new()
 var post: PostProcess = PostProcess.new()
+## The arrival (ADR 0026): offered on a first launch, and the one-time tooltips. Screens
+## ask it whether an action is allowed.
+var arrival: Arrival
 var _wipe: ColorRect = ColorRect.new()
 var _wipe_layer: CanvasLayer = CanvasLayer.new()
 var _menu: PauseMenu = PauseMenu.new()
@@ -54,6 +60,8 @@ var _menu: PauseMenu = PauseMenu.new()
 
 
 func _ready() -> void:
+	# Read before anything can write a profile save.
+	arrival = Arrival.new(self, not ProfileSeen.exists(Saves.profile_service()))
 	add_child(controller)
 	add_child(switcher)
 	add_child(post)
@@ -65,6 +73,7 @@ func _ready() -> void:
 	_wipe_layer.layer = PostProcess.LAYER - 1
 	_wipe_layer.add_child(_wipe)
 	add_child(_wipe_layer)
+	add_child(arrival.layer)
 	add_child(_menu)
 	_menu.wire(self)
 	hand = HandModel.new(controller)
@@ -73,7 +82,7 @@ func _ready() -> void:
 		if ResourceLoader.exists(SCREENS[screen_id]):
 			scenes[screen_id] = load(SCREENS[screen_id])
 	switcher.setup(_host, scenes)
-	show_screen(first_screen(), true)
+	show_screen(_opening_screen(), true)
 
 
 ## The art held for the session goes with the app.
@@ -100,12 +109,20 @@ func first_screen() -> String:
 	return "title" if bool(Settings.value("content_note_seen")) else "content_note"
 
 
+## The first screen of this launch: the content note until it is seen, then where it
+## leads.
+func _opening_screen() -> String:
+	var first: String = first_screen()
+	return first if first == "content_note" else arrival.next_screen()
+
+
 ## Shows a screen and hands it the app. replace drops the way back.
 func show_screen(screen_id: String, replace: bool = false) -> Node:
 	_play_wipe()
 	var screen: Node = switcher.replace(screen_id) if replace else switcher.push(screen_id)
 	if screen.has_method("open"):
 		screen.call("open", self)
+	arrival.shown(screen_id)
 	return screen
 
 
@@ -125,6 +142,7 @@ func back() -> bool:
 		return false
 	if switcher.current().has_method("open"):
 		switcher.current().call("open", self)
+	arrival.shown(switcher.current_id())
 	return true
 
 
@@ -154,7 +172,9 @@ func continue_run() -> bool:
 ## ending. Its save is cleared and nothing more is recorded (ADR 0025); the memory of
 ## the Quotas it finished, and a finished run's record, are already in the profile.
 func leave_run() -> void:
-	Saves.run_service().delete()
+	# The arrival is never saved: leaving it must not touch a real run's save.
+	if not arrival.is_running():
+		Saves.run_service().delete()
 	show_screen("title", true)
 
 

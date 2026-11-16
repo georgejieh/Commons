@@ -33,6 +33,7 @@ var _types: GridContainer = GridContainer.new()
 var _rates: Array[Label] = []
 var _active: Label = Label.new()
 var _order: Label = Label.new()
+var _close: Button
 
 
 func _ready() -> void:
@@ -65,9 +66,9 @@ func _ready() -> void:
 	var words: Label = ScreenKit.label(Keywords.glossary(WORDS, false), 18)
 	words.custom_minimum_size = Vector2(840, 0)
 	sheet.add_child(words)
-	var close: Button = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
-	close.pressed.connect(func() -> void: visible = false)
-	sheet.add_child(close)
+	_close = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
+	_close.pressed.connect(func() -> void: visible = false)
+	sheet.add_child(_close)
 	center.add_child(ScreenKit.card_panel(sheet))
 	visible = false
 
@@ -136,6 +137,11 @@ func _rate_text(type: int) -> String:
 ## The Rate shown for a hand type, a Pattern.Type value, for tests.
 func rate_text(type: int) -> String:
 	return _rates[type - 1].text
+
+
+## The Close button, which the arrival points at (ADR 0026).
+func close_button() -> Button:
+	return _close
 
 
 func rank_order_text() -> String:

@@ -8,6 +8,9 @@ extends SceneTree
 ## starts the app as --demo does, so New Run is the demo, and at the end starts a full
 ## run once for its frames (ADR 0025).
 ##   godot --path . --script res://tools/playtest.gd -- --demo --rounds 6 --out reports/playtest
+## With --tutorial in place of --demo it plays the arrival instead (ADR 0026), from a
+## first launch with no profile to run setup, through tools/tutorial_walk.gd:
+##   godot --path . --script res://tools/playtest.gd -- --tutorial --out reports/tutorial
 ## Needs a real window for its pictures. Run with --headless it walks the same steps and
 ## prints each frame's name instead, which checks its clicks without a window.
 ## Development only; tools/ never ships.
@@ -66,6 +69,8 @@ var _parcel_shot: bool = false
 var _debuffs_shot: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
+## True for the arrival's own short run (--tutorial).
+var _tutorial: bool = false
 
 
 func _initialize() -> void:
@@ -74,6 +79,7 @@ func _initialize() -> void:
 		# Paced like a window, so the step guard lasts as long as the moments it waits on.
 		Engine.max_fps = 60
 	var args: PackedStringArray = OS.get_cmdline_user_args()
+	_tutorial = args.has("--tutorial")
 	for flag: String in ["--out", "--rounds"]:
 		var at: int = args.find(flag)
 		if at >= 0 and at + 1 < args.size():
@@ -86,6 +92,9 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	if _tutorial:
+		await _tutorial_run()
+		return
 	# Loaded at run time: the demo names autoloads, which a --script tool can't see.
 	var saves: Node = root.get_node("Saves")
 	saves.call("use_run_path", SAVE_PATH)
@@ -101,6 +110,13 @@ func _run() -> void:
 	if switcher.call("current_id") == "content_note":
 		await _shot("content_note")
 		await _click_button_with_text(tr("note.continue"))
+		await _frames(20)
+	# With no profile the arrival is offered first (ADR 0026); the demo skips it.
+	if switcher.call("current_id") == "arrival":
+		await _click_button_with_text(tr("tutorial.skip"))
+		var page: Node = switcher.call("current")
+		var confirm: Object = page.call("confirm")
+		await _press(confirm.call("skip_button"))
 		await _frames(20)
 	await _shot("title")
 	await _collection_frames()
@@ -120,6 +136,16 @@ func _run() -> void:
 	await _ending_frames()
 	await _full_run_frames()
 	print("rounds=%d clicks=%d misclicks=%d shots=%d" % [_rounds_seen, _clicks, _misclicks, _shots])
+	quit(0)
+
+
+## The arrival on its own (ADR 0026), walked by tools/tutorial_walk.gd.
+func _tutorial_run() -> void:
+	var script: GDScript = load("res://tools/tutorial_walk.gd")
+	var walk: Object = script.new()
+	await walk.call("run", self, _out, _headless)
+	var counts: Array = [walk.get("shots"), walk.get("clicks"), walk.get("misclicks")]
+	print("tutorial shots=%d clicks=%d misclicks=%d" % counts)
 	quit(0)
 
 

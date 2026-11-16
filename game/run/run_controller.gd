@@ -718,6 +718,34 @@ func has_village() -> bool:
 	return not _loop.state.roster.is_empty()
 
 
+## True for a full run: the one-time tooltips show only there (ADR 0026).
+func is_full_run() -> bool:
+	return _loop.state.identity.is_full()
+
+
+## True for the arrival, which is never saved and never writes the profile.
+func is_tutorial() -> bool:
+	return _loop.state.identity.is_tutorial()
+
+
+## True when a family in a villager's seat remembers anything of the player.
+func remembers_seated() -> bool:
+	var state: RunState = _loop.state
+	for seat: int in range(1, state.table.size()):
+		var family: String = state.table[seat]
+		if not state.memory.counts.has(family):
+			continue
+		for count: float in state.memory.counts[family]:
+			if count != 0.0:
+				return true
+	return false
+
+
+## Lets the run go, as when the arrival ends: no save or profile is touched.
+func drop() -> void:
+	_loop = null
+
+
 ## A copy of the run state, for display.
 func state_copy() -> RunState:
 	return RunState.from_dict(_loop.state.to_dict())

@@ -6,6 +6,8 @@ extends RefCounted
 
 const DEMO: int = RunIdentity.Kind.DEMO
 const FULL: int = RunIdentity.Kind.FULL
+## The arrival (ADR 0026): authored, never saved, and never written to the profile.
+const TUTORIAL: int = RunIdentity.Kind.TUTORIAL
 
 var kind: int = FULL
 var seed_value: int = 0

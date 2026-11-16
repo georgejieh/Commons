@@ -99,6 +99,24 @@ func card_center(card_id: int) -> Vector2:
 	return global_position + size / 2.0
 
 
+## Where a card in the fan sits on screen, its whole face, or an empty rect when the card
+## isn't shown.
+func card_rect(card_id: int) -> Rect2:
+	for view: CardView in _views:
+		if view.card_id == card_id:
+			return view.get_global_rect()
+	return Rect2()
+
+
+## Puts the keyboard and gamepad cursor on a card, if it is in the fan.
+func point_cursor(card_id: int) -> void:
+	for index: int in _views.size():
+		if _views[index].card_id == card_id:
+			_cursor = index
+			_mark()
+			return
+
+
 ## Where a point on a card in the fan sits on screen, in the card's own pixels, or the
 ## fan's middle when the card isn't shown.
 func card_at(card_id: int, point: Vector2) -> Vector2:

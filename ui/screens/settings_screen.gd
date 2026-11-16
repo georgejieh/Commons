@@ -1,7 +1,8 @@
 class_name SettingsScreen
 extends Control
 ## Volumes, motion and the print pass on one sheet, and beside it the card back designs
-## (ADR 0025). Changes apply at once and save on the way back.
+## (ADR 0025). Changes apply at once and save on the way back. Replay the arrival plays
+## the first evening again (ADR 0026).
 
 var _card_backs: CardBackRow
 
@@ -23,7 +24,14 @@ func open(app: DemoApp) -> void:
 			Settings.save()
 			app.back()
 	)
-	column.add_child(back)
+	# The arrival again (ADR 0026): it ends at the title and changes nothing saved.
+	var replay: Button = ScreenKit.button(tr("settings.replay_arrival"), CommonsTheme.GHOST)
+	replay.pressed.connect(
+		func() -> void:
+			Settings.save()
+			app.arrival.start(true)
+	)
+	column.add_child(ScreenKit.row([back, replay]))
 	ScreenKit.reveal(column)
 	back.grab_focus()
 

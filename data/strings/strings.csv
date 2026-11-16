@@ -138,8 +138,8 @@ cheat.example.bomb,7 7 7 7
 cheat.example.rocket,Small + Big
 intro.where,Year {year} · Quota {set} of 3
 intro.target,Score {target} in up to {rounds} rounds.
-intro.ladder,"Later rounds add debuffs. They stack, and they apply only to you."
-table.debuffs,Debuffs on you only
+intro.ladder,Later rounds add debuffs. They stack until the Quota ends.
+table.debuffs,Debuffs
 intro.round,Round {round}
 intro.clean,Clean
 intro.clean_text,No debuff.
@@ -304,8 +304,16 @@ coll.back,Back
 hist.eyebrow,Village history
 hist.title,This run
 hist.empty,No history yet.
-hist.set,Quota {number}
-hist.row,"{name}: fed {fed}, bombed {bombed}, denounced {denounced}, betrayed {betrayed}"
+hist.quota_line,Quota {number}. {name}: {deeds}.
+hist.quota_nothing,Quota {number}. Nothing to record.
+hist.deed.fed,fed {times}
+hist.deed.bombed,bombed {times}
+hist.deed.denounced,denounced {times}
+hist.deed.betrayed,betrayed {times}
+hist.times.1,once
+hist.times.2,twice
+hist.times.3,three times
+hist.times.many,{count} times
 hist.back,Back
 note.eyebrow,Before you play
 note.title,Content note
@@ -837,3 +845,56 @@ cardback.sunrise.name,Sunrise
 cardback.wheat.name,Wheat
 cardback.lattice.name,Lattice
 cardback.pending,Coming with its art
+tutorial.arrival.text,"The cart leaves you at the brigade office. Wang from the next house says there is a game tonight, and you should sit in."
+tutorial.step.01.say,Someone has to be landlord. Let Zhao have it tonight: pass.
+tutorial.step.01.then,"Zhao took the seat and the three spare cards. You and I are the peasants, on the same side."
+tutorial.step.02.say,Zhao led a 7. Play one card that is higher.
+tutorial.step.02.then,A higher card of the same kind takes it.
+tutorial.step.03.say,"Zhao's king beats your 9. Pass, and let me try."
+tutorial.step.03.then,My 2 took it.
+tutorial.step.04.say,"It is ours now. Pass again, and keep your cards."
+tutorial.step.04.then,"Two passes, so I lead."
+tutorial.step.05.say,Zhao beat my five in a row with a higher five. Yours runs higher still: play it.
+tutorial.step.05.then,"Same length, higher cards."
+tutorial.step.06.say,"Everyone passed, so you lead. Play your pair of 5s."
+tutorial.step.06.then,Zhao answered with queens.
+tutorial.step.07.say,Four of a kind is a bomb. Play yours on his queens.
+tutorial.step.07.then,Nothing he holds answers that.
+tutorial.step.08.say,Three of a kind can carry a pair. Play them together and you are out.
+tutorial.step.08.then,"You are out first, so our side wins the round."
+tutorial.step.09.say,Open Rules. It lists every hand and what it scores.
+tutorial.step.09.then,Close it when you have looked. It is always at the table.
+tutorial.step.10.say,"As peasants, what we scored went into the Commons. Claim your household's need, and no more."
+tutorial.step.10.then,"Your die came up 1, so they checked your claim. It was true, so nothing happened."
+tutorial.step.11.say,Tonight you take the seat: call.
+tutorial.step.11.then,"The three spare cards are yours. You play alone now, against both of us."
+tutorial.step.12.say,"The landlord leads. Start with your long straight, 3 to 9."
+tutorial.step.12.then,Seven cards gone in one play. Neither of us can answer it.
+tutorial.step.13.say,You lead again. Get rid of the 5.
+tutorial.step.13.then,My ace takes it.
+tutorial.step.14.say,Keep your 2s together. Pass.
+tutorial.step.14.then,So I lead.
+tutorial.step.15.say,I led three 6s with a pair. Play your three 2s with a pair.
+tutorial.step.15.then,Three 2s beat any three.
+tutorial.step.16.say,We both passed. Play your last straight.
+tutorial.step.16.then,As landlord you kept all of it yourself.
+tutorial.step.17.say,Two rounds were not enough for the Quota. Press Continue and watch the room.
+tutorial.step.17.then,"When the brigade misses a Quota, Famine rises."
+tutorial.step.18.say,Coupons buy help at the state store. Buy Iron Rice Bowl.
+tutorial.step.18.then,A Cadre stays with you and works every round.
+tutorial.step.19.say,"There is another counter behind the store. Go round, and buy the card for your private plot."
+tutorial.step.19.then,"Someone saw you back there. Buying privately raises Resentment, and Resentment becomes Denunciation."
+tutorial.step.20.say,That is all I can show you. Press the button and your first year starts.
+tip.plot,"Your private plot. Before the first play you may swap cards between it and your hand, up to the number shown."
+tip.debuffs,"From round 2, each round of a Quota adds a debuff. They stack until the Quota ends."
+tip.memory,"Families you fed, bombed or denounced remember it. The memory fades a little each run, and it changes how they play with you and against you."
+tutorial.arrival.title,Arrival
+tutorial.arrival.sit_in,Sit in
+tutorial.skip,Skip
+tutorial.skip.confirm,Skip the arrival?
+tutorial.skip.yes,Skip
+tutorial.skip.no,Stay
+tutorial.begin,Begin your first year
+tip.got_it,Got it
+settings.replay_arrival,Replay the arrival
+summary.continue,Continue

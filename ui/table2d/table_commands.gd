@@ -2,11 +2,18 @@ class_name TableCommands
 extends RefCounted
 ## What the player sends from the table: plays, passes, bids, declared need, hints and
 ## the sort toggle. It wires the action bar and need panel to the run controller, and
-## keeps the bar's reading and buttons in step with the hand and the turn.
+## keeps the bar's reading and buttons in step with the hand and the turn. Every press
+## asks the gate first; during the arrival only the step's own action passes, and a
+## refused press does nothing (ADR 0026).
 
 ## What the prompt line says in place of the hand's reading, such as an armed Campaign's
 ## ask, or "" to leave the reading.
 var prompt: Callable = Callable()
+## Asked with an action's name and detail before it is sent; false refuses it. Unset, all
+## pass.
+var gate: Callable = Callable()
+## Opens the rules card.
+var open_rules: Callable = Callable()
 
 var _controller: RunController
 var _hand: HandModel
@@ -37,6 +44,7 @@ func setup(
 	actions.pass_turn.pressed.connect(_on_pass)
 	actions.hint.pressed.connect(_on_hint)
 	actions.sort.pressed.connect(_toggle_sort)
+	actions.rules.pressed.connect(_on_rules)
 	actions.call.pressed.connect(_on_bid.bind(true))
 	actions.decline.pressed.connect(_on_bid.bind(false))
 	need_panel.declared.connect(_on_need)
@@ -109,6 +117,8 @@ func _show_bid() -> void:
 
 ## Every command fills the event queue, so the buttons go off until it drains.
 func _on_play() -> void:
+	if not _allowed("play", _hand.selected_ids()):
+		return
 	if _controller.play(_hand.selected_ids()) == RunController.OK:
 		_hand.clear()
 	refresh()
@@ -117,6 +127,8 @@ func _on_play() -> void:
 ## Night Shift refuses the pass (ADR 0023): the Pass ticket is knocked back like a
 ## stamp and the reading says why, and the turn stays the player's.
 func _on_pass() -> void:
+	if not _allowed("pass"):
+		return
 	var refusal: String = _controller.pass_refusal()
 	if not refusal.is_empty():
 		_actions.reading.text = tr(refusal)
@@ -129,12 +141,16 @@ func _on_pass() -> void:
 
 
 func _on_bid(claim: bool) -> void:
+	if not _allowed("bid_call" if claim else "bid_pass"):
+		return
 	_actions.show_bidding(false)
 	_controller.bid(claim)
 	refresh()
 
 
 func _on_need(need: int) -> void:
+	if not _allowed("need", need):
+		return
 	_need_panel.visible = false
 	_controller.declare_need(need)
 	refresh()
@@ -142,6 +158,8 @@ func _on_need(need: int) -> void:
 
 ## Cycles rank, suit and groups, and names the current sort on the button.
 func _toggle_sort() -> void:
+	if not _allowed("sort"):
+		return
 	var next: int = (_hand_view.sort_mode + 1) % HandView.Sort.size()
 	_hand_view.set_sort(next as HandView.Sort)
 	_show_sort()
@@ -155,10 +173,19 @@ func _show_sort() -> void:
 
 ## Selects the play a Medium villager would make, and lights it.
 func _on_hint() -> void:
-	if _controller.awaiting() != RunController.AWAIT_PLAY:
+	if _controller.awaiting() != RunController.AWAIT_PLAY or not _allowed("hint"):
 		return
 	var ids: Array[int] = _hand.suggested_ids()
 	_hand.select_only(ids)
 	_hand_view.show_hint(ids)
 	if ids.is_empty():
 		_actions.reading.text = tr("hand.hint.pass")
+
+
+func _on_rules() -> void:
+	if _allowed("rules") and open_rules.is_valid():
+		open_rules.call()
+
+
+func _allowed(action: String, detail: Variant = null) -> bool:
+	return not gate.is_valid() or bool(gate.call(action, detail))

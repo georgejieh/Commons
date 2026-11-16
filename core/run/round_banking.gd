@@ -29,7 +29,8 @@ static func bank(
 ## Declarations are then audited (P4.3): each seat rolls the audit die, and a face at or
 ## below audit_faces checks its claim. Caught seats are appended to caught, and their
 ## true need replaces the lie. Returns true when the pool fell short of the needs that
-## stand, a Commons shortfall.
+## stand, a Commons shortfall. The audit's shown faces, when it names any, are the faces
+## the dice show: the arrival's authored rolls (ADR 0026).
 static func split(
 	state: RunState,
 	player: int,
@@ -61,7 +62,14 @@ static func split(
 	var stream: RandomStream = state.streams.stream(RandomStreams.AUDIT)
 	caught.append_array(
 		NeedAudit.run(
-			peasants, needs, params.base_need, audit_faces, audit.die_sides, stream, events
+			peasants,
+			needs,
+			params.base_need,
+			audit_faces,
+			audit.die_sides,
+			stream,
+			events,
+			audit.shown_faces
 		)
 	)
 	var declared: int = 0
