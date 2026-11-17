@@ -20,6 +20,8 @@ const DIM: Color = Color(0.05, 0.03, 0.02, 0.45)
 const PADDING: int = 22
 const FONT_SIZE: int = 22
 
+## Holds the slip and carries its fit, so the slip's own scale stays the entrance's.
+var _holder: Control = Control.new()
 var _slip: PanelContainer = PanelContainer.new()
 var _list: VBoxContainer = VBoxContainer.new()
 var _title: Label
@@ -38,7 +40,9 @@ func _ready() -> void:
 	add_child(dim)
 	_slip.add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	_slip.custom_minimum_size = Vector2(WIDTH, 0)
-	add_child(_slip)
+	_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_holder)
+	_holder.add_child(_slip)
 	_list.add_theme_constant_override("separation", 10)
 	_slip.add_child(_list)
 	_title = ScreenKit.eyebrow(tr("reading.title"))
@@ -176,9 +180,14 @@ func _keep_focus_inside() -> void:
 
 
 ## Sits the slip centred over the play area, its bottom no lower than BOTTOM and its top
-## no higher than TOP.
+## no higher than TOP. Four wild cards in one play can read more than a dozen ways: a
+## slip taller than that room is drawn smaller, whole, so every reading and Cancel can
+## still be clicked.
 func _place() -> void:
 	_slip.reset_size()
 	var tall: float = _slip.get_combined_minimum_size().y
+	var fit: float = minf(1.0, (BOTTOM - TOP) / tall)
 	_slip.size = Vector2(WIDTH, tall)
-	_slip.position = Vector2(CENTER_X - WIDTH / 2.0, maxf(TOP, BOTTOM - tall))
+	_slip.position = Vector2.ZERO
+	_holder.scale = Vector2(fit, fit)
+	_holder.position = Vector2(CENTER_X - WIDTH * fit / 2.0, maxf(TOP, BOTTOM - tall * fit))
