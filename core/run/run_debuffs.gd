@@ -137,12 +137,21 @@ func settle(totals: PackedFloat64Array, landlord: int) -> void:
 
 
 ## After a Campaign: when Appeal has turned the round's debuff off and it is a
-## Confiscation, its Cadres are handed back at once.
-func after_campaign(round_debuff: ActiveModifier) -> void:
+## Confiscation, its Cadres are handed back at once, with the round's deal.
+func after_campaign(round_debuff: ActiveModifier, deal: DealResult) -> void:
 	if round_debuff == null or round_debuff.enabled or confiscated.is_empty():
 		return
 	if not round_debuff.effect is ConfiscationEffect:
 		return
+	for entry: ActiveModifier in confiscated:
+		entry.effect.handed_back(deal)
+	round_over()
+
+
+## At the round's end: the Cadres a Confiscation left out of it are held again. A Quota
+## that ends with this round then pays and resets them as it does the others, and the
+## shops after it see them.
+func round_over() -> void:
 	for entry: ActiveModifier in confiscated:
 		_stack.set_enabled(entry, true)
 	confiscated.clear()

@@ -55,6 +55,7 @@ Debuffs are the game's roadblocks. They never build toward anything, and the pla
 ## Consequences
 
 - The ladder report and the Plan-pool ladder test move from the fixture table to the real pool, and the fixture is deleted.
+- **Confiscation lasts the round and no longer** (amended 2026-11-17, after the Phase 4B review). The Cadre is held again once the round is over. Before, a Cadre left out of a Quota's last round also missed the Quota's end: Ration Coupon kept its counts into the next Quota and paid nothing there, and Seed Grain, Bookkeeper and Grain Speculator missed their payment. A Cadre handed back mid-round by Appeal is given the round's deal, so Landlord's Ledger still knows the kitty.
 - Each debuff ships with a scenario test, its string keys, and a table beat where a card or a Cadre visibly changes (Levy, Redistribution, Confiscation, Glass Walls, Plot Seized).
 - The Slogan's hand type is new saved state. If it changes the checkpoint's shape, the run save moves to schema 9 with a migration.
 - The tier budgets and every number above are starting values for P4.16.

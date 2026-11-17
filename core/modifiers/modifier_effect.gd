@@ -39,6 +39,12 @@ func on_deal(_context: DealContext) -> void:
 	pass
 
 
+## Not a hook: called when a Cadre left out of the round at its start is handed back in
+## it (ADR 0023), with the round's deal, which its deal hook never saw.
+func handed_back(_deal: DealResult) -> void:
+	pass
+
+
 func round_start(_context: RoundContext) -> void:
 	pass
 

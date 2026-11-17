@@ -362,7 +362,7 @@ func player_campaign(slot: int, card_ids: Array[int]) -> Reason:
 		return Reason.ILLEGAL
 	record.add({"type": "campaign", "slot": slot, "cards": card_ids.duplicate()})
 	campaigns.use(slot, card_ids, moment, _round)
-	debuffs.after_campaign(campaigns.flags.round_debuff)
+	debuffs.after_campaign(campaigns.flags.round_debuff, _deal)
 	if moment == CampaignContext.Moment.SHOP:
 		_end_if_dead()
 	elif moment == CampaignContext.Moment.OPENING and not campaigns.wants_opening(_round):
@@ -963,6 +963,7 @@ func _end_round() -> void:
 		state.deck_order = DeckOrder.gather(_round)
 	_round = null
 	_deal = null
+	debuffs.round_over()
 	state.round_index += 1
 	if state.set_progress >= target() or state.round_index >= _sets.max_rounds():
 		_end_set()
