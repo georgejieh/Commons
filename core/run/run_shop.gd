@@ -93,9 +93,11 @@ func stock() -> Array[String]:
 	return _stock.duplicate()
 
 
-## The counter's price for a slot: the item's cost at price_percent, rounded up.
+## The counter's price for a slot: the item's cost at price_percent, rounded up, then
+## under any raise the books made (ADR 0022). Every price on both counters follows them.
 func price(slot: int) -> int:
-	return (_definition(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
+	var cost: int = (_definition(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
+	return RunBooks.priced(_state, cost)
 
 
 ## How many more of an item this counter will sell this run, or -1 when unlimited.
@@ -106,7 +108,7 @@ func left(modifier_id: String) -> int:
 
 
 func reroll_price() -> int:
-	return _params.reroll_base + _rerolls * _params.reroll_step
+	return RunBooks.priced(_state, _params.reroll_base + _rerolls * _params.reroll_step)
 
 
 ## True when a reroll could put something else on the counter: more Cadres to offer
@@ -174,7 +176,7 @@ func directive_stock() -> Array[String]:
 
 func directive_price(slot: int) -> int:
 	var cost: int = _directive(_directive_stock[slot]).cost
-	return (cost * _params.price_percent + PERCENT - 1) / PERCENT
+	return RunBooks.priced(_state, (cost * _params.price_percent + PERCENT - 1) / PERCENT)
 
 
 func check_directive(slot: int) -> Reason:

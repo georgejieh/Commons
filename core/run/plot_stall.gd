@@ -53,7 +53,7 @@ func suit(slot: int) -> int:
 
 
 func price(slot: int) -> int:
-	return _params.card_costs[_params.card_ranks.find(_ranks[slot])]
+	return RunBooks.priced(_state, _params.card_costs[_params.card_ranks.find(_ranks[slot])])
 
 
 func check_buy(slot: int) -> Reason:

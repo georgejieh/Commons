@@ -112,6 +112,8 @@ var famine_market_buys: int = 0
 var names: RunNames = RunNames.new()
 ## How far the village has drifted by this generation, from the profile (ADR 0028).
 var drift: VillageDrift = VillageDrift.new()
+## What figures reported from outside the game left in the books (ADR 0022).
+var books: RunBooks = RunBooks.new()
 
 
 func _init(seed_value: int) -> void:
@@ -184,6 +186,8 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.famine_market_buys = int(data["famine_market_buys"])
 	state.names = RunNames.from_dict(data["names"])
 	state.drift = VillageDrift.from_dict(data["drift"])
+	# Saves before schema 17 have none; RunRecord validates the field where it belongs.
+	state.books = RunBooks.from_dict(data.get("books", {}))
 	return state
 
 
@@ -251,6 +255,7 @@ func to_dict() -> Dictionary:
 		"famine_market_buys": famine_market_buys,
 		"names": names.to_dict(),
 		"drift": drift.to_dict(),
+		"books": books.to_dict(),
 	}
 
 

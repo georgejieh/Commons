@@ -8,7 +8,7 @@ const HISTORY_CAP: int = 50
 const CORRUPTION_MAX: float = 100.0
 ## A key written since schema 2 began: a profile from before it reads it from its history.
 const LANDLORD_ENDINGS_KEY: String = "landlord_endings"
-## Keys every schema 3 profile holds.
+## Keys every schema 4 profile holds.
 const KEYS: Array[String] = [
 	"memory",
 	"generation",
@@ -22,6 +22,7 @@ const KEYS: Array[String] = [
 	"surname",
 	"committed",
 	"drift",
+	"file",
 ]
 
 ## The village's memory of the player.
@@ -55,6 +56,9 @@ var committed_quota: int = -1
 ## How far each family has drifted over the generations (ADR 0028), written with the
 ## generation each full run starts.
 var drift: VillageDrift = VillageDrift.new()
+## The family's file (ADR 0022): every offence the game acted on, oldest first. Nothing
+## clears it but deleting the profile.
+var file: Array[FileEntry] = []
 
 
 static func from_dict(data: Dictionary) -> ProfileData:
@@ -80,6 +84,8 @@ static func from_dict(data: Dictionary) -> ProfileData:
 	profile.committed_run = str(committed["run_id"])
 	profile.committed_quota = int(committed["quota"])
 	profile.drift = VillageDrift.from_dict(data["drift"])
+	for entry: Dictionary in data.get("file", []):
+		profile.file.append(FileEntry.from_dict(entry))
 	return profile
 
 
@@ -87,6 +93,9 @@ func to_dict() -> Dictionary:
 	var entries: Array[Dictionary] = []
 	for entry: HistoryEntry in history:
 		entries.append(entry.to_dict())
+	var filed: Array[Dictionary] = []
+	for entry: FileEntry in file:
+		filed.append(entry.to_dict())
 	return {
 		"memory": memory.to_dict(),
 		"generation": generation,
@@ -101,12 +110,18 @@ func to_dict() -> Dictionary:
 		"surname": surname,
 		"committed": {"run_id": committed_run, "quota": committed_quota},
 		"drift": drift.to_dict(),
+		"file": filed,
 	}
 
 
 ## True when history holds a record of the run.
 func has_run(run_id: String) -> bool:
 	return history.any(func(entry: HistoryEntry) -> bool: return entry.run_id == run_id)
+
+
+## True when the file holds an entry under the key.
+func has_entry(key: String) -> bool:
+	return file.any(func(entry: FileEntry) -> bool: return entry.key == key)
 
 
 ## Adds a finished run's record, dropping the oldest past the cap.
@@ -131,7 +146,7 @@ static func is_count(value: Variant) -> bool:
 	return (value is int or value is float) and value >= 0 and value == floorf(value)
 
 
-## True when data is a whole schema 3 profile: every field, each of its kind.
+## True when data is a whole schema 4 profile: every field, each of its kind.
 static func is_valid(data: Dictionary) -> bool:
 	for key: String in KEYS:
 		if not data.has(key):
@@ -149,9 +164,19 @@ static func is_valid(data: Dictionary) -> bool:
 		return false
 	if not _float_text_valid(data["corruption"]) or not data["surname"] is String:
 		return false
-	if not VillageDrift.is_valid(data["drift"]):
+	if not VillageDrift.is_valid(data["drift"]) or not _file_valid(data["file"]):
 		return false
 	return _strings_valid(data["seen"])
+
+
+static func _file_valid(value: Variant) -> bool:
+	if not value is Array:
+		return false
+	var entries: Array = value
+	for entry: Variant in entries:
+		if not FileEntry.is_valid(entry):
+			return false
+	return true
 
 
 static func _history_valid(value: Variant) -> bool:

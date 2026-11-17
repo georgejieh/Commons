@@ -31,6 +31,7 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"envelope_buy": ["slot"],
 	"market_envelope": ["slot"],
 	"envelope_pick": ["index"],
+	"books": ["figures"],
 }
 ## The fields of one written decision: the villager's seat and the card IDs it played,
 ## none for a pass.
@@ -193,6 +194,18 @@ static func migrate_from_15(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 16 saves predate the books (ADR 0022): no figure corrected, none dark, and a
+## run begun with no entry in the family's file.
+static func migrate_from_16(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"books": RunBooks.new().to_dict()})
+		if checkpoint.get("identity") is Dictionary:
+			var identity: Dictionary = checkpoint["identity"]
+			identity.merge({"file_entries": 0})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -247,6 +260,8 @@ static func is_valid(data: Dictionary) -> bool:
 			if not command.has(field):
 				return false
 		if command.has(ReadingCodec.KEY) and not ReadingCodec.is_valid(command[ReadingCodec.KEY]):
+			return false
+		if type == "books" and not RunCorrections.is_valid(command["figures"]):
 			return false
 	return true
 
@@ -331,6 +346,8 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_market_envelope(int(command["slot"]))
 		"envelope_pick":
 			return loop.player_envelope_pick(int(command["index"]))
+		"books":
+			return loop.player_books(command["figures"])
 	return RunLoop.Reason.ILLEGAL
 
 
@@ -360,6 +377,12 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 	if not _counters_valid(checkpoint["year_rounds"], checkpoint["year_landlord_rounds"]):
 		return false
 	if not RunIdentity.is_valid(checkpoint["identity"]):
+		return false
+	# The file's count is in every identity saved since the books (schema 17).
+	var identity: Dictionary = checkpoint["identity"]
+	if not _counters_valid(identity.get("file_entries"), 0):
+		return false
+	if not RunBooks.is_valid(checkpoint["books"]):
 		return false
 	if not _counters_valid(checkpoint["year_starved"], 0):
 		return false

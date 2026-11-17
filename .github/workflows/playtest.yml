@@ -48,7 +48,7 @@ jobs:
             --script res://tools/playtest.gd -- --demo --rounds "${{ inputs.rounds || '8' }}" \
             --out reports/playtest 2>&1 | tee reports/playtest.log
           grep -E 'rounds=' reports/playtest.log
-          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR' reports/playtest.log
+          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR|COMMONS FILE MISMATCH' reports/playtest.log
       - name: Play the arrival
         # Its own short run: the tutorial from a first launch with no profile to run setup.
         if: always()
@@ -62,7 +62,7 @@ jobs:
             --script res://tools/playtest.gd -- --tutorial \
             --out reports/tutorial 2>&1 | tee reports/tutorial.log
           grep -E 'tutorial shots=' reports/tutorial.log
-          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR' reports/tutorial.log
+          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR|COMMONS FILE MISMATCH' reports/tutorial.log
       - name: Screens
         if: always()
         env:

@@ -35,3 +35,9 @@ if grep -q 'No test cases found' "$log"; then
 	echo "No tests ran." >&2
 	exit 1
 fi
+# An honest run never trips the file's detectors (ADR 0022). A test that trips one on
+# purpose takes the line itself, so it never reaches the output.
+if grep -q 'COMMONS FILE MISMATCH' "$log"; then
+	echo "A file detector logged a mismatch." >&2
+	exit 1
+fi

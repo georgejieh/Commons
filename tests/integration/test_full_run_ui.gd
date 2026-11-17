@@ -155,6 +155,7 @@ func test_the_summary_names_the_family_that_starved() -> void:
 	_app.new_run(SEED, true)
 	var loop: RunLoop = _app.controller.get("_loop")
 	loop.state.famine = RunLoop.DEFAULT_METERS.famine.high
+	_app.controller.reseal_book()
 	# A Quota met at its first round, so no missed Quota moves Famine before its end.
 	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
 	params.targets = params.targets.duplicate()

@@ -124,6 +124,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	# Coupons enough for the market's prices, handed out behind the controller.
 	var loop: RunLoop = _app.controller.get("_loop")
 	loop.state.coupons = 100
+	_app.controller.reseal_book()
 	var market: StoreScreen = _app.show_screen("black_market")
 	await await_idle_frame()
 	assert_bool(market.market).is_true()
@@ -152,6 +153,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 	var loop: RunLoop = _app.controller.get("_loop")
 	loop.state.coupons = 100
+	_app.controller.reseal_book()
 	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
 	var counter: HBoxContainer = store.get("_counter")

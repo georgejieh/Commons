@@ -56,12 +56,14 @@ func _fill() -> void:
 	state.rationed = true
 	state.coupons = 999
 	state.resentment = 88
+	_app.controller.reseal_book()
 	var tall: Array[String] = ["on_combined_brigades", "on_launching_satellites"]
 	_loop().shop.set("_directive_stock", tall)
 
 
 func test_both_shops_fit_a_fresh_run() -> void:
 	_loop().state.coupons = 60
+	_app.controller.reseal_book()
 	await _check_all("fresh")
 
 
@@ -155,6 +157,7 @@ func test_the_rank_picker_opens_on_the_screen() -> void:
 	for screen_size: Vector2i in SIZES:
 		get_tree().root.size = screen_size
 		_loop().state.coupons = 40
+		_app.controller.reseal_book()
 		var offered: Array[String] = ["rehabilitation", "steel_target", "last_sheaf"]
 		_loop().market.set("_stock", offered)
 		var market: StoreScreen = _app.show_screen("black_market", true)
@@ -182,6 +185,7 @@ func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
 			for kind: String in ["directive_envelope", "campaign_envelope", "parcel"]:
 				var screen_id: String = "black_market" if kind == "parcel" else "store"
 				_loop().state.coupons = 60
+				_app.controller.reseal_book()
 				_loop().shop.envelopes.clear()
 				_loop().market.envelopes.clear()
 				var stock: Array[String] = [kind]

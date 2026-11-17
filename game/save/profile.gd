@@ -4,14 +4,19 @@ extends RefCounted
 ## the run save, with its own schema version, and deleting the run save never touches
 ## it. Its fields are ProfileData's; ProfileCommits decides what a run writes to it.
 
-const SCHEMA_VERSION: int = 3
+const SCHEMA_VERSION: int = 4
+## The first profile schema that carries a seal (ADR 0022).
+const SEALED_FROM: int = 4
 const MEMORY_KEY: String = "memory"
 const DRIFT_KEY: String = "drift"
+const FILE_KEY: String = "file"
 
 
 static func service(path: String = SaveService.PROFILE_PATH) -> SaveService:
-	var migrations: Dictionary[int, Callable] = {1: migrate_from_1, 2: migrate_from_2}
-	return SaveService.new(path, migrations, SCHEMA_VERSION, is_valid)
+	var migrations: Dictionary[int, Callable] = {
+		1: migrate_from_1, 2: migrate_from_2, 3: migrate_from_3
+	}
+	return SaveService.new(path, migrations, SCHEMA_VERSION, is_valid, SEALED_FROM)
 
 
 ## Schema 1 to 2: the memory stays, and every field ADR 0025 adds starts empty.
@@ -26,6 +31,13 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 static func migrate_from_2(data: Dictionary) -> Dictionary:
 	if not data.has(DRIFT_KEY):
 		data[DRIFT_KEY] = {}
+	return data
+
+
+## Schema 3 to 4: the family's file is empty (ADR 0022).
+static func migrate_from_3(data: Dictionary) -> Dictionary:
+	if not data.has(FILE_KEY):
+		data[FILE_KEY] = []
 	return data
 
 

@@ -90,6 +90,11 @@ enum Type {
 	## deal or by Model Worker: value is the rank, text every rank wild now, joined by
 	## commas, in the order they were drawn.
 	WILD_RANKS,
+	## Figures reported from outside the game were taken as official (ADR 0022): value is
+	## the run's count of corrections, text the figures that differed, joined by commas,
+	## and correction says what each was and what followed. An offence with nothing to
+	## correct, such as a failed seal, has an empty correction.
+	BOOKS_CORRECTED,
 }
 
 var type: Type
@@ -104,6 +109,8 @@ var round_event: RoundEvent
 var grain: float = 0.0
 var rate: float = 0.0
 var zeal: float = 0.0
+## Set only for BOOKS_CORRECTED.
+var correction: BooksCorrection = null
 
 
 func _init(
@@ -135,4 +142,6 @@ func describe() -> String:
 		line += " amount=%.3f" % amount
 	if not text.is_empty():
 		line += " " + text
+	if correction != null and not correction.is_empty():
+		line += " [%s]" % correction.describe()
 	return line

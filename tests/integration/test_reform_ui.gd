@@ -28,6 +28,7 @@ func before_test() -> void:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
 	_loop().state.coupons = 60
+	_app.controller.reseal_book()
 
 
 func after_test() -> void:
@@ -138,6 +139,7 @@ func test_reduced_motion_enacts_at_once() -> void:
 
 func test_without_coupons_the_offer_cannot_be_bought() -> void:
 	_loop().state.coupons = 0
+	_app.controller.reseal_book()
 	var store: StoreScreen = await _open()
 	var stall: ReformStall = _stall(store)
 	assert_bool(stall.panel(0).buy.disabled).is_true()

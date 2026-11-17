@@ -36,6 +36,7 @@ const COMMANDS: Array[String] = [
 	"envelope_buy",
 	"envelope_pick",
 	"leave_store",
+	"books",
 ]
 ## What the run waits on, for views that may not name the loop.
 const AWAIT_BID: int = RunLoop.Awaiting.PLAYER_BID
@@ -62,6 +63,9 @@ var live_search: bool = true
 ## Weights a searching villager decides with in place of its own, so a tool can sample
 ## fewer deals (ADR 0027); null for its own.
 var search_weights: BotWeights = null
+## The file's three detectors (ADR 0022). A test may turn acting on, or take the line a
+## mismatch logs, through it.
+var file_watch: FileWatch = FileWatch.new()
 
 var _loop: RunLoop
 ## Decides for the loop's searcher. Every decision blocks until its samples finish.
@@ -111,8 +115,10 @@ func _begin(
 	profile: SaveService
 ) -> void:
 	_profile = profile
+	file_watch.attach(saves, profile)
 	_attach(RunLoop.new(state, configs, sets), saves)
 	_loop.start_set()
+	file_watch.started(_loop)
 	_loop.set_log.flush()
 	awaiting_changed.emit(_loop.awaiting())
 
@@ -121,9 +127,20 @@ func _begin(
 ## may stand past a boundary the profile never took, so the profile is offered it again;
 ## it takes nothing twice.
 func resume(loop: RunLoop, saves: SaveService = null, profile: SaveService = null) -> void:
+	_take_over(loop, saves, profile, null)
+
+
+## What resume() does, with what the load found, which the file's detectors act on: a
+## seal that failed, or a ledger the save does not hold (ADR 0022).
+func _take_over(loop: RunLoop, saves: SaveService, profile: SaveService, loaded: SaveLoad) -> void:
 	_profile = profile
+	file_watch.attach(saves, profile)
 	_attach(loop, saves)
+	if file_watch.resumed(_loop, loaded):
+		_save()
 	_remember(_loop.flow.state())
+	file_watch.sealed(_loop)
+	_loop.set_log.flush()
 	awaiting_changed.emit(_loop.awaiting())
 
 
@@ -153,7 +170,7 @@ func resume_saved(
 	var loop: RunLoop = RunRecord.resume(loaded.data, configs, sets)
 	if loop == null:
 		return false
-	resume(loop, saves, profile)
+	_take_over(loop, saves, profile, loaded)
 	return true
 
 
@@ -168,7 +185,7 @@ func bid_holder() -> int:
 
 
 func bid(claim: bool) -> int:
-	return _finish("bid", _loop.player_bid(claim))
+	return _act("bid", _loop.player_bid.bind(claim))
 
 
 ## The most cards the player may swap this round (P4.8).
@@ -177,7 +194,7 @@ func swap_limit() -> int:
 
 
 func swap(hand_ids: Array[int], plot_ids: Array[int]) -> int:
-	return _finish("swap", _loop.player_swap(hand_ids.duplicate(), plot_ids.duplicate()))
+	return _act("swap", _loop.player_swap.bind(hand_ids.duplicate(), plot_ids.duplicate()))
 
 
 ## reading names how the cards are read, one of readings_for(); with none, the strongest
@@ -185,37 +202,37 @@ func swap(hand_ids: Array[int], plot_ids: Array[int]) -> int:
 ## strongest until the reading picker passes one (ADR 0029).
 func play(card_ids: Array[int], reading: Pattern = null) -> int:
 	var chosen: Pattern = null if reading == null else reading.copy()
-	return _finish("play", _loop.player_play(card_ids.duplicate(), chosen))
+	return _act("play", _loop.player_play.bind(card_ids.duplicate(), chosen))
 
 
 func pass_turn() -> int:
 	var none: Array[int] = []
-	return _finish("pass", _loop.player_play(none))
+	return _act("pass", _loop.player_play.bind(none))
 
 
 func declare_need(need: int) -> int:
-	return _finish("declare_need", _loop.player_need(need))
+	return _act("declare_need", _loop.player_need.bind(need))
 
 
 ## Moves past a finished Set: into the state store, or past the run's last Set to its end.
 func finish_set() -> int:
 	if is_last_set():
-		return _finish("finish_set", _loop.next_set())
-	return _finish("finish_set", _loop.open_shop())
+		return _act("finish_set", _loop.next_set)
+	return _act("finish_set", _loop.open_shop)
 
 
 func buy(slot: int) -> int:
-	return _finish("buy", _loop.player_buy(slot))
+	return _act("buy", _loop.player_buy.bind(slot))
 
 
 func reroll() -> int:
-	return _finish("reroll", _loop.player_reroll())
+	return _act("reroll", _loop.player_reroll)
 
 
 ## Buys from the black market, which adds Resentment. A Cadre that needs a rank is
 ## refused without one (Ranks.THREE to Ranks.TWO).
 func market_buy(slot: int, rank: int = Ranks.INVALID) -> int:
-	return _finish("market_buy", _loop.player_market_buy(slot, rank))
+	return _act("market_buy", _loop.player_market_buy.bind(slot, rank))
 
 
 ## True when buying the Cadre asks for a rank first (ADR 0021).
@@ -233,22 +250,22 @@ func cadre_standing(cadre_id: String) -> CadreStanding:
 
 
 func market_reroll() -> int:
-	return _finish("market_reroll", _loop.player_market_reroll())
+	return _act("market_reroll", _loop.player_market_reroll)
 
 
 ## Buys one step of a private-plot upgrade at the black market.
 func upgrade(kind: String) -> int:
-	return _finish("upgrade", _loop.player_upgrade(kind))
+	return _act("upgrade", _loop.player_upgrade.bind(kind))
 
 
 ## Buys a card for the private plot at the black market.
 func plot_card(slot: int) -> int:
-	return _finish("plot_card", _loop.player_plot_card(slot))
+	return _act("plot_card", _loop.player_plot_card.bind(slot))
 
 
 ## Issues a Directive from the state store: its hand types rise a level at once.
 func directive(slot: int) -> int:
-	return _finish("directive", _loop.player_directive(slot))
+	return _act("directive", _loop.player_directive.bind(slot))
 
 
 ## A Directive's name and rules, and the hand types it raises, as Pattern.Type values.
@@ -279,19 +296,19 @@ func max_hand_level() -> int:
 
 ## Uses the held Campaign in slot, on the chosen hand cards when it asks for any.
 func campaign(slot: int, card_ids: Array[int] = []) -> int:
-	return _finish("campaign", _loop.player_campaign(slot, card_ids.duplicate()))
+	return _act("campaign", _loop.player_campaign.bind(slot, card_ids.duplicate()))
 
 
 ## Leaves the opening, where a Campaign could be used, for the round's first play.
 func begin_round() -> int:
-	return _finish("begin_round", _loop.player_begin())
+	return _act("begin_round", _loop.player_begin)
 
 
 ## Buys the Campaign on the state store's counter, or the black market's.
 func campaign_buy(slot: int, market: bool = false) -> int:
 	if market:
-		return _finish("campaign_buy", _loop.player_market_campaign(slot))
-	return _finish("campaign_buy", _loop.player_campaign_buy(slot))
+		return _act("campaign_buy", _loop.player_market_campaign.bind(slot))
+	return _act("campaign_buy", _loop.player_campaign_buy.bind(slot))
 
 
 ## The Campaigns the player holds, in slot order, and how many they can hold.
@@ -356,7 +373,7 @@ func campaign_shelf(market: bool) -> CampaignShelf:
 
 ## Enacts the state store's Reform for the rest of the run (ADR 0021).
 func reform(slot: int) -> int:
-	return _finish("reform", _loop.player_reform(slot))
+	return _act("reform", _loop.player_reform.bind(slot))
 
 
 ## The Reform on the state store's counter, for a screen to read.
@@ -368,13 +385,13 @@ func reform_shelf() -> ReformShelf:
 ## opens it at once (ADR 0021).
 func envelope_buy(slot: int, market: bool = false) -> int:
 	if market:
-		return _finish("envelope_buy", _loop.player_market_envelope(slot))
-	return _finish("envelope_buy", _loop.player_envelope_buy(slot))
+		return _act("envelope_buy", _loop.player_market_envelope.bind(slot))
+	return _act("envelope_buy", _loop.player_envelope_buy.bind(slot))
 
 
 ## Keeps the open envelope's item at index, or nothing with TAKE_NOTHING.
 func envelope_pick(index: int) -> int:
-	return _finish("envelope_pick", _loop.player_envelope_pick(index))
+	return _act("envelope_pick", _loop.player_envelope_pick.bind(index))
 
 
 ## The envelope on the state store's counter, or the black market's, for a screen to read.
@@ -441,12 +458,12 @@ func purchase_resentment() -> int:
 
 ## Leaves the store for the next Set, or the run's end.
 func leave_store() -> int:
-	return _finish("leave_store", _loop.next_set())
+	return _act("leave_store", _loop.next_set)
 
 
 ## Returns from reeducation to the next Set, or the run's end.
 func leave_reeducation() -> int:
-	return _finish("leave_reeducation", _loop.next_set())
+	return _act("leave_reeducation", _loop.next_set)
 
 
 func awaiting() -> int:
@@ -803,6 +820,20 @@ func remembers_seated() -> bool:
 ## Lets the run go, as when the arrival ends: no save or profile is touched.
 func drop() -> void:
 	_loop = null
+	file_watch.dropped()
+
+
+## Takes figures reported from outside the game as official (ADR 0022), by
+## RunCorrections' names. The file's detectors send it; it is a command like any other.
+func books(figures: Dictionary) -> int:
+	return _act("books", _loop.player_books.bind(figures.duplicate()))
+
+
+## For development tools and tests only: after changing the run's figures directly, tells
+## the second book the change was meant, so the next command compares against it.
+func reseal_book() -> void:
+	if _loop != null:
+		file_watch.sealed(_loop)
 
 
 ## A copy of the run state, for display.
@@ -846,6 +877,14 @@ func _campaign(campaign_id: String) -> CampaignDef:
 	return _loop.campaigns.definition(campaign_id)
 
 
+## Handles one command: the file's detectors look first, and what they correct is saved
+## before the command goes on (ADR 0022).
+func _act(command: String, act: Callable) -> int:
+	if file_watch.check(_loop):
+		_save()
+	return _finish(command, act.call())
+
+
 func _finish(command: String, reason: RunLoop.Reason) -> int:
 	_loop.set_log.flush()
 	if reason != RunLoop.Reason.OK:
@@ -853,12 +892,18 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 	else:
 		_save()
 		awaiting_changed.emit(_loop.awaiting())
+	file_watch.sealed(_loop)
 	return reason
 
 
+## Writes the run save, with the ledger's numbers beside it under the seal, then the
+## ledger itself once the save is whole (ADR 0022).
 func _save() -> void:
-	if _saves != null:
-		_saves.save(_loop.record.to_dict())
+	if _saves == null:
+		return
+	var extras: Dictionary = file_watch.before_write(_loop.state.coupons)
+	if _saves.save(_loop.record.to_dict(), extras) == Error.OK:
+		file_watch.written(extras)
 
 
 ## Writes the village's memory to the profile once a Set's summary is folded in, so it

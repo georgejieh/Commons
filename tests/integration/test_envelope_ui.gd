@@ -28,6 +28,7 @@ func before_test() -> void:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
 	_loop().state.coupons = 60
+	_app.controller.reseal_book()
 
 
 func after_test() -> void:
@@ -296,6 +297,7 @@ func test_parcel_cards_show_their_marks() -> void:
 			driver.act(_app.controller)
 		_app.controller.finish_set()
 		_loop().state.coupons = 60
+		_app.controller.reseal_book()
 	assert_int(seen).is_greater(0)
 
 

@@ -277,6 +277,7 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 	_app.controller.finish_set()
 	var loop: RunLoop = _app.controller.get("_loop")
 	loop.state.coupons = 60
+	_app.controller.reseal_book()
 	for screen_id: String in ["store", "black_market"]:
 		var store: StoreScreen = _app.show_screen(screen_id, true)
 		await await_idle_frame()

@@ -42,6 +42,17 @@ const DEFAULT_FREE_RIDE: FreeRideParams = preload("res://data/run/free_ride.tres
 const DEFAULT_VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
 const DEFAULT_MEMORY: MemoryParams = preload("res://data/villagers/memory.tres")
 const DEFAULT_BOSSES: BossPool = preload("res://data/run/boss_pool.tres")
+## What the loop waits on when a books command may come: the player is to act.
+const BOOKS_AWAITING: Array[Awaiting] = [
+	Awaiting.PLAYER_BID,
+	Awaiting.PLAYER_SWAP,
+	Awaiting.PLAYER_PLAY,
+	Awaiting.PLAYER_NEED,
+	Awaiting.SET_OVER,
+	Awaiting.SHOP,
+	Awaiting.REEDUCATION,
+	Awaiting.PLAYER_OPENING,
+]
 
 var state: RunState
 var flow: RunFlow
@@ -197,14 +208,15 @@ func seat_table(seat: int) -> BotTable:
 
 
 ## The current Set's target: the curve's, any boss's change, then the norm in force for
-## this Set, which leaves out what the Set itself earned once it is over.
+## this Set, which leaves out what the Set itself earned once it is over, then the
+## family's file and the corrections in force (ADR 0022).
 func target() -> float:
 	var base: float = _sets.target(state.year, state.set_type)
 	if state.boss_id != RunState.NO_BOSS:
 		var boss: ModifierDef = _pool_by_id[state.boss_id]
 		var percent: int = boss.parameters.get(GreatLeapEffect.QUOTA_PERCENT, 100)
 		base = base * percent / 100.0
-	return _sets.normed(base, state.norm_steps - state.over_steps)
+	return RunBooks.raised_target(_sets.normed(base, state.norm_steps - state.over_steps), state)
 
 
 ## Starts the Set the state names. The Set's start is the save checkpoint.
@@ -214,6 +226,7 @@ func start_set() -> Reason:
 	# A Quota's first round is always shuffled, Unplanned Economy or not.
 	state.deck_order.clear()
 	state.quota_corruption.clear()
+	RunBooks.start_quota(state)
 	record.mark(state)
 	_seat_roster()
 	set_log.start_set(state, set_number())
@@ -420,6 +433,36 @@ func player_envelope_pick(index: int) -> Reason:
 	if opened.pick(index, PLAYER) != RunShop.Reason.OK:
 		return Reason.ILLEGAL
 	record.add({"type": "envelope_pick", "index": index})
+	return Reason.OK
+
+
+## Takes figures reported from outside the game as official (ADR 0022): coupons, progress,
+## the three meters and the norm, by RunCorrections' names, each clamped to its field.
+## Never refused for being untrue; refused only when malformed, or while the loop is not
+## waiting on the player. A meter raised to its death ends the run at once away from the
+## table, and at the round's end at it, as every meter change does.
+func player_books(figures: Dictionary) -> Reason:
+	if not BOOKS_AWAITING.has(_awaiting):
+		return Reason.NOT_AWAITED
+	if not RunCorrections.is_valid(figures):
+		return Reason.ILLEGAL
+	var books: BooksParams = RunBooks.DEFAULT_PARAMS
+	var kept: Dictionary = RunCorrections.clamped(figures, _params, DEFAULT_RESENTMENT, books)
+	record.add({"type": "books", "figures": kept})
+	var correction: BooksCorrection = RunCorrections.apply(
+		state, kept, target(), _meters, _params, DEFAULT_RESENTMENT, books, set_log.events(), PLAYER
+	)
+	var corrected: RunEvent = RunEvent.new(
+		RunEvent.Type.BOOKS_CORRECTED,
+		PLAYER,
+		state.books.corrections,
+		0.0,
+		",".join(correction.figures)
+	)
+	corrected.correction = correction
+	set_log.add(corrected)
+	if [Awaiting.SET_OVER, Awaiting.SHOP, Awaiting.REEDUCATION].has(_awaiting):
+		_end_if_dead()
 	return Reason.OK
 
 

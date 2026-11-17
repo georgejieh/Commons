@@ -97,7 +97,7 @@ func upgrade_kinds() -> PackedStringArray:
 
 
 func upgrade_price(kind: String) -> int:
-	return PlotUpgrades.price(kind, _upgrades)
+	return PlotUpgrades.price(kind, _upgrades, _state)
 
 
 func can_upgrade(kind: String) -> bool:

@@ -173,7 +173,7 @@ func test_a_schema_2_profile_migrates_with_no_drift() -> void:
 	assert_int(data.generation).is_equal(4)
 	assert_str(data.surname).is_equal("Yuan")
 	assert_bool(data.drift.is_empty()).is_true()
-	assert_int(Profile.SCHEMA_VERSION).is_equal(3)
+	assert_int(Profile.SCHEMA_VERSION).is_equal(4)
 
 
 func test_a_damaged_drift_fails_validation() -> void:

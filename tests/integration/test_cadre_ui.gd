@@ -36,6 +36,7 @@ func _market_with_rehabilitation() -> StoreScreen:
 	_app.controller.finish_set()
 	var loop: RunLoop = _loop()
 	loop.state.coupons = 100
+	_app.controller.reseal_book()
 	var stock: Array[String] = ["rehabilitation", "show_trial", "last_sheaf"]
 	loop.market.set("_stock", stock)
 	return _app.show_screen("black_market")
@@ -120,6 +121,7 @@ func test_the_quota_report_counts_the_bookkeepers_coupons_in_the_paid_line() -> 
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.SET_OVER)
 	loop.set_log.add(RunEvent.new(RunEvent.Type.CADRE_FIRED, 0, 2, 0.0, "the_bookkeeper"))
 	loop.state.coupons += 2
+	_app.controller.reseal_book()
 	var report: SetSummaryScreen = _app.show_screen("set_summary", true)
 	await await_idle_frame()
 	var after: Array[Control] = report.get("_after")

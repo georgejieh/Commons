@@ -47,7 +47,8 @@ func stock() -> Array[String]:
 
 
 func price(slot: int) -> int:
-	return (definition(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
+	var cost: int = (definition(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
+	return RunBooks.priced(_state, cost)
 
 
 ## How many items an envelope of this kind shows: its own number and the Reforms'.

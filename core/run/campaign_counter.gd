@@ -25,7 +25,8 @@ func stock() -> Array[String]:
 
 
 func price(slot: int) -> int:
-	return (_campaign(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
+	var cost: int = (_campaign(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
+	return RunBooks.priced(_state, cost)
 
 
 ## True while the player can hold another Campaign.

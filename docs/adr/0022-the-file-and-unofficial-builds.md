@@ -102,3 +102,19 @@ Things to know before choosing:
 - P5.9 is the owner's licence decision, after v1.
 - Saves gain a checksum, which is a schema change.
 - `docs/ARCHITECTURE.md` gains both systems when they are built.
+
+## The books as built (P4.19, first half, 2026-11-16)
+
+Calls made while building, which the section above did not settle:
+
+- **A changed figure is a command.** A save is a checkpoint and the commands since. The detector puts the true figures back and sends a `books` command with what it found, so the correction is in the record and a reload replays it.
+- **What a raise is.** A raised coupon figure raises later targets and both shops' prices by reported over true, a true count of none taken as one. A raised progress figure raises later targets by the gain as a share of the target in force. Raises compound over corrections and round up. They are kept as their own percentages, apart from overfulfilment's steps.
+- **Later Quotas only.** A correction made during a Quota raises the targets of the Quotas after it, never the one in play.
+- **Caps, as data:** corrections raise targets and prices by at most 900% each over a run; reported coupons stop at 999,999 and reported norm steps at 999, and progress at the largest score the game holds.
+- **Prices** means every price in both shops: rerolls and the plot upgrades too.
+- **A lowered coupon or progress figure** is accepted and is still an offence. **A raised meter** is accepted with all a real rise brings; one raised to its limit ends the run as that meter does. **A lowered norm** goes dark as a meter does.
+- **A broken seal** has nothing to correct: it is an entry and a notice. A hand edit of the profile that empties the file costs one entry for the broken seal. The key is in the source, so the seal stops hand edits and nothing more, as this ADR says.
+- **The bait** is held to the number the save last wrote there and the one before it, since a crash can fall between the two writes. It is not checked before a run's first save, or beside a save restored from its backup.
+- **Each entry adds 5 corruption**, growing as every corruption event does, and raises a later run's targets 10%, up to double.
+- **Who can get an entry:** a full run with a profile, in a release build. The demo, the arrival, the balance harness, tools, tests and every development build log one line and change nothing.
+- **For P5.0:** when Expert's search leaves the command thread, the second book must be sealed again after its play is applied.

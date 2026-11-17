@@ -339,6 +339,8 @@ func _market_frames() -> void:
 	var offered: Array[String] = ["rehabilitation", "hidden_reserves", "last_sheaf"]
 	market.set("_stock", offered)
 	state.coupons = maxi(coupons, 40)
+	# The coupons are a frame's, put back before any command; the second book is told.
+	controller.call("reseal_book")
 	screen.call("_refresh")
 	await _frames(10)
 	await _shot("black_market_cadre_rules")
@@ -368,6 +370,7 @@ func _market_frames() -> void:
 	state.inventory.cadres.assign(held)
 	state.cadre_memos = CadreMemos.from_dict(memos)
 	state.coupons = coupons
+	controller.call("reseal_book")
 	market.set("_stock", stock)
 	screen.call("_refresh")
 	await _frames(10)
@@ -519,6 +522,8 @@ func _parcel_frames() -> void:
 	var snapshot: Dictionary = loop.record.to_dict()
 	loop.state.coupons += 12
 	loop.state.inventory.plot.clear()
+	# Handed over by this tool for the frame, so the second book is told (ADR 0022).
+	controller.call("reseal_book")
 	screen.call("_refresh")
 	await _frames(10)
 	var offer: Control = stall.call("panel", 0)
@@ -1195,6 +1200,8 @@ func _grant_coupons(amount: int) -> void:
 	var loop: RunLoop = controller.get("_loop")
 	loop.state.coupons += amount
 	loop.record.checkpoint["coupons"] = int(loop.record.checkpoint["coupons"]) + amount
+	# Handed over by this tool, so the second book is told (ADR 0022).
+	controller.call("reseal_book")
 
 
 ## On the first turn after a Campaign was bought, in a sandbox put back after: the tray

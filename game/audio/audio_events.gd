@@ -52,6 +52,8 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.STOOD_BY: "",
 	# The call-out that names a wild rank lands with the store's stamp (ADR 0029).
 	RunEvent.Type.WILD_RANKS: "store_buy",
+	# The notice that the books were corrected brings its own sound (ADR 0022).
+	RunEvent.Type.BOOKS_CORRECTED: "",
 }
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",

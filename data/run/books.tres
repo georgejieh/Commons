@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BooksParams" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/run/books_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+norm_cap_percent = 900
+price_cap_percent = 900
+coupons_max = 999999
+norm_steps_max = 999
+entry_percent = 10
+entry_cap_percent = 100
+entry_corruption = 5.0

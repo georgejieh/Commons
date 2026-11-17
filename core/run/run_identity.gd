@@ -17,6 +17,9 @@ var stake: int = 0
 var finished_runs: int = 0
 ## Which generation of the family plays this run, from 1; 0 for a run outside the profile.
 var generation: int = 0
+## Entries the family's file held when this run started (ADR 0022): each raises every
+## target. 0 for a run outside the profile, and for every run that is not a full one.
+var file_entries: int = 0
 
 
 static func make_id(seed_value: int, start_time: int) -> String:
@@ -31,6 +34,7 @@ static func from_dict(data: Dictionary) -> RunIdentity:
 	identity.stake = int(data["stake"])
 	identity.finished_runs = int(data["finished_runs"])
 	identity.generation = int(data["generation"])
+	identity.file_entries = int(data.get("file_entries", 0))
 	return identity
 
 
@@ -42,6 +46,7 @@ func to_dict() -> Dictionary:
 		"stake": stake,
 		"finished_runs": finished_runs,
 		"generation": generation,
+		"file_entries": file_entries,
 	}
 
 
@@ -53,14 +58,19 @@ func is_tutorial() -> bool:
 	return kind == Kind.TUTORIAL
 
 
-## True when data holds every field with the right kind of value.
+## True when data holds every field with the right kind of value. The file's count came
+## with run saves at schema 17 and is checked when present; RunRecord requires it there,
+## and a migration reads older identities through here.
 static func is_valid(value: Variant) -> bool:
 	if not value is Dictionary:
 		return false
 	var data: Dictionary = value
 	if not data.get("id") is String or not data.get("household") is String:
 		return false
-	for key: String in ["kind", "stake", "finished_runs", "generation"]:
+	var keys: Array[String] = ["kind", "stake", "finished_runs", "generation"]
+	if data.has("file_entries"):
+		keys.append("file_entries")
+	for key: String in keys:
 		var number: Variant = data.get(key)
 		if not (number is int or number is float) or number < 0 or number != floorf(number):
 			return false

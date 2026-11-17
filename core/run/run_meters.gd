@@ -60,6 +60,24 @@ static func apply_amount(
 	_update_setbacks(state, source.meter, table.bands(source.meter), player, events)
 
 
+## Sets a meter to a figure reported from outside the game (ADR 0022). No hook runs, since
+## nothing in the run moved it, but the bands and setbacks follow as for any rise.
+static func report(
+	state: RunState,
+	meter: String,
+	amount: int,
+	table: MeterTable,
+	params: RunParams,
+	player: int,
+	events: Array[RunEvent]
+) -> void:
+	var before: int = value(state, meter)
+	var after: int = clampi(amount, 0, params.meter_max)
+	_set_value(state, meter, after)
+	events.append(RunEvent.new(RunEvent.Type.METER_CHANGED, player, after - before, 0.0, meter))
+	_update_setbacks(state, meter, table.bands(meter), player, events)
+
+
 static func value(state: RunState, meter: String) -> int:
 	return state.famine if meter == FAMINE else state.denunciation
 
