@@ -309,13 +309,21 @@ func player_swap(hand_ids: Array[int], plot_ids: Array[int]) -> Reason:
 	return Reason.OK
 
 
-## No cards is a pass.
-func player_play(card_ids: Array[int]) -> Reason:
+## No cards is a pass. reading names how the cards are read when they can be read more
+## than one way (ADR 0029); with none, the strongest reading that may be played stands.
+## The record keeps the reading only when the cards alone would not settle it.
+func player_play(card_ids: Array[int], reading: Pattern = null) -> Reason:
 	if _awaiting != Awaiting.PLAYER_PLAY:
 		return Reason.NOT_AWAITED
-	if _round.apply(RoundAction.new(PLAYER, card_ids)) != RoundState.Reason.OK:
+	var action: RoundAction = RoundAction.new(PLAYER, card_ids)
+	action.reading = reading
+	var saved: Pattern = _reading_to_save(action)
+	if _round.apply(action) != RoundState.Reason.OK:
 		return Reason.ILLEGAL
-	record.add({"type": "play", "cards": card_ids.duplicate()})
+	var command: Dictionary = {"type": "play", "cards": card_ids.duplicate()}
+	if saved != null:
+		command[ReadingCodec.KEY] = ReadingCodec.encode(saved)
+	record.add(command)
 	_awaiting = Awaiting.NOTHING
 	_collect_round_events()
 	# An Anonymous Letter in force acts on this play before the round can end.
@@ -676,6 +684,8 @@ func _campaign_moment() -> CampaignContext.Moment:
 
 func _create_round() -> void:
 	_aim_grudges()
+	# The round's wild ranks (ADR 0029), none unless an item drew them.
+	_table.set_wild_ranks(state.wild_ranks)
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
 	_scoring.start(state.landlord_seat)
@@ -709,13 +719,26 @@ func _bot_play() -> void:
 	var offered: bool = (
 		play.is_pass() or legal.any(func(move: Pattern) -> bool: return move.equals(play.pattern))
 	)
+	var saved: Pattern = _reading_to_save(action) if SearchedDecisions.searches(config) else null
 	if not offered or _round.apply(action) != RoundState.Reason.OK:
 		refused_bot_actions += 1
 		assert(false, "A bot chose an illegal action")
 		action = _round.action_for(legal[0])
+		saved = _reading_to_save(action) if SearchedDecisions.searches(config) else null
 		_round.apply(action)
-	decisions.write(seat, config, action.card_ids)
+	decisions.write(seat, config, action.card_ids, saved)
 	_after_action()
+
+
+## The reading a play's record must keep: the one it is played as, when the cards could be
+## played more than one way. Null for a pass, a refused play or cards that read one way.
+func _reading_to_save(action: RoundAction) -> Pattern:
+	if action.card_ids.is_empty():
+		return null
+	var read: PlayReading = _round.read_play(action.seat, action.card_ids, action.reading)
+	if read.reason != RoundState.Reason.OK or read.readings.size() < 2:
+		return null
+	return read.pattern
 
 
 func _after_action() -> void:
@@ -836,6 +859,8 @@ func _end_round() -> void:
 	set_log.add(RunEvent.new(kept, _round.landlord()))
 	# What a Campaign held in force ends with its round, whatever comes next.
 	campaigns.start_round()
+	state.wild_ranks.clear()
+	_table.set_wild_ranks(state.wild_ranks)
 	state.deck_order.clear()
 	if RunReforms.gathers_deck(state):
 		state.deck_order = DeckOrder.gather(_round)

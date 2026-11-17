@@ -184,6 +184,15 @@ static func migrate_from_14(data: Dictionary, texts: Dictionary[String, String] 
 	return data
 
 
+## Version 15 saves predate wild ranks (ADR 0029): no rank was wild in the round in play.
+## Their plays name no reading, and with no rank wild their cards read only one way.
+static func migrate_from_15(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"wild_ranks": []})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -237,6 +246,8 @@ static func is_valid(data: Dictionary) -> bool:
 		for field: String in COMMAND_FIELDS[type]:
 			if not command.has(field):
 				return false
+		if command.has(ReadingCodec.KEY) and not ReadingCodec.is_valid(command[ReadingCodec.KEY]):
+			return false
 	return true
 
 
@@ -281,7 +292,9 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 		"swap":
 			return loop.player_swap(_ids(command["hand"]), _ids(command["plot"]))
 		"play":
-			return loop.player_play(_ids(command["cards"]))
+			# A reading is saved only where the cards read more than one way (ADR 0029).
+			var reading: Pattern = ReadingCodec.decode(command.get(ReadingCodec.KEY))
+			return loop.player_play(_ids(command["cards"]), reading)
 		"need":
 			return loop.player_need(int(command["need"]))
 		"shop":
@@ -359,6 +372,8 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 			return false
 	if not RunNames.is_valid(checkpoint["names"]) or not VillageDrift.is_valid(checkpoint["drift"]):
 		return false
+	if not ReadingCodec.wild_ranks_valid(checkpoint["wild_ranks"]):
+		return false
 	return _levels_valid(checkpoint["hand_levels"])
 
 
@@ -402,9 +417,13 @@ func add(command: Dictionary) -> void:
 	commands.append(command)
 
 
-## Writes down a searching villager's play: its seat and card IDs, none for a pass.
-func decide(seat: int, card_ids: Array[int]) -> void:
-	decisions.append({"seat": seat, "cards": card_ids.duplicate()})
+## Writes down a searching villager's play: its seat and card IDs, none for a pass, and
+## its reading when the cards read more than one way (ADR 0029).
+func decide(seat: int, card_ids: Array[int], reading: Pattern = null) -> void:
+	var entry: Dictionary = {"seat": seat, "cards": card_ids.duplicate()}
+	if reading != null:
+		entry[ReadingCodec.KEY] = ReadingCodec.encode(reading)
+	decisions.append(entry)
 
 
 func to_dict() -> Dictionary:

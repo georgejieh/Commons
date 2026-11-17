@@ -16,6 +16,8 @@ var _trick_bombed: bool = false
 var _stamped: PackedInt32Array = PackedInt32Array()
 var _seen_revision: int = -1
 var _dirty: bool = true
+## The round's wild ranks (ADR 0029), added to every seat's base rules before modifiers.
+var _wild_ranks: Array[int] = []
 ## A uniform table never rebuilds.
 var _fixed: bool = false
 
@@ -68,6 +70,14 @@ func set_stamped(seat: int, mask: int) -> void:
 		_dirty = true
 
 
+## Makes these ranks wild for every seat from the next refresh, beside any a modifier
+## adds. A uniform table keeps the rules it was built with.
+func set_wild_ranks(ranks: Array[int]) -> void:
+	if ranks != _wild_ranks:
+		_wild_ranks = ranks.duplicate()
+		_dirty = true
+
+
 ## Rebuilds if the flag is set or the stack has changed. Returns true if it rebuilt.
 ## The round calls this before each action, so a stack change applies at once.
 func refresh() -> bool:
@@ -80,6 +90,9 @@ func refresh() -> bool:
 	_maps.clear()
 	for seat: int in Seats.COUNT:
 		var params: RuleParams = _base_params.copy()
+		for rank: int in _wild_ranks:
+			if not params.wild_ranks.has(rank):
+				params.wild_ranks.append(rank)
 		_stack.run_build_ruleset(RulesetContext.new(seat, _landlord, params))
 		_rules.append(RuleSet.new(params))
 		var rank_map: PackedByteArray = Ranks.identity_map()

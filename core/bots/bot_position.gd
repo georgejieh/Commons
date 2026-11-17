@@ -19,6 +19,8 @@ var unseen: PackedByteArray
 ## The unseen cards an opponent could hold: all of them, unless a hand shown to the table
 ## (Glass Walls) tells the bot which of them a teammate holds or which seat holds what.
 var threats: PackedByteArray
+## How many of the threats are wild cards (ADR 0029).
+var wild_threats: int = 0
 var groups: Array[Pattern]
 var controls: Controls
 
@@ -34,6 +36,8 @@ func _init(
 	_read_seats()
 	unseen = UnseenCards.from_view(view)
 	threats = _threats()
+	var supply: WildSupply = WildSupply.of(threats, table.rules)
+	wild_threats = 0 if supply == null else supply.total
 	groups = scorer.decompose_own_hand().groups
 	var counts_cards: bool = config.reads_the_table()
 	controls = Controls.new(groups, threats, _largest_opposing_hand(), table, counts_cards)
@@ -120,6 +124,18 @@ func _roll(salt: int) -> float:
 
 func rank_of(rank: int) -> int:
 	return table.rank_map[rank]
+
+
+## True when an opponent could hold width cards that read as rank, counting the threats
+## by the cards really spent. A wild card joins any rank from 3 to 2 that has a card of
+## its own, so it never makes a single on its own (ADR 0029, rule 2).
+func could_hold(rank: int, width: int) -> bool:
+	if threats[rank] >= width:
+		return true
+	if wild_threats == 0 or threats[rank] == 0 or rank > Ranks.TWO:
+		return false
+	var others: int = wild_threats - (threats[rank] if table.rules.is_wild(rank) else 0)
+	return threats[rank] + others >= width
 
 
 func _read_seats() -> void:

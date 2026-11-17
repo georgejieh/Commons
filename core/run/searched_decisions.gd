@@ -59,7 +59,10 @@ static func is_valid(decisions: Variant, written: Variant) -> bool:
 
 
 static func _is_decision(entry: Dictionary) -> bool:
-	if entry.size() != RunRecord.DECISION_FIELDS.size():
+	var reading: bool = entry.has(ReadingCodec.KEY)
+	if entry.size() != RunRecord.DECISION_FIELDS.size() + (1 if reading else 0):
+		return false
+	if reading and not ReadingCodec.is_valid(entry[ReadingCodec.KEY]):
 		return false
 	var seat: Variant = entry.get("seat")
 	if not _is_whole(seat) or seat < 1 or seat >= Seats.COUNT:
@@ -122,11 +125,13 @@ func replay(round_state: RoundState, seat: int) -> bool:
 	var cards: Array[int] = []
 	for card: Variant in _written[_next]["cards"]:
 		cards.append(int(card))
-	if round_state.apply(RoundAction.new(seat, cards)) != RoundState.Reason.OK:
+	var action: RoundAction = RoundAction.new(seat, cards)
+	action.reading = ReadingCodec.decode(_written[_next].get(ReadingCodec.KEY))
+	if round_state.apply(action) != RoundState.Reason.OK:
 		_failed = true
 		return false
 	_next += 1
-	_record.decide(seat, cards)
+	_record.decide(seat, cards, action.reading)
 	return true
 
 
@@ -148,10 +153,11 @@ func decide(view: SeatView, legal: Array[Pattern], table: BotTable, config: BotC
 	return play
 
 
-## Writes the cards a searching seat played, none for a pass, to the record.
-func write(seat: int, config: BotConfig, card_ids: Array[int]) -> void:
+## Writes the cards a searching seat played, none for a pass, to the record, with the
+## reading when those cards read more than one way.
+func write(seat: int, config: BotConfig, card_ids: Array[int], reading: Pattern = null) -> void:
 	if searches(config):
-		_record.decide(seat, card_ids)
+		_record.decide(seat, card_ids, reading)
 
 
 ## JSON reads every number as a float.

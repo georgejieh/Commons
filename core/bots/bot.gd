@@ -26,6 +26,7 @@ static func decide_play(
 ) -> BotPlay:
 	if config.scripted != null:
 		return config.scripted.play(view, legal)
+	legal = considered(legal)
 	if legal.is_empty():
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.PASS_NOTHING_BEATS)
 	if config.effort < 1.0 and config.tier == BotConfig.Tier.EASY:
@@ -45,6 +46,7 @@ static func decide_play(
 static func search_job(
 	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
 ) -> BotSearchJob:
+	legal = considered(legal)
 	var scorer: CandidateScorer = CandidateScorer.new(
 		view.own_counts, table, config.weights, config.type_bias
 	)
@@ -57,6 +59,16 @@ static func search_job(
 	if ExpertSearch.applies(config):
 		candidates = legal
 	return BotSearchJob.new(position, candidates, play)
+
+
+## The legal moves a bot weighs: every one, less the wild plays it never needs
+## (WildSupply.is_lean, ADR 0029). With no wild card in hand that is all of them.
+static func considered(legal: Array[Pattern]) -> Array[Pattern]:
+	var kept: Array[Pattern] = []
+	for move: Pattern in legal:
+		if WildSupply.is_lean(move):
+			kept.append(move)
+	return legal if kept.size() == legal.size() or kept.is_empty() else kept
 
 
 static func _by_policy(position: BotPosition, legal: Array[Pattern]) -> BotPlay:

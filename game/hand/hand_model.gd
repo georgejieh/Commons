@@ -129,11 +129,12 @@ static func fold(rank: int, rank_map: PackedByteArray) -> int:
 	return -1
 
 
-## Cards whose rank appears in any legal move. Moves are over ranks, not instances.
+## Cards whose rank appears in any legal move, as the cards the move spends. Moves are
+## over ranks, not instances.
 func hint_ids() -> Array[int]:
 	var ranks: Dictionary[int, bool] = {}
 	for move: Pattern in _controller.legal_moves():
-		var counts: PackedByteArray = move.counts()
+		var counts: PackedByteArray = move.spent_counts()
 		for rank: int in counts.size():
 			if counts[rank] > 0:
 				ranks[rank] = true
@@ -184,7 +185,7 @@ func grouped_cards() -> Array[CardInstance]:
 	var ordered: Array[CardInstance] = []
 	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
 	for group: Pattern in Bot.suggest_groups(counts, _controller.player_table(), config):
-		var needed: PackedByteArray = group.counts()
+		var needed: PackedByteArray = group.spent_counts()
 		for card: CardInstance in left.duplicate():
 			if needed[card.base_rank()] > 0:
 				needed[card.base_rank()] -= 1

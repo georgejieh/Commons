@@ -1,7 +1,8 @@
 extends SceneTree
 ## Plays Expert through ExpertRunner, as players get it, against Hard over seeded deals.
 ## tools/tournament.gd gives Expert unlimited time on one thread, so it can't measure this.
-## Pairs games as in ADR 0010. Exits 1 on an illegal action.
+## Pairs games as in ADR 0010. Exits 1 on an illegal action. --wild N puts 0 to 2 wild
+## ranks in force for every seat, drawn per deal as the tournament draws them (ADR 0029).
 
 const DEFAULT_DEALS: int = 1000
 const PROGRESS_DEALS: int = 50
@@ -24,9 +25,16 @@ func _initialize() -> void:
 	var first_seed: int = _option("--seed", 0)
 	# The live game's deadline unless asked otherwise (ADR 0030).
 	var limit: int = _option("--limit-usec", BotConfig.DEFAULT_WEIGHTS.expert_deadline_usec)
+	var wild: int = _option("--wild", 0)
 	var wins: int = 0
 	for index: int in deals:
 		var deal: DealResult = SelfPlay.deal_from_seed(first_seed + index)
+		if wild > 0:
+			var params: RuleParams = RuleSet.DEFAULT_PARAMS.copy()
+			params.wild_ranks = TournamentRun.wild_ranks_for(first_seed + index, wild)
+			_rules = RuleSet.new(params)
+			_table = SeatRules.uniform(_rules, _map)
+			_bot_table = BotTable.new(_rules, _map)
 		if _landlord_won(deal, [LANDLORD], limit):
 			wins += 1
 		if not _landlord_won(deal, [1, 2], limit):
@@ -38,8 +46,8 @@ func _initialize() -> void:
 	var p99: int = _times[_times.size() * 99 / 100]
 	print(
 		(
-			"expert beats hard %.3f over %d games at %d usec, %d illegal actions, p99 %d usec"
-			% [float(wins) / (deals * 2), deals * 2, limit, _illegal, p99]
+			"expert beats hard %.3f over %d games at %d usec, %d wild, %d illegal actions, p99 %d usec"
+			% [float(wins) / (deals * 2), deals * 2, limit, wild, _illegal, p99]
 		)
 	)
 	print(_samples_line())

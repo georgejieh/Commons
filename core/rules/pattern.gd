@@ -1,7 +1,9 @@
 class_name Pattern
 extends RefCounted
 ## One legal play as ranks, with its comparison key fixed at construction.
-## Ranks are base ranks. Only the key uses the effective rank.
+## Ranks are base ranks. Only the key uses the effective rank. A play is a reading of the
+## cards it spends (ADR 0029): the type and ranks below are the reading, every card as
+## what it stands for, and spent holds the printed ranks only when a wild card stands in.
 
 enum Type {
 	PASS,
@@ -35,6 +37,9 @@ var card_count: int
 var kicker_ranks: PackedByteArray
 ## Orders plays of one shape by main rank. Shape is everything above KEY_RANK_BITS.
 var key: int
+## The printed rank counts of the cards spent, or empty when they are the reading's own
+## counts, as they always are with no wild card standing in.
+var spent: PackedByteArray = PackedByteArray()
 
 
 func _init(
@@ -70,7 +75,11 @@ func copy() -> Pattern:
 ## Returns a copy compared at a new effective rank.
 func rekeyed(effective_main: int) -> Pattern:
 	var kickers: PackedByteArray = kicker_ranks.duplicate()
-	return Pattern.new(type, main_rank, chain_length, card_count, kickers, effective_main)
+	var result: Pattern = Pattern.new(
+		type, main_rank, chain_length, card_count, kickers, effective_main
+	)
+	result.spent = spent.duplicate()
+	return result
 
 
 func shape() -> int:
@@ -85,7 +94,7 @@ func body_width() -> int:
 	return (card_count - kicker_ranks.size()) / chain_length
 
 
-## Returns the rank counts this play uses.
+## Returns the rank counts of the reading: every card as the rank it stands for.
 func counts() -> PackedByteArray:
 	var result: PackedByteArray = PackedByteArray()
 	result.resize(Ranks.COUNT)
@@ -101,10 +110,38 @@ func counts() -> PackedByteArray:
 	return result
 
 
-## Equal only for the same type and the same cards.
+## Returns the printed rank counts of the cards the play spends, which leave the hand.
+func spent_counts() -> PackedByteArray:
+	return counts() if spent.is_empty() else spent.duplicate()
+
+
+## Cards standing in for a rank other than their own: the fewest the cards allow.
+func stand_ins() -> int:
+	if spent.is_empty():
+		return 0
+	var reading: PackedByteArray = counts()
+	var total: int = 0
+	for rank: int in Ranks.COUNT:
+		total += maxi(0, reading[rank] - spent[rank])
+	return total
+
+
+## Equal only for the same type and the same reading.
 func identity() -> int:
 	return CountKey.encode(counts()) | (type << IDENTITY_TYPE_SHIFT)
 
 
-func equals(other: Pattern) -> bool:
+## The same reading, whatever cards spend it.
+func same_reading(other: Pattern) -> bool:
 	return key == other.key and identity() == other.identity()
+
+
+## The same reading of the same cards.
+func equals(other: Pattern) -> bool:
+	return same_reading(other) and spent == other.spent
+
+
+## Records the printed counts the play spends, kept only when they differ from the
+## reading's, so a play with no stand-in compares as it always has.
+func spend(printed: PackedByteArray) -> void:
+	spent = PackedByteArray() if printed == counts() else printed.duplicate()

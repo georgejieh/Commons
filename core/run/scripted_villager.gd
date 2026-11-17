@@ -64,7 +64,7 @@ func play(view: SeatView, legal: Array[Pattern]) -> BotPlay:
 	for card_id: int in cards:
 		counts[Deck.rank_of(card_id)] += 1
 	for move: Pattern in legal:
-		if move.counts() == counts:
+		if move.spent_counts() == counts:
 			return BotPlay.new(move, BotRationale.Code.NONE)
 	_fault("an illegal play %s" % str(cards))
 	return _fallback(view, legal)

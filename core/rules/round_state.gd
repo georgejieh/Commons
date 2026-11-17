@@ -192,9 +192,14 @@ func legal_moves() -> Array[Pattern]:
 	)
 
 
-## Turns a pattern into an action for the seat to act, using its least valuable cards.
+## Turns a pattern into an action for the seat to act, using its least valuable cards of
+## the ranks it spends, and naming its reading.
 func action_for(pattern: Pattern) -> RoundAction:
-	return RoundAction.from_cards(_turn, CardSelection.pick(_hands[_turn], pattern))
+	var action: RoundAction = RoundAction.from_cards(
+		_turn, CardSelection.pick(_hands[_turn], pattern)
+	)
+	action.reading = pattern
+	return action
 
 
 ## Cards in hand for every seat, which is all that is public about them.
@@ -225,8 +230,10 @@ func view_for(seat: int) -> SeatView:
 
 
 ## How the seat's cards read against the table, without playing them. A seat other than
-## the one to act gets OUT_OF_TURN with its pattern, so a view can still name it.
-func read_play(seat: int, card_ids: Array[int]) -> PlayReading:
+## the one to act gets OUT_OF_TURN with its pattern, so a view can still name it. Cards
+## with a wild card among them may read more than one way (ADR 0029): wanted names the
+## reading, and with none the strongest that may be played now stands.
+func read_play(seat: int, card_ids: Array[int], wanted: Pattern = null) -> PlayReading:
 	if is_over():
 		return PlayReading.new(Reason.ROUND_OVER)
 	_sync_rules()
@@ -240,14 +247,27 @@ func read_play(seat: int, card_ids: Array[int]) -> PlayReading:
 		seen[card_id] = true
 		reading.cards.append(card)
 	var rules: RuleSet = _table.rules_for(seat)
-	var classified: Classification = CardSelection.classify_cards(
-		reading.cards, rules, _table.map_for(seat)
-	)
+	var counts: PackedByteArray = CardSelection.printed_counts(reading.cards)
+	var classified: Classification = Classifier.classify(counts, rules, _table.map_for(seat))
 	reading.invalid_reason = classified.reason
-	if not classified.is_valid():
+	var options: Array[Pattern] = []
+	if WildSupply.of(counts, rules) != null:
+		options = Readings.of(counts, rules, _table.map_for(seat))
+	elif classified.is_valid():
+		options.append(classified.pattern)
+	if options.is_empty():
 		reading.reason = Reason.ILLEGAL_PLAY
 		return reading
-	reading.pattern = classified.pattern
+	reading.invalid_reason = Classification.Reason.OK
+	for option: Pattern in options:
+		if _current == null or PlayComparator.beats(option, _current, rules):
+			reading.readings.append(option)
+	reading.pattern = options[0] if reading.readings.is_empty() else reading.readings[0]
+	if wanted != null:
+		reading.pattern = Readings.checked(wanted, counts, rules, _table.map_for(seat))
+		if reading.pattern == null:
+			reading.reason = Reason.ILLEGAL_PLAY
+			return reading
 	if seat != _turn:
 		reading.reason = Reason.OUT_OF_TURN
 	elif _current != null and not PlayComparator.beats(reading.pattern, _current, rules):
@@ -274,7 +294,7 @@ func _apply_pass() -> Reason:
 
 
 func _apply_play(action: RoundAction) -> Reason:
-	var reading: PlayReading = read_play(_turn, action.card_ids)
+	var reading: PlayReading = read_play(_turn, action.card_ids, action.reading)
 	if reading.reason == Reason.OK:
 		_commit_play(reading.cards, action.card_ids, reading.pattern)
 	return reading.reason
@@ -293,7 +313,7 @@ func _commit_play(cards: Array[CardInstance], card_ids: Array[int], pattern: Pat
 	for card: CardInstance in cards:
 		event.cards.append(card.snapshot())
 	_events.append(event)
-	_history.append(PublicPlay.new(seat, pattern.copy(), pattern.counts()))
+	_history.append(PublicPlay.new(seat, pattern.copy(), pattern.spent_counts()))
 	_leader_entry = _history.size() - 1
 	_current = pattern
 	_trick_leader = seat

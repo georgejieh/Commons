@@ -79,7 +79,7 @@ static func _without_low(
 
 static func _is_top(position: BotPosition, rank: int, width: int) -> bool:
 	for other: int in Ranks.COUNT:
-		var could_answer: bool = position.threats[other] >= width
+		var could_answer: bool = position.could_hold(other, width)
 		if could_answer and position.rank_of(other) > position.rank_of(rank):
 			return false
 	return true
@@ -118,7 +118,7 @@ static func _weakest_group(position: BotPosition, moves: Array[Pattern]) -> Patt
 
 
 static func _low_cards(position: BotPosition, move: Pattern) -> int:
-	var counts: PackedByteArray = move.counts()
+	var counts: PackedByteArray = move.spent_counts()
 	var low: int = 0
 	for rank: int in Ranks.COUNT:
 		if position.rank_of(rank) < position.rank_of(LOW_LIMIT_RANK):
@@ -132,8 +132,9 @@ static func _is_lower(position: BotPosition, move: Pattern, other: Pattern) -> b
 	return position.rank_of(move.main_rank) < position.rank_of(other.main_rank)
 
 
-## The group as a legal move. A 2 or joker never rides as a kicker, so a group carrying
-## one is played bare.
+## The group as a legal move, by its reading: a plan's group spends what the generator
+## spends for it. A 2 or joker never rides as a kicker, so a group carrying one is played
+## bare.
 static func _usable(position: BotPosition, group: Pattern, moves: Array[Pattern]) -> Pattern:
 	var wanted: Pattern = group
 	for kicker: int in group.kicker_ranks:
@@ -141,7 +142,7 @@ static func _usable(position: BotPosition, group: Pattern, moves: Array[Pattern]
 			wanted = _bare(group)
 			break
 	for move: Pattern in moves:
-		if move.equals(wanted):
+		if move.same_reading(wanted):
 			return move
 	return null
 

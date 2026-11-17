@@ -6,6 +6,9 @@ extends RefCounted
 ## (ADR 0021). Rate comes from the hand type and its level, then a hook's share of it
 ## rounded up (ADR 0023), then a hook's Rate cap. Zeal starts at 1 and changes only
 ## through hooks: additive Zeal, then multiplicative Zeal, never below the data's minimum.
+## With a wild card standing in (ADR 0029) Grain still comes from the printed cards, and a
+## card is body or kicker by where the reading puts it (PlayPlacement); Rate comes from
+## the reading's type.
 
 const DEFAULT_PARAMS: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 ## Largest value the display can show. NaN and infinity clamp to it.
@@ -26,14 +29,19 @@ static func score_play(
 	plays_before: int = 0,
 	facts: PlayFacts = null
 ) -> ScoreBreakdown:
+	var body: Array[bool] = body_flags(cards, pattern)
 	var scored: int = 0
-	for card: CardInstance in cards:
-		if _is_scored(card, pattern):
+	var kicker_cards: PackedByteArray = PackedByteArray()
+	for index: int in cards.size():
+		if body[index]:
 			scored += 1
+		else:
+			kicker_cards.append(cards[index].base_rank())
 	var breakdown: ScoreBreakdown = ScoreBreakdown.new(scored)
 	var grain: float = 0.0
-	for card: CardInstance in cards:
-		if _is_scored(card, pattern):
+	for index: int in cards.size():
+		var card: CardInstance = cards[index]
+		if body[index]:
 			var base: float = params.card_grain[card.base_rank()]
 			if card.enhancement_id() == CardInstance.MODEL:
 				base = base * params.model_grain_percent / PERCENT
@@ -51,6 +59,7 @@ static func score_play(
 		play.seat_grain = facts.seat_grain
 	play.grain = grain
 	play.card_grain = params.card_grain
+	play.kicker_cards = kicker_cards
 	stack.run_play_scored(play)
 	grain += play.add_grain
 	breakdown.add_step(ScoreBreakdown.Step.ADD_GRAIN, play.add_grain)
@@ -104,13 +113,15 @@ static func clamp_score(value: float) -> float:
 	return maxf(value, -MAX_SCORE)
 
 
-## True when a card of a play scores Grain: its body, not its kickers.
+## True when a card of a play with no stand-in scores Grain: its body, not its kickers.
+## A play with a stand-in places its cards together, through body_flags.
 static func is_scored(card: CardInstance, pattern: Pattern) -> bool:
-	return _is_scored(card, pattern)
+	return PlayPlacement.is_body(card.base_rank(), pattern)
 
 
-static func _is_scored(card: CardInstance, pattern: Pattern) -> bool:
-	if pattern.type == Pattern.Type.ROCKET:
-		return true
-	var rank: int = card.base_rank()
-	return rank >= pattern.main_rank and rank < pattern.main_rank + pattern.chain_length
+## Per card, in order, true when the reading puts it in the body, which scores Grain.
+static func body_flags(cards: Array[CardInstance], pattern: Pattern) -> Array[bool]:
+	var flags: Array[bool] = []
+	for rank: int in PlayPlacement.stands_for(cards, pattern):
+		flags.append(PlayPlacement.is_body(rank, pattern))
+	return flags

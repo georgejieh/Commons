@@ -41,6 +41,9 @@ var reeducation_due: bool = false
 var resentment: int = 0
 ## Sets in a row the player has ended without holding the landlord's seat (ADR 0031).
 var seatless_sets: int = 0
+## The ranks wild in the round in play (ADR 0029), at most two, drawn by the items that
+## make them. Empty between rounds and while no rank is wild.
+var wild_ranks: Array[int] = []
 ## Each villager family's own Denunciation, from lies caught at audit (P4.3).
 var villager_denunciation: Dictionary[String, int] = {}
 ## Commons shares paid to the player, and to every peasant, this run (P4.4).
@@ -135,6 +138,8 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.reeducation_due = bool(data["reeducation_due"])
 	state.resentment = int(data["resentment"])
 	state.seatless_sets = int(data["seatless_sets"])
+	for rank: Variant in data.get("wild_ranks", []):
+		state.wild_ranks.append(int(rank))
 	state.commons_received = str(data["commons_received"]).to_int()
 	state.commons_paid = str(data["commons_paid"]).to_int()
 	state.memory = VillageMemory.from_dict(data["memory"])
@@ -208,6 +213,7 @@ func to_dict() -> Dictionary:
 		"reeducation_due": reeducation_due,
 		"resentment": resentment,
 		"seatless_sets": seatless_sets,
+		"wild_ranks": wild_ranks.duplicate(),
 		"commons_received": str(commons_received),
 		"commons_paid": str(commons_paid),
 		"memory": memory.to_dict(),

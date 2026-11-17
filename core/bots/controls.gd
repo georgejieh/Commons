@@ -1,7 +1,9 @@
 class_name Controls
 extends RefCounted
 ## Which of a hand's groups nothing unseen can beat, given what could still appear.
-## A bot that doesn't count cards treats only 2s, jokers and bombs as controls.
+## A bot that doesn't count cards treats only 2s, jokers and bombs as controls. While a
+## rank is wild, unseen wild cards can finish an answer of any rank (ADR 0029), which the
+## move generator reads from the unseen counts.
 
 const BOMB_WIDTH: int = 4
 
@@ -20,9 +22,14 @@ func _init(
 	counts_cards: bool = true,
 ) -> void:
 	rocket_possible = unseen[Ranks.SMALL_JOKER] > 0 and unseen[Ranks.BIG_JOKER] > 0
+	var supply: WildSupply = WildSupply.of(unseen, table.rules)
+	var wilds: int = 0 if supply == null else supply.total
 	for rank: int in Ranks.COUNT:
 		if unseen[rank] >= BOMB_WIDTH:
 			bomb_possible = true
+		elif wilds > 0 and rank <= Ranks.TWO and unseen[rank] > 0:
+			var others: int = wilds - (unseen[rank] if table.rules.is_wild(rank) else 0)
+			bomb_possible = bomb_possible or unseen[rank] + others >= BOMB_WIDTH
 	var mask: int = UnseenCards.mask_of(unseen)
 	var controls: int = 0
 	for group: Pattern in groups:

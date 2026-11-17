@@ -42,10 +42,13 @@ static func private_cadres(cadres: Array[String], pool: Array[ModifierDef]) -> i
 ## stamped kicker breeds no Resentment.
 static func stamped(cards: Array[CardInstance], seat: int, pattern: Pattern = null) -> int:
 	var count: int = 0
-	for card: CardInstance in cards:
-		if card.owner_stamp() != seat:
+	var body: Array[bool] = []
+	if pattern != null:
+		body = Scorer.body_flags(cards, pattern)
+	for index: int in cards.size():
+		if cards[index].owner_stamp() != seat:
 			continue
-		if pattern == null or Scorer.is_scored(card, pattern):
+		if pattern == null or body[index]:
 			count += 1
 	return count
 

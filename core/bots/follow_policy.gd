@@ -86,7 +86,7 @@ static func _take_with_control(position: BotPosition, legal: Array[Pattern]) -> 
 	for index: int in position.groups.size():
 		if position.controls.flags[index]:
 			for move: Pattern in legal:
-				if move.equals(position.groups[index]):
+				if move.same_reading(position.groups[index]):
 					return move
 	return null
 

@@ -18,6 +18,9 @@ var plays_before: int = 0
 var grain: float = 0.0
 ## Grain per base rank, for effects that score cards the play doesn't.
 var card_grain: Array[int] = []
+## The printed ranks of the cards the reading puts in its kickers (ADR 0029), which are
+## the kicker ranks unless a wild card stands in.
+var kicker_cards: PackedByteArray = PackedByteArray()
 ## The share of its Rate the play keeps, in percent, rounded up (ADR 0023). Applied before
 ## the cap.
 var rate_percent: int = 100

@@ -180,8 +180,12 @@ func swap(hand_ids: Array[int], plot_ids: Array[int]) -> int:
 	return _finish("swap", _loop.player_swap(hand_ids.duplicate(), plot_ids.duplicate()))
 
 
-func play(card_ids: Array[int]) -> int:
-	return _finish("play", _loop.player_play(card_ids.duplicate()))
+## reading names how the cards are read, one of readings_for(); with none, the strongest
+## reading stands, so a play that could read more than one way is played as the
+## strongest until the reading picker passes one (ADR 0029).
+func play(card_ids: Array[int], reading: Pattern = null) -> int:
+	var chosen: Pattern = null if reading == null else reading.copy()
+	return _finish("play", _loop.player_play(card_ids.duplicate(), chosen))
 
 
 func pass_turn() -> int:
@@ -556,6 +560,20 @@ func legal_moves() -> Array[Pattern]:
 	if _loop.awaiting() != RunLoop.Awaiting.PLAYER_PLAY:
 		return []
 	return _loop.round_state().legal_moves()
+
+
+## Every reading the player's chosen cards may be played as now, strongest first (ADR
+## 0029). More than one only when a wild card is among them; none when the cards form no
+## play that may be made now, or between rounds.
+func readings_for(card_ids: Array[int]) -> Array[Pattern]:
+	var none: Array[Pattern] = []
+	if _loop.round_state() == null:
+		return none
+	var read: PlayReading = _loop.round_state().read_play(RunLoop.PLAYER, card_ids.duplicate())
+	var result: Array[Pattern] = []
+	for reading: Pattern in read.readings:
+		result.append(reading.copy())
+	return result
 
 
 ## The player's card IDs for a pattern, by the fixed selection policy.
