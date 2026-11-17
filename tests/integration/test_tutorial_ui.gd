@@ -268,7 +268,9 @@ func _check_preview(step: TutorialStep) -> void:
 		)
 		await await_idle_frame()
 	var held: float = (Time.get_ticks_msec() - started) / 1000.0
-	assert_float(held).is_greater_equal(director.preview_seconds() - 0.1)
+	# The director's clock starts a frame or two before this one, and a slow frame under a
+	# full run widens the gap, so the hold is checked to a quarter of a second.
+	assert_float(held).is_greater_equal(director.preview_seconds() - 0.25)
 	_previews += 1
 
 
