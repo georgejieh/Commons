@@ -221,6 +221,14 @@ func test_the_longest_notice_fits_the_screen() -> void:
 		await await_idle_frame()
 		await await_idle_frame()
 		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		# The notice covers the whole screen, so nothing under it takes a click, and its
+		# sheet sits in the middle.
+		var whole: Rect2 = get_tree().root.get_visible_rect()
+		assert_bool(_app.notice.get_global_rect().grow(SLACK).encloses(whole)).is_true()
+		var sheet: Rect2 = _app.notice.acknowledge_button().get_parent_control().get_global_rect()
+		var off: Vector2 = sheet.get_center() - whole.get_center()
+		assert_float(absf(off.x)).override_failure_message(str(sheet)).is_less(4.0)
+		assert_float(absf(off.y)).override_failure_message(str(sheet)).is_less(4.0)
 		for node: Node in _app.notice.find_children("*", "Control", true, false):
 			var control: Control = node as Control
 			if not control.is_visible_in_tree() or control is ColorRect:
