@@ -70,7 +70,9 @@ static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
 
 
 ## A full-screen page over a backdrop with its content on one sheet down the left side,
-## so the art shows beside it and nothing hangs over the art's own paper.
+## so the art shows beside it and nothing hangs over the art's own paper. A sheet with
+## more on it than the page is tall is drawn smaller, so its last button is never off
+## the screen.
 static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(cover(backdrop))
@@ -88,7 +90,21 @@ static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBox
 	panel.offset_top = PAGE_MARGIN / 2.0
 	panel.offset_bottom = -PAGE_MARGIN / 2.0
 	panel.offset_right = PAGE_MARGIN + width
+	var fit: Callable = fit_side_sheet.bind(root, panel)
+	panel.minimum_size_changed.connect(fit)
+	panel.resized.connect(fit)
+	root.resized.connect(fit)
 	return sheet
+
+
+## Draws a side sheet smaller, from its top left corner, when what is on it is taller
+## than the page between its margins.
+static func fit_side_sheet(root: Control, panel: Control) -> void:
+	var room: float = root.size.y - PAGE_MARGIN
+	var tall: float = panel.get_combined_minimum_size().y
+	var fit: float = 1.0 if tall <= room or room <= 0.0 else room / tall
+	panel.pivot_offset = Vector2.ZERO
+	panel.scale = Vector2(fit, fit)
 
 
 ## A small tracked label over a big headline, the way a poster leads.

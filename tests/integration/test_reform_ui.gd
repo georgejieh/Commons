@@ -207,6 +207,30 @@ func test_the_set_intro_names_the_reforms_in_force() -> void:
 	assert_bool(found).is_true()
 
 
+## A Set intro with more on it than the page is tall is drawn smaller, so Begin is
+## never off the screen: every Reform in force makes the sheet too tall.
+func test_a_set_intro_too_tall_for_the_page_keeps_begin_on_screen() -> void:
+	var held: Array[String] = []
+	for reform: ReformDef in RunReforms.POOL.reforms:
+		held.append(reform.id)
+	_loop().state.reforms.assign(held)
+	_app.controller.leave_store()
+	var intro: Control = _app.show_screen("set_intro", true)
+	await await_idle_frame()
+	await await_idle_frame()
+	var begin: Button = null
+	for node: Node in intro.find_children("*", "Button", true, false):
+		if (node as Button).text == tr("intro.begin"):
+			begin = node as Button
+	assert_object(begin).is_not_null()
+	var screen: Rect2 = Rect2(Vector2.ZERO, Vector2(get_viewport().get_visible_rect().size))
+	var box: Rect2 = begin.get_global_rect()
+	assert_bool(screen.encloses(box)).override_failure_message(str(box)).is_true()
+	# The sheet was in fact too tall, and was drawn smaller to fit.
+	var panel: Control = ScreenKit.card_panel(begin.get_parent() as VBoxContainer)
+	assert_float(panel.scale.y).is_less(1.0)
+
+
 ## Nothing drawn is clean: decree paper is aged at stage 0 and more so at the last.
 func test_decree_paper_is_aged_and_wears_with_the_stage() -> void:
 	ArtStages.stage_override = 0

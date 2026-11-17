@@ -18,6 +18,8 @@ extends SceneTree
 const SEED: int = 4242
 const SHOT_EVERY: int = 5
 const STEP_FRAMES: int = 4
+## Steps the walk may stand on one page other than the table before it is stuck.
+const STUCK_STEPS: int = 40
 const SETTLE_SECONDS: float = 1.2
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
@@ -50,6 +52,9 @@ var _rounds_wanted: int = 6
 var _app: Node
 var _shots: int = 0
 var _misclicks: int = 0
+## The page the walk stands on and for how many steps, for _stuck().
+var _stood_on: String = ""
+var _stood_steps: int = 0
 var _clicks: int = 0
 var _rounds_seen: int = 0
 var _turns_in_round: int = 0
@@ -139,6 +144,9 @@ func _run() -> void:
 	while _rounds_seen <= _rounds_wanted and guard < 3000:
 		guard += 1
 		await _frames(STEP_FRAMES)
+		if _stuck():
+			quit(1)
+			return
 		await _step()
 	await _ending_frames()
 	await _full_run_frames()
@@ -822,6 +830,23 @@ func _struck_on_board() -> bool:
 
 
 ## Counts a step the tool could not take, with its reason, so the run fails on it.
+## True when the walk has stood on one page, not the table, for more steps than any page
+## takes: a button it cannot reach, such as one off the screen. Says so as a misclick,
+## so the walk fails at once and never runs out its time.
+func _stuck() -> bool:
+	var switcher: Object = _app.get("switcher")
+	var screen_id: String = switcher.call("current_id")
+	if screen_id != _stood_on or screen_id == "table":
+		_stood_on = screen_id
+		_stood_steps = 0
+		return false
+	_stood_steps += 1
+	if _stood_steps <= STUCK_STEPS:
+		return false
+	print("MISCLICK stuck on %s after %d steps" % [screen_id, _stood_steps])
+	return true
+
+
 func _fail(reason: String) -> void:
 	print("MISS %s" % reason)
 	_misclicks += 1
