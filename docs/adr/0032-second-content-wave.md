@@ -103,6 +103,22 @@ Each new Cadre needs its two pictures, the innocent one for stage 0 and the last
 - The run save does not change shape unless a Cadre's memo needs a new key; if it does, the schema moves with a migration.
 - After tuning, the nightly run's report is the evidence: the order holds with intervals that do not overlap, and whether any run reaches The Commons is recorded either way.
 
+## Measured (2026-11-17)
+
+No number in the wave was changed after it was built. The nightly workflow's run 44112976684 played 729 seeds a strategy on the wave's rules and data (commit e2c02e0), and its check passed: the order of [ADR 0027](0027-balance-harness.md) holds with intervals that do not overlap.
+
+| Survived the eighth Year | Collective | Private | Mixed |
+| --- | ---: | ---: | ---: |
+| Before the wave, 549 seeds | 1.3% (0.7% to 2.3%) | 20.0% (17.4% to 23.0%) | 39.9% (36.5% to 43.4%) |
+| After the wave, 729 seeds | 2.1% (1.4% to 3.1%) | 17.8% (15.6% to 20.3%) | 33.5% (30.7% to 36.4%) |
+
+- **The Commons is reached.** 22 of the 729 mixed runs (3.0%) ended there, with a mean Famine of 36 and a mean Resentment of 3. No run of any strategy had reached it in the 549 seeds before the wave. No collective or private run reached it.
+- **Resentment is the last bar.** 59 mixed runs ended as a peasant with both meters under 50. The 22 at 10 Resentment or less got The Commons; the other 37 stood between 13 and 42 and got The Secret Contract. The simulated players use a Self-Criticism as soon as they hold one and never keep one for the end, as a player after this ending would.
+- **Collective alone still dies of Famine** (97.9% of its runs, at a mean Year of 4.9). That is [ADR 0031](0031-the-unheld-seat.md) working as meant: The Commons comes from taking the seat when it is offered and living collectively otherwise, not from refusing it every time.
+- **Mixed survives less often than before the wave,** 33.5% against 39.9%. The two intervals meet at their ends, so the fall is likely real: the larger pool offers the Cadres a build needs less often. It is still well clear of private. Left for the owner's playtest and the next balance pass.
+- A harness rule that had collective and mixed buy a Self-Criticism before a Cadre while Resentment stood above 10 was tried on 48 seeds and changed nothing, since the store offers one Campaign a visit. It was not kept.
+- The fixes of the Phase 4B review came after this run. Two of them touch play: a confiscated Cadre is held again at its round's end, and the bots' hand memo tells two wild ranks apart. Neither moves a number in data.
+
 ## As built (first part, 2026-11-17)
 
 Every item does what its row says. Where the hooks could not carry it as described, the mechanism changed and the intent did not:
