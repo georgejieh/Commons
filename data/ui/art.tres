@@ -56,7 +56,23 @@ cadres = Dictionary[String, String]({
 "seed_grain": "res://art/cadres/cadre_seed_grain.png",
 "the_bookkeeper": "res://art/cadres/cadre_the_bookkeeper.png",
 "last_sheaf": "res://art/cadres/cadre_last_sheaf.png",
-"steel_target": "res://art/cadres/cadre_steel_target.png"
+"steel_target": "res://art/cadres/cadre_steel_target.png",
+"night_school": "res://art/cadres/cadre_night_school.png",
+"iron_and_coal": "res://art/cadres/cadre_iron_and_coal.png",
+"advanced_cooperative": "res://art/cadres/cadre_advanced_cooperative.png",
+"double_share_plough": "res://art/cadres/cadre_double_share_plough.png",
+"open_accounts": "res://art/cadres/cadre_open_accounts.png",
+"tractor_station": "res://art/cadres/cadre_tractor_station.png",
+"the_gleaners": "res://art/cadres/cadre_the_gleaners.png",
+"public_granary": "res://art/cadres/cadre_public_granary.png",
+"five_year_plan": "res://art/cadres/cadre_five_year_plan.png",
+"back_door": "res://art/cadres/cadre_back_door.png",
+"informers_reward": "res://art/cadres/cadre_informers_reward.png",
+"forged_seal": "res://art/cadres/cadre_forged_seal.png",
+"loudspeaker": "res://art/cadres/cadre_loudspeaker.png",
+"rent_book": "res://art/cadres/cadre_rent_book.png",
+"grain_speculator": "res://art/cadres/cadre_grain_speculator.png",
+"prize_exhibit": "res://art/cadres/cadre_prize_exhibit.png"
 })
 endings = Dictionary[String, String]({
 "secret_contract": "res://art/endings/ending_secret_contract.png",
