@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="LineageParams" format=3]
+
+[ext_resource type="Script" path="res://data/run/lineage_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+heirloom_low_rank = 8
+heirloom_high_rank = 11
+label_denunciation = 15
+loyal_feedings = 4.0
+social_families = 1
+commons_families = 2

@@ -13,5 +13,6 @@ hooks = Array[String](["play_scored"])
 parameters = Dictionary[String, int]({})
 rarity = 0
 cost = 4
+unlock_tier = 0
 name_key = "modifier.hidden_reserves.name"
 text_key = "modifier.hidden_reserves.text"

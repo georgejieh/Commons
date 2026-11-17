@@ -78,7 +78,8 @@ func test_a_set_ends_by_target_or_by_rounds() -> void:
 		assert_bool(met or rounds == SetConfig.new().max_rounds()).is_true()
 		assert_bool(rounds <= SetConfig.new().max_rounds()).is_true()
 		if met:
-			assert_int(state.coupons).is_equal(SetConfig.new().reward(state.set_type))
+			var bonus: int = SetConfig.new().over_bonus(state.over_steps)
+			assert_int(state.coupons).is_equal(SetConfig.new().reward(state.set_type) + bonus)
 		else:
 			assert_int(state.famine).is_greater(0)
 
@@ -94,7 +95,9 @@ func test_a_missed_target_plays_every_round_and_raises_famine() -> void:
 	var ladder_debuffs: int = max_rounds - state.debuff_ladder.count(RunState.NO_DEBUFF)
 	assert_int(_count(loop, RunEvent.Type.DEBUFF_ADDED)).is_equal(ladder_debuffs)
 	assert_int(state.coupons).is_equal(0)
-	assert_int(state.famine).is_equal(RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount)
+	var rises: PackedInt32Array = DebuffScript.rises(loop, RunMeters.FAMINE)
+	assert_int(rises[-1]).is_equal(RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount)
+	assert_int(state.famine).is_equal(DebuffScript.sum(rises))
 
 
 func test_every_round_accounts_for_all_cards() -> void:

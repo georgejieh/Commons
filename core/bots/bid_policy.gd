@@ -16,6 +16,9 @@ static func hand_points(counts: PackedByteArray, table: BotTable, weights: BotWe
 			points += weights.bomb_points
 	if counts[Ranks.SMALL_JOKER] > 0 and counts[Ranks.BIG_JOKER] > 0:
 		points += weights.rocket_points
+	# A wild card can stand in for any rank (ADR 0029), so each one held counts as well.
+	for rank: int in table.rules.wild_ranks():
+		points += counts[rank] * weights.wild_card_points
 	return points + _shape_bonus(counts, table, weights)
 
 

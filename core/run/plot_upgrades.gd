@@ -9,8 +9,9 @@ const SWAPS: String = "swaps"
 const KINDS: PackedStringArray = [CAPACITY, SWAPS]
 
 
-static func price(kind: String, params: PlotUpgradeParams) -> int:
-	return params.capacity_cost if kind == CAPACITY else params.swap_cost
+## The upgrade's price, under any raise the books made (ADR 0022).
+static func price(kind: String, params: PlotUpgradeParams, state: RunState) -> int:
+	return RunBooks.priced(state, params.capacity_cost if kind == CAPACITY else params.swap_cost)
 
 
 ## How many of this upgrade the run already has.
@@ -25,14 +26,14 @@ static func limit(kind: String, params: PlotUpgradeParams) -> int:
 static func can_buy(state: RunState, kind: String, params: PlotUpgradeParams) -> bool:
 	if not KINDS.has(kind):
 		return false
-	return bought(state, kind) < limit(kind, params) and state.coupons >= price(kind, params)
+	return bought(state, kind) < limit(kind, params) and state.coupons >= price(kind, params, state)
 
 
 ## Buys one step of an upgrade. Returns false, changing nothing, when it can't be bought.
 static func buy(state: RunState, kind: String, params: PlotUpgradeParams) -> bool:
 	if not can_buy(state, kind, params):
 		return false
-	state.coupons -= price(kind, params)
+	state.coupons -= price(kind, params, state)
 	if kind == CAPACITY:
 		state.plot_capacity_bonus += 1
 	else:

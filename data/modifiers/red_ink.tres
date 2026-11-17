@@ -13,5 +13,6 @@ hooks = Array[String](["card_scored"])
 parameters = Dictionary[String, int]({"grain": 10, "for_anyone": 0})
 rarity = 1
 cost = 5
+unlock_tier = 2
 name_key = "modifier.red_ink.name"
 text_key = "modifier.red_ink.text"

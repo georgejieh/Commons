@@ -96,8 +96,13 @@ func test_ration_cut_leaves_a_fraction_of_zeal() -> void:
 func test_zeal_parameters_read_as_decimals() -> void:
 	assert_str(_text("ration_cut")).is_equal("Your plays lose 0.25 Zeal.")
 	assert_str(_text("stakhanovite")).is_equal(
-		"Your Straights gain +0.5 Zeal for each card past 5."
+		(
+			"Your Straights gain +0.5 Zeal for each card past 5. Each Straight of 7 or more"
+			+ " cards you play adds +0.05 to that, for the run."
+		)
 	)
+	# Multipliers in hundredths read as decimals too (ADR 0021).
+	assert_str(_text("model_commune")).contains("multiplied by 1.5 before")
 	assert_str(_text("iron_rice_bowl")).is_equal(
 		"Your plays gain 30 Grain. Your Rate can't go above ×20."
 	)

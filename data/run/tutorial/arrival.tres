@@ -1,0 +1,416 @@
+[gd_resource type="Resource" script_class="TutorialScript" format=3]
+
+[ext_resource type="Script" path="res://data/run/tutorial/tutorial_script.gd" id="1"]
+[ext_resource type="Script" path="res://data/run/tutorial/tutorial_round.gd" id="2"]
+[ext_resource type="Script" path="res://data/run/tutorial/tutorial_seat.gd" id="3"]
+[ext_resource type="Script" path="res://data/run/tutorial/tutorial_step.gd" id="4"]
+[ext_resource type="Resource" path="res://data/run/tutorial/tutorial_sets.tres" id="5"]
+[ext_resource type="Resource" path="res://data/run/tutorial/tutorial_ladder.tres" id="6"]
+[ext_resource type="Resource" path="res://data/run/tutorial/tutorial_store.tres" id="7"]
+[ext_resource type="Resource" path="res://data/run/tutorial/tutorial_market.tres" id="8"]
+[ext_resource type="Resource" path="res://data/run/tutorial/tutorial_plot.tres" id="9"]
+
+[sub_resource type="Resource" id="round_1_seat_0"]
+script = ExtResource("3")
+bids = PackedInt32Array()
+plays = Array[PackedInt32Array]([])
+needs = PackedInt32Array()
+
+[sub_resource type="Resource" id="round_1_seat_1"]
+script = ExtResource("3")
+bids = PackedInt32Array(0)
+plays = Array[PackedInt32Array]([PackedInt32Array(), PackedInt32Array(48), PackedInt32Array(7, 10, 14, 16, 20), PackedInt32Array(), PackedInt32Array(), PackedInt32Array()])
+needs = PackedInt32Array(10)
+
+[sub_resource type="Resource" id="round_1_seat_2"]
+script = ExtResource("3")
+bids = PackedInt32Array(1)
+plays = Array[PackedInt32Array]([PackedInt32Array(17), PackedInt32Array(41), PackedInt32Array(), PackedInt32Array(11, 15, 18, 21, 25), PackedInt32Array(), PackedInt32Array(37, 38), PackedInt32Array()])
+needs = PackedInt32Array()
+
+[sub_resource type="Resource" id="round_1"]
+script = ExtResource("2")
+deal = PackedInt32Array(24, 28, 32, 36, 40, 44, 8, 9, 0, 1, 2, 3, 4, 5, 6, 12, 13, 48, 7, 10, 14, 16, 20, 19, 22, 26, 29, 30, 33, 39, 42, 45, 49, 52, 17, 41, 11, 15, 18, 21, 25, 37, 38, 27, 34, 35, 43, 46, 47, 50, 51, 23, 31, 53)
+seats = Array[ExtResource("3")]([SubResource("round_1_seat_0"), SubResource("round_1_seat_1"), SubResource("round_1_seat_2")])
+audit_faces = PackedInt32Array(1, 4)
+
+[sub_resource type="Resource" id="round_2_seat_0"]
+script = ExtResource("3")
+bids = PackedInt32Array()
+plays = Array[PackedInt32Array]([])
+needs = PackedInt32Array()
+
+[sub_resource type="Resource" id="round_2_seat_1"]
+script = ExtResource("3")
+bids = PackedInt32Array(0)
+plays = Array[PackedInt32Array]([PackedInt32Array(), PackedInt32Array(44), PackedInt32Array(13, 14, 15, 1, 2), PackedInt32Array()])
+needs = PackedInt32Array(10)
+
+[sub_resource type="Resource" id="round_2_seat_2"]
+script = ExtResource("3")
+bids = PackedInt32Array(0)
+plays = Array[PackedInt32Array]([PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array()])
+needs = PackedInt32Array(10)
+
+[sub_resource type="Resource" id="round_2"]
+script = ExtResource("2")
+deal = PackedInt32Array(0, 4, 8, 12, 16, 20, 24, 21, 25, 29, 33, 41, 45, 48, 49, 5, 6, 44, 13, 14, 15, 1, 2, 3, 10, 17, 22, 26, 28, 32, 36, 40, 46, 52, 7, 11, 18, 19, 23, 27, 30, 31, 34, 35, 38, 39, 42, 43, 47, 51, 53, 9, 37, 50)
+seats = Array[ExtResource("3")]([SubResource("round_2_seat_0"), SubResource("round_2_seat_1"), SubResource("round_2_seat_2")])
+audit_faces = PackedInt32Array(5, 3)
+
+[sub_resource type="Resource" id="step_01"]
+script = ExtResource("4")
+id = "01"
+action = 1
+cards = PackedInt32Array()
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "decline"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.01.say"
+then_key = "tutorial.step.01.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_02"]
+script = ExtResource("4")
+id = "02"
+action = 2
+cards = PackedInt32Array(24)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.02.say"
+then_key = "tutorial.step.02.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_03"]
+script = ExtResource("4")
+id = "03"
+action = 3
+cards = PackedInt32Array()
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "pass"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.03.say"
+then_key = "tutorial.step.03.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_04"]
+script = ExtResource("4")
+id = "04"
+action = 3
+cards = PackedInt32Array()
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "pass"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.04.say"
+then_key = "tutorial.step.04.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_05"]
+script = ExtResource("4")
+id = "05"
+action = 2
+cards = PackedInt32Array(28, 32, 36, 40, 44)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.05.say"
+then_key = "tutorial.step.05.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_06"]
+script = ExtResource("4")
+id = "06"
+action = 2
+cards = PackedInt32Array(8, 9)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.06.say"
+then_key = "tutorial.step.06.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_07"]
+script = ExtResource("4")
+id = "07"
+action = 2
+cards = PackedInt32Array(0, 1, 2, 3)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.07.say"
+then_key = "tutorial.step.07.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_08"]
+script = ExtResource("4")
+id = "08"
+action = 2
+cards = PackedInt32Array(4, 5, 6, 12, 13)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.08.say"
+then_key = "tutorial.step.08.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_09"]
+script = ExtResource("4")
+id = "09"
+action = 5
+cards = PackedInt32Array()
+need = 0
+button = "rules"
+slot = -1
+screen = "table"
+highlight = "rules"
+via = ""
+via_screen = ""
+until = "rules_close"
+prompt_key = "tutorial.step.09.say"
+then_key = "tutorial.step.09.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_10"]
+script = ExtResource("4")
+id = "10"
+action = 4
+cards = PackedInt32Array()
+need = 10
+button = ""
+slot = -1
+screen = "table"
+highlight = "declare"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.10.say"
+then_key = "tutorial.step.10.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_11"]
+script = ExtResource("4")
+id = "11"
+action = 0
+cards = PackedInt32Array()
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "call"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.11.say"
+then_key = "tutorial.step.11.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_12"]
+script = ExtResource("4")
+id = "12"
+action = 2
+cards = PackedInt32Array(0, 4, 8, 12, 16, 20, 24)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.12.say"
+then_key = "tutorial.step.12.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_13"]
+script = ExtResource("4")
+id = "13"
+action = 2
+cards = PackedInt32Array(9)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.13.say"
+then_key = "tutorial.step.13.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_14"]
+script = ExtResource("4")
+id = "14"
+action = 3
+cards = PackedInt32Array()
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "pass"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.14.say"
+then_key = "tutorial.step.14.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_15"]
+script = ExtResource("4")
+id = "15"
+action = 2
+cards = PackedInt32Array(48, 49, 50, 5, 6)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.15.say"
+then_key = "tutorial.step.15.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_16"]
+script = ExtResource("4")
+id = "16"
+action = 2
+cards = PackedInt32Array(21, 25, 29, 33, 37, 41, 45)
+need = 0
+button = ""
+slot = -1
+screen = "table"
+highlight = "cards"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.16.say"
+then_key = "tutorial.step.16.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_17"]
+script = ExtResource("4")
+id = "17"
+action = 5
+cards = PackedInt32Array()
+need = 0
+button = "continue"
+slot = -1
+screen = "set_summary"
+highlight = "continue"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.17.say"
+then_key = "tutorial.step.17.then"
+preview = "famine"
+
+[sub_resource type="Resource" id="step_18"]
+script = ExtResource("4")
+id = "18"
+action = 5
+cards = PackedInt32Array()
+need = 0
+button = "buy"
+slot = 0
+screen = "store"
+highlight = "buy"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.18.say"
+then_key = "tutorial.step.18.then"
+preview = ""
+
+[sub_resource type="Resource" id="step_19"]
+script = ExtResource("4")
+id = "19"
+action = 5
+cards = PackedInt32Array()
+need = 0
+button = "plot_card"
+slot = 0
+screen = "black_market"
+highlight = "plot_card"
+via = "door"
+via_screen = "store"
+until = ""
+prompt_key = "tutorial.step.19.say"
+then_key = "tutorial.step.19.then"
+preview = "denunciation"
+
+[sub_resource type="Resource" id="step_20"]
+script = ExtResource("4")
+id = "20"
+action = 5
+cards = PackedInt32Array()
+need = 0
+button = "begin"
+slot = -1
+screen = "black_market"
+highlight = "begin"
+via = ""
+via_screen = ""
+until = ""
+prompt_key = "tutorial.step.20.say"
+then_key = ""
+preview = ""
+
+[resource]
+script = ExtResource("1")
+seed_value = 2601
+sets = ExtResource("5")
+starting_coupons = 10
+ladder = ExtResource("6")
+store = ExtResource("7")
+store_cadre = "iron_rice_bowl"
+market = ExtResource("8")
+plot_cards = ExtResource("9")
+rounds = Array[ExtResource("2")]([SubResource("round_1"), SubResource("round_2")])
+denunciation = 10
+follow_seconds = 1.6
+preview_seconds = 2.0
+preview_value = 90
+steps = Array[ExtResource("4")]([SubResource("step_01"), SubResource("step_02"), SubResource("step_03"), SubResource("step_04"), SubResource("step_05"), SubResource("step_06"), SubResource("step_07"), SubResource("step_08"), SubResource("step_09"), SubResource("step_10"), SubResource("step_11"), SubResource("step_12"), SubResource("step_13"), SubResource("step_14"), SubResource("step_15"), SubResource("step_16"), SubResource("step_17"), SubResource("step_18"), SubResource("step_19"), SubResource("step_20")])

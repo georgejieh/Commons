@@ -4,6 +4,11 @@ extends RefCounted
 ## does; Escape or the gamepad's B closes the rules card or opens the menu; on the
 ## player's turn the cursor actions move along the hand and pick cards.
 
+## The Campaign tray, which takes its keys first.
+var tray: CampaignTray = null
+## The reading picker, which takes every key while it is open (ADR 0029).
+var picker: ReadingPicker = null
+
 var _pause: PauseMenu
 var _cheat_sheet: CheatSheet
 var _actions: ActionBar
@@ -30,6 +35,10 @@ func setup(
 
 ## Acts on event and returns true when it used it.
 func handle(event: InputEvent) -> bool:
+	if picker != null and picker.handle(event):
+		return true
+	if handle_tray(event):
+		return true
 	if event.is_action_pressed("ui_cancel") and not _pause.visible:
 		if _cheat_sheet.visible:
 			_cheat_sheet.visible = false
@@ -41,9 +50,14 @@ func handle(event: InputEvent) -> bool:
 	return _hand_cursor(event) or _shortcut(event)
 
 
+## The tray goes first, so Cancel takes back an armed Campaign before it opens the menu.
+func handle_tray(event: InputEvent) -> bool:
+	return tray != null and not _pause.visible and not _cheat_sheet.visible and tray.handle(event)
+
+
 func _shortcut(event: InputEvent) -> bool:
 	var shortcuts: Dictionary[String, Button] = {
-		"commons_play": _actions.call if _actions.call.is_visible_in_tree() else _actions.play,
+		"commons_play": _play_button(),
 		"commons_pass":
 		_actions.decline if _actions.decline.is_visible_in_tree() else _actions.pass_turn,
 		"commons_hint": _actions.hint,
@@ -61,8 +75,15 @@ func _shortcut(event: InputEvent) -> bool:
 	return false
 
 
+func _play_button() -> Button:
+	if _actions.call.is_visible_in_tree():
+		return _actions.call
+	return _actions.play_on if _actions.play_on.is_visible_in_tree() else _actions.play
+
+
 func _hand_cursor(event: InputEvent) -> bool:
-	if _controller.awaiting() != RunController.AWAIT_PLAY:
+	var choosing: Array[int] = [RunController.AWAIT_PLAY, RunController.AWAIT_OPENING]
+	if not choosing.has(_controller.awaiting()):
 		return false
 	if event.is_action_pressed("commons_cursor_left", true):
 		_hand_view.move_cursor(-1)

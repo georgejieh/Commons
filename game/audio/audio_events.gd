@@ -30,6 +30,30 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.ROSTER_CHANGED: "roster_changed",
 	RunEvent.Type.BOSS_CHOSEN: "boss_chosen",
 	RunEvent.Type.CADRE_PURGED: "cadre_purged",
+	RunEvent.Type.AUDIT_ROLLED: "audit_rolled",
+	RunEvent.Type.OVERFULFILLED: "overfulfilled",
+	RunEvent.Type.CAMPAIGN_USED: "campaign_used",
+	RunEvent.Type.CARDS_MARKED: "cards_marked",
+	RunEvent.Type.CARDS_MOVED: "cards_moved",
+	RunEvent.Type.PASS_FORCED: "pass_forced",
+	RunEvent.Type.LETTER_LAPSED: "letter_lapsed",
+	RunEvent.Type.STAKE_SETTLED: "stake_settled",
+	RunEvent.Type.DEBUFF_LIFTED: "debuff_lifted",
+	RunEvent.Type.COUPONS_GAINED: "coupons_gained",
+	RunEvent.Type.CADRE_FIRED: "cadre_fired",
+	RunEvent.Type.CARDS_PASSED: "cards_passed",
+	RunEvent.Type.CADRE_CONFISCATED: "cadre_confiscated",
+	RunEvent.Type.PLOT_SEIZED: "plot_seized",
+	RunEvent.Type.GRAIN_TAXED: "grain_taxed",
+	RunEvent.Type.BANK_VOIDED: "bank_voided",
+	RunEvent.Type.STARVED: "family_starved",
+	RunEvent.Type.DEPOSED: "family_deposed",
+	# The Famine it adds sounds as a meter change.
+	RunEvent.Type.STOOD_BY: "",
+	# The call-out that names a wild rank lands with the store's stamp (ADR 0029).
+	RunEvent.Type.WILD_RANKS: "store_buy",
+	# The notice that the books were corrected brings its own sound (ADR 0022).
+	RunEvent.Type.BOOKS_CORRECTED: "",
 }
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",

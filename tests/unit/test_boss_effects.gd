@@ -102,6 +102,17 @@ func test_landlords_ledger_doubles_the_kitty_as_a_later_deal_hook_left_it() -> v
 	var in_kitty: CardContext = CardContext.new(0, true, entered, 10.0)
 	ledger.card_scored(in_kitty)
 	assert_float(in_kitty.grain).is_equal(20.0)
+	# A Ledger left out of the deal by a Confiscation and handed back by Appeal reads
+	# the same kitty: the deal reaches it when its Cadre is returned.
+	var returned: LandlordsLedgerEffect = LandlordsLedgerEffect.new()
+	returned.holder_seat = 0
+	var missed: CardContext = CardContext.new(0, true, entered, 10.0)
+	returned.card_scored(missed)
+	assert_float(missed.grain).is_equal(10.0)
+	returned.handed_back(deal)
+	var found: CardContext = CardContext.new(0, true, entered, 10.0)
+	returned.card_scored(found)
+	assert_float(found.grain).is_equal(20.0)
 	var traded_out: CardContext = CardContext.new(0, true, left, 10.0)
 	ledger.card_scored(traded_out)
 	assert_float(traded_out.grain).is_equal(10.0)

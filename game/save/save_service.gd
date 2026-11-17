@@ -6,15 +6,27 @@ extends RefCounted
 ## to date one version at a time by the registered migrations, then checked by the
 ## validator, so a file that parses but lost its shape counts as damaged. Run saves and
 ## the profile save are separate files with their own services.
+##
+## From the version that seals (ADR 0022), every write carries a keyed checksum beside
+## schema_version, over the data and any extras (SaveSeal), and is read back and checked
+## before it replaces the save. A file from before that version has none and is not an
+## offence. A file at or past it whose seal is missing or wrong still loads when its shape
+## is valid; the load says so, and the service remembers it until it is taken.
 
-const SCHEMA_VERSION: int = 4
+const SCHEMA_VERSION: int = 18
+## The first run save schema that carries a seal.
+const SEALED_FROM: int = 17
 const RUN_PATH: String = "user://run.json"
-## Reserved for P4.14.
 const PROFILE_PATH: String = "user://profile.json"
 const BACKUP_SUFFIX: String = ".bak"
 const TEMP_SUFFIX: String = ".tmp"
 const RESTORED_KEY: String = "save.restored_from_backup"
 const UNREADABLE_KEY: String = "save.unreadable"
+const SEAL_KEY: String = "seal"
+const EXTRA_KEY: String = "extra"
+
+## Files that belong to this save and go with it when it is deleted.
+var companions: Array[String] = []
 
 var _path: String
 ## From version to the function that turns a save of that version into the next.
@@ -22,28 +34,51 @@ var _migrations: Dictionary[int, Callable]
 var _version: int
 ## Takes the migrated data and returns true when it is whole.
 var _validator: Callable
+var _sealed_from: int
+## The seal its values make, for the last file a load found whose seal was missing or
+## wrong, until taken; empty while none was.
+var _tampered: String = ""
 
 
 func _init(
 	path: String = RUN_PATH,
 	migrations: Dictionary[int, Callable] = {},
 	version: int = SCHEMA_VERSION,
-	validator: Callable = Callable()
+	validator: Callable = Callable(),
+	sealed_from: int = SEALED_FROM
 ) -> void:
 	_path = path
 	_migrations = migrations
 	_version = version
 	_validator = validator
+	_sealed_from = sealed_from
 
 
-## A run save, checked as a RunRecord.
+## A run save, checked as a RunRecord. The private ledger beside it goes with it.
 static func for_run(path: String = RUN_PATH) -> SaveService:
 	var migrations: Dictionary[int, Callable] = {
 		1: RunRecord.migrate_from_1,
 		2: RunRecord.migrate_from_2,
 		3: RunRecord.migrate_from_3,
+		4: RunRecord.migrate_from_4,
+		5: RunRecord.migrate_from_5,
+		6: RunRecord.migrate_from_6,
+		7: RunRecord.migrate_from_7,
+		8: RunRecord.migrate_from_8,
+		9: RunRecord.migrate_from_9,
+		10: RunRecord.migrate_from_10,
+		11: RunRecord.migrate_from_11,
+		12: RunRecord.migrate_from_12,
+		13: RunRecord.migrate_from_13,
+		# Names a saved run by its surnames as they read in the string table.
+		14: RunRecord.migrate_from_14.bind(Surnames.texts()),
+		15: RunRecord.migrate_from_15,
+		16: RunRecord.migrate_from_16,
+		17: RunRecord.migrate_from_17,
 	}
-	return SaveService.new(path, migrations, SCHEMA_VERSION, RunRecord.is_valid)
+	var service: SaveService = SaveService.new(path, migrations, SCHEMA_VERSION, RunRecord.is_valid)
+	service.companions.append(BaitLedger.path_for(path))
+	return service
 
 
 func path() -> String:
@@ -55,17 +90,13 @@ func backup_path() -> String:
 
 
 ## Full precision keeps every number the writer can keep; exact values travel as text.
-func save(data: Dictionary) -> Error:
-	var text: String = JSON.stringify({"schema_version": _version, "data": data}, "", true, true)
+## extras are kept beside the data, under the same seal.
+func save(data: Dictionary, extras: Dictionary = {}) -> Error:
 	var temp: String = _path + TEMP_SUFFIX
 	DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
-	var file: FileAccess = FileAccess.open(temp, FileAccess.WRITE)
-	if file == null:
-		return FileAccess.get_open_error()
-	var stored: bool = file.store_string(text)
-	file.close()
-	if not stored:
-		return ERR_FILE_CANT_WRITE
+	var written: Error = _write(temp, data, extras)
+	if written != OK:
+		return written
 	# A damaged main file never replaces the backup, which may be the only good save.
 	if _read(_path) != null:
 		if FileAccess.file_exists(backup_path()):
@@ -81,23 +112,120 @@ func save(data: Dictionary) -> Error:
 func load_save() -> SaveLoad:
 	var main: Variant = _read(_path)
 	if main != null:
-		return SaveLoad.new(SaveLoad.Status.OK, main)
+		return _loaded(SaveLoad.Status.OK, main, _path)
 	var backup: Variant = _read(backup_path())
 	if backup != null:
-		return SaveLoad.new(SaveLoad.Status.RESTORED_FROM_BACKUP, backup, RESTORED_KEY)
+		return _loaded(SaveLoad.Status.RESTORED_FROM_BACKUP, backup, backup_path(), RESTORED_KEY)
 	if not FileAccess.file_exists(_path) and not FileAccess.file_exists(backup_path()):
 		return SaveLoad.new(SaveLoad.Status.MISSING)
 	return SaveLoad.new(SaveLoad.Status.UNREADABLE, {}, UNREADABLE_KEY)
+
+
+## When a load since the last call found a file whose seal was missing or wrong, the seal
+## its values make, which names it; empty when none was. Forgets it.
+func take_tampered() -> String:
+	var found: String = _tampered
+	_tampered = ""
+	return found
+
+
+## The extras the main file keeps beside its data, as it is on disk now, or none when it
+## is missing or damaged.
+func kept_extras() -> Dictionary:
+	var parsed: Variant = _parse(_path)
+	if parsed == null:
+		return {}
+	var save: Dictionary = parsed
+	var extras: Variant = save.get(EXTRA_KEY, {})
+	return extras if extras is Dictionary else {}
 
 
 func delete() -> void:
 	for file_path: String in [_path, backup_path(), _path + TEMP_SUFFIX]:
 		if FileAccess.file_exists(file_path):
 			DirAccess.remove_absolute(file_path)
+	for companion: String in companions:
+		if FileAccess.file_exists(companion):
+			DirAccess.remove_absolute(companion)
 
 
-## Returns the migrated data, or null when the file is missing, damaged or too new.
-func _read(file_path: String) -> Variant:
+## Writes the file and reads it back. The seal is made over the values as JSON reads the
+## very text written: the seal is the last key in sorted order, so it is spliced onto the
+## end of that text and every other byte stays as it was sealed. What reached the disk is
+## then checked before the file is used; should it ever fail, it is sealed again from
+## what was read, so a save this service wrote never fails its own seal.
+func _write(file_path: String, data: Dictionary, extras: Dictionary) -> Error:
+	var wrapper: Dictionary = {"schema_version": _version, "data": data}
+	if not extras.is_empty():
+		wrapper[EXTRA_KEY] = extras
+	var text: String = JSON.stringify(wrapper, "", true, true)
+	var sealed: bool = _version >= _sealed_from
+	if sealed:
+		var parsed: Variant = JSON.parse_string(text)
+		# Text JSON cannot read back would load as damaged anyway; the save it would
+		# replace is kept.
+		if not parsed is Dictionary:
+			return ERR_INVALID_DATA
+		var seal: String = _seal_of(parsed)
+		text = text.left(text.length() - 1) + ',"%s":"%s"}' % [SEAL_KEY, seal]
+	var stored: Error = _store(file_path, text)
+	if stored != OK or not sealed:
+		return stored
+	# The same text reads as the same values, so it holds the seal it was given.
+	if FileAccess.get_file_as_string(file_path) == text:
+		return OK
+	var back: Variant = _parse(file_path)
+	if back == null:
+		return ERR_FILE_CORRUPT
+	if _seal_holds(back):
+		return OK
+	var again: Dictionary = back
+	again[SEAL_KEY] = _seal_of(back)
+	return _store(file_path, JSON.stringify(again, "", true, true))
+
+
+func _store(file_path: String, text: String) -> Error:
+	var file: FileAccess = FileAccess.open(file_path, FileAccess.WRITE)
+	if file == null:
+		return FileAccess.get_open_error()
+	var stored: bool = file.store_string(text)
+	file.close()
+	return OK if stored else ERR_FILE_CANT_WRITE
+
+
+## What a load found: the data, the extras beside it, and whether its seal failed. The
+## file is parsed again, since migrating changed the copy the data came from.
+func _loaded(
+	status: SaveLoad.Status, data: Variant, file_path: String, key: String = ""
+) -> SaveLoad:
+	var result: SaveLoad = SaveLoad.new(status, data, key)
+	var parsed: Variant = _parse(file_path)
+	if parsed == null:
+		return result
+	var save: Dictionary = parsed
+	var extras: Variant = save.get(EXTRA_KEY, {})
+	result.extras = extras if extras is Dictionary else {}
+	var version: int = int(save["schema_version"])
+	if version >= _sealed_from and not _seal_holds(save):
+		result.tampered = true
+		result.seal = _seal_of(save)
+		_tampered = result.seal
+	return result
+
+
+## True when a parsed save's seal is the one its values make.
+func _seal_holds(save: Dictionary) -> bool:
+	var seal: Variant = save.get(SEAL_KEY)
+	return SaveSeal.is_shaped(seal) and seal == _seal_of(save)
+
+
+func _seal_of(save: Dictionary) -> String:
+	var extras: Variant = save.get(EXTRA_KEY, {})
+	return SaveSeal.of(int(save["schema_version"]), save["data"], extras)
+
+
+## The file as JSON when it parses to a save's shape, or null.
+func _parse(file_path: String) -> Variant:
 	if not FileAccess.file_exists(file_path):
 		return null
 	var json: JSON = JSON.new()
@@ -105,6 +233,14 @@ func _read(file_path: String) -> Variant:
 		return null
 	var save: Dictionary = json.data
 	if not save.get("schema_version") is float or not save.get("data") is Dictionary:
+		return null
+	return save
+
+
+## Returns the migrated data, or null when the file is missing, damaged or too new.
+func _read(file_path: String) -> Variant:
+	var save: Variant = _parse(file_path)
+	if save == null:
 		return null
 	var data: Variant = _migrate(save["data"], int(save["schema_version"]))
 	if data == null or (_validator.is_valid() and not _validator.call(data)):

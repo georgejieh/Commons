@@ -46,6 +46,6 @@ static func feed_lead(position: BotPosition, moves: Array[Pattern]) -> Pattern:
 		if not loose or position.controls.flags[index]:
 			continue
 		for move: Pattern in moves:
-			if move.equals(group) and (lowest == null or move.key < lowest.key):
+			if move.same_reading(group) and (lowest == null or move.key < lowest.key):
 				lowest = move
 	return lowest

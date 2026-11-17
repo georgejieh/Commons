@@ -9,6 +9,9 @@ var pattern: Pattern
 ## Why the cards form no pattern, when they don't.
 var invalid_reason: Classification.Reason = Classification.Reason.OK
 var cards: Array[CardInstance] = []
+## Every reading of the cards that may be played now, strongest first (ADR 0029). The
+## pattern is the first of them unless the action named another.
+var readings: Array[Pattern] = []
 
 
 func _init(why: RoundState.Reason) -> void:

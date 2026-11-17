@@ -13,5 +13,6 @@ hooks = Array[String]([])
 parameters = Dictionary[String, int]({"info": 2})
 rarity = 1
 cost = 5
+unlock_tier = 0
 name_key = "modifier.peek.name"
 text_key = "modifier.peek.text"

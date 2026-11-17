@@ -6,6 +6,9 @@ extends Node
 signal changed(key: String)
 
 const PATH: String = "user://settings.cfg"
+## A debug build reads this environment variable for another file, so the test run keeps
+## its own settings and never touches the player's (tools/test.sh sets it).
+const PATH_OVERRIDE: String = "COMMONS_SETTINGS"
 const SECTION: String = "settings"
 const DEFAULTS: SettingsParams = preload("res://data/settings/default_settings.tres")
 const KEYS: Array[String] = [
@@ -17,6 +20,7 @@ const KEYS: Array[String] = [
 	"horror_intensity",
 	"no_flash",
 	"content_note_seen",
+	"card_back",
 ]
 
 var _values: Dictionary[String, Variant] = {}
@@ -24,7 +28,13 @@ var _path: String = PATH
 
 
 func _ready() -> void:
-	load_from(PATH)
+	load_from(start_path(OS.is_debug_build(), OS.get_environment(PATH_OVERRIDE)))
+
+
+## The file settings start from: the player's, or in a debug build the override when one
+## is given.
+static func start_path(debug: bool, override: String) -> String:
+	return override if debug and not override.is_empty() else PATH
 
 
 ## Reads settings from path, falling back to the defaults for anything missing.

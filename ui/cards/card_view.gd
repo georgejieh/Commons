@@ -1,11 +1,15 @@
 class_name CardView
 extends Control
 ## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
-## a picture, enhancement overlay, seal and owner stamp. A number card shows its suit
+## a picture, enhancement overlay, seal, and the marks that outlast a round, both on the
+## left edge a fan leaves showing: a red and gold rosette under the suit pip for a Model
+## card, a red chop at the foot for an owner's stamp. A number card shows its suit
 ## faintly in the corner; a court card or joker is a picture card, its art filling the
 ## face and fading to bare card stock in the corner, where the rank and suit are printed
 ## straight on, as on a playing card.
-## A note under the index says when a debuff makes the card rank as another. The parts
+## A wild card (ADR 0029) carries a red ribbon down the same edge, under the index.
+## A note under the index says when a debuff makes the card rank as another, or what a
+## played wild card stands in for. The parts
 ## come from CardArt, so no face is baked. bind() is the only way to show a card; views
 ## come from CardPool and are reused, never instanced during a round.
 
@@ -39,6 +43,17 @@ const FADE_SOLID: float = 0.45
 ## A paper edge around a picture card's rank, so it reads over any art.
 const RANK_OUTLINE: int = 6
 const NOTE_COLOR: Color = Color("9e1b16")
+## Where the marks sit: both down the left edge, the strip a fanned hand leaves showing,
+## the rosette under the suit pip and the chop at the foot, inside the selection edge.
+const CHOP_AT: Vector2 = Vector2(9, 128)
+const ROSETTE_AT: Vector2 = Vector2(13, 92)
+## Under a rank note the rosette moves down beside the chop, clear of the note.
+const ROSETTE_BY_NOTE: Vector2 = Vector2(40, 128)
+## A wild card's ribbon hangs down the very edge (ADR 0029); the rosette and the rank note
+## move right of it, the note narrowed so it still shows where the next card lies.
+const ROSETTE_BY_RIBBON: Vector2 = Vector2(16, 92)
+const NOTE_SPAN: Vector2 = Vector2(8, 72)
+const NOTE_SPAN_BY_RIBBON: Vector2 = Vector2(15, 61)
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -63,6 +78,9 @@ static var art_override: CardArt = null
 var card_id: int = -1
 
 var _cursor_mark: ColorRect = ColorRect.new()
+var _chop: CardMark = CardMark.new(CardMark.Kind.STAMP)
+var _rosette: CardMark = CardMark.new(CardMark.Kind.MODEL)
+var _ribbon: WildRibbon = WildRibbon.new()
 
 ## Every tween moving this view, so a reused view can stop them all.
 var _tweens: Array[Tween] = []
@@ -75,7 +93,6 @@ var _tweens: Array[Tween] = []
 @onready var _rank_note: Label = $Frame/RankNote
 @onready var _enhancement: ColorRect = $Frame/Enhancement
 @onready var _seal: Label = $Frame/Seal
-@onready var _stamp: Label = $Frame/Stamp
 @onready var _highlight: Panel = $Highlight
 
 
@@ -100,6 +117,11 @@ func _ready() -> void:
 	_rank_note.add_theme_stylebox_override("normal", tag)
 	_index.texture = _corner_fade()
 	_rank.add_theme_color_override("font_outline_color", STOCK)
+	for mark: CardMark in [_chop, _rosette]:
+		_frame.add_child(mark)
+	_frame.add_child(_ribbon)
+	_chop.position = CHOP_AT
+	_rosette.position = ROSETTE_AT
 
 
 ## The card parts in use.
@@ -150,21 +172,63 @@ func bind(card: CardInstance) -> void:
 	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
 	_rank.add_theme_color_override("font_color", RED if red else INK)
-	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID
+	var model: bool = card.enhancement_id() == CardInstance.MODEL
+	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID and not model
+	_rosette.visible = model
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
-	_stamp.visible = card.owner_stamp() != CardInstance.NO_OWNER
+	_chop.visible = card.owner_stamp() != CardInstance.NO_OWNER
+	_ribbon.show_on(false)
 	set_rank_note("")
 	set_marked(false, false)
 
 
 ## Says the card ranks as another, such as "as 3", or hides the note when text is empty.
+## A stand-in on the pile names the rank it stands for the same way (ADR 0029).
 func set_rank_note(text: String) -> void:
 	_rank_note.text = text
 	_rank_note.visible = not text.is_empty()
+	_place_marks()
 
 
 func rank_note() -> String:
 	return _rank_note.text if _rank_note.visible else ""
+
+
+## Hangs the wild card's ribbon on this card, or takes it off (ADR 0029).
+func set_wild(on: bool) -> void:
+	if on == _ribbon.visible:
+		return
+	_ribbon.show_on(on, card_id)
+	_place_marks()
+
+
+func shows_wild() -> bool:
+	return _ribbon.visible
+
+
+## The ribbon's box on the card, in card pixels, for tests.
+func ribbon_rect() -> Rect2:
+	return Rect2(_ribbon.position, _ribbon.size)
+
+
+## The rosette and the rank note keep clear of each other and of the ribbon.
+func _place_marks() -> void:
+	var span: Vector2 = NOTE_SPAN_BY_RIBBON if _ribbon.visible else NOTE_SPAN
+	_rank_note.offset_left = span.x
+	_rank_note.offset_right = span.y
+	if _rank_note.visible:
+		_rosette.position = ROSETTE_BY_NOTE
+	else:
+		_rosette.position = ROSETTE_BY_RIBBON if _ribbon.visible else ROSETTE_AT
+
+
+## The marks shown, for tests and playtests: a stamp's chop, a Model card's rosette.
+func shows_stamp() -> bool:
+	return _chop.visible
+
+
+func shows_model() -> bool:
+	return _rosette.visible
 
 
 ## True when the face is a picture card: art over the whole face under a corner index.

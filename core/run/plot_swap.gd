@@ -4,7 +4,8 @@ extends RefCounted
 ## the landlord has taken the kitty, so kitty cards can be swapped too (ADR 0014). A
 ## deck card that goes into the plot becomes a plot card with a new ID from the run's
 ## counter, keeping its rank, suit and marks, so the next round's fresh deck never meets
-## a card with its ID. No card is created or lost.
+## a card with its ID. No card is created or lost, and no mark: the marks saved for the
+## deck card go with it into the plot.
 
 
 static func is_valid(
@@ -59,10 +60,12 @@ static func store(state: RunState, card: CardInstance, params: RunParams) -> boo
 	return true
 
 
-## A plot card stays as it is; a deck card is reissued under the next plot ID.
+## A plot card stays as it is; a deck card is reissued under the next plot ID, and its
+## saved marks leave the deck with it.
 static func _for_plot(card: CardInstance, state: RunState) -> CardInstance:
 	if card.origin() == CardInstance.Origin.PLOT:
 		return card
+	state.card_marks.forget(card.id())
 	return card.reissued(state.take_plot_id())
 
 

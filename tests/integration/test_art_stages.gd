@@ -70,6 +70,14 @@ func test_the_shipped_variants_open_innocent_and_end_on_the_late_art() -> void:
 		for path: String in variant.stage_paths:
 			if not path.is_empty():
 				assert_bool(ResourceLoader.exists(path)).override_failure_message(path).is_true()
+		if variant.base == null:
+			# A picture loaded on demand resolves by its file, never loading its base first.
+			var early: Texture2D = ArtStages.picture(variant.base_path, 0)
+			assert_str(early.resource_path).is_not_equal(variant.base_path)
+			assert_str(ArtStages.picture(variant.base_path, last).resource_path).is_equal(
+				variant.base_path
+			)
+			continue
 		assert_object(ArtStages.resolve(variant.base, 0)).is_not_same(variant.base)
 		assert_object(ArtStages.resolve(variant.base, last)).is_same(variant.base)
 
@@ -100,3 +108,42 @@ func test_screens_built_later_use_the_new_stage() -> void:
 	ArtStages.stage_override = 9
 	var rect: TextureRect = auto_free(ScreenKit.cover(ScreenKit.ART.table_surface))
 	assert_str(rect.texture.resource_path).is_equal(LATE)
+
+
+## Cadre and ending pictures load when shown, through a cache that holds at most its
+## limit and drops the least recently shown; a dropped picture comes back when asked for.
+func test_pictures_load_on_demand_and_the_cache_keeps_its_limit() -> void:
+	ArtStages.variants_override = []
+	ArtStages.stage_override = 0
+	var cache: ArtCache = ArtStages.pictures()
+	cache.clear()
+	assert_int(ScreenKit.ART.picture_cache).is_equal(12)
+	var ids: Array[String] = ScreenKit.ART.cadres.keys()
+	assert_int(ids.size()).is_greater(cache.limit)
+	var first: String = ""
+	for cadre_id: String in ids:
+		var shown: Texture2D = ScreenKit.cadre_art(cadre_id)
+		assert_object(shown).override_failure_message(cadre_id).is_not_null()
+		if first.is_empty():
+			first = shown.resource_path
+		assert_int(cache.held_count()).is_less_equal(cache.limit)
+	assert_bool(cache.holds(first)).is_false()
+	assert_str(ScreenKit.cadre_art(ids[0]).resource_path).is_equal(first)
+	assert_bool(cache.holds(first)).is_true()
+	assert_int(cache.held_count()).is_equal(cache.limit)
+
+
+## The stage picks a Cadre's picture by its file: the first-run print early, the main
+## file from its late stage, and nothing loaded for a stage not shown.
+func test_a_cadre_picture_resolves_by_stage_from_its_path() -> void:
+	ArtStages.variants_override = []
+	ArtStages.pictures().clear()
+	var main: String = ScreenKit.ART.cadre_path("iron_rice_bowl")
+	var early: String = "res://art/cadres/stages/cadre_iron_rice_bowl_s0.png"
+	ArtStages.stage_override = 3
+	assert_str(ScreenKit.cadre_art("iron_rice_bowl").resource_path).is_equal(early)
+	assert_bool(ResourceLoader.has_cached(main)).is_false()
+	ArtStages.stage_override = 8
+	assert_str(ScreenKit.cadre_art("iron_rice_bowl").resource_path).is_equal(main)
+	assert_object(ScreenKit.ending_art("labeled")).is_not_null()
+	assert_object(ScreenKit.cadre_art("no_such_cadre")).is_null()

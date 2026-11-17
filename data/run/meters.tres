@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MeterTable" load_steps=13 format=3]
+[gd_resource type="Resource" script_class="MeterTable" load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://data/run/meter_table.gd" id="1"]
 [ext_resource type="Script" path="res://data/run/meter_bands.gd" id="2"]
@@ -42,7 +42,7 @@ amount = 3
 script = ExtResource("3")
 id = "caught_lie"
 meter = "denunciation"
-amount = 8
+amount = 3
 
 [sub_resource type="Resource" id="source_4"]
 script = ExtResource("3")
@@ -62,9 +62,39 @@ id = "resentment"
 meter = "denunciation"
 amount = 0
 
+[sub_resource type="Resource" id="source_7"]
+script = ExtResource("3")
+id = "campaign_famine"
+meter = "famine"
+amount = 0
+
+[sub_resource type="Resource" id="source_8"]
+script = ExtResource("3")
+id = "tutorial_denunciation"
+meter = "denunciation"
+amount = 0
+
+[sub_resource type="Resource" id="source_9"]
+script = ExtResource("3")
+id = "stood_by"
+meter = "famine"
+amount = 1
+
+[sub_resource type="Resource" id="source_10"]
+script = ExtResource("3")
+id = "campaign_denunciation"
+meter = "denunciation"
+amount = 0
+
+[sub_resource type="Resource" id="source_11"]
+script = ExtResource("3")
+id = "cadre_famine"
+meter = "famine"
+amount = 0
+
 [resource]
 script = ExtResource("1")
 famine = SubResource("famine")
 denunciation = SubResource("denunciation")
-sources = Array[ExtResource("3")]([SubResource("source_0"), SubResource("source_1"), SubResource("source_2"), SubResource("source_3"), SubResource("source_4"), SubResource("source_5"), SubResource("source_6")])
+sources = Array[ExtResource("3")]([SubResource("source_0"), SubResource("source_1"), SubResource("source_2"), SubResource("source_3"), SubResource("source_4"), SubResource("source_5"), SubResource("source_6"), SubResource("source_7"), SubResource("source_8"), SubResource("source_9"), SubResource("source_10"), SubResource("source_11")])
 rationing_shop_cut = 1

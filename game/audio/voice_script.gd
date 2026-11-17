@@ -36,6 +36,8 @@ static func plan(
 	var sources: PackedInt32Array = PackedInt32Array()
 	_spoken(text, chars, sources)
 	var shape: Vector4 = timing.moods[mood] if timing.moods.has(mood) else timing.moods[""]
+	# A drifted voice speaks its whole range higher or lower (ADR 0028).
+	shape.w *= voice.playback_pitch
 	var flat: bool = mood == SLOGAN
 	var clock: float = 0.0
 	for sentence: Vector3i in _sentences(chars):

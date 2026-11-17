@@ -100,3 +100,20 @@ func test_audio_adds_the_three_buses() -> void:
 	audio.ensure_buses()
 	for bus: String in ["Music", "Effects", "Voice"]:
 		assert_int(AudioServer.get_bus_index(bus)).is_not_equal(-1)
+
+
+## A debug build takes another settings file from the environment, which is how the test
+## run stays out of the player's settings; a release build never does.
+func test_settings_file_can_be_overridden_only_in_a_debug_build() -> void:
+	var other: String = "user://other.cfg"
+	assert_str(SettingsStore.start_path(true, other)).is_equal(other)
+	assert_str(SettingsStore.start_path(true, "")).is_equal(SettingsStore.PATH)
+	assert_str(SettingsStore.start_path(false, other)).is_equal(SettingsStore.PATH)
+
+
+func test_the_test_run_uses_its_own_settings_file() -> void:
+	(
+		assert_str(OS.get_environment(SettingsStore.PATH_OVERRIDE))
+		. override_failure_message("Run the tests with tools/test.sh, which sets COMMONS_SETTINGS.")
+		. is_not_empty()
+	)

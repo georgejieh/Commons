@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "seed_grain"
+kind = 0
+tag = 0
+lever = 2
+tier = 0
+hooks = Array[String](["play_scored", "set_end"])
+parameters = Dictionary[String, int]({"grain": 3})
+rarity = 2
+cost = 6
+unlock_tier = 2
+name_key = "modifier.seed_grain.name"
+text_key = "modifier.seed_grain.text"
+table_wide = true
+state_key = "modifier.seed_grain.state"

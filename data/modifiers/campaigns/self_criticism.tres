@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CampaignDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/campaign_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "self_criticism"
+tag = 0
+cost = 3
+unlock_tier = 1
+when = 2
+min_cards = 0
+max_cards = 0
+parameters = Dictionary[String, int]({"resentment": 6, "denunciation": 2})
+name_key = "campaign.self_criticism.name"
+text_key = "campaign.self_criticism.text"
+prompt_key = "campaign.self_criticism.prompt"

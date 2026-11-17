@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ShopParams" format=3]
+
+[ext_resource type="Script" path="res://data/run/shop_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+slots = 0
+directive_slots = 0
+cadre_slots = 5
+campaign_offers = 0
+campaign_slots = 2
+reform_offers = 0
+envelope_offers = 0
+envelopes = Array[Resource]([])
+reroll_base = 2
+reroll_step = 1
+rarity_weights = Array[int]([60, 30, 10])
+price_percent = 150
+stock_per_item = 0

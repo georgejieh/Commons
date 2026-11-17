@@ -8,3 +8,7 @@ extends Resource
 @export var swaps_per_round: int
 @export var plot_capacity: int = 4
 @export var meter_max: int
+## Sets in a row the player may go without the landlord's seat before it costs Famine,
+## and the most steps that cost then grows to (ADR 0031).
+@export var seat_grace_sets: int
+@export var seat_max_steps: int

@@ -11,3 +11,7 @@ extends Resource
 @export var pace: float = 5.0
 ## 0 is a clean voice, 1 a rough one.
 @export_range(0.0, 1.0) var roughness: float = 0.1
+## What playback scales the rendered letters' pitch by: 1 for the voice as its bank was
+## rendered. A copy drifted by the village's generations carries its shift here (ADR
+## 0028); it is never saved.
+var playback_pitch: float = 1.0

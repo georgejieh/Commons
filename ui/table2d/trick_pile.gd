@@ -30,6 +30,10 @@ const SWEEP_REACH: float = 0.55
 const THROW_SPIN: float = 0.7
 const HOP: float = 14.0
 
+## The round's wild ranks as the table's events have named them (ADR 0029): a card of one
+## lands with its ribbon on.
+var wild_ranks: Array[int] = []
+
 var _pool: CardPool
 var _pool_parent: Control
 var _motion: TableMotion
@@ -46,10 +50,16 @@ func setup(pool: CardPool, pool_parent: Control, motion: TableMotion) -> void:
 
 
 ## Lays a play on top of the pile. from is where it comes from on screen; origins, when
-## given, is where each card starts, as when the player's cards leave the hand.
-func show_play(cards: Array[CardInstance], from: Vector2, origins: Array[Vector2] = []) -> void:
+## given, is where each card starts, as when the player's cards leave the hand. With the
+## play's reading, a wild card standing in names the rank it stands for (ADR 0029).
+func show_play(
+	cards: Array[CardInstance], from: Vector2, origins: Array[Vector2] = [], reading: Pattern = null
+) -> void:
 	if cards.is_empty():
 		return
+	var stands: PackedByteArray = PackedByteArray()
+	if reading != null:
+		stands = PlayPlacement.stands_for(cards, reading)
 	_bury()
 	_starts.append(_views.size())
 	var noise: int = hash([cards[0].id(), _starts.size()])
@@ -67,6 +77,7 @@ func show_play(cards: Array[CardInstance], from: Vector2, origins: Array[Vector2
 			return
 		view.reparent(self, false)
 		view.bind(cards[order])
+		_mark_wild(view, cards[order], stands[order] if order < stands.size() else -1)
 		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		view.pivot_offset = Vector2.ZERO
 		var along: float = order * spacing
@@ -174,6 +185,14 @@ func pulse_top(seconds: float) -> void:
 		hop.tween_interval(order * each)
 		hop.tween_property(view, "position:y", rest - HOP, each * 0.4)
 		hop.tween_property(view, "position:y", rest, each * 0.6)
+
+
+## A wild card lands with its ribbon, and one standing in names its rank beside its own.
+func _mark_wild(view: CardView, card: CardInstance, stands_for: int) -> void:
+	view.set_wild(wild_ranks.has(card.base_rank()))
+	if stands_for >= 0 and stands_for != card.base_rank():
+		var rank: String = tr(CardView.RANK_KEYS[stands_for])
+		view.set_rank_note(tr("card.rank_as").format({"rank": rank}))
 
 
 ## Dims every play already on the pile.

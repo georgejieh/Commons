@@ -95,7 +95,7 @@ func _init() -> void:
 	_speech.gui_input.connect(_on_speech_input)
 	set_process(false)
 	_row.add_child(_portrait)
-	_back.texture = ArtStages.resolve(ScreenKit.ART.card_back)
+	_back.texture = CardBacks.picture(CardBacks.current())
 	_back.custom_minimum_size = Vector2(30, 42)
 	_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT

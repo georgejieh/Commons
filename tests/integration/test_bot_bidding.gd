@@ -23,6 +23,20 @@ func test_a_better_shape_earns_more() -> void:
 	assert_float(_points("3456789TJQKA")).is_greater(_points("33557799JJKK"))
 
 
+func test_each_wild_card_held_adds_to_the_bid() -> void:
+	var params: RuleParams = RuleSet.DEFAULT_PARAMS.copy()
+	params.wild_ranks = [RankText.rank("7")] as Array[int]
+	var wild: BotTable = BotTable.new(RuleSet.new(params), _map)
+	var counts: PackedByteArray = RankText.counts("3456779TJQKA")
+	# The shape of a hand is weighed apart, and a wild card may change it.
+	var no_shape: BotWeights = _weights.duplicate()
+	no_shape.shape_points = 0.0
+	var plain: float = BidPolicy.hand_points(counts, _table, no_shape)
+	var valued: float = BidPolicy.hand_points(counts, wild, no_shape)
+	assert_float(valued).is_equal(plain + 2.0 * _weights.wild_card_points)
+	assert_float(_weights.wild_card_points).is_greater(0.0)
+
+
 func test_the_last_bidder_lowers_the_bar_by_a_tenth() -> void:
 	var bar: float = BidPolicy.threshold(false, false, _weights)
 	assert_float(BidPolicy.threshold(false, true, _weights)).is_equal_approx(bar * 0.9, 0.001)

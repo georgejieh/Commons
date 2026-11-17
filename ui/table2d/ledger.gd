@@ -3,7 +3,8 @@ extends VBoxContainer
 ## The round's work points, as a scoreboard: the landlord's running total, then the
 ## Commons pool with each peasant's part of it, then the last few plays written out as
 ## Grain × Rate × Zeal. Rows are made once and reused, so scoring a play instances nothing. A
-## seat's total counts up as its play is stamped in (P3B.6).
+## seat's total counts up as its play is stamped in (P3B.6). At the stage past the last
+## the household's small ledger sits at its foot, with the run's true figures (ADR 0022).
 
 const MAX_PLAYS: int = 5
 ## A play's Grain × Rate × Zeal line is smaller than its heading, to fit on one line.
@@ -12,6 +13,9 @@ const SUM_SIZE: int = 15
 const ROW_WIDTH: float = 270.0
 const INK: Color = Color("1e1a16")
 const SOFT: Color = Color("5a4a36")
+
+## The household's small ledger, at the panel's foot at the stage past the last.
+var books: SmallLedger = SmallLedger.new()
 
 var _pending_type: String = ""
 var _names: Dictionary[int, String] = {}
@@ -27,6 +31,8 @@ var _plays_head: Label = Label.new()
 var _plays: KeywordText = KeywordText.new()
 var _texts: PackedStringArray = []
 var _counting: Tween = null
+## The room that keeps the household's small ledger at the panel's foot.
+var _foot: Control = Control.new()
 
 
 func _ready() -> void:
@@ -75,7 +81,19 @@ func _ready() -> void:
 	_plays.add_theme_font_size_override("bold_font_size", 18)
 	_plays.add_theme_color_override("default_color", INK)
 	add_child(_plays)
+	_foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_foot.visible = false
+	add_child(_foot)
+	add_child(books)
 	start_round(Seats.NONE)
+
+
+## The small ledger's figures from a copy of the run, shown only at the stage past the
+## last.
+func show_books(state: RunState, target: float) -> void:
+	books.show_table(state, target)
+	_foot.visible = books.visible
 
 
 ## Names each seat's row.

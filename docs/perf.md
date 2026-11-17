@@ -91,8 +91,10 @@ Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is 
 | --- | --- | --- |
 | Before (every asset at full size) | 170.4 MB | Over |
 | Large art capped at 512 px on import, icons packed into one atlas | 89.2 MB | Pass |
+| 18 more Cadres with art (P4.11h), Cadre art capped at 384 px | 125.0 MB peak | Pass |
+| Cadre and ending pictures loaded on demand (P4.14), 18 ending pictures added | 114.3 MB peak | Pass |
 
-The art library preloads every base texture. Stage versions load only when shown, so since the stage art arrived the tool also shows all 54 card faces and measures at stages 0, 4 and 9 in turn, reporting the peak.
+The art library preloads backdrops, paper and card art. Cadre and ending pictures load only when shown, through a cache of 12 (P4.14), so the table holds just the Cadres on its board. Stage versions load only when shown, so since the stage art arrived the tool also shows all 54 card faces and measures at stages 0, 4 and 9 in turn, reporting the peak.
 
 ## Table light GPU cost (P3C.6)
 
@@ -107,3 +109,22 @@ The art library preloads every base texture. Stage versions load only when shown
 | 5 | 1.016 | 0.753 | 0.263 |
 
 The median cost is 0.266 ms, inside the 1 ms budget. Run 4 was taken while the GPU sat at a lower clock state, which doubled its baseline, as in P3B.7. Every run held 60 fps with a p99 frame time of 17.2 ms or less. The four normal maps add about 8 MB of texture memory, which leaves the full table near 97 MB of the 128 MB budget.
+
+## Expert decision time (P4.16, ADR 0030)
+
+Development PC (ADR 0016), 2026-11-15. The live game asks an Expert villager for its play through `ExpertRunner`, which spreads the samples over the worker pool and starts no more after the deadline in `BotWeights.expert_deadline_usec` (300 ms).
+
+```bash
+godot --headless --path . --script res://tools/expert_deadline.gd -- --deals 40 --seed 0
+```
+
+| Path | Decisions | Mean | Worst or p99 | Samples finished, of 48 |
+| --- | --- | --- | --- | --- |
+| `ExpertRunner` at the 300 ms deadline | 601 | not recorded | p99 352.9 ms | mean 32.2; all 48 in 206 decisions; fewest 6 |
+| `Bot.decide_play` with no limit, one thread | 40 | 889 ms (median 632 ms) | worst 3,796 ms | all 48 |
+
+The 40-deal run took 166 seconds and Expert beat Hard in 0.525 of 80 games with no illegal action. The p99 is inside P2.9's 400 ms budget. A decision that finishes fewer than 12 samples keeps the policy's play (`expert_min_samples`), so some decisions at the deadline are not searched at all.
+
+The unlimited figures were taken over seeds 0 to 4 of `SelfPlay.deal_from_seed`, with Expert as landlord on even seeds and as both peasants on odd ones, Hard in the other seats, timing only decisions that had a choice to search. That path is what tests, the tournament and the balance harness use, and what the game used before ADR 0030.
+
+The wait is still on the thread that handles the player's command, so a play can be followed by two deadlines before the player's next turn. P5.0 moves it off that thread.

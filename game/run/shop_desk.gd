@@ -38,12 +38,25 @@ func reroll_price() -> int:
 	return _shop.reroll_price()
 
 
-## A reroll is worth pressing: affordable, the board has room for what it draws, and
-## the counter has something else to offer.
+## A reroll is worth pressing: affordable, and the counter has something else to offer
+## that could be bought: Cadres while the board has room, or Directives.
 func can_reroll() -> bool:
-	if not _shop.has_room() or not _shop.reroll_changes():
+	if not _shop.reroll_changes():
 		return false
 	return _state.coupons >= _shop.reroll_price()
+
+
+## Directive IDs per slot, an empty ID for one already issued.
+func directive_stock() -> Array[String]:
+	return _shop.directive_stock()
+
+
+func directive_price(slot: int) -> int:
+	return _shop.directive_price(slot)
+
+
+func can_buy_directive(slot: int) -> bool:
+	return _shop.check_directive(slot) == RunShop.Reason.OK
 
 
 ## Cards for the private plot on offer here: how many slots, then each slot's card (null
@@ -84,7 +97,7 @@ func upgrade_kinds() -> PackedStringArray:
 
 
 func upgrade_price(kind: String) -> int:
-	return PlotUpgrades.price(kind, _upgrades)
+	return PlotUpgrades.price(kind, _upgrades, _state)
 
 
 func can_upgrade(kind: String) -> bool:

@@ -7,7 +7,7 @@ extends RefCounted
 
 
 static func applies(config: BotConfig) -> bool:
-	return config.tier == BotConfig.Tier.EXPERT
+	return config.searches()
 
 
 ## Runs a job's samples in turn until the deadline, then decides on those it finished.
@@ -66,7 +66,8 @@ static func roll(position: BotPosition, hands: Array[PackedByteArray], move: Pat
 
 
 ## Deals the unseen cards to the other seats by hand size. The landlord keeps the unplayed
-## kitty. Returns nothing if the counts can't fit, which plot cards can cause.
+## kitty, and a hand shown to the table keeps its cards. Returns nothing if the counts
+## can't fit, which plot cards can cause.
 static func deal_unseen(position: BotPosition, sample: int) -> Array[PackedByteArray]:
 	var view: SeatView = position.view
 	var pool: PackedByteArray = PackedByteArray()
@@ -79,8 +80,17 @@ static func deal_unseen(position: BotPosition, sample: int) -> Array[PackedByteA
 		empty.resize(Ranks.COUNT)
 		hands.append(empty)
 	hands[position.seat] = view.own_counts.duplicate()
-	if not position.is_landlord():
-		_give_kitty(position, pool, hands[view.public.landlord])
+	# A hand shown to the table (Glass Walls) is dealt as it is, never sampled.
+	for shown_seat: int in view.exposed:
+		hands[shown_seat] = view.exposed[shown_seat].duplicate()
+		for rank: int in Ranks.COUNT:
+			for _copy: int in hands[shown_seat][rank]:
+				var at: int = pool.find(rank)
+				if at >= 0:
+					pool.remove_at(at)
+	var landlord: int = view.public.landlord
+	if not position.is_landlord() and not view.exposed.has(landlord):
+		_give_kitty(position, pool, hands[landlord])
 	var stream: RandomStream = RandomStream.new(_sample_seed(position, sample))
 	for seat: int in Seats.COUNT:
 		if (

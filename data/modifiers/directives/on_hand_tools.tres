@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DirectiveDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/directive_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "on_hand_tools"
+hand_types = Array[int]([1, 2])
+cost = 3
+unlock_tier = 0
+name_key = "directive.on_hand_tools.name"
+text_key = "directive.on_hand_tools.text"

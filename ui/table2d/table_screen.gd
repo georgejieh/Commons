@@ -1,3 +1,5 @@
+# gdlint: disable=max-file-lines
+# Just over 400 lines: only the table's wiring; what it wires lives in classes beside it.
 class_name TableScreen
 extends Control
 ## The 2D table (ADR 0017), seen as a play area rather than a whole table: a wooden rail
@@ -15,6 +17,8 @@ const RED: Color = Color("9e1b16")
 ## The play area's middle in x, and the seats' width and gap from that middle. The
 ## Cadre board centers on it between the seats.
 const PLAY_CENTER: float = 790.0
+## Half the trick's width about its centre: clear of the Campaign tray at its left.
+const PILE_HALF_WIDTH: float = 320.0
 const SEAT_WIDTH: float = 380.0
 const SEAT_OFFSET: float = 330.0
 ## The height the need panel and the audit slip center on, between seats and hand.
@@ -50,6 +54,10 @@ var _dread: DreadLayers = DreadLayers.new()
 var _dressing: DreadDressing = DreadDressing.new()
 var _surface: TextureRect
 var _moments: TableMoments = TableMoments.new()
+var _campaigns: TableCampaigns = TableCampaigns.new()
+var _debuff_beats: DebuffMoments = DebuffMoments.new()
+var _tutorial: TableTutorial = TableTutorial.new()
+var _wild: TableWild = TableWild.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -87,11 +95,17 @@ func _ready() -> void:
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
-	_place(_cheat_sheet, Vector2.ZERO, Vector2(1920, 1080))
-	_place(_pause, Vector2.ZERO, Vector2(1920, 1080))
+	for sheet: Control in [_cheat_sheet, _pause]:
+		add_child(sheet)
+		sheet.set_deferred("size", Vector2(1920, 1080))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
-	_place(_pile, Vector2(PLAY_CENTER - 460.0, 380), Vector2(920, 300))
+	# Narrower than the table, so the Campaign tray has the room at its left.
+	var pile_at: Vector2 = Vector2(PLAY_CENTER - PILE_HALF_WIDTH, 380)
+	_place(_pile, pile_at, Vector2(PILE_HALF_WIDTH * 2.0, 300))
+	_campaigns.place(self)
+	_debuff_beats.place(self, _hand_view)
+	_wild.place(self)
 	# The need panel, sheets and banner all lie over the pile.
 	move_child(_pile, _need_panel.get_index())
 
@@ -114,11 +128,13 @@ func open(app: DemoApp) -> void:
 	# The moments layer lies over everything, seats included, so a takeover dims it all.
 	move_child(_moments, -1)
 	_speech.setup(_seats, app)
-	_board.setup(_controller.cadre_slots())
+	_board.setup(_controller.cadre_slots(), _board.size)
 	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
 	_hand_view.setup(_hand, _pool)
 	_commands.setup(_controller, _hand, _hand_view, _actions, _need_panel, _player)
-	_actions.rules.pressed.connect(_cheat_sheet.toggle.bind(_controller))
+	_commands.open_rules = _cheat_sheet.toggle.bind(_controller)
+	_commands.gate = app.arrival.allows
+	_tutorial.setup(app, _actions, _hand_view, _need_panel, _cheat_sheet, _pause, _dressing)
 	_player.played.connect(_on_event)
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)
@@ -132,17 +148,21 @@ func open(app: DemoApp) -> void:
 		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
 	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
 	_moments.hud = _hud
+	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
+	_campaigns.attach(_pool, _debuffs)
+	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
 	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
 	_player.holds = {
 		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
 	}
 	_hud.menu.pressed.connect(_open_pause)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
-	_pause.to_title.connect(func() -> void: app.show_screen("title", true))
-	_pause.quit_game.connect(func() -> void: get_tree().quit())
-	_pause.dossier.connect(func() -> void: app.show_screen("dossier"))
-	_pause.last_round.connect(func() -> void: app.show_screen("round_summary"))
+	# The events wait behind the books' notice until it is acknowledged (ADR 0022).
+	app.notice.hold(_player)
+	_pause.wire(app)
 	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
+	_input.tray = _campaigns.tray
+	_wild.setup(_hand_view, _pile, _debuffs, _moments, _player, _commands, _input)
 	_setup_dread(app)
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
@@ -178,6 +198,11 @@ func actions() -> ActionBar:
 
 func need_panel() -> NeedPanel:
 	return _need_panel
+
+
+## What the arrival's slip points at on the table (ADR 0026).
+func tutorial() -> TableTutorial:
+	return _tutorial
 
 
 func _open_pause() -> void:
@@ -227,7 +252,10 @@ func _on_event(event: RunEvent) -> void:
 	if not _replaying:
 		TableSounds.play(event, _landlord, _controller)
 		_speech.on_event(event)
+	# Campaigns first, so a forced pass is tagged as one when its pass arrives.
+	_campaigns.on_event(event, _replaying or _player.flushing)
 	_moments.on_event(event, _replaying or _player.flushing)
+	_wild.on_event(event, _replaying or _player.flushing)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
@@ -242,6 +270,9 @@ func _on_event(event: RunEvent) -> void:
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
 			_dread.refresh(_controller.state_copy(), false, event.seat == 0)
+		RunEvent.Type.CADRE_FIRED:
+			if not (_replaying or _player.flushing):
+				_board.fired(_controller, event.text, event.value)
 	_refresh_status()
 
 
@@ -262,7 +293,7 @@ func _on_round_event(event: RoundEvent) -> void:
 				_hand_view.show_cards()
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
-			_ledger.set_pending(tr("pattern." + _type_name(event.pattern)))
+			_ledger.set_pending(DirectiveSheet.type_name(event.pattern.type))
 		RoundEvent.Type.TRICK_WON:
 			# A replayed or skipped trick is cleared at once: a sweep still running would
 			# clear the plays that come after it.
@@ -305,7 +336,9 @@ func _on_drained() -> void:
 		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.audit_chance())
 	_hand.refresh()
 	_hand_view.show_cards()
+	_campaigns.refresh()
 	_commands.refresh()
+	_tutorial.settled(awaiting)
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
 	elif awaiting == RunController.AWAIT_SWAP:
@@ -319,7 +352,7 @@ func _show_play(event: RoundEvent) -> void:
 	if event.seat == 0:
 		for card: CardInstance in event.cards:
 			origins.append(_hand_view.card_center(card.id()))
-	_pile.show_play(event.cards, _seat_center(event.seat), origins)
+	_pile.show_play(event.cards, _seat_center(event.seat), origins, event.pattern)
 
 
 func _seat_center(seat: int) -> Vector2:
@@ -337,6 +370,13 @@ func _on_setting(key: String) -> void:
 func _show_roles(landlord: int) -> void:
 	for seat: int in _seats:
 		_seats[seat].set_role(landlord == seat, landlord != seat and landlord != 0)
+	_show_you(landlord)
+
+
+## The line over your hand says your role, from the moment the round starts.
+func _show_you(landlord: int) -> void:
+	var role: String = "landlord" if landlord == 0 else "peasant"
+	_you.text = tr("table.you." + ("bidding" if landlord == Seats.NONE else role))
 
 
 func _count_cards(seat: int, change: int) -> void:
@@ -360,19 +400,13 @@ func _refresh_seats() -> void:
 		var bid: String = _moments.bid_key(seat)
 		if landlord == Seats.NONE and not bid.is_empty():
 			panel.set_bid(tr(bid))
-	if landlord == Seats.NONE:
-		_you.text = tr("table.you.bidding")
-	else:
-		_you.text = tr("table.you.landlord" if landlord == 0 else "table.you.peasant")
+	_show_you(landlord)
 
 
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
 	_hud.show_state(state, _app.max_rounds())
-
-
-static func _type_name(pattern: Pattern) -> String:
-	return String(Pattern.Type.keys()[pattern.type]).to_lower()
+	_ledger.show_books(state, _controller.target())
 
 
 func _place(node: Control, at: Vector2, extent: Vector2) -> void:

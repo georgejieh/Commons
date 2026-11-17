@@ -24,7 +24,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    # The suite took 6 minutes at Phase 4A and passed 12 with Phase 4B's 1,439 tests.
+    timeout-minutes: 30
     container:
       image: barichello/godot-ci:4.7.2@sha256:cdcca31e9194fd59a68a63f4b1b9c3981716819c520cd6f7966c5d72ca7246bd
     steps:

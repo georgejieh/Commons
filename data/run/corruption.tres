@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CorruptionParams" format=3]
+
+[ext_resource type="Script" path="res://data/run/corruption_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+weights = Dictionary[String, float]({
+"declared_over": 1.0,
+"caught_lying": 2.0,
+"bombed_teammate": 1.0,
+"hostile_campaign": 2.0,
+"landlord_every_round": 2.0,
+"famine_purchase": 2.0,
+"starved_while_rich": 6.0,
+"reeducated_victim": 4.0
+})
+growth = 3.0
+coupon_threshold = 8
+hostile_campaigns = Array[String](["anonymous_letter", "seizure_notice"])

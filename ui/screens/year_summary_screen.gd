@@ -11,10 +11,12 @@ func open(app: DemoApp) -> void:
 	)
 	column.add_child(heading)
 	var tiles: Array[Control] = [
-		ScreenKit.stat(tr("year.coupons_label"), state.coupons),
+		ScreenKit.figure_stat(tr("year.coupons_label"), state, ShownFigures.COUPONS, state.coupons),
 		ScreenKit.stat(tr("year.cadres_label"), state.inventory.cadres.size()),
-		ScreenKit.stat(tr("year.famine_label"), state.famine),
-		ScreenKit.stat(tr("year.denunciation_label"), state.denunciation),
+		ScreenKit.figure_stat(tr("year.famine_label"), state, ShownFigures.FAMINE, state.famine),
+		ScreenKit.figure_stat(
+			tr("year.denunciation_label"), state, ShownFigures.DENUNCIATION, state.denunciation
+		),
 	]
 	column.add_child(ScreenKit.row(tiles, 20))
 	var next: Button = ScreenKit.button(tr("year.next"), CommonsTheme.PRIMARY)

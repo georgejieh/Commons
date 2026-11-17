@@ -4,6 +4,8 @@ extends RefCounted
 ## the Commons pool, which is then split by declared need and emptied. Only what reaches
 ## the player counts toward the Set's target.
 
+const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
+
 
 ## Records each seat's total, banks the landlord and fills the pool.
 static func bank(
@@ -23,9 +25,12 @@ static func bank(
 
 
 ## Bots declare on the ai stream. The player's need counts only when they are a peasant.
-## Declarations are then audited at audit_chance (P4.3); caught seats are appended to
-## caught, and their true need replaces the lie. Returns true when the pool fell short
-## of the needs that stand, a Commons shortfall.
+## A debuff's cut takes from the player's share before it counts (ADR 0023).
+## Declarations are then audited (P4.3): each seat rolls the audit die, and a face at or
+## below audit_faces checks its claim. Caught seats are appended to caught, and their
+## true need replaces the lie. Returns true when the pool fell short of the needs that
+## stand, a Commons shortfall. The audit's shown faces, when it names any, are the faces
+## the dice show: the arrival's authored rolls (ADR 0026).
 static func split(
 	state: RunState,
 	player: int,
@@ -33,8 +38,10 @@ static func split(
 	configs: Array[BotConfig],
 	params: RunParams,
 	events: Array[RunEvent],
-	audit_chance: float = 0.0,
-	caught: Array[int] = []
+	audit_faces: int = 0,
+	caught: Array[int] = [],
+	audit: AuditParams = DEFAULT_AUDIT,
+	cut: BankCut = null
 ) -> bool:
 	var peasants: Array[int] = []
 	var needs: PackedInt64Array = PackedInt64Array()
@@ -52,9 +59,18 @@ static func split(
 		peasants.append(seat)
 		needs.append(need)
 		events.append(RunEvent.new(RunEvent.Type.NEED_DECLARED, seat, need))
-	var audit: RandomStream = state.streams.stream(RandomStreams.AUDIT)
+	var stream: RandomStream = state.streams.stream(RandomStreams.AUDIT)
 	caught.append_array(
-		NeedAudit.run(peasants, needs, params.base_need, audit_chance, audit, events)
+		NeedAudit.run(
+			peasants,
+			needs,
+			params.base_need,
+			audit_faces,
+			audit.die_sides,
+			stream,
+			events,
+			audit.shown_faces
+		)
 	)
 	var declared: int = 0
 	for need: int in needs:
@@ -65,7 +81,10 @@ static func split(
 		events.append(RunEvent.new(RunEvent.Type.SHARE_PAID, peasants[index], shares[index]))
 		state.commons_paid = mini(state.commons_paid + shares[index], Banking.MAX_POOL)
 		if peasants[index] == player:
-			state.set_progress += shares[index]
+			var kept: float = shares[index]
+			if cut != null:
+				kept = cut.apply(kept, player, events)
+			state.set_progress += kept
 			state.commons_received = mini(state.commons_received + shares[index], Banking.MAX_POOL)
 	state.commons_pool = 0
 	return short

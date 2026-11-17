@@ -199,6 +199,10 @@ func test_a_fold_names_the_rank_a_card_counts_as() -> void:
 
 
 func test_a_rank_debuff_shows_on_the_table_and_on_the_cards_it_changes() -> void:
+	# Put in force from round 2 by hand, in a Quota no one meets, so every round plays.
+	var loop: RunLoop = _app.controller.get("_loop")
+	loop.state.debuff_ladder.assign(["", RANK_DEBUFF, "", ""])
+	loop.set("_sets", DebuffScript.hard_sets())
 	assert_array(_app.controller.ladder()).contains([RANK_DEBUFF])
 	_app.show_screen("table", true)
 	await await_idle_frame()

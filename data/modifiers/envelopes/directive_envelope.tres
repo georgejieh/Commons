@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EnvelopeDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/envelope_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "directive_envelope"
+cost = 4
+unlock_tier = 0
+choices = 3
+contents = Array[int]([0])
+weights = Array[int]([1])
+wrapping = 0
+name_key = "envelope.directive_envelope.name"
+text_key = "envelope.directive_envelope.text"

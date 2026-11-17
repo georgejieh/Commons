@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CampaignDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/campaign_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "appeal"
+tag = 0
+cost = 4
+unlock_tier = 1
+when = 1
+min_cards = 0
+max_cards = 0
+parameters = Dictionary[String, int]({})
+name_key = "campaign.appeal.name"
+text_key = "campaign.appeal.text"
+prompt_key = "campaign.appeal.prompt"

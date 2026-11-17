@@ -14,6 +14,10 @@ const SET_END: String = "set_end"
 const SHOP_OPEN: String = "shop_open"
 const METER_CHANGE: String = "meter_change"
 const AUDIT: String = "audit"
+## After each real play or pass, never a preview (ADR 0021).
+const TURN_TAKEN: String = "turn_taken"
+## After a round's Commons split and its audit (ADR 0032).
+const NEED_SETTLED: String = "need_settled"
 
 const ALL: PackedStringArray = [
 	BUILD_RULESET,
@@ -28,4 +32,6 @@ const ALL: PackedStringArray = [
 	SHOP_OPEN,
 	METER_CHANGE,
 	AUDIT,
+	TURN_TAKEN,
+	NEED_SETTLED,
 ]

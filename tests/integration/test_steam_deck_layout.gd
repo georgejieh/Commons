@@ -82,7 +82,9 @@ func test_the_check_catches_overflow_and_offscreen() -> void:
 	assert_int(problems.size()).is_equal(2)
 
 
-func _check(node: Node, where: String, problems: PackedStringArray) -> void:
+## Content inside a ScrollContainer is clipped to it and scrolls into view, so below a
+## scroll only text overflow counts; the scroll itself must sit on screen.
+func _check(node: Node, where: String, problems: PackedStringArray, scrolled: bool = false) -> void:
 	var visible: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
 	var control: Control = node as Control
 	if control != null:
@@ -90,13 +92,15 @@ func _check(node: Node, where: String, problems: PackedStringArray) -> void:
 			return
 		var rect: Rect2 = control.get_global_rect()
 		var drawn: bool = rect.size.x > 0.0 and rect.size.y > 0.0 and control.modulate.a > 0.0
-		if drawn and not visible.encloses(rect) and not _is_backdrop(control):
+		var offscreen: bool = not visible.encloses(rect) and not _is_backdrop(control)
+		if drawn and offscreen and not scrolled:
 			problems.append("%s: %s at %s" % [where, control.get_path(), rect])
 		var overflow: float = _text_overflow(control)
 		if overflow > SLACK:
 			problems.append("%s: %s text %.0f px too wide" % [where, control.get_path(), overflow])
+	var inside: bool = scrolled or node is ScrollContainer
 	for child: Node in node.get_children():
-		_check(child, where, problems)
+		_check(child, where, problems, inside)
 
 
 ## How far single-line text runs past its control's width, or 0.

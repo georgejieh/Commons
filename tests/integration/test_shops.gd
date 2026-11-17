@@ -64,7 +64,8 @@ func test_buying_from_the_black_market_always_raises_resentment() -> void:
 				continue
 			var before: int = loop.state.resentment
 			var events: int = _resentment_events(loop)
-			assert_int(loop.player_market_buy(slot)).is_equal(RunLoop.Reason.OK)
+			# A rank for the Cadres that ask for one; the others ignore it (ADR 0021).
+			assert_int(loop.player_market_buy(slot, Ranks.SEVEN)).is_equal(RunLoop.Reason.OK)
 			assert_int(loop.state.resentment).is_greater(before)
 			assert_int(_resentment_events(loop)).is_equal(events + 1)
 			assert_str(loop.events()[-1].text).is_equal(Resentment.PRIVATE_PURCHASE)
@@ -100,11 +101,13 @@ func test_the_market_charges_more_than_the_store_for_the_same_cost() -> void:
 		var across: int = market.stock().find(item_id)
 		if across >= 0:
 			assert_int(market.price(across)).is_greater(store.price(slot))
-	# 150% of 5 is 7.5, rounded up.
-	assert_int(MARKET.price_percent).is_equal(150)
-	var dear: RunShop = RunShop.new(RunState.new(1), MARKET, [_costing(5)])
-	dear.open()
-	assert_int(dear.price(0)).is_equal(8)
+	# The market's percent of the cost, rounded up: 120% of 5 is 6, and of 6 is 7.2, so 8.
+	assert_int(MARKET.price_percent).is_greater(100)
+	for cost: int in [5, 6]:
+		var dear: RunShop = RunShop.new(RunState.new(1), MARKET, [_costing(cost)])
+		dear.open()
+		assert_int(dear.price(0)).is_equal(ceili(cost * MARKET.price_percent / 100.0))
+		assert_int(dear.price(0)).is_greater(cost)
 
 
 func test_the_state_store_runs_out_of_an_item_and_the_market_does_not() -> void:
@@ -258,9 +261,15 @@ func test_reeducation_can_exchange_for_a_private_cadre() -> void:
 
 func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
 	var loop: RunLoop = _at_the_shops(19)
-	# The state store has as many Cadres as slots, so a reroll would only reorder them.
-	assert_int(STORE_POOL.cadres.size()).is_less_equal(STORE.slots)
-	assert_bool(loop.shop.reroll_changes()).is_false()
+	# A counter with no more Cadres than slots would only reorder them on a reroll. The
+	# state store has more Cadres than slots since ADR 0021, and more Directives than
+	# their slots, and it redraws both.
+	var few: Array[ModifierDef] = STORE_POOL.cadres.slice(0, STORE.slots)
+	var cadres_only: RunShop = RunShop.new(loop.state, STORE, few)
+	cadres_only.open()
+	assert_bool(cadres_only.reroll_changes()).is_false()
+	assert_int(RunLoop.DEFAULT_DIRECTIVES.directives.size()).is_greater(STORE.directive_slots)
+	assert_bool(loop.shop.reroll_changes()).is_true()
 	assert_bool(loop.market.reroll_changes()).is_true()
 
 
@@ -270,4 +279,5 @@ func test_a_save_from_the_middle_of_phase_4_gains_every_missing_field() -> void:
 		data.erase(field)
 	var record: Dictionary = {"checkpoint": data, "commands": []}
 	assert_bool(RunRecord.is_valid(record)).is_false()
-	assert_bool(RunRecord.is_valid(RunRecord.migrate_from_3(record))).is_true()
+	var migrated: Dictionary = RunRecord.migrate_from_12(RunRecord.migrate_from_3(record))
+	assert_bool(RunRecord.is_valid(migrated)).is_true()

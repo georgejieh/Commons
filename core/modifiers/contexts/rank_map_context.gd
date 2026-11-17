@@ -7,6 +7,9 @@ var seat: int
 var landlord: int
 ## True once a bomb has been played in this trick.
 var trick_bombed: bool
+## Bit per base rank: the ranks whose every card in the seat's hand carries the seat's
+## own stamp. 0 outside a round.
+var stamped: int = 0
 ## Effective rank per base rank, to edit.
 var rank_map: PackedByteArray
 

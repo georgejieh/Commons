@@ -41,7 +41,7 @@ func step(move: Pattern) -> void:
 			_current = null
 			_passes = 0
 	else:
-		var used: PackedByteArray = move.counts()
+		var used: PackedByteArray = move.spent_counts()
 		for rank: int in Ranks.COUNT:
 			_hands[_turn][rank] -= used[rank]
 		_current = move
@@ -70,8 +70,9 @@ func _finished() -> int:
 func _decide() -> Pattern:
 	var counts: PackedByteArray = _hands[_turn]
 	var mask: int = UnseenCards.mask_of(counts)
+	# Lean, as Bot.considered would leave them, without building the rest (ADR 0029).
 	var legal: Array[Pattern] = MoveGenerator.generate(
-		counts, mask, _current, _table.rules, _table.rank_map
+		counts, mask, _current, _table.rules, _table.rank_map, true
 	)
 	return Bot.decide_play(_view(), legal, _table, _config, BotBudget.unlimited()).pattern
 
@@ -85,7 +86,7 @@ func _view() -> SeatView:
 		sizes.append(size)
 	var history: Array[PublicPlay] = []
 	if _current != null:
-		history.append(PublicPlay.new(_owner, _current, _current.counts()))
+		history.append(PublicPlay.new(_owner, _current, _current.spent_counts()))
 	var no_cards: Array[CardInstance] = []
 	var public: PublicView = PublicView.new(
 		_landlord, _turn, sizes, history, no_cards, _current, PackedInt32Array([0, 0, 0])

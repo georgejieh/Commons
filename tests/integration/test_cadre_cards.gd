@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
-## A Cadre card shows its art alone; its name and rules are in its tooltip, on the
-## store counter and on the table's notice board.
+## On the store counter a Cadre card prints its art, or the empty frame for it, its name
+## and its full rules, and its Buy button carries the tooltip; on the table's notice board
+## a card shows its art and keeps its name and rules in its tooltip.
 
 const SEED: int = 4301
 const SAVE_PATH: String = "user://test_cadre_cards/run.json"
@@ -28,7 +29,7 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
-func test_store_cards_show_art_and_put_name_and_rules_in_the_tooltip() -> void:
+func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void:
 	var store: Control = _app.show_screen("store")
 	await await_idle_frame()
 	var counter: HBoxContainer = store.get("_counter")
@@ -38,25 +39,41 @@ func test_store_cards_show_art_and_put_name_and_rules_in_the_tooltip() -> void:
 	for slot: int in stock.size():
 		var panel: Control = counter.get_child(slot) as Control
 		var tip: String = ScreenKit.cadre_tip(_app.controller, stock[slot])
-		assert_str(panel.tooltip_text).is_equal(tip)
-		assert_str(tip).contains(tr("modifier.%s.name" % stock[slot]))
+		var buy: Button = panel.find_children("*", "Button", true, false)[0]
+		assert_str(buy.tooltip_text).is_equal(tip)
+		var name: String = tr("modifier.%s.name" % stock[slot])
+		assert_str(tip).contains(name)
+		# The name is printed once, and the full rules under it.
+		var names: Array[Node] = _labels(panel).filter(
+			func(label: Node) -> bool: return (label as Label).text == name
+		)
+		assert_int(names.size()).is_equal(1)
+		var rules: KeywordText = panel.find_children("*", "KeywordText", true, false)[0]
 		var rule: String = _app.controller.modifier_text(stock[slot])
-		assert_str(tip.replace("\n", " ")).contains(rule)
-		assert_int(_labels(panel).size()).is_equal(0)
+		assert_str(rules.get_parsed_text()).contains(rule)
+		var bare: bool = not ScreenKit.ART.has_cadre(stock[slot])
+		assert_int(panel.find_children("*", "ArtFrame", true, false).size()).is_equal(
+			1 if bare else 0
+		)
 
 
 func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
-	var store: Control = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
 	var counter: HBoxContainer = store.get("_counter")
-	var idle: Label = store.get("_reading")
-	assert_bool(idle.visible).is_false()
-	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
+	var slip: DetailSlip = store.slip()
+	assert_bool(slip.visible).is_false()
+	var card: Control = counter.get_child(0)
+	var buy: Button = card.find_children("*", "Button", true, false)[0]
 	buy.focus_entered.emit()
-	var reading: Label = store.get("_reading")
-	assert_bool(reading.visible).is_true()
+	await await_idle_frame()
+	# The shared slip reads it out, under the card and clear of it.
+	assert_bool(slip.visible).is_true()
 	var first: String = _app.controller.store_stock()[0]
-	assert_str(reading.text).is_equal(ScreenKit.cadre_tip(_app.controller, first))
+	assert_str(slip.shown_rule()).is_equal(ScreenKit.rule_text(_app.controller, first))
+	assert_bool(slip.get_global_rect().intersects(card.get_global_rect())).is_false()
+	buy.focus_exited.emit()
+	assert_bool(slip.visible).is_false()
 
 
 func test_the_notice_board_cards_carry_the_tooltip() -> void:
@@ -107,6 +124,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	# Coupons enough for the market's prices, handed out behind the controller.
 	var loop: RunLoop = _app.controller.get("_loop")
 	loop.state.coupons = 100
+	_app.controller.reseal_book()
 	var market: StoreScreen = _app.show_screen("black_market")
 	await await_idle_frame()
 	assert_bool(market.market).is_true()
@@ -135,6 +153,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 	var loop: RunLoop = _app.controller.get("_loop")
 	loop.state.coupons = 100
+	_app.controller.reseal_book()
 	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
 	var counter: HBoxContainer = store.get("_counter")
@@ -154,5 +173,6 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 func test_the_collection_lists_the_cadres_of_both_shops() -> void:
 	var collection: Control = _app.show_screen("collection")
 	await await_idle_frame()
-	var grid: GridContainer = collection.find_children("*", "GridContainer", true, false)[0]
-	assert_int(grid.get_child_count()).is_equal(RunLoop.all_cadres().size())
+	var flows: Array[Node] = collection.find_children("*", "HFlowContainer", true, false)
+	var cadres: int = flows[0].get_child_count() + flows[1].get_child_count()
+	assert_int(cadres).is_equal(RunLoop.all_cadres().size())

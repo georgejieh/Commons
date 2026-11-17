@@ -24,6 +24,9 @@ Blue and green leave the art as corruption rises. By stage 6 the art is printed 
 - **Line.** One ink weight per asset: about 3 px at 1080p for the main contours, and about half that for hatching. No soft airbrush outlines.
 - **Fill.** Flat silkscreen blocks with two or three tones per color. Gradients appear only in sun rays and halos.
 - **Texture.** Aged poster paper: fold lines, foxing, tea rings and torn edges. Print misregistration of 1 to 3 px on large red blocks. The paper ages with each stage, but the play area always stays calm and low in contrast, so the cards read clearly.
+- **Grime never costs readability.** A name or a rule the player must read is drawn in dark ink over the stains, at 16 px or more on a 1080-high screen, at every corruption stage. Wear the paper, not the words.
+
+**Nothing is clean.** Even at stage 0 there is a little grime on everything, and it worsens with every stage. This holds for things drawn in code as much as for painted art: no pure white, no fresh colour, no perfect edge. The dice bowl is the model (`BowlGrime`): its glaze is yellowed, crazed and tea-stained from the start, each stage adds cracks, chips and dirt, and at the deep stages the red 1 on the die is an eye.
 - **Light.** One warm source, top center, where the sun or eye sits in each poster. On the table, the lamp sits in the same place.
 - **Composition.** Heroic upward poses, crowds in rows, banners on the diagonal, the sun at the top. Key detail goes at the edges, never under where cards lie.
 
@@ -73,7 +76,7 @@ Rules:
 - **Motion never carries a fact alone.** The ledger, seats and meters show the same thing at rest, and reduced motion keeps every fact.
 - **Decay comes later.** As corruption rises the same moves should smear, stutter and thin out. Build the clean version first.
 
-Built so far: callouts, the score tally, thrown cards, seat tags, the Quota bar and its seal (`InkSeal`), meters that swell as they move, the kitty turned face up, and a purchase sealed "approved" and pinned to the board. Still to build in this language: coupons torn off as they are spent, sealed envelopes for packs, the black market, and the screens between Quotas.
+Built so far: callouts, the score tally, thrown cards, seat tags, the Quota bar and its seal (`InkSeal`), meters that swell as they move, the kitty turned face up, and a purchase sealed "approved" and pinned to the board, the audit as two dice thrown into a porcelain bowl (one tinted for each villager, a red 1 means an audit), and a gold "overfulfilled" seal on the Quota report. Still to build in this language: coupons torn off as they are spent, sealed envelopes for packs, the black market, and the screens between Quotas.
 
 ## Files, sizes and atlases
 
@@ -100,6 +103,7 @@ The private board in `design/reference/` is never used as image input.
 | Use invented, unreadable stamp shapes | Use Chinese characters or any lettering in the art |
 | Keep the corruption in the eye, the hands and the smiles | Use gore, bodies, or suffering played for shock |
 | Keep the play area calm and low in contrast | Put detail where cards lie |
+| Wear, stain and yellow anything drawn in code | Draw a clean, new-looking object at any stage |
 | Keep each villager's whole head inside the frame, centered in 4:5 | Crop a face at the frame edge |
 | Treat red as the poster's ink | Use red to mean anything but Zeal or the landlord in the UI |
 | Make stage variants by editing the existing asset | Regenerate a stage from scratch, which breaks the continuity between stages |

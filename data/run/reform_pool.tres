@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ReformPool" format=3]
+
+[ext_resource type="Script" path="res://data/run/reform_pool.gd" id="1"]
+[ext_resource type="Resource" path="res://data/modifiers/reforms/supply_cooperative.tres" id="2"]
+[ext_resource type="Resource" path="res://data/modifiers/reforms/work_point_reform.tres" id="3"]
+[ext_resource type="Resource" path="res://data/modifiers/reforms/enlarged_committee.tres" id="4"]
+[ext_resource type="Resource" path="res://data/modifiers/reforms/grain_reserve.tres" id="5"]
+[ext_resource type="Resource" path="res://data/modifiers/reforms/couriers_bag.tres" id="6"]
+[ext_resource type="Resource" path="res://data/modifiers/reforms/unplanned_economy.tres" id="7"]
+[ext_resource type="Resource" path="res://data/modifiers/reforms/mass_line.tres" id="8"]
+[ext_resource type="Resource" path="res://data/modifiers/reforms/industrialization.tres" id="9"]
+
+[resource]
+script = ExtResource("1")
+reforms = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9")])

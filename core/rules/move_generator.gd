@@ -2,7 +2,11 @@ class_name MoveGenerator
 extends RefCounted
 ## Lists every legal play for a hand, over ranks rather than card instances, in a fixed
 ## order. A chain is a sliding window over chainable ranks, and kickers are rank
-## combinations, so suits never multiply the branching.
+## combinations, so suits never multiply the branching. With wild cards in the hand
+## (ADR 0029) every rank can take them, each reading is listed once with the cards
+## WildSupply spends for it, and a kicker made of wild cards alone reads as the first rank
+## WildSupply offers, so readings that differ only in such a kicker are not repeated.
+## Lean generation, for bots, leaves out every play WildSupply.is_lean() refuses unbuilt.
 
 const SINGLE_WIDTH: int = 1
 const PAIR_WIDTH: int = 2
@@ -19,6 +23,10 @@ var _present: PackedByteArray = PackedByteArray()
 ## A play's main rank must map above this to be worth building.
 var _floor: int = NO_FLOOR
 var _moves: Array[Pattern] = []
+## Null when the hand holds no wild card.
+var _supply: WildSupply = null
+## When above zero, only plays of exactly this many cards: the readings of one set.
+var _target: int = 0
 
 
 func _init(
@@ -27,24 +35,50 @@ func _init(
 	_counts = counts
 	_rules = rules
 	_rank_map = rank_map
+	_supply = WildSupply.of(counts, rules)
+	var mask: int = rank_mask
+	if _supply != null:
+		_counts = _supply.available()
+		for rank: int in Ranks.COUNT:
+			mask |= (1 << rank) if _counts[rank] > 0 else 0
 	for rank: int in Ranks.COUNT:
-		if rank_mask & (1 << rank) != 0:
+		if mask & (1 << rank) != 0:
 			_present.append(rank)
 
 
-## Pass null for current when leading. A pass is never listed.
+## Pass null for current when leading. A pass is never listed. lean leaves out the plays
+## WildSupply.is_lean() refuses, which only a hand with a wild card has.
 static func generate(
 	counts: PackedByteArray,
 	rank_mask: int,
 	current: Pattern,
 	rules: RuleSet,
-	rank_map: PackedByteArray
+	rank_map: PackedByteArray,
+	lean: bool = false
 ) -> Array[Pattern]:
 	var generator: MoveGenerator = MoveGenerator.new(counts, rank_mask, rules, rank_map)
+	if generator._supply != null:
+		generator._supply.lean = lean
 	if current == null:
 		generator._lead()
 	else:
 		generator._follow(current)
+	return generator._moves
+
+
+## Every reading of exactly these cards, in generation order, for cards that hold a wild
+## card. Readings sorts the result and reads plain cards through the classifier.
+static func exact(
+	counts: PackedByteArray, rules: RuleSet, rank_map: PackedByteArray
+) -> Array[Pattern]:
+	var mask: int = 0
+	var total: int = 0
+	for rank: int in Ranks.COUNT:
+		mask |= (1 << rank) if counts[rank] > 0 else 0
+		total += counts[rank]
+	var generator: MoveGenerator = MoveGenerator.new(counts, mask, rules, rank_map)
+	generator._target = total
+	generator._lead()
 	return generator._moves
 
 
@@ -95,17 +129,24 @@ func _follow(current: Pattern) -> void:
 
 
 func _rank_groups(type: Pattern.Type, width: int) -> void:
+	if not _fits(width):
+		return
 	for rank: int in _present:
 		if _counts[rank] >= width and _rank_map[rank] > _floor:
 			_add(type, rank, 1, width, PackedByteArray())
 
 
 func _trios_with_kicker(type: Pattern.Type, width: int) -> void:
+	if not _fits(TRIO_WIDTH + width):
+		return
 	for rank: int in _present:
 		if _counts[rank] < TRIO_WIDTH or _rank_map[rank] <= _floor:
 			continue
+		_offer_wild_kickers(1 << rank, 1)
 		for kicker: int in _present:
-			if kicker != rank and _counts[kicker] >= width:
+			if kicker == rank or _counts[kicker] < width or not _kicker_offered(kicker, 1):
+				continue
+			if _own_or_natural(kicker, width):
 				var kickers: PackedByteArray = PackedByteArray()
 				kickers.resize(width)
 				kickers.fill(kicker)
@@ -118,7 +159,12 @@ func _chains(type: Pattern.Type, width: int, minimum: int, fixed_length: int) ->
 		if _rank_map[start] <= _floor:
 			continue
 		var length: int = 0
+		var standing: int = 0
 		while start + length <= last and _counts[start + length] >= width:
+			if _supply != null:
+				standing += maxi(0, width - _supply.natural[start + length])
+				if standing > _supply.total:
+					break
 			length += 1
 			if length >= minimum and (fixed_length == ANY_LENGTH or length == fixed_length):
 				_chain_at(type, start, length, width)
@@ -126,6 +172,13 @@ func _chains(type: Pattern.Type, width: int, minimum: int, fixed_length: int) ->
 
 func _chain_at(type: Pattern.Type, start: int, length: int, width: int) -> void:
 	var body: int = width * length
+	var wings: int = 0
+	if type == Pattern.Type.AIRPLANE_SINGLES:
+		wings = length
+	elif type == Pattern.Type.AIRPLANE_PAIRS:
+		wings = length * PAIR_WIDTH
+	if not _fits(body + wings):
+		return
 	match type:
 		Pattern.Type.AIRPLANE_SINGLES:
 			_single_wings(start, length, body)
@@ -160,7 +213,10 @@ func _wing_pool(start: int, length: int, width: int) -> PackedByteArray:
 		if rank >= Ranks.TWO and not _rules.joker_or_two_may_be_wing():
 			continue
 		pool.append(rank)
-	return pool
+	var excluded: int = ((1 << length) - 1) << start
+	if not _rules.joker_or_two_may_be_wing():
+		excluded |= ~((1 << Ranks.TWO) - 1)
+	return _offered_pool(pool, excluded, length, width)
 
 
 ## Adds one play per way to pick slots ranks from the pool, each repeated width times.
@@ -204,23 +260,33 @@ func _add_kicker_set(
 ) -> void:
 	var kickers: PackedByteArray = PackedByteArray()
 	var mask: int = 0
+	var wild_alone: int = 0
 	for pick: int in picks:
 		var rank: int = pool[pick]
+		if _supply != null and _supply.natural[rank] == 0:
+			wild_alone += 1
 		mask |= 1 << rank
 		for _copy: int in width:
 			kickers.append(rank)
 	if width == SINGLE_WIDTH and mask & Classifier.ROCKET_MASK == Classifier.ROCKET_MASK:
 		if not _rules.rocket_may_be_kicker():
 			return
+	# Kickers of wild cards alone take the offered ranks in order, so no two plays differ
+	# only in what such a kicker reads as.
+	for index: int in wild_alone:
+		if mask & (1 << _supply.offered[index]) == 0:
+			return
 	_add(type, main, chain, body + kickers.size(), kickers)
 
 
 func _four_two_singles() -> void:
-	if not _rules.four_two_singles_allowed():
+	if not _rules.four_two_singles_allowed() or not _fits(QUAD_WIDTH + FOUR_TWO_KICKERS):
 		return
 	var type: Pattern.Type = Pattern.Type.FOUR_TWO_SINGLES
 	for rank: int in _present:
 		if _counts[rank] < QUAD_WIDTH or _rank_map[rank] <= _floor:
+			continue
+		if not _own_or_natural(rank, QUAD_WIDTH):
 			continue
 		var pool: PackedByteArray = _kicker_pool(rank, SINGLE_WIDTH)
 		_kicker_sets(type, rank, 1, QUAD_WIDTH, pool, FOUR_TWO_KICKERS, SINGLE_WIDTH)
@@ -230,11 +296,13 @@ func _four_two_singles() -> void:
 
 
 func _four_two_pairs() -> void:
-	if not _rules.four_two_pairs_allowed():
+	var cards: int = QUAD_WIDTH + FOUR_TWO_KICKERS * PAIR_WIDTH
+	if not _rules.four_two_pairs_allowed() or not _fits(cards):
 		return
 	var type: Pattern.Type = Pattern.Type.FOUR_TWO_PAIRS
 	for rank: int in _present:
-		if _counts[rank] >= QUAD_WIDTH and _rank_map[rank] > _floor:
+		var quad: bool = _counts[rank] >= QUAD_WIDTH and _own_or_natural(rank, QUAD_WIDTH)
+		if quad and _rank_map[rank] > _floor:
 			var pool: PackedByteArray = _kicker_pool(rank, PAIR_WIDTH)
 			_kicker_sets(type, rank, 1, QUAD_WIDTH, pool, FOUR_TWO_KICKERS, PAIR_WIDTH)
 
@@ -244,29 +312,70 @@ func _kicker_pool(body_rank: int, width: int) -> PackedByteArray:
 	for rank: int in _present:
 		if rank != body_rank and _counts[rank] >= width:
 			pool.append(rank)
-	return pool
+	return _offered_pool(pool, 1 << body_rank, FOUR_TWO_KICKERS, width)
+
+
+func _offered_pool(pool: PackedByteArray, excluded: int, slots: int, width: int) -> PackedByteArray:
+	return pool if _supply == null else _supply.offered_pool(pool, excluded, slots, width)
+
+
+func _own_or_natural(rank: int, width: int) -> bool:
+	return _supply == null or _supply.fills_own(rank, width)
+
+
+func _offer_wild_kickers(excluded: int, slots: int) -> void:
+	if _supply != null:
+		_supply.offer(excluded, slots)
+
+
+func _kicker_offered(rank: int, slots: int) -> bool:
+	return _supply == null or _supply.is_offered(rank, slots)
+
+
+func _fits(cards: int) -> bool:
+	return _target == 0 or cards == _target
 
 
 func _bombs(current: Pattern) -> void:
 	for rank: int in _present:
 		var largest: int = _counts[rank] if _rules.five_plus_is_bomb() else QUAD_WIDTH
 		for size: int in range(QUAD_WIDTH, mini(largest, _counts[rank]) + 1):
+			if not _fits(size):
+				continue
 			var bomb: Pattern = _build(Pattern.Type.BOMB, rank, 1, size, PackedByteArray())
-			if current == null or PlayComparator.beats(bomb, current, _rules):
+			if _spends(bomb) and (current == null or PlayComparator.beats(bomb, current, _rules)):
 				_moves.append(bomb)
 
 
 func _rocket(current: Pattern) -> void:
-	if _counts[Ranks.SMALL_JOKER] == 0 or _counts[Ranks.BIG_JOKER] == 0:
+	if _counts[Ranks.SMALL_JOKER] == 0 or _counts[Ranks.BIG_JOKER] == 0 or not _fits(PAIR_WIDTH):
 		return
 	var main: int = Ranks.SMALL_JOKER
 	var rocket: Pattern = _build(Pattern.Type.ROCKET, main, 1, PAIR_WIDTH, PackedByteArray())
-	if current == null or PlayComparator.beats(rocket, current, _rules):
+	if _spends(rocket) and (current == null or PlayComparator.beats(rocket, current, _rules)):
 		_moves.append(rocket)
 
 
 func _add(type: Pattern.Type, main: int, chain: int, cards: int, kickers: PackedByteArray) -> void:
-	_moves.append(_build(type, main, chain, cards, kickers))
+	if not _fits(cards):
+		return
+	var move: Pattern = _build(type, main, chain, cards, kickers)
+	if _spends(move):
+		_moves.append(move)
+
+
+## With wild cards, records the cards the move spends, or returns false when the hand
+## cannot spend it.
+func _spends(move: Pattern) -> bool:
+	if _supply == null:
+		return true
+	var reading: PackedByteArray = move.counts()
+	var printed: PackedByteArray = _supply.fill(reading)
+	if printed.is_empty():
+		return false
+	if printed != reading:
+		move.spent = printed
+	return true
 
 
 func _build(

@@ -22,6 +22,11 @@ extends Resource
 @export var anti_spring_doubles: bool
 ## Hand sizes that are called out to the table.
 @export var announce_at: Array[int]
+## On its first chance to pass in a round, the seat must play when anything beats the
+## table (Night Shift, ADR 0023).
+@export var must_answer_once: bool = false
+## Every other seat sees the seat's hand (Glass Walls, ADR 0023).
+@export var hand_shown: bool = false
 
 
 ## Returns a copy sharing nothing, because duplicate() shares the arrays.

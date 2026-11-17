@@ -10,6 +10,8 @@ extends Resource
 @export var stamped_card: int = 1
 ## Added when the player grabs the landlord seat from a villager who held it.
 @export var grab: int = 4
+## Added for each step a met Quota is overfulfilled by: the village pays for the norm.
+@export var overfulfilment: int = 1
 ## Denunciation added at each Set's end, sampled at Resentment as a share of max. This
 ## is the one mapping from Resentment to Denunciation.
 @export var denunciation: Curve

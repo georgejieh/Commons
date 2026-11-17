@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="HouseholdDef" format=3]
+
+[ext_resource type="Script" path="res://data/run/households/household_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "returned_soldier"
+unlock_tier = 4
+name_key = "household.returned_soldier.name"
+text_key = "household.returned_soldier.text"
+coupons = 2
+plot_cards = 0
+plot_low_rank = 7
+plot_high_rank = 10
+cadre_id = "loudspeaker"
+resentment = 0
+denunciation = 10
+famine = 0

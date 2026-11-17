@@ -6,7 +6,9 @@ extends RefCounted
 ## Scores add up along a path, so a lower score is simply better: fewer hands, then fewer
 ## low singles, then more group strength. Keep one instance for one decision, so all its
 ## candidates share the memo, and clear it for the next. Quads stay bombs unless a chain
-## takes from them, and trios stay whole, so neither is ever spent as kickers.
+## takes from them, and trios stay whole, so neither is ever spent as kickers. Wild cards
+## (ADR 0029) are a budget: a chain may take one per rank where a rank is one short,
+## and the leaf places the rest (WildLeaf).
 
 const POSITION_SHIFT: int = 60
 const HAND_SHIFT: int = 32
@@ -20,6 +22,10 @@ const SINGLE_WIDTH: int = 1
 const PAIR_WIDTH: int = 2
 const TRIO_WIDTH: int = 3
 const BOMB_WIDTH: int = 4
+const BUDGET_SHIFT: int = 40
+const OWN_SHIFT: int = 44
+const TAKE_BITS: int = 2
+const TAKE_MASK: int = 3
 
 var _rules: RuleSet
 var _rank_map: PackedByteArray
@@ -31,6 +37,13 @@ var _memos: Dictionary[int, Dictionary] = {}
 var _stored: int = 0
 var _planes: PackedInt32Array = PackedInt32Array()
 var _leaf: DecompositionLeaf
+## Wild cards not yet taken by a chain, and every wild card in the hand.
+var _budget: int = 0
+var _wilds: int = 0
+var _own: PackedByteArray = PackedByteArray()
+## The hand's wild cards by printed rank, packed, so hands that differ only there differ
+## in the memo.
+var _own_code: int = 0
 
 
 func _init(rules: RuleSet, rank_map: PackedByteArray, memo_cap: int) -> void:
@@ -63,7 +76,28 @@ func memo_size() -> int:
 func score(counts: PackedByteArray) -> int:
 	_counts = counts.duplicate()
 	_planes.clear()
+	_split_wilds()
 	return _search(0, CountKey.encode(_counts), 0)
+
+
+## Takes the wild cards out of the counts into the budget.
+func _split_wilds() -> void:
+	_own = PackedByteArray()
+	_own.resize(Ranks.COUNT)
+	_wilds = 0
+	_own_code = 0
+	for rank: int in _rules.wild_ranks():
+		if rank > Ranks.TWO:
+			continue
+		# A wild rank held in no card still takes its place in the code, so the memo
+		# tells one wild rank's cards from the other's.
+		_own_code = (_own_code << CountKey.BITS_PER_RANK) | _counts[rank]
+		if _counts[rank] == 0:
+			continue
+		_own[rank] = _counts[rank]
+		_wilds += _counts[rank]
+		_counts[rank] = 0
+	_budget = _wilds
 
 
 func decompose(counts: PackedByteArray) -> Decomposition:
@@ -77,14 +111,17 @@ func _search(position: int, key: int, plane_code: int) -> int:
 	while position <= _last and _counts[position] == 0:
 		position += 1
 	var memo_key: int = key | (position << POSITION_SHIFT)
-	if not _memos.has(plane_code):
-		_memos[plane_code] = {}
-	var memo: Dictionary = _memos[plane_code]
+	var memo_code: int = plane_code
+	if _wilds > 0:
+		memo_code |= (_budget << BUDGET_SHIFT) | (_own_code << OWN_SHIFT)
+	if not _memos.has(memo_code):
+		_memos[memo_code] = {}
+	var memo: Dictionary = _memos[memo_code]
 	if memo.has(memo_key):
 		return memo[memo_key]
 	var best: int
 	if position > _last:
-		best = _leaf.read(_counts, _planes).score
+		best = _leaf.read(_leaf_counts(), _planes).score
 	else:
 		best = mini(_search(position + 1, key, plane_code), _chains_at(position, key, plane_code))
 	if _stored < _cap:
@@ -93,21 +130,46 @@ func _search(position: int, key: int, plane_code: int) -> int:
 	return best
 
 
+## The counts the leaf reads: with no wild card spare, the counts as they stand.
+func _leaf_counts() -> PackedByteArray:
+	if _budget == 0:
+		return _counts
+	return WildLeaf.new(_leaf, _own).placed(_counts, _planes, _budget, _budget == _wilds)
+
+
 func _chains_at(start: int, key: int, plane_code: int) -> int:
 	var best: int = NO_SCORE
 	for width: int in range(SINGLE_WIDTH, TRIO_WIDTH + 1):
 		var length: int = 0
 		var minimum: int = _minimum_length(width)
 		var chain_key: int = key
-		while start + length <= _last and _counts[start + length] >= width:
-			_counts[start + length] -= width
-			chain_key -= width << ((start + length) * CountKey.BITS_PER_RANK)
+		var takes: int = 0
+		var budget: int = _budget
+		# A chain may take one wild card per rank where it falls short (ADR 0029).
+		while (
+			start + length <= _last
+			and (
+				_counts[start + length] >= width
+				or (_budget > 0 and _counts[start + length] + 1 == width)
+			)
+		):
+			var take: int = mini(width, _counts[start + length])
+			_counts[start + length] -= take
+			_budget -= width - take
+			takes |= take << (length * TAKE_BITS)
+			chain_key -= take << ((start + length) * CountKey.BITS_PER_RANK)
 			length += 1
 			if length >= minimum:
 				best = mini(best, _after_chain(start, length, width, chain_key, plane_code))
-		for rank: int in range(start, start + length):
-			_counts[rank] += width
+		_restore(start, length, takes)
+		_budget = budget
 	return best
+
+
+## Puts back the natural cards a chain took, as packed by _chains_at.
+func _restore(start: int, length: int, takes: int) -> void:
+	for offset: int in length:
+		_counts[start + offset] += (takes >> (offset * TAKE_BITS)) & TAKE_MASK
 
 
 func _after_chain(start: int, length: int, width: int, key: int, plane_code: int) -> int:
@@ -139,7 +201,7 @@ func _walk(position: int, key: int, plane_code: int, groups: Array[Pattern]) -> 
 	while position <= _last and _counts[position] == 0:
 		position += 1
 	if position > _last:
-		groups.append_array(_leaf.groups(_counts, _planes))
+		groups.append_array(_leaf.groups(_leaf_counts(), _planes))
 	elif _search(position + 1, key, plane_code) == target:
 		_walk(position + 1, key, plane_code, groups)
 	else:
@@ -152,17 +214,29 @@ func _walk_chain(
 	for width: int in range(SINGLE_WIDTH, TRIO_WIDTH + 1):
 		var length: int = 0
 		var chain_key: int = key
-		while start + length <= _last and _counts[start + length] >= width:
-			_counts[start + length] -= width
-			chain_key -= width << ((start + length) * CountKey.BITS_PER_RANK)
+		var takes: int = 0
+		var budget: int = _budget
+		# A chain may take one wild card per rank where it falls short (ADR 0029).
+		while (
+			start + length <= _last
+			and (
+				_counts[start + length] >= width
+				or (_budget > 0 and _counts[start + length] + 1 == width)
+			)
+		):
+			var take: int = mini(width, _counts[start + length])
+			_counts[start + length] -= take
+			_budget -= width - take
+			takes |= take << (length * TAKE_BITS)
+			chain_key -= take << ((start + length) * CountKey.BITS_PER_RANK)
 			length += 1
 			if length < _minimum_length(width):
 				continue
 			if _after_chain(start, length, width, chain_key, plane_code) == target:
 				_keep_chain(start, length, width, chain_key, plane_code, groups)
 				return
-		for rank: int in range(start, start + length):
-			_counts[rank] += width
+		_restore(start, length, takes)
+		_budget = budget
 
 
 func _keep_chain(

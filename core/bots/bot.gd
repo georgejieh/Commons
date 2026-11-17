@@ -1,7 +1,8 @@
 class_name Bot
 extends RefCounted
 ## The only way the game asks a bot for anything. Three pure functions, each with a
-## time budget. A bot sees its SeatView and the legal moves, never another hand.
+## time budget. A bot sees its SeatView and the legal moves, never another hand. A config
+## that carries a scripted villager is answered from its script (ADR 0026).
 
 
 ## True claims the landlord seat. counts is the bot's own dealt hand.
@@ -13,6 +14,8 @@ static func decide_bid(
 	config: BotConfig,
 	_budget: BotBudget
 ) -> bool:
+	if config.scripted != null:
+		return config.scripted.bid()
 	var points: float = BidPolicy.hand_points(counts, table, config.weights)
 	return points >= BidPolicy.threshold(is_grab, is_last, config.weights) - config.ambition
 
@@ -21,6 +24,9 @@ static func decide_bid(
 static func decide_play(
 	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig, budget: BotBudget
 ) -> BotPlay:
+	if config.scripted != null:
+		return config.scripted.play(view, legal)
+	legal = considered(legal)
 	if legal.is_empty():
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.PASS_NOTHING_BEATS)
 	if config.effort < 1.0 and config.tier == BotConfig.Tier.EASY:
@@ -40,6 +46,7 @@ static func decide_play(
 static func search_job(
 	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
 ) -> BotSearchJob:
+	legal = considered(legal)
 	var scorer: CandidateScorer = CandidateScorer.new(
 		view.own_counts, table, config.weights, config.type_bias
 	)
@@ -54,6 +61,16 @@ static func search_job(
 	return BotSearchJob.new(position, candidates, play)
 
 
+## The legal moves a bot weighs: every one, less the wild plays it never needs
+## (WildSupply.is_lean, ADR 0029). With no wild card in hand that is all of them.
+static func considered(legal: Array[Pattern]) -> Array[Pattern]:
+	var kept: Array[Pattern] = []
+	for move: Pattern in legal:
+		if WildSupply.is_lean(move):
+			kept.append(move)
+	return legal if kept.size() == legal.size() or kept.is_empty() else kept
+
+
 static func _by_policy(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 	if position.view.public.current_play == null:
 		return LeadPolicy.choose(position, legal)
@@ -64,10 +81,17 @@ static func _by_policy(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 static func declare_need(
 	true_need: int, config: BotConfig, stream: RandomStream, _budget: BotBudget
 ) -> int:
+	if config.scripted != null:
+		return config.scripted.need(true_need)
 	if stream.next_float() < config.honesty:
 		return true_need
 	var extra: int = roundi(true_need * config.lie_share)
 	return true_need + maxi(extra, BotConfig.TABLE.lie_floor)
+
+
+## The card IDs the bot hands its teammate when the player calls Mutual Aid on it.
+static func choose_gift(view: SeatView, table: BotTable, count: int) -> Array[int]:
+	return AidChoice.choose(view, table.rank_map, count)
 
 
 ## A hand split into its fewest plays (P2.2), for a view that sorts cards by group.

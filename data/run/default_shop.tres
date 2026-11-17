@@ -1,11 +1,19 @@
 [gd_resource type="Resource" script_class="ShopParams" format=3]
 
 [ext_resource type="Script" path="res://data/run/shop_params.gd" id="1"]
+[ext_resource type="Resource" path="res://data/modifiers/envelopes/directive_envelope.tres" id="2"]
+[ext_resource type="Resource" path="res://data/modifiers/envelopes/campaign_envelope.tres" id="3"]
 
 [resource]
 script = ExtResource("1")
 slots = 3
+directive_slots = 2
 cadre_slots = 5
+campaign_offers = 1
+campaign_slots = 2
+reform_offers = 1
+envelope_offers = 1
+envelopes = Array[Resource]([ExtResource("2"), ExtResource("3")])
 reroll_base = 2
 reroll_step = 1
 rarity_weights = Array[int]([60, 30, 10])
