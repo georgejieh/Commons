@@ -41,3 +41,19 @@ func famine_relief() -> int:
 ## True when the deck is gathered and cut between a Quota's rounds, not shuffled.
 func gathers_deck() -> bool:
 	return false
+
+
+## Ranks drawn wild with every deal, for every seat (ADR 0029).
+func wild_ranks_per_round() -> int:
+	return 0
+
+
+## The hooks of a rule this Reform puts on the table for every seat, or none. The run
+## adds the rule to the modifier stack each round, after the Cadres (ADR 0029).
+func rule_hooks() -> Array[String]:
+	return []
+
+
+## The rule's effect, with this Reform's parameters, or null with no rule.
+func table_rule() -> ModifierEffect:
+	return null

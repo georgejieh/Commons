@@ -184,9 +184,10 @@ func player_view() -> SeatView:
 	return view
 
 
-## What the player's cards would score if played now, through the real scoring path.
-func preview_play(card_ids: Array[int]) -> PlayPreview:
-	return _scoring.preview(_round, PLAYER, card_ids)
+## What the player's cards would score if played now, through the real scoring path, as
+## reading when one is named (ADR 0029), else as their strongest reading.
+func preview_play(card_ids: Array[int], reading: Pattern = null) -> PlayPreview:
+	return _scoring.preview(_round, PLAYER, card_ids, reading)
 
 
 ## What the seat's rules and rank order are, for bots and hints.
@@ -573,6 +574,9 @@ func _rebuild_modifiers() -> void:
 	_stack.clear()
 	for cadre_id: String in state.inventory.cadres:
 		_stack.add(_pool_by_id[cadre_id], PLAYER, state.cadre_memos.entry(cadre_id))
+	# A Reform's rule for every seat, such as Industrialization's bigger bombs (ADR 0029).
+	for rule: ActiveModifier in RunReforms.table_rules(state):
+		_stack.add_entry(rule)
 	for round_index: int in range(1, state.round_index + 1):
 		var id: String = state.debuff_ladder[round_index]
 		if id == RunState.NO_DEBUFF:
@@ -603,6 +607,13 @@ func _deal_cards() -> void:
 		_deal = Dealer.deal(cards, stream)
 	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream))
 	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
+	# Mass Line's rank is drawn after the deal on its stream, so the deal is unchanged and
+	# every seat knows it before the bid (ADR 0029).
+	for _rank: int in RunReforms.wild_ranks_per_round(state):
+		if RunWild.has_room(state):
+			var rank: int = RunWild.add(state, stream)
+			set_log.add(RunWild.event(state, rank))
+			_table.set_wild_ranks(state.wild_ranks)
 
 
 ## Who bids first moves round the table with the year, Set and round, so no seat always
@@ -635,8 +646,11 @@ func _record_bid(seat: int, claim: bool) -> void:
 	if _bidding.needs_redeal():
 		set_log.add(RunEvent.new(RunEvent.Type.REDEALT))
 		_move(RunFlow.State.BIDDING)
-		# A deal nobody bid on was never played, so a redeal is shuffled.
+		# A deal nobody bid on was never played, so a redeal is shuffled, and Mass Line
+		# draws its rank again with the new deal.
 		state.deck_order.clear()
+		if RunReforms.wild_ranks_per_round(state) > 0:
+			state.wild_ranks.clear()
 		_deal_cards()
 		_bidding = Bidding.new(_first_bidder())
 		return

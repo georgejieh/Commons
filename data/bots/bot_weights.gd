@@ -27,6 +27,9 @@ extends Resource
 @export var ace_points: float
 @export var bomb_points: float
 @export var rocket_points: float
+## Each wild card held while a rank is wild (ADR 0029), from the value of a 2. Nothing
+## reads it while no rank is wild.
+@export var wild_card_points: float
 ## Each hand under par adds shape_points.
 @export var shape_par_hands: float
 @export var shape_points: float

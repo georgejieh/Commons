@@ -10,6 +10,8 @@ extends RefCounted
 
 const STRATEGIES: Array[String] = ["collective", "private", "mixed"]
 const PARAMS: BalanceParams = preload("res://tools/balance_params.tres")
+## The wild ranks' three items (ADR 0029), whose purchases the harness counts.
+const WILD_ITEMS: Array[String] = ["model_worker", "mass_line", "industrialization"]
 
 var result: BalanceResult = BalanceResult.new()
 ## Weights Expert villagers search with in place of the game's, from sampling(), or
@@ -240,7 +242,9 @@ func _play() -> void:
 	elif play.is_pass():
 		_send("pass", _controller.pass_turn())
 	else:
-		_send("play", _controller.play(_controller.card_ids_for(play.pattern)))
+		# Under a wild rank the play is sent as the reading the bot chose (ADR 0029).
+		var reading: Pattern = null if _controller.wild_ranks().is_empty() else play.pattern
+		_send("play", _controller.play(_controller.card_ids_for(play.pattern), reading))
 
 
 func _need() -> void:
@@ -327,6 +331,13 @@ func _shop_step(state: RunState) -> String:
 
 
 func _bought(offer: BalanceOffer, state: RunState) -> void:
+	var item_id: String = offer.item_id
+	if offer.kind == BalanceOffer.Kind.REFORM:
+		item_id = _controller.reform_shelf().stock()[offer.slot]
+	elif offer.kind == BalanceOffer.Kind.CAMPAIGN:
+		item_id = _controller.campaign_shelf(offer.market).stock()[offer.slot]
+	if WILD_ITEMS.has(item_id):
+		result.wild_buys[item_id] = result.wild_buys.get(item_id, 0) + 1
 	if offer.kind == BalanceOffer.Kind.DIRECTIVE:
 		_directive_bought = true
 		result.directive_buys += 1
@@ -369,6 +380,10 @@ func _on_event(event: RunEvent) -> void:
 			result.starved += 1
 		RunEvent.Type.CAMPAIGN_USED:
 			result.campaigns_used += 1
+			if event.text == WILD_ITEMS[0]:
+				result.workers_used += 1
+		RunEvent.Type.WILD_RANKS:
+			result.wild_draws += 1
 		RunEvent.Type.RESENTMENT:
 			if event.text in [Resentment.PRIVATE_PURCHASE, Resentment.PRIVATE_CADRE]:
 				result.market_resentment += event.value

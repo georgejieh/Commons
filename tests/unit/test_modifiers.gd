@@ -129,10 +129,11 @@ func test_every_definition_in_data_is_valid() -> void:
 			reforms += 1
 			assert_array(Array(ModifierValidator.validate_reform(reform, keys))).is_empty()
 	assert_bool(checked >= 4).is_true()
-	# ADR 0021's six Directives and eight Campaigns (P4.11).
+	# ADR 0021's six Directives and eight Campaigns (P4.11), and ADR 0029's Model Worker,
+	# Mass Line and Industrialization.
 	assert_int(directives).is_equal(6)
-	assert_int(campaigns).is_equal(8)
-	assert_int(reforms).is_equal(6)
+	assert_int(campaigns).is_equal(9)
+	assert_int(reforms).is_equal(8)
 
 
 ## A Reform missing its strings, cost, effect or parameters is caught.

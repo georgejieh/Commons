@@ -56,3 +56,21 @@ All four tiers choose from moves the generator produces, each with its reading, 
 - The run save records the wild ranks of the round in play. The round's replay needs each play's reading, so a recorded play carries it.
 - The tournament tool gains a `--wild N` option.
 - The ladder of unlock tiers grows to five, and ADR 0021's table gains a row.
+
+## As built (2026-11-16)
+
+Calls made while building, which the sections above did not settle:
+
+- **Placement.** Where a play's stand-ins could fill either the body or a kicker, they fill the body first, the lowest printed rank and then the lowest ID first. Grain comes from the printed cards, so this costs a little Grain against the other order.
+- **Lean generation.** Bots and rollouts never consider a wild card standing in for a kicker, or a four-with-two whose four needs a stand-in. The round still accepts both from the player.
+- **The demo stops below tier 4.** A run outside the profile opens tiers 0 to 3 only. The demo, the tutorial and every default test run are unchanged, and no golden moved. The balance harness opens every tier.
+- **Model Worker** uses the timing Campaigns already have for "before the first play": a peasant uses it at the opening, the landlord on their first turn. It cannot be used during the bid, so a redeal never meets one. It draws on the deal stream when used.
+- **Mass Line redraws on a redeal**, so the rank goes with the deal that is played.
+- **Industrialization's Zeal is for every seat's bombs**, since the rule is the table's. It is 1 per card past the fourth, as data (`zeal_percent_per_card` 100).
+- **Bids** count each wild card held at `wild_card_points`, 2, a 2's value.
+- **Ranks are named in words**, "Sevens are wild" and "Bomb of Nines", not "7s" and "Bomb of 9s" as the examples above have it: the call-out is set in capitals, where "AS" does not read as Aces. A Single and the ends of a chain keep the printed glyph.
+- **The hint's reading is played without the picker** while the selection is still the hint's cards on the same turn. Any other selection that can be played more than one way opens the picker.
+- **The strip lists Industrialization** under the rules for the whole table, with the round's wild ranks.
+- **Nothing announces a tier opening between runs**, as for tiers 1 to 3. The collection shows the three items locked until then.
+
+Not done: a full `tools/expert_deadline.gd -- --wild 1` run. A 20-deal sample gave a p99 of 403 ms with one wild rank against 355 ms with none, both over the 300 ms the runner is set to, and 20 deals is too few to trust. P5.0 moves Expert off the command thread and takes the full measurement with it.

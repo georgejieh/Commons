@@ -57,6 +57,7 @@ var _moments: TableMoments = TableMoments.new()
 var _campaigns: TableCampaigns = TableCampaigns.new()
 var _debuff_beats: DebuffMoments = DebuffMoments.new()
 var _tutorial: TableTutorial = TableTutorial.new()
+var _wild: TableWild = TableWild.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -104,6 +105,7 @@ func _ready() -> void:
 	_place(_pile, pile_at, Vector2(PILE_HALF_WIDTH * 2.0, 300))
 	_campaigns.place(self)
 	_debuff_beats.place(self, _hand_view)
+	_wild.place(self)
 	# The need panel, sheets and banner all lie over the pile.
 	move_child(_pile, _need_panel.get_index())
 
@@ -158,6 +160,7 @@ func open(app: DemoApp) -> void:
 	_pause.wire(app)
 	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
 	_input.tray = _campaigns.tray
+	_wild.setup(_hand_view, _pile, _debuffs, _moments, _player, _commands, _input)
 	_setup_dread(app)
 	# Joining mid-Set replays what already happened silently, without banners.
 	_replaying = true
@@ -250,6 +253,7 @@ func _on_event(event: RunEvent) -> void:
 	# Campaigns first, so a forced pass is tagged as one when its pass arrives.
 	_campaigns.on_event(event, _replaying or _player.flushing)
 	_moments.on_event(event, _replaying or _player.flushing)
+	_wild.on_event(event, _replaying or _player.flushing)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
@@ -346,7 +350,7 @@ func _show_play(event: RoundEvent) -> void:
 	if event.seat == 0:
 		for card: CardInstance in event.cards:
 			origins.append(_hand_view.card_center(card.id()))
-	_pile.show_play(event.cards, _seat_center(event.seat), origins)
+	_pile.show_play(event.cards, _seat_center(event.seat), origins, event.pattern)
 
 
 func _seat_center(seat: int) -> Vector2:

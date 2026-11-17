@@ -14,6 +14,10 @@ var prompt: Callable = Callable()
 var gate: Callable = Callable()
 ## Opens the rules card.
 var open_rules: Callable = Callable()
+## Asks which reading to play when the chosen cards can be played more than one way now
+## (ADR 0029); with none set, the strongest is played.
+var picker: ReadingPicker = null:
+	set = _set_picker
 
 var _controller: RunController
 var _hand: HandModel
@@ -22,6 +26,8 @@ var _actions: ActionBar
 var _need_panel: NeedPanel
 var _player: EventPlayer
 var _names: Dictionary[int, String] = {}
+## The cards the open picker plays.
+var _picking: Array[int] = []
 
 
 func setup(
@@ -115,13 +121,41 @@ func _show_bid() -> void:
 	_actions.reading.tooltip_text = tr("table.bid_tip")
 
 
-## Every command fills the event queue, so the buttons go off until it drains.
+## Every command fills the event queue, so the buttons go off until it drains. Cards
+## that can be played more than one way now open the reading picker, unless they are the
+## hint's, which plays the reading the hint meant (ADR 0029).
 func _on_play() -> void:
-	if not _allowed("play", _hand.selected_ids()):
+	var ids: Array[int] = _hand.selected_ids()
+	if not _allowed("play", ids):
 		return
-	if _controller.play(_hand.selected_ids()) == RunController.OK:
+	var reading: Pattern = _hand.hint_reading()
+	if reading == null and picker != null:
+		var readings: Array[Pattern] = _controller.readings_for(ids)
+		if readings.size() > 1:
+			_picking = ids
+			picker.open(readings)
+			return
+	_send_play(ids, reading)
+
+
+func _send_play(ids: Array[int], reading: Pattern) -> void:
+	if _controller.play(ids, reading) == RunController.OK:
 		_hand.clear()
 	refresh()
+
+
+## The picker's choice plays the cards it was opened on, as that reading.
+func _on_picked(reading: Pattern) -> void:
+	var ids: Array[int] = _picking
+	_picking = []
+	_send_play(ids, reading)
+
+
+func _set_picker(value: ReadingPicker) -> void:
+	picker = value
+	if picker != null:
+		picker.chosen.connect(_on_picked)
+		picker.closed.connect(func() -> void: _picking = [])
 
 
 ## Night Shift refuses the pass (ADR 0023): the Pass ticket is knocked back like a
@@ -171,12 +205,11 @@ func _show_sort() -> void:
 	_actions.sort.tooltip_text = tr("action.sort_tip").format({"mode": mode})
 
 
-## Selects the play a Medium villager would make, and lights it.
+## Selects the play a Medium villager would make, as its reading, and lights it.
 func _on_hint() -> void:
 	if _controller.awaiting() != RunController.AWAIT_PLAY or not _allowed("hint"):
 		return
-	var ids: Array[int] = _hand.suggested_ids()
-	_hand.select_only(ids)
+	var ids: Array[int] = _hand.take_hint()
 	_hand_view.show_hint(ids)
 	if ids.is_empty():
 		_actions.reading.text = tr("hand.hint.pass")

@@ -51,6 +51,11 @@ var market_buys_over_limit: int = 0
 ## The most black market purchases in one visit.
 var market_buys_per_visit: int = 0
 var swapped_cards: int = 0
+## The wild ranks' items bought, by ID, and the ranks made wild over the run (ADR 0029),
+## for the harness's closing line; not in the CSV.
+var wild_buys: Dictionary[String, int] = {}
+var wild_draws: int = 0
+var workers_used: int = 0
 var rerolls: int = 0
 
 

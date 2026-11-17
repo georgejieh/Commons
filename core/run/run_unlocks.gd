@@ -3,17 +3,20 @@ extends RefCounted
 ## Which content a run may be offered (ADR 0025, "Unlocks"). An item is open when its
 ## unlock tier is at or below the finished runs the run started from, saved in its
 ## identity, so a loaded save opens the same items. A run that is not a full run, such as
-## the demo, has every tier open. This decides eligibility only: definitions are still
-## looked up by ID from the whole pools, so an item already held always works. Debuffs
-## have no tier.
+## the demo, has every tier open below the wild ranks', so the demo stays as it was built
+## (ADR 0029). This decides eligibility only: definitions are still looked up by ID from
+## the whole pools, so an item already held always works. Debuffs have no tier.
 
 ## Past every tier an item can carry: everything is open.
 const ALL_OPEN: int = 1 << 30
+## The tier of the items that make ranks wild, the new mechanic of the fifth tier (ADR
+## 0029). A run outside the profile stops below it.
+const WILD_TIER: int = 4
 
 
 ## The highest tier open to the run.
 static func open_tier(identity: RunIdentity) -> int:
-	return identity.finished_runs if identity.is_full() else ALL_OPEN
+	return identity.finished_runs if identity.is_full() else WILD_TIER - 1
 
 
 static func is_open(unlock_tier: int, open: int) -> bool:

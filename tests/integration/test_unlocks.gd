@@ -3,8 +3,9 @@ extends GdUnitTestSuite
 ## finished runs it started from, by every way an item can be offered or handed over:
 ## both counters' Cadres through rerolls, Directives, Campaigns, Reforms, the envelope
 ## kinds and what they hold, and reeducation's exchange. Held items of a locked tier still
-## work, a demo is never filtered, and a save keeps the pools it started with. Tier 0
-## fills every counter. Families join the village by finished runs and a landlord ending.
+## work, a demo opens every tier but the wild ranks', and a save keeps the pools it started
+## with. Tier 0 fills every counter. Families join the village by finished runs and a
+## landlord ending.
 
 const SEEDS: int = 60
 const REROLLS: int = 4
@@ -100,13 +101,16 @@ func _envelopes(loop: RunLoop, tiers: Dictionary[String, int], finished: int) ->
 
 func test_every_offer_path_draws_only_open_items() -> void:
 	var tiers: Dictionary[String, int] = _tiers()
-	for finished: int in [0, 1, 2, 3]:
+	for finished: int in [0, 1, 2, 3, 4]:
 		var reached: Dictionary[int, bool] = {}
 		for seed_value: int in SEEDS:
 			var loop: RunLoop = _loop(_full_state(seed_value, finished))
 			_visit(loop, tiers, finished)
 			_envelopes(loop, tiers, finished)
-			for item_id: String in loop.shop.stock() + loop.market.stock():
+			# The wild ranks' tier holds no Cadre, so its Campaign and Reforms count too.
+			var shown: Array[String] = loop.shop.stock() + loop.market.stock()
+			shown.append_array(loop.shop.campaigns.stock() + loop.shop.reforms.stock())
+			for item_id: String in shown:
 				if not item_id.is_empty():
 					reached[tiers[item_id]] = true
 			# Reeducation's exchange, from every Cadre held in turn.
@@ -155,14 +159,49 @@ func test_a_held_item_of_a_locked_tier_still_works_after_a_load() -> void:
 	assert_bool(resumed.pools.store_cadres.any(_is("seed_grain"))).is_false()
 
 
-func test_a_demo_run_is_never_filtered() -> void:
+## A demo run opens every tier below the wild ranks' (ADR 0029), so it is offered what it
+## always was and never a wild item.
+func test_a_demo_run_opens_every_tier_but_the_wild_ranks() -> void:
 	var loop: RunLoop = _loop(RunState.new(6300))
+	var below: Callable = func(item: Resource) -> bool:
+		return int(item.get("unlock_tier")) < RunUnlocks.WILD_TIER
 	assert_int(loop.pools.store_cadres.size()).is_equal(RunLoop.DEFAULT_CADRES.cadres.size())
 	assert_int(loop.pools.market_cadres.size()).is_equal(RunLoop.DEFAULT_MARKET.cadres.size())
-	assert_int(loop.pools.reforms.size()).is_equal(RunReforms.all().size())
+	assert_int(loop.pools.reforms.size()).is_equal(RunReforms.all().filter(below).size())
 	var campaigns: int = loop.pools.store_campaigns.size() + loop.pools.market_campaigns.size()
-	assert_int(campaigns).is_equal(RunCampaigns.all().size())
+	assert_int(campaigns).is_equal(RunCampaigns.all().filter(below).size())
 	assert_int(loop.pools.exchange().size()).is_equal(RunLoop.all_cadres().size())
+	for reform: ReformDef in loop.pools.reforms:
+		assert_bool(["mass_line", "industrialization"].has(reform.id)).is_false()
+	for campaign: CampaignDef in loop.pools.store_campaigns:
+		assert_str(campaign.id).is_not_equal("model_worker")
+
+
+## The wild ranks' items are the fifth tier: shut at three finished runs, open at four,
+## and the collection says how many runs are left until then.
+func test_the_wild_ranks_tier_opens_after_four_finished_runs() -> void:
+	var wild: Array[String] = ["model_worker", "mass_line", "industrialization"]
+	for finished: int in [3, 4]:
+		var pools: RunPools = RunPools.new(_full_state(6600, finished).identity)
+		var offered: Array[String] = []
+		for campaign: CampaignDef in pools.store_campaigns + pools.market_campaigns:
+			offered.append(campaign.id)
+		for reform: ReformDef in pools.reforms:
+			offered.append(reform.id)
+		for item_id: String in wild:
+			assert_bool(offered.has(item_id)).is_equal(finished >= RunUnlocks.WILD_TIER)
+	for finished: int in [3, 4]:
+		var view: CollectionView = CollectionView.for_runs(finished)
+		var found: int = 0
+		for section: int in [CollectionView.CAMPAIGNS, CollectionView.REFORMS]:
+			for sheet: UnlockSheet in view.sheets(section):
+				if finished == 3 and not sheet.open:
+					found += 1
+					assert_str(sheet.locked_line).is_equal(UnlockSheet.runs_line(1))
+				elif finished == 4 and wild.has(sheet.id):
+					found += 1
+					assert_bool(sheet.open).is_true()
+		assert_int(found).is_equal(wild.size())
 
 
 func test_a_save_keeps_the_pools_it_started_with() -> void:

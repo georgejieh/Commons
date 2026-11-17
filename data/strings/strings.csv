@@ -910,3 +910,52 @@ name.full,{given} {surname}
 settings.family_name,Family name
 settings.change_name,Change
 settings.name_locked,Finish or abandon your run to change it.
+campaign.model_worker.name,Model Worker
+campaign.model_worker.text,"Before the first play: one rank, drawn at random, is wild for every seat this round. A wild card may stand in for any rank from 3 to 2. With a rank wild already, this adds a second. It cannot be used while two are wild."
+campaign.model_worker.prompt,Press Use to make a rank wild this round.
+campaign.reason.wild_full,Two ranks are wild already.
+reform.mass_line.name,Mass Line
+reform.mass_line.text,"Every round, {ranks} rank drawn with the deal is wild for every seat, named before the bid. A wild card may stand in for any rank from 3 to 2."
+reform.industrialization.name,Industrialization
+reform.industrialization.text,"Bombs may hold 5 or more cards, for every seat, and more cards beat fewer. Each card past the fourth adds {zeal_percent_per_card} Zeal to that play."
+rank.plural.3,Threes
+rank.plural.4,Fours
+rank.plural.5,Fives
+rank.plural.6,Sixes
+rank.plural.7,Sevens
+rank.plural.8,Eights
+rank.plural.9,Nines
+rank.plural.10,Tens
+rank.plural.j,Jacks
+rank.plural.q,Queens
+rank.plural.k,Kings
+rank.plural.a,Aces
+rank.plural.2,Twos
+wild.one,{rank} are wild
+wild.two,{first} and {second} are wild
+wild.rule,A wild card plays as its own rank or stands in for any rank from 3 to 2.
+callout.wild.sub,"For every seat, this round only."
+callout.wild.sub.two,"{ranks}, for every seat, this round only."
+cheat.wild,Wild ranks
+cheat.wild.stand_in,"A wild card plays as its own rank or stands in for any rank from 3 to 2, never a Joker. Wild cards played alone keep one at its own rank: two wild Sevens are a Pair of Sevens."
+cheat.wild.order,"Bombs from high to low: the Rocket, four wild cards of one rank played as that rank, a Bomb with no stand-in, then a Bomb with one. Within each, the higher rank wins."
+cheat.wild.big,"Industrialization: a Bomb may hold 5 or more cards, and more cards beat fewer. At the same size the order above decides, and the Rocket still beats every Bomb."
+cheat.wild.grain,"Grain comes from each card as printed: a wild Seven standing in for a Queen scores as a Seven."
+reading.title,Play these cards as
+reading.cancel,Cancel
+reading.single,Single {rank}
+reading.pair,Pair of {ranks}
+reading.trio,Trio of {ranks}
+reading.trio_single,Trio of {ranks} with a Single
+reading.trio_pair,Trio of {ranks} with a Pair
+reading.straight,"Straight, {low} to {high}"
+reading.pair_chain,"Pair Run, {low} to {high}"
+reading.airplane,"Airplane, {low} to {high}"
+reading.airplane_singles,"Airplane, {low} to {high}, with Singles"
+reading.airplane_pairs,"Airplane, {low} to {high}, with Pairs"
+reading.four_two_singles,Four {ranks} with two Singles
+reading.four_two_pairs,Four {ranks} with two Pairs
+reading.bomb,Bomb of {ranks}
+reading.bomb_big,Bomb of {count} {ranks}
+reading.rocket,Rocket
+reading.kickers,{reading}: {kickers}

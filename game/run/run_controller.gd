@@ -582,11 +582,28 @@ func card_ids_for(pattern: Pattern) -> Array[int]:
 
 
 ## How the player's chosen cards read and what they would score now, or null between
-## rounds. A preview changes nothing.
-func preview_play(card_ids: Array[int]) -> PlayPreview:
+## rounds, as reading when one is named. A preview changes nothing.
+func preview_play(card_ids: Array[int], reading: Pattern = null) -> PlayPreview:
 	if _loop.round_state() == null:
 		return null
-	return _loop.preview_play(card_ids.duplicate())
+	var wanted: Pattern = null if reading == null else reading.copy()
+	return _loop.preview_play(card_ids.duplicate(), wanted)
+
+
+## The ranks wild for every seat now (ADR 0029), in the order they were drawn.
+func wild_ranks() -> Array[int]:
+	return _loop.state.wild_ranks.duplicate()
+
+
+## True while a bomb may hold five or more cards (Industrialization).
+func big_bombs() -> bool:
+	return player_table().rules.five_plus_is_bomb()
+
+
+## The held Reforms that put a rule on the table for every seat, such as
+## Industrialization, for the rules strip.
+func table_rule_reforms() -> Array[String]:
+	return RunReforms.table_rule_ids(_loop.state)
 
 
 ## The modifiers in play now: Cadres in slot order, then this Set's debuffs so far.

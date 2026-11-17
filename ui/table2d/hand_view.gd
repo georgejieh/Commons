@@ -27,6 +27,9 @@ const SORT_KEYS: Dictionary[Sort, String] = {
 ## Tweens the lift of a selected or hovered card, when set.
 var motion: TableMotion = null
 var sort_mode: Sort = Sort.RANK
+## The round's wild ranks as the table's events have named them (ADR 0029): their cards
+## carry the ribbon.
+var wild_ranks: Array[int] = []
 
 var _hinted: Array[int] = []
 var _model: HandModel
@@ -57,6 +60,7 @@ func show_cards() -> void:
 			view.reparent(self, false)
 		view.bind(card)
 		_note_fold(view, card)
+		view.set_wild(wild_ranks.has(card.base_rank()))
 		view.pressed.connect(_on_pressed)
 		view.hovered.connect(_on_hovered)
 		_views.append(view)
@@ -132,6 +136,22 @@ func hide_cards(ids: Array[int]) -> void:
 	for view: CardView in _views:
 		if ids.has(view.card_id):
 			view.modulate.a = 0.0
+
+
+## Hangs the ribbon on the cards of these ranks and takes it off the rest, without
+## dealing the fan again, so a hand still rising keeps moving.
+func mark_wild(ranks: Array[int]) -> void:
+	wild_ranks = ranks.duplicate()
+	for view: CardView in _views:
+		var card: int = view.card_id
+		for held: CardInstance in _model.cards():
+			if held.id() == card:
+				view.set_wild(wild_ranks.has(held.base_rank()))
+
+
+## The views in the fan, left to right, for tests and playtests.
+func views() -> Array[CardView]:
+	return _views.duplicate()
 
 
 ## Lights these cards with the hint edge until the hand next changes.

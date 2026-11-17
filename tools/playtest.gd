@@ -67,6 +67,7 @@ var _reform_shot: bool = false
 var _envelope_shot: bool = false
 var _parcel_shot: bool = false
 var _debuffs_shot: bool = false
+var _wild_store_shot: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
 ## True for the arrival's own short run (--tutorial).
@@ -165,6 +166,7 @@ func _step() -> void:
 			await _click_first_button()
 		"store":
 			await _shot("store")
+			await _wild_store_frames()
 			await _reform_frames()
 			await _buy_one()
 			await _issue_one()
@@ -212,6 +214,7 @@ func _table_step() -> void:
 			if _rounds_seen == 2 and not _debuffs_shot:
 				_debuffs_shot = true
 				await _debuff_frames()
+				await _wild_table_frames()
 				return
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
@@ -607,6 +610,48 @@ func _debuff_frames() -> void:
 		await _frames(30)
 
 
+## ADR 0029's wild ranks at the table, in a sandbox put back after (tools/playtest_wild.gd).
+func _wild_table_frames() -> void:
+	var walk: Object = _wild_walk()
+	await walk.call("table", _driver)
+	_took(walk)
+
+
+## The state store with each of the wild ranks' three items on its counter, once a run.
+func _wild_store_frames() -> void:
+	if _wild_store_shot:
+		return
+	_wild_store_shot = true
+	var walk: Object = _wild_walk()
+	await walk.call("store")
+	_took(walk)
+
+
+## The collection of a profile with three finished runs, at the locked wild tier.
+func _wild_collection_frame() -> void:
+	var view: CollectionView = CollectionView.for_runs(3)
+	var index: int = 0
+	var locked: int = -1
+	for section: int in view.section_keys().size():
+		for sheet: UnlockSheet in view.sheets(section):
+			if not sheet.open and locked < 0:
+				locked = index
+			index += 1
+	var walk: Object = _wild_walk()
+	await walk.call("collection", locked)
+	_took(walk)
+
+
+func _wild_walk() -> Object:
+	var script: GDScript = load("res://tools/playtest_wild.gd")
+	return script.new(self, _app, _out, _headless, _shots)
+
+
+func _took(walk: Object) -> void:
+	_shots = int(walk.get("shots"))
+	_misclicks += int(walk.get("misclicks"))
+
+
 ## Puts a debuff in force from the round under way to the Quota's end, as if it had
 ## arrived with this round. A Set's first round is always clean, so there the stack takes
 ## it straight and the ladder's next step carries it on.
@@ -933,6 +978,7 @@ func _meta_frames(profile: SaveService) -> void:
 	await _click_button_with_text(tr("setup.back"))
 	await _click_button_with_text(tr("title.collection"))
 	await _shot("collection_open")
+	await _wild_collection_frame()
 	page = switcher.call("current")
 	shown = page.call("open_line")
 	_expect(shown == CollectionView.for_runs(3).open_line(), "OPEN COLLECTION COUNT WRONG")

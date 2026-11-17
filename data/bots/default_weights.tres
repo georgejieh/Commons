@@ -19,6 +19,7 @@ two_points = 2.0
 ace_points = 1.0
 bomb_points = 5.0
 rocket_points = 7.0
+wild_card_points = 2.0
 shape_par_hands = 7.0
 shape_points = 1.0
 call_threshold = 7.0

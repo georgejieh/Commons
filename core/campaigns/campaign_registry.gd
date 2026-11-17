@@ -32,4 +32,6 @@ static func _build(campaign_id: String) -> CampaignEffect:
 			return SeizureNoticeEffect.new()
 		"anonymous_letter":
 			return AnonymousLetterEffect.new()
+		"model_worker":
+			return ModelWorkerEffect.new()
 	return null

@@ -159,6 +159,7 @@ Every item carries an unlock tier in its data. A tier opens after that many fini
 | 1 | 1 run | Cultural Revolution, Model Commune, Shock Brigade, Show Trial, The Informant, Last Sheaf | Overfulfillment, Appeal, Registration Drive; Enlarged Committee, Grain Reserve |
 | 2 | 2 runs | Poor Peasants' Association, Seed Grain, Planned Allocation, Red Ink, Class Label | Courier's Bag |
 | 3 | 3 runs | Rehabilitation, Steel Target | Seizure Notice; Unplanned Economy |
+| 4 | 4 runs | None | Model Worker; Mass Line, Industrialization ([ADR 0029](0029-wild-ranks.md)) |
 
 Registration Drive moved from tier 2 to tier 1 on 2026-11-15: the black market had only the Anonymous Letter to offer as a Campaign for a player's first two runs, and the Parcel already brings stamped cards at tier 0.
 

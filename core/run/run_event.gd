@@ -86,6 +86,10 @@ enum Type {
 	## (ADR 0031): value is the steps it cost, 0 on the last free Quota, and amount the
 	## Famine it added.
 	STOOD_BY,
+	## A rank became wild for every seat this round (ADR 0029), drawn by Mass Line after the
+	## deal or by Model Worker: value is the rank, text every rank wild now, joined by
+	## commas, in the order they were drawn.
+	WILD_RANKS,
 }
 
 var type: Type

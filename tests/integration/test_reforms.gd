@@ -43,7 +43,7 @@ func _played_set(seed_value: int, reforms: Array[String], sets: SetConfig) -> Ru
 	return loop
 
 
-func test_the_pool_holds_adr_0021s_six_reforms() -> void:
+func test_the_pool_holds_adr_0021s_six_reforms_and_adr_0029s_two() -> void:
 	var ids: Array[String] = []
 	for reform: ReformDef in POOL.reforms:
 		ids.append(reform.id)
@@ -58,6 +58,8 @@ func test_the_pool_holds_adr_0021s_six_reforms() -> void:
 				"grain_reserve",
 				"couriers_bag",
 				"unplanned_economy",
+				"mass_line",
+				"industrialization",
 			]
 		)
 	)
@@ -78,8 +80,10 @@ func test_the_store_offers_one_reform_the_same_for_the_same_seed() -> void:
 		assert_int(second.player_reroll()).is_equal(RunLoop.Reason.OK)
 		assert_array(first.shop.reforms.stock()).is_equal(second.shop.reforms.stock())
 		seen[offer[0]] = true
-	# Every Reform turns up across the seeds, Supply Cooperative too.
-	assert_int(seen.size()).is_equal(POOL.reforms.size())
+	# Every Reform a run outside the profile may be offered turns up across the seeds, Supply
+	# Cooperative too; the wild ranks' tier is not among them (ADR 0029).
+	assert_int(seen.size()).is_equal(RunPools.new(RunState.new(0).identity).reforms.size())
+	assert_bool(seen.has("mass_line") or seen.has("industrialization")).is_false()
 
 
 ## The draw comes last on the shop stream, so every other draw is as it was.
@@ -118,6 +122,7 @@ func test_a_held_or_held_back_reform_is_never_offered() -> void:
 	var state: RunState = RunState.new(1)
 	state.reforms.assign(["work_point_reform", "enlarged_committee", "grain_reserve"])
 	state.reforms.append_array(["couriers_bag", "unplanned_economy", "supply_cooperative"])
+	state.reforms.append_array(["mass_line", "industrialization"])
 	var counter: ReformCounter = ReformCounter.new(state, STORE, POOL.reforms)
 	counter.draw()
 	assert_array(counter.stock()).is_empty()

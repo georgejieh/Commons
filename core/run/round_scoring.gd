@@ -58,9 +58,12 @@ func scores() -> PackedFloat64Array:
 	return _scores
 
 
-## How the seat's cards would read and score if played now.
-func preview(round_state: RoundState, seat: int, card_ids: Array[int]) -> PlayPreview:
-	var reading: PlayReading = round_state.read_play(seat, card_ids)
+## How the seat's cards would read and score if played now, as wanted when it names one
+## of their readings.
+func preview(
+	round_state: RoundState, seat: int, card_ids: Array[int], wanted: Pattern = null
+) -> PlayPreview:
+	var reading: PlayReading = round_state.read_play(seat, card_ids, wanted)
 	if reading.pattern == null:
 		return PlayPreview.new(reading, 0.0)
 	var left: int = round_state.remaining()[seat] - reading.cards.size()

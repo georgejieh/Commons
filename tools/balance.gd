@@ -55,11 +55,34 @@ func _initialize() -> void:
 		"wall_seconds": (Time.get_ticks_msec() - began) / 1000.0,
 		"expert_samples": _expert_samples,
 	}
+	print(_wild_line())
 	var out: String = options.get("out", DEFAULT_OUT)
 	var saved: bool = _save(out.path_join("balance_runs.csv"), _tally.csv())
 	saved = _save(out.path_join("balance_quotas.csv"), _tally.quotas_csv()) and saved
 	saved = _save(out.path_join("balance.md"), BalanceReport.markdown(_tally, setup)) and saved
 	quit(_exit_code(saved, options.has("check")))
+
+
+## How often each of the wild ranks' items was bought, and the runs that played a rank
+## wild (ADR 0029).
+func _wild_line() -> String:
+	var bought: Dictionary[String, int] = {}
+	var runs: int = 0
+	var draws: int = 0
+	var used: int = 0
+	for result: BalanceResult in _tally.runs():
+		for item_id: String in result.wild_buys:
+			bought[item_id] = bought.get(item_id, 0) + result.wild_buys[item_id]
+		runs += 1 if result.wild_draws > 0 else 0
+		draws += result.wild_draws
+		used += result.workers_used
+	var parts: PackedStringArray = []
+	for item_id: String in BalanceDriver.WILD_ITEMS:
+		parts.append("%s %d" % [item_id, bought.get(item_id, 0)])
+	var bought_line: String = (
+		"wild items bought: %s; Model Workers used: %d" % [", ".join(parts), used]
+	)
+	return bought_line + "; runs with a wild rank: %d, ranks drawn: %d" % [runs, draws]
 
 
 ## Reads the options into the run's fields. Returns what is wrong with them, or "".

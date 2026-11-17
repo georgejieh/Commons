@@ -28,4 +28,8 @@ static func _build(reform_id: String) -> ReformEffect:
 			return CouriersBagEffect.new()
 		"unplanned_economy":
 			return UnplannedEconomyEffect.new()
+		"mass_line":
+			return MassLineEffect.new()
+		"industrialization":
+			return IndustrializationEffect.new()
 	return null

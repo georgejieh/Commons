@@ -6,6 +6,8 @@ extends RefCounted
 
 ## The Campaign tray, which takes its keys first.
 var tray: CampaignTray = null
+## The reading picker, which takes every key while it is open (ADR 0029).
+var picker: ReadingPicker = null
 
 var _pause: PauseMenu
 var _cheat_sheet: CheatSheet
@@ -33,6 +35,8 @@ func setup(
 
 ## Acts on event and returns true when it used it.
 func handle(event: InputEvent) -> bool:
+	if picker != null and picker.handle(event):
+		return true
 	if handle_tray(event):
 		return true
 	if event.is_action_pressed("ui_cancel") and not _pause.visible:

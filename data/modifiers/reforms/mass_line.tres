@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ReformDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/reform_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mass_line"
+cost = 10
+unlock_tier = 4
+parameters = Dictionary[String, int]({"ranks": 1})
+held_back = false
+name_key = "reform.mass_line.name"
+text_key = "reform.mass_line.text"

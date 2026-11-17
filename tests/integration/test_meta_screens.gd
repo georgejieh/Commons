@@ -242,7 +242,8 @@ func test_the_collection_fits_both_screens_and_counts_whats_open() -> void:
 			assert_str(screen.open_line()).is_equal(line)
 			assert_int(screen.entries().size()).is_equal(view.total())
 			if profile:
-				assert_int(view.open_count()).is_equal(view.total())
+				# Three runs open every tier but the wild ranks' three items (ADR 0029).
+				assert_int(view.total() - view.open_count()).is_equal(3)
 	var fresh: CollectionView = CollectionView.for_runs(0)
 	assert_int(fresh.open_count()).is_less(fresh.total())
 

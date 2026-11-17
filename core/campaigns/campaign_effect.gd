@@ -22,6 +22,8 @@ enum Reason {
 	ALREADY_MARKED,
 	## A hand in the trade holds a single card.
 	HAND_TOO_SMALL,
+	## Two ranks are wild already, the most there can be (ADR 0029).
+	WILD_FULL,
 }
 
 var parameters: Dictionary[String, int] = {}
