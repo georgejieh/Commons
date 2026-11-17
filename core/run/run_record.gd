@@ -277,7 +277,10 @@ static func is_valid(data: Dictionary) -> bool:
 
 ## Returns null when a saved command or a written decision no longer applies, so the
 ## caller can fall back. The searcher decides searching villagers once the replay is
-## over; data without the written marker replays as a record from before it.
+## over; data without the written marker replays as a record from before it. With
+## outside, searches are answered from outside the loop (P5.0): a villager the record
+## ends before, as in a save written while it was thinking, is not decided here, and the
+## loop comes back standing still for it.
 static func resume(
 	data: Dictionary,
 	configs: Array[BotConfig],
@@ -285,7 +288,8 @@ static func resume(
 	params: RunParams = RunLoop.DEFAULT_PARAMS,
 	pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs,
 	meters: MeterTable = RunLoop.DEFAULT_METERS,
-	searcher: Callable = Callable()
+	searcher: Callable = Callable(),
+	outside: bool = false
 ) -> RunLoop:
 	var loop: RunLoop = RunLoop.new(
 		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool, meters
@@ -294,6 +298,7 @@ static func resume(
 	# keeps it even when no new Set starts first, as in the store.
 	loop.record.mark(loop.state)
 	loop.decisions.searcher = searcher
+	loop.decisions.answered_outside = outside
 	# Before the checkpoint resumes, since villagers can act before the first command.
 	var written: Array[Dictionary] = []
 	written.assign(data.get("decisions", []))

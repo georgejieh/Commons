@@ -63,9 +63,14 @@ func resumed(loop: RunLoop, loaded: SaveLoad = null) -> bool:
 
 
 ## Before the controller handles a command: compares the book, reads the ledger and asks
-## the profile whether its seal held. Returns true when it changed the run.
+## the profile whether its seal held. Returns true when it changed the run. While a
+## villager's play is searched (P5.0) no figure can be corrected, since the books command
+## waits on the player, so the book and the ledger are left for the next check.
 func check(loop: RunLoop) -> bool:
 	var changed: bool = false
+	if loop.awaiting() == RunLoop.Awaiting.VILLAGER_SEARCH:
+		_check_profile(loop)
+		return false
 	if _book.holds(loop):
 		var found: Dictionary = _book.differences(loop.state)
 		if not found.is_empty():

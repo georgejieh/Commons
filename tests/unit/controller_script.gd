@@ -8,9 +8,13 @@ const NEED: int = 12
 var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
 
 
-## Takes one player turn. Returns false when the run is not waiting on the player.
+## Takes one player turn. Returns false when the run is not waiting on the player. A
+## villager whose play is searched (P5.0) is waited for, as a UI would, then it goes on.
 func act(controller: RunController) -> bool:
 	match controller.awaiting():
+		RunController.AWAIT_VILLAGER:
+			controller.settle_search()
+			return true
 		RunController.AWAIT_BID:
 			var claim: bool = Bot.decide_bid(
 				counts(controller.player_cards()),

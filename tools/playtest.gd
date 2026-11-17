@@ -258,6 +258,9 @@ func _table_step() -> void:
 				await _shot("round%d_opening" % _rounds_seen)
 			var opening_bar: Object = table.call("actions")
 			await _press(opening_bar.get("play_on"))
+		10:
+			# A villager's play is being searched (P5.0): nothing to press, so the walk waits.
+			pass
 
 
 func _play_turn(table: Node, controller: Node) -> void:

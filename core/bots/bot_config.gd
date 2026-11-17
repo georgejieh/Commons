@@ -56,6 +56,24 @@ static func from_personality(personality: Personality, seed_value: int = 0) -> B
 	return config
 
 
+## A copy that shares nothing the run changes, for a search that reads it on another
+## thread (P5.0). The weights and script are shared: nothing changes them in play.
+func copy() -> BotConfig:
+	var made: BotConfig = BotConfig.new(weights, tier, search_seed)
+	made.bomb_shift = bomb_shift
+	made.cooperation = cooperation
+	made.loyalty = loyalty
+	made.honesty = honesty
+	made.lie_share = lie_share
+	made.ambition = ambition
+	made.grudge = grudge
+	made.memory = memory.duplicate()
+	made.effort = effort
+	made.type_bias = type_bias.duplicate()
+	made.scripted = scripted
+	return made
+
+
 ## Cooperation with loyalty added, never past MAX_COOPERATION, nor below its own.
 func team_cooperation() -> float:
 	return maxf(cooperation, minf(cooperation + loyalty, MAX_COOPERATION))

@@ -21,6 +21,9 @@ enum Awaiting {
 	## Before the first play, a peasant player holding a Campaign for that moment may use
 	## it, then plays on with player_begin() (ADR 0021).
 	PLAYER_OPENING,
+	## A searching villager's play is being decided outside the loop (P5.0): read what the
+	## search needs from search_request() and hand the play in with villager_play().
+	VILLAGER_SEARCH,
 }
 enum Reason { OK, NOT_AWAITED, ILLEGAL }
 
@@ -95,6 +98,10 @@ var _deal: DealResult
 var _bidding: Bidding
 var _round: RoundState
 var _round_seen: int = 0
+## While the loop stands still for a villager's search: what the search reads, and the
+## loop's own copy of the moves the answer must be among.
+var _request: SearchRequest = null
+var _request_legal: Array[Pattern] = []
 
 
 ## configs has one entry per seat; the player's entry is unused.
@@ -783,7 +790,41 @@ func _bot_play() -> void:
 			_after_action()
 		return
 	var legal: Array[Pattern] = _round.legal_moves()
+	if decisions.stands_for(config, legal):
+		_request = decisions.request(seat, _round.view_for(seat), legal, seat_table(seat), config)
+		_request_legal = legal
+		_awaiting = Awaiting.VILLAGER_SEARCH
+		return
 	var play: BotPlay = decisions.decide(_round.view_for(seat), legal, seat_table(seat), config)
+	_play_bot(seat, config, legal, play)
+
+
+## What the search for the villager the loop stands still for reads (P5.0), or null
+## while it waits on anything else. The search may read it on any thread.
+func search_request() -> SearchRequest:
+	return _request
+
+
+## Takes the searched play of the villager the loop stands still for, and plays on (P5.0).
+## A play that is not among its legal moves or a pass is refused as any bot's is: counted
+## in refused_bot_actions, with the first legal move played instead. Not a player command:
+## the record writes it with the villagers' decisions, never with the commands.
+func villager_play(play: BotPlay) -> Reason:
+	if _awaiting != Awaiting.VILLAGER_SEARCH:
+		return Reason.NOT_AWAITED
+	var seat: int = _request.seat
+	var legal: Array[Pattern] = _request_legal
+	_request = null
+	_request_legal = []
+	_awaiting = Awaiting.NOTHING
+	_play_bot(seat, _configs[seat], legal, play)
+	advance()
+	return Reason.OK
+
+
+## Plays a bot's chosen play, or the first legal move in place of one it may not make,
+## and writes a searching seat's to the record.
+func _play_bot(seat: int, config: BotConfig, legal: Array[Pattern], play: BotPlay) -> void:
 	var action: RoundAction = RoundAction.new(seat)
 	if not play.is_pass():
 		action = _round.action_for(play.pattern)

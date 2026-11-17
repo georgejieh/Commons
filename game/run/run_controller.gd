@@ -48,6 +48,8 @@ const AWAIT_STORE: int = RunLoop.Awaiting.SHOP
 const AWAIT_RUN_OVER: int = RunLoop.Awaiting.RUN_OVER
 const AWAIT_REEDUCATION: int = RunLoop.Awaiting.REEDUCATION
 const AWAIT_OPENING: int = RunLoop.Awaiting.PLAYER_OPENING
+## A villager's play is being searched (P5.0): nothing to do but wait for it.
+const AWAIT_VILLAGER: int = RunLoop.Awaiting.VILLAGER_SEARCH
 ## A Campaign that can be used now (CampaignEffect.Reason.OK).
 const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
 ## The envelope pick that keeps nothing.
@@ -57,8 +59,11 @@ const SUIT_KEYS: Array[String] = ["suit.spades", "suit.hearts", "suit.clubs", "s
 const OK: int = RunLoop.Reason.OK
 
 ## True while the run's searching villagers decide under the ExpertRunner's deadline, as
-## the live game plays (ADR 0030). A tool or test that must stay repeatable sets it false
-## before it starts or resumes a run, and they search with no limit.
+## the live game plays (ADR 0030). In the tree the loop then stands still while one
+## thinks, and the search runs on the worker pool while frames go on (P5.0); outside it
+## each is searched at once on the calling thread. A tool or test that must stay
+## repeatable sets it false before it starts or resumes a run, and they search with no
+## limit inside the loop.
 var live_search: bool = true
 ## Weights a searching villager decides with in place of its own, so a tool can sample
 ## fewer deals (ADR 0027); null for its own.
@@ -68,8 +73,11 @@ var search_weights: BotWeights = null
 var file_watch: FileWatch = FileWatch.new()
 
 var _loop: RunLoop
-## Decides for the loop's searcher. Every decision blocks until its samples finish.
+## Decides for the loop's searcher, and for a villager answered at once outside the tree.
+## Every decision blocks until its samples finish.
 var _runner: ExpertRunner = ExpertRunner.new()
+## The searches run on the pool for villagers the loop stands still for (P5.0).
+var _searches: VillagerSearches = VillagerSearches.new()
 var _saves: SaveService = null
 ## The profile save, which the village's memory outlives runs in (P4.6).
 var _profile: SaveService = null
@@ -118,6 +126,7 @@ func _begin(
 	file_watch.attach(saves, profile)
 	_attach(RunLoop.new(state, configs, sets), saves)
 	_loop.start_set()
+	_serve()
 	file_watch.started(_loop)
 	_loop.set_log.flush()
 	awaiting_changed.emit(_loop.awaiting())
@@ -137,6 +146,9 @@ func _take_over(loop: RunLoop, saves: SaveService, profile: SaveService, loaded:
 	file_watch.attach(saves, profile)
 	_attach(loop, saves)
 	if file_watch.resumed(_loop, loaded):
+		_save()
+	# A save written while a villager thought resumes standing still for it (P5.0).
+	if _serve():
 		_save()
 	_remember(_loop.flow.state())
 	file_watch.sealed(_loop)
@@ -172,13 +184,22 @@ func resume_saved(
 	var data: Dictionary = loaded.data
 	if not ContentStamp.matches(loaded.extras):
 		data = ContentStamp.at_checkpoint(data)
-	var loop: RunLoop = RunRecord.resume(data, configs, sets)
+	var loop: RunLoop = _resumed(data, configs, sets)
 	if loop == null:
-		loop = RunRecord.resume(ContentStamp.at_checkpoint(data), configs, sets)
+		loop = _resumed(ContentStamp.at_checkpoint(data), configs, sets)
 	if loop == null:
 		return false
 	_take_over(loop, saves, profile, loaded)
 	return true
+
+
+## The save's run replayed, with searches answered from outside when this controller
+## searches live, so a villager the record ends before is searched again, not here.
+func _resumed(data: Dictionary, configs: Array[BotConfig], sets: SetConfig) -> RunLoop:
+	var params: RunParams = RunLoop.DEFAULT_PARAMS
+	var pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs
+	var meters: MeterTable = RunLoop.DEFAULT_METERS
+	return RunRecord.resume(data, configs, sets, params, pool, meters, Callable(), live_search)
 
 
 func has_run() -> bool:
@@ -826,6 +847,7 @@ func remembers_seated() -> bool:
 
 ## Lets the run go, as when the arrival ends: no save or profile is touched.
 func drop() -> void:
+	_searches.let_go()
 	_loop = null
 	file_watch.dropped()
 
@@ -849,8 +871,11 @@ func state_copy() -> RunState:
 
 
 func _attach(loop: RunLoop, saves: SaveService) -> void:
+	# A search still running for the loop this one replaces is thrown away when it ends.
+	_searches.let_go()
 	_loop = loop
 	_loop.decisions.searcher = _runner.search if live_search else Callable()
+	_loop.decisions.answered_outside = live_search
 	_loop.decisions.weights = search_weights
 	# A replayed loop may hold events banking appended unseen; the view reads those from
 	# set_events(), so the listener starts after them.
@@ -887,12 +912,17 @@ func _campaign(campaign_id: String) -> CampaignDef:
 ## Handles one command: the file's detectors look first, and what they correct is saved
 ## before the command goes on (ADR 0022).
 func _act(command: String, act: Callable) -> int:
+	# A search let go of when the controller left the tree is made now, before the command.
+	if not is_inside_tree():
+		settle_search()
 	if file_watch.check(_loop):
 		_save()
 	return _finish(command, act.call())
 
 
 func _finish(command: String, reason: RunLoop.Reason) -> int:
+	if reason == RunLoop.Reason.OK:
+		_serve()
 	_loop.set_log.flush()
 	if reason != RunLoop.Reason.OK:
 		command_refused.emit(command, reason)
@@ -901,6 +931,78 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 		awaiting_changed.emit(_loop.awaiting())
 	file_watch.sealed(_loop)
 	return reason
+
+
+## Hands in a searched villager's play when its search on the pool has finished, and
+## starts the search for a villager the loop stands still for if none runs (P5.0).
+func _process(_delta: float) -> void:
+	var play: BotPlay = _searches.poll(_loop)
+	if play != null:
+		_hand_in(play)
+	elif _awaits_villager():
+		_searches.serve(_loop)
+
+
+## Nothing polls a search once the controller leaves the tree, so every one is stopped
+## and waited for, and its play thrown away. The loop still stands still for the villager:
+## back in the tree its search starts again, and outside it is made at the next command.
+func _exit_tree() -> void:
+	_searches.wait_all()
+
+
+## For tools and tests that drive a run without frames: waits for the play of the villager
+## the loop stands still for, on this thread, and hands it in, as frames would.
+func settle_search() -> void:
+	if not _awaits_villager():
+		return
+	var play: BotPlay = _searches.wait(_loop)
+	if play == null:
+		play = _search_now()
+	_hand_in(play)
+
+
+## Searches still running on the pool, for tests: one for the villager awaited now, and
+## any let go of that have yet to finish.
+func searches_running() -> int:
+	return _searches.running()
+
+
+func _awaits_villager() -> bool:
+	return _loop != null and _loop.awaiting() == RunLoop.Awaiting.VILLAGER_SEARCH
+
+
+## Answers a villager the loop stands still for (P5.0). In the tree its search starts on
+## the pool and _process hands the play in. Outside it, as for a caller that never runs
+## frames, each such villager is searched at once on this thread, as before P5.0. True
+## when plays went in here.
+func _serve() -> bool:
+	if not _awaits_villager():
+		return false
+	if is_inside_tree():
+		_searches.serve(_loop)
+		return false
+	while _awaits_villager():
+		var reason: RunLoop.Reason = _loop.villager_play(_search_now())
+		assert(reason == RunLoop.Reason.OK, "The loop refused the play it stood still for")
+	return true
+
+
+func _search_now() -> BotPlay:
+	var request: SearchRequest = _loop.search_request()
+	return _runner.search(request.view, request.legal, request.table, request.config)
+
+
+## A searched play goes in as a command's result does: its events out, the run saved,
+## and the second book sealed again over the figures the play changed, since a play can
+## end a round and bank Grain (P4.19), before anyone is told what the run waits on now.
+func _hand_in(play: BotPlay) -> void:
+	var reason: RunLoop.Reason = _loop.villager_play(play)
+	assert(reason == RunLoop.Reason.OK, "The loop refused the play it stood still for")
+	_serve()
+	_loop.set_log.flush()
+	_save()
+	file_watch.sealed(_loop)
+	awaiting_changed.emit(_loop.awaiting())
 
 
 ## Writes the run save, with the ledger's numbers and the content's stamp (ADR 0033)

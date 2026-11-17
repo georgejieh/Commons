@@ -6,7 +6,9 @@ extends RefCounted
 ## takes them back from the record in order, and one that no longer fits fails the replay
 ## on its own path, never through the round's fallback for an illegal bot action. A list
 ## that ends inside the record's last command is a save written at a boundary before
-## those villagers played, and they decide then as they would have.
+## those villagers played, and they decide then as they would have. When the game answers
+## searches from outside (P5.0), the loop stands still for each live one instead of
+## asking the searcher.
 
 enum Mode {
 	## Decides by the searcher, or with no limit when there is none.
@@ -24,6 +26,10 @@ var searcher: Callable = Callable()
 ## Weights a searching seat decides with in place of its own, so a tool can sample fewer
 ## deals; null for its own. The seat's config gets its own back after each decision.
 var weights: BotWeights = null
+## True when the game answers a searching seat's live plays from outside the loop (P5.0):
+## the loop then stands still for each, as it does for the player, and is handed the play.
+## Off, as for every tool and test, the loop asks the searcher itself.
+var answered_outside: bool = false
 
 var _record: RunRecord
 var _mode: Mode = Mode.LIVE
@@ -144,13 +150,35 @@ func decide(view: SeatView, legal: Array[Pattern], table: BotTable, config: BotC
 	if weights != null:
 		config.weights = weights
 	var play: BotPlay
-	var live: bool = _mode == Mode.LIVE or (_mode == Mode.WRITTEN and _past_the_record())
-	if live and searcher.is_valid() and not legal.is_empty():
+	if _live() and searcher.is_valid() and not legal.is_empty():
 		play = searcher.call(view, legal, table, config)
 	else:
 		play = Bot.decide_play(view, legal, table, config, BotBudget.unlimited())
 	config.weights = own
 	return play
+
+
+## True when the loop stands still for this seat's play to be answered from outside: a
+## searching seat deciding live with moves to choose from, while searches are answered
+## outside. A seat with no move passes, and a replay reads the record, as before.
+func stands_for(config: BotConfig, legal: Array[Pattern]) -> bool:
+	return answered_outside and searches(config) and _live() and not legal.is_empty()
+
+
+## What the search for a seat the loop stands still for reads, with the weights handed
+## in, if any, in place of the seat's own.
+func request(
+	seat: int, view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
+) -> SearchRequest:
+	var made: SearchRequest = SearchRequest.new(seat, view, legal, table, config)
+	if weights != null:
+		made.config.weights = weights
+	return made
+
+
+## True while a searching seat's play is decided now, not read from the record.
+func _live() -> bool:
+	return _mode == Mode.LIVE or (_mode == Mode.WRITTEN and _past_the_record())
 
 
 ## Writes the cards a searching seat played, none for a pass, to the record, with the

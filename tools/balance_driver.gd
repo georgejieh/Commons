@@ -153,6 +153,9 @@ func _step() -> void:
 			_shop()
 		RunController.AWAIT_REEDUCATION:
 			_send("leave_reeducation", _controller.leave_reeducation())
+		RunController.AWAIT_VILLAGER:
+			# Never with live_search off; a villager searched off the frame is waited for.
+			_controller.settle_search()
 		var other:
 			_fail("the run awaits %d, which no command answers" % other)
 
