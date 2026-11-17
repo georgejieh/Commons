@@ -20,6 +20,8 @@ const SHOT_EVERY: int = 5
 const STEP_FRAMES: int = 4
 ## Steps the walk may stand on one page other than the table before it is stuck.
 const STUCK_STEPS: int = 40
+## Steps the whole walk may take before it is failed as never ending.
+const WALK_STEPS: int = 3000
 const SETTLE_SECONDS: float = 1.2
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
@@ -141,7 +143,7 @@ func _run() -> void:
 	await _slogan_frame()
 	await _click_button_with_text(tr("intro.begin"))
 	var guard: int = 0
-	while _rounds_seen <= _rounds_wanted and guard < 3000:
+	while _rounds_seen <= _rounds_wanted and guard < WALK_STEPS:
 		guard += 1
 		await _frames(STEP_FRAMES)
 		if _stuck():
@@ -150,8 +152,13 @@ func _run() -> void:
 		await _step()
 	await _ending_frames()
 	await _full_run_frames()
+	# Headless, frames outrun the table's animations and the steps run out first: only a
+	# walk on a display is failed for it.
+	if guard >= WALK_STEPS and _rounds_seen <= _rounds_wanted and not _headless:
+		_misclicks += 1
+		print("MISCLICK the walk ran out of steps after %d rounds" % _rounds_seen)
 	print("rounds=%d clicks=%d misclicks=%d shots=%d" % [_rounds_seen, _clicks, _misclicks, _shots])
-	quit(0)
+	quit(1 if _misclicks > 0 else 0)
 
 
 ## The arrival on its own (ADR 0026), walked by tools/tutorial_walk.gd.
@@ -161,7 +168,7 @@ func _tutorial_run() -> void:
 	await walk.call("run", self, _out, _headless)
 	var counts: Array = [walk.get("shots"), walk.get("clicks"), walk.get("misclicks")]
 	print("tutorial shots=%d clicks=%d misclicks=%d" % counts)
-	quit(0)
+	quit(1 if int(counts[2]) > 0 else 0)
 
 
 func _step() -> void:
