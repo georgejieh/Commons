@@ -13,7 +13,7 @@ extends RefCounted
 ## offence. A file at or past it whose seal is missing or wrong still loads when its shape
 ## is valid; the load says so, and the service remembers it until it is taken.
 
-const SCHEMA_VERSION: int = 17
+const SCHEMA_VERSION: int = 18
 ## The first run save schema that carries a seal.
 const SEALED_FROM: int = 17
 const RUN_PATH: String = "user://run.json"
@@ -74,6 +74,7 @@ static func for_run(path: String = RUN_PATH) -> SaveService:
 		14: RunRecord.migrate_from_14.bind(Surnames.texts()),
 		15: RunRecord.migrate_from_15,
 		16: RunRecord.migrate_from_16,
+		17: RunRecord.migrate_from_17,
 	}
 	var service: SaveService = SaveService.new(path, migrations, SCHEMA_VERSION, RunRecord.is_valid)
 	service.companions.append(BaitLedger.path_for(path))

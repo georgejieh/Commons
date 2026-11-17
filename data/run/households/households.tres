@@ -5,8 +5,10 @@
 [ext_resource type="Resource" path="res://data/run/households/middle_peasants.tres" id="3"]
 [ext_resource type="Resource" path="res://data/run/households/shopkeepers.tres" id="4"]
 [ext_resource type="Resource" path="res://data/run/households/old_family.tres" id="5"]
+[ext_resource type="Resource" path="res://data/run/households/mutual_aid_team.tres" id="6"]
+[ext_resource type="Resource" path="res://data/run/households/returned_soldier.tres" id="7"]
 
 [resource]
 script = ExtResource("1")
-households = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5")])
+households = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7")])
 default_id = "poor_peasants"

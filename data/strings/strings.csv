@@ -636,6 +636,39 @@ modifier.steel_target.name,Steel Target
 modifier.steel_target.text,Each Bomb or Rocket you play gives all your later plays +{zeal_percent} Zeal for the run. Each adds {resentment} Resentment.
 modifier.steel_target.state,"Now +{zeal} Zeal on all your plays, from {bombs} Bombs and Rockets."
 modifier.stakhanovite.state,Now +{zeal} Zeal for each card past {base_length}.
+modifier.night_school.name,Night School
+modifier.night_school.text,"Every Single and every Pair gains +{zeal_percent} Zeal."
+modifier.iron_and_coal.name,Iron and Coal
+modifier.iron_and_coal.text,Each spade and club that scores adds +{grain} Grain. Jokers have no suit.
+modifier.advanced_cooperative.name,Advanced Cooperative
+modifier.advanced_cooperative.text,Each scored card printed {low_rank} to {high_rank} adds +{grain} Grain.
+modifier.double_share_plough.name,Double-Share Plough
+modifier.double_share_plough.text,Pair Runs may be as short as {length} pairs.
+modifier.open_accounts.name,Open Accounts
+modifier.open_accounts.text,"Each round you claim no more than your fair half of the Commons, Resentment falls {resentment}."
+modifier.tractor_station.name,Tractor Station
+modifier.tractor_station.text,"Every Airplane, Airplane with Singles and Airplane with Pairs gains +{zeal_percent} Zeal."
+modifier.the_gleaners.name,The Gleaners
+modifier.the_gleaners.text,"When the peasants win a round, its Commons grows {percent}% for each card left in the landlord's hand, before it is split."
+modifier.public_granary.name,Public Granary
+modifier.public_granary.text,"Each round the peasants win with you among them, Famine falls {famine}."
+modifier.five_year_plan.name,Five-Year Plan
+modifier.five_year_plan.text,"Every play gains +{zeal_percent} Zeal for each Year of the run, this one included."
+modifier.back_door.name,Back Door
+modifier.back_door.text,Your first reroll at each black market visit is free.
+modifier.informers_reward.name,Informer's Reward
+modifier.informers_reward.text,"Each time an audit catches a villager claiming more than their fair half, earn {coupons} coupons."
+modifier.forged_seal.name,Forged Seal
+modifier.forged_seal.text,Your stamped cards add no Resentment when they score.
+modifier.loudspeaker.name,Loudspeaker
+modifier.loudspeaker.text,Your 2s and jokers played as Singles gain +{zeal_percent} Zeal.
+modifier.rent_book.name,Rent Book
+modifier.rent_book.text,Each round you win as landlord gives your later plays as landlord +{zeal_percent} Zeal for the run. Each such win adds {resentment} Resentment.
+modifier.rent_book.state,"Now +{zeal} Zeal on your plays as landlord, from {wins} rounds won."
+modifier.grain_speculator.name,Grain Speculator
+modifier.grain_speculator.text,Each step a Quota is overfulfilled by pays {coupons} more coupon and adds {resentment} more Resentment.
+modifier.prize_exhibit.name,Prize Exhibit
+modifier.prize_exhibit.text,"When you play a Model card, it scores its printed Grain ×{times_percent_grain}."
 cadre.rank_badge,{rank}s
 store.pick_rank,Pick the rank {name} works on.
 store.pick_cancel,Cancel
@@ -820,6 +853,10 @@ household.shopkeepers.name,Shopkeepers
 household.shopkeepers.text,Start with {coupons} coupons. The village holds {resentment} Resentment against you.
 household.old_family.name,The Old Family
 household.old_family.text,"Start with {coupons} coupons and Landlord's Ledger. The village holds {resentment} Resentment against you, and Denunciation starts at {denunciation}."
+household.mutual_aid_team.name,Mutual Aid Team
+household.mutual_aid_team.text,"Start with {coupons} coupons and Open Accounts. Famine starts at {famine}."
+household.returned_soldier.name,Returned Soldier
+household.returned_soldier.text,"Start with {coupons} coupons and Loudspeaker. Denunciation starts at {denunciation}."
 stake.base.name,Base
 stake.base.text,The rules as written.
 stake.second_harvest.name,Second Harvest
@@ -913,6 +950,15 @@ settings.name_locked,Finish or abandon your run to change it.
 campaign.model_worker.name,Model Worker
 campaign.model_worker.text,"Before the first play: one rank, drawn at random, is wild for every seat this round. A wild card may stand in for any rank from 3 to 2. With a rank wild already, this adds a second. It cannot be used while two are wild."
 campaign.model_worker.prompt,Press Use to make a rank wild this round.
+campaign.self_criticism.name,Self-Criticism
+campaign.self_criticism.text,"Resentment falls {resentment}. Denunciation rises {denunciation}. Use on your turn, or in either shop."
+campaign.self_criticism.prompt,"Press Use: Resentment falls {resentment}, Denunciation rises {denunciation}."
+campaign.relief_grain.name,Relief Grain
+campaign.relief_grain.text,"Famine falls {famine}. Use on your turn, or in either shop."
+campaign.relief_grain.prompt,Press Use to lower Famine {famine}.
+campaign.false_report.name,False Report
+campaign.false_report.text,"This Quota's progress rises by {percent}% of its target. The norm rises {steps} step for every later Quota, and Resentment rises {resentment}. Use on your turn."
+campaign.false_report.prompt,"Press Use to report {percent}% of the target as done. The norm and Resentment rise."
 campaign.reason.wild_full,Two ranks are wild already.
 reform.mass_line.name,Mass Line
 reform.mass_line.text,"Every round, {ranks} rank drawn with the deal is wild for every seat, named before the bid. A wild card may stand in for any rank from 3 to 2."

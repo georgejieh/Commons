@@ -126,4 +126,42 @@ static func _build_debuff(modifier_id: String) -> ModifierEffect:
 			return LossMeterEffect.new(RunMeters.DEBUFF_FAMINE)
 		"plot_seized":
 			return PlotSeizedEffect.new()
+	return _build_second_wave(modifier_id)
+
+
+## The Cadres ADR 0032 adds.
+static func _build_second_wave(modifier_id: String) -> ModifierEffect:
+	match modifier_id:
+		"night_school":
+			return NightSchoolEffect.new()
+		"iron_and_coal":
+			return IronAndCoalEffect.new()
+		"advanced_cooperative":
+			return AdvancedCooperativeEffect.new()
+		"double_share_plough":
+			return DoubleSharePloughEffect.new()
+		"open_accounts":
+			return OpenAccountsEffect.new()
+		"tractor_station":
+			return TractorStationEffect.new()
+		"the_gleaners":
+			return GleanersEffect.new()
+		"public_granary":
+			return PublicGranaryEffect.new()
+		"five_year_plan":
+			return FiveYearPlanEffect.new()
+		"back_door":
+			return BackDoorEffect.new()
+		"informers_reward":
+			return InformersRewardEffect.new()
+		"forged_seal":
+			return ForgedSealEffect.new()
+		"loudspeaker":
+			return LoudspeakerEffect.new()
+		"rent_book":
+			return RentBookEffect.new()
+		"grain_speculator":
+			return GrainSpeculatorEffect.new()
+		"prize_exhibit":
+			return PrizeExhibitEffect.new()
 	return null

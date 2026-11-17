@@ -12,6 +12,9 @@ const ALL_OPEN: int = 1 << 30
 ## The tier of the items that make ranks wild, the new mechanic of the fifth tier (ADR
 ## 0029). A run outside the profile stops below it.
 const WILD_TIER: int = 4
+## The last tier an item carries, the second content wave's (ADR 0032): open after five
+## finished runs.
+const LAST_TIER: int = 5
 
 
 ## The highest tier open to the run.

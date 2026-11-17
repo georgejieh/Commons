@@ -56,6 +56,7 @@ func _initialize() -> void:
 		"expert_samples": _expert_samples,
 	}
 	print(_wild_line())
+	print(_wave_line())
 	var out: String = options.get("out", DEFAULT_OUT)
 	var saved: bool = _save(out.path_join("balance_runs.csv"), _tally.csv())
 	saved = _save(out.path_join("balance_quotas.csv"), _tally.quotas_csv()) and saved
@@ -83,6 +84,31 @@ func _wild_line() -> String:
 		"wild items bought: %s; Model Workers used: %d" % [", ".join(parts), used]
 	)
 	return bought_line + "; runs with a wild rank: %d, ranks drawn: %d" % [runs, draws]
+
+
+## How often each of ADR 0032's pieces was bought, each of its Campaigns used, and the
+## runs that reached The Commons, by strategy.
+func _wave_line() -> String:
+	var bought: Dictionary[String, int] = {}
+	var used: Dictionary[String, int] = {}
+	var commons: Dictionary[String, int] = {}
+	for result: BalanceResult in _tally.runs():
+		for item_id: String in result.wave_buys:
+			bought[item_id] = bought.get(item_id, 0) + result.wave_buys[item_id]
+		for item_id: String in result.wave_uses:
+			used[item_id] = used.get(item_id, 0) + result.wave_uses[item_id]
+		if result.outcome == Endings.THE_COMMONS:
+			commons[result.strategy] = commons.get(result.strategy, 0) + 1
+	var parts: PackedStringArray = []
+	for item_id: String in BalanceWave.ITEMS:
+		parts.append("%s %d/%d" % [item_id, bought.get(item_id, 0), used.get(item_id, 0)])
+	var reached: PackedStringArray = []
+	for strategy: String in _strategies:
+		reached.append("%s %d" % [strategy, commons.get(strategy, 0)])
+	return (
+		"second wave bought/used: %s; runs reaching the_commons: %s"
+		% [", ".join(parts), ", ".join(reached)]
+	)
 
 
 ## Reads the options into the run's fields. Returns what is wrong with them, or "".

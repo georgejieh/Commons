@@ -29,6 +29,16 @@ static func add(
 		)
 
 
+## Lowers Resentment by amount, the one path it falls by (ADR 0032): never below 0, and
+## logged as RESENTMENT with the fall as a negative value, as a rise is logged. A fall
+## from 0 changes nothing and logs nothing, as a rise at the top does.
+static func lower(
+	state: RunState, amount: int, cause: String, params: ResentmentParams, events: Array[RunEvent]
+) -> void:
+	assert(amount >= 0, "A fall is given as a positive amount")
+	add(state, -amount, cause, params, events)
+
+
 ## Private Cadres held at a Set's end.
 static func private_cadres(cadres: Array[String], pool: Array[ModifierDef]) -> int:
 	var count: int = 0

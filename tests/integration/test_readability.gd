@@ -177,7 +177,8 @@ func test_the_rank_picker_stands_over_a_scrim() -> void:
 ## A profile with every tier open, so the collection shows every item.
 func _open_everything() -> void:
 	var data: ProfileData = Profile.read(Saves.profile_service())
-	data.finished_runs = 3
+	# Past the last tier (ADR 0032), so every Cadre's sheet is open.
+	data.finished_runs = RunUnlocks.LAST_TIER
 	Profile.write(Saves.profile_service(), data)
 
 

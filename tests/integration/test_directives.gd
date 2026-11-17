@@ -276,7 +276,7 @@ func test_every_directive_in_data_is_valid_and_the_validator_catches_bad_ones() 
 	assert_str("\n".join(ModifierValidator.validate_directive(bad, keys))).contains("no hand")
 
 
-## Every Cadre carries ADR 0021's unlock tier; nothing reads it until P4.14.
+## Every Cadre carries its unlock tier from ADR 0021's table and ADR 0032's.
 func test_cadres_carry_their_unlock_tiers() -> void:
 	var tiers: Dictionary[String, int] = {
 		"iron_rice_bowl": 0,
@@ -303,6 +303,23 @@ func test_cadres_carry_their_unlock_tiers() -> void:
 		"class_label": 2,
 		"rehabilitation": 3,
 		"steel_target": 3,
+		# ADR 0032's second wave.
+		"night_school": 1,
+		"iron_and_coal": 1,
+		"back_door": 1,
+		"advanced_cooperative": 2,
+		"double_share_plough": 2,
+		"open_accounts": 2,
+		"informers_reward": 2,
+		"tractor_station": 3,
+		"the_gleaners": 3,
+		"forged_seal": 3,
+		"loudspeaker": 3,
+		"public_granary": 4,
+		"five_year_plan": 4,
+		"rent_book": 4,
+		"grain_speculator": 5,
+		"prize_exhibit": 5,
 	}
 	var cadres: Array[ModifierDef] = RunLoop.all_cadres()
 	cadres.append(preload("res://data/modifiers/red_ink.tres"))

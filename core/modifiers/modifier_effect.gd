@@ -77,3 +77,7 @@ func audit(_context: AuditContext) -> void:
 
 func turn_taken(_context: TurnContext) -> void:
 	pass
+
+
+func need_settled(_context: NeedContext) -> void:
+	pass

@@ -2,7 +2,8 @@ class_name HouseholdDef
 extends Resource
 ## One household a full run can start as (ADR 0025): the family background picked at run
 ## setup, which sets what the run begins with and nothing after. A stronger start is paid
-## for in Resentment and Denunciation. Applied by RunOpening before the first checkpoint.
+## for in Resentment, Denunciation or Famine. Applied by RunOpening before the first
+## checkpoint.
 
 @export var id: String
 ## Finished runs needed before it can be picked.
@@ -23,6 +24,8 @@ extends Resource
 ## Resentment and Denunciation the village holds from the first deal.
 @export var resentment: int = 0
 @export var denunciation: int = 0
+## Famine the village starts at (ADR 0032).
+@export var famine: int = 0
 
 
 ## The numbers its rules line prints: coupons as the full starting amount.
@@ -32,4 +35,5 @@ func text_values(base_coupons: int) -> Dictionary[String, Variant]:
 		"cards": plot_cards,
 		"resentment": resentment,
 		"denunciation": denunciation,
+		"famine": famine,
 	}

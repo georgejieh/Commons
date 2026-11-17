@@ -39,6 +39,8 @@ var envelopes: EnvelopeCounter
 ## Cadre slots lost this visit to a debuff of the Quota just finished (Short Supply,
 ## ADR 0023). Set before the visit opens; it stacks with rationing.
 var short_cut: int = 0
+## The visit's first rerolls that cost nothing, from a held Cadre (Back Door, ADR 0032).
+var free_rerolls: int = 0
 
 var _state: RunState
 var _params: ShopParams
@@ -107,7 +109,11 @@ func left(modifier_id: String) -> int:
 	return maxi(_params.stock_per_item - int(_state.store_sold.get(modifier_id, 0)), 0)
 
 
+## The next reroll's price: nothing while the visit's free rerolls last, then the price
+## every later reroll pays, as if the free ones had been paid for.
 func reroll_price() -> int:
+	if _rerolls < free_rerolls:
+		return 0
 	return RunBooks.priced(_state, _params.reroll_base + _rerolls * _params.reroll_step)
 
 

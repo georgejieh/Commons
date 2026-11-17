@@ -32,9 +32,10 @@ func _in_pool(pool: CampaignPool, campaign_id: String) -> bool:
 
 
 func test_the_pools_hold_adr_0021s_campaigns_by_tag() -> void:
-	# ADR 0021's five and ADR 0029's Model Worker, all collective.
-	assert_int(STORE_POOL.campaigns.size()).is_equal(6)
-	assert_int(MARKET_POOL.campaigns.size()).is_equal(3)
+	# ADR 0021's five, ADR 0029's Model Worker and ADR 0032's two, all collective, and
+	# ADR 0021's three and ADR 0032's False Report, all private.
+	assert_int(STORE_POOL.campaigns.size()).is_equal(8)
+	assert_int(MARKET_POOL.campaigns.size()).is_equal(4)
 	for campaign: CampaignDef in STORE_POOL.campaigns:
 		assert_int(campaign.tag).is_equal(ModifierDef.Tag.COLLECTIVE)
 	for campaign: CampaignDef in MARKET_POOL.campaigns:

@@ -261,6 +261,8 @@ func _use_campaign() -> bool:
 	for slot: int in held.size():
 		if not _strategy.uses_campaign(held[slot]):
 			continue
+		if not BalanceWave.helps(held[slot], _controller.state_copy(), _params):
+			continue
 		if _controller.campaign_reason(slot, [], false) != RunController.CAMPAIGN_OK:
 			continue
 		var cards: Array[int] = _campaign_cards(slot, held[slot])
@@ -338,6 +340,8 @@ func _bought(offer: BalanceOffer, state: RunState) -> void:
 		item_id = _controller.campaign_shelf(offer.market).stock()[offer.slot]
 	if WILD_ITEMS.has(item_id):
 		result.wild_buys[item_id] = result.wild_buys.get(item_id, 0) + 1
+	if BalanceWave.ITEMS.has(item_id):
+		result.wave_buys[item_id] = result.wave_buys.get(item_id, 0) + 1
 	if offer.kind == BalanceOffer.Kind.DIRECTIVE:
 		_directive_bought = true
 		result.directive_buys += 1
@@ -382,6 +386,8 @@ func _on_event(event: RunEvent) -> void:
 			result.campaigns_used += 1
 			if event.text == WILD_ITEMS[0]:
 				result.workers_used += 1
+			if BalanceWave.ITEMS.has(event.text):
+				result.wave_uses[event.text] = result.wave_uses.get(event.text, 0) + 1
 		RunEvent.Type.WILD_RANKS:
 			result.wild_draws += 1
 		RunEvent.Type.RESENTMENT:

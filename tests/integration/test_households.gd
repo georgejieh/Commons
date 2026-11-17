@@ -128,13 +128,16 @@ func test_a_household_above_the_open_tier_is_refused() -> void:
 	assert_object(_start("middle_peasants")).is_not_null()
 
 
-func test_the_four_households_are_the_adrs() -> void:
+## ADR 0025's four and ADR 0032's two, in run setup's order.
+func test_the_six_households_are_the_adrs() -> void:
 	var pool: HouseholdPool = RunStarter.HOUSEHOLDS
 	var rows: Array[Array] = [
-		["poor_peasants", 0, 0, 0, "", 0, 0],
-		["middle_peasants", 1, 0, 2, "", 5, 0],
-		["shopkeepers", 2, 6, 0, "", 10, 0],
-		["old_family", 3, 0, 0, "landlords_ledger", 15, 10],
+		["poor_peasants", 0, 0, 0, "", 0, 0, 0],
+		["middle_peasants", 1, 0, 2, "", 5, 0, 0],
+		["shopkeepers", 2, 6, 0, "", 10, 0, 0],
+		["old_family", 3, 0, 0, "landlords_ledger", 15, 10, 0],
+		["mutual_aid_team", 2, 0, 0, "open_accounts", 0, 0, 10],
+		["returned_soldier", 4, 2, 0, "loudspeaker", 0, 10, 0],
 	]
 	assert_int(pool.households.size()).is_equal(rows.size())
 	for index: int in rows.size():
@@ -148,12 +151,56 @@ func test_the_four_households_are_the_adrs() -> void:
 			household.cadre_id,
 			household.resentment,
 			household.denunciation,
+			household.famine,
 		]
 		assert_array(got).is_equal(row)
 		assert_int(household.plot_low_rank).is_equal(Ranks.TEN)
 		assert_int(household.plot_high_rank).is_equal(Ranks.KING)
 		for key: String in [household.name_key, household.text_key]:
 			assert_str(tr(key)).is_not_equal(key)
+
+
+## Famine at 10 is below its low band: nothing has risen through mid, and the run says
+## so where it says what a household costs.
+func test_the_mutual_aid_team_starts_with_open_accounts_and_famine_at_ten() -> void:
+	_with_runs(2)
+	var state: RunState = _start("mutual_aid_team")
+	assert_int(state.coupons).is_equal(BASE)
+	assert_array(state.inventory.cadres).contains_exactly(["open_accounts"])
+	assert_bool(state.cadre_memos.has("open_accounts")).is_true()
+	assert_int(state.famine).is_equal(10)
+	assert_int(state.resentment).is_equal(0)
+	assert_int(state.denunciation).is_equal(0)
+	assert_bool(state.famine_armed).is_true()
+	assert_bool(state.rationed).is_false()
+	var rules: String = tr("household.mutual_aid_team.text").format(
+		RunStarter.HOUSEHOLDS.household("mutual_aid_team").text_values(BASE)
+	)
+	assert_str(rules).contains("Famine starts at 10")
+
+
+func test_the_returned_soldier_starts_with_loudspeaker_two_coupons_and_denunciation() -> void:
+	_with_runs(4)
+	var state: RunState = _start("returned_soldier")
+	assert_int(state.coupons).is_equal(BASE + 2)
+	assert_array(state.inventory.cadres).contains_exactly(["loudspeaker"])
+	assert_int(state.denunciation).is_equal(10)
+	assert_int(state.famine).is_equal(0)
+	assert_bool(state.denunciation_armed).is_true()
+	_with_runs(3)
+	assert_object(_start("returned_soldier")).is_null()
+
+
+## A household's Famine adds to the stake's, as every starting amount adds up (ADR 0025).
+func test_a_households_famine_adds_to_the_stakes() -> void:
+	var state: RunState = RunState.new(1)
+	var sum: StakeDef = StakeDef.new()
+	sum.famine = 5
+	RunOpening.household(
+		state, RunStarter.HOUSEHOLDS.household("mutual_aid_team"), null, RunLoop.DEFAULT_PARAMS
+	)
+	RunOpening.stake(state, sum, RunLoop.DEFAULT_PARAMS)
+	assert_int(state.famine).is_equal(15)
 
 
 func _cards(state: RunState) -> String:

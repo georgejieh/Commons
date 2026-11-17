@@ -33,6 +33,10 @@ var moves: Array[CardPass] = []
 var bank_voided: bool = false
 var tax_percent: int = 0
 var meter_sources: Array[String] = []
+## At round end: the cards the landlord still holds (ADR 0032), and the Famine the round
+## takes off the player's meter, to edit.
+var landlord_cards: int = 0
+var famine_fall: int = 0
 
 
 func _init(

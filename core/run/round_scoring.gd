@@ -15,6 +15,9 @@ var _seat_grain: PackedFloat64Array = PackedFloat64Array()
 var _last_grain: float = 0.0
 var _last_rate: float = 0.0
 var _last_zeal: float = 0.0
+var _last_stamps_resented: bool = true
+## The run's Year in play, for the hooks that grow with it (ADR 0032).
+var _year: int = 0
 
 
 func _init(levels: HandLevels, stack: ModifierStack) -> void:
@@ -22,8 +25,9 @@ func _init(levels: HandLevels, stack: ModifierStack) -> void:
 	_stack = stack
 
 
-func start(landlord: int) -> void:
+func start(landlord: int, year: int = 0) -> void:
 	_landlord = landlord
+	_year = year
 	_scores = PackedFloat64Array()
 	_scores.resize(Seats.COUNT)
 	_plays = PackedInt32Array()
@@ -52,6 +56,11 @@ func last_rate() -> float:
 
 func last_zeal() -> float:
 	return _last_zeal
+
+
+## False when a hook waived the Resentment the last play's stamped cards add (ADR 0032).
+func last_stamps_resented() -> bool:
+	return _last_stamps_resented
 
 
 func scores() -> PackedFloat64Array:
@@ -88,9 +97,10 @@ func _score_cards(
 		_stack,
 		Scorer.DEFAULT_PARAMS,
 		_plays[seat],
-		PlayFacts.new(_landlord, cards_left, _plays, _seat_grain)
+		PlayFacts.new(_landlord, cards_left, _plays, _seat_grain, _year)
 	)
 	_last_grain = breakdown.grain
 	_last_rate = breakdown.rate
 	_last_zeal = breakdown.zeal
+	_last_stamps_resented = breakdown.stamps_resented
 	return breakdown.total

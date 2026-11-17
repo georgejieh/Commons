@@ -206,6 +206,15 @@ static func migrate_from_16(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 17 saves predate False Report (ADR 0032): no Set in play raised the norm by a
+## report.
+static func migrate_from_17(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"reported_steps": 0})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -389,6 +398,11 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 	if not _counters_valid(checkpoint["famine_market_buys"], 0):
 		return false
 	if not _counters_valid(checkpoint["seatless_sets"], 0):
+		return false
+	# False Report's steps are a whole count, none past the norm they raised (ADR 0032).
+	if not _counters_valid(checkpoint["reported_steps"], 0):
+		return false
+	if checkpoint["reported_steps"] > checkpoint["norm_steps"]:
 		return false
 	for event_id: Variant in checkpoint["quota_corruption"]:
 		if not event_id is String:

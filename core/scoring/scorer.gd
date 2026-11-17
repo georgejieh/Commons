@@ -32,9 +32,11 @@ static func score_play(
 	var body: Array[bool] = body_flags(cards, pattern)
 	var scored: int = 0
 	var kicker_cards: PackedByteArray = PackedByteArray()
+	var body_cards: PackedByteArray = PackedByteArray()
 	for index: int in cards.size():
 		if body[index]:
 			scored += 1
+			body_cards.append(cards[index].base_rank())
 		else:
 			kicker_cards.append(cards[index].base_rank())
 	var breakdown: ScoreBreakdown = ScoreBreakdown.new(scored)
@@ -42,10 +44,12 @@ static func score_play(
 	for index: int in cards.size():
 		var card: CardInstance = cards[index]
 		if body[index]:
-			var base: float = params.card_grain[card.base_rank()]
+			var printed: float = params.card_grain[card.base_rank()]
+			var base: float = printed
 			if card.enhancement_id() == CardInstance.MODEL:
 				base = base * params.model_grain_percent / PERCENT
 			var context: CardContext = CardContext.new(seat, is_landlord, card, base)
+			context.printed_grain = printed
 			stack.run_card_scored(context)
 			breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)
 			grain += context.grain
@@ -57,10 +61,13 @@ static func score_play(
 		play.cards_left = facts.cards_left
 		play.seat_plays = facts.seat_plays
 		play.seat_grain = facts.seat_grain
+		play.year = facts.year
 	play.grain = grain
 	play.card_grain = params.card_grain
 	play.kicker_cards = kicker_cards
+	play.body_cards = body_cards
 	stack.run_play_scored(play)
+	breakdown.stamps_resented = play.stamps_resented
 	grain += play.add_grain
 	breakdown.add_step(ScoreBreakdown.Step.ADD_GRAIN, play.add_grain)
 

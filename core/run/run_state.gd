@@ -74,6 +74,10 @@ var store_sold: Dictionary[String, int] = {}
 ## for a Set counts norm_steps less over_steps.
 var norm_steps: int = 0
 var over_steps: int = 0
+## The steps False Report raised the norm by in the Set in play (ADR 0032), held like
+## over_steps, so the target in force for that Set leaves them out too; 0 again once the
+## next Set starts.
+var reported_steps: int = 0
 ## Each hand type's level, which Directives raise, and the marks saved on deck cards
 ## (P4.11).
 var hand_levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
@@ -157,6 +161,7 @@ static func from_dict(data: Dictionary) -> RunState:
 		state.store_sold[item_id] = int(data["store_sold"][item_id])
 	state.norm_steps = int(data["norm_steps"])
 	state.over_steps = int(data["over_steps"])
+	state.reported_steps = int(data["reported_steps"])
 	var max_level: int = Scorer.DEFAULT_PARAMS.max_level
 	state.hand_levels = HandLevels.from_array(data["hand_levels"], max_level)
 	state.card_marks = CardMarks.from_dict(data["card_marks"])
@@ -231,6 +236,7 @@ func to_dict() -> Dictionary:
 		"store_sold": store_sold.duplicate(),
 		"norm_steps": norm_steps,
 		"over_steps": over_steps,
+		"reported_steps": reported_steps,
 		"hand_levels": hand_levels.to_array(),
 		"card_marks": card_marks.to_dict(),
 		"cadre_memos": cadre_memos.to_dict(),

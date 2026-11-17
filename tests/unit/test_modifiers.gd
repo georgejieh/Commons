@@ -1,3 +1,5 @@
+# gdlint: disable=max-file-lines
+# Over 400 lines: one suite holds every modifier kind's validation and the hook order.
 extends GdUnitTestSuite
 ## Definitions, hook order and derived caches.
 
@@ -54,6 +56,9 @@ class Recorder:
 		log.append(label)
 
 	func turn_taken(_context: TurnContext) -> void:
+		log.append(label)
+
+	func need_settled(_context: NeedContext) -> void:
 		log.append(label)
 
 
@@ -129,10 +134,10 @@ func test_every_definition_in_data_is_valid() -> void:
 			reforms += 1
 			assert_array(Array(ModifierValidator.validate_reform(reform, keys))).is_empty()
 	assert_bool(checked >= 4).is_true()
-	# ADR 0021's six Directives and eight Campaigns (P4.11), and ADR 0029's Model Worker,
-	# Mass Line and Industrialization.
+	# ADR 0021's six Directives and eight Campaigns (P4.11), ADR 0029's Model Worker,
+	# Mass Line and Industrialization, and ADR 0032's three Campaigns.
 	assert_int(directives).is_equal(6)
-	assert_int(campaigns).is_equal(9)
+	assert_int(campaigns).is_equal(12)
 	assert_int(reforms).is_equal(8)
 
 
@@ -153,15 +158,15 @@ func test_a_broken_reform_is_caught() -> void:
 	assert_str("\n".join(ModifierValidator.validate_reform(stray, keys))).contains("no effect")
 
 
-## ADR 0021's 24 Cadres: 11 collective at the state store and 13 private at the black
-## market, each with its effect, its parameters, its strings, an unlock tier and, where
-## it keeps run state, the line that says where it stands.
-func test_both_pools_hold_adr_0021s_cadres_each_complete() -> void:
+## ADR 0021's 24 Cadres and ADR 0032's 16: 20 collective at the state store and 20
+## private at the black market, each with its effect, its parameters, its strings, an
+## unlock tier and, where it keeps run state, the line that says where it stands.
+func test_both_pools_hold_every_cadre_each_complete() -> void:
 	var keys: Dictionary[String, bool] = _string_keys()
 	var store: CadrePool = load(DATA + "run/cadre_pool.tres")
 	var market: CadrePool = load(DATA + "run/market_pool.tres")
-	assert_int(store.cadres.size()).is_equal(11)
-	assert_int(market.cadres.size()).is_equal(13)
+	assert_int(store.cadres.size()).is_equal(20)
+	assert_int(market.cadres.size()).is_equal(20)
 	var seen: Dictionary[String, bool] = {}
 	for definition: ModifierDef in store.cadres + market.cadres:
 		assert_bool(seen.has(definition.id)).override_failure_message(definition.id).is_false()
@@ -170,7 +175,8 @@ func test_both_pools_hold_adr_0021s_cadres_each_complete() -> void:
 		assert_array(Array(problems)).override_failure_message(definition.id).is_empty()
 		assert_int(definition.kind).is_equal(ModifierDef.Kind.CADRE)
 		assert_bool(EffectRegistry.has_effect(definition.id)).is_true()
-		assert_bool(definition.unlock_tier >= 0 and definition.unlock_tier <= 3).is_true()
+		var tier: int = definition.unlock_tier
+		assert_bool(tier >= 0 and tier <= RunUnlocks.LAST_TIER).is_true()
 		assert_int(definition.cost).is_greater(0)
 	for definition: ModifierDef in store.cadres:
 		assert_int(definition.tag).is_equal(ModifierDef.Tag.COLLECTIVE)
@@ -248,7 +254,7 @@ func test_the_validator_catches_each_kind_of_bad_definition() -> void:
 
 
 func test_the_hook_list_is_complete_and_each_hook_is_a_method() -> void:
-	assert_int(Hooks.ALL.size()).is_equal(13)
+	assert_int(Hooks.ALL.size()).is_equal(14)
 	var effect: ModifierEffect = ModifierEffect.new()
 	for hook: String in Hooks.ALL:
 		assert_bool(effect.has_method(hook)).is_true()
@@ -277,6 +283,8 @@ func _run_every_hook(stack: ModifierStack) -> void:
 	stack.run_meter_change(MeterContext.new("famine", 1))
 	stack.run_audit(AuditContext.new(0))
 	stack.run_turn_taken(TurnContext.new(0, 0, null, 0, 0))
+	var no_one: Array[int] = []
+	stack.run_need_settled(NeedContext.new(0, 0, NeedContext.NOT_DECLARED, 1, no_one))
 
 
 func test_every_hook_runs_cadres_then_debuffs_then_the_boss() -> void:

@@ -145,6 +145,7 @@ func _init(
 		tutorial.on_fault = func() -> void: refused_bot_actions += 1
 	_table = SeatRules.new(_stack)
 	campaigns = RunCampaigns.new(state, _stack, _table, meters, params, set_log, PLAYER)
+	campaigns.quota_target = target
 	debuffs = RunDebuffs.new(state, _stack, set_log, PLAYER)
 	_scoring = RoundScoring.new(state.hand_levels, _stack)
 
@@ -208,7 +209,8 @@ func seat_table(seat: int) -> BotTable:
 
 
 ## The current Set's target: the curve's, any boss's change, then the norm in force for
-## this Set, which leaves out what the Set itself earned once it is over, then the
+## this Set, which leaves out what the Set itself earned once it is over and what a False
+## Report raised it by in the Set (ADR 0032), then the
 ## family's file and the corrections in force (ADR 0022).
 func target() -> float:
 	var base: float = _sets.target(state.year, state.set_type)
@@ -216,7 +218,8 @@ func target() -> float:
 		var boss: ModifierDef = _pool_by_id[state.boss_id]
 		var percent: int = boss.parameters.get(GreatLeapEffect.QUOTA_PERCENT, 100)
 		base = base * percent / 100.0
-	return RunBooks.raised_target(_sets.normed(base, state.norm_steps - state.over_steps), state)
+	var steps: int = state.norm_steps - state.over_steps - state.reported_steps
+	return RunBooks.raised_target(_sets.normed(base, steps), state)
 
 
 ## Starts the Set the state names. The Set's start is the save checkpoint.
@@ -234,6 +237,7 @@ func start_set() -> Reason:
 	state.round_index = 0
 	state.set_progress = 0.0
 	state.over_steps = 0
+	state.reported_steps = 0
 	state.landlord_seat = Seats.NONE
 	_choose_boss()
 	var ladder_stream: RandomStream = state.streams.stream(RandomStreams.DEBUFF)
@@ -496,6 +500,7 @@ func open_shop() -> Reason:
 	shop.short_cut = RunDebuffs.store_cut(state, _pool_by_id, PLAYER)
 	shop.open()
 	market.open()
+	_read_shop_rules()
 	stall.open()
 	# Last on the shop stream, so Directives, Campaigns and Reforms change none of the
 	# stock drawn before them.
@@ -515,6 +520,7 @@ func player_buy(slot: int) -> Reason:
 	var reason: Reason = _shop_command({"type": "buy", "slot": slot}, shop.buy.bind(slot))
 	if reason == Reason.OK:
 		RunCadres.bought(state, bought, Ranks.INVALID)
+		_read_shop_rules()
 	return reason
 
 
@@ -539,8 +545,16 @@ func player_market_buy(slot: int, rank: int = Ranks.INVALID) -> Reason:
 	var reason: Reason = _shop_command(command, market.buy.bind(slot))
 	if reason == Reason.OK:
 		RunCadres.bought(state, bought, rank)
+		_read_shop_rules()
 		_market_bought()
 	return reason
+
+
+## What the held Cadres change about this visit's counters, read as it opens and again
+## after a Cadre is bought, so one bought now works at once (Back Door, ADR 0032).
+func _read_shop_rules() -> void:
+	var rules: ShopContext = RunCadres.shop_rules(state, _pool_by_id, PLAYER)
+	market.free_rerolls = rules.free_market_rerolls
 
 
 ## The Cadre on a counter's slot, or null for an empty or sold one.
@@ -745,7 +759,7 @@ func _create_round() -> void:
 	_table.set_wild_ranks(state.wild_ranks)
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
-	_scoring.start(state.landlord_seat)
+	_scoring.start(state.landlord_seat, state.year)
 	# Debuffs move cards here, after the kitty and before the plot swap (ADR 0023).
 	var opening: RoundContext = debuffs.round_context(_round, _table, campaigns.flags.round_debuff)
 	_stack.run_round_start(opening)
@@ -811,7 +825,8 @@ func _collect_round_events() -> void:
 		set_log.add(RunEvent.wrap(event))
 		if event.type == RoundEvent.Type.PLAYED:
 			var total: float = _scoring.score(event, _round.remaining()[event.seat])
-			if event.seat == PLAYER:
+			# A hook may waive what the player's stamped cards add (Forged Seal, ADR 0032).
+			if event.seat == PLAYER and _scoring.last_stamps_resented():
 				_resent(
 					(
 						Resentment.stamped(event.cards, PLAYER, event.pattern)
@@ -843,8 +858,16 @@ func _finish_round() -> void:
 	var winner: int = _round.winner()
 	var landlord: int = state.landlord_seat
 	var ending: RoundContext = RoundContext.new(landlord, winner, finish)
+	ending.landlord_cards = _round.remaining()[landlord]
 	_stack.run_round_end(ending)
 	debuffs.ended(ending)
+	# Before the round is scored, so the Quota's summary reads it as the round's (ADR 0032).
+	if ending.famine_fall > 0:
+		var logged: Array[RunEvent] = set_log.events()
+		var fall: int = ending.famine_fall
+		RunMeters.lower(
+			state, RunMeters.CADRE_FAMINE, fall, _meters, _stack, _params, PLAYER, logged
+		)
 	var totals: PackedFloat64Array = RoundTotals.totals(
 		_scoring.scores(), landlord, winner, finish, _table.rules_for(landlord)
 	)
@@ -889,9 +912,26 @@ func _split_commons(player_need: int) -> void:
 			_raise(RunMeters.CAUGHT_LIE)
 		else:
 			_denounce_villager(seat)
+	_settle_need(player_need, caught)
 	if _end_if_dead():
 		return
 	_end_round()
+
+
+## The Cadres that answer the split and its audit (ADR 0032): coupons for caught lies, and
+## Resentment lowered for an honest claim, which only a peasant makes.
+func _settle_need(player_need: int, caught: Array[int]) -> void:
+	var declared: int = player_need
+	if state.landlord_seat == PLAYER:
+		declared = NeedContext.NOT_DECLARED
+	var settled: NeedContext = RunCadres.settle_need(
+		_stack, state, PLAYER, declared, _params.base_need, caught
+	)
+	if settled.resentment_fall > 0:
+		Resentment.lower(
+			state, settled.resentment_fall, Resentment.CADRE, DEFAULT_RESENTMENT, set_log.events()
+		)
+	RunCadres.announce(state, set_log, PLAYER)
 
 
 ## A caught villager's own Denunciation rises by the caught-lie row, as the player's does.
@@ -932,16 +972,17 @@ func _end_round() -> void:
 
 func _end_set() -> void:
 	var met: bool = state.set_progress >= target()
+	var steps: int = _sets.over_steps(state.set_progress, target()) if met else 0
 	# Cadres that pay at a Quota's end are paid before the Quota is.
 	var ending: SetContext = SetContext.new(state.set_index, met)
 	ending.coupons = state.coupons
+	ending.over_steps = steps
 	_stack.run_set_end(ending)
 	state.coupons += ending.add_coupons
 	RunCadres.announce(state, set_log, PLAYER)
-	var steps: int = 0
 	if met:
 		state.coupons += _sets.reward(state.set_type) + RunReforms.quota_coupons(state)
-		steps = _overfulfil()
+		_overfulfil(steps)
 	else:
 		var famine: int = _meters.source(RunMeters.MISSED_TARGET).amount
 		RunMeters.apply_amount(
@@ -966,6 +1007,8 @@ func _end_set() -> void:
 	var held: int = Resentment.private_cadres(state.inventory.cadres, all_cadres())
 	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
 	_resent(steps * DEFAULT_RESENTMENT.overfulfilment, Resentment.OVERFULFILMENT)
+	# What a Cadre adds for the steps on top of that (Grain Speculator, ADR 0032).
+	_resent(ending.add_resentment, Resentment.CADRE)
 	var owed: int = Resentment.denunciation(state.resentment, DEFAULT_RESENTMENT)
 	if owed > 0:
 		RunMeters.apply_amount(
@@ -986,14 +1029,11 @@ func _end_set() -> void:
 
 ## A met Quota beaten by a step or more pays the bonus and raises the norm for every
 ## later Set. The steps are counted against the target in force for this Set, and stay
-## in over_steps until the next Set starts, so target() still reads this Set's. Returns
-## the steps.
-func _overfulfil() -> int:
-	var steps: int = _sets.over_steps(state.set_progress, target())
+## in over_steps until the next Set starts, so target() still reads this Set's.
+func _overfulfil(steps: int) -> void:
 	state.coupons += _sets.over_bonus(steps)
 	state.norm_steps += steps
 	state.over_steps = steps
-	return steps
 
 
 ## Moves a meter by a source in the meter table. Callers check death at a boundary.

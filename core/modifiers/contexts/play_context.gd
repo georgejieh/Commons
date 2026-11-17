@@ -21,6 +21,13 @@ var card_grain: Array[int] = []
 ## The printed ranks of the cards the reading puts in its kickers (ADR 0029), which are
 ## the kicker ranks unless a wild card stands in.
 var kicker_cards: PackedByteArray = PackedByteArray()
+## The printed ranks of the cards the play scores, in play order (ADR 0032).
+var body_cards: PackedByteArray = PackedByteArray()
+## The run's Year in play, from 1, or 0 when the scorer was not given the run.
+var year: int = 0
+## False when a hook waives the Resentment the seat's stamped cards add as they score
+## (Forged Seal, ADR 0032). Read once the play is scored.
+var stamps_resented: bool = true
 ## The share of its Rate the play keeps, in percent, rounded up (ADR 0023). Applied before
 ## the cap.
 var rate_percent: int = 100

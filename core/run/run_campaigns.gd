@@ -10,6 +10,8 @@ const MARKET_POOL: CampaignPool = preload("res://data/run/market_campaign_pool.t
 
 ## What Campaigns hold in force this round.
 var flags: CampaignRound = CampaignRound.new()
+## Returns the Quota's target in force now, for a Campaign that reads it (ADR 0032).
+var quota_target: Callable = Callable()
 
 var _state: RunState
 var _stack: ModifierStack
@@ -161,6 +163,8 @@ func _context(
 	context.moment = moment
 	context.card_ids = card_ids.duplicate()
 	context.player = _player
+	if quota_target.is_valid():
+		context.target = quota_target.call()
 	if context.round_state != null:
 		context.opening = context.round_state.public_view().history.is_empty()
 	return context

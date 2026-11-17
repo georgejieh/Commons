@@ -9,15 +9,19 @@ var landlord: int = Seats.NONE
 var cards_left: int = -1
 var seat_plays: PackedInt32Array = PackedInt32Array()
 var seat_grain: PackedFloat64Array = PackedFloat64Array()
+## The run's Year in play, from 1, or 0 outside a run (ADR 0032).
+var year: int = 0
 
 
 func _init(
 	landlord_value: int,
 	cards_left_value: int,
 	seat_plays_value: PackedInt32Array,
-	seat_grain_value: PackedFloat64Array
+	seat_grain_value: PackedFloat64Array,
+	year_value: int = 0
 ) -> void:
 	landlord = landlord_value
 	cards_left = cards_left_value
 	seat_plays = seat_plays_value
 	seat_grain = seat_grain_value
+	year = year_value

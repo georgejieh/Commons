@@ -20,6 +20,38 @@ static func take_turn(
 	return turn
 
 
+## Runs the need settled hook once a round's Commons is split (ADR 0032), and pays the
+## player the coupons it earned. declared is NeedContext.NOT_DECLARED for a round the
+## player was landlord. The caller lowers Resentment by the fall it returns.
+static func settle_need(
+	stack: ModifierStack,
+	state: RunState,
+	player: int,
+	declared: int,
+	true_need: int,
+	caught: Array[int]
+) -> NeedContext:
+	var settled: NeedContext = NeedContext.new(
+		player, state.landlord_seat, declared, true_need, caught
+	)
+	stack.run_need_settled(settled)
+	state.coupons += settled.coupons
+	return settled
+
+
+## What the held Cadres change about the shops this visit: the shop open hook over each
+## of them, with its saved state, as they stand when the visit opens or after a purchase.
+static func shop_rules(
+	state: RunState, definitions: Dictionary[String, ModifierDef], player: int
+) -> ShopContext:
+	var stack: ModifierStack = ModifierStack.new()
+	for cadre_id: String in state.inventory.cadres:
+		stack.add(definitions[cadre_id], player, state.cadre_memos.peek(cadre_id))
+	var context: ShopContext = ShopContext.new(player)
+	stack.run_shop_open(context)
+	return context
+
+
 ## Multiplies the peasants' round totals before they fill the Commons, so the ledger and
 ## the pool agree on what was scored.
 static func scale_commons(totals: PackedFloat64Array, landlord: int, scale: float) -> void:

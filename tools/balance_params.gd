@@ -16,6 +16,11 @@ extends Resource
 ## Campaigns whose chosen cards leave the hand take the lowest cards; every other
 ## Campaign that asks for cards takes the highest.
 @export var giving_campaigns: Array[String] = ["mutual_aid"]
+## ADR 0032's collective Campaigns are used only when they help: Relief Grain once
+## Famine stands at this or more, Self-Criticism once Resentment does, and never when its
+## Denunciation would reach the meter's death.
+@export var relief_famine_at: int = 6
+@export var criticism_resentment_at: int = 6
 ## Commands one run may send before it fails as stuck.
 @export var max_commands: int = 50000
 ## The run's start time, fixed so the run's ID, and so the run, is the same each time.

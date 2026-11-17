@@ -4,7 +4,8 @@
 [ext_resource type="Resource" path="res://data/modifiers/campaigns/registration_drive.tres" id="2"]
 [ext_resource type="Resource" path="res://data/modifiers/campaigns/seizure_notice.tres" id="3"]
 [ext_resource type="Resource" path="res://data/modifiers/campaigns/anonymous_letter.tres" id="4"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/false_report.tres" id="5"]
 
 [resource]
 script = ExtResource("1")
-campaigns = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4")])
+campaigns = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5")])

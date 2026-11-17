@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CampaignDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/campaign_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "false_report"
+tag = 1
+cost = 4
+unlock_tier = 3
+when = 0
+min_cards = 0
+max_cards = 0
+parameters = Dictionary[String, int]({"percent": 15, "steps": 1, "resentment": 2})
+name_key = "campaign.false_report.name"
+text_key = "campaign.false_report.text"
+prompt_key = "campaign.false_report.prompt"

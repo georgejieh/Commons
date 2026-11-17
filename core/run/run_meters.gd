@@ -14,6 +14,8 @@ const CAUGHT_LIE: String = "caught_lie"
 ## A Set in a run of Sets the player never held the landlord's seat in (ADR 0031). Its
 ## amount is for each step of the run past the grace.
 const STOOD_BY: String = "stood_by"
+## Famine a held Cadre takes off; its amount is the Cadre's (Public Granary, ADR 0032).
+const CADRE_FAMINE: String = "cadre_famine"
 const DEBUFF_FAMINE: String = "debuff_famine"
 const DEBUFF_DENUNCIATION: String = "debuff_denunciation"
 ## Its amount comes from the Resentment curve (P4.2), not the row.
@@ -58,6 +60,24 @@ static func apply_amount(
 		RunEvent.new(RunEvent.Type.METER_CHANGED, player, after - before, 0.0, source.meter)
 	)
 	_update_setbacks(state, source.meter, table.bands(source.meter), player, events)
+
+
+## Lowers the source's meter by amount, the one path a meter falls by (ADR 0032): through
+## the meter change hook as a rise goes, never below 0, logged as METER_CHANGED with the
+## fall as a negative value, and re-arming the band's setback once the meter is back below
+## mid by the table's margin, which lifts rationing.
+static func lower(
+	state: RunState,
+	source_id: String,
+	amount: int,
+	table: MeterTable,
+	stack: ModifierStack,
+	params: RunParams,
+	player: int,
+	events: Array[RunEvent]
+) -> void:
+	assert(amount >= 0, "A fall is given as a positive amount")
+	apply_amount(state, source_id, -amount, table, stack, params, player, events)
 
 
 ## Sets a meter to a figure reported from outside the game (ADR 0022). No hook runs, since

@@ -115,6 +115,11 @@ func run_turn_taken(context: TurnContext) -> void:
 		entry.effect.turn_taken(context)
 
 
+func run_need_settled(context: NeedContext) -> void:
+	for entry: ActiveModifier in _by_hook[Hooks.NEED_SETTLED]:
+		entry.effect.need_settled(context)
+
+
 func _changed() -> void:
 	revision += 1
 	_ordered.clear()

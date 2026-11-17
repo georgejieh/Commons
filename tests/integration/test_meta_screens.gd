@@ -59,7 +59,7 @@ func _collection() -> CollectionScreen:
 func test_a_fresh_profile_opens_one_household_and_one_stake() -> void:
 	var screen: RunSetupScreen = await _setup()
 	var papers: Array[AgedSheet] = screen.papers()
-	assert_int(papers.size()).is_equal(4)
+	assert_int(papers.size()).is_equal(RunStarter.HOUSEHOLDS.households.size())
 	assert_bool(papers[0].choosable).is_true()
 	assert_bool(papers[0].selected).is_true()
 	for paper: AgedSheet in papers.slice(1):
@@ -86,8 +86,11 @@ func test_a_fresh_profile_opens_one_household_and_one_stake() -> void:
 func test_a_veteran_sees_every_household_three_stakes_and_the_heirloom() -> void:
 	_veteran()
 	var screen: RunSetupScreen = await _setup()
-	for paper: AgedSheet in screen.papers():
-		assert_bool(paper.choosable).is_true()
+	# Three runs open every household but ADR 0032's Returned Soldier, of tier 4.
+	var households: Array[HouseholdDef] = RunStarter.HOUSEHOLDS.households
+	var papers: Array[AgedSheet] = screen.papers()
+	for index: int in papers.size():
+		assert_bool(papers[index].choosable).is_equal(households[index].unlock_tier <= 3)
 	var open: int = 0
 	for ticket: StakeTicket in screen.tickets():
 		open += 1 if ticket.open else 0
@@ -242,8 +245,9 @@ func test_the_collection_fits_both_screens_and_counts_whats_open() -> void:
 			assert_str(screen.open_line()).is_equal(line)
 			assert_int(screen.entries().size()).is_equal(view.total())
 			if profile:
-				# Three runs open every tier but the wild ranks' three items (ADR 0029).
-				assert_int(view.total() - view.open_count()).is_equal(3)
+				# Three runs open every tier but the wild ranks' three items (ADR 0029) and
+				# ADR 0032's three of tier 4 and two of tier 5.
+				assert_int(view.total() - view.open_count()).is_equal(8)
 	var fresh: CollectionView = CollectionView.for_runs(0)
 	assert_int(fresh.open_count()).is_less(fresh.total())
 

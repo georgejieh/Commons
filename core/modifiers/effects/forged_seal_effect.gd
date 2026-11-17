@@ -1,0 +1,9 @@
+class_name ForgedSealEffect
+extends ModifierEffect
+## The holder's stamped cards add no Resentment when they score (ADR 0032). It only reads
+## the play, so a preview says the same.
+
+
+func play_scored(context: PlayContext) -> void:
+	if context.seat == holder_seat:
+		context.stamps_resented = false

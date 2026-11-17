@@ -34,4 +34,10 @@ static func _build(campaign_id: String) -> CampaignEffect:
 			return AnonymousLetterEffect.new()
 		"model_worker":
 			return ModelWorkerEffect.new()
+		"self_criticism":
+			return SelfCriticismEffect.new()
+		"relief_grain":
+			return ReliefGrainEffect.new()
+		"false_report":
+			return FalseReportEffect.new()
 	return null

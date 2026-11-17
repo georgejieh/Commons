@@ -57,6 +57,10 @@ var wild_buys: Dictionary[String, int] = {}
 var wild_draws: int = 0
 var workers_used: int = 0
 var rerolls: int = 0
+## ADR 0032's pieces bought at either counter, and its Campaigns used, by ID, for the
+## harness's closing line; not in the CSV.
+var wave_buys: Dictionary[String, int] = {}
+var wave_uses: Dictionary[String, int] = {}
 
 
 ## Fills the run's final numbers from its last state.

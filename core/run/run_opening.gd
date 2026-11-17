@@ -14,8 +14,8 @@ const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 const OPENING: String = "household"
 
 
-## The household's coupons, plot cards, Cadre, Resentment and Denunciation. cadre is the
-## definition of household.cadre_id, or null for none.
+## The household's coupons, plot cards, Cadre, Resentment, Denunciation and Famine.
+## cadre is the definition of household.cadre_id, or null for none.
 static func household(
 	state: RunState, chosen: HouseholdDef, cadre: ModifierDef, run: RunParams
 ) -> void:
@@ -29,6 +29,7 @@ static func household(
 		RunCadres.bought(state, cadre, Ranks.INVALID)
 	resent(state, chosen.resentment)
 	raise(state, RunMeters.DENUNCIATION, chosen.denunciation, run)
+	raise(state, RunMeters.FAMINE, chosen.famine, run)
 
 
 ## The stake's starting Famine and Denunciation.

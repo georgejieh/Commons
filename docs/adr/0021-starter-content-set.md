@@ -161,6 +161,16 @@ Every item carries an unlock tier in its data. A tier opens after that many fini
 | 3 | 3 runs | Rehabilitation, Steel Target | Seizure Notice; Unplanned Economy |
 | 4 | 4 runs | None | Model Worker; Mass Line, Industrialization ([ADR 0029](0029-wild-ranks.md)) |
 
+The second wave ([ADR 0032](0032-second-content-wave.md)) adds to these tiers, and a sixth:
+
+| Tier | Opens | Cadres | Other |
+| --- | --- | --- | --- |
+| 1 | 1 run | Night School, Iron and Coal, Back Door | Self-Criticism |
+| 2 | 2 runs | Advanced Cooperative, Double-Share Plough, Open Accounts, Informer's Reward | Relief Grain; the Mutual Aid Team household |
+| 3 | 3 runs | Tractor Station, The Gleaners, Forged Seal, Loudspeaker | False Report |
+| 4 | 4 runs | Public Granary, Five-Year Plan, Rent Book | The Returned Soldier household |
+| 5 | 5 runs | Grain Speculator, Prize Exhibit | None |
+
 Registration Drive moved from tier 2 to tier 1 on 2026-11-15: the black market had only the Anonymous Letter to offer as a Campaign for a player's first two runs, and the Parcel already brings stamped cards at tier 0.
 
 The strongest scaling pieces sit in the late tiers, so a veteran's runs can reach further than a first run, by a little.

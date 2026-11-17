@@ -101,13 +101,13 @@ func _envelopes(loop: RunLoop, tiers: Dictionary[String, int], finished: int) ->
 
 func test_every_offer_path_draws_only_open_items() -> void:
 	var tiers: Dictionary[String, int] = _tiers()
-	for finished: int in [0, 1, 2, 3, 4]:
+	for finished: int in [0, 1, 2, 3, 4, 5]:
 		var reached: Dictionary[int, bool] = {}
 		for seed_value: int in SEEDS:
 			var loop: RunLoop = _loop(_full_state(seed_value, finished))
 			_visit(loop, tiers, finished)
 			_envelopes(loop, tiers, finished)
-			# The wild ranks' tier holds no Cadre, so its Campaign and Reforms count too.
+			# Campaigns and Reforms count too, for the tiers whose Cadres are few.
 			var shown: Array[String] = loop.shop.stock() + loop.market.stock()
 			shown.append_array(loop.shop.campaigns.stock() + loop.shop.reforms.stock())
 			for item_id: String in shown:
@@ -165,12 +165,15 @@ func test_a_demo_run_opens_every_tier_but_the_wild_ranks() -> void:
 	var loop: RunLoop = _loop(RunState.new(6300))
 	var below: Callable = func(item: Resource) -> bool:
 		return int(item.get("unlock_tier")) < RunUnlocks.WILD_TIER
-	assert_int(loop.pools.store_cadres.size()).is_equal(RunLoop.DEFAULT_CADRES.cadres.size())
-	assert_int(loop.pools.market_cadres.size()).is_equal(RunLoop.DEFAULT_MARKET.cadres.size())
+	# ADR 0032's tier 4 and 5 Cadres stay out of it as the wild ranks' items do.
+	var store: int = RunLoop.DEFAULT_CADRES.cadres.filter(below).size()
+	var market: int = RunLoop.DEFAULT_MARKET.cadres.filter(below).size()
+	assert_int(loop.pools.store_cadres.size()).is_equal(store)
+	assert_int(loop.pools.market_cadres.size()).is_equal(market)
 	assert_int(loop.pools.reforms.size()).is_equal(RunReforms.all().filter(below).size())
 	var campaigns: int = loop.pools.store_campaigns.size() + loop.pools.market_campaigns.size()
 	assert_int(campaigns).is_equal(RunCampaigns.all().filter(below).size())
-	assert_int(loop.pools.exchange().size()).is_equal(RunLoop.all_cadres().size())
+	assert_int(loop.pools.exchange().size()).is_equal(RunLoop.all_cadres().filter(below).size())
 	for reform: ReformDef in loop.pools.reforms:
 		assert_bool(["mass_line", "industrialization"].has(reform.id)).is_false()
 	for campaign: CampaignDef in loop.pools.store_campaigns:
@@ -245,7 +248,7 @@ func test_tier_zero_fills_every_counter() -> void:
 	assert_int(loop.pools.reforms.size()).is_greater_equal(store.reform_offers)
 	assert_int(loop.pools.store.envelopes.size()).is_equal(store.envelopes.size())
 	assert_int(loop.pools.market.envelopes.size()).is_equal(market.envelopes.size())
-	for tier: int in 4:
+	for tier: int in RunUnlocks.LAST_TIER + 1:
 		print("tier %d: %s" % [tier, _counts(tier)])
 
 

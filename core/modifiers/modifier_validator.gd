@@ -51,7 +51,7 @@ static func _cadre_problems(
 	var problems: PackedStringArray = []
 	if definition.kind != ModifierDef.Kind.CADRE:
 		return problems
-	if definition.unlock_tier < 0:
+	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
 		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
 	# State is read through the parameters, which the checks above already report.
 	for parameter: String in effect.required_parameters():
@@ -78,7 +78,7 @@ static func validate_directive(
 			problems.append("%s: missing string key %s" % [definition.id, key])
 	if definition.cost <= 0:
 		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
-	if definition.unlock_tier < 0:
+	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
 		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
 	if definition.hand_types.is_empty():
 		problems.append("%s: raises no hand type" % definition.id)
@@ -101,7 +101,7 @@ static func validate_campaign(
 			problems.append("%s: missing string key %s" % [definition.id, key])
 	if definition.cost <= 0:
 		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
-	if definition.unlock_tier < 0:
+	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
 		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
 	var counts_ok: bool = definition.min_cards >= 0 and definition.min_cards <= definition.max_cards
 	if not counts_ok or definition.max_cards > Dealer.HAND_SIZE:
@@ -126,7 +126,7 @@ static func validate_reform(
 			problems.append("%s: missing string key %s" % [definition.id, key])
 	if definition.cost <= 0:
 		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
-	if definition.unlock_tier < 0:
+	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
 		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
 	if not ReformRegistry.has_effect(definition.id):
 		problems.append("%s: no effect script" % definition.id)
@@ -148,7 +148,7 @@ static func validate_envelope(
 			problems.append("%s: missing string key %s" % [definition.id, key])
 	if definition.cost <= 0:
 		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
-	if definition.unlock_tier < 0:
+	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
 		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
 	if definition.choices <= 0:
 		problems.append("%s: bad choices %d" % [definition.id, definition.choices])

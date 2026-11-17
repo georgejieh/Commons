@@ -9,6 +9,8 @@ enum Moment { ELSEWHERE, OPENING, TURN, SHOP }
 const RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
 ## The meter row a Campaign's Famine moves through; its amount is the Campaign's.
 const FAMINE_SOURCE: String = "campaign_famine"
+## The meter row a Campaign's Denunciation moves through; its amount is the Campaign's.
+const DENUNCIATION_SOURCE: String = "campaign_denunciation"
 
 var definition: CampaignDef
 var state: RunState
@@ -25,6 +27,8 @@ var moment: Moment = Moment.ELSEWHERE
 var opening: bool = false
 var card_ids: Array[int] = []
 var player: int = 0
+## The Quota's target in force now, 0 when the loop gave none (ADR 0032).
+var target: float = 0.0
 
 
 ## The player's cards now, as copies, or none outside a round.
@@ -47,6 +51,22 @@ func add_event(event: RunEvent) -> void:
 func resent(amount: int) -> void:
 	if amount != 0:
 		Resentment.add(state, amount, Resentment.CAMPAIGN, RESENTMENT, set_log.events())
+
+
+## Lowers Resentment through its one path down (ADR 0032).
+func relent(amount: int) -> void:
+	if amount != 0:
+		Resentment.lower(state, amount, Resentment.CAMPAIGN, RESENTMENT, set_log.events())
+
+
+## Moves a meter through the Campaign's row: a rise for a positive amount, a fall through
+## the meters' one path down for a negative one.
+func move_meter(source_id: String, amount: int) -> void:
+	var logged: Array[RunEvent] = set_log.events()
+	if amount < 0:
+		RunMeters.lower(state, source_id, -amount, meters, stack, params, player, logged)
+	elif amount > 0:
+		RunMeters.apply_amount(state, source_id, amount, meters, stack, params, player, logged)
 
 
 ## Moves cards one for one between the player and seat, logging each direction.
