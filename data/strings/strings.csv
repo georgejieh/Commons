@@ -933,14 +933,14 @@ rank.plural.a,Aces
 rank.plural.2,Twos
 wild.one,{rank} are wild
 wild.two,{first} and {second} are wild
-wild.rule,A wild card plays as its own rank or stands in for any rank from 3 to 2.
+wild.strip,"For every seat, this round."
 callout.wild.sub,"For every seat, this round only."
 callout.wild.sub.two,"{ranks}, for every seat, this round only."
 cheat.wild,Wild ranks
-cheat.wild.stand_in,"A wild card plays as its own rank or stands in for any rank from 3 to 2, never a Joker. Wild cards played alone keep one at its own rank: two wild Sevens are a Pair of Sevens."
+cheat.wild.stand_in,"A wild card may stand in for any rank from 3 to 2, never a Joker. Wild cards played alone keep one at its own rank."
 cheat.wild.order,"Bombs from high to low: the Rocket, four wild cards of one rank played as that rank, a Bomb with no stand-in, then a Bomb with one. Within each, the higher rank wins."
-cheat.wild.big,"Industrialization: a Bomb may hold 5 or more cards, and more cards beat fewer. At the same size the order above decides, and the Rocket still beats every Bomb."
-cheat.wild.grain,"Grain comes from each card as printed: a wild Seven standing in for a Queen scores as a Seven."
+cheat.wild.order.big,"Bombs from high to low: the Rocket, then more cards over fewer. At the same size: four wild cards of one rank played as that rank, a Bomb with no stand-in, then a Bomb with one. Within each, the higher rank wins."
+cheat.wild.grain,"Grain comes from each card as printed, not the rank it stands in for."
 reading.title,Play these cards as
 reading.cancel,Cancel
 reading.single,Single {rank}

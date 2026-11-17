@@ -70,7 +70,8 @@ Calls made while building, which the sections above did not settle:
 - **Bids** count each wild card held at `wild_card_points`, 2, a 2's value.
 - **Ranks are named in words**, "Sevens are wild" and "Bomb of Nines", not "7s" and "Bomb of 9s" as the examples above have it: the call-out is set in capitals, where "AS" does not read as Aces. A Single and the ends of a chain keep the printed glyph.
 - **The hint's reading is played without the picker** while the selection is still the hint's cards on the same turn. Any other selection that can be played more than one way opens the picker.
-- **The strip lists Industrialization** under the rules for the whole table, with the round's wild ranks.
+- **The strip names the wild ranks on its first line** and no more, since the trick pile lies over the strip's lower lines; what a wild card may do is on the Rules sheet. Industrialization is listed under the rules for the whole table, on the strip and on the sheet.
+- **The Rules sheet is drawn smaller when it would not fit**, so no rule in play is ever cut off.
 - **Nothing announces a tier opening between runs**, as for tiers 1 to 3. The collection shows the three items locked until then.
 
 Not done: a full `tools/expert_deadline.gd -- --wild 1` run. A 20-deal sample gave a p99 of 403 ms with one wild rank against 355 ms with none, both over the 300 ms the runner is set to, and 20 deals is too few to trust. P5.0 moves Expert off the command thread and takes the full measurement with it.

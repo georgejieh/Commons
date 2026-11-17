@@ -152,7 +152,7 @@ func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 	var moments: TableMoments = table.get("_moments")
 	for view: CardView in hand_view.views():
 		assert_bool(view.shows_wild()).is_false()
-	assert_str(strip.shown_text()).not_contains(tr("wild.rule"))
+	assert_str(strip.shown_text()).not_contains(tr("wild.strip"))
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
 	var first: int = _app.controller.wild_ranks()[0]
 	var waited: float = 0.0
@@ -162,7 +162,8 @@ func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 	var one: Array[int] = [first]
 	assert_str(moments.callout.shown_word()).is_equal(ReadingText.wild_line(one).to_upper())
 	await _wait_idle(table)
-	assert_str(strip.shown_text()).contains(ReadingText.wild_line(one))
+	# The wild ranks are the strip's first line, above anything the trick may cover.
+	assert_str(strip.shown_text()).starts_with(ReadingText.wild_line(one))
 	var marked: int = 0
 	for view: CardView in hand_view.views():
 		var wild: bool = _rank_of(view.card_id) == first
@@ -363,17 +364,25 @@ func test_the_rules_sheet_explains_wild_ranks_only_while_one_is_wild() -> void:
 	assert_str(text).contains(ReadingText.wild_line(_app.controller.wild_ranks()))
 	for key: String in ["cheat.wild.stand_in", "cheat.wild.order", "cheat.wild.grain"]:
 		assert_str(text).contains(tr(key))
-	assert_str(text).not_contains(tr("cheat.wild.big"))
+	assert_str(text).not_contains(tr("cheat.wild.order.big"))
 	sheet.toggle(_app.controller)
 	# Under Industrialization it names bigger bombs too, and the sheet still fits.
 	_loop().state.reforms.assign(["industrialization"])
 	_loop().call("_rebuild_modifiers")
 	sheet.toggle(_app.controller)
 	await await_idle_frame()
-	assert_str(sheet.wild_text()).contains(tr("cheat.wild.big"))
-	var card: Control = sheet.get_child(1).get_child(0)
-	var inside: bool = Rect2(Vector2.ZERO, Vector2(SCREEN)).encloses(card.get_global_rect())
-	assert_bool(inside).override_failure_message(str(card.get_global_rect())).is_true()
+	assert_str(sheet.wild_text()).contains(tr("cheat.wild.order.big"))
+	var active: Label = sheet.get("_active")
+	assert_str(active.text).contains(tr("reform.industrialization.name"))
+	var screen: Rect2 = Rect2(Vector2.ZERO, Vector2(SCREEN))
+	var inside: bool = screen.encloses(sheet.sheet_rect())
+	assert_bool(inside).override_failure_message(str(sheet.sheet_rect())).is_true()
+	# However many rules are in play, the sheet is drawn smaller, never cut off.
+	active.text = "\n".join(PackedStringArray([active.text, active.text, active.text]))
+	await await_idle_frame()
+	await await_idle_frame()
+	inside = screen.encloses(sheet.sheet_rect())
+	assert_bool(inside).override_failure_message(str(sheet.sheet_rect())).is_true()
 	sheet.toggle(_app.controller)
 	# The next round has no wild rank, and the section goes.
 	var round_index: int = _loop().state.round_index

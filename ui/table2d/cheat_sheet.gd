@@ -4,7 +4,8 @@ extends Control
 ## Rate at the run's level for it, naming the level once a Directive has raised it, the
 ## rule changes active now, the current rank order, low to high, and while a rank is wild
 ## a section on wild cards (ADR 0029). While open it
-## redraws on every run event, so a changed rule shows the frame it changes.
+## redraws on every run event, so a changed rule shows the frame it changes. A sheet
+## with more rules than the screen has room for is drawn smaller, never cut off.
 
 const TYPES: Array[String] = [
 	"single",
@@ -32,6 +33,8 @@ const DIM: Color = Color(0.05, 0.03, 0.02, 0.72)
 const WILD_SIZE: int = 16
 const SPACING: int = 14
 const WILD_SPACING: int = 8
+## The least room kept clear above and below the sheet, in pixels.
+const MARGIN: float = 12.0
 
 var _controller: RunController
 var _types: GridContainer = GridContainer.new()
@@ -43,6 +46,7 @@ var _order: Label = Label.new()
 var _wild_head: Label
 var _wild: Label = Label.new()
 var _close: Button
+var _panel: Control
 
 
 func _ready() -> void:
@@ -85,7 +89,10 @@ func _ready() -> void:
 	_close = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
 	_close.pressed.connect(func() -> void: visible = false)
 	sheet.add_child(_close)
-	center.add_child(ScreenKit.card_panel(sheet))
+	_panel = ScreenKit.card_panel(sheet)
+	center.add_child(_panel)
+	# A container lays its child out at full size, so the fit follows every layout.
+	center.sort_children.connect(_fit)
 	visible = false
 
 
@@ -134,6 +141,10 @@ func refresh() -> void:
 				% [_controller.modifier_name(modifier_id), _controller.modifier_text(modifier_id)]
 			)
 		)
+	# A Reform's rule for every seat, such as Industrialization, is in play too.
+	for reform_id: String in _controller.table_rule_reforms():
+		var rule: String = _controller.reform_text(reform_id)
+		active.append("%s: %s" % [_controller.reform_name(reform_id), rule])
 	if active.is_empty():
 		active.append(tr("cheat.none"))
 	_active.text = "\n".join(active)
@@ -142,7 +153,7 @@ func refresh() -> void:
 
 
 ## The wild ranks' section, while one is in force: which ranks, what a wild card may stand
-## in for, the bomb order, bigger bombs under Industrialization and where Grain comes from.
+## in for, the bomb order, by size first under bigger bombs, and where Grain comes from.
 func _show_wild() -> void:
 	var ranks: Array[int] = _controller.wild_ranks()
 	_wild_head.visible = not ranks.is_empty()
@@ -153,13 +164,28 @@ func _show_wild() -> void:
 	if ranks.is_empty():
 		_wild.text = ""
 		return
+	var order: String = "cheat.wild.order.big" if _controller.big_bombs() else "cheat.wild.order"
 	var lines: PackedStringArray = [
 		"%s. %s" % [ReadingText.wild_line(ranks), tr("cheat.wild.stand_in")],
-		"%s %s" % [tr("cheat.wild.order"), tr("cheat.wild.grain")],
+		"%s %s" % [tr(order), tr("cheat.wild.grain")],
 	]
-	if _controller.big_bombs():
-		lines.append(tr("cheat.wild.big"))
 	_wild.text = "\n".join(lines)
+
+
+## Draws the sheet smaller when it is taller than the screen, and sets it in the screen's
+## middle itself: a container taller than the screen no longer centres its child there.
+func _fit() -> void:
+	var tall: float = _panel.size.y
+	var room: float = size.y - 2.0 * MARGIN
+	var fit: float = 1.0 if tall <= room or tall <= 0.0 else room / tall
+	_panel.pivot_offset = Vector2(_panel.size.x / 2.0, 0.0)
+	_panel.scale = Vector2(fit, fit)
+	_panel.position.y = floorf((size.y - tall * fit) / 2.0)
+
+
+## The sheet's box on screen as drawn, for tests.
+func sheet_rect() -> Rect2:
+	return _panel.get_global_rect()
 
 
 ## The wild ranks' section as shown, or empty while it is hidden, for tests.
