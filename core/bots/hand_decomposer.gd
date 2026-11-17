@@ -87,10 +87,14 @@ func _split_wilds() -> void:
 	_wilds = 0
 	_own_code = 0
 	for rank: int in _rules.wild_ranks():
-		if rank > Ranks.TWO or _counts[rank] == 0:
+		if rank > Ranks.TWO:
+			continue
+		# A wild rank held in no card still takes its place in the code, so the memo
+		# tells one wild rank's cards from the other's.
+		_own_code = (_own_code << CountKey.BITS_PER_RANK) | _counts[rank]
+		if _counts[rank] == 0:
 			continue
 		_own[rank] = _counts[rank]
-		_own_code = (_own_code << CountKey.BITS_PER_RANK) | _counts[rank]
 		_wilds += _counts[rank]
 		_counts[rank] = 0
 	_budget = _wilds

@@ -45,6 +45,20 @@ func test_every_tier_plays_wild_rounds_legally() -> void:
 	assert_int(played).is_equal(2 * (3 * DEALS + EXPERT_DEALS))
 
 
+## One decomposer scores many hands in a search and remembers them. With two wild ranks,
+## hands that differ only in which wild rank they hold must not share a memory.
+func test_the_memo_tells_two_wild_ranks_apart() -> void:
+	var wild: Array[int] = [Ranks.SEVEN, Ranks.KING]
+	var rules: RuleSet = WildReference.rules(wild, false)
+	var reused: HandDecomposer = HandDecomposer.new(rules, _map, 100000)
+	for hand: String in ["7", "K", "3457", "345K", "99K", "997", "77", "KK", "7K"]:
+		var fresh: HandDecomposer = HandDecomposer.new(rules, _map, 100000)
+		var expected: int = fresh.score(RankText.counts(hand))
+		assert_int(reused.score(RankText.counts(hand))).override_failure_message(hand).is_equal(
+			expected
+		)
+
+
 func test_a_wild_card_completes_a_planned_straight() -> void:
 	var jacks: RuleSet = WildReference.rules([Ranks.JACK] as Array[int], false)
 	var search: HandDecomposer = HandDecomposer.new(jacks, _map, 100000)

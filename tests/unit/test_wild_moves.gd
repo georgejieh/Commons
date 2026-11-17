@@ -16,6 +16,8 @@ const MAX_STEPS: int = 10000
 const TIMED_HANDS: int = 60
 const LEAN_BUDGET_USEC: int = 10000
 const FULL_BUDGET_USEC: int = 25000
+const RULED_HANDS: int = 12
+const RULED_SUBSETS: int = 8
 
 var _map: PackedByteArray = Ranks.identity_map()
 
@@ -139,6 +141,49 @@ func test_every_reading_of_every_subset_is_generated() -> void:
 			var counts: PackedByteArray = _hand(stream, cards, wilds, rules)
 			var current: Pattern = null if index % 2 == 0 else _random_play(stream, rules)
 			failures.append_array(_subset_failures(counts, current, rules))
+	assert_array(Array(failures.slice(0, 5))).is_empty()
+
+
+## The rank orders the Cadres make: reversed (Inverted Order), a 3 above the 2s
+## (Promotion of the Masses), and two ranks ranking as one (Class Enemy).
+func _changed_maps() -> Array[PackedByteArray]:
+	var reversed: PackedByteArray = Ranks.identity_map()
+	ReversedRanks.reverse(reversed)
+	var promoted: PackedByteArray = Ranks.identity_map()
+	RankShift.move_above(promoted, Ranks.THREE, Ranks.TWO)
+	var shared: PackedByteArray = Ranks.identity_map()
+	shared[Ranks.FIVE] = shared[Ranks.NINE]
+	return [reversed, promoted, shared]
+
+
+## The same two properties under the rules that change rank order or run length
+## (ADR 0021, ADR 0032): every generated move is a legal reading of its cards, and every
+## reading of every small subset is generated.
+func test_wild_moves_hold_under_changed_rank_orders_and_two_pair_runs() -> void:
+	var stream: RandomStream = RandomStream.new(SEED + 7)
+	var failures: PackedStringArray = []
+	var plough: RuleParams = RuleSet.DEFAULT_PARAMS.copy()
+	plough.wild_ranks = [Ranks.SEVEN] as Array[int]
+	plough.min_pair_chain_length = 2
+	var rule_sets: Array[RuleSet] = [_configs()[0], _configs()[2], RuleSet.new(plough)]
+	var maps: Array[PackedByteArray] = _changed_maps()
+	maps.append(Ranks.identity_map())
+	for map: PackedByteArray in maps:
+		_map = map
+		for rules: RuleSet in rule_sets:
+			for _hand_index: int in RULED_HANDS:
+				var wilds: int = stream.next_int(1, 4 * rules.wild_ranks().size())
+				var counts: PackedByteArray = _hand(stream, FULL_HAND, wilds, rules)
+				failures.append_array(_legal_failures(counts, null, rules))
+				failures.append_array(_legal_failures(counts, _random_play(stream, rules), rules))
+			for index: int in RULED_SUBSETS:
+				var cards: int = stream.next_int(MIN_SUBSET_CARDS, MAX_SUBSET_CARDS)
+				var small: PackedByteArray = _hand(
+					stream, cards, stream.next_int(1, MAX_SUBSET_WILDS), rules
+				)
+				var current: Pattern = null if index % 2 == 0 else _random_play(stream, rules)
+				failures.append_array(_subset_failures(small, current, rules))
+	_map = Ranks.identity_map()
 	assert_array(Array(failures.slice(0, 5))).is_empty()
 
 
