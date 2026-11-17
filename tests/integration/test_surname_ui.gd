@@ -226,6 +226,27 @@ func test_settings_will_not_change_it_while_a_run_is_saved() -> void:
 	assert_array(shown).contains([tr("settings.name_locked"), "Pan"])
 
 
+## The field is ink on the village's paper, no clean white box: its boxes draw nothing,
+## the paper under it is drawn, and its ink is the tickets' ink, faded by the stage.
+func test_the_field_is_written_on_paper() -> void:
+	await _launch()
+	var page: SurnameScreen = _page()
+	var field: LineEdit = page.field()
+	for style: String in ["normal", "focus", "read_only"]:
+		assert_object(field.get_theme_stylebox(style)).is_instanceof(StyleBoxEmpty)
+	var paper: Control = page.field_paper()
+	assert_object(field.get_parent()).is_same(paper)
+	assert_bool(paper.draw.is_connected(Callable(page, "_draw_paper"))).is_true()
+	await await_idle_frame()
+	var holds: bool = paper.get_global_rect().encloses(field.get_global_rect())
+	var rects: String = "%s %s" % [paper.get_global_rect(), field.get_global_rect()]
+	assert_bool(holds).override_failure_message(rects).is_true()
+	var ink: Color = field.get_theme_color("font_color")
+	assert_float(ink.get_luminance()).is_less(0.2)
+	await _key(KEY_ENTER)
+	assert_str(_app.switcher.current_id()).is_equal("arrival")
+
+
 func test_the_page_fits_both_screens() -> void:
 	for size: Vector2i in SIZES:
 		get_tree().root.size = size

@@ -14,11 +14,21 @@ const FIELD_SIZE: int = 40
 const FIELD_WIDTH: float = 420.0
 const NOTE_SIZE: int = 22
 const NOTE_INK: Color = Color("9e2a1d")
+## The field is written on a slip of the village's paper, as the tickets are: its height,
+## the ink, the band and ring the tickets use, its own seed after theirs, and how far in
+## the name starts, past the band.
+const FIELD_HEIGHT: float = 80.0
+const FIELD_INK: Color = Color("120d09")
+const FIELD_BAND: Color = Color("7a6446")
+const FIELD_RING: Color = Color("b98a2c")
+const FIELD_SEED: int = 120
+const FIELD_INSET: Vector4 = Vector4(24, 6, 16, 14)
 
 var _app: DemoApp
 ## True when the page changes a profile's surname from Settings.
 var _renaming: bool = false
 var _field: LineEdit = LineEdit.new()
+var _paper: Control = Control.new()
 var _note: Label
 var _tickets: Array[SurnameTicket] = []
 var _random: Button
@@ -37,10 +47,9 @@ func open(app: DemoApp) -> void:
 	_field.custom_minimum_size = Vector2(FIELD_WIDTH, 0)
 	_field.add_theme_font_size_override("font_size", FIELD_SIZE)
 	_field.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_field.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_field.text_changed.connect(_on_typed)
 	_field.text_submitted.connect(func(_text: String) -> void: confirm())
-	sheet.add_child(_field)
+	sheet.add_child(_field_on_paper())
 	_note = ScreenKit.label("", NOTE_SIZE, NOTE_INK)
 	sheet.add_child(_note)
 	sheet.add_child(_ticket_grid())
@@ -77,6 +86,11 @@ func field() -> LineEdit:
 	return _field
 
 
+## The slip of paper the field is written on.
+func field_paper() -> Control:
+	return _paper
+
+
 func tickets() -> Array[SurnameTicket]:
 	return _tickets.duplicate()
 
@@ -106,6 +120,43 @@ func _ticket_grid() -> GridContainer:
 		grid.add_child(ticket)
 		_tickets.append(ticket)
 	return grid
+
+
+## The field as a slip of the village's paper, never the engine's white box: ink on a
+## worn ticket, yellowed and foxed from stage 0 and worse with every stage, as the tickets
+## under it are, and ringed in faded gold while it has the focus.
+func _field_on_paper() -> Control:
+	_paper.custom_minimum_size = Vector2(FIELD_WIDTH, FIELD_HEIGHT)
+	_paper.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_paper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_paper.draw.connect(_draw_paper)
+	for style: String in ["normal", "focus", "read_only"]:
+		var bare: StyleBoxEmpty = StyleBoxEmpty.new()
+		bare.content_margin_left = FIELD_INSET.x
+		bare.content_margin_top = FIELD_INSET.y
+		bare.content_margin_right = FIELD_INSET.z
+		bare.content_margin_bottom = FIELD_INSET.w
+		_field.add_theme_stylebox_override(style, bare)
+	var ink: Color = BowlGrime.faded(FIELD_INK, BowlGrime.wear())
+	for color: String in ["font_color", "font_selected_color", "caret_color"]:
+		_field.add_theme_color_override(color, ink)
+	_field.add_theme_color_override("selection_color", Color(NOTE_INK, 0.3))
+	_paper.add_child(_field)
+	var tall: float = maxf(FIELD_HEIGHT, _field.get_combined_minimum_size().y)
+	_paper.custom_minimum_size = Vector2(FIELD_WIDTH, tall)
+	_field.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_field.focus_entered.connect(_paper.queue_redraw)
+	_field.focus_exited.connect(_paper.queue_redraw)
+	return _paper
+
+
+func _draw_paper() -> void:
+	var worn: float = BowlGrime.wear()
+	var rect: Rect2 = Rect2(Vector2.ZERO, _paper.size)
+	PaperTicket.draw(_paper, rect, worn, FIELD_SEED, FIELD_BAND)
+	if _field.has_focus():
+		var ring: Color = Color(BowlGrime.aged(FIELD_RING, worn * 0.5), 0.9)
+		_paper.draw_rect(rect.grow(2.5), ring, false, 3.0)
 
 
 ## Down from the field to the first row of tickets, and from the last row to Confirm;
