@@ -571,7 +571,7 @@ func _parcel_frames() -> void:
 	await create_timer(2.6).timeout
 	var saves_hub: Object = root.get_node("Saves")
 	var saves: Object = saves_hub.call("run_service")
-	saves.call("save", snapshot)
+	saves.call("save", snapshot, ContentStamp.extras())
 	_app.call("resume_to_screen")
 	await _frames(30)
 
@@ -628,7 +628,7 @@ func _debuff_frames() -> void:
 		await _debuff_beat(debuff_id, controller)
 		var saves_hub: Object = root.get_node("Saves")
 		var saves: Object = saves_hub.call("run_service")
-		saves.call("save", snapshot)
+		saves.call("save", snapshot, ContentStamp.extras())
 		_app.call("resume_to_screen")
 		await _frames(30)
 
@@ -922,7 +922,7 @@ func _ending_frames() -> void:
 	var switcher: Object = _app.get("switcher")
 	if switcher.call("current_id") != "title":
 		_fail("ENDING DID NOT GO HOME")
-	saves.call("save", snapshot)
+	saves.call("save", snapshot, ContentStamp.extras())
 	_app.call("resume_to_screen")
 	await _frames(30)
 
@@ -973,7 +973,7 @@ func _full_run_frames() -> void:
 	_expect(switcher.call("current_id") == "table", "RESUME WRONG SCREEN")
 	await _abandon_frames(switcher.call("current"), saves)
 	_put_back_files(kept)
-	saves.call("save", snapshot)
+	saves.call("save", snapshot, ContentStamp.extras())
 	_app.set("demo", true)
 	_app.call("resume_to_screen")
 	await _frames(30)
@@ -1175,7 +1175,7 @@ func _expect(held: bool, failure: String) -> void:
 func _open_ending(outcome: String, saves: Object) -> Node:
 	var record: RunRecord = RunRecord.new()
 	record.mark(_finished_run(ENDING_RUNS[outcome]))
-	saves.call("save", record.to_dict())
+	saves.call("save", record.to_dict(), ContentStamp.extras())
 	_app.call("resume_to_screen")
 	await _frames(20)
 	var switcher: Object = _app.get("switcher")
@@ -1306,7 +1306,7 @@ func _campaign_turn(table: Node, controller: Node) -> void:
 	ArtStages.stage_override = was
 	var saves_hub: Object = root.get_node("Saves")
 	var saves: Object = saves_hub.call("run_service")
-	saves.call("save", snapshot)
+	saves.call("save", snapshot, ContentStamp.extras())
 	_app.call("resume_to_screen")
 	await _frames(30)
 

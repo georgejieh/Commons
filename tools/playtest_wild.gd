@@ -60,7 +60,7 @@ func table(driver: Object) -> void:
 		await _use_and_photograph(controller)
 	ArtStages.stage_override = was
 	var saves: Object = _tree.root.get_node("Saves").call("run_service")
-	saves.call("save", snapshot)
+	saves.call("save", snapshot, ContentStamp.extras())
 	_app.call("resume_to_screen")
 	await _frames(30)
 

@@ -158,6 +158,8 @@ func continue_saved(saves: SaveService, profile: SaveService = null) -> bool:
 
 
 ## Resumes the run in the save, falling back to its backup. False when neither loads.
+## A save written against other content, or whose commands no longer apply, resumes at
+## its checkpoint, the start of its Quota (ADR 0033).
 func resume_saved(
 	saves: SaveService, configs: Array[BotConfig], sets: SetConfig, profile: SaveService = null
 ) -> bool:
@@ -167,7 +169,12 @@ func resume_saved(
 		and loaded.status != SaveLoad.Status.RESTORED_FROM_BACKUP
 	):
 		return false
-	var loop: RunLoop = RunRecord.resume(loaded.data, configs, sets)
+	var data: Dictionary = loaded.data
+	if not ContentStamp.matches(loaded.extras):
+		data = ContentStamp.at_checkpoint(data)
+	var loop: RunLoop = RunRecord.resume(data, configs, sets)
+	if loop == null:
+		loop = RunRecord.resume(ContentStamp.at_checkpoint(data), configs, sets)
 	if loop == null:
 		return false
 	_take_over(loop, saves, profile, loaded)
@@ -896,12 +903,13 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 	return reason
 
 
-## Writes the run save, with the ledger's numbers beside it under the seal, then the
-## ledger itself once the save is whole (ADR 0022).
+## Writes the run save, with the ledger's numbers and the content's stamp (ADR 0033)
+## beside it under the seal, then the ledger itself once the save is whole (ADR 0022).
 func _save() -> void:
 	if _saves == null:
 		return
 	var extras: Dictionary = file_watch.before_write(_loop.state.coupons)
+	extras[ContentStamp.KEY] = ContentStamp.current()
 	if _saves.save(_loop.record.to_dict(), extras) == Error.OK:
 		file_watch.written(extras)
 

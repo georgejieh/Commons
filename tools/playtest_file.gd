@@ -73,7 +73,7 @@ func table() -> void:
 	await _shot("file_table_stage_10")
 	ArtStages.stage_override = was
 	var saves: Object = _tree.root.get_node("Saves").call("run_service")
-	saves.call("save", snapshot)
+	saves.call("save", snapshot, ContentStamp.extras())
 	_app.call("resume_to_screen")
 	await _frames(30)
 
