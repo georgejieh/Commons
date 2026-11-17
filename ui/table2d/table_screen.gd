@@ -157,6 +157,8 @@ func open(app: DemoApp) -> void:
 	}
 	_hud.menu.pressed.connect(_open_pause)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
+	# The events wait behind the books' notice until it is acknowledged (ADR 0022).
+	app.notice.hold(_player)
 	_pause.wire(app)
 	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
 	_input.tray = _campaigns.tray
@@ -404,6 +406,7 @@ func _refresh_seats() -> void:
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
 	_hud.show_state(state, _app.max_rounds())
+	_ledger.show_books(state, _controller.target())
 
 
 func _place(node: Control, at: Vector2, extent: Vector2) -> void:

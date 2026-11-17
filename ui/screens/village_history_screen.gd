@@ -6,11 +6,15 @@ extends Control
 ## on one paper sheet across the page, as the collection does, in dark ink with no halo
 ## and a red heading. The scroll sits inside the sheet and follows keyboard and gamepad
 ## focus from sheet to sheet. With no run in progress there is no "This run" section.
+## While the family's file holds an entry its page follows, as the state keeps it: one
+## line an entry, oldest first, and that the file is kept (ADR 0022).
 
 const LINE_SIZE: int = 22
 const RECORD_SIZE: int = 20
 const RECORD_INK: Color = Color("2a2118")
 const SHEET_PADDING: int = 28
+## The file's sheet keeps stains of its own, apart from the generations' sheets.
+const FILE_SHEET: int = 97
 ## Text on the paper is ink, so the backdrop's paper halo is taken off it.
 const INKED_TYPES: Array[String] = ["Label", "Eyebrow", "Headline", "Title"]
 
@@ -18,6 +22,7 @@ var _scroll: ScrollContainer = ScrollContainer.new()
 var _sheet: PanelContainer = PanelContainer.new()
 var _records: Array[AgedSheet] = []
 var _run_lines: Array[Label] = []
+var _file_lines: Array[Label] = []
 var _back: Button
 
 
@@ -49,6 +54,10 @@ func open(app: DemoApp) -> void:
 		past.append(tr("hist.no_generations"))
 	for text: String in past:
 		body.add_child(_record(text))
+	var filed: PackedStringArray = HistoryView.file_lines(Saves.profile_service())
+	if not filed.is_empty():
+		body.add_child(_heading(tr("hist.file")))
+		body.add_child(_file_page(filed))
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.follow_focus = true
@@ -71,6 +80,14 @@ func records() -> Array[AgedSheet]:
 func run_lines() -> PackedStringArray:
 	var texts: PackedStringArray = []
 	for line: Label in _run_lines:
+		texts.append(line.text)
+	return texts
+
+
+## The family's file's page, its kept line last, empty while the file is. For tests.
+func file_lines() -> PackedStringArray:
+	var texts: PackedStringArray = []
+	for line: Label in _file_lines:
 		texts.append(line.text)
 	return texts
 
@@ -110,6 +127,21 @@ func _record(text: String) -> AgedSheet:
 	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sheet.column().add_child(line)
 	_records.append(sheet)
+	return sheet
+
+
+## The family's file on one aged sheet, which takes focus so the page scrolls to it: a
+## line an entry, then that the file is kept.
+func _file_page(entries: PackedStringArray) -> AgedSheet:
+	var sheet: AgedSheet = AgedSheet.new(0.0, FILE_SHEET)
+	sheet.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	entries.append(tr("hist.file.kept"))
+	sheet.accessibility_name = " ".join(entries)
+	for text: String in entries:
+		var line: Label = ScreenKit.label(text, RECORD_SIZE, RECORD_INK)
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sheet.column().add_child(line)
+		_file_lines.append(line)
 	return sheet
 
 

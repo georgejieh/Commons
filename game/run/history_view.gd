@@ -5,7 +5,8 @@ extends RefCounted
 ## in. A record only: the generation, the ending's title (a death's page title for a
 ## death), the class and the Year, then the families that died, joined as the epilogue
 ## joins names. The run in progress reads as a record too: one line per family each
-## Quota touched, only what happened, in words.
+## Quota touched, only what happened, in words. The family's file (ADR 0022) reads as the
+## state keeps it: one line an entry, oldest first, and that the file is kept.
 
 ## Each kind of deed in SetSummary.Kind order, by its string key.
 const DEEDS: Array[String] = [
@@ -13,6 +14,8 @@ const DEEDS: Array[String] = [
 ]
 ## Counts said as words up to three times, then as a number.
 const WORDED: int = 3
+## A figure an entry in the family's file names, lowercase in a line, by its key.
+const FILE_FIGURE: String = "hist.file.figure.%s"
 
 
 ## One line per finished run, newest first; empty when none has finished.
@@ -86,3 +89,32 @@ static func times(count: int) -> String:
 	if count <= WORDED:
 		return _t("hist.times.%d" % count)
 	return _t("hist.times.many").format({"count": count})
+
+
+## The family's file as its page in the history shows it, oldest first: when, and what
+## was corrected or that the papers were found altered. Empty while the file is.
+static func file_lines(profile: SaveService) -> PackedStringArray:
+	var lines: PackedStringArray = []
+	for entry: FileEntry in Profile.read(profile).file:
+		lines.append(file_line(entry))
+	return lines
+
+
+## "Generation 2, Year 3, Quota 1. The brigade's books were corrected to the household's
+## figures for coupons and Famine." An entry from no run's Quota has no date.
+static func file_line(entry: FileEntry) -> String:
+	var what: String = _t("hist.file.seal")
+	if not entry.figures.is_empty():
+		var names: PackedStringArray = []
+		for figure: String in RunCorrections.FIGURES:
+			if entry.figures.has(figure):
+				names.append(_t(FILE_FIGURE % figure))
+		what = _t("hist.file.corrected").format({"figures": EndingView.joined(names)})
+	if entry.year <= 0:
+		return what
+	var values: Dictionary[String, Variant] = {
+		"generation": entry.generation,
+		"year": entry.year,
+		"quota": entry.quota % SetConfig.SETS_PER_YEAR + 1,
+	}
+	return _t("hist.file.when").format(values) + " " + what

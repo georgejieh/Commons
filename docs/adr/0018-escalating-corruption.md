@@ -63,3 +63,12 @@ The project owner chose where the game's one vocal song goes. "Mandate In Ashes"
 - Each listed event must leave a player-caused record that the corruption service can read.
 - P4.5 and P4.17 feed each family's memory record into portrait choice.
 - P3C.1 (style bible) defines all ten stages before any large-scale art generation, because stages multiply the art budget.
+
+## Amendment, 2026-11-17: a stage past the last, for the file (ADR 0022, P4.19)
+
+There is an eleventh stage, 10, that corruption alone never reaches. It is shown when corruption is at its last stage and the family's file ([ADR 0022](0022-the-file-and-unofficial-builds.md)) holds an entry, so only a household that changed its figures from outside the game can see it.
+
+- The art is the last stage's and the wear is at its most. No new assets.
+- What changes is the figures: every one the screens show reads as a success, and the true ones appear only on the small ledger. This is the one exception to rule 9's "it never lies about game state". ADR 0022 chose it as the answer to a falsified figure, and the true figures stay on screen, on the ledger.
+- The horror-intensity setting still caps the art. It does not cap this stage's figures, which are a consequence of the file and show no imagery.
+- The collective ending resets corruption, as before, and so leaves this stage. The file stays, and each entry adds corruption when it is written.

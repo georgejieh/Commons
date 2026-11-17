@@ -6,12 +6,15 @@ extends RefCounted
 ## time: a line for another seat waits in a short queue until the one typing out ends.
 ## A seat's newer line for the same event replaces its older one, and when the queue
 ## overflows, idle chatter goes before announcements. Skipping shows every waiting line
-## at once, silently.
+## at once, silently. In a run that began with an entry in the family's file (ADR 0022),
+## a villager's line for one moment is now and then about the work team's visit instead,
+## drawn on the table's own seeded stream; a run with no entry draws nothing.
 
 ## A villager said a line: the voice (P3B.13) listens here.
 signal spoke(seat: int, event: String, line: SpeechLine)
 
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
+const VISIT: WorkTeamTalk = preload("res://data/ui/work_team_talk.tres")
 ## Spreads the seats' salts so two villagers rarely say the same line together.
 const SEAT_SALT: int = 7
 ## The most lines that wait at once, and the events that are only chatter.
@@ -31,6 +34,8 @@ var _voices: Dictionary[int, VoiceProfile] = {}
 var _voice_banks: Dictionary[int, String] = {}
 ## Lines waiting for the table to fall quiet, oldest first: seat, event and fields.
 var _waiting: Array[Dictionary] = []
+## The draws for the work team's lines, or null in a run with no entry in the file.
+var _visit: RandomStream = null
 
 
 func setup(seats: Dictionary[int, SeatPanel], app: DemoApp = null) -> void:
@@ -42,8 +47,10 @@ func setup(seats: Dictionary[int, SeatPanel], app: DemoApp = null) -> void:
 	_books.clear()
 	_voices.clear()
 	_voice_banks.clear()
+	_visit = null
 	if app == null:
 		return
+	_visit = visit_stream(app.controller)
 	for seat: int in seats:
 		var book: SpeechBook = app.seat_speech(seat)
 		if book != null:
@@ -107,6 +114,9 @@ func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	if choices.is_empty():
 		return
 	var line: SpeechLine = choices[posmod(said + seat * SEAT_SALT, choices.size())]
+	var visit: SpeechLine = _visit_line(event)
+	if visit != null:
+		line = visit
 	var text: String = tr(line.text_key).format(fields)
 	var reveal: PackedFloat32Array = PackedFloat32Array()
 	if _voices.has(seat):
@@ -116,6 +126,27 @@ func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	spoke.emit(seat, event, line)
 	if hurry:
 		_seats[seat].skip_speech()
+
+
+## The stream the work team's lines draw on, seeded from the run, the Year and the Quota,
+## or null when the run began with no entry in the family's file.
+static func visit_stream(controller: RunController) -> RandomStream:
+	if controller == null or not controller.has_run():
+		return null
+	var state: RunState = controller.state_copy()
+	if state.identity.file_entries <= 0:
+		return null
+	var name: String = VISIT.stream % [state.year, state.set_index]
+	return RandomStream.new(RandomStreams.derive_seed(state.run_seed, name))
+
+
+## One of the work team's lines in place of event's, at the data's chance, or null.
+func _visit_line(event: String) -> SpeechLine:
+	if _visit == null or event != VISIT.event or VISIT.lines.is_empty():
+		return null
+	if _visit.next_float() >= VISIT.chance:
+		return null
+	return VISIT.lines[_visit.next_int(0, VISIT.lines.size() - 1)]
 
 
 ## Shows every line still typing out, then every waiting line, and stops every voice.

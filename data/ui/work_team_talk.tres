@@ -1,0 +1,71 @@
+[gd_resource type="Resource" script_class="WorkTeamTalk" load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://data/ui/work_team_talk.gd" id="1"]
+[ext_resource type="Script" path="res://data/ui/speech_line.gd" id="2"]
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.1"
+mood = "tired"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.2"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.3"
+mood = "sour"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.4"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_5"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.5"
+mood = "sly"
+
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.6"
+mood = "tired"
+
+[sub_resource type="Resource" id="line_7"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.7"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_8"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.8"
+mood = "sour"
+
+[sub_resource type="Resource" id="line_9"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.9"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_10"]
+script = ExtResource("2")
+event = "pass"
+text_key = "speech.visit.10"
+mood = "tired"
+
+[resource]
+script = ExtResource("1")
+event = "pass"
+chance = 0.04
+stream = "work_team:%d:%d"
+lines = Array[ExtResource("2")]([SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6"), SubResource("line_7"), SubResource("line_8"), SubResource("line_9"), SubResource("line_10")])

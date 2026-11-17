@@ -68,6 +68,7 @@ var _envelope_shot: bool = false
 var _parcel_shot: bool = false
 var _debuffs_shot: bool = false
 var _wild_store_shot: bool = false
+var _file_store_shot: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
 ## True for the arrival's own short run (--tutorial).
@@ -166,6 +167,7 @@ func _step() -> void:
 			await _click_first_button()
 		"store":
 			await _shot("store")
+			await _file_store_frames()
 			await _wild_store_frames()
 			await _reform_frames()
 			await _buy_one()
@@ -215,6 +217,7 @@ func _table_step() -> void:
 				_debuffs_shot = true
 				await _debuff_frames()
 				await _wild_table_frames()
+				await _file_table_frames()
 				return
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
@@ -647,6 +650,36 @@ func _wild_collection_frame() -> void:
 	_took(walk)
 
 
+## ADR 0022's notice and dark figures at the table, in a sandbox put back after
+## (tools/playtest_file.gd).
+func _file_table_frames() -> void:
+	var walk: Object = _file_walk()
+	await walk.call("table")
+	_took(walk)
+
+
+## The shops with raised prices, a dark meter and the small ledger, once a run.
+func _file_store_frames() -> void:
+	if _file_store_shot:
+		return
+	_file_store_shot = true
+	var walk: Object = _file_walk()
+	await walk.call("store")
+	_took(walk)
+
+
+## The title's stamp and the history's page of the file, for a profile with entries.
+func _file_meta_frames(profile: SaveService) -> void:
+	var walk: Object = _file_walk()
+	await walk.call("meta", profile)
+	_took(walk)
+
+
+func _file_walk() -> Object:
+	var script: GDScript = load("res://tools/playtest_file.gd")
+	return script.new(self, _app, _out, _headless, _shots)
+
+
 func _wild_walk() -> Object:
 	var script: GDScript = load("res://tools/playtest_wild.gd")
 	return script.new(self, _app, _out, _headless, _shots)
@@ -879,6 +912,7 @@ func _full_run_frames() -> void:
 	await _history_frames(profile)
 	await _card_back_frames(profile)
 	await _corruption_frames(profile)
+	await _file_meta_frames(profile)
 	Profile.write(profile, ProfileData.new())
 	_app.call("show_screen", "title", true)
 	await _frames(20)

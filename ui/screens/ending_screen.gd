@@ -25,6 +25,8 @@ const DEATH_WIDTH: float = 1180.0
 const TITLE_INK: Color = Color("9a2a1a")
 
 var _view: EndingView
+## The run's last state, for how its figures show (ADR 0022).
+var _state: RunState = null
 ## The line under the eyebrow naming the player (ADR 0028).
 var _name: Label
 var _title: Label
@@ -36,6 +38,7 @@ var _home: Button
 
 func open(app: DemoApp) -> void:
 	_view = app.controller.ending()
+	_state = app.controller.state_copy()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(ScreenKit.cover(ScreenKit.ART.title_night))
 	var shade: ColorRect = ColorRect.new()
@@ -95,8 +98,10 @@ func _story() -> VBoxContainer:
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	story.add_child(text)
 	var tiles: Array[Control] = [
-		ScreenKit.stat(tr("end.famine"), _view.famine),
-		ScreenKit.stat(tr("end.denunciation"), _view.denunciation),
+		ScreenKit.figure_stat(tr("end.famine"), _state, ShownFigures.FAMINE, _view.famine),
+		ScreenKit.figure_stat(
+			tr("end.denunciation"), _state, ShownFigures.DENUNCIATION, _view.denunciation
+		),
 		_class_tile(),
 	]
 	story.add_child(ScreenKit.row(tiles, 20))

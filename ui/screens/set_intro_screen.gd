@@ -3,7 +3,8 @@ extends Control
 ## Before a Set: its type, its target and reward, how far the norm has raised it, who
 ## of the village sits at the table in a full run, and the debuff ladder drawn for it,
 ## one card per round, with round 1 always clean. Everything sits on one sheet at the
-## left, the rounds two by two.
+## left, the rounds two by two. Under a dark norm, or at the stage past the last, the
+## target is "None reported" (ADR 0022).
 
 const SHEET_WIDTH: float = 800.0
 const STEP_SIZE: Vector2 = Vector2(370, 170)
@@ -21,8 +22,12 @@ func open(app: DemoApp) -> void:
 	var target: String = tr("intro.target").format(
 		{"target": Strings.score(controller.target()), "rounds": app.max_rounds()}
 	)
+	# A dark norm hides the target, and with it how far the norm raised it (ADR 0022).
+	var shown: bool = ShownFigures.shows_target(state)
+	if not shown:
+		target = tr("intro.target.unreported").format({"rounds": app.max_rounds()})
 	column.add_child(ScreenKit.styled(target, CommonsTheme.TITLE))
-	if controller.norm_percent() > 0:
+	if controller.norm_percent() > 0 and shown:
 		var norm: Label = ScreenKit.label(
 			tr("intro.norm").format({"percent": controller.norm_percent()}), 24
 		)

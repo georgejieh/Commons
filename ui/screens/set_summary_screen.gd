@@ -9,7 +9,10 @@ extends Control
 ## the paid line says so (ADR 0021). A family that starved, or was put out of the
 ## landlord's seat, gets one plain line in ink at the foot, and nothing more (ADR 0025).
 ## A Quota that ended without the player in the landlord's seat says what that cost, or,
-## on the last free one, that the next will cost (ADR 0031).
+## on the last free one, that the next will cost (ADR 0031). Every figure shows as
+## ShownFigures says (ADR 0022): a dark Famine is "None reported" with no rise named, a
+## dark norm hides the target and the norm's rise, and at the stage past the last the
+## Quota reads as met and every figure as a success.
 
 const BAR: Vector2 = Vector2(960, 54)
 const SEAL_WIDTH: float = 150.0
@@ -39,18 +42,23 @@ var _quiet: Array[Control] = []
 var _fate_texts: PackedStringArray = []
 var _seat_texts: PackedStringArray = []
 var _next: Button
+## The run as the page opened on it, for how its figures show.
+var _state: RunState = null
 
 
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
 	var state: RunState = controller.state_copy()
 	_met = state.set_progress >= controller.target()
+	_state = state
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.notice_wall)
 	var verdict: Control = ScreenKit.header(
-		tr("set.type.%d" % state.set_type), tr("summary.met" if _met else "summary.missed")
+		tr("set.type.%d" % state.set_type),
+		tr("summary.met" if ShownFigures.reads_met(_met) else "summary.missed")
 	)
 	sheet.add_child(verdict)
 	_bar.setup(BAR, SEAL_WIDTH, 30)
+	_bar.show_as(QuotaBar.mode_for(state))
 	_bar.set_target(controller.target())
 	_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	sheet.add_child(_bar)
@@ -63,8 +71,10 @@ func open(app: DemoApp) -> void:
 	var paid: int = _kept + (controller.quota_reward() + controller.over_bonus() if _met else 0)
 	var cost: int = _famine_rise(controller)
 	var tiles: Array[Control] = [
-		_stat(tr("summary.coupons_label"), state.coupons - paid, state.coupons, ScreenKit.COUPON),
-		_stat(tr("summary.famine_label"), state.famine - cost, state.famine, ScreenKit.RED),
+		_figure(
+			tr("summary.coupons_label"), ShownFigures.COUPONS, state.coupons - paid, state.coupons
+		),
+		_figure(tr("summary.famine_label"), ShownFigures.FAMINE, state.famine - cost, state.famine),
 	]
 	var row: Control = ScreenKit.row(tiles, 20)
 	sheet.add_child(row)
@@ -76,7 +86,7 @@ func open(app: DemoApp) -> void:
 		var kept_line: Label = _line(kept.format({"cadre": tr(BOOKKEEPER_NAME)}), ScreenKit.INK)
 		sheet.add_child(kept_line)
 		_after.append(kept_line)
-	if _steps > 0:
+	if _steps > 0 and ShownFigures.is_true(state, ShownFigures.NORM):
 		var norm: Label = _line(
 			tr("summary.norm_raised").format({"percent": controller.norm_added_percent()}),
 			ScreenKit.RED
@@ -169,6 +179,8 @@ func _seat_lines(controller: RunController, count: int) -> Array[Label]:
 		if event.value == 0 and controller.is_last_set():
 			continue
 		var key: String = "summary.stood_by" if event.value > 0 else "summary.stood_by_last"
+		if event.value > 0 and not ShownFigures.is_true(_state, ShownFigures.FAMINE):
+			key = "summary.stood_by.unreported"
 		var text: String = tr(key).format({"count": count, "rise": roundi(event.amount)})
 		lines.append(_line(text, ScreenKit.RED if event.value > 0 else ScreenKit.INK))
 		_seat_texts.append(text)
@@ -222,6 +234,19 @@ func _on_filled() -> void:
 		tween.tween_property(piece, "modulate:a", 1.0, BEAT * 2.0)
 
 
+## A figure's tile: its number rolling as _stat() rolls it, or its words while it is not
+## shown as it is.
+func _figure(caption: String, figure: String, from: int, to: int) -> Control:
+	var words: String = ShownFigures.tile_text(_state, figure)
+	var ink: Color = ScreenKit.COUPON if figure == ShownFigures.COUPONS else ScreenKit.RED
+	if words.is_empty():
+		return _stat(caption, from, to, ink)
+	var tile: VBoxContainer = ScreenKit.card(Vector2(240, 0))
+	tile.add_child(ScreenKit.eyebrow(caption))
+	tile.add_child(ScreenKit.styled(words, CommonsTheme.TITLE))
+	return ScreenKit.card_panel(tile)
+
+
 ## A tile whose number rolls from what it was before the Quota ended to what it is now,
 ## in ink when it changed.
 func _stat(caption: String, from: int, to: int, ink: Color) -> Control:
@@ -244,6 +269,8 @@ func _stat(caption: String, from: int, to: int, ink: Color) -> Control:
 ## What the result means: the coupons it paid, bonus and all, or the Famine it cost and
 ## what Famine does.
 func _consequence(controller: RunController, famine: int) -> Label:
+	if not _met and ShownFigures.all_success():
+		return _line(tr("summary.fulfilled"), ScreenKit.INK)
 	if _met:
 		var paid: int = controller.quota_reward() + controller.over_bonus() + _kept
 		if _kept > 0:
@@ -253,6 +280,8 @@ func _consequence(controller: RunController, famine: int) -> Label:
 	var text: String = tr("summary.cost").format(
 		{"rise": _famine_rise(controller), "famine": famine}
 	)
+	if not ShownFigures.is_true(_state, ShownFigures.FAMINE):
+		text = tr("summary.famine").format({"value": ShownFigures.none_reported()})
 	return _line(text, ScreenKit.RED)
 
 

@@ -118,3 +118,13 @@ Calls made while building, which the section above did not settle:
 - **Each entry adds 5 corruption**, growing as every corruption event does, and raises a later run's targets 10%, up to double.
 - **Who can get an entry:** a full run with a profile, in a release build. The demo, the arrival, the balance harness, tools, tests and every development build log one line and change nothing.
 - **For P5.0:** when Expert's search leaves the command thread, the second book must be sealed again after its play is applied.
+
+## The screen as built (P4.19, second half, 2026-11-17)
+
+- **One notice for the whole app**, over whatever screen the player is on, built from live events only. It shows the first time and every time, and play waits until it is acknowledged.
+- **A dark figure's true value is never printed**, in the notice either: its line gives the reported value alone.
+- **A dark norm hides the Quota's target, the bar's fill and its seal.** The progress still shows.
+- **A dark meter gives no cue of any kind:** no bar, no pulse, no sound, no dread on the board, no change in the music. The setback or the death still plays.
+- **The stage past the last** needs an entry in the file and corruption at its last stage; corruption alone never reaches it, and horror intensity, which caps the art, does not cap it. There the Quota reads "Fulfilled ahead of plan", coupons "Ample supply" and every meter "None reported", and a Quota truly missed is recorded as fulfilled on its report. The small ledger shows the figures at the table and in both shops, with a figure that went dark still dark there.
+- **The title's stamp** names the household's file and how many entries it holds. **The history screen** lists them, oldest first, and says the file is kept. Nothing in the game says how to clear it.
+- **Villagers' lines** about the work team ride a pass, at a chance of 0.04, in a run that began with an entry.

@@ -72,6 +72,8 @@ var _slip: DetailSlip = DetailSlip.new()
 var _envelope_stall: EnvelopeStall = EnvelopeStall.new()
 ## Asks for a rank before a Cadre that needs one is bought (ADR 0021).
 var _picker: RankPicker = RankPicker.new()
+## The household's true figures, shown only at the stage past the last (ADR 0022).
+var _books: SmallLedger = SmallLedger.new(2)
 ## The page's main blocks by name, for the layout test.
 var _blocks: Dictionary[String, Control] = {}
 
@@ -143,6 +145,7 @@ func _header_row(app: DemoApp) -> Control:
 	_coupons.add_theme_color_override("font_color", ScreenKit.COUPON)
 	_coupons.autowrap_mode = TextServer.AUTOWRAP_OFF
 	balance.add_child(_coupons)
+	balance.add_child(_books)
 	balance.size_flags_vertical = Control.SIZE_SHRINK_END
 	var top: Array[Control] = [heading, balance]
 	if market:
@@ -255,11 +258,9 @@ func _refresh() -> void:
 		_counter.add_child(StoreNotes.on_paper(empty))
 	_reroll.text = tr("store.reroll").format({"price": _desk.reroll_price()})
 	_reroll.disabled = not _desk.can_reroll()
+	_books.show_shop(state)
 	if market:
-		UiMotion.count(_resentment, _shown_resentment, state.resentment, StoreNotes.whole)
-		if state.resentment > _shown_resentment:
-			UiMotion.pulse(_resentment)
-		_shown_resentment = state.resentment
+		_shown_resentment = StoreNotes.count_resentment(_resentment, _shown_resentment, state)
 		_goods.refresh()
 	else:
 		_directives.show_offers()
@@ -346,6 +347,7 @@ func _on_spent() -> void:
 	_shown_coupons = coupons
 	UiMotion.pulse(_coupons)
 	_reroll.disabled = not _desk.can_reroll()
+	_books.show_shop(_app.controller.state_copy())
 
 
 ## A plot card or an upgrade from the black market, bought by act.
@@ -408,5 +410,6 @@ func _leave() -> void:
 	_app.show_screen("set_intro", true)
 
 
+## Coupons as the page shows them: ample at the stage past the last (ADR 0022).
 func _coupon_text(value: float) -> String:
-	return Strings.count("store.coupons", roundi(value))
+	return ShownFigures.coupons(roundi(value), "store.coupons")

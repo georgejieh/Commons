@@ -9,13 +9,22 @@ extends RefCounted
 ## round's start and on the title, and served unchanged in between, so it never moves
 ## inside a round. The horror-intensity setting caps the stage the art shows. Nothing
 ## outside this horror layer reads the value: screens ask for art, never for a number.
+##
+## Past the last stage is one more (ADR 0022): while the family's file holds an entry and
+## corruption is at its last stage, the stage is FILED_STAGE. Corruption alone never
+## reaches it. Art there is the last stage's and wear stays at its most; what changes is
+## how the screens show the run's figures (ShownFigures).
 
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
 const ART: ArtLibrary = preload("res://data/ui/art.tres")
 const LAST_STAGE: int = BoardState.CORRUPTION_STAGES - 1
+## The stage past the last, reached only with an entry in the family's file.
+const FILED_STAGE: int = LAST_STAGE + 1
 ## Corruption points per stage: stage = floor(corruption / STAGE_SPAN), at most the last.
 const STAGE_SPAN: float = 10.0
-## Development builds only: a stage, or a corruption value 0 to 100, for the session.
+## Development builds only: a stage, or a corruption value 0 to 100, for the session. The
+## stage flag takes 0 to FILED_STAGE (10), so a tool can show the stage past the last; the
+## value flag never reaches it, as corruption alone never does.
 const STAGE_FLAG: String = "--corruption-stage"
 const VALUE_FLAG: String = "--corruption"
 const INTENSITY_KEY: String = "horror_intensity"
@@ -35,12 +44,17 @@ static var _loaded_stage: int = -1
 static var _pictures: ArtCache = ArtCache.new(ART.picture_cache)
 
 
-## The hidden corruption stage, 0 to 9: the override, then a development build's flags,
-## then the stage latched from the profile.
+## The hidden corruption stage, 0 to FILED_STAGE: the override, then a development
+## build's flags, then the stage latched from the profile.
 static func stage() -> int:
 	if stage_override >= 0:
-		return mini(stage_override, LAST_STAGE)
+		return mini(stage_override, FILED_STAGE)
 	return stage_from(OS.is_debug_build(), OS.get_cmdline_user_args(), _latched)
+
+
+## True at the stage past the last (ADR 0022).
+static func past_last() -> bool:
+	return stage() == FILED_STAGE
 
 
 ## The stage from what a build was given: only a debug build reads the flags, the stage
@@ -49,11 +63,11 @@ static func stage_from(debug: bool, args: PackedStringArray, latched: int) -> in
 	if debug:
 		var at: int = args.find(STAGE_FLAG)
 		if at >= 0 and at + 1 < args.size():
-			return clampi(args[at + 1].to_int(), 0, LAST_STAGE)
+			return clampi(args[at + 1].to_int(), 0, FILED_STAGE)
 		at = args.find(VALUE_FLAG)
 		if at >= 0 and at + 1 < args.size():
 			return stage_of(args[at + 1].to_float())
-	return clampi(latched, 0, LAST_STAGE)
+	return clampi(latched, 0, FILED_STAGE)
 
 
 ## The stage a corruption value from 0 to 100 shows.
@@ -61,14 +75,23 @@ static func stage_of(corruption: float) -> int:
 	return clampi(floori(corruption / STAGE_SPAN), 0, LAST_STAGE)
 
 
-## Reads the profile's corruption and holds its stage until the next latch. The app calls
-## this as a run starts, at each round's start and on the title, never inside a round.
+## The stage a profile shows: its corruption's, or the stage past the last when the file
+## holds an entry and corruption is at the last stage.
+static func stage_with_file(corruption: float, filed: bool) -> int:
+	var reached: int = stage_of(corruption)
+	return FILED_STAGE if filed and reached == LAST_STAGE else reached
+
+
+## Reads the profile's corruption and file and holds their stage until the next latch.
+## The app calls this as a run starts, at each round's start and on the title, never
+## inside a round.
 static func latch(profile: SaveService) -> void:
-	latch_value(Profile.read(profile).corruption)
+	var data: ProfileData = Profile.read(profile)
+	latch_value(data.corruption, not data.file.is_empty())
 
 
-static func latch_value(corruption: float) -> void:
-	_latched = stage_of(corruption)
+static func latch_value(corruption: float, filed: bool = false) -> void:
+	_latched = stage_with_file(corruption, filed)
 
 
 ## The highest stage the art may show at a horror intensity from 0 to 1.

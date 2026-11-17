@@ -1,7 +1,10 @@
 class_name TitleScreen
 extends Control
 ## The title: start a new run through run setup, continue a saved one, or open the
-## collection, village history or settings.
+## collection, village history or settings. While the family's file holds an entry, its
+## stamp stands in the top right corner (ADR 0022).
+
+var _stamp: FileStamp = null
 
 
 func open(app: DemoApp) -> void:
@@ -42,3 +45,12 @@ func open(app: DemoApp) -> void:
 	column.add_child(ScreenKit.row([collection, history, settings, quit]))
 	ScreenKit.reveal(column)
 	new_run.grab_focus()
+	var filed: int = ProfileFile.entries(Saves.profile_service()).size()
+	if filed > 0:
+		_stamp = FileStamp.new(filed)
+		add_child(_stamp)
+
+
+## The family's file's stamp, or null while the file is empty. For tests.
+func stamp() -> FileStamp:
+	return _stamp

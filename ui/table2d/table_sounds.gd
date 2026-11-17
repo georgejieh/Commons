@@ -1,15 +1,22 @@
 class_name TableSounds
 extends RefCounted
 ## Chooses the table's sound effects for each event (P3C.8): the event's own sound, a
-## round won or lost from the player's side, and a meter rising past a mark.
+## round won or lost from the player's side, and a meter rising past a mark. A meter not
+## shown as it is (ADR 0022) moves in silence: no sound gives it away.
 
 ## The Famine meter's event text. The UI may not name the core code that moves meters.
 const FAMINE: String = "famine"
 
 
 static func play(event: RunEvent, landlord: int, controller: RunController) -> void:
+	if event.type != RunEvent.Type.METER_CHANGED:
+		Audio.play(AudioEvents.name_for(event, landlord))
+		return
+	var state: RunState = controller.state_copy()
+	if not ShownFigures.warns(state, event.text):
+		return
 	Audio.play(AudioEvents.name_for(event, landlord))
-	if event.type == RunEvent.Type.METER_CHANGED and _rose(event, controller.state_copy()):
+	if _rose(event, state):
 		Audio.play(AudioEvents.METER_ROSE)
 
 

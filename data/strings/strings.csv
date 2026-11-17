@@ -959,3 +959,53 @@ reading.bomb,Bomb of {ranks}
 reading.bomb_big,Bomb of {count} {ranks}
 reading.rocket,Rocket
 reading.kickers,{reading}: {kickers}
+figure.none_reported,None reported
+figure.coupons.ample,Ample supply
+figure.quota.fulfilled,Fulfilled ahead of plan
+table.quota.dark,{progress} / None reported
+intro.target.unreported,Target: None reported. Up to {rounds} rounds.
+summary.stood_by.unreported,{count} Quotas in a row without the landlord's seat. Famine: None reported.
+summary.fulfilled,The brigade records the Quota as fulfilled.
+notice.eyebrow,Notice of correction
+notice.title,The books are corrected
+notice.body,The brigade's books and the household's books did not agree. The brigade's books have been corrected to match the household's. The brigade congratulates the household on its results.
+notice.figure,"{name}: recorded as {recorded}, now entered as {entered}."
+notice.dark,{name}: reported as {reported}. From now on it is entered as None reported.
+notice.dark.norm,{name}: reported as {reported}. From now on the Quota's target is entered as None reported.
+notice.norm,Every Quota after this one is set from the reported result. Targets rise {percent}%.
+notice.prices,Prices at the State Store and the black market rise {percent}%.
+notice.filed,A note has gone into the household's file. The file is kept at the brigade office and goes with the family.
+notice.seal.title,The household's papers
+notice.seal.body,The household's papers do not match the seal the brigade issued. They are accepted as presented.
+notice.ok,Acknowledge
+notice.name.coupons,Coupons
+notice.name.progress,Work points toward the Quota
+notice.name.famine,Famine
+notice.name.denunciation,Denunciation
+notice.name.resentment,Resentment
+notice.name.norm,Norm steps
+file.stamp.name,Household file
+file.stamp.entries,{count} entries
+file.stamp.entries.one,1 entry
+hist.file,The household's file
+hist.file.when,"Generation {generation}, Year {year}, Quota {quota}."
+hist.file.corrected,The brigade's books were corrected to the household's figures for {figures}.
+hist.file.seal,The household's papers were found altered.
+hist.file.kept,The file is kept at the brigade office and goes with the family.
+hist.file.figure.coupons,coupons
+hist.file.figure.progress,work points
+hist.file.figure.famine,Famine
+hist.file.figure.denunciation,Denunciation
+hist.file.figure.resentment,Resentment
+hist.file.figure.norm,norm steps
+ledger.books.title,Household books
+speech.visit.1,The work team had me up before light. Pass.
+speech.visit.2,They weighed the seed grain twice. Same both times.
+speech.visit.3,"Three of them, and they ate at the canteen every night."
+speech.visit.4,The account books went to the county on a bicycle.
+speech.visit.5,Who told them where the old granary key was? Not me.
+speech.visit.6,"The one with the tape measure did the threshing floor, then our yard."
+speech.visit.7,No lessons this week. The work team's in the schoolhouse.
+speech.visit.8,They asked who does our accounts. I said I can't read.
+speech.visit.9,The work team's pens leak. Look at my sleeve.
+speech.visit.10,Their bicycles are still outside the brigade office.

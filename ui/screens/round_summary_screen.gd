@@ -17,7 +17,9 @@ func open(app: DemoApp) -> void:
 	var tiles: Array[Control] = [
 		ScreenKit.stat(tr("round.score"), float(last.get("score", 0.0))),
 		ScreenKit.stat(tr("round.share"), float(last.get("share", 0))),
-		ScreenKit.stat(tr("round.progress"), state.set_progress),
+		ScreenKit.figure_stat(
+			tr("round.progress"), state, ShownFigures.PROGRESS, state.set_progress
+		),
 	]
 	sheet.add_child(ScreenKit.row(tiles, 20))
 	# Overfulfillment's stake is part of the result: the bank multiplied, or voided.

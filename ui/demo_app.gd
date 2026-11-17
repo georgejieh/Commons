@@ -54,6 +54,8 @@ var post: PostProcess = PostProcess.new()
 ## The arrival (ADR 0026): offered on a first launch, and the one-time tooltips. Screens
 ## ask it whether an action is allowed.
 var arrival: Arrival
+## The state's notice when the books are corrected (ADR 0022), over every screen.
+var notice: BooksNotice = BooksNotice.new()
 var _wipe: ColorRect = ColorRect.new()
 var _wipe_layer: CanvasLayer = CanvasLayer.new()
 var _menu: PauseMenu = PauseMenu.new()
@@ -80,6 +82,8 @@ func _ready() -> void:
 	# Over the arrival's layer, which draws above every piece a screen lifts.
 	_menu.z_index = TutorialLayer.DRAW_ORDER + 1
 	_menu.wire(self)
+	add_child(notice)
+	notice.watch(controller)
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
 	for screen_id: String in SCREENS:

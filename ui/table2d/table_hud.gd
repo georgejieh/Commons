@@ -2,7 +2,10 @@ class_name TableHud
 extends PanelContainer
 ## The bar across the top of the table: where you are in the run, the Quota as a bar
 ## that fills as work points reach you and is sealed when met, both meters and your
-## coupons. It reads a copy of the run state and never changes it.
+## coupons. It reads a copy of the run state and never changes it. Each figure shows as
+## ShownFigures says (ADR 0022): a dark meter is "None reported" in place of its bar and
+## never pulses, a dark norm hides the Quota's target, and at the stage past the last
+## every figure reads as a success.
 
 const INK: Color = Color("1e1a16")
 const PAPER: Color = Color("efe3c8")
@@ -14,6 +17,8 @@ const COUPON: Color = Color("6f9a62")
 const QUOTA_BAR: Vector2 = Vector2(300, 30)
 const METER_BAR: Vector2 = Vector2(150, 18)
 const SEAL_WIDTH: float = 92.0
+## The size of "None reported" where a meter's bar would be.
+const NONE_SIZE: int = 18
 ## Seconds a bar takes to reach a new value.
 const FILL_TIME: float = 0.6
 const QUOTA: String = "quota"
@@ -28,6 +33,11 @@ var denunciation: ProgressBar = ProgressBar.new()
 var menu: Button = Button.new()
 
 var _target: float = 1.0
+## Each meter's bar and the words shown in its place while it is not shown as it is.
+var _bars: Dictionary[String, ProgressBar] = {}
+var _none: Dictionary[String, Label] = {}
+## The run as the last show_state() read it, or null before it.
+var _state: RunState = null
 ## Where each bar is heading: the Quota's progress and both meters.
 var _goals: Dictionary[String, float] = {QUOTA: 0.0, FAMINE: 0.0, DENUNCIATION: 0.0}
 var _tweens: Dictionary[String, Tween] = {}
@@ -50,8 +60,8 @@ func _ready() -> void:
 	status.clip_text = true
 	row.add_child(status)
 	row.add_child(_quota_box())
-	row.add_child(_meter("meter.famine", famine, GRAIN, ScreenKit.ART.icon_famine))
-	row.add_child(_meter("meter.denunciation", denunciation, ZEAL, ScreenKit.ART.icon_denunciation))
+	row.add_child(_meter(FAMINE, famine, GRAIN, ScreenKit.ART.icon_famine))
+	row.add_child(_meter(DENUNCIATION, denunciation, ZEAL, ScreenKit.ART.icon_denunciation))
 	row.add_child(_icon(ScreenKit.ART.icon_coupon))
 	coupons.add_theme_color_override("font_color", COUPON)
 	coupons.add_theme_font_size_override("font_size", 26)
@@ -80,7 +90,31 @@ func show_state(state: RunState, rounds: int) -> void:
 			}
 		)
 	)
-	coupons.text = Strings.count("table.coupons", state.coupons)
+	coupons.text = ShownFigures.coupons(state.coupons, "table.coupons")
+	_state = state
+	quota.show_as(QuotaBar.mode_for(state))
+	for meter: String in _bars:
+		var shown: bool = ShownFigures.is_true(state, meter)
+		_bars[meter].visible = shown
+		_none[meter].visible = not shown
+
+
+## True while a meter is shown as it is, so its changes may be signalled.
+func shows_meter(meter: String) -> bool:
+	return not _bars.has(meter) or _bars[meter].visible
+
+
+## The Set's end as the call-out writes it under its word: the work points against the
+## target as the bar shows them, or "" when the target is shown as it is.
+func end_line(progress: float, target: float) -> String:
+	if _state == null or QuotaBar.mode_for(_state) == QuotaBar.Shown.AS_IS:
+		return ""
+	return ShownFigures.quota(_state, progress, target)
+
+
+## True when the Set's end reads as met: when it was, or at the stage past the last.
+func reads_met(met: bool) -> bool:
+	return ShownFigures.reads_met(met)
 
 
 ## Puts every bar where the run says it is, at once, unless it is already heading there.
@@ -110,7 +144,8 @@ func add_progress(amount: float, delay: float = 0.0) -> void:
 ## A meter moved by delta.
 func nudge_meter(meter: String, delta: float) -> void:
 	if _goals.has(meter) and meter != QUOTA:
-		_move(meter, _goals[meter] + delta, true)
+		# A meter not shown as it is moves without a sign (ADR 0022).
+		_move(meter, _goals[meter] + delta, shows_meter(meter))
 
 
 ## Where the Quota bar sits on screen, its middle.
@@ -176,12 +211,12 @@ func _quota_box() -> Control:
 	return box
 
 
-func _meter(key: String, bar: ProgressBar, color: Color, icon: Texture2D) -> HBoxContainer:
+func _meter(meter: String, bar: ProgressBar, color: Color, icon: Texture2D) -> HBoxContainer:
 	var box: HBoxContainer = HBoxContainer.new()
 	box.add_child(_icon(icon))
 	var label: Label = Label.new()
 	label.theme_type_variation = CommonsTheme.EYEBROW
-	label.text = tr(key).to_upper()
+	label.text = tr("meter." + meter).to_upper()
 	label.add_theme_color_override("font_color", PAPER)
 	bar.custom_minimum_size = METER_BAR
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -195,6 +230,17 @@ func _meter(key: String, bar: ProgressBar, color: Color, icon: Texture2D) -> HBo
 	bar.add_theme_stylebox_override("fill", fill)
 	box.add_child(label)
 	box.add_child(bar)
+	# The same width as the bar, so the row keeps its place when the words replace it.
+	var none: Label = Label.new()
+	none.text = ShownFigures.none_reported()
+	none.custom_minimum_size = Vector2(METER_BAR.x, 0)
+	none.add_theme_color_override("font_color", PAPER)
+	none.add_theme_font_size_override("font_size", NONE_SIZE)
+	none.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	none.visible = false
+	box.add_child(none)
+	_bars[meter] = bar
+	_none[meter] = none
 	return box
 
 

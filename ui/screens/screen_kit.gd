@@ -206,6 +206,18 @@ static func stat(caption: String, value: float, from_value: float = 0.0) -> Cont
 	return card_panel(tile)
 
 
+## A stat tile for one of the run's figures (ShownFigures names them), as ShownFigures
+## shows it: the rolling number, or its words ("None reported", ample, fulfilled).
+static func figure_stat(caption: String, state: RunState, figure: String, value: float) -> Control:
+	var words: String = ShownFigures.tile_text(state, figure)
+	if words.is_empty():
+		return stat(caption, value)
+	var tile: VBoxContainer = card(Vector2(240, 0))
+	tile.add_child(eyebrow(caption))
+	tile.add_child(styled(words, CommonsTheme.TITLE))
+	return card_panel(tile)
+
+
 ## Brings a page's pieces in one after another.
 static func reveal(column: VBoxContainer) -> void:
 	var pieces: Array[Control] = []

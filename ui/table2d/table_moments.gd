@@ -251,12 +251,17 @@ func _gain(amount: float, from: Vector2) -> void:
 	hud.add_progress(amount, TableFx.FLY_TIME)
 
 
-## The Quota is met or missed across the whole screen, before the table is left.
+## The Quota is met or missed across the whole screen, before the table is left, in the
+## words the bar shows its figures in (ADR 0022).
 func _on_set_ended(met: bool, progress: float) -> void:
 	slip.clear()
 	var line: String = tr("callout.quota.sub").format(
 		{"progress": Strings.score(progress), "target": Strings.score(_target)}
 	)
+	if hud != null:
+		var shown: String = hud.end_line(progress, _target)
+		line = line if shown.is_empty() else shown
+		met = hud.reads_met(met)
 	var word: String = tr("callout.quota.met" if met else "callout.quota.missed")
 	_shout(word, Callout.Tier.TAKEOVER, ScreenKit.RED if met else LOSS, line, Seats.NONE)
 

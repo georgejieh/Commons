@@ -1,0 +1,231 @@
+extends GdUnitTestSuite
+## ADR 0022's notice (P4.19): a live correction brings the state's notice over whatever
+## screen the player is on, saying what the event says and never a dark figure's true
+## value; it holds the table's events until a key or button acknowledges it, keeps the
+## focus and takes every other key; it shows again for the next correction, and never on
+## a replay, a reload or a table that joins the run. It fits the screen at its longest.
+
+const SEED: int = 7211
+const SAVE_PATH: String = "user://test_books_notice/run.json"
+const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
+const SLACK: float = 1.5
+
+var _app: DemoApp
+var _lines: PackedStringArray = []
+var _was_size: Vector2i
+
+
+func before_test() -> void:
+	_was_size = get_tree().root.size
+	Saves.use_run_path(SAVE_PATH)
+	Saves.run_service().delete()
+	Saves.profile_service().delete()
+	_lines.clear()
+	var scene: PackedScene = load("res://ui/main.tscn")
+	_app = auto_free(scene.instantiate())
+	add_child(_app)
+	_app.controller.live_search = false
+	_app.controller.file_watch.report = func(line: String) -> void: _lines.append(line)
+
+
+func after_test() -> void:
+	get_tree().root.size = _was_size
+	Saves.run_service().delete()
+	Saves.profile_service().delete()
+	ArtStages.latch_value(0.0)
+
+
+func _loop() -> RunLoop:
+	return _app.controller.get("_loop")
+
+
+## A live event as the controller sends one.
+func _send(correction: BooksCorrection) -> void:
+	var event: RunEvent = RunEvent.new(RunEvent.Type.BOOKS_CORRECTED, 0, 1)
+	event.correction = correction
+	_app.controller.event_emitted.emit(event)
+	await await_idle_frame()
+
+
+func _raised() -> BooksCorrection:
+	var correction: BooksCorrection = BooksCorrection.new()
+	correction.add("coupons", 12, 120)
+	correction.norm_added = 900
+	correction.price_added = 900
+	return correction
+
+
+func _key(code: Key) -> void:
+	for down: bool in [true, false]:
+		var key: InputEventKey = InputEventKey.new()
+		key.keycode = code
+		key.physical_keycode = code
+		key.pressed = down
+		Input.parse_input_event(key)
+		Input.flush_buffered_events()
+	await await_idle_frame()
+
+
+func _pad_accept() -> void:
+	for down: bool in [true, false]:
+		var pad: InputEventJoypadButton = InputEventJoypadButton.new()
+		pad.button_index = JOY_BUTTON_A
+		pad.pressed = down
+		Input.parse_input_event(pad)
+		Input.flush_buffered_events()
+	await await_idle_frame()
+
+
+func _start_full_run() -> void:
+	_app.controller.file_watch.release = true
+	assert_bool(_app.new_run(SEED, true)).is_true()
+
+
+## A figure changed behind the controller, then one honest command, as a release build
+## sees it: the detector corrects the books and the notice comes over the table.
+func test_a_live_correction_brings_the_notice_over_the_table_and_holds_it() -> void:
+	_start_full_run()
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	var coupons: int = _loop().state.coupons
+	_loop().state.coupons = coupons + 500
+	assert_bool(ControllerScript.new().act(_app.controller)).is_true()
+	await await_idle_frame()
+	var notice: BooksNotice = _app.notice
+	assert_bool(notice.is_showing()).is_true()
+	var recorded: String = TranslationServer.translate("notice.figure").format(
+		{"name": "Coupons", "recorded": coupons, "entered": coupons + 500}
+	)
+	assert_array(Array(notice.shown_lines())).contains([recorded])
+	var events: EventPlayer = table.get("_player")
+	assert_bool(events.is_processing()).is_false()
+	assert_object(get_viewport().gui_get_focus_owner()).is_same(notice.acknowledge_button())
+	await _key(KEY_ESCAPE)
+	assert_bool(notice.is_showing()).is_true()
+	assert_bool(_app.menu_is_open()).is_false()
+	var pause: PauseMenu = table.get("_pause")
+	assert_bool(pause.visible).is_false()
+	await _key(KEY_ENTER)
+	assert_bool(notice.is_showing()).is_false()
+	assert_bool(events.is_processing()).is_true()
+	assert_array(Array(_lines)).is_empty()
+
+
+## Loading the corrected run replays its books command, and the table that opens on it
+## replays the Quota's log: neither is live, so no notice shows.
+func test_no_notice_on_a_reload_or_a_table_joining_the_run() -> void:
+	_start_full_run()
+	_loop().state.coupons += 300
+	ControllerScript.new().act(_app.controller)
+	await await_idle_frame()
+	assert_bool(_app.notice.is_showing()).is_true()
+	await _key(KEY_ENTER)
+	_app.resume_to_screen()
+	await await_idle_frame()
+	assert_bool(_app.notice.is_showing()).is_false()
+	var replayed: int = 0
+	for event: RunEvent in _app.controller.set_events():
+		replayed += 1 if event.type == RunEvent.Type.BOOKS_CORRECTED else 0
+	assert_int(replayed).is_equal(1)
+	_app.show_screen("table", true)
+	await await_idle_frame()
+	assert_bool(_app.notice.is_showing()).is_false()
+
+
+## The notice comes over each of a run's screens off the table too, and a gamepad's A
+## acknowledges it. A second correction waits behind the first and shows after it.
+func test_the_notice_on_every_kind_of_screen_and_every_time() -> void:
+	_app.new_run(SEED)
+	var driver: ControllerScript = ControllerScript.new()
+	var guard: int = 0
+	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER and guard < 2000:
+		guard += 1
+		driver.act(_app.controller)
+	_app.show_screen("set_summary", true)
+	await await_idle_frame()
+	await _shown_and_acknowledged()
+	_app.controller.finish_set()
+	for screen_id: String in ["store", "black_market", "reeducation"]:
+		_app.show_screen(screen_id, screen_id == "store")
+		await await_idle_frame()
+		await _shown_and_acknowledged()
+	await _send(_raised())
+	await _send(BooksCorrection.new())
+	assert_int(_app.notice.waiting()).is_equal(1)
+	await _key(KEY_ENTER)
+	assert_bool(_app.notice.is_showing()).is_true()
+	var seal: String = TranslationServer.translate("notice.seal.title")
+	assert_array(Array(_app.notice.shown_lines())).contains([seal])
+	await _key(KEY_ENTER)
+	assert_bool(_app.notice.is_showing()).is_false()
+
+
+func _shown_and_acknowledged() -> void:
+	await _send(_raised())
+	assert_bool(_app.notice.is_showing()).is_true()
+	await await_idle_frame()
+	assert_object(get_viewport().gui_get_focus_owner()).is_same(_app.notice.acknowledge_button())
+	await _pad_accept()
+	assert_bool(_app.notice.is_showing()).is_false()
+
+
+## What the event says, line by line: a raise with its percents, a lowered meter that
+## went dark with only the value reported, and a broken seal with no figures at all.
+func test_the_notice_says_what_the_event_says() -> void:
+	var none: Array[String] = []
+	var raised: BooksNoticeText = BooksNoticeText.of(_raised(), none)
+	assert_str(raised.title).is_equal(TranslationServer.translate("notice.title"))
+	var lines: Array = Array(raised.lines)
+	(
+		assert_array(lines)
+		. contains(
+			[
+				"Coupons: recorded as 12, now entered as 120.",
+				TranslationServer.translate("notice.norm").format({"percent": 900}),
+				TranslationServer.translate("notice.prices").format({"percent": 900}),
+			]
+		)
+	)
+	assert_str(raised.filed).is_equal(TranslationServer.translate("notice.filed"))
+	var lowered: BooksCorrection = BooksCorrection.new()
+	lowered.add("famine", 47, 3)
+	lowered.dark.append("famine")
+	var dark: BooksNoticeText = BooksNoticeText.of(lowered, none)
+	assert_int(dark.lines.size()).is_equal(1)
+	assert_str(dark.lines[0]).contains("3").contains(ShownFigures.none_reported())
+	assert_str(" ".join(dark.all_lines())).not_contains("47")
+	# A meter dark before this correction keeps its true value unprinted when raised.
+	var risen: BooksCorrection = BooksCorrection.new()
+	risen.add("denunciation", 41, 60)
+	var already: Array[String] = ["denunciation"]
+	assert_str(" ".join(BooksNoticeText.of(risen, already).all_lines())).not_contains("41")
+	var seal: BooksNoticeText = BooksNoticeText.of(BooksCorrection.new(), none)
+	assert_str(seal.title).is_equal(TranslationServer.translate("notice.seal.title"))
+	assert_array(Array(seal.lines)).is_empty()
+
+
+## The longest notice, every figure corrected, fits each screen size with its button.
+func test_the_longest_notice_fits_the_screen() -> void:
+	_app.new_run(SEED)
+	var longest: BooksCorrection = BooksCorrection.new()
+	longest.add("coupons", 999999, 1)
+	longest.add("progress", 1.0, 9.99e15)
+	for figure: String in ["famine", "denunciation", "resentment", "norm"]:
+		longest.add(figure, 99, 0)
+		longest.dark.append(figure)
+	longest.norm_added = 900
+	longest.price_added = 900
+	await _send(longest)
+	for screen_size: Vector2i in SIZES:
+		get_tree().root.size = screen_size
+		await await_idle_frame()
+		await await_idle_frame()
+		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		for node: Node in _app.notice.find_children("*", "Control", true, false):
+			var control: Control = node as Control
+			if not control.is_visible_in_tree() or control is ColorRect:
+				continue
+			var rect: Rect2 = control.get_global_rect()
+			var where: String = "%s %s at %s" % [screen_size, control.get_path(), rect]
+			assert_bool(screen.encloses(rect)).override_failure_message(where).is_true()
+	await _key(KEY_ENTER)
