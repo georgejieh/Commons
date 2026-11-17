@@ -115,7 +115,7 @@ ADR 0018 stands, with its provisional event list replaced by the one below. Free
 | Being caught doing it | 2 more |
 | Bombing a play your teammate made | 1 |
 | Using Anonymous Letter or Seizure Notice | 2 |
-| Being the landlord in every round of a Quota | 2 |
+| Being the landlord in every round of a Quota, of at least two rounds | 2 |
 | A black-market purchase while Famine is in its high band (a reroll is not a purchase) | 2 |
 | A family starving while you hold 8 or more coupons | 6 |
 | A family sent to reeducation in a Quota where you bombed it or denounced it | 4 |

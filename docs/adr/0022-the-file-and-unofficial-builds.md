@@ -119,6 +119,14 @@ Calls made while building, which the section above did not settle:
 - **Who can get an entry:** a full run with a profile, in a release build. The demo, the arrival, the balance harness, tools, tests and every development build log one line and change nothing.
 - **For P5.0:** when Expert's search leaves the command thread, the second book must be sealed again after its play is applied.
 
+## Limits found in review (2026-11-17)
+
+The Phase 4B review read the detectors for false alarms. Three points stand as they are, on purpose or for now:
+
+- **A norm reported higher counts at once.** "Later Quotas only" above is about what a correction adds. A figure the household reports against itself is taken as presented, so a higher norm raises the target of the Quota in play, as a higher Famine counts at once.
+- **Two copies of the game writing one save at the same instant** can leave one copy's save beside the other's ledger, and the next command then files a ledger entry nobody earned. One copy after the other is handled: each reads the save on disk before it judges. Both at once needs two commands inside the few milliseconds between a save and its ledger. No lock stops a second launch yet; release readiness (Phase 5) should add one.
+- **One of the two files put back alone**, by hand from a copy or by a folder sync that restores an old ledger, reads as a changed ledger. That is a file changed from outside the game, which is what the ledger is there to see, but a player who only restored a backup did not mean it. Left for the owner's call.
+
 ## The screen as built (P4.19, second half, 2026-11-17)
 
 - **One notice for the whole app**, over whatever screen the player is on, built from live events only. It shows the first time and every time, and play waits until it is acknowledged.
