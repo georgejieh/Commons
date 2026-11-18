@@ -14,10 +14,11 @@ static func applies(config: BotConfig) -> bool:
 static func run(job: BotSearchJob, budget: BotBudget) -> BotPlay:
 	if not job.is_ready():
 		return job.fallback
+	var no_stop: BotBudget = BotBudget.unlimited()
 	for sample: int in job.sample_count():
 		if budget.is_expired():
 			break
-		job.run_sample(sample)
+		job.run_sample(sample, no_stop)
 	return job.best()
 
 
@@ -43,8 +44,11 @@ static func top_candidates(
 	return top
 
 
-## Returns 1 if the seat's side wins this move on this deal.
-static func roll(position: BotPosition, hands: Array[PackedByteArray], move: Pattern) -> int:
+## Returns 1 if the seat's side wins this move on this deal. Once stop expires the
+## rollout ends early and the result means nothing.
+static func roll(
+	position: BotPosition, hands: Array[PackedByteArray], move: Pattern, stop: BotBudget
+) -> int:
 	var copies: Array[PackedByteArray] = []
 	for hand: PackedByteArray in hands:
 		copies.append(hand.duplicate())
@@ -60,7 +64,7 @@ static func roll(position: BotPosition, hands: Array[PackedByteArray], move: Pat
 		position.config.rollout_config()
 	)
 	rollout.step(move)
-	var winner: int = rollout.play_out(position.config.weights.search_step_limit)
+	var winner: int = rollout.play_out(position.config.weights.search_step_limit, stop)
 	var landlord_won: bool = winner == view.public.landlord
 	return 1 if winner != Seats.NONE and landlord_won == position.is_landlord() else 0
 

@@ -38,13 +38,17 @@ func sample_count() -> int:
 	return _hands.size()
 
 
-func run_sample(sample: int) -> void:
+## Runs one sample. If stop expires before it is done the sample is abandoned and
+## counts as not finished, so a search can be held to a ceiling (P5.0).
+func run_sample(sample: int, stop: BotBudget) -> void:
 	var hands: Array[PackedByteArray] = []
 	hands.assign(_hands[sample])
 	var row: PackedInt32Array = PackedInt32Array()
 	row.resize(_candidates.size())
 	for index: int in _candidates.size():
-		row[index] = ExpertSearch.roll(_position, hands, _candidates[index])
+		row[index] = ExpertSearch.roll(_position, hands, _candidates[index], stop)
+		if stop.is_expired():
+			return
 	_results[sample] = row
 
 

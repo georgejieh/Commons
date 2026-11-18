@@ -2,7 +2,8 @@ class_name ExpertRunner
 extends RefCounted
 ## Runs one Expert decision on the worker pool and enforces its deadline. Core stays free
 ## of threads and clocks (ADR 0009). At the deadline it decides on the samples finished:
-## no sample starts after it, and one already running finishes first. decide() waits for
+## no sample starts after it, and one already running has the grace in the weights to
+## finish before it is abandoned. decide() waits for
 ## the decision on the calling thread; start() returns at once, and is_finished() moves
 ## the decision on each time it is asked, so the game can poll it once a frame (P5.0).
 
@@ -16,6 +17,8 @@ var _job: BotSearchJob
 var _expired: bool = false
 ## When no sample may start any more, in Time.get_ticks_usec(). Workers read it.
 var _deadline: int = 0
+## Expires a grace after the deadline. Workers read it between a rollout's steps.
+var _stop: BotBudget = BotBudget.unlimited()
 var _stage: Stage = Stage.IDLE
 var _task: int = -1
 var _group: int = -1
@@ -32,6 +35,7 @@ func decide(
 	var deadline: int = Time.get_ticks_usec() + limit_usec
 	_deadline = deadline
 	_expired = false
+	_stop = _stop_after(limit_usec, config)
 	_job = Bot.search_job(view, legal, table, config)
 	if not _job.is_ready() or Time.get_ticks_usec() >= deadline:
 		return _job.fallback
@@ -62,6 +66,7 @@ func start(
 	assert(_stage == Stage.IDLE or _stage == Stage.DONE, "A runner decides one play at a time")
 	_deadline = Time.get_ticks_usec() + limit_usec
 	_expired = false
+	_stop = _stop_after(limit_usec, config)
 	_play = null
 	_job = null
 	_task = WorkerThreadPool.add_task(_build.bind(view, legal, table, config))
@@ -129,10 +134,15 @@ static func _threads() -> int:
 	return maxi(1, OS.get_processor_count() - 1)
 
 
+## The budget that ends a running sample: the deadline and the weights' grace.
+static func _stop_after(limit_usec: int, config: BotConfig) -> BotBudget:
+	return BotBudget.new(limit_usec + config.weights.expert_grace_usec, Time.get_ticks_usec)
+
+
 func _past_deadline() -> bool:
 	return _expired or Time.get_ticks_usec() >= _deadline
 
 
 func _run_sample(sample: int) -> void:
 	if not _past_deadline():
-		_job.run_sample(sample)
+		_job.run_sample(sample, _stop)

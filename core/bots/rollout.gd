@@ -50,12 +50,15 @@ func step(move: Pattern) -> void:
 	_turn = Seats.next(_turn)
 
 
-## Returns the seat that went out, or Seats.NONE if the limit ran out.
-func play_out(step_limit: int) -> int:
+## Returns the seat that went out, or Seats.NONE if the limit ran out or the
+## budget did. A caller that gives a budget throws the result away once it expires.
+func play_out(step_limit: int, stop: BotBudget = null) -> int:
 	for _step: int in step_limit:
 		var winner: int = _finished()
 		if winner != Seats.NONE:
 			return winner
+		if stop != null and stop.is_expired():
+			return Seats.NONE
 		step(_decide())
 	return _finished()
 

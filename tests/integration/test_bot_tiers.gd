@@ -143,7 +143,7 @@ func test_the_default_samples_can_reach_the_minimum() -> void:
 func test_too_few_finished_samples_leave_the_policy_play() -> void:
 	var job: BotSearchJob = _search_job(BotConfig.DEFAULT_WEIGHTS)
 	for sample: int in BotConfig.DEFAULT_WEIGHTS.expert_min_samples - 1:
-		job.run_sample(sample)
+		job.run_sample(sample, BotBudget.unlimited())
 	assert_object(job.best()).is_same(job.fallback)
 
 
@@ -152,7 +152,7 @@ func test_enough_finished_samples_decide_at_a_deadline() -> void:
 	weights.expert_margin = 0.0
 	var job: BotSearchJob = _search_job(weights)
 	for sample: int in weights.expert_min_samples:
-		job.run_sample(sample)
+		job.run_sample(sample, BotBudget.unlimited())
 	assert_int(job.best().rationale).is_equal(BotRationale.Code.SEARCHED)
 
 

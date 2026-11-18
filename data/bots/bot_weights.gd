@@ -51,5 +51,8 @@ extends Resource
 ## How long the live game gives one Expert decision, in microseconds: at the deadline the
 ## search starts no more samples (ADR 0030, measured at ADR 0011's 300 ms).
 @export var expert_deadline_usec: int
+## How long past the deadline a sample already running may go on. After it the
+## sample is abandoned, which holds a decision under P2.9's 400 ms on any machine.
+@export var expert_grace_usec: int
 ## Actions after which a rollout counts as a loss.
 @export var search_step_limit: int
