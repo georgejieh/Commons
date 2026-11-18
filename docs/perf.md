@@ -128,3 +128,43 @@ The 40-deal run took 166 seconds and Expert beat Hard in 0.525 of 80 games with 
 The unlimited figures were taken over seeds 0 to 4 of `SelfPlay.deal_from_seed`, with Expert as landlord on even seeds and as both peasants on odd ones, Hard in the other seats, timing only decisions that had a choice to search. That path is what tests, the tournament and the balance harness use, and what the game used before ADR 0030.
 
 The wait is still on the thread that handles the player's command, so a play can be followed by two deadlines before the player's next turn. P5.0 moves it off that thread.
+
+## Expert decisions off the command thread (P5.0, ADR 0030)
+
+Development PC (ADR 0016), 2026-11-17, 8 logical processors, so the search has 7 worker threads.
+
+### Frames while two Expert families think
+
+`tests/integration/test_search_frames.gd` runs the run controller in the scene tree, as the game does, with both villagers Expert, and times every frame that passes while a search is out. It runs headless with no table drawn, so it measures the loop and the scripts and not the renderer.
+
+| Run | Searches | Frames while thinking | Longest frame | Search time, median | Search time, slowest |
+| --- | --- | --- | --- | --- | --- |
+| Full suite, before the hard stop | not recorded | not recorded | 14.4 ms | 311 ms | 367 ms |
+| Full suite, with the hard stop | 41 | 1,270 | 7.0 ms | 310 ms | 365 ms |
+
+The budget is 50 ms a frame. The longest frame that handed a play back to the loop took 6.9 ms.
+
+### Decision time at the deadline
+
+```bash
+godot --headless --path . --script res://tools/expert_deadline.gd -- --deals 1000 --seed 0
+godot --headless --path . --script res://tools/expert_deadline.gd -- --deals 1000 --seed 0 --wild 1
+```
+
+The first full run found the p99 over P2.9's 400 ms. The deadline stopped new samples from starting, and a sample already running finished however long it took.
+
+| 1,000 deals, before the hard stop | Expert against Hard | Illegal actions | p99 | Searched decisions | Samples finished, of 48 |
+| --- | --- | --- | --- | --- | --- |
+| No wild rank | 0.525 of 2,000 games | 0 | 401.0 ms | 16,407 | mean 26.6; all 48 in 3,861; fewest 2 |
+| One wild rank | 0.528 of 2,000 games | 0 | 426.1 ms | 11,222 | mean 25.7; all 48 in 2,897; fewest 0 |
+
+A sample now has `expert_grace_usec` (60 ms) past the deadline, and is then abandoned between two steps of its rollout. The same command with `--deals 400` measured it:
+
+| 400 deals, with the hard stop | Expert against Hard | Illegal actions | p99 | Searched decisions | Samples finished, of 48 |
+| --- | --- | --- | --- | --- | --- |
+| No wild rank | 0.519 of 800 games | 0 | 363.0 ms | 6,561 | mean 27.5; all 48 in 1,622; fewest 1 |
+| One wild rank | 0.530 of 800 games | 0 | 372.7 ms | 4,547 | mean 23.7; all 48 in 1,043; fewest 0 |
+
+Both are inside the 400 ms budget. The p99 sits a little past the 360 ms ceiling on samples because the figure also covers building the search and choosing among the results. Expert stays ahead of Hard both ways. The runs after the stop are 400 deals and not 1,000, so their win rates are less exact than the first table's: over 800 games one standard error is about 0.018.
+
+Part of the first no-wild run shared the machine with other work, which may have raised its p99. The wild run and both runs after the stop had the machine to themselves.
