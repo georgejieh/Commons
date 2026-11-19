@@ -13,6 +13,11 @@ extends SceneTree
 ##   godot --path . --script res://tools/playtest.gd -- --tutorial --out reports/tutorial
 ## Needs a real window for its pictures. Run with --headless it walks the same steps and
 ## prints each frame's name instead, which checks its clicks without a window.
+## Either walk takes --grayscale, --reduced-motion and --text-size N (ADR 0035, through
+## tools/display_flags.gd): a grayscale pass over everything shown, and the motion and
+## text size for this run only, saved to the tool's own settings file, never the player's.
+##   godot --path . --script res://tools/playtest.gd -- --demo --rounds 6 --grayscale
+##     --reduced-motion --text-size 2 --out reports/playtest_access
 ## Development only; tools/ never ships.
 
 const SEED: int = 4242
@@ -80,6 +85,7 @@ var _file_store_shot: bool = false
 var _headless: bool = false
 ## True for the arrival's own short run (--tutorial).
 var _tutorial: bool = false
+var _args: PackedStringArray = []
 
 
 func _initialize() -> void:
@@ -88,6 +94,7 @@ func _initialize() -> void:
 		# Paced like a window, so the step guard lasts as long as the moments it waits on.
 		Engine.max_fps = 60
 	var args: PackedStringArray = OS.get_cmdline_user_args()
+	_args = args
 	_tutorial = args.has("--tutorial")
 	for flag: String in ["--out", "--rounds"]:
 		var at: int = args.find(flag)
@@ -101,6 +108,8 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	var flags: GDScript = load("res://tools/display_flags.gd")
+	print(flags.call("apply", root, _args))
 	if _tutorial:
 		await _tutorial_run()
 		return
@@ -734,7 +743,13 @@ func _debuff_beat(debuff_id: String, controller: Object) -> void:
 		return
 	var before: Array[int] = _beats_now()
 	await _decline_bids(controller, debuff_id)
+	# Under reduced motion passed cards are not slid across the table: the hand shows as
+	# it ends up, which is the frame (ADR 0035's walk).
+	var still: bool = bool(root.get_node("Settings").call("value", "reduced_motion"))
 	match debuff_id:
+		"levy", "redistribution" when still:
+			await _until(_events_idle)
+			await _shot("table_%s" % debuff_id)
 		"levy", "redistribution", "plot_seized":
 			if not await _until(_beat_counted.bind(before)):
 				_fail("NO BEAT %s" % debuff_id)
@@ -1376,12 +1391,17 @@ func _leave_and_continue(table: Node) -> void:
 ## drops in after a claim; the claims on the slip come first, a step apart.
 func _dice_frames(table: Node) -> void:
 	var moments: Object = table.get("_moments")
-	var bowl: Object = moments.get("dice")
-	if not await _until(func() -> bool: return bool(bowl.call("is_rolling")), 4.0):
+	# Held weakly: under reduced motion the round can end and take the table with it
+	# before the dice are looked at, and a gone bowl rolls no more.
+	var bowl: WeakRef = weakref(moments.get("dice"))
+	var rolling: Callable = func() -> bool:
+		var held: Object = bowl.get_ref()
+		return held != null and bool(held.call("is_rolling"))
+	if not await _until(rolling, 4.0):
 		return
 	for frame: int in 3:
 		await _snap("round%d_dice_roll_%d" % [_rounds_seen, frame])
-	if not await _until(func() -> bool: return not bool(bowl.call("is_rolling"))):
+	if not await _until(func() -> bool: return not bool(rolling.call())):
 		_fail("DICE NEVER SETTLED round %d" % _rounds_seen)
 	await _snap("round%d_dice_settled" % _rounds_seen)
 
@@ -1447,6 +1467,12 @@ func _tour(table: Node) -> void:
 	await _press(_button_in(pause, tr("pause.settings")))
 	await _frames(30)
 	await _shot("tour_menu_settings")
+	# The Controls page and back (ADR 0035): its Back is the only one showing.
+	await _press(_button_in(pause, tr("controls.open")))
+	await _frames(30)
+	await _shot("tour_menu_controls")
+	await _press(_button_in(pause, tr("settings.back")))
+	await _frames(10)
 	await _press(_button_in(pause, tr("settings.back")))
 	await _frames(10)
 	await _press(_button_in(pause, tr("pause.resume")))

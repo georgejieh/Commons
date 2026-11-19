@@ -89,6 +89,12 @@ godot --headless --path . --script res://tools/playtest.gd -- --tutorial --out r
 Plays the arrival (the first-launch tutorial) from no profile to run setup with real clicks, and prints MISCLICK on a step that does not advance. Headless it names its frames without saving them. Its profile lives in `user://playtest_tutorial/`. The cloud playtest runs it after the play-through.
 
 ```bash
+godot --headless --path . --script res://tools/playtest.gd -- --demo --rounds 6 --grayscale --reduced-motion --text-size 2 --out reports/playtest_access
+```
+
+Plays the same walk with a grayscale pass over the screen, reduced motion and the largest text size ([ADR 0035](docs/adr/0035-accessibility.md)), and fails on the same terms. Each flag works alone, and with `--tutorial` too. They hold for that run only and save to the tool's own settings file, never the player's. The grayscale pass is a test fixture, not a setting, and only a run with a window shows it. The cloud playtest runs this walk second, into `reports/playtest_access`. `tools/demo_screenshots.gd` takes the same three flags.
+
+```bash
 godot --headless --path . --script res://tools/balance.gd -- --runs 20 --jobs 4
 ```
 
