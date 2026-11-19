@@ -2,7 +2,8 @@ extends SceneTree
 ## Opens the demo, starts a seeded run and saves a screenshot of each screen, for
 ## checking layout by eye. Needs a real window, not --headless:
 ##   godot --path . --script res://tools/demo_screenshots.gd -- --out reports/shots
-## Development only; tools/ never ships.
+## Add --text-size N (0 Standard, 1 Large, 2 Largest; ADR 0034) to shoot at a text size;
+## it is set for this run only and never saved. Development only; tools/ never ships.
 
 const SEED: int = 4242
 const SCREENS: Array[String] = [
@@ -11,6 +12,7 @@ const SCREENS: Array[String] = [
 const SETTLE_FRAMES: int = 70
 
 var _out: String = "res://reports/shots"
+var _text_size: int = 0
 
 
 func _initialize() -> void:
@@ -18,6 +20,9 @@ func _initialize() -> void:
 	var at: int = args.find("--out")
 	if at >= 0 and at + 1 < args.size():
 		_out = "res://" + args[at + 1]
+	var sized: int = args.find("--text-size")
+	if sized >= 0 and sized + 1 < args.size():
+		_text_size = clampi(args[sized + 1].to_int(), 0, 2)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out))
 	_run.call_deferred()
 
@@ -25,6 +30,7 @@ func _initialize() -> void:
 func _run() -> void:
 	# Loaded at run time: the demo names autoloads, which a --script tool can't see when
 	# it compiles.
+	root.get_node("Settings").call("set_value", "text_size", _text_size)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	var app: Node = scene.instantiate()
 	root.add_child(app)
