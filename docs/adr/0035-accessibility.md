@@ -62,7 +62,7 @@ The three fixes:
 
 The cloud playtest gains a second walk with all three on. It passes on the same terms as the first: no misclick, no hand mismatch, no missing button, no script error. Its frames are then read by the agent for anything a player could not tell apart.
 
-Tests hold what a walk cannot see: each of the three fixes; that a key changed on the Controls page moves the action at the table, in the Campaign tray and in the reading picker, survives a restart, and swaps on a clash; and that every action has a row.
+Tests hold what a walk cannot see: each of the three fixes; that a key changed on the Controls page moves the action at the table and in the Campaign tray, opens the reading picker and reaches nothing behind it while it is open (the picker itself answers only to the menu keys), survives a restart, and swaps on a clash; and that every action has a row.
 
 ## Alternatives rejected
 
@@ -76,7 +76,7 @@ Tests hold what a walk cannot see: each of the three fixes; that a key changed o
 
 - **A player who uses only a gamepad cannot change its buttons in v1.** The first release is on itch.io, where Steam Input is not there to do it. Every action is also a button that can be clicked, and the keyboard can be remapped. Pad remapping would take a second section in the file beside `keys` and the same capture. This is the open point most worth the owner's look.
 - The Controls page is the first place the game shows its keys.
-- Key names come from the engine and the keyboard layout, not from the string table. P5.1's string scan allows them as an exception.
+- Key names come from the engine and the keyboard layout, not from the string table. P5.1's string scan looks for literals, so it never sees them and needs no exception.
 - Xbox, PlayStation and Switch pads see the Deck's button names.
 - Why a shop button is faded is not always the price: a full Cadre shelf or Campaign tray refuses a purchase too, and the button does not say which. That is the same in colour and is left to the owner's playtest.
 - The walk in grayscale is the demo's rounds, the shops and the staged screens, not eight Years. A person playing a whole run in grayscale is not covered by any checklist item; it is left to the owner's playtest, and P5.2's tick will say which of the two was done.

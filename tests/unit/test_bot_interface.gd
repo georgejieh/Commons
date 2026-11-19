@@ -62,13 +62,24 @@ func test_only_the_interface_is_used_outside_the_bots_folder() -> void:
 		for path: String in _script_files(folder):
 			if path.begins_with(BOT_FOLDER):
 				continue
-			var text: String = FileAccess.get_file_as_string(path)
+			var code: String = _code_of(FileAccess.get_file_as_string(path))
 			for name: String in private_names:
+				# By whole name in code, so the Controls page (ADR 0035) and its comments do
+				# not read as the bots' Controls.
+				var named: RegEx = RegEx.create_from_string("\\b%s\\b" % name)
 				(
-					assert_bool(text.contains(name))
+					assert_object(named.search(code))
 					. override_failure_message("%s reaches %s" % [path, name])
-					. is_false()
+					. is_null()
 				)
+
+
+## A script's text without its comments.
+func _code_of(text: String) -> String:
+	var lines: PackedStringArray = []
+	for line: String in text.split("\n"):
+		lines.append(line.get_slice("#", 0))
+	return "\n".join(lines)
 
 
 func test_every_rationale_code_has_debug_text() -> void:

@@ -220,7 +220,6 @@ pause.settings,Settings
 pause.to_title,Return to title
 pause.quit,Quit game
 pause.saved,Your run saves after every move. Continue on the title screen picks up here.
-table.card_left,{count} card
 table.bid_prompt,Call the landlord seat?
 summary.paid,The Quota paid {count} coupons.
 summary.paid.one,The Quota paid 1 coupon.
@@ -1060,3 +1059,35 @@ speech.visit.7,No lessons this week. The work team's in the schoolhouse.
 speech.visit.8,They asked who does our accounts. I said I can't read.
 speech.visit.9,The work team's pens leak. Look at my sleeve.
 speech.visit.10,Their bicycles are still outside the brigade office.
+table.cards_two,Only {count} cards
+table.card_last,Last card
+controls.open,Controls
+controls.eyebrow,Settings
+controls.title,Controls
+controls.help,"Press a key's ticket, then the new key. Escape cancels."
+controls.press,Press a key
+controls.restore,Restore defaults
+controls.heading.action,Action
+controls.heading.key,Key
+controls.heading.pad,Gamepad
+controls.action.commons_play,Play
+controls.action.commons_pass,Pass
+controls.action.commons_hint,Hint
+controls.action.commons_sort,Sort
+controls.action.commons_rules,Rules
+controls.action.commons_campaign,Campaigns
+controls.action.commons_select,Pick card
+controls.action.commons_cursor_left,Cursor left
+controls.action.commons_cursor_right,Cursor right
+controls.pad.a,A
+controls.pad.b,B
+controls.pad.x,X
+controls.pad.y,Y
+controls.pad.l1,L1
+controls.pad.r1,R1
+controls.pad.view,View
+controls.pad.menu,Menu
+controls.pad.dpad_up,D-pad up
+controls.pad.dpad_down,D-pad down
+controls.pad.dpad_left,D-pad left
+controls.pad.dpad_right,D-pad right

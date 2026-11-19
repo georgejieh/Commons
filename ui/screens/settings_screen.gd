@@ -4,7 +4,8 @@ extends Control
 ## (ADR 0025), and under them the family's name with a way to change it between runs
 ## (ADR 0028). Changes apply at once and save on the way back. Replay the arrival plays
 ## the first evening again (ADR 0026). A new text size (ADR 0034) builds the screen again
-## at once, with the focus on the size chosen.
+## at once, with the focus on the size chosen. Controls opens the key bindings (ADR 0035)
+## as a screen of its own.
 
 var _app: DemoApp = null
 var _card_backs: CardBackRow
@@ -22,7 +23,11 @@ func open(app: DemoApp) -> void:
 	_card_backs = CardBackRow.new(CardBacks.profile_runs())
 	backs.add_child(_card_backs)
 	backs.add_child(_family_name(app))
-	var sheets: HBoxContainer = ScreenKit.row([SettingsPanel.build(), ScreenKit.card_panel(backs)])
+	var controls: Callable = func() -> void:
+		Settings.save()
+		app.show_screen("controls")
+	var panel: Control = SettingsPanel.build(false, controls)
+	var sheets: HBoxContainer = ScreenKit.row([panel, ScreenKit.card_panel(backs)])
 	sheets.alignment = BoxContainer.ALIGNMENT_BEGIN
 	for sheet: Node in sheets.get_children():
 		(sheet as Control).size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -32,7 +37,8 @@ func open(app: DemoApp) -> void:
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.follow_focus = true
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	sheets.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# As wide as the sheets, so its bar stands against them, not at the page's edge.
+	scroll.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	scroll.add_child(sheets)
 	column.add_child(scroll)
 	var back: Button = ScreenKit.button(tr("settings.back"), CommonsTheme.PRIMARY)

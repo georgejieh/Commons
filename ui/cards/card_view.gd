@@ -85,6 +85,7 @@ var _cursor_mark: ColorRect = ColorRect.new()
 var _chop: CardMark = CardMark.new(CardMark.Kind.STAMP)
 var _rosette: CardMark = CardMark.new(CardMark.Kind.MODEL)
 var _ribbon: WildRibbon = WildRibbon.new()
+var _tick: HintTick = HintTick.new()
 
 ## Every tween moving this view, so a reused view can stop them all.
 var _tweens: Array[Tween] = []
@@ -115,6 +116,7 @@ func _ready() -> void:
 	_cursor_mark.offset_top = CURSOR_BAR
 	_cursor_mark.offset_bottom = CURSOR_BAR * 2.0
 	add_child(_cursor_mark)
+	add_child(_tick)
 	var tag: StyleBoxFlat = StyleBoxFlat.new()
 	tag.bg_color = NOTE_COLOR
 	tag.set_corner_radius_all(4)
@@ -284,13 +286,24 @@ static func _corner_fade() -> GradientTexture2D:
 
 
 ## Selected cards lift and get a red edge, which turns bright gold once the selection
-## is a play that can be made; hinted cards get a gold edge. The keyboard
-## and gamepad cursor gets its own paper-white bar under the card, so it shows on a
-## selected card too.
+## is a play that can be made; hinted cards get a gold edge and a pencilled tick above
+## the edge the fan leaves showing, which stays when the card is also selected, so the
+## hint never rests on colour alone (ADR 0035). The keyboard and gamepad cursor gets its
+## own paper-white bar under the card, so it shows on a selected card too.
 func set_marked(selected: bool, hinted: bool, cursor: bool = false, armed: bool = false) -> void:
 	_highlight.visible = selected or hinted
 	_highlight.modulate = (ARMED if armed else RED) if selected else HINT
 	_cursor_mark.visible = cursor
+	_tick.show_on(hinted, card_id)
+
+
+func shows_hint_tick() -> bool:
+	return _tick.visible
+
+
+## The tick's box on the card, in card pixels, for tests.
+func hint_tick_rect() -> Rect2:
+	return Rect2(_tick.position, _tick.size)
 
 
 func has_cursor() -> bool:

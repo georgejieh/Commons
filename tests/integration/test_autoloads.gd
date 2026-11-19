@@ -58,12 +58,13 @@ func test_no_autoload_holds_an_object_field() -> void:
 			var held: Variant = node.get(property["name"])
 			if held is Object:
 				# The music, voice and effects players hold audio, cues and line plans, never
-				# run state.
+				# run state; the key bindings hold keys.
 				var allowed: bool = (
 					held is SaveService
 					or held is MusicPlayer
 					or held is VoicePlayer
 					or held is SfxPlayer
+					or held is KeyBindings
 				)
 				(
 					assert_bool(allowed)

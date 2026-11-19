@@ -7,7 +7,9 @@ signal changed(key: String)
 
 const PATH: String = "user://settings.cfg"
 ## A debug build reads this environment variable for another file, so the test run keeps
-## its own settings and never touches the player's (tools/test.sh sets it).
+## its own settings and never touches the player's (tools/test.sh sets it). The keys of
+## the table actions (ADR 0035) live in the same file, in their own section, and are
+## applied to the InputMap as the game starts, before any screen.
 const PATH_OVERRIDE: String = "COMMONS_SETTINGS"
 const SECTION: String = "settings"
 const DEFAULTS: SettingsParams = preload("res://data/settings/default_settings.tres")
@@ -24,12 +26,15 @@ const KEYS: Array[String] = [
 	"text_size",
 ]
 
+## The keyboard bindings. They apply to the InputMap at once whenever they change.
+var bindings: KeyBindings = KeyBindings.new()
 var _values: Dictionary[String, Variant] = {}
 var _path: String = PATH
 
 
 func _ready() -> void:
 	load_from(start_path(OS.is_debug_build(), OS.get_environment(PATH_OVERRIDE)))
+	bindings.apply()
 
 
 ## The file settings start from: the player's, or in a debug build the override when one
@@ -46,6 +51,7 @@ func load_from(path: String) -> void:
 	for key: String in KEYS:
 		var fallback: Variant = DEFAULTS.get(key)
 		_values[key] = file.get_value(SECTION, key, fallback) if loaded else fallback
+	bindings.read(file if loaded else ConfigFile.new())
 
 
 func value(key: String) -> Variant:
@@ -63,4 +69,11 @@ func save() -> Error:
 	var file: ConfigFile = ConfigFile.new()
 	for key: String in KEYS:
 		file.set_value(SECTION, key, _values[key])
+	bindings.write(file)
 	return file.save(_path)
+
+
+## From now on saves go to path; the values held stay as they are. The playtest tools
+## use it, so what they set for a run never reaches the player's file.
+func save_to(path: String) -> void:
+	_path = path

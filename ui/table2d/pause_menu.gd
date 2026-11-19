@@ -5,7 +5,8 @@ extends Control
 ## loses nothing; Continue on the title picks up at the same moment. Abandoning asks
 ## first, with the focus on keeping the run, and clears its save (ADR 0025). A new text
 ## size (ADR 0034) shows on the menu at once, and the screen under it is built again when
-## the menu closes.
+## the menu closes. The settings page opens the Controls page (ADR 0035), whose Back
+## and Escape come back to the settings.
 
 signal resumed
 signal to_title
@@ -27,6 +28,7 @@ var _opened_size: int = -1
 var _main: VBoxContainer
 var _settings: VBoxContainer
 var _confirm: VBoxContainer
+var _controls: ControlsPage
 var _resume: Button
 var _keep: Button
 var _abandon: Button
@@ -50,7 +52,7 @@ func _ready() -> void:
 	Settings.changed.connect(_on_setting)
 
 
-## Builds the three pages at the text size chosen now.
+## Builds the four pages at the text size chosen now.
 func _build_pages() -> void:
 	for page: Node in _stack.get_children():
 		_stack.remove_child(page)
@@ -59,9 +61,12 @@ func _build_pages() -> void:
 	_main = _menu()
 	_settings = _settings_page()
 	_confirm = _confirm_page()
+	_controls = ControlsPage.new(true)
+	_controls.leave.connect(_back_to_settings)
 	_stack.add_child(_main)
 	_stack.add_child(_settings)
 	_stack.add_child(_confirm)
+	_stack.add_child(_controls)
 
 
 ## A new text size rebuilds the pages at once, still on the settings page, with the focus
@@ -130,7 +135,8 @@ func _menu() -> VBoxContainer:
 func _settings_page() -> VBoxContainer:
 	var page: VBoxContainer = VBoxContainer.new()
 	page.add_theme_constant_override("separation", 16)
-	page.add_child(SettingsPanel.build(at_table))
+	var controls: Callable = func() -> void: _show_page(_controls)
+	page.add_child(SettingsPanel.build(at_table, controls))
 	var back: Callable = func() -> void: _show_page(_main)
 	page.add_child(_wide(tr("settings.back"), CommonsTheme.PRIMARY, back))
 	return page
@@ -153,13 +159,31 @@ func _confirm_page() -> VBoxContainer:
 
 ## Shows one page, with the focus on its first way out.
 func _show_page(page: VBoxContainer) -> void:
-	for each: VBoxContainer in [_main, _settings, _confirm]:
+	for each: VBoxContainer in [_main, _settings, _confirm, _controls]:
 		each.visible = each == page
 	UiMotion.enter([page] as Array[Control])
 	if page == _main:
 		_resume.grab_focus()
 	elif page == _confirm:
 		_keep.grab_focus()
+	elif page == _controls:
+		_controls.focus_first()
+	else:
+		# The settings sheet's first control, so a keyboard or gamepad can reach Controls.
+		var first: Control = _settings.find_next_valid_focus()
+		if first != null:
+			first.grab_focus()
+
+
+## From the Controls page back to the settings, with the focus on its Controls ticket.
+func _back_to_settings() -> void:
+	_show_page(_settings)
+	SettingsPanel.controls_button(_settings).grab_focus()
+
+
+## The Controls page, for tests and the playtest.
+func controls_page() -> ControlsPage:
+	return _controls
 
 
 ## True while the menu asks whether to abandon the run.

@@ -2,7 +2,8 @@ class_name SettingsPanel
 extends RefCounted
 ## The settings controls on one paper sheet, shared by the settings screen and the
 ## pause menu. Changes apply at once; the caller saves. A new text size (ADR 0034)
-## rebuilds the theme at once, and the sheet's owner builds the sheet again.
+## rebuilds the theme at once, and the sheet's owner builds the sheet again. At its foot a
+## ticket opens the Controls page (ADR 0035), which each owner shows its own way.
 
 const VOLUMES: Array[String] = ["music_volume", "effects_volume", "voice_volume"]
 const TOGGLES: Array[String] = ["reduced_motion", "post_process", "no_flash"]
@@ -13,11 +14,13 @@ const TEXT_SIZES: Array[String] = ["standard", "large", "largest"]
 ## The name of the box for each text size, for the focus and for tests.
 const TEXT_SIZE_BOX: String = "TextSize%d"
 const NAME_SIZE: int = 26
+## The name of the ticket that opens the Controls page, for the focus and for tests.
+const CONTROLS_BUTTON: String = "OpenControls"
 
 
 ## With at_table, a line under the text sizes says the table takes a new one at the next
-## deal (ADR 0034).
-static func build(at_table: bool = false) -> Control:
+## deal (ADR 0034). With open_controls, the sheet ends in a Controls ticket that calls it.
+static func build(at_table: bool = false, open_controls: Callable = Callable()) -> Control:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(760, 0))
 	sheet.add_theme_constant_override("separation", 18)
 	sheet.add_child(ScreenKit.eyebrow(TranslationServer.translate("settings.audio")))
@@ -38,7 +41,19 @@ static func build(at_table: bool = false) -> Control:
 		toggle.button_pressed = bool(Settings.value(key))
 		toggle.toggled.connect(func(on: bool) -> void: Settings.set_value(key, on))
 		sheet.add_child(toggle)
+	if open_controls.is_valid():
+		var controls: Button = ScreenKit.button(
+			TranslationServer.translate("controls.open"), CommonsTheme.SECONDARY
+		)
+		controls.name = CONTROLS_BUTTON
+		controls.pressed.connect(open_controls)
+		sheet.add_child(controls)
 	return ScreenKit.card_panel(sheet)
+
+
+## The ticket that opens the Controls page under root, or null.
+static func controls_button(root: Node) -> Button:
+	return root.find_child(CONTROLS_BUTTON, true, false) as Button
 
 
 ## A named slider from 0 to 1 bound to one setting.

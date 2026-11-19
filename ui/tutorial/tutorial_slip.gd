@@ -3,7 +3,8 @@ extends PanelContainer
 ## Wang's slip in the arrival (ADR 0026): his face beside one or two sentences in dark
 ## ink on the village's aged paper. It stands beside what it points at, never over it nor
 ## over the player's hand, and pulses once when an action is refused; under reduced
-## motion its border goes red for a moment instead.
+## motion its border goes red for a moment instead, with a cross of two strokes in its
+## top right corner, so the refusal does not rest on colour alone (ADR 0035).
 
 const WIDTH: float = 540.0
 const FACE: Vector2 = Vector2(96, 112)
@@ -15,6 +16,10 @@ const ALARM: Color = Color("b02a17")
 const ALARM_WIDTH: float = 5.0
 ## Seconds the red border holds under reduced motion.
 const ALARM_SECONDS: float = 0.6
+## The cross's box inside the slip's top right corner, its inset and its stroke.
+const CROSS: float = 22.0
+const CROSS_INSET: float = 12.0
+const CROSS_WIDTH: float = 4.0
 
 var _face: TextureRect = TextureRect.new()
 var _text: Label = Label.new()
@@ -130,6 +135,30 @@ func _calm() -> void:
 	queue_redraw()
 
 
+## Where the cross is drawn while the slip refuses, in the slip's own pixels.
+func cross_rect() -> Rect2:
+	return Rect2(Vector2(size.x - CROSS_INSET - CROSS, CROSS_INSET), Vector2.ONE * CROSS)
+
+
+## True while the cross shows: only under reduced motion, for as long as the border.
+func shows_cross() -> bool:
+	return _alarm
+
+
 func _draw() -> void:
-	if _alarm:
-		draw_rect(Rect2(Vector2.ZERO, size), ALARM, false, ALARM_WIDTH)
+	if not _alarm:
+		return
+	draw_rect(Rect2(Vector2.ZERO, size), ALARM, false, ALARM_WIDTH)
+	# Two quick strokes of red pencil, not quite straight and not quite meeting.
+	var box: Rect2 = cross_rect()
+	var ink: Color = BowlGrime.faded(ALARM, BowlGrime.wear())
+	var bend: Vector2 = Vector2(1.5, -1.0)
+	draw_polyline(
+		PackedVector2Array([box.position, box.get_center() + bend, box.end]), ink, CROSS_WIDTH, true
+	)
+	var rise: PackedVector2Array = [
+		Vector2(box.end.x + 1.0, box.position.y + 1.0),
+		box.get_center() - bend,
+		Vector2(box.position.x - 1.0, box.end.y),
+	]
+	draw_polyline(rise, ink, CROSS_WIDTH, true)

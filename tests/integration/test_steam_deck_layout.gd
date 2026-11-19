@@ -2,7 +2,8 @@ extends GdUnitTestSuite
 ## Nothing clips at any text size (ADR 0034), at 1920x1080 and at 1280x800, the Steam
 ## Deck's screen (P3B.11). With the canvas_items stretch and expand aspect, a 16:10
 ## window shows a 1920x1200 canvas. Every screen and the table's menus are opened at each
-## size on each screen, and ClipCheck says what clipping is.
+## size on each screen, and ClipCheck says what clipping is. The Controls page (ADR 0035)
+## is a screen of its own at the title and a page of the table's menu, so both are opened.
 
 const SEED: int = 4301
 const SAVE_PATH: String = "user://test_steam_deck_layout/run.json"
@@ -66,6 +67,14 @@ func test_the_table_menus_do_not_clip_at_any_text_size() -> void:
 			pause.call("_show_page", pause.get("_settings"))
 			await await_idle_frame()
 			ClipCheck.check(table, _where("pause settings", level, screen), problems)
+			pause.call("_show_page", pause.controls_page())
+			await await_idle_frame()
+			ClipCheck.check(table, _where("pause controls", level, screen), problems)
+			# Asking for a key prints its own words on the ticket.
+			pause.controls_page().capture(KeyBindings.ACTIONS[0])
+			await await_idle_frame()
+			ClipCheck.check(table, _where("pause controls asking", level, screen), problems)
+			pause.controls_page().cancel_capture()
 			pause.visible = false
 			var sheet: CheatSheet = table.get("_cheat_sheet")
 			sheet.toggle(_app.controller)

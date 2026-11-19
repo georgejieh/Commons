@@ -25,6 +25,7 @@ const SCREENS: Dictionary[String, String] = {
 	"store": "res://ui/screens/store_screen.tscn",
 	"year_summary": "res://ui/screens/year_summary_screen.tscn",
 	"settings": "res://ui/screens/settings_screen.tscn",
+	"controls": "res://ui/screens/controls_screen.tscn",
 	"demo_complete": "res://ui/screens/demo_complete_screen.tscn",
 	"dossier": "res://ui/screens/dossier_screen.tscn",
 	"content_note": "res://ui/screens/content_note_screen.tscn",

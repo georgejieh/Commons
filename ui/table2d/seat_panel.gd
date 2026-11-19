@@ -3,8 +3,9 @@ extends PanelContainer
 ## One villager at the table, on one paper sheet: portrait, with name, cards left and
 ## role level with its top, and their last words underneath. The landlord tag lies
 ## across the portrait's top, so it takes no line of its own. The sheet keeps one height
-## whatever is said. The card count turns red at 2 and 1 cards. A line types out in step with
-## the villager's voice (P3B.13); clicking it shows the rest at once.
+## whatever is said. The card count turns red at 2 and 1 cards and says so in words. A
+## line types out in step with the villager's voice (P3B.13); clicking it shows the rest
+## at once.
 
 ## The player skipped the line typing out, so its voice should stop.
 signal speech_skipped(seat: int)
@@ -130,13 +131,21 @@ func setup(seat_index: int, display_name: String, portrait: Texture2D = null) ->
 	_picture.texture = portrait
 
 
+## The cards left in words as well as red ink (ADR 0035): "Only 2 cards" at two and
+## "Last card" at one, so the warning does not rest on colour alone.
 func set_count(cards: int) -> void:
-	var key: String = "table.card_left" if cards == 1 else "table.cards_left"
-	var text: String = tr(key).format({"count": cards})
+	var text: String = SeatPanel.count_text(cards)
 	if _count.text != text and not _count.text.is_empty():
 		UiMotion.pulse(_count)
 	_count.text = text
 	_count.add_theme_color_override("font_color", LANDLORD_RED if cards <= 2 else INK)
+
+
+static func count_text(cards: int) -> String:
+	if cards == 1:
+		return TranslationServer.translate("table.card_last")
+	var key: String = "table.cards_two" if cards == 2 else "table.cards_left"
+	return TranslationServer.translate(key).format({"count": cards})
 
 
 func set_role(is_landlord: bool, teammate: bool) -> void:
