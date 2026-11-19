@@ -13,7 +13,6 @@ extends SceneTree
 ## Prints one result line per measure. Development only; tools/ never ships.
 
 const SEED: int = 5151
-const WARMUP_FRAMES: int = 30
 const DECK_SIZE: int = 54
 const STRESS_COLUMNS: int = 18
 const STRESS_ORIGIN: Vector2 = Vector2(120, 140)
@@ -24,8 +23,8 @@ const POST_BLOCK: int = 60
 const POST_SETTLE: int = 5
 
 var _seconds: float = 40.0
-var _frame_ms: PackedFloat64Array = []
-var _node_counts: PackedInt64Array = []
+## Opens the table and plays the Set, and keeps the frame times and node counts.
+var _play: TablePlay = TablePlay.new()
 var _stress: bool = false
 var _post_ab: bool = false
 ## The setting the A/B run switches: post_process, or horror_intensity.
@@ -52,20 +51,13 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	# Loaded at run time: the demo names autoloads, which a --script tool can't see when
-	# it compiles.
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: Node = scene.instantiate()
-	root.add_child(app)
-	app.call("new_run", SEED)
-	var table: Node = app.call("show_screen", "table", true)
+	var table: Node = _play.open(self, func(app_node: Node) -> void: app_node.call("new_run", SEED))
 	if _ab_key == "table_light":
 		var atmosphere: Node = table.get("_atmosphere")
 		_light = atmosphere.call("light")
 	if _post_ab:
 		RenderingServer.viewport_set_measure_render_time(root.get_viewport_rid(), true)
-	for _frame: int in WARMUP_FRAMES:
-		await process_frame
+	await _play.warm_up(self)
 	if _stress:
 		await _run_stress(table)
 		_report()
@@ -75,25 +67,7 @@ func _run() -> void:
 	if horror:
 		var dread: Object = table.get("_dread")
 		dread.call("force", 90, 90, false, 9)
-	var controller: Node = app.get("controller")
-	var script: GDScript = load("res://tests/unit/controller_script.gd")
-	var driver: Object = script.new()
-	var started: int = Time.get_ticks_msec()
-	var last: int = Time.get_ticks_usec()
-	while Time.get_ticks_msec() - started < int(_seconds * 1000.0):
-		await process_frame
-		var now: int = Time.get_ticks_usec()
-		_frame_ms.append((now - last) / 1000.0)
-		last = now
-		_sample_post()
-		var in_round: bool = controller.call("seat_view") != null
-		if in_round:
-			_node_counts.append(int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
-		if not is_instance_valid(table) or table.get_parent() == null:
-			break
-		var events: Node = table.get("_player")
-		if events.call("is_idle") and not horror:
-			driver.call("act", controller)
+	await _play.play_set(self, _seconds, _sample_post, not horror)
 	_report()
 	quit(0)
 
@@ -123,10 +97,10 @@ func _run_stress(table: Node) -> void:
 			views[index].position = STRESS_ORIGIN + cell * STRESS_STEP + sway
 		await process_frame
 		var now: int = Time.get_ticks_usec()
-		_frame_ms.append((now - last) / 1000.0)
+		_play.frame_ms.append((now - last) / 1000.0)
 		last = now
 		_sample_post()
-		_node_counts.append(int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
+		_play.node_counts.append(int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
 
 
 ## Times the GPU for this frame against whether the pass was on, then switches the pass
@@ -183,7 +157,7 @@ static func _median(values: PackedFloat64Array) -> float:
 
 
 func _report() -> void:
-	var sorted: PackedFloat64Array = _frame_ms.duplicate()
+	var sorted: PackedFloat64Array = _play.frame_ms.duplicate()
 	sorted.sort()
 	var total: float = 0.0
 	for value: float in sorted:
@@ -195,7 +169,7 @@ func _report() -> void:
 	print("median_ms=%.2f" % sorted[count / 2])
 	print("p99_ms=%.2f" % sorted[mini(count - 1, int(count * 0.99))])
 	print("mean_fps=%.1f" % (1000.0 * count / maxf(1.0, total)))
-	var counts: PackedInt64Array = _node_counts.duplicate()
+	var counts: PackedInt64Array = _play.node_counts.duplicate()
 	counts.sort()
 	if counts.is_empty():
 		print("nodes_during_rounds=none sampled")

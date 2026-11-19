@@ -10,6 +10,7 @@ const TOOLS: PackedStringArray = [
 	"res://tools/board_states.gd",
 	"res://tools/texture_budget.gd",
 	"res://tools/balance.gd",
+	"res://tools/perf_budget.gd",
 ]
 ## What Godot prints for a tool that does not compile: a compile error, or a parse error
 ## such as a warning treated as one.

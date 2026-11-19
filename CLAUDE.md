@@ -95,6 +95,12 @@ godot --headless --path . --script res://tools/playtest.gd -- --demo --rounds 6 
 Plays the same walk with a grayscale pass over the screen, reduced motion and the largest text size ([ADR 0035](docs/adr/0035-accessibility.md)), and fails on the same terms. Each flag works alone, and with `--tutorial` too. They hold for that run only and save to the tool's own settings file, never the player's. The grayscale pass is a test fixture, not a setting, and only a run with a window shows it. The cloud playtest runs this walk second, into `reports/playtest_access`. `tools/demo_screenshots.gd` takes the same three flags.
 
 ```bash
+godot --headless --path . --script res://tools/perf_budget.gd -- --out reports/perf_budget.md
+```
+
+Measures the rows of the performance budget that need no window and writes a report to commit: hand classification, legal moves for a 20-card hand, the bots' decisions (Easy, Medium and Hard from seeded games, Expert through `ExpertRunner` at its real deadline), the size and the save, load and resume times of a real mid-run save from a played run in a `user://` sandbox, and the memory of a loaded run. The same command without `--headless` and with `--windowed-rows` adds startup to the title, frame time during play, nodes made during a round and resident memory with the table open; run it on the minimum-spec machines. Each row is PASS, MISS or NOT MEASURED, and NOT MEASURED is never a pass. Exits 1 when any measured row misses. Add `--seed N`, `--hands N`, `--movegen-hands N`, `--bot-deals N`, `--expert-deals N` (default 20; 0 skips Expert), `--save-sets N`, `--save-reps N`, `--frame-seconds S` or `--out PATH`. Thresholds are in `tools/perf_limits.gd`. A headless run takes about two minutes.
+
+```bash
 godot --headless --path . --script res://tools/balance.gd -- --runs 20 --jobs 4
 ```
 

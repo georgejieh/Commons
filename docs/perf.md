@@ -168,3 +168,44 @@ A sample now has `expert_grace_usec` (60 ms) past the deadline, and is then aban
 Both are inside the 400 ms budget. The p99 sits a little past the 360 ms ceiling on samples because the figure also covers building the search and choosing among the results. Expert stays ahead of Hard both ways. The runs after the stop are 400 deals and not 1,000, so their win rates are less exact than the first table's: over 800 games one standard error is about 0.018.
 
 Part of the first no-wild run shared the machine with other work, which may have raised its p99. The wild run and both runs after the stop had the machine to themselves.
+
+## Every budget, by one command (P5.3, ADR 0036)
+
+```bash
+godot --headless --path . --script res://tools/perf_budget.gd -- --out reports/perf_budget.md
+godot --path . --script res://tools/perf_budget.gd -- --windowed-rows --out reports/perf_budget.md
+```
+
+The first line measures the rows that need no window. The second, in a window, adds startup, frame time, node instancing and resident memory with the table open. The report names the machine and gives each row a verdict; a row that was not measured says so and is never a pass.
+
+### Stand-in: the development PC
+
+This is not a minimum-spec machine (ADR 0036). Intel Core i7-6700K, 8 logical processors, 32 GB, Windows 10, headless, seed 0, commit `a997c15` plus the tool, 2026-11-19.
+
+| Row | Budget | Measured | Result | Samples |
+| --- | --- | --- | --- | --- |
+| Hand classification | under 50 us a call | median 8 us, p99 20 us, worst 85 us | Pass, judged on p99 | 20,000 calls |
+| Legal moves, 20-card hand | median under 1 ms | median 0.17 ms, p99 1.25 ms | Pass | 2,000 hands |
+| Bot decision, Easy | median under 30 ms, p99 under 100 ms | median 0.21 ms, p99 0.55 ms | Pass | 2,363 decisions |
+| Bot decision, Medium | the same | median 0.40 ms, p99 3.02 ms | Pass | 1,674 decisions |
+| Bot decision, Hard | the same | median 0.59 ms, p99 3.56 ms | Pass | 1,789 decisions |
+| Bot decision, Expert | p99 under 400 ms | p99 355 ms, on 7 worker threads | Pass | 618 decisions over 20 deals |
+| Save file size | under 64 KB | 5.8 KB | Pass | the largest autosave of a run of 8 Sets |
+| Save time | under 50 ms | median 8.1 ms, worst 13.3 ms | Pass | 40 repetitions |
+| Load time, the file | under 50 ms | median 4.5 ms, worst 6.0 ms | Pass | 40 repetitions |
+| Resume time | none | median 101 ms, worst 133 ms | Reported | 40 repetitions |
+| Static memory, run loaded | none of its own | 100 MB | Reported | once |
+| Resident memory, headless | under 512 MB | 194 MB | Pass, as a floor | once |
+| Startup to title | under 5 s | not measured | Not measured | needs a window |
+| Frame time during play | under 16.6 ms | not measured | Not measured | needs a window |
+| Nodes made during a round | none | not measured | Not measured | needs a window |
+| Resident memory, table open | under 512 MB | not measured | Not measured | needs a window |
+
+Notes on what the figures cover:
+
+- **Resume time** is what the Continue button costs: the file is loaded, then the run's record is replayed to where it was. It grows with the run; this run ended after 8 Sets of a possible 24. The budget's "load" is read here as the file, so this row has no verdict.
+- **Resident memory, headless** is the process's working set with no window and no textures on a GPU, so it is a floor. The figure that answers the budget is the windowed one.
+- **Expert** is a short sample. The long measurements are in the section above.
+- **Legal moves** is judged on the median, as the budget says. The p99 of 1.25 ms is over 1 ms.
+
+The windowed rows have not been run on any machine. Their code was written from `tools/table_perf.gd` and compiles; nothing may open a window on the owner's screen, so the first run of them is the owner's, on a reference machine.
