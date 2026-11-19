@@ -8,10 +8,14 @@ extends ScrollContainer
 
 ## How far one up or down press scrolls.
 const STEP: int = 90
+## The clear gap between the text and the scroll bar while there is one, at every size.
+const BAR_GAP: int = 16
 
 ## The most it stands, or 0 to take the room its container gives it.
 var cap: float = 0.0
 var _content: Control = null
+## Holds the content, with a margin on its right only while the bar shows.
+var _gutter: MarginContainer = MarginContainer.new()
 
 
 func _init(content: Control) -> void:
@@ -19,7 +23,14 @@ func _init(content: Control) -> void:
 	follow_focus = true
 	_content = content
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	add_child(content)
+	_gutter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Content that fills the scroll's height, as a death's centred column does, still can.
+	_gutter.size_flags_vertical = content.size_flags_vertical
+	_gutter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side: String in ["left", "top", "right", "bottom"]:
+		_gutter.add_theme_constant_override("margin_" + side, 0)
+	_gutter.add_child(content)
+	add_child(_gutter)
 	content.minimum_size_changed.connect(_fit)
 	get_v_scroll_bar().changed.connect(_update_focus)
 
@@ -35,10 +46,13 @@ func _fit() -> void:
 	custom_minimum_size.y = 0.0 if cap <= 0.0 else minf(tall, cap)
 
 
-## Focus is offered only while there is something to scroll to.
+## Focus is offered only while there is something to scroll to, and the gap at the bar
+## opens only while there is a bar.
 func _update_focus() -> void:
 	var bar: VScrollBar = get_v_scroll_bar()
-	focus_mode = Control.FOCUS_ALL if bar.max_value > bar.page + 1.0 else Control.FOCUS_NONE
+	var scrolls: bool = bar.max_value > bar.page + 1.0
+	focus_mode = Control.FOCUS_ALL if scrolls else Control.FOCUS_NONE
+	_gutter.add_theme_constant_override("margin_right", BAR_GAP if scrolls else 0)
 
 
 func can_scroll() -> bool:
