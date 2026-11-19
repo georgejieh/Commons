@@ -67,6 +67,8 @@ var _rounds_seen: int = 0
 var _turns_in_round: int = 0
 var _driver: Object
 var _toured: bool = false
+## The hint's tick photographed on a hand with a play to make (ADR 0035).
+var _hint_cards_shot: bool = false
 var _resumed: bool = false
 var _bought: int = 0
 var _issued: bool = false
@@ -280,6 +282,8 @@ func _play_turn(table: Node, controller: Node) -> void:
 	if not _toured:
 		_toured = true
 		await _tour(table)
+	if not _hint_cards_shot:
+		await _hint_cards_frame(table)
 	if _campaign_bought and not _campaign_used:
 		_campaign_used = true
 		await _campaign_turn(table, controller)
@@ -1441,6 +1445,55 @@ func _moment_frames(table: Node) -> void:
 	await _bowl_frames(table)
 
 
+## The real Hint button on an empty pile, so its pencilled ticks show (ADR 0035); the
+## tour's own hint may have been a pass. A turn whose hint marks nothing is left for a
+## later one. The selection is cleared after, so the walk plays its own choice.
+func _hint_cards_frame(table: Node) -> void:
+	var pile: Node = table.get("_pile")
+	if int(pile.call("play_count")) > 0:
+		return
+	var hand: Object = _app.get("hand")
+	hand.call("clear")
+	await _frames(2)
+	var actions: Object = table.call("actions")
+	await _press(actions.get("hint"))
+	await _frames(20)
+	var ticked: Array = hand.call("selected_ids")
+	if ticked.is_empty():
+		# No play suggested this turn: a later lead is tried.
+		print("HINT no cards round %d turn %d" % [_rounds_seen, _turns_in_round])
+		return
+	_hint_cards_shot = true
+	await _shot("tour_hint_cards")
+	hand.call("clear")
+	await _frames(4)
+
+
+## Under reduced motion the arrival's slip refuses a click with a red border and a cross
+## for 0.6 s in place of a pulse (ADR 0035). The demo skips the arrival, so the slip is
+## staged over the table with one of its lines, refuses once, and is taken inside that
+## time.
+func _refusal_frame() -> void:
+	if not _args.has("--reduced-motion"):
+		return
+	var script: GDScript = load("res://ui/tutorial/tutorial_slip.gd")
+	var slip: Control = script.new()
+	root.add_child(slip)
+	var face: Vector2 = script.get_script_constant_map()["FACE"]
+	slip.call("set_face", _app.call("seat_portrait", 1, face))
+	slip.call("say", tr("tutorial.step.02.say"))
+	await _frames(2)
+	var avoid: Array[Rect2] = []
+	slip.call("place", Rect2(Vector2(1300, 880), Vector2(240, 60)), avoid, Vector2(1920, 1080))
+	await _frames(2)
+	slip.call("refuse")
+	if not bool(slip.call("shows_cross")):
+		_fail("MISCLICK the slip showed no cross under reduced motion")
+	await _snap("tutorial_refused_reduced")
+	slip.queue_free()
+	await _frames(2)
+
+
 ## Presses every table control once and photographs the result.
 func _tour(table: Node) -> void:
 	await _moment_frames(table)
@@ -1454,6 +1507,7 @@ func _tour(table: Node) -> void:
 	await _shot("tour_hint")
 	var hand: Object = _app.get("hand")
 	hand.call("clear")
+	await _refusal_frame()
 	await _press(actions.get("rules"))
 	await _frames(30)
 	await _shot("tour_rules")
