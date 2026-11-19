@@ -23,6 +23,14 @@ const SEAT_WIDTH: float = 380.0
 const SEAT_OFFSET: float = 330.0
 ## The height the need panel and the audit slip center on, between seats and hand.
 const SHEET_MIDDLE: float = 520.0
+## The action column at Standard: at any text size it keeps its left edge, its foot and
+## its width, which is this or the toggles' width at Standard if that is wider.
+## It stops 8 px short of the ledger with the widest sort, 330 px at Standard.
+const ACTIONS_AT: Rect2 = Rect2(1218, 780, 280, 250)
+## The hand's fan: its right end stops short of the action column, so the lean of a full
+## hand's last card, which reaches about 98 px past its middle, never runs under the
+## buttons.
+const HAND_AT: Rect2 = Rect2(120, 830, 1016, 220)
 
 var _app: DemoApp
 var _controller: RunController
@@ -87,12 +95,14 @@ func _ready() -> void:
 	_place(_hud, Vector2.ZERO, Vector2(1920, 72))
 	_place(_board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
 	_place(_debuffs, Vector2(PLAY_CENTER - 298.0, 284), Vector2(596, 0))
-	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
+	_place(_hand_view, HAND_AT.position, HAND_AT.size)
 	_you.theme_type_variation = CommonsTheme.TITLE
 	_you.add_theme_font_size_override("font_size", TextSize.px(28))
 	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
-	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
+	_place(_actions, ACTIONS_AT.position, ACTIONS_AT.size)
+	# Held at its foot: a taller prompt grows up into the empty table, never down.
+	_actions.hold(ACTIONS_AT)
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
@@ -152,6 +162,7 @@ func open(app: DemoApp) -> void:
 	_moments.hud = _hud
 	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
 	_campaigns.attach(_pool, _debuffs)
+	_settle_tray()
 	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
 	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
 	_player.holds = {
@@ -257,6 +268,13 @@ func _build_seats() -> void:
 		)
 		_place(panel, Vector2(x, 112), Vector2(SEAT_WIDTH, 0))
 		_seats[seat] = panel
+
+
+## The Campaign tray under the left seat's foot, its leaflets above the brigade notice.
+func _settle_tray() -> void:
+	var left: SeatPanel = _seats[2]
+	var foot: float = left.position.y + left.get_combined_minimum_size().y
+	_campaigns.settle_under(foot, _dressing.notice_rect().position.y)
 
 
 func _on_event(event: RunEvent) -> void:

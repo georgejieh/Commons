@@ -26,7 +26,7 @@ const KITTY_SHOW: float = 0.9
 const KITTY_MARGIN: float = 0.12
 const KITTY_FROM: Vector2 = Vector2(790, 200)
 const KITTY_LABEL_AT: Vector2 = Vector2(790, 420)
-const HAND_AT: Vector2 = Vector2(660, 940)
+const HAND_AT: Vector2 = Vector2(628, 940)
 ## Shake from a play landing, per card, and the most a plain play gives.
 const THUMP_PER_CARD: float = 0.025
 const THUMP_MAX: float = 0.2

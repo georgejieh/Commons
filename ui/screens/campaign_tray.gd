@@ -132,6 +132,17 @@ func refresh() -> void:
 	queue_redraw()
 
 
+## How far down the head and the leaflets' places reach at rest, Use and Cancel left out.
+func resting_height() -> float:
+	var foot: float = _head.position.y + _head.get_combined_minimum_size().y
+	for slot: int in maxi(_leaflets.size(), 1):
+		var tall: float = _leaf().y
+		if slot < _leaflets.size():
+			tall = maxf(tall, _leaflets[slot].get_combined_minimum_size().y)
+		foot = maxf(foot, _place(slot).y + tall)
+	return foot
+
+
 ## How many leaflet places the tray has.
 func campaign_count() -> int:
 	return _leaflets.size()

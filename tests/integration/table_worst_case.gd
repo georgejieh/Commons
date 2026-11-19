@@ -1,0 +1,332 @@
+class_name TableWorstCase
+extends RefCounted
+## The table with every text piece holding the longest string of its family, measured in
+## the piece's own type (ADR 0034), and each piece's place on screen by name, for the
+## tests. ClipCheck sees each control against its own box; this sees the pieces against
+## one another.
+
+## A full Campaign tray needs Courier's Bag.
+const TRAY_REFORM: String = "couriers_bag"
+const TRAY_SIZE: int = 3
+## The most cards a hand or one play holds: the landlord's hand after the kitty.
+const MOST_CARDS: int = 20
+## Card ids for the staged hand and play, clear of each other.
+const HAND_IDS: int = 0
+const PLAY_IDS: int = 100
+## Numbers as wide as a prompt or a bid can print.
+const WIDE_SCORE: float = 999999.0
+const WIDE_COST: int = 99
+const WIDE_PERCENT: int = 150
+## The debuff strip's width on the table.
+const STRIP_WIDTH: float = 596.0
+
+
+## Opens the table at a text size with the run's state set for the worst case: the three
+## debuffs that make the strip tallest and a full Campaign tray of the longest names.
+static func open(app: DemoApp, suite: GdUnitTestSuite) -> TableScreen:
+	var loop: RunLoop = app.controller.get("_loop")
+	var state: RunState = loop.state
+	if not state.reforms.has(TRAY_REFORM):
+		state.reforms.append(TRAY_REFORM)
+	state.inventory.consumables.assign(longest_campaigns(app))
+	state.slogan_type = longest_slogan_type()
+	var debuffs: Array[String] = await tallest_debuffs(app, suite)
+	state.debuff_ladder.assign(["", debuffs[0], debuffs[1], debuffs[2]])
+	state.round_index = 3
+	var table: TableScreen = app.show_screen("table", true)
+	await suite.await_idle_frame()
+	await suite.await_idle_frame()
+	return table
+
+
+## Fills every text piece with its longest string. bidding shows Call and Pass in place of
+## the play set; redacted lays the bars over the brigade notice.
+static func fill(app: DemoApp, table: TableScreen, bidding: bool, redacted: bool) -> void:
+	table.call("_still", true)
+	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var surname: String = longest_surname()
+	for seat: int in seats:
+		var panel: SeatPanel = seats[seat]
+		panel.setup(seat, surname)
+		panel.set_role(seat == 2, false)
+		var role: Label = panel.get("_role")
+		panel.set_bid(widest(role, role_lines(), true))
+		var count: Label = panel.get("_count")
+		panel.set_count(_widest_count(count))
+		var speech: Label = panel.get("_speech")
+		panel.say(widest(speech, speech_lines()))
+	var you: Label = table.get("_you")
+	you.text = widest(you, _texts("table.you."))
+	var actions: ActionBar = table.actions()
+	actions.show_bidding(bidding)
+	actions.reading.text = tallest(actions.reading, prompts(app.controller))
+	var debuffs: DebuffStrip = table.get("_debuffs")
+	debuffs.show_debuffs(app.controller)
+	var dressing: DreadDressing = table.get("_dressing")
+	dressing.show_piece("redaction", 1.0 if redacted else 0.0)
+	var hand: HandView = table.get("_hand_view")
+	app.hand.set("_cards", cards(HAND_IDS))
+	hand.show_cards()
+	var pile: TrickPile = table.get("_pile")
+	pile.clear()
+	pile.show_play(cards(PLAY_IDS), pile.global_position)
+	var campaigns: TableCampaigns = table.get("_campaigns")
+	campaigns.tray.refresh()
+	campaigns.tray.visible = true
+
+
+## Each piece of the table that must stay clear of the others, by name, as drawn.
+static func pieces(table: TableScreen) -> Dictionary[String, Rect2]:
+	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var actions: ActionBar = table.actions()
+	var ledger: Control = table.get("_ledger")
+	var dressing: DreadDressing = table.get("_dressing")
+	var campaigns: TableCampaigns = table.get("_campaigns")
+	var hud: Control = table.get("_hud")
+	var board: Control = table.get("_board")
+	var strip: Control = table.get("_debuffs")
+	var you: Control = table.get("_you")
+	var found: Dictionary[String, Rect2] = {
+		"hud": hud.get_global_rect(),
+		"left seat": seats[2].get_global_rect(),
+		"right seat": seats[1].get_global_rect(),
+		"Cadre board": board.get_global_rect(),
+		"debuff strip": strip.get_global_rect(),
+		"trick pile": _pile_area(table.get("_pile")),
+		"brigade notice": dressing.notice_rect(),
+		"Campaign tray": _drawn_children(campaigns.tray),
+		"status line": you.get_global_rect(),
+		"prompt": actions.reading.get_global_rect(),
+		"action buttons": _buttons(actions),
+		"hand": _cards_area(table.get("_hand_view")),
+		"ledger": (ledger.get_parent() as Control).get_global_rect(),
+	}
+	return found
+
+
+## The rect a control covers as drawn, turned and scaled as it is.
+static func drawn(control: Control) -> Rect2:
+	var xform: Transform2D = control.get_global_transform()
+	var box: Rect2 = Rect2(Vector2.ZERO, control.size)
+	var area: Rect2 = Rect2(xform * box.position, Vector2.ZERO)
+	for corner: Vector2 in [Vector2(box.end.x, 0.0), box.end, Vector2(0.0, box.end.y)]:
+		area = area.expand(xform * corner)
+	return area
+
+
+static func _pile_area(pile: TrickPile) -> Rect2:
+	var area: Rect2 = pile.get_global_rect()
+	for child: Node in pile.get_children():
+		if child is Control and (child as Control).visible:
+			area = area.merge(drawn(child as Control))
+	return area
+
+
+static func _cards_area(hand: HandView) -> Rect2:
+	var area: Rect2 = Rect2()
+	for child: Node in hand.get_children():
+		if child is CardView and (child as Control).visible:
+			var card: Rect2 = drawn(child as Control)
+			area = card if not area.has_area() else area.merge(card)
+	return area
+
+
+## The tray's head, leaflets and buttons as shown; the tray's own box is a holder.
+static func _drawn_children(holder: Control) -> Rect2:
+	var area: Rect2 = Rect2()
+	for child: Node in holder.get_children():
+		var shown: Control = child as Control
+		if shown != null and shown.is_visible_in_tree() and shown.get_global_rect().has_area():
+			var rect: Rect2 = shown.get_global_rect()
+			area = rect if not area.has_area() else area.merge(rect)
+	return area
+
+
+static func _buttons(actions: ActionBar) -> Rect2:
+	var area: Rect2 = Rect2()
+	for button: Button in actions.find_children("*", "Button", true, false):
+		if button.is_visible_in_tree():
+			var rect: Rect2 = button.get_global_rect()
+			area = rect if not area.has_area() else area.merge(rect)
+	return area
+
+
+## Twenty cards of ranks and suits that cycle, with ids from first.
+static func cards(first: int) -> Array[CardInstance]:
+	var made: Array[CardInstance] = []
+	for index: int in MOST_CARDS:
+		var rank: int = index % Ranks.SMALL_JOKER
+		made.append(CardInstance.new(first + index, rank, index % 4, CardInstance.Origin.DECK))
+	return made
+
+
+## Of texts, the one widest on one line in label's type, upper-cased when upper.
+static func widest(label: Label, texts: Array[String], upper: bool = false) -> String:
+	var font: Font = label.get_theme_font("font")
+	var font_size: int = label.get_theme_font_size("font_size")
+	var best: String = ""
+	var best_wide: float = -1.0
+	for text: String in texts:
+		var shown: String = text.to_upper() if upper else text
+		var wide: float = font.get_string_size(shown, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		if wide > best_wide:
+			best = shown
+			best_wide = wide
+	return best
+
+
+## Of texts, the one that wraps tallest in label's type at label's width, the wider of two
+## as tall.
+static func tallest(label: Label, texts: Array[String]) -> String:
+	var font: Font = label.get_theme_font("font")
+	var font_size: int = label.get_theme_font_size("font_size")
+	var room: float = maxf(label.size.x, label.custom_minimum_size.x)
+	var best: String = ""
+	var best_size: Vector2 = Vector2(-1.0, -1.0)
+	for text: String in texts:
+		var tall: float = (
+			font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, room, font_size).y
+		)
+		var wide: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		if tall > best_size.y or (is_equal_approx(tall, best_size.y) and wide > best_size.x):
+			best = text
+			best_size = Vector2(wide, tall)
+	return best
+
+
+## What the role line can say: a role, a bid, or a flashed pass.
+static func role_lines() -> Array[String]:
+	var lines: Array[String] = _texts("table.role.")
+	lines.append_array(_texts("bid."))
+	for key: String in ["campaign.forced", "stamp.pass"]:
+		lines.append(TranslationServer.translate(key))
+	return lines
+
+
+## Every count line a seat can show, from a full hand down to the last card.
+static func _widest_count(label: Label) -> int:
+	var font: Font = label.get_theme_font("font")
+	var font_size: int = label.get_theme_font_size("font_size")
+	var best: int = 1
+	var best_wide: float = -1.0
+	for cards_left: int in range(1, MOST_CARDS + 1):
+		var text: String = SeatPanel.count_text(cards_left)
+		var wide: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		if wide > best_wide:
+			best = cards_left
+			best_wide = wide
+	return best
+
+
+## Every line a villager can say at the table.
+static func speech_lines() -> Array[String]:
+	var lines: Array[SpeechLine] = []
+	lines.append_array(TableSpeech.BOOK.lines)
+	lines.append_array(TableSpeech.VISIT.lines)
+	var families: Array[FamilyDef] = []
+	families.append_array(RunLoop.DEFAULT_VILLAGE.families)
+	families.append_array(RunLoop.DEFAULT_VILLAGE.youth_templates)
+	for family: FamilyDef in families:
+		if family.speech != null:
+			lines.append_array(family.speech.lines)
+	var texts: Array[String] = []
+	for line: SpeechLine in lines:
+		texts.append(TranslationServer.translate(line.text_key).format({"count": 16}))
+	return texts
+
+
+## Everything the prompt over Play and Pass can say: the selection's reading or its sum,
+## why it cannot be played, the bid and the grab, the hint's pass, Night Shift's refusal,
+## and an armed Campaign's ask or refusal.
+static func prompts(controller: RunController) -> Array[String]:
+	var texts: Array[String] = _texts("hand.reason.")
+	texts.append_array(_texts("campaign.reason."))
+	for key: String in ["table.bid_prompt", "hand.hint.pass", "table.must_play"]:
+		texts.append(TranslationServer.translate(key))
+	var grab: String = TranslationServer.translate("table.grab_prompt")
+	texts.append(grab.format({"name": longest_surname(), "cost": WIDE_COST}))
+	var types: Array[String] = []
+	for type: String in CheatSheet.TYPES:
+		types.append(TranslationServer.translate("pattern." + type))
+	var score: String = Strings.score(WIDE_SCORE)
+	var scaled: String = TranslationServer.translate("hand.scaled")
+	for type: String in types:
+		texts.append(type)
+		var sum: String = TranslationServer.translate("hand.sum").format(
+			{"type": type, "grain": score, "rate": score, "zeal": score, "total": score}
+		)
+		texts.append(sum + " " + scaled.format({"percent": WIDE_PERCENT}))
+	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
+		for campaign: CampaignDef in pool.campaigns:
+			texts.append(controller.campaign_prompt(campaign.id))
+	return texts
+
+
+## The three debuffs that stand tallest on the strip, each measured on a strip of the
+## table's width at the text size now.
+static func tallest_debuffs(app: DemoApp, suite: GdUnitTestSuite) -> Array[String]:
+	var loop: RunLoop = app.controller.get("_loop")
+	var state: RunState = loop.state
+	var strip: DebuffStrip = DebuffStrip.new()
+	app.add_child(strip)
+	strip.size = Vector2(STRIP_WIDTH, 0.0)
+	var heights: Dictionary[String, float] = {}
+	for debuff: ModifierDef in DebuffScript.POOL.debuffs:
+		state.debuff_ladder.assign(["", debuff.id, "", ""])
+		state.round_index = 1
+		strip.show_debuffs(app.controller)
+		await suite.await_idle_frame()
+		heights[debuff.id] = strip.get_combined_minimum_size().y
+	strip.queue_free()
+	var ids: Array[String] = []
+	ids.assign(heights.keys())
+	ids.sort_custom(func(a: String, b: String) -> bool: return heights[a] > heights[b])
+	return ids.slice(0, 3)
+
+
+## The Slogan's longest hand type, for the longest Slogan name.
+static func longest_slogan_type() -> int:
+	var best: int = Pattern.Type.PAIR
+	var longest: int = 0
+	for type: int in Pattern.Type.values():
+		var key: String = "pattern.plural." + String(Pattern.Type.keys()[type]).to_lower()
+		var shown: String = TranslationServer.translate(key)
+		if shown != key and shown.length() > longest:
+			longest = shown.length()
+			best = type
+	return best
+
+
+## The held Campaigns with the longest names, as many as a full tray holds.
+static func longest_campaigns(app: DemoApp) -> Array[String]:
+	var ids: Array[String] = []
+	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
+		for campaign: CampaignDef in pool.campaigns:
+			ids.append(campaign.id)
+	var named: Callable = func(id: String) -> int: return app.controller.campaign_name(id).length()
+	ids.sort_custom(
+		func(a: String, b: String) -> bool: return int(named.call(a)) > int(named.call(b))
+	)
+	return ids.slice(0, TRAY_SIZE)
+
+
+## The village's longest surname, as a seat is named by it.
+static func longest_surname() -> String:
+	var names: Array[String] = []
+	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+		names.append(TranslationServer.translate(family.name_key))
+	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
+		names.append(TranslationServer.translate(key))
+	var longest: String = ""
+	for name: String in names:
+		longest = name if name.length() > longest.length() else longest
+	return longest
+
+
+## Every string of the table whose key starts with prefix.
+static func _texts(prefix: String) -> Array[String]:
+	var texts: Array[String] = []
+	for key: String in SourceScan.table_keys():
+		if key.begins_with(prefix):
+			texts.append(TranslationServer.translate(key))
+	return texts

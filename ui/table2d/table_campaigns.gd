@@ -12,6 +12,8 @@ extends RefCounted
 ## y 354, left of the trick, which starts at x 470, with its buttons above the notice at
 ## y 622. Three leaflets end by x 460.
 const TRAY_AT: Vector2 = Vector2(78, 358)
+## The least room between the left seat's foot and the tray.
+const TRAY_GAP: float = 4.0
 
 var tray: CampaignTray = CampaignTray.new()
 var moments: CampaignMoments = CampaignMoments.new()
@@ -31,6 +33,14 @@ func place(screen: Control) -> void:
 	tray.position = TRAY_AT
 	screen.add_child(moments)
 	moments.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+
+## Keeps the tray under the left seat, whose sheet stands taller at a larger text size
+## (ADR 0034), but its leaflets clear of the brigade notice's top at ceiling. At Largest
+## the two do not both fit: the seat then lies over the tray's head.
+func settle_under(foot: float, ceiling: float) -> void:
+	var lowest: float = ceiling - TRAY_GAP - tray.resting_height()
+	tray.position.y = maxf(TRAY_AT.y, minf(foot + TRAY_GAP, lowest))
 
 
 func setup(

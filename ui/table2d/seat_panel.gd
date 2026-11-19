@@ -19,11 +19,13 @@ const PAPER: Color = Color("d9c8a4")
 ## The portrait's frame, and the picture inside it after the frame's 4 px edge.
 const PORTRAIT_BOX: Vector2 = Vector2(110, 138)
 const PICTURE_BOX: Vector2 = Vector2(102, 130)
+## Room each side of the landlord tag's word, inside its red ground.
+const TAG_MARGIN: int = 10
 ## Seconds a flashed word stays on the role line.
 const FLASH_HOLD: float = 0.9
-## The speech's type and the lines of room it keeps, at Standard 54 px tall. A larger
-## text size makes the room taller by its factor, and a line that would need a third line
-## there is set smaller, down to the Standard size (ADR 0034).
+## The speech's type and the lines of room it keeps: at least 54 px, times the text
+## size's factor, and never less than two lines of the type really stand. A line that
+## would need a third line there is set smaller, down to the Standard size (ADR 0034).
 const SPEECH_SIZE: int = 20
 const SPEECH_LINES: int = 2
 const SPEECH_ROOM: Vector2 = Vector2(200, 54)
@@ -68,8 +70,8 @@ func _init() -> void:
 	var tag: StyleBoxFlat = StyleBoxFlat.new()
 	tag.bg_color = ScreenKit.STYLE.vermilion
 	tag.set_corner_radius_all(ScreenKit.STYLE.radius)
-	tag.content_margin_left = 10
-	tag.content_margin_right = 10
+	tag.content_margin_left = TAG_MARGIN
+	tag.content_margin_right = TAG_MARGIN
 	_banner.add_theme_stylebox_override("normal", tag)
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -94,7 +96,8 @@ func _init() -> void:
 	_speech.add_theme_font_size_override("font_size", TextSize.px(SPEECH_SIZE))
 	_speech.add_theme_color_override("font_color", INK)
 	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	# Two lines of room, said or not, so the sheet never changes height.
+	# Two lines of room, said or not, so the sheet never changes height; _ready makes it
+	# as tall as two lines of the type really stand.
 	_speech.custom_minimum_size = Vector2(SPEECH_ROOM.x, ceilf(SPEECH_ROOM.y * TextSize.factor()))
 	_speech.max_lines_visible = SPEECH_LINES
 	_speech.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
@@ -123,6 +126,48 @@ func _init() -> void:
 ## not typing.
 func _ready() -> void:
 	set_process(false)
+	_fit_banner()
+	_hold_speech_room()
+
+
+## The speech's room stands as tall as two lines of its type, so a line that wraps to a
+## second never makes the sheet taller than it was with nothing said.
+func _hold_speech_room() -> void:
+	var font: Font = _speech.get_theme_font("font")
+	var line: float = font.get_height(TextSize.px(SPEECH_SIZE))
+	var gaps: float = _speech.get_theme_constant("line_spacing") * (SPEECH_LINES - 1)
+	var tall: float = maxf(_speech.custom_minimum_size.y, ceilf(line * SPEECH_LINES + gaps))
+	_speech.custom_minimum_size.y = tall
+
+
+## The landlord tag is print in a fixed box on the portrait (ADR 0034): the portrait's
+## width, or the tag's width at Standard where that is wider. Its word fits down, never
+## under its Standard size, so the tag never reaches the name beside the portrait. The
+## role line under the count says the same in type that grows.
+func _fit_banner() -> void:
+	var font: Font = _banner.get_theme_font("font")
+	var base: int = CommonsTheme.STYLE.eyebrow_size
+	var word: String = _banner.text
+	var standard: float = ceilf(_tag_width(font, word, TextSize.least(base)))
+	var box: float = maxf(PORTRAIT_BOX.x, standard)
+	var fits: Callable = func(font_size: int) -> bool:
+		return _tag_width(font, word, font_size) <= box
+	_banner.add_theme_font_size_override("font_size", TextSize.fit(base, base, fits))
+	_banner.offset_right = box - PORTRAIT_BOX.x
+
+
+## The tag's width with its word set at font_size, its margins included.
+static func _tag_width(font: Font, word: String, font_size: int) -> float:
+	return font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 2 * TAG_MARGIN
+
+
+## The landlord tag and the name as laid out, for tests.
+func banner_rect() -> Rect2:
+	return _banner.get_global_rect()
+
+
+func name_rect() -> Rect2:
+	return _name.get_global_rect()
 
 
 func setup(seat_index: int, display_name: String, portrait: Texture2D = null) -> void:
@@ -183,13 +228,13 @@ func set_bid(text: String) -> void:
 
 ## Shows text on the role line for a moment, such as a pass, then the role again.
 func flash(text: String) -> void:
-	_role.text = text.to_upper()
+	_show_role(text.to_upper())
 	UiMotion.pulse(_role)
 	if _flash != null and _flash.is_valid():
 		_flash.kill()
 	_flash = create_tween()
 	_flash.tween_interval(FLASH_HOLD)
-	_flash.tween_callback(func() -> void: _role.text = _role_text)
+	_flash.tween_callback(func() -> void: _show_role(_role_text))
 
 
 ## A small swell of the whole sheet, when its villager does something.
@@ -200,7 +245,27 @@ func bump() -> void:
 func _rest_role(text: String) -> void:
 	_role_text = text.to_upper()
 	if _flash == null or not _flash.is_running():
-		_role.text = _role_text
+		_show_role(_role_text)
+
+
+## The role line is print on the sheet beside the portrait (ADR 0034): it fits the room
+## the sheet leaves it, never under its Standard size, so the sheet keeps its width.
+func _show_role(text: String) -> void:
+	_role.text = text
+	var font: Font = _role.get_theme_font("font")
+	var room: float = _info_room()
+	var fits: Callable = func(font_size: int) -> bool:
+		return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= room
+	var base: int = CommonsTheme.STYLE.eyebrow_size
+	_role.add_theme_font_size_override("font_size", TextSize.fit(base, base, fits))
+
+
+## The width beside the portrait inside the sheet, or no limit before the sheet is sized.
+func _info_room() -> float:
+	if size.x <= 0.0:
+		return INF
+	var edges: float = get_theme_stylebox("panel").get_minimum_size().x
+	return size.x - edges - PORTRAIT_BOX.x - _row.get_theme_constant("separation")
 
 
 ## Shows a line; mood is the line's mood tag. With reveal times from the voice plan
