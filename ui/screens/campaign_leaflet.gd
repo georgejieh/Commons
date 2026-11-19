@@ -57,10 +57,10 @@ func _init() -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_theme_constant_override("separation", 4)
 	_eyebrow.theme_type_variation = CommonsTheme.EYEBROW
-	_eyebrow.add_theme_font_size_override("font_size", KIND_SIZE)
+	_eyebrow.add_theme_font_size_override("font_size", TextSize.px(KIND_SIZE))
 	_eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_name.add_theme_font_size_override("font_size", NAME_SIZE)
+	_name.add_theme_font_size_override("font_size", TextSize.px(NAME_SIZE))
 	_name.autowrap_mode = TextServer.AUTOWRAP_WORD
 	_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -68,7 +68,7 @@ func _init() -> void:
 	# A fixed width, so the wrapped name never makes the leaflet grow.
 	_name.custom_minimum_size = Vector2(SIZE.x - SIDE * 2.0, 0)
 	_status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_status.add_theme_font_size_override("font_size", STATUS_SIZE)
+	_status.add_theme_font_size_override("font_size", TextSize.px(STATUS_SIZE))
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status.text = TranslationServer.translate("campaign.not_now")
 	_status.visible = false
@@ -133,7 +133,8 @@ func set_compact(on: bool) -> void:
 func _fit_name(title: String) -> void:
 	var base: int = maxi(roundi(NAME_SIZE * (COMPACT if _compact else 1.0)), LEAST_NAME)
 	var least: int = LEAST_COMPACT_NAME if _compact else LEAST_NAME
-	NameFit.apply(_name, title, _name.custom_minimum_size.x, base, least)
+	var wide: float = _name.custom_minimum_size.x
+	NameFit.apply(_name, title, wide, TextSize.px(base), TextSize.least(least))
 
 
 ## The name as set, for tests.

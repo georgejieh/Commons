@@ -34,7 +34,7 @@ func _init() -> void:
 	row.add_child(_face)
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.custom_minimum_size = Vector2(WIDTH - FACE.x - 14.0 - PADDING * 2.0, 0)
-	_text.add_theme_font_size_override("font_size", TEXT_SIZE)
+	_text.add_theme_font_size_override("font_size", TextSize.px(TEXT_SIZE))
 	_text.add_theme_color_override("font_color", ScreenKit.INK)
 	_text.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(_text)
@@ -46,9 +46,10 @@ func set_face(face: Texture2D) -> void:
 	_face.texture = face
 
 
-## Shows the line, sized to it.
+## Shows the line, sized to it, at the text size chosen now: the slip outlives screens.
 func say(line: String) -> void:
 	_text.text = line
+	_text.add_theme_font_size_override("font_size", TextSize.px(TEXT_SIZE))
 	visible = not line.is_empty()
 	reset_size()
 

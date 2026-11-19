@@ -20,6 +20,12 @@ const PORTRAIT_BOX: Vector2 = Vector2(110, 138)
 const PICTURE_BOX: Vector2 = Vector2(102, 130)
 ## Seconds a flashed word stays on the role line.
 const FLASH_HOLD: float = 0.9
+## The speech's type and the lines of room it keeps, at Standard 54 px tall. A larger
+## text size makes the room taller by its factor, and a line that would need a third line
+## there is set smaller, down to the Standard size (ADR 0034).
+const SPEECH_SIZE: int = 20
+const SPEECH_LINES: int = 2
+const SPEECH_ROOM: Vector2 = Vector2(200, 54)
 
 var seat: int = -1
 
@@ -80,16 +86,16 @@ func _init() -> void:
 	_portrait.add_child(_picture)
 	_portrait.add_child(_banner)
 	_name.theme_type_variation = CommonsTheme.TITLE
-	_name.add_theme_font_size_override("font_size", 36)
-	_count.add_theme_font_size_override("font_size", 26)
+	_name.add_theme_font_size_override("font_size", TextSize.px(36))
+	_count.add_theme_font_size_override("font_size", TextSize.px(26))
 	_count.add_theme_color_override("font_color", INK)
 	_role.theme_type_variation = CommonsTheme.EYEBROW
-	_speech.add_theme_font_size_override("font_size", 20)
+	_speech.add_theme_font_size_override("font_size", TextSize.px(SPEECH_SIZE))
 	_speech.add_theme_color_override("font_color", INK)
 	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	# Two lines of room, said or not, so the sheet never changes height.
-	_speech.custom_minimum_size = Vector2(200, 54)
-	_speech.max_lines_visible = 2
+	_speech.custom_minimum_size = Vector2(SPEECH_ROOM.x, ceilf(SPEECH_ROOM.y * TextSize.factor()))
+	_speech.max_lines_visible = SPEECH_LINES
 	_speech.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	_speech.mouse_filter = Control.MOUSE_FILTER_STOP
 	_speech.gui_input.connect(_on_speech_input)
@@ -101,7 +107,7 @@ func _init() -> void:
 	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
 	_count_row.add_child(_back)
 	_count_row.add_child(_count)
-	_intel.add_theme_font_size_override("font_size", 17)
+	_intel.add_theme_font_size_override("font_size", TextSize.px(17))
 	_intel.add_theme_color_override("font_color", LANDLORD_RED)
 	_intel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_intel.custom_minimum_size = Vector2(220, 0)
@@ -194,11 +200,25 @@ func say(
 	text: String, mood: String = "", reveal: PackedFloat32Array = PackedFloat32Array()
 ) -> void:
 	_speech.text = text
+	_fit_speech(text)
 	_mood = mood
 	_reveal = reveal
 	_typed = 0.0
 	_speech.visible_characters = -1 if reveal.is_empty() else 0
 	set_process(not reveal.is_empty())
+
+
+## The line at the text size, smaller where it would need more lines than the room has.
+func _fit_speech(text: String) -> void:
+	var font: Font = _speech.get_theme_font("font")
+	var wide: float = maxf(_speech.size.x, _speech.custom_minimum_size.x)
+	var fits: Callable = func(font_size: int) -> bool:
+		var tall: float = (
+			font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, wide, font_size).y
+		)
+		return roundi(tall / font.get_height(font_size)) <= SPEECH_LINES
+	var font_size: int = TextSize.fit(SPEECH_SIZE, SPEECH_SIZE, fits)
+	_speech.add_theme_font_size_override("font_size", font_size)
 
 
 ## Shows the rest of a line still typing out. True if one was.

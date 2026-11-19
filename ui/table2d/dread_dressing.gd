@@ -100,7 +100,7 @@ func _add_notice() -> void:
 	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	words.custom_minimum_size = Vector2(NOTICE_AT.size.x - 24, 0)
 	words.add_theme_color_override("font_color", INK)
-	words.add_theme_font_size_override("font_size", 18)
+	words.add_theme_font_size_override("font_size", TextSize.px(18))
 	notice.add_child(words)
 	add_child(notice)
 	var bars: Control = Control.new()
@@ -140,7 +140,7 @@ func _add_poster() -> void:
 	words.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	words.add_theme_color_override("font_color", RED)
-	words.add_theme_font_size_override("font_size", 24)
+	words.add_theme_font_size_override("font_size", TextSize.px(24))
 	words.custom_minimum_size = Vector2(POSTER_AT.size.x - 24, 0)
 	poster.add_child(words)
 	_place("poster", poster, POSTER_AT)

@@ -48,7 +48,7 @@ func _init() -> void:
 ## Sizes the bar, its count and its seal, which overhangs the bar's right end.
 func setup(bar_size: Vector2, seal_width: float, font_size: int) -> void:
 	custom_minimum_size = bar_size
-	_text.add_theme_font_size_override("font_size", font_size)
+	_text.add_theme_font_size_override("font_size", TextSize.px(font_size))
 	_seal.prepare(tr("table.quota_met"), ScreenKit.RED, seal_width)
 	_seal.position = Vector2(bar_size.x - seal_width * 0.6, (bar_size.y - seal_width) / 2.0)
 	show_value(_shown)

@@ -110,7 +110,7 @@ func _typed(text: String, bold: bool) -> Label:
 	line.add_theme_font_override(
 		"font", ScreenKit.TYPEWRITER_BOLD if bold else ScreenKit.TYPEWRITER
 	)
-	line.add_theme_font_size_override("font_size", LINE_SIZE)
+	line.add_theme_font_size_override("font_size", TextSize.px(LINE_SIZE))
 	line.add_theme_color_override("font_color", BowlGrime.faded(INK, BowlGrime.wear()))
 	return line
 

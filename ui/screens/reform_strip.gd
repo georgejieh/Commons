@@ -39,7 +39,7 @@ func _init() -> void:
 	# The head leads the row of slips, so the strip keeps to one line while they fit.
 	var head: Label = ScreenKit.eyebrow("")
 	head.text = TranslationServer.translate("reform.strip").to_upper()
-	head.add_theme_font_size_override("font_size", HEAD_SIZE)
+	head.add_theme_font_size_override("font_size", TextSize.px(HEAD_SIZE))
 	for label: Label in [head, _none]:
 		label.custom_minimum_size = Vector2(0, TAG_HEIGHT)
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -117,7 +117,8 @@ func _describe(index: int) -> void:
 
 func _width(text: String) -> float:
 	var font: Font = get_theme_default_font()
-	return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, NAME_SIZE).x + TAG_PADDING
+	var name_px: int = TextSize.px(NAME_SIZE)
+	return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, name_px).x + TAG_PADDING
 
 
 func _draw_tag(tag: Control) -> void:
@@ -128,8 +129,9 @@ func _draw_tag(tag: Control) -> void:
 	DecreePaper.tag(tag, Rect2(Vector2.ZERO, tag.size), worn, _ids[index].hash() & 0xFF)
 	var font: Font = get_theme_default_font()
 	var ink: Color = BowlGrime.faded(INK, worn)
-	var baseline: Vector2 = Vector2(TAG_PADDING * 0.62, tag.size.y * 0.5 + NAME_SIZE * 0.42)
-	tag.draw_string(font, baseline, _names[index], HORIZONTAL_ALIGNMENT_LEFT, -1, NAME_SIZE, ink)
+	var name_px: int = TextSize.px(NAME_SIZE)
+	var baseline: Vector2 = Vector2(TAG_PADDING * 0.62, tag.size.y * 0.5 + name_px * 0.42)
+	tag.draw_string(font, baseline, _names[index], HORIZONTAL_ALIGNMENT_LEFT, -1, name_px, ink)
 	if tag.has_focus():
 		var gold: Color = CampaignPaper.ink(CampaignLeaflet.GOLD, worn * 0.5)
 		tag.draw_rect(Rect2(Vector2.ZERO, tag.size).grow(2.0), gold, false, 2.0)

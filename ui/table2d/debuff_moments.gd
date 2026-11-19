@@ -56,7 +56,7 @@ func _ready() -> void:
 	note.add_theme_stylebox_override("panel", ScreenKit.paper_style(NOTE_PADDING))
 	note.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	note.visible = false
-	_note_text.add_theme_font_size_override("font_size", NOTE_SIZE)
+	_note_text.add_theme_font_size_override("font_size", TextSize.px(NOTE_SIZE))
 	_note_text.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_note_text.add_theme_color_override("font_color", ScreenKit.INK)
 	note.add_child(_note_text)

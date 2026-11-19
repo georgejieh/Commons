@@ -53,13 +53,13 @@ func _init() -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_theme_constant_override("separation", 2)
 	_kind.theme_type_variation = CommonsTheme.EYEBROW
-	_kind.add_theme_font_size_override("font_size", KIND_SIZE)
+	_kind.add_theme_font_size_override("font_size", TextSize.px(KIND_SIZE))
 	_name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_name.add_theme_font_size_override("font_size", NAME_SIZE)
+	_name.add_theme_font_size_override("font_size", TextSize.px(NAME_SIZE))
 	_name.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_name.custom_minimum_size = Vector2(NAME_WIDTH, 0)
 	_sold.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_sold.add_theme_font_size_override("font_size", NAME_SIZE + 4)
+	_sold.add_theme_font_size_override("font_size", TextSize.px(NAME_SIZE + 4))
 	_sold.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_sold.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_sold.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -71,7 +71,7 @@ func _init() -> void:
 	_name.clip_text = false
 	buy.custom_minimum_size = Vector2.ZERO
 	buy.size_flags_horizontal = Control.SIZE_FILL
-	buy.add_theme_font_size_override("font_size", BUY_SIZE)
+	buy.add_theme_font_size_override("font_size", TextSize.px(BUY_SIZE))
 	column.add_child(buy)
 	add_child(column)
 	mouse_entered.connect(func() -> void: described.emit(self))
@@ -158,13 +158,13 @@ func name_label() -> Label:
 ## The name on one line, smaller as far as LEAST_NAME, then wrapped between words.
 func _fit_name(name_text: String) -> void:
 	var font: Font = ScreenKit.DISPLAY_BOLD
-	var font_size: int = NAME_SIZE
+	var font_size: int = TextSize.px(NAME_SIZE)
 	while (
-		font_size > LEAST_NAME
+		font_size > TextSize.least(LEAST_NAME)
 		and font.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > NAME_WIDTH
 	):
 		font_size -= 1
-	NameFit.apply(_name, name_text, NAME_WIDTH, font_size, LEAST_NAME)
+	NameFit.apply(_name, name_text, NAME_WIDTH, font_size, TextSize.least(LEAST_NAME))
 
 
 func shown_name() -> String:

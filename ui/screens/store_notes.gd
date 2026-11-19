@@ -12,7 +12,7 @@ const PADDING: int = 22
 
 static func warning(controller: RunController, width: float) -> Control:
 	var note: KeywordText = KeywordText.new()
-	note.add_theme_font_size_override("normal_font_size", NOTE_SIZE)
+	note.add_theme_font_size_override("normal_font_size", TextSize.px(NOTE_SIZE))
 	note.add_theme_color_override("default_color", ScreenKit.INK)
 	note.custom_minimum_size = Vector2(width, 0)
 	var text: String = TranslationServer.translate("market.warning")

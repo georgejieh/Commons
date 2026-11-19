@@ -74,7 +74,7 @@ func _ready() -> void:
 	dice.center = BOWL_AT
 	_kitty_label.text = tr("keyword.kitty.name").to_upper()
 	_kitty_label.theme_type_variation = CommonsTheme.TITLE
-	_kitty_label.add_theme_font_size_override("font_size", 34)
+	_kitty_label.add_theme_font_size_override("font_size", TextSize.px(34))
 	_kitty_label.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
 	_kitty_label.add_theme_color_override("font_outline_color", ScreenKit.INK)
 	_kitty_label.add_theme_constant_override("outline_size", 10)

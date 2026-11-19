@@ -12,7 +12,7 @@ const SAVE_PATH: String = "user://test_readability/run.json"
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 ## The least type that reads on a 1080 screen, and the least a board name may shrink to.
 const READABLE: int = 16
-const SHRUNK: int = 13
+const SHRUNK: int = 14
 ## How much of a card's left edge a fanned hand leaves showing, in card pixels.
 const FAN_STRIP: float = 57.0
 
@@ -32,6 +32,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
 	get_tree().root.size = _was_size
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
@@ -131,11 +132,17 @@ func test_the_reforms_strip_and_board_names_fit_without_clipping() -> void:
 	var notes: Control = store.blocks()["notes"]
 	assert_float(strip.size.x).is_greater(notes.size.x - 2.0)
 	var font: Font = strip.get_theme_default_font()
-	for word: String in ["Rehabilitation", "Overfulfillment", "Stakhanovite"]:
-		var fitted: int = CadreBadge.name_size(font, word, 80.0)
+	# The narrowest a board's name may be set in: a card of a full board of six.
+	var board: NoticeBoard = auto_free(NoticeBoard.new())
+	add_child(board)
+	board.setup(6, StoreScreen.BOARD_BOX)
+	var tile: float = board.tile_size(6).x - CadreBadge.NAME_MARGIN * 2.0
+	# Cadre names only: the board shows nothing else ("Overfulfillment" is a Campaign).
+	for word: String in ["Rehabilitation", "Stakhanovite"]:
+		var fitted: int = CadreBadge.name_size(font, word, tile)
 		assert_int(fitted).is_greater_equal(SHRUNK)
 		var width: float = font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, fitted).x
-		assert_float(width).is_less_equal(80.0)
+		assert_float(width).override_failure_message(word).is_less_equal(tile)
 
 
 ## Both marks sit down the card's left edge, which a fanned hand leaves showing, clear of
@@ -224,33 +231,38 @@ func test_the_village_history_sits_on_one_sheet_with_a_red_heading() -> void:
 ## Every name, through every paper that prints it, breaks only between words: a word
 ## wider than its paper shrinks the name instead.
 func test_no_name_breaks_inside_a_word() -> void:
-	for campaign: CampaignDef in RunCampaigns.all():
-		var name: String = tr(campaign.name_key)
-		for compact: bool in [false, true]:
-			var leaflet: CampaignLeaflet = auto_free(CampaignLeaflet.new())
-			add_child(leaflet)
-			leaflet.set_compact(compact)
-			leaflet.show_campaign(0, campaign.id, name, "", false)
-			await await_idle_frame()
-			_assert_fits(leaflet.name_label(), "leaflet %s" % compact)
-		await _check_panel(name)
-		for count: int in [3, 4]:
-			var paper: ChoicePaper = await _choice(count)
-			paper.show_campaign(_app.controller, campaign.id)
-			await await_idle_frame()
-			_assert_fits(_named(paper, name), "campaign choice %d" % count)
-	for reform: ReformDef in RunReforms.all():
-		await _check_panel(tr(reform.name_key))
-	for params: ShopParams in [RunLoop.DEFAULT_SHOP, RunLoop.DEFAULT_BLACK_MARKET]:
-		for envelope: EnvelopeDef in params.envelopes:
-			await _check_panel(tr(envelope.name_key))
-	for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
-		for count: int in [3, 4]:
-			var paper: ChoicePaper = await _choice(count)
-			paper.show_directive(_app.controller, directive.id)
-			await await_idle_frame()
-			_assert_fits(_named(paper, tr(directive.name_key)), "directive %d" % count)
-	await _check_cadres()
+	for level: int in TextSize.count():
+		Settings.set_value(TextSize.SETTING, level)
+		for campaign: CampaignDef in RunCampaigns.all():
+			var name: String = tr(campaign.name_key)
+			for compact: bool in [false, true]:
+				var leaflet: CampaignLeaflet = auto_free(CampaignLeaflet.new())
+				add_child(leaflet)
+				leaflet.set_compact(compact)
+				leaflet.show_campaign(0, campaign.id, name, "", false)
+				await await_idle_frame()
+				_assert_fits(leaflet.name_label(), "leaflet %s" % compact)
+				_clips(leaflet, "leaflet %s %s" % [campaign.id, compact])
+			await _check_panel(name)
+			for count: int in [3, 4]:
+				var paper: ChoicePaper = await _choice(count)
+				paper.show_campaign(_app.controller, campaign.id)
+				await await_idle_frame()
+				_assert_fits(_named(paper, name), "campaign choice %d" % count)
+				_clips(paper, "campaign choice %s %d" % [campaign.id, count])
+		for reform: ReformDef in RunReforms.all():
+			await _check_panel(tr(reform.name_key))
+		for params: ShopParams in [RunLoop.DEFAULT_SHOP, RunLoop.DEFAULT_BLACK_MARKET]:
+			for envelope: EnvelopeDef in params.envelopes:
+				await _check_panel(tr(envelope.name_key))
+		for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+			for count: int in [3, 4]:
+				var paper: ChoicePaper = await _choice(count)
+				paper.show_directive(_app.controller, directive.id)
+				await await_idle_frame()
+				_assert_fits(_named(paper, tr(directive.name_key)), "directive %d" % count)
+				_clips(paper, "directive choice %s %d" % [directive.id, count])
+		await _check_cadres()
 
 
 func _check_cadres() -> void:
@@ -267,6 +279,7 @@ func _check_cadres() -> void:
 		words.add_child(StoreCard.words(name, "rule"))
 		await await_idle_frame()
 		_assert_fits(_named(words, name), "store card")
+		_clips(words, "store card %s" % name)
 		var fitted: int = CadreBadge.name_size(font, name, tile)
 		(
 			assert_bool(NameFit.words_fit(font, name, tile, fitted))
@@ -279,6 +292,7 @@ func _check_cadres() -> void:
 	await await_idle_frame()
 	for cadre: ModifierDef in RunLoop.all_cadres():
 		_assert_fits(_named(collection, tr(cadre.name_key)), "collection")
+	_clips(collection, "collection with everything open")
 
 
 func _check_panel(name: String) -> void:
@@ -287,6 +301,7 @@ func _check_panel(name: String) -> void:
 	panel.offer(CounterPanel.Look.LEAFLET, "KIND", "id", name, "rule", "Buy")
 	await await_idle_frame()
 	_assert_fits(panel.name_label(), "counter panel")
+	_clips(panel, "counter panel %s" % name)
 
 
 func _choice(count: int) -> ChoicePaper:
@@ -331,3 +346,10 @@ func test_whole_multiples_print_without_a_decimal() -> void:
 	)
 	assert_str(caption).contains("2 times")
 	assert_str(caption).not_contains("2.0")
+
+
+## Nothing under root clips, as ClipCheck says (ADR 0034).
+func _clips(root: Node, where: String) -> void:
+	var problems: PackedStringArray = []
+	ClipCheck.check(root, "%s at text size %d" % [where, TextSize.level()], problems)
+	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()

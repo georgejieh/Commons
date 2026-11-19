@@ -3,7 +3,9 @@ extends Control
 ## The in-game menu, opened with the Menu button or Escape: resume, change settings, go
 ## back to the title, abandon the run, or quit. The run saves after every move, so leaving
 ## loses nothing; Continue on the title picks up at the same moment. Abandoning asks
-## first, with the focus on keeping the run, and clears its save (ADR 0025).
+## first, with the focus on keeping the run, and clears its save (ADR 0025). A new text
+## size (ADR 0034) shows on the menu at once, and the screen under it is built again when
+## the menu closes.
 
 signal resumed
 signal to_title
@@ -14,6 +16,14 @@ signal abandon
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.78)
 
+## The table's own menu: its settings sheet says a new text size reaches the table at
+## the next deal (ADR 0034). Set before the menu enters the tree.
+var at_table: bool = false
+var _app: DemoApp = null
+var _stack: VBoxContainer = VBoxContainer.new()
+## The text size the pages were built at, and the one the menu opened at.
+var _built_size: int = -1
+var _opened_size: int = -1
 var _main: VBoxContainer
 var _settings: VBoxContainer
 var _confirm: VBoxContainer
@@ -34,19 +44,44 @@ func _ready() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(center)
-	var stack: VBoxContainer = VBoxContainer.new()
-	center.add_child(stack)
+	center.add_child(_stack)
+	_build_pages()
+	visible = false
+	Settings.changed.connect(_on_setting)
+
+
+## Builds the three pages at the text size chosen now.
+func _build_pages() -> void:
+	for page: Node in _stack.get_children():
+		_stack.remove_child(page)
+		page.queue_free()
+	_built_size = TextSize.level()
 	_main = _menu()
 	_settings = _settings_page()
 	_confirm = _confirm_page()
-	stack.add_child(_main)
-	stack.add_child(_settings)
-	stack.add_child(_confirm)
-	visible = false
+	_stack.add_child(_main)
+	_stack.add_child(_settings)
+	_stack.add_child(_confirm)
+
+
+## A new text size rebuilds the pages at once, still on the settings page, with the focus
+## on the size just chosen.
+func _on_setting(key: String) -> void:
+	if key == TextSize.SETTING and visible:
+		_rebuild_on_settings.call_deferred()
+
+
+func _rebuild_on_settings() -> void:
+	if _built_size == TextSize.level():
+		return
+	_build_pages()
+	_show_page(_settings)
+	SettingsPanel.chosen_text_size(_settings).grab_focus()
 
 
 ## Sends the menu's ways out to the app's screens.
 func wire(app: DemoApp) -> void:
+	_app = app
 	to_title.connect(func() -> void: app.show_screen("title", true))
 	quit_game.connect(func() -> void: app.get_tree().quit())
 	dossier.connect(func() -> void: app.show_screen("dossier"))
@@ -55,6 +90,9 @@ func wire(app: DemoApp) -> void:
 
 
 func open() -> void:
+	if _built_size != TextSize.level():
+		_build_pages()
+	_opened_size = TextSize.level()
 	visible = true
 	move_to_front()
 	_show_page(_main)
@@ -64,6 +102,9 @@ func close() -> void:
 	Settings.save()
 	visible = false
 	resumed.emit()
+	if _app != null and _opened_size != TextSize.level():
+		_opened_size = TextSize.level()
+		SettingsPanel.rebuild_screen(_app)
 
 
 func _menu() -> VBoxContainer:
@@ -89,7 +130,7 @@ func _menu() -> VBoxContainer:
 func _settings_page() -> VBoxContainer:
 	var page: VBoxContainer = VBoxContainer.new()
 	page.add_theme_constant_override("separation", 16)
-	page.add_child(SettingsPanel.build())
+	page.add_child(SettingsPanel.build(at_table))
 	var back: Callable = func() -> void: _show_page(_main)
 	page.add_child(_wide(tr("settings.back"), CommonsTheme.PRIMARY, back))
 	return page

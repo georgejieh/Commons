@@ -5,7 +5,8 @@ extends Control
 ## rule changes active now, the current rank order, low to high, and while a rank is wild
 ## a section on wild cards (ADR 0029). While open it
 ## redraws on every run event, so a changed rule shows the frame it changes. A sheet
-## with more rules than the screen has room for is drawn smaller, never cut off.
+## with more rules than the screen has room for scrolls between its heading and Close,
+## never cut off and never drawn smaller (ADR 0034).
 
 const TYPES: Array[String] = [
 	"single",
@@ -47,6 +48,7 @@ var _wild_head: Label
 var _wild: Label = Label.new()
 var _close: Button
 var _panel: Control
+var _scroll: ProseScroll
 
 
 func _ready() -> void:
@@ -64,28 +66,32 @@ func _ready() -> void:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(1100, 0))
 	sheet.add_theme_constant_override("separation", SPACING)
 	sheet.add_child(ScreenKit.header(tr("cheat.eyebrow"), tr("cheat.title"), ScreenKit.INK))
+	var body: VBoxContainer = VBoxContainer.new()
+	body.add_theme_constant_override("separation", SPACING)
+	_scroll = ProseScroll.new(body)
+	sheet.add_child(_scroll)
 	_types.columns = 6
 	_types.add_theme_constant_override("h_separation", 28)
 	_types.add_theme_constant_override("v_separation", 6)
-	sheet.add_child(_types)
-	sheet.add_child(ScreenKit.eyebrow(tr("cheat.active")))
+	body.add_child(_types)
+	body.add_child(ScreenKit.eyebrow(tr("cheat.active")))
 	for label: Label in [_active, _order]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.custom_minimum_size = Vector2(840, 0)
-		label.add_theme_font_size_override("font_size", 22)
-	sheet.add_child(_active)
-	sheet.add_child(_order)
+		label.add_theme_font_size_override("font_size", TextSize.px(22))
+	body.add_child(_active)
+	body.add_child(_order)
 	_wild_head = ScreenKit.eyebrow(tr("cheat.wild"))
 	_wild.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_wild.custom_minimum_size = Vector2(840, 0)
-	_wild.add_theme_font_size_override("font_size", WILD_SIZE)
+	_wild.add_theme_font_size_override("font_size", TextSize.px(WILD_SIZE))
 	for part: Control in [_wild_head, _wild]:
 		part.visible = false
-		sheet.add_child(part)
-	sheet.add_child(ScreenKit.eyebrow(tr("cheat.keywords")))
+		body.add_child(part)
+	body.add_child(ScreenKit.eyebrow(tr("cheat.keywords")))
 	var words: Label = ScreenKit.label(Keywords.glossary(WORDS, false), 18)
 	words.custom_minimum_size = Vector2(840, 0)
-	sheet.add_child(words)
+	body.add_child(words)
 	_close = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
 	_close.pressed.connect(func() -> void: visible = false)
 	sheet.add_child(_close)
@@ -172,15 +178,11 @@ func _show_wild() -> void:
 	_wild.text = "\n".join(lines)
 
 
-## Draws the sheet smaller when it is taller than the screen, and sets it in the screen's
-## middle itself: a container taller than the screen no longer centres its child there.
+## Lets the rules stand as tall as the screen leaves room for between the heading and
+## Close, and scroll past that.
 func _fit() -> void:
-	var tall: float = _panel.size.y
-	var room: float = size.y - 2.0 * MARGIN
-	var fit: float = 1.0 if tall <= room or tall <= 0.0 else room / tall
-	_panel.pivot_offset = Vector2(_panel.size.x / 2.0, 0.0)
-	_panel.scale = Vector2(fit, fit)
-	_panel.position.y = floorf((size.y - tall * fit) / 2.0)
+	var others: float = _panel.get_combined_minimum_size().y - _scroll.custom_minimum_size.y
+	_scroll.fit_to(maxf(size.y - 2.0 * MARGIN - others, 0.0))
 
 
 ## The sheet's box on screen as drawn, for tests.

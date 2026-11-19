@@ -9,8 +9,10 @@ extends Control
 
 const SHADE: float = 0.38
 const STROKE: float = 3.0
+## A stamp is art (ADR 0034): it keeps its size at every text size, and shrinks on a
+## small card no further than the least size anything the player reads is set at.
 const STAMP_SIZE: int = 17
-const LEAST_SIZE: int = 11
+const LEAST_SIZE: int = 14
 ## The share of the card's diagonal the stamp may span.
 const FIT: float = 0.8
 const STAMP_TILT: float = -0.36
@@ -47,7 +49,9 @@ func _draw() -> void:
 	# Smaller type on a smaller card, so the stamp never runs off it.
 	var type_size: int = STAMP_SIZE
 	var wide: Vector2 = font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, type_size)
-	while type_size > LEAST_SIZE and wide.x + BAND_PAD.x * 2.0 > size.length() * FIT:
+	while (
+		type_size > TextSize.least(LEAST_SIZE) and wide.x + BAND_PAD.x * 2.0 > size.length() * FIT
+	):
 		type_size -= 1
 		wide = font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, type_size)
 	draw_set_transform(size / 2.0, STAMP_TILT)

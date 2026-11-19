@@ -30,6 +30,9 @@ const FACE_SIZE: float = 190.0
 ## How far from the middle a face sits, and how far the word moves over to make room.
 const FACE_OFFSET: float = 520.0
 const WORD_SHIFT: float = 90.0
+## The cloth is art of a fixed size: the word grows with the text size only while it
+## fills no more than this share of the band's height and of the screen's width.
+const WORD_ROOM: Vector2 = Vector2(0.9, 0.8)
 
 ## How far the cloth has crossed, how far it has left, and how strong the dim and rays
 ## are, each from 0 to 1. Tweened; the banner is drawn from them.
@@ -211,15 +214,27 @@ func _lay_out(word: String, sub: String, face: Texture2D) -> void:
 	_face.position = middle + Vector2(side * FACE_OFFSET, 0) - _face.size / 2.0
 	var shift: float = -side * WORD_SHIFT if face != null else 0.0
 	_word.text = word
-	_word.add_theme_font_size_override("font_size", WORD_SIZE[_tier])
+	_word.add_theme_font_size_override("font_size", _fitted(word, WORD_SIZE[_tier], WORD_ROOM.y))
 	_sub.text = sub
-	_sub.add_theme_font_size_override("font_size", SUB_SIZE[_tier])
+	_sub.add_theme_font_size_override("font_size", _fitted(sub, SUB_SIZE[_tier], 0.4))
 	for label: Label in [_word, _sub]:
 		label.reset_size()
 		label.pivot_offset = label.size / 2.0
 	var lift: float = tall * 0.1 if not sub.is_empty() else 0.0
 	_word.position = middle + Vector2(shift, -lift) - _word.size / 2.0
 	_sub.position = middle + Vector2(shift, tall * 0.3) - _sub.size / 2.0
+
+
+## The size text of a Standard size base is shouted at: grown with the text size while it
+## stays inside the screen's width and the given share of the band's height.
+func _fitted(text: String, base: int, share: float) -> int:
+	var font: Font = _word.get_theme_font("font")
+	var wide: float = size.x * WORD_ROOM.x
+	var tall: float = maxf(font.get_height(base), BAND_HEIGHT[_tier] * share)
+	var fits: Callable = func(font_size: int) -> bool:
+		var line: Vector2 = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+		return line.x <= wide and font.get_height(font_size) <= tall
+	return TextSize.fit(base, base, fits)
 
 
 func _rest() -> void:

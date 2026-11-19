@@ -287,6 +287,6 @@ func _consequence(controller: RunController, famine: int) -> Label:
 
 func _line(text: String, ink: Color) -> Label:
 	var line: Label = ScreenKit.styled(text, CommonsTheme.TITLE)
-	line.add_theme_font_size_override("font_size", 26)
+	line.add_theme_font_size_override("font_size", TextSize.px(26))
 	line.add_theme_color_override("font_color", ink)
 	return line

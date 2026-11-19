@@ -32,6 +32,7 @@ var _name: Label
 var _title: Label
 var _heading: HBoxContainer
 var _list: EpilogueList = null
+var _story_scroll: ProseScroll = null
 var _show_all: Button = null
 var _home: Button
 
@@ -61,14 +62,9 @@ func open(app: DemoApp) -> void:
 	var columns: HBoxContainer = ScreenKit.row([], 48)
 	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page.add_child(columns)
-	var story: VBoxContainer = _story()
-	columns.add_child(story)
+	_story_scroll = _reading()
+	columns.add_child(_story_scroll)
 	if _view.death:
-		# A death has no epilogue beside it: its column sits in the middle of the sheet,
-		# both ways, so the page has no empty half.
-		story.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		story.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		story.custom_minimum_size.x = DEATH_WIDTH
 		columns.alignment = BoxContainer.ALIGNMENT_CENTER
 	else:
 		columns.add_child(_village())
@@ -77,6 +73,29 @@ func open(app: DemoApp) -> void:
 	# The title lands like a verdict, in ink.
 	UiMotion.stamp(_heading)
 	_start()
+
+
+## The story on a scroll of its paper, for when a larger text size makes it taller than
+## the page (ADR 0034); the way home stays on screen. A death has no epilogue beside it:
+## its column sits in the middle of the sheet, both ways, so the page has no empty half.
+func _reading() -> ProseScroll:
+	var story: VBoxContainer = _story()
+	var reading: Control = story
+	if _view.death:
+		story.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		story.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		story.custom_minimum_size.x = DEATH_WIDTH
+		var middle: CenterContainer = CenterContainer.new()
+		middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		middle.add_child(story)
+		reading = middle
+	var scroll: ProseScroll = ProseScroll.new(reading)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = (
+		Control.SIZE_SHRINK_CENTER if _view.death else Control.SIZE_EXPAND_FILL
+	)
+	scroll.size_flags_stretch_ratio = story.size_flags_stretch_ratio
+	return scroll
 
 
 ## The ending itself: the title card, the text, then the meters and class as tiles.
@@ -178,10 +197,10 @@ func _fit_title(frame: Control) -> void:
 	if HanziSeal.can_draw(_view.seal):
 		room -= SEAL_WIDTH + 28.0
 	var font: Font = ScreenKit.DISPLAY_BOLD
-	var font_size: int = TITLE_MAX
-	while font_size > TITLE_MIN and _width(font, font_size) > room:
+	var font_size: int = TextSize.px(TITLE_MAX)
+	while font_size > TextSize.least(TITLE_MIN) and _width(font, font_size) > room:
 		font_size -= 2
-	_title.add_theme_font_size_override("font_size", font_size)
+	_title.add_theme_font_size_override("font_size", maxi(font_size, TextSize.least(TITLE_MIN)))
 
 
 func _width(font: Font, font_size: int) -> float:
@@ -262,6 +281,11 @@ func _unhandled_input(event: InputEvent) -> void:
 ## What a test or the playtest reads: the epilogue, the way home and Show all.
 func epilogue() -> EpilogueList:
 	return _list
+
+
+## The story's scroll, for tests.
+func story_scroll() -> ProseScroll:
+	return _story_scroll
 
 
 ## The line naming the player, for tests.

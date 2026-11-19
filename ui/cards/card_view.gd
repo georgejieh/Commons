@@ -54,6 +54,10 @@ const ROSETTE_BY_NOTE: Vector2 = Vector2(40, 128)
 const ROSETTE_BY_RIBBON: Vector2 = Vector2(16, 92)
 const NOTE_SPAN: Vector2 = Vector2(8, 72)
 const NOTE_SPAN_BY_RIBBON: Vector2 = Vector2(15, 61)
+## The rank note's type and the height of its tag on the card: the card is art of a fixed
+## size, so the note grows with the text size only as far as its tag holds it.
+const NOTE_SIZE: int = 18
+const NOTE_TALL: float = 26.0
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -188,6 +192,17 @@ func set_rank_note(text: String) -> void:
 	_rank_note.text = text
 	_rank_note.visible = not text.is_empty()
 	_place_marks()
+	_rank_note.add_theme_font_size_override("font_size", _note_size(text))
+
+
+func _note_size(text: String) -> int:
+	var font: Font = _rank_note.get_theme_font("font")
+	var wide: float = _rank_note.offset_right - _rank_note.offset_left
+	var tall: float = maxf(NOTE_TALL, font.get_height(NOTE_SIZE))
+	var fits: Callable = func(font_size: int) -> bool:
+		var line: Vector2 = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+		return line.x <= wide and font.get_height(font_size) <= tall
+	return TextSize.fit(NOTE_SIZE, NOTE_SIZE, fits)
 
 
 func rank_note() -> String:

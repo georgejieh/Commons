@@ -39,6 +39,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
 	get_tree().root.size = _was_size
 	Saves.run_service().delete()
 
@@ -81,15 +82,18 @@ func test_both_shops_fit_the_most_a_run_holds() -> void:
 
 
 func _check_all(where: String) -> void:
-	for screen_size: Vector2i in SIZES:
-		get_tree().root.size = screen_size
-		for screen_id: String in ["store", "black_market"]:
-			var store: StoreScreen = _app.show_screen(screen_id, true)
-			await await_idle_frame()
-			await await_idle_frame()
-			var label: String = "%s %s %s" % [where, screen_id, screen_size]
-			_check_inside(store, label)
-			_check_blocks(store, label)
+	for level: int in TextSize.count():
+		Settings.set_value(TextSize.SETTING, level)
+		for screen_size: Vector2i in SIZES:
+			get_tree().root.size = screen_size
+			for screen_id: String in ["store", "black_market"]:
+				var store: StoreScreen = _app.show_screen(screen_id, true)
+				await await_idle_frame()
+				await await_idle_frame()
+				var label: String = "%s %s %s" % [where, screen_id, screen_size]
+				_check_inside(store, label)
+				_check_blocks(store, label)
+				_clips(store, label)
 
 
 func _check_inside(root: Node, where: String) -> void:
@@ -180,33 +184,36 @@ func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
 	Settings.set_value("reduced_motion", true)
 	for reforms: Array[String] in [[] as Array[String], ["supply_cooperative"] as Array[String]]:
 		_loop().state.reforms.assign(reforms)
-		for screen_size: Vector2i in SIZES:
-			get_tree().root.size = screen_size
-			for kind: String in ["directive_envelope", "campaign_envelope", "parcel"]:
-				var screen_id: String = "black_market" if kind == "parcel" else "store"
-				_loop().state.coupons = 60
-				_app.controller.reseal_book()
-				_loop().shop.envelopes.clear()
-				_loop().market.envelopes.clear()
-				var stock: Array[String] = [kind]
-				var counter: EnvelopeCounter = _loop().market.envelopes
-				if kind != "parcel":
-					counter = _loop().shop.envelopes
-				counter.set("_stock", stock)
-				var store: StoreScreen = _app.show_screen(screen_id, true)
-				await await_idle_frame()
-				var stall: EnvelopeStall = store.get("_envelope_stall")
-				stall.panel(0).buy.pressed.emit()
-				await await_idle_frame()
-				await await_idle_frame()
-				var overlay: EnvelopeOverlay = stall.overlay()
-				var label: String = "%s %s %d" % [kind, screen_size, 3 + reforms.size()]
-				assert_int(overlay.papers().size()).is_equal(3 + reforms.size())
-				_check_inside(overlay, label)
-				_check_apart(overlay, label)
-				_check_aligned(overlay, label)
-				overlay.nothing_button().pressed.emit()
-				await await_idle_frame()
+		for level: int in TextSize.count():
+			Settings.set_value(TextSize.SETTING, level)
+			for screen_size: Vector2i in SIZES:
+				get_tree().root.size = screen_size
+				for kind: String in ["directive_envelope", "campaign_envelope", "parcel"]:
+					var screen_id: String = "black_market" if kind == "parcel" else "store"
+					_loop().state.coupons = 60
+					_app.controller.reseal_book()
+					_loop().shop.envelopes.clear()
+					_loop().market.envelopes.clear()
+					var stock: Array[String] = [kind]
+					var counter: EnvelopeCounter = _loop().market.envelopes
+					if kind != "parcel":
+						counter = _loop().shop.envelopes
+					counter.set("_stock", stock)
+					var store: StoreScreen = _app.show_screen(screen_id, true)
+					await await_idle_frame()
+					var stall: EnvelopeStall = store.get("_envelope_stall")
+					stall.panel(0).buy.pressed.emit()
+					await await_idle_frame()
+					await await_idle_frame()
+					var overlay: EnvelopeOverlay = stall.overlay()
+					var label: String = "%s %s %d" % [kind, screen_size, 3 + reforms.size()]
+					assert_int(overlay.papers().size()).is_equal(3 + reforms.size())
+					_check_inside(overlay, label)
+					_check_apart(overlay, label)
+					_check_aligned(overlay, label)
+					_clips(overlay, label)
+					overlay.nothing_button().pressed.emit()
+					await await_idle_frame()
 	Settings.set_value("reduced_motion", false)
 
 
@@ -301,19 +308,28 @@ func _check_aligned(overlay: EnvelopeOverlay, where: String) -> void:
 ## Every Directive's document fits an envelope's smaller place whole: no Rate line, at
 ## 16 px or more, runs past its bottom.
 func test_every_directive_document_fits_the_smaller_place() -> void:
-	for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
-		var paper: ChoicePaper = auto_free(ChoicePaper.new())
-		# Under the app, so the game's theme sets its type.
-		_app.add_child(paper)
-		paper.setup(0, ChoicePaper.ITEM_MANY)
-		paper.show_directive(_app.controller, directive.id)
-		await await_idle_frame()
-		var sheet: Control = paper.item.get_child(0) as Control
-		(
-			assert_float(sheet.get_combined_minimum_size().y)
-			. override_failure_message(directive.id)
-			. is_less_equal(ChoicePaper.ITEM_MANY.y + 0.5)
-		)
-		assert_vector(paper.item.size).is_equal(ChoicePaper.ITEM_MANY)
-		for line: Label in paper.lines:
-			assert_int(line.get_theme_font_size("font_size")).is_greater_equal(16)
+	for level: int in TextSize.count():
+		Settings.set_value(TextSize.SETTING, level)
+		for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+			var paper: ChoicePaper = auto_free(ChoicePaper.new())
+			# Under the app, so the game's theme sets its type.
+			_app.add_child(paper)
+			paper.setup(0, ChoicePaper.ITEM_MANY)
+			paper.show_directive(_app.controller, directive.id)
+			await await_idle_frame()
+			var sheet: Control = paper.item.get_child(0) as Control
+			(
+				assert_float(sheet.get_combined_minimum_size().y)
+				. override_failure_message(directive.id)
+				. is_less_equal(ChoicePaper.ITEM_MANY.y + 0.5)
+			)
+			assert_vector(paper.item.size).is_equal(ChoicePaper.ITEM_MANY)
+			for line: Label in paper.lines:
+				assert_int(line.get_theme_font_size("font_size")).is_greater_equal(16)
+
+
+## Nothing under root clips, as ClipCheck says (ADR 0034).
+func _clips(root: Node, where: String) -> void:
+	var problems: PackedStringArray = []
+	ClipCheck.check(root, "%s at text size %d" % [where, TextSize.level()], problems)
+	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()

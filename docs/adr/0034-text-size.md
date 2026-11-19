@@ -48,6 +48,20 @@ At each of the three sizes, at 1920x1080 and at 1280x800:
 - text inside a scroll area is checked for width only, since it scrolls;
 - each paper that prints one item of a family (a Cadre, a Campaign, a Directive, a Reform, a debuff, an envelope, an ending, a notice, a tutorial step, a villager's line) is checked with every item of that family, so the longest is always among them.
 
+## Amendment, 2026-11-18: screens that are already full
+
+The first build found four screens with no room left at Standard: the state store, the black market, the ending and the cheat sheet. At Largest the store came to 1,162 px of a 1,080 px canvas and the ending to 1,234 px. The rules above do not say what gives. These do, in this order:
+
+1. **Display type holds.** A base size of 40 px or more, which is the title and headline steps and the ending's title, does not grow. At Standard it is already larger than body text is at Largest (22 px by 1.3 is under 29 px).
+2. **Margins give way.** On a page that would overflow, the outer margin and the gaps between rows shrink before anything else does, to no less than 24 px of margin and half of each gap.
+3. **Print fits,** as above: text in a fixed box fits down, never below its Standard size.
+4. **Prose scrolls on its own paper.** The ending's story, the cheat sheet and the settings sheets scroll inside their paper when they are too long. Their buttons stay on screen, the scroll follows the focus, and the arrow keys and the stick move it.
+5. **A shop never scrolls.** Everything for sale is on screen at once. If rules 1 to 3 do not make room, the shop's rules boxes and Directive documents count as fixed boxes and fit down.
+
+Never: a clipped line, text below its Standard size, or art made smaller.
+
+**The table mid-round.** "The screen under it is rebuilt when the sheet closes" holds for every screen but the table in a round. Rebuilding it there would lose a need being set, an open reading picker and plays not yet acted out. The table's themed text changes at once, and its own pieces take the new size at the next deal, with the hand's sort kept. While a round is in play the settings sheet says so in one line. The mixed state in between must not clip, and a test holds that.
+
 ## Alternatives rejected
 
 - **Scaling the whole canvas.** `content_scale_factor` enlarges art and layout with the text, so a larger size shows less of a table that is already full.

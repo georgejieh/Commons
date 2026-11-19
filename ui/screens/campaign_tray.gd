@@ -51,7 +51,7 @@ func _init() -> void:
 	for button: Button in [use, cancel]:
 		button.focus_mode = Control.FOCUS_NONE
 		button.custom_minimum_size = BUTTON
-		button.add_theme_font_size_override("font_size", 20)
+		button.add_theme_font_size_override("font_size", TextSize.px(20))
 
 
 func _ready() -> void:

@@ -45,7 +45,7 @@ func open(app: DemoApp) -> void:
 	sheet.add_child(ScreenKit.header(tr("surname.eyebrow"), tr("surname.title")))
 	_field.max_length = Surnames.LONGEST
 	_field.custom_minimum_size = Vector2(FIELD_WIDTH, 0)
-	_field.add_theme_font_size_override("font_size", FIELD_SIZE)
+	_field.add_theme_font_size_override("font_size", TextSize.px(FIELD_SIZE))
 	_field.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_field.text_changed.connect(_on_typed)
 	_field.text_submitted.connect(func(_text: String) -> void: confirm())

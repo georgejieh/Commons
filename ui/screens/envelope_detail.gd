@@ -31,7 +31,7 @@ func _init() -> void:
 	_rule.fit_content = true
 	_rule.scroll_active = false
 	_rule.custom_minimum_size = Vector2(RULE_WIDTH, 0)
-	_rule.add_theme_font_size_override("normal_font_size", RULE_SIZE)
+	_rule.add_theme_font_size_override("normal_font_size", TextSize.px(RULE_SIZE))
 	_rule.add_theme_color_override("default_color", ScreenKit.INK)
 	left.add_child(_rule)
 	_hint.text = TranslationServer.translate("envelope.nothing.confirm")

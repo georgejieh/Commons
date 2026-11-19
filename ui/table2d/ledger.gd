@@ -40,7 +40,7 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(ROW_WIDTH, 0)
 	var title: Label = Label.new()
 	title.text = tr("ledger.title")
-	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_font_size_override("font_size", TextSize.px(26))
 	title.add_theme_font_override("font", ScreenKit.TYPEWRITER_BOLD)
 	title.add_theme_color_override("font_color", INK)
 	add_child(title)
@@ -77,8 +77,8 @@ func _ready() -> void:
 	_plays.custom_minimum_size = Vector2(ROW_WIDTH, 0)
 	_plays.add_theme_font_override("normal_font", ScreenKit.TYPEWRITER)
 	_plays.add_theme_font_override("bold_font", ScreenKit.TYPEWRITER_BOLD)
-	_plays.add_theme_font_size_override("normal_font_size", 18)
-	_plays.add_theme_font_size_override("bold_font_size", 18)
+	_plays.add_theme_font_size_override("normal_font_size", TextSize.px(18))
+	_plays.add_theme_font_size_override("bold_font_size", TextSize.px(18))
 	_plays.add_theme_color_override("default_color", INK)
 	add_child(_plays)
 	_foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -155,7 +155,7 @@ func add_play(
 	var percent: int = ScoreTally.scale_percent(grain, rate, zeal, total)
 	if percent != ScoreTally.WHOLE:
 		sum += " " + tr("ledger.scaled").format({"percent": percent})
-	var line: String = "[font_size=%d]%s[/font_size]" % [SUM_SIZE, Keywords.mark(sum)]
+	var line: String = "[font_size=%d]%s[/font_size]" % [TextSize.px(SUM_SIZE), Keywords.mark(sum)]
 	_texts.append("[b]%s[/b]\n%s" % [head.replace("[", "[lb]"), line])
 	if _texts.size() > MAX_PLAYS:
 		_texts.remove_at(0)
@@ -236,7 +236,7 @@ func _as_head(label: Label, key: String) -> void:
 
 
 func _as_text(label: Label) -> void:
-	label.add_theme_font_size_override("font_size", 22)
+	label.add_theme_font_size_override("font_size", TextSize.px(22))
 	label.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 	label.add_theme_color_override("font_color", INK)
 

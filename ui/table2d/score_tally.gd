@@ -167,7 +167,7 @@ func _tile(value: Label, caption: String, ink: Color, value_size: int) -> Contro
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", -4)
 	value.theme_type_variation = CommonsTheme.TITLE
-	value.add_theme_font_size_override("font_size", value_size)
+	value.add_theme_font_size_override("font_size", TextSize.px(value_size))
 	value.add_theme_color_override("font_color", ink)
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	value.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -187,7 +187,7 @@ func _sign(text: String) -> Label:
 	var made: Label = Label.new()
 	made.text = text
 	made.theme_type_variation = CommonsTheme.TITLE
-	made.add_theme_font_size_override("font_size", SIGN_SIZE)
+	made.add_theme_font_size_override("font_size", TextSize.px(SIGN_SIZE))
 	made.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
 	ScreenKit.paper_outline(made)
 	made.add_theme_color_override("font_outline_color", ScreenKit.INK)

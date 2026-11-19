@@ -44,7 +44,7 @@ func _show(label: Label, text: String, color: Color, font_size: int) -> void:
 		if running != null and running.is_valid():
 			running.kill()
 	label.text = text
-	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_size_override("font_size", TextSize.px(font_size))
 	label.add_theme_color_override("font_color", color)
 	label.reset_size()
 	label.pivot_offset = label.size / 2.0
@@ -58,7 +58,7 @@ func _show(label: Label, text: String, color: Color, font_size: int) -> void:
 func _made(font_size: int) -> Label:
 	var label: Label = Label.new()
 	label.theme_type_variation = CommonsTheme.TITLE
-	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_size_override("font_size", TextSize.px(font_size))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ScreenKit.paper_outline(label)
 	label.visible = false

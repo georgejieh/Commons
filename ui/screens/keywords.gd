@@ -113,7 +113,7 @@ static func slip(text: String, title: String = "") -> Control:
 	if not title.is_empty():
 		var head: Label = Label.new()
 		head.text = title
-		head.add_theme_font_size_override("font_size", SLIP_SIZE + 4)
+		head.add_theme_font_size_override("font_size", TextSize.px(SLIP_SIZE + 4))
 		head.add_theme_color_override("font_color", ScreenKit.INK)
 		box.add_child(head)
 	box.add_child(_slip_text(mark(text), SLIP_SIZE, ScreenKit.INK))
@@ -132,7 +132,7 @@ static func _slip_text(bbcode: String, font_size: int, color: Color) -> RichText
 	made.scroll_active = false
 	made.custom_minimum_size = Vector2(SLIP_WIDTH, 0)
 	made.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	made.add_theme_font_size_override("normal_font_size", font_size)
+	made.add_theme_font_size_override("normal_font_size", TextSize.px(font_size))
 	made.add_theme_color_override("default_color", color)
 	made.text = bbcode
 	return made

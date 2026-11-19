@@ -69,7 +69,8 @@ func _ready() -> void:
 	add_child(controller)
 	add_child(switcher)
 	add_child(post)
-	theme = CommonsTheme.build()
+	_apply_text_size()
+	Settings.changed.connect(_on_setting)
 	_wipe.color = CommonsTheme.STYLE.ink
 	_wipe.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_wipe.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -142,6 +143,21 @@ func _play_wipe() -> void:
 	var tween: Tween = _wipe.create_tween()
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_wipe, "modulate:a", 0.0, UiMotion.PRESETS.wipe_time)
+
+
+## A new text size (ADR 0034) reaches everything drawn from the theme at once; pieces that
+## set their own sizes take it when their screen is built again.
+## The project's fallback theme takes the size too, for anything drawn outside the app.
+func _on_setting(key: String) -> void:
+	if key == TextSize.SETTING:
+		_apply_text_size()
+
+
+func _apply_text_size() -> void:
+	theme = CommonsTheme.build()
+	var fallback: Theme = ThemeDB.get_project_theme()
+	if fallback != null:
+		fallback.default_font_size = TextSize.px(CommonsTheme.STYLE.body_size)
 
 
 ## Goes back one screen. Returns false at the bottom of the stack.

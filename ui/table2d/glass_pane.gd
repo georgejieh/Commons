@@ -38,7 +38,7 @@ func _ready() -> void:
 	visible = false
 	_slip.add_theme_stylebox_override("panel", ScreenKit.paper_style(SLIP_PADDING))
 	_slip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_words.add_theme_font_size_override("font_size", SLIP_SIZE)
+	_words.add_theme_font_size_override("font_size", TextSize.px(SLIP_SIZE))
 	_words.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_words.add_theme_color_override("font_color", ScreenKit.INK)
 	_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

@@ -26,8 +26,8 @@ func _init() -> void:
 	_lines.fit_content = true
 	_lines.scroll_active = false
 	_lines.mouse_filter = Control.MOUSE_FILTER_PASS
-	_lines.add_theme_font_size_override("normal_font_size", FONT_SIZE)
-	_lines.add_theme_font_size_override("bold_font_size", FONT_SIZE)
+	_lines.add_theme_font_size_override("normal_font_size", TextSize.px(FONT_SIZE))
+	_lines.add_theme_font_size_override("bold_font_size", TextSize.px(FONT_SIZE))
 	_lines.add_theme_font_override("bold_font", ScreenKit.DISPLAY_BOLD)
 	_lines.add_theme_color_override("default_color", ScreenKit.INK)
 	add_child(_lines)
@@ -83,7 +83,7 @@ func _table_rules(controller: RunController) -> PackedStringArray:
 func _add_group(rows: PackedStringArray, head_key: String, group: PackedStringArray) -> void:
 	if group.is_empty():
 		return
-	rows.append("[font_size=%d]%s[/font_size]" % [HEAD_SIZE, tr(head_key).to_upper()])
+	rows.append("[font_size=%d]%s[/font_size]" % [TextSize.px(HEAD_SIZE), tr(head_key).to_upper()])
 	rows.append_array(group)
 
 

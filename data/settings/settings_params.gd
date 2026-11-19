@@ -18,3 +18,14 @@ extends Resource
 @export var content_note_seen: bool = false
 ## The card back design chosen (ADR 0025): cosmetic, per player.
 @export var card_back: String = "sunrise"
+## The text size chosen (ADR 0034): an index into text_scales, 0 for Standard.
+@export var text_size: int = 0
+
+@export_group("Text size")
+## What each text size multiplies every font size by: Standard, Large, Largest. Not saved.
+@export var text_scales: Array[float] = [1.0, 1.15, 1.3]
+## The least font size, in canvas pixels, anything the player reads is set at. Not saved.
+@export var least_text_px: int = 14
+## Display type holds (ADR 0034): a base size this large or larger, the title and
+## headline steps and the ending's title, does not grow. Not saved.
+@export var display_text_px: int = 40

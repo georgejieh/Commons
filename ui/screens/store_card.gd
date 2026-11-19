@@ -72,11 +72,12 @@ static func words(title: String, rule: String) -> Control:
 	words.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var name: Label = ScreenKit.label(title, NAME_SIZE)
 	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	NameFit.apply(name, title, StoreScreen.CARD.x - 48.0, NAME_SIZE, NameFit.LEAST)
+	var wide: float = StoreScreen.CARD.x - 48.0
+	NameFit.apply(name, title, wide, TextSize.px(NAME_SIZE), TextSize.least(NameFit.LEAST))
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	words.add_child(name)
 	var rules: KeywordText = KeywordText.new()
-	rules.add_theme_font_size_override("normal_font_size", RULE_SIZE)
+	rules.add_theme_font_size_override("normal_font_size", TextSize.px(RULE_SIZE))
 	rules.add_theme_color_override("default_color", ScreenKit.INK)
 	rules.set_rule(rule)
 	words.add_child(rules)

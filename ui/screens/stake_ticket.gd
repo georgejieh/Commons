@@ -43,7 +43,8 @@ func _init(stake_number: int, unlocked: bool, words: String) -> void:
 	var ink: Color = BowlGrime.faded(INK, BowlGrime.wear())
 	_words = ScreenKit.label("", NAME_SIZE if unlocked else LINE_SIZE, ink)
 	var wide: float = SIZE.x - WORDS_LEFT - WORDS_RIGHT
-	NameFit.apply(_words, words, wide, NAME_SIZE if unlocked else LINE_SIZE, NameFit.LEAST)
+	var base: int = TextSize.px(NAME_SIZE if unlocked else LINE_SIZE)
+	NameFit.apply(_words, words, wide, base, TextSize.least(NameFit.LEAST))
 	_words.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_words.mouse_filter = Control.MOUSE_FILTER_IGNORE

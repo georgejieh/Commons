@@ -40,6 +40,8 @@ const TINTS: Dictionary[int, Color] = {
 	2: Color("b7c3e0"),
 }
 const TAG_SIZE: int = 22
+## The name tag's height at Standard; it grows with the text.
+const TAG_TALL: float = 32.0
 ## Pip places on a die, as fractions of its side from the middle.
 const PIPS: Dictionary[int, Array] = {
 	1: [Vector2(0, 0)],
@@ -317,16 +319,20 @@ func _draw_tag(index: int, middle: Vector2, scale_now: float, alpha: float) -> v
 	var text: String = _names[index] if index < _names.size() else ""
 	if text.is_empty():
 		return
-	var width: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, TAG_SIZE).x
+	var tag_px: int = TextSize.px(TAG_SIZE)
+	var width: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px).x
 	var at: Vector2 = _rest_at(index, middle, scale_now) + Vector2(0, DIE * 0.95 * scale_now)
-	var box: Rect2 = Rect2(at - Vector2(width / 2.0 + 12.0, 16.0), Vector2(width + 24.0, 32.0))
+	var tall: float = TAG_TALL + tag_px - TAG_SIZE
+	var box: Rect2 = Rect2(
+		at - Vector2(width / 2.0 + 12.0, tall / 2.0), Vector2(width + 24.0, tall)
+	)
 	var shown: float = alpha * clampf(tumble * 3.0, 0.0, 1.0)
 	var paper: Color = BowlGrime.aged(tint_for(_seats[index]), BowlGrime.wear())
 	draw_rect(box, Color(paper, shown))
 	draw_rect(box, Color(PIP_BLACK, shown * 0.6), false, 2.0)
-	var baseline: Vector2 = at + Vector2(-width / 2.0, TAG_SIZE * 0.36)
+	var baseline: Vector2 = at + Vector2(-width / 2.0, tag_px * 0.36)
 	var ink: Color = Color(PIP_BLACK, shown)
-	draw_string(font, baseline, text, HORIZONTAL_ALIGNMENT_LEFT, -1, TAG_SIZE, ink)
+	draw_string(font, baseline, text, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px, ink)
 
 
 ## The face a die shows: changing fast as it is thrown and slower as it settles, then

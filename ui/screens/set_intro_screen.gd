@@ -108,11 +108,11 @@ func _step(controller: RunController, round_index: int, debuff_id: String) -> Co
 		card.add_child(ScreenKit.styled(tr(text_key), CommonsTheme.CAPTION))
 	else:
 		var name: Label = ScreenKit.styled(controller.modifier_name(debuff_id), CommonsTheme.TITLE)
-		name.add_theme_font_size_override("font_size", StoreScreen.NAME_SIZE)
+		name.add_theme_font_size_override("font_size", TextSize.px(StoreScreen.NAME_SIZE))
 		name.add_theme_color_override("font_color", ScreenKit.RED)
 		card.add_child(name)
 		var rule: KeywordText = KeywordText.new()
-		rule.add_theme_font_size_override("normal_font_size", 20)
+		rule.add_theme_font_size_override("normal_font_size", TextSize.px(20))
 		rule.add_theme_color_override("default_color", ScreenKit.INK)
 		rule.set_rule(ScreenKit.rule_text(controller, debuff_id))
 		card.add_child(rule)

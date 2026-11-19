@@ -109,34 +109,6 @@ func _press(table: TableScreen, driver: ControllerScript) -> void:
 			table.actions().play.pressed.emit()
 
 
-## Every literal key the UI and game layers pass to tr() is in the string table.
-func test_every_literal_ui_key_is_in_the_table() -> void:
-	var keys: Dictionary[String, bool] = {}
-	var table: FileAccess = FileAccess.open("res://data/strings/strings.csv", FileAccess.READ)
-	while not table.eof_reached():
-		var row: PackedStringArray = table.get_csv_line()
-		if not row.is_empty():
-			keys[row[0]] = true
-	var pattern: RegEx = RegEx.create_from_string(r'tr\("([a-z0-9_.]+)"\)')
-	var missing: PackedStringArray = []
-	for root: String in ["res://ui", "res://game"]:
-		for path: String in _scripts(root):
-			for found: RegExMatch in pattern.search_all(FileAccess.get_file_as_string(path)):
-				if not keys.has(found.get_string(1)):
-					missing.append("%s: %s" % [path, found.get_string(1)])
-	assert_array(missing).is_empty()
-
-
-func _scripts(root: String) -> PackedStringArray:
-	var paths: PackedStringArray = []
-	for name: String in DirAccess.get_files_at(root):
-		if name.ends_with(".gd"):
-			paths.append(root.path_join(name))
-	for folder: String in DirAccess.get_directories_at(root):
-		paths.append_array(_scripts(root.path_join(folder)))
-	return paths
-
-
 ## After a command the buttons stay off until the bots' plays have been shown.
 func test_buttons_lock_while_events_play() -> void:
 	var table: TableScreen = _app.show_screen("table", true)

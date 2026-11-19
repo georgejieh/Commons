@@ -22,6 +22,11 @@ const SHADE: Color = Color(0.08, 0.06, 0.04, 0.3)
 const HALO_SIZE: int = 10
 ## Page margins and the widest a content column grows.
 const PAGE_MARGIN: int = 88
+## On a page that would overflow at a larger text size, the margin and the gaps between
+## its rows give way first, to this margin and this share of each gap (ADR 0034).
+const LEAST_PAGE_MARGIN: int = 24
+const LEAST_GAP_SHARE: float = 0.5
+const FULL_GAP: StringName = &"full_gap"
 const MIN_BUTTON_WIDTH: int = 260
 ## Space kept around a face in a portrait box, as a share of the head's size per side.
 const FACE_MARGIN: float = 0.12
@@ -47,7 +52,56 @@ static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", STYLE.gap + 8)
 	margin.add_child(column)
+	var make_room: Callable = give_way.bind(root, margin, column)
+	root.resized.connect(make_room)
+	column.minimum_size_changed.connect(make_room)
 	return column
+
+
+## Shrinks a page's margin, then the gaps between its rows, as far as it must for what
+## is on it to fit the screen, and no further than LEAST_PAGE_MARGIN and LEAST_GAP_SHARE.
+## A page that fits keeps its full margin and gaps.
+static func give_way(root: Control, margin: MarginContainer, column: VBoxContainer) -> void:
+	if root.size.x <= 0.0 or root.size.y <= 0.0:
+		return
+	if not column.has_meta(FULL_GAP):
+		column.set_meta(FULL_GAP, column.get_theme_constant("separation"))
+	var full_gap: int = column.get_meta(FULL_GAP)
+	var gaps: int = maxi(_shown_rows(column) - 1, 0)
+	var shown_gap: int = column.get_theme_constant("separation")
+	var need: Vector2 = column.get_combined_minimum_size()
+	var content_tall: float = need.y - shown_gap * gaps
+	var side: int = _room(root.size.x - need.x)
+	var top: int = _room(root.size.y - content_tall - full_gap * gaps)
+	var gap: int = full_gap
+	if gaps > 0 and top == LEAST_PAGE_MARGIN:
+		var spare: float = (root.size.y - content_tall - LEAST_PAGE_MARGIN * 2.0) / gaps
+		var least_gap: int = ceili(full_gap * LEAST_GAP_SHARE)
+		gap = clampi(floori(spare), least_gap, full_gap)
+	_set_constant(margin, "margin_left", side)
+	_set_constant(margin, "margin_right", side)
+	_set_constant(margin, "margin_top", top)
+	_set_constant(margin, "margin_bottom", top)
+	_set_constant(column, "separation", gap)
+
+
+## The margin a side keeps with spare room left over at the full margin.
+static func _room(spare: float) -> int:
+	return clampi(floori(spare / 2.0), LEAST_PAGE_MARGIN, PAGE_MARGIN)
+
+
+static func _shown_rows(column: VBoxContainer) -> int:
+	var rows: int = 0
+	for child: Node in column.get_children():
+		if child is Control and (child as Control).visible:
+			rows += 1
+	return rows
+
+
+## Sets a constant only when it changes, so a layout that settles stays settled.
+static func _set_constant(control: Control, constant: String, value: int) -> void:
+	if control.get_theme_constant(constant) != value:
+		control.add_theme_constant_override(constant, value)
 
 
 ## A full-screen page over a backdrop with its content centered on one sheet, for
@@ -133,12 +187,13 @@ static func styled(text: String, level: String) -> Label:
 	return made
 
 
+## A label of the given Standard size, set at the chosen text size.
 static func label(text: String, font_size: int, color: Color = INK) -> Label:
 	var made: Label = Label.new()
 	made.text = text
 	if font_size >= STYLE.title_size:
 		made.add_theme_font_override("font", DISPLAY_BOLD)
-	made.add_theme_font_size_override("font_size", font_size)
+	made.add_theme_font_size_override("font_size", TextSize.px(font_size))
 	made.add_theme_color_override("font_color", color)
 	made.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return made

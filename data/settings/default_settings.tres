@@ -13,3 +13,7 @@ horror_intensity = 1.0
 no_flash = false
 content_note_seen = false
 card_back = "sunrise"
+text_size = 0
+text_scales = Array[float]([1.0, 1.15, 1.3])
+least_text_px = 14
+display_text_px = 40

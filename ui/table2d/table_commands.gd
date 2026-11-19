@@ -199,6 +199,12 @@ func _toggle_sort() -> void:
 	_show_sort()
 
 
+## Sets the hand's sort, as when the table is built again at a new text size.
+func set_sort(mode: HandView.Sort) -> void:
+	_hand_view.set_sort(mode)
+	_show_sort()
+
+
 func _show_sort() -> void:
 	var mode: String = tr(HandView.SORT_KEYS[_hand_view.sort_mode])
 	_actions.sort.text = tr("action.sort_by").format({"mode": mode})

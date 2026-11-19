@@ -39,7 +39,7 @@ func _ready() -> void:
 	add_child(_dressing)
 	add_child(_dread)
 	_caption.theme_type_variation = CommonsTheme.HEADLINE
-	_caption.add_theme_font_size_override("font_size", CAPTION_SIZE)
+	_caption.add_theme_font_size_override("font_size", TextSize.px(CAPTION_SIZE))
 	_caption.add_theme_color_override("font_color", ScreenKit.INK)
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(CAPTION_PADDING))
@@ -51,6 +51,7 @@ func _ready() -> void:
 
 ## Shows the room with meter at value for seconds, from the true famine and denunciation.
 func play(post: ShaderMaterial, meter: String, value: int, truth: Vector2i, seconds: float) -> void:
+	_caption.add_theme_font_size_override("font_size", TextSize.px(CAPTION_SIZE))
 	if not _set_up:
 		_set_up = true
 		var materials: Dictionary[String, ShaderMaterial] = DreadLayers.table_materials(

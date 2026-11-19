@@ -29,6 +29,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
 	get_tree().root.size = _was_size
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
@@ -215,25 +216,38 @@ func test_the_longest_notice_fits_the_screen() -> void:
 		longest.dark.append(figure)
 	longest.norm_added = 900
 	longest.price_added = 900
-	await _send(longest)
-	for screen_size: Vector2i in SIZES:
-		get_tree().root.size = screen_size
-		await await_idle_frame()
-		await await_idle_frame()
-		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
-		# The notice covers the whole screen, so nothing under it takes a click, and its
-		# sheet sits in the middle.
-		var whole: Rect2 = get_tree().root.get_visible_rect()
-		assert_bool(_app.notice.get_global_rect().grow(SLACK).encloses(whole)).is_true()
-		var sheet: Rect2 = _app.notice.acknowledge_button().get_parent_control().get_global_rect()
-		var off: Vector2 = sheet.get_center() - whole.get_center()
-		assert_float(absf(off.x)).override_failure_message(str(sheet)).is_less(4.0)
-		assert_float(absf(off.y)).override_failure_message(str(sheet)).is_less(4.0)
-		for node: Node in _app.notice.find_children("*", "Control", true, false):
-			var control: Control = node as Control
-			if not control.is_visible_in_tree() or control is ColorRect:
-				continue
-			var rect: Rect2 = control.get_global_rect()
-			var where: String = "%s %s at %s" % [screen_size, control.get_path(), rect]
-			assert_bool(screen.encloses(rect)).override_failure_message(where).is_true()
-	await _key(KEY_ENTER)
+	for level: int in TextSize.count():
+		Settings.set_value(TextSize.SETTING, level)
+		# The notice takes the text size as it is shown.
+		await _send(longest)
+		for screen_size: Vector2i in SIZES:
+			get_tree().root.size = screen_size
+			await await_idle_frame()
+			await await_idle_frame()
+			var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+			# The notice covers the whole screen, so nothing under it takes a click, and its
+			# sheet sits in the middle.
+			var whole: Rect2 = get_tree().root.get_visible_rect()
+			assert_bool(_app.notice.get_global_rect().grow(SLACK).encloses(whole)).is_true()
+			var sheet: Rect2 = (
+				_app.notice.acknowledge_button().get_parent_control().get_global_rect()
+			)
+			var off: Vector2 = sheet.get_center() - whole.get_center()
+			assert_float(absf(off.x)).override_failure_message(str(sheet)).is_less(4.0)
+			assert_float(absf(off.y)).override_failure_message(str(sheet)).is_less(4.0)
+			for node: Node in _app.notice.find_children("*", "Control", true, false):
+				var control: Control = node as Control
+				if not control.is_visible_in_tree() or control is ColorRect:
+					continue
+				var rect: Rect2 = control.get_global_rect()
+				var where: String = "%s %s at %s" % [screen_size, control.get_path(), rect]
+				assert_bool(screen.encloses(rect)).override_failure_message(where).is_true()
+			_clips(_app.notice, str(screen_size))
+		await _key(KEY_ENTER)
+
+
+## Nothing under root clips, as ClipCheck says (ADR 0034).
+func _clips(root: Node, where: String) -> void:
+	var problems: PackedStringArray = []
+	ClipCheck.check(root, "%s at text size %d" % [where, TextSize.level()], problems)
+	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()

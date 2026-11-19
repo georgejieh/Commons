@@ -2,7 +2,8 @@ class_name CommonsTheme
 extends RefCounted
 ## Builds the demo's component theme from UiStyle tokens: ticket buttons in four kinds,
 ## a gold focus ring, paper sheets, meters, form controls and a type scale. Screens pick
-## a kind with theme_type_variation; nothing styles itself by hand.
+## a kind with theme_type_variation; nothing styles itself by hand. Its font sizes come
+## from TextSize, so the app builds it again when the text size changes.
 
 const STYLE: UiStyle = preload("res://data/ui/ui_style.tres")
 const MEDIUM: FontVariation = preload("res://ui/theme/oswald_medium.tres")
@@ -37,7 +38,7 @@ static var _stock: ImageTexture = null
 static func build() -> Theme:
 	var theme: Theme = Theme.new()
 	theme.default_font = MEDIUM
-	theme.default_font_size = STYLE.body_size
+	theme.default_font_size = TextSize.px(STYLE.body_size)
 	_buttons(theme)
 	_labels(theme)
 	_sheet(theme)
@@ -65,7 +66,7 @@ static func _buttons(theme: Theme) -> void:
 		theme.set_stylebox("disabled", name, _ticket(Color(ink, DISABLED_ALPHA), false))
 		theme.set_stylebox("focus", name, _focus_ring())
 		theme.set_font("font", name, BOLD)
-		theme.set_font_size("font_size", name, STYLE.button_size)
+		theme.set_font_size("font_size", name, TextSize.px(STYLE.button_size))
 		for state: String in ["font_color", "font_hover_color", "font_pressed_color"]:
 			theme.set_color(state, name, text)
 		theme.set_color("font_hover_pressed_color", name, text)
@@ -110,7 +111,7 @@ static func _labels(theme: Theme) -> void:
 		var name: String = level[0]
 		theme.set_type_variation(name, "Label")
 		theme.set_font("font", name, level[1])
-		theme.set_font_size("font_size", name, level[2])
+		theme.set_font_size("font_size", name, TextSize.px(level[2]))
 		theme.set_color("font_color", name, level[3])
 
 
@@ -157,6 +158,9 @@ static func _controls(theme: Theme) -> void:
 	theme.set_icon("grabber_disabled", "HSlider", _seal(STYLE.ink_soft))
 	theme.set_icon("unchecked", "CheckBox", _check_box(false))
 	theme.set_icon("checked", "CheckBox", _check_box(true))
+	# A choice of one in a group (the text size) is the same box.
+	theme.set_icon("radio_unchecked", "CheckBox", _check_box(false))
+	theme.set_icon("radio_checked", "CheckBox", _check_box(true))
 	theme.set_constant("h_separation", "CheckBox", 12)
 	theme.set_stylebox("focus", "HSlider", _focus_ring())
 	theme.set_stylebox("focus", "CheckBox", _focus_ring())
@@ -172,7 +176,7 @@ static func _controls(theme: Theme) -> void:
 	theme.set_color("font_color", "CheckBox", STYLE.ink)
 	theme.set_color("font_hover_color", "CheckBox", STYLE.vermilion)
 	theme.set_color("font_pressed_color", "CheckBox", STYLE.ink)
-	theme.set_font_size("font_size", "CheckBox", STYLE.body_size + 4)
+	theme.set_font_size("font_size", "CheckBox", TextSize.px(STYLE.body_size + 4))
 	var field: StyleBoxFlat = StyleBoxFlat.new()
 	field.bg_color = STYLE.paper_bright
 	field.border_color = STYLE.ink

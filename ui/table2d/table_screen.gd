@@ -58,6 +58,7 @@ var _campaigns: TableCampaigns = TableCampaigns.new()
 var _debuff_beats: DebuffMoments = DebuffMoments.new()
 var _tutorial: TableTutorial = TableTutorial.new()
 var _wild: TableWild = TableWild.new()
+var _resize: TableResize = TableResize.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -88,13 +89,14 @@ func _ready() -> void:
 	_place(_debuffs, Vector2(PLAY_CENTER - 298.0, 284), Vector2(596, 0))
 	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
 	_you.theme_type_variation = CommonsTheme.TITLE
-	_you.add_theme_font_size_override("font_size", 28)
+	_you.add_theme_font_size_override("font_size", TextSize.px(28))
 	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
 	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
+	_pause.at_table = true
 	for sheet: Control in [_cheat_sheet, _pause]:
 		add_child(sheet)
 		sheet.set_deferred("size", Vector2(1920, 1080))
@@ -160,6 +162,7 @@ func open(app: DemoApp) -> void:
 	# The events wait behind the books' notice until it is acknowledged (ADR 0022).
 	app.notice.hold(_player)
 	_pause.wire(app)
+	_resize.setup(self, app, _pause)
 	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
 	_input.tray = _campaigns.tray
 	_wild.setup(_hand_view, _pile, _debuffs, _moments, _player, _commands, _input)
@@ -198,6 +201,15 @@ func actions() -> ActionBar:
 
 func need_panel() -> NeedPanel:
 	return _need_panel
+
+
+## The hand's sort, kept when the table is built again at a new text size (ADR 0034).
+func sort_mode() -> HandView.Sort:
+	return _hand_view.sort_mode
+
+
+func keep_sort(mode: HandView.Sort) -> void:
+	_commands.set_sort(mode)
 
 
 ## What the arrival's slip points at on the table (ADR 0026).
@@ -256,6 +268,7 @@ func _on_event(event: RunEvent) -> void:
 	_campaigns.on_event(event, _replaying or _player.flushing)
 	_moments.on_event(event, _replaying or _player.flushing)
 	_wild.on_event(event, _replaying or _player.flushing)
+	_resize.on_event(event)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
@@ -339,6 +352,7 @@ func _on_drained() -> void:
 	_campaigns.refresh()
 	_commands.refresh()
 	_tutorial.settled(awaiting)
+	_resize.drained(awaiting)
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
 	elif awaiting == RunController.AWAIT_SWAP:

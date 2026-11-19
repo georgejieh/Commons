@@ -118,6 +118,56 @@ func show_directive(controller: RunController, directive_id: String) -> void:
 	item.custom_minimum_size = item_size
 	item.clip_contents = true
 	_place.add_child(item)
+	# Measured where the theme reaches it, so the sizes are the ones it is drawn at.
+	_fit_lines(sheet, name)
+
+
+## The document is a place of a fixed size: its Rate lines grow with the text size only
+## while the whole document still fits it (ADR 0034).
+## When the lines at their Standard size still do not fit, the name is set smaller, down
+## to the size it has at Standard.
+func _fit_lines(sheet: VBoxContainer, name: Label) -> void:
+	var wide: float = item_size.x - DOCUMENT_PADDING * 2.0
+	var fits: Callable = func(font_size: int) -> bool:
+		for line: Label in lines:
+			line.add_theme_font_size_override("font_size", font_size)
+		return _document_height(sheet, wide) <= item_size.y
+	var line_px: int = TextSize.fit(LINE_SIZE, LINE_SIZE, fits)
+	fits.call(line_px)
+	var font: Font = name.get_theme_font("font")
+	var least: int = _one_line_size(font, name.text, item_size.x - DOCUMENT_INSET, NAME_SIZE)
+	var name_px: int = name.get_theme_font_size("font_size")
+	while name_px > least and _document_height(sheet, wide) > item_size.y:
+		name_px -= 1
+		name.add_theme_font_size_override("font_size", maxi(name_px, TextSize.least(least)))
+
+
+## How tall the document's column stands with its wrapped lines set wide, before it is
+## laid out: its pieces, the gaps between them and its padding.
+func _document_height(sheet: VBoxContainer, wide: float) -> float:
+	var tall: float = DOCUMENT_PADDING * 2.0
+	var gap: float = float(sheet.get_theme_constant("separation"))
+	for child: Node in sheet.get_children():
+		var piece: Control = child as Control
+		var label: Label = piece as Label
+		if label != null and label.autowrap_mode != TextServer.AUTOWRAP_OFF:
+			tall += wrapped_height(label, wide) + gap
+		else:
+			tall += piece.get_combined_minimum_size().y + gap
+	return tall - gap
+
+
+## How tall a label wrapping between words stands at width wide, from its font.
+static func wrapped_height(label: Label, wide: float) -> float:
+	var font: Font = label.get_theme_font("font")
+	var font_size: int = label.get_theme_font_size("font_size")
+	var spacing: float = float(label.get_theme_constant("line_spacing"))
+	var flags: int = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND
+	var block: Vector2 = font.get_multiline_string_size(
+		label.text, HORIZONTAL_ALIGNMENT_LEFT, wide, font_size, -1, flags
+	)
+	var rows: int = maxi(roundi(block.y / font.get_height(font_size)), 1)
+	return rows * font.get_height(font_size) + (rows - 1) * spacing
 
 
 ## Sets a Directive's name on one line where a size from NAME_SIZE down to
@@ -125,13 +175,19 @@ func show_directive(controller: RunController, directive_id: String) -> void:
 ## between words at the least size.
 func _fit_one_line(name: Label, wide: float) -> void:
 	var font: Font = name.get_theme_font("font")
-	var font_size: int = NAME_SIZE
+	var font_size: int = _one_line_size(font, title, wide, TextSize.px(NAME_SIZE))
+	NameFit.apply(name, title, wide, font_size, TextSize.least(NameFit.LEAST))
+
+
+## The largest size from start down to DOCUMENT_NAME_LEAST at which text keeps to one line.
+static func _one_line_size(font: Font, text: String, wide: float, start: int) -> int:
+	var font_size: int = start
 	while (
-		font_size > DOCUMENT_NAME_LEAST
-		and font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > wide
+		font_size > TextSize.least(DOCUMENT_NAME_LEAST)
+		and font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > wide
 	):
 		font_size -= 1
-	NameFit.apply(name, title, wide, font_size, NameFit.LEAST)
+	return font_size
 
 
 ## A Campaign: its leaflet, as the tray holds it, as large as the place allows.

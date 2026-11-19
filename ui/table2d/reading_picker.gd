@@ -66,7 +66,7 @@ func open(readings: Array[Pattern]) -> void:
 		var kind: String = CommonsTheme.PRIMARY if index == 0 else CommonsTheme.SECONDARY
 		var button: Button = ScreenKit.button(words[index], kind)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.add_theme_font_size_override("font_size", FONT_SIZE)
+		button.add_theme_font_size_override("font_size", TextSize.px(FONT_SIZE))
 		button.focus_mode = Control.FOCUS_ALL
 		button.pressed.connect(_choose.bind(index))
 		_list.add_child(button)

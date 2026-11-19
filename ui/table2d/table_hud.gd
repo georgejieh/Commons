@@ -19,6 +19,7 @@ const METER_BAR: Vector2 = Vector2(150, 18)
 const SEAL_WIDTH: float = 92.0
 ## The size of "None reported" where a meter's bar would be.
 const NONE_SIZE: int = 18
+const STATUS_SIZE: int = 26
 ## Seconds a bar takes to reach a new value.
 const FILL_TIME: float = 0.6
 const QUOTA: String = "quota"
@@ -54,22 +55,23 @@ func _ready() -> void:
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 24)
 	status.add_theme_color_override("font_color", PAPER)
-	status.add_theme_font_size_override("font_size", 26)
+	status.add_theme_font_size_override("font_size", TextSize.px(STATUS_SIZE))
 	status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	status.clip_text = true
+	status.resized.connect(_fit_status)
 	row.add_child(status)
 	row.add_child(_quota_box())
 	row.add_child(_meter(FAMINE, famine, GRAIN, ScreenKit.ART.icon_famine))
 	row.add_child(_meter(DENUNCIATION, denunciation, ZEAL, ScreenKit.ART.icon_denunciation))
 	row.add_child(_icon(ScreenKit.ART.icon_coupon))
 	coupons.add_theme_color_override("font_color", COUPON)
-	coupons.add_theme_font_size_override("font_size", 26)
+	coupons.add_theme_font_size_override("font_size", TextSize.px(26))
 	coupons.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	row.add_child(coupons)
 	menu.text = tr("pause.open")
 	menu.theme_type_variation = CommonsTheme.GHOST
-	menu.add_theme_font_size_override("font_size", 18)
+	menu.add_theme_font_size_override("font_size", TextSize.px(18))
 	menu.tooltip_text = tr("pause.open_tip")
 	UiMotion.hoverable(menu)
 	row.add_child(menu)
@@ -91,12 +93,26 @@ func show_state(state: RunState, rounds: int) -> void:
 		)
 	)
 	coupons.text = ShownFigures.coupons(state.coupons, "table.coupons")
+	_fit_status()
 	_state = state
 	quota.show_as(QuotaBar.mode_for(state))
 	for meter: String in _bars:
 		var shown: bool = ShownFigures.is_true(state, meter)
 		_bars[meter].visible = shown
 		_none[meter].visible = not shown
+
+
+## The bar is of a fixed size: where you are grows with the text size only while it
+## fits the room the bar leaves it (ADR 0034).
+func _fit_status() -> void:
+	var font: Font = ScreenKit.DISPLAY_BOLD
+	var room: float = status.size.x
+	var fits: Callable = func(font_size: int) -> bool:
+		var line: Vector2 = font.get_string_size(
+			status.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size
+		)
+		return line.x <= room
+	status.add_theme_font_size_override("font_size", TextSize.fit(STATUS_SIZE, STATUS_SIZE, fits))
 
 
 ## True while a meter is shown as it is, so its changes may be signalled.
@@ -235,7 +251,7 @@ func _meter(meter: String, bar: ProgressBar, color: Color, icon: Texture2D) -> H
 	none.text = ShownFigures.none_reported()
 	none.custom_minimum_size = Vector2(METER_BAR.x, 0)
 	none.add_theme_color_override("font_color", PAPER)
-	none.add_theme_font_size_override("font_size", NONE_SIZE)
+	none.add_theme_font_size_override("font_size", TextSize.px(NONE_SIZE))
 	none.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	none.visible = false
 	box.add_child(none)

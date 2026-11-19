@@ -4,6 +4,9 @@ extends RefCounted
 ## and when one word is wider than the paper the type shrinks until it fits, never below
 ## a floor. Every paper that prints a name goes through here: Campaign leaflets, counter
 ## panels, envelope choices, shop Cadre cards, the collection and the notice board.
+## Callers hand it sizes from TextSize: the base as TextSize.px and the floor as
+## TextSize.least, so a name grows with the text size and never sets smaller than at
+## Standard.
 
 ## The least a name is set at on full-size paper; compact papers set their own floor.
 const LEAST: int = 16

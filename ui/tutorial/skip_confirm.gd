@@ -8,7 +8,9 @@ signal skipped
 signal stayed
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.7)
+const QUESTION_SIZE: int = 28
 
+var _question: Label
 var _stay: Button
 var _skip: Button
 var _before: Control = null
@@ -28,7 +30,8 @@ func _ready() -> void:
 	add_child(center)
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(460, 0))
 	sheet.add_theme_constant_override("separation", 14)
-	sheet.add_child(ScreenKit.label(tr("tutorial.skip.confirm"), 28, ScreenKit.INK))
+	_question = ScreenKit.label(tr("tutorial.skip.confirm"), QUESTION_SIZE, ScreenKit.INK)
+	sheet.add_child(_question)
 	_stay = ScreenKit.button(tr("tutorial.skip.no"), CommonsTheme.PRIMARY)
 	_stay.pressed.connect(_answer.bind(false))
 	_skip = ScreenKit.button(tr("tutorial.skip.yes"), CommonsTheme.GHOST)
@@ -40,7 +43,9 @@ func _ready() -> void:
 	visible = false
 
 
+## Asks, at the text size chosen now: the question outlives screens.
 func ask() -> void:
+	_question.add_theme_font_size_override("font_size", TextSize.px(QUESTION_SIZE))
 	_before = get_viewport().gui_get_focus_owner()
 	visible = true
 	move_to_front()

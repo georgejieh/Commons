@@ -39,6 +39,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
 	get_tree().root.size = _was_size
 	Settings.set_value("reduced_motion", _was_reduced)
 	Saves.run_service().delete()
@@ -112,7 +113,7 @@ func _check_type(screen: EndingScreen, view: EndingView, where: String) -> void:
 			assert_int(font_size).override_failure_message(where).is_greater_equal(20)
 			assert_object(label.get_theme_color("font_color")).is_equal(ScreenKit.INK)
 		elif label.text == view.note:
-			assert_int(font_size).is_equal(16)
+			assert_int(font_size).is_equal(TextSize.px(EndingScreen.NOTE_SIZE))
 			assert_object(label.get_theme_color("font_color")).is_equal(ScreenKit.INK)
 		elif label.is_visible_in_tree() and not label.text.is_empty():
 			assert_int(font_size).override_failure_message(label.text).is_greater_equal(READABLE)
@@ -122,32 +123,35 @@ func _check_type(screen: EndingScreen, view: EndingView, where: String) -> void:
 
 func test_every_ending_and_death_fits_both_screens_with_a_full_village() -> void:
 	Settings.set_value("reduced_motion", true)
-	for screen_size: Vector2i in SIZES:
-		get_tree().root.size = screen_size
-		for outcome: String in CASES:
-			var screen: EndingScreen = _finish(outcome)
-			await await_idle_frame()
-			await await_idle_frame()
-			var where: String = "%s %s" % [outcome, screen_size]
-			var view: EndingView = _app.controller.ending()
-			assert_str(view.id).override_failure_message(where).is_equal(outcome)
-			_check_inside(screen, where)
-			_check_type(screen, view, where)
-			var list: EpilogueList = screen.epilogue()
-			if view.death:
-				assert_object(list).override_failure_message(where).is_null()
-				continue
-			# Twelve living families on five shared lines (warm, wary, bitter and the two
-			# states), and the dead named on the two roll-call endings.
-			var roll_call: bool = outcome == "lean_years" or outcome == "full_granary"
-			assert_int(list.line_labels().size()).is_equal(5 + (1 if roll_call else 0))
-			var bar: VScrollBar = list.get_v_scroll_bar()
-			if bar.max_value > bar.page + 1.0:
-				assert_bool(list.can_scroll()).override_failure_message(where).is_true()
-			else:
-				for label: Label in list.line_labels():
-					var rect: Rect2 = label.get_global_rect()
-					assert_bool(list.get_global_rect().grow(SLACK).encloses(rect)).is_true()
+	for level: int in TextSize.count():
+		Settings.set_value(TextSize.SETTING, level)
+		for screen_size: Vector2i in SIZES:
+			get_tree().root.size = screen_size
+			for outcome: String in CASES:
+				var screen: EndingScreen = _finish(outcome)
+				await await_idle_frame()
+				await await_idle_frame()
+				var where: String = "%s %s" % [outcome, screen_size]
+				var view: EndingView = _app.controller.ending()
+				assert_str(view.id).override_failure_message(where).is_equal(outcome)
+				_check_inside(screen, where)
+				_check_type(screen, view, where)
+				_clips(screen, where)
+				var list: EpilogueList = screen.epilogue()
+				if view.death:
+					assert_object(list).override_failure_message(where).is_null()
+					continue
+				# Twelve living families on five shared lines (warm, wary, bitter and the two
+				# states), and the dead named on the two roll-call endings.
+				var roll_call: bool = outcome == "lean_years" or outcome == "full_granary"
+				assert_int(list.line_labels().size()).is_equal(5 + (1 if roll_call else 0))
+				var bar: VScrollBar = list.get_v_scroll_bar()
+				if bar.max_value > bar.page + 1.0:
+					assert_bool(list.can_scroll()).override_failure_message(where).is_true()
+				else:
+					for label: Label in list.line_labels():
+						var rect: Rect2 = label.get_global_rect()
+						assert_bool(list.get_global_rect().grow(SLACK).encloses(rect)).is_true()
 
 
 func test_the_note_shows_only_under_the_secret_contract_and_the_commons() -> void:
@@ -221,10 +225,11 @@ func test_a_deaths_column_is_centred_on_the_sheet() -> void:
 	for frame: int in 4:
 		await await_idle_frame()
 	var heading: Control = screen.get("_heading")
+	# The story is centred in its scroll, which fills the columns (ADR 0034).
 	var story: Control = heading
-	while story != null and not (story.get_parent() is HBoxContainer):
+	while story != null and not (story.get_parent() is CenterContainer):
 		story = story.get_parent() as Control
-	var columns: Control = story.get_parent() as Control
+	var columns: Control = screen.story_scroll()
 	var above: float = story.global_position.y - columns.global_position.y
 	var below: float = columns.get_global_rect().end.y - story.get_global_rect().end.y
 	assert_float(above).is_greater(0.0)
@@ -329,3 +334,10 @@ func test_an_ending_without_art_sets_its_title_in_the_frame() -> void:
 	assert_int(screen.find_children("*", "ArtFrame", true, false).size()).is_equal(1)
 	# No face here holds the seal's characters, so Struggled's seal is left out, not boxed.
 	assert_bool(HanziSeal.can_draw("斗地主")).is_equal(ScreenKit.ART.hanzi_font != null)
+
+
+## Nothing under root clips, as ClipCheck says (ADR 0034).
+func _clips(root: Node, where: String) -> void:
+	var problems: PackedStringArray = []
+	ClipCheck.check(root, "%s at text size %d" % [where, TextSize.level()], problems)
+	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()

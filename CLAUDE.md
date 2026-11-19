@@ -108,6 +108,7 @@ Dependencies run `ui` → `game` → `core`. `core` may read `data` definitions.
 - All randomness goes through the seeded stream service. Global random functions and array shuffle are forbidden in `core/`.
 - Every tunable number lives in data Resources. Structural constants are named constants.
 - Every player-facing string lives in one English string table and is referenced by key. The game is English only.
+- Every font size in `ui/` goes through `TextSize.px` (ADR 0034); art that holds a letter keeps its size.
 - One class per file, files under about 400 lines, functions under about 50 lines, composition over inheritance. Exceeding a limit needs a one-line justification comment.
 - Build only what a checklist item asks for. No abstraction until a second concrete use exists.
 - Check Godot built-ins first, then a vetted add-on, then custom code. Vendor add-ons in `addons/` at a pinned version and record them in `docs/DEPENDENCIES.md`.

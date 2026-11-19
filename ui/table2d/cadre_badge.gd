@@ -10,7 +10,9 @@ const COUNT_SIZE: int = 21
 ## A name is set at NAME_SIZE, smaller only as far as its longest word needs to fit the
 ## card's width, and never below LEAST_NAME. Nothing is abbreviated or clipped.
 const NAME_SIZE: int = 16
-const LEAST_NAME: int = 13
+const LEAST_NAME: int = 14
+## Room kept between the count and the ticket's edges, in pixels.
+const COUNT_PAD: Vector2 = Vector2(12, 2)
 const NAME_MARGIN: float = 5.0
 const INK: Color = Color("1e1a16")
 const BAND: Color = Color("3f6338")
@@ -41,7 +43,17 @@ func count() -> String:
 
 ## The size a name is set at to fit wide: each word on one line.
 static func name_size(font: Font, text: String, wide: float) -> int:
-	return NameFit.size_for(font, text, wide, NAME_SIZE, LEAST_NAME)
+	return NameFit.size_for(font, text, wide, TextSize.px(NAME_SIZE), TextSize.least(LEAST_NAME))
+
+
+## The count's size: grown with the text size as far as the ticket holds it.
+static func count_size(font: Font, text: String) -> int:
+	var fits: Callable = func(font_size: int) -> bool:
+		var wide: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		return (
+			wide <= TICKET.x - COUNT_PAD.x and font.get_height(font_size) <= TICKET.y + COUNT_PAD.y
+		)
+	return TextSize.fit(COUNT_SIZE, COUNT_SIZE, fits)
 
 
 func _draw() -> void:
@@ -60,4 +72,5 @@ func _draw() -> void:
 	var at: Vector2 = Vector2((size.x - TICKET.x) / 2.0, size.y - TICKET.y - 4.0)
 	PaperTicket.draw(self, Rect2(at, TICKET), worn, _count.hash() & 0xFF, BAND)
 	var baseline: Vector2 = at + Vector2(6, TICKET.y * 0.72)
-	draw_string(font, baseline, _count, HORIZONTAL_ALIGNMENT_CENTER, TICKET.x - 6, COUNT_SIZE, ink)
+	var count_px: int = count_size(font, _count)
+	draw_string(font, baseline, _count, HORIZONTAL_ALIGNMENT_CENTER, TICKET.x - 6, count_px, ink)

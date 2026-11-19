@@ -116,6 +116,9 @@ func _show_next() -> void:
 	_eyebrow.text = _shown.eyebrow.to_upper()
 	_title.text = _shown.title
 	_body.text = _shown.body
+	# The notice outlives screens, so it takes the text size chosen now.
+	_body.add_theme_font_size_override("font_size", TextSize.px(BODY_SIZE))
+	_filed.add_theme_font_size_override("font_size", TextSize.px(LINE_SIZE))
 	for child: Node in _lines.get_children():
 		_lines.remove_child(child)
 		child.queue_free()

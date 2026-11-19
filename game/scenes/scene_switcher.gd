@@ -47,6 +47,12 @@ func back() -> bool:
 	return true
 
 
+## Builds the screen on top of the stack again, keeping the stack. Returns the new one.
+func reload() -> Node:
+	assert(not _stack.is_empty(), "No screen to reload")
+	return _show(_stack[-1])
+
+
 func _show(screen_id: String) -> Node:
 	assert(_screens.has(screen_id), "Unknown screen")
 	if _current != null:

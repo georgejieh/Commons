@@ -26,6 +26,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
 	get_tree().root.size = _was_size
 	Settings.set_value("reduced_motion", false)
 	Saves.run_service().delete()
@@ -53,63 +54,73 @@ func _inside(control: Control, where: String) -> void:
 
 
 func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
-	for screen_size: Vector2i in SIZES:
-		get_tree().root.size = screen_size
-		for debuff: ModifierDef in DebuffScript.POOL.debuffs:
-			_ladder(debuff.id)
-			var intro: Control = _app.show_screen("set_intro", true)
-			await await_idle_frame()
-			await await_idle_frame()
-			var where: String = "%s %s" % [debuff.id, screen_size]
-			var name: String = _app.controller.modifier_name(debuff.id)
-			var rule: String = _app.controller.modifier_text(debuff.id)
-			var named: bool = false
-			for node: Node in intro.find_children("*", "Label", true, false):
-				var label: Label = node
-				if label.text == name:
-					named = true
-					assert_int(label.get_theme_font_size("font_size")).is_greater_equal(READABLE)
-					_inside(label, where)
-			assert_bool(named).override_failure_message(where).is_true()
-			var ruled: bool = false
-			for node: Node in intro.find_children("*", "KeywordText", true, false):
-				var text: KeywordText = node
-				if text.get_parsed_text() == rule:
-					ruled = true
-					assert_int(text.get_theme_font_size("normal_font_size")).is_greater_equal(
-						READABLE
-					)
-					var ink: Color = text.get_theme_color("default_color")
-					assert_float(ink.get_luminance()).override_failure_message(where).is_less(0.3)
-					_inside(text, where)
-			assert_bool(ruled).override_failure_message(where).is_true()
+	for level: int in TextSize.count():
+		Settings.set_value(TextSize.SETTING, level)
+		for screen_size: Vector2i in SIZES:
+			get_tree().root.size = screen_size
+			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
+				_ladder(debuff.id)
+				var intro: Control = _app.show_screen("set_intro", true)
+				await await_idle_frame()
+				await await_idle_frame()
+				var where: String = "%s %s" % [debuff.id, screen_size]
+				var name: String = _app.controller.modifier_name(debuff.id)
+				var rule: String = _app.controller.modifier_text(debuff.id)
+				var named: bool = false
+				for node: Node in intro.find_children("*", "Label", true, false):
+					var label: Label = node
+					if label.text == name:
+						named = true
+						assert_int(label.get_theme_font_size("font_size")).is_greater_equal(
+							READABLE
+						)
+						_inside(label, where)
+				assert_bool(named).override_failure_message(where).is_true()
+				var ruled: bool = false
+				for node: Node in intro.find_children("*", "KeywordText", true, false):
+					var text: KeywordText = node
+					if text.get_parsed_text() == rule:
+						ruled = true
+						assert_int(text.get_theme_font_size("normal_font_size")).is_greater_equal(
+							READABLE
+						)
+						var ink: Color = text.get_theme_color("default_color")
+						assert_float(ink.get_luminance()).override_failure_message(where).is_less(
+							0.3
+						)
+						_inside(text, where)
+				assert_bool(ruled).override_failure_message(where).is_true()
+				_clips(intro, where)
 	assert_str(_app.controller.modifier_name("slogan_of_the_week")).is_equal(
 		"Slogan of the Week: Pairs"
 	)
 
 
 func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
-	for screen_size: Vector2i in SIZES:
-		get_tree().root.size = screen_size
-		for debuff: ModifierDef in DebuffScript.POOL.debuffs:
-			_ladder(debuff.id)
-			_loop().state.round_index = 1
-			var table: TableScreen = _app.show_screen("table", true)
-			await await_idle_frame()
-			var strip: DebuffStrip = table.get("_debuffs")
-			strip.show_debuffs(_app.controller)
-			await await_idle_frame()
-			var where: String = "%s %s" % [debuff.id, screen_size]
-			var shown: String = strip.shown_text()
-			assert_str(shown).override_failure_message(where).contains(
-				_app.controller.modifier_name(debuff.id)
-			)
-			assert_str(shown).override_failure_message(where).contains(
-				_app.controller.modifier_text(debuff.id)
-			)
-			assert_int(DebuffStrip.FONT_SIZE).is_greater_equal(READABLE)
-			_inside(strip, where)
-			_loop().state.round_index = 0
+	for level: int in TextSize.count():
+		Settings.set_value(TextSize.SETTING, level)
+		for screen_size: Vector2i in SIZES:
+			get_tree().root.size = screen_size
+			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
+				_ladder(debuff.id)
+				_loop().state.round_index = 1
+				var table: TableScreen = _app.show_screen("table", true)
+				await await_idle_frame()
+				var strip: DebuffStrip = table.get("_debuffs")
+				strip.show_debuffs(_app.controller)
+				await await_idle_frame()
+				var where: String = "%s %s" % [debuff.id, screen_size]
+				var shown: String = strip.shown_text()
+				assert_str(shown).override_failure_message(where).contains(
+					_app.controller.modifier_name(debuff.id)
+				)
+				assert_str(shown).override_failure_message(where).contains(
+					_app.controller.modifier_text(debuff.id)
+				)
+				assert_int(DebuffStrip.FONT_SIZE).is_greater_equal(READABLE)
+				_inside(strip, where)
+				_clips(table, where)
+				_loop().state.round_index = 0
 
 
 ## Plays the player's seat through the table until check returns true, at most turns times.
@@ -273,3 +284,10 @@ func test_night_shift_refuses_the_pass_and_says_why() -> void:
 	)
 	assert_bool(reached).is_true()
 	assert_array(said).is_equal([tr("table.must_play")])
+
+
+## Nothing under root clips, as ClipCheck says (ADR 0034).
+func _clips(root: Node, where: String) -> void:
+	var problems: PackedStringArray = []
+	ClipCheck.check(root, "%s at text size %d" % [where, TextSize.level()], problems)
+	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()

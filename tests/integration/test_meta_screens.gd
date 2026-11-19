@@ -26,6 +26,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
 	get_tree().root.size = _was_size
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
@@ -177,28 +178,32 @@ func test_run_setup_fits_both_screens() -> void:
 	for profile: bool in [false, true]:
 		if profile:
 			_veteran()
-		for screen_size: Vector2i in SIZES:
-			get_tree().root.size = screen_size
-			var screen: RunSetupScreen = await _setup()
-			var where: String = "setup %s %s" % [profile, screen_size]
-			_check_layout(screen, screen.scroll(), where)
-			_check_type(screen, where)
-			if screen_size == SIZES[0]:
-				# At 1080 the whole page shows without scrolling.
-				var content: Control = screen.scroll().get_child(0)
-				assert_float(content.size.y).override_failure_message(where).is_less_equal(
-					screen.scroll().size.y + SLACK
+		for level: int in TextSize.count():
+			Settings.set_value(TextSize.SETTING, level)
+			for screen_size: Vector2i in SIZES:
+				get_tree().root.size = screen_size
+				var screen: RunSetupScreen = await _setup()
+				var where: String = "setup %s %s" % [profile, screen_size]
+				_check_layout(screen, screen.scroll(), where)
+				_check_type(screen, where)
+				_clips(screen, where)
+				if screen_size == SIZES[0] and level == 0:
+					# At 1080 and Standard the whole page shows without scrolling; larger
+					# text may scroll (ADR 0034).
+					var content: Control = screen.scroll().get_child(0)
+					assert_float(content.size.y).override_failure_message(where).is_less_equal(
+						screen.scroll().size.y + SLACK
+					)
+				# Focus on the last ticket scrolls it into view.
+				screen.tickets()[-1].grab_focus()
+				await await_idle_frame()
+				await await_idle_frame()
+				var view: Rect2 = screen.scroll().get_global_rect().grow(SLACK + 8.0)
+				(
+					assert_bool(view.encloses(screen.tickets()[-1].get_global_rect()))
+					. override_failure_message(where)
+					. is_true()
 				)
-			# Focus on the last ticket scrolls it into view.
-			screen.tickets()[-1].grab_focus()
-			await await_idle_frame()
-			await await_idle_frame()
-			var view: Rect2 = screen.scroll().get_global_rect().grow(SLACK + 8.0)
-			(
-				assert_bool(view.encloses(screen.tickets()[-1].get_global_rect()))
-				. override_failure_message(where)
-				. is_true()
-			)
 
 
 ## Every stake ticket's words are 16 px or more, on one or two lines, never broken inside
@@ -234,20 +239,23 @@ func test_the_collection_fits_both_screens_and_counts_whats_open() -> void:
 	for profile: bool in [false, true]:
 		if profile:
 			_veteran()
-		for screen_size: Vector2i in SIZES:
-			get_tree().root.size = screen_size
-			var screen: CollectionScreen = await _collection()
-			var where: String = "collection %s %s" % [profile, screen_size]
-			_check_layout(screen, screen.scroll(), where)
-			_check_type(screen, where)
-			var view: CollectionView = CollectionView.for_runs(3 if profile else 0)
-			var line: String = "%d of %d open" % [view.open_count(), view.total()]
-			assert_str(screen.open_line()).is_equal(line)
-			assert_int(screen.entries().size()).is_equal(view.total())
-			if profile:
-				# Three runs open every tier but the wild ranks' three items (ADR 0029) and
-				# ADR 0032's three of tier 4 and two of tier 5.
-				assert_int(view.total() - view.open_count()).is_equal(8)
+		for level: int in TextSize.count():
+			Settings.set_value(TextSize.SETTING, level)
+			for screen_size: Vector2i in SIZES:
+				get_tree().root.size = screen_size
+				var screen: CollectionScreen = await _collection()
+				var where: String = "collection %s %s" % [profile, screen_size]
+				_check_layout(screen, screen.scroll(), where)
+				_check_type(screen, where)
+				_clips(screen, where)
+				var view: CollectionView = CollectionView.for_runs(3 if profile else 0)
+				var line: String = "%d of %d open" % [view.open_count(), view.total()]
+				assert_str(screen.open_line()).is_equal(line)
+				assert_int(screen.entries().size()).is_equal(view.total())
+				if profile:
+					# Three runs open every tier but the wild ranks' three items (ADR 0029) and
+					# ADR 0032's three of tier 4 and two of tier 5.
+					assert_int(view.total() - view.open_count()).is_equal(8)
 	var fresh: CollectionView = CollectionView.for_runs(0)
 	assert_int(fresh.open_count()).is_less(fresh.total())
 
@@ -372,3 +380,10 @@ func _all_items() -> Array[Resource]:
 	items.append_array(RunReforms.all())
 	items.append_array(RunPools.STORE.envelopes + RunPools.MARKET.envelopes)
 	return items
+
+
+## Nothing under root clips, as ClipCheck says (ADR 0034).
+func _clips(root: Node, where: String) -> void:
+	var problems: PackedStringArray = []
+	ClipCheck.check(root, "%s at text size %d" % [where, TextSize.level()], problems)
+	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()

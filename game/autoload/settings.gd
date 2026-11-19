@@ -21,6 +21,7 @@ const KEYS: Array[String] = [
 	"no_flash",
 	"content_note_seen",
 	"card_back",
+	"text_size",
 ]
 
 var _values: Dictionary[String, Variant] = {}
