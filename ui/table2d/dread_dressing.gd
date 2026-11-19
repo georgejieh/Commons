@@ -19,12 +19,19 @@ const POSTER_AT: Rect2 = Rect2(1190, 520, 200, 200)
 const CHAIR_SPOTS: Array[Vector2] = [Vector2(36, 560), Vector2(1440, 590)]
 const EXTRA_CHAIR_SPOT: Vector2 = Vector2(740, 330)
 const REDACTION_LINES: int = 3
+## A redaction bar's height as a share of a line of the notice's text, its left inset
+## and how much further in, and shorter, each line down starts.
+const BAR_SHARE: float = 22.0 / 28.0
+const BAR_INSET: float = 14.0
+const BAR_STEP: Vector2 = Vector2(9, 30)
 
 var spotlight_material: ShaderMaterial = ShaderMaterial.new()
 
 var _pieces: Dictionary[String, Control] = {}
 var _flash_until: Dictionary[String, int] = {}
 var _notice: PanelContainer = PanelContainer.new()
+var _notice_words: Label = Label.new()
+var _bars: Control = Control.new()
 
 
 func _ready() -> void:
@@ -88,14 +95,16 @@ func _add_spotlight() -> void:
 	spot.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
-## The brigade notice is always on the wall; only its redaction bars come and go.
+## The brigade notice is always on the wall; only its redaction bars come and go. At a
+## larger text size its paper grows upward (ADR 0034), its bottom and left edges kept, so
+## it never reaches the status line under it, and the bars follow the lines of its text.
 func _add_notice() -> void:
 	var notice: PanelContainer = _notice
 	notice.add_theme_stylebox_override("panel", _box(PAPER, INK, 2))
 	notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	notice.position = NOTICE_AT.position
 	notice.custom_minimum_size = NOTICE_AT.size
-	var words: Label = Label.new()
+	var words: Label = _notice_words
 	words.text = tr("dread.notice")
 	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	words.custom_minimum_size = Vector2(NOTICE_AT.size.x - 24, 0)
@@ -103,16 +112,51 @@ func _add_notice() -> void:
 	words.add_theme_font_size_override("font_size", TextSize.px(18))
 	notice.add_child(words)
 	add_child(notice)
-	var bars: Control = Control.new()
-	bars.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bars.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for line: int in REDACTION_LINES:
 		var bar: ColorRect = ColorRect.new()
 		bar.color = INK
-		bar.position = Vector2(14 + line * 9, 22 + line * 34)
-		bar.size = Vector2(NOTICE_AT.size.x - 40 - line * 30, 22)
 		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		bars.add_child(bar)
-	_place("redaction", bars, NOTICE_AT)
+		_bars.add_child(bar)
+	_place("redaction", _bars, NOTICE_AT)
+	notice.resized.connect(_fit_notice)
+	# Its rect, not its size: the bars follow where the notice sets its words.
+	words.item_rect_changed.connect(_fit_notice)
+	_fit_notice()
+
+
+## Stands the notice as tall as its words need, up from its bottom edge, and lays a bar
+## over each of the first lines of its text, centred on the line.
+func _fit_notice() -> void:
+	var tall: float = maxf(NOTICE_AT.size.y, _notice.get_combined_minimum_size().y)
+	var top: Vector2 = Vector2(NOTICE_AT.position.x, NOTICE_AT.end.y - tall)
+	if _notice.position != top or _notice.size.y != tall:
+		_notice.position = top
+		_notice.size = Vector2(NOTICE_AT.size.x, tall)
+	_bars.position = top
+	_bars.custom_minimum_size = _notice.size
+	_bars.size = _notice.size
+	var line_tall: float = _notice_words.get_line_height()
+	var pitch: float = line_tall + _notice_words.get_theme_constant("line_spacing")
+	var bar_tall: float = roundf(line_tall * BAR_SHARE)
+	for line: int in _bars.get_child_count():
+		var bar: ColorRect = _bars.get_child(line) as ColorRect
+		var middle: float = _notice_words.position.y + line * pitch + line_tall / 2.0
+		bar.position = Vector2(BAR_INSET + line * BAR_STEP.x, roundf(middle - bar_tall / 2.0))
+		bar.size = Vector2(NOTICE_AT.size.x - 40.0 - line * BAR_STEP.y, bar_tall)
+
+
+## The rects the redaction bars cover, on screen, for tests.
+func redaction_rects() -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	for bar: Node in _bars.get_children():
+		rects.append((bar as Control).get_global_rect())
+	return rects
+
+
+## The notice's words, for tests.
+func notice_words() -> Label:
+	return _notice_words
 
 
 func _add_chairs(piece: String, spots: Array[Vector2]) -> void:
