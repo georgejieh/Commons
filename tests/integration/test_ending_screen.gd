@@ -101,6 +101,23 @@ func _check_inside(screen: EndingScreen, where: String) -> void:
 		)
 
 
+## The meters and class are figures, not prose: they stand outside the story's scroll,
+## whole on the screen beside the way home, so no fold can cut a tile (ADR 0034).
+func _check_figures(screen: EndingScreen, where: String) -> void:
+	var figures: HBoxContainer = screen.figures()
+	var scrolled: bool = screen.story_scroll().is_ancestor_of(figures)
+	assert_bool(scrolled).override_failure_message(where).is_false()
+	assert_int(figures.get_child_count()).is_equal(3)
+	var visible_rect: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var home: Rect2 = screen.home_button().get_global_rect()
+	for tile: Node in figures.get_children():
+		var rect: Rect2 = (tile as Control).get_global_rect()
+		var at: String = "%s: %s" % [where, rect]
+		assert_bool(visible_rect.encloses(rect)).override_failure_message(at).is_true()
+		assert_bool(rect.intersects(home)).override_failure_message(at).is_false()
+		assert_bool(rect.intersects(screen.story_scroll().get_global_rect())).is_false()
+
+
 func _check_type(screen: EndingScreen, view: EndingView, where: String) -> void:
 	var title_size: int = 0
 	var largest: int = 0
@@ -135,6 +152,7 @@ func test_every_ending_and_death_fits_both_screens_with_a_full_village() -> void
 				var view: EndingView = _app.controller.ending()
 				assert_str(view.id).override_failure_message(where).is_equal(outcome)
 				_check_inside(screen, where)
+				_check_figures(screen, where)
 				_check_type(screen, view, where)
 				_clips(screen, where)
 				var list: EpilogueList = screen.epilogue()

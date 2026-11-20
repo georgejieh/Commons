@@ -42,6 +42,16 @@ static func seat_voice(state: RunState, seat: int) -> VoiceProfile:
 	return voice
 
 
+## Every surname a villager's seat can show: each family's and each sent-down youth's.
+static func every_surname() -> Array[String]:
+	var names: Array[String] = []
+	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+		names.append(_t(family.name_key))
+	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
+		names.append(_t(key))
+	return names
+
+
 static func _seated(state: RunState, seat: int) -> RosterEntry:
 	if state.roster.is_empty() or seat <= 0 or seat >= state.table.size():
 		return null

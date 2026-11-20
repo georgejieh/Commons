@@ -374,6 +374,20 @@ func campaign_prompt(campaign_id: String) -> String:
 	return tr(definition.prompt_key).format(definition.text_values())
 
 
+## Every Campaign's prompt, held or not, and every surname a seat can show, for the
+## table's pieces that must have room for the longest (ADR 0034).
+func every_campaign_prompt() -> Array[String]:
+	var prompts: Array[String] = []
+	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
+		for definition: CampaignDef in pool.campaigns:
+			prompts.append(tr(definition.prompt_key).format(definition.text_values()))
+	return prompts
+
+
+func every_surname() -> Array[String]:
+	return RunPeople.every_surname()
+
+
 ## The fewest and most hand cards a Campaign asks for, as x and y.
 func campaign_cards(campaign_id: String) -> Vector2i:
 	var definition: CampaignDef = _campaign(campaign_id)

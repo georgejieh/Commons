@@ -451,6 +451,10 @@ need.lie,"More than your half. Audit chance: {chance}%. If caught, you get your 
 need.less,Less than your half. {name} gets more of the pool.
 need.percent,{percent}%
 table.rules_everyone,Rules for the whole table
+table.rules_named,Each is on the Rules sheet in full.
+table.rules_named.one,It is on the Rules sheet in full.
+table.rules_counted,{count} rules in force. Each is on the Rules sheet in full.
+table.rules_counted.one,1 rule in force. It is on the Rules sheet in full.
 modifier.table_wide,This applies to everyone at the table.
 keyword.landlord.name,Landlord
 keyword.landlord.text,"Landlord: plays alone against the other two, takes the kitty and leads first. A landlord banks their own score."

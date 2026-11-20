@@ -1,10 +1,11 @@
 class_name DreadDressing
 extends Control
 ## The dread layers' set dressing (P3B.12), drawn over the room and under the cards,
-## seats and controls: empty chairs at the room's edge, a poster about your household,
-## black bars over the brigade notice, a spotlight on your seat and gilt trim for a
-## landlord. Shapes are placeholders until the art pass (P3C). Each piece fades with its
-## weight; none covers anything the player reads.
+## seats and controls: empty chairs at the room's edge, a notice about your household
+## under the Cadre board, black bars over the brigade notice, a spotlight on your seat and
+## gilt trim for a landlord. Shapes are placeholders until the art pass (P3C). Each piece
+## fades with its weight; none covers anything the player reads, and the rules slip may
+## stand in front of the right chair (ADR 0034, rule 6).
 
 const LAMP_SHADER: Shader = preload("res://shaders/lamp_light.gdshader")
 const WOOD: Color = Color("2a1a10")
@@ -15,9 +16,13 @@ const GILT: Color = Color("c9a227")
 ## Where the pieces sit, in the table's 1920x1080 frame: wall space clear of the seats,
 ## play lanes, hand, buttons and ledger.
 const NOTICE_AT: Rect2 = Rect2(150, 622, 280, 124)
-const POSTER_AT: Rect2 = Rect2(1190, 520, 200, 200)
+## The household notice, wide and low, in the strip's old place between the Cadre board's
+## foot (y 268) and the trick's box (y 380), 6 px clear of each, its words on one line.
+const POSTER_AT: Rect2 = Rect2(492, 274, 596, 100)
+const POSTER_SIZE: int = 24
 const CHAIR_SPOTS: Array[Vector2] = [Vector2(36, 560), Vector2(1440, 590)]
-const EXTRA_CHAIR_SPOT: Vector2 = Vector2(740, 330)
+## Between the trick's foot and the hand, right of the status line.
+const EXTRA_CHAIR_SPOT: Vector2 = Vector2(1030, 690)
 const REDACTION_LINES: int = 3
 ## A redaction bar's height as a share of a line of the notice's text, its left inset
 ## and how much further in, and shorter, each line down starts.
@@ -32,6 +37,9 @@ var _flash_until: Dictionary[String, int] = {}
 var _notice: PanelContainer = PanelContainer.new()
 var _notice_words: Label = Label.new()
 var _bars: Control = Control.new()
+## True while the notice is taken down for the Campaign tray (ADR 0034, rule 8).
+var _notice_down: bool = false
+var _notice_fade: Tween = null
 
 
 func _ready() -> void:
@@ -45,9 +53,45 @@ func _ready() -> void:
 	_add_gilt()
 
 
-## Where the brigade notice hangs on screen, for what must keep clear of it.
+## Where the brigade notice hangs on screen, for what must keep clear of it; nothing
+## while it is taken down.
 func notice_rect() -> Rect2:
-	return _notice.get_global_rect() if _notice.is_inside_tree() else Rect2()
+	if not _notice.is_inside_tree() or _notice_down:
+		return Rect2()
+	return _notice.get_global_rect()
+
+
+## Where the notice's top stands when it is up, at the text size now.
+func notice_top() -> float:
+	return _notice.position.y
+
+
+## Takes the notice down when the left column needs its wall, and puts it back when
+## there is room again: it fades as the other pieces do, at once under reduced motion.
+## Its redaction bars go with it.
+func take_down_notice(down: bool) -> void:
+	if down == _notice_down:
+		return
+	_notice_down = down
+	if _notice_fade != null and _notice_fade.is_valid():
+		_notice_fade.kill()
+	var weight: float = 0.0 if down else 1.0
+	if down:
+		_bars.visible = false
+	else:
+		_notice.visible = true
+	if UiMotion.reduced():
+		_notice.modulate.a = weight
+		_notice.visible = not down
+		return
+	_notice_fade = _notice.create_tween()
+	_notice_fade.tween_property(_notice, "modulate:a", weight, UiMotion.PRESETS.hover_time * 2.0)
+	if down:
+		_notice_fade.tween_callback(_notice.hide)
+
+
+func is_notice_down() -> bool:
+	return _notice_down
 
 
 ## Fades a piece to weight; at 0 it is hidden.
@@ -57,7 +101,7 @@ func show_piece(piece: String, weight: float) -> void:
 	var flashing: bool = Time.get_ticks_msec() < _flash_until.get(piece, 0)
 	var control: Control = _pieces[piece]
 	control.modulate.a = 1.0 if flashing else weight
-	control.visible = flashing or weight > 0.01
+	control.visible = (flashing or weight > 0.01) and not (piece == "redaction" and _notice_down)
 
 
 ## Shows a piece in full for a moment, as a flicker.
@@ -180,14 +224,17 @@ func _add_poster() -> void:
 	poster.add_theme_stylebox_override("panel", _box(PAPER, RED, 6))
 	var words: Label = Label.new()
 	words.text = tr("dread.poster")
-	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	words.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	words.add_theme_color_override("font_color", RED)
-	words.add_theme_font_size_override("font_size", TextSize.px(24))
-	words.custom_minimum_size = Vector2(POSTER_AT.size.x - 24, 0)
 	poster.add_child(words)
 	_place("poster", poster, POSTER_AT)
+	# One line, print in a fixed box: it fits down, never under its Standard size.
+	var font: Font = words.get_theme_font("font")
+	var room: float = POSTER_AT.size.x - poster.get_theme_stylebox("panel").get_minimum_size().x
+	var fits: Callable = func(font_size: int) -> bool:
+		return font.get_string_size(words.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= room
+	words.add_theme_font_size_override("font_size", TextSize.fit(POSTER_SIZE, POSTER_SIZE, fits))
 
 
 func _add_gilt() -> void:

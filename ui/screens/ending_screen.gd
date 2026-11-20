@@ -6,6 +6,8 @@ extends Control
 ## final class. Beside them each family's epilogue line arrives a beat after the last,
 ## and any accept press shows the rest at once. The Secret Contract and The Commons close
 ## on the historical note. A run that died shows the record of its death and no epilogue.
+## The story scrolls when a larger text size makes it too tall (ADR 0034); the figures are
+## not prose, so they stand at the foot of the page with the way home, always whole.
 
 const MARGIN: Vector2 = Vector2(56, 36)
 const FRAME_HEIGHT: float = 308.0
@@ -35,6 +37,8 @@ var _list: EpilogueList = null
 var _story_scroll: ProseScroll = null
 var _show_all: Button = null
 var _home: Button
+## The two meters and the final class, as tiles at the page's foot.
+var _figures: HBoxContainer
 
 
 func open(app: DemoApp) -> void:
@@ -98,7 +102,7 @@ func _reading() -> ProseScroll:
 	return scroll
 
 
-## The ending itself: the title card, the text, then the meters and class as tiles.
+## The ending itself: the title card, then the text. The figures go at the page's foot.
 func _story() -> VBoxContainer:
 	var story: VBoxContainer = VBoxContainer.new()
 	story.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -123,7 +127,7 @@ func _story() -> VBoxContainer:
 		),
 		_class_tile(),
 	]
-	story.add_child(ScreenKit.row(tiles, 20))
+	_figures = ScreenKit.row(tiles, 20)
 	return story
 
 
@@ -231,9 +235,14 @@ func _village() -> VBoxContainer:
 	return village
 
 
+## The page's foot: the figures at the left, the way home at the right, level with the
+## tiles' foot.
 func _buttons(app: DemoApp) -> HBoxContainer:
-	var bar: HBoxContainer = ScreenKit.row([], 20)
-	bar.alignment = BoxContainer.ALIGNMENT_END
+	var bar: HBoxContainer = ScreenKit.row([_figures], 20)
+	var room: Control = Control.new()
+	room.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_child(room)
 	if _list != null:
 		_show_all = ScreenKit.button(tr("end.show_all"), CommonsTheme.SECONDARY)
 		_show_all.pressed.connect(skip)
@@ -242,6 +251,9 @@ func _buttons(app: DemoApp) -> HBoxContainer:
 	# The run is over: going home clears its save (ADR 0025).
 	_home.pressed.connect(app.leave_run)
 	bar.add_child(_home)
+	for button: Button in [_show_all, _home]:
+		if button != null:
+			button.size_flags_vertical = Control.SIZE_SHRINK_END
 	return bar
 
 
@@ -286,6 +298,11 @@ func epilogue() -> EpilogueList:
 ## The story's scroll, for tests.
 func story_scroll() -> ProseScroll:
 	return _story_scroll
+
+
+## The meters' and class's tiles, for tests.
+func figures() -> HBoxContainer:
+	return _figures
 
 
 ## The line naming the player, for tests.

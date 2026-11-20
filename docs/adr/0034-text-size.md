@@ -62,8 +62,28 @@ Never: a clipped line, text below its Standard size, or art made smaller.
 
 **The table mid-round.** "The screen under it is rebuilt when the sheet closes" holds for every screen but the table in a round. Rebuilding it there would lose a need being set, an open reading picker and plays not yet acted out. The table's themed text changes at once, and its own pieces take the new size at the next deal, with the hand's sort kept. While a round is in play the settings sheet says so in one line. The mixed state in between must not clip, and a test holds that.
 
+## Amendment, 2026-11-19: the table's pieces against one another
+
+The cloud frames at Largest showed pieces of the table running into each other, which the clipping test could not see because it compares a control with its own box. A test now puts the longest of everything on the table and checks every pair of pieces. It found three places where the rules above do not say what gives:
+
+- The rules strip under the Cadre board cannot hold three debuffs above the trick, even at Standard: 314 px of text in 96 px of room, and 484 px at Largest. Moving the trick down as far as the status line allows gives the strip 154 px, which holds neither three debuffs in full nor, at the worst, their names (254 px).
+- The left column at Largest is 29 px short for the seat, the Campaign tray and the brigade notice.
+- A seat that shows what an information Cadre reveals grows by 76 px or more at Standard and covers what is under it at every size.
+
+These settle them:
+
+6. **The rules in force are on a slip under the right seat,** as the Campaign tray is under the left one. The strip under the Cadre board is gone and the trick stays where it is. The slip's room runs from the right seat's foot to the top of the action column at its tallest. That wall held dressing: the poster about the player's household moves to the strip's old place under the Cadre board, as a wide notice whose type fits its box, and the empty chair stays, with the slip in front of it when the slip is tall.
+7. **A slip that does not fit its room steps down, one form at a time.** In full: every rule with its text, as before. By name: the wild ranks' line, the debuffs by name, the table's rules by name, a struck name for a lifted debuff, and one line that points to the Rules sheet. Table-wide Cadres are not named, because their cards are on the board. By name with the type fitted down, never below Standard. Counted: the wild ranks' line, how many rules are in force, and the pointer. The slip never shows some rules in full and others by name. The Rules sheet always has every rule in force in full.
+8. **In the left column, dressing gives way before information.** When the seat, the tray and the brigade notice do not all fit, the tray drops its heading, since each leaflet already says what it is. If that is not enough, or an armed Campaign's Use and Cancel need the room, the brigade notice is taken down until there is room again. If an armed Campaign still does not fit after rule 9, what a Cadre reveals about the left seat is put away until the Campaign is used or cancelled.
+9. **What a Cadre reveals about a seat is print across the sheet's whole width,** under the portrait, not in the column beside it. When its column is still short after the steps above, with the slip by name on the right, its type fits down, never below Standard. Only then is the slip counted.
+
+A rule's full text is one key away at every moment, and the slip always shows that rules are in force. What is lost at the worst is reading a rule's text, or its name, without opening the sheet.
+
 ## Alternatives rejected
 
+- **A strip that always shows every rule in full.** No place on the table holds three debuffs, the table's rules and the wild ranks at once, at any size.
+- **Moving the trick down to make room under the Cadre board.** Built and measured: 154 px at every size, 100 px short of the names alone at the worst.
+- **Names only, always.** Simpler, and early in a Set, when one new rule is in force and there is room for it, the player would have to open a sheet to read it.
 - **Scaling the whole canvas.** `content_scale_factor` enlarges art and layout with the text, so a larger size shows less of a table that is already full.
 - **A slider.** Every value would need the same proof. Three sizes can each be tested on every screen.
 - **Leaving fixed boxes at Standard.** Simpler, and most of the table's text would not change.

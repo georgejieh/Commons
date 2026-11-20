@@ -19,6 +19,9 @@ const CARD_SPACING: float = 50.0
 const SCATTER: Vector2 = Vector2(40, 16)
 const PLAY_TILT: float = 0.07
 const CARD_TILT: float = 0.02
+## How far a card turned by the most a play and its card turn reaches past its own box,
+## so a long play, scattered and turned, still lies inside the pile's area.
+const LEAN: float = 13.0
 ## Brightness of the plays under the newest.
 const BURIED: float = 0.6
 ## The size a card starts at as it leaves a seat, before it lands at PLAY_SCALE.
@@ -71,6 +74,7 @@ func show_play(
 		(size - Vector2(span, card_size.y)) / 2.0
 		+ Vector2(_unit(noise, 2) * SCATTER.x, _unit(noise, 3) * SCATTER.y)
 	)
+	corner.x = clampf(corner.x, LEAN, maxf(LEAN, size.x - span - LEAN))
 	for order: int in cards.size():
 		var view: CardView = _pool.acquire()
 		if view == null:
@@ -205,7 +209,7 @@ func _bury() -> void:
 func _spacing(count: int) -> float:
 	if count < 2:
 		return CARD_SPACING
-	var room: float = size.x - CARD.x * PLAY_SCALE
+	var room: float = size.x - CARD.x * PLAY_SCALE - 2.0 * LEAN
 	return minf(CARD_SPACING, room / (count - 1))
 
 

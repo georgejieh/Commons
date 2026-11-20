@@ -5,6 +5,8 @@ extends Control
 ## The 2D table (ADR 0017), seen as a play area rather than a whole table: a wooden rail
 ## frames the screen, the two villagers sit along the top edge with their lanes in front
 ## of them, the ledger is set into the right rail and your hand runs along the bottom.
+## Under the left seat is the Campaign tray, under the right one the rules slip; the
+## trick lies between them (ADR 0034, rules 6 to 9).
 ## It renders the run's events one step apart and sends commands; it never changes the
 ## run.
 
@@ -23,6 +25,14 @@ const SEAT_WIDTH: float = 380.0
 const SEAT_OFFSET: float = 330.0
 ## The height the need panel and the audit slip center on, between seats and hand.
 const SHEET_MIDDLE: float = 520.0
+## The action column at Standard: at any text size it keeps its left edge, its foot and
+## its width, which is this or the toggles' width at Standard if that is wider.
+## It stops 8 px short of the ledger with the widest sort, 330 px at Standard.
+const ACTIONS_AT: Rect2 = Rect2(1218, 780, 280, 250)
+## The hand's fan: its right end stops short of the action column, so the lean of a full
+## hand's last card, which reaches about 98 px past its middle, never runs under the
+## buttons.
+const HAND_AT: Rect2 = Rect2(120, 830, 1016, 220)
 
 var _app: DemoApp
 var _controller: RunController
@@ -59,6 +69,7 @@ var _debuff_beats: DebuffMoments = DebuffMoments.new()
 var _tutorial: TableTutorial = TableTutorial.new()
 var _wild: TableWild = TableWild.new()
 var _resize: TableResize = TableResize.new()
+var _columns: TableColumns = TableColumns.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -86,13 +97,17 @@ func _ready() -> void:
 	ledger_paper.add_child(_ledger)
 	_place(_hud, Vector2.ZERO, Vector2(1920, 72))
 	_place(_board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
-	_place(_debuffs, Vector2(PLAY_CENTER - 298.0, 284), Vector2(596, 0))
-	_place(_hand_view, Vector2(120, 830), Vector2(1080, 220))
+	_place(_hand_view, HAND_AT.position, HAND_AT.size)
 	_you.theme_type_variation = CommonsTheme.TITLE
 	_you.add_theme_font_size_override("font_size", TextSize.px(28))
 	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
-	_place(_actions, Vector2(1230, 780), Vector2(280, 250))
+	_place(_actions, ACTIONS_AT.position, ACTIONS_AT.size)
+	# Held at its foot: a taller prompt grows up into the empty table, never down.
+	_actions.hold(ACTIONS_AT)
+	# The rules slip under the right seat, as wide as from its edge to the column's.
+	var slip_x: float = PLAY_CENTER + SEAT_OFFSET
+	_place(_debuffs, Vector2(slip_x, 112), Vector2(_actions.held().end.x - slip_x, 0))
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
@@ -152,6 +167,7 @@ func open(app: DemoApp) -> void:
 	_moments.hud = _hud
 	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
 	_campaigns.attach(_pool, _debuffs)
+	_columns.setup(_seats, _campaigns.tray, _dressing, _debuffs, _actions, _controller)
 	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
 	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
 	_player.holds = {
@@ -351,6 +367,7 @@ func _on_drained() -> void:
 	_hand_view.show_cards()
 	_campaigns.refresh()
 	_commands.refresh()
+	_columns.fit()
 	_tutorial.settled(awaiting)
 	_resize.drained(awaiting)
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
