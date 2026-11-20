@@ -26,7 +26,7 @@ Imports the project. Needed once on a fresh clone before anything else that uses
 bash tools/test.sh
 ```
 
-Runs every test, including the layer check and a check that every project script compiles. Exits 0 only if tests ran and all passed. Reports go to `reports/`.
+Runs every test, including the layer check and a check that every project script compiles. Exits 0 only if tests ran and all passed. Reports go to `reports/`. It ends and fails a run that passes `TEST_TIMEOUT` seconds (3600 unless set) or prints more than `TEST_LOG_MAX` bytes (200 MB unless set), so a test that loops cannot fill the disk. Give any other Godot command you leave running a time limit and an output cap of its own.
 
 ```bash
 bash tools/lint.sh
