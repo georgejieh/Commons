@@ -41,7 +41,7 @@ func test_a_seat_keeps_its_width_and_its_tag_clear_of_its_name() -> void:
 		_app.add_child(panel)
 		panel.position = Vector2(80, 112)
 		panel.size = Vector2(TableScreen.SEAT_WIDTH, 0)
-		panel.setup(2, TableWorstCase.longest_surname())
+		panel.setup(2, TableWorstCase.longest_surname(_app.controller))
 		panel.set_role(true, false)
 		var role: Label = panel.get("_role")
 		panel.set_bid(TableWorstCase.widest(role, TableWorstCase.role_lines(), true))
@@ -51,9 +51,12 @@ func test_a_seat_keeps_its_width_and_its_tag_clear_of_its_name() -> void:
 		await await_idle_frame()
 		await await_idle_frame()
 		var where: String = "size %d" % level
-		var tag: Rect2 = panel.banner_rect()
-		if tag.intersects(panel.name_rect()):
-			problems.append("%s: tag %s meets name %s" % [where, tag, panel.name_rect()])
+		var banner_label: Label = panel.get("_banner")
+		var name_label: Label = panel.get("_name")
+		var tag: Rect2 = banner_label.get_global_rect()
+		var name_rect: Rect2 = name_label.get_global_rect()
+		if tag.intersects(name_rect):
+			problems.append("%s: tag %s meets name %s" % [where, tag, name_rect])
 		var banner: Label = panel.get("_banner")
 		var tag_size: int = banner.get_theme_font_size("font_size")
 		if tag_size < base or tag_size > TextSize.px(base):
@@ -74,7 +77,7 @@ func test_a_seat_keeps_its_width_and_its_tag_clear_of_its_name() -> void:
 func test_the_tag_is_unchanged_at_standard() -> void:
 	var panel: SeatPanel = auto_free(SeatPanel.new())
 	_app.add_child(panel)
-	panel.setup(2, TableWorstCase.longest_surname())
+	panel.setup(2, TableWorstCase.longest_surname(_app.controller))
 	panel.set_role(true, false)
 	await await_idle_frame()
 	var banner: Label = panel.get("_banner")
@@ -83,7 +86,8 @@ func test_the_tag_is_unchanged_at_standard() -> void:
 	var font: Font = banner.get_theme_font("font")
 	var word: float = font.get_string_size(banner.text, HORIZONTAL_ALIGNMENT_LEFT, -1, base).x
 	var natural: float = maxf(SeatPanel.PORTRAIT_BOX.x, word + 2 * SeatPanel.TAG_MARGIN)
-	assert_float(panel.banner_rect().size.x).is_equal_approx(natural, 1.0)
+	var shown: Label = panel.get("_banner")
+	assert_float(shown.get_global_rect().size.x).is_equal_approx(natural, 1.0)
 
 
 func test_the_action_column_keeps_its_foot_and_width() -> void:
@@ -97,7 +101,7 @@ func test_the_action_column_keeps_its_foot_and_width() -> void:
 			var actions: ActionBar = table.actions()
 			for bidding: bool in [false, true]:
 				actions.show_bidding(bidding)
-				var prompts: Array[String] = TableWorstCase.prompts(_app.controller)
+				var prompts: Array[String] = PromptLines.every(_app.controller, bidding)
 				actions.reading.text = TableWorstCase.tallest(actions.reading, prompts)
 				await await_idle_frame()
 				await await_idle_frame()

@@ -5,6 +5,9 @@ extends RefCounted
 ## tests. ClipCheck sees each control against its own box; this sees the pieces against
 ## one another.
 
+## The dressing the worst case puts up: the household notice and the extra chair keep
+## clear of every piece; the room's chairs, the spotlight and the gilt lie under them.
+const DRESSING: Array[String] = ["poster", "extra_chair", "empty_chairs", "gilt"]
 ## A full Campaign tray needs Courier's Bag.
 const TRAY_REFORM: String = "couriers_bag"
 const TRAY_SIZE: int = 3
@@ -13,24 +16,33 @@ const MOST_CARDS: int = 20
 ## Card ids for the staged hand and play, clear of each other.
 const HAND_IDS: int = 0
 const PLAY_IDS: int = 100
-## Numbers as wide as a prompt or a bid can print.
-const WIDE_SCORE: float = 999999.0
-const WIDE_COST: int = 99
-const WIDE_PERCENT: int = 150
-## The debuff strip's width on the table.
-const STRIP_WIDTH: float = 596.0
+## The rules slip's width on the table: from the right seat's left edge to the action
+## column's right edge.
+const STRIP_WIDTH: float = 428.0
 
 
-## Opens the table at a text size with the run's state set for the worst case: the three
-## debuffs that make the strip tallest and a full Campaign tray of the longest names.
-static func open(app: DemoApp, suite: GdUnitTestSuite) -> TableScreen:
+## Opens the table at a text size with the run's state set for the worst case: a full
+## Campaign tray of the longest names, and either the three debuffs that make the strip
+## tallest in full, or, with named, the most the strip can ever name: the three debuffs
+## with the longest names, every Reform held, as many table-wide Cadres as the slots then
+## hold, longest names first, and two wild ranks (set by fill).
+static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> TableScreen:
 	var loop: RunLoop = app.controller.get("_loop")
 	var state: RunState = loop.state
 	if not state.reforms.has(TRAY_REFORM):
 		state.reforms.append(TRAY_REFORM)
 	state.inventory.consumables.assign(longest_campaigns(app))
 	state.slogan_type = longest_slogan_type()
-	var debuffs: Array[String] = await tallest_debuffs(app, suite)
+	var debuffs: Array[String] = []
+	if named:
+		for reform: ReformDef in RunReforms.POOL.reforms:
+			if not state.reforms.has(reform.id):
+				state.reforms.append(reform.id)
+		state.inventory.cadres.assign(longest_wide_cadres(app.controller))
+		debuffs = longest_named_debuffs(app.controller)
+	else:
+		state.inventory.cadres.clear()
+		debuffs = await tallest_debuffs(app, suite)
 	state.debuff_ladder.assign(["", debuffs[0], debuffs[1], debuffs[2]])
 	state.round_index = 3
 	var table: TableScreen = app.show_screen("table", true)
@@ -40,11 +52,13 @@ static func open(app: DemoApp, suite: GdUnitTestSuite) -> TableScreen:
 
 
 ## Fills every text piece with its longest string. bidding shows Call and Pass in place of
-## the play set; redacted lays the bars over the brigade notice.
-static func fill(app: DemoApp, table: TableScreen, bidding: bool, redacted: bool) -> void:
+## the play set; redacted lays the bars over the brigade notice; wild names two wild
+## ranks on the slip; intel puts the tallest intel lines on both seats; armed arms the
+## tray's first Campaign, so Use and Cancel show.
+static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 	table.call("_still", true)
 	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
-	var surname: String = longest_surname()
+	var surname: String = longest_surname(app.controller)
 	for seat: int in seats:
 		var panel: SeatPanel = seats[seat]
 		panel.setup(seat, surname)
@@ -55,15 +69,20 @@ static func fill(app: DemoApp, table: TableScreen, bidding: bool, redacted: bool
 		panel.set_count(_widest_count(count))
 		var speech: Label = panel.get("_speech")
 		panel.say(widest(speech, speech_lines()))
+		panel.set_intel(
+			IntelWorstCase.worst_intel(app, panel) if options.get("intel", false) else ""
+		)
 	var you: Label = table.get("_you")
 	you.text = widest(you, _texts("table.you."))
 	var actions: ActionBar = table.actions()
+	var bidding: bool = options.get("bidding", false)
 	actions.show_bidding(bidding)
-	actions.reading.text = tallest(actions.reading, prompts(app.controller))
-	var debuffs: DebuffStrip = table.get("_debuffs")
-	debuffs.show_debuffs(app.controller)
+	actions.reading.text = tallest(actions.reading, PromptLines.every(app.controller, bidding))
 	var dressing: DreadDressing = table.get("_dressing")
-	dressing.show_piece("redaction", 1.0 if redacted else 0.0)
+	dressing.show_piece("redaction", 1.0 if options.get("redacted", false) else 0.0)
+	# Every piece of dressing up, so the pieces that must keep clear are seen doing it.
+	for piece: String in DRESSING:
+		dressing.show_piece(piece, 1.0)
 	var hand: HandView = table.get("_hand_view")
 	app.hand.set("_cards", cards(HAND_IDS))
 	hand.show_cards()
@@ -71,8 +90,19 @@ static func fill(app: DemoApp, table: TableScreen, bidding: bool, redacted: bool
 	pile.clear()
 	pile.show_play(cards(PLAY_IDS), pile.global_position)
 	var campaigns: TableCampaigns = table.get("_campaigns")
-	campaigns.tray.refresh()
-	campaigns.tray.visible = true
+	var tray: CampaignTray = campaigns.tray
+	tray.refresh()
+	tray.visible = true
+	tray.disarm()
+	if options.get("armed", false):
+		# Armed whatever the moment allows, so Use and Cancel show for the layout.
+		tray.set("_armed", 0)
+		tray.call("_show_marks")
+	var strip: DebuffStrip = table.get("_debuffs")
+	strip.wild_ranks = longest_wild_ranks() if options.get("wild", false) else ([] as Array[int])
+	strip.show_debuffs(app.controller)
+	var columns: TableColumns = table.get("_columns")
+	columns.fit()
 
 
 ## Each piece of the table that must stay clear of the others, by name, as drawn.
@@ -91,7 +121,7 @@ static func pieces(table: TableScreen) -> Dictionary[String, Rect2]:
 		"left seat": seats[2].get_global_rect(),
 		"right seat": seats[1].get_global_rect(),
 		"Cadre board": board.get_global_rect(),
-		"debuff strip": strip.get_global_rect(),
+		"rules slip": strip.get_global_rect() if strip.visible else Rect2(),
 		"trick pile": _pile_area(table.get("_pile")),
 		"brigade notice": dressing.notice_rect(),
 		"Campaign tray": _drawn_children(campaigns.tray),
@@ -100,8 +130,21 @@ static func pieces(table: TableScreen) -> Dictionary[String, Rect2]:
 		"action buttons": _buttons(actions),
 		"hand": _cards_area(table.get("_hand_view")),
 		"ledger": (ledger.get_parent() as Control).get_global_rect(),
+		"household notice": _piece_rect(dressing, "poster"),
+		"extra chair": _piece_rect(dressing, "extra_chair"),
 	}
 	return found
+
+
+## A piece of dressing as drawn: its own box, or its parts' for a group; nothing hidden.
+static func _piece_rect(dressing: DreadDressing, piece: String) -> Rect2:
+	var pieces: Dictionary[String, Control] = dressing.get("_pieces")
+	var control: Control = pieces[piece]
+	if not control.is_visible_in_tree():
+		return Rect2()
+	if control.size != Vector2.ZERO:
+		return control.get_global_rect()
+	return _drawn_children(control)
 
 
 ## The rect a control covers as drawn, turned and scaled as it is.
@@ -235,33 +278,6 @@ static func speech_lines() -> Array[String]:
 	return texts
 
 
-## Everything the prompt over Play and Pass can say: the selection's reading or its sum,
-## why it cannot be played, the bid and the grab, the hint's pass, Night Shift's refusal,
-## and an armed Campaign's ask or refusal.
-static func prompts(controller: RunController) -> Array[String]:
-	var texts: Array[String] = _texts("hand.reason.")
-	texts.append_array(_texts("campaign.reason."))
-	for key: String in ["table.bid_prompt", "hand.hint.pass", "table.must_play"]:
-		texts.append(TranslationServer.translate(key))
-	var grab: String = TranslationServer.translate("table.grab_prompt")
-	texts.append(grab.format({"name": longest_surname(), "cost": WIDE_COST}))
-	var types: Array[String] = []
-	for type: String in CheatSheet.TYPES:
-		types.append(TranslationServer.translate("pattern." + type))
-	var score: String = Strings.score(WIDE_SCORE)
-	var scaled: String = TranslationServer.translate("hand.scaled")
-	for type: String in types:
-		texts.append(type)
-		var sum: String = TranslationServer.translate("hand.sum").format(
-			{"type": type, "grain": score, "rate": score, "zeal": score, "total": score}
-		)
-		texts.append(sum + " " + scaled.format({"percent": WIDE_PERCENT}))
-	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
-		for campaign: CampaignDef in pool.campaigns:
-			texts.append(controller.campaign_prompt(campaign.id))
-	return texts
-
-
 ## The three debuffs that stand tallest on the strip, each measured on a strip of the
 ## table's width at the text size now.
 static func tallest_debuffs(app: DemoApp, suite: GdUnitTestSuite) -> Array[String]:
@@ -282,6 +298,38 @@ static func tallest_debuffs(app: DemoApp, suite: GdUnitTestSuite) -> Array[Strin
 	ids.assign(heights.keys())
 	ids.sort_custom(func(a: String, b: String) -> bool: return heights[a] > heights[b])
 	return ids.slice(0, 3)
+
+
+## The three debuffs with the longest names.
+static func longest_named_debuffs(controller: RunController) -> Array[String]:
+	var ids: Array[String] = []
+	for debuff: ModifierDef in DebuffScript.POOL.debuffs:
+		ids.append(debuff.id)
+	var named: Callable = func(id: String) -> int: return controller.modifier_name(id).length()
+	ids.sort_custom(func(a: String, b: String) -> bool: return named.call(a) > named.call(b))
+	return ids.slice(0, 3)
+
+
+## The table-wide Cadres with the longest names, as many as the slots hold.
+static func longest_wide_cadres(controller: RunController) -> Array[String]:
+	var ids: Array[String] = []
+	for cadre: ModifierDef in RunLoop.all_cadres():
+		if cadre.table_wide and not ids.has(cadre.id):
+			ids.append(cadre.id)
+	var named: Callable = func(id: String) -> int: return controller.modifier_name(id).length()
+	ids.sort_custom(func(a: String, b: String) -> bool: return named.call(a) > named.call(b))
+	return ids.slice(0, controller.cadre_slots())
+
+
+## The two wild ranks whose line on the strip is longest.
+static func longest_wild_ranks() -> Array[int]:
+	var best: Array[int] = [0, 1]
+	for first: int in Ranks.TWO + 1:
+		for second: int in range(first + 1, Ranks.TWO + 1):
+			var pair: Array[int] = [first, second]
+			if ReadingText.wild_line(pair).length() > ReadingText.wild_line(best).length():
+				best = pair
+	return best
 
 
 ## The Slogan's longest hand type, for the longest Slogan name.
@@ -311,16 +359,8 @@ static func longest_campaigns(app: DemoApp) -> Array[String]:
 
 
 ## The village's longest surname, as a seat is named by it.
-static func longest_surname() -> String:
-	var names: Array[String] = []
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
-		names.append(TranslationServer.translate(family.name_key))
-	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
-		names.append(TranslationServer.translate(key))
-	var longest: String = ""
-	for name: String in names:
-		longest = name if name.length() > longest.length() else longest
-	return longest
+static func longest_surname(controller: RunController) -> String:
+	return PromptLines.longest_seat_name(controller)
 
 
 ## Every string of the table whose key starts with prefix.

@@ -67,9 +67,24 @@ func hold(box: Rect2) -> void:
 	for button: Button in [hint, sort, rules]:
 		button.add_theme_font_size_override("font_size", font_size)
 	_held = Rect2(box.position, Vector2(wide, box.size.y))
+	# The prompt wraps at the column's width from the start, so it can be measured.
+	reading.custom_minimum_size.x = wide
 	grow_vertical = Control.GROW_DIRECTION_BEGIN
 	size = _held.size
 	position = Vector2(_held.position.x, _held.end.y - size.y)
+
+
+## How tall the column stands with the tallest of prompts over the play set, or over
+## Call and Pass when bidding: measured on the prompt line at the column's width.
+func tallest(prompts: Array[String], bidding: bool) -> float:
+	var shown: String = reading.text
+	var tall: float = 0.0
+	for prompt: String in prompts:
+		reading.text = prompt
+		tall = maxf(tall, reading.get_minimum_size().y)
+	reading.text = shown
+	var row: Control = _bid_row if bidding else _turn_row
+	return tall + get_theme_constant("separation") + row.get_combined_minimum_size().y
 
 
 ## Where the column was stood: its left edge, width and foot, for the table and tests.

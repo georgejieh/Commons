@@ -1,7 +1,8 @@
 class_name SeatPanel
 extends PanelContainer
 ## One villager at the table, on one paper sheet: portrait, with name, cards left and
-## role level with its top, and their last words underneath. The landlord tag lies
+## role level with its top, what an information Cadre reveals across the sheet's width
+## under them (ADR 0034, rule 9), and their last words underneath. The landlord tag lies
 ## across the portrait's top, so it takes no line of its own. The sheet keeps one height
 ## whatever is said. The card count turns red at 2 and 1 cards and says so in words. A
 ## line types out in step with the villager's voice (P3B.13); clicking it shows the rest
@@ -29,6 +30,8 @@ const FLASH_HOLD: float = 0.9
 const SPEECH_SIZE: int = 20
 const SPEECH_LINES: int = 2
 const SPEECH_ROOM: Vector2 = Vector2(200, 54)
+## What an information Cadre reveals, at Standard.
+const INTEL_SIZE: int = 17
 
 var seat: int = -1
 
@@ -41,6 +44,8 @@ var _role: Label = Label.new()
 var _speech: Label = Label.new()
 ## What an information Cadre shows about this villager's hand; empty without one.
 var _intel: Label = Label.new()
+## True while the intel waits for an armed Campaign to be used or put down (ADR 0034).
+var _intel_away: bool = false
 var _info: VBoxContainer = VBoxContainer.new()
 var _back: TextureRect = TextureRect.new()
 var _count_row: HBoxContainer = HBoxContainer.new()
@@ -111,14 +116,14 @@ func _init() -> void:
 	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
 	_count_row.add_child(_back)
 	_count_row.add_child(_count)
-	_intel.add_theme_font_size_override("font_size", TextSize.px(17))
+	_intel.add_theme_font_size_override("font_size", TextSize.px(INTEL_SIZE))
 	_intel.add_theme_color_override("font_color", LANDLORD_RED)
 	_intel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_intel.custom_minimum_size = Vector2(220, 0)
 	_intel.visible = false
-	for child: Control in [_name, _count_row, _role, _intel]:
+	for child: Control in [_name, _count_row, _role]:
 		_info.add_child(child)
 	_row.add_child(_info)
+	_stack.add_child(_intel)
 	_stack.add_child(_speech)
 
 
@@ -159,15 +164,6 @@ func _fit_banner() -> void:
 ## The tag's width with its word set at font_size, its margins included.
 static func _tag_width(font: Font, word: String, font_size: int) -> float:
 	return font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 2 * TAG_MARGIN
-
-
-## The landlord tag and the name as laid out, for tests.
-func banner_rect() -> Rect2:
-	return _banner.get_global_rect()
-
-
-func name_rect() -> Rect2:
-	return _name.get_global_rect()
 
 
 func setup(seat_index: int, display_name: String, portrait: Texture2D = null) -> void:
@@ -213,7 +209,46 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 ## Shows what an information Cadre reveals about this hand, or nothing.
 func set_intel(text: String) -> void:
 	_intel.text = text
-	_intel.visible = not text.is_empty()
+	_intel.visible = not text.is_empty() and not _intel_away
+	# The sheet stands as tall as it needs, shorter again once the line goes.
+	fit_intel(TextSize.px(INTEL_SIZE))
+
+
+## Sets the intel line at font_size, across the sheet's inner width. Its column may fit it
+## down, never under its Standard size (ADR 0034, rule 9).
+func fit_intel(font_size: int) -> void:
+	var edges: float = get_theme_stylebox("panel").get_minimum_size().x
+	_intel.custom_minimum_size.x = maxf(size.x - edges, 0.0)
+	_intel.add_theme_font_size_override("font_size", maxi(font_size, TextSize.least(INTEL_SIZE)))
+	_stand_again()
+
+
+## Puts the intel line away, taking no room, or brings it back.
+func put_away_intel(away: bool) -> void:
+	if away == _intel_away:
+		return
+	_intel_away = away
+	_intel.visible = not _intel.text.is_empty() and not away
+	_stand_again()
+
+
+## The sheet at the height its lines need now. Godot stops throwing out cached minimum
+## sizes at the first one already thrown out, so a change made inside a deferred call can
+## leave the sheet's standing over a line that has changed; each is thrown out by hand,
+## innermost first, before the sheet is measured.
+func _stand_again() -> void:
+	for control: Control in [_intel, _stack, self]:
+		control.update_minimum_size()
+	reset_size()
+
+
+## True while the intel line shows.
+func has_intel() -> bool:
+	return _intel.visible
+
+
+func intel_size() -> int:
+	return _intel.get_theme_font_size("font_size")
 
 
 func intel() -> String:

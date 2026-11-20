@@ -96,6 +96,8 @@ func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 	)
 
 
+## Each debuff alone on the rules slip, no intel on the seat: in full at Standard on both
+## screens, and at every size in full or by name, never cut (ADR 0034, rule 7).
 func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
@@ -109,14 +111,21 @@ func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 				var strip: DebuffStrip = table.get("_debuffs")
 				strip.show_debuffs(_app.controller)
 				await await_idle_frame()
-				var where: String = "%s %s" % [debuff.id, screen_size]
+				var where: String = "%s %s size %d" % [debuff.id, screen_size, level]
 				var shown: String = strip.shown_text()
 				assert_str(shown).override_failure_message(where).contains(
 					_app.controller.modifier_name(debuff.id)
 				)
-				assert_str(shown).override_failure_message(where).contains(
-					_app.controller.modifier_text(debuff.id)
+				if level == 0:
+					assert_bool(strip.is_named()).override_failure_message(where).is_false()
+				if not strip.is_named():
+					assert_str(shown).override_failure_message(where).contains(
+						_app.controller.modifier_text(debuff.id)
+					)
+				assert_int(strip.form()).override_failure_message(where).is_less_equal(
+					DebuffStrip.Form.FITTED
 				)
+				assert_bool(strip.fits()).override_failure_message(where).is_true()
 				assert_int(DebuffStrip.FONT_SIZE).is_greater_equal(READABLE)
 				_inside(strip, where)
 				_clips(table, where)

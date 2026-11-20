@@ -45,6 +45,9 @@ var _leaflets: Array[CampaignLeaflet] = []
 var _armed: int = -1
 var _cursor: int = -1
 var _refusal: String = ""
+## False when the table's left column is short: the leaflets start where the head was
+## (ADR 0034, rule 8).
+var _heading: bool = true
 
 
 func _init() -> void:
@@ -132,14 +135,12 @@ func refresh() -> void:
 	queue_redraw()
 
 
-## How far down the head and the leaflets' places reach at rest, Use and Cancel left out.
+## How far down the head and the leaflets reach at rest, Use and Cancel left out.
 func resting_height() -> float:
-	var foot: float = _head.position.y + _head.get_combined_minimum_size().y
-	for slot: int in maxi(_leaflets.size(), 1):
-		var tall: float = _leaf().y
-		if slot < _leaflets.size():
-			tall = maxf(tall, _leaflets[slot].get_combined_minimum_size().y)
-		foot = maxf(foot, _place(slot).y + tall)
+	var top: float = _head_height()
+	var foot: float = top + _tallest_leaf()
+	if _heading:
+		foot = maxf(foot, _head.get_combined_minimum_size().y)
 	return foot
 
 
@@ -261,7 +262,43 @@ func _place(slot: int) -> Vector2:
 
 
 func _head_height() -> float:
+	# Without its head the tray keeps room for an armed leaflet's lift.
+	if not _heading:
+		return CampaignLeaflet.LIFT
 	return HEAD if compact else HEAD_FULL
+
+
+## Shows or drops the head; the leaflets and buttons move up into its place.
+func show_heading(on: bool) -> void:
+	if on == _heading:
+		return
+	_heading = on
+	_head.visible = on
+	refresh()
+
+
+func has_heading() -> bool:
+	return _heading
+
+
+## How far down the tray reaches with or without its head: the head, the leaflets and,
+## while a Campaign is armed, Use and Cancel under them.
+func standing_height(heading: bool) -> float:
+	var top: float = (HEAD if compact else HEAD_FULL) if heading else CampaignLeaflet.LIFT
+	var foot: float = top + _tallest_leaf()
+	if heading:
+		foot = maxf(foot, _head.get_combined_minimum_size().y)
+	if _armed >= 0 and not side_buttons and not vertical:
+		var button: float = maxf(use.get_combined_minimum_size().y, BUTTON.y)
+		foot = maxf(foot, top + _leaf().y + GAP + button)
+	return foot
+
+
+func _tallest_leaf() -> float:
+	var tall: float = _leaf().y
+	for leaflet: CampaignLeaflet in _leaflets:
+		tall = maxf(tall, leaflet.get_combined_minimum_size().y)
+	return tall
 
 
 func _leaf() -> Vector2:

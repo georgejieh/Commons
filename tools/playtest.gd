@@ -242,6 +242,7 @@ func _table_step() -> void:
 			if _rounds_seen == 2 and not _debuffs_shot:
 				_debuffs_shot = true
 				await _debuff_frames()
+				await _rules_frames()
 				await _wild_table_frames()
 				await _file_table_frames()
 				return
@@ -642,6 +643,39 @@ func _debuff_frames() -> void:
 		loop.set("_sets", SetConfig.new(params))
 		_force_debuff(loop, debuff_id)
 		await _debuff_beat(debuff_id, controller)
+		var saves_hub: Object = root.get_node("Saves")
+		var saves: Object = saves_hub.call("run_service")
+		saves.call("save", snapshot, ContentStamp.extras())
+		_app.call("resume_to_screen")
+		await _frames(30)
+
+
+## The rules slip under the right seat (ADR 0034, rules 6 and 7), staged in a sandbox put
+## back after: one short debuff in force, which it shows in full, then the three that
+## stand tallest, which it names at most sizes, each with a play on the trick. The save
+## taken before is written back and resumed, so the walk's own run is untouched.
+func _rules_frames() -> void:
+	var cases: Dictionary[String, Array] = {
+		"table_rules_one": ["", "straightened_lines", "", ""],
+		"table_rules_worst": ["", "plot_seized", "night_shift", "criticism_meeting"],
+	}
+	for frame: String in cases:
+		var controller: Object = _app.get("controller")
+		var loop: RunLoop = controller.get("_loop")
+		var snapshot: Dictionary = loop.record.to_dict()
+		var ladder: Array[String] = []
+		ladder.assign(cases[frame])
+		loop.state.debuff_ladder.assign(ladder)
+		loop.state.round_index = ladder.size() - 1
+		var table: Node = _app.call("show_screen", "table", true)
+		await _frames(30)
+		var held: Array = controller.call("player_cards")
+		var play: Array[CardInstance] = []
+		for card: CardInstance in held.slice(0, 3):
+			play.append(card)
+		var pile: Node = table.get("_pile")
+		pile.call("show_play", play, Vector2(790, 200))
+		await _shot(frame)
 		var saves_hub: Object = root.get_node("Saves")
 		var saves: Object = saves_hub.call("run_service")
 		saves.call("save", snapshot, ContentStamp.extras())
