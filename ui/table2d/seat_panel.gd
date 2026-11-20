@@ -55,6 +55,8 @@ var _mood: String = ""
 ## What the role line says at rest, and the tween that puts it back after a flash.
 var _role_text: String = ""
 var _flash: Tween = null
+## The landlord tag's stamp while it lands, so a role that changes first can stop it.
+var _tag_stamp: Tween = null
 ## When each character of the current line shows, and how long it has been typing.
 var _reveal: PackedFloat32Array = PackedFloat32Array()
 var _typed: float = 0.0
@@ -192,6 +194,11 @@ static func count_text(cards: int) -> String:
 func set_role(is_landlord: bool, teammate: bool) -> void:
 	# The tag keeps its space either way, so the seat never changes height.
 	var was_landlord: bool = _banner.modulate.a > 0.5
+	# A stamp still landing would bring the tag back after the seat lost it.
+	if _tag_stamp != null and _tag_stamp.is_valid():
+		_tag_stamp.kill()
+		_banner.scale = Vector2.ONE
+		_banner.rotation = 0.0
 	_banner.modulate.a = 1.0 if is_landlord else 0.0
 	_portrait.color = GOLD if is_landlord else PAPER
 	if is_landlord:
@@ -202,7 +209,7 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 		_rest_role(tr("table.role.peasant"))
 	# Taking the seat is stamped onto the portrait.
 	if is_landlord and not was_landlord:
-		UiMotion.stamp(_banner)
+		_tag_stamp = UiMotion.stamp(_banner)
 		bump()
 
 

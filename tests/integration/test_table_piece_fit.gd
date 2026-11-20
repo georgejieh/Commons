@@ -90,6 +90,26 @@ func test_the_tag_is_unchanged_at_standard() -> void:
 	assert_float(shown.get_global_rect().size.x).is_equal_approx(natural, 1.0)
 
 
+## A seat that takes the landlord's seat and loses it before the stamp lands, as a resume
+## replays it, shows no tag once the stamp's time has passed.
+func test_a_tag_stamped_and_lost_at_once_stays_off() -> void:
+	Settings.set_value("reduced_motion", false)
+	var panel: SeatPanel = auto_free(SeatPanel.new())
+	_app.add_child(panel)
+	panel.setup(1, TableWorstCase.longest_surname(_app.controller))
+	# As the table seats it: a peasant first, so taking the seat is stamped.
+	panel.set_role(false, false)
+	panel.set_role(true, false)
+	panel.set_role(false, false)
+	await get_tree().create_timer(UiMotion.PRESETS.stamp_time + 0.2).timeout
+	var banner: Label = panel.get("_banner")
+	assert_float(banner.modulate.a).is_equal(0.0)
+	panel.set_role(true, false)
+	await get_tree().create_timer(UiMotion.PRESETS.stamp_time + 0.2).timeout
+	assert_float(banner.modulate.a).is_equal(1.0)
+	assert_vector(banner.scale).is_equal(Vector2.ONE)
+
+
 func test_the_action_column_keeps_its_foot_and_width() -> void:
 	var problems: PackedStringArray = []
 	for level: int in TextSize.count():
