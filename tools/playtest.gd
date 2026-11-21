@@ -30,8 +30,8 @@ const WALK_STEPS: int = 3000
 const SETTLE_SECONDS: float = 1.8
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
-## How far into the title's arrival its picture is taken, before the snap's own beat.
-const TITLE_PRESS_SECONDS: float = 0.3
+## How far through its pressing the title's name is held for its picture.
+const TITLE_PRESSED: float = 0.5
 ## The longest a wait on something the table does may take, in real seconds: generous,
 ## since a headless run and a software-rendered one go at different paces.
 const WAIT_SECONDS: float = 20.0
@@ -355,10 +355,24 @@ func _collection_frames() -> void:
 		await _frames(10)
 		await _shot("collection_scrolled")
 	await _click_button_with_text(tr("coll.back"))
-	# Back on the title, which arrives again: a picture part way through the pressing of
-	# its name, then on with the walk, since its buttons work while it arrives.
-	await create_timer(TITLE_PRESS_SECONDS).timeout
+	await _frames(20)
+	await _title_pressing_frame()
+
+
+## The title's name part way through its pressing, held there for the picture: a slow
+## renderer has the real pressing over before it draws a frame of it. Not under reduced
+## motion, where the name is never pressed.
+func _title_pressing_frame() -> void:
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	if UiMotion.reduced() or not screen.has_method("word"):
+		return
+	var word: Object = screen.call("word")
+	await create_timer(SETTLE_SECONDS).timeout
+	var whole: float = word.call("seconds")
+	word.set("clock", whole * TITLE_PRESSED)
 	await _snap("title_pressing")
+	word.set("clock", whole)
 
 
 ## In the black market, once a run: the rank picker open over the counter with a ticket

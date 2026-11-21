@@ -8,6 +8,12 @@ extends Control
 ## page's one moment), then the line under it, the buttons that start a run, and last
 ## the row of minor buttons, which only fades. Every button takes a press from the first
 ## frame.
+## The column stands at the top of the page, in the poster's sky: at Standard its foot
+## is above SKY of the page's height, where the crowd's faces begin, so no button lies
+## on a face.
+
+## The share of the page's height the poster's sky takes, down to the crowd.
+const SKY: float = 0.6
 
 var _stamp: FileStamp = null
 var _word: TitleWord = null
@@ -19,8 +25,12 @@ func open(app: DemoApp) -> void:
 	# The title reads the art's stage afresh, as a run's start does (ADR 0025).
 	ArtStages.latch(Saves.profile_service())
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title_night)
-	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.alignment = BoxContainer.ALIGNMENT_BEGIN
+	# Paper letters edged in ink, as the line under the name is: crisp on the poster.
 	var eyebrow: Label = ScreenKit.eyebrow(tr("title.eyebrow"))
+	eyebrow.add_theme_color_override("font_color", ScreenKit.STYLE.paper)
+	eyebrow.add_theme_color_override("font_outline_color", ScreenKit.INK)
+	eyebrow.add_theme_constant_override("outline_size", 6)
 	column.add_child(eyebrow)
 	_word = TitleWord.new(tr("game.title"))
 	column.add_child(_word)

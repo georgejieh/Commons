@@ -109,11 +109,31 @@ func test_the_name_stands_inside_the_screen_as_wide_as_its_type() -> void:
 		var type: Vector2 = font.get_string_size(word.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px)
 		assert_str(word.text).is_equal(tr("game.title"))
 		assert_float(word.size.x).is_greater_equal(type.x)
-		assert_float(word.size.y).is_greater_equal(font.get_height(px))
+		assert_float(word.size.y).is_greater_equal(float(px))
+		assert_float(word.size.y).is_less(font.get_height(px))
 		var screen: Rect2 = title.get_global_rect()
 		var where: String = "%s %s" % [screen_size, word.get_global_rect()]
 		var inside: bool = screen.encloses(word.get_global_rect())
 		assert_bool(inside).override_failure_message(where).is_true()
+
+
+## At Standard the column keeps to the poster's sky, so no button lies on a face in the
+## crowd, and the name's box is close under the eyebrow.
+func test_the_column_stands_in_the_sky_above_the_crowd() -> void:
+	Settings.set_value("reduced_motion", true)
+	for screen_size: Vector2i in SIZES:
+		get_tree().root.size = screen_size
+		var title: TitleScreen = _app.show_screen("title", true)
+		await await_idle_frame()
+		await await_idle_frame()
+		var page: Rect2 = title.get_global_rect()
+		var foot: float = _minor(title).get_global_rect().end.y
+		var where: String = "%s foot at %.0f of %.0f" % [screen_size, foot, page.size.y]
+		var in_sky: bool = foot <= page.position.y + page.size.y * TitleScreen.SKY
+		assert_bool(in_sky).override_failure_message(where).is_true()
+		var gap: float = title.word().get_global_rect().position.y
+		gap -= _eyebrow(title).get_global_rect().end.y
+		assert_float(gap).is_less(60.0)
 
 
 func test_the_type_is_never_clean_and_sits_worse_at_each_stage() -> void:

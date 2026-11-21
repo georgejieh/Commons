@@ -9,6 +9,11 @@ extends Control
 
 const SIZE: int = 168
 const OUTLINE: int = 20
+## The face keeps room over its capitals and under its line that this word has no use
+## for. These shares of the size are left off its box, so the lines above and below sit
+## as close to it as they do to each other.
+const HEAD: float = 0.26
+const FOOT: float = 0.2
 ## How far a letter sits off its line and off upright at stage 0, in pixels and radians,
 ## and how much further each stage sets it.
 const DROP: float = 1.5
@@ -16,8 +21,8 @@ const LEAN: float = 0.007
 const WORSE_PER_STAGE: float = 0.35
 ## How far the vermilion pass lies out of register: at rest at stage 0, more per stage,
 ## and as its letter lands.
-const SLIP: float = 2.0
-const SLIP_PER_STAGE: float = 0.6
+const SLIP: float = 3.0
+const SLIP_PER_STAGE: float = 0.5
 const SLIP_LANDING: float = 9.0
 const SLIP_ALONG: Vector2 = Vector2(1.0, 0.6)
 ## A letter comes down turned by up to this much.
@@ -41,6 +46,8 @@ func _init(word: String) -> void:
 	text = word
 	accessibility_name = word
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Its box is the word and no wider, so what stands beside it is clear of it.
+	size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	var random: RandomNumberGenerator = RandomNumberGenerator.new()
 	random.seed = SEED
 	for _letter: int in text.length():
@@ -53,7 +60,7 @@ func _init(word: String) -> void:
 func _get_minimum_size() -> Vector2:
 	var px: int = TextSize.px(SIZE)
 	var wide: float = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px).x
-	return Vector2(wide, _font.get_height(px))
+	return Vector2(wide, _font.get_height(px) - (HEAD + FOOT) * px)
 
 
 ## How long the whole word takes to press.
@@ -123,7 +130,7 @@ func _draw_letter(layer: int, letter: int, px: int, stage: int) -> void:
 	var turn: float = lerpf(rest.z * TURN, rest.y * LEAN * uneven, minf(pressed, 1.0))
 	var grown: float = lerpf(presets.letter_from_scale, 1.0, pressed)
 	draw_set_transform(middle, turn, Vector2.ONE * grown)
-	var at: Vector2 = Vector2(-wide / 2.0, _font.get_ascent(px) - size.y / 2.0)
+	var at: Vector2 = Vector2(-wide / 2.0, _font.get_ascent(px) - HEAD * px - size.y / 2.0)
 	var ink: float = minf(down * 2.5, 1.0)
 	match layer:
 		0:
