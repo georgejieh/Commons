@@ -27,9 +27,11 @@ const STEP_FRAMES: int = 4
 const STUCK_STEPS: int = 40
 ## Steps the whole walk may take before it is failed as never ending.
 const WALK_STEPS: int = 3000
-const SETTLE_SECONDS: float = 1.2
+const SETTLE_SECONDS: float = 1.8
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
+## How far into the title's arrival its picture is taken, before the snap's own beat.
+const TITLE_PRESS_SECONDS: float = 0.3
 ## The longest a wait on something the table does may take, in real seconds: generous,
 ## since a headless run and a software-rendered one go at different paces.
 const WAIT_SECONDS: float = 20.0
@@ -351,7 +353,10 @@ func _collection_frames() -> void:
 		await _frames(10)
 		await _shot("collection_scrolled")
 	await _click_button_with_text(tr("coll.back"))
-	await _frames(20)
+	# Back on the title, which arrives again: a picture part way through the pressing of
+	# its name, then on with the walk, since its buttons work while it arrives.
+	await create_timer(TITLE_PRESS_SECONDS).timeout
+	await _snap("title_pressing")
 
 
 ## In the black market, once a run: the rank picker open over the counter with a ticket

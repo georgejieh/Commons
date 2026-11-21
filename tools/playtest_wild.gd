@@ -11,7 +11,7 @@ extends RefCounted
 ## reaches every UI node as Object, Node or Control, never by a ui/ class name.
 ## Development only; tools/ never ships.
 
-const SETTLE_SECONDS: float = 1.2
+const SETTLE_SECONDS: float = 1.8
 const SNAP_SECONDS: float = 0.22
 const WAIT_SECONDS: float = 20.0
 ## The corruption stages the hand's ribbons are photographed at.

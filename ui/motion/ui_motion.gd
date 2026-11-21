@@ -10,6 +10,9 @@ const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 const ENTER_SCALE: float = 0.96
 ## Where a control keeps its hover tween, so a new one replaces it.
 const TWEEN_META: StringName = &"ui_motion_tween"
+## Marks a control that lifts on hover. Its scale is its hover's, so an entrance only
+## fades it.
+const LIFTS: StringName = &"ui_motion_lifts"
 
 
 static func reduced() -> bool:
@@ -22,6 +25,7 @@ static func seconds(base: float) -> float:
 
 ## Lifts a control on hover or focus and sinks it while pressed.
 static func hoverable(control: Control) -> void:
+	control.set_meta(LIFTS, true)
 	_center_pivot(control)
 	control.resized.connect(_center_pivot.bind(control))
 	control.mouse_entered.connect(_scale_to.bind(control, PRESETS.hover_scale))
@@ -34,20 +38,45 @@ static func hoverable(control: Control) -> void:
 		button.button_up.connect(_scale_to.bind(control, PRESETS.hover_scale))
 
 
-## Fades and settles controls in one after another.
+## Fades and settles controls in one after another, slowly enough to be read and with
+## the last one in by enter_within however many there are. Nothing waits on it: a button
+## takes a press while it is still arriving.
 static func enter(controls: Array[Control]) -> void:
+	var stagger: float = PRESETS.enter_stagger
+	if controls.size() > 1:
+		var room: float = PRESETS.enter_within - PRESETS.enter_time
+		stagger = minf(stagger, room / (controls.size() - 1))
+	for index: int in controls.size():
+		enter_at(controls[index], index * stagger)
+
+
+## Brings one control in after delay seconds. A quiet piece (small print, a row of minor
+## buttons) only fades, and so does a control that lifts on hover, whose scale is its
+## hover's.
+static func enter_at(control: Control, delay: float, quiet: bool = false) -> void:
 	if reduced():
 		return
-	for index: int in controls.size():
-		var control: Control = controls[index]
-		_center_pivot(control)
-		control.modulate.a = 0.0
-		control.scale = Vector2.ONE * ENTER_SCALE
-		var tween: Tween = control.create_tween().set_parallel(true)
-		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		var delay: float = index * PRESETS.enter_stagger
-		tween.tween_property(control, "modulate:a", 1.0, PRESETS.enter_time).set_delay(delay)
-		tween.tween_property(control, "scale", Vector2.ONE, PRESETS.enter_time).set_delay(delay)
+	control.modulate.a = 0.0
+	var tween: Tween = control.create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "modulate:a", 1.0, PRESETS.enter_time).set_delay(delay)
+	if quiet or control.has_meta(LIFTS):
+		return
+	_center_pivot(control)
+	control.scale = Vector2.ONE * ENTER_SCALE
+	tween.tween_property(control, "scale", Vector2.ONE, PRESETS.enter_time).set_delay(delay)
+
+
+## Lays a full-screen picture down: from a little large to its size, about its middle.
+static func settle(picture: Control) -> void:
+	if reduced():
+		return
+	_center_pivot(picture)
+	picture.resized.connect(_center_pivot.bind(picture))
+	picture.scale = Vector2.ONE * PRESETS.settle_from
+	var tween: Tween = picture.create_tween()
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(picture, "scale", Vector2.ONE, PRESETS.settle_time)
 
 
 ## Rolls a label's number from one value to another; shown formats each step. Returns

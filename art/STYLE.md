@@ -75,8 +75,12 @@ Rules:
 - **A choice that is ready looks ready.** A playable selection rises and its edge turns gold; the Play ticket swells.
 - **Motion never carries a fact alone.** The ledger, seats and meters show the same thing at rest, and reduced motion keeps every fact.
 - **Decay comes later.** As corruption rises the same moves should smear, stutter and thin out. Build the clean version first.
+- **A page arrives in order, and can be read as it does.** Its pieces come in from the top down, each over about half a second and a tenth apart, and a long page is whole inside about a second. Nothing waits on it: every button works from the first frame.
+- **One moment a page.** A page has at most one piece that arrives its own way, and the rest only fade and settle. On the title that piece is the name, pressed letter by letter like poster type. Small print (an eyebrow, a row of minor buttons) only fades.
+- **What does not move.** Backdrops hold still once a page is in, and so does dressing. Nothing pulses, floats or shimmers to fill a quiet page; the one thing that moves is the thing to look at.
+- **A hover is small and quick.** A lift of a few percent over about a sixth of a second, and a press sinks under it.
 
-Built so far: callouts, the score tally, thrown cards, seat tags, the Quota bar and its seal (`InkSeal`), meters that swell as they move, the kitty turned face up, and a purchase sealed "approved" and pinned to the board, the audit as two dice thrown into a porcelain bowl (one tinted for each villager, a red 1 means an audit), and a gold "overfulfilled" seal on the Quota report. Still to build in this language: coupons torn off as they are spent, sealed envelopes for packs, the black market, and the screens between Quotas.
+Built so far: callouts, the score tally, thrown cards, seat tags, the Quota bar and its seal (`InkSeal`), meters that swell as they move, the kitty turned face up, and a purchase sealed "approved" and pinned to the board, the audit as two dice thrown into a porcelain bowl (one tinted for each villager, a red 1 means an audit), and a gold "overfulfilled" seal on the Quota report, and the title's arrival (the poster laid down, the name pressed, the rest in order). Still to build in this language: coupons torn off as they are spent, sealed envelopes for packs, the black market, and the screens between Quotas.
 
 ## Files, sizes and atlases
 
