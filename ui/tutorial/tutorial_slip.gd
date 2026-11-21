@@ -11,7 +11,7 @@ const FACE: Vector2 = Vector2(96, 112)
 const TEXT_SIZE: int = 24
 const GAP: float = 28.0
 const MARGIN: float = 16.0
-const PADDING: int = 16
+const PADDING: int = 20
 const ALARM: Color = Color("b02a17")
 const ALARM_WIDTH: float = 5.0
 ## Seconds the red border holds under reduced motion.

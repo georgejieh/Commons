@@ -23,7 +23,7 @@ var _was_focused: Control = null
 func _ready() -> void:
 	visible = false
 	z_index = 2
-	add_theme_stylebox_override("panel", ScreenKit.paper_style(14))
+	add_theme_stylebox_override("panel", ScreenKit.paper_style(20))
 	# One line: a wrapping prompt is measured at no width, which makes the strip tall.
 	_prompt.autowrap_mode = TextServer.AUTOWRAP_OFF
 	var column: VBoxContainer = VBoxContainer.new()
