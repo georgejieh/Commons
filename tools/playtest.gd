@@ -79,6 +79,7 @@ var _market_shot: bool = false
 var _opening_granted: bool = false
 var _reform_shot: bool = false
 var _envelope_shot: bool = false
+var _keyword_shot: bool = false
 var _parcel_shot: bool = false
 var _debuffs_shot: bool = false
 var _wild_store_shot: bool = false
@@ -199,6 +200,7 @@ func _step() -> void:
 			await _buy_one()
 			await _issue_one()
 			await _buy_campaign()
+			await _keyword_frames()
 			await _envelope_frames()
 			await _click_button_with_text(tr("market.open"))
 			await _shot("black_market")
@@ -492,6 +494,71 @@ func _reform_frames() -> void:
 		var pinned: Control = strip.call("tag", 0)
 		pinned.grab_focus()
 		await _snap("store_reform_strip_slip")
+
+
+## A keyword's slip, once a run, with the real pointer: it is swept over the store's rules
+## text until it rests on a keyword, the slip that opens is photographed, and the pointer
+## then moves onto the slip, which must still be there a second later.
+func _keyword_frames() -> void:
+	if _keyword_shot:
+		return
+	_keyword_shot = true
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	var tips: Object = null
+	for found: Node in screen.find_children("*", "RichTextLabel", true, false):
+		var text: RichTextLabel = found as RichTextLabel
+		if not text.is_visible_in_tree() or not text.text.contains("[url="):
+			continue
+		tips = await _rest_on_keyword(text)
+		if tips != null:
+			break
+	if tips == null:
+		_fail("MISCLICK no keyword slip opened under the pointer")
+		return
+	await _shot("keyword_slip")
+	var slips: Array = tips.call("slips")
+	var slip: Control = slips[0]
+	_point_at(slip.get_global_transform_with_canvas() * (slip.size / 2.0))
+	await create_timer(1.0).timeout
+	slips = tips.call("slips")
+	if slips.is_empty():
+		_fail("MISCLICK the keyword slip closed with the pointer on it")
+	await _snap("keyword_slip_held")
+	_point_at(Vector2(4, 4))
+	await create_timer(0.8).timeout
+
+
+## Moves the pointer itself to a place on the canvas. Rich text finds the word under the
+## pointer from where the engine says the mouse is, not from an event's own position: the
+## real cursor in a window, Input's record without one, both in the window's pixels.
+func _point_at(at: Vector2) -> void:
+	var move: InputEventMouseMotion = InputEventMouseMotion.new()
+	move.position = root.get_final_transform() * at
+	move.global_position = move.position
+	root.warp_mouse(at)
+	Input.parse_input_event(move)
+
+
+## Sweeps the pointer over text until a keyword's slip opens; null when none does.
+func _rest_on_keyword(text: RichTextLabel) -> Object:
+	var area: Rect2 = text.get_global_rect()
+	var y: float = area.position.y + 8.0
+	while y < area.end.y:
+		var x: float = area.position.x + 4.0
+		while x < area.end.x:
+			_point_at(Vector2(x, y))
+			Input.flush_buffered_events()
+			await _frames(1)
+			var tips: Object = root.get_node_or_null("KeywordTips")
+			if tips != null and not str(tips.get("_asked_id")).is_empty():
+				await create_timer(0.5).timeout
+				var open: Array = tips.call("slips")
+				if not open.is_empty():
+					return tips
+			x += 8.0
+		y += 10.0
+	return null
 
 
 ## The state store's envelope, once a run: its offer with the slip, a few frames through

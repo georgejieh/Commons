@@ -9,7 +9,7 @@ extends PanelContainer
 
 const GAP: float = 10.0
 const MARGIN: float = 16.0
-const PADDING: int = 14
+const PADDING: int = 20
 ## Marks a piece whose leaving the tree already hides the slip.
 const WATCHED: StringName = &"detail_slip_watched"
 

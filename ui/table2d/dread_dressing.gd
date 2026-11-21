@@ -24,6 +24,11 @@ const CHAIR_SPOTS: Array[Vector2] = [Vector2(36, 560), Vector2(1440, 590)]
 ## Between the trick's foot and the hand, right of the status line.
 const EXTRA_CHAIR_SPOT: Vector2 = Vector2(1030, 690)
 const REDACTION_LINES: int = 3
+## The brigade notice changes with every deal: this many notices for each stretch of a
+## run, and the last Year of the early and of the middle stretch.
+const NOTICES: int = 4
+const EARLY_UNTIL: int = 2
+const MID_UNTIL: int = 5
 ## A redaction bar's height as a share of a line of the notice's text, its left inset
 ## and how much further in, and shorter, each line down starts.
 const BAR_SHARE: float = 22.0 / 28.0
@@ -59,6 +64,35 @@ func notice_rect() -> Rect2:
 	if not _notice.is_inside_tree() or _notice_down:
 		return Rect2()
 	return _notice.get_global_rect()
+
+
+## The key of the notice the brigade has posted: plain and welcome in a run's early
+## Years, a notch wrong in the middle ones and further wrong in the last. turn counts on
+## with each Set and round, so the wall is not the same from one deal to the next.
+static func notice_key(year: int, turn: int) -> String:
+	var stretch: String = "late"
+	if year <= EARLY_UNTIL:
+		stretch = "early"
+	elif year <= MID_UNTIL:
+		stretch = "mid"
+	return "dread.notice.%s.%d" % [stretch, posmod(turn, NOTICES)]
+
+
+## Posts a notice by its key; its redaction bars follow its words.
+func post_notice(key: String) -> void:
+	var text: String = tr(key)
+	if _notice_words.text == text:
+		return
+	_notice_words.text = text
+	# Stood again at once, so whoever lays the left column out next reads its true top.
+	_notice_words.update_minimum_size()
+	_notice.update_minimum_size()
+	_fit_notice()
+
+
+## The words on the notice now, for tests.
+func notice_text() -> String:
+	return _notice_words.text
 
 
 ## Where the notice's top stands when it is up, at the text size now.
@@ -149,7 +183,7 @@ func _add_notice() -> void:
 	notice.position = NOTICE_AT.position
 	notice.custom_minimum_size = NOTICE_AT.size
 	var words: Label = _notice_words
-	words.text = tr("dread.notice")
+	words.text = tr(DreadDressing.notice_key(1, 0))
 	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	words.custom_minimum_size = Vector2(NOTICE_AT.size.x - 24, 0)
 	words.add_theme_color_override("font_color", INK)

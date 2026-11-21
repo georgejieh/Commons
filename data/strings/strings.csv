@@ -326,7 +326,18 @@ note.settings,"To soften it, lower Horror intensity in Settings. No flashes turn
 note.continue,Continue
 settings.horror_intensity,Horror intensity
 settings.no_flash,No flashes
-dread.notice,"Brigade notice: the threshing floor is swept. Bring your own baskets on Sunday."
+dread.notice.early.0,"Brigade notice: the threshing floor is swept. Bring your own baskets on Sunday."
+dread.notice.early.1,"Brigade notice: the new well is open. Households draw before the morning bell."
+dread.notice.early.2,"Brigade notice: the ox is rested. River plots are ploughed first this week."
+dread.notice.early.3,"Brigade notice: lamp oil has come. One measure a household, after work."
+dread.notice.mid.0,"Brigade notice: the morning bell rings an hour earlier. The evening bell stays."
+dread.notice.mid.1,"Brigade notice: work points are read out Fridays. Corrections, the Friday after."
+dread.notice.mid.2,"Brigade notice: baskets are weighed twice. The second weight is written down."
+dread.notice.mid.3,"Brigade notice: the ox is lent to the next brigade. Plough by hand this week."
+dread.notice.late.0,"Brigade notice: the threshing floor is closed for counting. Baskets stay inside."
+dread.notice.late.1,"Brigade notice: the shared kitchen serves at noon only. Evening work goes on."
+dread.notice.late.2,"Brigade notice: the well is drawn by roster. The brigade leader keeps the roster."
+dread.notice.late.3,"Brigade notice: lamps are out by the evening bell. The store has no oil."
 dread.poster,Household under review
 villager.wang,Wang
 villager.li,Li

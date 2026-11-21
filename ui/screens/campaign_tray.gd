@@ -132,7 +132,19 @@ func refresh() -> void:
 		_armed = -1
 	_cursor = mini(_cursor, held.size() - 1)
 	_show_marks()
+	_stand_tall()
 	queue_redraw()
+
+
+## A leaflet whose words need more than its place, as at a larger text size, makes the
+## tray taller with it, so the leaflet never runs out of the tray onto what is under it.
+func _stand_tall() -> void:
+	var more: float = _tallest_leaf() - _leaf().y
+	var base: Vector2 = tray_size(_leaflets.size(), side_buttons, compact, vertical)
+	var tall: float = base.y + maxf(more, 0.0)
+	if not is_equal_approx(custom_minimum_size.y, tall):
+		custom_minimum_size.y = tall
+		size.y = tall
 
 
 ## How far down the head and the leaflets reach at rest, Use and Cancel left out.

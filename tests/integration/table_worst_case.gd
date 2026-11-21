@@ -80,6 +80,8 @@ static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 	actions.reading.text = tallest(actions.reading, PromptLines.every(app.controller, bidding))
 	var dressing: DreadDressing = table.get("_dressing")
 	dressing.show_piece("redaction", 1.0 if options.get("redacted", false) else 0.0)
+	# The first notice, which none stands taller than (test_brigade_notice).
+	dressing.post_notice(DreadDressing.notice_key(1, 0))
 	# Every piece of dressing up, so the pieces that must keep clear are seen doing it.
 	for piece: String in DRESSING:
 		dressing.show_piece(piece, 1.0)

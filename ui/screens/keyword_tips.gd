@@ -21,6 +21,8 @@ const LAYER: int = 90
 static var _made: KeywordTips = null
 
 var _slips: Array[KeywordSlip] = []
+## Where the pointer last was, from the mouse's own events.
+var _mouse: Vector2 = Vector2.ZERO
 ## The word being rested on, before its slip opens.
 var _asked_id: String = ""
 var _asked_from: KeywordText = null
@@ -31,6 +33,7 @@ var _asked_for: float = 0.0
 static func of(from: Node) -> KeywordTips:
 	if _made == null or not is_instance_valid(_made):
 		_made = KeywordTips.new()
+		_made.name = "KeywordTips"
 		from.get_tree().root.add_child(_made)
 	return _made
 
@@ -46,6 +49,8 @@ func ask(text: KeywordText, keyword_id: String) -> void:
 		if slip.source == text and slip.id == keyword_id:
 			slip.word_held = true
 			return
+	if _slips.is_empty() and _asked_id.is_empty():
+		_mouse = get_viewport().get_mouse_position()
 	_asked_id = keyword_id
 	_asked_from = text
 	_asked_for = 0.0
@@ -67,8 +72,14 @@ func slips() -> Array[KeywordSlip]:
 	return _slips
 
 
+func _input(event: InputEvent) -> void:
+	var motion: InputEventMouseMotion = event as InputEventMouseMotion
+	if motion != null:
+		_mouse = motion.position
+
+
 func _process(delta: float) -> void:
-	tick(delta, get_viewport().get_mouse_position())
+	tick(delta, _mouse)
 
 
 ## One step of time with the pointer at mouse: opens a slip asked for long enough, and

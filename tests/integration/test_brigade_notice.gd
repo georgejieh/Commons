@@ -104,3 +104,32 @@ func test_each_redaction_bar_lies_over_a_line_of_the_notice() -> void:
 					. override_failure_message(at)
 					. is_true()
 				)
+
+
+## The wall changes: a different notice from one deal to the next, from another set in the
+## middle Years and another in the last, each a real string, and none standing taller
+## than the first, so nothing laid out round the notice moves when it changes.
+func test_the_notice_changes_with_the_deal_and_the_years() -> void:
+	var seen: Dictionary[String, bool] = {}
+	for year: int in [1, 2, 3, 5, 6, 8]:
+		for turn: int in DreadDressing.NOTICES:
+			var key: String = DreadDressing.notice_key(year, turn)
+			assert_str(tr(key)).override_failure_message(key).is_not_equal(key)
+			seen[key] = true
+	assert_int(seen.size()).is_equal(DreadDressing.NOTICES * 3)
+	assert_str(DreadDressing.notice_key(1, 0)).is_not_equal(DreadDressing.notice_key(1, 1))
+	assert_str(DreadDressing.notice_key(2, 5)).is_equal(DreadDressing.notice_key(1, 1))
+	assert_str(DreadDressing.notice_key(3, 0)).contains(".mid.")
+	assert_str(DreadDressing.notice_key(6, 0)).contains(".late.")
+	for level: int in TextSize.count():
+		var table: TableScreen = await _table_at(level)
+		var dressing: DreadDressing = table.get("_dressing")
+		var first: float = dressing.notice_rect().size.y
+		for key: String in seen:
+			dressing.post_notice(key)
+			await await_idle_frame()
+			await await_idle_frame()
+			assert_str(dressing.notice_text()).is_equal(tr(key))
+			var where: String = "%s at size %d" % [key, level]
+			var tall: float = dressing.notice_rect().size.y
+			assert_float(tall).override_failure_message(where).is_less_equal(first + 0.5)

@@ -14,7 +14,7 @@ const PICKED: Color = Color("9e2a1d")
 const LOCKED_INK: Color = Color("4a3a26")
 const SEED: int = 8317
 const SPECKS: Vector2i = Vector2i(6, 34)
-const PADDING: int = 18
+const PADDING: int = 20
 const LOCKED_SIZE: int = 18
 
 ## True when a click or accept press picks it.

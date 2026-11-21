@@ -230,7 +230,8 @@ func _check_apart(overlay: EnvelopeOverlay, where: String) -> void:
 		_check_paper(paper, overlay.papers().size(), where)
 	var blocks: Dictionary[String, Control] = overlay.blocks()
 	for name: String in ["heading", "detail", "button"]:
-		pieces.append(blocks[name])
+		if blocks.has(name):
+			pieces.append(blocks[name])
 	for first: int in pieces.size():
 		for second: int in range(first + 1, pieces.size()):
 			var a: Rect2 = pieces[first].get_global_rect().grow(-SLACK)
@@ -243,8 +244,9 @@ func _check_apart(overlay: EnvelopeOverlay, where: String) -> void:
 
 
 ## A choice is the main thing on the screen: its item fills its place along one side, at
-## the size the count of choices gives, and Keep is exactly as wide as the paper; a
-## caption sits on paper at a readable size, and nothing in a choice is faded.
+## the size the count of choices gives, and the item is its own button, with no face and
+## exactly as wide as the paper; a caption sits on paper at a readable size, and nothing
+## in a choice is faded.
 func _check_paper(paper: ChoicePaper, count: int, where: String) -> void:
 	var place: Vector2 = ChoicePaper.item_for(count)
 	assert_bool(place.x >= (200.0 if count <= 3 else 190.0)).is_true()
@@ -255,8 +257,11 @@ func _check_paper(paper: ChoicePaper, count: int, where: String) -> void:
 		. override_failure_message("%s: item %s in %s" % [where, item, place])
 		. is_true()
 	)
-	var keep: float = paper.keep.get_global_rect().size.x
-	assert_float(absf(keep - paper.size.x)).override_failure_message(where).is_less(2.0)
+	var keep: Rect2 = paper.keep.get_global_rect()
+	assert_float(absf(keep.size.x - paper.size.x)).override_failure_message(where).is_less(2.0)
+	assert_str(paper.keep.text).override_failure_message(where).is_empty()
+	var covered: bool = keep.grow(SLACK).encloses(EnvelopeOverlay.shown_rect(paper.item))
+	assert_bool(covered).override_failure_message(where + " button over item").is_true()
 	if not paper.caption().is_empty():
 		var label: Label = paper.caption_label()
 		assert_int(label.get_theme_font_size("font_size")).is_greater_equal(16)

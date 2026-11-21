@@ -17,7 +17,7 @@ const HEAD_SIZE: int = 16
 const GAP: int = 8
 const INK: Color = Color("1e1a16")
 ## Clear of the paper's printed border.
-const PADDING: int = 18
+const PADDING: int = 20
 
 var _row: HFlowContainer = HFlowContainer.new()
 var _column: VBoxContainer = VBoxContainer.new()

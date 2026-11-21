@@ -354,7 +354,9 @@ func _new_deal() -> void:
 func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
-	_hud.sync(_controller.state_copy(), _controller.target())
+	var state: RunState = _controller.state_copy()
+	_hud.sync(state, _controller.target())
+	_dressing.post_notice(DreadDressing.notice_key(state.year, state.set_index + state.round_index))
 	_board.show_cadres(_controller)
 	_debuffs.show_debuffs(_controller)
 	var awaiting: int = _controller.awaiting()

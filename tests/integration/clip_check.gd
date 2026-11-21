@@ -5,10 +5,13 @@ extends RefCounted
 ## than its box; no wrapped label has more lines than it shows, and no rich text outside
 ## a scroll is taller than its box; and nothing the player reads is set under the least
 ## text size. Inside a ScrollContainer only width counts, since the text scrolls into
-## view; the scroll itself must sit on screen.
+## view; the scroll itself must sit on screen. And no text lies on the printed border of
+## the paper it is on (the owner's playtest of 2026-11-20).
 
 ## Sub-pixel rounding allowance, in canvas pixels.
 const SLACK: float = 1.5
+## The paper sheet's printed lines end 17 px in from its edge; words keep inside them.
+const PAPER_LINES: float = 18.0
 
 
 ## Checks node and everything under it, adding each problem to problems.
@@ -43,6 +46,51 @@ static func _check_control(
 	var font_size: int = read_size(control)
 	if font_size > 0 and font_size < TextSize.PARAMS.least_text_px:
 		problems.append("%s: %s set at %d px" % [where, path, font_size])
+	var on_border: float = 0.0 if scrolled else border_overlap(control)
+	if on_border > SLACK:
+		var words: String = shown_text(control).left(24)
+		problems.append(
+			"%s: %s '%s' is %.0f px onto its paper's border" % [where, path, words, on_border]
+		)
+
+
+## How far a control that prints text reaches onto the printed border of the paper sheet
+## it stands on, or 0: its box against the nearest paper's, PAPER_LINES in from each edge.
+static func border_overlap(control: Control) -> float:
+	if read_size(control) == 0 or control is Button:
+		return 0.0
+	var paper: Control = _paper_under(control)
+	if paper == null:
+		return 0.0
+	var inside: Rect2 = _drawn(paper).grow(-PAPER_LINES)
+	var box: Rect2 = _drawn(control)
+	var over: float = maxf(inside.position.x - box.position.x, box.end.x - inside.end.x)
+	over = maxf(over, maxf(inside.position.y - box.position.y, box.end.y - inside.end.y))
+	return maxf(over, 0.0)
+
+
+## The nearest ancestor drawn as a paper sheet: a panel whose style is the paper texture
+## with the sheet's border. A ticket button's smaller border does not count.
+static func _paper_under(control: Control) -> Control:
+	var node: Node = control.get_parent()
+	while node != null:
+		var panel: PanelContainer = node as PanelContainer
+		if panel != null:
+			var style: StyleBoxTexture = panel.get_theme_stylebox("panel") as StyleBoxTexture
+			var sheet: bool = (
+				style != null
+				and style.get_texture_margin(SIDE_LEFT) >= CommonsTheme.SHEET_BORDER - 0.5
+			)
+			if sheet:
+				return panel
+		node = node.get_parent()
+	return null
+
+
+## A control's box as drawn, its scale counted.
+static func _drawn(control: Control) -> Rect2:
+	var shown: Transform2D = control.get_global_transform()
+	return Rect2(shown.origin, control.size * shown.get_scale())
 
 
 ## How far single-line text runs past its control's width, or 0.
@@ -81,6 +129,15 @@ static func hidden_lines(control: Control) -> int:
 	if rich != null and not rich.get_parsed_text().is_empty():
 		return 1 if rich.get_content_height() > rich.size.y + SLACK else 0
 	return 0
+
+
+## The words a control prints, or "".
+static func shown_text(control: Control) -> String:
+	if control is Label:
+		return (control as Label).text
+	if control is RichTextLabel:
+		return (control as RichTextLabel).get_parsed_text()
+	return ""
 
 
 ## The font size text is set at in a control that prints text, or 0.
