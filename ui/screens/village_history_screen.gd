@@ -15,8 +15,6 @@ const RECORD_INK: Color = Color("2a2118")
 const SHEET_PADDING: int = 28
 ## The file's sheet keeps stains of its own, apart from the generations' sheets.
 const FILE_SHEET: int = 97
-## Text on the paper is ink, so the backdrop's paper halo is taken off it.
-const INKED_TYPES: Array[String] = ["Label", "Eyebrow", "Headline", "Title"]
 
 var _scroll: ScrollContainer = ScrollContainer.new()
 var _sheet: PanelContainer = PanelContainer.new()
@@ -30,7 +28,8 @@ func open(app: DemoApp) -> void:
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
 	_sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
 	_sheet.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_sheet.theme = _no_halo()
+	# Text on the paper is ink, so the backdrop's paper halo is taken off it.
+	_sheet.theme = ScreenKit.ink_theme()
 	page.add_child(_sheet)
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
@@ -103,13 +102,6 @@ func sheet() -> PanelContainer:
 
 func back_button() -> Button:
 	return _back
-
-
-static func _no_halo() -> Theme:
-	var theme: Theme = Theme.new()
-	for type: String in INKED_TYPES:
-		theme.set_constant("outline_size", type, 0)
-	return theme
 
 
 func _heading(text: String) -> Label:

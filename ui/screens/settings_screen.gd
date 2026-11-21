@@ -2,7 +2,8 @@ class_name SettingsScreen
 extends Control
 ## Volumes, motion and the print pass on one sheet, and beside it the card back designs
 ## (ADR 0025), and under them the family's name with a way to change it between runs
-## (ADR 0028). Changes apply at once and save on the way back. Replay the arrival plays
+## (ADR 0028). The two sheets stand as tall as each other, the name at the foot of its
+## sheet. Changes apply at once and save on the way back. Replay the arrival plays
 ## the first evening again (ADR 0026). A new text size (ADR 0034) builds the screen again
 ## at once, with the focus on the size chosen. Controls opens the key bindings (ADR 0035)
 ## as a screen of its own.
@@ -11,6 +12,7 @@ var _app: DemoApp = null
 var _card_backs: CardBackRow
 var _change: Button = null
 var _name_line: Label
+var _sheets: HBoxContainer
 
 
 func open(app: DemoApp) -> void:
@@ -22,12 +24,17 @@ func open(app: DemoApp) -> void:
 	var backs: VBoxContainer = ScreenKit.card(Vector2(0, 0))
 	_card_backs = CardBackRow.new(CardBacks.profile_runs())
 	backs.add_child(_card_backs)
+	# The shorter sheet is as tall as the taller, and what room that leaves on this one
+	# lies between the card backs and the name, which stands at the sheet's foot.
+	var room: Control = Control.new()
+	room.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	backs.add_child(room)
 	backs.add_child(_family_name(app))
 	var panel: Control = SettingsPanel.build(false)
 	var sheets: HBoxContainer = ScreenKit.row([panel, ScreenKit.card_panel(backs)])
 	sheets.alignment = BoxContainer.ALIGNMENT_BEGIN
-	for sheet: Node in sheets.get_children():
-		(sheet as Control).size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_sheets = sheets
 	# At a larger text size the sheets can stand taller than the page: they scroll, and
 	# follow the focus, so Back and the header stay on screen (ADR 0034).
 	var scroll: ScrollContainer = ScrollContainer.new()
@@ -77,6 +84,14 @@ func _rebuild() -> void:
 	_change = null
 	open(_app)
 	SettingsPanel.chosen_text_size(self).grab_focus()
+
+
+## The two sheets, left to right, for tests.
+func sheets() -> Array[Control]:
+	var made: Array[Control] = []
+	for sheet: Node in _sheets.get_children():
+		made.append(sheet as Control)
+	return made
 
 
 ## The card back row, for tests.

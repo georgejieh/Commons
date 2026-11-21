@@ -6,8 +6,9 @@ extends Control
 ## blank aged sheet with only the line saying when it opens, and nothing in its text,
 ## tooltip or accessible name names it. The sections flow to the screen's width and
 ## scroll, and the scroll follows keyboard and gamepad focus from sheet to sheet. The
-## whole page sits on one paper sheet, so the heading reads as the shops' do. A Cadre
-## with no art yet shows the empty frame its picture will fill.
+## whole page sits on one paper sheet, so the heading reads as the shops' do, and its
+## text is ink on that paper, with no halo. A Cadre with no art yet shows the empty frame
+## its picture will fill.
 
 const ART_SIZE: Vector2 = Vector2(128, 168)
 const CARD_WIDTH: float = 480.0
@@ -30,6 +31,7 @@ func open(app: DemoApp) -> void:
 	var sheet: PanelContainer = PanelContainer.new()
 	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
 	sheet.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sheet.theme = ScreenKit.ink_theme()
 	page.add_child(sheet)
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
@@ -71,9 +73,7 @@ func open_line() -> String:
 
 
 func _heading(text: String) -> Label:
-	var heading: Label = ScreenKit.styled(text, CommonsTheme.TITLE)
-	ScreenKit.paper_outline(heading)
-	return heading
+	return ScreenKit.styled(text, CommonsTheme.TITLE)
 
 
 func _flow(sheets: Array[UnlockSheet]) -> HFlowContainer:
