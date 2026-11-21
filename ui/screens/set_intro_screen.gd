@@ -68,7 +68,8 @@ func open(app: DemoApp) -> void:
 		tips.append("tip.debuffs")
 	if controller.remembers_seated():
 		tips.append("tip.memory")
-	TipSlip.offer(self, app, tips)
+	# Beside the sheet, never over it.
+	TipSlip.offer(self, app, tips, true)
 
 
 ## The Reforms in force, named in one line, or null while none is (ADR 0021).

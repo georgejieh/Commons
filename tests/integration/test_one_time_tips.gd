@@ -66,6 +66,18 @@ func _dismiss_all(slip: TipSlip) -> Array[String]:
 	return seen
 
 
+## On the Quota page the slip stands whole on the screen, in the half the sheet leaves
+## free, level with the screen's middle.
+func test_the_slip_stands_beside_the_quota_sheet() -> void:
+	var slip: TipSlip = await _tip(_full_quota_page(false))
+	await await_idle_frame()
+	var screen: Rect2 = get_tree().root.get_visible_rect()
+	var paper: Rect2 = slip.paper_rect()
+	assert_bool(paper.has_area() and screen.encloses(paper)).is_true()
+	assert_float(paper.position.x).is_greater_equal(screen.size.x / 2.0)
+	assert_float(paper.get_center().y).is_equal_approx(screen.get_center().y, 2.0)
+
+
 func test_debuffs_and_memory_show_once_across_two_full_runs_and_a_restart() -> void:
 	var first: TipSlip = await _tip(_full_quota_page(false))
 	assert_array(await _dismiss_all(first)).is_equal(["tip.debuffs"])

@@ -3,7 +3,8 @@ extends Control
 ## A one-time tooltip (ADR 0026): a paper slip over a light scrim with one line of text
 ## and "Got it", which takes the focus. Dismissing it is what the profile remembers, so
 ## each shows once per profile, the first time its subject comes up in a full run. Tips
-## due together show one after another.
+## due together show one after another. It stands in the middle of the screen, or of
+## its right half where the screen's own sheet fills the left.
 
 signal dismissed(tip_id: String)
 
@@ -17,11 +18,14 @@ var _shown: String = ""
 var _text: Label
 var _got_it: Button
 var _before: Control = null
+var _right_half: bool = false
 
 
 ## Adds a slip to host for whichever of tip_ids are due now, and shows the first. Returns
-## the slip, or null when none is due.
-static func offer(host: Control, app: DemoApp, tip_ids: Array[String]) -> TipSlip:
+## the slip, or null when none is due. right_half keeps it off a sheet on the left.
+static func offer(
+	host: Control, app: DemoApp, tip_ids: Array[String], right_half: bool = false
+) -> TipSlip:
 	var due: Array[String] = []
 	for tip_id: String in tip_ids:
 		if app.arrival.tip_due(tip_id):
@@ -31,21 +35,25 @@ static func offer(host: Control, app: DemoApp, tip_ids: Array[String]) -> TipSli
 	var slip: TipSlip = TipSlip.new()
 	slip._app = app
 	slip._queue = due
+	slip._right_half = right_half
 	host.add_child(slip)
 	slip._next.call_deferred()
 	return slip
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Offsets too: anchors alone leave a new control with no size, and the slip in a corner.
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var dim: ColorRect = ColorRect.new()
 	dim.color = DIM
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(dim)
 	var center: CenterContainer = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if _right_half:
+		center.anchor_left = 0.5
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(center)
 	var paper: PanelContainer = PanelContainer.new()
@@ -70,6 +78,11 @@ func shown() -> String:
 
 func got_it_button() -> Button:
 	return _got_it
+
+
+## Where the paper stands on screen.
+func paper_rect() -> Rect2:
+	return (_text.get_parent().get_parent() as Control).get_global_rect()
 
 
 func _next() -> void:
