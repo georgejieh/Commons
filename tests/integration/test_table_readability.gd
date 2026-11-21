@@ -142,14 +142,14 @@ func test_a_rule_for_the_whole_table_says_so() -> void:
 
 func test_keywords_explain_themselves() -> void:
 	var marked: String = Keywords.mark("Your plays gain 5 Grain and lose 1 Zeal.")
-	assert_str(marked).contains('[hint="Grain:')
-	assert_str(marked).contains('[hint="Zeal:')
+	assert_str(marked).contains("[url=grain]")
+	assert_str(marked).contains("[url=zeal]")
 	var zeal: String = Keywords.wrapped(tr("keyword.zeal.text"))
 	assert_str(Keywords.tip("Your plays lose 1 Zeal.")).is_equal(zeal)
 	assert_str(Keywords.tip("Pass.")).is_empty()
 	# A keyword reads as a link, in any case and in the plural, as it was written.
 	var kickers: String = Keywords.mark("Your kickers score.")
-	assert_str(kickers).contains('[hint="Kicker:')
+	assert_str(kickers).contains("[url=kicker]")
 	assert_str(kickers).contains("[u]kickers[/u]")
 	assert_array(Array(Keywords.found("While you are landlord, kitty cards count."))).is_equal(
 		["landlord", "kitty"]
