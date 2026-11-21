@@ -11,7 +11,10 @@ extends Control
 const GRAIN: Color = Color("8a5a12")
 const LOSS: Color = Color("3a322b")
 ## Where the tally and the audit slip sit, as their middles.
-const TALLY_AT: Vector2 = Vector2(790, 660)
+## The tally's middle, midway between the brigade notice and the action column, and the
+## least room it keeps from the column.
+const TALLY_AT: Vector2 = Vector2(824, 660)
+const TALLY_GAP: float = 8.0
 const SLIP_AT: Vector2 = Vector2(790, 520)
 ## The bowl lands beside the slip, in the open table between it and the ledger, so the
 ## claims stay readable while their dice roll.
@@ -371,5 +374,9 @@ func _pace() -> float:
 	return _player.step / TableMotion.PRESETS.event_step
 
 
+## The tally about its middle. A sum of very wide numbers slides left, over the notice,
+## which is dressing, and never onto the action column, where the prompt is read.
 func _center_tally() -> void:
 	tally.position = TALLY_AT - tally.size / 2.0
+	var most: float = TableScreen.ACTIONS_AT.position.x - TALLY_GAP - tally.size.x
+	tally.position.x = minf(tally.position.x, most)
