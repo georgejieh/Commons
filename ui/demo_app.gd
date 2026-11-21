@@ -304,7 +304,9 @@ func max_rounds() -> int:
 	return DEMO.sets.max_rounds
 
 
-## Seconds between table events, shorter under reduced motion.
+## Seconds between table events: shorter under reduced motion, longer through the
+## arrival, where every play and every score is new.
 func motion_step() -> float:
 	var reduced: bool = bool(Settings.value("reduced_motion"))
-	return MOTION.event_step * (MOTION.reduced_scale if reduced else 1.0)
+	var step: float = MOTION.event_step * (MOTION.reduced_scale if reduced else 1.0)
+	return step * (MOTION.arrival_scale if arrival.is_running() else 1.0)

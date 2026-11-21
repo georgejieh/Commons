@@ -5,6 +5,8 @@ extends Resource
 
 ## Seconds between table events, so each bot play can be seen.
 @export var event_step: float = 0.55
+## The arrival plays the table this much slower: everything on it is new to the player.
+@export var arrival_scale: float = 1.5
 @export var deal: float = 0.25
 @export var hover: float = 0.12
 @export var select: float = 0.1
