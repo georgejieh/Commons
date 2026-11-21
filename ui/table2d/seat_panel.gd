@@ -3,10 +3,9 @@ extends PanelContainer
 ## One villager at the table, on one paper sheet: portrait, with name, cards left and
 ## role level with its top, what an information Cadre reveals across the sheet's width
 ## under them (ADR 0034, rule 9), and their last words underneath. The landlord tag lies
-## across the portrait's top, so it takes no line of its own. The sheet keeps one height
-## whatever is said. The card count turns red at 2 and 1 cards and says so in words. A
-## line types out in step with the villager's voice (P3B.13); clicking it shows the rest
-## at once.
+## across the portrait's top. The card count turns red at 2 and 1 cards and says so in
+## words. A line types out in step with the villager's voice (P3B.13); a click shows the
+## rest at once.
 
 ## The player skipped the line typing out, so its voice should stop.
 signal speech_skipped(seat: int)
@@ -30,8 +29,9 @@ const FLASH_HOLD: float = 0.9
 const SPEECH_SIZE: int = 20
 const SPEECH_LINES: int = 2
 const SPEECH_ROOM: Vector2 = Vector2(200, 54)
-## What an information Cadre reveals, at Standard.
+## What an information Cadre reveals, and the cards left, at Standard.
 const INTEL_SIZE: int = 17
+const COUNT_SIZE: int = 26
 
 var seat: int = -1
 
@@ -97,7 +97,7 @@ func _init() -> void:
 	_portrait.add_child(_banner)
 	_name.theme_type_variation = CommonsTheme.TITLE
 	_name.add_theme_font_size_override("font_size", TextSize.px(36))
-	_count.add_theme_font_size_override("font_size", TextSize.px(26))
+	_count.add_theme_font_size_override("font_size", TextSize.px(COUNT_SIZE))
 	_count.add_theme_color_override("font_color", INK)
 	_role.theme_type_variation = CommonsTheme.EYEBROW
 	_speech.add_theme_font_size_override("font_size", TextSize.px(SPEECH_SIZE))
@@ -182,6 +182,13 @@ func set_count(cards: int) -> void:
 		UiMotion.pulse(_count)
 	_count.text = text
 	_count.add_theme_color_override("font_color", LANDLORD_RED if cards <= 2 else INK)
+	# Print beside the portrait: it fits the room the sheet leaves, never under Standard.
+	var font: Font = _count.get_theme_font("font")
+	var gap: float = _count_row.get_theme_constant("separation")
+	var room: float = _info_room() - _back.custom_minimum_size.x - gap
+	var fits: Callable = func(font_size: int) -> bool:
+		return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= room
+	_count.add_theme_font_size_override("font_size", TextSize.fit(COUNT_SIZE, COUNT_SIZE, fits))
 
 
 static func count_text(cards: int) -> String:
@@ -239,14 +246,12 @@ func put_away_intel(away: bool) -> void:
 	_stand_again()
 
 
-## The sheet at the height its lines need now. Godot stops throwing out cached minimum
-## sizes at the first one already thrown out, so a change made inside a deferred call can
-## leave the sheet's standing over a line that has changed; each is thrown out by hand,
-## innermost first, before the sheet is measured.
+## The sheet at the height its lines need now, its width kept. Each cached minimum size
+## is thrown out by hand, innermost first: Godot can leave a stale one standing.
 func _stand_again() -> void:
 	for control: Control in [_intel, _stack, self]:
 		control.update_minimum_size()
-	reset_size()
+	size = Vector2(size.x, 0.0)
 
 
 ## True while the intel line shows.
