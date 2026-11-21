@@ -196,6 +196,12 @@ func test_settings_changes_the_surname_between_runs() -> void:
 	await _launch()
 	var settings: SettingsScreen = _app.show_screen("settings")
 	assert_str(settings.name_line()).is_equal("Huang")
+	# The name stands on one line with Change beside it, no taller than a button.
+	await await_idle_frame()
+	var line: Label = settings.get("_name_line")
+	assert_int(line.get_line_count()).is_equal(1)
+	assert_float(line.size.x).is_greater(60.0)
+	assert_float(settings.change_button().size.y).is_less(100.0)
 	settings.change_button().pressed.emit()
 	await await_idle_frame()
 	var page: SurnameScreen = _page()

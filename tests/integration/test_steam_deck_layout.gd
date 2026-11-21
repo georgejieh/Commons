@@ -36,6 +36,18 @@ func test_the_canvas_is_16_by_10() -> void:
 	assert_float(visible.size.x / visible.size.y).is_equal_approx(1.6, 0.01)
 
 
+## A window wider than 16:9, as a maximized one is, shows the same 1920 by 1080 canvas
+## with bars at its sides: nothing is laid out for a wider one.
+func test_a_wider_window_keeps_the_canvas() -> void:
+	for window: Vector2i in [Vector2i(1920, 1017), Vector2i(2560, 1080), Vector2i(3440, 1440)]:
+		get_tree().root.size = window
+		await await_idle_frame()
+		var visible: Rect2 = get_tree().root.get_visible_rect()
+		assert_vector(visible.size).override_failure_message(str(window)).is_equal(
+			Vector2(1920, 1080)
+		)
+
+
 func test_no_screen_clips_at_any_text_size() -> void:
 	var problems: PackedStringArray = []
 	for level: int in TextSize.count():

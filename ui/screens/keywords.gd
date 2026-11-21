@@ -44,20 +44,21 @@ const SOFT: Color = Color("5a4a36")
 static var _patterns: Dictionary[String, RegEx] = {}
 
 
-## text as BBCode with every keyword underlined, colored and explained on hover. A
-## keyword matches in any case and in the plural, and prints as it was written.
-static func mark(text: String) -> String:
+## text as BBCode with every keyword underlined, colored and made a link named by its
+## ID, which KeywordText explains on hover. A keyword matches in any case and in the
+## plural, and prints as it was written. Keywords in skip print as plain words, so a
+## keyword's own meaning never links to itself.
+static func mark(text: String, skip: PackedStringArray = []) -> String:
 	var marked: String = text.replace("[", "[lb]")
-	# Two passes, so a word inside another keyword's explanation is never marked.
+	# Two passes, so a keyword's ID inside a link already made is never marked.
 	for index: int in TERMS.size():
-		marked = _pattern(TERMS[index]).sub(marked, "\u0001%d\u0002$0\u0003" % index, true)
+		if not skip.has(TERMS[index]):
+			marked = _pattern(TERMS[index]).sub(marked, "\u0001%d\u0002$0\u0003" % index, true)
 	for index: int in TERMS.size():
 		var id: String = TERMS[index]
-		# The hint is quoted, so only a quote or a bracket could end it early.
-		var tip: String = meaning(id).replace('"', "'").replace("[", "(").replace("]", ")")
-		var open: String = '[hint="%s"][color=#%s][u]' % [tip, INKS.get(id, LINK)]
+		var open: String = "[url=%s][color=#%s][u]" % [id, INKS.get(id, LINK)]
 		marked = marked.replace("\u0001%d\u0002" % index, open)
-	return marked.replace("\u0003", "[/u][/color][/hint]")
+	return marked.replace("\u0003", "[/u][/color][/url]")
 
 
 ## The keywords text names, in glossary order.
@@ -132,6 +133,7 @@ static func _slip_text(bbcode: String, font_size: int, color: Color) -> RichText
 	made.scroll_active = false
 	made.custom_minimum_size = Vector2(SLIP_WIDTH, 0)
 	made.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	made.meta_underlined = false
 	made.add_theme_font_size_override("normal_font_size", TextSize.px(font_size))
 	made.add_theme_color_override("default_color", color)
 	made.text = bbcode

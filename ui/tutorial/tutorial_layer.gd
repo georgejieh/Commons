@@ -1,11 +1,12 @@
 class_name TutorialLayer
 extends Control
-## The arrival over every screen it plays on (ADR 0026): Wang's slip beside the one thing
-## the step asks for, the red ring round that thing, the Skip button in the corner and
-## the question it asks, the "Begin your first year" button for the last step, and the
-## room shown at a meter's high band. It reads the director and the screen shown; it
-## sends nothing to the run. Screens name their targets with tutorial_target(key) or,
-## for the table, tutorial_rect(key), and may name what the slip must keep clear of. It
+## The arrival over every screen it plays on (ADR 0026): Wang's slip, the light on what
+## the step asks for (TutorialGlow), the Skip button in the corner and the question it
+## asks, the "Begin your first year" button for the last step, and the room shown at a
+## meter's high band. It reads the director and the screen shown; it sends nothing to
+## the run. Screens name their targets with tutorial_target(key) or, for the table,
+## tutorial_rects(key); they may name what the slip must keep clear of, or with
+## tutorial_home(extent) the one place the slip stands, as the table does. It
 ## draws above every piece a screen lifts (the store's slips and seals, the envelope),
 ## so the room it shows covers the whole page, and below the app's menu.
 
@@ -17,7 +18,7 @@ const DRAW_ORDER: int = 5
 var _app: DemoApp = null
 var _director: TutorialDirector = null
 var _slip: TutorialSlip = TutorialSlip.new()
-var _ring: HighlightRing = HighlightRing.new()
+var _glow: TutorialGlow = TutorialGlow.new()
 var _skip: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _begin: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 var _confirm: SkipConfirm = SkipConfirm.new()
@@ -34,7 +35,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = DRAW_ORDER
-	for child: Control in [_preview, _ring, _slip, _begin, _skip, _confirm]:
+	for child: Control in [_preview, _glow, _slip, _begin, _skip, _confirm]:
 		add_child(child)
 	_skip.text = tr("tutorial.skip")
 	_skip.pressed.connect(_confirm.ask)
@@ -63,7 +64,7 @@ func attach(app: DemoApp, director: TutorialDirector) -> void:
 func detach() -> void:
 	_director = null
 	_confirm.visible = false
-	_ring.ring(Rect2())
+	_glow.light([])
 	_slip.say("")
 	_begin.visible = false
 	visible = false
@@ -80,8 +81,8 @@ func slip() -> TutorialSlip:
 	return _slip
 
 
-func ring() -> HighlightRing:
-	return _ring
+func glow() -> TutorialGlow:
+	return _glow
 
 
 func skip_button() -> Button:
@@ -127,7 +128,7 @@ func _process(_delta: float) -> void:
 		_layout()
 
 
-## Rings the target on the screen shown and stands the slip beside it.
+## Lights the target on the screen shown and stands the slip by it, or at its home.
 func _layout() -> void:
 	var size_now: Vector2 = get_viewport_rect().size
 	_skip.reset_size()
@@ -143,13 +144,19 @@ func _layout() -> void:
 	var showing: bool = not hidden and (_on_its_screen() or _preview.visible)
 	_slip.visible = showing and not _slip.line().is_empty()
 	var key: String = _director.highlight() if showing and not _preview.visible else ""
-	var target: Rect2 = _target_rect(guide, key)
-	_ring.ring(target)
+	_glow.light(_targets(guide, key))
+	var target: Rect2 = _glow.lit_area()
 	if _preview.visible:
 		_under_caption()
 		return
 	if not target.has_area():
 		return
+	if guide != null and guide.has_method("tutorial_home"):
+		_slip.reset_size()
+		var home: Vector2 = guide.call("tutorial_home", _slip.size)
+		if home.is_finite():
+			_slip.global_position = home
+			return
 	var avoid: Array[Rect2] = []
 	if guide != null and guide.has_method("tutorial_avoid"):
 		avoid.assign(guide.call("tutorial_avoid"))
@@ -178,18 +185,20 @@ func _guide() -> Object:
 	return screen
 
 
-func _target_rect(guide: Object, key: String) -> Rect2:
+## What the step asks for on the screen shown, each thing's place in screen space.
+func _targets(guide: Object, key: String) -> Array[Rect2]:
+	var found: Array[Rect2] = []
 	if key.is_empty() or guide == null:
-		return Rect2()
+		return found
 	if key == "begin":
-		return _begin.get_global_rect()
-	if guide.has_method("tutorial_rect"):
-		return guide.call("tutorial_rect", key)
-	if guide.has_method("tutorial_target"):
+		found.append(_begin.get_global_rect())
+	elif guide.has_method("tutorial_rects"):
+		found.assign(guide.call("tutorial_rects", key))
+	elif guide.has_method("tutorial_target"):
 		var control: Control = guide.call("tutorial_target", key)
 		if control != null and control.is_visible_in_tree():
-			return control.get_global_rect()
-	return Rect2()
+			found.append(control.get_global_rect())
+	return found
 
 
 ## Keyboard and gamepad start on the allowed action: the target's own button.
