@@ -11,6 +11,8 @@ extends Control
 ## so the room it shows covers the whole page, and below the app's menu.
 
 const CORNER: float = 24.0
+## From the screen's foot: close under it, so Skip clears the ledger's foot at the table.
+const FOOT: float = 8.0
 const BEGIN_GAP: float = 16.0
 ## Above the highest piece a screen lifts, the envelope overlay's 4.
 const DRAW_ORDER: int = 5
@@ -132,10 +134,10 @@ func _process(_delta: float) -> void:
 func _layout() -> void:
 	var size_now: Vector2 = get_viewport_rect().size
 	_skip.reset_size()
-	_skip.position = size_now - _skip.size - Vector2.ONE * CORNER
+	_skip.position = size_now - _skip.size - Vector2(CORNER, FOOT)
 	_begin.reset_size()
 	_begin.position = Vector2(
-		_skip.position.x - BEGIN_GAP - _begin.size.x, size_now.y - _begin.size.y - CORNER
+		_skip.position.x - BEGIN_GAP - _begin.size.x, size_now.y - _begin.size.y - FOOT
 	)
 	var guide: Object = _guide()
 	var hidden: bool = _app.menu_is_open()

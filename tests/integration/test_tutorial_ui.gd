@@ -351,6 +351,13 @@ func _check_slip(where: String) -> void:
 			for piece: String in kept:
 				var over: bool = rect.intersects(kept[piece])
 				assert_bool(over).override_failure_message("%s %s" % [where, piece]).is_false()
+			# The empty Cadre board is put away under the slip, and Skip clears the ledger.
+			var board: Control = table.get("_board")
+			assert_bool(board.visible).override_failure_message(where + " board").is_false()
+			var ledger: Control = table.get("_ledger")
+			var paper: Rect2 = (ledger.get_parent() as Control).get_global_rect()
+			var skip: bool = layer.skip_button().get_global_rect().intersects(paper)
+			assert_bool(skip).override_failure_message(where + " skip on ledger").is_false()
 	var store: StoreScreen = _app.switcher.current() as StoreScreen
 	if store != null:
 		# Wang's slip is the only explanation on screen while the arrival runs.

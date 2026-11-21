@@ -202,6 +202,14 @@ func test_settings_changes_the_surname_between_runs() -> void:
 	assert_int(line.get_line_count()).is_equal(1)
 	assert_float(line.size.x).is_greater(60.0)
 	assert_float(settings.change_button().size.y).is_less(100.0)
+	# Controls stands whole at the screen's foot, outside the sheets' scroll.
+	var controls: Button = SettingsPanel.controls_button(settings)
+	var screen: Rect2 = get_tree().root.get_visible_rect()
+	assert_bool(screen.encloses(controls.get_global_rect())).is_true()
+	var above: Node = controls.get_parent()
+	while above != null and above != settings:
+		assert_bool(above is ScrollContainer).is_false()
+		above = above.get_parent()
 	settings.change_button().pressed.emit()
 	await await_idle_frame()
 	var page: SurnameScreen = _page()

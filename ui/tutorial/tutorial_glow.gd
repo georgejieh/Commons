@@ -10,8 +10,8 @@ extends Control
 const OFF: float = 6.0
 ## The halo: how far it reaches at rest, how much further at the top of a breath, and
 ## how long a breath takes.
-const REACH: float = 12.0
-const BREATH_REACH: float = 6.0
+const REACH: float = 14.0
+const BREATH_REACH: float = 8.0
 const BREATH: float = 1.5
 ## Moving to a new thing: seconds the frame takes to close in, and from how far out.
 const SWELL: float = 0.3
@@ -112,5 +112,5 @@ func _draw() -> void:
 	for index: int in _rects.size():
 		var off: float = OFF + SWELL_BY * maxf(swell, 0.0)
 		var frame: PackedVector2Array = GiltFrame.path(_rects[index].grow(off))
-		GiltFrame.halo(self, frame, REACH + BREATH_REACH * breath, (0.07 + 0.05 * breath) * shine)
+		GiltFrame.halo(self, frame, REACH + BREATH_REACH * breath, (0.1 + 0.07 * breath) * shine)
 		GiltFrame.gild(self, frame, shine, index)

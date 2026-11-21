@@ -133,3 +133,26 @@ func test_the_notice_changes_with_the_deal_and_the_years() -> void:
 			var where: String = "%s at size %d" % [key, level]
 			var tall: float = dressing.notice_rect().size.y
 			assert_float(tall).override_failure_message(where).is_less_equal(first + 0.5)
+
+
+## The score tally keeps clear of the notice on its left and of the action column on its
+## right for an ordinary play; a sum of very wide numbers may lie over the notice, which
+## is dressing, and still never over the column.
+func test_the_tally_keeps_clear_of_the_notice_and_the_buttons() -> void:
+	Settings.set_value("reduced_motion", true)
+	var table: TableScreen = await _table_at(0)
+	var dressing: DreadDressing = table.get("_dressing")
+	var moments: TableMoments = table.get("_moments")
+	for wide: bool in [false, true]:
+		if wide:
+			moments.tally.show_score(9999.0, 96.0, 12.5, 999999.0)
+		else:
+			moments.tally.show_score(54.0, 7.0, 1.5, 567.0)
+		await await_idle_frame()
+		await await_idle_frame()
+		var tally: Rect2 = moments.tally.get_global_rect()
+		assert_bool(tally.has_area()).is_true()
+		assert_bool(tally.intersects(table.actions().get_global_rect())).is_false()
+		if not wide:
+			assert_bool(tally.intersects(dressing.notice_rect())).is_false()
+	Settings.set_value("reduced_motion", false)
