@@ -115,3 +115,25 @@ func test_a_slip_closes_when_its_text_goes() -> void:
 	_text.visible = false
 	_tips.tick(0.01, Vector2(300, 210))
 	assert_array(_tips.slips()).is_empty()
+
+
+## The engine itself reports the pointer on a marked word: mouse motion over the text,
+## not a signal sent by hand, asks for the slip. The text finds the word under the
+## pointer from where the engine says the mouse is, so the motion goes in through Input,
+## in the window's own pixels.
+func test_real_pointer_motion_over_a_word_asks_for_its_slip() -> void:
+	_text.set_rule("Zeal Zeal Zeal Zeal Zeal Zeal Zeal Zeal Zeal Zeal Zeal Zeal Zeal Zeal Zeal")
+	await await_idle_frame()
+	await await_idle_frame()
+	var asked: Array[String] = []
+	_text.meta_hover_started.connect(func(meta: Variant) -> void: asked.append(str(meta)))
+	var area: Rect2 = _text.get_global_rect()
+	for step: int in 12:
+		var move: InputEventMouseMotion = InputEventMouseMotion.new()
+		var at: Vector2 = area.position + Vector2(20.0 + step * 30.0, 12.0)
+		move.position = get_tree().root.get_final_transform() * at
+		move.global_position = move.position
+		Input.parse_input_event(move)
+		Input.flush_buffered_events()
+		await await_idle_frame()
+	assert_array(asked).contains(["zeal"])
