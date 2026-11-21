@@ -337,3 +337,39 @@ func test_envelope_paper_is_aged_and_wears_with_the_stage() -> void:
 	var tie: Color = EnvelopePaper.paper(EnvelopeShelf.STRING_TIE, 0.3)
 	var seal: Color = EnvelopePaper.paper(EnvelopeShelf.WAX_SEAL, 0.3)
 	assert_float(absf(tie.get_luminance() - seal.get_luminance())).is_greater(0.1)
+
+
+## A paper is its own button: it shows no Keep button, a click on the item keeps it, and
+## the pointed paper is the one lit, with a Keep tag, while the others are not. An
+## envelope of Directives has no explanation under the row, since each document says
+## everything itself; an envelope of Campaigns has one.
+func test_a_paper_is_kept_by_clicking_it_and_only_the_pointed_one_is_lit() -> void:
+	Settings.set_value("reduced_motion", true)
+	_offer("directive_envelope")
+	var store: StoreScreen = await _open()
+	var overlay: EnvelopeOverlay = _bought(store)
+	await await_idle_frame()
+	await await_idle_frame()
+	var papers: Array[ChoicePaper] = overlay.papers()
+	assert_bool(overlay.blocks().has("detail")).is_false()
+	for paper: ChoicePaper in papers:
+		assert_str(paper.keep.text).is_empty()
+		var item: Rect2 = EnvelopeOverlay.shown_rect(paper.item)
+		assert_bool(paper.keep.get_global_rect().grow(1.5).encloses(item)).is_true()
+		assert_bool(paper.is_pointed()).is_equal(paper.index == 0)
+		assert_bool(paper.shows_keep_tag()).is_equal(paper.index == 0)
+	papers[2].keep.mouse_entered.emit()
+	assert_bool(papers[2].is_pointed() and papers[2].shows_keep_tag()).is_true()
+	assert_bool(papers[0].is_pointed() or papers[0].shows_keep_tag()).is_false()
+	assert_str(overlay.shown_title()).is_equal(papers[2].title)
+	papers[2].keep.pressed.emit()
+	assert_object(_app.controller.opened_envelope()).is_null()
+	assert_dict(_loop().record.commands[-1]).is_equal({"type": "envelope_pick", "index": 2})
+	_offer("campaign_envelope")
+	_loop().state.coupons = 60
+	_app.controller.reseal_book()
+	store = await _open()
+	overlay = _bought(store)
+	await await_idle_frame()
+	assert_bool(overlay.blocks().has("detail")).is_true()
+	overlay.nothing_button().pressed.emit()

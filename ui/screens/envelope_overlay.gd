@@ -2,21 +2,25 @@ class_name EnvelopeOverlay
 extends Control
 ## An envelope opened over the shop page (ADR 0021). A Scrim dims the page and takes its
 ## clicks, the envelope comes to the middle and is opened in one beat, and its papers
-## slide out into a row. Under them the pointed paper's name and full rules, with each
-## keyword's meaning (EnvelopeDetail), and one Take Nothing. Keeping a paper lifts it
+## slide out into a row. A paper is kept by clicking it. Under the row, EnvelopeDetail
+## explains the pointed paper where papers do not print their own rules, then one Take
+## Nothing. Keeping a paper lifts it
 ## under a seal, Kept, or Issued with each Rate ticking for a Directive, while the others
 ## fall away; taking nothing lets them all fall. Then the overlay closes and frees
 ## everything it made. Reduced motion skips to each end.
 ##
 ## Keyboard and gamepad: focus lands on the first paper that can be kept, left and right
 ## move, accept keeps. Cancel never throws an envelope away at once: it moves focus to
-## Take Nothing, and a second cancel there confirms it.
+## Take Nothing and a line under it asks for a second cancel, which confirms it.
 
 ## The envelope is answered and the overlay is gone.
 signal closed
 
 const GAP: int = 20
 const ROW_GAP: int = 14
+## Inside the heading paper's printed border, which ends 17 px in.
+const HEADING_PADDING: int = 22
+const CONFIRM_SIZE: int = 18
 ## The envelope's size once it reaches the middle.
 const FIGURE: Vector2 = Vector2(540, 340)
 ## Seconds: the envelope's arrival, its opening beat, each paper's slide and the gap
@@ -52,6 +56,9 @@ var _row: HBoxContainer = HBoxContainer.new()
 var _papers: Array[ChoicePaper] = []
 var _detail: EnvelopeDetail = EnvelopeDetail.new()
 var _nothing: Button = ScreenKit.button("", CommonsTheme.GHOST)
+## Asks for a second cancel, under Take Nothing; it keeps its room while hidden.
+var _confirm: Label = ScreenKit.label("", CONFIRM_SIZE, ScreenKit.RED)
+var _pointed_title: String = String()
 var _seal: InkSeal = InkSeal.new()
 var _busy: bool = true
 var _blocks: Dictionary[String, Control] = {}
@@ -81,13 +88,21 @@ func open(controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate:
 	_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_column.add_child(_row)
 	_fill_row()
+	# Always in the tree, so it is freed with the overlay; hidden, it takes no room.
 	_column.add_child(_detail)
-	_blocks["detail"] = _detail
+	_detail.visible = EnvelopeDetail.needed(_shelf)
+	if _detail.visible:
+		_blocks["detail"] = _detail
 	_nothing.text = tr("envelope.nothing")
 	_nothing.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_nothing.pressed.connect(_take_nothing)
 	_nothing.focus_entered.connect(_point.bind(-1))
 	_column.add_child(_nothing)
+	_confirm.text = tr("envelope.nothing.confirm")
+	_confirm.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_confirm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_confirm.modulate.a = 0.0
+	_column.add_child(_confirm)
 	_blocks["row"] = _row
 	_blocks["button"] = _nothing
 	_figure.wrapping = shelf.wrapping(shelf.opened_id())
@@ -118,7 +133,7 @@ func is_busy() -> bool:
 
 ## The line that asks for a second cancel, shown after the first.
 func asks_to_confirm() -> bool:
-	return _detail.asks_to_confirm()
+	return _confirm.modulate.a > 0.5
 
 
 func seal() -> InkSeal:
@@ -129,9 +144,9 @@ func figure() -> EnvelopeFigure:
 	return _figure
 
 
-## The name and rules shown under the row now.
+## The pointed paper's name, which the explanation under the row shows when there is one.
 func shown_title() -> String:
-	return _detail.shown_title()
+	return _pointed_title
 
 
 ## The overlay's main pieces by name, which must fit the screen without overlapping.
@@ -141,7 +156,7 @@ func blocks() -> Dictionary[String, Control]:
 
 func _heading() -> Control:
 	var sheet: PanelContainer = PanelContainer.new()
-	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(10))
+	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(HEADING_PADDING))
 	sheet.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var lines: VBoxContainer = VBoxContainer.new()
 	lines.add_theme_constant_override("separation", 0)
@@ -160,13 +175,14 @@ func _heading() -> Control:
 ## One paper per item, each in a place of its own so it can move while the row holds.
 func _fill_row() -> void:
 	var item: Vector2 = ChoicePaper.item_for(_shelf.count())
+	var strips: bool = ChoicePaper.needs_strips(_shelf)
 	for index: int in _shelf.count():
 		var place: Control = Control.new()
-		place.custom_minimum_size = ChoicePaper.size_for(item)
+		place.custom_minimum_size = ChoicePaper.size_for(item, strips)
 		place.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_row.add_child(place)
 		var paper: ChoicePaper = ChoicePaper.new()
-		paper.setup(index, item)
+		paper.setup(index, item, strips)
 		# In the tree first: a card view is only ready to show a card once it is in it.
 		place.add_child(paper)
 		var kind: int = _shelf.kind(index)
@@ -183,8 +199,8 @@ func _fill_row() -> void:
 		_papers.append(paper)
 
 
-## Left and right move along the Keep buttons, down goes to Take Nothing and up comes
-## back; nothing leads out of the overlay.
+## Left and right move along the papers, down goes to Take Nothing and up comes back;
+## nothing leads out of the overlay.
 func _wire_focus() -> void:
 	var keeps: Array[Button] = []
 	for paper: ChoicePaper in _papers:
@@ -273,7 +289,9 @@ func _point(index: int) -> void:
 		paper.set_cursor(paper.index == index)
 	if index < 0:
 		return
+	_confirm.modulate.a = 0.0
 	var paper: ChoicePaper = _papers[index]
+	_pointed_title = paper.title
 	var rule: String = paper.rule
 	if not paper.is_takeable():
 		rule += "\n\n" + paper.caption()
@@ -286,11 +304,11 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	if _busy:
 		return
-	if _nothing.has_focus() and _detail.asks_to_confirm():
+	if _nothing.has_focus() and asks_to_confirm():
 		_take_nothing()
 		return
 	_nothing.grab_focus()
-	_detail.ask_to_confirm(true)
+	_confirm.modulate.a = 1.0
 
 
 ## Keeps the paper: the pick is sent now, then acted out.

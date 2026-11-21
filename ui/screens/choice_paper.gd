@@ -4,38 +4,57 @@ extends Control
 ## screen: a Directive as its typed document with each Rate it raises, a Campaign as its
 ## leaflet, a plot card as its face with its mark plainly on it. Under it, on a paper
 ## strip of its own, what a card's mark does, or why the item cannot be kept now, in dark
-## ink; the item itself always stays at full strength. Under that, Keep, as wide as the
-## paper. Hovering it or focusing its Keep asks the envelope's screen to explain it.
+## ink; the item itself always stays at full strength. The item is the button: a click on
+## it, or accept while it has the focus, keeps it. Pointed at, it lifts a little under a
+## gilt frame (GiltFrame) and a Keep tag, and asks the envelope's screen to explain it.
 
 ## Hovered or focused: the screen should explain this item.
 signal pointed(index: int)
 signal kept(index: int)
 
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
-## The item's place with up to three choices, and with four or more.
-const ITEM_FEW: Vector2 = Vector2(240, 300)
-const ITEM_MANY: Vector2 = Vector2(210, 265)
+## The item's place with up to three choices, and with four or more. Each is a little
+## wider for its height than a Campaign's leaflet, the widest item, so a leaflet, a card
+## and a document all stand the place's full height and line up.
+const ITEM_FEW: Vector2 = Vector2(270, 340)
+const ITEM_MANY: Vector2 = Vector2(238, 300)
 const FEW: int = 3
-## The caption strip's height and Keep's, under the item, and the gap between them.
-const CAPTION_HEIGHT: float = 76.0
-const KEEP_HEIGHT: float = 50.0
+## The caption strip's height under the item, and the gap between them.
+const CAPTION_HEIGHT: float = 92.0
 const GAP: float = 8.0
+## Room over the item for it to lift into with its tag, so a pointed paper never leaves
+## its own box; how far it lifts and grows, and how long that takes.
+const LIFT_ROOM: float = 40.0
+const LIFT: float = 12.0
+const LIFT_SCALE: float = 1.04
+const LIFT_TIME: float = 0.16
+## The frame's stand-off from the item, its halo, and the Keep tag's side margins.
+const FRAME_OFF: float = 5.0
+const HALO_REACH: float = 10.0
+const TAG_MARGIN: int = 12
 const NAME_SIZE: int = 26
 ## A Directive's Rate lines, never under 16 px.
 const LINE_SIZE: int = 16
 const CAPTION_SIZE: int = 17
-const CAPTION_PADDING: int = 14
-## A Directive document's padding inside its printed border, and the room its border
-## and padding take from its name.
-const DOCUMENT_PADDING: int = 14
-const DOCUMENT_INSET: float = 32.0
+const CAPTION_PADDING: int = 20
+## A Directive document's padding, clear of the paper's printed border (17 px), and the
+## room that padding takes from its name.
+const DOCUMENT_PADDING: int = 20
+const DOCUMENT_INSET: float = 44.0
 const DOCUMENT_NAME_LEAST: int = 18
 ## A refusal is dark red ink, a caption dark ink.
 const REFUSED_INK: Color = Color("7a160d")
-const GOLD: Color = Color("c9a227")
 
 var index: int = -1
-var keep: Button = ScreenKit.button("", CommonsTheme.COUPON)
+## The item's own button: no face, the size of the item, over it.
+var keep: Button = Button.new()
+## 0 at rest, 1 lifted under the pointer.
+var lift: float = 0.0:
+	set(value):
+		lift = value
+		_lifted.position = Vector2(0, LIFT_ROOM - LIFT * value)
+		_lifted.scale = Vector2.ONE * (1.0 + (LIFT_SCALE - 1.0) * value)
+		queue_redraw()
 ## What the screen's explanation shows: the item's name and its full rules.
 var title: String = ""
 var rule: String = ""
@@ -50,6 +69,10 @@ var _caption: Label = ScreenKit.label("", CAPTION_SIZE)
 var _strip: PanelContainer = PanelContainer.new()
 var _holder: Control = Control.new()
 var _place: CenterContainer = CenterContainer.new()
+## What lifts: the item's place and its Keep tag.
+var _lifted: Control = Control.new()
+var _tag: Label = Label.new()
+var _lifting: Tween = null
 var _cursor: bool = false
 var _takeable: bool = true
 
@@ -59,37 +82,78 @@ static func item_for(count: int) -> Vector2:
 	return ITEM_FEW if count <= FEW else ITEM_MANY
 
 
-## The whole paper's size for an item's place: the item, its caption strip and Keep.
-static func size_for(item: Vector2) -> Vector2:
-	return Vector2(item.x, item.y + GAP + CAPTION_HEIGHT + GAP + KEEP_HEIGHT)
+## True when a paper in shelf's open envelope has a caption to print under it: what a
+## card's mark does, or why an item cannot be kept. Then every paper keeps room for one.
+static func needs_strips(shelf: EnvelopeShelf) -> bool:
+	for index: int in shelf.count():
+		var kind: int = shelf.kind(index)
+		var plain: bool = (
+			kind == EnvelopeShelf.KIND_DIRECTIVE or kind == EnvelopeShelf.KIND_CAMPAIGN
+		)
+		if not plain or not shelf.refusal_key(index).is_empty():
+			return true
+	return false
 
 
-## Lays the paper out for its place in the row. Call before showing an item.
-func setup(at: int, place: Vector2) -> void:
+## The whole paper's size for an item's place: room to lift, the item and, with strips,
+## its caption strip.
+static func size_for(item: Vector2, strips: bool = true) -> Vector2:
+	var under: float = GAP + CAPTION_HEIGHT if strips else 0.0
+	return Vector2(item.x, LIFT_ROOM + item.y + under)
+
+
+## Lays the paper out for its place in the row; strips keeps room under the item for a
+## caption. Call before showing an item.
+func setup(at: int, place: Vector2, strips: bool = true) -> void:
 	index = at
 	item_size = place
-	var whole: Vector2 = size_for(place)
+	var whole: Vector2 = size_for(place, strips)
 	custom_minimum_size = whole
 	size = whole
 	pivot_offset = whole / 2.0
-	mouse_filter = Control.MOUSE_FILTER_STOP
-	var column: VBoxContainer = VBoxContainer.new()
-	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	column.add_theme_constant_override("separation", int(GAP))
-	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_lifted.size = place
+	_lifted.pivot_offset = place / 2.0
+	_lifted.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_lifted)
 	_place.custom_minimum_size = place
+	_place.size = place
 	_place.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(_place)
-	column.add_child(_caption_strip(place.x))
-	keep.text = TranslationServer.translate("envelope.keep")
-	keep.custom_minimum_size = Vector2(place.x, KEEP_HEIGHT)
-	keep.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	column.add_child(keep)
-	add_child(column)
-	mouse_entered.connect(func() -> void: pointed.emit(index))
+	_lifted.add_child(_place)
+	# Always in the tree, so it is freed with the paper; shown only where it has room.
+	var strip: Control = _caption_strip(place.x)
+	strip.position = Vector2(0, LIFT_ROOM + place.y + GAP)
+	strip.size = Vector2(place.x, CAPTION_HEIGHT)
+	strip.visible = strips
+	add_child(strip)
+	_make_tag()
+	# The item is the button: it has no face of its own, only the pointer and the focus.
+	for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+		keep.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	keep.position = Vector2(0, LIFT_ROOM)
+	keep.size = place
+	keep.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	add_child(keep)
+	lift = 0.0
 	keep.mouse_entered.connect(func() -> void: pointed.emit(index))
 	keep.focus_entered.connect(func() -> void: pointed.emit(index))
 	keep.pressed.connect(func() -> void: kept.emit(index))
+
+
+## The Keep tag that hangs on a pointed item's top edge: it says what a click does.
+func _make_tag() -> void:
+	_tag.text = TranslationServer.translate("envelope.keep").to_upper()
+	_tag.theme_type_variation = CommonsTheme.EYEBROW
+	_tag.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
+	var ground: StyleBoxFlat = StyleBoxFlat.new()
+	ground.bg_color = ScreenKit.STYLE.vermilion
+	ground.set_corner_radius_all(ScreenKit.STYLE.radius)
+	ground.content_margin_left = TAG_MARGIN
+	ground.content_margin_right = TAG_MARGIN
+	_tag.add_theme_stylebox_override("normal", ground)
+	_tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tag.visible = false
+	_lifted.add_child(_tag)
 
 
 ## A Directive: its typed document, a name over one Rate line per hand type it raises,
@@ -244,10 +308,37 @@ func caption_strip() -> PanelContainer:
 	return _strip
 
 
-## Under the keyboard or gamepad cursor: a gold edge under the item.
+## Pointed at by the mouse, the keyboard or the gamepad: the item lifts a little under a
+## gilt frame and its Keep tag. One that cannot be kept stays down under a plain dark
+## frame. Under reduced motion nothing moves; the frame and the tag say it.
 func set_cursor(on: bool) -> void:
+	if on == _cursor:
+		return
 	_cursor = on
+	_tag.visible = on and _takeable
+	if _tag.visible:
+		_tag.reset_size()
+		_tag.position = Vector2((item_size.x - _tag.size.x) / 2.0, -_tag.size.y / 2.0)
+	var to: float = 1.0 if on and _takeable else 0.0
+	if _lifting != null and _lifting.is_valid():
+		_lifting.kill()
+	if UiMotion.reduced() or not is_inside_tree():
+		lift = 0.0
+	else:
+		_lifting = create_tween()
+		_lifting.set_trans(Tween.TRANS_BACK if on else Tween.TRANS_CUBIC)
+		_lifting.set_ease(Tween.EASE_OUT)
+		_lifting.tween_property(self, "lift", to, LIFT_TIME)
 	queue_redraw()
+
+
+## True while the paper is the one pointed at, and whether its Keep tag shows.
+func is_pointed() -> bool:
+	return _cursor
+
+
+func shows_keep_tag() -> bool:
+	return _tag.visible
 
 
 ## The strip of paper under the item that a caption is printed on, hidden while empty.
@@ -297,6 +388,11 @@ func _fit_scale(base: Vector2) -> float:
 func _draw() -> void:
 	if not _cursor:
 		return
-	var edge: Color = CampaignPaper.ink(GOLD, BowlGrime.wear())
-	var under: float = _place.custom_minimum_size.y + 2.0
-	draw_rect(Rect2(Vector2(8, under), Vector2(item_size.x - 16, 4)), edge)
+	var grown: Vector2 = item_size * _lifted.scale
+	var at: Vector2 = _lifted.position + (item_size - grown) / 2.0
+	var frame: PackedVector2Array = GiltFrame.path(Rect2(at, grown).grow(FRAME_OFF))
+	if not _takeable:
+		draw_polyline(frame, REFUSED_INK, 2.0, true)
+		return
+	GiltFrame.halo(self, frame, HALO_REACH, 0.09)
+	GiltFrame.gild(self, frame, 1.0, index)
