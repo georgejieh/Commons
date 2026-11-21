@@ -94,6 +94,40 @@ func test_the_tally_counts_a_score_and_says_when_it_lands() -> void:
 	Settings.set_value("reduced_motion", false)
 
 
+## Each chit's number and caption stand inside the paper's printed border, "Work points"
+## included, and the table waits for the total to be read.
+func test_the_tally_keeps_its_words_inside_its_paper() -> void:
+	Settings.set_value("reduced_motion", true)
+	for level: int in TextSize.count():
+		Settings.set_value(TextSize.SETTING, level)
+		var tally: ScoreTally = auto_free(ScoreTally.new())
+		add_child(tally)
+		tally.show_score(999999.0, 96.0, 12.5, 999999.0)
+		await await_idle_frame()
+		await await_idle_frame()
+		for tile: PanelContainer in tally.find_children("*", "PanelContainer", true, false):
+			var inside: Rect2 = tile.get_global_rect().grow(-18.0)
+			for label: Label in tile.find_children("*", "Label", true, false):
+				var font: Font = label.get_theme_font("font")
+				var wide: float = (
+					font
+					. get_string_size(
+						label.text,
+						HORIZONTAL_ALIGNMENT_LEFT,
+						-1,
+						label.get_theme_font_size("font_size")
+					)
+					. x
+				)
+				var where: String = "%s at size %d" % [label.text, level]
+				assert_float(wide).override_failure_message(where).is_less_equal(inside.size.x)
+				var held: bool = inside.grow(1.0).encloses(label.get_global_rect())
+				assert_bool(held).override_failure_message(where).is_true()
+	Settings.set_value(TextSize.SETTING, 0)
+	Settings.set_value("reduced_motion", false)
+	assert_float(ScoreTally.read_time(1.0)).is_greater_equal(0.4)
+
+
 func test_a_callout_comes_down_by_itself() -> void:
 	var callout: Callout = auto_free(Callout.new())
 	add_child(callout)

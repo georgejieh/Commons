@@ -7,16 +7,21 @@ extends HBoxContainer
 
 signal landed(total_text: String)
 
-const TILE: Vector2 = Vector2(128, 84)
+const TILE: Vector2 = Vector2(150, 104)
+## Inside the paper's printed border, which ends 17 px in.
+const PADDING: int = 20
 const VALUE_SIZE: int = 40
 const TOTAL_SIZE: int = 48
 const SIGN_SIZE: int = 34
-## Seconds for each beat at full pace: chits in, Grain counting, a stamp, the total.
-const ENTER: float = 0.08
-const COUNT: float = 0.26
-const BEAT: float = 0.12
-const ROLL: float = 0.24
-const LINGER: float = 0.7
+## Seconds for each beat at full pace: chits in, Grain counting, a stamp, the total, and
+## how long the total stands before it fades. HELD is the share of that the table waits
+## through, so the next play never starts over a total not yet read.
+const ENTER: float = 0.1
+const COUNT: float = 0.4
+const BEAT: float = 0.22
+const ROLL: float = 0.36
+const LINGER: float = 0.9
+const HELD: float = 0.5
 const STAMP_SCALE: float = 1.35
 const TOTAL_INK: Color = Color("9e1b16")
 const IDLE: Color = Color("8a745c")
@@ -94,6 +99,11 @@ func show_score(grain: float, rate: float, zeal: float, total: float, pace: floa
 	return (ENTER + COUNT + BEAT * 2.0 + ROLL) * pace
 
 
+## Seconds after the total lands that the table waits before its next event.
+static func read_time(pace: float) -> float:
+	return LINGER * HELD * minf(pace, 1.0)
+
+
 func clear() -> void:
 	_stop()
 	visible = false
@@ -161,7 +171,7 @@ func _stop() -> void:
 func _tile(value: Label, caption: String, ink: Color, value_size: int) -> Control:
 	var tile: PanelContainer = PanelContainer.new()
 	tile.custom_minimum_size = TILE
-	tile.add_theme_stylebox_override("panel", ScreenKit.paper_style(8))
+	tile.add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	tile.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var box: VBoxContainer = VBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER

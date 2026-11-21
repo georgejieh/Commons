@@ -17,7 +17,7 @@ const SLIP_AT: Vector2 = Vector2(790, 520)
 ## claims stay readable while their dice roll.
 const BOWL_AT: Vector2 = Vector2(1312, 575)
 ## How fast a villager's score is counted, against the player's own at 1.
-const VILLAGER_PACE: float = 0.55
+const VILLAGER_PACE: float = 0.75
 ## Seconds the ledger waits after the total lands, while it flies over.
 const FLIGHT: float = 0.35
 ## The kitty lies face up this long before the landlord takes it, and where it is
@@ -233,7 +233,7 @@ func _on_scored(event: RunEvent, quiet: bool) -> void:
 	_ledger.add_play(
 		event.seat, event.grain, event.rate, event.zeal, event.amount, seconds + flight
 	)
-	_player.hold(seconds)
+	_player.hold(seconds + (ScoreTally.read_time(pace) if seconds > 0.0 else 0.0))
 
 
 func _on_landed(total_text: String) -> void:
