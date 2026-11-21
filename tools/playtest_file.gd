@@ -13,7 +13,7 @@ extends RefCounted
 ## reaches every UI node as Object, Node or Control, never by a ui/ class name.
 ## Development only; tools/ never ships.
 
-const SETTLE_SECONDS: float = 1.2
+const SETTLE_SECONDS: float = 1.8
 const WAIT_SECONDS: float = 20.0
 const STAMP_STAGES: Array[int] = [0, 4, 9]
 ## The raised coupon figure and the lowered meter the notices are shown for.
@@ -152,7 +152,7 @@ func _check_stamp(title: Node) -> void:
 		var control: Control = found as Control
 		if control == stamp or not control.is_visible_in_tree():
 			continue
-		if control is Button or (control is Label and (control as Label).text == tr("game.title")):
+		if control is Button or control is TitleWord:
 			_expect(
 				not area.intersects(control.get_global_rect()), "STAMP COVERS %s" % control.name
 			)

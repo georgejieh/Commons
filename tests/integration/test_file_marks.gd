@@ -84,7 +84,7 @@ func test_the_stamp_shows_only_with_an_entry_clear_of_the_buttons() -> void:
 		assert_int(stamp.mouse_filter).is_equal(Control.MOUSE_FILTER_IGNORE)
 		for node: Node in title.find_children("*", "Control", true, false):
 			var control: Control = node as Control
-			var titled: bool = control is Label and (control as Label).text == tr("game.title")
+			var titled: bool = control is TitleWord
 			if not control.is_visible_in_tree() or not (control is Button or titled):
 				continue
 			var where: String = "%s covers %s" % [screen_size, control.get_path()]

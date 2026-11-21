@@ -27,9 +27,11 @@ const STEP_FRAMES: int = 4
 const STUCK_STEPS: int = 40
 ## Steps the whole walk may take before it is failed as never ending.
 const WALK_STEPS: int = 3000
-const SETTLE_SECONDS: float = 1.2
+const SETTLE_SECONDS: float = 1.8
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
+## How far through its pressing the title's name is held for its picture.
+const TITLE_PRESSED: float = 0.5
 ## The longest a wait on something the table does may take, in real seconds: generous,
 ## since a headless run and a software-rendered one go at different paces.
 const WAIT_SECONDS: float = 20.0
@@ -57,6 +59,8 @@ const ENDING_RUNS: Dictionary[String, Array] = {
 var _out: String = "res://reports/playtest"
 var _rounds_wanted: int = 6
 var _app: Node
+## How many marked words the pointer has come to rest on, for a failure's report.
+var _words_rested: int = 0
 var _shots: int = 0
 var _misclicks: int = 0
 ## The page the walk stands on and for how many steps, for _stuck().
@@ -352,6 +356,23 @@ func _collection_frames() -> void:
 		await _shot("collection_scrolled")
 	await _click_button_with_text(tr("coll.back"))
 	await _frames(20)
+	await _title_pressing_frame()
+
+
+## The title's name part way through its pressing, held there for the picture: a slow
+## renderer has the real pressing over before it draws a frame of it. Not under reduced
+## motion, where the name is never pressed.
+func _title_pressing_frame() -> void:
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	if _args.has("--reduced-motion") or not screen.has_method("word"):
+		return
+	var word: Object = screen.call("word")
+	await create_timer(SETTLE_SECONDS).timeout
+	var whole: float = word.call("seconds")
+	word.set("clock", whole * TITLE_PRESSED)
+	await _snap("title_pressing")
+	word.set("clock", whole)
 
 
 ## In the black market, once a run: the rank picker open over the counter with a ticket
@@ -506,15 +527,23 @@ func _keyword_frames() -> void:
 	var switcher: Object = _app.get("switcher")
 	var screen: Node = switcher.call("current")
 	var tips: Object = null
+	var marked: int = 0
 	for found: Node in screen.find_children("*", "RichTextLabel", true, false):
 		var text: RichTextLabel = found as RichTextLabel
 		if not text.is_visible_in_tree() or not text.text.contains("[url="):
 			continue
+		marked += 1
 		tips = await _rest_on_keyword(text)
 		if tips != null:
 			break
+	if marked == 0:
+		# The walk has bought what this store's counter held, and nothing left on the
+		# page names a keyword: the next store is asked.
+		_keyword_shot = false
+		return
 	if tips == null:
-		_fail("MISCLICK no keyword slip opened under the pointer")
+		var seen: Array[int] = [marked, _words_rested]
+		_fail("MISCLICK no keyword slip opened under the pointer (%d texts, %d words)" % seen)
 		return
 	await _shot("keyword_slip")
 	var slips: Array = tips.call("slips")
@@ -552,6 +581,7 @@ func _rest_on_keyword(text: RichTextLabel) -> Object:
 			await _frames(1)
 			var tips: Object = root.get_node_or_null("KeywordTips")
 			if tips != null and not str(tips.get("_asked_id")).is_empty():
+				_words_rested += 1
 				await create_timer(0.5).timeout
 				var open: Array = tips.call("slips")
 				if not open.is_empty():

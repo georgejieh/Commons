@@ -11,7 +11,7 @@ const SEED: int = 4242
 const SCREENS: Array[String] = [
 	"title", "set_intro", "table", "store", "set_summary", "settings", "controls", "demo_complete"
 ]
-const SETTLE_FRAMES: int = 70
+const SETTLE_FRAMES: int = 110
 
 var _out: String = "res://reports/shots"
 var _args: PackedStringArray = []

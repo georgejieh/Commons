@@ -72,3 +72,48 @@ func test_a_count_lands_on_its_value() -> void:
 	await await_millis(int((UiMotion.PRESETS.count_time + 0.2) * 1000.0))
 	assert_str(label.text).is_equal("42")
 	Settings.set_value("reduced_motion", was)
+
+
+## A page of many pieces closes its gaps up: the last piece waits its turn and is still
+## in by enter_within.
+func test_a_long_page_is_in_by_enter_within() -> void:
+	var was: bool = bool(Settings.value("reduced_motion"))
+	Settings.set_value("reduced_motion", false)
+	var pieces: Array[Control] = []
+	for _piece: int in 30:
+		var piece: Control = auto_free(Control.new())
+		add_child(piece)
+		pieces.append(piece)
+	UiMotion.enter(pieces)
+	var presets: MotionPresets = UiMotion.PRESETS
+	await await_millis(int(presets.enter_time * 500.0))
+	assert_float(pieces[0].modulate.a).is_greater(0.0)
+	assert_float(pieces[29].modulate.a).is_equal(0.0)
+	await await_millis(int((presets.enter_within - presets.enter_time * 0.5 + 0.25) * 1000.0))
+	for piece: Control in pieces:
+		assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
+		assert_vector(piece.scale).is_equal_approx(Vector2.ONE, Vector2(0.01, 0.01))
+	Settings.set_value("reduced_motion", was)
+
+
+## A control that lifts on hover keeps its scale through an entrance, which only fades
+## it, and a quiet piece only fades too.
+func test_an_entrance_only_fades_a_lifted_button_and_a_quiet_piece() -> void:
+	var was: bool = bool(Settings.value("reduced_motion"))
+	Settings.set_value("reduced_motion", false)
+	var button: Button = auto_free(ScreenKit.button("Go"))
+	add_child(button)
+	var quiet: Control = auto_free(Control.new())
+	add_child(quiet)
+	button.grab_focus()
+	UiMotion.enter_at(button, 0.0)
+	UiMotion.enter_at(quiet, 0.0, true)
+	assert_float(button.modulate.a).is_equal(0.0)
+	assert_vector(quiet.scale).is_equal(Vector2.ONE)
+	assert_float(button.scale.x).is_greater_equal(1.0)
+	await await_millis(int((UiMotion.PRESETS.enter_time + 0.2) * 1000.0))
+	var lifted: Vector2 = Vector2.ONE * UiMotion.PRESETS.hover_scale
+	assert_vector(button.scale).is_equal_approx(lifted, Vector2(0.01, 0.01))
+	assert_float(button.modulate.a).is_equal_approx(1.0, 0.01)
+	assert_float(quiet.modulate.a).is_equal_approx(1.0, 0.01)
+	Settings.set_value("reduced_motion", was)

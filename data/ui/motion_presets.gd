@@ -37,11 +37,13 @@ extends Resource
 ## A button's scale on hover and while pressed.
 @export var hover_scale: float = 1.04
 @export var press_scale: float = 0.96
-@export var hover_time: float = 0.12
-## A screen's pieces fade and rise in one after another.
-@export var enter_time: float = 0.32
-@export var enter_stagger: float = 0.05
-@export var enter_rise: float = 18.0
+@export var hover_time: float = 0.16
+## A screen's pieces fade and settle in one after another, each over enter_time and
+## enter_stagger apart. A page of many pieces closes the gap up so that the last one is
+## in by enter_within.
+@export var enter_time: float = 0.5
+@export var enter_stagger: float = 0.08
+@export var enter_within: float = 1.1
 ## Numbers roll to their new value over this long.
 @export var count_time: float = 0.6
 ## A stamp lands from this scale and tilt.
@@ -58,3 +60,17 @@ extends Resource
 @export var wipe_time: float = 0.22
 ## Each epilogue line arrives this long after the one before (ADR 0024).
 @export var epilogue_beat: float = 0.45
+
+@export_group("Title")
+## The title's first piece starts this long after the screen opens, and each piece after
+## the name follows the one before by title_stagger.
+@export var title_start: float = 0.1
+@export var title_stagger: float = 0.12
+## The name is pressed a letter at a time: each from letter_from_scale over letter_time,
+## letter_stagger after the one before.
+@export var letter_stagger: float = 0.06
+@export var letter_time: float = 0.36
+@export var letter_from_scale: float = 1.22
+## The poster behind the title is laid down from this scale over this long.
+@export var settle_from: float = 1.04
+@export var settle_time: float = 1.6

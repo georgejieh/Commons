@@ -3,22 +3,37 @@ extends Control
 ## The title: start a new run through run setup, continue a saved one, or open the
 ## collection, village history or settings. While the family's file holds an entry, its
 ## stamp stands in the top right corner (ADR 0022).
+## The page arrives in order and is whole in about a second and a half: the poster is
+## laid down, the eyebrow fades in, the name is pressed letter by letter (TitleWord, the
+## page's one moment), then the line under it, the buttons that start a run, and last
+## the row of minor buttons, which only fades. Every button takes a press from the first
+## frame.
+## The column stands at the top of the page, in the poster's sky: at Standard its foot
+## is above SKY of the page's height, where the crowd's faces begin, so no button lies
+## on a face.
+
+## The share of the page's height the poster's sky takes, down to the crowd.
+const SKY: float = 0.6
 
 var _stamp: FileStamp = null
+var _word: TitleWord = null
+## Seconds from opening until the last piece is in; 0 under reduced motion.
+var _arrives_in: float = 0.0
 
 
 func open(app: DemoApp) -> void:
 	# The title reads the art's stage afresh, as a run's start does (ADR 0025).
 	ArtStages.latch(Saves.profile_service())
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title_night)
-	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_child(ScreenKit.eyebrow(tr("title.eyebrow")))
-	var title: Label = ScreenKit.styled(tr("game.title"), CommonsTheme.HEADLINE)
-	title.add_theme_font_size_override("font_size", TextSize.px(168))
-	title.add_theme_color_override("font_color", ScreenKit.GOLD)
-	title.add_theme_color_override("font_outline_color", ScreenKit.INK)
-	title.add_theme_constant_override("outline_size", 20)
-	column.add_child(title)
+	column.alignment = BoxContainer.ALIGNMENT_BEGIN
+	# Paper letters edged in ink, as the line under the name is: crisp on the poster.
+	var eyebrow: Label = ScreenKit.eyebrow(tr("title.eyebrow"))
+	eyebrow.add_theme_color_override("font_color", ScreenKit.STYLE.paper)
+	eyebrow.add_theme_color_override("font_outline_color", ScreenKit.INK)
+	eyebrow.add_theme_constant_override("outline_size", 6)
+	column.add_child(eyebrow)
+	_word = TitleWord.new(tr("game.title"))
+	column.add_child(_word)
 	var subtitle: Label = ScreenKit.styled(tr("title.subtitle"), CommonsTheme.TITLE)
 	subtitle.add_theme_font_size_override("font_size", TextSize.px(30))
 	subtitle.add_theme_color_override("font_color", ScreenKit.STYLE.paper)
@@ -42,8 +57,9 @@ func open(app: DemoApp) -> void:
 	collection.pressed.connect(func() -> void: app.show_screen("collection"))
 	var history: Button = ScreenKit.button(tr("title.history"), CommonsTheme.GHOST)
 	history.pressed.connect(func() -> void: app.show_screen("village_history"))
-	column.add_child(ScreenKit.row([collection, history, settings, quit]))
-	ScreenKit.reveal(column)
+	var minor: HBoxContainer = ScreenKit.row([collection, history, settings, quit])
+	column.add_child(minor)
+	_arrive(column, eyebrow, minor)
 	new_run.grab_focus()
 	var filed: int = ProfileFile.entries(Saves.profile_service()).size()
 	if filed > 0:
@@ -54,3 +70,38 @@ func open(app: DemoApp) -> void:
 ## The family's file's stamp, or null while the file is empty. For tests.
 func stamp() -> FileStamp:
 	return _stamp
+
+
+## The game's name. For tests.
+func word() -> TitleWord:
+	return _word
+
+
+## Seconds from opening until the whole page is in. For tests.
+func arrives_in() -> float:
+	return _arrives_in
+
+
+## The poster under everything. For tests.
+func poster() -> Control:
+	return get_child(0) as Control
+
+
+## Brings the page in, in order. The eyebrow and the minor row are small print and only
+## fade; the spacer has nothing to show.
+func _arrive(column: VBoxContainer, eyebrow: Control, minor: Control) -> void:
+	if UiMotion.reduced():
+		return
+	var presets: MotionPresets = UiMotion.PRESETS
+	UiMotion.settle(poster())
+	var at: float = presets.title_start
+	for child: Node in column.get_children():
+		var piece: Control = child as Control
+		if piece == _word:
+			at += presets.title_stagger
+			at += _word.press(at)
+		elif piece is Label or piece is BaseButton or piece == minor:
+			if piece != eyebrow:
+				at += presets.title_stagger
+			UiMotion.enter_at(piece, at, piece == eyebrow or piece == minor)
+	_arrives_in = at + presets.enter_time
