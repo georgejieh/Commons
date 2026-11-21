@@ -59,6 +59,8 @@ const ENDING_RUNS: Dictionary[String, Array] = {
 var _out: String = "res://reports/playtest"
 var _rounds_wanted: int = 6
 var _app: Node
+## How many marked words the pointer has come to rest on, for a failure's report.
+var _words_rested: int = 0
 var _shots: int = 0
 var _misclicks: int = 0
 ## The page the walk stands on and for how many steps, for _stuck().
@@ -511,15 +513,23 @@ func _keyword_frames() -> void:
 	var switcher: Object = _app.get("switcher")
 	var screen: Node = switcher.call("current")
 	var tips: Object = null
+	var marked: int = 0
 	for found: Node in screen.find_children("*", "RichTextLabel", true, false):
 		var text: RichTextLabel = found as RichTextLabel
 		if not text.is_visible_in_tree() or not text.text.contains("[url="):
 			continue
+		marked += 1
 		tips = await _rest_on_keyword(text)
 		if tips != null:
 			break
+	if marked == 0:
+		# The walk has bought what this store's counter held, and nothing left on the
+		# page names a keyword: the next store is asked.
+		_keyword_shot = false
+		return
 	if tips == null:
-		_fail("MISCLICK no keyword slip opened under the pointer")
+		var seen: Array[int] = [marked, _words_rested]
+		_fail("MISCLICK no keyword slip opened under the pointer (%d texts, %d words)" % seen)
 		return
 	await _shot("keyword_slip")
 	var slips: Array = tips.call("slips")
@@ -557,6 +567,7 @@ func _rest_on_keyword(text: RichTextLabel) -> Object:
 			await _frames(1)
 			var tips: Object = root.get_node_or_null("KeywordTips")
 			if tips != null and not str(tips.get("_asked_id")).is_empty():
+				_words_rested += 1
 				await create_timer(0.5).timeout
 				var open: Array = tips.call("slips")
 				if not open.is_empty():
