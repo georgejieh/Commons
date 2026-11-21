@@ -229,6 +229,15 @@ static func halo_theme() -> Theme:
 	return theme
 
 
+## Takes the backdrop's paper halo off text that stands on a paper sheet, where it is ink
+## on paper and a halo only softens it. Set as the sheet's theme.
+static func ink_theme() -> Theme:
+	var theme: Theme = Theme.new()
+	for type: String in ["Label", CommonsTheme.EYEBROW, CommonsTheme.HEADLINE, CommonsTheme.TITLE]:
+		theme.set_constant("outline_size", type, 0)
+	return theme
+
+
 ## A texture that fills its parent, cropped to keep its shape.
 static func cover(texture: Texture2D) -> TextureRect:
 	var rect: TextureRect = TextureRect.new()

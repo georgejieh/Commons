@@ -6,7 +6,9 @@ extends Control
 ## unlocked stakes as tickets to pick with the rules the chosen one plays under (its own
 ## and every lower stake's), then Start and Back. It opens on Poor Peasants and the
 ## highest unlocked stake every time. Keyboard and gamepad reach everything, and the
-## sheet scrolls with focus where the screen is short.
+## sheet scrolls with focus where the screen is short. Where the page has room to spare,
+## the household papers stand taller into most of it, and the rules keep room for the
+## longest any open stake plays under, so picking a stake moves nothing.
 ## With --demo it keeps its simple form and starts the demo.
 
 const PAGE_MARGIN: int = 40
@@ -15,6 +17,9 @@ const PAPER_MIN: Vector2 = Vector2(220, 210)
 const NAME_SIZE: int = 26
 const RULES_SIZE: int = 20
 const LINE_SIZE: int = 22
+## Where the page has room to spare, the household papers stand this many times as tall
+## as the room left under the rules.
+const PAPERS_SHARE: float = 6.0
 
 var _app: DemoApp
 var _view: SetupView
@@ -47,6 +52,7 @@ func open(app: DemoApp) -> void:
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap + 4)
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var values: Dictionary[String, Variant] = {
 		"name": _view.player_name, "number": _view.generation
 	}
@@ -54,15 +60,23 @@ func open(app: DemoApp) -> void:
 	if not _view.inherited.is_empty():
 		column.add_child(ScreenKit.label(_view.inherited, LINE_SIZE))
 	column.add_child(_heading(tr("setup.household")))
-	column.add_child(_household_row())
+	var households: HBoxContainer = _household_row()
+	households.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	households.size_flags_stretch_ratio = PAPERS_SHARE
+	column.add_child(households)
 	column.add_child(_heading(tr("setup.stake")))
 	column.add_child(_stake_row())
 	column.add_child(_rules)
+	var foot: Control = Control.new()
+	foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_child(foot)
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.follow_focus = true
 	_scroll.add_child(column)
 	page.add_child(_scroll)
+	_reserve_rules()
 	_start = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
 	_start.pressed.connect(_begin)
 	_back = ScreenKit.button(tr("setup.back"), CommonsTheme.GHOST)
@@ -128,6 +142,17 @@ func _page() -> VBoxContainer:
 	page.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
 	sheet.add_child(page)
 	return page
+
+
+## Keeps room under the tickets for the most lines of rules an open stake plays under.
+func _reserve_rules() -> void:
+	var most: int = 1
+	for sheet: UnlockSheet in _view.stakes:
+		if sheet.open:
+			most = maxi(most, _view.stake_rules(sheet.index).size())
+	var between: int = _rules.get_theme_constant("line_spacing")
+	var tall: float = most * _rules.get_line_height() + (most - 1) * between
+	_rules.custom_minimum_size = Vector2(0, tall)
 
 
 func _heading(text: String) -> Label:
