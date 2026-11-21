@@ -92,12 +92,15 @@ func _family_name(app: DemoApp) -> VBoxContainer:
 	var block: VBoxContainer = VBoxContainer.new()
 	block.add_child(ScreenKit.eyebrow(tr("settings.family_name")))
 	_name_line = ScreenKit.label(Surnames.of_profile(Saves.profile_service()), 30)
+	# One line: a wrapping label beside a button is given a letter's width.
+	_name_line.autowrap_mode = TextServer.AUTOWRAP_OFF
 	var running: bool = app.has_saved_run() or app.arrival.is_running()
 	if running:
 		block.add_child(_name_line)
 		block.add_child(ScreenKit.label(tr("settings.name_locked"), 20))
 		return block
 	_change = ScreenKit.button(tr("settings.change_name"), CommonsTheme.SECONDARY)
+	_change.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_change.pressed.connect(
 		func() -> void:
 			Settings.save()
