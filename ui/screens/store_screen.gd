@@ -40,7 +40,8 @@ const MAIN_GAP: int = 24
 const SHELF_GAP: int = 20
 ## The most room the Cadre board takes; its cards shrink to fit six.
 const BOARD_BOX: Vector2 = Vector2(612, 122)
-const SHEET_PADDING: int = 8
+## Inside the paper's printed border, which ends 17 px in.
+const SHEET_PADDING: int = 20
 ## The warning's width at the right of the black market's heading.
 const NOTE_WIDTH: float = 640.0
 
@@ -176,7 +177,7 @@ func _main_row(app: DemoApp) -> Control:
 		_goods = MarketGoods.new()
 		_goods.setup(app.controller, _desk, _market_buy)
 		side = _goods.panel()
-		side.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING + 2))
+		side.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
 		_upgrades = _goods.upgrades
 	else:
 		_directives = DirectiveRow.new()
