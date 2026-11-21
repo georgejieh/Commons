@@ -317,8 +317,9 @@ func _until_prompt() -> void:
 	await await_idle_frame()
 
 
-## The slip shows Wang's line beside the ringed target, clear of it and of the hand, on
-## screen, in dark type 20 px or more.
+## The slip shows Wang's line clear of the lit target and of the hand, on screen, in dark
+## type 20 px or more. At the table it also keeps clear of what a step teaches from: the
+## prompt with the play's sum, the buttons, the trick and the place the score is counted.
 func _check_slip(where: String) -> void:
 	var layer: TutorialLayer = _app.arrival.layer
 	var slip: TutorialSlip = layer.slip()
@@ -330,14 +331,26 @@ func _check_slip(where: String) -> void:
 	var rect: Rect2 = slip.get_global_rect()
 	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
 	assert_bool(screen.encloses(rect)).override_failure_message(where).is_true()
-	var target: Rect2 = layer.ring().ringed()
-	assert_bool(target.has_area()).override_failure_message(where + " ring").is_true()
+	var target: Rect2 = layer.glow().lit_area()
+	assert_bool(target.has_area()).override_failure_message(where + " light").is_true()
 	assert_bool(rect.intersects(target)).override_failure_message(where + " target").is_false()
 	var table: TableScreen = _app.switcher.current() as TableScreen
 	if table != null:
 		# The hand, and the brigade notice on the wall behind the table.
 		for hand: Rect2 in table.tutorial().tutorial_avoid():
 			assert_bool(rect.intersects(hand)).override_failure_message(where + " hand").is_false()
+		var sheet: CheatSheet = table.get("_cheat_sheet")
+		if not sheet.visible:
+			var pile: Control = table.get("_pile")
+			var kept: Dictionary[String, Rect2] = {
+				"prompt": table.actions().reading.get_global_rect(),
+				"buttons": table.actions().get_global_rect(),
+				"trick": pile.get_global_rect(),
+				"score": Rect2(TableMoments.TALLY_AT - Vector2(340, 70), Vector2(680, 140)),
+			}
+			for piece: String in kept:
+				var over: bool = rect.intersects(kept[piece])
+				assert_bool(over).override_failure_message("%s %s" % [where, piece]).is_false()
 	var store: StoreScreen = _app.switcher.current() as StoreScreen
 	if store != null:
 		# Wang's slip is the only explanation on screen while the arrival runs.
@@ -356,21 +369,6 @@ func _key(code: Key) -> void:
 	await await_idle_frame()
 
 
-## The slip keeps clear of the brigade notice at step 7's cards, where it once covered
-## it: the notice, the hand and the cards as they stood in the first cloud frames.
-func test_the_slip_keeps_clear_of_the_brigade_notice() -> void:
-	var cards: Rect2 = Rect2(330, 790, 330, 200)
-	var hand: Rect2 = Rect2(320, 780, 690, 230)
-	var notice: Rect2 = Rect2(150, 622, 280, 124)
-	var extent: Vector2 = Vector2(TutorialSlip.WIDTH, 140)
-	var at: Vector2 = TutorialSlip.spot(extent, cards, [hand, notice], Vector2(1920, 1080))
-	var slip: Rect2 = Rect2(at, extent)
-	for kept: Rect2 in [cards, hand, notice]:
-		assert_bool(slip.intersects(kept)).is_false()
-	# Still beside its target, not across the room.
-	assert_float(slip.get_center().distance_to(cards.get_center())).is_less(700.0)
-
-
 ## The table names the brigade notice among what the slip must keep clear of.
 func test_the_table_names_the_notice_to_keep_clear_of() -> void:
 	await _launch()
@@ -382,18 +380,3 @@ func test_the_table_names_the_notice_to_keep_clear_of() -> void:
 		func(rect: Rect2) -> bool: return rect.size.is_equal_approx(DreadDressing.NOTICE_AT.size)
 	)
 	assert_bool(notice).is_true()
-
-
-## The store's detail slip stays closed while the arrival runs, and opens again after.
-func test_the_detail_slip_stays_closed_through_the_arrival() -> void:
-	var slip: DetailSlip = auto_free(DetailSlip.new())
-	var piece: Control = auto_free(Control.new())
-	add_child(piece)
-	add_child(slip)
-	var running: Array[bool] = [true]
-	slip.quiet = func() -> bool: return running[0]
-	slip.show_for(piece, "Iron Rice Bowl", "rule")
-	assert_bool(slip.visible).is_false()
-	running[0] = false
-	slip.show_for(piece, "Iron Rice Bowl", "rule")
-	assert_bool(slip.visible).is_true()

@@ -104,3 +104,11 @@ The Quota page says debuffs "apply only to you", and the table's strip is headed
 - Iron Rice Bowl and the plot card in steps 18 and 19 are placed on the counters by the script; the tutorial's shops draw nothing else.
 - The cloud playtest gains the tutorial's frames, started with a `--tutorial` flag beside `--demo`.
 - P4.17's surname step must not write the profile before the tutorial ends.
+
+## Amendment, 2026-11-20: the light and the slip's home
+
+The owner's playtest found the hand-drawn red ring round a step's target ugly, and found Wang's slip lying over the play's sum and the score while a step taught them.
+
+- **The target is lit, not ringed.** A gilt frame with a breathing vermilion halo hugs the button or the card itself. It swells once when it moves and stands still under reduced motion. On a play step the cards are already put up as chosen, so the light is on Play; a card the player has put down again is lit in its place.
+- **At the table the slip has one home,** beside Wang's seat, over the Cadre board's slots, which are empty through the arrival. It no longer moves to each target, so it never lies on the hand, the trick, the prompt or the place the score is counted. Other screens place it beside the target as before, and while the rules card is open it stands beside the card's Close button.
+- **A one-time tip stands in the middle of the screen,** or of the right half where the screen's own sheet fills the left.

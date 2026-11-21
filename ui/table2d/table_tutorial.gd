@@ -2,8 +2,13 @@ class_name TableTutorial
 extends RefCounted
 ## The table's part in the arrival (ADR 0026): it reports where the run stands once the
 ## table's events have played, puts a play step's cards up as chosen with the cursor on
-## the first, tells the arrival when the rules card closes, and names what its slip
-## points at and must keep clear of: the player's hand and the brigade notice.
+## the first, tells the arrival when the rules card closes, and names what the arrival
+## lights and where its slip stands: beside Wang's seat, clear of the hand, the trick,
+## the score and the prompt.
+
+## The slip's home: its top, level with the seats, and its gap from Wang's seat.
+const HOME_TOP: float = 118.0
+const HOME_GAP: float = 16.0
 
 var _app: DemoApp
 var _actions: ActionBar
@@ -46,6 +51,32 @@ func settled(awaiting: int) -> void:
 	var director: TutorialDirector = _app.arrival.director
 	if director != null:
 		director.ready("table", awaiting)
+
+
+## What the step asks for, each thing lit by itself. A play step's cards are put up as
+## chosen, so what is left to press is Play; a card the player has put down again is lit
+## in its place.
+func tutorial_rects(key: String) -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	if key != "cards":
+		rects.append(tutorial_rect(key))
+		return rects
+	for card_id: int in _app.arrival.director.cards():
+		if not _hand.is_selected(card_id):
+			rects.append(_hand_view.card_rect(card_id))
+	if rects.is_empty():
+		rects.append(_visible_rect(_actions.play))
+	return rects
+
+
+## Where the slip stands at the table whatever the step: beside Wang's seat, over the
+## Cadre board's slots, which are empty through the arrival. Nowhere of its own while the
+## rules card lies over the table.
+func tutorial_home(extent: Vector2) -> Vector2:
+	if _cheat_sheet.visible:
+		return Vector2.INF
+	var seat_left: float = TableScreen.PLAY_CENTER + TableScreen.SEAT_OFFSET
+	return Vector2(seat_left - HOME_GAP - extent.x, HOME_TOP)
 
 
 func tutorial_rect(key: String) -> Rect2:
