@@ -23,10 +23,7 @@ func open(app: DemoApp) -> void:
 	_card_backs = CardBackRow.new(CardBacks.profile_runs())
 	backs.add_child(_card_backs)
 	backs.add_child(_family_name(app))
-	var controls: Callable = func() -> void:
-		Settings.save()
-		app.show_screen("controls")
-	var panel: Control = SettingsPanel.build(false, controls)
+	var panel: Control = SettingsPanel.build(false)
 	var sheets: HBoxContainer = ScreenKit.row([panel, ScreenKit.card_panel(backs)])
 	sheets.alignment = BoxContainer.ALIGNMENT_BEGIN
 	for sheet: Node in sheets.get_children():
@@ -54,7 +51,16 @@ func open(app: DemoApp) -> void:
 			Settings.save()
 			app.arrival.start(true)
 	)
-	column.add_child(ScreenKit.row([back, replay]))
+	# Controls stands here with Back, where it is always whole: at the sheet's foot it
+	# was cut in half by the fold.
+	var controls: Button = ScreenKit.button(tr("controls.open"), CommonsTheme.SECONDARY)
+	controls.name = SettingsPanel.CONTROLS_BUTTON
+	controls.pressed.connect(
+		func() -> void:
+			Settings.save()
+			app.show_screen("controls")
+	)
+	column.add_child(ScreenKit.row([back, controls, replay]))
 	ScreenKit.reveal(column)
 	back.grab_focus()
 
