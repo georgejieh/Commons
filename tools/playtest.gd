@@ -365,7 +365,7 @@ func _collection_frames() -> void:
 func _title_pressing_frame() -> void:
 	var switcher: Object = _app.get("switcher")
 	var screen: Node = switcher.call("current")
-	if UiMotion.reduced() or not screen.has_method("word"):
+	if _args.has("--reduced-motion") or not screen.has_method("word"):
 		return
 	var word: Object = screen.call("word")
 	await create_timer(SETTLE_SECONDS).timeout
