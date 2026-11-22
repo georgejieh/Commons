@@ -5,7 +5,8 @@ extends Resource
 ## the ordered steps.
 
 @export var seed_value: int = 0
-## The Quota: two rounds, a target they cannot reach.
+## The Quota: two rounds, and a target the authored plays fall short of. It is a figure a
+## player can read (the plays score under half of it), never a stand-in.
 @export var sets: SetParams
 @export var starting_coupons: int = 10
 ## A ladder with no budget, so no round draws a debuff.

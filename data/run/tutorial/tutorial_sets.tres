@@ -6,7 +6,7 @@
 script = ExtResource("1")
 years = 1
 max_rounds = 2
-targets = Array[float]([1e+09, 1e+09, 1e+09])
+targets = Array[float]([6000.0, 6000.0, 6000.0])
 reward_coupons = Array[int]([0, 0, 0])
 over_step_percent = 25
 over_max_steps = 0
