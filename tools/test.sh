@@ -14,7 +14,9 @@ fi
 
 # Tests keep their own settings file, started fresh each run, so no test reads or writes
 # the player's settings.
-export COMMONS_SETTINGS="user://test_run_settings.cfg"
+# A second run at the same time, as from another worktree, names a file of its own in
+# COMMONS_SETTINGS (user://NAME.cfg) so the two do not share one.
+export COMMONS_SETTINGS="${COMMONS_SETTINGS:-user://test_run_settings.cfg}"
 if [ -n "${APPDATA:-}" ]; then
 	user_dir="$APPDATA/Godot/app_userdata/Commons"
 elif [ "$(uname)" = "Darwin" ]; then
@@ -22,7 +24,7 @@ elif [ "$(uname)" = "Darwin" ]; then
 else
 	user_dir="${XDG_DATA_HOME:-$HOME/.local/share}/godot/app_userdata/Commons"
 fi
-rm -f "$user_dir/test_run_settings.cfg"
+rm -f "$user_dir/${COMMONS_SETTINGS#user://}"
 
 if [ $# -eq 0 ]; then
 	set -- -a res://tests/unit -a res://tests/integration -a res://tests/golden

@@ -362,6 +362,7 @@ func _snap(name: String) -> void:
 
 func _shot(name: String) -> void:
 	await _tree.create_timer(SETTLE_SECONDS).timeout
+	_tree.call("audit_layout", name)
 	await _picture(name)
 
 
