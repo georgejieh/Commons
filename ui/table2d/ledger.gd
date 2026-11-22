@@ -1,14 +1,18 @@
 class_name Ledger
 extends VBoxContainer
 ## The round's work points, as a scoreboard: the landlord's running total, then the
-## Commons pool with each peasant's part of it, then the last few plays written out as
-## Grain × Rate × Zeal. Rows are made once and reused, so scoring a play instances nothing. A
+## Commons pool with each peasant's part of it, then the last few plays: who played what,
+## and under it Grain × Rate × Zeal = its score, on one line each so a score is never left
+## alone on a line. Rows are made once and reused, so scoring a play instances nothing. A
 ## seat's total counts up as its play is stamped in (P3B.6). At the stage past the last
 ## the household's small ledger sits at its foot, with the run's true figures (ADR 0022).
 
 const MAX_PLAYS: int = 5
-## A play's Grain × Rate × Zeal line is smaller than its heading, to fit on one line.
-const SUM_SIZE: int = 15
+## A play's Grain × Rate × Zeal line is set in the condensed face at the least size a
+## player must read, so the whole sum and its score fit one line of the ledger.
+const SUM_SIZE: int = 16
+const SUM_FACE: String = "res://ui/theme/oswald_medium.tres"
+const SCORE_FACE: String = "res://ui/theme/oswald_bold.tres"
 ## Rows wrap inside the ledger's paper.
 const ROW_WIDTH: float = 270.0
 const INK: Color = Color("1e1a16")
@@ -140,7 +144,7 @@ func add_play(
 	var before: float = _totals[seat]
 	_totals[seat] += total
 	var head: String = tr("ledger.play").format(
-		{"who": _names.get(seat, ""), "type": _pending_type, "total": Strings.score(total)}
+		{"who": _names.get(seat, ""), "type": _pending_type}
 	)
 	var sum: String = (
 		tr("ledger.sum")
@@ -155,7 +159,11 @@ func add_play(
 	var percent: int = ScoreTally.scale_percent(grain, rate, zeal, total)
 	if percent != ScoreTally.WHOLE:
 		sum += " " + tr("ledger.scaled").format({"percent": percent})
-	var line: String = "[font_size=%d]%s[/font_size]" % [TextSize.px(SUM_SIZE), Keywords.mark(sum)]
+	var score: String = tr("ledger.equals").format({"total": Strings.score(total)})
+	var line: String = (
+		"[font_size=%d][font=%s]%s [/font][font=%s]%s[/font][/font_size]"
+		% [TextSize.px(SUM_SIZE), SUM_FACE, Keywords.mark(sum), SCORE_FACE, score]
+	)
 	_texts.append("[b]%s[/b]\n%s" % [head.replace("[", "[lb]"), line])
 	if _texts.size() > MAX_PLAYS:
 		_texts.remove_at(0)

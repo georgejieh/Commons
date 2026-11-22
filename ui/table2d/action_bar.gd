@@ -28,6 +28,9 @@ var _held: Rect2 = Rect2()
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 12)
+	# The buttons stand at the column's foot whatever the prompt's length: a prompt of two
+	# lines grows up from them, and nothing under the pointer moves.
+	alignment = BoxContainer.ALIGNMENT_END
 	reading.theme_type_variation = CommonsTheme.TITLE
 	reading.add_theme_font_size_override("font_size", TextSize.px(24))
 	ScreenKit.paper_outline(reading)

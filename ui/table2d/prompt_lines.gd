@@ -29,7 +29,14 @@ static func every(controller: RunController, bidding: bool) -> Array[String]:
 		var named: String = TranslationServer.translate("pattern." + type)
 		texts.append(named)
 		var sum: String = TranslationServer.translate("hand.sum").format(
-			{"type": named, "grain": score, "rate": score, "zeal": score, "total": score}
+			{
+				"type": named,
+				"break": "\n",
+				"grain": score,
+				"rate": score,
+				"zeal": score,
+				"total": score
+			}
 		)
 		texts.append(sum + " " + scaled.format({"percent": WIDE_PERCENT}))
 	texts.append_array(controller.every_campaign_prompt())

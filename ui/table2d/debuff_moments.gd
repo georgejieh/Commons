@@ -18,6 +18,10 @@ const BACKS: int = 4
 const NOTE_SIZE: int = 18
 const NOTE_PADDING: int = 22
 const NOTE_LIFT: float = 110.0
+## How far a full hand's fan reaches past the hand's box at each end.
+const GLASS_REACH: float = 72.0
+## Between the end of the line over the hand and the Glass Walls slip beside it.
+const STATUS_GAP: float = 16.0
 ## Room between a seized card and the cut-in's words.
 const TORN_GAP: float = 48.0
 
@@ -68,8 +72,9 @@ func _ready() -> void:
 func place(screen: Control, hand_view: Control) -> void:
 	screen.add_child(glass)
 	screen.move_child(glass, hand_view.get_index() + 1)
-	glass.position = hand_view.position
-	glass.size = hand_view.size
+	# A full hand's fan leans past the hand's own box at both ends: the pane covers it all.
+	glass.position = hand_view.position - Vector2(GLASS_REACH, 0)
+	glass.size = hand_view.size + Vector2(GLASS_REACH * 2.0, 0)
 	screen.add_child(self)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
@@ -122,6 +127,17 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 				glass.set_shown(_controller.hand_shown(), not quiet)
 		RunEvent.Type.DEBUFF_LIFTED:
 			refresh()
+
+
+## Keeps the Glass Walls slip clear of the words of the line over the hand, and puts it
+## away while a sheet lies over its place.
+func clear_slip(line: Label, sheet_up: bool) -> void:
+	var face: Font = line.get_theme_font("font")
+	var type: int = line.get_theme_font_size("font_size")
+	var words: float = face.get_string_size(line.text, HORIZONTAL_ALIGNMENT_LEFT, -1, type).x
+	glass.clear_of = line.position.x + words + STATUS_GAP
+	glass.covered = sheet_up
+	glass.place_slip()
 
 
 ## Once the queue has drained: the glass and the notice board as the run holds them.

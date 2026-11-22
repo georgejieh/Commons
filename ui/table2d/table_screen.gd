@@ -362,10 +362,13 @@ func _on_drained() -> void:
 	_hud.sync(state, _controller.target())
 	_dressing.post_notice(DreadDressing.notice_key(state.year, state.set_index + state.round_index))
 	_board.show_cadres(_controller)
+	# A row of empty slots says nothing: the board stands once a Cadre is held.
+	_board.visible = not (_app.arrival.is_running() or state.inventory.cadres.is_empty())
 	_debuffs.show_debuffs(_controller)
 	var awaiting: int = _controller.awaiting()
 	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
+	_clear_for_sheet()
 	if awaiting == RunController.AWAIT_NEED:
 		var pool: int = _controller.state_copy().commons_pool
 		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.audit_chance())
@@ -429,6 +432,15 @@ func _show_roles(landlord: int) -> void:
 func _show_you(landlord: int) -> void:
 	var role: String = "landlord" if landlord == 0 else "peasant"
 	_you.text = tr("table.you." + ("bidding" if landlord == Seats.NONE else role))
+	_clear_for_sheet()
+
+
+## The claim sheet lies over the line above the hand, and half a line showing under a
+## sheet reads as a fault: the line is put away while the sheet is up, and the Glass
+## Walls slip keeps clear of both.
+func _clear_for_sheet() -> void:
+	_you.visible = not _need_panel.visible
+	_debuff_beats.clear_slip(_you, _need_panel.visible)
 
 
 func _count_cards(seat: int, change: int) -> void:

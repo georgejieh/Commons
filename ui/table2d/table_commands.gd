@@ -90,6 +90,9 @@ func refresh() -> void:
 			. format(
 				{
 					"type": text,
+					# The hand type on a line of its own, then its sum, whose result never
+					# drops alone onto a further line (the string joins it to Zeal).
+					"break": "\n",
 					"grain": Strings.score(preview.grain),
 					"rate": Strings.factor(preview.rate),
 					"zeal": Strings.factor(preview.zeal),

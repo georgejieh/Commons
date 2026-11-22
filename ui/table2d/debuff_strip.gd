@@ -19,7 +19,7 @@ enum Form { FULL, NAMED, FITTED, COUNTED }
 
 const NAME_HEX: String = "9e1b16"
 const FONT_SIZE: int = 20
-const HEAD_SIZE: int = 14
+const HEAD_SIZE: int = 16
 ## Room inside the paper's printed border.
 const PADDING: int = 22
 ## Between names in the named forms.

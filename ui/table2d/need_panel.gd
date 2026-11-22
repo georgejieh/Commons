@@ -9,7 +9,9 @@ extends PanelContainer
 
 signal declared(need: int)
 
-const WIDTH: float = 440.0
+## Wide enough that the claim's lines wrap once at most at Standard, so the sheet stays
+## clear of the seats above it and short over the hand.
+const WIDTH: float = 520.0
 const LIE: Color = Color("9e1b16")
 const DECLARE_WIDTH: float = 240.0
 
