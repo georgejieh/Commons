@@ -153,6 +153,12 @@ func test_every_ending_and_death_fits_both_screens_with_a_full_village() -> void
 				assert_str(view.id).override_failure_message(where).is_equal(outcome)
 				_check_inside(screen, where)
 				_check_figures(screen, where)
+				# The title card gives up height first, so the story stands whole (P5.2a).
+				var story: VScrollBar = screen.story_scroll().get_v_scroll_bar()
+				var at: String = "%s at text size %d" % [where, level]
+				assert_float(story.max_value).override_failure_message(at).is_less_equal(
+					story.page + SLACK
+				)
 				_check_type(screen, view, where)
 				_clips(screen, where)
 				var list: EpilogueList = screen.epilogue()

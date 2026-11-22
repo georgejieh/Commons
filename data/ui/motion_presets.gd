@@ -5,6 +5,9 @@ extends Resource
 
 ## Seconds between table events, so each bot play can be seen.
 @export var event_step: float = 0.55
+## What the table's pace setting multiplies the step by: Slow, Standard, Fast. A slower
+## table gives each villager's play longer to be read; nothing else changes.
+@export var pace_scales: Array[float] = [1.4, 1.0, 0.7]
 ## The arrival plays the table this much slower: everything on it is new to the player.
 @export var arrival_scale: float = 1.5
 @export var deal: float = 0.25
@@ -55,6 +58,9 @@ extends Resource
 @export var stamp_from_scale: float = 1.6
 @export var stamp_tilt: float = -0.12
 @export var stamp_time: float = 0.22
+## A Scarce stamp is pressed this long after a counter's cards start to arrive: they are
+## in, there is a breath, then it lands.
+@export var scarce_wait: float = 0.85
 ## A played card flies from its seat to its lane.
 @export var fly_time: float = 0.28
 ## Cards in a fresh deal arrive one after another.

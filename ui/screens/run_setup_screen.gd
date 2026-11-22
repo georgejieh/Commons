@@ -3,12 +3,14 @@ extends Control
 ## Run setup (ADR 0025). For a full run, on one sheet of aged paper: the player's name
 ## and the generation this run will be (ADR 0028), what the last generation left, the
 ## households as papers to pick (a locked one is a blank sheet saying when it opens), the
-## unlocked stakes as tickets to pick with the rules the chosen one plays under (its own
-## and every lower stake's), then Start and Back. It opens on Poor Peasants and the
-## highest unlocked stake every time. Keyboard and gamepad reach everything, and the
-## sheet scrolls with focus where the screen is short. Where the page has room to spare,
-## the household papers stand taller into most of it, and the rules keep room for the
-## longest any open stake plays under, so picking a stake moves nothing.
+## stakes as tickets to pick with the rules the chosen one plays under (its own and every
+## lower stake's), a locked one saying how it opens, then Start and Back. The stake row
+## stands as wide as the household row. It opens on Poor Peasants and the highest
+## unlocked stake every time. Keyboard and gamepad reach everything, and the sheet
+## scrolls with focus and fades at the cut where the screen is short. Where the page has
+## room to spare, the household papers stand taller into most of it, and the rules,
+## beside the stake heading, keep room for the longest any open stake plays under, so
+## picking a stake moves nothing.
 ## With --demo it keeps its simple form and starts the demo.
 
 const PAGE_MARGIN: int = 40
@@ -20,6 +22,12 @@ const LINE_SIZE: int = 22
 ## Where the page has room to spare, the household papers stand this many times as tall
 ## as the room left under the rules.
 const PAPERS_SHARE: float = 6.0
+## The gap between the page's rows at each text size: closer at the larger sizes, so the
+## stake row stands whole on the page at every size (P5.2a).
+const ROW_GAPS: Array[int] = [20, 14, 10]
+## The least width the rules beside the stake heading take, so they wrap as lines and
+## not as a column of words.
+const RULES_WIDTH: float = 960.0
 
 var _app: DemoApp
 var _view: SetupView
@@ -50,7 +58,7 @@ func open(app: DemoApp) -> void:
 	_scroll = ScrollContainer.new()
 	var page: VBoxContainer = _page()
 	var column: VBoxContainer = VBoxContainer.new()
-	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap + 4)
+	column.add_theme_constant_override("separation", ROW_GAPS[TextSize.level()])
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var values: Dictionary[String, Variant] = {
@@ -64,9 +72,13 @@ func open(app: DemoApp) -> void:
 	households.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	households.size_flags_stretch_ratio = PAPERS_SHARE
 	column.add_child(households)
-	column.add_child(_heading(tr("setup.stake")))
+	# The rules the picked stake plays under stand beside its heading, above the tickets,
+	# so the stake row and its rules stand whole together at every text size.
+	var stake_heading: HBoxContainer = ScreenKit.row([_heading(tr("setup.stake")), _rules], 28)
+	_rules.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rules.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	column.add_child(stake_heading)
 	column.add_child(_stake_row())
-	column.add_child(_rules)
 	var foot: Control = Control.new()
 	foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -75,6 +87,7 @@ func open(app: DemoApp) -> void:
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.follow_focus = true
 	_scroll.add_child(column)
+	ScrollFade.over(_scroll)
 	page.add_child(_scroll)
 	_reserve_rules()
 	_start = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
@@ -152,11 +165,12 @@ func _reserve_rules() -> void:
 			most = maxi(most, _view.stake_rules(sheet.index).size())
 	var between: int = _rules.get_theme_constant("line_spacing")
 	var tall: float = most * _rules.get_line_height() + (most - 1) * between
-	_rules.custom_minimum_size = Vector2(0, tall)
+	_rules.custom_minimum_size = Vector2(RULES_WIDTH, tall)
 
 
 func _heading(text: String) -> Label:
 	var heading: Label = ScreenKit.styled(text, CommonsTheme.TITLE)
+	heading.autowrap_mode = TextServer.AUTOWRAP_OFF
 	ScreenKit.paper_outline(heading)
 	return heading
 
@@ -191,10 +205,15 @@ func _household_paper(sheet: UnlockSheet) -> AgedSheet:
 
 func _stake_row() -> HBoxContainer:
 	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", 14)
 	for sheet: UnlockSheet in _view.stakes:
 		var words: String = sheet.name if sheet.open else sheet.locked_line
+		# Past the next stake the view names none, so as not to name a stake not yet
+		# reached: each of those opens with a win at the one before it.
+		if words.is_empty():
+			words = tr("unlock.win_before")
 		var ticket: StakeTicket = StakeTicket.new(sheet.index, sheet.open, words)
+		ticket.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if sheet.open:
 			ticket.pressed.connect(_pick_stake.bind(sheet.index))
 		row.add_child(ticket)

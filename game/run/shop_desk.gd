@@ -34,6 +34,11 @@ func can_buy(slot: int) -> bool:
 	return _shop.check_buy(slot) == RunShop.Reason.OK
 
 
+## True for a Cadre that seldom reaches the counter, which the screen stamps Scarce.
+func is_scarce(slot: int) -> bool:
+	return _shop.is_rare(slot)
+
+
 func reroll_price() -> int:
 	return _shop.reroll_price()
 

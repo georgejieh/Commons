@@ -29,6 +29,13 @@ const SLIP_SIZE: int = 18
 const SLIP_PADDING: int = 22
 const SLIP_GAP: float = 6.0
 
+## The slip gives way (ADR 0034): it stands only where its left edge is right of this x,
+## in the pane's parent's space, which is where the line over the hand ends; and never
+## while a sheet lies over its place. The pane and the rules slip under the right seat
+## still say Glass Walls.
+var clear_of: float = 0.0
+var covered: bool = false
+
 var _slip: PanelContainer = PanelContainer.new()
 var _words: Label = Label.new()
 
@@ -48,9 +55,7 @@ func _ready() -> void:
 
 ## Shows or clears the glass; animate fades it in, as the round's beat.
 func set_shown(on: bool, animate: bool) -> void:
-	_words.text = tr("table.glass_walls")
-	_slip.reset_size()
-	_slip.position = Vector2(size.x - _slip.size.x, -_slip.size.y - SLIP_GAP)
+	place_slip()
 	if on == visible:
 		return
 	visible = on
@@ -60,6 +65,15 @@ func set_shown(on: bool, animate: bool) -> void:
 		create_tween().tween_property(self, "modulate:a", 1.0, FADE_TIME)
 	else:
 		modulate.a = 1.0
+
+
+## Stands the slip over the pane's right end, or puts it away where it would lie on the
+## line over the hand or under a sheet.
+func place_slip() -> void:
+	_words.text = tr("table.glass_walls")
+	_slip.reset_size()
+	_slip.position = Vector2(size.x - _slip.size.x, -_slip.size.y - SLIP_GAP)
+	_slip.visible = not covered and position.x + _slip.position.x >= clear_of
 
 
 ## The slip's words, for tests.

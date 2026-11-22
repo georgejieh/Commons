@@ -7,12 +7,19 @@ extends HBoxContainer
 ## When a Cadre fires, its card swells and its count changes there, not over the table.
 ## There is a slot for every Cadre the player can hold; the cards shrink to keep the
 ## board inside its box when a Reform adds one. A Cadre a Confiscation leaves out of the
-## round is struck through and stamped for that round (ADR 0023).
+## round is struck through and stamped for that round (ADR 0023). A board given an empty
+## line, as the shops give theirs, prints it across its slots while it holds no Cadre.
 
 ## How faint an empty Cadre slot is.
 const EMPTY_ALPHA: float = 0.22
 const TILE_SIZE: Vector2 = Vector2(108, 140)
 const GAP: int = 14
+## The empty line's type size, and its paper halo.
+const EMPTY_SIZE: int = 18
+const EMPTY_HALO: int = 5
+
+## Printed across the slots while no Cadre is held; empty for none, as at the table.
+var empty_line: String = ""
 
 var _pictures: Array[TextureRect] = []
 var _cards: Array[TipHost] = []
@@ -134,3 +141,21 @@ func show_cadres(controller: RunController) -> void:
 		var bare: bool = held and not ScreenKit.ART.has_cadre(cadre_ids[index])
 		_badges[index].show_name(tr("modifier.%s.name" % cadre_ids[index]) if bare else "")
 		_badges[index].show_count(controller.cadre_standing(cadre_ids[index]).count if held else "")
+	queue_redraw()
+
+
+## True while the board shows its empty line, for tests.
+func shows_empty_line() -> bool:
+	return _ids.is_empty() and not empty_line.is_empty()
+
+
+func _draw() -> void:
+	if not shows_empty_line():
+		return
+	var font: Font = get_theme_default_font()
+	var px: int = TextSize.px(EMPTY_SIZE)
+	var wide: float = font.get_string_size(empty_line, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+	var at: Vector2 = Vector2((size.x - wide) / 2.0, size.y / 2.0 + font.get_ascent(px) * 0.4)
+	var halo: Color = CampaignPaper.paper(BowlGrime.wear())
+	draw_string_outline(font, at, empty_line, HORIZONTAL_ALIGNMENT_LEFT, -1, px, EMPTY_HALO, halo)
+	draw_string(font, at, empty_line, HORIZONTAL_ALIGNMENT_LEFT, -1, px, ScreenKit.INK)

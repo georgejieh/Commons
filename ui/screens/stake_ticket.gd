@@ -2,8 +2,8 @@ class_name StakeTicket
 extends Button
 ## One stake at run setup (ADR 0025): a worn ration ticket with the stake's name inked on
 ## it (art/STYLE.md, "Nothing is clean"). The picked one is stamped round in red; focus
-## and hover lift a ticket and ring it in faded gold. A locked stake is a blank ticket,
-## and the first locked one says how it opens. Its paper and ink are the rank picker's
+## and hover lift a ticket and ring it in faded gold. A locked stake is a blank ticket
+## saying how it opens. Its paper and ink are the rank picker's
 ## tickets' (PaperTicket's warm paper, ink faded by the stage), and it is wide enough that
 ## its words sit at 16 px or more on one or two lines, never broken inside a word.
 

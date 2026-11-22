@@ -60,6 +60,18 @@ func shown_title() -> String:
 	return _title.text
 
 
+## The reason no paper in shelf's open envelope can be kept, when every one is refused
+## for the same reason; empty when any can be kept or the reasons differ.
+static func shared_refusal(shelf: EnvelopeShelf) -> String:
+	var shared: String = ""
+	for index: int in shelf.count():
+		var why: String = shelf.refusal_key(index)
+		if why.is_empty() or (not shared.is_empty() and why != shared):
+			return ""
+		shared = why
+	return shared
+
+
 ## True when some paper in shelf's open envelope does not print its own rules, as a
 ## Campaign's leaflet and a plot card do not; a Directive's document says everything.
 static func needed(shelf: EnvelopeShelf) -> bool:

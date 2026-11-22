@@ -102,6 +102,13 @@ func price(slot: int) -> int:
 	return RunBooks.priced(_state, cost)
 
 
+## True when the Cadre in a slot is of the top rarity, the kind seldom drawn.
+func is_rare(slot: int) -> bool:
+	if slot < 0 or slot >= _stock.size() or _stock[slot] == SOLD:
+		return false
+	return _definition(_stock[slot]).rarity >= ModifierDef.RARE
+
+
 ## How many more of an item this counter will sell this run, or -1 when unlimited.
 func left(modifier_id: String) -> int:
 	if _params.stock_per_item <= 0:

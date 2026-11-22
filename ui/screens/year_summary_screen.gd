@@ -5,7 +5,9 @@ extends Control
 
 func open(app: DemoApp) -> void:
 	var state: RunState = app.controller.state_copy()
-	var column: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
+	var column: VBoxContainer = SheetPad.column(
+		ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
+	)
 	var heading: Control = ScreenKit.header(
 		tr("year.eyebrow"), tr("year.title").format({"year": state.year})
 	)

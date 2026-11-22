@@ -1,11 +1,11 @@
 class_name KeywordTips
 extends CanvasLayer
 ## The slips that explain keywords on hover, over every screen. Resting the pointer on a
-## marked word opens its slip beside the pointer. The slip stays while the pointer is on
-## the word, on the slip, or on a slip opened from a word inside it, and for a moment
-## after, so the pointer can cross from a word onto its slip and read the words there.
-## The engine's own tooltips close the moment the pointer leaves the word, which made a
-## keyword inside a tooltip unreachable.
+## marked word opens its slip near the pointer, off every button. The slip stays while
+## the pointer is on the word, on the slip, or on a slip opened from a word inside it,
+## and for a moment after, so the pointer can cross from a word onto its slip and read
+## the words there. The engine's own tooltips close the moment the pointer leaves the
+## word, which made a keyword inside a tooltip unreachable.
 
 ## Seconds the pointer rests on a word before its slip opens, and a slip outlives it.
 const DELAY: float = 0.18
@@ -16,6 +16,8 @@ const FADE: float = 0.1
 const GAP: Vector2 = Vector2(16, 22)
 const EDGE: float = 12.0
 const REACH: float = 10.0
+## Around the pointer, the word a slip never covers.
+const POINTER: float = 8.0
 const LAYER: int = 90
 
 static var _made: KeywordTips = null
@@ -128,18 +130,14 @@ func _open(text: KeywordText, keyword_id: String, mouse: Vector2) -> void:
 	_slips.append(slip)
 
 
-## Stands a slip below and right of the pointer, or on the other side where the screen
-## ends, once its text has taken its height.
+## Stands a slip below and right of the pointer where that is clear, else where
+## SlipPlacer finds room off the word, every button and as much text as it can, once
+## its text has taken its height.
 func _place(slip: KeywordSlip) -> void:
 	var screen: Rect2 = get_viewport().get_visible_rect().grow(-EDGE)
-	var spot: Vector2 = slip.asked_at + GAP
-	if spot.x + slip.size.x > screen.end.x:
-		spot.x = slip.asked_at.x - GAP.x - slip.size.x
-	if spot.y + slip.size.y > screen.end.y:
-		spot.y = slip.asked_at.y - GAP.y - slip.size.y
-	spot.x = clampf(spot.x, screen.position.x, maxf(screen.position.x, screen.end.x - slip.size.x))
-	spot.y = clampf(spot.y, screen.position.y, maxf(screen.position.y, screen.end.y - slip.size.y))
-	slip.position = spot
+	var word: Rect2 = Rect2(slip.asked_at, Vector2.ZERO).grow(POINTER)
+	var wanted: Vector2 = slip.asked_at + GAP
+	slip.position = SlipPlacer.place(slip.size, wanted, word, GAP.x, screen, get_tree().root, slip)
 	slip.placed = true
 	if UiMotion.reduced():
 		slip.modulate.a = 1.0

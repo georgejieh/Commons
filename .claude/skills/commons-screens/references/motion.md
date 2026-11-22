@@ -28,7 +28,7 @@ Something seen a hundred times an hour gets almost nothing. Something seen once 
 A reward that changes nothing the player can see was not a reward.
 
 - **Three beats:** a held breath before, the result landing past its size and settling, then the count. The second beat is the short one.
-- **A ladder.** Decide what a routine result, a good one and a great one each get, and keep the top rung for what happens about once a run. If every envelope gets the gold seal, the gold seal means nothing.
+- **A ladder.** Decide what a routine result, a good one and a great one each get, and keep the top rung for what happens about once a run. If every envelope gets the gold seal, the gold seal means nothing. Before building a rung, check the data has the tier: Cadres carry a rarity and the top one is stamped Scarce on the counter (`ScarceStamp`); envelope papers carry none, so they have no rare arrival.
 - **A budget per event.** At most three sounds layered, a few moving things, the screen clear again inside a second and a half.
 - **One long effect.** A screen may have one effect that takes its time. When a moment reads weak, replace its effect with a better one; do not stack a second on top.
 - **Count where it can be watched,** and let a click jump to the final value.

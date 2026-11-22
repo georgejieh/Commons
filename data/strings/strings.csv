@@ -161,6 +161,9 @@ store.reroll,Reroll · {price} coupons
 store.leave,Next Quota
 store.sold,Sold
 store.buy,Buy · {price} coupons
+store.buy.poor,Need {price} coupons
+store.buy.full,No room
+store.buy.empty,Nothing inside
 store.rationed,Rationing: {count} Cadres on the counter until Famine falls below {below}.
 store.rationed.one,Rationing: 1 Cadre on the counter until Famine falls below {below}.
 year.title,Year {year} done
@@ -200,6 +203,10 @@ settings.text_size.standard,Standard
 settings.text_size.large,Large
 settings.text_size.largest,Largest
 settings.text_size.table,The table changes at the next deal
+settings.table_pace,Table pace
+settings.table_pace.slow,Slow
+settings.table_pace.standard,Standard
+settings.table_pace.fast,Fast
 banner.landlord_wins,The landlord wins the round
 banner.peasants_win,The peasants win the round
 sort.rank,Rank
@@ -307,7 +314,7 @@ coll.back,Back
 hist.eyebrow,Village history
 hist.title,This run
 hist.empty,No history yet.
-hist.quota_line,Quota {number}. {name}: {deeds}.
+hist.quota_line,Quota {number}. {name} was {deeds}.
 hist.quota_nothing,Quota {number}. Nothing to record.
 hist.deed.fed,fed {times}
 hist.deed.bombed,bombed {times}
@@ -446,10 +453,11 @@ ledger.landlord,Landlord
 ledger.commons,Commons pool
 ledger.you,You
 ledger.plays,Plays
-ledger.play,{who} · {type} · {total}
+ledger.play,{who} · {type}
+ledger.equals,= {total}
 ledger.sum,{grain} Grain × {rate} Rate × {zeal} Zeal
 ledger.final,Round total
-hand.sum,{type}  ·  {grain} Grain × {rate} Rate × {zeal} Zeal = {total}
+hand.sum,{type}{break}{grain} Grain × {rate} Rate × {zeal} Zeal = {total}
 action.grab,Grab
 table.grab_prompt,"{name} holds the landlord seat. Grabbing it adds {cost} Resentment."
 table.bid_tip,"The first to call holds the landlord seat. Anyone who hasn't passed may then grab it once, and a caller who was grabbed from may grab it back. Calling an open seat is free. Grabbing a held seat adds Resentment, which makes the villagers play harder against you. Who bids first moves round the table. The landlord keeps the seat until they lose a round."
@@ -518,6 +526,7 @@ callout.quota.missed,Quota missed
 callout.quota.sub,{progress} of {target} work points
 store.approved,Approved
 store.shelf,Your Cadres
+store.shelf.empty,Cadres you buy are pinned here.
 market.paid,Paid
 market.warning,Nothing here is on the books. Every purchase adds {rise} Resentment.
 market.upgrade.capacity,Enlarge your plot · {price} coupons
@@ -726,11 +735,13 @@ envelope.parcel.text,"Opens at once and shows {choices} items, each a private Ca
 envelope.opened,Opened
 envelope.keep,Keep
 envelope.nothing,Take Nothing
-envelope.nothing.confirm,Press again to take nothing.
+envelope.nothing.confirm,Press again to take nothing
 envelope.choose,"Keep one, or take nothing."
 envelope.kept,Kept
 envelope.refused.campaigns_full,You hold as many Campaigns as you can.
 envelope.refused.plot_full,Your private plot is full.
+envelope.refused.short,Cannot be kept
+envelope.refused.all,{why} None of these can be kept.
 envelope.refused.other,This cannot be kept now.
 envelope.card.stamped.name,Stamped Plot Card
 envelope.card.stamped.text,"A {card} for your private plot, carrying your stamp. Each stamped card you score adds {resentment} Resentment."
@@ -795,6 +806,8 @@ callout.plot_seized,Plot Seized
 callout.plot_seized.sub,The {card} in your plot is destroyed for the run
 store.short_supply,Short Supply: {count} fewer Cadres on the counter.
 store.short_supply.one,Short Supply: 1 fewer Cadre on the counter.
+store.scarce,Scarce
+store.scarce.note,Scarce: rarely on the counter.
 round.taxed,Grain Tax took {amount} of what you banked.
 round.voided,"Overtime: your side lost, so you banked nothing."
 beat.levy.given,Levy: your {card} goes to {name}.
@@ -862,6 +875,7 @@ coll.open,{open} of {total} open
 unlock.runs_one,Opens after 1 more run
 unlock.runs,Opens after {count} more runs
 unlock.win_at,Opens when you win at {stake}
+unlock.win_before,Opens when you win at the stake before
 setup.household,Household
 setup.stake,Stake
 household.poor_peasants.name,Poor Peasants
@@ -893,14 +907,14 @@ lineage.loyal,Inherited: the {name} family remembers a kindness.
 lineage.loyal_many,Inherited: the {names} families remember a kindness.
 lineage.label,Inherited: the label. Denunciation starts {amount} higher.
 hist.past,Earlier generations
-hist.generation,Generation {number}. {ending}. {class}. Year {year}.
+hist.generation,Generation {number}. {ending}. Class: {class}. Ended in Year {year}.
 hist.not_at_roll_call,Not at roll call: {names}.
 hist.no_generations,No generation has finished a run yet.
 settings.card_back,Card back
 cardback.sunrise.name,Sunrise
 cardback.wheat.name,Wheat
 cardback.lattice.name,Lattice
-cardback.pending,Coming with its art
+cardback.pending,Not printed yet
 tutorial.arrival.text,"The cart leaves you at the brigade office. Wang from the next house says there is a game tonight, and you should sit in."
 tutorial.step.01.say,Someone has to be landlord. Let Zhao have it tonight: pass.
 tutorial.step.01.then,"Zhao took the seat and the three spare cards. You and I are the peasants, on the same side."

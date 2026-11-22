@@ -309,4 +309,6 @@ func max_rounds() -> int:
 func motion_step() -> float:
 	var reduced: bool = bool(Settings.value("reduced_motion"))
 	var step: float = MOTION.event_step * (MOTION.reduced_scale if reduced else 1.0)
+	var pace: int = clampi(int(Settings.value("table_pace")), 0, MOTION.pace_scales.size() - 1)
+	step *= MOTION.pace_scales[pace]
 	return step * (MOTION.arrival_scale if arrival.is_running() else 1.0)

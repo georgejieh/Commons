@@ -87,6 +87,10 @@ var _keyword_shot: bool = false
 var _parcel_shot: bool = false
 var _debuffs_shot: bool = false
 var _wild_store_shot: bool = false
+## The layout audit and how many findings it has printed.
+var _audit: RefCounted = null
+var _layout_found: int = 0
+var _scarce_market_shot: bool = false
 var _file_store_shot: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
@@ -174,6 +178,7 @@ func _run() -> void:
 		_misclicks += 1
 		print("MISCLICK the walk ran out of steps after %d rounds" % _rounds_seen)
 	print("rounds=%d clicks=%d misclicks=%d shots=%d" % [_rounds_seen, _clicks, _misclicks, _shots])
+	print("layout findings=%d" % _layout_found)
 	quit(1 if _misclicks > 0 else 0)
 
 
@@ -184,6 +189,7 @@ func _tutorial_run() -> void:
 	await walk.call("run", self, _out, _headless)
 	var counts: Array = [walk.get("shots"), walk.get("clicks"), walk.get("misclicks")]
 	print("tutorial shots=%d clicks=%d misclicks=%d" % counts)
+	print("layout findings=%d" % _layout_found)
 	quit(1 if int(counts[2]) > 0 else 0)
 
 
@@ -208,6 +214,7 @@ func _step() -> void:
 			await _envelope_frames()
 			await _click_button_with_text(tr("market.open"))
 			await _shot("black_market")
+			await _scarce_market_frames()
 			await _parcel_frames()
 			# The Parcel's sandbox resumes the saved run, which lands in the state store.
 			if switcher.call("current_id") != "black_market":
@@ -794,6 +801,17 @@ func _wild_store_frames() -> void:
 	_wild_store_shot = true
 	var walk: Object = _wild_walk()
 	await walk.call("store")
+	await walk.call("scarce", false)
+	_took(walk)
+
+
+## The black market with a Cadre of the top rarity on its counter, once a run.
+func _scarce_market_frames() -> void:
+	if _scarce_market_shot:
+		return
+	_scarce_market_shot = true
+	var walk: Object = _wild_walk()
+	await walk.call("scarce", true)
 	_took(walk)
 
 
@@ -1786,6 +1804,7 @@ func _shot(name: String) -> void:
 	# Count-ups and entrances run on the clock, and software rendering is slow, so wait
 	# on time, not frames, before a picture.
 	await create_timer(SETTLE_SECONDS).timeout
+	audit_layout(name)
 	if _headless:
 		_named(name)
 		return
@@ -1793,6 +1812,18 @@ func _shot(name: String) -> void:
 	_shots += 1
 	var path: String = _out.path_join("%02d_%s.png" % [_shots, name])
 	root.get_texture().get_image().save_png(ProjectSettings.globalize_path(path))
+
+
+## Reads the screen at rest for layout faults (tools/layout_audit.gd) and prints each new
+## one as a LAYOUT line under the frame's name. A finding is to be read, not a failure.
+func audit_layout(name: String) -> void:
+	if _audit == null:
+		var script: GDScript = load("res://tools/layout_audit.gd")
+		_audit = script.new()
+	var found: PackedStringArray = _audit.call("check", root)
+	for line: String in found:
+		print("LAYOUT %s %s" % [name, line])
+	_layout_found += found.size()
 
 
 ## A frame taken without a window: counted and named.

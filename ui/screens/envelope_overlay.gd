@@ -12,16 +12,15 @@ extends Control
 ##
 ## Keyboard and gamepad: focus lands on the first paper that can be kept, left and right
 ## move, accept keeps. Cancel never throws an envelope away at once: it moves focus to
-## Take Nothing and a line under it asks for a second cancel, which confirms it.
+## Take Nothing, whose words then ask for a second cancel, which confirms it.
 
 ## The envelope is answered and the overlay is gone.
 signal closed
 
 const GAP: int = 20
-const ROW_GAP: int = 14
+const ROW_GAP: int = 10
 ## Inside the heading paper's printed border, which ends 17 px in.
 const HEADING_PADDING: int = 22
-const CONFIRM_SIZE: int = 18
 ## The envelope's size once it reaches the middle.
 const FIGURE: Vector2 = Vector2(540, 340)
 ## Seconds: the envelope's arrival, its opening beat, each paper's slide and the gap
@@ -42,11 +41,13 @@ const KEEP_SCALE: float = 1.06
 const FALL: float = 340.0
 const FALL_TURN: float = 0.3
 ## The seal's width as a share of the kept item's, and how much of it overhangs the
-## item's bottom right corner, so it never covers the name.
+## item's right edge; it sits on the item's foot, above the caption under it.
 const SEAL_SHARE: float = 0.62
-const SEAL_OVERHANG: float = 0.4
+const SEAL_OVERHANG: float = 0.5
 ## The instruction under the envelope's name.
 const ASK_SIZE: int = 18
+## Kept clear between the column and the screen's top and bottom.
+const EDGE: float = 16.0
 
 var _controller: RunController
 var _shelf: EnvelopeShelf
@@ -57,9 +58,13 @@ var _row: HBoxContainer = HBoxContainer.new()
 var _papers: Array[ChoicePaper] = []
 var _detail: EnvelopeDetail = EnvelopeDetail.new()
 var _nothing: Button = ScreenKit.button("", CommonsTheme.GHOST)
-## Asks for a second cancel, under Take Nothing; it keeps its room while hidden.
-var _confirm: Label = ScreenKit.label("", CONFIRM_SIZE, ScreenKit.RED)
+## True once a cancel has asked for a second, which Take Nothing's words say.
+var _confirming: bool = false
 var _pointed_title: String = String()
+## The instruction under the envelope's name, and the one reason none of its papers can
+## be kept when they all share it, said there once.
+var _ask: Label = ScreenKit.label("", ASK_SIZE)
+var _refused: String = String()
 var _seal: InkSeal = InkSeal.new()
 var _opening: EnvelopeOpening = EnvelopeOpening.new()
 var _busy: bool = true
@@ -80,6 +85,8 @@ func open(controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate:
 	add_child(_dim)
 	var center: CenterContainer = CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.offset_top = EDGE
+	center.offset_bottom = -EDGE
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(center)
 	_column.add_theme_constant_override("separation", ROW_GAP)
@@ -100,11 +107,6 @@ func open(controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate:
 	_nothing.pressed.connect(_take_nothing)
 	_nothing.focus_entered.connect(_point.bind(-1))
 	_column.add_child(_nothing)
-	_confirm.text = tr("envelope.nothing.confirm")
-	_confirm.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_confirm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_confirm.modulate.a = 0.0
-	_column.add_child(_confirm)
 	_blocks["row"] = _row
 	_blocks["button"] = _nothing
 	_figure.wrapping = shelf.wrapping(shelf.opened_id())
@@ -134,9 +136,14 @@ func is_busy() -> bool:
 	return _busy
 
 
-## The line that asks for a second cancel, shown after the first.
+## The instruction under the envelope's name, for tests.
+func asked() -> String:
+	return _ask.text
+
+
+## Take Nothing asks for a second cancel, as it does after the first.
 func asks_to_confirm() -> bool:
-	return _confirm.modulate.a > 0.5
+	return _confirming
 
 
 func seal() -> InkSeal:
@@ -167,9 +174,12 @@ func _heading() -> Control:
 	var name: Label = ScreenKit.styled(_shelf.envelope_name(_shelf.opened_id()), CommonsTheme.TITLE)
 	name.autowrap_mode = TextServer.AUTOWRAP_OFF
 	lines.add_child(name)
-	var ask: Label = ScreenKit.label(tr("envelope.choose"), ASK_SIZE)
-	ask.autowrap_mode = TextServer.AUTOWRAP_OFF
-	lines.add_child(ask)
+	_refused = EnvelopeDetail.shared_refusal(_shelf)
+	_ask.text = tr("envelope.choose")
+	if not _refused.is_empty():
+		_ask.text = tr("envelope.refused.all").format({"why": tr(_refused)})
+	_ask.autowrap_mode = TextServer.AUTOWRAP_OFF
+	lines.add_child(_ask)
 	sheet.add_child(lines)
 	_blocks["heading"] = sheet
 	return sheet
@@ -195,7 +205,10 @@ func _fill_row() -> void:
 			paper.show_campaign(_controller, _shelf.item_id(index))
 		else:
 			paper.show_card(_controller, kind, _shelf.card(index))
+		# A reason every paper shares is said once, over the row; each paper says only no.
 		var why: String = _shelf.refusal_key(index)
+		if not why.is_empty() and not _refused.is_empty():
+			why = "envelope.refused.short"
 		paper.set_takeable(why.is_empty(), "" if why.is_empty() else tr(why))
 		paper.pointed.connect(_point)
 		paper.kept.connect(_keep)
@@ -254,11 +267,11 @@ func _point(index: int) -> void:
 		paper.set_cursor(paper.index == index)
 	if index < 0:
 		return
-	_confirm.modulate.a = 0.0
+	_ask_confirm(false)
 	var paper: ChoicePaper = _papers[index]
 	_pointed_title = paper.title
 	var rule: String = paper.rule
-	if not paper.is_takeable():
+	if not paper.is_takeable() and _refused.is_empty():
 		rule += "\n\n" + paper.caption()
 	_detail.explain(paper.title, rule)
 
@@ -280,7 +293,12 @@ func _input(event: InputEvent) -> void:
 		_take_nothing()
 		return
 	_nothing.grab_focus()
-	_confirm.modulate.a = 1.0
+	_ask_confirm(true)
+
+
+func _ask_confirm(on: bool) -> void:
+	_confirming = on
+	_nothing.text = tr("envelope.nothing.confirm" if on else "envelope.nothing")
 
 
 ## Keeps the paper: the pick is sent now, then acted out.
@@ -304,6 +322,9 @@ func _keep(index: int) -> void:
 		func(other: ChoicePaper) -> bool: return other != paper
 	)
 	_fall(others)
+	# Once a paper is kept, Take Nothing is done with: it fades from under the seal.
+	_nothing.disabled = true
+	_nothing.create_tween().tween_property(_nothing, "modulate:a", 0.0, KEEP_TIME)
 	paper.z_index = 1
 	var word: String = tr("directive.issued" if directive else "envelope.kept")
 	var tween: Tween = create_tween()
@@ -325,13 +346,13 @@ static func shown_rect(control: Control) -> Rect2:
 	return Rect2(shown.origin, control.size * shown.get_scale())
 
 
-## The seal lands on the kept item's bottom right corner, part of it off the paper, so
-## the name and the mark stay in sight.
+## The seal lands on the kept item's foot at its right edge, half of it off the paper,
+## so the name, the mark and the caption under the item stay in sight.
 func _press_seal(paper: ChoicePaper, word: String) -> void:
 	var shown: Rect2 = shown_rect(paper.item)
 	var wide: float = shown.size.x * SEAL_SHARE
 	_seal.prepare(word, ScreenKit.RED, wide)
-	var middle: Vector2 = shown.end - Vector2.ONE * wide * (0.5 - SEAL_OVERHANG)
+	var middle: Vector2 = shown.end - Vector2(wide * (0.5 - SEAL_OVERHANG), wide * 0.5)
 	_seal.position = middle - global_position - _seal.size / 2.0
 	_seal.press()
 

@@ -24,6 +24,7 @@ const KEYS: Array[String] = [
 	"content_note_seen",
 	"card_back",
 	"text_size",
+	"table_pace",
 ]
 
 ## The keyboard bindings. They apply to the InputMap at once whenever they change.

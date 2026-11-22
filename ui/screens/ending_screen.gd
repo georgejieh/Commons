@@ -15,11 +15,15 @@ const FRAME_HEIGHT: float = 308.0
 ## frame, and the picture's margin inside its printed frame.
 const PICTURE_HEIGHT: float = 288.0
 const PICTURE_INSET: float = 10.0
+## Where the story is taller than its column, the title card gives up height first, down
+## to this, so the text stands whole before anything scrolls (P5.2a).
+const FRAME_LEAST: float = 150.0
 ## The title's largest and smallest size: it shrinks to fit its card on one line.
 const TITLE_MAX: int = 84
 const TITLE_MIN: int = 48
 const TEXT_SIZE: int = 22
-const NOTE_SIZE: int = 16
+## The historical note: small print, but never under the readable floor as drawn.
+const NOTE_SIZE: int = 18
 const NAME_SIZE: int = 26
 const SEAL_WIDTH: float = 92.0
 ## The text column's width on a death's page, which has no epilogue beside it.
@@ -33,6 +37,10 @@ var _state: RunState = null
 var _name: Label
 var _title: Label
 var _heading: HBoxContainer
+## The title card's frame, the height it stands at when there is room, and the story.
+var _frame: Control
+var _frame_full: float = 0.0
+var _story_column: VBoxContainer
 var _list: EpilogueList = null
 var _story_scroll: ProseScroll = null
 var _show_all: Button = null
@@ -94,6 +102,9 @@ func _reading() -> ProseScroll:
 		middle.add_child(story)
 		reading = middle
 	var scroll: ProseScroll = ProseScroll.new(reading)
+	ScrollFade.over(scroll)
+	scroll.resized.connect(_fit_frame.call_deferred)
+	story.minimum_size_changed.connect(_fit_frame.call_deferred)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_horizontal = (
 		Control.SIZE_SHRINK_CENTER if _view.death else Control.SIZE_EXPAND_FILL
@@ -109,9 +120,11 @@ func _story() -> VBoxContainer:
 	story.size_flags_stretch_ratio = 1.15
 	story.add_theme_constant_override("separation", 18)
 	# The eyebrow and the player's name under it sit tight, as a header's lines do.
+	_story_column = story
 	var heading: VBoxContainer = VBoxContainer.new()
 	heading.add_theme_constant_override("separation", 0)
-	heading.add_child(ScreenKit.eyebrow(tr("end.eyebrow")))
+	var eyebrow: Label = ScreenKit.eyebrow(tr("end.eyebrow"))
+	heading.add_child(eyebrow)
 	_name = ScreenKit.label(_view.player_name, NAME_SIZE, ScreenKit.INK)
 	_name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	heading.add_child(_name)
@@ -120,6 +133,10 @@ func _story() -> VBoxContainer:
 	var text: Label = ScreenKit.label(_view.text, TEXT_SIZE, ScreenKit.INK)
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	story.add_child(text)
+	# A death's column is centred on the sheet, so its lines are centred in it too.
+	if _view.death:
+		for line: Label in [eyebrow, _name, text]:
+			line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var tiles: Array[Control] = [
 		ScreenKit.figure_stat(tr("end.famine"), _state, ShownFigures.FAMINE, _view.famine),
 		ScreenKit.figure_stat(
@@ -136,6 +153,7 @@ func _story() -> VBoxContainer:
 func _title_card() -> Control:
 	var card: VBoxContainer = VBoxContainer.new()
 	var frame: Control = Control.new()
+	_frame = frame
 	frame.custom_minimum_size = Vector2(0, FRAME_HEIGHT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(frame)
@@ -164,7 +182,19 @@ func _title_card() -> Control:
 		center.add_child(heading)
 		frame.add_child(center)
 	frame.resized.connect(_fit_title.bind(frame))
+	_frame_full = frame.custom_minimum_size.y
 	return card
+
+
+## The title card stands shorter, down to FRAME_LEAST, by as much as the story is taller
+## than its column, and back up as room comes back.
+func _fit_frame() -> void:
+	if _frame == null or _story_scroll == null or _story_scroll.size.y <= 0.0:
+		return
+	var spare: float = _story_scroll.size.y - _story_column.get_combined_minimum_size().y
+	var want: float = clampf(_frame.custom_minimum_size.y + spare, FRAME_LEAST, _frame_full)
+	if absf(want - _frame.custom_minimum_size.y) > 0.5:
+		_frame.custom_minimum_size.y = floorf(want)
 
 
 ## The ending's picture hung whole in the middle of the title card's space, at its own

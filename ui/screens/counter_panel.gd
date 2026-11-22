@@ -41,7 +41,8 @@ var _sold: Label = Label.new()
 
 func _init() -> void:
 	custom_minimum_size = SIZE
-	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	# Every paper on the counter stands as tall as the tallest, with one top.
+	size_flags_vertical = Control.SIZE_FILL
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var margins: StyleBoxEmpty = StyleBoxEmpty.new()
 	margins.content_margin_left = 12

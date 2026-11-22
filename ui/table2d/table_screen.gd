@@ -33,6 +33,10 @@ const ACTIONS_AT: Rect2 = Rect2(1218, 780, 280, 250)
 ## hand's last card, which reaches about 98 px past its middle, never runs under the
 ## buttons.
 const HAND_AT: Rect2 = Rect2(120, 830, 1016, 220)
+## The room the line over the hand stands in, down to a lifted card's top, and the least
+## gap between a sheet and the hand or the bar.
+const YOU_ROOM: float = 46.0
+const SHEET_GAP: float = 8.0
 
 var _app: DemoApp
 var _controller: RunController
@@ -99,9 +103,13 @@ func _ready() -> void:
 	_place(_board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
 	_place(_hand_view, HAND_AT.position, HAND_AT.size)
 	_you.theme_type_variation = CommonsTheme.TITLE
-	_you.add_theme_font_size_override("font_size", TextSize.px(28))
 	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
+	# The line stands between the notice over it and a lifted card under it: its type fits
+	# that room, never under Standard.
+	var face: Font = _you.get_theme_font("font")
+	var fits: Callable = func(type: int) -> bool: return face.get_height(type) <= YOU_ROOM
+	_you.add_theme_font_size_override("font_size", TextSize.fit(28, 28, fits))
 	_place(_actions, ACTIONS_AT.position, ACTIONS_AT.size)
 	# Held at its foot: a taller prompt grows up into the empty table, never down.
 	_actions.hold(ACTIONS_AT)
@@ -110,6 +118,8 @@ func _ready() -> void:
 	_place(_debuffs, Vector2(slip_x, 112), Vector2(_actions.held().end.x - slip_x, 0))
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
+	_need_panel.foot = HAND_AT.position.y - SHEET_GAP
+	_need_panel.head = _hud.size.y + SHEET_GAP
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
 	_pause.at_table = true
 	for sheet: Control in [_cheat_sheet, _pause]:
@@ -135,7 +145,6 @@ func open(app: DemoApp) -> void:
 	add_child(_pool)
 	add_child(_player)
 	add_child(_motion)
-	_player.step = app.motion_step()
 	_player.motion = _motion
 	_motion.setup(self, bool(Settings.value("reduced_motion")))
 	Settings.changed.connect(_on_setting)
@@ -172,11 +181,7 @@ func open(app: DemoApp) -> void:
 	_campaigns.attach(_pool, _debuffs)
 	_columns.setup(_seats, _campaigns.tray, _dressing, _debuffs, _actions, _controller)
 	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
-	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
-	_player.wind = _wind()
-	_player.holds = {
-		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
-	}
+	_set_pace()
 	_hud.menu.pressed.connect(_open_pause)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
 	# The events wait behind the books' notice until it is acknowledged (ADR 0022).
@@ -362,10 +367,13 @@ func _on_drained() -> void:
 	_hud.sync(state, _controller.target())
 	_dressing.post_notice(DreadDressing.notice_key(state.year, state.set_index + state.round_index))
 	_board.show_cadres(_controller)
+	# A row of empty slots says nothing: the board stands once a Cadre is held.
+	_board.visible = not (_app.arrival.is_running() or state.inventory.cadres.is_empty())
 	_debuffs.show_debuffs(_controller)
 	var awaiting: int = _controller.awaiting()
 	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
+	_clear_for_sheet()
 	if awaiting == RunController.AWAIT_NEED:
 		var pool: int = _controller.state_copy().commons_pool
 		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.audit_chance())
@@ -400,7 +408,19 @@ func _seat_center(seat: int) -> Vector2:
 func _on_setting(key: String) -> void:
 	if key == "reduced_motion":
 		_motion.set_reduced(bool(Settings.value("reduced_motion")))
-		_player.wind = _wind()
+	if key == "reduced_motion" or key == "table_pace":
+		_set_pace()
+
+
+## The step between events, and every wait measured in it, at the pace chosen in
+## settings: it takes hold at once, mid-round.
+func _set_pace() -> void:
+	_player.step = _app.motion_step()
+	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
+	_player.wind = _wind()
+	_player.holds = {
+		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
+	}
 
 
 ## The beat a villager's seat is marked for before its cards leave, at the table's pace;
@@ -429,6 +449,15 @@ func _show_roles(landlord: int) -> void:
 func _show_you(landlord: int) -> void:
 	var role: String = "landlord" if landlord == 0 else "peasant"
 	_you.text = tr("table.you." + ("bidding" if landlord == Seats.NONE else role))
+	_clear_for_sheet()
+
+
+## The claim sheet lies over the line above the hand, and half a line showing under a
+## sheet reads as a fault: the line is put away while the sheet is up, and the Glass
+## Walls slip keeps clear of both.
+func _clear_for_sheet() -> void:
+	_you.visible = not _need_panel.visible
+	_debuff_beats.clear_slip(_you, _need_panel.visible)
 
 
 func _count_cards(seat: int, change: int) -> void:

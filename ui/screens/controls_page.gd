@@ -37,6 +37,8 @@ const ROWS_CAP: float = 600.0
 const ROWS_CAP_UNDER_HEADER: float = 540.0
 
 var _tickets: Dictionary[String, Button] = {}
+var _rows_scroll: ProseScroll
+var _rows_cap: float = 0.0
 var _restore: Button
 var _back: Button
 ## The action asking for a key, or "" while none is, and the frame the asking began in.
@@ -53,8 +55,13 @@ func _init(titled: bool = false) -> void:
 	if titled:
 		sheet.add_child(ScreenKit.eyebrow(tr("controls.title")))
 	sheet.add_child(ScreenKit.styled(tr("controls.help"), CommonsTheme.CAPTION))
-	var rows: ProseScroll = ProseScroll.new(_rows())
-	rows.fit_to(ROWS_CAP if titled else ROWS_CAP_UNDER_HEADER)
+	var grid: GridContainer = _rows()
+	var rows: ProseScroll = ProseScroll.new(grid)
+	_rows_scroll = rows
+	_rows_cap = ROWS_CAP if titled else ROWS_CAP_UNDER_HEADER
+	rows.fit_to(_rows_cap)
+	grid.sort_children.connect(_whole_rows.bind(grid))
+	ScrollFade.over(rows)
 	sheet.add_child(rows)
 	_restore = ScreenKit.button(tr("controls.restore"), CommonsTheme.GHOST)
 	_restore.pressed.connect(restore_defaults)
@@ -66,6 +73,31 @@ func _init(titled: bool = false) -> void:
 	add_child(_back)
 	_link_focus()
 	visibility_changed.connect(_on_visibility)
+
+
+## The rows' scroll, for tests.
+func rows_scroll() -> ProseScroll:
+	return _rows_scroll
+
+
+## The scroll stops at the foot of the last row that fits under its cap, so no row is
+## left sliced at the cut: the next one lies whole below it, with the fade over the edge.
+func _whole_rows(grid: GridContainer) -> void:
+	var tall: float = grid.get_combined_minimum_size().y
+	if tall <= _rows_cap:
+		_rows_scroll.fit_to(_rows_cap)
+		return
+	var fits: float = 0.0
+	var count: int = grid.get_child_count()
+	for first: int in range(0, count, grid.columns):
+		var foot: float = 0.0
+		for index: int in range(first, mini(first + grid.columns, count)):
+			var cell: Control = grid.get_child(index) as Control
+			foot = maxf(foot, cell.position.y + cell.size.y)
+		if foot > _rows_cap:
+			break
+		fits = foot
+	_rows_scroll.fit_to(fits if fits > 0.0 else _rows_cap)
 
 
 ## Up and down run through the tickets, Restore defaults and Back, and stop at the ends;

@@ -8,7 +8,8 @@ extends Control
 ## scroll, and the scroll follows keyboard and gamepad focus from sheet to sheet. The
 ## whole page sits on one paper sheet, so the heading reads as the shops' do, and its
 ## text is ink on that paper, with no halo. A Cadre with no art yet shows the empty frame
-## its picture will fill.
+## its picture will fill. The scroll is as wide as the whole cards that fit across, so
+## its bar stands beside them, and it fades at a cut edge while more lies past it.
 
 const ART_SIZE: Vector2 = Vector2(128, 168)
 const CARD_WIDTH: float = 480.0
@@ -19,6 +20,8 @@ const LOCKED_HEIGHT: float = 150.0
 const FOCUS_RING: Color = Color("b98a2c")
 const SHEET_PADDING: int = 28
 const GAP: int = 20
+## The room kept between the last card and the scroll's bar.
+const BAR_ROOM: int = 24
 
 var _entries: Array[Control] = []
 var _scroll: ScrollContainer = ScrollContainer.new()
@@ -50,12 +53,26 @@ func open(app: DemoApp) -> void:
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.follow_focus = true
 	_scroll.add_child(sections)
+	_scroll.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	ScrollFade.over(_scroll)
 	column.add_child(_scroll)
+	column.resized.connect(_fit_width.bind(column))
 	var back: Button = ScreenKit.button(tr("coll.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(app.back)
 	column.add_child(back)
 	ScreenKit.reveal(column)
 	back.grab_focus()
+
+
+## The scroll takes the width of as many whole cards as fit across the sheet, and the
+## bar's room beside them.
+func _fit_width(column: VBoxContainer) -> void:
+	var bar: float = _scroll.get_v_scroll_bar().get_combined_minimum_size().x
+	var room: float = column.size.x - bar - BAR_ROOM
+	var across: int = maxi(1, floori((room + GAP) / (CARD_WIDTH + GAP)))
+	var wide: float = across * CARD_WIDTH + (across - 1) * GAP + BAR_ROOM + bar
+	if absf(_scroll.custom_minimum_size.x - wide) > 0.5:
+		_scroll.custom_minimum_size.x = wide
 
 
 ## Every sheet in order, section by section, open and locked, for tests.
