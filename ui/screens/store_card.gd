@@ -49,11 +49,10 @@ static func make(
 		picture.add_child(stamp)
 		tip += "\n" + _tr("store.scarce.note")
 		told += "\n\n" + _tr("store.scarce.note")
-	var button: Button = ScreenKit.button(
-		_tr("store.buy").format({"price": desk.price(slot)}), CommonsTheme.COUPON
-	)
+	var button: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	button.size_flags_horizontal = Control.SIZE_FILL
-	button.disabled = not desk.can_buy(slot)
+	var coupons: int = controller.state_copy().coupons
+	BuyTicket.dress(button, desk.can_buy(slot), desk.price(slot), coupons)
 	button.tooltip_text = tip
 	var panel: Control = ScreenKit.card_panel(card)
 	button.focus_entered.connect(slip.show_for.bind(panel, title, told, false))

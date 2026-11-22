@@ -98,6 +98,7 @@ func open(app: DemoApp) -> void:
 	_envelope_stall.spent.connect(_on_spent)
 	_envelope_stall.settled.connect(_on_envelope_settled)
 	_board.setup(app.controller.cadre_slots(), BOARD_BOX)
+	_board.empty_line = tr("store.shelf.empty")
 	column.add_child(_header_row(app))
 	column.add_child(_main_row(app))
 	var leave: Button = _button_row(column)
@@ -197,6 +198,7 @@ func _main_row(app: DemoApp) -> Control:
 ## button that takes focus first.
 func _button_row(column: VBoxContainer) -> Button:
 	_reroll.pressed.connect(_on_reroll)
+	BuyTicket.readable(_reroll)
 	var leave: Button = ScreenKit.button(
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
 	)
@@ -289,7 +291,7 @@ func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
 	if rank == Ranks.INVALID and market and controller.needs_rank(_desk.stock()[slot]):
 		var name: String = tr("modifier.%s.name" % _desk.stock()[slot])
 		var then: Callable = func(picked: int) -> void: _buy(slot, panel, picked)
-		_picker.ask(tr("store.pick_rank").format({"name": name}), _counter, then)
+		_picker.ask(tr("store.pick_rank").format({"name": name}), panel, then)
 		return
 	var held: int = controller.state_copy().inventory.cadres.size()
 	if market:

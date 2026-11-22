@@ -20,7 +20,8 @@ const LEAST_COMPACT_NAME: int = 13
 const SIDE: float = 6.0
 const SIDE_COMPACT: float = 4.0
 const KIND_SIZE: int = 12
-const STATUS_SIZE: int = 14
+## The red line at a leaflet's foot, no smaller than the game's least readable size.
+const STATUS_SIZE: int = 16
 ## A paper-coloured halo round the type, so stains never cross a letter.
 const HALO: int = 4
 const LIFT: float = 14.0

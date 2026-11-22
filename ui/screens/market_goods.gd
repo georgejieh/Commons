@@ -49,12 +49,13 @@ func _show_upgrades() -> void:
 			text = _tr("market.upgrade.%s.out" % kind)
 		var ticket: Button = ScreenKit.button(text, CommonsTheme.COUPON)
 		ticket.disabled = not _desk.can_upgrade(kind)
+		BuyTicket.readable(ticket)
 		ticket.tooltip_text = Keywords.wrapped(_tr("market.upgrade.%s.tip" % kind))
 		ticket.pressed.connect(_buy.bind(_controller.upgrade.bind(kind), "upgrade"))
 		upgrades.add_child(ticket)
 
 
-## The cards for the private plot on offer: each as a card over its price.
+## The cards for the private plot on offer: each as a card over its Buy button.
 func _show_stall() -> void:
 	for child: Node in sheet.get_children():
 		sheet.remove_child(child)
@@ -79,12 +80,14 @@ func _show_stall() -> void:
 		view.bind(card)
 		view.visible = true
 		view.modulate.a = 1.0 if card != null else 0.0
-		var text: String = _tr("store.sold")
-		if card != null:
-			text = Strings.count("store.coupons", _desk.plot_card_price(slot))
-		var buy: Button = ScreenKit.button(text, CommonsTheme.COUPON)
+		var buy: Button = ScreenKit.button(_tr("store.sold"), CommonsTheme.COUPON)
 		buy.custom_minimum_size = Vector2(view.custom_minimum_size.x, 0)
-		buy.disabled = card == null or not _desk.can_buy_plot_card(slot)
+		buy.add_theme_font_size_override("font_size", TextSize.px(CounterPanel.BUY_SIZE))
+		buy.disabled = true
+		BuyTicket.readable(buy)
+		if card != null:
+			var can: bool = _desk.can_buy_plot_card(slot)
+			BuyTicket.dress(buy, can, _desk.plot_card_price(slot), _coupons())
 		buy.tooltip_text = Keywords.wrapped(_tr("market.plot.tip"))
 		buy.pressed.connect(_buy.bind(_controller.plot_card.bind(slot), "plot_card", slot))
 		item.add_child(buy)
@@ -94,6 +97,10 @@ func _show_stall() -> void:
 ## The Buy button under a plot card, or null.
 func card_button(slot: int) -> Button:
 	return _card_buttons[slot] if slot < _card_buttons.size() else null
+
+
+func _coupons() -> int:
+	return _controller.state_copy().coupons
 
 
 static func _tr(key: String) -> String:

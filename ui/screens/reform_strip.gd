@@ -21,6 +21,7 @@ const PADDING: int = 20
 
 var _row: HFlowContainer = HFlowContainer.new()
 var _column: VBoxContainer = VBoxContainer.new()
+var _head: Label = ScreenKit.eyebrow("")
 var _none: Label = ScreenKit.label("", NAME_SIZE)
 var _tags: Array[Control] = []
 var _ids: Array[String] = []
@@ -37,7 +38,7 @@ func _init() -> void:
 	_row.custom_minimum_size = Vector2(0, TAG_HEIGHT)
 	column.add_child(_row)
 	# The head leads the row of slips, so the strip keeps to one line while they fit.
-	var head: Label = ScreenKit.eyebrow("")
+	var head: Label = _head
 	head.text = TranslationServer.translate("reform.strip").to_upper()
 	head.add_theme_font_size_override("font_size", TextSize.px(HEAD_SIZE))
 	for label: Label in [head, _none]:
@@ -48,6 +49,25 @@ func _init() -> void:
 	_none.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_none.add_theme_color_override("font_color", INK)
 	add_child(column)
+
+
+## "None yet" stands on the head's baseline. Both are centred in the row, and their faces
+## set the baseline at different depths, so the higher one is pushed down to meet the other.
+func _ready() -> void:
+	var gap: float = baseline(_head) - baseline(_none)
+	var higher: Label = _none if gap > 0.0 else _head
+	var push: StyleBoxEmpty = StyleBoxEmpty.new()
+	# A top margin moves centred text down by half of it.
+	push.content_margin_top = absf(gap) * 2.0
+	higher.add_theme_stylebox_override("normal", push)
+
+
+## Where a label's baseline sits in the row, centred in TAG_HEIGHT with no margin.
+static func baseline(label: Label) -> float:
+	var font: Font = label.get_theme_font("font")
+	var px: int = label.get_theme_font_size("font_size")
+	var ascent: float = font.get_ascent(px)
+	return (TAG_HEIGHT - ascent - font.get_descent(px)) / 2.0 + ascent
 
 
 ## Prints a shop's note on the strip's sheet, above the slips: one sheet, one border.
