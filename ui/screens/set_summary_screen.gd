@@ -14,11 +14,14 @@ extends Control
 ## dark norm hides the target and the norm's rise, and at the stage past the last the
 ## Quota reads as met and every figure as a success.
 
-const BAR: Vector2 = Vector2(960, 54)
+## The bar leaves room at its right end inside the sheet's padding for the met seal,
+## which overhangs it, so the seal stays on the paper.
+const BAR: Vector2 = Vector2(900, 54)
 const SEAL_WIDTH: float = 150.0
-## The overfulfilled seal is wider for its longer word, and sits left of the met seal.
+## The overfulfilled seal is wider for its longer word, and sits left of the met seal,
+## clear of it by this much (each seal's band reaches a little past its ring when tilted).
 const OVER_WIDTH: float = 176.0
-const OVER_GAP: float = 12.0
+const OVER_GAP: float = 30.0
 ## A deeper gold than the bar's, so the second seal reads on paper.
 const OVER_INK: Color = Color("a8791a")
 ## Seconds before the bar starts, the bar takes to fill, and between the lines after.
@@ -51,7 +54,7 @@ func open(app: DemoApp) -> void:
 	var state: RunState = controller.state_copy()
 	_met = state.set_progress >= controller.target()
 	_state = state
-	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.notice_wall)
+	var sheet: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	var verdict: Control = ScreenKit.header(
 		tr("set.type.%d" % state.set_type),
 		tr("summary.met" if ShownFigures.reads_met(_met) else "summary.missed")
@@ -76,6 +79,9 @@ func open(app: DemoApp) -> void:
 		),
 		_figure(tr("summary.famine_label"), ShownFigures.FAMINE, state.famine - cost, state.famine),
 	]
+	# The tiles share the sheet's width, so no half of the row stands empty.
+	for tile: Control in tiles:
+		tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var row: Control = ScreenKit.row(tiles, 20)
 	sheet.add_child(row)
 	var line: Label = _consequence(controller, state.famine)
@@ -200,6 +206,11 @@ func fate_lines() -> PackedStringArray:
 ## What the arrival points at here: the way on.
 func tutorial_target(key: String) -> Control:
 	return _next if key == "continue" else null
+
+
+## The overfulfilled seal, for tests.
+func over_seal() -> InkSeal:
+	return _over
 
 
 ## The bar and its count, for tests.
