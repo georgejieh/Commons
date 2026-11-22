@@ -180,8 +180,9 @@ func test_focus_moves_along_the_row_and_one_cancel_never_throws_it_away() -> voi
 	assert_bool(_stall(store).is_busy()).is_false()
 
 
-## A choice that cannot be kept stays at full strength, its Keep off, with its reason on
-## a paper strip in dark red at a readable size.
+## A choice that cannot be kept stays at full strength, its Keep off, with a refusal on
+## a paper strip in dark red at a readable size; a reason every paper shares is said once,
+## under the envelope's name (test_envelope_reads).
 func test_a_choice_that_cannot_be_kept_says_why_at_full_strength() -> void:
 	Settings.set_value("reduced_motion", true)
 	_offer("campaign_envelope")
@@ -196,7 +197,7 @@ func test_a_choice_that_cannot_be_kept_says_why_at_full_strength() -> void:
 	for paper: ChoicePaper in overlay.papers():
 		assert_bool(paper.is_takeable()).is_false()
 		assert_bool(paper.keep.disabled).is_true()
-		assert_str(paper.caption()).is_equal(tr("envelope.refused.campaigns_full"))
+		assert_str(paper.caption()).is_equal(tr("envelope.refused.short"))
 		assert_float(paper.modulate.a).is_equal(1.0)
 		assert_float(paper.item.modulate.a).is_equal(1.0)
 		assert_bool(paper.caption_strip().is_visible_in_tree()).is_true()

@@ -729,11 +729,13 @@ envelope.parcel.text,"Opens at once and shows {choices} items, each a private Ca
 envelope.opened,Opened
 envelope.keep,Keep
 envelope.nothing,Take Nothing
-envelope.nothing.confirm,Press again to take nothing.
+envelope.nothing.confirm,Press again to take nothing
 envelope.choose,"Keep one, or take nothing."
 envelope.kept,Kept
 envelope.refused.campaigns_full,You hold as many Campaigns as you can.
 envelope.refused.plot_full,Your private plot is full.
+envelope.refused.short,Cannot be kept
+envelope.refused.all,{why} None of these can be kept.
 envelope.refused.other,This cannot be kept now.
 envelope.card.stamped.name,Stamped Plot Card
 envelope.card.stamped.text,"A {card} for your private plot, carrying your stamp. Each stamped card you score adds {resentment} Resentment."
