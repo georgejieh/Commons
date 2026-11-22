@@ -24,6 +24,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
 	Saves.run_service().delete()
 
 
@@ -142,3 +143,24 @@ func test_a_board_of_empty_slots_is_not_shown() -> void:
 func test_the_arrivals_quota_is_a_figure_a_player_can_read() -> void:
 	for target: float in TUTORIAL.sets.targets:
 		assert_float(target).is_between(1000.0, 99999.0)
+
+
+func test_at_the_largest_text_the_claim_sheet_and_the_line_keep_off_the_hand() -> void:
+	Settings.set_value(TextSize.SETTING, 2)
+	await await_idle_frame()
+	var table: TableScreen = await _table()
+	var need: NeedPanel = table.need_panel()
+	need.visible = true
+	need.ask(9999, "Zhuge", 0.5)
+	for _frame: int in 4:
+		await await_idle_frame()
+	var hand_top: float = TableScreen.HAND_AT.position.y
+	var sheet: Rect2 = need.get_global_rect()
+	assert_float(sheet.end.y).is_less_equal(hand_top)
+	assert_float(sheet.position.y).is_greater_equal(72.0)
+	need.visible = false
+	# The line over the hand ends where it does at Standard, above a lifted card's top.
+	var line: Label = table.get("_you")
+	var face: Font = line.get_theme_font("font")
+	var tall: float = face.get_height(line.get_theme_font_size("font_size"))
+	assert_float(line.global_position.y + tall).is_less_equal(hand_top - HandView.LIFT)

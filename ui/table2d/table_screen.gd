@@ -33,6 +33,10 @@ const ACTIONS_AT: Rect2 = Rect2(1218, 780, 280, 250)
 ## hand's last card, which reaches about 98 px past its middle, never runs under the
 ## buttons.
 const HAND_AT: Rect2 = Rect2(120, 830, 1016, 220)
+## The room the line over the hand stands in, down to a lifted card's top, and the least
+## gap between a sheet and the hand or the bar.
+const YOU_ROOM: float = 46.0
+const SHEET_GAP: float = 8.0
 
 var _app: DemoApp
 var _controller: RunController
@@ -99,9 +103,13 @@ func _ready() -> void:
 	_place(_board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
 	_place(_hand_view, HAND_AT.position, HAND_AT.size)
 	_you.theme_type_variation = CommonsTheme.TITLE
-	_you.add_theme_font_size_override("font_size", TextSize.px(28))
 	ScreenKit.paper_outline(_you)
 	_place(_you, Vector2(120, 750), Vector2(900, 40))
+	# The line stands between the notice over it and a lifted card under it: its type fits
+	# that room, never under Standard.
+	var face: Font = _you.get_theme_font("font")
+	var fits: Callable = func(type: int) -> bool: return face.get_height(type) <= YOU_ROOM
+	_you.add_theme_font_size_override("font_size", TextSize.fit(28, 28, fits))
 	_place(_actions, ACTIONS_AT.position, ACTIONS_AT.size)
 	# Held at its foot: a taller prompt grows up into the empty table, never down.
 	_actions.hold(ACTIONS_AT)
@@ -110,6 +118,8 @@ func _ready() -> void:
 	_place(_debuffs, Vector2(slip_x, 112), Vector2(_actions.held().end.x - slip_x, 0))
 	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
+	_need_panel.foot = HAND_AT.position.y - SHEET_GAP
+	_need_panel.head = _hud.size.y + SHEET_GAP
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
 	_pause.at_table = true
 	for sheet: Control in [_cheat_sheet, _pause]:

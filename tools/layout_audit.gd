@@ -181,9 +181,9 @@ func _is_sheet(box: Rect2) -> bool:
 	return box.get_area() >= _screen.get_area() * SHEET
 
 
-## Two papers of one kind side by side, as cards in a fan or a pile, overlap on purpose.
+## Two papers of one kind, as cards in a fan or in the plays of a pile, overlap on purpose.
 static func _alike(sheet: Control, other: Control) -> bool:
-	if other == null or sheet.get_parent() != other.get_parent():
+	if other == null:
 		return false
 	return sheet.get_script() == other.get_script() and sheet.get_class() == other.get_class()
 

@@ -17,6 +17,10 @@ const DECLARE_WIDTH: float = 240.0
 
 ## Where the panel's middle sits; it grows and shrinks around this point.
 var center: Vector2 = Vector2.ZERO
+## The lowest its foot may stand and the highest its head, when set: a taller sheet, as at
+## the largest text size, grows up over the table and never down over the hand.
+var foot: float = 0.0
+var head: float = 0.0
 
 var _need: int = 0
 var _true_need: int = 0
@@ -172,6 +176,8 @@ func _fit() -> void:
 		reset_size()
 		if center != Vector2.ZERO:
 			position = center - size / 2.0
+		if foot > 0.0:
+			position.y = maxf(minf(position.y, foot - size.y), head)
 		if not is_inside_tree():
 			return
 		await get_tree().process_frame
