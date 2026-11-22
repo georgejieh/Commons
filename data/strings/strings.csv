@@ -864,6 +864,7 @@ coll.open,{open} of {total} open
 unlock.runs_one,Opens after 1 more run
 unlock.runs,Opens after {count} more runs
 unlock.win_at,Opens when you win at {stake}
+unlock.win_before,Opens when you win at the stake before
 setup.household,Household
 setup.stake,Stake
 household.poor_peasants.name,Poor Peasants
