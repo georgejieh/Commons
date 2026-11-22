@@ -11,9 +11,12 @@ extends Control
 signal acknowledged
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.82)
-const WIDTH: float = 900.0
+## As wide as the other dialog sheets, so its longest notice stands whole at the largest
+## text size inside the dialog padding.
+const WIDTH: float = 1040.0
 const BODY_SIZE: int = 24
 const LINE_SIZE: int = 22
+const NO_BREAK: String = " "
 ## Over the pause menu, which draws over the arrival's layer.
 const DRAW_ORDER: int = TutorialLayer.DRAW_ORDER + 2
 
@@ -58,6 +61,7 @@ func _ready() -> void:
 	_ok.pressed.connect(_acknowledge)
 	for piece: Control in [_eyebrow, _title, _body, _lines, _filed, _ok]:
 		_sheet.add_child(piece)
+	SheetPad.column(_sheet)
 	center.add_child(ScreenKit.card_panel(_sheet))
 	visible = false
 	get_viewport().gui_focus_changed.connect(_on_focus_changed)
@@ -115,7 +119,7 @@ func _show_next() -> void:
 	_shown = _queue.pop_front()
 	_eyebrow.text = _shown.eyebrow.to_upper()
 	_title.text = _shown.title
-	_body.text = _shown.body
+	_body.text = BooksNotice.kept_together(_shown.body)
 	# The notice outlives screens, so it takes the text size chosen now.
 	_body.add_theme_font_size_override("font_size", TextSize.px(BODY_SIZE))
 	_filed.add_theme_font_size_override("font_size", TextSize.px(LINE_SIZE))
@@ -123,7 +127,7 @@ func _show_next() -> void:
 		_lines.remove_child(child)
 		child.queue_free()
 	for line: String in _shown.lines:
-		_lines.add_child(ScreenKit.label(line, LINE_SIZE, ScreenKit.INK))
+		_lines.add_child(ScreenKit.label(kept_together(line), LINE_SIZE, ScreenKit.INK))
 	_lines.visible = not _shown.lines.is_empty()
 	_filed.text = _shown.filed
 	visible = true
@@ -132,6 +136,15 @@ func _show_next() -> void:
 	Audio.play(AudioEvents.STORE_BUY)
 	UiMotion.stamp(ScreenKit.card_panel(_sheet))
 	_ok.grab_focus()
+
+
+## A line with its last two words joined by a no-break space, so a wrapped line never
+## leaves one figure alone on its last line.
+static func kept_together(line: String) -> String:
+	var last: int = line.rfind(" ")
+	if last <= 0:
+		return line
+	return line.substr(0, last) + NO_BREAK + line.substr(last + 1)
 
 
 func _acknowledge() -> void:

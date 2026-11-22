@@ -19,7 +19,7 @@ var _entries: Dictionary[int, PackedStringArray] = {}
 
 func open(app: DemoApp) -> void:
 	var state: RunState = app.controller.state_copy()
-	var column: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.notice_wall)
+	var column: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	column.add_child(ScreenKit.header(tr("dossier.eyebrow"), tr("dossier.title")))
 	var cards: Array[Control] = []
 	for seat: int in range(1, Seats.COUNT):

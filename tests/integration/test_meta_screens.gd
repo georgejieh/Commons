@@ -70,9 +70,10 @@ func test_a_fresh_profile_opens_one_household_and_one_stake() -> void:
 	assert_bool(tickets[0].open).is_true()
 	assert_bool(tickets[0].picked).is_true()
 	assert_str(tickets[1].words()).is_equal("Opens when you win at Base")
+	# Every locked stake says how it opens; past the next, without naming one not reached.
 	for ticket: StakeTicket in tickets.slice(2):
 		assert_bool(ticket.open).is_false()
-		assert_str(ticket.words()).is_empty()
+		assert_str(ticket.words()).is_equal("Opens when you win at the stake before")
 	assert_str(screen.rules_text()).is_equal("The rules as written.")
 	# The player's name for the run Start begins, then the generation (ADR 0028).
 	assert_bool(_shows(screen, screen.player_name() + ", generation 1")).is_true()
@@ -187,13 +188,17 @@ func test_run_setup_fits_both_screens() -> void:
 				_check_layout(screen, screen.scroll(), where)
 				_check_type(screen, where)
 				_clips(screen, where)
-				if screen_size == SIZES[0] and level == 0:
-					# At 1080 and Standard the whole page shows without scrolling; larger
-					# text may scroll (ADR 0034).
-					var content: Control = screen.scroll().get_child(0)
-					assert_float(content.size.y).override_failure_message(where).is_less_equal(
-						screen.scroll().size.y + SLACK
-					)
+				# The whole page shows without scrolling at every text size (P5.2a), and the
+				# stake row stands as wide as the household row.
+				var content: Control = screen.scroll().get_child(0)
+				assert_float(content.size.y).override_failure_message(where).is_less_equal(
+					screen.scroll().size.y + SLACK
+				)
+				var stakes: Control = screen.tickets()[0].get_parent()
+				var households: Control = screen.papers()[0].get_parent()
+				assert_float(stakes.size.x).override_failure_message(where).is_equal_approx(
+					households.size.x, SLACK
+				)
 				# Focus on the last ticket scrolls it into view.
 				screen.tickets()[-1].grab_focus()
 				await await_idle_frame()
@@ -208,7 +213,8 @@ func test_run_setup_fits_both_screens() -> void:
 
 ## Every stake ticket's words are 16 px or more, on one or two lines, never broken inside
 ## a word, on the rank picker's warm paper with its red band; a locked ticket past the
-## first stays blank. At both screen sizes, fresh and veteran.
+## first says it opens with a win at the stake before. At both screen sizes, fresh and
+## veteran.
 func test_stake_tickets_read_at_16_px_on_warm_paper() -> void:
 	for profile: bool in [false, true]:
 		if profile:

@@ -13,6 +13,7 @@ var _card_backs: CardBackRow
 var _change: Button = null
 var _name_line: Label
 var _sheets: HBoxContainer
+var _scroll: ScrollContainer
 
 
 func open(app: DemoApp) -> void:
@@ -35,8 +36,9 @@ func open(app: DemoApp) -> void:
 	var sheets: HBoxContainer = ScreenKit.row([panel, ScreenKit.card_panel(backs)])
 	sheets.alignment = BoxContainer.ALIGNMENT_BEGIN
 	_sheets = sheets
-	# At a larger text size the sheets can stand taller than the page: they scroll, and
-	# follow the focus, so Back and the header stay on screen (ADR 0034).
+	# The sheets are laid out to stand whole on the page at every text size; should they
+	# ever stand taller, they scroll, follow the focus and fade at the cut, so Back and
+	# the header stay on screen and the cut reads as more (ADR 0034).
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.follow_focus = true
@@ -44,6 +46,8 @@ func open(app: DemoApp) -> void:
 	# As wide as the sheets, so its bar stands against them, not at the page's edge.
 	scroll.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	scroll.add_child(sheets)
+	ScrollFade.over(scroll)
+	_scroll = scroll
 	column.add_child(scroll)
 	var back: Button = ScreenKit.button(tr("settings.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(
@@ -72,12 +76,18 @@ func open(app: DemoApp) -> void:
 	back.grab_focus()
 
 
+## A settings page no longer on screen does not build itself again.
 func _on_setting(key: String) -> void:
-	if key == TextSize.SETTING:
+	if key == TextSize.SETTING and is_inside_tree():
 		_rebuild.call_deferred()
 
 
 func _rebuild() -> void:
+	if not is_inside_tree():
+		return
+	# The page's fit is connected again with the new page.
+	for connection: Dictionary in resized.get_connections():
+		resized.disconnect(connection["callable"])
 	for child: Node in get_children():
 		remove_child(child)
 		child.queue_free()
@@ -92,6 +102,11 @@ func sheets() -> Array[Control]:
 	for sheet: Node in _sheets.get_children():
 		made.append(sheet as Control)
 	return made
+
+
+## The scroll the sheets stand in, for tests.
+func scroll() -> ScrollContainer:
+	return _scroll
 
 
 ## The card back row, for tests.

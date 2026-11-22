@@ -74,7 +74,7 @@ func test_a_generations_line_reads_exactly() -> void:
 	var names: Array[String] = _keys(3)
 	var entry: HistoryEntry = _entry(3, Endings.LEAN_YEARS, false, names.slice(0, 2))
 	var expected: String = (
-		"Generation 3. Lean Years. Peasant. Year 8. Not at roll call: %s and %s."
+		"Generation 3. Lean Years. Class: Peasant. Ended in Year 8. Not at roll call: %s and %s."
 		% [tr(names[0]), tr(names[1])]
 	)
 	assert_str(HistoryView.line(entry)).is_equal(expected)
@@ -84,7 +84,7 @@ func test_a_generations_line_reads_exactly() -> void:
 	)
 	var death: HistoryEntry = _entry(5, Endings.DEATH_FAMINE, true, [])
 	assert_str(HistoryView.line(death)).is_equal(
-		"Generation 5. The Granary Is Empty. Landlord. Year 3."
+		"Generation 5. The Granary Is Empty. Class: Landlord. Ended in Year 3."
 	)
 
 
@@ -166,10 +166,10 @@ func test_the_run_reads_as_a_record() -> void:
 		assert_array(Array(HistoryView.run_lines(summaries, name_of)))
 		. is_equal(
 			[
-				"Quota 1. Wang: fed twice.",
-				"Quota 2. Zhao: bombed once, denounced once.",
+				"Quota 1. Wang was fed twice.",
+				"Quota 2. Zhao was bombed once, denounced once.",
 				"Quota 3. Nothing to record.",
-				"Quota 4. Wang: fed three times, bombed 4 times, betrayed once.",
+				"Quota 4. Wang was fed three times, bombed 4 times, betrayed once.",
 			]
 		)
 	)
@@ -276,7 +276,7 @@ func test_the_card_back_row_at_both_sizes() -> void:
 			assert_bool(swatches[0].selected).is_true()
 			var lines: Array[String] = ["Opens after 2 more runs", "Opens after 5 more runs"]
 			if runs == 5:
-				lines = ["Coming with its art", "Coming with its art"]
+				lines = ["Not printed yet", "Not printed yet"]
 			for index: int in [1, 2]:
 				assert_bool(swatches[index].choosable).is_false()
 				assert_str(swatches[index].accessibility_name).is_equal(lines[index - 1])

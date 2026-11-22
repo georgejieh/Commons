@@ -7,7 +7,7 @@ extends Control
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
 	var state: RunState = controller.state_copy()
-	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.notice_wall)
+	var sheet: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	var last: Dictionary = last_round(controller.set_events())
 	var title_key: String = "round.none"
 	if not last.is_empty():

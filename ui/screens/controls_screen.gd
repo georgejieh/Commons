@@ -13,6 +13,9 @@ func open(app: DemoApp) -> void:
 	var column: VBoxContainer = ScreenKit.page(self)
 	column.add_child(ScreenKit.header(tr("controls.eyebrow"), tr("controls.title")))
 	_page = ControlsPage.new()
+	# As wide as its sheet, so the scroll's bar stands beside the keys, not at the far
+	# side of the page.
+	_page.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_page.leave.connect(func() -> void: app.back())
 	column.add_child(_page)
 	ScreenKit.reveal(column)
