@@ -5,7 +5,8 @@ extends RefCounted
 ## text that runs out of the paper it is on, text drawn over other text, text partly under
 ## another paper, and type under 16 px. It reads the tree and never changes it. What is
 ## behind a full-screen dim (a dialog or an open envelope over a page) is not compared
-## with what is in front of it, and what a ScrollContainer cuts off is scrolled, not cut.
+## with what is in front of it, nor what a large sheet covers with the sheet; cards in a
+## fan cover one another on purpose; and what a ScrollContainer cuts off is scrolled.
 ## A finding is a line to read, not a failure: a slip that explains a card covers part of
 ## the page on purpose. Each is reported once a run.
 ## Loaded at run time by playtest.gd; it names no ui/ class. Development only.
@@ -21,6 +22,8 @@ const LEAST_TYPE: float = 15.5
 const FAINT: float = 0.35
 ## A full-screen piece covers at least this share of the screen.
 const CURTAIN: float = 0.95
+## A paper this share of the screen or more is a sheet laid over the page on purpose.
+const SHEET: float = 0.12
 const SNIPPET: int = 28
 
 var _seen: Dictionary[String, bool] = {}
@@ -75,7 +78,7 @@ func _walk(
 		var box: Rect2 = _global(control, Rect2(Vector2.ZERO, control.size))
 		if _is_paper(control):
 			paper = control
-			_papers.append({"node": control, "box": box, "order": order})
+			_papers.append({"node": control, "box": box.intersection(clip), "order": order})
 		elif _is_curtain(control, box):
 			_curtains.append(order)
 		if _has_text(control):
@@ -163,11 +166,26 @@ func _check_covered(found: PackedStringArray) -> void:
 				continue
 			if _level(paper["order"]) != _level(text["order"]):
 				continue
+			if _is_sheet(paper["box"]) or _alike(sheet, text["paper"]):
+				continue
 			var hidden: float = box.intersection(paper["box"]).get_area() / area
 			if hidden > COVERED.x and hidden < COVERED.y:
 				var by: String = _name(sheet)
 				var share: int = roundi(hidden * 100.0)
 				_add(found, "COVERED", _said(control), "%d%% under %s" % [share, by])
+
+
+## A sheet laid over the page on purpose (the rules, the pause menu, the claim): what it
+## covers is behind it, as behind a dim.
+func _is_sheet(box: Rect2) -> bool:
+	return box.get_area() >= _screen.get_area() * SHEET
+
+
+## Two papers of one kind side by side, as cards in a fan or a pile, overlap on purpose.
+static func _alike(sheet: Control, other: Control) -> bool:
+	if other == null or sheet.get_parent() != other.get_parent():
+		return false
+	return sheet.get_script() == other.get_script() and sheet.get_class() == other.get_class()
 
 
 ## How many full-screen dims are drawn before a piece: pieces are compared within one.
