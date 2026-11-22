@@ -11,6 +11,11 @@ extends Resource
 @export var hover: float = 0.12
 @export var select: float = 0.1
 @export var play: float = 0.22
+## A villager's seat swells to wind_scale over wind_up seconds before its cards leave it.
+## The player did not choose that play, so they get a beat to look. Their own play
+## answers at once.
+@export var wind_up: float = 0.16
+@export var wind_scale: float = 1.04
 @export var sweep: float = 0.3
 ## A won trick leaves the table with this Tween.TransitionType and Tween.EaseType.
 @export var sweep_transition: int = Tween.TRANS_CUBIC
