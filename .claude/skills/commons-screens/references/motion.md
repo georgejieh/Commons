@@ -43,12 +43,12 @@ A reward that changes nothing the player can see was not a reward.
 ## Godot traps
 
 - **Inside a Container, never tween `position`.** The Container sets position and size again each time it sorts. `UiMotion` changes scale and opacity for that reason. If a piece has to travel or turn inside a Container, use the offset transforms of 4.7 (`offset_transform_enabled`, see `godot-ui-control`), which the Container leaves alone, and add the move to `UiMotion`, not to the screen.
-- **A pivot in pixels goes stale.** `pivot_offset = size / 2` is the centre only until the Control is resized, and a Control in a Container has no size in `_ready`. Use `pivot_offset_ratio = Vector2(0.5, 0.5)`.
+- **A pivot in pixels goes stale.** `pivot_offset = size / 2` is the centre only until the Control is resized, and a Control in a Container has no size in `_ready`. `UiMotion` keeps the pivot of anything it moves at the middle as the size changes. In new code that sets its own pivot, use `pivot_offset_ratio = Vector2(0.5, 0.5)`, and never set both on one node: the two add together.
 - **Return to the resting value, not to a literal.** Remember the scale a piece had before the first effect and go back to that, or a second hit during the first creeps it larger.
 - **One tween for one property.** Stop the running tween before starting another on the same property, and set the final value where an effect ends.
 - **Set the start state after you know the tween will run.** A piece made invisible for an entrance that never starts stays invisible, and a headless walk will not notice.
 - **One switch for reduced motion.** Every tween asks `UiMotion.reduced()` or goes through `UiMotion`. A switch with one exception is not a switch. Tool scripts cannot name `UiMotion`, since it needs an autoload; they read the flag from their arguments.
-- **Digits.** Oswald's digits are of different widths and the font has no tabular figures. A number that rolls in Oswald needs a box sized for its widest value and a fixed alignment, or it must be drawn digit by digit in equal cells. Courier Prime is already fixed-width.
+- **Digits.** Oswald's digits are of different widths and the font has no tabular figures. `UiMotion.count` gives a rolling label room for its widest digits, so nothing beside it moves; the digits inside still shift a little unless the label is right-aligned. A number that must hold perfectly still is drawn digit by digit in equal cells. Courier Prime is already fixed-width.
 - **A piece that is fading in is fainter than its resting contrast.** Do not judge contrast from a frame taken mid-entrance, and pulse the paper, not the ink.
 
 ## Checking motion
