@@ -139,4 +139,4 @@ Dependencies run `ui` → `game` → `core`. `core` may read `data` definitions.
 
 ## Skills
 
-Project skills are in `.claude/skills/`: Godot and game design references, plus `commons-prose` for all game text, `commons-bgm` for Suno music and `commons-sfx` for sound effects. Use them for that work.
+Project skills are in `.claude/skills/`: Godot and game design references, plus `commons-prose` for all game text, `commons-screens` for screens, UX, motion and reading playtest frames, `commons-bgm` for Suno music and `commons-sfx` for sound effects. Use them for that work.

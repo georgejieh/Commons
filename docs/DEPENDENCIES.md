@@ -19,6 +19,7 @@
 | commons-prose (`.claude/skills/commons-prose`) | project-owned | See its NOTICE.md | Voice and AI-tell rules for all game text; adapted from blader/humanizer, hardikpandya/stop-slop and conorbronsdon/avoid-ai-writing; not shipped | Nothing |
 | commons-bgm (`.claude/skills/commons-bgm`) | project-owned | See its NOTICE.md | Suno prompts and music planning; not shipped | Nothing |
 | commons-sfx (`.claude/skills/commons-sfx`) | project-owned; tools from [game-sfx](https://github.com/GhazaGG/Game-Sound-Effect-for-Claude) at `0f287ed` | Skill text is ours; tools are MIT | Sound effect sourcing, licensing, synthesis and measurement; not shipped. Under the adoption bar (new, one author), accepted by the project owner after review | Nothing |
+| commons-screens (`.claude/skills/commons-screens`) | project-owned | See its NOTICE.md | Rules and a review rubric for screens, UX, motion and playtest frames; adapted from game-ux-ui-skill, gamestack, vibedgames, downbelow-skills, Claude-Code-Game-Studios and the MotionSites skill, none of them installed; not shipped | Nothing |
 
 Godot AI must be excluded from export presets (`addons/godot_ai/*`). Its telemetry is disabled by `--disable-telemetry` in `.mcp.json` and the `GODOT_AI_DISABLE_TELEMETRY` user environment variable. Update it with its dock's Update button, then update the pin in `.mcp.json` and this table.
 
