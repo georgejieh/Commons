@@ -139,7 +139,9 @@ func _check_pairs(found: PackedStringArray) -> void:
 			if under["paper"] != over["paper"] and under["paper"] != null:
 				if int(under["order"]) > int(over["order"]):
 					continue
-			var shared: Rect2 = (under["box"] as Rect2).intersection(over["box"])
+			var under_box: Rect2 = under["box"]
+			var over_box: Rect2 = over["box"]
+			var shared: Rect2 = under_box.intersection(over_box)
 			if shared.size.x < OVERLAP or shared.size.y < OVERLAP:
 				continue
 			_add(found, "OVERLAP", _said(a), "over %s at %s" % [_said(b), _at(shared)])
