@@ -18,6 +18,8 @@ const GAP: float = 14.0
 ## lifts by CampaignLeaflet.LIFT and must stay clear of the head.
 const HEAD: float = 26.0
 const HEAD_FULL: float = 36.0
+## Between a compact tray's head and its leaflets, whatever size the head's type is.
+const HEAD_CLEAR: float = 8.0
 const BUTTON: Vector2 = Vector2(118, 44)
 
 ## Off while the table is acting events out, so nothing is armed mid-moment.
@@ -141,7 +143,7 @@ func refresh() -> void:
 func _stand_tall() -> void:
 	var more: float = _tallest_leaf() - _leaf().y
 	var base: Vector2 = tray_size(_leaflets.size(), side_buttons, compact, vertical)
-	var tall: float = base.y + maxf(more, 0.0)
+	var tall: float = base.y + maxf(more, 0.0) + (_head_extra() if _heading else 0.0)
 	if not is_equal_approx(custom_minimum_size.y, tall):
 		custom_minimum_size.y = tall
 		size.y = tall
@@ -277,7 +279,15 @@ func _head_height() -> float:
 	# Without its head the tray keeps room for an armed leaflet's lift.
 	if not _heading:
 		return CampaignLeaflet.LIFT
-	return HEAD if compact else HEAD_FULL
+	return (HEAD if compact else HEAD_FULL) + _head_extra()
+
+
+## How much more room a compact head needs than HEAD, so its type never touches the
+## leaflets under it.
+func _head_extra() -> float:
+	if not compact:
+		return 0.0
+	return maxf(_head.get_combined_minimum_size().y + HEAD_CLEAR - HEAD, 0.0)
 
 
 ## Shows or drops the head; the leaflets and buttons move up into its place.
@@ -296,7 +306,9 @@ func has_heading() -> bool:
 ## How far down the tray reaches with or without its head: the head, the leaflets and,
 ## while a Campaign is armed, Use and Cancel under them.
 func standing_height(heading: bool) -> float:
-	var top: float = (HEAD if compact else HEAD_FULL) if heading else CampaignLeaflet.LIFT
+	var top: float = (HEAD if compact else HEAD_FULL) + _head_extra()
+	if not heading:
+		top = CampaignLeaflet.LIFT
 	var foot: float = top + _tallest_leaf()
 	if heading:
 		foot = maxf(foot, _head.get_combined_minimum_size().y)
