@@ -290,7 +290,7 @@ func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
 	if rank == Ranks.INVALID and market and controller.needs_rank(_desk.stock()[slot]):
 		var name: String = tr("modifier.%s.name" % _desk.stock()[slot])
 		var then: Callable = func(picked: int) -> void: _buy(slot, panel, picked)
-		_picker.ask(tr("store.pick_rank").format({"name": name}), _counter, then)
+		_picker.ask(tr("store.pick_rank").format({"name": name}), panel, then)
 		return
 	var held: int = controller.state_copy().inventory.cadres.size()
 	if market:
