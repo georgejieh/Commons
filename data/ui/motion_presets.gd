@@ -5,6 +5,9 @@ extends Resource
 
 ## Seconds between table events, so each bot play can be seen.
 @export var event_step: float = 0.55
+## What the table's pace setting multiplies the step by: Slow, Standard, Fast. A slower
+## table gives each villager's play longer to be read; nothing else changes.
+@export var pace_scales: Array[float] = [1.4, 1.0, 0.7]
 ## The arrival plays the table this much slower: everything on it is new to the player.
 @export var arrival_scale: float = 1.5
 @export var deal: float = 0.25

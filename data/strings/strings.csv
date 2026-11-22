@@ -200,6 +200,10 @@ settings.text_size.standard,Standard
 settings.text_size.large,Large
 settings.text_size.largest,Largest
 settings.text_size.table,The table changes at the next deal
+settings.table_pace,Table pace
+settings.table_pace.slow,Slow
+settings.table_pace.standard,Standard
+settings.table_pace.fast,Fast
 banner.landlord_wins,The landlord wins the round
 banner.peasants_win,The peasants win the round
 sort.rank,Rank

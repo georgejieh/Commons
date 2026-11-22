@@ -135,7 +135,6 @@ func open(app: DemoApp) -> void:
 	add_child(_pool)
 	add_child(_player)
 	add_child(_motion)
-	_player.step = app.motion_step()
 	_player.motion = _motion
 	_motion.setup(self, bool(Settings.value("reduced_motion")))
 	Settings.changed.connect(_on_setting)
@@ -172,11 +171,7 @@ func open(app: DemoApp) -> void:
 	_campaigns.attach(_pool, _debuffs)
 	_columns.setup(_seats, _campaigns.tray, _dressing, _debuffs, _actions, _controller)
 	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
-	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
-	_player.wind = _wind()
-	_player.holds = {
-		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
-	}
+	_set_pace()
 	_hud.menu.pressed.connect(_open_pause)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
 	# The events wait behind the books' notice until it is acknowledged (ADR 0022).
@@ -403,7 +398,19 @@ func _seat_center(seat: int) -> Vector2:
 func _on_setting(key: String) -> void:
 	if key == "reduced_motion":
 		_motion.set_reduced(bool(Settings.value("reduced_motion")))
-		_player.wind = _wind()
+	if key == "reduced_motion" or key == "table_pace":
+		_set_pace()
+
+
+## The step between events, and every wait measured in it, at the pace chosen in
+## settings: it takes hold at once, mid-round.
+func _set_pace() -> void:
+	_player.step = _app.motion_step()
+	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
+	_player.wind = _wind()
+	_player.holds = {
+		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
+	}
 
 
 ## The beat a villager's seat is marked for before its cards leave, at the table's pace;

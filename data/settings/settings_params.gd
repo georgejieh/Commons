@@ -20,6 +20,8 @@ extends Resource
 @export var card_back: String = "sunrise"
 ## The text size chosen (ADR 0034): an index into text_scales, 0 for Standard.
 @export var text_size: int = 0
+## The table's pace chosen: an index into MotionPresets.pace_scales, 1 for Standard.
+@export var table_pace: int = 1
 
 @export_group("Text size")
 ## What each text size multiplies every font size by: Standard, Large, Largest. Not saved.

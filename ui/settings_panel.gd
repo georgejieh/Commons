@@ -13,13 +13,18 @@ const DISPLAY_SLIDERS: Array[String] = ["horror_intensity"]
 const TEXT_SIZES: Array[String] = ["standard", "large", "largest"]
 ## The name of the box for each text size, for the focus and for tests.
 const TEXT_SIZE_BOX: String = "TextSize%d"
+## The table's paces under Display, by the end of their string keys, slowest first, and
+## the name of the box for each (P5.2a).
+const PACES: Array[String] = ["slow", "standard", "fast"]
+const PACE_SETTING: String = "table_pace"
+const PACE_BOX: String = "TablePace%d"
 const NAME_SIZE: int = 26
 ## The least room a setting's name takes; it grows to the widest name, kept on one line,
 ## so every slider starts at one edge.
 const NAME_WIDTH: float = 200.0
 ## The gap between the sheet's rows at each text size: closer at the larger sizes, so the
 ## sheet stands whole on the page at every size (P5.2a).
-const ROW_GAPS: Array[int] = [18, 14, 10]
+const ROW_GAPS: Array[int] = [18, 14, 6]
 ## The toggles flow two to a line where they fit.
 const TOGGLE_GAP: int = 28
 ## The name of the ticket that opens the Controls page, for the focus and for tests.
@@ -39,6 +44,7 @@ static func build(at_table: bool = false, open_controls: Callable = Callable()) 
 	for key: String in DISPLAY_SLIDERS:
 		sheet.add_child(_slider(key, names))
 	sheet.add_child(_text_sizes(names, at_table))
+	sheet.add_child(_paces(names))
 	var toggles: HFlowContainer = HFlowContainer.new()
 	toggles.add_theme_constant_override("h_separation", TOGGLE_GAP)
 	toggles.add_theme_constant_override("v_separation", ROW_GAPS[TextSize.level()])
@@ -112,6 +118,27 @@ static func _text_sizes(names: float, at_table: bool) -> Control:
 	return block
 
 
+## The table's pace: its name and a box for each pace, the chosen one ticked, one group
+## as the text sizes are. It takes hold at once, at a table already open.
+static func _paces(names: float) -> Control:
+	var group: ButtonGroup = ButtonGroup.new()
+	var row: Array[Control] = [_name(PACE_SETTING, names)]
+	var chosen: int = clampi(int(Settings.value(PACE_SETTING)), 0, PACES.size() - 1)
+	for pace: int in PACES.size():
+		var choice: CheckBox = CheckBox.new()
+		choice.name = PACE_BOX % pace
+		choice.button_group = group
+		choice.text = TranslationServer.translate("settings.table_pace." + PACES[pace])
+		choice.button_pressed = pace == chosen
+		choice.toggled.connect(
+			func(on: bool) -> void:
+				if on:
+					Settings.set_value(PACE_SETTING, pace)
+		)
+		row.append(choice)
+	return ScreenKit.row(row)
+
+
 ## The box for the text size chosen now under root, for the focus after a rebuild.
 static func chosen_text_size(root: Node) -> CheckBox:
 	return root.find_child(TEXT_SIZE_BOX % TextSize.level(), true, false) as CheckBox
@@ -150,6 +177,7 @@ static func _name_width() -> float:
 	keys.append_array(VOLUMES)
 	keys.append_array(DISPLAY_SLIDERS)
 	keys.append(TextSize.SETTING)
+	keys.append(PACE_SETTING)
 	for key: String in keys:
 		var words: String = TranslationServer.translate("settings." + key)
 		var shown: Vector2 = CommonsTheme.BOLD.get_string_size(
