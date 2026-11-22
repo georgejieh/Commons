@@ -6,7 +6,7 @@ extends Control
 ## left, the rounds two by two. Under a dark norm, or at the stage past the last, the
 ## target is "None reported" (ADR 0022).
 
-const SHEET_WIDTH: float = 800.0
+const SHEET_WIDTH: float = 830.0
 const STEP_SIZE: Vector2 = Vector2(370, 170)
 
 
@@ -14,7 +14,7 @@ func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
 	var state: RunState = controller.state_copy()
 	var art: Texture2D = ScreenKit.ART.notice_wall
-	var column: VBoxContainer = ScreenKit.side_sheet(self, art, SHEET_WIDTH)
+	var column: VBoxContainer = SheetPad.column(ScreenKit.side_sheet(self, art, SHEET_WIDTH))
 	var where: String = tr("intro.where").format(
 		{"year": state.year, "set": state.set_index + 1, "sets": app.sets_per_year()}
 	)
@@ -43,7 +43,10 @@ func open(app: DemoApp) -> void:
 	var reforms: Label = reforms_line(controller)
 	if reforms != null:
 		column.add_child(reforms)
-	column.add_child(ScreenKit.eyebrow(tr("intro.ladder")))
+	# The ladder's caption wraps, so at a larger text size it keeps inside the sheet.
+	var caption: Label = ScreenKit.eyebrow(tr("intro.ladder"))
+	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(caption)
 	var steps: Array[Control] = []
 	var ladder: Array[String] = controller.ladder()
 	for round_index: int in ladder.size():

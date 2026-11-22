@@ -113,7 +113,7 @@ func close() -> void:
 
 
 func _menu() -> VBoxContainer:
-	var sheet: VBoxContainer = ScreenKit.card(Vector2(460, 0))
+	var sheet: VBoxContainer = SheetPad.column(ScreenKit.card(Vector2(460, 0)))
 	sheet.add_theme_constant_override("separation", 14)
 	sheet.add_child(ScreenKit.header(tr("pause.eyebrow"), tr("pause.title"), ScreenKit.INK))
 	_resume = _wide(tr("pause.resume"), CommonsTheme.PRIMARY, close)
@@ -142,11 +142,12 @@ func _settings_page() -> VBoxContainer:
 	return page
 
 
-## Asks before abandoning the run. Keep playing has the focus, so a stray press of
-## accept keeps the run.
+## Asks before abandoning the run, under a title of its own, on the menu's padding. Keep
+## playing has the focus, so a stray press of accept keeps the run.
 func _confirm_page() -> VBoxContainer:
-	var sheet: VBoxContainer = ScreenKit.card(Vector2(460, 0))
+	var sheet: VBoxContainer = SheetPad.column(ScreenKit.card(Vector2(460, 0)))
 	sheet.add_theme_constant_override("separation", 14)
+	sheet.add_child(ScreenKit.header(tr("pause.eyebrow"), tr("menu.abandon"), ScreenKit.INK))
 	sheet.add_child(ScreenKit.label(tr("menu.abandon.confirm"), 24, ScreenKit.INK))
 	_keep = _wide(tr("menu.abandon.no"), CommonsTheme.PRIMARY, close)
 	sheet.add_child(_keep)
