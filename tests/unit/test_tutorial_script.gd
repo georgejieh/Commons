@@ -115,7 +115,9 @@ func test_villagers_play_their_own_cards() -> void:
 func test_the_quota_cannot_be_met_and_draws_no_debuff() -> void:
 	var sets: SetConfig = SetConfig.new(SCRIPT.sets)
 	assert_int(sets.max_rounds()).is_equal(2)
-	assert_float(sets.target(1, RunState.SetType.SMALL)).is_greater(1.0e8)
+	# A figure a player can read, more than twice what the authored plays score (about
+	# 2.8K); test_tutorial_run plays it through to the missed Quota.
+	assert_float(sets.target(1, RunState.SetType.SMALL)).is_equal(6000.0)
 	var stream: RandomStream = RandomStreams.new(SCRIPT.seed_value).stream(RandomStreams.DEBUFF)
 	var ladder: Array[String] = DebuffLadder.draw(
 		RunLoop.DEFAULT_POOL.debuffs, RunState.SetType.SMALL, 2, stream, SCRIPT.ladder

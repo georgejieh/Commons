@@ -160,10 +160,9 @@ func add_play(
 	if percent != ScoreTally.WHOLE:
 		sum += " " + tr("ledger.scaled").format({"percent": percent})
 	var score: String = tr("ledger.equals").format({"total": Strings.score(total)})
-	var line: String = (
-		"[font_size=%d][font=%s]%s [/font][font=%s]%s[/font][/font_size]"
-		% [TextSize.px(SUM_SIZE), SUM_FACE, Keywords.mark(sum), SCORE_FACE, score]
-	)
+	var faces: Array[String] = [SUM_FACE, Keywords.mark(sum), SCORE_FACE, score]
+	var faced: String = "[font=%s]%s [/font][font=%s]%s[/font]" % faces
+	var line: String = "[font_size=%d]%s[/font_size]" % [TextSize.px(SUM_SIZE), faced]
 	_texts.append("[b]%s[/b]\n%s" % [head.replace("[", "[lb]"), line])
 	if _texts.size() > MAX_PLAYS:
 		_texts.remove_at(0)
