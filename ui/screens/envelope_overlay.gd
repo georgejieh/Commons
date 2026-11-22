@@ -241,6 +241,10 @@ func _settle() -> void:
 		if paper.is_takeable():
 			paper.keep.grab_focus()
 			return
+	# None can be kept: the first is explained all the same, so the paper under the row
+	# is never blank. Focus then goes to Take Nothing, which leaves that text standing.
+	if not _papers.is_empty():
+		_point(0)
 	_nothing.grab_focus()
 
 
