@@ -7,7 +7,8 @@ extends Control
 ## with market set, the black market behind it: the room goes dark, prices are higher,
 ## the plot can be enlarged, and every purchase adds Resentment, which the screen
 ## counts. Every purchase goes through the run controller. A purchase is acted out: the
-## card is sealed, then flies down to its place on your board.
+## card is sealed, then flies down to its place on your board. A Cadre that seldom
+## reaches the counter is stamped Scarce a beat after the cards arrive (ScarceStamp).
 ##
 ## The page fits one 1920x1080 screen in four rows inside the header's margins:
 ## - the heading, with your coupons, the shop's note and the Reforms in force at its right;
@@ -110,6 +111,7 @@ func open(app: DemoApp) -> void:
 	_shown_resentment = app.controller.state_copy().resentment
 	_refresh()
 	ScreenKit.reveal(column)
+	ScarceStamp.press_under(_counter, UiMotion.PRESETS.scarce_wait)
 	leave.grab_focus()
 	# An envelope left open, as by a save taken while choosing, is shown open again.
 	_envelope_stall.resume()
@@ -273,7 +275,8 @@ func _refresh() -> void:
 
 func _item(slot: int, cadre_id: String) -> Control:
 	var buy: Callable = func(panel: Control) -> void: _buy(slot, panel)
-	return StoreCard.make(_app.controller, _desk, slot, cadre_id, _slip, buy)
+	var ink: Color = MARKET_INK if market else ScreenKit.RED
+	return StoreCard.make(_app.controller, _desk, slot, cadre_id, _slip, buy, ink)
 
 
 ## Buys the Cadre in a slot and acts it out: the coupons roll down, the card is sealed,
@@ -383,6 +386,7 @@ func _on_reroll() -> void:
 			if child is PanelContainer:
 				fresh.append(child as Control)
 	UiMotion.enter(fresh)
+	ScarceStamp.press_under(_counter, UiMotion.PRESETS.scarce_wait)
 
 
 ## An envelope was answered: the page shows what it gave, wherever that went.

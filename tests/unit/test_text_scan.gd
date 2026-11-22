@@ -25,6 +25,7 @@ const ALLOWED: Dictionary[String, String] = {
 	"sizes res://ui/screens/hanzi_seal.gd": "A seal is art.",
 	"sizes res://ui/screens/ink_seal.gd": "A seal is art.",
 	"sizes res://ui/screens/file_stamp.gd": "A stamp is art.",
+	"sizes res://ui/screens/scarce_stamp.gd": "A stamp is art.",
 	"sizes res://ui/table2d/confiscated_mark.gd":
 	"A stamp is art; on a small card it shrinks no further than TextSize.least.",
 	"sizes res://ui/screens/name_fit.gd":

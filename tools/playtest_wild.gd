@@ -7,7 +7,9 @@ extends RefCounted
 ## section are the real path; the picker with three or more readings and a soft bomb on
 ## the pile with its stand-ins are laid out from cards built here. In the state store each
 ## of the three items is put on its counter in turn. In the collection, a profile of three
-## finished runs shows the wild tier locked. Loaded at run time by playtest.gd, so it
+## finished runs shows the wild tier locked. It also forces a Cadre of the top rarity
+## onto either shop's counter, for its Scarce stamp landing and at rest (scarce()). Loaded
+## at run time by playtest.gd, so it
 ## reaches every UI node as Object, Node or Control, never by a ui/ class name.
 ## Development only; tools/ never ships.
 
@@ -20,6 +22,12 @@ const STEPS: int = 400
 ## Where a play on the pile is thrown from, the top of the play area.
 const PILE_FROM: Vector2 = Vector2(790, 160)
 const ITEMS: Array[String] = ["model_worker", "mass_line", "industrialization"]
+## A Cadre of the top rarity from each shop's pool, and the pools they are looked up in.
+const SCARCE: Array[String] = ["seed_grain", "rent_book"]
+const POOLS: Array[String] = ["res://data/run/cadre_pool.tres", "res://data/run/market_pool.tres"]
+const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
+## How far through its landing the Scarce stamp is photographed, as shares of its time.
+const LANDING: Array[float] = [0.3, 0.6]
 
 var shots: int = 0
 var misclicks: int = 0
@@ -99,6 +107,52 @@ func store() -> void:
 	loop.shop.reforms.set("_stock", reforms)
 	loop.shop.campaigns.set("_pool", campaign_pool)
 	loop.shop.reforms.set("_pool", reform_pool)
+	screen.call("_refresh")
+	await _frames(10)
+
+
+## A Cadre of the top rarity on the first place of a shop's counter (the black market's
+## with market), stamped Scarce: the stamp part way through its landing, its clock held,
+## then at rest. The counter is put back after.
+func scarce(market: bool) -> void:
+	var controller: Object = _app.get("controller")
+	var loop: RunLoop = controller.get("_loop")
+	var shop: RunShop = loop.market if market else loop.shop
+	var stock: Array[String] = shop.stock()
+	var pool: Array[ModifierDef] = shop.get("_pool")
+	var whole: CadrePool = load(POOLS[int(market)])
+	var forced: Array[String] = stock.duplicate()
+	if forced.is_empty():
+		forced.append(SCARCE[int(market)])
+	forced[0] = SCARCE[int(market)]
+	shop.set("_pool", whole.cadres.duplicate())
+	shop.set("_stock", forced)
+	var switcher: Object = _app.get("switcher")
+	var screen: Node = switcher.call("current")
+	screen.call("_refresh")
+	await _frames(10)
+	var name: String = "market_scarce" if market else "store_scarce"
+	var stamp: Control = null
+	for node: Node in screen.find_children("*", "Control", true, false):
+		if node.has_method("land"):
+			stamp = node as Control
+			break
+	if stamp == null:
+		_fail("NO SCARCE STAMP")
+	else:
+		var landing: Tween = stamp.call("land")
+		if landing != null:
+			landing.pause()
+			var at: float = 0.0
+			for index: int in LANDING.size():
+				landing.custom_step((LANDING[index] - at) * PRESETS.stamp_time)
+				at = LANDING[index]
+				await _frames(2)
+				await _picture("%s_landing_%d" % [name, index])
+			landing.custom_step(PRESETS.stamp_time)
+		await _shot(name)
+	shop.set("_stock", stock)
+	shop.set("_pool", pool)
 	screen.call("_refresh")
 	await _frames(10)
 

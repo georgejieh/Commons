@@ -13,6 +13,8 @@ const ZEAL_PERCENT_PREFIX: String = "zeal_percent"
 ## Parameters named with this prefix hold a multiplier in hundredths, so 150 shows as 1.5.
 const TIMES_PERCENT_PREFIX: String = "times_percent"
 const PERCENT: float = 100.0
+## The top rarity. Rarities index ShopParams.rarity_weights: common, uncommon, rare.
+const RARE: int = 2
 
 @export var id: String
 @export var kind: Kind

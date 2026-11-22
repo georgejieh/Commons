@@ -55,6 +55,9 @@ extends Resource
 @export var stamp_from_scale: float = 1.6
 @export var stamp_tilt: float = -0.12
 @export var stamp_time: float = 0.22
+## A Scarce stamp is pressed this long after a counter's cards start to arrive: they are
+## in, there is a breath, then it lands.
+@export var scarce_wait: float = 0.85
 ## A played card flies from its seat to its lane.
 @export var fly_time: float = 0.28
 ## Cards in a fresh deal arrive one after another.

@@ -87,6 +87,7 @@ var _keyword_shot: bool = false
 var _parcel_shot: bool = false
 var _debuffs_shot: bool = false
 var _wild_store_shot: bool = false
+var _scarce_market_shot: bool = false
 var _file_store_shot: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
@@ -208,6 +209,7 @@ func _step() -> void:
 			await _envelope_frames()
 			await _click_button_with_text(tr("market.open"))
 			await _shot("black_market")
+			await _scarce_market_frames()
 			await _parcel_frames()
 			# The Parcel's sandbox resumes the saved run, which lands in the state store.
 			if switcher.call("current_id") != "black_market":
@@ -794,6 +796,17 @@ func _wild_store_frames() -> void:
 	_wild_store_shot = true
 	var walk: Object = _wild_walk()
 	await walk.call("store")
+	await walk.call("scarce", false)
+	_took(walk)
+
+
+## The black market with a Cadre of the top rarity on its counter, once a run.
+func _scarce_market_frames() -> void:
+	if _scarce_market_shot:
+		return
+	_scarce_market_shot = true
+	var walk: Object = _wild_walk()
+	await walk.call("scarce", true)
 	_took(walk)
 
 

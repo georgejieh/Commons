@@ -795,6 +795,8 @@ callout.plot_seized,Plot Seized
 callout.plot_seized.sub,The {card} in your plot is destroyed for the run
 store.short_supply,Short Supply: {count} fewer Cadres on the counter.
 store.short_supply.one,Short Supply: 1 fewer Cadre on the counter.
+store.scarce,Scarce
+store.scarce.note,Scarce: rarely on the counter.
 round.taxed,Grain Tax took {amount} of what you banked.
 round.voided,"Overtime: your side lost, so you banked nothing."
 beat.levy.given,Levy: your {card} goes to {name}.
