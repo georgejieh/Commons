@@ -161,6 +161,9 @@ store.reroll,Reroll · {price} coupons
 store.leave,Next Quota
 store.sold,Sold
 store.buy,Buy · {price} coupons
+store.buy.poor,Need {price} coupons
+store.buy.full,No room
+store.buy.empty,Nothing inside
 store.rationed,Rationing: {count} Cadres on the counter until Famine falls below {below}.
 store.rationed.one,Rationing: 1 Cadre on the counter until Famine falls below {below}.
 year.title,Year {year} done

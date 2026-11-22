@@ -197,6 +197,7 @@ func _main_row(app: DemoApp) -> Control:
 ## button that takes focus first.
 func _button_row(column: VBoxContainer) -> Button:
 	_reroll.pressed.connect(_on_reroll)
+	BuyTicket.readable(_reroll)
 	var leave: Button = ScreenKit.button(
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
 	)

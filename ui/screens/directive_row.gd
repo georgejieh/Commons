@@ -86,12 +86,11 @@ func _document(slot: int, directive_id: String) -> Control:
 	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	name.autowrap_mode = TextServer.AUTOWRAP_OFF
 	heading.add_child(name)
-	var buy: Button = ScreenKit.button(
-		tr("store.buy").format({"price": _desk.directive_price(slot)}), CommonsTheme.COUPON
-	)
+	var buy: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	buy.custom_minimum_size = Vector2.ZERO
 	buy.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	buy.disabled = not _desk.can_buy_directive(slot)
+	var coupons: int = _controller.state_copy().coupons
+	BuyTicket.dress(buy, _desk.can_buy_directive(slot), _desk.directive_price(slot), coupons)
 	sheet.add_child(ScreenKit.row([heading, buy], 12))
 	sheet.add_child(HSeparator.new())
 	var lines: Array[Label] = []
