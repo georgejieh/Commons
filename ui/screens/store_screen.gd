@@ -98,6 +98,7 @@ func open(app: DemoApp) -> void:
 	_envelope_stall.spent.connect(_on_spent)
 	_envelope_stall.settled.connect(_on_envelope_settled)
 	_board.setup(app.controller.cadre_slots(), BOARD_BOX)
+	_board.empty_line = tr("store.shelf.empty")
 	column.add_child(_header_row(app))
 	column.add_child(_main_row(app))
 	var leave: Button = _button_row(column)

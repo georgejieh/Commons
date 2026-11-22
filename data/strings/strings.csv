@@ -521,6 +521,7 @@ callout.quota.missed,Quota missed
 callout.quota.sub,{progress} of {target} work points
 store.approved,Approved
 store.shelf,Your Cadres
+store.shelf.empty,Cadres you buy are pinned here.
 market.paid,Paid
 market.warning,Nothing here is on the books. Every purchase adds {rise} Resentment.
 market.upgrade.capacity,Enlarge your plot · {price} coupons
