@@ -8,12 +8,19 @@ extends Control
 ## page's one moment), then the line under it, the buttons that start a run, and last
 ## the row of minor buttons, which only fades. Every button takes a press from the first
 ## frame.
-## The column stands at the top of the page, in the poster's sky: at Standard its foot
-## is above SKY of the page's height, where the crowd's faces begin, so no button lies
-## on a face.
+## The column stands at the top of the page, in the poster's sky: its foot is above SKY
+## of the page's height, where the crowd's faces begin, so no button lies on a face.
+## Continue stands beside New Run, so a saved run adds no row to the column.
 
 ## The share of the page's height the poster's sky takes, down to the crowd.
 const SKY: float = 0.6
+## The faces nearest the buttons in the poster, as shares of the picture: the young man's
+## head at the left, the woman beside him, and the man at the left edge. For tests.
+const FACES: Array[Rect2] = [
+	Rect2(0.02, 0.62, 0.16, 0.21),
+	Rect2(0.21, 0.71, 0.14, 0.22),
+	Rect2(0.0, 0.77, 0.07, 0.16),
+]
 
 var _stamp: FileStamp = null
 var _word: TitleWord = null
@@ -44,11 +51,12 @@ func open(app: DemoApp) -> void:
 	column.add_child(spacer)
 	var new_run: Button = ScreenKit.button(tr("title.new_run"), CommonsTheme.PRIMARY)
 	new_run.pressed.connect(func() -> void: app.show_screen("run_setup"))
-	column.add_child(new_run)
+	var starts: HBoxContainer = ScreenKit.row([new_run])
 	if app.has_saved_run():
 		var resume: Button = ScreenKit.button(tr("title.continue"))
 		resume.pressed.connect(func() -> void: app.resume_to_screen())
-		column.add_child(resume)
+		starts.add_child(resume)
+	column.add_child(starts)
 	var settings: Button = ScreenKit.button(tr("title.settings"), CommonsTheme.GHOST)
 	settings.pressed.connect(func() -> void: app.show_screen("settings"))
 	var quit: Button = ScreenKit.button(tr("title.quit"), CommonsTheme.GHOST)
@@ -59,7 +67,7 @@ func open(app: DemoApp) -> void:
 	history.pressed.connect(func() -> void: app.show_screen("village_history"))
 	var minor: HBoxContainer = ScreenKit.row([collection, history, settings, quit])
 	column.add_child(minor)
-	_arrive(column, eyebrow, minor)
+	_arrive(column, eyebrow, starts, minor)
 	new_run.grab_focus()
 	var filed: int = ProfileFile.entries(Saves.profile_service()).size()
 	if filed > 0:
@@ -89,7 +97,7 @@ func poster() -> Control:
 
 ## Brings the page in, in order. The eyebrow and the minor row are small print and only
 ## fade; the spacer has nothing to show.
-func _arrive(column: VBoxContainer, eyebrow: Control, minor: Control) -> void:
+func _arrive(column: VBoxContainer, eyebrow: Control, starts: Control, minor: Control) -> void:
 	if UiMotion.reduced():
 		return
 	var presets: MotionPresets = UiMotion.PRESETS
@@ -100,7 +108,7 @@ func _arrive(column: VBoxContainer, eyebrow: Control, minor: Control) -> void:
 		if piece == _word:
 			at += presets.title_stagger
 			at += _word.press(at)
-		elif piece is Label or piece is BaseButton or piece == minor:
+		elif piece is Label or piece == starts or piece == minor:
 			if piece != eyebrow:
 				at += presets.title_stagger
 			UiMotion.enter_at(piece, at, piece == eyebrow or piece == minor)
