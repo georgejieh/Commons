@@ -155,6 +155,7 @@ func open(app: DemoApp) -> void:
 	_commands.gate = app.arrival.allows
 	_tutorial.setup(app, _actions, _hand_view, _need_panel, _cheat_sheet, _pause, _dressing)
 	_player.played.connect(_on_event)
+	_player.winding.connect(_on_winding)
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)
 	var names: Dictionary[int, String] = {
@@ -172,6 +173,7 @@ func open(app: DemoApp) -> void:
 	_columns.setup(_seats, _campaigns.tray, _dressing, _debuffs, _actions, _controller)
 	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
 	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
+	_player.wind = _wind()
 	_player.holds = {
 		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
 	}
@@ -398,6 +400,21 @@ func _seat_center(seat: int) -> Vector2:
 func _on_setting(key: String) -> void:
 	if key == "reduced_motion":
 		_motion.set_reduced(bool(Settings.value("reduced_motion")))
+		_player.wind = _wind()
+
+
+## The beat a villager's seat is marked for before its cards leave, at the table's pace;
+## none under reduced motion.
+func _wind() -> float:
+	if _motion.reduced:
+		return 0.0
+	return TableMotion.PRESETS.wind_up * _player.step / TableMotion.PRESETS.event_step
+
+
+func _on_winding(event: RunEvent) -> void:
+	var seat: int = event.round_event.seat
+	if not _replaying and _seats.has(seat):
+		_motion.wind_up(_seats[seat], _player.wind)
 
 
 ## The seats take their roles as the round starts, and their card counts tick as cards

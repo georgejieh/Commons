@@ -6,6 +6,8 @@ extends Node
 ## and hit-stop off. Every number comes from MotionPresets.
 
 const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
+## Where a seat keeps its wind-up's tween, so the next one replaces it.
+const WIND_META: StringName = &"table_motion_wind"
 
 ## The node that shakes, usually the table's root.
 var target: Control
@@ -59,6 +61,23 @@ func impact() -> void:
 func bump(trauma: float) -> void:
 	if not reduced:
 		_trauma = minf(1.0, _trauma + trauma)
+
+
+## A villager's seat swells as they are about to play and settles as the cards fly, so
+## the eye is on the seat before the cards leave it. Nothing under reduced motion.
+func wind_up(seat: Control, seconds: float) -> void:
+	if reduced or seconds <= 0.0:
+		return
+	if seat.has_meta(WIND_META):
+		var running: Tween = seat.get_meta(WIND_META)
+		if running != null and running.is_valid():
+			running.kill()
+	seat.pivot_offset = seat.size / 2.0
+	var tween: Tween = seat.create_tween()
+	seat.set_meta(WIND_META, tween)
+	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(seat, "scale", Vector2.ONE * PRESETS.wind_scale, seconds)
+	tween.tween_property(seat, "scale", Vector2.ONE, duration(PRESETS.fly_time))
 
 
 ## Drops a card onto the table: from a little larger and clear to its place, a beat

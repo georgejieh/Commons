@@ -2,9 +2,12 @@ class_name EventPlayer
 extends Node
 ## Plays the run's events one at a time, a step apart, so each bot play can be seen.
 ## One command can produce a whole trick of events; the queue spaces them out. Views
-## connect to played and read the run only once the queue is empty.
+## connect to played and read the run only once the queue is empty. A villager's play is
+## announced a beat before it happens (winding), so the eye is on the seat first.
 
 signal played(event: RunEvent)
+## A seat other than the player's is about to play this event, wind seconds from now.
+signal winding(event: RunEvent)
 signal queued
 signal drained
 
@@ -15,6 +18,10 @@ var round_end_hold: float = 1.6
 var holds: Dictionary[int, float] = {}
 ## Seconds after a play before its score is counted, or negative to use a full step.
 var play_wait: float = -1.0
+## Seconds a villager's play waits after it is announced; zero plays it at once.
+var wind: float = 0.0
+## The seat whose plays are the player's own. They answer at once, with no wind-up.
+var own_seat: int = 0
 ## True while flush() plays the queue at once: nothing should be acted out.
 var flushing: bool = false
 ## Holds the queue still during a hit-stop.
@@ -25,6 +32,8 @@ var _wait: float = 0.0
 ## True when the last event asked for a hold: drained then waits for it to pass.
 var _held: bool = false
 var _draining: bool = false
+## True once the event at the head of the queue has been announced.
+var _wound: bool = false
 
 
 func push(event: RunEvent) -> void:
@@ -44,6 +53,7 @@ func flush() -> void:
 		played.emit(_queue.pop_front())
 	flushing = false
 	_wait = 0.0
+	_wound = false
 	_held = false
 	_draining = false
 	drained.emit()
@@ -62,6 +72,12 @@ func _process(delta: float) -> void:
 		return
 	_wait -= delta
 	while _wait <= 0.0 and not _queue.is_empty():
+		if not _wound and _winds(_queue[0]):
+			_wound = true
+			winding.emit(_queue[0])
+			_wait = wind
+			break
+		_wound = false
 		var event: RunEvent = _queue.pop_front()
 		# A handler may hold the queue, so every wait below only ever lengthens it.
 		_wait = 0.0
@@ -91,6 +107,13 @@ func _step_for(event: RunEvent) -> float:
 		event.round_event != null and event.round_event.type == RoundEvent.Type.PLAYED
 	)
 	return play_wait if played_cards and play_wait >= 0.0 else step
+
+
+## Only another seat's play of cards is wound up.
+func _winds(event: RunEvent) -> bool:
+	if wind <= 0.0 or event.round_event == null:
+		return false
+	return event.round_event.type == RoundEvent.Type.PLAYED and event.round_event.seat != own_seat
 
 
 func _ends_round(event: RunEvent) -> bool:

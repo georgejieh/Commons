@@ -2,7 +2,8 @@ class_name EnvelopeOverlay
 extends Control
 ## An envelope opened over the shop page (ADR 0021). A Scrim dims the page and takes its
 ## clicks, the envelope comes to the middle and is opened in one beat, and its papers
-## slide out into a row. A paper is kept by clicking it. Under the row, EnvelopeDetail
+## slide out into a row (EnvelopeOpening); a click or an accept ends that act at once. A
+## paper is kept by clicking it. Under the row, EnvelopeDetail
 ## explains the pointed paper where papers do not print their own rules, then one Take
 ## Nothing. Keeping a paper lifts it
 ## under a seal, Kept, or Issued with each Rate ticking for a Directive, while the others
@@ -60,6 +61,7 @@ var _nothing: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _confirm: Label = ScreenKit.label("", CONFIRM_SIZE, ScreenKit.RED)
 var _pointed_title: String = String()
 var _seal: InkSeal = InkSeal.new()
+var _opening: EnvelopeOpening = EnvelopeOpening.new()
 var _busy: bool = true
 var _blocks: Dictionary[String, Control] = {}
 
@@ -112,7 +114,8 @@ func open(controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate:
 	add_child(_seal)
 	_wire_focus()
 	if animate and not UiMotion.reduced():
-		_play_open(from)
+		_busy = true
+		_opening.play(self, _dim, _figure, _column, _papers, from, _settle)
 	else:
 		_settle()
 
@@ -224,48 +227,6 @@ func _wire_focus() -> void:
 	_nothing.focus_previous = _nothing.get_path_to(keeps[-1] if not keeps.is_empty() else back)
 
 
-## The envelope arrives from its offer, opens in one beat, and its papers fan out of it.
-func _play_open(from: Rect2) -> void:
-	_busy = true
-	_dim.modulate.a = 0.0
-	_column.modulate.a = 0.0
-	_figure.visible = true
-	_figure.position = from.position - global_position
-	_figure.size = from.size
-	# The overlay covers the page, which may not have been laid out yet: aim by the screen.
-	var middle: Vector2 = get_viewport_rect().size / 2.0 - global_position
-	var target: Vector2 = middle - FIGURE / 2.0 + Vector2(0, -40)
-	var tween: Tween = create_tween()
-	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_dim, "modulate:a", 1.0, ARRIVE_TIME)
-	tween.parallel().tween_property(_figure, "position", target, ARRIVE_TIME)
-	tween.parallel().tween_property(_figure, "size", FIGURE, ARRIVE_TIME)
-	tween.tween_property(_figure, "opened", 1.0, OPEN_TIME).set_trans(Tween.TRANS_SINE)
-	tween.tween_callback(_fan)
-	tween.tween_interval(FAN_TIME + FAN_STAGGER * _papers.size())
-	tween.tween_property(_figure, "modulate:a", 0.0, CLOSE_TIME)
-	tween.tween_callback(_settle)
-
-
-## Each paper slides out of the open envelope to its place in the row, one after another.
-func _fan() -> void:
-	var mouth: Vector2 = _figure.global_position + _figure.size / 2.0
-	var heading: Tween = _column.create_tween()
-	heading.tween_property(_column, "modulate:a", 1.0, FAN_TIME)
-	for index: int in _papers.size():
-		var paper: ChoicePaper = _papers[index]
-		var place: Control = paper.get_parent() as Control
-		paper.position = mouth - place.global_position - paper.size / 2.0
-		paper.scale = Vector2.ONE * FAN_FROM
-		paper.rotation = (index - (_papers.size() - 1) / 2.0) * 0.12
-		var tween: Tween = paper.create_tween().set_parallel(true)
-		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		var delay: float = index * FAN_STAGGER
-		tween.tween_property(paper, "position", Vector2.ZERO, FAN_TIME).set_delay(delay)
-		tween.tween_property(paper, "scale", Vector2.ONE, FAN_TIME).set_delay(delay)
-		tween.tween_property(paper, "rotation", 0.0, FAN_TIME).set_delay(delay)
-
-
 ## Everything at rest and ready to choose.
 func _settle() -> void:
 	_figure.visible = false
@@ -299,6 +260,13 @@ func _point(index: int) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if _opening.is_playing():
+		# The act is ended, and the input with it: a second one chooses.
+		if EnvelopeOpening.ends(event):
+			get_viewport().set_input_as_handled()
+			_opening.stop()
+			_settle()
+		return
 	if not event.is_action_pressed("ui_cancel"):
 		return
 	get_viewport().set_input_as_handled()
