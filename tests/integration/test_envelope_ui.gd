@@ -189,6 +189,10 @@ func test_a_choice_that_cannot_be_kept_says_why_at_full_strength() -> void:
 	var store: StoreScreen = await _open()
 	var overlay: EnvelopeOverlay = _bought(store)
 	await await_idle_frame()
+	# With nothing to keep, the first paper is still explained and Take Nothing has focus.
+	assert_str(overlay.shown_title()).is_equal(overlay.papers()[0].title)
+	assert_str(overlay.shown_title()).is_not_empty()
+	assert_bool(overlay.nothing_button().has_focus()).is_true()
 	for paper: ChoicePaper in overlay.papers():
 		assert_bool(paper.is_takeable()).is_false()
 		assert_bool(paper.keep.disabled).is_true()
