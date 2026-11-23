@@ -186,8 +186,14 @@ func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
 	assert_bool(start).override_failure_message(str(awaiting)).is_true()
 	assert_int(_app.controller.searches_running()).is_equal(0)
 	assert_int(opened.sort_mode()).is_equal(HandView.Sort.SUIT)
+	# The new table is set at the new size: the prompt takes it whole, and the line over
+	# the hand grows as far as its room between the notice and a lifted card lets it.
+	var opened_actions: ActionBar = opened.get("_actions")
+	var prompt_px: int = opened_actions.reading.get_theme_font_size("font_size")
+	assert_int(prompt_px).is_equal(TextSize.px(24))
 	var opened_you: Label = opened.get("_you")
-	assert_int(opened_you.get_theme_font_size("font_size")).is_equal(TextSize.px(28))
+	var you_px: int = opened_you.get_theme_font_size("font_size")
+	assert_int(you_px).is_between(29, TextSize.px(28))
 	var round_now: Array = _round(opened)
 	assert_array(round_now[2]).override_failure_message("hand").is_equal(_hand_ids())
 	var opened_resize: TableResize = opened.get("_resize")
