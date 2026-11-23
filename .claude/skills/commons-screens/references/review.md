@@ -46,3 +46,11 @@ Common fixes:
 ## A second reader
 
 Marks drift upward when the builder gives them, and a reviewer who has read three rounds starts to forgive. For a finished screen, hand the frames and this file to a subagent that has seen none of the work. Ask for a mark and one sentence of evidence on each point, and fixes written as "done when" something can be seen. Then check its lowest marks yourself against the frames.
+
+## Measure before calling it a fault
+
+An eye reading a shrunken frame is wrong about brightness and about small gaps. A piece on a dark ground looks lit; two edges a few pixels apart look as if they touch.
+
+- **Brightness and dimming.** Sample the pixels of the same piece in two frames (with and without the sheet, the dim or the stage) and compare the numbers. A piece that fell by the same share as its neighbours is dimmed, however it looks.
+- **Overlap, clipping and gaps.** Read the playtest's `LAYOUT` lines (`tools/layout_audit.gd`) for the frame, or assert the rectangles in a test. A reader's "touches" or "covers" is a place to measure, not a finding.
+- **A checker that finds nothing** is tested before it is believed.
