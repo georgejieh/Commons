@@ -203,6 +203,9 @@ func leave_run() -> void:
 	KeptSeat.forget()
 	# The arrival is never saved: leaving it must not touch a real run's save.
 	if not arrival.is_running():
+		# The run is let go before its save is cleared, so a villager still thinking
+		# cannot hand in a play afterwards and write the save back (P5.2a).
+		controller.drop()
 		Saves.run_service().delete()
 	show_screen("title", true)
 
