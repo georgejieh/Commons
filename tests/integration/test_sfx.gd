@@ -80,7 +80,9 @@ func test_a_motion_sound_never_lands_on_an_events_own() -> void:
 	Audio.fill(AudioEvents.MOTION_STAMP)
 	await await_millis(30)
 	assert_str(Audio.last_filled).is_empty()
-	await await_millis(AudioMixer.FILL_GUARD_MSEC + 30)
+	# The moment has passed: set the last sound back rather than wait on the clock, so a
+	# sound left playing by another suite cannot land inside the wait.
+	Audio.set("_played_msec", Time.get_ticks_msec() - AudioMixer.FILL_GUARD_MSEC - 1)
 	Audio.fill(AudioEvents.MOTION_STAMP)
 	await await_millis(30)
 	assert_str(Audio.last_filled).is_equal(AudioEvents.MOTION_STAMP)
