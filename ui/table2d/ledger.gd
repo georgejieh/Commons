@@ -184,6 +184,12 @@ func add_play(
 	)
 
 
+## The table hurried the scored play this total waits on: it arrives speed times sooner.
+func hurry(speed: float) -> void:
+	if _counting != null and _counting.is_valid():
+		_counting.set_speed_scale(speed)
+
+
 ## The seat's total once the round's end multipliers are in.
 func set_final(seat: int, total: float) -> void:
 	_totals[seat] = total

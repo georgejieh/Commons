@@ -76,20 +76,16 @@ func test_a_pass_is_tagged_on_its_seat_and_the_role_comes_back() -> void:
 	assert_str(role.text).is_equal(tr("table.role.teammate").to_upper())
 
 
-func test_the_tally_counts_a_score_and_says_when_it_lands() -> void:
+func test_the_tally_shows_a_whole_sum_and_says_it_landed() -> void:
 	var tally: ScoreTally = auto_free(ScoreTally.new())
 	add_child(tally)
 	var landed: Array[String] = []
 	tally.landed.connect(func(total: String) -> void: landed.append(total))
-	var seconds: float = tally.show_score(54.0, 7.0, 1.0, 378.0, 0.2)
-	assert_float(seconds).is_greater(0.0)
-	assert_array(landed).is_empty()
-	await await_millis(int(seconds * 1000.0) + 250)
+	assert_float(tally.show_score(54.0, 7.0, 1.0, 378.0)).is_equal(0.0)
 	assert_array(landed).is_equal(["378"])
 	assert_str(tally.shown()).is_equal("54 × 7 × 1 = 378")
-	# Reduced motion shows the sum at once.
 	Settings.set_value("reduced_motion", true)
-	assert_float(tally.show_score(16.0, 3.0, 0.75, 36.0)).is_equal(0.0)
+	tally.show_score(16.0, 3.0, 0.75, 36.0)
 	assert_str(tally.shown()).is_equal("16 × 3 × 0.75 = 36")
 	Settings.set_value("reduced_motion", false)
 

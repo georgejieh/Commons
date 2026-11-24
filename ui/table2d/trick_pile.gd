@@ -32,6 +32,8 @@ const SWEEP_REACH: float = 0.55
 ## lands; a counted card hops this far.
 const THROW_SPIN: float = 0.7
 const HOP: float = 14.0
+## How bright a card flashes when its mark or a hook on it changes the score.
+const FLASH: Color = Color(1.45, 1.35, 1.15)
 
 ## The round's wild ranks as the table's events have named them (ADR 0029): a card of one
 ## lands with its ribbon on.
@@ -180,19 +182,61 @@ func _fly(view: CardView, start: Vector2, rest: Vector2, angle: float, order: in
 	return tween
 
 
-## Hops each card of the top play in turn, over seconds in all, as its Grain is counted.
-func pulse_top(seconds: float) -> void:
-	var top: Array[CardView] = top_views()
-	if _motion.reduced or top.is_empty() or seconds <= 0.0:
-		return
-	var each: float = seconds / top.size()
-	for order: int in top.size():
-		var view: CardView = top[order]
-		var rest: float = view.position.y
-		var hop: Tween = view.tween()
-		hop.tween_interval(order * each)
-		hop.tween_property(view, "position:y", rest - HOP, each * 0.4)
-		hop.tween_property(view, "position:y", rest, each * 0.6)
+## How far below the pile's top any laid card can reach, in pixels: the lowest a play
+## lands, scattered, at its most turned and at its longest, with its cards turned too. A
+## card only ever hops up from there, so nothing laid on the pile is lower (P5.2a).
+func reach_below() -> float:
+	var card_size: Vector2 = CARD * PLAY_SCALE
+	var along: float = maxf(0.0, size.x - card_size.x - 2.0 * LEAN)
+	return (size.y + card_size.y) / 2.0 + SCATTER.y + along * sin(PLAY_TILT) + LEAN
+
+
+## Hops a card of the top play over seconds as its Grain is counted (P5.2a).
+func tick_card(card_id: int, seconds: float) -> void:
+	var view: CardView = _view_of(card_id)
+	if view != null and not _motion.reduced and seconds > 0.0:
+		_hop(view, seconds)
+
+
+## A card's mark or a hook on it changed the score: the card flashes bright and hops,
+## unless motion is reduced. Returns where it lies on screen, or an empty box when it is
+## not on the pile.
+func flash_card(card_id: int, seconds: float) -> Rect2:
+	var view: CardView = _view_of(card_id)
+	if view == null:
+		return Rect2()
+	if not _motion.reduced and seconds > 0.0:
+		var rest: Color = view.modulate
+		var flash: Tween = view.tween()
+		flash.tween_property(
+			view, "modulate", Color(FLASH.r, FLASH.g, FLASH.b, rest.a), seconds * 0.3
+		)
+		flash.tween_property(view, "modulate", rest, seconds * 0.7)
+		_hop(view, seconds)
+	return view.get_global_transform() * Rect2(Vector2.ZERO, view.size)
+
+
+## Every laid card's box on screen as it is drawn, turned and scaled, for tests.
+func drawn_rects() -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	for view: CardView in _views:
+		rects.append(view.get_global_transform() * Rect2(Vector2.ZERO, view.size))
+	return rects
+
+
+func _hop(view: CardView, seconds: float) -> void:
+	var rest: float = view.position.y
+	var hop: Tween = view.tween()
+	hop.tween_property(view, "position:y", rest - HOP, seconds * 0.4)
+	hop.tween_property(view, "position:y", rest, seconds * 0.6)
+
+
+## The view of a card on the pile, the top play first, or null.
+func _view_of(card_id: int) -> CardView:
+	for index: int in range(_views.size() - 1, -1, -1):
+		if _views[index].card_id == card_id:
+			return _views[index]
+	return null
 
 
 ## A wild card lands with its ribbon, and one standing in names its rank beside its own.
