@@ -54,6 +54,9 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.WILD_RANKS: "store_buy",
 	# The notice that the books were corrected brings its own sound (ADR 0022).
 	RunEvent.Type.BOOKS_CORRECTED: "",
+	# A sale back to a shop sounds as the shop's own stamp, which the screen plays.
+	RunEvent.Type.CADRE_SOLD: "",
+	RunEvent.Type.CAMPAIGN_SOLD: "",
 }
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",

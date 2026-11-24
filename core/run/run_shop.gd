@@ -13,7 +13,8 @@ extends RefCounted
 ## counter with Reform offers draws them after its Campaigns, and the reroll redraws
 ## them too. A counter with envelope offers draws them after everything else, and the
 ## reroll redraws them until one is bought (EnvelopeCounter). How many Cadres the player
-## can hold is RunReforms.cadre_slots().
+## can hold is RunReforms.cadre_slots(). A held Cadre may be sold back to either counter
+## for part of its price there (ADR 0040); it is not offered again that visit.
 
 enum Reason {
 	OK,
@@ -26,6 +27,10 @@ enum Reason {
 	## An envelope's plot card while the plot is full, and a pick with no envelope open.
 	PLOT_FULL,
 	NO_ENVELOPE,
+	## A sale of a Cadre or Campaign the player does not hold (ADR 0040).
+	NOT_HELD,
+	## A sale of a Cadre a debuff or boss holds this round (ADR 0040).
+	CADRE_BOUND,
 }
 
 const SOLD: String = ""
@@ -41,6 +46,8 @@ var envelopes: EnvelopeCounter
 var short_cut: int = 0
 ## The visit's first rerolls that cost nothing, from a held Cadre (Back Door, ADR 0032).
 var free_rerolls: int = 0
+## Cadres sold back this visit, at either counter: none is offered again until the next.
+var withheld: Array[String] = []
 
 var _state: RunState
 var _params: ShopParams
@@ -83,6 +90,8 @@ func slot_count() -> int:
 ## drawn by stock_directives(), campaigns.draw(), reforms.draw() and envelopes.draw().
 func open() -> void:
 	_rerolls = 0
+	withheld.clear()
+	campaigns.withheld.clear()
 	_directive_stock.clear()
 	campaigns.clear()
 	reforms.clear()
@@ -169,6 +178,46 @@ func buy(slot: int) -> Reason:
 	return Reason.OK
 
 
+## What this counter pays for a held item listed at cost: sell_percent of its price here
+## now, rounded down, and never less than one coupon (ADR 0040).
+func sale_price(cost: int) -> int:
+	return sale_of(_state, _params, cost)
+
+
+static func sale_of(state: RunState, params: ShopParams, cost: int) -> int:
+	var price: int = RunBooks.priced(state, (cost * params.price_percent + PERCENT - 1) / PERCENT)
+	return maxi(1, price * params.sell_percent / PERCENT)
+
+
+## Why the held Cadre at index cannot be sold here now, or OK. bound names the Cadres a
+## debuff or boss holds at this moment, which stay.
+func check_sell(index: int, definition: ModifierDef, bound: Array[String]) -> Reason:
+	var held: Array[String] = _state.inventory.cadres
+	if index < 0 or index >= held.size() or definition == null or definition.id != held[index]:
+		return Reason.NOT_HELD
+	if bound.has(held[index]):
+		return Reason.CADRE_BOUND
+	return Reason.OK
+
+
+## Sells the held Cadre at index: it pays sale_price, leaves the board and its saved state
+## for good, and the state store may stock it again from the next visit. Nothing its
+## purchase changed is given back. The caller withholds it from both counters.
+func sell(index: int, definition: ModifierDef, bound: Array[String]) -> Reason:
+	var reason: Reason = check_sell(index, definition, bound)
+	if reason != Reason.OK:
+		return reason
+	_state.coupons += sale_price(definition.cost)
+	_state.inventory.cadres.remove_at(index)
+	_state.cadre_memos.keep_only(_state.inventory.cadres)
+	var sold: int = int(_state.store_sold.get(definition.id, 0))
+	if sold > 1:
+		_state.store_sold[definition.id] = sold - 1
+	else:
+		_state.store_sold.erase(definition.id)
+	return Reason.OK
+
+
 func reroll() -> Reason:
 	if _state.coupons < reroll_price():
 		return Reason.TOO_POOR
@@ -236,6 +285,7 @@ func stock_directives() -> void:
 func _restock() -> void:
 	# What the player holds, and what this counter has sold out of, is not offered.
 	var closed: Array[String] = _state.inventory.cadres.duplicate()
+	closed.append_array(withheld)
 	for definition: ModifierDef in _pool:
 		if left(definition.id) == 0:
 			closed.append(definition.id)

@@ -37,6 +37,8 @@ const COMMANDS: Array[String] = [
 	"envelope_pick",
 	"leave_store",
 	"books",
+	"sell_cadre",
+	"sell_campaign",
 ]
 ## What the run waits on, for views that may not name the loop.
 const AWAIT_BID: int = RunLoop.Awaiting.PLAYER_BID
@@ -339,6 +341,17 @@ func campaign_buy(slot: int, market: bool = false) -> int:
 	return _act("campaign_buy", _loop.player_campaign_buy.bind(slot))
 
 
+## Sells the held Cadre at index back to the state store, or the black market, for part
+## of its price there (ADR 0040).
+func sell_cadre(index: int, market: bool = false) -> int:
+	return _act("sell_cadre", _loop.player_sell_cadre.bind(index, market))
+
+
+## Sells the held Campaign at index back to the state store, or the black market.
+func sell_campaign(index: int, market: bool = false) -> int:
+	return _act("sell_campaign", _loop.player_sell_campaign.bind(index, market))
+
+
 ## The Campaigns the player holds, in slot order, and how many they can hold.
 func held_campaigns() -> Array[String]:
 	return _loop.state.inventory.consumables.duplicate()
@@ -489,8 +502,12 @@ func reform_text(reform_id: String) -> String:
 func desk(market: bool) -> ShopDesk:
 	if market:
 		var upgrades: PlotUpgradeParams = RunLoop.DEFAULT_PLOT_UPGRADES
-		return ShopDesk.new(_loop.market, _loop.state, upgrades, _loop.stall)
-	return ShopDesk.new(_loop.shop, _loop.state)
+		var at_market: ShopDesk = ShopDesk.new(_loop.market, _loop.state, upgrades, _loop.stall)
+		at_market.bound = _loop.debuffs.confiscated_ids()
+		return at_market
+	var at_store: ShopDesk = ShopDesk.new(_loop.shop, _loop.state)
+	at_store.bound = _loop.debuffs.confiscated_ids()
+	return at_store
 
 
 ## The Resentment every black market purchase adds.

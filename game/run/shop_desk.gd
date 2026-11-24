@@ -4,6 +4,9 @@ extends RefCounted
 ## they can be bought now. The state store and the black market each have one. It only
 ## reads the run; buying goes through RunController's commands.
 
+## The held Cadres a debuff or boss holds now, which cannot be sold (ADR 0040).
+var bound: Array[String] = []
+
 var _shop: RunShop
 var _state: RunState
 ## The private-plot upgrades this counter sells, or null when it sells none.
@@ -37,6 +40,41 @@ func can_buy(slot: int) -> bool:
 ## True for a Cadre that seldom reaches the counter, which the screen stamps Scarce.
 func is_scarce(slot: int) -> bool:
 	return _shop.is_rare(slot)
+
+
+## What this counter pays now for the held Cadre at index, or the held Campaign with
+## campaign set (ADR 0040); 0 when there is none, or it cannot be sold now, as a Cadre a
+## debuff or boss holds.
+func sale(index: int, campaign: bool = false) -> int:
+	if campaign:
+		var held: CampaignDef = _held_campaign(index)
+		if _shop.campaigns.check_sell(index, held) != RunShop.Reason.OK:
+			return 0
+		return _shop.campaigns.sale_price(held)
+	var definition: ModifierDef = _held_cadre(index)
+	if _shop.check_sell(index, definition, bound) != RunShop.Reason.OK:
+		return 0
+	return _shop.sale_price(definition.cost)
+
+
+func _held_cadre(index: int) -> ModifierDef:
+	var held: Array[String] = _state.inventory.cadres
+	if index < 0 or index >= held.size():
+		return null
+	for definition: ModifierDef in RunLoop.all_cadres():
+		if definition.id == held[index]:
+			return definition
+	return null
+
+
+func _held_campaign(index: int) -> CampaignDef:
+	var held: Array[String] = _state.inventory.consumables
+	if index < 0 or index >= held.size():
+		return null
+	for definition: CampaignDef in RunCampaigns.all():
+		if definition.id == held[index]:
+			return definition
+	return null
 
 
 func reroll_price() -> int:
