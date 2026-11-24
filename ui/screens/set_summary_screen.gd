@@ -64,7 +64,7 @@ func open(app: DemoApp) -> void:
 	_bar.show_as(QuotaBar.mode_for(state))
 	_bar.set_target(controller.target())
 	_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	sheet.add_child(_bar)
+	sheet.add_child(_seal_room(_bar))
 	_steps = controller.over_steps() if _met else 0
 	_over.prepare(tr("summary.over"), OVER_INK, OVER_WIDTH)
 	var met_left: float = BAR.x - SEAL_WIDTH * 0.6
@@ -128,6 +128,17 @@ func open(app: DemoApp) -> void:
 	for piece: Control in _after + _quiet:
 		piece.modulate.a = 0.0
 	_bar.fill_to(state.set_progress, FILL, START)
+
+
+## The seals overhang the bar above and below; the bar stands in a band as tall as the
+## wider seal, so the figures under it never cover a seal (P5.2a).
+func _seal_room(bar: QuotaBar) -> MarginContainer:
+	var room: MarginContainer = MarginContainer.new()
+	var overhang: int = ceili((maxf(OVER_WIDTH, SEAL_WIDTH) - BAR.y) / 2.0)
+	room.add_theme_constant_override("margin_bottom", overhang)
+	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	room.add_child(bar)
+	return room
 
 
 ## How much Famine the Quota's end added: every Famine change logged after the last
