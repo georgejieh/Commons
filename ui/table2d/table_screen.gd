@@ -163,6 +163,7 @@ func open(app: DemoApp) -> void:
 	_commands.open_rules = _cheat_sheet.toggle.bind(_controller)
 	_commands.gate = app.arrival.allows
 	_tutorial.setup(app, _actions, _hand_view, _need_panel, _cheat_sheet, _pause, _dressing)
+	_tutorial.watch(_pile, _player)
 	_player.played.connect(_on_event)
 	_player.winding.connect(_on_winding)
 	_player.drained.connect(_on_drained)

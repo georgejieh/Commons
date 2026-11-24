@@ -5,7 +5,10 @@ extends RefCounted
 ## and only its one action is allowed. Every other action is refused, which changes
 ## nothing and makes the prompt pulse. An accepted action shows the step's follow-up,
 ## which stays for a beat and until the next prompt, or waits for the step's closing
-## button. With no director, screens accept everything as before.
+## button. A follow-up to an action at the table waits until the table has shown the
+## run's answer to it (answered(), or the table's next report), so Wang never speaks of a
+## villager's play before it is on the table. With no director, screens accept
+## everything as before.
 
 signal changed
 signal refused
@@ -28,6 +31,8 @@ var _phase: Phase = Phase.BETWEEN
 var _last: TutorialStep = null
 ## True while a follow-up holds its beat; release() ends it.
 var _held: bool = false
+## True while a follow-up waits for the table to show the run's answer to the action.
+var _unseen: bool = false
 var _screen: String = ""
 var _awaiting: int = NOTHING
 
@@ -53,9 +58,9 @@ func is_done() -> bool:
 	return _phase == Phase.DONE
 
 
-## True while a follow-up holds its beat before the next prompt may show.
+## True while a follow-up shows and holds its beat before the next prompt may show.
 func is_held() -> bool:
-	return _held
+	return _held and not _unseen
 
 
 ## Seconds a follow-up holds before the next prompt.
@@ -67,7 +72,17 @@ func follow_seconds() -> float:
 func ready(screen: String, awaiting: int) -> void:
 	_screen = screen
 	_awaiting = awaiting
+	if awaiting != NOTHING:
+		_unseen = false
 	_evaluate()
+
+
+## The table has shown the run's answer to the last action as far as a new deal: the
+## follow-up may show now.
+func answered() -> void:
+	if _unseen:
+		_unseen = false
+		changed.emit()
 
 
 ## The slip's line now: the prompt, the last follow-up, or nothing.
@@ -77,7 +92,7 @@ func line_key() -> String:
 			return step().prompt_key
 		Phase.DONE:
 			return ""
-	return "" if _last == null else _last.then_key
+	return "" if _last == null or _unseen else _last.then_key
 
 
 ## The target to ring on the screen now shown, or "" for none.
@@ -129,6 +144,7 @@ func note(action: String) -> void:
 ## Ends the follow-up's beat, so the next prompt may show.
 func release() -> void:
 	_held = false
+	_unseen = false
 	_evaluate()
 
 
@@ -182,6 +198,8 @@ func _advance(hold: bool) -> void:
 		return
 	_phase = Phase.BETWEEN
 	_held = hold and _last != null and not _last.then_key.is_empty()
+	# A button leaves the run where it was; any other action is answered at the table.
+	_unseen = _held and _last.action != TutorialStep.Action.BUTTON
 	_evaluate()
 
 
