@@ -144,7 +144,10 @@ func test_the_table_waits_for_the_sequence_and_a_click_hurries_it() -> void:
 
 func test_sitting_out_plays_a_villagers_score_at_the_hurried_pace() -> void:
 	var moments: TableMoments = _moments()
-	var event: RunEvent = _scored("999", ["canteen"], 1)
+	# A Cadre no longer scores for an opponent (ADR 0039), so the villager's play here
+	# is the holder's scored play at the villager's seat: the same steps to act out.
+	var event: RunEvent = _scored("999", ["canteen"], HOLDER)
+	event.seat = 1
 	var full: float = moments.sequence.play(event, 1.0)
 	moments.sequence.stop()
 	moments.sequence.hurry_villagers = true
