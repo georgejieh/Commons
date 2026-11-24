@@ -122,6 +122,9 @@ func _check_table(table: TableScreen, where: String) -> void:
 		moments.on_event(RunEvent.new(RunEvent.Type.SET_STARTED, Seats.NONE, 0, SMALL_TARGET))
 		moments.on_event(_big_play())
 		var rest: Array[Rect2] = moments.tally.drawn_rects()
+		# The line over the hand shares the tally's band, so it steps aside for it.
+		var line: Label = table.get("_you")
+		assert_float(line.modulate.a).override_failure_message(where + " line").is_equal(0.0)
 		# Fitted to its room, its type is never drawn smaller than at Standard.
 		var drawn: float = moments.tally.scale.x * TextSize.factor()
 		assert_float(drawn).override_failure_message(where + " type").is_greater_equal(0.999)
@@ -142,5 +145,7 @@ func _check_table(table: TableScreen, where: String) -> void:
 			moved = moved or moments.tally.drawn_rects() != rest
 			frames += 1
 			await await_idle_frame()
+		if not moments.tally.visible:
+			assert_float(line.modulate.a).override_failure_message(where + " back").is_equal(1.0)
 		# The motion was measured, not only the rest.
 		assert_bool(moved).override_failure_message(where + " never moved").is_true()

@@ -183,6 +183,7 @@ func open(app: DemoApp) -> void:
 	for seat: int in _seats:
 		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
 	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
+	_moments.tally.visibility_changed.connect(_step_aside)
 	_kept.setup(_player, _moments.callout, names, faces)
 	_swap_sheet.setup(app, _pool)
 	_moments.hud = _hud
@@ -466,6 +467,12 @@ func _show_you(landlord: int) -> void:
 	var role: String = "landlord" if landlord == 0 else "peasant"
 	_you.text = tr("table.you." + ("bidding" if landlord == Seats.NONE else role))
 	_clear_for_sheet()
+
+
+## The tally's band is the line's too: the line over the hand steps aside while a play's
+## score is shown, its role told by then, and is back when the tally is put away.
+func _step_aside() -> void:
+	_you.modulate.a = 0.0 if _moments.tally.visible else 1.0
 
 
 ## The claim sheet lies over the line above the hand, and half a line showing under a
