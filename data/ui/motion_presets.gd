@@ -20,6 +20,9 @@ extends Resource
 @export var wind_up: float = 0.16
 @export var wind_scale: float = 1.04
 @export var sweep: float = 0.3
+## A finished round stays on the table, all of it in view, this many table steps once its
+## last share is paid; then the last trick is swept off and the next hand is dealt.
+@export var round_close_steps: float = 1.0
 ## A won trick leaves the table with this Tween.TransitionType and Tween.EaseType.
 @export var sweep_transition: int = Tween.TRANS_CUBIC
 @export var sweep_ease: int = Tween.EASE_IN

@@ -74,6 +74,7 @@ var _tutorial: TableTutorial = TableTutorial.new()
 var _wild: TableWild = TableWild.new()
 var _resize: TableResize = TableResize.new()
 var _columns: TableColumns = TableColumns.new()
+var _close: RoundClose = RoundClose.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -177,6 +178,8 @@ func open(app: DemoApp) -> void:
 		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
 	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
 	_moments.hud = _hud
+	add_child(_close)
+	_close.setup(_player, _pile, _moments, _hand, _hand_view, _seat_center)
 	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
 	_campaigns.attach(_pool, _debuffs)
 	_columns.setup(_seats, _campaigns.tray, _dressing, _debuffs, _actions, _controller)
@@ -327,8 +330,7 @@ func _on_round_event(event: RoundEvent) -> void:
 			_show_play(event)
 			_count_cards(event.seat, -event.cards.size())
 			if event.seat == 0:
-				_hand.refresh()
-				_hand_view.show_cards()
+				_close.own_play(event)
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
 			_ledger.set_pending(DirectiveSheet.type_name(event.pattern.type))
