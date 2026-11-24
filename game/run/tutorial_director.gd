@@ -4,16 +4,14 @@ extends RefCounted
 ## settled; when the run waits on the next step's action there, that step's prompt shows
 ## and only its one action is allowed. Every other action is refused, which changes
 ## nothing and makes the prompt pulse. An accepted action shows the step's follow-up,
-## which stays for a beat and until the next prompt, or opens a board preview, or waits
-## for the step's closing button. With no director, screens accept everything as before.
+## which stays for a beat and until the next prompt, or waits for the step's closing
+## button. With no director, screens accept everything as before.
 
 signal changed
 signal refused
-## A board preview of the meter's high band should play now; preview_done() ends it.
-signal preview_started(meter: String)
 signal finished
 
-enum Phase { BETWEEN, PROMPT, UNTIL, PREVIEW, DONE }
+enum Phase { BETWEEN, PROMPT, UNTIL, DONE }
 
 ## The names screens send for the run's own actions; a button sends its own name.
 const BID_CALL: String = "bid_call"
@@ -60,17 +58,9 @@ func is_held() -> bool:
 	return _held
 
 
-## Seconds a follow-up holds before the next prompt, and a board preview lasts.
+## Seconds a follow-up holds before the next prompt.
 func follow_seconds() -> float:
 	return _script.follow_seconds
-
-
-func preview_seconds() -> float:
-	return _script.preview_seconds
-
-
-func preview_value() -> int:
-	return _script.preview_value
 
 
 ## The screen now shown and what the run waits on, once that screen has settled.
@@ -142,12 +132,6 @@ func release() -> void:
 	_evaluate()
 
 
-## The board preview has played.
-func preview_done() -> void:
-	if _phase == Phase.PREVIEW:
-		_advance(false)
-
-
 ## True when action, with its detail, is exactly the step's own.
 static func matches(current: TutorialStep, action: String, detail: Variant) -> bool:
 	match current.action:
@@ -185,10 +169,6 @@ func _accept(current: TutorialStep) -> void:
 	if not current.until.is_empty():
 		_phase = Phase.UNTIL
 		changed.emit()
-	elif not current.preview.is_empty():
-		_phase = Phase.PREVIEW
-		changed.emit()
-		preview_started.emit(current.preview)
 	else:
 		_advance(true)
 

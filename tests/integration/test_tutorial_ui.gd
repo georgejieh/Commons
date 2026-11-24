@@ -5,10 +5,9 @@ extends GdUnitTestSuite
 ## 1280x800; finishing writes the profile's first save once, with the arrival seen, then
 ## run setup; skipping writes the same and goes to the title; quitting part-way writes
 ## nothing; a replay ends at the title and leaves the profile and a real run save as they
-## were; a refused action pulses the slip. Since the first cloud frames: each board
-## preview covers the whole screen over the page, its meter's name large on paper with
-## Wang's line under it, and no prompt comes until it has gone; the slip keeps clear of
-## the brigade notice; and the store's detail slip stays closed while the arrival runs.
+## were; a refused action pulses the slip. Since the first cloud frames: the slip keeps
+## clear of the brigade notice, and the store's detail slip stays closed while the
+## arrival runs.
 
 const SAVE_PATH: String = "user://test_tutorial_ui/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
@@ -16,14 +15,12 @@ const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
 const LEAST_TYPE: int = 20
 const DARK_INK: float = 0.35
 const SLACK: float = 1.5
-## The longest any wait may take, in milliseconds: a board preview is a few seconds.
+## The longest any wait may take, in milliseconds.
 const WAIT_MSEC: int = 20000
 
 var _app: DemoApp = null
 var _was_size: Vector2i
 var _saved: Dictionary[String, Variant] = {}
-## Board previews checked on screen during a walk.
-var _previews: int = 0
 
 
 func before_test() -> void:
@@ -170,7 +167,6 @@ func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
 	fresh["seen"] = ["tutorial"]
 	fresh["surname"] = surname
 	assert_dict(data.to_dict()).is_equal(fresh)
-	assert_int(_previews).is_equal(2)
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_false()
 
 
@@ -233,53 +229,8 @@ func _answer(step: TutorialStep) -> void:
 				await _until_prompt()
 				await _check_slip("black market")
 				await _key(KEY_ENTER)
-				if not step.preview.is_empty():
-					await _check_preview(step)
 			else:
 				await _key(KEY_ENTER)
-				if not step.preview.is_empty():
-					await _check_preview(step)
-
-
-## The room is shown over the whole screen, above every piece the page lifts, with the
-## meter's name on paper and Wang's follow-up under it, for the script's seconds; the next
-## prompt waits until it has gone.
-func _check_preview(step: TutorialStep) -> void:
-	var layer: TutorialLayer = _app.arrival.layer
-	var room: RoomPreview = layer.preview()
-	var where: String = "preview " + step.preview
-	assert_bool(room.is_visible_in_tree()).override_failure_message(where).is_true()
-	var screen: Rect2 = get_tree().root.get_visible_rect()
-	var covered: String = "%s: %s over %s" % [where, room.get_global_rect(), screen]
-	assert_bool(room.get_global_rect().encloses(screen)).override_failure_message(covered).is_true()
-	assert_int(layer.z_index).is_greater(_highest_lift(_app.switcher.current()))
-	assert_str(room.caption()).is_equal(tr("meter." + step.preview))
-	var caption: Rect2 = room.caption_rect()
-	assert_float(caption.size.y).is_greater(RoomPreview.CAPTION_SIZE)
-	var slip: TutorialSlip = layer.slip()
-	assert_str(slip.line()).is_equal(tr(step.then_key))
-	assert_bool(slip.is_visible_in_tree()).override_failure_message(where + " slip").is_true()
-	assert_bool(slip.get_global_rect().position.y >= caption.end.y).is_true()
-	var started: int = Time.get_ticks_msec()
-	var director: TutorialDirector = _app.arrival.director
-	while room.visible and Time.get_ticks_msec() - started < WAIT_MSEC:
-		assert_int(director.phase()).override_failure_message(where).is_equal(
-			TutorialDirector.Phase.PREVIEW
-		)
-		await await_idle_frame()
-	var held: float = (Time.get_ticks_msec() - started) / 1000.0
-	# The director's clock starts a frame or two before this one, and a slow frame under a
-	# full run widens the gap, so the hold is checked to a quarter of a second.
-	assert_float(held).is_greater_equal(director.preview_seconds() - 0.25)
-	_previews += 1
-
-
-## The highest draw order any piece of a screen is lifted to.
-func _highest_lift(screen: Node) -> int:
-	var highest: int = 0
-	for found: Node in screen.find_children("*", "CanvasItem", true, false):
-		highest = maxi(highest, (found as CanvasItem).z_index)
-	return highest
 
 
 ## Waits until the step is done: the director moved past it, or the arrival ended.

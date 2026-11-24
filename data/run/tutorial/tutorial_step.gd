@@ -26,5 +26,3 @@ enum Action { BID_CALL, BID_PASS, PLAY, PASS, NEED, BUTTON }
 @export var prompt_key: String = ""
 ## The line that follows the action, or empty for none.
 @export var then_key: String = ""
-## The meter whose high band the board shows for a moment after the action, or empty.
-@export var preview: String = ""

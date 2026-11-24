@@ -2,13 +2,12 @@ class_name TutorialLayer
 extends Control
 ## The arrival over every screen it plays on (ADR 0026): Wang's slip, the light on what
 ## the step asks for (TutorialGlow), the Skip button in the corner and the question it
-## asks, the "Begin your first year" button for the last step, and the room shown at a
-## meter's high band. It reads the director and the screen shown; it sends nothing to
-## the run. Screens name their targets with tutorial_target(key) or, for the table,
-## tutorial_rects(key); they may name what the slip must keep clear of, or with
-## tutorial_home(extent) the one place the slip stands, as the table does. It
-## draws above every piece a screen lifts (the store's slips and seals, the envelope),
-## so the room it shows covers the whole page, and below the app's menu.
+## asks, and the "Begin your first year" button for the last step. It reads the
+## director and the screen shown; it sends nothing to the run. Screens name their
+## targets with tutorial_target(key) or, for the table, tutorial_rects(key); they may
+## name what the slip must keep clear of, or with tutorial_home(extent) the one place
+## the slip stands, as the table does. It draws above every piece a screen lifts (the
+## store's slips and seals, the envelope), and below the app's menu.
 
 const CORNER: float = 24.0
 ## From the screen's foot: close under it, so Skip clears the ledger's foot at the table.
@@ -24,7 +23,6 @@ var _glow: TutorialGlow = TutorialGlow.new()
 var _skip: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _begin: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 var _confirm: SkipConfirm = SkipConfirm.new()
-var _preview: RoomPreview = RoomPreview.new()
 ## The step and target focus was last put on, so it moves only when they change.
 var _focused: String = ""
 ## The step whose follow-up beat is running.
@@ -32,19 +30,17 @@ var _beat_for: int = -1
 
 
 func _ready() -> void:
-	# Offsets too: anchors alone keep the size a new control has, none, and the room
-	# shown under a layer of no size has none either.
+	# Offsets too: anchors alone keep the size a new control has, none.
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = DRAW_ORDER
-	for child: Control in [_preview, _glow, _slip, _begin, _skip, _confirm]:
+	for child: Control in [_glow, _slip, _begin, _skip, _confirm]:
 		add_child(child)
 	_skip.text = tr("tutorial.skip")
 	_skip.pressed.connect(_confirm.ask)
 	_begin.text = tr("tutorial.begin")
 	_begin.pressed.connect(_on_begin)
 	_confirm.skipped.connect(func() -> void: _app.arrival.skip())
-	_preview.done.connect(_on_preview_done)
 	_begin.visible = false
 	visible = false
 
@@ -57,7 +53,6 @@ func attach(app: DemoApp, director: TutorialDirector) -> void:
 	_beat_for = -1
 	director.changed.connect(_on_changed)
 	director.refused.connect(_slip.refuse)
-	director.preview_started.connect(_on_preview)
 	_slip.set_face(app.seat_portrait(1, TutorialSlip.FACE))
 	visible = true
 	_on_changed()
@@ -97,10 +92,6 @@ func begin_button() -> Button:
 
 func confirm() -> SkipConfirm:
 	return _confirm
-
-
-func preview() -> RoomPreview:
-	return _preview
 
 
 func _on_changed() -> void:
@@ -143,14 +134,11 @@ func _layout() -> void:
 	var hidden: bool = _app.menu_is_open()
 	if guide != null and guide.has_method("tutorial_hidden"):
 		hidden = hidden or bool(guide.call("tutorial_hidden"))
-	var showing: bool = not hidden and (_on_its_screen() or _preview.visible)
+	var showing: bool = not hidden and _on_its_screen()
 	_slip.visible = showing and not _slip.line().is_empty()
-	var key: String = _director.highlight() if showing and not _preview.visible else ""
+	var key: String = _director.highlight() if showing else ""
 	_glow.light(_targets(guide, key))
 	var target: Rect2 = _glow.lit_area()
-	if _preview.visible:
-		_under_caption()
-		return
 	if not target.has_area():
 		return
 	if guide != null and guide.has_method("tutorial_home"):
@@ -163,14 +151,6 @@ func _layout() -> void:
 	if guide != null and guide.has_method("tutorial_avoid"):
 		avoid.assign(guide.call("tutorial_avoid"))
 	_slip.place(target, avoid, size_now)
-
-
-## While the room is shown, Wang's follow-up stands centred under the meter's name.
-func _under_caption() -> void:
-	_slip.reset_size()
-	var caption: Rect2 = _preview.caption_rect()
-	var x: float = caption.get_center().x - _slip.size.x / 2.0
-	_slip.global_position = Vector2(x, caption.end.y + TutorialSlip.GAP)
 
 
 func _on_its_screen() -> bool:
@@ -229,17 +209,3 @@ func _focus_target() -> void:
 
 func _on_begin() -> void:
 	_app.arrival.allows("begin")
-
-
-func _on_preview(meter: String) -> void:
-	var state: RunState = _app.controller.state_copy()
-	var truth: Vector2i = Vector2i(state.famine, state.denunciation)
-	_preview.play(
-		_app.post.material(), meter, _director.preview_value(), truth, _director.preview_seconds()
-	)
-	_layout()
-
-
-func _on_preview_done() -> void:
-	if _director != null:
-		_director.preview_done()

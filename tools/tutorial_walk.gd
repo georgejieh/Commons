@@ -3,8 +3,7 @@ extends RefCounted
 ## the surname page (ADR 0028), a village name refused first and then a ticket picked
 ## with a real click, takes the Arrival page, then plays every step of the arrival with
 ## real clicks on what each step rings, at the table's own pace, taking a frame at each
-## prompt, at both board previews while they are on screen, once after a refused action,
-## and at run setup. A step that does not advance prints a
+## prompt, once after a refused action, and at run setup. A step that does not advance prints a
 ## MISCLICK line, which the cloud workflow fails on. Loaded at run time by playtest.gd,
 ## so it reaches every UI node as Object, Node or Control, never by a ui/ class name.
 ## Development only; tools/ never ships.
@@ -174,27 +173,6 @@ func _button(step: Resource, actions: Object) -> void:
 				await _until(func() -> bool: return _screen_id() == step.get("screen"))
 				await _frames(10)
 			await _press(_target_button(step.get("highlight")))
-	var preview: String = step.get("preview")
-	if not preview.is_empty():
-		var room: Control = _layer().call("preview")
-		if await _until(func() -> bool: return room.visible):
-			# Taken at once: the room holds for two seconds, which a slow renderer's
-			# settling wait would outlast.
-			await _frames(3)
-			await _shot("tutorial_%s_preview" % preview, 0.0)
-			_expect(_room_shown(room, preview), "MISCLICK no %s preview on screen" % preview)
-		else:
-			_fail("MISCLICK no %s preview" % preview)
-
-
-## True while the room covers the whole screen with the meter's caption, over the page,
-## and the next step's prompt has not come.
-func _room_shown(room: Control, meter: String) -> bool:
-	var whole: bool = room.get_global_rect().encloses(_root.get_visible_rect())
-	var layer: Control = _layer()
-	var over: bool = layer.z_index > 4 and room.is_visible_in_tree()
-	var waiting: bool = int(_director().call("phase")) != PROMPT
-	return whole and over and waiting and str(room.call("meter")) == meter
 
 
 ## The button inside what the screen shown rings for key.

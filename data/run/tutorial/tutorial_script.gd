@@ -23,7 +23,4 @@ extends Resource
 @export var denunciation: int = 10
 ## Seconds a follow-up line holds before the next prompt may replace it.
 @export var follow_seconds: float = 1.6
-## Seconds the board holds a meter's high band, and the value it shows there.
-@export var preview_seconds: float = 2.0
-@export var preview_value: int = 90
 @export var steps: Array[TutorialStep] = []

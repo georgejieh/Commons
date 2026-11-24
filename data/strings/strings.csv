@@ -948,12 +948,12 @@ tutorial.step.15.say,I led three 6s with a pair. Play your three 2s with a pair.
 tutorial.step.15.then,Three 2s beat any three.
 tutorial.step.16.say,We both passed. Play your last straight.
 tutorial.step.16.then,As landlord you kept all of it yourself.
-tutorial.step.17.say,Two rounds were not enough for the Quota. Press Continue and watch the room.
+tutorial.step.17.say,Two rounds were not enough for the Quota. Press Continue.
 tutorial.step.17.then,"When the brigade misses a Quota, Famine rises."
 tutorial.step.18.say,Coupons buy help at the state store. Buy Iron Rice Bowl.
 tutorial.step.18.then,A Cadre stays with you and works every round.
 tutorial.step.19.say,"There is another counter behind the store. Go round, and buy the card for your private plot."
-tutorial.step.19.then,"Someone saw you back there. Buying privately raises Resentment, and Resentment becomes Denunciation."
+tutorial.step.19.then,"Buying privately raises Resentment, and Resentment becomes Denunciation."
 tutorial.step.20.say,That is all I can show you. Press the button and your first year starts.
 tip.plot,"Your private plot. Before the first play you may swap cards between it and your hand, up to the number shown."
 tip.debuffs,"From round 2, each round of a Quota adds a debuff. They stack until the Quota ends."

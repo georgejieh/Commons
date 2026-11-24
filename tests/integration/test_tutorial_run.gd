@@ -138,7 +138,6 @@ func _play_through() -> Array[RunEvent]:
 		assert_bool(_director.attempt(_action_name(step), _detail(step))).is_true()
 		_act(step)
 		_director.note(step.until)
-		_director.preview_done()
 		_director.release()
 		_report()
 	return events

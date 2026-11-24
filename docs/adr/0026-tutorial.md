@@ -76,12 +76,12 @@ The player's 20 cards with the kitty: 3 4 5 6 7 8 9; 8 9 10 J Q K A; three 2s an
 
 | # | The player must | Wang says | Then |
 | --- | --- | --- | --- |
-| 17 | Press Continue on the Quota's report | "Two rounds were not enough for the Quota. Press Continue and watch the room." | Famine rises, and the room is shown for a moment as it looks when Famine is high. "When the brigade misses a Quota, Famine rises." |
+| 17 | Press Continue on the Quota's report | "Two rounds were not enough for the Quota. Press Continue." | Famine rises. "When the brigade misses a Quota, Famine rises." |
 | 18 | Buy the one Cadre on the counter | "Coupons buy help at the state store. Buy Iron Rice Bowl." | "A Cadre stays with you and works every round." |
-| 19 | Go behind the store and buy the plot card | "There is another counter behind the store. Go round, and buy the card for your private plot." | Denunciation rises, and the room is shown for a moment as it looks when Denunciation is high. "Someone saw you back there. Buying privately raises Resentment, and Resentment becomes Denunciation." |
+| 19 | Go behind the store and buy the plot card | "There is another counter behind the store. Go round, and buy the card for your private plot." | Denunciation rises. "Buying privately raises Resentment, and Resentment becomes Denunciation." |
 | 20 | Press "Begin your first year" | "That is all I can show you. Press the button and your first year starts." | To run setup. |
 
-The Famine at 17 is the game's own rule for a missed Quota. The Denunciation at 19 is a scripted amount (data), because in a real run Resentment turns into Denunciation only at a Quota's end. Each room is the real board at that meter's high band, held for about two seconds with the meter named in a caption, and then the board returns to its true state.
+The Famine at 17 is the game's own rule for a missed Quota. The Denunciation at 19 is a scripted amount (data), because in a real run Resentment turns into Denunciation only at a Quota's end. (Until 2026-11-24 each step also showed the room for a moment as it looks at that meter's high band; see the amendment below.)
 
 ## One-time tooltips in real runs
 
@@ -112,3 +112,9 @@ The owner's playtest found the hand-drawn red ring round a step's target ugly, a
 - **The target is lit, not ringed.** A gilt frame with a breathing vermilion halo hugs the button or the card itself. It swells once when it moves and stands still under reduced motion. On a play step the cards are already put up as chosen, so the light is on Play; a card the player has put down again is lit in its place.
 - **At the table the slip has one home,** beside Wang's seat, over the Cadre board's slots, which are empty through the arrival. It no longer moves to each target, so it never lies on the hand, the trick, the prompt or the place the score is counted. Other screens place it beside the target as before, and while the rules card is open it stands beside the card's Close button.
 - **A one-time tip stands in the middle of the screen,** or of the right half where the screen's own sheet fills the left.
+
+## Amendment, 2026-11-24: the owner's playtest
+
+The owner's direction from their playtest of 2026-11-24, on a large monitor.
+
+- **The arrival teaches how to play and nothing else.** The two rooms shown at a meter's high band after steps 17 and 19, the prompt's "and watch the room" at 17 and the line "Someone saw you back there." at 19 are cut: they hinted at the hidden corruption arc, which ADR 0018 keeps from the player, and the owner found the missed Quota's room out of place and confusing. Both steps stay, so the Quota still ends and the shops still open; each meter's rise is still named in Wang's line. The board preview, its timing data and its overlay are gone with them.
