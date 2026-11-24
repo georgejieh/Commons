@@ -2,9 +2,11 @@ class_name CardMarks
 extends RefCounted
 ## The marks saved on deck cards, so a stamp or Model outlasts its round (ADR 0021). Every
 ## deal builds the deck fresh, and apply() puts the saved marks back on it. A plot card
-## carries its own marks, saved with the plot. A deck card that leaves for the plot takes
-## its marks with it, so a mark is never doubled. stamp() and make_model() are the entry
-## points later Campaigns call: both change the card through CardModifiers and save it.
+## carries its own marks, saved with the plot; one swapped into the hand is a copy, and a
+## mark made on that copy reaches the plot's card by its ID (ADR 0038). A deck card a swap
+## took out keeps its saved marks for the next deal. stamp() and make_model() are the
+## entry points later Campaigns call: both change the card through CardModifiers and save
+## it.
 
 ## Deck card ID to the seat whose stamp it carries, and to its enhancement ID. An
 ## unmarked card has no entry.
@@ -62,12 +64,6 @@ func apply(cards: Array[CardInstance]) -> void:
 			CardModifiers.stamp(card, stamps[card.id()])
 		if enhancements.has(card.id()):
 			CardModifiers.enhance(card, enhancements[card.id()])
-
-
-## A deck card that leaves for the plot takes its marks with it.
-func forget(deck_id: int) -> void:
-	stamps.erase(deck_id)
-	enhancements.erase(deck_id)
 
 
 ## Stamps a deck or plot card as the seat's, for the rest of the run.

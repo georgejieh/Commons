@@ -733,13 +733,8 @@ PLAY_SCORED seat=2 value=0 amount=350.000
   TRICK_WON seat=2
   PLAYED seat=2 cards=[20, 21, 23, 28] pattern=TRIO_SINGLE main=5 chain=1 kickers=[7]
 PLAY_SCORED seat=2 value=0 amount=168.000
-  PLAYED seat=0 cards=[33, 40, 41, 42] pattern=TRIO_SINGLE main=10 chain=1 kickers=[8]
+  PLAYED seat=0 cards=[6, 40, 41, 42] pattern=TRIO_SINGLE main=10 chain=1 kickers=[1]
 PLAY_SCORED seat=0 value=0 amount=273.000
-  PASSED seat=1
-  PASSED seat=2
-  TRICK_WON seat=0
-  PLAYED seat=0 cards=[6, 10, 15, 18, 1002] pattern=STRAIGHT main=0 chain=5 kickers=[]
-PLAY_SCORED seat=0 value=0 amount=175.000
   PASSED seat=1
   PASSED seat=2
   TRICK_WON seat=0
@@ -753,31 +748,95 @@ PLAY_SCORED seat=0 value=0 amount=84.000
   PASSED seat=1
   PASSED seat=2
   TRICK_WON seat=0
-  PLAYED seat=0 cards=[52, 53] pattern=ROCKET main=13 chain=1 kickers=[]
-PLAY_SCORED seat=0 value=0 amount=1650.000
-  ANNOUNCED seat=0 value=2
+  PLAYED seat=0 cards=[10] pattern=SINGLE main=2 chain=1 kickers=[]
+PLAY_SCORED seat=0 value=0 amount=5.000
+  PASSED seat=1
+  PLAYED seat=2 cards=[46] pattern=SINGLE main=11 chain=1 kickers=[]
+PLAY_SCORED seat=2 value=0 amount=14.000
+  PLAYED seat=0 cards=[1000] pattern=SINGLE main=12 chain=1 kickers=[]
+PLAY_SCORED seat=0 value=0 amount=15.000
   PASSED seat=1
   PASSED seat=2
   TRICK_WON seat=0
-  PLAYED seat=0 cards=[29, 31] pattern=PAIR main=7 chain=1 kickers=[]
-PLAY_SCORED seat=0 value=0 amount=60.000
-  TRICK_WON seat=0
-  ROUND_ENDED seat=0 value=0
-ROUND_SCORED seat=0 value=0 amount=3444.000
-ROUND_SCORED seat=1 value=0
-ROUND_SCORED seat=2 value=0 amount=584.000
-BANKED seat=2 value=0 amount=584.000
+  PLAYED seat=0 cards=[15] pattern=SINGLE main=3 chain=1 kickers=[]
+PLAY_SCORED seat=0 value=0 amount=6.000
+  PASSED seat=1
+  PLAYED seat=2 cards=[36] pattern=SINGLE main=9 chain=1 kickers=[]
+PLAY_SCORED seat=2 value=0 amount=12.000
+  ANNOUNCED seat=2 value=2
+  PASSED seat=0
+  PLAYED seat=1 cards=[45] pattern=SINGLE main=11 chain=1 kickers=[]
+PLAY_SCORED seat=1 value=0 amount=14.000
+  PASSED seat=2
+  PASSED seat=0
+  TRICK_WON seat=1
+  PLAYED seat=1 cards=[3, 7, 11, 12, 19, 22, 26, 30, 32, 38, 43] pattern=STRAIGHT main=0 chain=11 kickers=[]
+PLAY_SCORED seat=1 value=0 amount=616.000
+  PASSED seat=2
+  PASSED seat=0
+  TRICK_WON seat=1
+  PLAYED seat=1 cards=[27, 49, 50, 51] pattern=TRIO_SINGLE main=12 chain=1 kickers=[6]
+PLAY_SCORED seat=1 value=0 amount=315.000
+  ANNOUNCED seat=1 value=1
+  PASSED seat=2
+  PASSED seat=0
+  TRICK_WON seat=1
+  PLAYED seat=1 cards=[39] pattern=SINGLE main=9 chain=1 kickers=[]
+PLAY_SCORED seat=1 value=0 amount=12.000
+  TRICK_WON seat=1
+  ROUND_ENDED seat=1 value=0
+ROUND_SCORED seat=0 value=0 amount=437.000
+ROUND_SCORED seat=1 value=0 amount=1435.500
+ROUND_SCORED seat=2 value=0 amount=610.000
+BANKED seat=2 value=0 amount=610.000
 NEED_DECLARED seat=0 value=12
 NEED_DECLARED seat=1 value=10
 AUDIT_ROLLED seat=0 value=4 amount=1.000
 AUDIT_ROLLED seat=1 value=1 amount=1.000
 AUDITED seat=1 value=0
-SHARE_PAID seat=0 value=1879
-GRAIN_TAXED seat=0 value=20 amount=376.000
-SHARE_PAID seat=1 value=1565
+SHARE_PAID seat=0 value=1022
+GRAIN_TAXED seat=0 value=20 amount=205.000
+SHARE_PAID seat=1 value=850
 SEAT_LOST seat=2 value=0
-SET_ENDED seat=-1 value=1 amount=1769.000
-end progress=1769.000 coupons=4 famine=0 plot=2
+DEBUFF_ADDED seat=0 value=2 work_point_audit
+DEALT seat=-1 value=2
+BID seat=0 value=1
+BID seat=1 value=0
+BID seat=2 value=1
+RESENTMENT seat=-1 value=3 grab
+BID seat=0 value=1
+LANDLORD_CHOSEN seat=0 value=4
+  ROUND_STARTED seat=0
+  KITTY_TAKEN seat=0 cards=[5, 27, 42]
+SWAPPED seat=0 value=1
+  PLAYED seat=0 cards=[14, 18, 25, 26, 27, 29, 30, 31, 32, 34, 35, 42] pattern=AIRPLANE_SINGLES main=6 chain=3 kickers=[3, 4, 10]
+PLAY_SCORED seat=0 value=0 amount=1080.000
+  PASSED seat=1
+  PASSED seat=2
+  TRICK_WON seat=0
+  PLAYED seat=0 cards=[20, 21, 37, 39, 48, 50, 51, 1000] pattern=FOUR_TWO_PAIRS main=12 chain=1 kickers=[5, 5, 9, 9]
+PLAY_SCORED seat=0 value=0 amount=1320.000
+  TRICK_WON seat=0
+  ROUND_ENDED seat=0 value=1
+GRAIN_TAXED seat=0 value=20 amount=1440.000
+ROUND_SCORED seat=0 value=0 amount=5760.000
+ROUND_SCORED seat=1 value=0
+ROUND_SCORED seat=2 value=0
+BANKED seat=0 value=0 amount=5760.000
+NEED_DECLARED seat=1 value=10
+NEED_DECLARED seat=2 value=10
+AUDIT_ROLLED seat=1 value=3 amount=3.000
+AUDIT_ROLLED seat=2 value=1 amount=3.000
+AUDITED seat=1 value=0
+AUDITED seat=2 value=0
+SHARE_PAID seat=1 value=0
+SHARE_PAID seat=2 value=0
+METER_CHANGED seat=0 value=3 famine
+SEAT_KEPT seat=0 value=0
+RESENTMENT seat=-1 value=4 overfulfilment
+SET_ENDED seat=-1 value=1 amount=6843.000
+OVERFULFILLED seat=0 value=4
+end progress=6843.000 coupons=12 famine=3 plot=2
 set 3505
 SET_STARTED seat=-1 value=0 amount=1000000000.000 grain_tax,levy,slogan_of_the_week
 DEALT seat=-1 value=0

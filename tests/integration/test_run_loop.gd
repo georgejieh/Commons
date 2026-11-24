@@ -141,15 +141,15 @@ func test_plot_swaps_conserve_cards() -> void:
 	for card: CardInstance in loop.round_state().view_for(RunLoop.PLAYER).own_cards:
 		given = card if card.id() == plot_ids[0] else given
 	var after: Array[int] = _ids(loop.player_cards()) + _ids(state.inventory.plot)
-	# The kitty is already in the landlord's hand at the swap, so the count is unchanged.
+	# The kitty is in the landlord's hand by the swap; the plot card is in both (ADR 0038).
 	assert_int(after.size()).is_equal(before.size())
 	for card_id: int in before:
 		if card_id != hand_ids[0]:
 			assert_bool(after.has(card_id)).is_true()
 	assert_object(given).is_not_null()
-	# The deck card went into the plot under a new plot ID (ADR 0014).
-	assert_bool(_ids(state.inventory.plot).has(hand_ids[0])).is_false()
-	assert_int(state.inventory.plot[0].origin()).is_equal(CardInstance.Origin.PLOT)
+	# The deck card sits the round out: it is in neither the hand nor the plot.
+	assert_bool(after.has(hand_ids[0])).is_false()
+	assert_array(_ids(state.inventory.plot)).is_equal([CardInstance.FIRST_PLOT_ID, 1001])
 
 
 func test_commands_out_of_turn_are_refused() -> void:

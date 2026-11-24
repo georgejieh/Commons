@@ -1,11 +1,12 @@
 class_name PlotSwap
 extends RefCounted
-## Exchanges cards between the player's hand and the private plot, one for one, after
-## the landlord has taken the kitty, so kitty cards can be swapped too (ADR 0014). A
-## deck card that goes into the plot becomes a plot card with a new ID from the run's
-## counter, keeping its rank, suit and marks, so the next round's fresh deck never meets
-## a card with its ID. No card is created or lost, and no mark: the marks saved for the
-## deck card go with it into the plot.
+## Brings plot cards into the player's hand for one round, one for one with hand cards,
+## after the landlord has taken the kitty, so kitty cards can be swapped too (ADR 0038,
+## which keeps ADR 0014's kitty rule). The plot is never changed by a swap: each plot
+## card goes into the hand as a copy under its own plot ID, with its marks, and the plot
+## still holds it when the round is over, played or not. The hand card it replaced sits
+## the round out and is dealt again with the next round's fresh deck, its saved marks
+## still on it. No card is created, lost or reissued.
 
 
 static func is_valid(
@@ -31,16 +32,16 @@ static func is_valid(
 	return true
 
 
+## The plot cards join the hand as copies, so nothing the round does to its own cards
+## reaches the plot; a mark made through CardMarks finds the plot's card by its ID. The
+## hand cards taken out are dropped from the round.
 static func apply(
 	round_state: RoundState, seat: int, state: RunState, hand_ids: Array[int], plot_ids: Array[int]
 ) -> void:
 	var incoming: Array[CardInstance] = []
 	for card_id: int in plot_ids:
-		incoming.append(state.inventory.plot[_plot_index(state.inventory, card_id)])
-	var outgoing: Array[CardInstance] = round_state.exchange(seat, hand_ids, incoming)
-	for index: int in plot_ids.size():
-		var at: int = _plot_index(state.inventory, plot_ids[index])
-		state.inventory.plot[at] = _for_plot(outgoing[index], state)
+		incoming.append(state.inventory.plot[_plot_index(state.inventory, card_id)].snapshot())
+	round_state.exchange(seat, hand_ids, incoming)
 
 
 ## The most cards the plot can hold, and the most swaps a round allows, with upgrades.
@@ -52,21 +53,14 @@ static func swaps(state: RunState, params: RunParams) -> int:
 	return params.swaps_per_round + state.swap_bonus
 
 
-## Puts a card into the plot when there is room. Returns false when the plot is full.
+## Puts a plot card into the plot when there is room. Returns false when the plot is full.
+## Every card made for the plot is made a plot card, under RunState.take_plot_id().
 static func store(state: RunState, card: CardInstance, params: RunParams) -> bool:
+	assert(card.origin() == CardInstance.Origin.PLOT, "Only a plot card goes into the plot")
 	if state.inventory.plot.size() >= capacity(state, params):
 		return false
-	state.inventory.plot.append(_for_plot(card, state))
+	state.inventory.plot.append(card)
 	return true
-
-
-## A plot card stays as it is; a deck card is reissued under the next plot ID, and its
-## saved marks leave the deck with it.
-static func _for_plot(card: CardInstance, state: RunState) -> CardInstance:
-	if card.origin() == CardInstance.Origin.PLOT:
-		return card
-	state.card_marks.forget(card.id())
-	return card.reissued(state.take_plot_id())
 
 
 static func _plot_index(inventory: RunInventory, card_id: int) -> int:

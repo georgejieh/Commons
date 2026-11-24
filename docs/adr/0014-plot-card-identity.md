@@ -4,6 +4,8 @@
 
 Accepted, 2026-11-05 (project owner, during Phase 4 planning). Built in P4.8.
 
+Superseded in part on 2026-11-24 by [ADR 0038](0038-plot-swaps-last-one-round.md): a swap now lasts one round (option 3 below), so nothing is reissued into the plot. The kitty decision below still stands.
+
 ## Context
 
 Each round deals a fresh 54-card deck with IDs 0 to 53. A plot swap moves one of those deck cards into the private plot. In the next round the fresh deck holds the same ID again, which breaks P1A.3's rule that IDs are unique within a run. The new copy can then be dealt to any seat while the plot holds the old one: a swap brings a duplicate into play, or `Hand.add()` refuses it and a card disappears. Both reviews of Phase 3A reproduced this. One also found that the landlord can't swap a kitty card, because the swap step runs on the 17 dealt cards before the round adds the kitty.
