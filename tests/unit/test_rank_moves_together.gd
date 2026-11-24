@@ -9,6 +9,8 @@ const VILLAGER: int = 1
 const PROMOTION: String = "promotion_of_the_masses"
 const REHABILITATION: String = "rehabilitation"
 const CLASS_LABEL: String = "class_label"
+const REVOLUTION: String = "cultural_revolution"
+const INVERTED: String = "inverted_order"
 ## Rehabilitation's pick and Years held: some stop short of the 2, some reach it.
 const REHAB_PICKS: Array[Vector2i] = [
 	Vector2i(Ranks.ACE, 0),
@@ -122,7 +124,7 @@ func test_unmoved_ranks_keep_their_printed_standing() -> void:
 			if not moving.has(rank):
 				var label: String = "%s rank %d" % [_name(case), rank]
 				assert_int(standing[rank]).override_failure_message(label).is_equal(
-					rank * Standing.STEP
+					Standing.identity()[rank]
 				)
 
 
@@ -253,23 +255,34 @@ func test_the_round_keeps_the_kings_level_and_the_three_over_the_two() -> void:
 		assert_bool(_has_single(moves, Ranks.QUEEN)).override_failure_message(label).is_false()
 
 
-## Every rank-moving Cadre at once, two of each, with an order reversal among them (Cultural
-## Revolution after a bomb, or the Inverted Order debuff), in many slot orders and on both
-## sides of a bomb: the 2 and the jokers stay on their printed standings, any rank on a
-## printed standing is on its own (or its own turned over), and standings keep the seat's
-## order. Moved ranks pile into one gap here, so a gap that overflowed would show.
+## Every rank-moving Cadre at once, two of each, with one or both order reversals among
+## them (Cultural Revolution after a bomb and the Inverted Order debuff), in many slot
+## orders and on both sides of a bomb: the 2 and the jokers stay on their printed
+## standings, any rank on a printed standing is on its own (or its own turned over), and
+## standings keep the seat's order. Moved ranks pile into one gap here, so a gap that
+## overflowed would show, and a turn that left the scale would break the order.
 func test_every_rank_mover_at_once_stays_inside_its_gaps() -> void:
 	var ids: Array[String] = [
-		PROMOTION, REHABILITATION, CLASS_LABEL, "", PROMOTION, REHABILITATION, CLASS_LABEL
+		PROMOTION,
+		REHABILITATION,
+		CLASS_LABEL,
+		REVOLUTION,
+		PROMOTION,
+		REHABILITATION,
+		CLASS_LABEL,
+		INVERTED,
 	]
-	var picks: Array[Vector2i] = [Vector2i(Ranks.FIVE, 2), Vector2i(Ranks.THREE, 9)]
-	for turn: int in ids.size() * 4:
+	var picks: Array[Vector2i] = [
+		Vector2i(Ranks.FIVE, 2), Vector2i(Ranks.THREE, 9), Vector2i(Ranks.FOUR, 0)
+	]
+	for turn: int in ids.size() * 6:
 		var stack: ModifierStack = ModifierStack.new()
-		var rehabs: int = 0
+		var rehabs: int = turn
 		for index: int in ids.size():
-			var id: String = ids[(index * (turn % 5 + 1) + turn) % ids.size()]
-			if id.is_empty():
-				id = "cultural_revolution" if turn % 2 == 0 else "inverted_order"
+			var id: String = ids[(index * (turn % 7 + 1) + turn) % ids.size()]
+			# Every third turn holds one reversal, the rest both.
+			if turn % 3 == 0 and id == (REVOLUTION if turn % 2 == 0 else INVERTED):
+				continue
 			var memo: CadreMemo = null
 			if id == REHABILITATION:
 				memo = _memo(picks[rehabs % picks.size()])
@@ -286,10 +299,11 @@ func test_every_rank_mover_at_once_stays_inside_its_gaps() -> void:
 func _assert_gaps_hold(table: SeatRules, bombed: bool, name: String) -> void:
 	var standing: PackedByteArray = table.standing_in(HOLDER, bombed)
 	var order: PackedByteArray = table.map_in(HOLDER, bombed)
-	var top: int = (Ranks.COUNT - 1) * Standing.STEP
+	var turned: PackedByteArray = Standing.identity()
+	ReversedRanks.reverse(turned, Standing.STEP)
 	for rank: int in Ranks.COUNT:
 		var label: String = "%s rank %d: %s" % [name, rank, Array(standing)]
-		var own: Array[int] = [rank * Standing.STEP, top - rank * Standing.STEP]
+		var own: Array[int] = [Standing.identity()[rank], turned[rank]]
 		if standing[rank] % Standing.STEP == 0:
 			assert_bool(own.has(standing[rank])).override_failure_message(label).is_true()
 		elif rank >= Ranks.TWO:
@@ -300,3 +314,27 @@ func _assert_gaps_hold(table: SeatRules, bombed: bool, name: String) -> void:
 				. override_failure_message(label)
 				. is_equal(signi(order[rank] - order[other]))
 			)
+
+
+## Cultural Revolution turns the order over after a bomb, Rehabilitation then lifts its 4
+## past the turned-over 3 into the gap above the top standing, and Inverted Order turns it
+## back: the 4 must end up lowest in standings as in the seat's order, inside the scale.
+func test_a_rank_above_the_top_turns_over_to_below_the_bottom() -> void:
+	var stack: ModifierStack = ModifierStack.new()
+	stack.add(_def(REVOLUTION), HOLDER)
+	stack.add(_def(REHABILITATION), HOLDER, _memo(Vector2i(Ranks.FOUR, 0)))
+	stack.add(_def(INVERTED), HOLDER)
+	var table: SeatRules = SeatRules.new(stack)
+	table.start_round(HOLDER)
+	table.set_trick_bombed(true)
+	var order: PackedByteArray = table.map_in(HOLDER, true)
+	var standing: PackedByteArray = table.standing_in(HOLDER, true)
+	for rank: int in Ranks.COUNT:
+		if rank != Ranks.FOUR:
+			assert_int(order[Ranks.FOUR]).is_less(order[rank])
+			assert_int(standing[Ranks.FOUR]).is_less(standing[rank])
+	_assert_gaps_hold(table, true, "climb")
+	# Every rank but the 4 stands level with a villager's same rank.
+	for rank: int in Ranks.COUNT:
+		if rank != Ranks.FOUR:
+			assert_int(standing[rank]).is_equal(table.standing_in(VILLAGER, true)[rank])
