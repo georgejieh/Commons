@@ -164,6 +164,7 @@ store.buy,Buy · {price} coupons
 store.buy.poor,Need {price} coupons
 store.buy.full,No room
 store.buy.empty,Nothing inside
+store.buy.sold_back,Back next visit
 store.sell,Sell · {price}
 store.sell.confirm,Sell for {price}?
 store.sell.bound,Held back
@@ -760,6 +761,7 @@ envelope.choose,"Keep one, or take nothing."
 envelope.kept,Kept
 envelope.refused.campaigns_full,You hold as many Campaigns as you can.
 envelope.refused.plot_full,Your private plot is full.
+envelope.refused.sold_back,You sold this Campaign on this visit. It comes back at the next one.
 envelope.refused.short,Cannot be kept
 envelope.refused.all,{why} None of these can be kept.
 envelope.refused.other,This cannot be kept now.

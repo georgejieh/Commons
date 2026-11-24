@@ -71,10 +71,13 @@ func _on_pressed() -> void:
 
 
 ## On each of the player's turns while sitting out: pass again if still nothing is legal,
-## else hand the turn back.
+## else hand the turn back. A drain on another seat's turn, as while a villager's play is
+## still being searched, waits for the next; the trick's end is _on_played's.
 func _on_drained() -> void:
 	if _active:
-		if not _my_turn() or not _following() or not _controller.legal_moves().is_empty():
+		if not _my_turn():
+			return
+		if not _following() or not _controller.legal_moves().is_empty():
 			_set_active(false)
 		else:
 			_pass()

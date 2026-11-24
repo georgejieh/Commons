@@ -26,6 +26,9 @@ var controls: Controls
 ## The opponents' tables where they play under other rules or another order than this
 ## seat (ADR 0039), one for each way of playing; empty when they all play as it does.
 var rivals: Array[BotTable] = []
+## The tables this seat's own bomb is judged under once it is down, or null when a bomb
+## changes nothing (BombedSide).
+var bombed: BombedSide = null
 
 
 func _init(
@@ -43,8 +46,10 @@ func _init(
 	wild_threats = 0 if supply == null else supply.total
 	groups = scorer.decompose_own_hand().groups
 	rivals = _rivals()
+	bombed = BombedSide.of(table, seat, _opponents())
 	var counts_cards: bool = config.reads_the_table()
-	controls = Controls.new(groups, threats, _largest_opposing_hand(), table, counts_cards, rivals)
+	var largest: int = _largest_opposing_hand()
+	controls = Controls.new(groups, threats, largest, table, counts_cards, rivals, bombed)
 
 
 func hand_size() -> int:
@@ -107,7 +112,8 @@ func going_out(legal: Array[Pattern]) -> Pattern:
 ## holding back every group nothing unseen beats costs it about five points of win rate.
 func read_groups(other: Array[Pattern]) -> Controls:
 	var counts_cards: bool = config.reads_the_table() and not is_landlord()
-	return Controls.new(other, threats, _largest_opposing_hand(), table, counts_cards, rivals)
+	var largest: int = _largest_opposing_hand()
+	return Controls.new(other, threats, largest, table, counts_cards, rivals, bombed)
 
 
 ## A repeatable roll for this decision, from 0 to 1.
@@ -206,6 +212,14 @@ func _rivals() -> Array[BotTable]:
 			found.append(rival)
 	if not differs:
 		found.clear()
+	return found
+
+
+func _opponents() -> Array[int]:
+	var found: Array[int] = []
+	for other: int in Seats.COUNT:
+		if is_opponent(other):
+			found.append(other)
 	return found
 
 

@@ -100,3 +100,34 @@ func test_plot_cards_say_buy_and_their_price() -> void:
 	assert_object(button).is_not_null()
 	assert_bool(button.disabled).is_false()
 	assert_str(button.text).is_equal(tr("store.buy").format({"price": desk.plot_card_price(0)}))
+
+
+## A Campaign sold back this visit says so on the copy still on the shelf, whatever the
+## coupons, and cannot be pressed (ADR 0040).
+func test_a_campaign_sold_back_says_it_returns_next_visit() -> void:
+	_loop().state.coupons = 40
+	var campaign_id: String = _loop().shop.campaigns.stock()[0]
+	_loop().state.inventory.consumables.append(campaign_id)
+	_app.controller.reseal_book()
+	var index: int = _loop().state.inventory.consumables.size() - 1
+	assert_int(_app.controller.sell_campaign(index)).is_equal(RunLoop.Reason.OK)
+	var store: StoreScreen = await _open("store")
+	var stall: Object = store.get("_campaign_stall")
+	var panel: CounterPanel = stall.call("panel", 0)
+	_assert_readable(panel.buy, "sold back campaign")
+	assert_str(panel.buy.text).is_equal(tr("store.buy.sold_back"))
+	assert_bool(_app.controller.campaign_shelf(false).is_sold_back(0)).is_true()
+
+
+## The same for a Cadre sold back while a counter still offers it.
+func test_a_cadre_sold_back_says_it_returns_next_visit() -> void:
+	_loop().state.coupons = 40
+	var cadre_id: String = _loop().shop.stock()[0]
+	_loop().state.inventory.cadres.append(cadre_id)
+	_app.controller.reseal_book()
+	var index: int = _loop().state.inventory.cadres.size() - 1
+	assert_int(_app.controller.sell_cadre(index)).is_equal(RunLoop.Reason.OK)
+	var store: StoreScreen = await _open("store")
+	var buy: Button = _cadre_buy(store, 0)
+	_assert_readable(buy, "sold back cadre")
+	assert_str(buy.text).is_equal(tr("store.buy.sold_back"))

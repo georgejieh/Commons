@@ -187,3 +187,96 @@ func test_sales_replay_from_a_save_and_an_older_save_still_loads() -> void:
 	assert_array(resumed.state.inventory.cadres).is_equal(loop.state.inventory.cadres)
 	assert_array(resumed.shop.stock()).is_equal(loop.shop.stock())
 	assert_dict(resumed.state.store_sold).is_equal(loop.state.store_sold)
+
+
+## A loop at the shops holding a copy of the Campaign the counter offers in slot 0, as a
+## player who bought it on an earlier visit would.
+func _holding_the_shelfs_campaign(seed_value: int, at_market: bool) -> RunLoop:
+	var probe: RunLoop = _at_the_shops(seed_value)
+	var counter: CampaignCounter = probe.market.campaigns if at_market else probe.shop.campaigns
+	var campaign_id: String = counter.stock()[0]
+	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
+	loop.start_set()
+	RunScript.new().play_until_set_over(loop)
+	loop.state.coupons = RICH
+	loop.state.inventory.consumables.append(campaign_id)
+	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
+	var shelf: CampaignCounter = loop.market.campaigns if at_market else loop.shop.campaigns
+	assert_str(shelf.stock()[0]).is_equal(campaign_id)
+	return loop
+
+
+## The loop's record, its checkpoint given the coupons and Campaigns the test handed it.
+func _record_of(loop: RunLoop, campaign_id: String) -> Dictionary:
+	var record: Dictionary = loop.record.to_dict()
+	var checkpoint: Dictionary = record["checkpoint"]
+	checkpoint["coupons"] = RICH
+	var held: Array = checkpoint["inventory"]["consumables"]
+	if not held.has(campaign_id):
+		held.append(campaign_id)
+	return record
+
+
+## ADR 0040: the Campaign just sold cannot be bought straight back from the copy already
+## on the shelf, at either counter, and the save replays the sale and the refusal alike.
+func test_a_sold_campaign_cannot_be_bought_back_from_the_shelf_that_visit() -> void:
+	for at_market: bool in [false, true]:
+		var loop: RunLoop = _holding_the_shelfs_campaign(29, at_market)
+		var shelf: CampaignCounter = loop.market.campaigns if at_market else loop.shop.campaigns
+		var campaign_id: String = shelf.stock()[0]
+		var index: int = loop.state.inventory.consumables.rfind(campaign_id)
+		assert_int(shelf.check(0)).is_equal(RunShop.Reason.OK)
+		assert_int(loop.player_sell_campaign(index, at_market)).is_equal(RunLoop.Reason.OK)
+		for counter: CampaignCounter in [loop.shop.campaigns, loop.market.campaigns]:
+			for slot: int in counter.stock().size():
+				if counter.stock()[slot] == campaign_id:
+					assert_int(counter.check(slot)).is_equal(RunShop.Reason.SOLD_BACK)
+		var after_sale: Dictionary = loop.state.to_dict()
+		var bought: RunLoop.Reason = (
+			loop.player_market_campaign(0) if at_market else loop.player_campaign_buy(0)
+		)
+		assert_int(bought).is_equal(RunLoop.Reason.ILLEGAL)
+		assert_dict(loop.state.to_dict()).is_equal(after_sale)
+		var record: Dictionary = _record_of(loop, campaign_id)
+		var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
+		assert_object(resumed).is_not_null()
+		assert_dict(resumed.state.to_dict()).is_equal(loop.state.to_dict())
+		var again: CampaignCounter = (
+			resumed.market.campaigns if at_market else resumed.shop.campaigns
+		)
+		assert_int(again.check(0)).is_equal(RunShop.Reason.SOLD_BACK)
+
+
+## The same for a Cadre: one sold back cannot be bought from a slot of either counter that
+## offers it that visit.
+func test_a_sold_cadre_cannot_be_bought_back_from_either_shelf_that_visit() -> void:
+	for at_market: bool in [false, true]:
+		var loop: RunLoop = _at_the_shops(30)
+		var counter: RunShop = loop.market if at_market else loop.shop
+		var cadre_id: String = counter.stock()[0]
+		loop.state.inventory.cadres.append(cadre_id)
+		var index: int = loop.state.inventory.cadres.size() - 1
+		assert_int(loop.player_sell_cadre(index, at_market)).is_equal(RunLoop.Reason.OK)
+		assert_int(counter.check_buy(0)).is_equal(RunShop.Reason.SOLD_BACK)
+		var before: Dictionary = loop.state.to_dict()
+		var bought: RunLoop.Reason = (
+			loop.player_market_buy(0, Ranks.SEVEN) if at_market else loop.player_buy(0)
+		)
+		assert_int(bought).is_equal(RunLoop.Reason.ILLEGAL)
+		assert_dict(loop.state.to_dict()).is_equal(before)
+
+
+## A Campaign sold back cannot be kept from an envelope opened after the sale that visit.
+func test_an_envelope_will_not_hand_back_a_campaign_sold_that_visit() -> void:
+	var loop: RunLoop = _at_the_shops(31)
+	var counter: EnvelopeCounter = loop.shop.envelopes
+	var campaign_id: String = RunCampaigns.all()[0].id
+	loop.shop.campaigns.withheld.append(campaign_id)
+	var item: EnvelopeItem = EnvelopeItem.new(EnvelopeDef.Content.CAMPAIGN, campaign_id)
+	counter.set("_opened", EnvelopeDef.new())
+	counter.set("_items", [item] as Array[EnvelopeItem])
+	assert_int(counter.check_pick(0)).is_equal(RunShop.Reason.SOLD_BACK)
+	assert_int(counter.pick(0, RunLoop.PLAYER)).is_equal(RunShop.Reason.SOLD_BACK)
+	assert_array(loop.state.inventory.consumables).not_contains([campaign_id])
+	loop.shop.campaigns.withheld.clear()
+	assert_int(counter.check_pick(0)).is_not_equal(RunShop.Reason.SOLD_BACK)

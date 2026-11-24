@@ -3,10 +3,11 @@ extends RefCounted
 ## What a shop's Buy button says. One that can be pressed says "Buy" and the price. One
 ## that cannot says why in place of "Buy": "Need 8 coupons" while the coupons are short,
 ## "No room" while the board, the tray or the plot is full (no price, which would not fit
-## a counter paper at the largest text). Off, its words are dark ink that reads on the
+## a counter paper at the largest text), and "Back next visit" for an item sold back this
+## visit, whatever the coupons. Off, its words are dark ink that reads on the
 ## faded ticket, in colour and in grayscale.
 
-enum Why { NONE, POOR, FULL, EMPTY }
+enum Why { NONE, POOR, FULL, EMPTY, SOLD_BACK }
 
 ## Ink on a ticket that cannot be pressed: dark enough to read, a little faded.
 const OFF_INK: Color = Color(0.118, 0.102, 0.086, 0.82)
@@ -20,7 +21,7 @@ static func dress(
 	button.disabled = not can
 	var why: Why = Why.NONE
 	if not can:
-		why = Why.POOR if coupons < price else otherwise
+		why = Why.POOR if coupons < price and otherwise != Why.SOLD_BACK else otherwise
 	button.text = words(why, price)
 	readable(button)
 
@@ -35,6 +36,8 @@ static func words(why: Why, price: int) -> String:
 			key = "store.buy.full"
 		Why.EMPTY:
 			key = "store.buy.empty"
+		Why.SOLD_BACK:
+			key = "store.buy.sold_back"
 	return TranslationServer.translate(key).format({"price": price})
 
 

@@ -3,8 +3,8 @@ extends RefCounted
 ## One counter's Campaigns (ADR 0021): drawn evenly from its pool after every other draw
 ## on the shop stream, redrawn by the counter's reroll, and bought at the counter's
 ## price. A Campaign is refused while the player holds as many as they can. A held one
-## may be sold back for part of its price here (ADR 0040), and is not offered again that
-## visit.
+## may be sold back for part of its price here (ADR 0040): it is not offered again that
+## visit, and a copy of it already on the counter cannot be bought until the next.
 
 const SOLD: String = ""
 const PERCENT: int = 100
@@ -49,6 +49,8 @@ func check(slot: int) -> RunShop.Reason:
 		return RunShop.Reason.NO_SUCH_SLOT
 	if _stock[slot] == SOLD:
 		return RunShop.Reason.SOLD_OUT
+	if withheld.has(_stock[slot]):
+		return RunShop.Reason.SOLD_BACK
 	if not has_room():
 		return RunShop.Reason.CAMPAIGNS_FULL
 	if _state.coupons < price(slot):

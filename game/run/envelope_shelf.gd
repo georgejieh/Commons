@@ -109,4 +109,6 @@ func refusal_key(index: int) -> String:
 			return "envelope.refused.campaigns_full"
 		RunShop.Reason.PLOT_FULL:
 			return "envelope.refused.plot_full"
+		RunShop.Reason.SOLD_BACK:
+			return "envelope.refused.sold_back"
 	return "envelope.refused.other"

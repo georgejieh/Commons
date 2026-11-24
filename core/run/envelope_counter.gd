@@ -14,6 +14,9 @@ const PERCENT: int = 100
 const NOTHING: int = -1
 const DEFAULT_RUN: RunParams = preload("res://data/run/default_run.tres")
 
+## The counter's Campaigns, whose sold-back ones an envelope may not hand back that visit.
+var sold_back: CampaignCounter = null
+
 var _state: RunState
 var _params: ShopParams
 var _run: RunParams
@@ -117,7 +120,11 @@ func check_pick(index: int) -> RunShop.Reason:
 		return RunShop.Reason.OK
 	if index < 0 or index >= _items.size():
 		return RunShop.Reason.NO_SUCH_SLOT
-	return EnvelopeContents.check(_items[index], _state, _run)
+	var item: EnvelopeItem = _items[index]
+	if item.content == EnvelopeDef.Content.CAMPAIGN and sold_back != null:
+		if sold_back.withheld.has(item.item_id):
+			return RunShop.Reason.SOLD_BACK
+	return EnvelopeContents.check(item, _state, _run)
 
 
 ## Keeps the item at index for the seat, or nothing, and closes the envelope.

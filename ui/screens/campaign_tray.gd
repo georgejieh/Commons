@@ -12,6 +12,8 @@ extends Control
 signal changed
 ## A Campaign was used: the run accepted it and its events are on their way.
 signal used(slot: int, campaign_id: String)
+## The leaflets were laid out again from what is held, which may have changed.
+signal refreshed
 
 const GAP: float = 14.0
 ## Room for the head over a compact row, and over full-size leaflets, whose armed one
@@ -136,6 +138,7 @@ func refresh() -> void:
 	_show_marks()
 	_stand_tall()
 	queue_redraw()
+	refreshed.emit()
 
 
 ## A leaflet whose words need more than its place, as at a larger text size, makes the

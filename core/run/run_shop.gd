@@ -31,6 +31,9 @@ enum Reason {
 	NOT_HELD,
 	## A sale of a Cadre a debuff or boss holds this round (ADR 0040).
 	CADRE_BOUND,
+	## A purchase of a Cadre or Campaign sold back this visit, at either counter, or a
+	## Campaign so sold kept from an envelope (ADR 0040).
+	SOLD_BACK,
 }
 
 const SOLD: String = ""
@@ -78,6 +81,7 @@ func _init(
 	campaigns = CampaignCounter.new(state, params, offered)
 	reforms = ReformCounter.new(state, params, reformed)
 	envelopes = EnvelopeCounter.new(state, params, directives, offered, run)
+	envelopes.sold_back = campaigns
 
 
 ## Slots this visit offers: fewer while rationing is in force, and fewer under Short
@@ -159,6 +163,8 @@ func check_buy(slot: int) -> Reason:
 		return Reason.NO_SUCH_SLOT
 	if _stock[slot] == SOLD:
 		return Reason.SOLD_OUT
+	if withheld.has(_stock[slot]):
+		return Reason.SOLD_BACK
 	if not has_room():
 		return Reason.CADRES_FULL
 	if _state.coupons < price(slot):

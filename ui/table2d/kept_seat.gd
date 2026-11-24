@@ -7,6 +7,7 @@ extends RefCounted
 ## never read the bidding tip knows who holds the seat and why.
 
 ## The round last called out, by Quota and round, so a rebuilt table never says it twice.
+## A run starting or being left forgets it (forget), so the next run calls its own.
 static var said: String = ""
 
 ## The landlord of the round in progress, or Seats.NONE between rounds.
@@ -71,6 +72,11 @@ func line(names: Dictionary[int, String]) -> String:
 	if landlord == 0:
 		return TranslationServer.translate("seat.kept.you")
 	return TranslationServer.translate("seat.kept.sub").format({"name": name})
+
+
+## Forgets the round last called out, as a run starts or is left.
+static func forget() -> void:
+	said = ""
 
 
 ## A reader that has read every event given.
