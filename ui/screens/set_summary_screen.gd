@@ -158,7 +158,10 @@ func _norm_line(controller: RunController, state: RunState) -> Label:
 	}
 	var key: String = "summary.norm_raised" if _steps > 0 else "summary.norm_kept"
 	_norm_text = tr(key).format(values)
-	return _line(_norm_text, ScreenKit.RED if _steps > 0 else ScreenKit.INK)
+	var line: Label = _line(_norm_text, ScreenKit.RED if _steps > 0 else ScreenKit.INK)
+	# Two sentences: it wraps inside the paper instead of pushing the sheet wider.
+	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return line
 
 
 ## The line about the norm, or "" with none, for tests.
