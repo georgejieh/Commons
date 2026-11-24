@@ -1,0 +1,68 @@
+{
+ "name": "score_bell",
+ "description": "A small brass handbell struck once, dry and close: a Cadre, a mark or a level that raised the score. Pitched to G; the table raises it a step for each thing that fires in a play.",
+ "layers": [
+  {
+   "wave": "sine",
+   "freq": 784,
+   "partials": [
+    [
+     1,
+     0,
+     1
+    ],
+    [
+     2.4,
+     -6,
+     0.7
+    ],
+    [
+     5.95,
+     -14,
+     0.4
+    ]
+   ],
+   "env": {
+    "attack": 0.001,
+    "hold": 0.005,
+    "release": 0.34,
+    "curve": 2.6
+   }
+  },
+  {
+   "wave": "noise",
+   "env": {
+    "attack": 0.0005,
+    "hold": 0.001,
+    "release": 0.004,
+    "curve": 3
+   },
+   "filters": [
+    {
+     "type": "highpass",
+     "cutoff": 3000
+    },
+    {
+     "type": "lowpass",
+     "cutoff": 7000
+    }
+   ],
+   "gain_db": -16
+  }
+ ],
+ "master": {
+  "lufs": -25,
+  "peak_db": -6,
+  "highpass": 300
+ },
+ "expect": {
+  "duration": [
+   0.2,
+   0.45
+  ],
+  "centroid": [
+   700,
+   3500
+  ]
+ }
+}

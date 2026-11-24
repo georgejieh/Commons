@@ -76,6 +76,7 @@ func _put_away() -> void:
 	if _winner != Seats.NONE and _seat_center.is_valid():
 		toward = _seat_center.call(_winner)
 	_pile.sweep(toward)
+	Audio.fill(AudioEvents.ROUND_NAMES[RoundEvent.Type.TRICK_WON])
 	_moments.slip.clear()
 	_moments.tally.clear()
 

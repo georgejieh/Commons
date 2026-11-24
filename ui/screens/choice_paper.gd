@@ -315,6 +315,8 @@ func set_cursor(on: bool) -> void:
 	if on == _cursor:
 		return
 	_cursor = on
+	if on:
+		Audio.fill(AudioEvents.MOTION_HOVER)
 	_tag.visible = on and _takeable
 	if _tag.visible:
 		_tag.reset_size()

@@ -89,6 +89,7 @@ func _same(lit_now: Array[Rect2]) -> bool:
 
 
 func _close_in() -> void:
+	Audio.fill(AudioEvents.MOTION_PULSE)
 	if _closing != null and _closing.is_valid():
 		_closing.kill()
 	if UiMotion.reduced():

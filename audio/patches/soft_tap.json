@@ -1,0 +1,64 @@
+{
+ "name": "soft_tap",
+ "description": "A fingertip tapped on card stock: barely there. Something on the table swells or lifts to catch the eye, a villager taking up their cards, a button the pointer rests on.",
+ "layers": [
+  {
+   "wave": "sine",
+   "freq": 720,
+   "partials": [
+    [
+     1,
+     0,
+     1
+    ],
+    [
+     2.76,
+     -12,
+     0.5
+    ]
+   ],
+   "env": {
+    "attack": 0.0008,
+    "hold": 0.001,
+    "release": 0.025,
+    "curve": 3
+   }
+  },
+  {
+   "wave": "noise",
+   "env": {
+    "attack": 0.0005,
+    "hold": 0.001,
+    "release": 0.005,
+    "curve": 3
+   },
+   "filters": [
+    {
+     "type": "bandpass",
+     "cutoff": 1800,
+     "q": 0.9
+    }
+   ],
+   "gain_db": -10
+  }
+ ],
+ "master": {
+  "lufs": -32,
+  "peak_db": -16,
+  "highpass": 250
+ },
+ "vary": {
+  "pitch": 0.6,
+  "gain_db": 1
+ },
+ "expect": {
+  "duration": [
+   0.015,
+   0.05
+  ],
+  "centroid": [
+   500,
+   3000
+  ]
+ }
+}

@@ -75,6 +75,7 @@ func show_all() -> void:
 
 
 func _show_line(index: int) -> void:
+	Audio.fill(AudioEvents.MOTION_PULSE)
 	_shown = index + 1
 	var label: Label = _lines[index]
 	var fade: Tween = label.create_tween()

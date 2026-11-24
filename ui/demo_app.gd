@@ -142,6 +142,7 @@ func show_screen(screen_id: String, replace: bool = false) -> Node:
 func _play_wipe() -> void:
 	if UiMotion.reduced():
 		return
+	Audio.fill(AudioEvents.MOTION_WIPE)
 	_wipe.modulate.a = 1.0
 	var tween: Tween = _wipe.create_tween()
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

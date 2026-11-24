@@ -1,0 +1,83 @@
+{
+ "name": "score_bead",
+ "description": "An abacus bead knocked along its rod: a dry, short wooden click with a little hollow ring. Counts each scored card, rolls a total up a bead at a time, and ticks any number that rolls. Heard very often, so short and soft; the table raises its pitch a step per bead.",
+ "layers": [
+  {
+   "wave": "noise",
+   "env": {
+    "attack": 0.0005,
+    "hold": 0.001,
+    "release": 0.006,
+    "curve": 3
+   },
+   "filters": [
+    {
+     "type": "highpass",
+     "cutoff": 2200
+    },
+    {
+     "type": "lowpass",
+     "cutoff": 6500
+    }
+   ],
+   "gain_db": -9
+  },
+  {
+   "wave": "sine",
+   "freq": 1568,
+   "partials": [
+    [
+     1,
+     0,
+     1
+    ],
+    [
+     2.76,
+     -9,
+     0.5
+    ],
+    [
+     5.4,
+     -18,
+     0.3
+    ]
+   ],
+   "env": {
+    "attack": 0.0005,
+    "hold": 0.001,
+    "release": 0.035,
+    "curve": 3
+   }
+  },
+  {
+   "wave": "sine",
+   "freq": 523,
+   "env": {
+    "attack": 0.0005,
+    "hold": 0.0,
+    "release": 0.02,
+    "curve": 3
+   },
+   "gain_db": -12
+  }
+ ],
+ "master": {
+  "lufs": -25,
+  "peak_db": -7,
+  "highpass": 250
+ },
+ "vary": {
+  "pitch": 0.5,
+  "gain_db": 1
+ },
+ "expect": {
+  "duration": [
+   0.02,
+   0.07
+  ],
+  "centroid": [
+   800,
+   4000
+  ]
+ }
+}

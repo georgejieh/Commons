@@ -447,7 +447,34 @@ The dread layers (P3B.12) put the run's state on the board without touching anyt
 
 `AudioEvents` in `game/audio/` names a sound for every domain event type (P3B.10): each `RunEvent` type, each round event inside a `ROUND` event, and a separate name for bombs and rockets. The table passes each event it shows to `TableSounds`, which plays its name on `Audio.play()`. With the landlord known, a finished round is named won or lost from the player's side, and a meter rising past a mark adds `meter_rose`.
 
-**Sound effects (P3C.8).** `SfxPlayer` (`game/audio/`) is a child of the `Audio` autoload, reached as `Audio.effects`. `SfxBank` (`data/audio/sfx_bank.tres`) maps event names to `SfxSound`s: takes, gain, pitch spread and voices. Each take has its own player on the Effects bus, because swapping a player's stream cuts copies still ringing; takes play round-robin, and pitch spread draws from a cosmetic `RandomStream` that belongs to no run. A name with no sound stays silent. The `Audio` autoload gives every `BaseButton` its click as it enters the tree, so screens carry no sound code; the state store adds `store_buy`. Files live in `audio/sfx/`, their synthesis and layering patches in `audio/patches/`, and every file's source and license in `audio/sources/manifest.csv`, which `tests/unit/test_audio_manifest.gd` enforces. Sound choices are in `audio/sources/SOUND_STYLE.md`.
+**Sound effects (P3C.8).** `SfxPlayer` (`game/audio/`) is a child of the `Audio` autoload, reached as `Audio.effects`. `SfxBank` (`data/audio/sfx_bank.tres`) maps event names to `SfxSound`s: takes, gain, pitch spread and voices. Each take has its own player on the Effects bus, because swapping a player's stream cuts copies still ringing; takes play round-robin, and pitch spread draws from a cosmetic `RandomStream` that belongs to no run. A name with no sound stays silent. The `Audio` autoload gives every `BaseButton` its click as it enters the tree, so screens carry no sound code; the state store adds `store_buy`. Files live in `audio/sfx/`, their synthesis and layering patches in `audio/patches/`, and every file's source and license in `audio/sources/manifest.csv`, which `tests/unit/test_audio_manifest.gd` enforces. Sound choices are in `audio/sources/SOUND_STYLE.md`. `tools/make_sfx.py` renders the synthesized files from their patches through the skill's vendored `sfx.py` with fixed seeds, the same bytes every time (`python -m pytest -q tools` checks it). `SfxPlayer.play` takes a pitch offset, so a scored play's ticks and chimes climb the pentatonic steps in `score_scale_steps` and a cut falls by them.
+
+**A sound for every motion (P5.2a).** Each kind of motion has a sound named in `AudioEvents.MOTION_NAMES`. The motion primitives (`UiMotion`, `TableMotion.wind_up`, `TableFx.fly`, the table's banners) call `Audio.fill`, which plays at the frame's end only into a silence: when the moment's own event has sounded within `AudioMixer.FILL_GUARD_MSEC`, it keeps quiet, so a purchase stamps once and a bomb's banner adds nothing to the bomb. Every sound plays on the Effects bus, so the Effects volume governs it, with round-robin takes, a cosmetic pitch spread and a voice limit per sound under the Master limiter.
+
+| Moment | Where | Sound |
+|---|---|---|
+| A scored card counted, Rate and Zeal landing | `ScoreSequence` | `score_tick` (abacus bead, a step up per card), `score_rate`, `score_zeal` (small stamp) |
+| A Cadre, mark or level raising the score; a debuff or boss cutting it | `ScoreSequence` | `score_chime` (handbell, a step up each), `score_cut` (dull gong, a step down each) |
+| The total rolling up and landing | `ScoreSequence` | `score_roll` (beads), `score_land`, or `score_land_heavy` for a big share of the Quota |
+| A figure flying to the ledger or the Quota bar | `TableFx.fly` | `motion_fly` (paper flick) |
+| A deal, a play, a pass, a won trick, a bomb, a rocket, a round won or lost | `TableSounds` | `dealt`, `card_played`, `passed`, `trick_won`, `bomb_played`, `rocket_played`, `round_won`, `round_lost` (as before) |
+| The kitty laid out and taken | `kitty_taken` | card takes, quieter |
+| A villager taking up their cards | `TableMotion.wind_up` | `motion_wind` (soft tap) |
+| A banner for a call, grab, audit or forced pass | `TableMoments._shout` | `callout_cut` (brush stroke) |
+| The Quota met or missed | `TableMoments._on_set_ended` | `quota_met` (heavy stamp), `quota_missed` (gong) |
+| The audit's dice thrown, the bowl lifted away | `TableMoments._on_rolled` | `dice_roll`, `motion_settle` |
+| The last trick swept off at a round's close | `RoundClose` | `trick_won` |
+| Any stamp landing (seals, Scarce, roles, strikes, the ledger) | `UiMotion.stamp` | `motion_stamp`, unless its event sounds (`store_buy`) |
+| Any swell (board slots, seats, the strip, notes, the HUD) | `UiMotion.pulse` | `motion_pulse` (soft tap) |
+| Any number rolling (ledger, shop figures, stats, the Quota bar) | `UiMotion.count`, `QuotaBar.fill_to` | `motion_count` (bead) |
+| A page's pieces arriving; envelope papers fanning out | `UiMotion.enter`, `EnvelopeOpening` | `motion_enter` (paper flick) |
+| The title's poster laid down, its name pressed | `UiMotion.settle`, `TitleWord.press` | `motion_settle`, `motion_stamp` |
+| A button or hand card hovered, a paper under the cursor, a keyword slip opening | `UiMotion.hoverable`, `HandView`, `ChoicePaper`, `KeywordTips` | `motion_hover` (quietest tap); a press clicks (`button_click`), a card picked taps (`motion_pulse`) |
+| The ink wipe between screens, a card torn | `DemoApp`, `TornCard` | `motion_wipe` (brush) |
+| Envelope papers not kept falling away | `EnvelopeOverlay` | `motion_fly` |
+| Epilogue lines, the arrival's light closing in | `EpilogueList`, `TutorialGlow` | `motion_pulse` |
+| The Glass Walls pane shown or put away | `GlassPane` | `motion_settle` |
+| Dread flickers, a notice taken down, a portrait blinking; the table's shake | `DreadDressing`, `SeatPanel.blink`, `TableMotion` | none, on purpose: the horror creeps with no sting, and a shake rides on its bomb's sound |
 
 **Music (P3C.9).** `MusicPlayer` (`game/audio/`) is a child of the `Audio` autoload, reached as `Audio.music`, so the autoload list stays at four. It plays one `MusicCue` at a time on the Music bus, with the cue's stems in one `AudioStreamSynchronized` so they share a timeline. `MusicScore` (`data/audio/music_score.tres`) picks the cue from the Famine layer's target and the landlord seat. `DreadLayers` asks for a cue at each round boundary and passes its shown weights every frame, and each layer's `audio_stems` fades those stems by volume only, so they return in step. A new cue starts when playback crosses the next bar line, counted from the cue's measured first downbeat, and stems the two cues share keep their gains. Asking for the cue already playing cancels a waiting change, and leaving the table brings every stem back. Cues with no audio stay silent. The cue plan and Suno prompts are in `audio/music/CUES.md`.
 

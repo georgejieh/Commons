@@ -1,0 +1,118 @@
+{
+ "name": "dice_bowl",
+ "description": "The audit's dice thrown into a wooden bowl: a run of small wooden knocks that slows and settles.",
+ "layers": [
+  {
+   "wave": "sine",
+   "freq": 1300,
+   "partials": [
+    [
+     1,
+     0,
+     1
+    ],
+    [
+     2.76,
+     -8,
+     0.5
+    ],
+    [
+     5.4,
+     -16,
+     0.3
+    ]
+   ],
+   "env": {
+    "attack": 0.0005,
+    "hold": 0.001,
+    "release": 0.03,
+    "curve": 3
+   },
+   "at": [
+    0.0,
+    0.05,
+    0.09,
+    0.15,
+    0.2,
+    0.28,
+    0.36,
+    0.47
+   ],
+   "jitter": {
+    "time": 0.012,
+    "pitch": 3,
+    "gain_db": 4
+   }
+  },
+  {
+   "wave": "noise",
+   "env": {
+    "attack": 0.0005,
+    "hold": 0.001,
+    "release": 0.008,
+    "curve": 3
+   },
+   "filters": [
+    {
+     "type": "highpass",
+     "cutoff": 1800
+    },
+    {
+     "type": "lowpass",
+     "cutoff": 6000
+    }
+   ],
+   "gain_db": -10,
+   "at": [
+    0.0,
+    0.05,
+    0.09,
+    0.15,
+    0.2,
+    0.28,
+    0.36,
+    0.47
+   ],
+   "jitter": {
+    "time": 0.012,
+    "pitch": 3,
+    "gain_db": 4
+   }
+  },
+  {
+   "wave": "sine",
+   "freq": [
+    [
+     0,
+     220
+    ],
+    [
+     0.5,
+     200
+    ]
+   ],
+   "env": {
+    "attack": 0.005,
+    "hold": 0.05,
+    "release": 0.3,
+    "curve": 2
+   },
+   "gain_db": -18
+  }
+ ],
+ "master": {
+  "lufs": -24,
+  "peak_db": -4,
+  "highpass": 120
+ },
+ "expect": {
+  "duration": [
+   0.45,
+   0.65
+  ],
+  "centroid": [
+   500,
+   3500
+  ]
+ }
+}

@@ -248,12 +248,14 @@ func _before(a: CardInstance, b: CardInstance) -> bool:
 
 
 func _on_pressed(card_id: int) -> void:
+	Audio.fill(AudioEvents.MOTION_PULSE)
 	_dragging = true
 	_drag_selects = not _model.is_selected(card_id)
 	_model.set_selected(card_id, _drag_selects)
 
 
 func _on_hovered(card_id: int) -> void:
+	Audio.fill(AudioEvents.MOTION_HOVER)
 	if _dragging and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		_model.set_selected(card_id, _drag_selects)
 

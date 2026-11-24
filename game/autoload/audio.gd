@@ -10,6 +10,9 @@ const BUSES: Dictionary[String, String] = {
 
 ## The click every button makes when pressed.
 const CLICK: String = "button_click"
+## A motion's own sound plays only into a silence: not when another effect started this
+## close before it, as when the event it shows already has a sound (P5.2a).
+const FILL_GUARD_MSEC: int = 70
 
 ## The last event name played, for tests and a debug overlay.
 var last_played: String = ""
@@ -19,7 +22,10 @@ var music: MusicPlayer = MusicPlayer.new()
 var voice: VoicePlayer = VoicePlayer.new()
 ## The sound effects (P3C.8).
 var effects: SfxPlayer = SfxPlayer.new()
+## The last motion sound filled in, for tests.
+var last_filled: String = ""
 var _click: Callable = play.bind(CLICK)
+var _played_msec: int = -FILL_GUARD_MSEC
 
 
 func _init() -> void:
@@ -62,10 +68,28 @@ func _on_setting_changed(key: String) -> void:
 			apply_volume(bus)
 
 
-## Plays the sound for a named event.
-func play(event_name: String) -> void:
+## Plays the sound for a named event, semitones above its own pitch.
+func play(event_name: String, semitones: float = 0.0) -> void:
 	last_played = event_name
-	effects.play(event_name)
+	_sounded(effects.play(event_name, semitones))
+
+
+## Plays a motion's sound at the end of the frame, unless an effect has just started or
+## starts in the same frame: a moment whose event has a sound keeps that one alone.
+func fill(event_name: String) -> void:
+	_fill_now.call_deferred(event_name)
+
+
+func _fill_now(event_name: String) -> void:
+	if Time.get_ticks_msec() - _played_msec < FILL_GUARD_MSEC:
+		return
+	last_filled = event_name
+	_sounded(effects.play(event_name))
+
+
+func _sounded(played: bool) -> void:
+	if played:
+		_played_msec = Time.get_ticks_msec()
 
 
 ## Gives every button its click, wherever it is built, so screens need no sound code.

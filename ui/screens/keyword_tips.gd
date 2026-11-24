@@ -104,6 +104,7 @@ func tick(delta: float, mouse: Vector2) -> void:
 			continue
 		if not slip.placed and slip.size.y > 0.0:
 			_place(slip)
+			Audio.fill(AudioEvents.MOTION_HOVER)
 		var under: bool = slip.get_global_rect().grow(REACH).has_point(mouse)
 		held = held or slip.word_held or (slip.placed and under)
 		slip.idle = 0.0 if held else slip.idle + delta

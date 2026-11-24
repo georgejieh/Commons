@@ -77,7 +77,9 @@ func press(delay: float) -> float:
 		return 0.0
 	clock = 0.0
 	var tween: Tween = create_tween()
-	tween.tween_property(self, "clock", seconds(), seconds()).set_delay(delay)
+	tween.tween_interval(delay)
+	tween.tween_callback(Audio.fill.bind(AudioEvents.MOTION_STAMP))
+	tween.tween_property(self, "clock", seconds(), seconds())
 	return seconds() - UiMotion.PRESETS.letter_time
 
 

@@ -74,6 +74,7 @@ func stop() -> void:
 
 ## Each paper slides out of the open envelope to its place in the row, one after another.
 func _fan(figure: EnvelopeFigure, column: Control, papers: Array[ChoicePaper]) -> void:
+	Audio.fill(AudioEvents.MOTION_ENTER)
 	var mouth: Vector2 = figure.global_position + figure.size / 2.0
 	var heading: Tween = column.create_tween()
 	heading.tween_property(column, "modulate:a", 1.0, EnvelopeOverlay.FAN_TIME)

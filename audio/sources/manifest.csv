@@ -436,3 +436,18 @@ audio/voices/youth_b/w.wav,voice,Synthesis,tools/voice_proto/render_bank.py,proj
 audio/voices/youth_b/x.wav,voice,Synthesis,tools/voice_proto/render_bank.py,project,Original,,,youth_b VoiceProfile,2026-11-06,,letter x
 audio/voices/youth_b/y.wav,voice,Synthesis,tools/voice_proto/render_bank.py,project,Original,,,youth_b VoiceProfile,2026-11-06,,letter y
 audio/voices/youth_b/z.wav,voice,Synthesis,tools/voice_proto/render_bank.py,project,Original,,,youth_b VoiceProfile,2026-11-06,,letter z
+audio/sfx/score_bead_01.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_bead.json,2026-11-24,,"take 1 of 3, seed 5200"
+audio/sfx/score_bead_02.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_bead.json,2026-11-24,,"take 2 of 3, seed 5201"
+audio/sfx/score_bead_03.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_bead.json,2026-11-24,,"take 3 of 3, seed 5202"
+audio/sfx/score_stamp_01.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_stamp.json,2026-11-24,,"take 1 of 2, seed 5200"
+audio/sfx/score_stamp_02.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_stamp.json,2026-11-24,,"take 2 of 2, seed 5201"
+audio/sfx/score_land.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_land.json,2026-11-24,,seed 5200
+audio/sfx/score_land_heavy.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_land_heavy.json,2026-11-24,,seed 5200
+audio/sfx/score_bell.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_bell.json,2026-11-24,,seed 5200
+audio/sfx/score_gong.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/score_gong.json,2026-11-24,,seed 5200
+audio/sfx/paper_flick_01.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/paper_flick.json,2026-11-24,,"take 1 of 2, seed 5200"
+audio/sfx/paper_flick_02.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/paper_flick.json,2026-11-24,,"take 2 of 2, seed 5201"
+audio/sfx/brush_stroke.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/brush_stroke.json,2026-11-24,,seed 5200
+audio/sfx/dice_bowl.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/dice_bowl.json,2026-11-24,,seed 5200
+audio/sfx/soft_tap_01.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/soft_tap.json,2026-11-24,,"take 1 of 2, seed 5200"
+audio/sfx/soft_tap_02.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/soft_tap.json,2026-11-24,,"take 2 of 2, seed 5201"
