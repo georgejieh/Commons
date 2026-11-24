@@ -3,12 +3,17 @@ extends Node
 ## Plays the run's events one at a time, a step apart, so each bot play can be seen.
 ## One command can produce a whole trick of events; the queue spaces them out. Views
 ## connect to played and read the run only once the queue is empty. A villager's play is
-## announced a beat before it happens (winding), so the eye is on the seat first.
+## announced a beat before it happens (winding), so the eye is on the seat first. A round
+## that has ended is put away before the next deal plays (closing): the run deals the next
+## hand the moment the last is settled, but the table shows it only once the round is gone.
 
 signal played(event: RunEvent)
 ## A seat other than the player's is about to play this event, wind seconds from now.
 signal winding(event: RunEvent)
 signal queued
+## A finished round is about to give way to the next deal, which waits for any hold this
+## asks for.
+signal closing
 signal drained
 
 ## Seconds between events, and the pause after a round ends so its banner can be read.
@@ -34,6 +39,8 @@ var _held: bool = false
 var _draining: bool = false
 ## True once the event at the head of the queue has been announced.
 var _wound: bool = false
+## True from a round's end until the deal after it, or the Quota's end.
+var _round_over: bool = false
 
 
 func push(event: RunEvent) -> void:
@@ -46,12 +53,22 @@ func is_idle() -> bool:
 	return _queue.is_empty() and not _draining
 
 
+## True while a deal still waits in the queue: the run already holds the next hand, and
+## the table still shows the round before it.
+func deal_waiting() -> bool:
+	for event: RunEvent in _queue:
+		if event.type == RunEvent.Type.DEALT or event.type == RunEvent.Type.SET_STARTED:
+			return true
+	return false
+
+
 ## Plays every queued event now, for tests and skipping.
 func flush() -> void:
 	flushing = true
 	while not _queue.is_empty():
 		played.emit(_queue.pop_front())
 	flushing = false
+	_round_over = false
 	_wait = 0.0
 	_wound = false
 	_held = false
@@ -72,6 +89,12 @@ func _process(delta: float) -> void:
 		return
 	_wait -= delta
 	while _wait <= 0.0 and not _queue.is_empty():
+		if _round_over and _queue[0].type == RunEvent.Type.DEALT:
+			_round_over = false
+			_wait = 0.0
+			closing.emit()
+			if _wait > 0.0:
+				break
 		if not _wound and _winds(_queue[0]):
 			_wound = true
 			winding.emit(_queue[0])
@@ -89,6 +112,9 @@ func _process(delta: float) -> void:
 			_wait = maxf(_wait, holds[event.type])
 		if _ends_round(event):
 			_wait = maxf(_wait, round_end_hold)
+			_round_over = true
+		elif event.type == RunEvent.Type.SET_ENDED:
+			_round_over = false
 	if not _queue.is_empty():
 		return
 	# A moment still playing out finishes before the table moves on.

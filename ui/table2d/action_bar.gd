@@ -1,7 +1,8 @@
 class_name ActionBar
 extends VBoxContainer
 ## What the player can do on their turn: the selection's reading and projected score,
-## Play and Pass, and the Hint, Sort and Rules toggles. Bidding swaps in Call and Pass,
+## Play and Pass, Sit out beside Pass when nothing the player holds can answer the trick
+## (SitOut), and the Hint, Sort and Rules toggles. Bidding swaps in Call and Pass,
 ## and the opening before the first play, where a Campaign may be used, swaps in Play on.
 ## The column is held at its foot and its width (ADR 0034): a taller prompt grows it up
 ## into the empty table, and the toggles' type fits the width, never under Standard.
@@ -12,6 +13,7 @@ const TOGGLE_SIZE: int = 18
 var reading: Label = Label.new()
 var play: Button = Button.new()
 var pass_turn: Button = Button.new()
+var sit_out: Button = Button.new()
 var hint: Button = Button.new()
 var sort: Button = Button.new()
 var rules: Button = Button.new()
@@ -20,6 +22,7 @@ var decline: Button = Button.new()
 var play_on: Button = Button.new()
 
 var _turn_row: VBoxContainer = VBoxContainer.new()
+var _pass_row: HBoxContainer = HBoxContainer.new()
 var _bid_row: HBoxContainer = HBoxContainer.new()
 var _toggles: HBoxContainer = HBoxContainer.new()
 ## Where the column stands: its left edge, width and foot.
@@ -38,8 +41,14 @@ func _ready() -> void:
 	add_child(reading)
 	_button(play, "action.play", CommonsTheme.PRIMARY)
 	_button(pass_turn, "action.pass", CommonsTheme.SECONDARY)
+	_button(sit_out, "action.sit_out", CommonsTheme.SECONDARY)
+	sit_out.tooltip_text = tr("action.sit_out_tip")
+	sit_out.visible = false
 	_turn_row.add_child(play)
-	_turn_row.add_child(pass_turn)
+	for button: Button in [pass_turn, sit_out]:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_pass_row.add_child(button)
+	_turn_row.add_child(_pass_row)
 	for pair: Array in [[hint, "action.hint"], [sort, "action.sort"], [rules, "action.rules"]]:
 		var button: Button = pair[0]
 		_button(button, pair[1], CommonsTheme.GHOST)
@@ -119,6 +128,11 @@ func show_bidding(on: bool) -> void:
 	_bid_row.visible = on
 	_turn_row.visible = not on
 	play_on.visible = false
+
+
+## Sit out stands beside Pass only while it is offered.
+func show_sit_out(on: bool) -> void:
+	sit_out.visible = on
 
 
 ## The opening: Play on in place of the turn's buttons.

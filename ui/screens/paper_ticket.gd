@@ -13,6 +13,8 @@ const PERFORATION: Color = Color("7a6446")
 const SEED: int = 6143
 const NOTCH: float = 5.0
 const SPECKS: Vector2i = Vector2i(4, 26)
+## How strongly the empty part of a meter band shows.
+const CHANNEL_ALPHA: float = 0.18
 
 
 ## The ticket's paper at a wear: a little darker and duller as the stage deepens.
@@ -20,19 +22,42 @@ static func paper(worn: float) -> Color:
 	return PAPER.lerp(BowlGrime.BONE, 0.2 * worn).darkened(0.02 + 0.15 * worn)
 
 
-## The ticket filling rect, with a coloured band down its left end.
+## The ticket filling rect, with a coloured band down its left end. fill is how much of
+## the band is inked, from its foot: all of it at 1, a meter's share below that over a
+## faint empty channel, and no band at all when negative.
 static func draw(
-	canvas: CanvasItem, rect: Rect2, worn: float, which: int, band: Color, alpha: float = 1.0
+	canvas: CanvasItem,
+	rect: Rect2,
+	worn: float,
+	which: int,
+	band: Color,
+	alpha: float = 1.0,
+	fill: float = 1.0
 ) -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = SEED + 97 * which
 	var body: PackedVector2Array = _outline(rect, rng, worn)
 	canvas.draw_colored_polygon(body, Color(paper(worn), alpha))
-	var strip: Rect2 = Rect2(rect.position + Vector2(3, 4), Vector2(5, rect.size.y - 8))
-	canvas.draw_rect(strip, Color(BowlGrime.aged(band, worn * 0.8), alpha * 0.85))
+	if fill >= 0.0:
+		_band(canvas, rect, worn, band, alpha, minf(fill, 1.0))
 	_perforate(canvas, rect, worn, alpha)
 	_grime(canvas, rect, rng, worn, alpha)
 	canvas.draw_polyline(body + PackedVector2Array([body[0]]), Color(EDGE, alpha * 0.6), 1.2)
+
+
+## The band down the left end, inked from its foot to fill; an empty channel shows
+## faintly above it, so a part-filled band reads as a meter.
+static func _band(
+	canvas: CanvasItem, rect: Rect2, worn: float, band: Color, alpha: float, fill: float
+) -> void:
+	var strip: Rect2 = Rect2(rect.position + Vector2(3, 4), Vector2(5, rect.size.y - 8))
+	var ink: Color = BowlGrime.aged(band, worn * 0.8)
+	if fill < 1.0:
+		canvas.draw_rect(strip, Color(ink, alpha * CHANNEL_ALPHA))
+		canvas.draw_rect(strip, Color(ink, alpha * 0.85), false, 1.0)
+	var inked: float = strip.size.y * fill
+	var full: Rect2 = Rect2(strip.position + Vector2(0, strip.size.y - inked), Vector2(5, inked))
+	canvas.draw_rect(full, Color(ink, alpha * 0.85))
 
 
 ## Corners out of true, a notch out of each end, and the top right thumbed round.

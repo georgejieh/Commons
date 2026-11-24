@@ -29,9 +29,13 @@ func open(app: DemoApp) -> void:
 	column.add_child(ScreenKit.styled(target, CommonsTheme.TITLE))
 	if controller.norm_percent() > 0 and shown:
 		var norm: Label = ScreenKit.label(
-			tr("intro.norm").format({"percent": controller.norm_percent()}), 24
+			tr("intro.norm").format(
+				{"percent": controller.norm_percent(), "step": controller.norm_step_percent()}
+			),
+			24
 		)
 		norm.add_theme_color_override("font_color", ScreenKit.RED)
+		norm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		column.add_child(norm)
 	if controller.has_village():
 		var names: String = ", ".join(

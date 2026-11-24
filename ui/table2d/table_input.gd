@@ -60,6 +60,7 @@ func _shortcut(event: InputEvent) -> bool:
 		"commons_play": _play_button(),
 		"commons_pass":
 		_actions.decline if _actions.decline.is_visible_in_tree() else _actions.pass_turn,
+		"commons_sit_out": _actions.sit_out,
 		"commons_hint": _actions.hint,
 		"commons_sort": _actions.sort,
 		"commons_rules": _actions.rules,

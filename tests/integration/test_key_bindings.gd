@@ -49,6 +49,7 @@ func test_the_defaults_are_the_project_keys() -> void:
 		"commons_select": KEY_UP,
 		"commons_cursor_left": KEY_LEFT,
 		"commons_cursor_right": KEY_RIGHT,
+		"commons_sit_out": KEY_X,
 	}
 	for action: String in expected:
 		assert_int(bindings.key(action)).override_failure_message(action).is_equal(expected[action])

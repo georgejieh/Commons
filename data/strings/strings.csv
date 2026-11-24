@@ -218,6 +218,9 @@ sort.groups,Groups
 action.sort_by,Sort: {mode}
 action.sort_tip,Sorted by {mode}. Click to change.
 action.hint_tip,Selects the play a careful player would make.
+action.sit_out,Sit out
+action.sit_out_tip,"Passes for you until this trick is won, and the villagers play faster meanwhile. Offered only when nothing you hold beats the table. If that changes, the turn comes back to you."
+table.sitting_out,Sitting out this trick.
 hand.hint.pass,Passing is the best move here.
 cheat.eyebrow,Rules of the table
 cheat.close,Close
@@ -549,8 +552,9 @@ ledger.scaled,× {percent}%
 hand.scaled,(after × {percent}%)
 callout.audit,Audit!
 summary.over,Overfulfilled
-summary.norm_raised,The norm is raised {percent}% for every Quota to come.
-intro.norm,Norm raised {percent}%
+summary.norm_raised,"The target was beaten by {over}%, so the norm rises {added}%. Every later Quota's target is raised {total}% in all."
+summary.norm_kept,The target was beaten by {over}%. The norm rises only for a Quota beaten by a quarter or more.
+intro.norm,Target raised {percent}% by the norm. Each Quota beaten by a quarter or more raises it {step}% more.
 keyword.norm.name,Norm
 keyword.norm.text,Norm: beating a Quota by a quarter or more pays extra coupons and raises every later Quota.
 keyword.stamp.name,Stamp
@@ -1112,6 +1116,7 @@ controls.action.commons_campaign,Campaigns
 controls.action.commons_select,Pick card
 controls.action.commons_cursor_left,Cursor left
 controls.action.commons_cursor_right,Cursor right
+controls.action.commons_sit_out,Sit out trick
 controls.pad.a,A
 controls.pad.b,B
 controls.pad.x,X
