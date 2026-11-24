@@ -1,7 +1,8 @@
 class_name InfoReveal
 extends RefCounted
 ## Fills the player's InfoView from the information flags their modifiers turn on (P4.9).
-## Bots never get one, so with no flags the player sees exactly the public view.
+## Bots never get one, so with no flags the player sees exactly the public view. Each
+## opponent's hand is read under that opponent's own rules (ADR 0039), never the player's.
 
 const INFO: String = "info"
 
@@ -22,7 +23,8 @@ static func build(round_state: RoundState, seat: int, info_flags: int, table: Bo
 		for other: int in Seats.COUNT:
 			var opponent: bool = other != seat and (other == landlord or seat == landlord)
 			if opponent:
-				info.opponent_types[other] = _types(round_state.view_for(other).own_counts, table)
+				var theirs: BotTable = table.as_seat(other, table.bombed)
+				info.opponent_types[other] = _types(round_state.view_for(other).own_counts, theirs)
 	if info_flags & InfoView.CLOSEST_HAND:
 		var fewest: int = 99
 		for other: int in Seats.COUNT:
