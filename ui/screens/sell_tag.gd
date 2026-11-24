@@ -23,6 +23,8 @@ var button: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _host: Control
 var _price: int = 0
 var _why: String = ""
+## The held item the ticket is for, so a question is taken back when another takes its place.
+var _item: String = ""
 var _asking: bool = false
 var _hovered: bool = false
 var _focused: bool = false
@@ -60,8 +62,12 @@ static func attach(host: Control) -> SellTag:
 	return tag
 
 
-## The item on the paper sells for price, or cannot be sold now for the reason why.
-func offer(price: int, why: String = "") -> void:
+## The item on the paper, item, sells for price, or cannot be sold now for the reason why.
+## A question asked about another item is taken back.
+func offer(price: int, why: String = "", item: String = "") -> void:
+	if item != _item or price != _price or why != _why:
+		_asking = false
+	_item = item
 	_offered = true
 	_price = price
 	_why = why
@@ -72,6 +78,8 @@ func offer(price: int, why: String = "") -> void:
 ## The paper holds nothing to sell.
 func withdraw() -> void:
 	_offered = false
+	_asking = false
+	_item = ""
 	_host.focus_mode = Control.FOCUS_NONE
 	_show()
 

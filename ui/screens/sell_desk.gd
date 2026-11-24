@@ -5,7 +5,10 @@ extends RefCounted
 ## counter pays for it. Its rules show in the shop's slip while the paper has the focus,
 ## as the engine's tooltip shows them under the pointer. A sale goes through the run
 ## controller; the screen hears of it from the run's CADRE_SOLD or CAMPAIGN_SOLD event,
-## counts the coupons up and shows the freed place.
+## counts the coupons up and shows the freed place. The tickets follow the tray: whenever
+## it lays out what is held again, as after a Campaign is bought or used here, every
+## ticket names the item now on its paper, and a question left on a paper whose item
+## changed is taken back.
 
 ## A sale went through: the coupons and the board changed. index is where the item stood
 ## among the held Cadres, or the held Campaigns with campaign set.
@@ -40,6 +43,7 @@ func setup(
 	_slip = slip
 	_busy = busy
 	app.controller.event_emitted.connect(_on_event)
+	tray.refreshed.connect(refresh)
 
 
 ## Offers every held item for sale at this counter's price now.
@@ -53,13 +57,17 @@ func refresh() -> void:
 		var tag: SellTag = _tag(node as Control, false)
 		if index < cadres.size():
 			var paid: int = _desk.sale(index)
-			tag.offer(paid, "" if paid > 0 else tr("store.sell.bound"))
+			tag.offer(paid, "" if paid > 0 else tr("store.sell.bound"), cadres[index])
 		else:
 			tag.withdraw()
 		index += 1
-	var held: int = controller.held_campaigns().size()
-	for slot: int in held:
-		_tag(_tray.leaflet(slot), true).offer(_desk.sale(slot, true))
+	var held: Array[String] = controller.held_campaigns()
+	for slot: int in _tray.campaign_count():
+		var tag: SellTag = _tag(_tray.leaflet(slot), true)
+		if slot < held.size():
+			tag.offer(_desk.sale(slot, true), "", held[slot])
+		else:
+			tag.withdraw()
 
 
 ## The tag on a held item's paper, for tests: a board card or a tray leaflet.
