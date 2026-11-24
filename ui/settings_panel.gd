@@ -6,7 +6,7 @@ extends RefCounted
 ## ticket opens the Controls page (ADR 0035), which each owner shows its own way.
 
 const VOLUMES: Array[String] = ["music_volume", "effects_volume", "voice_volume"]
-const TOGGLES: Array[String] = ["reduced_motion", "post_process", "no_flash"]
+const TOGGLES: Array[String] = ["reduced_motion", "post_process", "no_flash", "show_hint"]
 ## Sliders from 0 to 1 under Display.
 const DISPLAY_SLIDERS: Array[String] = ["horror_intensity"]
 ## The text sizes under Display, by the end of their string keys, Standard first.

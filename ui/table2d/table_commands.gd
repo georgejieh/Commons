@@ -216,7 +216,9 @@ func _show_sort() -> void:
 
 ## Selects the play a Medium villager would make, as its reading, and lights it.
 func _on_hint() -> void:
-	if _controller.awaiting() != RunController.AWAIT_PLAY or not _allowed("hint"):
+	if _controller.awaiting() != RunController.AWAIT_PLAY or not HintSetting.shown():
+		return
+	if not _allowed("hint"):
 		return
 	var ids: Array[int] = _hand.take_hint()
 	_hand_view.show_hint(ids)

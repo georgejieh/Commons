@@ -47,6 +47,8 @@ func _ready() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_toggles.add_child(button)
 	hint.tooltip_text = tr("action.hint_tip")
+	hint.visible = HintSetting.shown()
+	Settings.changed.connect(_on_setting)
 	_turn_row.add_child(_toggles)
 	add_child(_turn_row)
 	_button(call, "action.call", CommonsTheme.PRIMARY)
@@ -123,6 +125,12 @@ func show_bidding(on: bool) -> void:
 func show_opening(on: bool) -> void:
 	play_on.visible = on
 	_turn_row.visible = not on and not _bid_row.visible
+
+
+## The Hint shows only while the player keeps it on.
+func _on_setting(key: String) -> void:
+	if key == HintSetting.SETTING:
+		hint.visible = HintSetting.shown()
 
 
 func _button(button: Button, key: String, kind: String) -> void:

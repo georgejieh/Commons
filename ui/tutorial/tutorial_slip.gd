@@ -12,6 +12,8 @@ const TEXT_SIZE: int = 24
 const GAP: float = 28.0
 const MARGIN: float = 16.0
 const PADDING: int = 20
+## The gap between Wang's face and his line.
+const FACE_GAP: int = 14
 const ALARM: Color = Color("b02a17")
 const ALARM_WIDTH: float = 5.0
 ## Seconds the red border holds under reduced motion.
@@ -30,7 +32,7 @@ func _init() -> void:
 	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var row: HBoxContainer = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 14)
+	row.add_theme_constant_override("separation", FACE_GAP)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_face.custom_minimum_size = FACE
 	_face.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -38,7 +40,7 @@ func _init() -> void:
 	_face.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(_face)
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_text.custom_minimum_size = Vector2(WIDTH - FACE.x - 14.0 - PADDING * 2.0, 0)
+	set_width(WIDTH)
 	_text.add_theme_font_size_override("font_size", TextSize.px(TEXT_SIZE))
 	_text.add_theme_color_override("font_color", ScreenKit.INK)
 	_text.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -49,6 +51,12 @@ func _init() -> void:
 
 func set_face(face: Texture2D) -> void:
 	_face.texture = face
+
+
+## Makes the slip width wide, or WIDTH, its line wrapping to fit; its height follows.
+func set_width(wide: float) -> void:
+	_text.custom_minimum_size = Vector2(wide - FACE.x - FACE_GAP - PADDING * 2.0, 0)
+	reset_size()
 
 
 ## Shows the line, sized to it, at the text size chosen now: the slip outlives screens.

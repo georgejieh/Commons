@@ -3,10 +3,9 @@ extends Control
 ## Volumes, motion and the print pass on one sheet, and beside it the card back designs
 ## (ADR 0025), and under them the family's name with a way to change it between runs
 ## (ADR 0028). The two sheets stand as tall as each other, the name at the foot of its
-## sheet. Changes apply at once and save on the way back. Replay the arrival plays
-## the first evening again (ADR 0026). A new text size (ADR 0034) builds the screen again
-## at once, with the focus on the size chosen. Controls opens the key bindings (ADR 0035)
-## as a screen of its own.
+## sheet. Changes apply at once and save on the way back. A new text size (ADR 0034)
+## builds the screen again at once, with the focus on the size chosen. Controls opens the
+## key bindings (ADR 0035) as a screen of its own. Replay the arrival is on the title.
 
 var _app: DemoApp = null
 var _card_backs: CardBackRow
@@ -55,13 +54,6 @@ func open(app: DemoApp) -> void:
 			Settings.save()
 			app.back()
 	)
-	# The arrival again (ADR 0026): it ends at the title and changes nothing saved.
-	var replay: Button = ScreenKit.button(tr("settings.replay_arrival"), CommonsTheme.GHOST)
-	replay.pressed.connect(
-		func() -> void:
-			Settings.save()
-			app.arrival.start(true)
-	)
 	# Controls stands here with Back, where it is always whole: at the sheet's foot it
 	# was cut in half by the fold.
 	var controls: Button = ScreenKit.button(tr("controls.open"), CommonsTheme.SECONDARY)
@@ -71,7 +63,7 @@ func open(app: DemoApp) -> void:
 			Settings.save()
 			app.show_screen("controls")
 	)
-	column.add_child(ScreenKit.row([back, controls, replay]))
+	column.add_child(ScreenKit.row([back, controls]))
 	ScreenKit.reveal(column)
 	back.grab_focus()
 

@@ -1,7 +1,8 @@
 class_name TitleScreen
 extends Control
 ## The title: start a new run through run setup, continue a saved one, or open the
-## collection, village history or settings. While the family's file holds an entry, its
+## collection, village history or settings, or, once the profile has finished or skipped
+## the arrival, play it again (ADR 0026). While the family's file holds an entry, its
 ## stamp stands in the top right corner (ADR 0022).
 ## The page arrives in order and is whole in about a second and a half: the poster is
 ## laid down, the eyebrow fades in, the name is pressed letter by letter (TitleWord, the
@@ -21,6 +22,9 @@ const FACES: Array[Rect2] = [
 	Rect2(0.21, 0.71, 0.14, 0.22),
 	Rect2(0.0, 0.77, 0.07, 0.16),
 ]
+
+## The name of the Replay the arrival button, for tests.
+const REPLAY: String = "ReplayArrival"
 
 var _stamp: FileStamp = null
 var _word: TitleWord = null
@@ -65,7 +69,11 @@ func open(app: DemoApp) -> void:
 	collection.pressed.connect(func() -> void: app.show_screen("collection"))
 	var history: Button = ScreenKit.button(tr("title.history"), CommonsTheme.GHOST)
 	history.pressed.connect(func() -> void: app.show_screen("village_history"))
-	var minor: HBoxContainer = ScreenKit.row([collection, history, settings, quit])
+	var minors: Array[Control] = [collection, history]
+	if ProfileSeen.has(Saves.profile_service(), ProfileSeen.TUTORIAL):
+		minors.append(_replay_button(app))
+	minors.append_array([settings, quit])
+	var minor: HBoxContainer = ScreenKit.row(minors)
 	column.add_child(minor)
 	_arrive(column, eyebrow, starts, minor)
 	new_run.grab_focus()
@@ -73,6 +81,20 @@ func open(app: DemoApp) -> void:
 	if filed > 0:
 		_stamp = FileStamp.new(filed)
 		add_child(_stamp)
+
+
+## The arrival again (ADR 0026). It is never saved and ends at the title, so a saved run
+## and the profile are left as they were.
+func _replay_button(app: DemoApp) -> Button:
+	var replay: Button = ScreenKit.button(tr("title.replay_arrival"), CommonsTheme.GHOST)
+	replay.name = REPLAY
+	replay.pressed.connect(func() -> void: app.arrival.start(true))
+	return replay
+
+
+## The Replay the arrival button, or null when there is no arrival to replay. For tests.
+func replay_button() -> Button:
+	return find_child(REPLAY, true, false) as Button
 
 
 ## The family's file's stamp, or null while the file is empty. For tests.

@@ -129,9 +129,11 @@ func test_the_controls_rows_stop_at_a_whole_row() -> void:
 
 
 ## With a saved run, Continue stands beside New Run, and no title button lies on a face
-## in the poster at either window or any text size.
+## in the poster or off the screen at either window or any text size, Replay the arrival
+## among them once the profile is past the arrival.
 func test_no_title_button_lies_on_a_face() -> void:
 	_app.new_run(SEED)
+	ProfileSeen.mark(Saves.profile_service(), ProfileSeen.TUTORIAL)
 	for pair: Array in _each():
 		var where: String = _at(pair)
 		var title: TitleScreen = await _show("title")
@@ -140,9 +142,17 @@ func test_no_title_button_lies_on_a_face() -> void:
 		for face: Rect2 in TitleScreen.FACES:
 			faces.append(_on_cover(poster, face))
 		var continued: bool = false
+		assert_object(title.replay_button()).override_failure_message(where).is_not_null()
+		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
 		for node: Node in title.find_children("*", "Button", true, false):
 			var button: Button = node as Button
 			continued = continued or button.text == tr("title.continue")
+			var on_screen: bool = screen.encloses(button.get_global_rect())
+			(
+				assert_bool(on_screen)
+				. override_failure_message("%s: %s" % [where, button.text])
+				. is_true()
+			)
 			for face: Rect2 in faces:
 				var at: String = "%s: %s on %s" % [where, button.text, face]
 				(

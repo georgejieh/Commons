@@ -8,6 +8,7 @@ extends VBoxContainer
 ## back button or a click cancels the asking, and nothing under the page sees what it
 ## takes. Escape otherwise backs out. Menu keys are not on the page and never change, so
 ## no set of bindings can lock a player in or out of it. Changes apply and save at once.
+## The Hint's row is left out while the player keeps the Hint off (HintSetting).
 
 ## Back was pressed, or Escape outside the asking.
 signal leave
@@ -37,6 +38,8 @@ const ROWS_CAP: float = 600.0
 const ROWS_CAP_UNDER_HEADER: float = 540.0
 
 var _tickets: Dictionary[String, Button] = {}
+## The Hint's row: its name, its ticket and its gamepad button.
+var _hint_row: Array[Control] = []
 var _rows_scroll: ProseScroll
 var _rows_cap: float = 0.0
 var _restore: Button
@@ -71,7 +74,7 @@ func _init(titled: bool = false) -> void:
 	_back.size_flags_horizontal = Control.SIZE_FILL
 	_back.pressed.connect(_leave)
 	add_child(_back)
-	_link_focus()
+	_show_hint_row()
 	visibility_changed.connect(_on_visibility)
 
 
@@ -88,11 +91,15 @@ func _whole_rows(grid: GridContainer) -> void:
 		_rows_scroll.fit_to(_rows_cap)
 		return
 	var fits: float = 0.0
-	var count: int = grid.get_child_count()
+	var cells: Array[Control] = []
+	for child: Node in grid.get_children():
+		if (child as Control).visible:
+			cells.append(child as Control)
+	var count: int = cells.size()
 	for first: int in range(0, count, grid.columns):
 		var foot: float = 0.0
 		for index: int in range(first, mini(first + grid.columns, count)):
-			var cell: Control = grid.get_child(index) as Control
+			var cell: Control = cells[index]
 			foot = maxf(foot, cell.position.y + cell.size.y)
 		if foot > _rows_cap:
 			break
@@ -105,7 +112,8 @@ func _whole_rows(grid: GridContainer) -> void:
 func _link_focus() -> void:
 	var order: Array[Button] = []
 	for action: String in KeyBindings.ACTIONS:
-		order.append(_tickets[action])
+		if _tickets[action].visible:
+			order.append(_tickets[action])
 	order.append_array([_restore, _back])
 	for index: int in order.size():
 		var button: Button = order[index]
@@ -117,6 +125,13 @@ func _link_focus() -> void:
 		button.focus_next = button.get_path_to(below)
 		button.focus_neighbor_left = button.get_path_to(button)
 		button.focus_neighbor_right = button.get_path_to(button)
+
+
+## The Hint's row shows only while the Hint is on; the focus runs past it when it is not.
+func _show_hint_row() -> void:
+	for cell: Control in _hint_row:
+		cell.visible = HintSetting.shown()
+	_link_focus()
 
 
 ## The focus goes to the first key's ticket.
@@ -189,6 +204,8 @@ func _rows() -> GridContainer:
 		var pad: Label = ScreenKit.label(ControlsPage.pad_name(action), PAD_SIZE)
 		pad.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		grid.add_child(pad)
+		if action == HintSetting.ACTION:
+			_hint_row.assign([name, key, pad])
 	_show_keys()
 	return grid
 
@@ -237,3 +254,5 @@ func _leave() -> void:
 func _on_visibility() -> void:
 	if not is_visible_in_tree() and not _capturing.is_empty():
 		cancel_capture()
+	if is_visible_in_tree():
+		_show_hint_row()
