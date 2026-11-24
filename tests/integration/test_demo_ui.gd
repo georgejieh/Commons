@@ -293,7 +293,8 @@ func test_an_overfulfilled_quota_is_sealed_twice_and_counts_the_bonus() -> void:
 		assert_str(line.text).is_equal(Strings.count("summary.paid", paid))
 		var norm: Label = after[2]
 		var added: int = steps * SetConfig.DEFAULT_PARAMS.norm_percent_per_step
-		assert_str(norm.text).is_equal(tr("summary.norm_raised").format({"percent": added}))
+		assert_str(norm.text).is_equal(report.norm_text())
+		assert_str(norm.text).contains("%d%%" % added)
 		var tile: Label = _number_in(after[0], 0)
 		assert_str(tile.text).is_equal(str(_app.controller.state_copy().coupons))
 	Settings.set_value("reduced_motion", false)
@@ -311,7 +312,8 @@ func test_the_next_quota_shows_the_raised_norm() -> void:
 	assert_int(percent).is_greater(0)
 	_app.show_screen("set_intro", true)
 	await await_idle_frame()
-	var note: String = tr("intro.norm").format({"percent": percent})
+	var step: int = SetConfig.DEFAULT_PARAMS.norm_percent_per_step
+	var note: String = tr("intro.norm").format({"percent": percent, "step": step})
 	assert_bool(_has_label(_app.switcher.current(), note)).is_true()
 
 

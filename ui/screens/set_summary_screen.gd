@@ -47,6 +47,7 @@ var _seat_texts: PackedStringArray = []
 var _next: Button
 ## The run as the page opened on it, for how its figures show.
 var _state: RunState = null
+var _norm_text: String = ""
 
 
 func open(app: DemoApp) -> void:
@@ -92,11 +93,8 @@ func open(app: DemoApp) -> void:
 		var kept_line: Label = _line(kept.format({"cadre": tr(BOOKKEEPER_NAME)}), ScreenKit.INK)
 		sheet.add_child(kept_line)
 		_after.append(kept_line)
-	if _steps > 0 and ShownFigures.is_true(state, ShownFigures.NORM):
-		var norm: Label = _line(
-			tr("summary.norm_raised").format({"percent": controller.norm_added_percent()}),
-			ScreenKit.RED
-		)
+	var norm: Label = _norm_line(controller, state)
+	if norm != null:
 		sheet.add_child(norm)
 		_after.append(norm)
 	for seat_line: Label in _seat_lines(controller, state.seatless_sets):
@@ -139,6 +137,33 @@ func _seal_room(bar: QuotaBar) -> MarginContainer:
 	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	room.add_child(bar)
 	return room
+
+
+## How far the Quota was beaten, and what that did to the norm (P5.2a): a step or more
+## raises it, and the line says by how much and to what; beaten by less, it says the norm
+## stayed. Nothing while the norm is dark or the Quota was missed or only just met.
+func _norm_line(controller: RunController, state: RunState) -> Label:
+	if not _met or not ShownFigures.is_true(state, ShownFigures.NORM):
+		return null
+	var target: float = controller.target()
+	if not target > 0.0:
+		return null
+	var over: int = floori((state.set_progress - target) * 100.0 / target)
+	if over <= 0:
+		return null
+	var values: Dictionary = {
+		"over": over,
+		"added": controller.norm_added_percent(),
+		"total": controller.norm_percent(),
+	}
+	var key: String = "summary.norm_raised" if _steps > 0 else "summary.norm_kept"
+	_norm_text = tr(key).format(values)
+	return _line(_norm_text, ScreenKit.RED if _steps > 0 else ScreenKit.INK)
+
+
+## The line about the norm, or "" with none, for tests.
+func norm_text() -> String:
+	return _norm_text
 
 
 ## How much Famine the Quota's end added: every Famine change logged after the last

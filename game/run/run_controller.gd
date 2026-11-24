@@ -543,6 +543,11 @@ func norm_percent() -> int:
 	return _loop.sets().norm_percent(_loop.state.norm_steps)
 
 
+## How far one step raises the norm, in percent.
+func norm_step_percent() -> int:
+	return _loop.sets().norm_percent(1)
+
+
 ## How far the Set just finished raised the norm, in percent.
 func norm_added_percent() -> int:
 	return _loop.sets().norm_percent(_loop.state.over_steps)
