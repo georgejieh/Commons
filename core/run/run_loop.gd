@@ -318,7 +318,8 @@ func player_bid(claim: bool) -> Reason:
 	return Reason.OK
 
 
-## Exchanges hand cards for plot cards, one for one, up to the round's swaps.
+## Brings plot cards into the hand for this round, one for one for hand cards, up to the
+## round's swaps; the plot itself is unchanged (ADR 0038). No cards is a decline.
 func player_swap(hand_ids: Array[int], plot_ids: Array[int]) -> Reason:
 	if _awaiting != Awaiting.PLAYER_SWAP:
 		return Reason.NOT_AWAITED
@@ -765,7 +766,8 @@ func _record_bid(seat: int, claim: bool) -> void:
 
 func _begin_play() -> void:
 	_move(RunFlow.State.ROUND_PLAY)
-	# The round starts first, so the landlord holds the kitty before the swap (ADR 0014).
+	# The round starts first, so the landlord holds the kitty before the swap (ADR 0038).
+	# While the swap waits, advance() stands still: no seat plays before it is answered.
 	_create_round()
 	if not state.inventory.plot.is_empty() and swap_limit() > 0:
 		_awaiting = Awaiting.PLAYER_SWAP

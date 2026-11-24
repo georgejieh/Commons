@@ -89,7 +89,7 @@ Each shows once per profile, the first time its subject appears in a full run, a
 
 | Subject | When | Text |
 | --- | --- | --- |
-| Private plot | The first time the plot swap is offered | "Your private plot. Before the first play you may swap cards between it and your hand, up to the number shown." |
+| Private plot | The first time the plot swap is offered | "Your private plot. Before the first play you may swap plot cards into your hand, up to the number shown, and each one goes back to your plot when the round ends." |
 | Debuffs | The first Quota page that lists a debuff | "From round 2, each round of a Quota adds a debuff. They stack until the Quota ends." |
 | Villager memory | The first time a family that remembers the player is seated | "Families you fed, bombed or denounced remember it. The memory fades a little each run, and it changes how they play with you and against you." |
 

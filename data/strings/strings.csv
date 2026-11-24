@@ -295,12 +295,20 @@ plot.eyebrow,Private plot
 plot.title,Swap cards
 plot.hand,Your hand
 plot.plot,Your plot
-plot.empty,Your plot is empty.
 plot.keep,Keep hand
 plot.swap,Swap
-plot.limit,Swap up to {count} cards this round.
-plot.limit.one,Swap up to 1 card this round.
-plot.back,Back
+plot.out,Sits out
+plot.left,Swaps left
+plot.left.count,{left} of {limit}
+plot.rule,"Each plot card you swap in goes back to your plot when the round ends, played or not. The card it replaced sits this round out."
+plot.how,"Pick a card in your hand and one in your plot, or drag one onto the other."
+plot.pair,"{in} in, {out} sits out"
+plot.undo,Undo
+plot.none_left,No swaps left this round. Undo one to make another.
+seat.kept.word,No bidding
+seat.kept.sub,{name} won the last round and keeps the landlord seat.
+seat.kept.you,You won the last round and keep the landlord seat.
+seat.risen.sub,"{name}, the Risen Villager, starts this Quota as landlord."
 reed.eyebrow,Reeducation
 reed.title,Sent for reeducation
 reed.body,"You miss this visit to the State Store. Your private plot is emptied. If you hold a Cadre, one is exchanged for a Cadre you don't hold."
@@ -541,10 +549,10 @@ market.upgrade.capacity.out,Your plot is as large as it gets
 market.upgrade.capacity.tip,Your private plot holds one more card.
 market.upgrade.swaps,One more swap a round · {price} coupons
 market.upgrade.swaps.out,No more swaps to buy
-market.upgrade.swaps.tip,"Each round, you may swap one more card between your hand and your private plot."
+market.upgrade.swaps.tip,"Each round, you may swap one more card from your private plot into your hand. It goes back to your plot when the round ends."
 summary.short,Short
 market.plot,For your private plot · {held} of {room}
-market.plot.tip,"This card goes into your private plot. Each round, after the landlord is chosen, you may swap plot cards into your hand."
+market.plot.tip,"This card goes into your private plot. Each round, after the landlord is chosen, you may swap plot cards into your hand. They go back to your plot when the round ends."
 intel.types,Holds: {list}
 intel.cards,Cards: {list}
 tally.scaled,× {percent}% =
@@ -963,7 +971,7 @@ tutorial.step.18.then,A Cadre stays with you and works every round.
 tutorial.step.19.say,"There is another counter behind the store. Go round, and buy the card for your private plot."
 tutorial.step.19.then,"Buying privately raises Resentment, and Resentment becomes Denunciation."
 tutorial.step.20.say,That is all I can show you. Press the button and your first year starts.
-tip.plot,"Your private plot. Before the first play you may swap cards between it and your hand, up to the number shown."
+tip.plot,"Your private plot. Before the first play you may swap plot cards into your hand, up to the number shown, and each one goes back to your plot when the round ends."
 tip.debuffs,"From round 2, each round of a Quota adds a debuff. They stack until the Quota ends."
 tip.memory,"Families you fed, bombed or denounced remember it. The memory fades a little each run, and it changes how they play with you and against you."
 tutorial.arrival.title,Arrival

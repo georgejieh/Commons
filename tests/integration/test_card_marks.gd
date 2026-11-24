@@ -1,7 +1,8 @@
 extends GdUnitTestSuite
 ## ADR 0021: an owner's stamp and the Model mark are saved per deck card and put back on
 ## every deal, through a whole Set, a save and a load, and a replay; a plot card keeps
-## its own marks, and a swap carries a card's marks with it either way. A Model card
+## its own marks, in the plot and in the hand it is swapped into for a round, and a deck
+## card a swap sets aside keeps its saved marks for the next deal (ADR 0038). A Model card
 ## doubles its Grain for whoever scores it, never as a kicker, and a stamped card scores
 ## Red Ink's Grain only for its owner and breeds Resentment when the owner scores it.
 
@@ -88,7 +89,9 @@ func test_marks_survive_every_deal_of_a_whole_set() -> void:
 		if not script.act(loop):
 			break
 	assert_int(deals).is_greater(1)
-	# A marked card the swaps put into the plot took its mark there; the rest stay.
+	# A swap moves no mark: every saved mark is still saved, and no other.
+	assert_int(loop.state.card_marks.stamps.size()).is_equal(STAMPED.size())
+	assert_int(loop.state.card_marks.enhancements.size()).is_equal(MODELS.size())
 	for card_id: int in loop.state.card_marks.stamps:
 		assert_array(STAMPED).contains([card_id])
 	for card_id: int in loop.state.card_marks.enhancements:
@@ -165,10 +168,10 @@ func test_a_plot_card_saves_its_own_marks() -> void:
 	assert_int(saved.inventory.plot[0].owner_stamp()).is_equal(RunLoop.PLAYER)
 
 
-## A marked deck card swapped into the plot is reissued with its marks, and the deck's
-## copy is plain from then on; a marked plot card swapped into the hand keeps its marks.
-## No card is created, lost or repeated.
-func test_a_swap_carries_marks_both_ways() -> void:
+## A marked plot card swapped into the hand keeps its marks there and in the plot, which
+## the swap leaves as it was; the marked deck card it replaced sits the round out and is
+## dealt with its marks the next round (ADR 0038). No card is created, lost or repeated.
+func test_a_swap_keeps_marks_both_ways() -> void:
 	var state: RunState = RunState.new(SEED)
 	for deck_id: int in DECK_SIZE:
 		CardMarks.stamp(state, CardInstance.from_deck_id(deck_id), RunLoop.PLAYER)
@@ -187,20 +190,20 @@ func test_a_swap_carries_marks_both_ways() -> void:
 	var given: CardInstance = loop.player_cards()[0]
 	var taken: int = plot_card.id()
 	assert_int(loop.player_swap([given.id()], [taken])).is_equal(RunLoop.Reason.OK)
+	assert_int(state.inventory.plot.size()).is_equal(1)
 	var stored: CardInstance = state.inventory.plot[0]
-	assert_int(stored.origin()).is_equal(CardInstance.Origin.PLOT)
+	assert_object(stored).is_same(plot_card)
 	assert_str(stored.enhancement_id()).is_equal(CardInstance.MODEL)
 	assert_int(stored.owner_stamp()).is_equal(RunLoop.PLAYER)
-	assert_bool(state.card_marks.stamps.has(given.id())).is_false()
-	assert_bool(state.card_marks.enhancements.has(given.id())).is_false()
-	var arrived: CardInstance = _held(loop)[taken]
+	assert_bool(state.card_marks.stamps.has(given.id())).is_true()
+	assert_bool(state.card_marks.enhancements.has(given.id())).is_true()
+	var arrived: CardInstance = null
+	for card: CardInstance in loop.player_cards():
+		arrived = card if card.id() == taken else arrived
 	assert_str(arrived.enhancement_id()).is_equal(CardInstance.MODEL)
 	assert_int(arrived.owner_stamp()).is_equal(RunLoop.PLAYER)
-	# The bots have played since the swap, so only what is still held is checked.
-	var held: Dictionary[int, CardInstance] = _held(loop)
-	assert_bool(held.has(given.id())).is_false()
-	assert_bool(held.has(stored.id())).is_false()
-	# The deck's next copy of the given card is dealt plain; every other keeps its marks.
+	assert_bool(_held(loop).has(given.id())).is_false()
+	# Next round the given card is dealt again with its marks, and the plot card is home.
 	var round_index: int = state.round_index
 	while state.round_index == round_index and loop.awaiting() != RunLoop.Awaiting.SET_OVER:
 		script.act(loop)
@@ -210,8 +213,10 @@ func test_a_swap_carries_marks_both_ways() -> void:
 		assert_bool(script.act(loop)).is_true()
 	var next: Dictionary[int, CardInstance] = _held(loop)
 	assert_bool(next.has(given.id())).is_true()
-	assert_str(next[given.id()].enhancement_id()).is_equal(CardInstance.NO_ID)
-	assert_int(next[given.id()].owner_stamp()).is_equal(CardInstance.NO_OWNER)
+	assert_bool(next.has(taken)).is_false()
+	assert_str(next[given.id()].enhancement_id()).is_equal(CardInstance.MODEL)
+	assert_int(next[given.id()].owner_stamp()).is_equal(RunLoop.PLAYER)
+	assert_object(state.inventory.plot[0]).is_same(plot_card)
 	_check_marks(loop)
 
 

@@ -3,10 +3,11 @@ extends RefCounted
 ## Unplanned Economy's deal (ADR 0021): between the rounds of a Quota the deck is gathered
 ## as the last round left it and cut, not shuffled. gather() takes the cards in the order
 ## they were played, then each seat's unplayed cards in seat order, then the unplayed
-## kitty, keeping deck cards only. Plot cards stay in the plot, so a deck card that went
-## into the plot is put back at the end, in ID order: the order always holds every deck
-## card exactly once. deal() cuts it once at a point drawn on the deal stream and deals
-## it in order, as Dealer deals: seat 0's hand, seat 1's, seat 2's, then the kitty.
+## kitty, keeping deck cards only. A plot card swapped into a hand is left out, and a
+## deck card a swap took out of the round is put back at the end, in ID order (ADR 0038):
+## the order always holds every deck card exactly once. deal() cuts it once at a point
+## drawn on the deal stream and deals it in order, as Dealer deals: seat 0's hand, seat
+## 1's, seat 2's, then the kitty.
 
 
 ## The deck IDs a finished round leaves, in gathering order.

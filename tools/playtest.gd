@@ -91,6 +91,8 @@ var _wild_store_shot: bool = false
 var _audit: RefCounted = null
 var _layout_found: int = 0
 var _scarce_market_shot: bool = false
+## The walk through the plot swap (tools/playtest_swap.gd), made at the first bid.
+var _swap_walk: Object = null
 var _file_store_shot: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
@@ -274,6 +276,8 @@ func _table_step() -> void:
 			await _press(declare)
 			await _dice_frames(table)
 			await _shot("round%d_audit" % _rounds_seen)
+		2:
+			await _swap_answer(table)
 		3:
 			await _play_turn(table, controller)
 		9:
@@ -1428,6 +1432,23 @@ func _grant_opening() -> void:
 	var inventory: Dictionary = loop.record.checkpoint["inventory"]
 	var held: Array = inventory["consumables"]
 	held.append("mutual_aid")
+	# The plot too, so every round of the walk offers the swap.
+	_swap().call("grant", loop)
+
+
+func _swap() -> Object:
+	if _swap_walk == null:
+		var script: GDScript = load("res://tools/playtest_swap.gd")
+		_swap_walk = script.new(self, _app, _out, _headless, _shots)
+	return _swap_walk
+
+
+## The swap sheet the table waits on, answered by clicks.
+func _swap_answer(table: Node) -> void:
+	var walk: Object = _swap()
+	walk.set("shots", _shots)
+	await walk.call("answer", table, _rounds_seen)
+	_took(walk)
 
 
 ## Coupons for a frame's purchase, in the state and in the record's checkpoint at the

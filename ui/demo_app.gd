@@ -32,7 +32,6 @@ const SCREENS: Dictionary[String, String] = {
 	"run_setup": "res://ui/screens/run_setup_screen.tscn",
 	"round_summary": "res://ui/screens/round_summary_screen.tscn",
 	"black_market": "res://ui/screens/black_market_screen.tscn",
-	"plot_swap": "res://ui/screens/plot_swap_screen.tscn",
 	"reeducation": "res://ui/screens/reeducation_screen.tscn",
 	"ending": "res://ui/screens/ending_screen.tscn",
 	"collection": "res://ui/screens/collection_screen.tscn",
@@ -43,7 +42,7 @@ const SCREENS: Dictionary[String, String] = {
 
 ## Screens of a run, off the table, where Escape opens the menu. The table has its own.
 const MENU_SCREENS: Array[String] = [
-	"set_intro", "set_summary", "store", "black_market", "year_summary", "plot_swap"
+	"set_intro", "set_summary", "store", "black_market", "year_summary"
 ]
 
 ## True when New Run starts the demo. Tools set it before the app enters the tree.
@@ -224,8 +223,6 @@ func screen_for(awaiting: int) -> String:
 		RunController.AWAIT_RUN_OVER:
 			# A full run ends on its ending; the demo keeps its Year summary and closing page.
 			return "ending" if controller.has_village() else "year_summary"
-		RunController.AWAIT_SWAP:
-			return "plot_swap"
 	return table_id()
 
 
