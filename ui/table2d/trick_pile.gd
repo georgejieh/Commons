@@ -53,8 +53,9 @@ func setup(pool: CardPool, pool_parent: Control, motion: TableMotion) -> void:
 
 
 ## Lays a play on top of the pile. from is where it comes from on screen; origins, when
-## given, is where each card starts, as when the player's cards leave the hand. With the
-## play's reading, a wild card standing in names the rank it stands for (ADR 0029).
+## given, is where each card starts, as when the player's cards leave the hand. The cards
+## lie in PlayOrder. With the play's reading, a wild card standing in names the rank it
+## stands for (ADR 0029).
 func show_play(
 	cards: Array[CardInstance], from: Vector2, origins: Array[Vector2] = [], reading: Pattern = null
 ) -> void:
@@ -75,19 +76,22 @@ func show_play(
 		+ Vector2(_unit(noise, 2) * SCATTER.x, _unit(noise, 3) * SCATTER.y)
 	)
 	corner.x = clampf(corner.x, LEAN, maxf(LEAN, size.x - span - LEAN))
+	# The cards lie as the reading reads them, low to high, whatever order they came in.
+	var lying: Array[int] = PlayOrder.arrange(cards, reading)
 	for order: int in cards.size():
+		var index: int = lying[order]
 		var view: CardView = _pool.acquire()
 		if view == null:
 			return
 		view.reparent(self, false)
-		view.bind(cards[order])
-		_mark_wild(view, cards[order], stands[order] if order < stands.size() else -1)
+		view.bind(cards[index])
+		_mark_wild(view, cards[index], stands[index] if index < stands.size() else -1)
 		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		view.pivot_offset = Vector2.ZERO
 		var along: float = order * spacing
 		var rest: Vector2 = corner + Vector2(along, along * sin(tilt))
 		var angle: float = tilt + _unit(noise, 10 + order) * CARD_TILT
-		var start: Vector2 = origins[order] if order < origins.size() else from
+		var start: Vector2 = origins[index] if index < origins.size() else from
 		view.rotation = angle + _unit(noise, 30 + order) * THROW_SPIN
 		var flight: Tween = _fly(view, start, rest, angle, order)
 		_views.append(view)
