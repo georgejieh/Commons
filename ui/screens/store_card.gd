@@ -55,6 +55,7 @@ static func make(
 	BuyTicket.dress(button, desk.can_buy(slot), desk.price(slot), coupons)
 	button.tooltip_text = tip
 	var panel: Control = ScreenKit.card_panel(card)
+	button.set_meta(TipPlacer.SUBJECT, panel)
 	button.focus_entered.connect(slip.show_for.bind(panel, title, told, false))
 	button.focus_exited.connect(slip.hide_for.bind(panel))
 	card.add_child(button)

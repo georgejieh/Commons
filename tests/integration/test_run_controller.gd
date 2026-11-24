@@ -26,6 +26,8 @@ const UI_ACTIONS: Array[String] = [
 	"envelope_pick",
 	"leave_store",
 	"books",
+	"sell_cadre",
+	"sell_campaign",
 ]
 
 

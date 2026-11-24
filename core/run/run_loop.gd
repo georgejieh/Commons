@@ -557,6 +557,44 @@ func player_market_buy(slot: int, rank: int = Ranks.INVALID) -> Reason:
 	return reason
 
 
+## Sells the held Cadre at index back to the state store, or with at_market to the black
+## market, for part of its price there (ADR 0040). It leaves the board and its saved state
+## for good, and neither counter offers it again this visit. Nothing its purchase changed
+## is given back, and the sale changes no meter. A Cadre a debuff holds stays.
+func player_sell_cadre(index: int, at_market: bool = false) -> Reason:
+	var counter: RunShop = market if at_market else shop
+	var held: Array[String] = state.inventory.cadres
+	var cadre_id: String = held[index] if index >= 0 and index < held.size() else ""
+	var definition: ModifierDef = _pool_by_id.get(cadre_id)
+	var paid: int = 0 if definition == null else counter.sale_price(definition.cost)
+	var act: Callable = counter.sell.bind(index, definition, debuffs.confiscated_ids())
+	var command: Dictionary = {"type": "sell_cadre", "index": index, "market": at_market}
+	var reason: Reason = _shop_command(command, act)
+	if reason == Reason.OK:
+		shop.withheld.append(cadre_id)
+		market.withheld.append(cadre_id)
+		_read_shop_rules()
+		set_log.add(RunEvent.new(RunEvent.Type.CADRE_SOLD, PLAYER, paid, 0.0, cadre_id))
+	return reason
+
+
+## Sells the held Campaign at index back to the state store, or the black market, as a
+## Cadre is sold; neither counter offers it again this visit.
+func player_sell_campaign(index: int, at_market: bool = false) -> Reason:
+	var counter: CampaignCounter = market.campaigns if at_market else shop.campaigns
+	var held: Array[String] = state.inventory.consumables
+	var campaign_id: String = held[index] if index >= 0 and index < held.size() else ""
+	var definition: CampaignDef = campaigns.definition(campaign_id)
+	var paid: int = 0 if definition == null else counter.sale_price(definition)
+	var command: Dictionary = {"type": "sell_campaign", "index": index, "market": at_market}
+	var reason: Reason = _shop_command(command, counter.sell.bind(index, definition))
+	if reason == Reason.OK:
+		shop.campaigns.withheld.append(campaign_id)
+		market.campaigns.withheld.append(campaign_id)
+		set_log.add(RunEvent.new(RunEvent.Type.CAMPAIGN_SOLD, PLAYER, paid, 0.0, campaign_id))
+	return reason
+
+
 ## What the held Cadres change about this visit's counters, read as it opens and again
 ## after a Cadre is bought, so one bought now works at once (Back Door, ADR 0032).
 func _read_shop_rules() -> void:

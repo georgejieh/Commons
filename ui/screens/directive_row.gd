@@ -110,6 +110,7 @@ func _document(slot: int, directive_id: String) -> Control:
 	)
 	panel.tooltip_text = tip
 	buy.tooltip_text = tip
+	buy.set_meta(TipPlacer.SUBJECT, panel)
 	buy.pressed.connect(_issue.bind(slot, directive_id, panel, lines, buy, name))
 	return panel
 

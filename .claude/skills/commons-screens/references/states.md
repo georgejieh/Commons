@@ -38,7 +38,7 @@ Then:
 
 ## Tooltips and slips
 
-- A slip never covers the thing it explains, and never the control the player must use next. Place it on the side with room, and keep it inside the window.
+- A slip or tooltip stands right beside the thing it explains, touching it or within `SlipPlacer.REACH`, on the side with room (above or below first, then right or left), wholly inside the window. It never covers the thing itself or that thing's own button. It keeps off other buttons when a spot just as close does, and it may cover other papers and text: it is gone when the pointer leaves, so it stays where the eye is and never jumps to a far edge. Keyboard and gamepad focus place it the same way.
 - A slip sits above the HUD and below a modal.
 - A slip does not explain its own subject again. Grain's slip does not mark the word Grain.
 - One level of nesting at most, and the second opens beside the first, not over it.

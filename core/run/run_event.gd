@@ -95,6 +95,12 @@ enum Type {
 	## and correction says what each was and what followed. An offence with nothing to
 	## correct, such as a failed seal, has an empty correction.
 	BOOKS_CORRECTED,
+	## The player sold a held Cadre back at a shop (ADR 0040): value is the coupons paid,
+	## text its ID.
+	CADRE_SOLD,
+	## The player sold a held Campaign back at a shop (ADR 0040): value is the coupons
+	## paid, text its ID.
+	CAMPAIGN_SOLD,
 }
 
 var type: Type

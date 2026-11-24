@@ -3,8 +3,8 @@ extends PanelContainer
 ## One shared slip that explains whatever a shop's compact pieces point at (ADR 0021):
 ## the item's name over its rules with each keyword's meaning, as the Keywords.slip
 ## tooltip has it, on aged paper. It shows while a piece is hovered or holds focus, and
-## stands above or below that piece where that is clear, else where SlipPlacer finds
-## room: never over the piece or any button, kept on screen. While quiet says so,
+## stands right beside that piece, above or below it first, as SlipPlacer places every
+## slip: never over the piece or its button, kept on screen. While quiet says so,
 ## as it does through the arrival, whose slip is the only explanation on screen, it
 ## stays closed.
 
@@ -80,6 +80,5 @@ func _place() -> void:
 		return
 	var screen: Rect2 = get_viewport_rect().grow(-MARGIN)
 	var around: Rect2 = SlipPlacer.on_screen(_anchor)
-	var y: float = around.position.y - GAP - size.y if _above else around.end.y + GAP
-	var wanted: Vector2 = Vector2(around.position.x, y)
-	global_position = SlipPlacer.place(size, wanted, around, GAP, screen, get_tree().root, self)
+	var side: int = SlipPlacer.ABOVE if _above else SlipPlacer.BELOW
+	global_position = SlipPlacer.place(size, around, GAP, screen, get_tree().root, self, side)

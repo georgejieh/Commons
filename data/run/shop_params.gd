@@ -28,3 +28,6 @@ extends Resource
 @export var price_percent: int = 100
 ## How many of one item this counter sells in a run. 0 means no limit.
 @export var stock_per_item: int = 0
+## What this counter pays for a held Cadre or Campaign sold back to it, as a percent of
+## the item's price here now, rounded down, never under one coupon (ADR 0040).
+@export var sell_percent: int = 50
