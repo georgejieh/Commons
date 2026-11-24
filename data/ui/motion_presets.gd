@@ -23,6 +23,9 @@ extends Resource
 ## A finished round stays on the table, all of it in view, this many table steps once its
 ## last share is paid; then the last trick is swept off and the next hand is dealt.
 @export var round_close_steps: float = 1.0
+## While the player sits out a trick they cannot answer, the table's step, at whatever
+## pace is chosen, is multiplied by this, so the villagers' plays go by faster.
+@export var sit_out_scale: float = 0.4
 ## A won trick leaves the table with this Tween.TransitionType and Tween.EaseType.
 @export var sweep_transition: int = Tween.TRANS_CUBIC
 @export var sweep_ease: int = Tween.EASE_IN

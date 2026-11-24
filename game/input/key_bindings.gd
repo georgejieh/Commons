@@ -1,6 +1,6 @@
 class_name KeyBindings
 extends RefCounted
-## The keyboard keys of the nine table actions (ADR 0035). Each action has one bare key,
+## The keyboard keys of the ten table actions (ADR 0035). Each action has one bare key,
 ## held as a physical keycode so it sits in the same place on any layout. The defaults
 ## are the keys the project's input settings give; the bindings in use replace only the
 ## key event of each action in the InputMap, so its gamepad button stays. A key already
@@ -19,6 +19,7 @@ const ACTIONS: Array[String] = [
 	"commons_select",
 	"commons_cursor_left",
 	"commons_cursor_right",
+	"commons_sit_out",
 ]
 ## The section of the settings file the bindings live in.
 const SECTION: String = "keys"

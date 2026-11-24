@@ -215,6 +215,9 @@ sort.groups,Groups
 action.sort_by,Sort: {mode}
 action.sort_tip,Sorted by {mode}. Click to change.
 action.hint_tip,Selects the play a careful player would make.
+action.sit_out,Sit out
+action.sit_out_tip,"Passes for you until this trick is won, and the villagers play faster meanwhile. Offered only when nothing you hold beats the table. If that changes, the turn comes back to you."
+table.sitting_out,Sitting out this trick.
 hand.hint.pass,Passing is the best move here.
 cheat.eyebrow,Rules of the table
 cheat.close,Close
@@ -1109,6 +1112,7 @@ controls.action.commons_campaign,Campaigns
 controls.action.commons_select,Pick card
 controls.action.commons_cursor_left,Cursor left
 controls.action.commons_cursor_right,Cursor right
+controls.action.commons_sit_out,Sit out trick
 controls.pad.a,A
 controls.pad.b,B
 controls.pad.x,X
