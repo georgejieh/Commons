@@ -18,6 +18,14 @@ const TIERS: Array[BotConfig.Tier] = [
 ]
 const SEARCHED_GAMES: int = 3
 const HELD_GAMES: int = 12
+## Rank-moving Cadres held two at a time by seat 0, in both slot orders (ADR 0039).
+const RANK_PAIRS: Array[Array] = [
+	["rehabilitation", "promotion_of_the_masses"],
+	["promotion_of_the_masses", "rehabilitation"],
+	["class_label", "promotion_of_the_masses"],
+	["rehabilitation", "class_label"],
+]
+const PAIR_GAMES: int = 4
 
 
 func _random_table(stream: RandomStream) -> SeatRules:
@@ -97,3 +105,22 @@ func test_a_bot_answers_by_its_seats_rank_map() -> void:
 		BotBudget.unlimited()
 	)
 	assert_str(BotScript.text_of(play)).is_equal("3")
+
+
+## Two rank-moving Cadres held together, Rehabilitation's pick already at the 2: no bot
+## makes an illegal action against the holder or while holding them.
+func test_no_bot_acts_illegally_while_one_seat_holds_two_rank_cadres() -> void:
+	for pair: Array in RANK_PAIRS:
+		var stack: ModifierStack = ModifierStack.new()
+		for name: String in pair:
+			var memo: CadreMemo = CadreMemo.new()
+			memo.put(CadreMemo.RANK, Ranks.ACE)
+			stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), 0, memo)
+		var table: SeatRules = SeatRules.new(stack)
+		for game: int in PAIR_GAMES:
+			var seats: Array[BotConfig] = _random_seats(RandomStream.new(game + 57))
+			var deal: DealResult = SelfPlay.deal_from_seed(4300 + game)
+			var result: SelfPlayResult = SelfPlay.play_round(deal, game % Seats.COUNT, seats, table)
+			var label: String = "%s game %d" % [pair, game]
+			assert_int(result.illegal_actions).override_failure_message(label).is_equal(0)
+			assert_bool(result.winner != Seats.NONE).override_failure_message(label).is_true()
