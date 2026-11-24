@@ -16,6 +16,8 @@ var _last_grain: float = 0.0
 var _last_rate: float = 0.0
 var _last_zeal: float = 0.0
 var _last_stamps_resented: bool = true
+## What changed the last real play's score, in order (P5.2a). A preview keeps none.
+var _last_steps: Array[ScoreStep] = []
 ## The run's Year in play, for the hooks that grow with it (ADR 0032).
 var _year: int = 0
 
@@ -39,7 +41,7 @@ func start(landlord: int, year: int = 0) -> void:
 ## Scores a PLAYED event and adds it to the seat's round score. cards_left is the seat's
 ## hand size once the play is made.
 func score(event: RoundEvent, cards_left: int = -1) -> float:
-	var total: float = _score_cards(event.cards, event.pattern, event.seat, cards_left)
+	var total: float = _score_cards(event.cards, event.pattern, event.seat, cards_left, true)
 	_scores[event.seat] += total
 	_plays[event.seat] += 1
 	_seat_grain[event.seat] = _last_grain
@@ -56,6 +58,11 @@ func last_rate() -> float:
 
 func last_zeal() -> float:
 	return _last_zeal
+
+
+## What changed the last play scored, one step at a time, for the table to act out.
+func last_steps() -> Array[ScoreStep]:
+	return _last_steps
 
 
 ## False when a hook waived the Resentment the last play's stamped cards add (ADR 0032).
@@ -86,7 +93,7 @@ func preview(
 
 
 func _score_cards(
-	cards: Array[CardInstance], pattern: Pattern, seat: int, cards_left: int
+	cards: Array[CardInstance], pattern: Pattern, seat: int, cards_left: int, record: bool = false
 ) -> float:
 	var breakdown: ScoreBreakdown = Scorer.score_play(
 		cards,
@@ -97,10 +104,12 @@ func _score_cards(
 		_stack,
 		Scorer.DEFAULT_PARAMS,
 		_plays[seat],
-		PlayFacts.new(_landlord, cards_left, _plays, _seat_grain, _year)
+		PlayFacts.new(_landlord, cards_left, _plays, _seat_grain, _year),
+		record
 	)
 	_last_grain = breakdown.grain
 	_last_rate = breakdown.rate
 	_last_zeal = breakdown.zeal
 	_last_stamps_resented = breakdown.stamps_resented
+	_last_steps = breakdown.trail
 	return breakdown.total

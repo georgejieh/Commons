@@ -4,6 +4,8 @@ extends RefCounted
 ## pieces that fade and settle in one after another, numbers that roll, and stamps that
 ## land. Motion uses scale and fade, never position, so containers keep their layout.
 ## Every tween belongs to the node it moves. Reduced motion shortens or skips it all.
+## Each kind of motion has its own sound (P5.2a), filled in through Audio.fill only where
+## the moment's event has none, and played under reduced motion too.
 
 const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 ## A piece starts its entrance this much smaller.
@@ -33,6 +35,7 @@ static func hoverable(control: Control) -> void:
 	control.set_meta(LIFTS, true)
 	_center_pivot(control)
 	control.mouse_entered.connect(_scale_to.bind(control, PRESETS.hover_scale))
+	control.mouse_entered.connect(Audio.fill.bind(AudioEvents.MOTION_HOVER))
 	control.mouse_exited.connect(_scale_to.bind(control, 1.0))
 	control.focus_entered.connect(_scale_to.bind(control, PRESETS.hover_scale))
 	control.focus_exited.connect(_scale_to.bind(control, 1.0))
@@ -46,6 +49,7 @@ static func hoverable(control: Control) -> void:
 ## the last one in by enter_within however many there are. Nothing waits on it: a button
 ## takes a press while it is still arriving.
 static func enter(controls: Array[Control]) -> void:
+	Audio.fill(AudioEvents.MOTION_ENTER)
 	var stagger: float = PRESETS.enter_stagger
 	if controls.size() > 1:
 		var room: float = PRESETS.enter_within - PRESETS.enter_time
@@ -73,6 +77,7 @@ static func enter_at(control: Control, delay: float, quiet: bool = false) -> voi
 
 ## Lays a full-screen picture down: from a little large to its size, about its middle.
 static func settle(picture: Control) -> void:
+	Audio.fill(AudioEvents.MOTION_SETTLE)
 	if reduced():
 		return
 	_center_pivot(picture)
@@ -93,6 +98,7 @@ static func count(label: Label, from: float, to: float, shown: Callable) -> Twee
 		label.text = last
 		_reserve(label, ends)
 		return null
+	Audio.fill(AudioEvents.MOTION_COUNT)
 	var both: Array[String] = [shown.call(from), last]
 	_reserve(label, both)
 	var tween: Tween = label.create_tween()
@@ -134,6 +140,7 @@ static func _reserve(label: Label, texts: Array[String]) -> void:
 
 ## Lands a control like an ink stamp: from large and tilted down to its place.
 static func stamp(control: Control) -> Tween:
+	Audio.fill(AudioEvents.MOTION_STAMP)
 	_center_pivot(control)
 	if reduced():
 		return null
@@ -150,6 +157,7 @@ static func stamp(control: Control) -> Tween:
 
 ## A short swell to draw the eye to a change.
 static func pulse(control: Control) -> void:
+	Audio.fill(AudioEvents.MOTION_PULSE)
 	_center_pivot(control)
 	if reduced():
 		return

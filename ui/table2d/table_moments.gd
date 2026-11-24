@@ -2,7 +2,8 @@ class_name TableMoments
 extends Control
 ## The table acted out, as one layer over the play area. Small beats stay where they
 ## happen: a pass is tagged on the seat that passed, a card lands with weight, a score
-## is counted up in chits under the trick and flies to the ledger. Big beats take the
+## is acted out on chits under the trick (ScoreSequence) and flies to the ledger. Big
+## beats take the
 ## whole screen for a moment through the Callout: a call or grab for the landlord
 ## seat, a bomb, the end of a round. It holds the event queue still for as long as
 ## each beat needs, and shows only what the run already says; the ledger, seats and
@@ -10,19 +11,16 @@ extends Control
 
 const GRAIN: Color = Color("8a5a12")
 const LOSS: Color = Color("3a322b")
-## Where the tally and the audit slip sit, as their middles.
-## The tally's middle, midway between the brigade notice and the action column, and the
-## least room it keeps from the column.
-const TALLY_AT: Vector2 = Vector2(824, 660)
-const TALLY_GAP: float = 8.0
+## Where the audit slip sits, its middle. The tally keeps to the room ScoreSequence
+## gives it, between the laid cards and the hand.
 const SLIP_AT: Vector2 = Vector2(790, 520)
 ## The bowl lands beside the slip, in the open table between it and the ledger, so the
 ## claims stay readable while their dice roll.
 const BOWL_AT: Vector2 = Vector2(1312, 575)
-## How fast a villager's score is counted, against the player's own at 1.
-const VILLAGER_PACE: float = 0.75
-## Seconds the ledger waits after the total lands, while it flies over.
+## Seconds the ledger waits after the total lands, while it flies over, and the least the
+## table waits on a total once its sequence is done.
 const FLIGHT: float = 0.35
+const MIN_READ: float = 0.05
 ## The kitty lies face up this long before the landlord takes it, and where it is
 ## dealt from and labelled.
 const KITTY_SHOW: float = 0.9
@@ -37,6 +35,7 @@ const TAKEOVER_SHAKE: float = 0.45
 
 var callout: Callout = Callout.new()
 var tally: ScoreTally = ScoreTally.new()
+var sequence: ScoreSequence = ScoreSequence.new()
 var slip: AuditSlip = AuditSlip.new()
 var dice: DiceBowl = DiceBowl.new()
 var fx: TableFx = TableFx.new()
@@ -84,7 +83,10 @@ func _ready() -> void:
 	_kitty_label.visible = false
 	add_child(_kitty_label)
 	move_child(_kitty_label, 0)
-	tally.resized.connect(_center_tally)
+	add_child(sequence)
+	sequence.tally = tally
+	sequence.fx = fx
+	tally.resized.connect(sequence.place)
 	tally.landed.connect(_on_landed)
 
 
@@ -106,6 +108,9 @@ func setup(
 	_faces = faces
 	slip.setup(names)
 	pile.landed.connect(_on_cards_landed)
+	sequence.pile = pile
+	sequence.hurried.connect(ledger.hurry)
+	player.waits_on = sequence.is_running
 
 
 ## Acts out event. quiet keeps the bookkeeping and drops the show, for replays.
@@ -123,7 +128,7 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 			_landlord = Seats.NONE
 			_bids.clear()
 			slip.clear()
-			tally.clear()
+			_clear_tally()
 			callout.dismiss()
 			_end_dice()
 			_kitty_label.visible = false
@@ -137,7 +142,7 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 			_on_scored(event, quiet)
 		RunEvent.Type.NEED_DECLARED:
 			if not quiet:
-				tally.clear()
+				_clear_tally()
 				slip.claim(event.seat, event.value)
 		RunEvent.Type.AUDIT_ROLLED:
 			if not quiet:
@@ -204,6 +209,9 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 			if not quiet and _seats.has(event.seat):
 				_seats[event.seat].flash(tr("campaign.forced" if forced else "stamp.pass"))
 		RoundEvent.Type.PLAYED:
+			# The last score's tally gives way to the next play's cards.
+			if not sequence.is_running():
+				_clear_tally()
 			var type: Pattern.Type = event.pattern.type
 			if quiet or (type != Pattern.Type.BOMB and type != Pattern.Type.ROCKET):
 				return
@@ -213,7 +221,7 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 		RoundEvent.Type.ROUND_ENDED:
 			if quiet:
 				return
-			tally.clear()
+			_clear_tally()
 			var landlord_won: bool = event.seat == _landlord
 			var player_won: bool = landlord_won == (_landlord == 0)
 			var line: String = tr("banner.landlord_wins" if landlord_won else "banner.peasants_win")
@@ -222,21 +230,24 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 			_shout(word, Callout.Tier.TAKEOVER, cloth, line, Seats.NONE)
 
 
-## Counts a play's score up under the trick, then sends it to the ledger. The queue
-## waits for the count; the ledger's own total rolls once the number arrives.
+## Acts a play's score out under the trick, then sends it to the ledger. The queue waits
+## for the sequence and then for the total to be read; the ledger's own total rolls once
+## the number arrives.
 func _on_scored(event: RunEvent, quiet: bool) -> void:
 	if quiet:
+		sequence.stop()
 		_ledger.add_play(event.seat, event.grain, event.rate, event.zeal, event.amount)
 		return
 	_scoring = event.seat
-	var pace: float = _pace() * (1.0 if event.seat == 0 else VILLAGER_PACE)
-	_pile.pulse_top(ScoreTally.COUNT * pace)
-	var seconds: float = tally.show_score(event.grain, event.rate, event.zeal, event.amount, pace)
+	var pace: float = _pace() * (1.0 if event.seat == 0 else TableMotion.PRESETS.score_villager)
+	sequence.target = _target
+	var seconds: float = sequence.play(event, pace)
 	var flight: float = FLIGHT if seconds > 0.0 else 0.0
 	_ledger.add_play(
 		event.seat, event.grain, event.rate, event.zeal, event.amount, seconds + flight
 	)
-	_player.hold(seconds + (ScoreTally.read_time(pace) if seconds > 0.0 else 0.0))
+	if seconds > 0.0:
+		_player.hold(maxf(ScoreTally.read_time(pace), MIN_READ))
 
 
 func _on_landed(total_text: String) -> void:
@@ -266,6 +277,7 @@ func _on_set_ended(met: bool, progress: float) -> void:
 		line = line if shown.is_empty() else shown
 		met = hud.reads_met(met)
 	var word: String = tr("callout.quota.met" if met else "callout.quota.missed")
+	Audio.play(AudioEvents.QUOTA_MET if met else AudioEvents.QUOTA_MISSED)
 	_shout(word, Callout.Tier.TAKEOVER, ScreenKit.RED if met else LOSS, line, Seats.NONE)
 
 
@@ -288,6 +300,7 @@ func _on_rolled(event: RunEvent) -> void:
 	_rolls.clear()
 	_kill_dice_beat()
 	var seconds: float = dice.roll(seats, faces, audit_faces, names)
+	Audio.play(AudioEvents.DICE_ROLL)
 	_dice_beat = create_tween()
 	_dice_beat.tween_interval(seconds)
 	_dice_beat.tween_callback(_mark_unchecked.bind(seats, faces, audit_faces))
@@ -297,6 +310,7 @@ func _on_rolled(event: RunEvent) -> void:
 		_dice_beat.tween_interval(cut_in)
 		seconds += cut_in
 	_dice_beat.tween_callback(dice.lift_away)
+	_dice_beat.tween_callback(Audio.fill.bind(AudioEvents.MOTION_SETTLE))
 	_player.hold(seconds + DiceBowl.lift_seconds())
 
 
@@ -364,6 +378,8 @@ func _on_cards_landed(count: int) -> void:
 func _shout(word: String, tier: Callout.Tier, cloth: Color, line: String, seat: int) -> void:
 	var face: Texture2D = _faces.get(seat)
 	var seconds: float = callout.shout(word, tier, cloth, line, face, seat != 1)
+	# A banner sweeps in with a brush stroke, unless its event already sounds.
+	Audio.fill(AudioEvents.CALLOUT_CUT)
 	if tier == Callout.Tier.TAKEOVER:
 		_motion.bump(TAKEOVER_SHAKE)
 	_player.hold(seconds)
@@ -374,9 +390,7 @@ func _pace() -> float:
 	return _player.step / TableMotion.PRESETS.event_step
 
 
-## The tally about its middle. A sum of very wide numbers slides left, over the notice,
-## which is dressing, and never onto the action column, where the prompt is read.
-func _center_tally() -> void:
-	tally.position = TALLY_AT - tally.size / 2.0
-	var most: float = TableScreen.ACTIONS_AT.position.x - TALLY_GAP - tally.size.x
-	tally.position.x = minf(tally.position.x, most)
+## The tally and the sequence acting on it are taken down.
+func _clear_tally() -> void:
+	sequence.stop()
+	tally.clear()

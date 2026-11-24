@@ -14,6 +14,10 @@ extends HBoxContainer
 const EMPTY_ALPHA: float = 0.22
 const TILE_SIZE: Vector2 = Vector2(108, 140)
 const GAP: int = 14
+## How far a Cadre's card swings on its pin, in radians, and swells, when it changes a
+## play's score.
+const JIGGLE: float = 0.1
+const JIGGLE_SCALE: float = 1.08
 ## The empty line's type size, and its paper halo.
 const EMPTY_SIZE: int = 18
 const EMPTY_HALO: int = 5
@@ -97,6 +101,30 @@ func fired(controller: RunController, cadre_id: String, amount: int) -> void:
 	var count: String = controller.cadre_standing(cadre_id).count
 	_badges[index].show_count(count if not count.is_empty() else "+%d" % amount)
 	pulse_slot(index)
+
+
+## A held Cadre changed a play's score as it was counted (P5.2a): its card jiggles on
+## its pin, unless motion is reduced, and its count shows what it is now. Returns where
+## the card stands on screen, or an empty box when the Cadre is not on the board.
+func jiggle(controller: RunController, cadre_id: String, seconds: float) -> Rect2:
+	var index: int = _ids.find(cadre_id)
+	if index < 0 or not is_visible_in_tree():
+		return Rect2()
+	var card: TipHost = _cards[index]
+	var count: String = controller.cadre_standing(cadre_id).count
+	if not count.is_empty():
+		_badges[index].show_count(count)
+	if not UiMotion.reduced() and seconds > 0.0:
+		card.pivot_offset = card.size / 2.0
+		var wobble: Tween = card.create_tween()
+		wobble.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		var swings: Array[float] = [JIGGLE, -JIGGLE * 0.7, JIGGLE * 0.4, 0.0]
+		for angle: float in swings:
+			wobble.tween_property(card, "rotation", angle, seconds / swings.size())
+		var swell: Tween = card.create_tween()
+		swell.tween_property(card, "scale", Vector2.ONE * JIGGLE_SCALE, seconds * 0.3)
+		swell.tween_property(card, "scale", Vector2.ONE, seconds * 0.7)
+	return card.get_global_rect()
 
 
 ## Strikes a slot's card out for the round; animate presses the stamp on like ink.

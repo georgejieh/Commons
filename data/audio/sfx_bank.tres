@@ -23,6 +23,21 @@
 [ext_resource type="AudioStream" path="res://audio/sfx/store_buy_01.wav" id="store_buy_01"]
 [ext_resource type="AudioStream" path="res://audio/sfx/store_buy_02.wav" id="store_buy_02"]
 [ext_resource type="AudioStream" path="res://audio/sfx/meter_rose.wav" id="meter_rose"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_bead_01.wav" id="score_bead_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_bead_02.wav" id="score_bead_02"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_bead_03.wav" id="score_bead_03"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_stamp_01.wav" id="score_stamp_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_stamp_02.wav" id="score_stamp_02"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_land.wav" id="score_land"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_land_heavy.wav" id="score_land_heavy"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_bell.wav" id="score_bell"]
+[ext_resource type="AudioStream" path="res://audio/sfx/score_gong.wav" id="score_gong"]
+[ext_resource type="AudioStream" path="res://audio/sfx/paper_flick_01.wav" id="paper_flick_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/paper_flick_02.wav" id="paper_flick_02"]
+[ext_resource type="AudioStream" path="res://audio/sfx/brush_stroke.wav" id="brush_stroke"]
+[ext_resource type="AudioStream" path="res://audio/sfx/dice_bowl.wav" id="dice_bowl"]
+[ext_resource type="AudioStream" path="res://audio/sfx/soft_tap_01.wav" id="soft_tap_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/soft_tap_02.wav" id="soft_tap_02"]
 
 [sub_resource type="Resource" id="dealt"]
 script = ExtResource("2")
@@ -100,6 +115,165 @@ id = "meter_rose"
 streams = Array[AudioStream]([ExtResource("meter_rose")])
 voices = 1
 
+[sub_resource type="Resource" id="score_tick"]
+script = ExtResource("2")
+id = "score_tick"
+streams = Array[AudioStream]([ExtResource("score_bead_01"), ExtResource("score_bead_02"), ExtResource("score_bead_03")])
+volume_db = -1.0
+pitch_semitones = 0.15
+voices = 4
+
+[sub_resource type="Resource" id="score_rate"]
+script = ExtResource("2")
+id = "score_rate"
+streams = Array[AudioStream]([ExtResource("score_stamp_01"), ExtResource("score_stamp_02")])
+pitch_semitones = 0.2
+voices = 2
+
+[sub_resource type="Resource" id="score_zeal"]
+script = ExtResource("2")
+id = "score_zeal"
+streams = Array[AudioStream]([ExtResource("score_stamp_01"), ExtResource("score_stamp_02")])
+volume_db = -2.0
+pitch_semitones = 0.2
+voices = 2
+
+[sub_resource type="Resource" id="score_chime"]
+script = ExtResource("2")
+id = "score_chime"
+streams = Array[AudioStream]([ExtResource("score_bell")])
+voices = 3
+
+[sub_resource type="Resource" id="score_cut"]
+script = ExtResource("2")
+id = "score_cut"
+streams = Array[AudioStream]([ExtResource("score_gong")])
+voices = 2
+
+[sub_resource type="Resource" id="score_roll"]
+script = ExtResource("2")
+id = "score_roll"
+streams = Array[AudioStream]([ExtResource("score_bead_01"), ExtResource("score_bead_02"), ExtResource("score_bead_03")])
+volume_db = -5.0
+pitch_semitones = 0.3
+voices = 4
+
+[sub_resource type="Resource" id="score_land"]
+script = ExtResource("2")
+id = "score_land"
+streams = Array[AudioStream]([ExtResource("score_land")])
+pitch_semitones = 0.3
+voices = 1
+
+[sub_resource type="Resource" id="score_land_heavy"]
+script = ExtResource("2")
+id = "score_land_heavy"
+streams = Array[AudioStream]([ExtResource("score_land_heavy")])
+pitch_semitones = 0.2
+voices = 1
+
+[sub_resource type="Resource" id="kitty_taken"]
+script = ExtResource("2")
+id = "kitty_taken"
+streams = Array[AudioStream]([ExtResource("card_play_01"), ExtResource("card_play_02"), ExtResource("card_play_03"), ExtResource("card_play_04")])
+volume_db = -3.0
+pitch_semitones = 0.6
+voices = 2
+
+[sub_resource type="Resource" id="motion_stamp"]
+script = ExtResource("2")
+id = "motion_stamp"
+streams = Array[AudioStream]([ExtResource("score_stamp_01"), ExtResource("score_stamp_02")])
+volume_db = -3.0
+pitch_semitones = 0.5
+voices = 2
+
+[sub_resource type="Resource" id="motion_pulse"]
+script = ExtResource("2")
+id = "motion_pulse"
+streams = Array[AudioStream]([ExtResource("soft_tap_01"), ExtResource("soft_tap_02")])
+pitch_semitones = 0.6
+voices = 2
+
+[sub_resource type="Resource" id="motion_count"]
+script = ExtResource("2")
+id = "motion_count"
+streams = Array[AudioStream]([ExtResource("score_bead_01"), ExtResource("score_bead_02"), ExtResource("score_bead_03")])
+volume_db = -6.0
+pitch_semitones = 0.6
+voices = 2
+
+[sub_resource type="Resource" id="motion_enter"]
+script = ExtResource("2")
+id = "motion_enter"
+streams = Array[AudioStream]([ExtResource("paper_flick_01"), ExtResource("paper_flick_02")])
+volume_db = -2.0
+pitch_semitones = 1.0
+voices = 1
+
+[sub_resource type="Resource" id="motion_settle"]
+script = ExtResource("2")
+id = "motion_settle"
+streams = Array[AudioStream]([ExtResource("paper_flick_01"), ExtResource("paper_flick_02")])
+pitch_semitones = 0.5
+voices = 1
+
+[sub_resource type="Resource" id="motion_hover"]
+script = ExtResource("2")
+id = "motion_hover"
+streams = Array[AudioStream]([ExtResource("soft_tap_01"), ExtResource("soft_tap_02")])
+volume_db = -5.0
+pitch_semitones = 0.8
+voices = 1
+
+[sub_resource type="Resource" id="motion_fly"]
+script = ExtResource("2")
+id = "motion_fly"
+streams = Array[AudioStream]([ExtResource("paper_flick_01"), ExtResource("paper_flick_02")])
+pitch_semitones = 0.8
+voices = 2
+
+[sub_resource type="Resource" id="motion_wind"]
+script = ExtResource("2")
+id = "motion_wind"
+streams = Array[AudioStream]([ExtResource("soft_tap_01"), ExtResource("soft_tap_02")])
+pitch_semitones = 0.5
+voices = 1
+
+[sub_resource type="Resource" id="motion_wipe"]
+script = ExtResource("2")
+id = "motion_wipe"
+streams = Array[AudioStream]([ExtResource("brush_stroke")])
+volume_db = -4.0
+pitch_semitones = 0.6
+voices = 1
+
+[sub_resource type="Resource" id="callout_cut"]
+script = ExtResource("2")
+id = "callout_cut"
+streams = Array[AudioStream]([ExtResource("brush_stroke")])
+pitch_semitones = 0.4
+voices = 1
+
+[sub_resource type="Resource" id="dice_roll"]
+script = ExtResource("2")
+id = "dice_roll"
+streams = Array[AudioStream]([ExtResource("dice_bowl")])
+pitch_semitones = 0.3
+voices = 1
+
+[sub_resource type="Resource" id="quota_met"]
+script = ExtResource("2")
+id = "quota_met"
+streams = Array[AudioStream]([ExtResource("score_land_heavy")])
+voices = 1
+
+[sub_resource type="Resource" id="quota_missed"]
+script = ExtResource("2")
+id = "quota_missed"
+streams = Array[AudioStream]([ExtResource("score_gong")])
+voices = 1
+
 [resource]
 script = ExtResource("1")
-sounds = Array[ExtResource("2")]([SubResource("dealt"), SubResource("redealt"), SubResource("card_played"), SubResource("passed"), SubResource("bomb_played"), SubResource("rocket_played"), SubResource("trick_won"), SubResource("round_won"), SubResource("round_lost"), SubResource("button_click"), SubResource("store_buy"), SubResource("meter_rose")])
+sounds = Array[ExtResource("2")]([SubResource("dealt"), SubResource("redealt"), SubResource("card_played"), SubResource("passed"), SubResource("bomb_played"), SubResource("rocket_played"), SubResource("trick_won"), SubResource("round_won"), SubResource("round_lost"), SubResource("button_click"), SubResource("store_buy"), SubResource("meter_rose"), SubResource("score_tick"), SubResource("score_rate"), SubResource("score_zeal"), SubResource("score_chime"), SubResource("score_cut"), SubResource("score_roll"), SubResource("score_land"), SubResource("score_land_heavy"), SubResource("kitty_taken"), SubResource("motion_stamp"), SubResource("motion_pulse"), SubResource("motion_count"), SubResource("motion_enter"), SubResource("motion_settle"), SubResource("motion_hover"), SubResource("motion_fly"), SubResource("motion_wind"), SubResource("motion_wipe"), SubResource("callout_cut"), SubResource("dice_roll"), SubResource("quota_met"), SubResource("quota_missed")])

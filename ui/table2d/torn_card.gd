@@ -54,6 +54,7 @@ func tear(card: CardInstance, middle: Vector2) -> float:
 	if UiMotion.reduced():
 		visible = false
 		return 0.0
+	Audio.fill(AudioEvents.MOTION_WIPE)
 	_face_size = _faces[0].custom_minimum_size
 	var half_width: float = _face_size.x / 2.0
 	for side: int in 2:

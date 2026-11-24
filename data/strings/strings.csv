@@ -556,6 +556,10 @@ market.plot.tip,"This card goes into your private plot. Each round, after the la
 intel.types,Holds: {list}
 intel.cards,Cards: {list}
 tally.scaled,× {percent}% =
+score.step.add,+{value} {figure}
+score.step.less,−{value} {figure}
+score.step.times,×{value} {figure}
+score.step.set,{figure} {value}
 ledger.scaled,× {percent}%
 hand.scaled,(after × {percent}%)
 callout.audit,Audit!

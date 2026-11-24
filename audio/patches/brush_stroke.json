@@ -1,0 +1,67 @@
+{
+ "name": "brush_stroke",
+ "description": "A wide brush dragged once across paper: a soft rising and falling hiss. A banner swept across the table for a call, a grab or an audit.",
+ "layers": [
+  {
+   "wave": "noise",
+   "env": {
+    "attack": 0.05,
+    "hold": 0.04,
+    "release": 0.12,
+    "curve": 1.8
+   },
+   "filters": [
+    {
+     "type": "bandpass",
+     "cutoff": [
+      [
+       0,
+       1100
+      ],
+      [
+       0.2,
+       1800
+      ]
+     ],
+     "q": 0.7
+    },
+    {
+     "type": "lowpass",
+     "cutoff": 4500
+    }
+   ]
+  },
+  {
+   "wave": "noise",
+   "env": {
+    "attack": 0.002,
+    "hold": 0.005,
+    "release": 0.03,
+    "curve": 3
+   },
+   "filters": [
+    {
+     "type": "bandpass",
+     "cutoff": 700,
+     "q": 1.0
+    }
+   ],
+   "gain_db": -8
+  }
+ ],
+ "master": {
+  "lufs": -26,
+  "peak_db": -8,
+  "highpass": 300
+ },
+ "expect": {
+  "duration": [
+   0.15,
+   0.26
+  ],
+  "centroid": [
+   800,
+   3500
+  ]
+ }
+}

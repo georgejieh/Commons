@@ -68,6 +68,7 @@ func bump(trauma: float) -> void:
 func wind_up(seat: Control, seconds: float) -> void:
 	if reduced or seconds <= 0.0:
 		return
+	Audio.fill(AudioEvents.MOTION_WIND)
 	if seat.has_meta(WIND_META):
 		var running: Tween = seat.get_meta(WIND_META)
 		if running != null and running.is_valid():

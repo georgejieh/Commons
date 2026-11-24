@@ -79,6 +79,59 @@ const METER_ROSE: String = "meter_rose"
 const STORE_BUY: String = "store_buy"
 ## The player's seat.
 const PLAYER: int = 0
+## A scored play acted out (P5.2a): each card counted, the Rate and Zeal landing, a
+## change that raised the score and one that cut it, the total rolling up and landing,
+## harder for a big one.
+const SCORE_TICK: String = "score_tick"
+const SCORE_RATE: String = "score_rate"
+const SCORE_ZEAL: String = "score_zeal"
+const SCORE_CHIME: String = "score_chime"
+const SCORE_CUT: String = "score_cut"
+const SCORE_ROLL: String = "score_roll"
+const SCORE_LAND: String = "score_land"
+const SCORE_LAND_HEAVY: String = "score_land_heavy"
+## A motion's own sound, filled in by Audio.fill only where its event has none (P5.2a):
+## a stamp landing, a swell, a number rolling, a page's pieces arriving, a picture laid
+## down, a hover, a figure in flight, a villager taking up their cards, the ink wipe
+## between screens, a banner across the table, the audit's dice, and the Quota met or
+## missed.
+const MOTION_STAMP: String = "motion_stamp"
+const MOTION_PULSE: String = "motion_pulse"
+const MOTION_COUNT: String = "motion_count"
+const MOTION_ENTER: String = "motion_enter"
+const MOTION_SETTLE: String = "motion_settle"
+const MOTION_HOVER: String = "motion_hover"
+const MOTION_FLY: String = "motion_fly"
+const MOTION_WIND: String = "motion_wind"
+const MOTION_WIPE: String = "motion_wipe"
+const CALLOUT_CUT: String = "callout_cut"
+const DICE_ROLL: String = "dice_roll"
+const QUOTA_MET: String = "quota_met"
+const QUOTA_MISSED: String = "quota_missed"
+## Every name above, for the bank's test.
+const MOTION_NAMES: Array[String] = [
+	SCORE_TICK,
+	SCORE_RATE,
+	SCORE_ZEAL,
+	SCORE_CHIME,
+	SCORE_CUT,
+	SCORE_ROLL,
+	SCORE_LAND,
+	SCORE_LAND_HEAVY,
+	MOTION_STAMP,
+	MOTION_PULSE,
+	MOTION_COUNT,
+	MOTION_ENTER,
+	MOTION_SETTLE,
+	MOTION_HOVER,
+	MOTION_FLY,
+	MOTION_WIND,
+	MOTION_WIPE,
+	CALLOUT_CUT,
+	DICE_ROLL,
+	QUOTA_MET,
+	QUOTA_MISSED,
+]
 
 
 ## The sound for an event. ROUND events take their round event's name. With the landlord

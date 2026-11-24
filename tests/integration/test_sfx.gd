@@ -16,6 +16,7 @@ func test_every_sound_answers_a_named_event() -> void:
 	var names: Array[String] = []
 	names.append_array(AudioEvents.RUN_NAMES.values())
 	names.append_array(AudioEvents.ROUND_NAMES.values())
+	names.append_array(AudioEvents.MOTION_NAMES)
 	(
 		names
 		. append_array(
@@ -56,6 +57,39 @@ func test_the_table_events_all_have_sounds() -> void:
 		for stream: AudioStream in sound.streams:
 			assert_object(stream).override_failure_message(id).is_not_null()
 			assert_float(stream.get_length()).override_failure_message(id).is_greater(0.0)
+
+
+## Every scored play's beats and every motion's own sound have takes that load (P5.2a).
+func test_every_motion_and_scoring_beat_has_a_sound() -> void:
+	for id: String in AudioEvents.MOTION_NAMES:
+		var sound: SfxSound = BANK.sound(id)
+		assert_object(sound).override_failure_message(id).is_not_null()
+		if sound == null:
+			continue
+		assert_int(sound.voices).override_failure_message(id).is_between(1, 4)
+		for stream: AudioStream in sound.streams:
+			assert_object(stream).override_failure_message(id).is_not_null()
+			assert_float(stream.get_length()).override_failure_message(id).is_between(0.01, 0.7)
+
+
+## A motion's sound fills only a silence: right after an event's own sound it keeps
+## quiet, and once the moment has passed it plays.
+func test_a_motion_sound_never_lands_on_an_events_own() -> void:
+	Audio.last_filled = ""
+	Audio.play("card_played")
+	Audio.fill(AudioEvents.MOTION_STAMP)
+	await await_millis(30)
+	assert_str(Audio.last_filled).is_empty()
+	await await_millis(AudioMixer.FILL_GUARD_MSEC + 30)
+	Audio.fill(AudioEvents.MOTION_STAMP)
+	await await_millis(30)
+	assert_str(Audio.last_filled).is_equal(AudioEvents.MOTION_STAMP)
+
+
+func test_a_step_up_raises_the_pitch() -> void:
+	assert_bool(_effects.play(AudioEvents.SCORE_CHIME, 7.0)).is_true()
+	var player: AudioStreamPlayer = _effects.get_child(0)
+	assert_float(player.pitch_scale).is_equal_approx(pow(2.0, 7.0 / 12.0), 0.001)
 
 
 func test_takes_play_round_robin() -> void:

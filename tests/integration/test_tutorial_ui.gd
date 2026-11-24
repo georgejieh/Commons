@@ -313,11 +313,12 @@ func _check_slip(where: String) -> void:
 		var sheet: CheatSheet = table.get("_cheat_sheet")
 		if not sheet.visible:
 			var pile: Control = table.get("_pile")
+			var moments: TableMoments = table.get("_moments")
 			var kept: Dictionary[String, Rect2] = {
 				"prompt": table.actions().reading.get_global_rect(),
 				"buttons": table.actions().get_global_rect(),
 				"trick": pile.get_global_rect(),
-				"score": Rect2(TableMoments.TALLY_AT - Vector2(340, 70), Vector2(680, 140)),
+				"score": moments.sequence.room(),
 			}
 			for piece: String in kept:
 				var over: bool = rect.intersects(kept[piece])

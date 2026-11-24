@@ -1,22 +1,72 @@
 class_name TableFx
 extends Control
-## Numbers in flight over the table: a play's points leaving the tally for the ledger.
-## Labels are made once and reused in turn. Nothing here takes the mouse or carries
-## information the table doesn't also show at rest, so reduced motion drops it.
+## Numbers in flight over the table: a play's points leaving the tally for the ledger,
+## and the small tags of what each thing that fired added to a play's score, beside it
+## (P5.2a). Labels are made once and reused in turn. Nothing here takes the mouse. A
+## flight carries nothing the table doesn't show at rest, so reduced motion drops it; a
+## tag still shows under reduced motion, standing still, since it says what the tally's
+## figures only show the sum of.
 
 const FLIERS: int = 6
 const FLY_SIZE: int = 38
 const FLY_TIME: float = 0.5
 const TWEEN_META: StringName = &"fx_tween"
+const TAGS: int = 6
+const TAG_SIZE: int = 22
+## A tag stands this far above what it labels, and never higher than the bar's foot.
+const TAG_GAP: float = 4.0
+const TAG_TOP: float = 82.0
+const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 
 var _fliers: Array[Label] = []
 var _next_flier: int = 0
+var _tags: Array[Label] = []
+var _next_tag: int = 0
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for _index: int in FLIERS:
 		_fliers.append(_made(FLY_SIZE))
+	for _index: int in TAGS:
+		_tags.append(_made(TAG_SIZE))
+
+
+## Shows a short tag, such as "+30 Grain", just above a box on screen, or below it when
+## there is no room above. It rises a little as it fades, or under reduced motion stands
+## still until it goes. Returns the tag, for tests.
+func tag(text: String, around: Rect2, color: Color) -> Label:
+	var label: Label = _tags[_next_tag]
+	_next_tag = (_next_tag + 1) % TAGS
+	_show(label, text, color, TAG_SIZE)
+	var at: Vector2 = Vector2(
+		around.get_center().x - label.size.x / 2.0, around.position.y - TAG_GAP - label.size.y
+	)
+	if at.y < TAG_TOP:
+		at.y = around.end.y + TAG_GAP
+	at.x = clampf(at.x, TAG_GAP, maxf(TAG_GAP, size.x - label.size.x - TAG_GAP))
+	label.position = at - global_position
+	var hold: float = PRESETS.score_label_time
+	var tween: Tween = label.create_tween()
+	label.set_meta(TWEEN_META, tween)
+	if UiMotion.reduced():
+		tween.tween_interval(hold)
+	else:
+		tween.set_parallel(true)
+		tween.tween_property(label, "position:y", label.position.y - PRESETS.score_label_rise, hold)
+		tween.tween_property(label, "modulate:a", 0.0, hold * 0.4).set_delay(hold * 0.6)
+		tween.chain()
+	tween.tween_callback(label.hide)
+	return label
+
+
+## The tags showing now, for tests.
+func shown_tags() -> Array[Label]:
+	var shown: Array[Label] = []
+	for label: Label in _tags:
+		if label.visible:
+			shown.append(label)
+	return shown
 
 
 ## Sends text from one point on screen to another, shrinking as it lands. Reduced
@@ -24,6 +74,7 @@ func _ready() -> void:
 func fly(text: String, from: Vector2, to: Vector2, color: Color) -> void:
 	if UiMotion.reduced():
 		return
+	Audio.fill(AudioEvents.MOTION_FLY)
 	var label: Label = _fliers[_next_flier]
 	_next_flier = (_next_flier + 1) % FLIERS
 	_show(label, text, color, FLY_SIZE)

@@ -31,6 +31,9 @@ var own_seat: int = 0
 var flushing: bool = false
 ## Holds the queue still during a hit-stop.
 var motion: TableMotion = null
+## Holds the queue still while it returns true, as while a scored play is acted out
+## (P5.2a): the next seat's play waits for the sequence to finish or be hurried.
+var waits_on: Callable = Callable()
 
 var _queue: Array[RunEvent] = []
 var _wait: float = 0.0
@@ -86,6 +89,8 @@ func _process(delta: float) -> void:
 	if _queue.is_empty() and not _draining:
 		return
 	if motion != null and motion.is_stopped():
+		return
+	if waits_on.is_valid() and bool(waits_on.call()):
 		return
 	_wait -= delta
 	while _wait <= 0.0 and not _queue.is_empty():

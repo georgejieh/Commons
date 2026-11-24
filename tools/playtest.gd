@@ -1612,6 +1612,17 @@ func _moment_frames(table: Node) -> void:
 	for frame: int in 4:
 		await _snap("moment_tally_%d" % frame)
 	await create_timer(2.0).timeout
+	# The same sum acted out as a play scores (P5.2a): the cards' Grain, the Rate and Zeal
+	# landing, a change to Zeal firing with its tag, then the total rolling and stamped.
+	var scored: RunEvent = RunEvent.new(RunEvent.Type.PLAY_SCORED, 0, 0, 567.0)
+	scored.grain = 54.0
+	scored.rate = 7.0
+	scored.zeal = 1.5
+	var sequence: Object = moments.get("sequence")
+	sequence.call("play", scored, 1.0)
+	for frame: int in 8:
+		await _snap("moment_score_%d" % frame)
+	await create_timer(2.0).timeout
 	await _bowl_frames(table)
 
 

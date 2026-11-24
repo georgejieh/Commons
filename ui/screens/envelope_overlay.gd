@@ -375,6 +375,7 @@ func _take_nothing() -> void:
 
 
 func _fall(falling: Array[ChoicePaper]) -> void:
+	Audio.fill(AudioEvents.MOTION_FLY)
 	for index: int in falling.size():
 		var paper: ChoicePaper = falling[index]
 		paper.keep.disabled = true

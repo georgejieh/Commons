@@ -59,6 +59,7 @@ func set_shown(on: bool, animate: bool) -> void:
 	if on == visible:
 		return
 	visible = on
+	Audio.fill(AudioEvents.MOTION_SETTLE)
 	queue_redraw()
 	if on and animate and not UiMotion.reduced():
 		modulate.a = 0.0

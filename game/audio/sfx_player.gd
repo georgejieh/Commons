@@ -14,15 +14,17 @@ var _players: Dictionary[String, AudioStreamPlayer] = {}
 var _next_take: Dictionary[String, int] = {}
 
 
-## Plays the sound for an event name. Returns false when the event has no sound.
-func play(id: String) -> bool:
+## Plays the sound for an event name, semitones above its own pitch (P5.2a: a scored
+## play's ticks and chimes step up or down as they go). Returns false when the event has
+## no sound.
+func play(id: String, semitones: float = 0.0) -> bool:
 	var sound: SfxSound = BANK.sound(id)
 	if sound == null or sound.streams.is_empty():
 		return false
 	var take: int = _next_take.get(id, 0)
 	_next_take[id] = (take + 1) % sound.streams.size()
 	var player: AudioStreamPlayer = _player_for(sound, take)
-	var shift: float = (_random.next_float() * 2.0 - 1.0) * sound.pitch_semitones
+	var shift: float = (_random.next_float() * 2.0 - 1.0) * sound.pitch_semitones + semitones
 	player.pitch_scale = pow(2.0, shift / 12.0)
 	player.play()
 	return true

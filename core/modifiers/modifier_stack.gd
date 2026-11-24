@@ -73,16 +73,26 @@ func run_round_start(context: RoundContext) -> void:
 		entry.effect.round_start(context)
 
 
-func run_play_scored(context: PlayContext) -> void:
+## With a trail, each hook's change is recorded as it runs, for the table (P5.2a).
+func run_play_scored(context: PlayContext, trail: ScoreTrail = null) -> void:
+	if trail != null:
+		trail.start_play(context)
 	for entry: ActiveModifier in _by_hook[Hooks.PLAY_SCORED]:
-		if entry.scores_for(context.seat, context.landlord):
-			entry.effect.play_scored(context)
+		if not entry.scores_for(context.seat, context.landlord):
+			continue
+		entry.effect.play_scored(context)
+		if trail != null:
+			trail.play_hook(entry.definition, context)
 
 
-func run_card_scored(context: CardContext) -> void:
+func run_card_scored(context: CardContext, trail: ScoreTrail = null) -> void:
 	for entry: ActiveModifier in _by_hook[Hooks.CARD_SCORED]:
-		if entry.scores_for(context.seat, context.landlord):
-			entry.effect.card_scored(context)
+		if not entry.scores_for(context.seat, context.landlord):
+			continue
+		var before: float = context.grain
+		entry.effect.card_scored(context)
+		if trail != null:
+			trail.card_hook(entry.definition, context, before)
 
 
 func run_trick_won(context: TrickContext) -> void:

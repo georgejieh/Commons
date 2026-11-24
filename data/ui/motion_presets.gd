@@ -47,6 +47,43 @@ extends Resource
 ## Duration multiplier under reduced motion.
 @export var reduced_scale: float = 0.35
 
+@export_group("Scoring")
+## A scored play acted out (P5.2a), in seconds at the Standard pace: the chits coming in,
+## each card's tick, the Rate and Zeal landing, each Cadre, mark, level or debuff that
+## changed the score, the total rolling up and the stamp as it lands. Each tick and each
+## step after the first takes score_quicken of the one before, down to its least, so a
+## long play or chain speeds up as it goes; and the whole sequence keeps within score_most.
+@export var score_enter: float = 0.08
+@export var score_tick: float = 0.09
+@export var score_least_tick: float = 0.035
+@export var score_land: float = 0.18
+@export var score_step: float = 0.34
+@export var score_least_step: float = 0.14
+@export var score_quicken: float = 0.85
+@export var score_roll: float = 0.4
+@export var score_stamp: float = 0.2
+@export var score_most: float = 2.6
+## A villager's play is acted out at this share of the player's own time, and a hurried
+## one, clicked through or while the player sits out, at score_hurried.
+@export var score_villager: float = 0.75
+@export var score_hurried: float = 0.3
+## How much larger a chit lands, and swells as its figure changes; the total lands larger
+## still, and the tally shakes by up to score_shake pixels for a play worth score_heavy of
+## the Quota's target or more. That share or more also lands with the heavier stamp.
+@export var score_chit_scale: float = 1.08
+@export var score_total_scale: float = 1.12
+@export var score_shake: float = 5.0
+@export var score_heavy: float = 0.2
+## The label of what a step added stands this long, rising this far as it fades.
+@export var score_label_time: float = 0.75
+@export var score_label_rise: float = 16.0
+## Semitones each tick and chime climbs over the first, in steps of the major pentatonic,
+## so any run stays in G; past the last they hold. A cut falls by the same steps.
+@export var score_scale_steps: Array[int] = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24]
+## The total rolls up a bead at a time: this many beads at most, and at least.
+@export var score_beads: int = 8
+@export var score_least_beads: int = 3
+
 @export_group("Interface")
 ## A button's scale on hover and while pressed.
 @export var hover_scale: float = 1.04

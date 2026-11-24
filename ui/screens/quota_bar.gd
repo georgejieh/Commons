@@ -111,6 +111,7 @@ func fill_to(to: float, seconds: float, delay: float = 0.0) -> void:
 		return
 	_tween = create_tween()
 	_tween.tween_interval(delay)
+	_tween.tween_callback(Audio.fill.bind(AudioEvents.MOTION_COUNT))
 	var fill: MethodTweener = _tween.tween_method(show_value, _shown, to, seconds)
 	fill.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	_tween.tween_callback(filled.emit)

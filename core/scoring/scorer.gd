@@ -27,8 +27,11 @@ static func score_play(
 	stack: ModifierStack,
 	params: ScoreParams = DEFAULT_PARAMS,
 	plays_before: int = 0,
-	facts: PlayFacts = null
+	facts: PlayFacts = null,
+	record: bool = false
 ) -> ScoreBreakdown:
+	# A real play records each change for the table to act out (P5.2a); a preview doesn't.
+	var trail: ScoreTrail = ScoreTrail.new() if record else null
 	var body: Array[bool] = body_flags(cards, pattern)
 	var scored: int = 0
 	var kicker_cards: PackedByteArray = PackedByteArray()
@@ -48,10 +51,13 @@ static func score_play(
 			var base: float = printed
 			if card.enhancement_id() == CardInstance.MODEL:
 				base = base * params.model_grain_percent / PERCENT
+			if trail != null:
+				trail.card(card.id(), printed)
+				trail.mark(card.id(), CardInstance.MODEL, base - printed)
 			var context: CardContext = CardContext.new(seat, is_landlord, card, base)
 			context.printed_grain = printed
 			context.landlord = Seats.NONE if facts == null else facts.landlord
-			stack.run_card_scored(context)
+			stack.run_card_scored(context, trail)
 			breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)
 			grain += context.grain
 
@@ -67,14 +73,13 @@ static func score_play(
 	play.card_grain = params.card_grain
 	play.kicker_cards = kicker_cards
 	play.body_cards = body_cards
-	stack.run_play_scored(play)
+	stack.run_play_scored(play, trail)
 	breakdown.stamps_resented = play.stamps_resented
 	grain += play.add_grain
 	breakdown.add_step(ScoreBreakdown.Step.ADD_GRAIN, play.add_grain)
 
-	var rate: float = params.rate_for(pattern.type, level)
-	if play.rate_percent != PERCENT:
-		rate = ceilf(rate * play.rate_percent / PERCENT)
+	var level_rate: float = params.rate_for(pattern.type, level)
+	var rate: float = rate_after(level_rate, play.rate_percent, INF)
 	breakdown.add_step(ScoreBreakdown.Step.RATE, rate)
 	if rate > play.rate_cap:
 		rate = play.rate_cap
@@ -88,7 +93,20 @@ static func score_play(
 	breakdown.rate = clamp_score(rate)
 	breakdown.zeal = clamp_score(zeal)
 	breakdown.total = clamp_score(grain * rate * zeal * play.total_scale)
+	if trail != null:
+		var base_rate: float = params.rate_for(pattern.type, HandLevels.FIRST_LEVEL)
+		trail.finish(base_rate, level_rate, params.min_zeal)
+		breakdown.trail = trail.steps
 	return breakdown
+
+
+## A hand's Rate at its level once a hook's share of it (ADR 0023), rounded up, and a cap
+## are applied.
+static func rate_after(level_rate: float, percent: int, cap: float) -> float:
+	var rate: float = level_rate
+	if percent != PERCENT:
+		rate = ceilf(rate * percent / PERCENT)
+	return minf(rate, cap)
 
 
 ## The end-of-round multiplier for one side's score. Spring and anti-spring reward only

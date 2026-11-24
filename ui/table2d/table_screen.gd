@@ -186,6 +186,7 @@ func open(app: DemoApp) -> void:
 	_kept.setup(_player, _moments.callout, names, faces)
 	_swap_sheet.setup(app, _pool)
 	_moments.hud = _hud
+	_moments.sequence.attach(_board, _debuffs, _controller)
 	add_child(_close)
 	_close.setup(_player, _pile, _moments, _hand, _hand_view, _seat_center)
 	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
@@ -430,6 +431,7 @@ func _on_setting(key: String) -> void:
 ## settings: it takes hold at once, mid-round.
 func _set_pace() -> void:
 	_player.step = _app.motion_step() * _sit_out.pace()
+	_moments.sequence.hurry_villagers = _sit_out.is_active()
 	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
 	_player.wind = _wind()
 	_player.holds = {

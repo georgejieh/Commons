@@ -1,0 +1,54 @@
+{
+ "name": "paper_flick",
+ "description": "A slip of paper flicked across the table: a short airy brush of noise. A figure flying to the ledger or the Quota bar, a page laid down, a page's pieces settling in.",
+ "layers": [
+  {
+   "wave": "noise",
+   "env": {
+    "attack": 0.025,
+    "hold": 0.02,
+    "release": 0.07,
+    "curve": 2
+   },
+   "filters": [
+    {
+     "type": "bandpass",
+     "cutoff": [
+      [
+       0,
+       1900
+      ],
+      [
+       0.12,
+       900
+      ]
+     ],
+     "q": 0.9
+    },
+    {
+     "type": "lowpass",
+     "cutoff": 4500
+    }
+   ]
+  }
+ ],
+ "master": {
+  "lufs": -30,
+  "peak_db": -12,
+  "highpass": 400
+ },
+ "vary": {
+  "pitch": 1.0,
+  "gain_db": 1.5
+ },
+ "expect": {
+  "duration": [
+   0.08,
+   0.16
+  ],
+  "centroid": [
+   900,
+   3500
+  ]
+ }
+}
