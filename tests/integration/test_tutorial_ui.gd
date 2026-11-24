@@ -170,7 +170,7 @@ func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_false()
 
 
-## Replayed from Settings at 1280x800 over a profile with history and a run in progress:
+## Replayed from the title at 1280x800 over a profile with history and a run in progress:
 ## it ends at the title, and the profile and the run save are byte for byte as they were.
 func test_a_replay_at_800_leaves_the_profile_and_run_save_alone() -> void:
 	get_tree().root.size = SIZES[1]
@@ -186,14 +186,34 @@ func test_a_replay_at_800_leaves_the_profile_and_run_save_alone() -> void:
 	var run_save: String = FileAccess.get_file_as_string(Saves.run_service().path())
 	var profile: String = _profile_bytes()
 	assert_str(run_save).is_not_empty()
-	_app.show_screen("title", true)
-	_app.show_screen("settings")
+	var title: TitleScreen = _app.show_screen("title", true)
 	await await_idle_frame()
-	_app.arrival.start(true)
+	assert_object(title.replay_button()).is_not_null()
+	title.replay_button().pressed.emit()
+	await await_idle_frame()
+	assert_bool(_app.arrival.is_running()).is_true()
 	await _walk("800")
 	assert_str(_app.switcher.current_id()).is_equal("title")
 	assert_str(FileAccess.get_file_as_string(Saves.run_service().path())).is_equal(run_save)
 	assert_str(_profile_bytes()).is_equal(profile)
+
+
+## The title offers the arrival again only to a profile that has finished or skipped it,
+## and Settings no longer does.
+func test_only_a_profile_past_the_arrival_is_offered_it_again() -> void:
+	await _launch()
+	var title: TitleScreen = _app.show_screen("title", true)
+	await await_idle_frame()
+	assert_object(title.replay_button()).is_null()
+	ProfileSeen.mark(Saves.profile_service(), ProfileSeen.TUTORIAL)
+	title = _app.show_screen("title", true)
+	await await_idle_frame()
+	assert_object(title.replay_button()).is_not_null()
+	assert_bool(title.replay_button().is_visible_in_tree()).is_true()
+	var settings: Control = _app.show_screen("settings")
+	await await_idle_frame()
+	for node: Node in settings.find_children("*", "Button", true, false):
+		assert_str((node as Button).text).is_not_equal(tr("title.replay_arrival"))
 
 
 ## Plays every step with the keys a player would press, checking the slip at each prompt.

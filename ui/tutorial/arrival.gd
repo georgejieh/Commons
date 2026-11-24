@@ -5,7 +5,7 @@ extends RefCounted
 ## starts the tutorial run, follows the screens it plays on through its layer, and ends
 ## on any other screen. Finishing it, or skipping it, writes the profile's first save
 ## with the arrival seen; quitting part-way writes nothing, so it is offered again.
-## Replayed from Settings it ends at the title and leaves the profile alone. It also
+## Replayed from the title it ends at the title and leaves the profile alone. It also
 ## decides when the one-time tooltips of a full run show.
 
 ## The screens the arrival plays on, and those its menu opens over the table.
@@ -24,7 +24,7 @@ var first_launch: bool = false
 var layer: TutorialLayer = TutorialLayer.new()
 
 var _app: DemoApp
-## True while the arrival plays again from Settings.
+## True while the arrival plays again from the title.
 var _replay: bool = false
 
 
