@@ -74,6 +74,7 @@ var _tutorial: TableTutorial = TableTutorial.new()
 var _wild: TableWild = TableWild.new()
 var _resize: TableResize = TableResize.new()
 var _columns: TableColumns = TableColumns.new()
+var _swap_sheet: PlotSwapSheet = PlotSwapSheet.new()
 var _kept: KeptSeatCall = KeptSeatCall.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
@@ -124,6 +125,7 @@ func _ready() -> void:
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
 	_pause.at_table = true
 	add_child(_kept)
+	add_child(_swap_sheet)
 	for sheet: Control in [_cheat_sheet, _pause]:
 		add_child(sheet)
 		sheet.set_deferred("size", Vector2(1920, 1080))
@@ -179,6 +181,7 @@ func open(app: DemoApp) -> void:
 		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
 	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
 	_kept.setup(_player, _moments.callout, names, faces)
+	_swap_sheet.setup(app, _pool)
 	_moments.hud = _hud
 	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
 	_campaigns.attach(_pool, _debuffs)
@@ -391,8 +394,8 @@ func _on_drained() -> void:
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
 	elif awaiting == RunController.AWAIT_SWAP:
-		# The plot swap has its own screen, over the table; it comes back here.
-		_app.show_screen("plot_swap")
+		# The plot swap is a sheet over the table, opened once the queue is empty (ADR 0038).
+		_swap_sheet.open()
 
 
 ## A play flies to the pile from the seat that made it; yours leaves from your hand.

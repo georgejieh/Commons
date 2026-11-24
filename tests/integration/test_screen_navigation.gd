@@ -86,7 +86,7 @@ func test_phase_4_screens_open_over_the_run_and_go_back() -> void:
 	_app.show_screen("table", true)
 	await await_idle_frame()
 	var before: Dictionary = _app.controller.state_copy().to_dict()
-	for screen_id: String in ["plot_swap", "reeducation"]:
+	for screen_id: String in ["reeducation"]:
 		_app.show_screen(screen_id)
 		await await_idle_frame()
 		assert_str(_app.switcher.current_id()).is_equal(screen_id)
@@ -157,10 +157,8 @@ func test_last_round_reports_exact_values_and_keeps_them() -> void:
 	assert_bool(lost["won"]).is_false()
 
 
-func test_keeping_a_hand_with_nothing_behind_returns_to_the_table() -> void:
+## A run saved while its plot swap waits continues at the table, which opens the swap's
+## sheet over itself (ADR 0038): there is no swap screen to land on.
+func test_a_waiting_swap_continues_at_the_table() -> void:
 	_app.new_run(SEED)
-	_app.show_screen("plot_swap", true)
-	await await_idle_frame()
-	_press("plot.keep")
-	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(_app.table_id())
+	assert_str(_app.screen_for(RunController.AWAIT_SWAP)).is_equal(_app.table_id())

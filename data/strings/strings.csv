@@ -289,12 +289,8 @@ plot.eyebrow,Private plot
 plot.title,Swap cards
 plot.hand,Your hand
 plot.plot,Your plot
-plot.empty,Your plot is empty.
 plot.keep,Keep hand
 plot.swap,Swap
-plot.limit,Swap up to {count} cards this round.
-plot.limit.one,Swap up to 1 card this round.
-plot.back,Back
 plot.out,Sits out
 plot.left,Swaps left
 plot.left.count,{left} of {limit}
