@@ -3,13 +3,14 @@ extends RefCounted
 ## The table's part in the arrival (ADR 0026): it reports where the run stands once the
 ## table's events have played and the cards on top of the trick have landed, and tells
 ## the arrival when a new deal begins, so a follow-up waits for the villagers' answer it
-## speaks of (the owner's playtest of 2026-11-24). It puts a play step's cards up as
-## chosen with the cursor on
-## the first, tells the arrival when the rules card closes, and names what the arrival
-## lights and where its slip stands: beside Wang's seat, clear of the hand, the trick,
-## the score and the prompt.
+## speaks of. It puts a play step's cards up as chosen with the cursor on the first,
+## tells the arrival when the rules card closes, and names what the arrival lights and
+## where its slip stands: in the player's eye line, centred between the seats with its
+## foot just over the trick, clear of the cards in play, the hand, the prompt, the
+## ledger and the bar (the owner's playtest of 2026-11-24).
 
-## The slip's home: its top, level with the seats, and its gap from Wang's seat.
+## The highest the slip's top may stand, level with the seats' tops under the bar, and
+## its gap over the trick, or over the claim sheet while that is up.
 const HOME_TOP: float = 118.0
 const HOME_GAP: float = 16.0
 ## The longest a report waits for a play's cards to land, in milliseconds, so a flight
@@ -133,14 +134,29 @@ func tutorial_rects(key: String) -> Array[Rect2]:
 	return rects
 
 
-## Where the slip stands at the table whatever the step: beside Wang's seat, over the
-## Cadre board's slots, which are empty through the arrival. Nowhere of its own while the
-## rules card lies over the table.
-func tutorial_home(extent: Vector2) -> Vector2:
+## Stands the slip at its home at the table, whatever the step, and returns true; or
+## returns false while the rules card lies over the table, where it has none. Its home is
+## centred on the play area's middle, between the two seats, with its foot just over the
+## trick, or over the claim sheet while that is up, so the eye finds it beside the play.
+## Where the claim sheet leaves no room over it, at the larger text sizes, Wang speaks
+## from his own seat: the slip stands over it, between the sheet and the action column,
+## as narrow as that room.
+func tutorial_place(slip: TutorialSlip) -> bool:
 	if _cheat_sheet.visible:
-		return Vector2.INF
-	var seat_left: float = TableScreen.PLAY_CENTER + TableScreen.SEAT_OFFSET
-	return Vector2(seat_left - HOME_GAP - extent.x, HOME_TOP)
+		return false
+	slip.set_width(TutorialSlip.WIDTH)
+	var foot: float = _pile.get_global_rect().position.y
+	if _need_panel.visible:
+		var sheet: Rect2 = _need_panel.get_global_rect()
+		foot = sheet.position.y
+		if foot - HOME_GAP - slip.size.y < HOME_TOP:
+			var left: float = sheet.end.x + HOME_GAP
+			slip.set_width(_actions.get_global_rect().position.x + _actions.size.x - left)
+			slip.global_position = Vector2(left, HOME_TOP)
+			return true
+	var top: float = maxf(HOME_TOP, foot - HOME_GAP - slip.size.y)
+	slip.global_position = Vector2(TableScreen.PLAY_CENTER - slip.size.x / 2.0, top)
+	return true
 
 
 func tutorial_rect(key: String) -> Rect2:

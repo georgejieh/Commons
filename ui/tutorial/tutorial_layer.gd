@@ -5,8 +5,8 @@ extends Control
 ## asks, and the "Begin your first year" button for the last step. It reads the
 ## director and the screen shown; it sends nothing to the run. Screens name their
 ## targets with tutorial_target(key) or, for the table, tutorial_rects(key); they may
-## name what the slip must keep clear of, or with tutorial_home(extent) the one place
-## the slip stands, as the table does. It draws above every piece a screen lifts (the
+## name what the slip must keep clear of, or with tutorial_place(slip) stand the slip at
+## a home of their own, as the table does. It draws above every piece a screen lifts (the
 ## store's slips and seals, the envelope), and below the app's menu.
 
 const CORNER: float = 24.0
@@ -138,15 +138,14 @@ func _layout() -> void:
 	_slip.visible = showing and not _slip.line().is_empty()
 	var key: String = _director.highlight() if showing else ""
 	_glow.light(_targets(guide, key))
+	# A home holds the slip whatever it says, so a taller line keeps its foot in place.
+	if guide != null and guide.has_method("tutorial_place"):
+		if bool(guide.call("tutorial_place", _slip)):
+			return
+	_slip.set_width(TutorialSlip.WIDTH)
 	var target: Rect2 = _glow.lit_area()
 	if not target.has_area():
 		return
-	if guide != null and guide.has_method("tutorial_home"):
-		_slip.reset_size()
-		var home: Vector2 = guide.call("tutorial_home", _slip.size)
-		if home.is_finite():
-			_slip.global_position = home
-			return
 	var avoid: Array[Rect2] = []
 	if guide != null and guide.has_method("tutorial_avoid"):
 		avoid.assign(guide.call("tutorial_avoid"))
