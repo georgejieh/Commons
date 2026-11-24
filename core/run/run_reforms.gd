@@ -102,7 +102,6 @@ static func table_rules(state: RunState) -> Array[ActiveModifier]:
 		rule.parameters = reform.parameters.duplicate()
 		rule.name_key = reform.name_key
 		rule.text_key = reform.text_key
-		rule.table_wide = true
 		rules.append(ActiveModifier.new(rule, effect.table_rule()))
 	return rules
 

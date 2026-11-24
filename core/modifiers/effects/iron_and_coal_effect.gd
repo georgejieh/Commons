@@ -1,7 +1,7 @@
 class_name IronAndCoalEffect
 extends ModifierEffect
-## Every scored spade and club adds flat Grain, for whoever scores it (ADR 0032). Jokers
-## have no suit.
+## Every scored spade and club adds flat Grain (ADR 0032), for the holder and the holder's
+## teammate (SeatScope, ADR 0039). Jokers have no suit.
 
 const GRAIN: String = "grain"
 ## Suits in deck order: spade, heart, club, diamond.

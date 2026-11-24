@@ -6,8 +6,8 @@ extends RefCounted
 
 static func cadre(definition: ModifierDef) -> String:
 	var text: String = CadreText.rules(definition)
-	if definition.table_wide:
-		text += " " + TranslationServer.translate("modifier.table_wide")
+	if definition.counts_for_teammate:
+		text += " " + TranslationServer.translate("modifier.counts_for_teammate")
 	return text
 
 

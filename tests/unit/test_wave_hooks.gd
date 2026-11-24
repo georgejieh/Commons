@@ -81,8 +81,9 @@ func test_the_gleaners_grow_the_commons_by_the_landlords_cards_left() -> void:
 	assert_float(_ended(stack, THIRD, OTHER, 6).commons_scale).is_equal_approx(1.3, 0.0001)
 	assert_float(_ended(stack, THIRD, HOLDER, 1).commons_scale).is_equal_approx(1.05, 0.0001)
 	assert_float(_ended(stack, THIRD, THIRD, 6).commons_scale).is_equal(1.0)
-	# The holder as landlord still sees the peasants' Commons grow when they win.
-	assert_float(_ended(stack, HOLDER, OTHER, 4).commons_scale).is_equal_approx(1.2, 0.0001)
+	# Held by the landlord it pays nothing: the peasants are the holder's opponents (ADR
+	# 0039).
+	assert_float(_ended(stack, HOLDER, OTHER, 4).commons_scale).is_equal(1.0)
 	var both: ModifierStack = _stack(["model_commune", "the_gleaners"])
 	var scale: float = _ended(both, THIRD, OTHER, 6).commons_scale
 	assert_float(scale).is_equal_approx(1.95, 0.0001)
@@ -122,9 +123,10 @@ func test_back_door_makes_the_first_black_market_reroll_free() -> void:
 	assert_int(market.reroll_price()).is_equal(0)
 
 
-func test_double_share_plough_lowers_the_shortest_pair_run_for_every_seat() -> void:
+func test_double_share_plough_lowers_the_shortest_pair_run_for_its_holder_alone() -> void:
 	var table: SeatRules = SeatRules.new(_stack(["double_share_plough"]))
-	for seat: int in Seats.COUNT:
-		assert_int(table.rules_for(seat).min_pair_chain_length()).is_equal(2)
+	assert_int(table.rules_for(HOLDER).min_pair_chain_length()).is_equal(2)
+	for seat: int in [OTHER, THIRD]:
+		assert_int(table.rules_for(seat).min_pair_chain_length()).is_equal(3)
 	var plain: SeatRules = SeatRules.new(ModifierStack.new())
 	assert_int(plain.rules_for(HOLDER).min_pair_chain_length()).is_equal(3)

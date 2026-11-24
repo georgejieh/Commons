@@ -25,5 +25,5 @@ func _init(
 	view = seat_view
 	for move: Pattern in moves:
 		legal.append(move.copy())
-	table = BotTable.new(seat_table.rules, seat_table.rank_map.duplicate())
+	table = seat_table.copied()
 	config = seat_config.copy()

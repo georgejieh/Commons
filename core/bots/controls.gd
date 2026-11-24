@@ -3,7 +3,8 @@ extends RefCounted
 ## Which of a hand's groups nothing unseen can beat, given what could still appear.
 ## A bot that doesn't count cards treats only 2s, jokers and bombs as controls. While a
 ## rank is wild, unseen wild cards can finish an answer of any rank (ADR 0029), which the
-## move generator reads from the unseen counts.
+## move generator reads from the unseen counts. An answer is read under each rival's own
+## rules and standings (ADR 0039): a group is beaten if any rival's could beat it.
 
 const BOMB_WIDTH: int = 4
 
@@ -20,7 +21,11 @@ func _init(
 	largest_hand: int,
 	table: BotTable,
 	counts_cards: bool = true,
+	rivals: Array[BotTable] = [],
 ) -> void:
+	var answering: Array[BotTable] = rivals
+	if answering.is_empty():
+		answering = [table]
 	rocket_possible = unseen[Ranks.SMALL_JOKER] > 0 and unseen[Ranks.BIG_JOKER] > 0
 	var supply: WildSupply = WildSupply.of(unseen, table.rules)
 	var wilds: int = 0 if supply == null else supply.total
@@ -36,7 +41,7 @@ func _init(
 		var high: bool = table.rank_map[group.main_rank] >= Ranks.TWO
 		var is_control: bool = high or group.type == Pattern.Type.BOMB
 		if counts_cards:
-			is_control = _is_control(group, unseen, mask, largest_hand, table)
+			is_control = _is_control(group, unseen, mask, largest_hand, table, answering)
 		flags.append(is_control)
 		controls += 1 if is_control else 0
 	effective_hands = groups.size() - controls
@@ -44,18 +49,25 @@ func _init(
 
 ## A rival must hold the whole answer, so an answer larger than any hand does not count.
 func _is_control(
-	group: Pattern, unseen: PackedByteArray, mask: int, largest_hand: int, table: BotTable
+	group: Pattern,
+	unseen: PackedByteArray,
+	mask: int,
+	largest_hand: int,
+	table: BotTable,
+	answering: Array[BotTable]
 ) -> bool:
 	if group.type == Pattern.Type.ROCKET:
 		return true
 	if group.card_count > largest_hand and group.type != Pattern.Type.BOMB:
 		return true
-	var beaters: Array[Pattern] = MoveGenerator.generate(
-		unseen, mask, group, table.rules, table.rank_map
-	)
-	for beater: Pattern in beaters:
-		var same_type: bool = beater.type == group.type
-		var answers_bomb: bool = group.type == Pattern.Type.BOMB
-		if (same_type or answers_bomb) and beater.card_count <= largest_hand:
-			return false
+	var played: Pattern = group.rekeyed(table.standing[group.main_rank])
+	for rival: BotTable in answering:
+		var beaters: Array[Pattern] = MoveGenerator.generate(
+			unseen, mask, played, rival.rules, rival.standing
+		)
+		for beater: Pattern in beaters:
+			var same_type: bool = beater.type == group.type
+			var answers_bomb: bool = group.type == Pattern.Type.BOMB
+			if (same_type or answers_bomb) and beater.card_count <= largest_hand:
+				return false
 	return true

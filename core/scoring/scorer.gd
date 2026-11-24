@@ -50,6 +50,7 @@ static func score_play(
 				base = base * params.model_grain_percent / PERCENT
 			var context: CardContext = CardContext.new(seat, is_landlord, card, base)
 			context.printed_grain = printed
+			context.landlord = Seats.NONE if facts == null else facts.landlord
 			stack.run_card_scored(context)
 			breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)
 			grain += context.grain

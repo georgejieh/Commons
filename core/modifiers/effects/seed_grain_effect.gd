@@ -1,7 +1,8 @@
 class_name SeedGrainEffect
 extends ModifierEffect
-## Every seat's plays gain flat Grain for each Quota met while it is held. The count
-## rises at each met Quota's end.
+## Plays gain flat Grain for each Quota met while it is held, for the holder and the
+## holder's teammate (SeatScope, ADR 0039). The count rises at each met Quota's end: the
+## player's Quota, whoever sat where.
 
 const GRAIN: String = "grain"
 const MET: String = "met"

@@ -16,4 +16,4 @@ cost = 5
 unlock_tier = 2
 name_key = "modifier.poor_peasants_association.name"
 text_key = "modifier.poor_peasants_association.text"
-table_wide = true
+counts_for_teammate = true

@@ -12,6 +12,10 @@ var trick_bombed: bool
 var stamped: int = 0
 ## Effective rank per base rank, to edit.
 var rank_map: PackedByteArray
+## The gap between neighbouring printed ranks in rank_map: 1 for a seat's own order,
+## Standing.STEP for its standings, where a moved rank fits between two others. An effect
+## hands it to RankShift and ReversedRanks and never needs to read it.
+var step: int = 1
 
 
 func _init(

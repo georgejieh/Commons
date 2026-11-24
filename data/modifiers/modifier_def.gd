@@ -30,8 +30,10 @@ const RARE: int = 2
 @export var unlock_tier: int = 0
 @export var name_key: String
 @export var text_key: String
-## True when the effect changes every seat's play, not only its holder's.
-@export var table_wide: bool = false
+## True when a collective Cadre's scoring also pays on the holder's teammate's plays while
+## the holder is a peasant (ADR 0039). A Cadre never acts for the holder's opponents, and
+## its rules and ranks are the holder's alone, so nothing else can say more.
+@export var counts_for_teammate: bool = false
 ## True when buying it asks the player to pick a rank first (ADR 0021).
 @export var needs_rank: bool = false
 ## The line that says where a Cadre with run state stands, or empty when it keeps none.

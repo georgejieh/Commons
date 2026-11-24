@@ -1,7 +1,7 @@
 class_name AdvancedCooperativeEffect
 extends ModifierEffect
-## Every scored card printed from low_rank to high_rank adds flat Grain, for whoever
-## scores it (ADR 0032).
+## Every scored card printed from low_rank to high_rank adds flat Grain (ADR 0032), for the
+## holder and the holder's teammate (SeatScope, ADR 0039).
 
 const LOW_RANK: String = "low_rank"
 const HIGH_RANK: String = "high_rank"

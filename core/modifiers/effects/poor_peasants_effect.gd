@@ -1,7 +1,8 @@
 class_name PoorPeasantsEffect
 extends ModifierEffect
 ## Scored cards printed from low_rank to high_rank score their own Grain times a
-## multiplier in hundredths, for whoever scores them. Own Grain is the printed Grain,
+## multiplier in hundredths, for the holder and the holder's teammate (SeatScope, ADR
+## 0039). Own Grain is the printed Grain,
 ## raised if the card is Model, so flat Grain other hooks add is never multiplied.
 
 const LOW_RANK: String = "low_rank"

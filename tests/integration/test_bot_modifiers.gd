@@ -2,12 +2,22 @@ extends GdUnitTestSuite
 ## Bots read each seat's own rules and rank map, so no modifier set makes them act illegally.
 
 const MODIFIERS: Array[String] = [
-	"promotion_of_the_masses", "criticism_meeting", "inverted_order", "cultural_revolution"
+	"promotion_of_the_masses",
+	"criticism_meeting",
+	"inverted_order",
+	"cultural_revolution",
+	"shock_brigade",
+	"double_share_plough",
+]
+## The Cadres that change what one seat may play or what its cards beat (ADR 0039).
+const SEAT_CADRES: Array[String] = [
+	"promotion_of_the_masses", "cultural_revolution", "shock_brigade", "double_share_plough"
 ]
 const TIERS: Array[BotConfig.Tier] = [
 	BotConfig.Tier.EASY, BotConfig.Tier.MEDIUM, BotConfig.Tier.HARD
 ]
 const SEARCHED_GAMES: int = 3
+const HELD_GAMES: int = 12
 
 
 func _random_table(stream: RandomStream) -> SeatRules:
@@ -48,9 +58,29 @@ func test_searching_bots_stay_legal_under_modifiers() -> void:
 		_assert_clean(game_seed, [expert, expert, expert])
 
 
+## Each Cadre held by seat 0 alone, as the player holds it, with every tier at every seat
+## and Expert in one game each: no bot makes an illegal action against the seat that
+## plays by other rules, or while holding them.
+func test_no_bot_acts_illegally_while_one_seat_holds_a_cadre() -> void:
+	var expert: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.EXPERT)
+	for name: String in SEAT_CADRES:
+		var stack: ModifierStack = ModifierStack.new()
+		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), 0)
+		var table: SeatRules = SeatRules.new(stack)
+		for game: int in HELD_GAMES + 1:
+			var seats: Array[BotConfig] = [expert, expert, expert]
+			if game < HELD_GAMES:
+				seats = _random_seats(RandomStream.new(game + 31))
+			var deal: DealResult = SelfPlay.deal_from_seed(4100 + game)
+			var result: SelfPlayResult = SelfPlay.play_round(deal, game % Seats.COUNT, seats, table)
+			var label: String = "%s game %d" % [name, game]
+			assert_int(result.illegal_actions).override_failure_message(label).is_equal(0)
+			assert_bool(result.winner != Seats.NONE).override_failure_message(label).is_true()
+
+
 func test_a_bot_answers_by_its_seats_rank_map() -> void:
 	var stack: ModifierStack = ModifierStack.new()
-	stack.add(ResourceLoader.load("res://data/modifiers/promotion_of_the_masses.tres"), 0)
+	stack.add(ResourceLoader.load("res://data/modifiers/promotion_of_the_masses.tres"), 1)
 	var table: SeatRules = SeatRules.new(stack)
 	var deal: DealResult = RoundScript.stacked_deal(["29", "3", "4"], "")
 	var round_state: RoundState = RoundState.new(deal, 0, table)

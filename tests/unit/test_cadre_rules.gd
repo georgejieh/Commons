@@ -124,26 +124,27 @@ func _deck() -> Array[CardInstance]:
 	return cards
 
 
-func test_shock_brigade_allows_four_card_straights_for_every_seat_but_not_three() -> void:
+func test_shock_brigade_allows_its_holder_four_card_straights_but_not_three() -> void:
 	var table: SeatRules = SeatRules.new(_stack("shock_brigade"))
+	for seat: int in [OTHER, OTHER + 1]:
+		assert_int(table.rules_for(seat).min_straight_length()).is_equal(5)
 	var four: PackedByteArray = PackedByteArray()
 	four.resize(Ranks.COUNT)
 	for rank: int in range(Ranks.FIVE, Ranks.NINE):
 		four[rank] = 1
 	var three: PackedByteArray = four.duplicate()
 	three[Ranks.EIGHT] = 0
-	for seat: int in Seats.COUNT:
-		var rules: RuleSet = table.rules_for(seat)
-		assert_int(rules.min_straight_length()).is_equal(4)
-		var read: Classification = Classifier.classify(four, rules, Ranks.identity_map())
-		assert_int(read.pattern.type).is_equal(Pattern.Type.STRAIGHT)
-		assert_bool(Classifier.classify(three, rules, Ranks.identity_map()).is_valid()).is_false()
-		var moves: Array[Pattern] = MoveGenerator.generate(
-			four, _mask(four), null, rules, Ranks.identity_map()
-		)
-		assert_bool(moves.any(func(move: Pattern) -> bool: return move.card_count == 4)).is_true()
-	var plain: RuleSet = SeatRules.new(ModifierStack.new()).rules_for(0)
-	assert_bool(Classifier.classify(four, plain, Ranks.identity_map()).is_valid()).is_false()
+	var rules: RuleSet = table.rules_for(HOLDER)
+	assert_int(rules.min_straight_length()).is_equal(4)
+	var read: Classification = Classifier.classify(four, rules, Ranks.identity_map())
+	assert_int(read.pattern.type).is_equal(Pattern.Type.STRAIGHT)
+	assert_bool(Classifier.classify(three, rules, Ranks.identity_map()).is_valid()).is_false()
+	var moves: Array[Pattern] = MoveGenerator.generate(
+		four, _mask(four), null, rules, Ranks.identity_map()
+	)
+	assert_bool(moves.any(func(move: Pattern) -> bool: return move.card_count == 4)).is_true()
+	var other: RuleSet = table.rules_for(OTHER)
+	assert_bool(Classifier.classify(four, other, Ranks.identity_map()).is_valid()).is_false()
 
 
 func _mask(counts: PackedByteArray) -> int:

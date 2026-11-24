@@ -1,5 +1,6 @@
 extends GdUnitTestSuite
-## The four rank modifiers, including that legal moves stay legal under each.
+## The four rank modifiers, including that legal moves stay legal under each. A rank
+## Cadre changes its holder's map alone (ADR 0039), as the rank debuffs always did.
 
 const SEED: int = 1904
 const GAMES: int = 200
@@ -31,7 +32,10 @@ func _pass(round_state: RoundState) -> void:
 
 
 func test_promotion_puts_threes_above_twos_and_below_jokers() -> void:
-	var map: PackedByteArray = _table(["promotion_of_the_masses"]).map_for(1)
+	var table: SeatRules = _table(["promotion_of_the_masses"])
+	var map: PackedByteArray = table.map_for(0)
+	assert_bool(table.map_for(1) == Ranks.identity_map()).is_true()
+	assert_bool(table.map_for(2) == Ranks.identity_map()).is_true()
 	assert_bool(map[Ranks.THREE] > map[Ranks.TWO]).is_true()
 	assert_bool(map[Ranks.THREE] < map[Ranks.SMALL_JOKER]).is_true()
 	for rank: int in range(Ranks.FOUR, Ranks.TWO):
@@ -47,7 +51,7 @@ func test_promotion_never_breaks_a_straight() -> void:
 
 
 func test_promotion_changes_who_wins() -> void:
-	var table: SeatRules = _table(["promotion_of_the_masses"])
+	var table: SeatRules = _table(["promotion_of_the_masses"], 1)
 	var round_state: RoundState = _round(table, ["29", "3", "4"])
 	assert_int(_play(round_state, table, "2")).is_equal(RoundState.Reason.OK)
 	assert_int(_play(round_state, table, "3")).is_equal(RoundState.Reason.OK)
@@ -86,7 +90,7 @@ func test_a_tied_rank_does_not_beat() -> void:
 
 
 func test_a_promoted_chain_compares_by_its_lowest_rank() -> void:
-	var table: SeatRules = _table(["promotion_of_the_masses"])
+	var table: SeatRules = _table(["promotion_of_the_masses"], 1)
 	var round_state: RoundState = _round(table, ["TJQKA9", "345678", "5"])
 	assert_int(_play(round_state, table, "TJQKA")).is_equal(RoundState.Reason.OK)
 	assert_int(_play(round_state, table, "34567")).is_equal(RoundState.Reason.OK)
@@ -123,7 +127,7 @@ func test_a_modifier_added_mid_trick_applies_at_once() -> void:
 	var table: SeatRules = SeatRules.new(stack)
 	var round_state: RoundState = _round(table, ["29", "34", "5"])
 	assert_int(_play(round_state, table, "2")).is_equal(RoundState.Reason.OK)
-	stack.add(ResourceLoader.load("res://data/modifiers/promotion_of_the_masses.tres"), 0)
+	stack.add(ResourceLoader.load("res://data/modifiers/promotion_of_the_masses.tres"), 1)
 	assert_int(round_state.legal_moves().size()).is_equal(1)
 	assert_int(_play(round_state, table, "3")).is_equal(RoundState.Reason.OK)
 
@@ -142,15 +146,17 @@ func test_a_modifier_removed_mid_trick_refreshes_the_play_on_the_table() -> void
 
 func test_the_refresh_reads_the_players_own_map() -> void:
 	var stack: ModifierStack = ModifierStack.new()
-	stack.add(ResourceLoader.load("res://data/modifiers/cultural_revolution.tres"), 0)
+	stack.add(ResourceLoader.load("res://data/modifiers/cultural_revolution.tres"), 1)
 	stack.add(ResourceLoader.load("res://data/modifiers/inverted_order.tres"), 1)
 	var table: SeatRules = SeatRules.new(stack)
 	var round_state: RoundState = _round(table, ["34", "7777J", "5"])
 	assert_int(_play(round_state, table, "3")).is_equal(RoundState.Reason.OK)
 	assert_int(_play(round_state, table, "7777")).is_equal(RoundState.Reason.OK)
 	var view: PublicView = round_state.public_view()
-	var expected: int = table.map_for(1)[Ranks.SEVEN]
-	assert_int(expected).is_equal(Ranks.SEVEN)
+	assert_int(table.map_for(1)[Ranks.SEVEN]).is_equal(Ranks.SEVEN)
+	# A play's key reads the seat's standings (ADR 0039), here turned twice over too.
+	var expected: int = table.standing_for(1)[Ranks.SEVEN]
+	assert_int(expected).is_equal(Ranks.SEVEN * Standing.STEP)
 	assert_int(view.current_play.key & 0xFF).is_equal(expected)
 	assert_int(view.history[1].pattern.key & 0xFF).is_equal(expected)
 
@@ -170,7 +176,7 @@ func test_a_new_round_starts_with_a_clean_table() -> void:
 
 
 func test_cultural_revolution_inverts_after_a_bomb_until_the_trick_ends() -> void:
-	var table: SeatRules = _table(["cultural_revolution"])
+	var table: SeatRules = _table(["cultural_revolution"], 2)
 	var round_state: RoundState = _round(table, ["34", "77778888", "6666J5"])
 	_pass_lead(round_state, table)
 	assert_int(_play(round_state, table, "7777")).is_equal(RoundState.Reason.OK)
@@ -181,8 +187,10 @@ func test_cultural_revolution_inverts_after_a_bomb_until_the_trick_ends() -> voi
 	assert_int(table.map_for(2)[Ranks.SIX]).is_equal(Ranks.SIX)
 
 
+## The holder's 7s bomb, then read in the holder's inverted order, stand above a
+## villager's 8s, read in the villager's own.
 func test_a_higher_bomb_loses_once_ranks_are_inverted() -> void:
-	var table: SeatRules = _table(["cultural_revolution"])
+	var table: SeatRules = _table(["cultural_revolution"], 1)
 	var round_state: RoundState = _round(table, ["34", "77775", "88886"])
 	_pass_lead(round_state, table)
 	assert_int(_play(round_state, table, "7777")).is_equal(RoundState.Reason.OK)

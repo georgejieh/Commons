@@ -2,15 +2,15 @@ class_name DebuffStrip
 extends PanelContainer
 ## The rules in force this round, on a paper slip under the right seat (ADR 0034, rule
 ## 6), so a rule that changes play is always in view, not only on the Rules sheet: first
-## the round's wild ranks on one line (ADR 0029), then the debuffs that bind only the
-## player, then anything that changes play for the whole table: a Reform's table rule, a
-## debuff or a Cadre. Hidden while none applies.
+## the round's wild ranks on one line (ADR 0029), then the round's debuffs, then a
+## Reform's rule that changes play for the whole table. A Cadre is never here: it works
+## for the player's household alone (ADR 0039), and its card is on the board. Hidden while
+## none applies.
 ##
 ## The slip keeps to a room the table gives it and steps down one form at a time until
 ## it fits (rule 7): in full; by name, with a line that points to the Rules sheet; by name
 ## with the type fitted down, never under Standard; and, when the table allows it,
-## counted. Table-wide Cadres are named nowhere but in full: their cards are on the board.
-## It never shows some rules in full and others by name.
+## counted. It never shows some rules in full and others by name.
 
 ## The rules in force were read again, so the table can lay out the slip's column.
 signal shown
@@ -37,8 +37,6 @@ var _lines: KeywordText = KeywordText.new()
 var _form: Form = Form.FULL
 var _yours: Array[Dictionary] = []
 var _everyone: Array[Dictionary] = []
-## Table-wide Cadres, shown only in full.
-var _cadres: Array[Dictionary] = []
 
 
 func _init() -> void:
@@ -57,34 +55,23 @@ func _init() -> void:
 
 func show_debuffs(controller: RunController) -> void:
 	_yours.clear()
-	_cadres.clear()
 	_everyone = _table_rules(controller)
 	for modifier_id: String in controller.active_debuff_ids():
-		var rule: Dictionary = _rule(controller, modifier_id)
-		(_everyone if controller.is_table_wide(modifier_id) else _yours).append(rule)
-	for cadre_id: String in controller.state_copy().inventory.cadres:
-		if controller.is_table_wide(cadre_id):
-			_cadres.append(_rule(controller, cadre_id))
+		_yours.append(_rule(controller, modifier_id))
 	refit()
 	shown.emit()
 
 
 ## Lays the rules out again in the first form that fits the room now.
 func refit() -> void:
-	var everyone: Array[Dictionary] = []
-	everyone.assign(_everyone + _cadres)
 	_form = Form.FULL
 	_set_type(TextSize.px(FONT_SIZE))
-	_lines.text = _full(everyone)
+	_lines.text = _full()
 	visible = not _lines.text.is_empty()
 	if not visible:
 		size = Vector2(size.x, 0.0)
 		return
-	if _measure() > room and _named_count() == 0:
-		# Only Cadres, whose cards are on the board: the wild ranks' line, if any.
-		_lines.text = "\n".join(_wild_row())
-		visible = not _lines.text.is_empty()
-	elif _measure() > room:
+	if _measure() > room and _named_count() > 0:
 		_lines.text = _by_name()
 		_form = Form.NAMED
 		if _measure() > room:
@@ -117,7 +104,7 @@ func is_named() -> bool:
 	return _form != Form.FULL
 
 
-## How many rules the named forms name: the debuffs and the table's rules, not Cadres.
+## How many rules the named forms name: the debuffs and the table's rules.
 func _named_count() -> int:
 	return _yours.size() + _everyone.size()
 
@@ -130,9 +117,9 @@ func _fit_type() -> void:
 
 
 ## Every rule in full: the wild ranks' line, then each group under its head.
-func _full(everyone: Array[Dictionary]) -> String:
+func _full() -> String:
 	var rows: PackedStringArray = _wild_row()
-	for group: Array in [["table.debuffs", _yours], ["table.rules_everyone", everyone]]:
+	for group: Array in [["table.debuffs", _yours], ["table.rules_everyone", _everyone]]:
 		var rules: Array[Dictionary] = []
 		rules.assign(group[1])
 		if rules.is_empty():

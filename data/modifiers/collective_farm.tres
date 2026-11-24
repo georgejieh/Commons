@@ -16,4 +16,4 @@ cost = 5
 unlock_tier = 0
 name_key = "modifier.collective_farm.name"
 text_key = "modifier.collective_farm.text"
-table_wide = true
+counts_for_teammate = true

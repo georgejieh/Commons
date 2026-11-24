@@ -131,9 +131,12 @@ func identity() -> int:
 	return CountKey.encode(counts()) | (type << IDENTITY_TYPE_SHIFT)
 
 
-## The same reading, whatever cards spend it.
+## The same reading, whatever cards spend it and whichever scale its key was read on: a
+## seat's order or its standings (ADR 0039).
 func same_reading(other: Pattern) -> bool:
-	return key == other.key and identity() == other.identity()
+	return (
+		shape() == other.shape() and main_rank == other.main_rank and identity() == other.identity()
+	)
 
 
 ## The same reading of the same cards.

@@ -80,7 +80,7 @@ static func _without_low(
 static func _is_top(position: BotPosition, rank: int, width: int) -> bool:
 	for other: int in Ranks.COUNT:
 		var could_answer: bool = position.could_hold(other, width)
-		if could_answer and position.rank_of(other) > position.rank_of(rank):
+		if could_answer and position.outranked(other, rank):
 			return false
 	return true
 

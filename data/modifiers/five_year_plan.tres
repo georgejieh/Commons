@@ -16,4 +16,4 @@ cost = 6
 unlock_tier = 4
 name_key = "modifier.five_year_plan.name"
 text_key = "modifier.five_year_plan.text"
-table_wide = true
+counts_for_teammate = true

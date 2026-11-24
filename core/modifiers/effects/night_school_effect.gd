@@ -1,6 +1,7 @@
 class_name NightSchoolEffect
 extends ModifierEffect
-## Every seat's Singles and Pairs gain flat Zeal, given in hundredths (ADR 0032).
+## Singles and Pairs gain flat Zeal, given in hundredths (ADR 0032), for the holder and
+## the holder's teammate (SeatScope, ADR 0039).
 
 const ZEAL_PERCENT: String = "zeal_percent"
 const SMALL_PLAYS: Array[Pattern.Type] = [Pattern.Type.SINGLE, Pattern.Type.PAIR]

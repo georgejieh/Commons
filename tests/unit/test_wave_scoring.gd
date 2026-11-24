@@ -1,10 +1,17 @@
 extends GdUnitTestSuite
 ## ADR 0032's scoring Cadres, one golden scenario each through the real Scorer: the
-## effect, its boundary, and who it reaches. A collective Cadre changes every seat's
-## plays; a private one changes only its holder's.
+## effect, its boundary, and who it reaches. A collective scoring Cadre changes its
+## holder's plays and, while the holder is a peasant, the teammate's, never an
+## opponent's (ADR 0039); a private one changes only its holder's.
 
 const HOLDER: int = 0
 const OTHER: int = 1
+## Seat and landlord, x and y, of the plays a collective scoring Cadre held by seat 0 pays
+## on: the holder as a peasant, the teammate, and the holder as landlord.
+const PAID: Array[Vector2i] = [Vector2i(0, 2), Vector2i(1, 2), Vector2i(0, 0)]
+## And those it never pays on: the landlord against the holder, and a peasant against the
+## holder as landlord.
+const UNPAID: Array[Vector2i] = [Vector2i(2, 2), Vector2i(1, 0)]
 const SPADE: int = 0
 const HEART: int = 1
 const CLUB: int = 2
@@ -60,22 +67,38 @@ func _score(
 	)
 
 
-func test_night_school_gives_every_seats_singles_and_pairs_half_a_zeal() -> void:
+## Scores the cards for at.x in a round whose landlord is at.y.
+func _score_at(
+	stack: ModifierStack, cards: Array[CardInstance], at: Vector2i, year: int = 0
+) -> ScoreBreakdown:
+	var facts: PlayFacts = PlayFacts.new(
+		at.y, -1, PackedInt32Array([0, 0, 0]), PackedFloat64Array([0, 0, 0]), year
+	)
+	return Scorer.score_play(
+		cards, _pattern(cards), 1, at.x, at.x == at.y, stack, Scorer.DEFAULT_PARAMS, 0, facts
+	)
+
+
+func test_night_school_gives_the_holders_sides_singles_and_pairs_half_a_zeal() -> void:
 	var stack: ModifierStack = _stack(["night_school"])
-	for seat: int in [HOLDER, OTHER]:
-		assert_float(_score(stack, _cards([Ranks.SEVEN]), seat).zeal).is_equal(1.5)
-		assert_float(_score(stack, _cards([Ranks.SEVEN, Ranks.SEVEN]), seat).zeal).is_equal(1.5)
+	for at: Vector2i in PAID:
+		assert_float(_score_at(stack, _cards([Ranks.SEVEN]), at).zeal).is_equal(1.5)
+		assert_float(_score_at(stack, _cards([Ranks.SEVEN, Ranks.SEVEN]), at).zeal).is_equal(1.5)
+	for at: Vector2i in UNPAID:
+		assert_float(_score_at(stack, _cards([Ranks.SEVEN]), at).zeal).is_equal(1.0)
 	var trio: Array[CardInstance] = _cards([Ranks.SEVEN, Ranks.SEVEN, Ranks.SEVEN])
 	assert_float(_score(stack, trio).zeal).is_equal(1.0)
 
 
-func test_iron_and_coal_adds_to_spades_and_clubs_for_everyone_and_not_jokers() -> void:
+func test_iron_and_coal_adds_to_the_holders_sides_spades_and_clubs_not_jokers() -> void:
 	var stack: ModifierStack = _stack(["iron_and_coal"])
-	for seat: int in [HOLDER, OTHER]:
-		assert_float(_score(stack, [_card(Ranks.SEVEN, SPADE)], seat).grain).is_equal(9.0)
-		assert_float(_score(stack, [_card(Ranks.SEVEN, CLUB)], seat).grain).is_equal(9.0)
-		assert_float(_score(stack, [_card(Ranks.SEVEN, HEART)], seat).grain).is_equal(7.0)
-		assert_float(_score(stack, [_card(Ranks.SEVEN, DIAMOND)], seat).grain).is_equal(7.0)
+	for at: Vector2i in PAID:
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, SPADE)], at).grain).is_equal(9.0)
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, CLUB)], at).grain).is_equal(9.0)
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, HEART)], at).grain).is_equal(7.0)
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, DIAMOND)], at).grain).is_equal(7.0)
+	for at: Vector2i in UNPAID:
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, SPADE)], at).grain).is_equal(7.0)
 	var joker: Array[CardInstance] = [CardInstance.from_deck_id(Deck.SMALL_JOKER_ID)]
 	assert_float(_score(stack, joker).grain).is_equal(16.0)
 
@@ -83,16 +106,18 @@ func test_iron_and_coal_adds_to_spades_and_clubs_for_everyone_and_not_jokers() -
 ## J is printed 11 and A 14: each gains 4. A 10 and a 2 sit outside the range.
 func test_advanced_cooperative_adds_to_cards_printed_jack_to_ace() -> void:
 	var stack: ModifierStack = _stack(["advanced_cooperative"])
-	for seat: int in [HOLDER, OTHER]:
-		assert_float(_score(stack, _cards([Ranks.JACK]), seat).grain).is_equal(15.0)
-		assert_float(_score(stack, _cards([Ranks.ACE]), seat).grain).is_equal(18.0)
-		assert_float(_score(stack, _cards([Ranks.TEN]), seat).grain).is_equal(10.0)
-		assert_float(_score(stack, _cards([Ranks.TWO]), seat).grain).is_equal(15.0)
+	for at: Vector2i in PAID:
+		assert_float(_score_at(stack, _cards([Ranks.JACK]), at).grain).is_equal(15.0)
+		assert_float(_score_at(stack, _cards([Ranks.ACE]), at).grain).is_equal(18.0)
+		assert_float(_score_at(stack, _cards([Ranks.TEN]), at).grain).is_equal(10.0)
+		assert_float(_score_at(stack, _cards([Ranks.TWO]), at).grain).is_equal(15.0)
+	for at: Vector2i in UNPAID:
+		assert_float(_score_at(stack, _cards([Ranks.JACK]), at).grain).is_equal(11.0)
 	# A Pair of Queens: 12 + 4 twice.
 	assert_float(_score(stack, _cards([Ranks.QUEEN, Ranks.QUEEN])).grain).is_equal(32.0)
 
 
-func test_tractor_station_gives_every_airplane_a_zeal_and_nothing_else() -> void:
+func test_tractor_station_gives_the_holders_sides_airplanes_a_zeal_and_nothing_else() -> void:
 	var stack: ModifierStack = _stack(["tractor_station"])
 	var plane: Array[int] = [Ranks.SEVEN, Ranks.SEVEN, Ranks.SEVEN, Ranks.EIGHT, Ranks.EIGHT]
 	plane.append(Ranks.EIGHT)
@@ -100,23 +125,27 @@ func test_tractor_station_gives_every_airplane_a_zeal_and_nothing_else() -> void
 	singles.append_array([Ranks.THREE, Ranks.FOUR])
 	var pairs: Array[int] = plane.duplicate()
 	pairs.append_array([Ranks.THREE, Ranks.THREE, Ranks.FOUR, Ranks.FOUR])
-	for seat: int in [HOLDER, OTHER]:
+	for at: Vector2i in PAID:
 		for ranks: Array[int] in [plane, singles, pairs]:
-			assert_float(_score(stack, _cards(ranks), seat).zeal).is_equal(2.0)
+			assert_float(_score_at(stack, _cards(ranks), at).zeal).is_equal(2.0)
+	for at: Vector2i in UNPAID:
+		assert_float(_score_at(stack, _cards(plane), at).zeal).is_equal(1.0)
 	var trio: Array[CardInstance] = _cards([Ranks.SEVEN, Ranks.SEVEN, Ranks.SEVEN])
 	assert_float(_score(stack, trio).zeal).is_equal(1.0)
 
 
-func test_five_year_plan_counts_the_year_in_play_for_every_seat() -> void:
+func test_five_year_plan_counts_the_year_in_play_for_the_holders_side() -> void:
 	var stack: ModifierStack = _stack(["five_year_plan"])
 	var single: Array[CardInstance] = _cards([Ranks.SEVEN])
 	var expected: Dictionary[int, float] = {0: 1.0, 1: 1.1, 3: 1.3, 8: 1.8}
 	for year: int in expected:
-		for seat: int in [HOLDER, OTHER]:
-			var zeal: float = _score(stack, single, seat, seat == OTHER, year).zeal
+		for at: Vector2i in PAID:
+			var zeal: float = _score_at(stack, single, at, year).zeal
 			assert_float(zeal).override_failure_message(str(year)).is_equal_approx(
 				expected[year], 0.0001
 			)
+		for at: Vector2i in UNPAID:
+			assert_float(_score_at(stack, single, at, year).zeal).is_equal(1.0)
 
 
 func test_loudspeaker_raises_the_holders_twos_and_jokers_played_as_singles() -> void:

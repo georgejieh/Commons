@@ -1,14 +1,21 @@
 class_name RankShift
 extends RefCounted
-## Moves one rank to just above another in an effective-rank map, shifting the ranks
-## between to make room, so order holds whatever the map looked like before (ADR 0008).
-## Shared by Promotion of the Masses, Rehabilitation and Class Label.
+## Moves one rank to just above another in an effective-rank map, so order holds whatever
+## the map looked like before (ADR 0008). Shared by Promotion of the Masses, Rehabilitation
+## and Class Label. In a seat's own order, 0 to 14 with no gaps, the ranks between shift to
+## make room. In its standings (Standing, ADR 0039) the rank drops into the gap just above
+## its target and nothing else moves, so the ranks it passes stay level with every other
+## seat's; only a gap already filled shifts them, by less than a printed rank.
 
 
-static func move_above(rank_map: PackedByteArray, rank: int, above: int) -> void:
+## step is the map's gap between printed ranks: 1, or Standing.STEP for standings.
+static func move_above(rank_map: PackedByteArray, rank: int, above: int, step: int = 1) -> void:
 	var low: int = rank_map[rank]
 	var high: int = rank_map[above]
 	if low == high:
+		return
+	if step > 1 and _room_above(rank_map, rank, high):
+		rank_map[rank] = high + 1
 		return
 	for other: int in Ranks.COUNT:
 		var value: int = rank_map[other]
@@ -33,3 +40,11 @@ static func next_up(rank_map: PackedByteArray, rank: int) -> int:
 
 static func is_joker(rank: int) -> bool:
 	return rank == Ranks.SMALL_JOKER or rank == Ranks.BIG_JOKER
+
+
+## True when no rank but this one holds the value just above high.
+static func _room_above(rank_map: PackedByteArray, rank: int, high: int) -> bool:
+	for other: int in Ranks.COUNT:
+		if other != rank and rank_map[other] == high + 1:
+			return false
+	return true

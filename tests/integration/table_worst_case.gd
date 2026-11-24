@@ -24,8 +24,8 @@ const STRIP_WIDTH: float = 428.0
 ## Opens the table at a text size with the run's state set for the worst case: a full
 ## Campaign tray of the longest names, and either the three debuffs that make the strip
 ## tallest in full, or, with named, the most the strip can ever name: the three debuffs
-## with the longest names, every Reform held, as many table-wide Cadres as the slots then
-## hold, longest names first, and two wild ranks (set by fill).
+## with the longest names, every Reform held, a full board of the longest-named Cadres,
+## and two wild ranks (set by fill). Cadres are never on the strip (ADR 0039).
 static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> TableScreen:
 	var loop: RunLoop = app.controller.get("_loop")
 	var state: RunState = loop.state
@@ -38,7 +38,7 @@ static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> T
 		for reform: ReformDef in RunReforms.POOL.reforms:
 			if not state.reforms.has(reform.id):
 				state.reforms.append(reform.id)
-		state.inventory.cadres.assign(longest_wide_cadres(app.controller))
+		state.inventory.cadres.assign(longest_named_cadres(app.controller))
 		debuffs = longest_named_debuffs(app.controller)
 	else:
 		state.inventory.cadres.clear()
@@ -312,11 +312,11 @@ static func longest_named_debuffs(controller: RunController) -> Array[String]:
 	return ids.slice(0, 3)
 
 
-## The table-wide Cadres with the longest names, as many as the slots hold.
-static func longest_wide_cadres(controller: RunController) -> Array[String]:
+## The Cadres with the longest names, as many as the slots hold.
+static func longest_named_cadres(controller: RunController) -> Array[String]:
 	var ids: Array[String] = []
 	for cadre: ModifierDef in RunLoop.all_cadres():
-		if cadre.table_wide and not ids.has(cadre.id):
+		if not ids.has(cadre.id):
 			ids.append(cadre.id)
 	var named: Callable = func(id: String) -> int: return controller.modifier_name(id).length()
 	ids.sort_custom(func(a: String, b: String) -> bool: return named.call(a) > named.call(b))

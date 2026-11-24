@@ -16,5 +16,5 @@ cost = 6
 unlock_tier = 2
 name_key = "modifier.seed_grain.name"
 text_key = "modifier.seed_grain.text"
-table_wide = true
+counts_for_teammate = true
 state_key = "modifier.seed_grain.state"

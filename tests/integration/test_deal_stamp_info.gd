@@ -81,12 +81,9 @@ func test_planned_allocation_doubles_the_rank_through_the_deal_hook() -> void:
 	assert_float(rate).is_between(target - TOLERANCE, target + TOLERANCE)
 
 
-func _score_stamped(seat: int, for_anyone: int) -> float:
-	var definition: ModifierDef = RED_INK.duplicate()
-	definition.parameters = RED_INK.parameters.duplicate()
-	definition.parameters[OwnerStampEffect.FOR_ANYONE] = for_anyone
+func _score_stamped(seat: int) -> float:
 	var stack: ModifierStack = ModifierStack.new()
-	stack.add(definition, 0)
+	stack.add(RED_INK, 0)
 	var card: CardInstance = CardInstance.from_deck_id(20)
 	CardModifiers.stamp(card, 0)
 	var rules: RuleSet = RuleSet.default_rules()
@@ -118,9 +115,8 @@ func test_a_stamped_card_scores_extra_only_for_its_owner() -> void:
 		)
 		. total
 	)
-	assert_float(_score_stamped(0, 0)).is_greater(plain)
-	assert_float(_score_stamped(1, 0)).is_equal(plain)
-	assert_float(_score_stamped(1, 1)).is_greater(plain)
+	assert_float(_score_stamped(0)).is_greater(plain)
+	assert_float(_score_stamped(1)).is_equal(plain)
 
 
 func _one(card: CardInstance) -> PackedByteArray:

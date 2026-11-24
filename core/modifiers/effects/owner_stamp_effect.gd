@@ -1,19 +1,16 @@
 class_name OwnerStampEffect
 extends ModifierEffect
-## Cards stamped with the holder's mark score extra Grain (P4.9). Only the holder gets
-## it: dealt to anyone else a stamped card is plain, unless for_anyone is 1, when it
-## scores for whoever plays it.
+## Cards stamped with the holder's mark score extra Grain (P4.9), only when the holder
+## plays them: dealt to anyone else a stamped card is plain. A private Cadre scores only
+## the holder's plays (SeatScope, ADR 0039), so nothing here can open it to another seat.
 
 const GRAIN: String = "grain"
-const FOR_ANYONE: String = "for_anyone"
 
 
 func required_parameters() -> PackedStringArray:
-	return PackedStringArray([GRAIN, FOR_ANYONE])
+	return PackedStringArray([GRAIN])
 
 
 func card_scored(context: CardContext) -> void:
-	if context.card.owner_stamp() != holder_seat:
-		return
-	if context.seat == holder_seat or parameters[FOR_ANYONE] == 1:
+	if context.card.owner_stamp() == holder_seat:
 		context.grain += parameters[GRAIN]
