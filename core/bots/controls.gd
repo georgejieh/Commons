@@ -4,7 +4,9 @@ extends RefCounted
 ## A bot that doesn't count cards treats only 2s, jokers and bombs as controls. While a
 ## rank is wild, unseen wild cards can finish an answer of any rank (ADR 0029), which the
 ## move generator reads from the unseen counts. An answer is read under each rival's own
-## rules and standings (ADR 0039): a group is beaten if any rival's could beat it.
+## rules and standings (ADR 0039): a group is beaten if any rival's could beat it. A bomb
+## is judged as the trick will stand once it is down, under the standings that hold after
+## a bomb (Cultural Revolution turns its holder's order over), when the caller gives them.
 
 const BOMB_WIDTH: int = 4
 
@@ -22,6 +24,7 @@ func _init(
 	table: BotTable,
 	counts_cards: bool = true,
 	rivals: Array[BotTable] = [],
+	bombed: BombedSide = null,
 ) -> void:
 	var answering: Array[BotTable] = rivals
 	if answering.is_empty():
@@ -41,7 +44,12 @@ func _init(
 		var high: bool = table.rank_map[group.main_rank] >= Ranks.TWO
 		var is_control: bool = high or group.type == Pattern.Type.BOMB
 		if counts_cards:
-			is_control = _is_control(group, unseen, mask, largest_hand, table, answering)
+			var own: BotTable = table
+			var against: Array[BotTable] = answering
+			if group.type == Pattern.Type.BOMB and bombed != null:
+				own = bombed.own
+				against = bombed.rivals
+			is_control = _is_control(group, unseen, mask, largest_hand, own, against)
 		flags.append(is_control)
 		controls += 1 if is_control else 0
 	effective_hands = groups.size() - controls

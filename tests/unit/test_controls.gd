@@ -75,3 +75,37 @@ func test_an_answer_larger_than_any_hand_does_not_count() -> void:
 	var view: SeatView = _view(["34567", "8", "9"])
 	assert_bool(_controls(view, "34567", 17).flags[0]).is_false()
 	assert_bool(_controls(view, "34567", 4).flags[0]).is_true()
+
+
+## Seat 1's position holding KKKK and one card of every rank above it, with the player
+## (seat 0) holding QQQQ and, when named, a Cadre.
+func _bomb_position(cadre: String) -> BotPosition:
+	var stack: ModifierStack = ModifierStack.new()
+	if not cadre.is_empty():
+		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % cadre), 0)
+	var rules: SeatRules = SeatRules.new(stack)
+	var deal: DealResult = RoundScript.stacked_deal(["QQQQ3", "KKKKA2b", "45"], "")
+	var round_state: RoundState = RoundState.new(deal, 1, rules)
+	rules.refresh()
+	var view: SeatView = round_state.view_for(1)
+	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.HARD)
+	var table: BotTable = BotTable.of_seat(rules, 1)
+	var scorer: CandidateScorer = CandidateScorer.new(view.own_counts, table, config.weights)
+	return BotPosition.new(view, table, config, scorer)
+
+
+func _bomb_flag(position: BotPosition) -> bool:
+	for index: int in position.groups.size():
+		var group: Pattern = position.groups[index]
+		if group.type == Pattern.Type.BOMB and group.main_rank == Ranks.KING:
+			return position.controls.flags[index]
+	fail("no bomb of Ks in the hand's groups")
+	return false
+
+
+## ADR 0039: a bot's bomb is judged under the standings after a bomb. With no Cadre at the
+## table nothing unseen beats KKKK; with the player holding Cultural Revolution, whose
+## order a bomb turns over, the player's unseen QQQQ would beat it, so it is no control.
+func test_a_bomb_is_judged_under_the_order_a_bomb_brings() -> void:
+	assert_bool(_bomb_flag(_bomb_position(""))).is_true()
+	assert_bool(_bomb_flag(_bomb_position("cultural_revolution"))).is_false()
