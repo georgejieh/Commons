@@ -1,7 +1,7 @@
 class_name CanteenEffect
 extends ModifierEffect
-## Every seat's Trio, Trio with a Single and Trio with a Pair gains flat Zeal, given in
-## hundredths.
+## Each Trio, Trio with a Single and Trio with a Pair gains flat Zeal, given in hundredths,
+## for the holder and the holder's teammate (SeatScope, ADR 0039).
 
 const ZEAL_PERCENT: String = "zeal_percent"
 const TRIOS: Array[Pattern.Type] = [

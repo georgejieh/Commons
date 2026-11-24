@@ -4,6 +4,9 @@ extends RefCounted
 
 var seat: int
 var is_landlord: bool
+## The round's landlord, or Seats.NONE outside a round, so the stack can tell the seat's
+## side (ADR 0039).
+var landlord: int = Seats.NONE
 var card: CardInstance
 ## This card's Grain, to edit.
 var grain: float

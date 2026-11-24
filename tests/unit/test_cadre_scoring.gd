@@ -1,11 +1,18 @@
 extends GdUnitTestSuite
 ## ADR 0021's scoring Cadres, one golden scenario each through the real Scorer: the
 ## effect, its boundary, and who it reaches. A private Cadre changes only its holder's
-## plays; a collective one changes every seat's. Also how Model, Red Banner, Poor
-## Peasants' Association and Red Ink stack on one card, and where Zeal multipliers sit.
+## plays; a collective scoring one its holder's and, while the holder is a peasant, the
+## teammate's, never an opponent's (ADR 0039). Also how Model, Red Banner, Poor Peasants'
+## Association and Red Ink stack on one card, and where Zeal multipliers sit.
 
 const HOLDER: int = 0
 const OTHER: int = 1
+## Seat and landlord, x and y, of the plays a collective scoring Cadre held by seat 0 pays
+## on: the holder as a peasant, the teammate, and the holder as landlord.
+const PAID: Array[Vector2i] = [Vector2i(0, 2), Vector2i(1, 2), Vector2i(0, 0)]
+## And those it never pays on: the landlord against the holder, and a peasant against the
+## holder as landlord.
+const UNPAID: Array[Vector2i] = [Vector2i(2, 2), Vector2i(1, 0)]
 const SPADE: int = 0
 const HEART: int = 1
 const CLUB: int = 2
@@ -40,6 +47,16 @@ func _score(
 	)
 
 
+## Scores the cards for at.x in a round whose landlord is at.y.
+func _score_at(stack: ModifierStack, cards: Array[CardInstance], at: Vector2i) -> ScoreBreakdown:
+	var facts: PlayFacts = PlayFacts.new(
+		at.y, -1, PackedInt32Array([0, 0, 0]), PackedFloat64Array([0, 0, 0])
+	)
+	return Scorer.score_play(
+		cards, _pattern(cards), 1, at.x, at.x == at.y, stack, Scorer.DEFAULT_PARAMS, 0, facts
+	)
+
+
 func _bomb() -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
 	for suit: int in Deck.SUITS:
@@ -47,36 +64,44 @@ func _bomb() -> Array[CardInstance]:
 	return cards
 
 
-func test_canteen_gives_every_seats_trios_their_zeal_and_nothing_else() -> void:
+func test_canteen_gives_the_holders_sides_trios_their_zeal_and_nothing_else() -> void:
 	var stack: ModifierStack = _stack(["canteen"])
 	var trio: Array[CardInstance] = [
 		_card(Ranks.FIVE, SPADE), _card(Ranks.FIVE, HEART), _card(Ranks.FIVE, CLUB)
 	]
 	var with_single: Array[CardInstance] = trio.duplicate()
 	with_single.append(_card(Ranks.KING, SPADE))
-	for seat: int in [HOLDER, OTHER]:
-		assert_float(_score(stack, trio, seat).zeal).is_equal_approx(1.5, 0.0001)
-		assert_float(_score(stack, with_single, seat).zeal).is_equal_approx(1.5, 0.0001)
+	for at: Vector2i in PAID:
+		assert_float(_score_at(stack, trio, at).zeal).is_equal_approx(1.5, 0.0001)
+		assert_float(_score_at(stack, with_single, at).zeal).is_equal_approx(1.5, 0.0001)
+	for at: Vector2i in UNPAID:
+		assert_float(_score_at(stack, trio, at).zeal).is_equal(1.0)
+	# Outside a round nobody has a teammate.
+	assert_float(_score(stack, trio, OTHER).zeal).is_equal(1.0)
 	var pair: Array[CardInstance] = [_card(Ranks.FIVE, SPADE), _card(Ranks.FIVE, HEART)]
 	assert_float(_score(stack, pair).zeal).is_equal(1.0)
 
 
-func test_red_banner_adds_to_hearts_and_diamonds_for_everyone_and_not_jokers() -> void:
+func test_red_banner_adds_to_the_holders_sides_hearts_and_diamonds_not_jokers() -> void:
 	var stack: ModifierStack = _stack(["red_banner"])
-	for seat: int in [HOLDER, OTHER]:
-		assert_float(_score(stack, [_card(Ranks.SEVEN, HEART)], seat).grain).is_equal(9.0)
-		assert_float(_score(stack, [_card(Ranks.SEVEN, DIAMOND)], seat).grain).is_equal(9.0)
-		assert_float(_score(stack, [_card(Ranks.SEVEN, SPADE)], seat).grain).is_equal(7.0)
+	for at: Vector2i in PAID:
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, HEART)], at).grain).is_equal(9.0)
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, DIAMOND)], at).grain).is_equal(9.0)
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, SPADE)], at).grain).is_equal(7.0)
+	for at: Vector2i in UNPAID:
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, HEART)], at).grain).is_equal(7.0)
 	var joker: Array[CardInstance] = [CardInstance.from_deck_id(Deck.BIG_JOKER_ID)]
 	assert_float(_score(stack, joker).grain).is_equal(17.0)
 
 
-func test_poor_peasants_double_cards_printed_3_to_7_for_everyone() -> void:
+func test_poor_peasants_double_the_holders_sides_cards_printed_3_to_7() -> void:
 	var stack: ModifierStack = _stack(["poor_peasants_association"])
-	for seat: int in [HOLDER, OTHER]:
-		assert_float(_score(stack, [_card(Ranks.THREE, SPADE)], seat).grain).is_equal(6.0)
-		assert_float(_score(stack, [_card(Ranks.SEVEN, SPADE)], seat).grain).is_equal(14.0)
-		assert_float(_score(stack, [_card(Ranks.EIGHT, SPADE)], seat).grain).is_equal(8.0)
+	for at: Vector2i in PAID:
+		assert_float(_score_at(stack, [_card(Ranks.THREE, SPADE)], at).grain).is_equal(6.0)
+		assert_float(_score_at(stack, [_card(Ranks.SEVEN, SPADE)], at).grain).is_equal(14.0)
+		assert_float(_score_at(stack, [_card(Ranks.EIGHT, SPADE)], at).grain).is_equal(8.0)
+	for at: Vector2i in UNPAID:
+		assert_float(_score_at(stack, [_card(Ranks.THREE, SPADE)], at).grain).is_equal(3.0)
 
 
 ## A kicker scores nothing whatever its rank: a Trio of 8s carrying a 3.
@@ -110,23 +135,25 @@ func test_model_poor_peasants_red_banner_and_red_ink_stack_in_any_order() -> voi
 		assert_float(breakdown.grain).is_equal(32.0)
 		# The breakdown's card step carries the whole card, so the steps add up.
 		assert_float(breakdown.step_value(0)).is_equal(32.0)
-	# Another seat scoring the same card gets the Model, the Association and the banner,
-	# but not the stamp.
+	# The teammate scoring the same card gets the Model, the Association and the banner,
+	# but not the stamp; an opponent gets the Model alone.
 	var first: Array[String] = []
 	first.assign(orders[0])
-	var theirs: ScoreBreakdown = _score(_stack(first), [card], OTHER)
-	assert_float(theirs.grain).is_equal(22.0)
+	assert_float(_score_at(_stack(first), [card], Vector2i(OTHER, 2)).grain).is_equal(22.0)
+	assert_float(_score_at(_stack(first), [card], Vector2i(2, 2)).grain).is_equal(10.0)
 
 
-func test_seed_grain_counts_met_quotas_and_feeds_every_seat() -> void:
+func test_seed_grain_counts_met_quotas_and_feeds_the_holders_side() -> void:
 	var stack: ModifierStack = _stack(["seed_grain"])
 	var single: Array[CardInstance] = [_card(Ranks.SEVEN, SPADE)]
 	assert_float(_score(stack, single).grain).is_equal(7.0)
 	stack.run_set_end(SetContext.new(0, true))
 	stack.run_set_end(SetContext.new(1, false))
 	stack.run_set_end(SetContext.new(2, true))
-	for seat: int in [HOLDER, OTHER]:
-		assert_float(_score(stack, single, seat).grain).is_equal(7.0 + 6.0)
+	for at: Vector2i in PAID:
+		assert_float(_score_at(stack, single, at).grain).is_equal(7.0 + 6.0)
+	for at: Vector2i in UNPAID:
+		assert_float(_score_at(stack, single, at).grain).is_equal(7.0)
 	var effect: ModifierEffect = stack.ordered_entries()[0].effect
 	assert_int(effect.memo.value(SeedGrainEffect.MET)).is_equal(2)
 	assert_bool(effect.memo.fired).is_true()
@@ -220,6 +247,12 @@ func test_collective_farm_adds_the_teammates_last_grain_to_a_peasants_pair() -> 
 	# The landlord has no teammate, and only a Pair gains.
 	assert_float(_score(stack, pair, landlord, played).grain).is_equal(12.0)
 	assert_float(_score(stack, [_card(Ranks.SIX, SPADE)], 0, played).grain).is_equal(6.0)
+	# Held by the landlord it pays nobody: the peasants are the holder's opponents.
+	var held_by_landlord: PlayFacts = PlayFacts.new(
+		0, 10, PackedInt32Array([2, 1, 3]), PackedFloat64Array([20, 31, 40])
+	)
+	assert_float(_score(stack, pair, 1, held_by_landlord).grain).is_equal(12.0)
+	assert_float(_score(stack, pair, 2, held_by_landlord).grain).is_equal(12.0)
 	# A teammate who has not played this round adds nothing.
 	var quiet: PlayFacts = PlayFacts.new(
 		landlord, 10, PackedInt32Array([2, 0, 3]), PackedFloat64Array([20, 0, 40])

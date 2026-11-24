@@ -18,6 +18,20 @@ static func default_rules() -> RuleSet:
 	return RuleSet.new(DEFAULT_PARAMS)
 
 
+## True when both were built from the same parameters, as two seats' rules are unless a
+## modifier changed one seat's (ADR 0039).
+func same_as(other: RuleSet) -> bool:
+	if other == self:
+		return true
+	for property: Dictionary in _params.get_property_list():
+		if property["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE == 0:
+			continue
+		var name: String = property["name"]
+		if _params.get(name) != other._params.get(name):
+			return false
+	return true
+
+
 func min_straight_length() -> int:
 	return _params.min_straight_length
 

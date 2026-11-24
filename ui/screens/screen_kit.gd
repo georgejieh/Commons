@@ -350,11 +350,11 @@ static func ending_art(ending_id: String) -> Texture2D:
 	return ArtStages.picture(ART.ending_path(ending_id))
 
 
-## A modifier's rules, saying so when it changes the whole table and not only you.
+## A modifier's rules, saying so when a Cadre also pays on your teammate's plays.
 static func rule_text(controller: RunController, modifier_id: String) -> String:
 	var rule: String = controller.modifier_text(modifier_id)
-	if controller.is_table_wide(modifier_id):
-		rule += " " + TranslationServer.translate("modifier.table_wide")
+	if controller.counts_for_teammate(modifier_id):
+		rule += " " + TranslationServer.translate("modifier.counts_for_teammate")
 	# A held Cadre with run state says where it stands (ADR 0021).
 	var standing: String = controller.cadre_standing(modifier_id).line
 	if not standing.is_empty():

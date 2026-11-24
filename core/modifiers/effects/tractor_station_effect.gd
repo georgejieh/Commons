@@ -1,7 +1,7 @@
 class_name TractorStationEffect
 extends ModifierEffect
-## Every seat's Airplanes, with or without wings, gain flat Zeal, given in hundredths
-## (ADR 0032).
+## Airplanes, with or without wings, gain flat Zeal, given in hundredths (ADR 0032), for
+## the holder and the holder's teammate (SeatScope, ADR 0039).
 
 const ZEAL_PERCENT: String = "zeal_percent"
 const AIRPLANES: Array[Pattern.Type] = [

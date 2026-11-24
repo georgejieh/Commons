@@ -9,7 +9,8 @@ const STRINGS: String = "res://data/strings/strings.csv"
 const QUERIES: int = 1000
 
 
-## Writes its label to a shared log from every hook.
+## Writes its label to a shared log from every hook. Held by seat 0, the seat every
+## hook below is run for.
 class Recorder:
 	extends ModifierEffect
 	var label: String
@@ -18,6 +19,7 @@ class Recorder:
 	func _init(name: String, shared: Array[String]) -> void:
 		label = name
 		log = shared
+		holder_seat = 0
 
 	func build_ruleset(_context: RulesetContext) -> void:
 		log.append(label)
@@ -332,17 +334,23 @@ func test_a_modifier_runs_only_on_the_hooks_it_lists() -> void:
 	assert_int(log.size()).is_equal(1)
 
 
-func test_a_rebuild_visits_each_modifier_once_per_seat() -> void:
+## A debuff's hook builds every seat and leaves the seat to the effect; a Cadre's builds
+## its holder's seat alone (ADR 0039).
+func test_a_rebuild_visits_each_modifier_once_per_seat_it_reaches() -> void:
 	var stack: ModifierStack = ModifierStack.new()
 	var log: Array[String] = []
 	var listed: Array[String] = [Hooks.BUILD_RANK_MAP]
 	for index: int in 4:
 		var effect: Recorder = Recorder.new(str(index), log)
-		stack.add_entry(ActiveModifier.new(_def(ModifierDef.Kind.CADRE, listed), effect))
+		stack.add_entry(ActiveModifier.new(_def(ModifierDef.Kind.DEBUFF, listed), effect))
+	var cadre: Recorder = Recorder.new("cadre", log)
+	cadre.holder_seat = 1
+	stack.add_entry(ActiveModifier.new(_def(ModifierDef.Kind.CADRE, listed), cadre))
 	var table: SeatRules = SeatRules.new(stack)
 	log.clear()
 	table.start_round(0)
-	assert_int(log.size()).is_equal(4 * Seats.COUNT)
+	assert_int(log.size()).is_equal((4 * Seats.COUNT + 1) * SeatRules.MAPS_PER_SEAT)
+	assert_int(log.count("cadre")).is_equal(SeatRules.MAPS_PER_SEAT)
 
 
 func test_ruleset_hooks_can_not_touch_other_seats_or_the_defaults() -> void:

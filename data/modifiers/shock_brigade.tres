@@ -16,4 +16,3 @@ cost = 5
 unlock_tier = 1
 name_key = "modifier.shock_brigade.name"
 text_key = "modifier.shock_brigade.text"
-table_wide = true

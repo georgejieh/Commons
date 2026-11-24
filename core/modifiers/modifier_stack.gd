@@ -1,7 +1,8 @@
 class_name ModifierStack
 extends RefCounted
 ## The active modifiers. Every hook runs Cadres in slot order, then debuffs in ladder
-## order, then the boss twist. Anything else is held in slot order with the Cadres.
+## order, then the boss twist. Anything else is held in slot order with the Cadres. The
+## four seat hooks skip an entry whose reach leaves the seat out (SeatScope, ADR 0039).
 
 ## Changes with every add, remove, enable or disable, so caches can tell they are stale.
 var revision: int = 0
@@ -52,12 +53,14 @@ func ordered_entries() -> Array[ActiveModifier]:
 
 func run_build_ruleset(context: RulesetContext) -> void:
 	for entry: ActiveModifier in _by_hook[Hooks.BUILD_RULESET]:
-		entry.effect.build_ruleset(context)
+		if entry.builds_for(context.seat):
+			entry.effect.build_ruleset(context)
 
 
 func run_build_rank_map(context: RankMapContext) -> void:
 	for entry: ActiveModifier in _by_hook[Hooks.BUILD_RANK_MAP]:
-		entry.effect.build_rank_map(context)
+		if entry.builds_for(context.seat):
+			entry.effect.build_rank_map(context)
 
 
 func run_on_deal(context: DealContext) -> void:
@@ -72,12 +75,14 @@ func run_round_start(context: RoundContext) -> void:
 
 func run_play_scored(context: PlayContext) -> void:
 	for entry: ActiveModifier in _by_hook[Hooks.PLAY_SCORED]:
-		entry.effect.play_scored(context)
+		if entry.scores_for(context.seat, context.landlord):
+			entry.effect.play_scored(context)
 
 
 func run_card_scored(context: CardContext) -> void:
 	for entry: ActiveModifier in _by_hook[Hooks.CARD_SCORED]:
-		entry.effect.card_scored(context)
+		if entry.scores_for(context.seat, context.landlord):
+			entry.effect.card_scored(context)
 
 
 func run_trick_won(context: TrickContext) -> void:

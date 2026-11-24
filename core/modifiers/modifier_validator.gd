@@ -39,7 +39,23 @@ static func validate(
 		if Hooks.ALL.has(hook) and own_methods.count(hook) < 2:
 			problems.append("%s: does not implement %s" % [definition.id, hook])
 	problems.append_array(_cadre_problems(definition, effect, string_keys))
+	if definition.counts_for_teammate and not _scores_for_a_side(definition):
+		problems.append(
+			"%s: counts for a teammate but is no collective scoring Cadre" % definition.id
+		)
 	return problems
+
+
+## Only a collective Cadre with a scoring hook may pay on the teammate's plays (ADR 0039).
+static func _scores_for_a_side(definition: ModifierDef) -> bool:
+	var scores: bool = (
+		definition.hooks.has(Hooks.PLAY_SCORED) or definition.hooks.has(Hooks.CARD_SCORED)
+	)
+	return (
+		scores
+		and definition.kind == ModifierDef.Kind.CADRE
+		and definition.tag == ModifierDef.Tag.COLLECTIVE
+	)
 
 
 ## A Cadre needs an unlock tier, and one that keeps run state needs the line that says

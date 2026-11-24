@@ -90,7 +90,7 @@ static func _take_turn(
 ) -> void:
 	var seat: int = round_state.seat_to_act()
 	var legal: Array[Pattern] = round_state.legal_moves()
-	var seat_table: BotTable = BotTable.new(table.rules_for(seat), table.map_for(seat))
+	var seat_table: BotTable = BotTable.of_seat(table, seat)
 	var started: int = clock.call() if clock.is_valid() else 0
 	var play: BotPlay = Bot.decide_play(
 		round_state.view_for(seat), legal, seat_table, configs[seat], BotBudget.unlimited()

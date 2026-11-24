@@ -16,4 +16,4 @@ cost = 4
 unlock_tier = 1
 name_key = "modifier.night_school.name"
 text_key = "modifier.night_school.text"
-table_wide = true
+counts_for_teammate = true

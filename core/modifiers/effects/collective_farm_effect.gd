@@ -1,7 +1,9 @@
 class_name CollectiveFarmEffect
 extends ModifierEffect
-## Every peasant's Pair also scores the Grain of their teammate's last play this round,
-## as added Grain. Nothing when the teammate has not played yet this round.
+## A peasant's Pair also scores the Grain of their teammate's last play this round, as
+## added Grain. Nothing when the teammate has not played yet this round. It scores for the
+## holder and the holder's teammate only (SeatScope, ADR 0039), so a landlord holding it
+## gets nothing and the opponents never do.
 
 
 func play_scored(context: PlayContext) -> void:

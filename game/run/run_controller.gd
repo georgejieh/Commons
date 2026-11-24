@@ -692,13 +692,14 @@ func boss() -> String:
 	return _loop.state.boss_id
 
 
-## A modifier's rules text with its parameters filled in.
-## True when a modifier changes every seat's play, not only the player's.
-func is_table_wide(modifier_id: String) -> bool:
+## True when a Cadre's scoring also pays on the player's teammate's plays while the player
+## is a peasant (ADR 0039). No Cadre changes another seat's rules or ranks.
+func counts_for_teammate(modifier_id: String) -> bool:
 	var definition: ModifierDef = _definitions[modifier_id]
-	return definition.table_wide
+	return definition.counts_for_teammate
 
 
+## A modifier's rules text with its parameters filled in.
 func modifier_text(modifier_id: String) -> String:
 	return CadreText.rules(_definitions[modifier_id], _run_values(modifier_id))
 

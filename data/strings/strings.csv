@@ -15,9 +15,9 @@ rank.2,2
 rank.small_joker,Small Joker
 rank.big_joker,Big Joker
 modifier.cultural_revolution.name,Cultural Revolution
-modifier.cultural_revolution.text,"After any bomb, rank order inverts until the trick ends."
+modifier.cultural_revolution.text,"After any bomb, your cards rank in reverse order until the trick ends."
 modifier.promotion_of_the_masses.name,Promotion of the Masses
-modifier.promotion_of_the_masses.text,"3s rank above 2s, below the jokers."
+modifier.promotion_of_the_masses.text,"Your 3s rank above 2s, below the jokers."
 modifier.criticism_meeting.name,Criticism Meeting
 modifier.criticism_meeting.text,"Your 2s rank lowest, level with 3s. They still pair only with other 2s."
 modifier.inverted_order.name,Inverted Order
@@ -474,7 +474,7 @@ table.rules_named,Each is on the Rules sheet in full.
 table.rules_named.one,It is on the Rules sheet in full.
 table.rules_counted,{count} rules in force. Each is on the Rules sheet in full.
 table.rules_counted.one,1 rule in force. It is on the Rules sheet in full.
-modifier.table_wide,This applies to everyone at the table.
+modifier.counts_for_teammate,"While you are a peasant, this counts for your teammate's plays too."
 keyword.landlord.name,Landlord
 keyword.landlord.text,"Landlord: plays alone against the other two, takes the kitty and leads first. A landlord banks their own score."
 keyword.peasant.name,Peasant
@@ -637,7 +637,7 @@ modifier.planned_allocation.state,You picked {rank}s.
 modifier.class_label.name,Class Label
 modifier.class_label.text,"While you are landlord, your stamped cards rank above 2s and below the jokers, in their printed order. This applies to a rank only while every card of that rank in your hand is stamped."
 modifier.collective_farm.name,Collective Farm
-modifier.collective_farm.text,A peasant's Pair also scores the Grain of the last hand their teammate played this round. Nothing if the teammate has only passed.
+modifier.collective_farm.text,Your Pairs also score the Grain of the last hand your teammate played this round. Nothing if your teammate has only passed.
 modifier.show_trial.name,Show Trial
 modifier.show_trial.text,Your Bombs and Rockets score ×{times_percent_zeal} Zeal. Each one you play adds {resentment} Resentment.
 modifier.model_commune.name,Model Commune
@@ -646,16 +646,16 @@ modifier.ration_coupon.name,Ration Coupon
 modifier.ration_coupon.text,"Every {passes}th pass you make in a Quota earns {coupons} coupon, up to {cap} coupons a Quota. Forced passes count."
 modifier.ration_coupon.state,"This Quota: {earned} of {cap} coupons earned, after {passed} passes."
 modifier.shock_brigade.name,Shock Brigade
-modifier.shock_brigade.text,Straights may be as short as {length} cards.
+modifier.shock_brigade.text,Your Straights may be as short as {length} cards. A villager can beat one that short only with a Bomb or the Rocket.
 modifier.canteen.name,Canteen
-modifier.canteen.text,"Every Trio, Trio with a Single and Trio with a Pair gains +{zeal_percent} Zeal."
+modifier.canteen.text,"Your Trios, Trios with a Single and Trios with a Pair gain +{zeal_percent} Zeal."
 modifier.red_banner.name,Red Banner
-modifier.red_banner.text,Each heart and diamond that scores adds +{grain} Grain. Jokers have no suit.
+modifier.red_banner.text,Each heart and diamond you score adds +{grain} Grain. Jokers have no suit.
 modifier.poor_peasants_association.name,Poor Peasants' Association
-modifier.poor_peasants_association.text,Each scored card printed {low_rank} to {high_rank} scores its own Grain ×{times_percent_grain}.
+modifier.poor_peasants_association.text,Each card printed {low_rank} to {high_rank} scores its own Grain ×{times_percent_grain} when you score it.
 modifier.seed_grain.name,Seed Grain
-modifier.seed_grain.text,Every play scores +{grain} Grain for each Quota met while you hold this.
-modifier.seed_grain.state,Now +{grain} Grain on every play.
+modifier.seed_grain.text,Your plays score +{grain} Grain for each Quota met while you hold this.
+modifier.seed_grain.state,Now +{grain} Grain on each of your plays.
 modifier.the_bookkeeper.name,The Bookkeeper
 modifier.the_bookkeeper.text,"At a Quota's end, before it pays, earn {coupons} coupon for every {per} coupons you hold, up to {cap} coupons."
 modifier.last_sheaf.name,Last Sheaf
@@ -665,23 +665,23 @@ modifier.steel_target.text,Each Bomb or Rocket you play gives all your later pla
 modifier.steel_target.state,"Now +{zeal} Zeal on all your plays, from {bombs} Bombs and Rockets."
 modifier.stakhanovite.state,Now +{zeal} Zeal for each card past {base_length}.
 modifier.night_school.name,Night School
-modifier.night_school.text,"Every Single and every Pair gains +{zeal_percent} Zeal."
+modifier.night_school.text,"Your Singles and Pairs gain +{zeal_percent} Zeal."
 modifier.iron_and_coal.name,Iron and Coal
-modifier.iron_and_coal.text,Each spade and club that scores adds +{grain} Grain. Jokers have no suit.
+modifier.iron_and_coal.text,Each spade and club you score adds +{grain} Grain. Jokers have no suit.
 modifier.advanced_cooperative.name,Advanced Cooperative
-modifier.advanced_cooperative.text,Each scored card printed {low_rank} to {high_rank} adds +{grain} Grain.
+modifier.advanced_cooperative.text,Each card printed {low_rank} to {high_rank} adds +{grain} Grain when you score it.
 modifier.double_share_plough.name,Double-Share Plough
-modifier.double_share_plough.text,Pair Runs may be as short as {length} pairs.
+modifier.double_share_plough.text,Your Pair Runs may be as short as {length} pairs. A villager can beat one that short only with a Bomb or the Rocket.
 modifier.open_accounts.name,Open Accounts
 modifier.open_accounts.text,"Each round you claim no more than your fair half of the Commons, Resentment falls {resentment}."
 modifier.tractor_station.name,Tractor Station
-modifier.tractor_station.text,"Every Airplane, Airplane with Singles and Airplane with Pairs gains +{zeal_percent} Zeal."
+modifier.tractor_station.text,"Your Airplanes, Airplanes with Singles and Airplanes with Pairs gain +{zeal_percent} Zeal."
 modifier.the_gleaners.name,The Gleaners
-modifier.the_gleaners.text,"When the peasants win a round, its Commons grows {percent}% for each card left in the landlord's hand, before it is split."
+modifier.the_gleaners.text,"When you are a peasant and the peasants win a round, its Commons grows {percent}% for each card left in the landlord's hand, before it is split."
 modifier.public_granary.name,Public Granary
 modifier.public_granary.text,"Each round the peasants win with you among them, Famine falls {famine}."
 modifier.five_year_plan.name,Five-Year Plan
-modifier.five_year_plan.text,"Every play gains +{zeal_percent} Zeal for each Year of the run, this one included."
+modifier.five_year_plan.text,"Your plays gain +{zeal_percent} Zeal for each Year of the run, this one included."
 modifier.back_door.name,Back Door
 modifier.back_door.text,Your first reroll at each black market visit is free.
 modifier.informers_reward.name,Informer's Reward

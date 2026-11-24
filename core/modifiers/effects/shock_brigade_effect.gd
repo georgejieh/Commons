@@ -1,6 +1,7 @@
 class_name ShockBrigadeEffect
 extends ModifierEffect
-## Straights may be as short as length, for every seat.
+## Straights may be as short as length, for the holder's seat alone (SeatScope, ADR
+## 0039). A seat without it answers a shorter one only with a Bomb or the Rocket.
 
 const LENGTH: String = "length"
 

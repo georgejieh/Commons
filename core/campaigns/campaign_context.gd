@@ -41,7 +41,7 @@ func hand() -> Array[CardInstance]:
 ## The rules and rank order a seat plays under, for a bot's choice.
 func seat_table(seat: int) -> BotTable:
 	table.refresh()
-	return BotTable.new(table.rules_for(seat), table.map_for(seat))
+	return BotTable.of_seat(table, seat)
 
 
 func add_event(event: RunEvent) -> void:

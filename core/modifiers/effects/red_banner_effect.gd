@@ -1,7 +1,7 @@
 class_name RedBannerEffect
 extends ModifierEffect
-## Every scored heart and diamond adds flat Grain, for whoever scores it. Jokers have no
-## suit.
+## Every scored heart and diamond adds flat Grain, for the holder and the holder's
+## teammate (SeatScope, ADR 0039). Jokers have no suit.
 
 const GRAIN: String = "grain"
 ## Suits in deck order: spade, heart, club, diamond.

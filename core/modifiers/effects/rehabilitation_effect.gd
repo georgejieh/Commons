@@ -27,7 +27,7 @@ func build_rank_map(context: RankMapContext) -> void:
 		var up: int = RankShift.next_up(context.rank_map, rank)
 		if up == Ranks.INVALID or RankShift.is_joker(up):
 			return
-		RankShift.move_above(context.rank_map, rank, up)
+		RankShift.move_above(context.rank_map, rank, up, context.step)
 
 
 func picked() -> int:

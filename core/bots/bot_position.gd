@@ -23,6 +23,9 @@ var threats: PackedByteArray
 var wild_threats: int = 0
 var groups: Array[Pattern]
 var controls: Controls
+## The opponents' tables where they play under other rules or another order than this
+## seat (ADR 0039), one for each way of playing; empty when they all play as it does.
+var rivals: Array[BotTable] = []
 
 
 func _init(
@@ -39,8 +42,9 @@ func _init(
 	var supply: WildSupply = WildSupply.of(threats, table.rules)
 	wild_threats = 0 if supply == null else supply.total
 	groups = scorer.decompose_own_hand().groups
+	rivals = _rivals()
 	var counts_cards: bool = config.reads_the_table()
-	controls = Controls.new(groups, threats, _largest_opposing_hand(), table, counts_cards)
+	controls = Controls.new(groups, threats, _largest_opposing_hand(), table, counts_cards, rivals)
 
 
 func hand_size() -> int:
@@ -103,7 +107,7 @@ func going_out(legal: Array[Pattern]) -> Pattern:
 ## holding back every group nothing unseen beats costs it about five points of win rate.
 func read_groups(other: Array[Pattern]) -> Controls:
 	var counts_cards: bool = config.reads_the_table() and not is_landlord()
-	return Controls.new(other, threats, _largest_opposing_hand(), table, counts_cards)
+	return Controls.new(other, threats, _largest_opposing_hand(), table, counts_cards, rivals)
 
 
 ## A repeatable roll for this decision, from 0 to 1.
@@ -124,6 +128,18 @@ func _roll(salt: int) -> float:
 
 func rank_of(rank: int) -> int:
 	return table.rank_map[rank]
+
+
+## True when an opponent's other would stand above this seat's rank, each read in its own
+## seat's order on the shared standings (ADR 0039).
+func outranked(other: int, rank: int) -> bool:
+	var own: int = table.standing[rank]
+	if rivals.is_empty():
+		return table.standing[other] > own
+	for rival: BotTable in rivals:
+		if rival.standing[other] > own:
+			return true
+	return false
 
 
 ## True when an opponent could hold width cards that read as rank, counting the threats
@@ -171,6 +187,30 @@ func _threats() -> PackedByteArray:
 				opposing[rank] += hidden[rank]
 			break
 	return opposing
+
+
+func _rivals() -> Array[BotTable]:
+	var found: Array[BotTable] = []
+	if table.is_uniform():
+		return found
+	var differs: bool = false
+	for other: int in Seats.COUNT:
+		if not is_opponent(other):
+			continue
+		var rival: BotTable = table.as_seat(other, table.bombed)
+		if _plays_like(rival, table):
+			rival = table
+		else:
+			differs = true
+		if not found.any(func(known: BotTable) -> bool: return _plays_like(known, rival)):
+			found.append(rival)
+	if not differs:
+		found.clear()
+	return found
+
+
+static func _plays_like(first: BotTable, second: BotTable) -> bool:
+	return first.rules == second.rules and first.standing == second.standing
 
 
 func _largest_opposing_hand() -> int:

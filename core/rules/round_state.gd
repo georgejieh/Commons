@@ -187,9 +187,9 @@ func events() -> Array[RoundEvent]:
 func legal_moves() -> Array[Pattern]:
 	_sync_rules()
 	var hand: Hand = _hands[_turn]
-	return MoveGenerator.generate(
-		hand.counts(), hand.rank_mask(), _current, _table.rules_for(_turn), _table.map_for(_turn)
-	)
+	var rules: RuleSet = _table.rules_for(_turn)
+	var standing: PackedByteArray = _table.standing_for(_turn)
+	return MoveGenerator.generate(hand.counts(), hand.rank_mask(), _current, rules, standing)
 
 
 ## Turns a pattern into an action for the seat to act, using its least valuable cards of
@@ -248,11 +248,13 @@ func read_play(seat: int, card_ids: Array[int], wanted: Pattern = null) -> PlayR
 		reading.cards.append(card)
 	var rules: RuleSet = _table.rules_for(seat)
 	var counts: PackedByteArray = CardSelection.printed_counts(reading.cards)
-	var classified: Classification = Classifier.classify(counts, rules, _table.map_for(seat))
+	# Keys read standings, so plays of seats with different orders compare (ADR 0039).
+	var standing: PackedByteArray = _table.standing_for(seat)
+	var classified: Classification = Classifier.classify(counts, rules, standing)
 	reading.invalid_reason = classified.reason
 	var options: Array[Pattern] = []
 	if WildSupply.of(counts, rules) != null:
-		options = Readings.of(counts, rules, _table.map_for(seat))
+		options = Readings.of(counts, rules, standing)
 	elif classified.is_valid():
 		options.append(classified.pattern)
 	if options.is_empty():
@@ -264,7 +266,7 @@ func read_play(seat: int, card_ids: Array[int], wanted: Pattern = null) -> PlayR
 			reading.readings.append(option)
 	reading.pattern = options[0] if reading.readings.is_empty() else reading.readings[0]
 	if wanted != null:
-		reading.pattern = Readings.checked(wanted, counts, rules, _table.map_for(seat))
+		reading.pattern = Readings.checked(wanted, counts, rules, standing)
 		if reading.pattern == null:
 			reading.reason = Reason.ILLEGAL_PLAY
 			return reading
@@ -333,7 +335,7 @@ func _commit_play(cards: Array[CardInstance], card_ids: Array[int], pattern: Pat
 ## A changed rank map applies to the play on the table too, read in its player's map.
 func _rekey_current() -> void:
 	if _current != null:
-		_current = _current.rekeyed(_table.map_for(_trick_leader)[_current.main_rank])
+		_current = _current.rekeyed(_table.standing_for(_trick_leader)[_current.main_rank])
 		_history[_leader_entry].pattern = _current.copy()
 
 

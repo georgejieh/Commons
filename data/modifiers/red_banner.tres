@@ -16,4 +16,4 @@ cost = 4
 unlock_tier = 0
 name_key = "modifier.red_banner.name"
 text_key = "modifier.red_banner.text"
-table_wide = true
+counts_for_teammate = true

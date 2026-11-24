@@ -113,12 +113,14 @@ func _follow(current: Pattern) -> void:
 			_trios_with_kicker(Pattern.Type.TRIO_SINGLE, SINGLE_WIDTH)
 		Pattern.Type.TRIO_PAIR:
 			_trios_with_kicker(Pattern.Type.TRIO_PAIR, PAIR_WIDTH)
+		# A chain answers only at a length the follower's own rules allow: a seat without
+		# Shock Brigade has no 4-card Straight to answer one with (ADR 0039).
 		Pattern.Type.STRAIGHT:
-			_chains(current.type, SINGLE_WIDTH, length, length)
+			_chains(current.type, SINGLE_WIDTH, maxi(length, _rules.min_straight_length()), length)
 		Pattern.Type.PAIR_CHAIN:
-			_chains(current.type, PAIR_WIDTH, length, length)
+			_chains(current.type, PAIR_WIDTH, maxi(length, _rules.min_pair_chain_length()), length)
 		Pattern.Type.AIRPLANE, Pattern.Type.AIRPLANE_SINGLES, Pattern.Type.AIRPLANE_PAIRS:
-			_chains(current.type, TRIO_WIDTH, length, length)
+			_chains(current.type, TRIO_WIDTH, maxi(length, _rules.min_airplane_length()), length)
 		Pattern.Type.FOUR_TWO_SINGLES:
 			_four_two_singles()
 		Pattern.Type.FOUR_TWO_PAIRS:

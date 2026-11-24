@@ -66,7 +66,9 @@ static func _gated(position: BotPosition, moves: Array[Pattern]) -> Array[Patter
 static func _on_teammate(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 	var play: Pattern = position.view.public.current_play
 	var weights: BotWeights = position.config.weights
-	var weak: bool = position.rank_of(play.main_rank) < weights.weak_teammate_rank
+	# The teammate's card in the teammate's own order (ADR 0039).
+	var teammate_rank: int = position.table.map_of(position.teammate)[play.main_rank]
+	var weak: bool = teammate_rank < weights.weak_teammate_rank
 	if (
 		position.plays_a_role()
 		and position.is_upstream()

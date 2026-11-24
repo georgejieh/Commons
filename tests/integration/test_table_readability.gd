@@ -130,14 +130,15 @@ func test_a_villagers_line_goes_when_they_act_again() -> void:
 	assert_str(second.speech()).is_not_empty()
 
 
-func test_a_rule_for_the_whole_table_says_so() -> void:
-	assert_bool(_app.controller.is_table_wide("promotion_of_the_masses")).is_true()
-	assert_bool(_app.controller.is_table_wide(RANK_DEBUFF)).is_false()
-	var rule: String = ScreenKit.rule_text(_app.controller, "promotion_of_the_masses")
-	assert_str(rule).contains(tr("modifier.table_wide"))
-	assert_str(ScreenKit.rule_text(_app.controller, RANK_DEBUFF)).not_contains(
-		tr("modifier.table_wide")
-	)
+## A Cadre works for the player's household (ADR 0039): a collective scoring one says it
+## counts for the teammate too, and a rank Cadre or a debuff says nothing of the kind.
+func test_a_cadre_that_pays_the_teammate_says_so() -> void:
+	var line: String = tr("modifier.counts_for_teammate")
+	assert_bool(_app.controller.counts_for_teammate("canteen")).is_true()
+	assert_str(ScreenKit.rule_text(_app.controller, "canteen")).contains(line)
+	for modifier_id: String in ["promotion_of_the_masses", RANK_DEBUFF]:
+		assert_bool(_app.controller.counts_for_teammate(modifier_id)).is_false()
+		assert_str(ScreenKit.rule_text(_app.controller, modifier_id)).not_contains(line)
 
 
 func test_keywords_explain_themselves() -> void:

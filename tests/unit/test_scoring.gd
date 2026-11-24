@@ -49,6 +49,8 @@ class Overflow:
 
 func _scoring_stack(effect: ModifierEffect) -> ModifierStack:
 	var definition: ModifierDef = ModifierDef.new()
+	# A debuff's hooks reach every seat (ADR 0039), so any seat's play shows the steps.
+	definition.kind = ModifierDef.Kind.DEBUFF
 	var hooks: Array[String] = [Hooks.PLAY_SCORED, Hooks.CARD_SCORED]
 	definition.hooks = hooks
 	var stack: ModifierStack = ModifierStack.new()

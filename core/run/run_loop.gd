@@ -212,7 +212,7 @@ func preview_play(card_ids: Array[int], reading: Pattern = null) -> PlayPreview:
 ## What the seat's rules and rank order are, for bots and hints.
 func seat_table(seat: int) -> BotTable:
 	_table.refresh()
-	return BotTable.new(_table.rules_for(seat), _table.map_for(seat))
+	return BotTable.of_seat(_table, seat)
 
 
 ## The current Set's target: the curve's, any boss's change, then the norm in force for

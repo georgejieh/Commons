@@ -16,4 +16,4 @@ cost = 5
 unlock_tier = 2
 name_key = "modifier.advanced_cooperative.name"
 text_key = "modifier.advanced_cooperative.text"
-table_wide = true
+counts_for_teammate = true

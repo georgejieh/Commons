@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
-## ADR 0032's Double-Share Plough: a Pair Run of 2 pairs is a hand for every seat while it
-## is in force and never otherwise. The classifier reads it, the move generator offers
-## it, and every bot tier plays it legally.
+## ADR 0032's Double-Share Plough: a Pair Run of 2 pairs is a hand for its holder's seat
+## while it is in force, and for no other seat (ADR 0039) and never otherwise. The
+## classifier reads it, the move generator offers it, and every bot tier plays it legally.
 
 const TIERS: Array[BotConfig.Tier] = [
 	BotConfig.Tier.EASY, BotConfig.Tier.MEDIUM, BotConfig.Tier.HARD, BotConfig.Tier.EXPERT
@@ -35,8 +35,10 @@ func _mask(counts: PackedByteArray) -> int:
 func test_the_classifier_and_move_generator_read_two_pairs_only_under_the_plough() -> void:
 	var counts: PackedByteArray = RankText.counts("3344")
 	for table: SeatRules in [_plough(), _plain()]:
-		var ploughed: bool = table.rules_for(0).min_pair_chain_length() == 2
+		var held: bool = table.rules_for(0).min_pair_chain_length() == 2
 		for seat: int in Seats.COUNT:
+			var ploughed: bool = held and seat == 0
+			assert_int(table.rules_for(seat).min_pair_chain_length()).is_equal(2 if ploughed else 3)
 			var rules: RuleSet = table.rules_for(seat)
 			var read: Classification = Classifier.classify(counts, rules, Ranks.identity_map())
 			assert_bool(read.is_valid()).is_equal(ploughed)

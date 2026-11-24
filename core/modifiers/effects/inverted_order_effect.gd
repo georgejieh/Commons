@@ -5,4 +5,4 @@ extends ModifierEffect
 
 func build_rank_map(context: RankMapContext) -> void:
 	if context.seat == holder_seat:
-		ReversedRanks.reverse(context.rank_map)
+		ReversedRanks.reverse(context.rank_map, context.step)

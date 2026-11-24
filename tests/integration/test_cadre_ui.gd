@@ -109,7 +109,7 @@ func test_a_cadre_with_a_count_shows_it_on_its_card_and_swells_when_it_fires() -
 	assert_str(board.count_at(0)).is_equal("+6")
 	assert_str(board.count_at(1)).is_empty()
 	var cards: Array[TipHost] = board.get("_cards")
-	assert_str(cards[0].tip_rule()).contains("Now +6 Grain on every play.")
+	assert_str(cards[0].tip_rule()).contains("Now +6 Grain on each of your plays.")
 	board.fired(_app.controller, "the_bookkeeper", 2)
 	assert_str(board.count_at(1)).is_equal("+2")
 	# Drawn on the card, never a label over the table.
