@@ -59,3 +59,20 @@ func test_the_table_calls_a_kept_seat_once() -> void:
 		player.played.emit(event)
 	assert_bool(callout.is_showing()).is_true()
 	assert_str(KeptSeat.said).is_equal("4:2")
+
+
+## What was called is forgotten when a run starts or is left, so a new run in the same
+## session, even one on the same seed, calls its own first kept seat.
+func test_a_new_run_forgets_what_the_last_one_called() -> void:
+	Saves.use_run_path("user://test_kept_seat/run.json")
+	Saves.run_service().delete()
+	var scene: PackedScene = load("res://ui/main.tscn")
+	var app: DemoApp = auto_free(scene.instantiate())
+	add_child(app)
+	KeptSeat.said = "4:2"
+	assert_bool(app.new_run(5)).is_true()
+	assert_str(KeptSeat.said).is_empty()
+	KeptSeat.said = "4:2"
+	app.leave_run()
+	assert_str(KeptSeat.said).is_empty()
+	Saves.run_service().delete()

@@ -55,6 +55,7 @@ func allows(action: String, detail: Variant = null) -> bool:
 ## Starts the arrival at the table. replay plays it again, ending at the title.
 func start(replay: bool = false) -> void:
 	_replay = replay
+	KeptSeat.forget()
 	_app.controller.start(RunStarter.tutorial())
 	director = TutorialDirector.new()
 	director.finished.connect(_on_finished)

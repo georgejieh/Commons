@@ -187,6 +187,7 @@ func new_run(seed_value: int, full: bool = false, household: String = "", stake:
 	if full:
 		request.household = household
 		request.stake = stake
+	KeptSeat.forget()
 	return controller.start(request, Saves.run_service(), Saves.profile_service())
 
 
@@ -199,6 +200,7 @@ func continue_run() -> bool:
 ## ending. Its save is cleared and nothing more is recorded (ADR 0025); the memory of
 ## the Quotas it finished, and a finished run's record, are already in the profile.
 func leave_run() -> void:
+	KeptSeat.forget()
 	# The arrival is never saved: leaving it must not touch a real run's save.
 	if not arrival.is_running():
 		Saves.run_service().delete()
