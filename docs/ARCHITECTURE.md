@@ -324,6 +324,7 @@ The boss's modifier joins the stack after the debuffs, and the Set intro names i
 - **The swap lasts one round.** `PlotSwap.apply` puts a copy of each plot card, under its own plot ID and with its marks, into the hand through `RoundState.exchange`, and drops the hand card it replaces from the round (a kitty card leaves the public kitty too). The plot is never changed by a swap: the plot card is there when the round is over, played or not, and the set-aside deck card is dealt with the next fresh deck, its saved marks on it. Nothing is reissued; `RunState.take_plot_id()` is used only to make a new plot card, and runs past every plot ID ever held.
 - **Capacity.** `PlotSwap.capacity()` is data `plot_capacity` plus `plot_capacity_bonus`. `PlotSwap.store()` adds a card only below capacity; the black market's `PlotStall` uses it to put a bought card in the plot.
 - **Duplicate ranks.** A fifth copy of a rank in hand reads by the RuleSet's `five_plus_is_bomb`.
+- **A round with no bidding** says so as it begins. `KeptSeat` reads the Set's events and knows when the round in progress was not bid for: the landlord who won the last round keeps the seat, or, in a Quota's first round, the risen villager starts the boss Quota as landlord. `KeptSeatCall` shouts "No bidding" with who and why when the round starts, holding the queue, or after the table's replay when it opens on such a round; the swap sheet prints the same line when it opens over it. Each round is called once (`KeptSeat.said`).
 
 **Deal, stamp and information effects (P4.9).**
 

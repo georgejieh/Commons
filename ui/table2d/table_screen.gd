@@ -74,6 +74,7 @@ var _tutorial: TableTutorial = TableTutorial.new()
 var _wild: TableWild = TableWild.new()
 var _resize: TableResize = TableResize.new()
 var _columns: TableColumns = TableColumns.new()
+var _kept: KeptSeatCall = KeptSeatCall.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -122,6 +123,7 @@ func _ready() -> void:
 	_need_panel.head = _hud.size.y + SHEET_GAP
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
 	_pause.at_table = true
+	add_child(_kept)
 	for sheet: Control in [_cheat_sheet, _pause]:
 		add_child(sheet)
 		sheet.set_deferred("size", Vector2(1920, 1080))
@@ -176,6 +178,7 @@ func open(app: DemoApp) -> void:
 	for seat: int in _seats:
 		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
 	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
+	_kept.setup(_player, _moments.callout, names, faces)
 	_moments.hud = _hud
 	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
 	_campaigns.attach(_pool, _debuffs)
@@ -200,6 +203,7 @@ func open(app: DemoApp) -> void:
 	_player.flush()
 	_still(false)
 	_replaying = false
+	_kept.after_replay(_controller.awaiting() == RunController.AWAIT_SWAP)
 	_hud.sync(_controller.state_copy(), _controller.target())
 
 
