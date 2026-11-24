@@ -44,7 +44,7 @@ static func is_tooltip(panel: Window) -> bool:
 ## What a tooltip on control keeps off: the control, or the one it names, and every
 ## button inside that, which may stand past its edge.
 static func subject(control: Control) -> Rect2:
-	var named: Object = control.get_meta(SUBJECT, null)
+	var named: Object = control.get_meta(SUBJECT) if control.has_meta(SUBJECT) else null
 	var thing: Control = control
 	if is_instance_valid(named) and named is Control and (named as Control).is_inside_tree():
 		thing = named as Control
