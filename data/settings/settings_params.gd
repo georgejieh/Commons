@@ -22,6 +22,8 @@ extends Resource
 @export var text_size: int = 0
 ## The table's pace chosen: an index into MotionPresets.pace_scales, 1 for Standard.
 @export var table_pace: int = 1
+## Whether the table offers its Hint button (HintSetting).
+@export var show_hint: bool = true
 
 @export_group("Text size")
 ## What each text size multiplies every font size by: Standard, Large, Largest. Not saved.

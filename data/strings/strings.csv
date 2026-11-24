@@ -333,6 +333,7 @@ note.settings,"To soften it, lower Horror intensity in Settings. No flashes turn
 note.continue,Continue
 settings.horror_intensity,Horror intensity
 settings.no_flash,No flashes
+settings.show_hint,Hint button
 dread.notice.early.0,"Brigade notice: the threshing floor is swept. Bring your own baskets on Sunday."
 dread.notice.early.1,"Brigade notice: the new well is open. Households draw before the morning bell."
 dread.notice.early.2,"Brigade notice: the ox is rested. River plots are ploughed first this week."
