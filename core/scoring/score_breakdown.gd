@@ -17,6 +17,9 @@ var total: float = 0.0
 var stamps_resented: bool = true
 var steps: PackedFloat64Array = PackedFloat64Array()
 var step_count: int = 0
+## Every change to the score, one at a time, for the table to act out (P5.2a). Kept only
+## when the scorer was asked to record, as for a real play; empty for a preview.
+var trail: Array[ScoreStep] = []
 
 
 func _init(scored_cards: int) -> void:

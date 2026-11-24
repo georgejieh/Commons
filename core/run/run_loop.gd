@@ -917,6 +917,7 @@ func _collect_round_events() -> void:
 			scored.grain = _scoring.last_grain()
 			scored.rate = _scoring.last_rate()
 			scored.zeal = _scoring.last_zeal()
+			scored.steps = _scoring.last_steps()
 			set_log.add(scored)
 			_take_turn(event)
 		elif event.type == RoundEvent.Type.PASSED:
