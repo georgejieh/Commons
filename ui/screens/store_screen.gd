@@ -1,14 +1,15 @@
 # gdlint: disable=max-file-lines
-# Just over 400 lines: the arrival's gate on each way to buy or leave (ADR 0026).
+# Over 400 lines: the arrival's gate on each way to buy or leave (ADR 0026).
 class_name StoreScreen
 extends Control
 ## A shop between Sets (P4.10): Cadres on the counter, bought with coupons, a reroll,
 ## and what you already hold, pinned on a board. The same screen is the state store and,
 ## with market set, the black market behind it: the room goes dark, prices are higher,
 ## the plot can be enlarged, and every purchase adds Resentment, which the screen
-## counts. Every purchase goes through the run controller. A purchase is acted out: the
-## card is sealed, then flies down to its place on your board. A Cadre that seldom
-## reaches the counter is stamped Scarce a beat after the cards arrive (ScarceStamp).
+## counts. Every purchase goes through the run controller, and so does every sale of a
+## held Cadre or Campaign back to the counter (SellDesk, ADR 0040). A purchase is acted
+## out: the card is sealed, then flies down to its place on your board. A Cadre that
+## seldom reaches the counter is stamped Scarce a beat after the cards arrive.
 ##
 ## The page fits one 1920x1080 screen in four rows inside the header's margins:
 ## - the heading, with your coupons, the shop's note and the Reforms in force at its right;
@@ -74,6 +75,8 @@ var _slip: DetailSlip = DetailSlip.new()
 var _envelope_stall: EnvelopeStall = EnvelopeStall.new()
 ## Asks for a rank before a Cadre that needs one is bought (ADR 0021).
 var _picker: RankPicker = RankPicker.new()
+## Sells back the held Cadres and Campaigns (ADR 0040).
+var _sale: SellDesk = SellDesk.new()
 ## The household's true figures, shown only at the stage past the last (ADR 0022).
 var _books: SmallLedger = SmallLedger.new(2)
 ## The page's main blocks by name, for the layout test.
@@ -99,6 +102,8 @@ func open(app: DemoApp) -> void:
 	_envelope_stall.settled.connect(_on_envelope_settled)
 	_board.setup(app.controller.cadre_slots(), BOARD_BOX)
 	_board.empty_line = tr("store.shelf.empty")
+	_sale.setup(app, market, _desk, _board, _campaign_stall.tray, _slip, is_issuing)
+	_sale.sold.connect(_on_sold)
 	column.add_child(_header_row(app))
 	column.add_child(_main_row(app))
 	var leave: Button = _button_row(column)
@@ -273,6 +278,7 @@ func _refresh() -> void:
 	_campaign_stall.show_offer()
 	_reform_stall.show_offer()
 	_envelope_stall.show_offer()
+	_sale.refresh()
 
 
 func _item(slot: int, cadre_id: String) -> Control:
@@ -354,6 +360,16 @@ func _on_spent() -> void:
 	UiMotion.pulse(_coupons)
 	_reroll.disabled = not _desk.can_reroll()
 	_books.show_shop(_app.controller.state_copy())
+
+
+## Something held was sold back: the coupons count up, and the freed place swells.
+func _on_sold(_index: int, campaign: bool) -> void:
+	_on_spent()
+	_refresh()
+	if not campaign:
+		_board.pulse_slot(_app.controller.state_copy().inventory.cadres.size())
+	if get_viewport().gui_get_focus_owner() == null:
+		(_blocks["buttons"].get_child(0) as Button).grab_focus()
 
 
 ## A plot card or an upgrade from the black market, bought by act.

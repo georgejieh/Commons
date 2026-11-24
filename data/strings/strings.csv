@@ -164,6 +164,9 @@ store.buy,Buy · {price} coupons
 store.buy.poor,Need {price} coupons
 store.buy.full,No room
 store.buy.empty,Nothing inside
+store.sell,Sell · {price}
+store.sell.confirm,Sell for {price}?
+store.sell.bound,Held back
 store.rationed,Rationing: {count} Cadres on the counter until Famine falls below {below}.
 store.rationed.one,Rationing: 1 Cadre on the counter until Famine falls below {below}.
 year.title,Year {year} done
