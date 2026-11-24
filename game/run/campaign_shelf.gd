@@ -23,6 +23,11 @@ func can_buy(slot: int) -> bool:
 	return _counter.check(slot) == RunShop.Reason.OK
 
 
+## True for a Campaign sold back this visit, which cannot be bought until the next.
+func is_sold_back(slot: int) -> bool:
+	return _counter.check(slot) == RunShop.Reason.SOLD_BACK
+
+
 ## True when the player already holds as many Campaigns as they can.
 func is_full() -> bool:
 	return not _counter.has_room()

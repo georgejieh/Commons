@@ -6,6 +6,10 @@ extends RefCounted
 
 ## The held Cadres a debuff or boss holds now, which cannot be sold (ADR 0040).
 var bound: Array[String] = []
+## The Cadres sold back this visit, which cannot be bought until the next (ADR 0040).
+var sold_back: Array[String]:
+	get:
+		return _shop.withheld.duplicate()
 
 var _shop: RunShop
 var _state: RunState

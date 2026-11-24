@@ -91,7 +91,10 @@ func _offer(slot: int, campaign_id: String) -> CounterPanel:
 		tr("store.buy").format({"price": _shelf.price(slot)})
 	)
 	var coupons: int = controller.state_copy().coupons
-	BuyTicket.dress(made.buy, _shelf.can_buy(slot), _shelf.price(slot), coupons)
+	var why: BuyTicket.Why = BuyTicket.Why.FULL
+	if _shelf.is_sold_back(slot):
+		why = BuyTicket.Why.SOLD_BACK
+	BuyTicket.dress(made.buy, _shelf.can_buy(slot), _shelf.price(slot), coupons, why)
 	if _shelf.is_full():
 		made.rule += "\n\n" + tr("campaign.full")
 	made.buy.pressed.connect(_buy.bind(slot, made))
