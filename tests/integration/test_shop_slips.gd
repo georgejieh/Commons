@@ -1,9 +1,10 @@
 extends GdUnitTestSuite
-## A slip never covers what it explains nor any button (commons-screens states.md): on
-## both shops, at 1920x1080 and 1280x800 and at every text size, the slip for a Cadre on
-## the counter, for each offer on the counter, for a Reform in force and for a keyword in
-## a Cadre's rules lies wholly on the screen, off the thing it explains and off every
-## visible button, enabled or not.
+## A slip stands right beside what it explains (commons-screens states.md, the owner's
+## playtest of 2026-11-24): on both shops, at 1920x1080 and 1280x800 and at every text
+## size, the slip for a Cadre on the counter, for each offer on the counter (the Campaign,
+## the Reform and the envelope), for a Reform in force and for a keyword in a Cadre's
+## rules lies wholly on the screen, within SlipPlacer.REACH of the thing it explains, and
+## off that thing and its own button. It may lie on other papers.
 
 const SEED: int = 4242
 const SAVE_PATH: String = "user://test_shop_slips/run.json"
@@ -46,7 +47,7 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
-func test_every_slip_on_both_shops_keeps_off_its_piece_and_every_button() -> void:
+func test_every_slip_on_both_shops_stands_beside_its_piece() -> void:
 	Settings.set_value("reduced_motion", true)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
@@ -127,13 +128,27 @@ func _check_slip(store: StoreScreen, paper: Control, anchor: Rect2, where: Strin
 		. override_failure_message("%s: slip %s over its piece %s" % [where, slip, anchor])
 		. is_false()
 	)
+	var reach: float = _gap(slip, anchor)
+	(
+		assert_float(reach)
+		. override_failure_message("%s: slip %s is %.0f px from %s" % [where, slip, reach, anchor])
+		. is_less_equal(SlipPlacer.REACH + SLACK)
+	)
+	# Its own button: any button that lies on the piece it explains.
 	for node: Node in store.find_children("*", "BaseButton", true, false):
 		var button: BaseButton = node as BaseButton
-		if not button.is_visible_in_tree():
-			continue
 		var box: Rect2 = button.get_global_rect()
+		if not button.is_visible_in_tree() or not anchor.encloses(box):
+			continue
 		(
 			assert_bool(inner.intersects(box))
 			. override_failure_message("%s: slip %s over %s %s" % [where, slip, button.name, box])
 			. is_false()
 		)
+
+
+## The gap between two rectangles: 0 when they touch or overlap.
+func _gap(a: Rect2, b: Rect2) -> float:
+	var dx: float = maxf(0.0, maxf(b.position.x - a.end.x, a.position.x - b.end.x))
+	var dy: float = maxf(0.0, maxf(b.position.y - a.end.y, a.position.y - b.end.y))
+	return Vector2(dx, dy).length()

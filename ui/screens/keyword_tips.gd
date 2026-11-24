@@ -1,11 +1,11 @@
 class_name KeywordTips
 extends CanvasLayer
 ## The slips that explain keywords on hover, over every screen. Resting the pointer on a
-## marked word opens its slip near the pointer, off every button. The slip stays while
-## the pointer is on the word, on the slip, or on a slip opened from a word inside it,
-## and for a moment after, so the pointer can cross from a word onto its slip and read
-## the words there. The engine's own tooltips close the moment the pointer leaves the
-## word, which made a keyword inside a tooltip unreachable.
+## marked word opens its slip right beside the word, below it first (SlipPlacer). The
+## slip stays while the pointer is on the word, on the slip, or on a slip opened from a
+## word inside it, and for a moment after, so the pointer can cross from a word onto its
+## slip and read the words there. The engine's own tooltips close the moment the pointer
+## leaves the word, which made a keyword inside a tooltip unreachable.
 
 ## Seconds the pointer rests on a word before its slip opens, and a slip outlives it.
 const DELAY: float = 0.18
@@ -130,14 +130,14 @@ func _open(text: KeywordText, keyword_id: String, mouse: Vector2) -> void:
 	_slips.append(slip)
 
 
-## Stands a slip below and right of the pointer where that is clear, else where
-## SlipPlacer finds room off the word, every button and as much text as it can, once
-## its text has taken its height.
+## Stands a slip right beside the word under the pointer, below it first, as SlipPlacer
+## places every slip, once its text has taken its height.
 func _place(slip: KeywordSlip) -> void:
 	var screen: Rect2 = get_viewport().get_visible_rect().grow(-EDGE)
 	var word: Rect2 = Rect2(slip.asked_at, Vector2.ZERO).grow(POINTER)
-	var wanted: Vector2 = slip.asked_at + GAP
-	slip.position = SlipPlacer.place(slip.size, wanted, word, GAP.x, screen, get_tree().root, slip)
+	var below: int = SlipPlacer.BELOW
+	var root: Node = get_tree().root
+	slip.position = SlipPlacer.place(slip.size, word, GAP.x, screen, root, slip, below)
 	slip.placed = true
 	if UiMotion.reduced():
 		slip.modulate.a = 1.0

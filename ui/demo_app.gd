@@ -85,6 +85,8 @@ func _ready() -> void:
 	_menu.z_index = TutorialLayer.DRAW_ORDER + 1
 	_menu.wire(self)
 	add_child(notice)
+	# Every tooltip stands beside what it explains, off it and its button.
+	add_child(TipPlacer.new())
 	notice.watch(controller)
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
