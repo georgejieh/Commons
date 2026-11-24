@@ -7,6 +7,8 @@ extends GdUnitTestSuite
 ## last stage; and the shops offer a Campaign and its tray without passing 1080.
 
 const SEED: int = 4242
+## How many seeds the opening test may try before it fails.
+const OPENING_SEEDS: int = 8
 const SAVE_PATH: String = "user://test_campaign_ui/run.json"
 const WAIT_SECONDS: float = 6.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
@@ -331,8 +333,17 @@ func _check_inside(root: Node, where: String) -> void:
 
 
 func test_the_opening_offers_play_on_and_plays_on() -> void:
-	_hold(["mutual_aid"])
-	assert_bool(_drive_to(RunController.AWAIT_OPENING)).is_true()
+	# Mutual Aid opens only for a peasant, and which seed makes the player one before
+	# the run's end moves with the Quota targets: take the first seed that does.
+	var reached: bool = false
+	for step: int in OPENING_SEEDS:
+		if step > 0:
+			_app.new_run(SEED + step)
+		_hold(["mutual_aid"])
+		reached = _drive_to(RunController.AWAIT_OPENING)
+		if reached:
+			break
+	assert_bool(reached).is_true()
 	var table: TableScreen = await _open_table()
 	var actions: ActionBar = table.actions()
 	assert_bool(actions.play_on.is_visible_in_tree()).is_true()
