@@ -76,6 +76,10 @@ func _show_stall() -> void:
 		cards.add_child(item)
 		var view: CardView = CARD_SCENE.instantiate()
 		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# A card keeps a card's proportions, as the table draws it: the Buy ticket under it
+		# may be wider, and the card stands centred over it, never stretched to its width.
+		view.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		view.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		item.add_child(view)
 		view.bind(card)
 		view.visible = true
@@ -92,6 +96,13 @@ func _show_stall() -> void:
 		buy.pressed.connect(_buy.bind(_controller.plot_card.bind(slot), "plot_card", slot))
 		item.add_child(buy)
 		_card_buttons.append(buy)
+
+
+## The card shown in a slot of the stall, or null, for tests.
+func card_view(slot: int) -> CardView:
+	if slot >= _card_buttons.size():
+		return null
+	return _card_buttons[slot].get_parent().get_child(0) as CardView
 
 
 ## The Buy button under a plot card, or null.
