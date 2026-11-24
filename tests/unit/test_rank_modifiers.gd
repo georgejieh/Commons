@@ -156,7 +156,7 @@ func test_the_refresh_reads_the_players_own_map() -> void:
 	assert_int(table.map_for(1)[Ranks.SEVEN]).is_equal(Ranks.SEVEN)
 	# A play's key reads the seat's standings (ADR 0039), here turned twice over too.
 	var expected: int = table.standing_for(1)[Ranks.SEVEN]
-	assert_int(expected).is_equal(Ranks.SEVEN * Standing.STEP)
+	assert_int(expected).is_equal(Standing.identity()[Ranks.SEVEN])
 	assert_int(view.current_play.key & 0xFF).is_equal(expected)
 	assert_int(view.history[1].pattern.key & 0xFF).is_equal(expected)
 

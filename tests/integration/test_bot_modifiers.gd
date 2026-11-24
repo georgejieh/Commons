@@ -26,6 +26,9 @@ const RANK_PAIRS: Array[Array] = [
 	["rehabilitation", "class_label"],
 ]
 const PAIR_GAMES: int = 4
+## Cultural Revolution, then Rehabilitation on the 4, then Inverted Order: after a bomb the
+## 4 climbs past the turned-over 3 and is turned over again.
+const CLIMB: Array[String] = ["cultural_revolution", "rehabilitation", "inverted_order"]
 
 
 func _random_table(stream: RandomStream) -> SeatRules:
@@ -124,3 +127,19 @@ func test_no_bot_acts_illegally_while_one_seat_holds_two_rank_cadres() -> void:
 			var label: String = "%s game %d" % [pair, game]
 			assert_int(result.illegal_actions).override_failure_message(label).is_equal(0)
 			assert_bool(result.winner != Seats.NONE).override_failure_message(label).is_true()
+
+
+func test_no_bot_acts_illegally_while_the_holder_turns_a_climbed_rank_over() -> void:
+	var stack: ModifierStack = ModifierStack.new()
+	for name: String in CLIMB:
+		var memo: CadreMemo = CadreMemo.new()
+		memo.put(CadreMemo.RANK, Ranks.FOUR)
+		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), 0, memo)
+	var table: SeatRules = SeatRules.new(stack)
+	for game: int in PAIR_GAMES * 2:
+		var seats: Array[BotConfig] = _random_seats(RandomStream.new(game + 71))
+		var deal: DealResult = SelfPlay.deal_from_seed(4400 + game)
+		var result: SelfPlayResult = SelfPlay.play_round(deal, game % Seats.COUNT, seats, table)
+		var label: String = "climb game %d" % game
+		assert_int(result.illegal_actions).override_failure_message(label).is_equal(0)
+		assert_bool(result.winner != Seats.NONE).override_failure_message(label).is_true()
