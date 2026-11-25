@@ -14,5 +14,5 @@ func required_parameters() -> PackedStringArray:
 func card_scored(context: CardContext) -> void:
 	if context.card.enhancement_id() != CardInstance.MODEL:
 		return
-	var wanted: float = context.printed_grain * parameters[TIMES_PERCENT_GRAIN] / 100.0
+	var wanted: float = fraction(context.printed_grain * parameters[TIMES_PERCENT_GRAIN])
 	context.grain += wanted - context.own_grain

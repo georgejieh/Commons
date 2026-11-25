@@ -11,4 +11,4 @@ func required_parameters() -> PackedStringArray:
 
 func play_scored(context: PlayContext) -> void:
 	if context.cards_left == 0:
-		context.mul_zeal *= parameters[TIMES_PERCENT_ZEAL] / 100.0
+		context.mul_zeal *= fraction(parameters[TIMES_PERCENT_ZEAL])

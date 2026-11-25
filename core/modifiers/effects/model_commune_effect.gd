@@ -14,5 +14,5 @@ func round_end(context: RoundContext) -> void:
 	var peasants_won: bool = context.winner != Seats.NONE and context.winner != context.landlord
 	if holder_seat == context.landlord or not peasants_won or context.winner == holder_seat:
 		return
-	context.commons_scale *= parameters[TIMES_PERCENT_COMMONS] / 100.0
+	context.commons_scale *= fraction(parameters[TIMES_PERCENT_COMMONS])
 	memo.fire()

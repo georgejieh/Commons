@@ -21,4 +21,4 @@ func rank_parameters() -> PackedStringArray:
 func card_scored(context: CardContext) -> void:
 	var rank: int = context.card.base_rank()
 	if rank >= parameters[LOW_RANK] and rank <= parameters[HIGH_RANK]:
-		context.grain += context.own_grain * (parameters[TIMES_PERCENT_GRAIN] - 100) / 100.0
+		context.grain += fraction(context.own_grain * (parameters[TIMES_PERCENT_GRAIN] - 100))

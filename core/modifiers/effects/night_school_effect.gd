@@ -13,4 +13,4 @@ func required_parameters() -> PackedStringArray:
 
 func play_scored(context: PlayContext) -> void:
 	if SMALL_PLAYS.has(context.pattern.type):
-		context.add_zeal += parameters[ZEAL_PERCENT] / 100.0
+		context.add_zeal += fraction(parameters[ZEAL_PERCENT])

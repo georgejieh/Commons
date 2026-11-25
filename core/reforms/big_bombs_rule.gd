@@ -9,7 +9,6 @@ extends ModifierEffect
 const ZEAL_PERCENT: String = "zeal_percent_per_card"
 ## A bomb's cards without bigger bombs.
 const BOMB_CARDS: int = 4
-const PERCENT: float = 100.0
 
 
 func required_parameters() -> PackedStringArray:
@@ -24,4 +23,4 @@ func play_scored(context: PlayContext) -> void:
 	var pattern: Pattern = context.pattern
 	if pattern.type != Pattern.Type.BOMB or pattern.card_count <= BOMB_CARDS:
 		return
-	context.add_zeal += (pattern.card_count - BOMB_CARDS) * parameters[ZEAL_PERCENT] / PERCENT
+	context.add_zeal += fraction((pattern.card_count - BOMB_CARDS) * parameters[ZEAL_PERCENT])

@@ -13,7 +13,7 @@ func required_parameters() -> PackedStringArray:
 
 func play_scored(context: PlayContext) -> void:
 	if context.is_bomb():
-		context.mul_zeal *= parameters[TIMES_PERCENT_ZEAL] / 100.0
+		context.mul_zeal *= fraction(parameters[TIMES_PERCENT_ZEAL])
 
 
 func turn_taken(context: TurnContext) -> void:
