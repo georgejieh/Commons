@@ -49,7 +49,11 @@ static func from_dict(data: Dictionary) -> CardInstance:
 
 ## Returns an independent copy, for views of a hand.
 func snapshot() -> CardInstance:
-	return CardInstance.from_dict(to_dict())
+	var card: CardInstance = CardInstance.new(_id, _base_rank, _suit, _origin)
+	card._enhancement_id = _enhancement_id
+	card._seal_id = _seal_id
+	card._owner_stamp = _owner_stamp
+	return card
 
 
 ## The number an event gives a mark: 0 for the player's stamp, else the enhancement's
