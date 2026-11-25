@@ -1572,7 +1572,9 @@ func _arm_and_choose(table: Node, tray: Object, card_ids: Array[int]) -> void:
 		await _click_card(table, card_id)
 
 
-## Up to count cards of the hand to mark, court cards first, none of them already taken.
+## Up to count cards of the hand to mark, court cards first, none of them already taken
+## and none already marked: a Campaign refuses a card that carries its mark, and the marks
+## walk may have marked this hand.
 func _marking_picks(count: int, taken: Array[int]) -> Array[int]:
 	var hand: Object = _app.get("hand")
 	var cards: Array = hand.call("cards")
@@ -1582,9 +1584,17 @@ func _marking_picks(count: int, taken: Array[int]) -> Array[int]:
 		for card: CardInstance in cards:
 			if picks.size() >= count or taken.has(card.id()) or picks.has(card.id()):
 				continue
+			if _is_marked(card):
+				continue
 			if court.has(card.base_rank()) == want_court:
 				picks.append(card.id())
 	return picks
+
+
+func _is_marked(card: CardInstance) -> bool:
+	return (
+		card.enhancement_id() != CardInstance.NO_ID or card.owner_stamp() != CardInstance.NO_OWNER
+	)
 
 
 ## The dice bowl settled on a 1 and a 4, so the red 1 and its audit ring show, at
