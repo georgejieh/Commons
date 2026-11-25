@@ -47,13 +47,19 @@ func _init(
 static func from_personality(personality: Personality, seed_value: int = 0) -> BotConfig:
 	var tier_value: Tier = personality.tier as Tier
 	var config: BotConfig = BotConfig.new(DEFAULT_WEIGHTS, tier_value, seed_value)
-	config.bomb_shift = TABLE.bomb_aggression[personality.bomb_aggression]
-	config.cooperation = TABLE.cooperation[personality.cooperation]
-	config.honesty = TABLE.honesty[personality.honesty]
-	config.lie_share = TABLE.lie_share[personality.honesty]
-	config.ambition = TABLE.ambition[personality.ambition]
-	config.grudge = TABLE.grudge[personality.grudge]
+	config.take_traits(personality)
 	return config
+
+
+## Plays by the personality's five traits from now on; the tier is left as it is. A
+## family's trait shifts use it as a meter crosses their band (ADR 0043).
+func take_traits(personality: Personality) -> void:
+	bomb_shift = TABLE.bomb_aggression[personality.bomb_aggression]
+	cooperation = TABLE.cooperation[personality.cooperation]
+	honesty = TABLE.honesty[personality.honesty]
+	lie_share = TABLE.lie_share[personality.honesty]
+	ambition = TABLE.ambition[personality.ambition]
+	grudge = TABLE.grudge[personality.grudge]
 
 
 ## A copy that shares nothing the run changes, for a search that reads it on another

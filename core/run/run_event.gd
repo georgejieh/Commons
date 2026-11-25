@@ -105,6 +105,12 @@ enum Type {
 	## CardInstance.mark_value() of the mark, 0 for the player's stamp, amount the coupons
 	## paid, and text the card's ID.
 	DECK_CARD_MARKED,
+	## A boss twist set the player's cards aside face up before the bid (ADR 0043): text is
+	## their IDs, joined by commas.
+	CARDS_SET_ASIDE,
+	## The player's information Cadre showed them the kitty before the bid (ADR 0043): text
+	## is its cards' IDs, joined by commas.
+	KITTY_SEEN,
 }
 
 var type: Type

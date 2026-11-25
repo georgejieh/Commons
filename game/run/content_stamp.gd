@@ -24,8 +24,8 @@ static func current() -> String:
 	return _current
 
 
-## Everything a run draws from, in a fixed order: the pools' definitions, then the numbers
-## that size each shelf and the ladder.
+## Everything a run draws from, in a fixed order: the pools' definitions, the boss
+## officials (ADR 0043), then the numbers that size each shelf and the ladder.
 static func drawn() -> Array[Resource]:
 	var found: Array[Resource] = []
 	found.append_array(RunPools.STORE_CADRES.cadres)
@@ -35,6 +35,7 @@ static func drawn() -> Array[Resource]:
 	found.append_array(RunPools.MARKET_CAMPAIGNS.campaigns)
 	found.append_array(RunPools.REFORMS.reforms)
 	found.append_array(RunLoop.DEFAULT_POOL.debuffs)
+	found.append_array(RunLoop.DEFAULT_BOSSES.officials)
 	found.append_array([RunPools.STORE, RunPools.MARKET, RunPools.LADDER, RunPools.PLOT_CARDS])
 	found.append_array([RunPools.DECK_CARDS, RunLoop.DEFAULT_PLOT_UPGRADES, RunLoop.DEFAULT_PARAMS])
 	found.append_array(RunPools.STORE.envelopes + RunPools.MARKET.envelopes)

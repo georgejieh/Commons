@@ -192,19 +192,41 @@ func player_cards() -> Array[CardInstance]:
 	return cards
 
 
+## The cards the round's deal set aside face up (ADR 0043), every seat's to see; none
+## between deals.
+func set_aside_cards() -> Array[CardInstance]:
+	var cards: Array[CardInstance] = []
+	if _deal != null:
+		for card: CardInstance in _deal.set_aside:
+			cards.append(card.snapshot())
+	return cards
+
+
 ## The player's view of the round: the public view and their own cards, plus whatever
 ## their information upgrades reveal (P4.9). Null between rounds.
 func player_view() -> SeatView:
 	if _round == null:
 		return null
 	var view: SeatView = _round.view_for(PLAYER)
-	var held: Array[ModifierDef] = []
-	for cadre_id: String in state.inventory.cadres:
-		held.append(_pool_by_id[cadre_id])
-	var info_flags: int = InfoReveal.flags(held)
+	var info_flags: int = _info_flags()
 	if info_flags != 0:
 		view.info = InfoReveal.build(_round, PLAYER, info_flags, seat_table(PLAYER))
 	return view
+
+
+## What the player's information upgrades show while the landlord seat is bid for (ADR
+## 0043), or null when nothing is bid for or they show nothing then. No bot reads it.
+func bid_info() -> InfoView:
+	if _bidding == null or _deal == null:
+		return null
+	return InfoReveal.bid_info(_deal, _info_flags())
+
+
+func _info_flags() -> int:
+	var held: Array[ModifierDef] = []
+	for cadre_id: String in state.inventory.cadres:
+		held.append(_pool_by_id[cadre_id])
+	return InfoReveal.flags(held)
 
 
 ## What the player's cards would score if played now, through the real scoring path, as
@@ -286,6 +308,7 @@ func _start_round() -> void:
 	if _seat.needs_bidding():
 		_move(RunFlow.State.BIDDING)
 		_bidding = Bidding.new(_first_bidder())
+		_show_kitty()
 	else:
 		_begin_play()
 	advance()
@@ -748,8 +771,11 @@ func _deal_cards() -> void:
 		var cards: Array[CardInstance] = state.deck.cards()
 		state.card_marks.apply(cards)
 		_deal = Dealer.deal(cards, stream)
-	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream))
+	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream, state.year))
 	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
+	if not _deal.set_aside.is_empty():
+		var aside: String = _ids_text(_deal.set_aside)
+		set_log.add(RunEvent.new(RunEvent.Type.CARDS_SET_ASIDE, PLAYER, 0, 0.0, aside))
 	# Mass Line's rank is drawn after the deal on its stream, so the deal is unchanged and
 	# every seat knows it before the bid (ADR 0029). It is the player's alone (ADR 0039).
 	for _rank: int in RunReforms.wild_ranks_per_round(state):
@@ -757,6 +783,21 @@ func _deal_cards() -> void:
 			var rank: int = RunWild.add(state, stream)
 			set_log.add(RunWild.event(state, rank))
 			_table.set_wild_ranks(state.wild_ranks, PLAYER)
+
+
+## Logs the kitty the player's information upgrade shows them before the bid (ADR 0043).
+func _show_kitty() -> void:
+	var info: InfoView = bid_info()
+	if info != null and not info.kitty.is_empty():
+		var kitty: String = _ids_text(info.kitty)
+		set_log.add(RunEvent.new(RunEvent.Type.KITTY_SEEN, PLAYER, 0, 0.0, kitty))
+
+
+static func _ids_text(cards: Array[CardInstance]) -> String:
+	var ids: PackedStringArray = []
+	for card: CardInstance in cards:
+		ids.append(str(card.id()))
+	return ",".join(ids)
 
 
 ## Who bids first moves round the table with the year, Set and round, so no seat always
@@ -796,6 +837,7 @@ func _record_bid(seat: int, claim: bool) -> void:
 			state.wild_ranks.clear()
 		_deal_cards()
 		_bidding = Bidding.new(_first_bidder())
+		_show_kitty()
 		return
 	_seat.assign(_bidding.landlord())
 	state.landlord_seat = _bidding.landlord()
@@ -841,6 +883,8 @@ func _campaign_moment() -> CampaignContext.Moment:
 
 
 func _create_round() -> void:
+	# Families play the round by their traits as the meters stand at its start (ADR 0043).
+	TraitShifts.apply(state, _configs, DEFAULT_VILLAGE, _meters)
 	_aim_grudges()
 	# The round's wild ranks (ADR 0029), none unless an item drew them. Every item that
 	# draws one is the player's, so they are the player's seat's alone (ADR 0039).
@@ -1021,6 +1065,9 @@ func _split_commons(player_need: int) -> void:
 	var faces: int = NeedAudit.faces(state, pools.audit, _stack)
 	var caught: Array[int] = []
 	var events: Array[RunEvent] = set_log.events()
+	# A claim reads the meters as they stand when it is made (ADR 0043).
+	var shifted: Array[int] = TraitShifts.apply(state, _configs, DEFAULT_VILLAGE, _meters)
+	var claims_from: int = events.size()
 	if RoundBanking.split(
 		state,
 		PLAYER,
@@ -1034,6 +1081,7 @@ func _split_commons(player_need: int) -> void:
 		debuffs.cut
 	):
 		_raise(RunMeters.COMMONS_SHORTFALL)
+	TraitShifts.note_claims(state, shifted, events, claims_from, _params.base_need)
 	for seat: int in caught:
 		if seat == PLAYER:
 			_raise(RunMeters.CAUGHT_LIE)

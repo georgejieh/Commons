@@ -95,6 +95,10 @@ func test_an_overfulfilled_set_pays_the_bonus_and_raises_later_targets() -> void
 	assert_int(state.norm_steps).is_equal(steps * 2)
 	loop.next_set()
 	base = sets.target(state.year, state.set_type)
+	# The third Set is the Year's boss, and a boss may change its Quota (Great Leap).
+	for boss: ModifierDef in RunLoop.DEFAULT_BOSSES.all():
+		if boss.id == state.boss_id:
+			base = base * boss.parameters.get(GreatLeapEffect.QUOTA_PERCENT, 100) / 100.0
 	var twice: float = 100.0 + steps * 2 * SETS.norm_percent_per_step
 	assert_float(loop.target()).is_equal_approx(base * twice / 100.0, 1e-9)
 

@@ -7,10 +7,11 @@
 [ext_resource type="Resource" path="res://data/modifiers/bosses/the_purge.tres" id="5"]
 [ext_resource type="Resource" path="res://data/modifiers/bosses/risen_villager.tres" id="6"]
 [ext_resource type="Resource" path="res://data/modifiers/bosses/new_landlord.tres" id="7"]
+[ext_resource type="Resource" path="res://data/modifiers/bosses/the_handicap.tres" id="8"]
 
 [resource]
 script = ExtResource("1")
-officials = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5")])
+officials = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("8")])
 risen = ExtResource("6")
 new_landlord = ExtResource("7")
 style_sets = 3

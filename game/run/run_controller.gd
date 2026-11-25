@@ -775,6 +775,15 @@ func ladder() -> Array[String]:
 	return _loop.state.debuff_ladder.duplicate()
 
 
+## The cards the round's deal set aside face up (ADR 0043), named and joined, or "" when
+## it set none aside.
+func set_aside_names() -> String:
+	var names: PackedStringArray = []
+	for card: CardInstance in _loop.set_aside_cards():
+		names.append(card_name(card))
+	return ", ".join(names)
+
+
 ## The current Set's boss twist ID, or an empty string outside boss Sets (P4.7).
 func boss() -> String:
 	return _loop.state.boss_id
@@ -843,6 +852,8 @@ func _run_values(modifier_id: String) -> Dictionary[String, Variant]:
 			else _type_plural(type)
 		)
 	var effect: ModifierEffect = EffectRegistry.create(_definitions[modifier_id], RunLoop.PLAYER)
+	if effect is HandicapEffect:
+		values[HandicapEffect.CARDS] = HandicapEffect.count_at(effect.parameters, _loop.state.year)
 	if effect is LossMeterEffect:
 		var source: String = (effect as LossMeterEffect).source()
 		values["amount"] = RunLoop.DEFAULT_METERS.source(source).amount
@@ -855,6 +866,21 @@ func _type_plural(type: int) -> String:
 
 func target() -> float:
 	return _loop.target()
+
+
+## The dossier's line for the claims a seated family made while a trait shift held (ADR
+## 0043), or "" until the player has seen one.
+func shift_line(seat: int) -> String:
+	var state: RunState = _loop.state
+	if seat <= 0 or seat >= state.table.size():
+		return ""
+	var family_id: String = state.table[seat]
+	var count: int = state.observations.count(family_id, Observations.Kind.SHIFTED_CLAIMS)
+	var shift: TraitShift = TraitShifts.seen_shift(RunLoop.DEFAULT_VILLAGE, state, family_id)
+	if count == 0 or shift == null:
+		return ""
+	var at: int = RunLoop.DEFAULT_METERS.bands(shift.meter).least(shift.band)
+	return tr(shift.seen_key).format({"count": count, "at": at})
 
 
 ## A copy of the roster entry in a villager's seat, or null when the run seats no roster.

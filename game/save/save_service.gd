@@ -18,7 +18,7 @@ extends RefCounted
 ## it is moved aside beside it, under NEWER_SUFFIX, and a write whose move fails is
 ## refused.
 
-const SCHEMA_VERSION: int = 19
+const SCHEMA_VERSION: int = 20
 ## The first run save schema that carries a seal.
 const SEALED_FROM: int = 17
 const RUN_PATH: String = "user://run.json"
@@ -84,6 +84,7 @@ static func for_run(path: String = RUN_PATH) -> SaveService:
 		16: RunRecord.migrate_from_16,
 		17: RunRecord.migrate_from_17,
 		18: RunRecord.migrate_from_18,
+		19: RunRecord.migrate_from_19,
 	}
 	var service: SaveService = SaveService.new(path, migrations, SCHEMA_VERSION, RunRecord.is_valid)
 	service.companions.append(BaitLedger.path_for(path))

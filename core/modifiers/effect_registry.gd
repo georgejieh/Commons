@@ -50,13 +50,15 @@ static func _build(modifier_id: String) -> ModifierEffect:
 			return RequisitionEffect.new()
 		"great_leap":
 			return GreatLeapEffect.new()
+		"the_handicap":
+			return HandicapEffect.new()
 		"the_purge", "risen_villager", "new_landlord":
 			return BossMarkerEffect.new()
 		"planned_allocation":
 			return PlannedAllocationEffect.new()
 		"red_ink":
 			return OwnerStampEffect.new()
-		"the_informant", "peek":
+		"the_informant", "peek", "the_tally_clerk":
 			return InfoMarkerEffect.new()
 	return _build_starter(modifier_id)
 

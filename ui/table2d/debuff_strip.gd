@@ -2,8 +2,9 @@ class_name DebuffStrip
 extends PanelContainer
 ## The rules in force this round, on a paper slip under the right seat (ADR 0034, rule
 ## 6), so a rule that changes play is always in view, not only on the Rules sheet: first
-## the round's wild ranks on one line (ADR 0029), then the round's debuffs, then the
-## rules of the player's Reforms that change play. Those are the player's alone, as wild
+## the round's wild ranks on one line (ADR 0029), then the round's debuffs, then the boss
+## twist, with the cards it set aside this round (ADR 0043), then the rules of the
+## player's Reforms that change play. Those are the player's alone, as wild
 ## ranks are (ADR 0039), and each line says so. A Cadre is never here: it works for the
 ## player's household alone too, and its card is on the board. Hidden while none applies.
 ##
@@ -39,6 +40,7 @@ var allow_count: bool = true
 var _lines: KeywordText = KeywordText.new()
 var _form: Form = Form.FULL
 var _yours: Array[Dictionary] = []
+var _boss: Array[Dictionary] = []
 var _reforms: Array[Dictionary] = []
 
 
@@ -61,6 +63,14 @@ func show_debuffs(controller: RunController) -> void:
 	_reforms = _reform_rules(controller)
 	for modifier_id: String in controller.active_debuff_ids():
 		_yours.append(_rule(controller, modifier_id))
+	_boss.clear()
+	if not controller.boss().is_empty():
+		var twist: Dictionary = _rule(controller, controller.boss())
+		var aside: String = controller.set_aside_names()
+		if not aside.is_empty():
+			var line: String = tr("table.set_aside").format({"cards": aside})
+			twist["rule"] = "%s %s" % [twist["rule"], _escape(line)]
+		_boss.append(twist)
 	refit()
 	shown.emit()
 
@@ -107,9 +117,9 @@ func is_named() -> bool:
 	return _form != Form.FULL
 
 
-## How many rules the named forms name: the debuffs and the table's rules.
+## How many rules the named forms name: the debuffs, the boss and the table's rules.
 func _named_count() -> int:
-	return _yours.size() + _reforms.size()
+	return _yours.size() + _boss.size() + _reforms.size()
 
 
 func _fit_type() -> void:
@@ -122,7 +132,9 @@ func _fit_type() -> void:
 ## Every rule in full: the wild ranks' line, then each group under its head.
 func _full() -> String:
 	var rows: PackedStringArray = _wild_row()
-	for group: Array in [["table.debuffs", _yours], ["table.rules_reforms", _reforms]]:
+	for group: Array in [
+		["table.debuffs", _yours], ["table.boss", _boss], ["table.rules_reforms", _reforms]
+	]:
 		var rules: Array[Dictionary] = []
 		rules.assign(group[1])
 		if rules.is_empty():
@@ -141,7 +153,9 @@ func _full() -> String:
 ## lifted debuff struck through, and the line that points to the Rules sheet.
 func _by_name() -> String:
 	var rows: PackedStringArray = _wild_row()
-	for group: Array in [["table.debuffs", _yours], ["table.rules_reforms", _reforms]]:
+	for group: Array in [
+		["table.debuffs", _yours], ["table.boss", _boss], ["table.rules_reforms", _reforms]
+	]:
 		var rules: Array[Dictionary] = []
 		rules.assign(group[1])
 		if rules.is_empty():

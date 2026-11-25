@@ -26,5 +26,19 @@ func band(value: int) -> Band:
 	return Band.CALM
 
 
+## The least value in the band.
+func least(of_band: Band) -> int:
+	match of_band:
+		Band.LOW:
+			return low
+		Band.MID:
+			return mid
+		Band.HIGH:
+			return high
+		Band.DEATH:
+			return death
+	return 0
+
+
 func rearms_at(value: int) -> bool:
 	return value < mid - rearm_margin
