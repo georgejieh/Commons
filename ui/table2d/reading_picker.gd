@@ -1,8 +1,9 @@
 class_name ReadingPicker
 extends Control
 ## Asks how the chosen cards are played when they can be played more than one way now
-## (ADR 0029): a paper slip over the trick, between the seats and above the hand, listing
-## each reading in words, strongest first. Focus starts on the strongest; up and down move
+## (ADR 0029): a paper slip beside the chosen cards it asks about, placed as every slip is
+## (SlipPlacer: above them first, never on them or on a button), listing each reading in
+## words, strongest first. Focus starts on the strongest; up and down move
 ## it, confirm plays the one focused and cancel closes the slip with the selection kept. A
 ## click outside the slip cancels too. The table stays visible, a little dimmed, so the
 ## lifted cards can still be seen. Buttons sound as every button does.
@@ -10,11 +11,9 @@ extends Control
 signal chosen(reading: Pattern)
 signal closed
 
-## The slip's middle in x and the lowest its bottom edge may sit, clear of the hand at
-## y 830 and the action bar, and the highest its top may sit, under the HUD.
-const CENTER_X: float = 790.0
-const BOTTOM: float = 800.0
+## The highest the slip's top may sit, under the HUD, and its gap from the cards.
 const TOP: float = 96.0
+const GAP: float = 8.0
 const WIDTH: float = 520.0
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.45)
 const PADDING: int = 22
@@ -54,8 +53,9 @@ func _ready() -> void:
 	visible = false
 
 
-## Opens the slip on these readings, strongest first, with focus on the first.
-func open(readings: Array[Pattern]) -> void:
+## Opens the slip on these readings, strongest first, with focus on the first, beside the
+## cards they read, a rectangle on screen.
+func open(readings: Array[Pattern], beside: Rect2) -> void:
 	_readings = readings.duplicate()
 	for button: Button in _buttons:
 		_list.remove_child(button)
@@ -75,7 +75,7 @@ func open(readings: Array[Pattern]) -> void:
 	_cancel.focus_mode = Control.FOCUS_ALL
 	visible = true
 	move_to_front()
-	_place()
+	_place(beside)
 	_keep_focus_inside()
 	_buttons[0].grab_focus()
 	UiMotion.enter([_slip] as Array[Control])
@@ -179,15 +179,18 @@ func _keep_focus_inside() -> void:
 		button.focus_neighbor_right = button.get_path_to(button)
 
 
-## Sits the slip centred over the play area, its bottom no lower than BOTTOM and its top
-## no higher than TOP. Four wild cards in one play can read more than a dozen ways: a
-## slip taller than that room is drawn smaller, whole, so every reading and Cancel can
+## Stands the slip beside the cards, by the rule every slip keeps, its top no higher
+## than TOP. Four wild cards in one play can read more than a dozen ways: a slip taller
+## than the room over the cards is drawn smaller, whole, so every reading and Cancel can
 ## still be clicked.
-func _place() -> void:
+func _place(beside: Rect2) -> void:
 	_slip.reset_size()
 	var tall: float = _slip.get_combined_minimum_size().y
-	var fit: float = minf(1.0, (BOTTOM - TOP) / tall)
+	var room: float = beside.position.y - GAP - TOP
+	var fit: float = minf(1.0, room / tall) if room > 0.0 else 1.0
 	_slip.size = Vector2(WIDTH, tall)
 	_slip.position = Vector2.ZERO
 	_holder.scale = Vector2(fit, fit)
-	_holder.position = Vector2(CENTER_X - WIDTH * fit / 2.0, maxf(TOP, BOTTOM - tall * fit))
+	var screen: Rect2 = Rect2(Vector2(0.0, TOP), get_viewport_rect().size - Vector2(0.0, TOP))
+	var placed: Vector2 = Vector2(WIDTH, tall) * fit
+	_holder.position = SlipPlacer.place(placed, beside, GAP, screen, get_parent(), self)

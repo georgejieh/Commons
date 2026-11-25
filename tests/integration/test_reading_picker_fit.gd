@@ -1,8 +1,10 @@
 extends GdUnitTestSuite
 ## The reading slip with as many readings as one play can have (ADR 0029): every reading
-## and Cancel stay on screen and clear of the hand.
+## and Cancel stay on screen and clear of the cards it asks about.
 
 const SCREEN: Rect2 = Rect2(0, 0, 1920, 1080)
+## Chosen cards lifted out of the fan's middle, as the table's hand shows them.
+const CHOSEN: Rect2 = Rect2(500, 786, 248, 168)
 
 
 func _picker() -> ReadingPicker:
@@ -22,10 +24,10 @@ func test_a_play_with_many_readings_keeps_every_choice_on_screen() -> void:
 	var readings: Array[Pattern] = _many()
 	assert_int(readings.size()).is_greater(12)
 	var picker: ReadingPicker = _picker()
-	picker.open(readings)
+	picker.open(readings, CHOSEN)
 	await await_millis(600)
 	var room: Rect2 = Rect2(
-		0, ReadingPicker.TOP - 1.0, SCREEN.size.x, ReadingPicker.BOTTOM - ReadingPicker.TOP + 2.0
+		0, ReadingPicker.TOP - 1.0, SCREEN.size.x, CHOSEN.position.y - ReadingPicker.TOP + 1.0
 	)
 	assert_bool(room.encloses(picker.slip_rect())).is_true()
 	for index: int in readings.size():
@@ -44,7 +46,9 @@ func test_a_short_slip_is_drawn_full_size() -> void:
 	var readings: Array[Pattern] = _many()
 	readings.resize(2)
 	var picker: ReadingPicker = _picker()
-	picker.open(readings)
+	picker.open(readings, CHOSEN)
 	await await_millis(600)
 	assert_float(picker.slip_rect().size.x).is_equal_approx(ReadingPicker.WIDTH, 0.5)
-	assert_float(picker.slip_rect().end.y).is_equal_approx(ReadingPicker.BOTTOM, 0.5)
+	# Above the cards, its foot a gap over them.
+	var foot: float = CHOSEN.position.y - ReadingPicker.GAP
+	assert_float(picker.slip_rect().end.y).is_equal_approx(foot, 0.5)

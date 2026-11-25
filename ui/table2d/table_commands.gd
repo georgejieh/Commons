@@ -136,7 +136,7 @@ func _on_play() -> void:
 		var readings: Array[Pattern] = _controller.readings_for(ids)
 		if readings.size() > 1:
 			_picking = ids
-			picker.open(readings)
+			picker.open(readings, _hand_view.selection_rect())
 			return
 	_send_play(ids, reading)
 

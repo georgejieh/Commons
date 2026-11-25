@@ -103,6 +103,17 @@ func card_center(card_id: int) -> Vector2:
 	return global_position + size / 2.0
 
 
+## The selected cards' faces on screen, together, lifted as they are drawn; empty when
+## nothing is selected.
+func selection_rect() -> Rect2:
+	var area: Rect2 = Rect2()
+	for view: CardView in _views:
+		if _model.is_selected(view.card_id):
+			var face: Rect2 = view.get_global_rect()
+			area = face if not area.has_area() else area.merge(face)
+	return area
+
+
 ## Where a card in the fan sits on screen, its whole face, or an empty rect when the card
 ## isn't shown.
 func card_rect(card_id: int) -> Rect2:
