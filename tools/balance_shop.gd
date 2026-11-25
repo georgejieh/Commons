@@ -5,6 +5,7 @@ extends RefCounted
 ## the harness sends is one the run accepts.
 
 
+## What both shops offer the player now, with the coupons to spend on it.
 static func visit(controller: RunController, state: RunState) -> BalanceVisit:
 	var seen: BalanceVisit = BalanceVisit.new()
 	seen.coupons = state.coupons

@@ -77,6 +77,7 @@ func finish(state: RunState) -> void:
 	cadres = state.inventory.cadres.size()
 
 
+## True when the run failed: a refused command, a refused bot action or a script error.
 func failed() -> bool:
 	return not failure.is_empty()
 

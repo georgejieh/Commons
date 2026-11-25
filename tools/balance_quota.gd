@@ -58,10 +58,12 @@ func share() -> float:
 	return progress / target if target > 0.0 else 0.0
 
 
+## The work points made a round in this Quota.
 func per_round() -> float:
 	return progress / rounds if rounds > 0 else 0.0
 
 
+## This Quota as one row of reports/balance_quotas.csv.
 func csv(seed_value: int, strategy: String) -> String:
 	var cells: Array[String] = [
 		str(seed_value),

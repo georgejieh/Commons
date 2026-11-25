@@ -4,6 +4,8 @@ extends RefCounted
 ## base rank, then ID, so every choice is the same for the same cards.
 
 
+## The card's strength in the seat's rank order, which wild ranks and debuffs change; its
+## base rank when the order has no place for it.
 static func strength(card: CardInstance, rank_map: PackedByteArray) -> int:
 	return rank_map[card.base_rank()] if card.base_rank() < rank_map.size() else card.base_rank()
 
@@ -31,7 +33,8 @@ static func counts(cards: Array[CardInstance]) -> PackedByteArray:
 	return result
 
 
-## The rank from 3 to 2 held most often in counts, the higher on a tie, or 2 for none.
+## The plain rank held most often in counts, from 3 up to 2 in the game's order (jokers
+## left out), the higher on a tie, or 2 for none.
 static func most_held(counts_in: PackedByteArray) -> int:
 	var best: int = Ranks.TWO
 	var most: int = 0
