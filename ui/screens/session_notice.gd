@@ -1,0 +1,122 @@
+class_name SessionNotice
+extends Control
+## A notice about the game's own session (ADR 0037), over everything: that another copy
+## is already open, or that the last session did not close and where its files were
+## copied. A sheet of paper on a dim, with its buttons in a row; the first has the focus
+## and the focus stays among them by keyboard and gamepad, and the dim stops the mouse
+## short of anything under it.
+
+## Above every screen and the arrival's layer, as the books notice is.
+const DRAW_ORDER: int = BooksNotice.DRAW_ORDER
+const BODY_SIZE: int = 24
+const LINE_SIZE: int = 22
+
+var _eyebrow: String
+var _title: String
+var _body: String
+var _line: String
+var _buttons: Array[Button]
+var _panel: Control = null
+
+
+## line is a smaller line under the body, such as a folder's path, or empty.
+func _init(
+	eyebrow: String, title: String, body: String, buttons: Array[Button], line: String = ""
+) -> void:
+	_eyebrow = eyebrow
+	_title = title
+	_body = body
+	_buttons = buttons
+	_line = line
+
+
+## The notice a second copy shows: Quit, with the focus, and Open anyway.
+static func already_open(seconds: int, quit: Callable, anyway: Callable) -> SessionNotice:
+	var leave: Button = ScreenKit.button(
+		TranslationServer.translate("session.open.quit"), CommonsTheme.PRIMARY
+	)
+	leave.pressed.connect(quit)
+	var go_on: Button = ScreenKit.button(TranslationServer.translate("session.open.anyway"))
+	go_on.pressed.connect(anyway)
+	var body: String = TranslationServer.translate("session.open.body")
+	var wait: String = TranslationServer.translate("session.open.wait").format({"seconds": seconds})
+	return SessionNotice.new(
+		TranslationServer.translate("session.open.eyebrow"),
+		TranslationServer.translate("session.open.title"),
+		"%s\n\n%s" % [body, wait],
+		[leave, go_on]
+	)
+
+
+## The notice on the title after a session that did not close: OK, with the focus, and a
+## button that opens the folder the files were copied to.
+static func kept(folder: String) -> SessionNotice:
+	var ok: Button = ScreenKit.button(
+		TranslationServer.translate("session.kept.ok"), CommonsTheme.PRIMARY
+	)
+	var show: Button = ScreenKit.button(TranslationServer.translate("session.kept.open"))
+	var shown: String = ProjectSettings.globalize_path(folder)
+	show.pressed.connect(func() -> void: OS.shell_open(shown))
+	var notice: SessionNotice = SessionNotice.new(
+		TranslationServer.translate("session.kept.eyebrow"),
+		TranslationServer.translate("session.kept.title"),
+		TranslationServer.translate("session.kept.body"),
+		[ok, show],
+		shown
+	)
+	ok.pressed.connect(notice.close)
+	return notice
+
+
+func _ready() -> void:
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	z_index = DRAW_ORDER
+	var dim: ColorRect = ColorRect.new()
+	dim.color = BooksNotice.DIM
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(dim)
+	var center: CenterContainer = CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(center)
+	var sheet: VBoxContainer = ScreenKit.card(Vector2(BooksNotice.WIDTH, 0))
+	sheet.add_theme_constant_override("separation", 14)
+	sheet.add_child(ScreenKit.eyebrow(_eyebrow.to_upper()))
+	sheet.add_child(ScreenKit.styled(_title, CommonsTheme.HEADLINE))
+	sheet.add_child(ScreenKit.label(_body, BODY_SIZE, ScreenKit.INK))
+	if not _line.is_empty():
+		var line: Label = ScreenKit.label(_line, LINE_SIZE, ScreenKit.INK)
+		# A path has no spaces to break at.
+		line.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+		sheet.add_child(line)
+	var controls: Array[Control] = []
+	controls.assign(_buttons)
+	sheet.add_child(ScreenKit.row(controls))
+	SheetPad.column(sheet)
+	_panel = ScreenKit.card_panel(sheet)
+	center.add_child(_panel)
+	get_viewport().gui_focus_changed.connect(_on_focus_changed)
+	_buttons[0].grab_focus.call_deferred()
+
+
+## Takes the notice away, and leaves the focus to what is under it.
+func close() -> void:
+	get_viewport().gui_focus_changed.disconnect(_on_focus_changed)
+	queue_free()
+
+
+func buttons() -> Array[Button]:
+	return _buttons
+
+
+## The paper the notice is printed on, for layout tests.
+func sheet() -> Control:
+	return _panel
+
+
+## Focus that leaves the notice's buttons, for a screen under it, comes back.
+func _on_focus_changed(control: Control) -> void:
+	if is_inside_tree() and not _buttons.has(control):
+		_buttons[0].grab_focus.call_deferred()

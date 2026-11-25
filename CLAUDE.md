@@ -106,6 +106,12 @@ godot --headless --path . --script res://tools/balance.gd -- --runs 20 --jobs 4
 
 Plays full runs headless (no profile, every unlock tier open, Poor Peasants) with the collective, private and mixed strategies of [ADR 0027](docs/adr/0027-balance-harness.md) on the same seeds, and writes `reports/balance_runs.csv`, `reports/balance_quotas.csv` (a row per Quota played) and `reports/balance.md`. Add `--minutes M` for a time budget, `--seed S`, `--stake K`, `--strategies a,b`, `--out DIR`, `--expert-samples N` so Expert villagers sample N deals instead of 48 (12 at least; several times faster), or `--check` to exit 1 unless mixed > private > collective > 0 holds. It exits 1 on any refused command, illegal bot action or script error. A run takes from seconds to several minutes, longest when an Expert family is seated.
 
+```bash
+godot --headless --path . --script res://tools/soak.gd -- --runs 100
+```
+
+Plays full runs headless with the balance harness's drivers, the strategies and the stakes taken in turn, each saved through the real `SaveService` as it plays and resumed from its save at every Set's end ([ADR 0037](docs/adr/0037-stability.md)), and writes `reports/soak.md` with the count of refused commands, refused bot actions, errors, failed saves and loads, and resumes that are not the run saved, and the seeds of failed runs. Exits 1 on any fault. Add `--seed S`, `--jobs J`, `--expert-samples N` or `--out DIR`. The nightly workflow runs 100; locally, give it a few with `--runs N`, since a run takes from seconds to minutes.
+
 ## Layers
 
 Dependencies run `ui` → `game` → `core`. `core` may read `data` definitions. Nothing in `core` references `game` or `ui`.

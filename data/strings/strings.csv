@@ -1143,3 +1143,14 @@ controls.pad.dpad_up,D-pad up
 controls.pad.dpad_down,D-pad down
 controls.pad.dpad_left,D-pad left
 controls.pad.dpad_right,D-pad right
+session.open.eyebrow,One game at a time
+session.open.title,Commons is already open
+session.open.body,"Another copy of the game is running on this computer. Two copies open at once can each write over the other's save."
+session.open.wait,"If that copy has stopped, this notice closes by itself within {seconds} seconds."
+session.open.quit,Quit
+session.open.anyway,Open anyway
+session.kept.eyebrow,Last session
+session.kept.title,The game did not close properly
+session.kept.body,"Your save was kept and loads as before. A copy of it, with the game's log from that session, is in this folder:"
+session.kept.ok,OK
+session.kept.open,Open the folder

@@ -15,6 +15,7 @@ const ALLOWED: Dictionary[String, String] = {
 	"The arrival's scripted seats report a fault through push_error, for tests.",
 	"text res://game/file/file_watch.gd":
 	"LOG_LINE marks a detector's line in the log, which tools/test.sh looks for.",
+	"text res://game/session/game_log.gd": "The game's lines in its log file, never shown in play.",
 	"text res://data/villagers/names.tres":
 	"The name generator's pools and the names it must never make: proper names.",
 	"cjk res://data/run/endings.tres": "Each ending's seal, drawn as decoration by HanziSeal.",

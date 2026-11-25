@@ -90,8 +90,15 @@ func backup_path() -> String:
 
 
 ## Full precision keeps every number the writer can keep; exact values travel as text.
-## extras are kept beside the data, under the same seal.
+## extras are kept beside the data, under the same seal. A failure is logged.
 func save(data: Dictionary, extras: Dictionary = {}) -> Error:
+	var result: Error = _replace(data, extras)
+	if result != OK:
+		GameLog.save_failed(_path, result)
+	return result
+
+
+func _replace(data: Dictionary, extras: Dictionary) -> Error:
 	var temp: String = _path + TEMP_SUFFIX
 	DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	var written: Error = _write(temp, data, extras)
@@ -115,9 +122,11 @@ func load_save() -> SaveLoad:
 		return _loaded(SaveLoad.Status.OK, main, _path)
 	var backup: Variant = _read(backup_path())
 	if backup != null:
+		GameLog.load_fell_back(_path)
 		return _loaded(SaveLoad.Status.RESTORED_FROM_BACKUP, backup, backup_path(), RESTORED_KEY)
 	if not FileAccess.file_exists(_path) and not FileAccess.file_exists(backup_path()):
 		return SaveLoad.new(SaveLoad.Status.MISSING)
+	GameLog.load_failed(_path)
 	return SaveLoad.new(SaveLoad.Status.UNREADABLE, {}, UNREADABLE_KEY)
 
 
