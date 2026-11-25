@@ -142,7 +142,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.check:
         with open(OUT, encoding="utf-8", newline="") as handle:
-            current = handle.read() == text()
+            # A Windows checkout may turn the file's line ends to CRLF.
+            current = handle.read().replace("\r\n", "\n") == text()
         if not current:
             print("data/credits/credits.json is out of date: run tools/write_credits.py")
         return 0 if current else 1
