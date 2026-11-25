@@ -4,13 +4,13 @@ extends RefCounted
 ## asked for is dropped first. A dropped picture still on screen stays loaded through the
 ## node showing it, and comes back as the same texture when asked for again.
 
-var limit: int = 12
+var limit: int
 var _held: Dictionary[String, Texture2D] = {}
 ## Paths in the order they were last asked for, oldest first.
 var _order: Array[String] = []
 
 
-func _init(most: int = 12) -> void:
+func _init(most: int) -> void:
 	limit = maxi(most, 1)
 
 

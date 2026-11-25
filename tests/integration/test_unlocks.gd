@@ -343,14 +343,14 @@ func test_a_profile_from_before_the_count_reads_it_from_its_history() -> void:
 	data.history.append(_entry(HistoryEntry.LANDLORD, Endings.FULL_GRANARY))
 	var old: Dictionary = data.to_dict()
 	old.erase(ProfileData.LANDLORD_ENDINGS_KEY)
-	assert_bool(Profile.is_valid(old)).is_true()
+	assert_bool(ProfileData.is_valid(old)).is_true()
 	var read: ProfileData = ProfileData.from_dict(old)
 	assert_int(read.landlord_endings).is_equal(1)
 	assert_array(RunStarter.unlocked_families(read)).contains(["deng"])
 	old[ProfileData.LANDLORD_ENDINGS_KEY] = -1
-	assert_bool(Profile.is_valid(old)).is_false()
+	assert_bool(ProfileData.is_valid(old)).is_false()
 	old[ProfileData.LANDLORD_ENDINGS_KEY] = 1.5
-	assert_bool(Profile.is_valid(old)).is_false()
+	assert_bool(ProfileData.is_valid(old)).is_false()
 
 
 ## ADR 0027: the balance harness's request opens every tier, family and stake with no

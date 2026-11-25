@@ -2,12 +2,11 @@ class_name DemoApp
 extends Control
 ## The game's root (ADR 0017): the run controller, the hand model, the scene switcher
 ## and the screen host. Screens get the app in open() and reach the run only through
-## its controller. The table scene is the 2D or the 3D one, chosen at export. New Run
-## starts the full eight-Year run, or the one-Year demo when the app was launched with
-## --demo after -- on the command line (ADR 0025). On a first launch, with no profile save,
-## it asks the family's name (ADR 0028), then offers the arrival (ADR 0026): a scripted
-## first evening at the table, played over its own layer, never saved, that writes the
-## profile's first save, with that name, when it ends.
+## its controller. New Run starts the full eight-Year run, or the one-Year demo when the
+## app was launched with --demo after -- on the command line (ADR 0025). On a first
+## launch, with no profile save, it asks the family's name (ADR 0028), then offers the
+## arrival (ADR 0026): a scripted first evening at the table, played over its own layer,
+## never saved, that writes the profile's first save, with that name, when it ends.
 
 const DEMO: DemoParams = preload("res://data/run/demo.tres")
 ## The command-line flag that makes New Run start the demo.
@@ -20,7 +19,6 @@ const SCREENS: Dictionary[String, String] = {
 	"title": "res://ui/screens/title_screen.tscn",
 	"set_intro": "res://ui/screens/set_intro_screen.tscn",
 	"table": "res://ui/table2d/table_screen.tscn",
-	"table_3d": "res://ui/table3d/table_3d_screen.tscn",
 	"set_summary": "res://ui/screens/set_summary_screen.tscn",
 	"store": "res://ui/screens/store_screen.tscn",
 	"year_summary": "res://ui/screens/year_summary_screen.tscn",
@@ -120,8 +118,7 @@ func _open(kept: String = "") -> void:
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
 	for screen_id: String in SCREENS:
-		if ResourceLoader.exists(SCREENS[screen_id]):
-			scenes[screen_id] = load(SCREENS[screen_id])
+		scenes[screen_id] = load(SCREENS[screen_id])
 	switcher.setup(_host, scenes)
 	show_screen(_opening_screen(), true)
 

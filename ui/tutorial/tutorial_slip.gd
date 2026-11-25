@@ -134,10 +134,6 @@ func refuse() -> void:
 	tween.tween_callback(_calm)
 
 
-func is_alarmed() -> bool:
-	return _alarm
-
-
 func _calm() -> void:
 	_alarm = false
 	queue_redraw()

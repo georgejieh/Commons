@@ -16,7 +16,7 @@ static func service(path: String = SaveService.PROFILE_PATH) -> SaveService:
 	var migrations: Dictionary[int, Callable] = {
 		1: migrate_from_1, 2: migrate_from_2, 3: migrate_from_3
 	}
-	return SaveService.new(path, migrations, SCHEMA_VERSION, is_valid, SEALED_FROM)
+	return SaveService.new(path, migrations, SCHEMA_VERSION, ProfileData.is_valid, SEALED_FROM)
 
 
 ## Schema 1 to 2: the memory stays, and every field ADR 0025 adds starts empty.
@@ -41,11 +41,6 @@ static func migrate_from_3(data: Dictionary) -> Dictionary:
 	return data
 
 
-## True when the data is a whole profile, every field of its kind.
-static func is_valid(data: Dictionary) -> bool:
-	return ProfileData.is_valid(data)
-
-
 ## The saved profile, or an empty one for a new or damaged profile.
 static func read(profile: SaveService) -> ProfileData:
 	var loaded: SaveLoad = profile.load_save()
@@ -59,15 +54,3 @@ static func read(profile: SaveService) -> ProfileData:
 
 static func write(profile: SaveService, data: ProfileData) -> Error:
 	return profile.save(data.to_dict())
-
-
-## What the saved village remembers, or nothing for a new or damaged profile.
-static func memory(profile: SaveService) -> VillageMemory:
-	return read(profile).memory
-
-
-## Writes the memory, keeping whatever else the profile holds.
-static func save_memory(profile: SaveService, memory: VillageMemory) -> Error:
-	var data: ProfileData = read(profile)
-	data.memory = memory
-	return write(profile, data)

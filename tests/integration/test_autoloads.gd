@@ -113,11 +113,11 @@ func test_a_settings_write_that_cannot_finish_leaves_the_last_file() -> void:
 	DirAccess.remove_absolute(folder)
 
 
-func test_strings_resolve_table_keys() -> void:
+func test_strings_count_with_the_one_form_when_the_table_has_it() -> void:
 	var strings: StringTable = auto_free(StringTable.new())
-	assert_str(strings.text("rank.a")).is_equal("A")
-	assert_bool(strings.has("rank.a")).is_true()
-	assert_bool(strings.has("no.such.key")).is_false()
+	assert_str(strings.count("summary.paid", 1)).is_equal(tr("summary.paid.one"))
+	assert_str(strings.count("summary.paid", 3)).is_equal(tr("summary.paid").format({"count": 3}))
+	assert_str(strings.count("file.stamp.entries", 0)).contains("0")
 
 
 func test_audio_adds_the_three_buses() -> void:

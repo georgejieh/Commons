@@ -40,10 +40,6 @@ func decide(
 	if not _job.is_ready() or Time.get_ticks_usec() >= deadline:
 		return _job.fallback
 	var group: int = WorkerThreadPool.add_group_task(_run_sample, _job.sample_count(), _threads())
-	while not WorkerThreadPool.is_group_task_completed(group):
-		if Time.get_ticks_usec() >= deadline:
-			_expired = true
-		OS.delay_msec(WAIT_STEP_MSEC)
 	WorkerThreadPool.wait_for_group_task_completion(group)
 	return _job.best()
 

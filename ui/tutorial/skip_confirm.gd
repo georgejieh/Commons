@@ -5,7 +5,6 @@ extends Control
 ## stays too.
 
 signal skipped
-signal stayed
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.7)
 const QUESTION_SIZE: int = 28
@@ -71,7 +70,6 @@ func _answer(skip: bool) -> void:
 		return
 	if _before != null and is_instance_valid(_before) and _before.is_visible_in_tree():
 		_before.grab_focus()
-	stayed.emit()
 
 
 func _unhandled_input(event: InputEvent) -> void:

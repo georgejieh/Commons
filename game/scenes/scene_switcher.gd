@@ -4,8 +4,6 @@ extends Node
 ## named by ID. The run lives in RunController beside the switcher, never in a screen,
 ## so changing or going back between screens keeps the run.
 
-signal screen_changed(screen_id: String)
-
 var _host: Node
 var _screens: Dictionary[String, PackedScene] = {}
 var _stack: Array[String] = []
@@ -60,5 +58,4 @@ func _show(screen_id: String) -> Node:
 		_current.queue_free()
 	_current = _screens[screen_id].instantiate()
 	_host.add_child(_current)
-	screen_changed.emit(screen_id)
 	return _current

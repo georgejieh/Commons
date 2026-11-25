@@ -84,7 +84,7 @@ static func from_dict(data: Dictionary) -> ProfileData:
 	profile.committed_run = str(committed["run_id"])
 	profile.committed_quota = int(committed["quota"])
 	profile.drift = VillageDrift.from_dict(data["drift"])
-	for entry: Dictionary in data.get("file", []):
+	for entry: Dictionary in data["file"]:
 		profile.file.append(FileEntry.from_dict(entry))
 	return profile
 

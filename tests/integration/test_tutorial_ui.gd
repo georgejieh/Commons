@@ -146,7 +146,7 @@ func test_a_refused_action_changes_nothing_and_marks_the_slip() -> void:
 	await _key(KEY_ENTER)
 	assert_int(director.index()).is_equal(0)
 	assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_BID)
-	assert_bool(_app.arrival.layer.slip().is_alarmed()).is_true()
+	assert_bool(_app.arrival.layer.slip().shows_cross()).is_true()
 
 
 ## The whole arrival with the keyboard alone at 1920x1080, then run setup and the

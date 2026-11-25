@@ -42,10 +42,8 @@ func set_inputs(famine: int, denunciation: int, landlord: bool, corruption_stage
 	stage = clampi(corruption_stage, 0, CORRUPTION_STAGES - 1)
 	for index: int in _config.layers.size():
 		var layer: HorrorLayer = _config.layers[index]
-		var value: float = input_value(
-			layer.input, famine, denunciation, landlord, corruption_stage
-		)
-		var gate: float = input_value(layer.gate, famine, denunciation, landlord, corruption_stage)
+		var value: float = input_value(layer.input, famine, denunciation, landlord, stage)
+		var gate: float = input_value(layer.gate, famine, denunciation, landlord, stage)
 		targets[index] = clampf(layer.weight_for(value) * layer.gate_for(gate), 0.0, 1.0)
 
 
