@@ -90,10 +90,7 @@ func pass_reason() -> Reason:
 	if _current == null:
 		return Reason.CANNOT_PASS_ON_LEAD
 	_sync_rules()
-	if _table.rules_for(_turn).must_answer_once() and _answered[_turn] == 0:
-		if not legal_moves().is_empty():
-			return Reason.MUST_PLAY
-	return Reason.OK
+	return _pass_reason()
 
 
 ## Before anyone plays, trades cards in a seat's hand for others one for one: the
@@ -199,10 +196,7 @@ func events() -> Array[RoundEvent]:
 ## Lists what the seat to act may play. A follower may also pass.
 func legal_moves() -> Array[Pattern]:
 	_sync_rules()
-	var hand: Hand = _hands[_turn]
-	var rules: RuleSet = _table.rules_for(_turn)
-	var standing: PackedByteArray = _table.standing_for(_turn)
-	return MoveGenerator.generate(hand.counts(), hand.rank_mask(), _current, rules, standing)
+	return _legal_moves()
 
 
 ## Turns a pattern into an action for the seat to act, using its least valuable cards of
@@ -252,6 +246,28 @@ func read_play(seat: int, card_ids: Array[int], wanted: Pattern = null) -> PlayR
 	if is_over():
 		return PlayReading.new(Reason.ROUND_OVER)
 	_sync_rules()
+	return _read_play(seat, card_ids, wanted)
+
+
+## The private forms of pass_reason, legal_moves and read_play read the rules as they
+## stand: apply() brings them up to date once for the action, each public query itself.
+func _pass_reason() -> Reason:
+	if _current == null:
+		return Reason.CANNOT_PASS_ON_LEAD
+	if _table.rules_for(_turn).must_answer_once() and _answered[_turn] == 0:
+		if not _legal_moves().is_empty():
+			return Reason.MUST_PLAY
+	return Reason.OK
+
+
+func _legal_moves() -> Array[Pattern]:
+	var hand: Hand = _hands[_turn]
+	var rules: RuleSet = _table.rules_for(_turn)
+	var standing: PackedByteArray = _table.standing_for(_turn)
+	return MoveGenerator.generate(hand.counts(), hand.rank_mask(), _current, rules, standing)
+
+
+func _read_play(seat: int, card_ids: Array[int], wanted: Pattern) -> PlayReading:
 	var reading: PlayReading = PlayReading.new(Reason.OK)
 	var seen: Dictionary[int, bool] = {}
 	for card_id: int in card_ids:
@@ -265,17 +281,11 @@ func read_play(seat: int, card_ids: Array[int], wanted: Pattern = null) -> PlayR
 	var counts: PackedByteArray = CardSelection.printed_counts(reading.cards)
 	# Keys read standings, so plays of seats with different orders compare (ADR 0039).
 	var standing: PackedByteArray = _table.standing_for(seat)
-	var classified: Classification = Classifier.classify(counts, rules, standing)
-	reading.invalid_reason = classified.reason
-	var options: Array[Pattern] = []
-	if WildSupply.of(counts, rules) != null:
-		options = Readings.of(counts, rules, standing)
-	elif classified.is_valid():
-		options.append(classified.pattern)
+	var options: Array[Pattern] = Readings.of(counts, rules, standing)
 	if options.is_empty():
+		reading.invalid_reason = Classifier.classify(counts, rules, standing).reason
 		reading.reason = Reason.ILLEGAL_PLAY
 		return reading
-	reading.invalid_reason = Classification.Reason.OK
 	for option: Pattern in options:
 		if _current == null or PlayComparator.beats(option, _current, rules):
 			reading.readings.append(option)
@@ -293,7 +303,7 @@ func read_play(seat: int, card_ids: Array[int], wanted: Pattern = null) -> PlayR
 
 
 func _apply_pass() -> Reason:
-	var allowed: Reason = pass_reason()
+	var allowed: Reason = _pass_reason()
 	if allowed != Reason.OK:
 		return allowed
 	var seat: int = _turn
@@ -311,7 +321,7 @@ func _apply_pass() -> Reason:
 
 
 func _apply_play(action: RoundAction) -> Reason:
-	var reading: PlayReading = read_play(_turn, action.card_ids, action.reading)
+	var reading: PlayReading = _read_play(_turn, action.card_ids, action.reading)
 	if reading.reason == Reason.OK:
 		_commit_play(reading.cards, action.card_ids, reading.pattern)
 	return reading.reason
