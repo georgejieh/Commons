@@ -33,7 +33,8 @@ var failure: String = ""
 ## The run Quota by Quota, and where its coupons came from and went.
 var ledger: BalanceLedger = BalanceLedger.new()
 
-## What the choices were, for the tests.
+## What the choices were, from here to swapped_cards: only the tests read these, to prove
+## from them what each strategy chose, which is what the harness exists to check.
 var calls: int = 0
 var grabs: int = 0
 var landlord_rounds: int = 0
