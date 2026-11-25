@@ -1,0 +1,22 @@
+{"name": "ambience_rustle", "description": "Paper turned somewhere in the room, and footsteps passing outside. Denunciation mid.",
+ "duration": 16,
+ "layers": [
+  {"wave": "noise", "at": [0.521, 0.599, 4.27, 4.389, 6.905, 6.98, 7.032, 9.513, 9.551, 9.605, 11.551, 11.584, 11.673, 11.765, 14.987, 15.034], "env": {"attack": 0.004, "hold": 0.015, "release": 0.07, "curve": 2.2}, "filters": [{"type": "bandpass", "cutoff": 2600, "q": 1.1}, {"type": "lowpass", "cutoff": 6000}], "jitter": {"time": 0.01, "pitch": 3.0, "gain_db": 5}},
+  {"wave": "sine", "freq": [[0, 85], [0.07, 52]], "at": [4.097], "drive": 0.5, "env": {"attack": 0.003, "hold": 0.015, "release": 0.13, "curve": 2.4}, "gain_db": -26.0},
+  {"wave": "noise", "at": [4.097], "env": {"attack": 0.002, "hold": 0.01, "release": 0.06, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 500}], "gain_db": -30.0},
+  {"wave": "sine", "freq": [[0, 85], [0.07, 52]], "at": [4.743], "drive": 0.5, "env": {"attack": 0.003, "hold": 0.015, "release": 0.13, "curve": 2.4}, "gain_db": -23.5},
+  {"wave": "noise", "at": [4.743], "env": {"attack": 0.002, "hold": 0.01, "release": 0.06, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 500}], "gain_db": -27.5},
+  {"wave": "sine", "freq": [[0, 85], [0.07, 52]], "at": [5.348], "drive": 0.5, "env": {"attack": 0.003, "hold": 0.015, "release": 0.13, "curve": 2.4}, "gain_db": -21.0},
+  {"wave": "noise", "at": [5.348], "env": {"attack": 0.002, "hold": 0.01, "release": 0.06, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 500}], "gain_db": -25.0},
+  {"wave": "sine", "freq": [[0, 85], [0.07, 52]], "at": [5.944], "drive": 0.5, "env": {"attack": 0.003, "hold": 0.015, "release": 0.13, "curve": 2.4}, "gain_db": -18.5},
+  {"wave": "noise", "at": [5.944], "env": {"attack": 0.002, "hold": 0.01, "release": 0.06, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 500}], "gain_db": -22.5},
+  {"wave": "sine", "freq": [[0, 85], [0.07, 52]], "at": [6.574], "drive": 0.5, "env": {"attack": 0.003, "hold": 0.015, "release": 0.13, "curve": 2.4}, "gain_db": -16.0},
+  {"wave": "noise", "at": [6.574], "env": {"attack": 0.002, "hold": 0.01, "release": 0.06, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 500}], "gain_db": -20.0},
+  {"wave": "sine", "freq": [[0, 85], [0.07, 52]], "at": [7.188], "drive": 0.5, "env": {"attack": 0.003, "hold": 0.015, "release": 0.13, "curve": 2.4}, "gain_db": -18.5},
+  {"wave": "noise", "at": [7.188], "env": {"attack": 0.002, "hold": 0.01, "release": 0.06, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 500}], "gain_db": -22.5},
+  {"wave": "sine", "freq": [[0, 85], [0.07, 52]], "at": [7.799], "drive": 0.5, "env": {"attack": 0.003, "hold": 0.015, "release": 0.13, "curve": 2.4}, "gain_db": -21.0},
+  {"wave": "noise", "at": [7.799], "env": {"attack": 0.002, "hold": 0.01, "release": 0.06, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 500}], "gain_db": -25.0},
+  {"wave": "sine", "freq": [[0, 85], [0.07, 52]], "at": [8.427], "drive": 0.5, "env": {"attack": 0.003, "hold": 0.015, "release": 0.13, "curve": 2.4}, "gain_db": -23.5},
+  {"wave": "noise", "at": [8.427], "env": {"attack": 0.002, "hold": 0.01, "release": 0.06, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 500}], "gain_db": -27.5}
+ ],
+ "master": {"lufs": -31, "peak_db": -3, "highpass": 60, "reverb": {"mix": 0.25, "decay": 0.6}}}

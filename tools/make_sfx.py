@@ -37,8 +37,10 @@ SOUNDS = {
 SEED = 5200
 
 
-def _sfx():
-    sys.path.insert(0, SKILL)
+def load_sfx():
+    """The commons-sfx skill's vendored renderer."""
+    if SKILL not in sys.path:
+        sys.path.insert(0, SKILL)
     import sfx  # noqa: E402  (vendored, unmodified; see the skill's NOTICE.md)
 
     return sfx
@@ -46,7 +48,7 @@ def _sfx():
 
 def renders(names=None):
     """Every file as (file name, WAV bytes), in a fixed order."""
-    sfx = _sfx()
+    sfx = load_sfx()
     made = []
     for name, takes in SOUNDS.items():
         if names and name not in names:
@@ -55,16 +57,17 @@ def renders(names=None):
         jobs = [(f"{name}_{i + 1:02d}", SEED + i, True, i) for i in range(takes)]
         for stem, seed, variant, index in jobs or [(name, SEED, False, 0)]:
             samples = sfx.render(patch, seed, variant, index)
-            made.append((stem + ".wav", _wav_bytes(sfx, samples)))
+            made.append((stem + ".wav", wav_bytes(samples, sfx.SR)))
     return made
 
 
-def _wav_bytes(sfx, samples):
+def wav_bytes(samples, rate):
+    """Mono 16-bit PCM WAV of samples from -1 to 1, clipped there."""
     buffer = io.BytesIO()
     with wave.open(buffer, "wb") as out:
         out.setnchannels(1)
         out.setsampwidth(2)
-        out.setframerate(sfx.SR)
+        out.setframerate(rate)
         frames = bytearray()
         for value in samples:
             clipped = max(-1.0, min(1.0, value))

@@ -1,0 +1,9 @@
+{"name": "ambience_clock", "description": "A slow clock: a wooden tick and tock, once a second, in a small room. Denunciation high.",
+ "duration": 8,
+ "layers": [
+  {"wave": "noise", "at": [0.0, 2.0, 4.0, 6.0], "env": {"attack": 0.0008, "hold": 0.003, "release": 0.025, "curve": 2.5}, "filters": [{"type": "bandpass", "cutoff": 3200, "q": 4}], "jitter": {"gain_db": 0.5}},
+  {"wave": "sine", "freq": 1174.7, "at": [0.0, 2.0, 4.0, 6.0], "partials": [[1, 0, 1], [2.76, -8, 0.5], [5.4, -16, 0.3]], "env": {"attack": 0.0008, "hold": 0.002, "release": 0.045, "curve": 2.6}, "gain_db": -6, "jitter": {"gain_db": 0.5}},
+  {"wave": "noise", "at": [1.0, 3.0, 5.0, 7.0], "env": {"attack": 0.0008, "hold": 0.003, "release": 0.025, "curve": 2.5}, "filters": [{"type": "bandpass", "cutoff": 2600, "q": 4}], "jitter": {"gain_db": 0.5}},
+  {"wave": "sine", "freq": 987.8, "at": [1.0, 3.0, 5.0, 7.0], "partials": [[1, 0, 1], [2.76, -8, 0.5], [5.4, -16, 0.3]], "env": {"attack": 0.0008, "hold": 0.002, "release": 0.045, "curve": 2.6}, "gain_db": -6, "jitter": {"gain_db": 0.5}}
+ ],
+ "master": {"lufs": -30, "peak_db": -3, "highpass": 200, "reverb": {"mix": 0.18, "decay": 0.5}}}

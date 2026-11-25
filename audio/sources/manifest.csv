@@ -451,3 +451,12 @@ audio/sfx/brush_stroke.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_s
 audio/sfx/dice_bowl.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/dice_bowl.json,2026-11-24,,seed 5200
 audio/sfx/soft_tap_01.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/soft_tap.json,2026-11-24,,"take 1 of 2, seed 5200"
 audio/sfx/soft_tap_02.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_sfx.py,project,Original,,,audio/patches/soft_tap.json,2026-11-24,,"take 2 of 2, seed 5201"
+audio/sfx/ambience_room.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_room.json,2026-11-25,,"loop, seed 6800, decimated to 11025 Hz"
+audio/sfx/ambience_hollow.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_hollow.json,2026-11-25,,"loop, seed 6800, decimated to 11025 Hz"
+audio/sfx/ambience_chatter.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_chatter.json,2026-11-25,,"loop, seed 6800, decimated to 11025 Hz"
+audio/sfx/ambience_wind.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_wind.json,2026-11-25,,"loop, seed 6800, decimated to 11025 Hz"
+audio/sfx/ambience_drone.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_drone.json,2026-11-25,,"loop, seed 6800, decimated to 11025 Hz"
+audio/sfx/ambience_crowd.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_crowd.json,2026-11-25,,"loop, seed 6800, decimated to 11025 Hz"
+audio/sfx/ambience_rustle.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_rustle.json,2026-11-25,,"loop, seed 6800, decimated to 22050 Hz"
+audio/sfx/ambience_whispers.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_whispers.json,2026-11-25,,"loop, seed 6800, decimated to 22050 Hz"
+audio/sfx/ambience_clock.wav,sfx,Synthesis,commons-sfx sfx.py through tools/make_ambience.py,project,Original,,,audio/patches/ambience_clock.json,2026-11-25,,"loop, seed 6800, decimated to 22050 Hz"
