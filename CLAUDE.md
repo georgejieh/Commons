@@ -41,6 +41,12 @@ python -m pytest -q tools
 Tests the Python tools (art cleanup, voice bank). Needs `pillow` and `pytest` from `requirements-dev.txt`.
 
 ```bash
+python tools/pack_check.py build/windows/Commons.exe build/linux/Commons.pck --list
+```
+
+Lists what an exported build packs and exits 1 if it holds anything that must never ship: tools, tests, documents, development add-ons, working files. CI and the release run it on every export.
+
+```bash
 python tools/art_cleanup.py IN_DIR OUT_DIR --size 512x512
 ```
 

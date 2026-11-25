@@ -20,6 +20,8 @@ Dependencies run one way: `ui` → `game` → `core`. `core` may read definition
 
 `tools/script_check.gd` makes every project script compile in the test suite, because exports tokenize scripts without type checking.
 
+Every export preset packs `all_resources` with one exclude filter, the same in each: the agents' files, the development add-ons, `tools/`, `tests/`, `docs/`, `design/`, `reports/`, the art and sound working files (`art/sources/`, `art/palette.json`, `audio/sources/`, `audio/patches/`, `audio/preview/`). Godot packs any JSON file as a resource, which is how `.mcp.json` and the cleanup script's palette once shipped. `tools/pack_check.py` reads an exported pack, embedded in the Windows executable, beside the Linux one or inside the macOS zip, and fails on any path under its own forbidden list; CI's export and the release's build run it on what they exported. The Steam Deck plays the Linux build.
+
 ## Randomness
 
 Each run has one `RandomStreams` with eight independent streams: deal, shop, debuff, ai, events, cosmetic, audit, names. A stream's seed is an FNV-1a hash of the run seed and its name, so adding a stream never disturbs the others. `core/` code takes a `RandomStream` and never touches an engine generator. Seeds and states serialize as text, because JSON numbers cannot hold 64 bits.

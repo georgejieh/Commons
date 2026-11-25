@@ -11,6 +11,7 @@ on:
       - export_presets.cfg
       - tools/packaging/**
       - tools/write_notices.gd
+      - tools/pack_check.py
 
 permissions:
   contents: read
@@ -55,7 +56,7 @@ jobs:
       - name: Install packaging tools
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends nsis zip file curl ca-certificates
+          apt-get install -y --no-install-recommends nsis zip file curl ca-certificates python3
       - name: Move export templates to the runner's home
         run: |
           mkdir -p ~/.local/share/godot/export_templates ~/.config
@@ -75,6 +76,8 @@ jobs:
           cp THIRD-PARTY-NOTICES.txt build/windows/
           cp THIRD-PARTY-NOTICES.txt build/linux/
           zip -j build/macos/Commons.zip THIRD-PARTY-NOTICES.txt
+      - name: Check nothing ships that should not
+        run: python3 tools/pack_check.py build/windows/Commons.exe build/linux/Commons.pck build/macos/Commons.zip
       - name: Package Windows
         run: |
           zip -j "dist/Commons-${VERSION}-windows.zip" build/windows/*
