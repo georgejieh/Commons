@@ -25,7 +25,7 @@ func _scored(text: String, ids: Array[String], seat: int = HOLDER) -> RunEvent:
 		stack.add(_def(id), HOLDER)
 	var cards: Array[CardInstance] = _cards(text)
 	var rules: RuleSet = RuleSet.default_rules()
-	var pattern: Pattern = CardSelection.classify_cards(cards, rules, Ranks.identity_map()).pattern
+	var pattern: Pattern = RoundScript.classify(cards, rules, Ranks.identity_map()).pattern
 	var score: ScoreBreakdown = Scorer.score_play(
 		cards, pattern, 2, seat, false, stack, Scorer.DEFAULT_PARAMS, 0, null, true
 	)

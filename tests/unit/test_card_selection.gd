@@ -37,7 +37,7 @@ func test_every_move_of_random_hands_reproduces_its_pattern() -> void:
 		for move: Pattern in moves:
 			var chosen: Array[CardInstance] = CardSelection.pick(hand, move)
 			assert_int(chosen.size()).is_equal(move.card_count)
-			var read: Classification = CardSelection.classify_cards(chosen, _rules, _map)
+			var read: Classification = RoundScript.classify(chosen, _rules, _map)
 			assert_int(read.pattern.identity()).is_equal(move.identity())
 
 
@@ -68,5 +68,5 @@ func test_a_hand_that_lacks_the_cards_gets_nothing() -> void:
 
 func test_a_player_selection_goes_through_the_classifier() -> void:
 	var bad: Array[CardInstance] = [Deck.new().card(0), Deck.new().card(4)]
-	var result: Classification = CardSelection.classify_cards(bad, _rules, _map)
+	var result: Classification = RoundScript.classify(bad, _rules, _map)
 	assert_bool(result.is_valid()).is_false()

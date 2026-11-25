@@ -26,6 +26,13 @@ static func play(round_state: RoundState, text: String) -> RoundAction:
 	return round_state.action_for(Classifier.classify(RankText.counts(text), rules, map).pattern)
 
 
+## Reads cards as printed through the classifier, as a player's own pick is read.
+static func classify(
+	cards: Array[CardInstance], rules: RuleSet, rank_map: PackedByteArray
+) -> Classification:
+	return Classifier.classify(CardSelection.printed_counts(cards), rules, rank_map)
+
+
 static func _take(pool: Array[CardInstance], text: String) -> Array[CardInstance]:
 	var taken: Array[CardInstance] = []
 	for symbol: String in text:

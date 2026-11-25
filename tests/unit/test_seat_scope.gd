@@ -132,7 +132,7 @@ func _total(stack: ModifierStack, cards: Array, seat: int, landlord: int) -> flo
 	var played: Array[CardInstance] = []
 	played.assign(cards)
 	var pattern: Pattern = (
-		CardSelection.classify_cards(played, RuleSet.default_rules(), Ranks.identity_map()).pattern
+		RoundScript.classify(played, RuleSet.default_rules(), Ranks.identity_map()).pattern
 	)
 	var facts: PlayFacts = PlayFacts.new(
 		landlord, 0, PackedInt32Array([3, 3, 3]), PackedFloat64Array([30, 40, 50]), 4

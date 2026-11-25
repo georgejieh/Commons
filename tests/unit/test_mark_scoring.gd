@@ -30,7 +30,7 @@ func _score(
 	for id: String in held:
 		stack.add(_def(id), PLAYER)
 	var pattern: Pattern = (
-		CardSelection.classify_cards(cards, RuleSet.default_rules(), Ranks.identity_map()).pattern
+		RoundScript.classify(cards, RuleSet.default_rules(), Ranks.identity_map()).pattern
 	)
 	return Scorer.score_play(cards, pattern, level, seat, false, stack, PARAMS, 0, null, true)
 
