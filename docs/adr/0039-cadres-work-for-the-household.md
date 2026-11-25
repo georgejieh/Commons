@@ -54,3 +54,38 @@ Each Cadre's rules text says whose plays it acts on: "your" for the holder's. A 
 - The collective Cadres are weaker than before when the player is landlord, and the landlord route gains a little: the player's scoring Cadres no longer pay the two peasants against them. The balance harness (ADR 0027) measures it.
 - Directive hand levels, Industrialization's bigger bombs, Mass Line's and Model Worker's wild ranks, and Model cards still act for every seat. They are outside this rule and were reported to the lead to decide.
 - Nothing saved changes. Definitions are not saved, and no Cadre's memo holds a count that read another seat.
+
+## Amended 2026-11-24: whatever the player buys that changes play is the player's
+
+Status: the owner's direction, second note of their playtest of 2026-11-24, as the lead decided it. The owner's words:
+
+> so effects that changes how the game is played but doesnt effect scoring should not effect villagers while effects that only care about scoring can effect villagers since if you are not landlord it helps you.
+
+### The general rule
+
+Anything the player buys or uses that changes how the game is played (what is legal, what beats what, what a card may stand in for) acts for the player's seat alone, whatever kind of item it is: Cadre, Reform, Campaign, Directive or plot upgrade. Effects that only change scoring keep the reach they have: Directive hand levels score every seat's plays, Model cards score for whoever plays them, and rule 2 above stays for the Cadres. Card marks on deck cards (Model, stamps) keep their duration and travel with the communal deck.
+
+`SeatScope.rules_reach` now gives every kind the player buys (Cadre, Campaign, Directive, Reform) its holder's seat alone, and only debuffs and boss twists every seat. Wild ranks are not a modifier, so `SeatRules.set_wild_ranks(ranks, seat)` takes the seat they are wild for.
+
+### What it covers now
+
+| Item | Kind | Changes play | Acts on, before | Acts on, now |
+| --- | --- | --- | --- | --- |
+| Mass Line | Reform | a rank drawn with each deal is wild | every seat | the player's seat |
+| Industrialization | Reform | five or more of a rank are a bomb; Zeal per card past the fourth | every seat | the player's seat; the Zeal follows the bomb, so it is the player's |
+| Model Worker | Campaign | a rank drawn when used is wild this round | every seat | the player's seat |
+| Anonymous Letter | Campaign | the next seat must pass on the player's play | that villager | unchanged: it takes a choice from a villager, it gives them nothing |
+
+Every other Reform, Campaign, Directive and plot upgrade changes limits, the economy, the deal, cards held or scoring, and is unchanged. Every source of wild ranks in a run is one of the two above; no debuff, boss twist or stake makes a rank wild. The tournament's `--wild` and `--big-bombs`, `tools/expert_play.gd` and the tests that make a rank wild for every seat keep doing so, through `set_wild_ranks(ranks)` with no seat and the base parameters.
+
+### Wild ranks that are one seat's
+
+Only the player's cards of a wild rank are wild. A villager's card of that rank is a plain card in their hand, in what they may play, in what they are offered, in the bots' plans and in scoring, and it lands on the pile plain. Whether four cards of a rank are the pure-wild bomb is the playing seat's to say, so the classifier and the generator mark it on the play (`Pattern.main_wild`) from that seat's rules, and the comparator reads the mark, not the rules of the seat comparing. So: the player's four wild 7s beat a villager's four Aces; a villager's four 7s are a Bomb with no stand-in, beaten by the player's four 8s; the player's Bomb with a stand-in loses to any villager's Bomb without one. A bot counts unseen wild cards only under an opponent's rules that hold them (`Controls.threat_rules`): a villager bot fears the player's wild cards, and does not count another villager's 7s as wild.
+
+### What a villager may do against a bigger bomb
+
+Only the player may play a bomb of five or more cards. More cards beat fewer, whatever the tier, and a villager cannot make a bomb of five, so against one a villager has the Rocket alone. A villager's four-card bomb never beats the player's five-card bomb, whatever its rank; a villager holding five of a rank (through a Campaign's trade) may play four of them as a bomb, never five. This needed no new check: a bomb's comparison key holds its card count, the comparator already put size before kind and rank, and the round's legality check, the move generator and every bot tier read the same comparator with each seat's own rules.
+
+### Saves
+
+Nothing saved changes. `RunState.wild_ranks` and the per-round draw are recorded as before and replay to the same state: they are now read as the player's ranks. A save from before this change loads; a command in it that no longer applies, because a villager's play once used a stand-in, falls back to the Quota's checkpoint as ADR 0033 says.

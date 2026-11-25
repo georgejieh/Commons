@@ -677,8 +677,9 @@ func _rebuild_modifiers() -> void:
 	_stack.clear()
 	for cadre_id: String in state.inventory.cadres:
 		_stack.add(_pool_by_id[cadre_id], PLAYER, state.cadre_memos.entry(cadre_id))
-	# A Reform's rule for every seat, such as Industrialization's bigger bombs (ADR 0029).
-	for rule: ActiveModifier in RunReforms.table_rules(state):
+	# A Reform's rule for the player's seat, such as Industrialization's bigger bombs
+	# (ADR 0029, ADR 0039).
+	for rule: ActiveModifier in RunReforms.table_rules(state, PLAYER):
 		_stack.add_entry(rule)
 	for round_index: int in range(1, state.round_index + 1):
 		var id: String = state.debuff_ladder[round_index]
@@ -711,12 +712,12 @@ func _deal_cards() -> void:
 	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream))
 	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
 	# Mass Line's rank is drawn after the deal on its stream, so the deal is unchanged and
-	# every seat knows it before the bid (ADR 0029).
+	# every seat knows it before the bid (ADR 0029). It is the player's alone (ADR 0039).
 	for _rank: int in RunReforms.wild_ranks_per_round(state):
 		if RunWild.has_room(state):
 			var rank: int = RunWild.add(state, stream)
 			set_log.add(RunWild.event(state, rank))
-			_table.set_wild_ranks(state.wild_ranks)
+			_table.set_wild_ranks(state.wild_ranks, PLAYER)
 
 
 ## Who bids first moves round the table with the year, Set and round, so no seat always
@@ -802,8 +803,9 @@ func _campaign_moment() -> CampaignContext.Moment:
 
 func _create_round() -> void:
 	_aim_grudges()
-	# The round's wild ranks (ADR 0029), none unless an item drew them.
-	_table.set_wild_ranks(state.wild_ranks)
+	# The round's wild ranks (ADR 0029), none unless an item drew them. Every item that
+	# draws one is the player's, so they are the player's seat's alone (ADR 0039).
+	_table.set_wild_ranks(state.wild_ranks, PLAYER)
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
 	_scoring.start(state.landlord_seat, state.year)
@@ -1039,7 +1041,7 @@ func _end_round() -> void:
 	# What a Campaign held in force ends with its round, whatever comes next.
 	campaigns.start_round()
 	state.wild_ranks.clear()
-	_table.set_wild_ranks(state.wild_ranks)
+	_table.set_wild_ranks(state.wild_ranks, PLAYER)
 	state.deck_order.clear()
 	if RunReforms.gathers_deck(state):
 		state.deck_order = DeckOrder.gather(_round)

@@ -29,6 +29,8 @@ var rivals: Array[BotTable] = []
 ## The tables this seat's own bomb is judged under once it is down, or null when a bomb
 ## changes nothing (BombedSide).
 var bombed: BombedSide = null
+## Which of the threats are wild: the opponents' rules (Controls.threat_rules).
+var _threat_rules: RuleSet
 
 
 func _init(
@@ -42,10 +44,11 @@ func _init(
 	_read_seats()
 	unseen = UnseenCards.from_view(view)
 	threats = _threats()
-	var supply: WildSupply = WildSupply.of(threats, table.rules)
-	wild_threats = 0 if supply == null else supply.total
 	groups = scorer.decompose_own_hand().groups
 	rivals = _rivals()
+	_threat_rules = Controls.threat_rules(table, rivals)
+	var supply: WildSupply = WildSupply.of(threats, _threat_rules)
+	wild_threats = 0 if supply == null else supply.total
 	bombed = BombedSide.of(table, seat, _opponents())
 	var counts_cards: bool = config.reads_the_table()
 	var largest: int = _largest_opposing_hand()
@@ -156,7 +159,7 @@ func could_hold(rank: int, width: int) -> bool:
 		return true
 	if wild_threats == 0 or threats[rank] == 0 or rank > Ranks.TWO:
 		return false
-	var others: int = wild_threats - (threats[rank] if table.rules.is_wild(rank) else 0)
+	var others: int = wild_threats - (threats[rank] if _threat_rules.is_wild(rank) else 0)
 	return threats[rank] + others >= width
 
 

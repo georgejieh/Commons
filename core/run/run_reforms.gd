@@ -4,8 +4,9 @@ extends RefCounted
 ## order they were enacted. This is the one place the run reads what they change: how
 ## many Cadres and Campaigns the player can hold, what a met Quota pays and a missed one
 ## costs, how many items an envelope holds, whether the deck is gathered, not shuffled,
-## between a Quota's rounds, how many ranks each deal makes wild, and the rules a Reform
-## puts on the table. A held ID with no definition changes nothing.
+## between a Quota's rounds, how many ranks each deal makes wild for the player, and the
+## rules a Reform gives the player's seat (ADR 0039). A held ID with no definition changes
+## nothing.
 
 const POOL: ReformPool = preload("res://data/run/reform_pool.tres")
 ## The player's limits before any Reform are the state store's numbers.
@@ -74,7 +75,8 @@ static func gathers_deck(state: RunState) -> bool:
 	return false
 
 
-## Ranks drawn wild with every deal, for every seat: Mass Line's (ADR 0029).
+## Ranks drawn wild with every deal, for the player's seat alone: Mass Line's (ADR 0029,
+## ADR 0039).
 static func wild_ranks_per_round(state: RunState) -> int:
 	var ranks: int = 0
 	for effect: ReformEffect in _effects(state):
@@ -82,10 +84,11 @@ static func wild_ranks_per_round(state: RunState) -> int:
 	return ranks
 
 
-## The rules held Reforms put on the table for every seat, in the order they were
-## enacted, each as a stack entry of kind REFORM that runs only its own hooks: today
-## Industrialization's bigger bombs (ADR 0029).
-static func table_rules(state: RunState) -> Array[ActiveModifier]:
+## The rules held Reforms give the holder's seat, which is the player's, in the order they
+## were enacted, each as a stack entry of kind REFORM that runs only its own hooks and
+## builds the holder's seat alone (SeatScope): today Industrialization's bigger bombs
+## (ADR 0029, ADR 0039).
+static func table_rules(state: RunState, holder: int) -> Array[ActiveModifier]:
 	var rules: Array[ActiveModifier] = []
 	for reform_id: String in state.reforms:
 		var reform: ReformDef = definition(reform_id)
@@ -102,14 +105,16 @@ static func table_rules(state: RunState) -> Array[ActiveModifier]:
 		rule.parameters = reform.parameters.duplicate()
 		rule.name_key = reform.name_key
 		rule.text_key = reform.text_key
-		rules.append(ActiveModifier.new(rule, effect.table_rule()))
+		var rule_effect: ModifierEffect = effect.table_rule()
+		rule_effect.holder_seat = holder
+		rules.append(ActiveModifier.new(rule, rule_effect))
 	return rules
 
 
-## The held Reforms that put a rule on the table, in the order they were enacted.
+## The held Reforms that give the player's seat a rule, in the order they were enacted.
 static func table_rule_ids(state: RunState) -> Array[String]:
 	var ids: Array[String] = []
-	for rule: ActiveModifier in table_rules(state):
+	for rule: ActiveModifier in table_rules(state, Seats.NONE):
 		ids.append(rule.definition.id)
 	return ids
 

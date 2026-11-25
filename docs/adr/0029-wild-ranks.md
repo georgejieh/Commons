@@ -9,7 +9,7 @@ ADR 0007 left wild substitution to "the item that adds wild ranks". The engine t
 
 ## The rules
 
-1. **Wild cards.** While a rank is wild, every card of that rank is a wild card, in every hand. At most two ranks are wild at once. Jokers are never wild.
+1. **Wild cards.** While a rank is wild, every card of that rank is a wild card, in every hand. At most two ranks are wild at once. Jokers are never wild. (Amended 2026-11-24, ADR 0039: a rank is wild for the seats its source names; every item that makes one is the player's, so in a run only the player's cards of it are wild.)
 2. **Standing in.** A wild card may be played as its own rank, or stand in for any rank from 3 to 2. It never stands in for a joker, so it can never make a rocket. A play made only of wild cards is read with at least one of them at its own rank: two wild 7s alone are a pair of 7s, as the published rules of the laizi tables have it.
 3. **A play is declared.** A play is a set of cards and one reading of them. When the chosen cards can be read in more than one legal way, the player picks the reading, strongest first in the list; with one legal reading the play goes straight down. The reading stands once played. A bot's move is always a reading.
 4. **Comparing.** A play is compared by its reading, as if every card were what it stands for. A wild 7 read as a queen is a queen for every rule about rank: the rank order, Promotion of the Masses, Criticism Meeting, Rehabilitation, Class Label, Inverted Order.
@@ -34,7 +34,7 @@ They are the game's fifth unlock tier: tier 4, open after four finished runs. Th
 | Industrialization | Reform | State store | Bombs may hold 5 or more cards. A bigger bomb beats a smaller one, and each card past the fourth adds 1 Zeal. | 8 |
 
 - The wild rank is drawn on the deal stream after the deal, so the deal itself does not change. It is shown before anyone bids.
-- Wild ranks apply to all three seats, so these items are collective.
+- Wild ranks apply to all three seats, so these items are collective. (Superseded 2026-11-24 by ADR 0039: the three items act for the player's seat alone.)
 - Industrialization also counts for five or more cards of a rank reached through the private plot, where a hand can hold a fifth copy. Until now that was a data flag with no item behind it.
 
 ## What the screen must do
@@ -75,3 +75,7 @@ Calls made while building, which the sections above did not settle:
 - **Nothing announces a tier opening between runs**, as for tiers 1 to 3. The collection shows the three items locked until then.
 
 Not done: a full `tools/expert_deadline.gd -- --wild 1` run. A 20-deal sample gave a p99 of 403 ms with one wild rank against 355 ms with none, both over the 300 ms the runner is set to, and 20 deals is too few to trust. P5.0 moves Expert off the command thread and takes the full measurement with it.
+
+## Amended 2026-11-24
+
+The owner's direction, second note of their playtest of 2026-11-24, recorded in [ADR 0039](0039-cadres-work-for-the-household.md): Mass Line's and Model Worker's wild ranks and Industrialization's bigger bombs are the player's alone. Where this ADR says a rank is wild "for everyone" or "in every hand", or that Industrialization's Zeal is for every seat's bombs, read the player's seat. A villager's card of the player's wild rank is a plain card and carries no ribbon. Whether four cards of a rank are the pure-wild bomb is read under the rules of the seat that played them (`Pattern.main_wild`). The bomb tiers of rule 5 and rule 6 are unchanged; under rule 6 only the player may play a bomb of five or more, and a villager answers one with the Rocket alone. The tournament's `--wild N` and `--big-bombs` still make ranks wild and bigger bombs legal for every seat, since they measure the bots.

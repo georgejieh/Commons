@@ -4,6 +4,8 @@ extends RefCounted
 ## Worker one when it is used, both on the deal stream: Mass Line after the deal, so the
 ## deal itself is unchanged. A drawn rank runs from 3 to 2, never one already wild, and at
 ## most two are wild at once. The ranks live in RunState.wild_ranks until the round ends.
+## Both items are the player's, so the ranks are wild for the player's seat alone; a
+## villager's card of one is a plain card (ADR 0039).
 
 const MAX_RANKS: int = ReadingCodec.MAX_WILD_RANKS
 

@@ -25,8 +25,10 @@ var _trick_bombed: bool = false
 var _stamped: PackedInt32Array = PackedInt32Array()
 var _seen_revision: int = -1
 var _dirty: bool = true
-## The round's wild ranks (ADR 0029), added to every seat's base rules before modifiers.
+## The round's wild ranks (ADR 0029), added to the base rules of _wild_seat, or of every
+## seat while that is Seats.NONE, before modifiers.
 var _wild_ranks: Array[int] = []
+var _wild_seat: int = Seats.NONE
 ## A uniform table never rebuilds.
 var _fixed: bool = false
 
@@ -102,11 +104,14 @@ func set_stamped(seat: int, mask: int) -> void:
 		_dirty = true
 
 
-## Makes these ranks wild for every seat from the next refresh, beside any a modifier
-## adds. A uniform table keeps the rules it was built with.
-func set_wild_ranks(ranks: Array[int]) -> void:
-	if ranks != _wild_ranks:
+## Makes these ranks wild from the next refresh, beside any a modifier adds: for one seat
+## alone, or for every seat with Seats.NONE. Ranks the player bought (Mass Line, Model
+## Worker) are the player's seat's alone (ADR 0039); a test or the tournament's --wild
+## makes them every seat's. A uniform table keeps the rules it was built with.
+func set_wild_ranks(ranks: Array[int], seat: int = Seats.NONE) -> void:
+	if ranks != _wild_ranks or seat != _wild_seat:
 		_wild_ranks = ranks.duplicate()
+		_wild_seat = seat
 		_dirty = true
 
 
@@ -123,8 +128,9 @@ func refresh() -> bool:
 	_standings.clear()
 	for seat: int in Seats.COUNT:
 		var params: RuleParams = _base_params.copy()
+		var wild_here: bool = _wild_seat == Seats.NONE or _wild_seat == seat
 		for rank: int in _wild_ranks:
-			if not params.wild_ranks.has(rank):
+			if wild_here and not params.wild_ranks.has(rank):
 				params.wild_ranks.append(rank)
 		_stack.run_build_ruleset(RulesetContext.new(seat, _landlord, params))
 		_rules.append(_shared(RuleSet.new(params)))

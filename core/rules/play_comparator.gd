@@ -41,11 +41,13 @@ static func beats(play: Pattern, current: Pattern, rules: RuleSet) -> bool:
 
 
 ## Rule 5's kinds: soft with any stand-in, pure-wild for exactly four cards of a wild rank
-## read as that rank, natural otherwise.
-static func bomb_kind(bomb: Pattern, rules: RuleSet) -> int:
+## read as that rank, natural otherwise. Whether the rank is wild is the playing seat's
+## to say (Pattern.main_wild): a villager's four of the player's wild rank are a natural
+## bomb, and the player's four are pure-wild against anyone (ADR 0039).
+static func bomb_kind(bomb: Pattern, _rules: RuleSet) -> int:
 	if bomb.stand_ins() > 0:
 		return SOFT
-	if bomb.card_count == PURE_WILD_CARDS and rules.is_wild(bomb.main_rank):
+	if bomb.card_count == PURE_WILD_CARDS and bomb.main_wild:
 		return PURE_WILD
 	return NATURAL
 

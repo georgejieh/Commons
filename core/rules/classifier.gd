@@ -187,7 +187,7 @@ func _valid(
 	type: Pattern.Type, main: int, chain: int, total: int, kickers: PackedByteArray = NO_KICKERS
 ) -> Classification:
 	var pattern: Pattern = Pattern.new(type, main, chain, total, kickers, _rank_map[main])
-	return Classification.new(pattern, Classification.Reason.OK)
+	return Classification.new(pattern.read_under(_rules), Classification.Reason.OK)
 
 
 func _invalid(reason: Classification.Reason) -> Classification:

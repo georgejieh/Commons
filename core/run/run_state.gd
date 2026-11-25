@@ -42,7 +42,8 @@ var resentment: int = 0
 ## Sets in a row the player has ended without holding the landlord's seat (ADR 0031).
 var seatless_sets: int = 0
 ## The ranks wild in the round in play (ADR 0029), at most two, drawn by the items that
-## make them. Empty between rounds and while no rank is wild.
+## make them, for the player's seat alone (ADR 0039). Empty between rounds and while no
+## rank is wild.
 var wild_ranks: Array[int] = []
 ## Each villager family's own Denunciation, from lies caught at audit (P4.3).
 var villager_denunciation: Dictionary[String, int] = {}
