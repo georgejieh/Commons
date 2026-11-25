@@ -1,10 +1,11 @@
 class_name BalanceParams
 extends Resource
-## The numbers in ADR 0027's strategy table, and the harness's own limits. The harness
-## loads tools/balance_params.tres; nothing in the game reads it.
+## The numbers in ADR 0027's strategy table, and the harness's own limits. The defaults
+## here are the values the harness plays by; tools/balance_params.tres, which it loads,
+## carries only a value that differs. Nothing in the game reads it.
 
-## Coupons the mixed player keeps back at the state store.
-@export var kept_back: int = 4
+## Coupons the mixed player keeps back at the state store: none, as ADR 0027 has it.
+@export var kept_back: int = 0
 ## The mixed player buys at the black market only while Resentment is under this.
 @export var resentment_limit: int = 40
 ## How much more than the true need the mixed player claims, in percent, while no more
