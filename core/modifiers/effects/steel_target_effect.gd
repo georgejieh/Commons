@@ -13,8 +13,7 @@ func required_parameters() -> PackedStringArray:
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat == holder_seat:
-		context.add_zeal += _zeal_percent() / 100.0
+	context.add_zeal += _zeal_percent() / 100.0
 
 
 func turn_taken(context: TurnContext) -> void:

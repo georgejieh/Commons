@@ -15,7 +15,7 @@ func required_parameters() -> PackedStringArray:
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat == holder_seat and context.is_landlord:
+	if context.is_landlord:
 		context.add_zeal += _zeal_percent() / 100.0
 
 

@@ -20,8 +20,6 @@ func rank_parameters() -> PackedStringArray:
 
 
 func build_rank_map(context: RankMapContext) -> void:
-	if context.seat != holder_seat:
-		return
 	var rank: int = picked()
 	for _step: int in steps():
 		var up: int = RankShift.next_up(context.rank_map, rank)

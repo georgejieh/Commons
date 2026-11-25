@@ -12,7 +12,7 @@ func required_parameters() -> PackedStringArray:
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat != holder_seat or context.pattern.type != Pattern.Type.SINGLE:
+	if context.pattern.type != Pattern.Type.SINGLE:
 		return
 	if context.body_cards.size() == 1 and context.body_cards[0] >= Ranks.TWO:
 		context.add_zeal += parameters[ZEAL_PERCENT] / 100.0

@@ -16,7 +16,7 @@ func handed_back(deal: DealResult) -> void:
 
 
 func card_scored(context: CardContext) -> void:
-	if context.seat == holder_seat and context.is_landlord and _in_kitty(context.card.id()):
+	if context.is_landlord and _in_kitty(context.card.id()):
 		context.grain *= 2.0
 
 

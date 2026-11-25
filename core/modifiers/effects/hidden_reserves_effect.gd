@@ -5,7 +5,5 @@ extends ModifierEffect
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat != holder_seat:
-		return
 	for rank: int in context.kicker_cards:
 		context.add_grain += context.card_grain[rank]

@@ -19,7 +19,7 @@ func required_parameters() -> PackedStringArray:
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat != holder_seat or context.pattern.type != Pattern.Type.STRAIGHT:
+	if context.pattern.type != Pattern.Type.STRAIGHT:
 		return
 	var extra: int = maxi(0, context.pattern.card_count - parameters[BASE_LENGTH])
 	context.add_zeal += extra * _per_card() / 100.0

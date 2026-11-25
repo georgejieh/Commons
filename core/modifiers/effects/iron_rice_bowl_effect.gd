@@ -11,7 +11,5 @@ func required_parameters() -> PackedStringArray:
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat != holder_seat:
-		return
 	context.add_grain += parameters[GRAIN]
 	context.rate_cap = minf(context.rate_cap, parameters[RATE_CAP])
