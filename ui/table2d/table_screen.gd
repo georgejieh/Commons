@@ -407,13 +407,14 @@ func _on_drained() -> void:
 		_swap_sheet.open()
 
 
-## A play flies to the pile from the seat that made it; yours leaves from your hand.
+## A play flies to the pile from the seat that made it; yours leaves from your hand. Only
+## your cards of a wild rank land wild: the ranks are yours alone (ADR 0039).
 func _show_play(event: RoundEvent) -> void:
 	var origins: Array[Vector2] = []
 	if event.seat == 0:
 		for card: CardInstance in event.cards:
 			origins.append(_hand_view.card_center(card.id()))
-	_pile.show_play(event.cards, _seat_center(event.seat), origins, event.pattern)
+	_pile.show_play(event.cards, _seat_center(event.seat), origins, event.pattern, event.seat == 0)
 
 
 func _seat_center(seat: int) -> Vector2:

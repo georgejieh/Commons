@@ -36,7 +36,8 @@ const HOP: float = 14.0
 const FLASH: Color = Color(1.45, 1.35, 1.15)
 
 ## The round's wild ranks as the table's events have named them (ADR 0029): a card of one
-## lands with its ribbon on.
+## lands with its ribbon on when the seat that played it holds the rank wild. The ranks are
+## the player's alone (ADR 0039), so a villager's card of one lands plain.
 var wild_ranks: Array[int] = []
 
 var _pool: CardPool
@@ -57,9 +58,14 @@ func setup(pool: CardPool, pool_parent: Control, motion: TableMotion) -> void:
 ## Lays a play on top of the pile. from is where it comes from on screen; origins, when
 ## given, is where each card starts, as when the player's cards leave the hand. The cards
 ## lie in PlayOrder. With the play's reading, a wild card standing in names the rank it
-## stands for (ADR 0029).
+## stands for (ADR 0029). wild is false for cards whose seat does not hold the wild ranks,
+## a villager's, which land plain (ADR 0039).
 func show_play(
-	cards: Array[CardInstance], from: Vector2, origins: Array[Vector2] = [], reading: Pattern = null
+	cards: Array[CardInstance],
+	from: Vector2,
+	origins: Array[Vector2] = [],
+	reading: Pattern = null,
+	wild: bool = true
 ) -> void:
 	if cards.is_empty():
 		return
@@ -87,7 +93,7 @@ func show_play(
 			return
 		view.reparent(self, false)
 		view.bind(cards[index])
-		_mark_wild(view, cards[index], stands[index] if index < stands.size() else -1)
+		_mark_wild(view, cards[index], stands[index] if index < stands.size() else -1, wild)
 		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		view.pivot_offset = Vector2.ZERO
 		var along: float = order * spacing
@@ -240,8 +246,8 @@ func _view_of(card_id: int) -> CardView:
 
 
 ## A wild card lands with its ribbon, and one standing in names its rank beside its own.
-func _mark_wild(view: CardView, card: CardInstance, stands_for: int) -> void:
-	view.set_wild(wild_ranks.has(card.base_rank()))
+func _mark_wild(view: CardView, card: CardInstance, stands_for: int, wild: bool) -> void:
+	view.set_wild(wild and wild_ranks.has(card.base_rank()))
 	if stands_for >= 0 and stands_for != card.base_rank():
 		var rank: String = tr(CardView.RANK_KEYS[stands_for])
 		view.set_rank_note(tr("card.rank_as").format({"rank": rank}))
