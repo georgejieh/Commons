@@ -192,6 +192,16 @@ func player_cards() -> Array[CardInstance]:
 	return cards
 
 
+## The cards the round's deal set aside face up (ADR 0043), every seat's to see; none
+## between deals.
+func set_aside_cards() -> Array[CardInstance]:
+	var cards: Array[CardInstance] = []
+	if _deal != null:
+		for card: CardInstance in _deal.set_aside:
+			cards.append(card.snapshot())
+	return cards
+
+
 ## The player's view of the round: the public view and their own cards, plus whatever
 ## their information upgrades reveal (P4.9). Null between rounds.
 func player_view() -> SeatView:
@@ -748,8 +758,11 @@ func _deal_cards() -> void:
 		var cards: Array[CardInstance] = state.deck.cards()
 		state.card_marks.apply(cards)
 		_deal = Dealer.deal(cards, stream)
-	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream))
+	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream, state.year))
 	set_log.add(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, state.round_index))
+	if not _deal.set_aside.is_empty():
+		var aside: String = _ids_text(_deal.set_aside)
+		set_log.add(RunEvent.new(RunEvent.Type.CARDS_SET_ASIDE, PLAYER, 0, 0.0, aside))
 	# Mass Line's rank is drawn after the deal on its stream, so the deal is unchanged and
 	# every seat knows it before the bid (ADR 0029). It is the player's alone (ADR 0039).
 	for _rank: int in RunReforms.wild_ranks_per_round(state):
@@ -757,6 +770,13 @@ func _deal_cards() -> void:
 			var rank: int = RunWild.add(state, stream)
 			set_log.add(RunWild.event(state, rank))
 			_table.set_wild_ranks(state.wild_ranks, PLAYER)
+
+
+static func _ids_text(cards: Array[CardInstance]) -> String:
+	var ids: PackedStringArray = []
+	for card: CardInstance in cards:
+		ids.append(str(card.id()))
+	return ",".join(ids)
 
 
 ## Who bids first moves round the table with the year, Set and round, so no seat always

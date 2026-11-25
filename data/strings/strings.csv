@@ -464,6 +464,8 @@ modifier.risen_villager.name,Risen Villager
 modifier.risen_villager.text,A villager who held the landlord seat for a whole Set sits at the table and starts this Set as landlord.
 modifier.new_landlord.name,New Landlord
 modifier.new_landlord.text,"Your opponent favors the hand types you played most, and calls the landlord seat about as often as you did, over your last three Sets."
+modifier.the_handicap.name,The Handicap
+modifier.the_handicap.text,"Each round, before the bid, cards drawn at random from your hand are set aside face up until it ends: {cards} this Year."
 modifier.planned_allocation.name,Planned Allocation
 modifier.planned_allocation.text,Pick a rank when you buy this. Each card of that rank is twice as likely to be dealt to you.
 modifier.red_ink.name,Red Ink
@@ -684,6 +686,9 @@ callout.stake.lost.sub,You bank nothing this round
 round.stake.won,Overfulfillment raised what you banked to {amount}.
 round.stake.lost,Overfulfillment: you lost the round and banked nothing.
 table.debuff_lifted,lifted by Appeal
+table.boss,Boss
+table.set_aside,Set aside this round: {cards}.
+table.set_aside_word,Set aside
 modifier.rehabilitation.name,Rehabilitation
 modifier.rehabilitation.text,"Pick a rank when you buy this. Your cards of that rank move up {first_steps} rank in the Year you buy it and {steps_per_year} more each Year after, stopping below the jokers. Moved up 1, a 7 beats an 8 and loses to a 9."
 modifier.rehabilitation.state,Your {rank}s have moved up {steps}.
@@ -868,6 +873,7 @@ round.voided,"Overtime: your side lost, so you banked nothing."
 beat.levy.given,Levy: your {card} goes to {name}.
 beat.levy.taken,Levy: you take {name}'s {card}.
 beat.redistribution,Redistribution: everyone passes {count} cards to the left.
+beat.set_aside,{name}: {cards} set aside for the round.
 summary.starved,The {name} household did not come to the Commons.
 summary.deposed,{name} was put out of the landlord's seat.
 summary.stood_by,Famine rose by {rise} for {count} Quotas in a row without the landlord's seat.

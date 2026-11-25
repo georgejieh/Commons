@@ -59,6 +59,8 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.CAMPAIGN_SOLD: "",
 	# The desk's mark is pressed with the shop's own stamp, which the screen plays.
 	RunEvent.Type.DECK_CARD_MARKED: "",
+	# What the deal shows before the bid comes with the deal's own sound (ADR 0043).
+	RunEvent.Type.CARDS_SET_ASIDE: "",
 }
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",

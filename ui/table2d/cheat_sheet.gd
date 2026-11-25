@@ -147,6 +147,10 @@ func refresh() -> void:
 				% [_controller.modifier_name(modifier_id), _controller.modifier_text(modifier_id)]
 			)
 		)
+	# A boss twist holds for the whole Set (ADR 0043).
+	var boss: String = _controller.boss()
+	if not boss.is_empty():
+		active.append("%s: %s" % [_controller.modifier_name(boss), _controller.modifier_text(boss)])
 	# A Reform's rule for the player's seat, such as Industrialization, is in play too.
 	for reform_id: String in _controller.table_rule_reforms():
 		var rule: String = _controller.reform_text(reform_id)

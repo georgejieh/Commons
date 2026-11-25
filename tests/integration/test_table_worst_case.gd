@@ -3,11 +3,11 @@ extends GdUnitTestSuite
 ## every text piece holds the longest string of its family, measured in its own type, the
 ## trick a twenty-card play, the hand twenty cards and the Campaign tray three leaflets,
 ## with and without the tallest intel on both seats and with and without a Campaign
-## armed. The rules slip holds either the three debuffs that stand tallest in full, or the
-## most it can ever name: the longest names, every table-rule Reform, table-wide Cadres
-## on the board and two wild ranks. Every piece is wholly on screen and no two pieces
-## overlap. ClipCheck sees each control against its own box and so cannot see one piece
-## grow into another.
+## armed. The rules slip holds the worst boss (ADR 0043) and either the three debuffs
+## that stand tallest in full, or the most it can ever name: the longest names, every
+## table-rule Reform, table-wide Cadres on the board and two wild ranks. Every piece is
+## wholly on screen and no two pieces overlap. ClipCheck sees each control against its
+## own box and so cannot see one piece grow into another.
 ##
 ## Which form the slip takes and which steps the left column takes are asserted for every
 ## case, so a string that flips one is seen.
@@ -36,8 +36,8 @@ const EXPECTED: Dictionary[String, String] = {
 	"full|0|true|true": "NAMED heading:false notice:false intel:17/17 slip:20 room:226",
 	"full|1|false|false": "NAMED heading:true notice:true intel:20/20 slip:23 room:253",
 	"full|1|false|true": "NAMED heading:true notice:true intel:20/20 slip:23 room:253",
-	"full|1|true|false": "FITTED heading:false notice:false intel:20/17 slip:20 room:134",
-	"full|1|true|true": "FITTED heading:false notice:false intel:19/17 slip:20 room:134",
+	"full|1|true|false": "COUNTED heading:false notice:false intel:20/17 slip:23 room:134",
+	"full|1|true|true": "COUNTED heading:false notice:false intel:19/17 slip:23 room:134",
 	"full|2|false|false": "NAMED heading:false notice:false intel:22/22 slip:26 room:209",
 	"full|2|false|true": "NAMED heading:false notice:false intel:22/22 slip:26 room:209",
 	"full|2|true|false": "COUNTED heading:false notice:false intel:21/17 slip:20 room:90",

@@ -25,7 +25,8 @@ const STRIP_WIDTH: float = 428.0
 ## Campaign tray of the longest names, and either the three debuffs that make the strip
 ## tallest in full, or, with named, the most the strip can ever name: the three debuffs
 ## with the longest names, every Reform held, a full board of the longest-named Cadres,
-## and two wild ranks (set by fill). Cadres are never on the strip (ADR 0039).
+## and two wild ranks (set by fill); and either way the worst boss (BossWorstCase).
+## Cadres are never on the strip (ADR 0039).
 static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> TableScreen:
 	var loop: RunLoop = app.controller.get("_loop")
 	var state: RunState = loop.state
@@ -43,6 +44,8 @@ static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> T
 	else:
 		state.inventory.cadres.clear()
 		debuffs = await tallest_debuffs(app, suite)
+	# A boss Set's slip holds its boss too (ADR 0043).
+	await BossWorstCase.worst(app, suite, named)
 	state.debuff_ladder.assign(["", debuffs[0], debuffs[1], debuffs[2]])
 	state.round_index = 3
 	var table: TableScreen = app.show_screen("table", true)

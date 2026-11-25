@@ -775,6 +775,15 @@ func ladder() -> Array[String]:
 	return _loop.state.debuff_ladder.duplicate()
 
 
+## The cards the round's deal set aside face up (ADR 0043), named and joined, or "" when
+## it set none aside.
+func set_aside_names() -> String:
+	var names: PackedStringArray = []
+	for card: CardInstance in _loop.set_aside_cards():
+		names.append(card_name(card))
+	return ", ".join(names)
+
+
 ## The current Set's boss twist ID, or an empty string outside boss Sets (P4.7).
 func boss() -> String:
 	return _loop.state.boss_id
@@ -843,6 +852,8 @@ func _run_values(modifier_id: String) -> Dictionary[String, Variant]:
 			else _type_plural(type)
 		)
 	var effect: ModifierEffect = EffectRegistry.create(_definitions[modifier_id], RunLoop.PLAYER)
+	if effect is HandicapEffect:
+		values[HandicapEffect.CARDS] = HandicapEffect.count_at(effect.parameters, _loop.state.year)
 	if effect is LossMeterEffect:
 		var source: String = (effect as LossMeterEffect).source()
 		values["amount"] = RunLoop.DEFAULT_METERS.source(source).amount
