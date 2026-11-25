@@ -19,10 +19,11 @@ var missing: Array[String] = []
 
 
 ## The 90% Wilson score interval for survived runs out of runs, as lower and upper.
-static func wilson(survived: int, runs: int, z: float = Z_90) -> Vector2:
+static func wilson(survived: int, runs: int) -> Vector2:
 	if runs <= 0:
 		return Vector2(0.0, 1.0)
 	var share: float = float(survived) / runs
+	var z: float = Z_90
 	var z2: float = z * z
 	var denominator: float = 1.0 + z2 / runs
 	var centre: float = (share + z2 / (2.0 * runs)) / denominator
