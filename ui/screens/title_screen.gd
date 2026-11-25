@@ -3,7 +3,8 @@ extends Control
 ## The title: start a new run through run setup, continue a saved one, or open the
 ## collection, village history or settings, or, once the profile has finished or skipped
 ## the arrival, play it again (ADR 0026). While the family's file holds an entry, its
-## stamp stands in the top right corner (ADR 0022).
+## stamp stands in the top right corner (ADR 0022). After a session that did not close,
+## a notice over the page says where its files were copied (ADR 0037).
 ## The page arrives in order and is whole in about a second and a half: the poster is
 ## laid down, the eyebrow fades in, the name is pressed letter by letter (TitleWord, the
 ## page's one moment), then the line under it, the buttons that start a run, and last
@@ -81,6 +82,12 @@ func open(app: DemoApp) -> void:
 	if filed > 0:
 		_stamp = FileStamp.new(filed)
 		add_child(_stamp)
+	# The last session did not close (ADR 0037): said once, over the page.
+	if not app.kept_crash.is_empty():
+		var kept: SessionNotice = SessionNotice.kept(app.kept_crash)
+		add_child(kept)
+		kept.buttons()[0].pressed.connect(new_run.grab_focus)
+		app.kept_crash = ""
 
 
 ## The arrival again (ADR 0026). It is never saved and ends at the title, so a saved run

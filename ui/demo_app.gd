@@ -56,6 +56,9 @@ var post: PostProcess = PostProcess.new()
 var arrival: Arrival
 ## The state's notice when the books are corrected (ADR 0022), over every screen.
 var notice: BooksNotice = BooksNotice.new()
+## The folder the last session's files were copied to when it did not close (ADR 0037),
+## until the title has told the player; empty otherwise.
+var kept_crash: String = ""
 var _wipe: ColorRect = ColorRect.new()
 var _wipe_layer: CanvasLayer = CanvasLayer.new()
 var _menu: PauseMenu = PauseMenu.new()
@@ -64,12 +67,26 @@ var _menu: PauseMenu = PauseMenu.new()
 
 
 func _ready() -> void:
+	_apply_text_size()
+	# A launch of the game itself first asks whether another copy is open, or the last one
+	# stopped (ADR 0037); a tool or test that builds the app opens it at once.
+	if not LaunchGate.guards(self):
+		_open()
+		return
+	var gate: LaunchGate = LaunchGate.new()
+	gate.opened.connect(_open)
+	add_child(gate)
+
+
+## Opens the app. kept is the folder the last session's files were copied to when it did
+## not close, which the title tells the player of, or empty.
+func _open(kept: String = "") -> void:
+	kept_crash = kept
 	# Read before anything can write a profile save.
 	arrival = Arrival.new(self, not ProfileSeen.exists(Saves.profile_service()))
 	add_child(controller)
 	add_child(switcher)
 	add_child(post)
-	_apply_text_size()
 	Settings.changed.connect(_on_setting)
 	_wipe.color = CommonsTheme.STYLE.ink
 	_wipe.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -188,12 +205,18 @@ func new_run(seed_value: int, full: bool = false, household: String = "", stake:
 		request.household = household
 		request.stake = stake
 	KeptSeat.forget()
-	return controller.start(request, Saves.run_service(), Saves.profile_service())
+	if not controller.start(request, Saves.run_service(), Saves.profile_service()):
+		return false
+	GameLog.run_started("full" if full else "demo", seed_value)
+	return true
 
 
 ## Continues the saved run as the kind it was saved as.
 func continue_run() -> bool:
-	return controller.continue_saved(Saves.run_service(), Saves.profile_service())
+	if not controller.continue_saved(Saves.run_service(), Saves.profile_service()):
+		return false
+	GameLog.run_resumed(controller.state_copy().run_seed)
+	return true
 
 
 ## Leaves the run for good, for the title: abandoned from the menu, or finished on its
@@ -203,6 +226,9 @@ func leave_run() -> void:
 	KeptSeat.forget()
 	# The arrival is never saved: leaving it must not touch a real run's save.
 	if not arrival.is_running():
+		if controller.has_run():
+			var over: bool = controller.awaiting() == RunController.AWAIT_RUN_OVER
+			GameLog.run_ended(controller.state_copy().run_seed, "finished" if over else "abandoned")
 		# The run is let go before its save is cleared, so a villager still thinking
 		# cannot hand in a play afterwards and write the save back (P5.2a).
 		controller.drop()

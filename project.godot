@@ -24,6 +24,9 @@ _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [debug]
 
+file_logging/enable_file_logging=true
+file_logging/log_path="user://logs/commons.log"
+file_logging/max_log_files=10
 gdscript/warnings/untyped_declaration=2
 gdscript/warnings/unsafe_property_access=2
 gdscript/warnings/unsafe_method_access=2
