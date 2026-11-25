@@ -8,6 +8,5 @@ id = "enlarged_committee"
 cost = 10
 unlock_tier = 1
 parameters = Dictionary[String, int]({"cadres": 1})
-held_back = false
 name_key = "reform.enlarged_committee.name"
 text_key = "reform.enlarged_committee.text"

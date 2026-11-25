@@ -8,6 +8,5 @@ id = "grain_reserve"
 cost = 8
 unlock_tier = 1
 parameters = Dictionary[String, int]({"famine": 3})
-held_back = false
 name_key = "reform.grain_reserve.name"
 text_key = "reform.grain_reserve.text"

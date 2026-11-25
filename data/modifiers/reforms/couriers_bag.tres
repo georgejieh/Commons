@@ -8,6 +8,5 @@ id = "couriers_bag"
 cost = 6
 unlock_tier = 2
 parameters = Dictionary[String, int]({"campaigns": 1})
-held_back = false
 name_key = "reform.couriers_bag.name"
 text_key = "reform.couriers_bag.text"
