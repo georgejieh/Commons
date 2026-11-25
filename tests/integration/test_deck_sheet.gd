@@ -129,26 +129,24 @@ func test_the_sheet_keeps_the_focus_and_cancel_closes_it() -> void:
 	sheet.open_deck()
 	await await_idle_frame()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(sheet.board())
-	var right: InputEventAction = InputEventAction.new()
-	right.action = "ui_right"
-	right.pressed = true
 	var first: int = sheet.board().cursor_card()
-	Input.parse_input_event(right)
-	await await_idle_frame()
+	await _tap("ui_right")
 	assert_int(sheet.board().cursor_card()).is_not_equal(first)
-	var down: InputEventAction = InputEventAction.new()
-	down.action = "ui_down"
-	down.pressed = true
-	Input.parse_input_event(down)
-	await await_idle_frame()
+	await _tap("ui_down")
 	var owner: Control = get_viewport().gui_get_focus_owner()
 	assert_bool(owner == sheet.board() or sheet.is_ancestor_of(owner)).is_true()
-	var cancel: InputEventAction = InputEventAction.new()
-	cancel.action = "ui_cancel"
-	cancel.pressed = true
-	Input.parse_input_event(cancel)
-	await await_idle_frame()
+	await _tap("ui_cancel")
 	assert_bool(sheet.is_open()).is_false()
+
+
+## Presses and lets go of an action, so no later test finds it held.
+func _tap(action: String) -> void:
+	for pressed: bool in [true, false]:
+		var event: InputEventAction = InputEventAction.new()
+		event.action = action
+		event.pressed = pressed
+		Input.parse_input_event(event)
+		await await_idle_frame()
 
 
 func test_the_table_opens_it_from_its_menu_and_waits() -> void:
