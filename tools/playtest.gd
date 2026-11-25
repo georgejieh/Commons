@@ -98,6 +98,8 @@ var _file_store_shot: bool = false
 ## The deck sheet and the state store's desk photographed (tools/playtest_marks.gd).
 var _marks_store_shot: bool = false
 var _marks_table_shot: bool = false
+## True from the state store's exchange until the table has shown the deck sheet.
+var _deck_table_due: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
 ## True for the arrival's own short run (--tutorial).
@@ -308,6 +310,11 @@ func _play_turn(table: Node, controller: Node) -> void:
 	if _rounds_seen >= 2 and not _marks_table_shot:
 		_marks_table_shot = true
 		await _marks_table_frames()
+	if _deck_table_due:
+		_deck_table_due = false
+		var walk: Object = _marks_walk()
+		await walk.call("table_deck")
+		_took(walk)
 	if not _toured:
 		_toured = true
 		await _tour(table)
@@ -650,11 +657,31 @@ func _envelope_frames() -> void:
 	await _stage_9(overlay, "envelope_choices_stage_9")
 	var keep: Button = _first_keep(papers, overlay)
 	await _press(keep)
+	await _requisition_choice(screen)
 	await create_timer(0.25).timeout
 	await _snap("envelope_kept")
 	await create_timer(2.6).timeout
 	if bool(stall.call("is_busy")):
 		_fail("ENVELOPE STILL OPEN")
+
+
+## A Requisition's deck card asks for the card it replaces (ADR 0042): the first deck card
+## that may leave is clicked on the deck sheet, and the exchange confirmed.
+func _requisition_choice(screen: Node) -> void:
+	var sheet: Object = screen.get("_deck")
+	if not bool(sheet.call("is_open")):
+		return
+	await _shot("requisition_choose")
+	var board: Object = sheet.call("board")
+	for card_id: int in board.call("card_ids"):
+		var card: CardInstance = board.call("card_of", card_id)
+		if not bool(board.call("is_plot", card_id)) and card.base_rank() < Ranks.SMALL_JOKER:
+			var view: Control = board.call("view_of", card_id)
+			await _mouse_click(view.get_global_transform_with_canvas() * Vector2(14.0, 84.0))
+			break
+	await _press(sheet.call("confirm_button"))
+	if bool(sheet.call("is_open")):
+		_fail("REQUISITION DID NOT EXCHANGE")
 
 
 ## The black market's Parcel, once a run, in a sandbox put back after: its offer with
@@ -878,6 +905,7 @@ func _marks_store_frames() -> void:
 	_marks_store_shot = true
 	var walk: Object = _marks_walk()
 	await walk.call("store")
+	_deck_table_due = bool(walk.get("exchanged"))
 	_took(walk)
 
 
