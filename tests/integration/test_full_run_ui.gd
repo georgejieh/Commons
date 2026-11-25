@@ -153,7 +153,7 @@ func test_the_endings_way_home_clears_the_run_save() -> void:
 ## one line, and the dossier shows its seat no more.
 func test_the_summary_names_the_family_that_starved() -> void:
 	_app.new_run(SEED, true)
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.famine = RunLoop.DEFAULT_METERS.famine.high
 	_app.controller.reseal_book()
 	# A Quota met at its first round, so no missed Quota moves Famine before its end.
@@ -187,7 +187,7 @@ func test_the_summary_names_the_family_that_starved() -> void:
 ## seat after all.
 func _seatless_summary(seatless: int) -> SetSummaryScreen:
 	_app.new_run(SEED, true)
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.seatless_sets = seatless
 	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
 	params.targets = params.targets.duplicate()

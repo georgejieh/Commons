@@ -122,7 +122,7 @@ func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
 
 func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> void:
 	# Coupons enough for the market's prices, handed out behind the controller.
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 100
 	_app.controller.reseal_book()
 	var market: StoreScreen = _app.show_screen("black_market")
@@ -151,7 +151,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 
 
 func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 100
 	_app.controller.reseal_book()
 	var store: StoreScreen = _app.show_screen("store")

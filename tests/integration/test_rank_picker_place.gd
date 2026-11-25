@@ -38,7 +38,7 @@ func after_test() -> void:
 func test_the_picker_stands_beside_its_card_with_even_padding() -> void:
 	# Measured at rest: the strip's entrance scales it in.
 	Settings.set_value("reduced_motion", true)
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in SIZES:

@@ -82,6 +82,7 @@ const FORBIDDEN_WORDS: PackedStringArray = [
 	"set_enhancement",
 	"set_seal",
 	"set_owner_stamp",
+	"run_loop",
 ]
 const EXTENSIONS: PackedStringArray = ["gd", "tscn"]
 

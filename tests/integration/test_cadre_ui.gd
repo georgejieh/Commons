@@ -27,7 +27,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## Opens the black market with Rehabilitation on its first slot. The stock is set behind

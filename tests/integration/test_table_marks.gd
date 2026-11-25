@@ -101,7 +101,7 @@ func test_the_brigade_notice_is_worn_paper_with_its_words_inside_the_border() ->
 
 func test_each_rule_name_is_closed_before_its_text() -> void:
 	var debuff: String = DebuffScript.POOL.debuffs[0].id
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", debuff, "", ""])
 	loop.state.round_index = 1
 	var name: String = _app.controller.modifier_name(debuff)

@@ -308,7 +308,7 @@ func test_the_dossier_holds_the_longest_full_names() -> void:
 		get_tree().root.size = size
 		await _launch()
 		assert_bool(_app.new_run(97, true)).is_true()
-		var loop: RunLoop = _app.controller.get("_loop")
+		var loop: RunLoop = _app.controller.run_loop()
 		var given: Array[String] = [_longest_given(), BOOK.pools[2].names[30]]
 		for seat: int in [1, 2]:
 			loop.state.names.given[loop.state.table[seat]] = given[seat - 1]

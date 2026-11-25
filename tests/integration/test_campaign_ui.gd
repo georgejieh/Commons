@@ -37,12 +37,12 @@ func after_test() -> void:
 
 ## Tests hand the player Campaigns directly; a run only gets them from a shop.
 func _hold(held: Array[String]) -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.inventory.consumables.assign(held)
 
 
 func _record_size() -> int:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	return loop.record.commands.size()
 
 
@@ -277,7 +277,7 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
 	_app.controller.reseal_book()
 	for screen_id: String in ["store", "black_market"]:

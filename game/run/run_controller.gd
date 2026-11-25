@@ -962,6 +962,13 @@ func state_copy() -> RunState:
 	return RunState.from_dict(_loop.state.to_dict())
 
 
+## The run's loop itself, for tests and development tools that set up or read what no
+## command reaches. The UI may not call it: it reaches a run only through commands and
+## queries, and the UI boundary check holds it to that.
+func run_loop() -> RunLoop:
+	return _loop
+
+
 func _attach(loop: RunLoop, saves: SaveService) -> void:
 	# A search still running for the loop this one replaces is thrown away when it ends.
 	_searches.let_go()

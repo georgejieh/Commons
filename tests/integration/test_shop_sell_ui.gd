@@ -28,7 +28,7 @@ func before_test() -> void:
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
 	_app.controller.reseal_book()
 	Settings.set_value("reduced_motion", true)
@@ -42,7 +42,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## Holds count Cadres the counters do not offer, and one Campaign.

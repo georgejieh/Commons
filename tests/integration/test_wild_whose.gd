@@ -31,7 +31,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## A new run with the player holding Model Worker, played to the player's first lead.

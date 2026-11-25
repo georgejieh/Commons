@@ -119,8 +119,8 @@ func play(seed_value: int) -> BalanceResult:
 
 
 func _finish() -> void:
-	# The controller keeps the loop's bot count to itself; the tests read it the same way.
-	var loop: RunLoop = WalkBase.member(_controller, "_loop")
+	# The loop's count of refused bot actions, reached as the tests reach it.
+	var loop: RunLoop = _controller.run_loop()
 	var refused: int = loop.refused_bot_actions
 	if refused > 0:
 		_fail("%d bot actions refused" % refused)

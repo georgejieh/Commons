@@ -31,7 +31,7 @@ func _zhao_answers(profile: SaveService) -> int:
 	for seed_value: int in SEEDS:
 		var controller: RunController = auto_free(RunController.new())
 		controller.start_run(seed_value, _configs(), SetConfig.new(), null, 0, profile)
-		var loop: RunLoop = controller.get("_loop")
+		var loop: RunLoop = controller.run_loop()
 		loop.state.table.assign(["player", ZHAO, "li"])
 		var script: RunScript = RunScript.new()
 		script.play_until_set_over(loop)

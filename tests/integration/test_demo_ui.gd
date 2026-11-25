@@ -228,7 +228,7 @@ func test_the_ledger_counts_each_play_once() -> void:
 
 
 func test_a_stocked_plot_opens_the_swap_sheet_over_the_table() -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.inventory.plot.append(
 		CardInstance.new(CardInstance.FIRST_PLOT_ID, 12, 0, CardInstance.Origin.PLOT)
 	)

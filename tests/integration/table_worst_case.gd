@@ -28,7 +28,7 @@ const STRIP_WIDTH: float = 428.0
 ## and two wild ranks (set by fill); and either way the worst boss (BossWorstCase).
 ## Cadres are never on the strip (ADR 0039).
 static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> TableScreen:
-	var loop: RunLoop = app.controller.get("_loop")
+	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
 	if not state.reforms.has(TRAY_REFORM):
 		state.reforms.append(TRAY_REFORM)
@@ -287,7 +287,7 @@ static func speech_lines() -> Array[String]:
 ## The three debuffs that stand tallest on the strip, each measured on a strip of the
 ## table's width at the text size now.
 static func tallest_debuffs(app: DemoApp, suite: GdUnitTestSuite) -> Array[String]:
-	var loop: RunLoop = app.controller.get("_loop")
+	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
 	var strip: DebuffStrip = DebuffStrip.new()
 	app.add_child(strip)

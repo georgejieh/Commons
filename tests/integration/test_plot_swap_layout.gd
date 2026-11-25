@@ -32,7 +32,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## The most plot cards and swaps a run can hold, from the data and its upgrades.

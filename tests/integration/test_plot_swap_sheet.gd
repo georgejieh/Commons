@@ -28,7 +28,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## Stocks the plot, a Model card and a stamped one among it, and plays the table up to the

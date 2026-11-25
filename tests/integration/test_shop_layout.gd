@@ -46,7 +46,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## Hands the run the most it can hold, behind the controller, as only tests do.

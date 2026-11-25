@@ -220,7 +220,7 @@ func test_a_save_keeps_the_pools_it_started_with() -> void:
 	Profile.write(_profile, data)
 	var resumed: RunController = auto_free(RunController.new())
 	assert_bool(resumed.continue_saved(_saves, _profile)).is_true()
-	var loop: RunLoop = resumed.get("_loop")
+	var loop: RunLoop = resumed.run_loop()
 	assert_int(loop.state.identity.finished_runs).is_equal(1)
 	var open: int = (
 		RunPools

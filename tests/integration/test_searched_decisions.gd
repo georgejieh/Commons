@@ -308,10 +308,10 @@ func test_a_searching_seat_decides_with_the_weights_handed_in() -> void:
 func test_the_live_game_searches_and_the_harness_does_not() -> void:
 	var live: RunController = auto_free(RunController.new())
 	live.start_run(SEED, RunScript.bots(), SetConfig.new())
-	var live_loop: RunLoop = live.get("_loop")
+	var live_loop: RunLoop = live.run_loop()
 	assert_bool(live_loop.decisions.searcher.is_valid()).is_true()
 	var driver: BalanceDriver = BalanceDriver.new(BalanceDriver.strategy_named("collective"))
 	var harness: RunController = auto_free(driver.new_controller())
 	harness.start_run(SEED, RunScript.bots(), SetConfig.new())
-	var harness_loop: RunLoop = harness.get("_loop")
+	var harness_loop: RunLoop = harness.run_loop()
 	assert_bool(harness_loop.decisions.searcher.is_valid()).is_false()

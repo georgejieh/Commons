@@ -48,7 +48,7 @@ static func full(seed_value: int = SEED) -> RunRequest:
 
 
 static func loop_of(run: RunController) -> RunLoop:
-	return run.get("_loop")
+	return run.run_loop()
 
 
 ## One command of whatever the run waits on, honestly. False at the run's end, or when

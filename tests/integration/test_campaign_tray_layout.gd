@@ -30,7 +30,7 @@ func after_test() -> void:
 
 
 func _hold(held: Array[String]) -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.inventory.consumables.assign(held)
 
 
@@ -61,7 +61,7 @@ func _check_tray_clear(table: TableScreen) -> void:
 
 ## With Courier's Bag the tray holds three, and armed, its buttons stay clear too.
 func test_three_held_leaflets_and_their_buttons_stay_clear() -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.reforms.append("couriers_bag")
 	_hold(["model_harvest", "anonymous_letter", "grain_loan"])
 	assert_bool(_drive_to(RunController.AWAIT_PLAY)).is_true()

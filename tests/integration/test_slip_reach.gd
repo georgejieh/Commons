@@ -126,7 +126,7 @@ func test_slips_at_the_table_stand_beside_their_thing() -> void:
 	var app: DemoApp = auto_free(scene.instantiate())
 	add_child(app)
 	app.new_run(4242)
-	var loop: RunLoop = app.controller.get("_loop")
+	var loop: RunLoop = app.controller.run_loop()
 	if loop.state.inventory.cadres.is_empty():
 		loop.state.inventory.cadres.append("canteen")
 	Settings.set_value("reduced_motion", true)

@@ -14,8 +14,10 @@ func test_ui_has_no_core_mutator_references() -> void:
 	assert_array(UiBoundaryCheck.scan("res://ui")).is_empty()
 
 
+## The bad fixtures each break the boundary once: one calls a loop command, one takes the
+## loop through the controller's way in for tests and tools.
 func test_checker_flags_a_mutator_and_ignores_comments() -> void:
-	assert_array(UiBoundaryCheck.scan(FIXTURES + "bad")).has_size(1)
+	assert_array(UiBoundaryCheck.scan(FIXTURES + "bad")).has_size(2)
 	assert_array(UiBoundaryCheck.scan(FIXTURES + "good")).is_empty()
 	assert_array(UiBoundaryCheck.scan(FIXTURES + "missing")).has_size(1)
 
@@ -58,7 +60,7 @@ func test_each_leave_command_is_refused_outside_its_own_phase() -> void:
 	assert_int(controller.awaiting()).is_equal(RunController.AWAIT_STORE)
 	assert_int(controller.leave_reeducation()).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_int(controller.leave_store()).is_equal(RunLoop.Reason.OK)
-	var loop: RunLoop = controller.get("_loop")
+	var loop: RunLoop = controller.run_loop()
 	while script.act(controller):
 		pass
 	loop.state.reeducation_due = true

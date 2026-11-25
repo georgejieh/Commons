@@ -30,7 +30,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _controller.get("_loop")
+	return _controller.run_loop()
 
 
 ## Reports the screen the run now shows, as a settled screen would.

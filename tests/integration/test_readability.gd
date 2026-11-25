@@ -54,7 +54,7 @@ func _open(screen_id: String) -> StoreScreen:
 
 func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 	_to_store()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	var offered: Array[String] = ["rehabilitation", "hidden_reserves", "last_sheaf"]
 	loop.market.set("_stock", offered)
 	for screen_id: String in ["store", "black_market"]:
@@ -124,7 +124,7 @@ func test_campaign_leaflets_keep_their_names_readable_and_strong() -> void:
 func test_the_reforms_strip_and_board_names_fit_without_clipping() -> void:
 	assert_int(ReformStrip.NAME_SIZE).is_greater_equal(READABLE)
 	_to_store()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.reforms.assign(["supply_cooperative", "work_point_reform", "couriers_bag"])
 	var store: StoreScreen = await _open("store")
 	var stall: ReformStall = store.get("_reform_stall")

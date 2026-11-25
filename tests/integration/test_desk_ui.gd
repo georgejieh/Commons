@@ -23,7 +23,7 @@ func before_test() -> void:
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 50
 	_app.controller.reseal_book()
 
@@ -33,7 +33,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 func test_the_store_desk_marks_the_chosen_card() -> void:

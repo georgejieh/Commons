@@ -98,7 +98,7 @@ func test_the_dossier_tells_the_shift_once_it_was_seen() -> void:
 	_app = auto_free(scene.instantiate())
 	add_child(_app)
 	_app.new_run(SEED, true)
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.table[1] = "qin"
 	loop.state.observations.add("qin", Observations.Kind.PASSES)
 	var at: int = RunLoop.DEFAULT_METERS.famine.high

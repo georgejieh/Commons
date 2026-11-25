@@ -56,7 +56,7 @@ func _send(command: String, reason: int) -> void:
 
 
 func _finish() -> void:
-	var loop: RunLoop = WalkBase.member(_controller, "_loop")
+	var loop: RunLoop = _controller.run_loop()
 	faults.bot_actions += _refused_before + loop.refused_bot_actions
 	if _refused_before > 0:
 		_fail("%d bot actions refused before the last resume" % _refused_before)
@@ -77,7 +77,7 @@ func _resume() -> void:
 	if resumed.state_copy().to_dict() != before or resumed.awaiting() != awaited:
 		faults.mismatches += 1
 		_fail("the run resumed at Year %d is not the run saved" % _year())
-	var loop: RunLoop = WalkBase.member(_controller, "_loop")
+	var loop: RunLoop = _controller.run_loop()
 	_refused_before += loop.refused_bot_actions
 	_controller.event_emitted.disconnect(_on_event)
 	_controller.free()

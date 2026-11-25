@@ -39,7 +39,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 func _open(screen_id: String = "store") -> StoreScreen:

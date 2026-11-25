@@ -29,7 +29,7 @@ func after_test() -> void:
 
 func test_the_open_sheet_matches_the_run_at_every_event() -> void:
 	# Put in force from round 2 by hand, in a Quota no one meets, so every round plays.
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", RANK_DEBUFF, "", ""])
 	loop.set("_sets", DebuffScript.hard_sets())
 	assert_array(_app.controller.ladder()).contains([RANK_DEBUFF])

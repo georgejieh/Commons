@@ -185,7 +185,7 @@ func _steps(table: TableScreen) -> String:
 ## it stood at 9cc9ecf: the tray under the seat with its heading, the notice up, the
 ## trick, the column and the hand in their places, and no slip.
 func test_a_table_with_no_rule_stands_as_before_at_standard() -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.inventory.consumables.assign(["mutual_aid"])
 	for screen: Vector2i in SCREENS_AT:
 		get_tree().root.size = screen

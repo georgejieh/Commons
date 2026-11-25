@@ -159,7 +159,7 @@ static func _figures(controller: RunController) -> Array[float]:
 
 
 static func _loop_of(controller: RunController) -> RunLoop:
-	return controller.get("_loop")
+	return controller.run_loop()
 
 
 func _out_of_time(began: int) -> bool:

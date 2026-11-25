@@ -68,7 +68,7 @@ func _act(controller: RunController, script: ControllerScript) -> bool:
 
 
 func _loop(controller: RunController) -> RunLoop:
-	return controller.get("_loop")
+	return controller.run_loop()
 
 
 func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:

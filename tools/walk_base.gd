@@ -99,7 +99,7 @@ func _controller() -> Object:
 
 ## The run's loop, which only a development tool reaches into.
 func _loop() -> RunLoop:
-	return member(_controller(), "_loop")
+	return _controller().call("run_loop")
 
 
 func _current() -> Node:
