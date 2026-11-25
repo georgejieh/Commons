@@ -105,7 +105,6 @@ Each hook takes one typed context:
 | `play_scored` | `PlayContext` | seat, is_landlord, landlord, pattern, cards_left, seat_plays, seat_grain, add_grain, add_zeal, mul_zeal, rate_percent, rate_cap, total_scale, year, body_cards, stamps_resented |
 | `card_scored` | `CardContext` | seat, is_landlord, card, own_grain, grain, printed_grain |
 | `turn_taken` | `TurnContext` | seat, landlord, pattern (null for a pass), cards_left, player, resentment, coupons |
-| `trick_won` | `TrickContext` | winner, landlord |
 | `round_end` | `RoundContext` | landlord, winner, finish, commons_scale, bank_voided, tax_percent, meter_sources, landlord_cards, famine_fall |
 | `set_end` | `SetContext` | set_index, target_met, coupons, add_coupons, over_steps, add_resentment |
 | `shop_open` | `ShopContext` | seat, cadre_cut, free_market_rerolls |

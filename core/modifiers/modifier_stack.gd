@@ -95,11 +95,6 @@ func run_card_scored(context: CardContext, trail: ScoreTrail = null) -> void:
 			trail.card_hook(entry.definition, context, before)
 
 
-func run_trick_won(context: TrickContext) -> void:
-	for entry: ActiveModifier in _by_hook[Hooks.TRICK_WON]:
-		entry.effect.trick_won(context)
-
-
 func run_round_end(context: RoundContext) -> void:
 	for entry: ActiveModifier in _by_hook[Hooks.ROUND_END]:
 		entry.effect.round_end(context)

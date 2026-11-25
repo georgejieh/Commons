@@ -39,9 +39,6 @@ class Recorder:
 	func card_scored(_context: CardContext) -> void:
 		log.append(label)
 
-	func trick_won(_context: TrickContext) -> void:
-		log.append(label)
-
 	func round_end(_context: RoundContext) -> void:
 		log.append(label)
 
@@ -257,7 +254,7 @@ func test_the_validator_catches_each_kind_of_bad_definition() -> void:
 
 
 func test_the_hook_list_is_complete_and_each_hook_is_a_method() -> void:
-	assert_int(Hooks.ALL.size()).is_equal(14)
+	assert_int(Hooks.ALL.size()).is_equal(13)
 	var effect: ModifierEffect = ModifierEffect.new()
 	for hook: String in Hooks.ALL:
 		assert_bool(effect.has_method(hook)).is_true()
@@ -279,7 +276,6 @@ func _run_every_hook(stack: ModifierStack) -> void:
 	stack.run_round_start(RoundContext.new(0, Seats.NONE, finish))
 	stack.run_play_scored(PlayContext.new(0, false, pass_play, 0.0, 0.0, 1.0))
 	stack.run_card_scored(CardContext.new(0, false, card, 0.0))
-	stack.run_trick_won(TrickContext.new(0, 0))
 	stack.run_round_end(RoundContext.new(0, 0, finish))
 	stack.run_set_end(SetContext.new(0, true))
 	stack.run_shop_open(ShopContext.new(0))
@@ -327,7 +323,7 @@ func test_disabled_modifiers_do_not_run() -> void:
 func test_a_modifier_runs_only_on_the_hooks_it_lists() -> void:
 	var stack: ModifierStack = ModifierStack.new()
 	var log: Array[String] = []
-	var listed: Array[String] = [Hooks.TRICK_WON]
+	var listed: Array[String] = [Hooks.SET_END]
 	stack.add_entry(
 		ActiveModifier.new(_def(ModifierDef.Kind.CADRE, listed), Recorder.new("x", log))
 	)

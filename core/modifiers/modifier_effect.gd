@@ -57,10 +57,6 @@ func card_scored(_context: CardContext) -> void:
 	pass
 
 
-func trick_won(_context: TrickContext) -> void:
-	pass
-
-
 func round_end(_context: RoundContext) -> void:
 	pass
 
