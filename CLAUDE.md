@@ -86,7 +86,7 @@ Plays the demo through its real UI on a GitHub runner with a virtual display, so
 godot --headless --path . --script res://tools/playtest.gd -- --tutorial --out reports/tutorial
 ```
 
-Plays the arrival (the first-launch tutorial) from no profile to run setup with real clicks, and prints MISCLICK on a step that does not advance. Headless it names its frames without saving them. Its profile lives in `user://playtest_tutorial/`. The cloud playtest runs it after the play-through.
+Plays the arrival (the first-launch tutorial) from no profile to run setup with real clicks, and prints MISCLICK on a step that does not advance. Headless it names its frames without saving them. Its profile lives in `user://playtest_tutorial/`. Two walks at once overwrite each other's save unless each is given `--profile NAME`, which moves its saves to a folder of its own (`user://playtest_NAME/`); this holds for the play-through too. The cloud playtest runs it after the play-through.
 
 ```bash
 godot --headless --path . --script res://tools/playtest.gd -- --demo --rounds 6 --grayscale --reduced-motion --text-size 2 --out reports/playtest_access

@@ -39,7 +39,8 @@ const WAIT_SECONDS: float = 20.0
 const CORRUPTION_VALUES: Array[int] = [5, 35, 65, 95]
 ## How many rounds the Night Shift sandbox's Quota may run, so its refusal comes.
 const NIGHT_SHIFT_ROUNDS: int = 12
-const SAVE_PATH: String = "user://playtest/run.json"
+const SAVE_FILE: String = "run.json"
+const PROFILES: String = "res://tools/walk_profile.gd"
 ## Corruption stages the dice bowl is photographed at, settled on a 1 and a 4.
 const BOWL_STAGES: Array[int] = [0, 3, 6, 9]
 ## Each ending and death the playtest finishes a run on (ADR 0024): Famine, Denunciation,
@@ -128,7 +129,8 @@ func _run() -> void:
 		return
 	# Loaded at run time: the demo names autoloads, which a --script tool can't see.
 	var saves: Node = root.get_node("Saves")
-	saves.call("use_run_path", SAVE_PATH)
+	var profiles: GDScript = load(PROFILES)
+	saves.call("use_run_path", str(profiles.call("folder", "playtest", _args)) + SAVE_FILE)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = scene.instantiate()
 	# The demo flow, as --demo on the command line gives it, whether or not it was passed.
@@ -188,7 +190,9 @@ func _run() -> void:
 func _tutorial_run() -> void:
 	var script: GDScript = load("res://tools/tutorial_walk.gd")
 	var walk: Object = script.new()
-	await walk.call("run", self, _out, _headless)
+	var profiles: GDScript = load(PROFILES)
+	var folder: String = profiles.call("folder", "playtest_tutorial", _args)
+	await walk.call("run", self, _out, _headless, folder)
 	var counts: Array = [walk.get("shots"), walk.get("clicks"), walk.get("misclicks")]
 	print("tutorial shots=%d clicks=%d misclicks=%d" % counts)
 	print("layout findings=%d" % _layout_found)

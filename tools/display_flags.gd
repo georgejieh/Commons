@@ -15,7 +15,8 @@ const REDUCED_MOTION: String = "--reduced-motion"
 const TEXT_SIZE: String = "--text-size"
 ## Above PostProcess.LAYER and every layer the game makes.
 const LAYER: int = 128
-const SAVE_PATH: String = "user://playtest/tool_settings.cfg"
+const SAVE_FILE: String = "tool_settings.cfg"
+const PROFILES: String = "res://tools/walk_profile.gd"
 const SHADER: String = """
 shader_type canvas_item;
 uniform sampler2D screen: hint_screen_texture, filter_linear;
@@ -45,8 +46,10 @@ static func apply(root: Window, args: PackedStringArray) -> String:
 	if not any(args):
 		return "display flags: none"
 	var settings: Node = root.get_node("Settings")
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SAVE_PATH.get_base_dir()))
-	settings.call("save_to", SAVE_PATH)
+	var profiles: GDScript = load(PROFILES)
+	var folder: String = profiles.call("folder", "playtest", args)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(folder))
+	settings.call("save_to", folder + SAVE_FILE)
 	var reduced: bool = args.has(REDUCED_MOTION)
 	if reduced:
 		settings.call("set_value", "reduced_motion", true)

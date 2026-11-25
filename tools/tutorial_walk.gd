@@ -8,7 +8,7 @@ extends RefCounted
 ## so it reaches every UI node as Object, Node or Control, never by a ui/ class name.
 ## Development only; tools/ never ships.
 
-const SAVE_PATH: String = "user://playtest_tutorial/run.json"
+const SAVE_FILE: String = "run.json"
 const SETTLE_SECONDS: float = 1.2
 ## The longest a step may take to come, or to be taken, in real seconds.
 const WAIT_SECONDS: float = 30.0
@@ -37,13 +37,13 @@ var _surname: String = ""
 
 
 ## Plays the arrival through and returns when it has reached run setup or failed.
-func run(tree: SceneTree, out: String, headless: bool) -> void:
+func run(tree: SceneTree, out: String, headless: bool, folder: String) -> void:
 	_tree = tree
 	_root = tree.root
 	_out = out
 	_headless = headless
 	var saves: Node = _root.get_node("Saves")
-	saves.call("use_run_path", SAVE_PATH)
+	saves.call("use_run_path", folder + SAVE_FILE)
 	for service: Object in [saves.call("run_service"), saves.call("profile_service")]:
 		service.call("delete")
 	_app = (load("res://ui/main.tscn") as PackedScene).instantiate()
