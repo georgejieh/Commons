@@ -36,7 +36,7 @@ func test_only_private_cadres_count() -> void:
 func test_only_the_players_own_stamps_count() -> void:
 	var cards: Array[CardInstance] = []
 	for deck_id: int in 4:
-		cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append(Deck.new().card(deck_id))
 	CardModifiers.stamp(cards[0], 0)
 	CardModifiers.stamp(cards[1], 0)
 	CardModifiers.stamp(cards[2], 1)

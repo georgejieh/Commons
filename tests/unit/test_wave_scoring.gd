@@ -31,10 +31,10 @@ func _stack(ids: Array[String], memo: CadreMemo = null) -> ModifierStack:
 
 func _card(rank: int, suit: int) -> CardInstance:
 	if rank == Ranks.SMALL_JOKER:
-		return CardInstance.from_deck_id(Deck.SMALL_JOKER_ID)
+		return Deck.new().card(Deck.SMALL_JOKER_ID)
 	if rank == Ranks.BIG_JOKER:
-		return CardInstance.from_deck_id(Deck.BIG_JOKER_ID)
-	return CardInstance.from_deck_id(rank * Deck.SUITS + suit)
+		return Deck.new().card(Deck.BIG_JOKER_ID)
+	return Deck.new().card(rank * Deck.SUITS + suit)
 
 
 func _cards(ranks: Array[int]) -> Array[CardInstance]:
@@ -99,7 +99,7 @@ func test_iron_and_coal_adds_to_the_holders_sides_spades_and_clubs_not_jokers() 
 		assert_float(_score_at(stack, [_card(Ranks.SEVEN, DIAMOND)], at).grain).is_equal(7.0)
 	for at: Vector2i in UNPAID:
 		assert_float(_score_at(stack, [_card(Ranks.SEVEN, SPADE)], at).grain).is_equal(7.0)
-	var joker: Array[CardInstance] = [CardInstance.from_deck_id(Deck.SMALL_JOKER_ID)]
+	var joker: Array[CardInstance] = [Deck.new().card(Deck.SMALL_JOKER_ID)]
 	assert_float(_score(stack, joker).grain).is_equal(16.0)
 
 

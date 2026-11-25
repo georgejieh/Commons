@@ -17,9 +17,9 @@ const DECK_SIZE: int = 54
 func _marked_state(seed_value: int = SEED) -> RunState:
 	var state: RunState = RunState.new(seed_value)
 	for deck_id: int in STAMPED:
-		CardMarks.stamp(state, CardInstance.from_deck_id(deck_id), RunLoop.PLAYER)
+		CardMarks.stamp(state, Deck.new().card(deck_id), RunLoop.PLAYER)
 	for deck_id: int in MODELS:
-		CardMarks.enhance(state, CardInstance.from_deck_id(deck_id), CardInstance.MODEL)
+		CardMarks.enhance(state, Deck.new().card(deck_id), CardInstance.MODEL)
 	return state
 
 
@@ -174,8 +174,8 @@ func test_a_plot_card_saves_its_own_marks() -> void:
 func test_a_swap_keeps_marks_both_ways() -> void:
 	var state: RunState = RunState.new(SEED)
 	for deck_id: int in DECK_SIZE:
-		CardMarks.stamp(state, CardInstance.from_deck_id(deck_id), RunLoop.PLAYER)
-		CardMarks.enhance(state, CardInstance.from_deck_id(deck_id), CardInstance.MODEL)
+		CardMarks.stamp(state, Deck.new().card(deck_id), RunLoop.PLAYER)
+		CardMarks.enhance(state, Deck.new().card(deck_id), CardInstance.MODEL)
 	var plot_card: CardInstance = CardInstance.new(
 		state.take_plot_id(), Ranks.NINE, 1, CardInstance.Origin.PLOT
 	)
@@ -224,7 +224,7 @@ func test_a_swap_keeps_marks_both_ways() -> void:
 func _single(deck_id: int) -> Pattern:
 	var counts: PackedByteArray = PackedByteArray()
 	counts.resize(Ranks.COUNT)
-	counts[Deck.rank_of(deck_id)] = 1
+	counts[Deck.new().rank_of(deck_id)] = 1
 	var rules: RuleSet = RuleSet.default_rules()
 	return Classifier.classify(counts, rules, Ranks.identity_map()).pattern
 
@@ -234,8 +234,8 @@ func test_a_model_card_doubles_its_grain_for_whoever_scores_it() -> void:
 	var params: ScoreParams = Scorer.DEFAULT_PARAMS
 	assert_int(params.model_grain_percent).is_equal(200)
 	var pattern: Pattern = _single(20)
-	var plain: Array[CardInstance] = [CardInstance.from_deck_id(20)]
-	var model: Array[CardInstance] = [CardInstance.from_deck_id(20)]
+	var plain: Array[CardInstance] = [Deck.new().card(20)]
+	var model: Array[CardInstance] = [Deck.new().card(20)]
 	CardModifiers.enhance(model[0], CardInstance.MODEL)
 	var base: float = Scorer.score_play(plain, pattern, 1, 0, false, stack).grain
 	for seat: int in Seats.COUNT:
@@ -248,7 +248,7 @@ func test_a_model_card_doubles_its_grain_for_whoever_scores_it() -> void:
 func test_a_model_card_dealt_to_an_opponent_doubles_for_them() -> void:
 	var state: RunState = RunState.new(SEED)
 	for deck_id: int in DECK_SIZE:
-		CardMarks.enhance(state, CardInstance.from_deck_id(deck_id), CardInstance.MODEL)
+		CardMarks.enhance(state, Deck.new().card(deck_id), CardInstance.MODEL)
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	var script: RunScript = RunScript.new()
 	loop.start_set()
@@ -290,8 +290,8 @@ func test_a_model_kicker_still_scores_nothing() -> void:
 ## stamped card scores its Grain for the player and is plain for anyone else.
 func test_red_ink_reads_a_saved_stamp_only_for_its_owner() -> void:
 	var state: RunState = RunState.new(SEED)
-	CardMarks.stamp(state, CardInstance.from_deck_id(20), RunLoop.PLAYER)
-	var dealt: Array[CardInstance] = [CardInstance.from_deck_id(20)]
+	CardMarks.stamp(state, Deck.new().card(20), RunLoop.PLAYER)
+	var dealt: Array[CardInstance] = [Deck.new().card(20)]
 	state.card_marks.apply(dealt)
 	assert_int(dealt[0].owner_stamp()).is_equal(RunLoop.PLAYER)
 	var stack: ModifierStack = ModifierStack.new()
@@ -309,7 +309,7 @@ func test_red_ink_reads_a_saved_stamp_only_for_its_owner() -> void:
 func test_scoring_saved_stamps_breeds_resentment() -> void:
 	var state: RunState = RunState.new(SEED)
 	for deck_id: int in DECK_SIZE:
-		CardMarks.stamp(state, CardInstance.from_deck_id(deck_id), RunLoop.PLAYER)
+		CardMarks.stamp(state, Deck.new().card(deck_id), RunLoop.PLAYER)
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	loop.start_set()
 	RunScript.new().play_until_set_over(loop)

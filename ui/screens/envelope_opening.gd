@@ -3,8 +3,8 @@ extends RefCounted
 ## The envelope's opening act (ADR 0021): it comes from its offer to the middle, opens in
 ## one beat, and its papers slide out into their row. An envelope is opened many times a
 ## run and the papers are what the player came for, so a click or an accept ends the act
-## at once; EnvelopeOverlay then lays everything out at rest. Its times are the
-## overlay's.
+## at once; EnvelopeOverlay then lays everything out at rest. The papers not kept fall
+## away at the end (fall()). Its times are the overlay's.
 
 ## The envelope stands this far above the middle, over the row its papers will take.
 const RAISED: Vector2 = Vector2(0, -40)
@@ -21,6 +21,22 @@ static func ends(event: InputEvent) -> bool:
 	if click != null:
 		return click.pressed and click.button_index == MOUSE_BUTTON_LEFT
 	return event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_cancel")
+
+
+## The papers fall away one after another, each turning, and fade.
+static func fall(falling: Array[ChoicePaper]) -> void:
+	Audio.fill(AudioEvents.MOTION_FLY)
+	for index: int in falling.size():
+		var paper: ChoicePaper = falling[index]
+		paper.keep.disabled = true
+		var tween: Tween = paper.create_tween().set_parallel(true)
+		tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		var delay: float = index * EnvelopeOverlay.FAN_STAGGER
+		var turn: float = EnvelopeOverlay.FALL_TURN * (1.0 if index % 2 == 0 else -1.0)
+		var time: float = EnvelopeOverlay.FALL_TIME
+		tween.tween_property(paper, "position:y", EnvelopeOverlay.FALL, time).set_delay(delay)
+		tween.tween_property(paper, "rotation", turn, time).set_delay(delay)
+		tween.tween_property(paper, "modulate:a", 0.0, time).set_delay(delay)
 
 
 ## Plays the act over overlay, from where the offer stood, then calls done.

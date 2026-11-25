@@ -331,7 +331,7 @@ func test_seizure_notice_takes_the_opponents_highest_for_your_lowest() -> void:
 	for card: CardInstance in loop.player_cards():
 		if card.id() != taken:
 			assert_int(rank_map[card.base_rank()]).is_greater_equal(
-				rank_map[Deck.rank_of(given)] if given < Deck.SIZE else 0
+				rank_map[Deck.new().rank_of(given)] if given < Deck.SIZE else 0
 			)
 
 

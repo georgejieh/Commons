@@ -109,20 +109,20 @@ func can_buy_directive(slot: int) -> bool:
 ## Cards for the private plot on offer here: how many slots, then each slot's card (null
 ## once sold), price and whether it can be bought now.
 func plot_card_count() -> int:
-	return 0 if _stall == null else _stall.count()
+	return 0 if _stall == null else _stall.offers.count()
 
 
 func plot_card(slot: int) -> CardInstance:
-	if _stall.rank(slot) == PlotStall.SOLD:
+	if _stall.offers.rank(slot) == CardOffers.SOLD:
 		return null
 	# A stand-in to show: the card gets its real plot ID when bought.
 	return CardInstance.new(
-		-1 - slot, _stall.rank(slot), _stall.suit(slot), CardInstance.Origin.PLOT
+		-1 - slot, _stall.offers.rank(slot), _stall.offers.suit(slot), CardInstance.Origin.PLOT
 	)
 
 
 func plot_card_price(slot: int) -> int:
-	return _stall.price(slot)
+	return _stall.offers.price(slot)
 
 
 func can_buy_plot_card(slot: int) -> bool:

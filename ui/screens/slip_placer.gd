@@ -5,8 +5,10 @@ extends RefCounted
 ## then the other of above and below, then right, then left. It is always wholly on the
 ## screen, never on the thing itself, which holds its own button, and it slides along a
 ## side, never past the thing's end, to keep off another button when a spot as close
-## does so. Other papers and text it may cover: a slip is gone as soon as the pointer
-## leaves, so it stays where the eye already is rather than jumping to a far edge.
+## does so. Other papers and text it may cover, but for a control in the KEEP_CLEAR
+## group, such as the deck sheet's rank names, which it keeps off on any side within
+## reach before it keeps off a button: a slip is gone as soon as the pointer leaves, so it
+## stays where the eye already is rather than jumping to a far edge.
 
 ## The sides a slip may stand on, in the order tried when the first one asked for fails.
 const ABOVE: int = 0
@@ -25,10 +27,14 @@ const OVERLAP: float = 48.0
 ## pixel slid along a side.
 const ON_THING: float = 1.0e9
 const TOO_FAR: float = 1.0e7
+## A pixel on a control kept clear costs more than taking another side.
+const ON_KEPT: float = 1.0e6
 const ON_BUTTON: float = 1.0e3
 const SIDE_STEP: float = 1.0e5
 ## Kept clear around a button, so a slip's edge never lies on one.
 const BUTTON_CLEAR: float = 4.0
+## The group of controls a slip keeps off as it keeps off buttons.
+const KEEP_CLEAR: StringName = &"slip_keep_clear"
 
 
 ## The top-left corner for a slip of size beside keep, gap away from it on side first
@@ -38,15 +44,20 @@ static func place(
 	size: Vector2, keep: Rect2, gap: float, screen: Rect2, root: Node, own: Node, first: int = ABOVE
 ) -> Vector2:
 	var buttons: Array[Rect2] = []
+	var kept: Array[Rect2] = []
 	if root != null:
 		gather(root, own, buttons)
+		_gather_kept(root, kept)
 	var best: Vector2 = inside(keep.position, size, screen)
 	var best_score: float = INF
 	var rank: int = 0
 	for side: int in _order(first):
 		for spot: Vector2 in _along(side, size, keep, gap):
 			var at: Vector2 = inside(spot, size, screen)
-			var score: float = _cost(Rect2(at, size), keep, buttons, rank, spot.distance_to(at))
+			var rect: Rect2 = Rect2(at, size)
+			var score: float = _cost(rect, keep, buttons, rank, spot.distance_to(at))
+			for box: Rect2 in kept:
+				score += ON_KEPT * rect.intersection(box).get_area()
 			score += (spot - _aligned(side, size, keep, gap)).length()
 			if score < best_score:
 				best_score = score
@@ -82,6 +93,30 @@ static func gather(root: Node, own: Node, buttons: Array[Rect2]) -> void:
 		var rect: Rect2 = on_screen(control)
 		if rect.size.x > 0.0 and rect.size.y > 0.0:
 			buttons.append(rect.grow(BUTTON_CLEAR))
+
+
+## Every control kept clear visible under root into kept, as much of its rectangle on the
+## screen as no clipping parent hides, as a scrolled sheet hides what is scrolled away.
+static func _gather_kept(root: Node, kept: Array[Rect2]) -> void:
+	if not root.is_inside_tree():
+		return
+	for node: Node in root.get_tree().get_nodes_in_group(KEEP_CLEAR):
+		var control: Control = node as Control
+		if root.is_ancestor_of(control) and control.is_visible_in_tree():
+			var shown: Rect2 = shown_rect(control)
+			if shown.has_area():
+				kept.append(shown)
+
+
+## A control's rectangle on the screen, cut to what its clipping parents let show.
+static func shown_rect(control: Control) -> Rect2:
+	var rect: Rect2 = on_screen(control)
+	var parent: Control = control.get_parent_control()
+	while parent != null:
+		if parent.clip_contents:
+			rect = rect.intersection(on_screen(parent))
+		parent = parent.get_parent_control()
+	return rect
 
 
 ## A control's rectangle in the screen's own pixels, through any canvas layer.

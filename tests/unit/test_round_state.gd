@@ -233,8 +233,7 @@ func test_random_legal_games_terminate_with_every_card_accounted_for() -> void:
 	var stream: RandomStream = RandomStream.new(SEED)
 	for game: int in RANDOM_GAMES:
 		var cards: Array[CardInstance] = []
-		for deck_id: int in Deck.generate():
-			cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append_array(Deck.new().cards())
 		var deal: DealResult = Dealer.deal(cards, stream)
 		var round_state: RoundState = RoundState.new(
 			deal, game % Seats.COUNT, SeatRules.uniform(_rules, _map)
@@ -246,7 +245,7 @@ func test_random_legal_games_terminate_with_every_card_accounted_for() -> void:
 			for card: CardInstance in round_state.view_for(seat).own_cards:
 				assert_bool(seen.has(card.id())).is_false()
 				seen[card.id()] = true
-		for deck_id: int in Deck.generate():
+		for deck_id: int in Deck.SIZE:
 			assert_bool(seen.has(deck_id)).is_true()
 		assert_int(seen.size()).is_equal(TOTAL_CARDS)
 

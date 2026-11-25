@@ -42,8 +42,7 @@ func test_the_share_counts_what_reached_the_player() -> void:
 
 func test_a_bot_with_no_effort_passes_when_following_and_leads_its_weakest() -> void:
 	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
+	cards.append_array(Deck.new().cards())
 	var deal: DealResult = Dealer.deal(cards, RandomStream.new(11))
 	var rules: SeatRules = SeatRules.new(ModifierStack.new())
 	var round_state: RoundState = RoundState.new(deal, 0, rules)

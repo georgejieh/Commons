@@ -1,11 +1,13 @@
 class_name DeckBoard
 extends Control
-## The deck sheet's cards (ADR 0041): every deck card as its real face, one group a rank
-## in rank order, then the private plot's cards, laid out by DeckFit in the room given.
-## Each card shows its marks. Pointer, keys and pad move one cursor over the cards: left
-## and right along the order, up and down a row of groups; the card under it is named in
-## the shared slip beside it. When picking, a press picks the card under the cursor and
-## lifts it; a plot card cannot be picked.
+## The deck sheet's cards (ADR 0041): every deck card as its real face, one group a rank in
+## rank order, then the private plot's cards, laid out by DeckFit in the room given. A
+## group's name gives its count where it is not a plain deck's (ADR 0042), and a rank the
+## deck holds none of keeps its name over an empty place. Each card shows its marks, and a
+## slip keeps off every name (SlipPlacer.KEEP_CLEAR). Pointer, keys and pad move one cursor
+## over the cards: left and right along the order, up and down a row of groups; the card
+## under it is named in the shared slip beside it. When picking, a press picks the card
+## under the cursor and lifts it; a plot card cannot be picked.
 
 signal cursor_moved(card_id: int)
 signal picked_card(card_id: int)
@@ -52,13 +54,19 @@ func show_cards(deck: Array[CardInstance], plot: Array[CardInstance], room: Vect
 	clear()
 	prepare()
 	_groups.clear()
+	var plain: PackedByteArray = Deck.new().rank_counts()
 	for rank: int in Ranks.COUNT:
 		var group: Array[CardInstance] = []
 		for card: CardInstance in deck:
 			if card.base_rank() == rank:
 				group.append(card)
 		_groups.append(group)
-		_names.append(_name(TranslationServer.translate(CardView.RANK_KEYS[rank])))
+		var name: String = TranslationServer.translate(CardView.RANK_KEYS[rank])
+		if group.size() != plain[rank]:
+			name = TranslationServer.translate("deck.rank_count").format(
+				{"rank": name, "count": group.size()}
+			)
+		_names.append(_name(name))
 	if not plot.is_empty():
 		_groups.append(plot.duplicate())
 		_names.append(_name(TranslationServer.translate("deck.plot")))
@@ -142,7 +150,7 @@ func cursor_card() -> int:
 
 ## True for a plot card, which the desks never mark.
 func is_plot(card_id: int) -> bool:
-	return _group_of.get(card_id, 0) >= Ranks.COUNT
+	return _cards.has(card_id) and _cards[card_id].origin() == CardInstance.Origin.PLOT
 
 
 ## Moves the cursor to the card, as a hover or a key does.
@@ -169,6 +177,7 @@ func _name(text: String) -> Label:
 	var label: Label = ScreenKit.eyebrow(text)
 	label.add_theme_font_size_override("font_size", TextSize.px(NAME_SIZE))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_to_group(SlipPlacer.KEEP_CLEAR)
 	add_child(label)
 	return label
 
@@ -223,14 +232,32 @@ func _step(by: int) -> void:
 
 
 ## To the first card of the group a row above or below, or the last group of a shorter
-## last row. False when there is no row that way, so the focus may leave for the buttons.
+## last row, or the nearest group of that row with a card in it, past a row of empty
+## ones. False when there is no such row that way, so the focus may leave for the buttons.
 func _step_row(by: int) -> bool:
-	var row: int = floori(_group_of[cursor_card()] / float(_fit.columns)) + by
-	var rows: int = ceili(_groups.size() / float(_fit.columns))
-	if row < 0 or row >= rows:
-		return false
-	var group: int = mini(_group_of[cursor_card()] + by * _fit.columns, _groups.size() - 1)
-	var cards: Array = _groups[group]
-	var card: CardInstance = cards[0]
-	point_at(card.id())
-	return true
+	var columns: int = _fit.columns
+	var at: int = _group_of[cursor_card()]
+	var rows: int = ceili(_groups.size() / float(columns))
+	var row: int = floori(at / float(columns)) + by
+	while row >= 0 and row < rows:
+		var aimed: int = mini(row * columns + at % columns, _groups.size() - 1)
+		for group: int in _nearest_in_row(aimed, row):
+			var cards: Array = _groups[group]
+			if not cards.is_empty():
+				var card: CardInstance = cards[0]
+				point_at(card.id())
+				return true
+		row += by
+	return false
+
+
+## The groups of row, the aimed one first, then outward from it.
+func _nearest_in_row(aimed: int, row: int) -> Array[int]:
+	var first: int = row * _fit.columns
+	var last: int = mini(first + _fit.columns, _groups.size()) - 1
+	var order: Array[int] = [aimed]
+	for reach: int in range(1, _fit.columns):
+		for group: int in [aimed - reach, aimed + reach]:
+			if group >= first and group <= last:
+				order.append(group)
+	return order

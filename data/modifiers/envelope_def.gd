@@ -16,6 +16,11 @@ enum Content {
 	STAMPED_CARD,
 	## A new plot card with the Model enhancement.
 	MODEL_CARD,
+	## A card for the communal deck, which takes the place of a deck card the player names
+	## (ADR 0042).
+	DECK_CARD,
+	## A card for the communal deck carrying an enhancement, drawn evenly from them all.
+	MARKED_DECK_CARD,
 }
 
 ## How it looks on the counter and when it is opened.

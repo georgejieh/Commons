@@ -2,15 +2,19 @@ class_name DeckSheet
 extends Control
 ## The deck sheet (ADR 0041): a sheet over the page that shows the communal deck, all 54
 ## cards as real faces with their marks, a rank to a group in rank order, and the private
-## plot's cards after them, with a legend of the marks the run holds. It opens read-only
-## from both shops and the table, and in choosing mode from a shop's desk, where the
-## player picks one deck card, reads what will change on it, the mark it would replace
-## included, and confirms or backs out. A hover or the cursor names a card's marks in the
-## slip beside it. While open it keeps the focus and every key; Cancel closes it.
+## plot's cards after them, with a legend of the marks the run holds. Each group's name
+## gives its count where an exchange made it differ from a plain deck's, and the slip
+## over a card the state store put in the deck names the card it replaced (ADR 0042). It
+## opens read-only from both shops and the table, and in choosing mode for a DeckChoice,
+## a shop's desk or an exchange, where the player picks one deck card, reads what will
+## happen to it, and confirms or backs out. A hover or the cursor names a card's marks in
+## the slip beside it. While open it keeps the focus and every key; Cancel closes it.
 
 signal closed
-## The desk marked the card: the page shows what the desk did.
-signal marked(card_id: int)
+## The choice was made on the card: the page shows what it did.
+signal chosen(card_id: int)
+
+const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.6)
 const MARGIN: float = 24.0
@@ -23,8 +27,7 @@ const STAMP: String = "stamp"
 const PLAYER: int = 0
 
 var _controller: RunController = null
-var _desk: DeskView = null
-var _market: bool = false
+var _choice: DeckChoice = null
 var _board: DeckBoard = DeckBoard.new()
 var _scroll: ScrollContainer = ScrollContainer.new()
 var _paper: PanelContainer = PanelContainer.new()
@@ -35,10 +38,14 @@ var _status: Label = ScreenKit.label("", RULE_SIZE)
 var _confirm: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 var _back: Button = ScreenKit.button("", CommonsTheme.SECONDARY)
 var _slip: DetailSlip = DetailSlip.new()
+## The card coming into the deck, beside the heading, while an exchange is chosen.
+var _incoming: CardView = null
 
 
 func _ready() -> void:
 	visible = false
+	# Above an envelope open over the page (EnvelopeOverlay), whose deck card it places.
+	z_index = 5
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var dim: ColorRect = ColorRect.new()
@@ -64,7 +71,10 @@ func _ready() -> void:
 	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_legend.add_theme_constant_override("separation", 18)
 	_legend.size_flags_vertical = Control.SIZE_SHRINK_END
-	column.add_child(ScreenKit.row([titles, _legend]))
+	_incoming = CARD_SCENE.instantiate()
+	_incoming.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_incoming.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	column.add_child(ScreenKit.row([_incoming, titles, _legend]))
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_scroll.add_child(_board)
@@ -78,6 +88,8 @@ func _ready() -> void:
 	_board.cursor_moved.connect(_on_cursor)
 	_board.picked_card.connect(_on_picked)
 	add_child(_slip)
+	# The sheet covers the page, so its slip keeps off the sheet's buttons and names alone.
+	_slip.within = self
 	resized.connect(_fit)
 
 
@@ -115,24 +127,25 @@ func status_text() -> String:
 	return _status.text
 
 
+## The card shown coming into the deck, for tests and the playtest.
+func incoming_view() -> CardView:
+	return _incoming
+
+
 ## Opens read-only on the deck as the run holds it now.
 func open_deck() -> void:
-	_desk = null
+	_choice = null
 	_eyebrow.text = tr("deck.eyebrow")
 	_title.text = tr("deck.title")
 	_open(false)
 
 
-## Opens on the deck for the player to pick a card for desk to mark: the state store's,
-## or with market the black market's.
-func open_desk(desk: DeskView, market: bool) -> void:
-	_desk = desk
-	_market = market
-	_eyebrow.text = tr("deck.desk.market" if market else "deck.desk.store")
-	if desk.stamps():
-		_title.text = tr("deck.desk.stamp_title")
-	else:
-		_title.text = tr("deck.desk.title").format({"mark": _mark_name(desk.offer())})
+## Opens on the deck for the player to pick a card for choice: a desk's mark, or the card
+## an exchange takes out.
+func open_choice(choice: DeckChoice) -> void:
+	_choice = choice
+	_eyebrow.text = choice.eyebrow()
+	_title.text = choice.title()
 	_open(true)
 
 
@@ -151,6 +164,10 @@ func _open(choosing: bool) -> void:
 	_board.picking = choosing
 	_confirm.visible = choosing
 	_back.text = tr("deck.back" if choosing else "deck.close")
+	var coming: CardInstance = null if _choice == null else _choice.incoming()
+	_incoming.visible = coming != null
+	if coming != null:
+		_incoming.bind(coming)
 	var state: RunState = _controller.state_copy()
 	_board.show_cards(_controller.deck_cards(), state.inventory.plot, _room())
 	_show_legend(state)
@@ -166,6 +183,8 @@ func _room() -> Vector2:
 	var header: float = (
 		_title.get_combined_minimum_size().y + _eyebrow.get_combined_minimum_size().y
 	)
+	if _incoming.visible:
+		header = maxf(header, _incoming.get_combined_minimum_size().y)
 	var footer: float = _back.get_combined_minimum_size().y
 	return Vector2(inside.x - 12.0, inside.y - header - footer - SPACING * 2.0)
 
@@ -201,13 +220,13 @@ func _legend_entry(mark: String, count: int) -> Control:
 	var kind: CardMark.Kind = CardMark.Kind.STAMP if mark == STAMP else CardMark.KINDS[mark]
 	var drawn: CardMark = CardMark.new(kind)
 	drawn.visible = true
-	var words: String = tr("deck.legend.entry").format({"mark": _mark_name(mark), "count": count})
+	var words: String = tr("deck.legend.entry").format({"mark": mark_name(mark), "count": count})
 	var entry: HBoxContainer = ScreenKit.row([drawn, ScreenKit.label(words, LEGEND_SIZE)], 6)
 	entry.tooltip_text = Keywords.wrapped(Keywords.meaning(mark))
 	return entry
 
 
-static func _mark_name(mark: String) -> String:
+static func mark_name(mark: String) -> String:
 	return TranslationServer.translate("keyword.%s.name" % mark)
 
 
@@ -215,9 +234,9 @@ static func _mark_name(mark: String) -> String:
 static func marks_text(card: CardInstance) -> String:
 	var names: PackedStringArray = []
 	if CardMark.draws(card.enhancement_id()):
-		names.append(_mark_name(card.enhancement_id()))
+		names.append(mark_name(card.enhancement_id()))
 	if card.owner_stamp() == PLAYER:
-		names.append(_mark_name(STAMP))
+		names.append(mark_name(STAMP))
 	if names.is_empty():
 		return TranslationServer.translate("deck.marks.none")
 	return TranslationServer.translate("deck.marks").format({"marks": ", ".join(names)})
@@ -229,9 +248,13 @@ func _on_cursor(card_id: int) -> void:
 	if view == null or card == null:
 		return
 	var title: String = PlotSwapSheet.card_name(card)
+	var rule: String = marks_text(card)
 	if _board.is_plot(card_id):
 		title = tr("deck.plot_card").format({"card": title})
-	_slip.show_for(view, title, marks_text(card))
+	elif _controller.replaced(card_id) != null:
+		var plain: String = PlotSwapSheet.card_name(_controller.replaced(card_id))
+		rule = tr("deck.exchanged").format({"marks": rule, "card": plain})
+	_slip.show_for(view, title, rule)
 
 
 func _on_picked(_card_id: int) -> void:
@@ -239,49 +262,37 @@ func _on_picked(_card_id: int) -> void:
 	_link_focus()
 
 
-## What the desk would do to the picked card, or why it cannot, and the confirm ticket.
+## What the choice would do to the picked card, or why it cannot, and the confirm ticket.
+## Read-only, how many cards the state store has exchanged.
 func _show_choice() -> void:
-	if _desk == null:
+	if _choice == null:
+		var changed: int = _controller.exchanged_count()
 		_status.text = tr("deck.how")
+		if changed > 0:
+			_status.text += " " + tr("deck.exchanges").format({"count": changed})
 		return
-	var price: int = _desk.price()
-	var key: String = "deck.desk.stamp" if _desk.stamps() else "deck.desk.mark"
-	_confirm.text = tr(key).format({"price": price})
+	_confirm.text = _choice.confirm_text()
 	var picked: int = _board.picked
 	if picked == DeckBoard.NONE:
-		_status.text = tr("deck.desk.how")
+		_status.text = _choice.how()
 		_confirm.disabled = true
 		return
-	var refusal: String = _desk.refusal(picked)
+	var card: CardInstance = _board.card_of(picked)
+	var refusal: String = _choice.refusal(card)
 	_confirm.disabled = not refusal.is_empty()
-	_status.text = _change_text(_board.card_of(picked), refusal, price)
-
-
-func _change_text(card: CardInstance, refusal: String, price: int) -> String:
-	var values: Dictionary[String, Variant] = {
-		"card": PlotSwapSheet.card_name(card),
-		"mark": _mark_name(_desk.offer()),
-		"old": _mark_name(card.enhancement_id()),
-		"price": price,
-	}
-	if not refusal.is_empty():
-		return tr(refusal).format(values)
-	if _desk.stamps():
-		return tr("deck.change.stamp").format(values)
-	if CardMark.draws(card.enhancement_id()):
-		return tr("deck.change.replace").format(values)
-	return tr("deck.change.mark").format(values)
+	_status.text = refusal if not refusal.is_empty() else _choice.change(card)
 
 
 func _on_confirm() -> void:
 	var picked: int = _board.picked
-	if _desk == null or picked == DeckBoard.NONE:
+	if _choice == null or picked == DeckBoard.NONE:
 		return
-	if _controller.mark_card(picked, _market) != RunController.OK:
+	if not _choice.commit(_controller, picked):
 		_show_choice()
 		return
+	# Told before closed, so whatever waits on the choice knows it was made.
+	chosen.emit(picked)
 	close()
-	marked.emit(picked)
 
 
 ## The focus stays on the sheet: the cards above, the buttons in a row under them.

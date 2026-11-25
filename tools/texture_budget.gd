@@ -75,4 +75,4 @@ func _show_all_cards(table: Node) -> void:
 		var view: CardView = pool.acquire()
 		if view == null:
 			return
-		view.bind(CardInstance.from_deck_id(deck_id))
+		view.bind(Deck.new().card(deck_id))

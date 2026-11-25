@@ -23,6 +23,7 @@ const PAD_NAMES: Dictionary[JoyButton, String] = {
 	JOY_BUTTON_START: "menu",
 	JOY_BUTTON_LEFT_SHOULDER: "l1",
 	JOY_BUTTON_RIGHT_SHOULDER: "r1",
+	JOY_BUTTON_LEFT_STICK: "l3",
 	JOY_BUTTON_DPAD_UP: "dpad_up",
 	JOY_BUTTON_DPAD_DOWN: "dpad_down",
 	JOY_BUTTON_DPAD_LEFT: "dpad_left",

@@ -62,4 +62,4 @@ func _choose() -> void:
 	if _screen_busy.is_valid() and _screen_busy.call():
 		return
 	_slip.hide_slip()
-	_sheet.open_desk(_desk, _market)
+	_sheet.open_choice(DeskChoice.new(_desk, _market))

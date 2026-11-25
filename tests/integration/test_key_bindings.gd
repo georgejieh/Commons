@@ -46,6 +46,7 @@ func test_the_defaults_are_the_project_keys() -> void:
 		"commons_sort": KEY_S,
 		"commons_rules": KEY_R,
 		"commons_campaign": KEY_C,
+		"commons_deck": KEY_D,
 		"commons_select": KEY_UP,
 		"commons_cursor_left": KEY_LEFT,
 		"commons_cursor_right": KEY_RIGHT,

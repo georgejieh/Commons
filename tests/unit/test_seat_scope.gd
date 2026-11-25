@@ -104,7 +104,7 @@ func test_no_cadre_changes_a_villagers_rules_or_ranks() -> void:
 
 
 func _card(rank: int, suit: int) -> CardInstance:
-	return CardInstance.from_deck_id(rank * Deck.SUITS + suit)
+	return Deck.new().card(rank * Deck.SUITS + suit)
 
 
 ## Plays of many shapes, with Model, stamped and kitty cards among them.
@@ -124,7 +124,7 @@ func _plays() -> Array[Array]:
 		straight.append(_card(rank, 3))
 	plays.append(bomb)
 	plays.append(straight)
-	plays.append([CardInstance.from_deck_id(Deck.SMALL_JOKER_ID)])
+	plays.append([Deck.new().card(Deck.SMALL_JOKER_ID)])
 	return plays
 
 

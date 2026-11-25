@@ -17,7 +17,7 @@ func _def(id: String) -> ModifierDef:
 
 
 func _card(rank: int, suit: int, enhancement: String = CardInstance.NO_ID) -> CardInstance:
-	var card: CardInstance = CardInstance.from_deck_id(rank * Deck.SUITS + suit)
+	var card: CardInstance = Deck.new().card(rank * Deck.SUITS + suit)
 	if enhancement != CardInstance.NO_ID:
 		CardModifiers.enhance(card, enhancement)
 	return card

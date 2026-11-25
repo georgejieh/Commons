@@ -41,7 +41,7 @@ func test_the_store_desk_marks_the_chosen_card() -> void:
 	await await_idle_frame()
 	var offer: String = _loop().shop.desk.offer
 	var other: String = CardInstance.SURPLUS if offer == CardInstance.MODEL else CardInstance.MODEL
-	CardMarks.enhance(_loop().state, CardInstance.from_deck_id(CARD), other)
+	CardMarks.enhance(_loop().state, Deck.new().card(CARD), other)
 	var stall: DeskStall = store.get("_desk_stall")
 	stall.show_offer()
 	assert_bool(stall.ticket.is_visible_in_tree()).is_true()
@@ -71,7 +71,7 @@ func test_the_store_desk_marks_the_chosen_card() -> void:
 func test_a_card_the_desk_refuses_says_why_and_cannot_be_confirmed() -> void:
 	var store: StoreScreen = _app.show_screen("store", true)
 	await await_idle_frame()
-	CardMarks.enhance(_loop().state, CardInstance.from_deck_id(CARD), _loop().shop.desk.offer)
+	CardMarks.enhance(_loop().state, Deck.new().card(CARD), _loop().shop.desk.offer)
 	var stall: DeskStall = store.get("_desk_stall")
 	stall.ticket.pressed.emit()
 	await await_idle_frame()

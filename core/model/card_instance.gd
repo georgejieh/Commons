@@ -36,10 +36,6 @@ func _init(card_id: int, rank: int, card_suit: int, card_origin: Origin) -> void
 	_origin = card_origin
 
 
-static func from_deck_id(deck_id: int) -> CardInstance:
-	return CardInstance.new(deck_id, Deck.rank_of(deck_id), Deck.suit_of(deck_id), Origin.DECK)
-
-
 static func from_dict(data: Dictionary) -> CardInstance:
 	var origin_value: Origin = int(data["origin"]) as Origin
 	var card: CardInstance = CardInstance.new(

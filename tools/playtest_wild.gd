@@ -281,8 +281,8 @@ func _pile_frame(controller: Object) -> void:
 	var reading: Pattern = Readings.of(counts, table.get("rules"), table.get("rank_map"))[0]
 	var cards: Array[CardInstance] = []
 	for suit: int in 3:
-		cards.append(CardInstance.from_deck_id(rank * Deck.SUITS + suit))
-	cards.append(CardInstance.from_deck_id(wild[0] * Deck.SUITS + 3))
+		cards.append(Deck.new().card(rank * Deck.SUITS + suit))
+	cards.append(Deck.new().card(wild[0] * Deck.SUITS + 3))
 	var pile: Object = _part("_pile")
 	pile.call("clear")
 	var none: Array[Vector2] = []
@@ -291,8 +291,8 @@ func _pile_frame(controller: Object) -> void:
 	await _shot("wild_pile_soft_bomb")
 	# A villager's pair of the player's wild rank lands plain (ADR 0039): no ribbon.
 	var pair: Array[CardInstance] = [
-		CardInstance.from_deck_id(wild[0] * Deck.SUITS),
-		CardInstance.from_deck_id(wild[0] * Deck.SUITS + 1),
+		Deck.new().card(wild[0] * Deck.SUITS),
+		Deck.new().card(wild[0] * Deck.SUITS + 1),
 	]
 	pile.call("show_play", pair, PILE_FROM, none, null, false)
 	await _frames(30)

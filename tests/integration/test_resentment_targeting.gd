@@ -14,8 +14,7 @@ func _answers(resentment: int, landlord: int) -> int:
 	var answered: int = 0
 	for deal_index: int in DEALS:
 		var cards: Array[CardInstance] = []
-		for deck_id: int in Deck.generate():
-			cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append_array(Deck.new().cards())
 		var deal: DealResult = Dealer.deal(cards, RandomStream.new(4200 + deal_index))
 		var rules: SeatRules = SeatRules.new(ModifierStack.new())
 		var round_state: RoundState = RoundState.new(deal, landlord, rules)

@@ -17,7 +17,8 @@ const STORE: ShopParams = preload("res://data/run/default_shop.tres")
 const MARKET: ShopParams = preload("res://data/run/black_market.tres")
 const AUDIT: AuditParams = preload("res://data/run/audit.tres")
 const LADDER: LadderParams = preload("res://data/run/default_ladder.tres")
-const PLOT_CARDS: PlotUpgradeParams = preload("res://data/run/plot_upgrades.tres")
+const PLOT_CARDS: CardStallParams = preload("res://data/run/plot_stall.tres")
+const DECK_CARDS: CardStallParams = preload("res://data/run/deck_stall.tres")
 
 var store_cadres: Array[ModifierDef]
 var market_cadres: Array[ModifierDef]
@@ -31,8 +32,9 @@ var store: ShopParams
 var market: ShopParams
 var audit: AuditParams
 var ladder: LadderParams
-## What the black market's plot stall offers.
-var plot_cards: PlotUpgradeParams = PLOT_CARDS
+## What the black market's plot stall and the state store's deck stall offer.
+var plot_cards: CardStallParams = PLOT_CARDS
+var deck_cards: CardStallParams = DECK_CARDS
 ## The stake's numbers, its own and every lower stake's.
 var stake: StakeDef
 

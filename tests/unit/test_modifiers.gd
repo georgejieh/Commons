@@ -270,7 +270,7 @@ func test_architecture_lists_every_hook() -> void:
 
 func _run_every_hook(stack: ModifierStack) -> void:
 	var pass_play: Pattern = Pattern.pass_play()
-	var card: CardInstance = CardInstance.from_deck_id(0)
+	var card: CardInstance = Deck.new().card(0)
 	var finish: RoundEvent.Finish = RoundEvent.Finish.NORMAL
 	stack.run_build_ruleset(RulesetContext.new(0, 0, RuleSet.DEFAULT_PARAMS.copy()))
 	stack.run_build_rank_map(RankMapContext.new(0, 0, false, Ranks.identity_map()))

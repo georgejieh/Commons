@@ -157,9 +157,9 @@ func test_the_cards_come_first_then_rate_and_zeal_then_what_changed_them() -> vo
 	stack.add(_def("red_banner"), HOLDER)
 	stack.add(_def("canteen"), HOLDER)
 	var cards: Array[CardInstance] = [
-		CardInstance.from_deck_id(Ranks.FIVE * Deck.SUITS),
-		CardInstance.from_deck_id(Ranks.FIVE * Deck.SUITS + 1),
-		CardInstance.from_deck_id(Ranks.FIVE * Deck.SUITS + 2),
+		Deck.new().card(Ranks.FIVE * Deck.SUITS),
+		Deck.new().card(Ranks.FIVE * Deck.SUITS + 1),
+		Deck.new().card(Ranks.FIVE * Deck.SUITS + 2),
 	]
 	CardModifiers.enhance(cards[2], CardInstance.MODEL)
 	var kept: ScoreBreakdown = _score(stack, cards, 2, true)

@@ -44,9 +44,9 @@ func _to_the_store() -> StoreScreen:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
 	var state: RunState = _loop().state
-	CardMarks.enhance(state, CardInstance.from_deck_id(MODEL_CARD), CardInstance.MODEL)
-	CardMarks.enhance(state, CardInstance.from_deck_id(SURPLUS_CARD), CardInstance.SURPLUS)
-	CardMarks.stamp(state, CardInstance.from_deck_id(STAMPED_CARD), RunLoop.PLAYER)
+	CardMarks.enhance(state, Deck.new().card(MODEL_CARD), CardInstance.MODEL)
+	CardMarks.enhance(state, Deck.new().card(SURPLUS_CARD), CardInstance.SURPLUS)
+	CardMarks.stamp(state, Deck.new().card(STAMPED_CARD), RunLoop.PLAYER)
 	_app.controller.reseal_book()
 	return _app.show_screen("store", true)
 

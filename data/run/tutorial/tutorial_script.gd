@@ -17,7 +17,7 @@ extends Resource
 ## The black market's numbers: no Cadres, nothing drawn.
 @export var market: ShopParams
 ## The one plot card on the black market's stall.
-@export var plot_cards: PlotUpgradeParams
+@export var plot_cards: CardStallParams
 @export var rounds: Array[TutorialRound] = []
 ## What the plot card's purchase adds to Denunciation, through its own meter table row.
 @export var denunciation: int = 10

@@ -3,12 +3,13 @@ extends RefCounted
 ## Builds rounds for tests.
 
 
-## Deals stacked hands from text. Each seat's text picks the next unused deck cards.
+## Deals stacked hands from text. Each seat's text picks the next unused cards of a plain
+## deck, and every seat counts the round against the whole plain deck.
 static func stacked_deal(seat_texts: Array[String], kitty_text: String) -> DealResult:
-	var pool: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		pool.append(CardInstance.from_deck_id(deck_id))
+	var plain: Deck = Deck.new()
+	var pool: Array[CardInstance] = plain.cards()
 	var deal: DealResult = DealResult.new()
+	deal.deck_counts = plain.rank_counts()
 	for text: String in seat_texts:
 		var hand: Hand = Hand.new()
 		for card: CardInstance in _take(pool, text):

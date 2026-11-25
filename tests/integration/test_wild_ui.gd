@@ -198,7 +198,7 @@ func test_the_ribbon_keeps_clear_of_the_index_and_every_mark_in_the_narrowest_fa
 	var scene: PackedScene = load("res://ui/cards/card_view.tscn")
 	var view: CardView = auto_free(scene.instantiate())
 	add_child(view)
-	var card: CardInstance = CardInstance.from_deck_id(Ranks.TEN * Deck.SUITS + 1)
+	var card: CardInstance = Deck.new().card(Ranks.TEN * Deck.SUITS + 1)
 	card.set_owner_stamp(0)
 	card.set_enhancement(CardInstance.MODEL)
 	for note: String in ["", "as Q"]:

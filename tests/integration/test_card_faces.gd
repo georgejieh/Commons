@@ -23,7 +23,7 @@ func after_test() -> void:
 func test_all_54_faces_bind_from_parts() -> void:
 	var art: CardArt = CardView.parts()
 	for deck_id: int in DECK_SIZE:
-		var card: CardInstance = CardInstance.from_deck_id(deck_id)
+		var card: CardInstance = Deck.new().card(deck_id)
 		var view: CardView = _views[deck_id]
 		view.bind(card)
 		var picture: TextureRect = view.get("_picture")
@@ -44,7 +44,7 @@ func test_changing_the_frame_restyles_every_card() -> void:
 	for deck_id: int in DECK_SIZE:
 		var view: CardView = auto_free(SCENE.instantiate())
 		add_child(view)
-		view.bind(CardInstance.from_deck_id(deck_id))
+		view.bind(Deck.new().card(deck_id))
 		fresh.append(view)
 	for view: CardView in fresh:
 		var frame: Panel = view.get("_frame")
@@ -59,7 +59,7 @@ func test_changing_a_suit_icon_restyles_that_suit_only() -> void:
 	swapped.suits[1] = hearts
 	CardView.art_override = swapped
 	for deck_id: int in DECK_SIZE:
-		var card: CardInstance = CardInstance.from_deck_id(deck_id)
+		var card: CardInstance = Deck.new().card(deck_id)
 		_views[deck_id].bind(card)
 		var suit: TextureRect = _views[deck_id].get("_suit")
 		if card.base_rank() < Ranks.SMALL_JOKER:
@@ -67,7 +67,7 @@ func test_changing_a_suit_icon_restyles_that_suit_only() -> void:
 
 
 func test_the_card_stock_is_lit_through_its_normal_map() -> void:
-	_views[0].bind(CardInstance.from_deck_id(0))
+	_views[0].bind(Deck.new().card(0))
 	var frame: Panel = _views[0].get("_frame")
 	var stock: StyleBoxTexture = frame.get_theme_stylebox("panel") as StyleBoxTexture
 	var canvas: CanvasTexture = stock.texture as CanvasTexture

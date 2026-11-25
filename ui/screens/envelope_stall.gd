@@ -3,8 +3,9 @@ extends RefCounted
 ## A shop's envelope (ADR 0021): its offer on the counter as a small sealed envelope or
 ## parcel whose rules the shared DetailSlip shows, and, once bought, the envelope opened
 ## over the page in an EnvelopeOverlay. While it is open the screen takes no purchase.
-## An envelope still open when the page opens, as after a load, is shown open at once.
-## Every purchase and pick goes through the run controller.
+## An envelope still open when the page opens, as after a load, is shown open at once. A
+## card for the deck is kept through the page's deck sheet (ADR 0042). Every purchase and
+## pick goes through the run controller.
 
 ## Coupons changed, so the screen can count them.
 signal spent
@@ -20,11 +21,17 @@ var _shelf: EnvelopeShelf
 var _slip: DetailSlip
 var _screen_busy: Callable = Callable()
 var _host: Control
+var _deck: DeckSheet
 var _overlay: EnvelopeOverlay = null
 
 
 func setup(
-	app: DemoApp, market: bool, slip: DetailSlip, screen_busy: Callable, host: Control
+	app: DemoApp,
+	market: bool,
+	slip: DetailSlip,
+	screen_busy: Callable,
+	host: Control,
+	deck: DeckSheet
 ) -> void:
 	_app = app
 	_market = market
@@ -32,6 +39,7 @@ func setup(
 	_slip = slip
 	_screen_busy = screen_busy
 	_host = host
+	_deck = deck
 	offers.add_theme_constant_override("separation", 12)
 
 
@@ -116,6 +124,7 @@ func _open(shelf: EnvelopeShelf, from: Rect2, animate: bool) -> void:
 	_overlay = EnvelopeOverlay.new()
 	_host.add_child(_overlay)
 	_overlay.closed.connect(_on_closed)
+	_overlay.use_deck_sheet(_deck)
 	_overlay.open(_app.controller, shelf, from, animate)
 
 

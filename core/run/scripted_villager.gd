@@ -62,7 +62,11 @@ func play(view: SeatView, legal: Array[Pattern]) -> BotPlay:
 	var counts: PackedByteArray = PackedByteArray()
 	counts.resize(Ranks.COUNT)
 	for card_id: int in cards:
-		counts[Deck.rank_of(card_id)] += 1
+		var held: CardInstance = _held(view, card_id)
+		if held == null:
+			_fault("a card it does not hold, %d" % card_id)
+			return _fallback(view, legal)
+		counts[held.base_rank()] += 1
 	for move: Pattern in legal:
 		if move.spent_counts() == counts:
 			return BotPlay.new(move, BotRationale.Code.NONE)
@@ -89,3 +93,11 @@ func _fault(what: String) -> void:
 	push_error("Scripted villager in seat %d: %s" % [_seat, what])
 	if on_fault.is_valid():
 		on_fault.call()
+
+
+## The seat's own card with the ID, or null when it holds none.
+static func _held(view: SeatView, card_id: int) -> CardInstance:
+	for card: CardInstance in view.own_cards:
+		if card.id() == card_id:
+			return card
+	return null

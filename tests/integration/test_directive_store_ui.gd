@@ -208,11 +208,11 @@ func test_the_cheat_sheet_shows_the_raised_rate_and_level() -> void:
 func test_a_card_view_shows_each_mark_clear_of_the_note_and_edge() -> void:
 	var view: CardView = auto_free(CARD_SCENE.instantiate())
 	add_child(view)
-	var plain: CardInstance = CardInstance.from_deck_id(20)
+	var plain: CardInstance = Deck.new().card(20)
 	view.bind(plain)
 	assert_bool(view.shows_stamp()).is_false()
 	assert_bool(view.shown_enhancement() == CardInstance.MODEL).is_false()
-	var marked: CardInstance = CardInstance.from_deck_id(20)
+	var marked: CardInstance = Deck.new().card(20)
 	CardModifiers.stamp(marked, 0)
 	view.bind(marked)
 	assert_bool(view.shows_stamp()).is_true()

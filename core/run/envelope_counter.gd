@@ -83,7 +83,7 @@ func buy(slot: int) -> RunShop.Reason:
 	_opened = definition(_stock[slot])
 	var stream: RandomStream = RandomStream.new(RandomStreams.derive_seed(_state.run_seed, _key()))
 	_items = EnvelopeContents.draw(
-		_opened, choices(_opened.id), _state, _directives, _campaigns, stream
+		_opened, choices(_opened.id), _state, _run, _directives, _campaigns, stream
 	)
 	_stock[slot] = SOLD
 	_bought = _opened.id
@@ -112,8 +112,9 @@ func items() -> Array[EnvelopeItem]:
 	return copies
 
 
-## Why the item at index cannot be kept now, or OK. NOTHING can always be picked.
-func check_pick(index: int) -> RunShop.Reason:
+## Why the item at index cannot be kept now, or OK. NOTHING can always be picked. A deck
+## card is checked against the deck card it would replace once out names one.
+func check_pick(index: int, out: int = Deck.NO_SLOT) -> RunShop.Reason:
 	if _opened == null:
 		return RunShop.Reason.NO_ENVELOPE
 	if index == NOTHING:
@@ -124,16 +125,20 @@ func check_pick(index: int) -> RunShop.Reason:
 	if item.content == EnvelopeDef.Content.CAMPAIGN and sold_back != null:
 		if sold_back.withheld.has(item.item_id):
 			return RunShop.Reason.SOLD_BACK
-	return EnvelopeContents.check(item, _state, _run)
+	return EnvelopeContents.check(item, _state, _run, out)
 
 
-## Keeps the item at index for the seat, or nothing, and closes the envelope.
-func pick(index: int, seat: int) -> RunShop.Reason:
-	var reason: RunShop.Reason = check_pick(index)
+## Keeps the item at index for the seat, or nothing, and closes the envelope. A deck card
+## goes in place of the deck card in out; without one it is refused and the envelope
+## stays open.
+func pick(index: int, seat: int, out: int = Deck.NO_SLOT) -> RunShop.Reason:
+	var reason: RunShop.Reason = check_pick(index, out)
 	if reason != RunShop.Reason.OK:
 		return reason
 	if index != NOTHING:
-		EnvelopeContents.take(_items[index], _state, _run, seat, _directives)
+		reason = EnvelopeContents.take(_items[index], _state, _run, seat, _directives, out)
+		if reason != RunShop.Reason.OK:
+			return reason
 	_opened = null
 	_items.clear()
 	return RunShop.Reason.OK
@@ -177,7 +182,10 @@ func _open_kinds() -> Array[EnvelopeDef]:
 
 
 func _shows_anything(envelope: EnvelopeDef) -> bool:
-	return envelope != null and EnvelopeContents.has_any(envelope, _state, _directives, _campaigns)
+	return (
+		envelope != null
+		and EnvelopeContents.has_any(envelope, _state, _run, _directives, _campaigns)
+	)
 
 
 ## One key per visit and envelope: a counter sells at most one envelope a visit, and the

@@ -13,6 +13,9 @@ var _owner: int
 var _passes: int
 var _table: BotTable
 var _config: BotConfig
+## The round's cards by rank as the searching seat knows them, which every seat's sketch
+## counts unseen cards against.
+var _deck_counts: PackedByteArray
 var _bombed: bool
 ## Each seat's table, before a bomb at index seat and after one at COUNT + seat, made the
 ## first time the seat decides.
@@ -27,7 +30,8 @@ func _init(
 	owner: int,
 	passes: int,
 	table: BotTable,
-	config: BotConfig
+	config: BotConfig,
+	deck_counts: PackedByteArray
 ) -> void:
 	_hands = hands
 	_landlord = landlord
@@ -37,6 +41,7 @@ func _init(
 	_passes = passes
 	_table = table
 	_config = config
+	_deck_counts = deck_counts
 	_bombed = table.bombed
 	_tables.resize(Seats.COUNT * 2)
 
@@ -115,4 +120,4 @@ func _view() -> SeatView:
 	var public: PublicView = PublicView.new(
 		_landlord, _turn, sizes, history, no_cards, _current, PackedInt32Array([0, 0, 0])
 	)
-	return SeatView.new(_turn, public, _hands[_turn].duplicate(), no_cards)
+	return SeatView.new(_turn, public, _hands[_turn].duplicate(), no_cards, _deck_counts)

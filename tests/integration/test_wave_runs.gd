@@ -147,8 +147,8 @@ func test_forged_seal_keeps_stamped_cards_from_adding_resentment() -> void:
 	var stamped: Array[int] = []
 	for held: Array in [[], ["forged_seal"]]:
 		var loop: RunLoop = _loop(8500, held)
-		for deck_id: int in Deck.generate():
-			CardMarks.stamp(loop.state, CardInstance.from_deck_id(deck_id), 0)
+		for deck_id: int in Deck.SIZE:
+			CardMarks.stamp(loop.state, Deck.new().card(deck_id), 0)
 		loop.start_set()
 		_play_set(loop)
 		stamped.append(_of(loop, RunEvent.Type.RESENTMENT, Resentment.STAMPED_CARD).size())

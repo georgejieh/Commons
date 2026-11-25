@@ -68,8 +68,7 @@ func test_planned_allocation_doubles_the_rank_through_the_deal_hook() -> void:
 	var copies: int = 0
 	for index: int in DEALS:
 		var cards: Array[CardInstance] = []
-		for deck_id: int in Deck.generate():
-			cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append_array(Deck.new().cards())
 		var deal: DealResult = Dealer.deal(cards, stream)
 		stack.run_on_deal(DealContext.new(Seats.NONE, deal, stream))
 		reached += deal.hands[0].count_of(rank)
@@ -84,7 +83,7 @@ func test_planned_allocation_doubles_the_rank_through_the_deal_hook() -> void:
 func _score_stamped(seat: int) -> float:
 	var stack: ModifierStack = ModifierStack.new()
 	stack.add(RED_INK, 0)
-	var card: CardInstance = CardInstance.from_deck_id(20)
+	var card: CardInstance = Deck.new().card(20)
 	CardModifiers.stamp(card, 0)
 	var rules: RuleSet = RuleSet.default_rules()
 	var counts: PackedByteArray = PackedByteArray()
@@ -98,14 +97,10 @@ func test_a_stamped_card_scores_extra_only_for_its_owner() -> void:
 	var plain: float = (
 		Scorer
 		. score_play(
-			[CardInstance.from_deck_id(20)],
+			[Deck.new().card(20)],
 			(
 				Classifier
-				. classify(
-					_one(CardInstance.from_deck_id(20)),
-					RuleSet.default_rules(),
-					Ranks.identity_map()
-				)
+				. classify(_one(Deck.new().card(20)), RuleSet.default_rules(), Ranks.identity_map())
 				. pattern
 			),
 			1,

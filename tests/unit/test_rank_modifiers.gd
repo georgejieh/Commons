@@ -204,8 +204,7 @@ func _pass_lead(round_state: RoundState, table: SeatRules) -> void:
 
 func _random_game(table: SeatRules, stream: RandomStream, landlord: int) -> void:
 	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
+	cards.append_array(Deck.new().cards())
 	var round_state: RoundState = RoundState.new(Dealer.deal(cards, stream), landlord, table)
 	var actions: int = 0
 	while not round_state.is_over() and actions < MAX_ACTIONS:

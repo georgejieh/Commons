@@ -1250,3 +1250,31 @@ desk.ticket,Mark {mark} · {price} coupons
 desk.ticket.stamp,Stamp · {price} coupons
 desk.used,Desk: marked
 desk.used.stamp,Desk: stamped
+controls.action.commons_deck,Deck
+controls.pad.l3,L3
+store.deck,For the communal deck
+store.deck.tip,"This card goes into the communal deck for the rest of the run. You pick a deck card to take out, and it leaves with its marks. The deck holds at most {most} cards of a rank, and the jokers never leave it."
+store.buy.at_most,Rank full
+exchange.eyebrow,For the communal deck
+exchange.title,Pick the card that leaves
+exchange.how,"The {card} goes into the deck for the rest of the run, in place of the card you pick, which leaves with its marks."
+exchange.card,"{card}, {mark}"
+exchange.change,In: {in}. Out: {out}.
+exchange.change.marked,"In: {in}. Out: {out}, with its {marks}."
+exchange.marks.both,{first} and {second}
+exchange.confirm,Exchange · {price} coupons
+exchange.confirm.kept,Exchange
+exchange.refused.joker,The jokers never leave the deck.
+exchange.refused.at_most,The deck already has as many of this rank as it can hold.
+exchange.refused.other,This card cannot go into the deck now.
+deck.rank_count,{rank} ×{count}
+deck.exchanged,"{marks}. Came in at the state store in place of a {card}."
+deck.exchanges,Cards put in at the state store: {count}.
+envelope.deck_envelope.name,Requisition
+envelope.deck_envelope.text,"Opens at once and shows {choices} cards for the communal deck. Put one into the deck in place of a card you pick, or take nothing."
+envelope.card.deck.name,Card for the Deck
+envelope.card.deck.text,"A {card} for the communal deck, for the rest of the run. You pick a deck card to take out, and it leaves with its marks."
+envelope.card.deck.caption,For the deck. You pick the card it replaces.
+envelope.card.marked_deck.name,{mark} Card for the Deck
+envelope.card.marked_deck.text,"A {card} marked {mark}, for the communal deck, for the rest of the run. You pick a deck card to take out, and it leaves with its marks."
+envelope.card.marked_deck.caption,{mark}. You pick the card it replaces.

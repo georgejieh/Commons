@@ -31,8 +31,7 @@ static func _draw_line(streams: RandomStreams, stream_name: String) -> String:
 
 static func _deal_line(streams: RandomStreams, bias: DealBias) -> String:
 	var cards: Array[CardInstance] = []
-	for id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(id))
+	cards.append_array(Deck.new().cards())
 	var values: PackedStringArray = []
 	for card: CardInstance in Dealer.arrange(cards, streams.stream(RandomStreams.DEAL), bias):
 		values.append(str(card.id()))

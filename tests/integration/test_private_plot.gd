@@ -170,7 +170,7 @@ func test_a_landlord_may_swap_a_kitty_card_which_then_sits_the_round_out() -> vo
 			if event.round_event != null and event.round_event.type == RoundEvent.Type.KITTY_TAKEN:
 				kitty = event.round_event.card_ids
 		var plot_id: int = state.inventory.plot[0].id()
-		var rank: int = Deck.rank_of(kitty[0])
+		var rank: int = Deck.new().rank_of(kitty[0])
 		var shown: int = loop.round_state().view_for(1).public.kitty_counts[rank]
 		assert_int(loop.player_swap([kitty[0]], [plot_id])).is_equal(RunLoop.Reason.OK)
 		assert_array(_ids(state.inventory.plot)).not_contains([kitty[0]])

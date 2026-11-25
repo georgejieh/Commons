@@ -35,6 +35,7 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"sell_cadre": ["index", "market"],
 	"sell_campaign": ["index", "market"],
 	"mark_card": ["card", "market"],
+	"deck_card": ["slot", "out"],
 }
 ## The fields of one written decision: the villager's seat and the card IDs it played,
 ## none for a pass.
@@ -218,6 +219,15 @@ static func migrate_from_17(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 18 saves predate the deck exchange (ADR 0042): every slot of the communal deck
+## holds its plain card.
+static func migrate_from_18(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge({"deck": {}})
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {
@@ -362,7 +372,9 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 		"market_envelope":
 			return loop.player_market_envelope(int(command["slot"]))
 		"envelope_pick":
-			return loop.player_envelope_pick(int(command["index"]))
+			# A deck card kept names the slot it takes out (ADR 0042); no other pick does.
+			var out: int = int(command.get("out", Deck.NO_SLOT))
+			return loop.player_envelope_pick(int(command["index"]), out)
 		"books":
 			return loop.player_books(command["figures"])
 		"sell_cadre":
@@ -371,6 +383,8 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_sell_campaign(int(command["index"]), bool(command["market"]))
 		"mark_card":
 			return loop.player_mark_card(int(command["card"]), bool(command["market"]))
+		"deck_card":
+			return loop.player_deck_card(int(command["slot"]), int(command["out"]))
 	return RunLoop.Reason.ILLEGAL
 
 
@@ -389,6 +403,8 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 		if fresh[key] is int and not number:
 			return false
 	if not CardMarks.is_valid(checkpoint["card_marks"]):
+		return false
+	if not Deck.is_valid(checkpoint["deck"]):
 		return false
 	if not CadreMemos.is_valid(checkpoint["cadre_memos"]):
 		return false

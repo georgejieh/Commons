@@ -65,8 +65,10 @@ var _goods: MarketGoods = null
 var _upgrades: HBoxContainer = null
 var _reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _shown_coupons: float = 0.0
-## The state store's Directives; the black market issues none.
+## The state store's Directives beside its Cadres, and its cards for the communal deck at
+## the end of its row of buttons (ADR 0042); the black market has neither.
 var _directives: DirectiveRow = null
+var _deck_goods: DeckGoods = null
 var _campaign_stall: CampaignStall = CampaignStall.new()
 var _reform_stall: ReformStall = ReformStall.new()
 ## Explains what is hovered or focused on the counter, the board and the strip.
@@ -102,7 +104,7 @@ func open(app: DemoApp) -> void:
 	_campaign_stall.spent.connect(_on_spent)
 	_reform_stall.setup(app, _slip, is_issuing, not market)
 	_reform_stall.spent.connect(_on_spent)
-	_envelope_stall.setup(app, market, _slip, is_issuing, self)
+	_envelope_stall.setup(app, market, _slip, is_issuing, self, _deck)
 	_envelope_stall.spent.connect(_on_spent)
 	_envelope_stall.settled.connect(_on_envelope_settled)
 	_board.setup(app.controller.cadre_slots(), BOARD_BOX)
@@ -121,7 +123,7 @@ func open(app: DemoApp) -> void:
 	add_child(_deck)
 	_deck.setup(app.controller)
 	_deck.closed.connect(_on_deck_closed)
-	_deck.marked.connect(_on_marked)
+	_deck.chosen.connect(_on_chosen)
 	_desk_stall.setup(app.controller.mark_desk(market), market, _deck, _slip, is_issuing)
 	_shown_coupons = app.controller.state_copy().coupons
 	_shown_resentment = app.controller.state_copy().resentment
@@ -236,7 +238,12 @@ func _button_row(column: VBoxContainer) -> Button:
 		leave.pressed.connect(_leave)
 		var door: Button = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
 		door.pressed.connect(_to_market)
-		buttons = ScreenKit.row([leave, _reroll, door, deck, _desk_stall.ticket])
+		_deck_goods = DeckGoods.new()
+		_deck_goods.setup(_app.controller, _deck, _slip, is_issuing)
+		var row: Array[Control] = [
+			leave, _reroll, door, deck, _desk_stall.ticket, _deck_goods.strip
+		]
+		buttons = ScreenKit.row(row)
 	_blocks["buttons"] = buttons
 	column.add_child(buttons)
 	return leave
@@ -295,6 +302,7 @@ func _refresh() -> void:
 		_goods.refresh()
 	else:
 		_directives.show_offers()
+		_deck_goods.refresh()
 	_board.show_cadres(controller)
 	_campaign_stall.show_offer()
 	_reform_stall.show_offer()
@@ -436,13 +444,19 @@ func _open_deck() -> void:
 		_deck.open_deck()
 
 
+## Back to the page's first button, unless the sheet stood over an open envelope, which
+## takes the focus back itself.
 func _on_deck_closed() -> void:
-	(_blocks["buttons"].get_child(0) as Button).grab_focus()
+	if not _envelope_stall.is_busy():
+		(_blocks["buttons"].get_child(0) as Button).grab_focus()
 
 
-## The desk marked a card: the coupons count down and its paper says it is done.
-func _on_marked(_card_id: int) -> void:
-	Audio.play(AudioEvents.STORE_BUY)
+## The desk marked a card, or a card came into the deck: the coupons count down and the
+## paper says it is done.
+func _on_chosen(_card_id: int) -> void:
+	# A deck card kept from an envelope sounds as the envelope acts it out.
+	if not _envelope_stall.is_busy():
+		Audio.play(AudioEvents.STORE_BUY)
 	_on_spent()
 	_refresh()
 

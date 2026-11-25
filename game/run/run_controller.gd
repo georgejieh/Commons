@@ -57,6 +57,8 @@ const AWAIT_VILLAGER: int = RunLoop.Awaiting.VILLAGER_SEARCH
 const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
 ## The envelope pick that keeps nothing.
 const TAKE_NOTHING: int = EnvelopeCounter.NOTHING
+## An envelope pick that names no deck card to take out.
+const NO_CARD: int = Deck.NO_SLOT
 ## Suit names in suit order: spade, heart, club, diamond.
 const SUIT_KEYS: Array[String] = ["suit.spades", "suit.hearts", "suit.clubs", "suit.diamonds"]
 const OK: int = RunLoop.Reason.OK
@@ -365,14 +367,35 @@ func mark_desk(market: bool) -> DeskView:
 	return DeskView.new((_loop.market if market else _loop.shop).desk, _loop.state)
 
 
-## The 54 deck cards as the next deal will find them, in deck order, each a copy with
-## the marks the run has saved on it (ADR 0041).
+## The 54 deck cards as the next deal will find them, in slot order, each a copy with
+## the marks the run has saved on it (ADR 0041), the state store's exchanges in place
+## (ADR 0042).
 func deck_cards() -> Array[CardInstance]:
-	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.SIZE:
-		cards.append(CardInstance.from_deck_id(deck_id))
+	var cards: Array[CardInstance] = _loop.state.deck.cards()
 	_loop.state.card_marks.apply(cards)
 	return cards
+
+
+## The plain deck's card the state store replaced in slot (ADR 0042), or null when the
+## slot holds its plain card.
+func replaced(slot: int) -> CardInstance:
+	if not _loop.state.deck.changed_slots().has(slot):
+		return null
+	return Deck.new().card(slot)
+
+
+## How many slots of the deck hold a card the state store put there.
+func exchanged_count() -> int:
+	return _loop.state.deck.changed_slots().size()
+
+
+## The deck card in slot as the round in play was dealt it, with its saved marks, for a
+## view that shows a card it holds only the ID of, as the kitty.
+func deck_card(slot: int) -> CardInstance:
+	var card: CardInstance = _loop.state.deck.card(slot)
+	var one: Array[CardInstance] = [card]
+	_loop.state.card_marks.apply(one)
+	return card
 
 
 ## The Campaigns the player holds, in slot order, and how many they can hold.
@@ -467,9 +490,21 @@ func envelope_buy(slot: int, market: bool = false) -> int:
 	return _act("envelope_buy", _loop.player_envelope_buy.bind(slot))
 
 
-## Keeps the open envelope's item at index, or nothing with TAKE_NOTHING.
-func envelope_pick(index: int) -> int:
-	return _act("envelope_pick", _loop.player_envelope_pick.bind(index))
+## Keeps the open envelope's item at index, or nothing with TAKE_NOTHING. A card for the
+## deck goes in place of the deck card in out (ADR 0042).
+func envelope_pick(index: int, out: int = NO_CARD) -> int:
+	return _act("envelope_pick", _loop.player_envelope_pick.bind(index, out))
+
+
+## Buys the state store's card in slot for the communal deck, in place of the deck card
+## in out, for the rest of the run (ADR 0042).
+func exchange_card(slot: int, out: int) -> int:
+	return _act("deck_card", _loop.player_deck_card.bind(slot, out))
+
+
+## The state store's stall of cards for the deck this visit, for a screen to read.
+func deck_stall() -> DeckStallView:
+	return DeckStallView.new(_loop.deck_stall)
 
 
 ## The envelope on the state store's counter, or the black market's, for a screen to read.
@@ -497,14 +532,21 @@ func card_name(card: CardInstance) -> String:
 
 
 func envelope_card_text(kind: int, key: String, card: CardInstance) -> String:
-	var mark: String = "stamped" if kind == EnvelopeShelf.KIND_STAMPED else "model"
+	var marks: Dictionary[int, String] = {
+		EnvelopeShelf.KIND_STAMPED: "stamped",
+		EnvelopeShelf.KIND_MODEL: "model",
+		EnvelopeShelf.KIND_DECK: "deck",
+		EnvelopeShelf.KIND_MARKED_DECK: "marked_deck",
+	}
 	var model: float = Scorer.DEFAULT_PARAMS.model_grain_percent / 100.0
 	var values: Dictionary[String, Variant] = {
 		"resentment": RunLoop.DEFAULT_RESENTMENT.stamped_card,
 		"model_times": ModifierDef.multiple(model),
 		"card": card_name(card),
+		"mark":
+		"" if card.enhancement_id().is_empty() else tr("keyword.%s.name" % card.enhancement_id()),
 	}
-	return tr("envelope.card.%s.%s" % [mark, key]).format(values)
+	return tr("envelope.card.%s.%s" % [marks[kind], key]).format(values)
 
 
 ## The Reforms in force, in the order they were enacted.
