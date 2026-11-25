@@ -105,7 +105,7 @@ func _replace(data: Dictionary, extras: Dictionary) -> Error:
 	if written != OK:
 		return written
 	# A damaged main file never replaces the backup, which may be the only good save.
-	if _read(_path) != null:
+	if _data_of(_parse(_path)) != null:
 		if FileAccess.file_exists(backup_path()):
 			DirAccess.remove_absolute(backup_path())
 		var kept: Error = DirAccess.rename_absolute(_path, backup_path())
@@ -117,13 +117,15 @@ func _replace(data: Dictionary, extras: Dictionary) -> Error:
 
 
 func load_save() -> SaveLoad:
-	var main: Variant = _read(_path)
-	if main != null:
-		return _loaded(SaveLoad.Status.OK, main, _path)
-	var backup: Variant = _read(backup_path())
-	if backup != null:
+	var main: Variant = _parse(_path)
+	var data: Variant = _data_of(main)
+	if data != null:
+		return _loaded(SaveLoad.Status.OK, data, main)
+	var backup: Variant = _parse(backup_path())
+	data = _data_of(backup)
+	if data != null:
 		GameLog.load_fell_back(_path)
-		return _loaded(SaveLoad.Status.RESTORED_FROM_BACKUP, backup, backup_path(), RESTORED_KEY)
+		return _loaded(SaveLoad.Status.RESTORED_FROM_BACKUP, data, backup, RESTORED_KEY)
 	if not FileAccess.file_exists(_path) and not FileAccess.file_exists(backup_path()):
 		return SaveLoad.new(SaveLoad.Status.MISSING)
 	GameLog.load_failed(_path)
@@ -202,16 +204,12 @@ func _store(file_path: String, text: String) -> Error:
 	return OK if stored else ERR_FILE_CANT_WRITE
 
 
-## What a load found: the data, the extras beside it, and whether its seal failed. The
-## file is parsed again, since migrating changed the copy the data came from.
+## What a load found: the data, the extras beside it, and whether the seal of the file
+## it came from, save, failed.
 func _loaded(
-	status: SaveLoad.Status, data: Variant, file_path: String, key: String = ""
+	status: SaveLoad.Status, data: Variant, save: Dictionary, key: String = ""
 ) -> SaveLoad:
 	var result: SaveLoad = SaveLoad.new(status, data, key)
-	var parsed: Variant = _parse(file_path)
-	if parsed == null:
-		return result
-	var save: Dictionary = parsed
 	var extras: Variant = save.get(EXTRA_KEY, {})
 	result.extras = extras if extras is Dictionary else {}
 	var version: int = int(save["schema_version"])
@@ -246,15 +244,21 @@ func _parse(file_path: String) -> Variant:
 	return save
 
 
-## Returns the migrated data, or null when the file is missing, damaged or too new.
-func _read(file_path: String) -> Variant:
-	var save: Variant = _parse(file_path)
+## The migrated data of a parsed save, or null when there is none or it is damaged or
+## too new. An older save is migrated on a copy, so the parsed values its seal was made
+## over stay as they were read.
+func _data_of(save: Variant) -> Variant:
 	if save == null:
 		return null
-	var data: Variant = _migrate(save["data"], int(save["schema_version"]))
-	if data == null or (_validator.is_valid() and not _validator.call(data)):
+	var parsed: Dictionary = save
+	var version: int = int(parsed["schema_version"])
+	var data: Dictionary = parsed["data"]
+	if version < _version:
+		data = data.duplicate(true)
+	var migrated: Variant = _migrate(data, version)
+	if migrated == null or (_validator.is_valid() and not _validator.call(migrated)):
 		return null
-	return data
+	return migrated
 
 
 ## Brings data up to this version, or returns null when it is newer or a step is missing.
