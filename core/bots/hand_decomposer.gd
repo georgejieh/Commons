@@ -42,6 +42,8 @@ var _own: PackedByteArray = PackedByteArray()
 ## The hand's wild cards by printed rank, packed, so hands that differ only there differ
 ## in the memo.
 var _own_code: int = 0
+## Places the spare wild cards at a leaf, made once a score for a hand that holds any.
+var _wild_leaf: WildLeaf = null
 
 
 func _init(rules: RuleSet, rank_map: PackedByteArray, memo_cap: int) -> void:
@@ -98,6 +100,7 @@ func _split_wilds() -> void:
 		_wilds += _counts[rank]
 		_counts[rank] = 0
 	_budget = _wilds
+	_wild_leaf = WildLeaf.new(_leaf, _own) if _wilds > 0 else null
 
 
 func decompose(counts: PackedByteArray) -> Decomposition:
@@ -134,7 +137,7 @@ func _search(position: int, key: int, plane_code: int) -> int:
 func _leaf_counts() -> PackedByteArray:
 	if _budget == 0:
 		return _counts
-	return WildLeaf.new(_leaf, _own).placed(_counts, _planes, _budget, _budget == _wilds)
+	return _wild_leaf.placed(_counts, _planes, _budget, _budget == _wilds)
 
 
 func _chains_at(start: int, key: int, plane_code: int) -> int:
