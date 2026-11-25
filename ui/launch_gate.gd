@@ -43,6 +43,12 @@ static func guards(app: Node) -> bool:
 	return tree.get_script() == null and tree.current_scene == app
 
 
+## The most seconds the "already open" notice can stand once the other copy has stopped:
+## the stale beats, and the beat it is read at.
+static func wait_seconds(params: SessionParams) -> int:
+	return ceili(params.stale_after() + params.beat_seconds)
+
+
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -70,8 +76,7 @@ func notice() -> SessionNotice:
 
 
 func _show_notice() -> void:
-	var seconds: int = ceili(_params.stale_after() + _params.beat_seconds)
-	_notice = SessionNotice.already_open(seconds, get_tree().quit, _open_anyway)
+	_notice = SessionNotice.already_open(wait_seconds(_params), get_tree().quit, _open_anyway)
 	add_child(_notice)
 	_timer.start()
 
