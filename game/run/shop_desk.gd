@@ -1,6 +1,6 @@
 class_name ShopDesk
 extends RefCounted
-## One counter as a screen sees it (P4.10): what is on it, what things cost and whether
+## One counter as a screen sees it: what is on it, what things cost and whether
 ## they can be bought now. The state store and the black market each have one. It only
 ## reads the run; buying goes through RunController's commands.
 
@@ -106,12 +106,12 @@ func can_buy_directive(slot: int) -> bool:
 	return _shop.check_directive(slot) == RunShop.Reason.OK
 
 
-## Cards for the private plot on offer here: how many slots, then each slot's card (null
-## once sold), price and whether it can be bought now.
+## How many cards for the private plot are on offer here.
 func plot_card_count() -> int:
 	return 0 if _stall == null else _stall.offers.count()
 
 
+## A stand-in for the plot card in slot, or null once it is sold.
 func plot_card(slot: int) -> CardInstance:
 	if _stall.offers.rank(slot) == CardOffers.SOLD:
 		return null
@@ -121,19 +121,22 @@ func plot_card(slot: int) -> CardInstance:
 	)
 
 
+## What the plot card in slot costs now.
 func plot_card_price(slot: int) -> int:
 	return _stall.offers.price(slot)
 
 
+## True when the plot card in slot can be bought now.
 func can_buy_plot_card(slot: int) -> bool:
 	return _stall.check_buy(slot) == PlotStall.Reason.OK
 
 
-## Cards in the private plot now, and how many it holds.
+## How many cards the private plot holds now.
 func plot_size() -> int:
 	return _state.inventory.plot.size()
 
 
+## How many cards the private plot can hold.
 func plot_capacity() -> int:
 	return PlotSwap.capacity(_state, RunLoop.DEFAULT_PARAMS)
 

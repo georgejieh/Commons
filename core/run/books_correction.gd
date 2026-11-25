@@ -1,6 +1,6 @@
 class_name BooksCorrection
 extends RefCounted
-## What one books command corrected (ADR 0022, P4.19), carried by its BOOKS_CORRECTED
+## What one books command corrected (ADR 0022), carried by its BOOKS_CORRECTED
 ## event, so the notice can be built from the event alone: each figure that differed, its
 ## true value and the value reported, and what followed. A correction with no figures is
 ## an offence with nothing to correct, such as a save whose seal failed.

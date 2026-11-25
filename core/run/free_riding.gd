@@ -1,7 +1,7 @@
 class_name FreeRiding
 extends RefCounted
 ## The teammate's effort from the player's share of everything the Commons has paid
-## peasants this run (P4.4).
+## peasants this run.
 
 
 ## The player's share, from 0 to 1. Nothing paid yet counts as no share.

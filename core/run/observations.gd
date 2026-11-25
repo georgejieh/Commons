@@ -1,7 +1,7 @@
 class_name Observations
 extends RefCounted
 ## What the player has seen each villager do at the table this run, per family: the
-## dossier's source (P3B.8). It holds only what happened in view, never a personality.
+## dossier's source. It holds only what happened in view, never a personality.
 
 ## SHIFTED_CLAIMS counts claims above the fair half made while one of the family's honesty
 ## shifts held (ADR 0043).

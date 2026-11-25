@@ -1,6 +1,6 @@
 class_name PlotStall
 extends RefCounted
-## Cards for the private plot, sold at the black market (P4.10). Each visit offers a few
+## Cards for the private plot, sold at the black market. Each visit offers a few
 ## cards through CardOffers, drawn on the shop stream from the ranks the data lists. A
 ## bought card goes into the plot under a new plot ID, if the plot has room.
 

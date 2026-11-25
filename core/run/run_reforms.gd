@@ -42,7 +42,7 @@ static func campaign_slots(state: RunState) -> int:
 	return LIMITS.campaign_slots + extra
 
 
-## More items every envelope holds to choose from, for the envelopes (P4.11g).
+## More items every envelope holds to choose from, for the envelopes (ADR 0021).
 static func extra_envelope_choices(state: RunState) -> int:
 	var extra: int = 0
 	for effect: ReformEffect in _effects(state):
@@ -86,7 +86,7 @@ static func wild_ranks_per_round(state: RunState) -> int:
 
 ## The rules held Reforms give the holder's seat, which is the player's, in the order they
 ## were enacted, each as a stack entry of kind REFORM that runs only its own hooks and
-## builds the holder's seat alone (SeatScope): today Industrialization's bigger bombs
+## builds the holder's seat alone (SeatScope), such as Industrialization's bigger bombs
 ## (ADR 0029, ADR 0039).
 static func table_rules(state: RunState, holder: int) -> Array[ActiveModifier]:
 	var rules: Array[ActiveModifier] = []

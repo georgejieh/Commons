@@ -1,6 +1,6 @@
 class_name PlayerStyle
 extends RefCounted
-## How the player played one Set (P4.7): how often they played each hand type and how
+## How the player played one Set: how often they played each hand type and how
 ## often they called the landlord seat. The New Landlord and mirroring families copy it.
 
 var type_counts: PackedInt64Array = PackedInt64Array()

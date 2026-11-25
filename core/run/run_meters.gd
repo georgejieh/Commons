@@ -18,7 +18,7 @@ const STOOD_BY: String = "stood_by"
 const CADRE_FAMINE: String = "cadre_famine"
 const DEBUFF_FAMINE: String = "debuff_famine"
 const DEBUFF_DENUNCIATION: String = "debuff_denunciation"
-## Its amount comes from the Resentment curve (P4.2), not the row.
+## Its amount comes from the Resentment curve, not the row.
 const RESENTMENT: String = "resentment"
 const RATIONING: String = "rationing"
 const REEDUCATION: String = "reeducation"

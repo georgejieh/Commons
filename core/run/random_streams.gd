@@ -9,9 +9,9 @@ const DEBUFF: String = "debuff"
 const AI: String = "ai"
 const EVENTS: String = "events"
 const COSMETIC: String = "cosmetic"
-## Need audits (P4.3), apart from ai so a check never shifts a bot's draws.
+## Need audits, apart from ai so a check never shifts a bot's draws.
 const AUDIT: String = "audit"
-## Given names (P4.17), apart from events so naming a run moves no other draw.
+## Given names (ADR 0028), apart from events so naming a run moves no other draw.
 const NAMING: String = "names"
 const NAMES: PackedStringArray = [DEAL, SHOP, DEBUFF, AI, EVENTS, COSMETIC, AUDIT, NAMING]
 

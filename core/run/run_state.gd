@@ -9,7 +9,7 @@ enum SetType { SMALL, LARGE, BOSS }
 const NO_DEBUFF: String = ""
 const NO_BOSS: String = ""
 const NO_SLOGAN: int = -1
-## Family IDs by seat until P4.5 seats the roster.
+## Family IDs by seat for a run with no roster, and seat 0's name in every run.
 const DEFAULT_TABLE: Array[String] = ["player", "seat_1", "seat_2"]
 
 var run_seed: int
@@ -29,7 +29,7 @@ var debuff_ladder: Array[String] = []
 var slogan_type: int = NO_SLOGAN
 var famine: int = 0
 var denunciation: int = 0
-## Setback state (P4.1). A meter's setback is armed until it fires, and re-arms once the
+## Setback state. A meter's setback is armed until it fires, and re-arms once the
 ## meter falls back below its margin.
 var famine_armed: bool = true
 var denunciation_armed: bool = true
@@ -37,7 +37,7 @@ var denunciation_armed: bool = true
 var rationed: bool = false
 ## Reeducation replaces the next shop visit while true.
 var reeducation_due: bool = false
-## The village's Resentment of the player (P4.2).
+## The village's Resentment of the player.
 var resentment: int = 0
 ## Sets in a row the player has ended without holding the landlord's seat (ADR 0031).
 var seatless_sets: int = 0
@@ -45,15 +45,15 @@ var seatless_sets: int = 0
 ## make them, for the player's seat alone (ADR 0039). Empty between rounds and while no
 ## rank is wild.
 var wild_ranks: Array[int] = []
-## Each villager family's own Denunciation, from lies caught at audit (P4.3).
+## Each villager family's own Denunciation, from lies caught at audit.
 var villager_denunciation: Dictionary[String, int] = {}
-## Commons shares paid to the player, and to every peasant, this run (P4.4).
+## Commons shares paid to the player, and to every peasant, this run.
 var commons_received: int = 0
 var commons_paid: int = 0
-## What each family remembers of the player, carried in from the profile (P4.6).
+## What each family remembers of the player, carried in from the profile.
 var memory: VillageMemory = VillageMemory.new()
 ## Families that held the landlord seat for a whole Set this run, and those that have
-## already run a boss Set (P4.7).
+## already run a boss Set.
 var risen: Array[String] = []
 var risen_used: Array[String] = []
 ## Officials that have run a boss Set since the pool last cycled.
@@ -63,12 +63,11 @@ var boss_id: String = NO_BOSS
 var boss_family: String = ""
 ## How the player played their most recent Sets, oldest first.
 var styles: Array[PlayerStyle] = []
-## The next ID for a card entering the plot, and the plot upgrades bought (P4.8).
+## The next ID for a card entering the plot, and the plot upgrades bought.
 var next_plot_id: int = CardInstance.FIRST_PLOT_ID
 var plot_capacity_bonus: int = 0
 var swap_bonus: int = 0
-## How many of each item the state store has sold this run, against its limited stock
-## (P4.10).
+## How many of each item the state store has sold this run, against its limited stock.
 var store_sold: Dictionary[String, int] = {}
 ## Overfulfilment steps earned this run, which raise every later target, and the steps
 ## the Set just finished earned, 0 again once the next Set starts. The target in force
@@ -79,8 +78,7 @@ var over_steps: int = 0
 ## over_steps, so the target in force for that Set leaves them out too; 0 again once the
 ## next Set starts.
 var reported_steps: int = 0
-## Each hand type's level, which Directives raise, and the marks saved on deck cards
-## (P4.11).
+## Each hand type's level, which Directives raise, and the marks saved on deck cards.
 var hand_levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
 var card_marks: CardMarks = CardMarks.new()
 ## The communal deck, slot by slot, as the state store's exchanges left it (ADR 0042).

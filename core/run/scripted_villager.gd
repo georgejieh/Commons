@@ -7,7 +7,7 @@ extends RefCounted
 ## actions, so a test fails on it, and the seat plays a legal pass, or its lowest legal
 ## play when it leads.
 
-## Called once per fault, with what went wrong.
+## Called once per fault.
 var on_fault: Callable = Callable()
 
 var _seat: int

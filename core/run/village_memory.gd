@@ -1,6 +1,6 @@
 class_name VillageMemory
 extends RefCounted
-## What each family remembers of the player, across runs (P4.6): how often the player
+## What each family remembers of the player, across runs: how often the player
 ## fed, bombed, denounced and betrayed them, built from Set summaries. Counts fade by a
 ## data rate at each new run, so old harm weighs less than new harm but lingers.
 

@@ -17,7 +17,7 @@ var _last_rate: float = 0.0
 var _last_zeal: float = 0.0
 var _last_stamps_resented: bool = true
 var _last_surplus: Array[int] = []
-## What changed the last real play's score, in order (P5.2a). A preview keeps none.
+## What changed the last real play's score, in order. A preview keeps none.
 var _last_steps: Array[ScoreStep] = []
 ## The run's Year in play, for the hooks that grow with it (ADR 0032).
 var _year: int = 0

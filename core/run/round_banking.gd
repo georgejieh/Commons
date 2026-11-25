@@ -26,7 +26,7 @@ static func bank(
 
 ## Bots declare on the ai stream. The player's need counts only when they are a peasant.
 ## A debuff's cut takes from the player's share before it counts (ADR 0023).
-## Declarations are then audited (P4.3): each seat rolls the audit die, and a face at or
+## Declarations are then audited: each seat rolls the audit die, and a face at or
 ## below audit_faces checks its claim. Caught seats are appended to caught, and their
 ## true need replaces the lie. Returns true when the pool fell short of the needs that
 ## stand, a Commons shortfall. The audit's shown faces, when it names any, are the faces

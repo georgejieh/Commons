@@ -1,8 +1,8 @@
 class_name RunRequest
 extends RefCounted
 ## What a new run is asked to be (ADR 0025): its kind, seed, household, stake and lineage,
-## and whether it writes the profile. The app, the demo, and later the tutorial and the
-## balance harness all start runs from one of these, through RunStarter.
+## and whether it writes the profile. The app, the demo, the arrival and the balance
+## harness all start runs from one of these, through RunStarter.
 
 const DEMO: int = RunIdentity.Kind.DEMO
 const FULL: int = RunIdentity.Kind.FULL

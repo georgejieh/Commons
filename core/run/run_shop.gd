@@ -1,21 +1,10 @@
 class_name RunShop
 extends RefCounted
-## One counter between Sets: the state store or the black market (P4.10). Stock is drawn
-## on the shop stream by rarity weight from the counter's pool, leaving out what the
-## player holds and what the counter has run out of, and bought with coupons at the
-## counter's price. A reroll draws new stock for a price that rises with each reroll in
-## the visit. Stock is never saved: a save in the shop replays the visit from the Set's
-## end, which draws the same stock. A counter with Directive slots also offers Directives
-## (ADR 0021), drawn evenly after every Cadre on the stream and redrawn by the same
-## reroll; one whose whole family is at the top level is not offered. A counter with
-## Campaign offers draws them last of all, evenly from its pool, and the same reroll
-## redraws them; a Campaign is refused while the player holds as many as they can. A
-## counter with Reform offers draws them after its Campaigns, and the reroll redraws
-## them too. A counter with envelope offers draws them after everything else, and the
-## reroll redraws them until one is bought (EnvelopeCounter). How many Cadres the player
-## can hold is RunReforms.cadre_slots(). A held Cadre may be sold back to either counter
-## for part of its price there (ADR 0040); it is not offered again that visit. Each
-## counter's desk marks one deck card a visit (MarkDesk, ADR 0041).
+## One counter between Sets: the state store or the black market. It holds the visit's
+## Cadres and Directives, and through its counters its Campaigns, Reforms, envelopes and
+## mark desk, each drawn on the shop stream in the order RunLoop.open_shop() gives and
+## bought with coupons at the counter's price. Stock is never saved: a save in the shop
+## replays the visit from the Set's end, which draws the same stock.
 
 enum Reason {
 	OK,
@@ -64,7 +53,7 @@ var withheld: Array[String] = []
 var _state: RunState
 var _params: ShopParams
 var _pool: Array[ModifierDef]
-## Slots lost while rationing is in force (P4.1).
+## Slots lost while rationing is in force.
 var _ration_cut: int
 var _stock: Array[String] = []
 var _rerolls: int = 0

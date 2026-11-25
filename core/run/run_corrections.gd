@@ -1,6 +1,6 @@
 class_name RunCorrections
 extends RefCounted
-## The books command (ADR 0022, P4.19): figures reported from outside the game, taken as
+## The books command (ADR 0022): figures reported from outside the game, taken as
 ## official and never refused for being untrue. A figure outside what its field holds is
 ## clamped to the field; only a malformed command is refused. Against the true figures:
 ## coupons or progress reported higher become the reported ones, and every later Quota's

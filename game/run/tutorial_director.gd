@@ -8,7 +8,7 @@ extends RefCounted
 ## button. A follow-up to an action at the table waits until the table has shown the
 ## run's answer to it (answered(), or the table's next report), so Wang never speaks of a
 ## villager's play before it is on the table. With no director, screens accept
-## everything as before.
+## everything.
 
 signal changed
 signal refused

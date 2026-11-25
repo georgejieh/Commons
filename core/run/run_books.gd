@@ -1,7 +1,7 @@
 class_name RunBooks
 extends RefCounted
 ## What the run's books hold after figures reported from outside the game were taken as
-## official (ADR 0022, P4.19): the figures that went dark, how far corrections raised
+## official (ADR 0022): the figures that went dark, how far corrections raised
 ## the norm and the shops' prices, and how many corrections there were. A raised norm is
 ## kept here as a percent of each target, apart from the overfulfilment steps, and so is
 ## a raised price. Both compound: each correction multiplies what the last left.

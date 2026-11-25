@@ -21,7 +21,7 @@ enum Awaiting {
 	## Before the first play, a peasant player holding a Campaign for that moment may use
 	## it, then plays on with player_begin() (ADR 0021).
 	PLAYER_OPENING,
-	## A searching villager's play is being decided outside the loop (P5.0): read what the
+	## A searching villager's play is being decided outside the loop (ADR 0030): read what the
 	## search needs from search_request() and hand the play in with villager_play().
 	VILLAGER_SEARCH,
 }
@@ -31,7 +31,7 @@ const PLAYER: int = 0
 const DEFAULT_PARAMS: RunParams = preload("res://data/run/default_run.tres")
 const DEFAULT_POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
 const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
-## Private items the black market sells (P4.9 effects, P4.10 stock).
+## Private items the black market sells.
 const DEFAULT_MARKET: CadrePool = preload("res://data/run/market_pool.tres")
 const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
 const DEFAULT_BLACK_MARKET: ShopParams = preload("res://data/run/black_market.tres")
@@ -203,7 +203,7 @@ func set_aside_cards() -> Array[CardInstance]:
 
 
 ## The player's view of the round: the public view and their own cards, plus whatever
-## their information upgrades reveal (P4.9). Null between rounds.
+## their information upgrades reveal. Null between rounds.
 func player_view() -> SeatView:
 	if _round == null:
 		return null
@@ -243,8 +243,8 @@ func seat_table(seat: int) -> BotTable:
 
 ## The current Set's target: the curve's, any boss's change, then the norm in force for
 ## this Set, which leaves out what the Set itself earned once it is over and what a False
-## Report raised it by in the Set (ADR 0032), then the
-## family's file and the corrections in force (ADR 0022).
+## Report raised it by in the Set (ADR 0032), then the family's file and the corrections
+## in force (ADR 0022).
 func target() -> float:
 	var base: float = _sets.target(state.year, state.set_type)
 	if state.boss_id != RunState.NO_BOSS:
@@ -925,13 +925,13 @@ func _bot_play() -> void:
 	_play_bot(seat, config, legal, play)
 
 
-## What the search for the villager the loop stands still for reads (P5.0), or null
+## What the search for the villager the loop stands still for reads (ADR 0030), or null
 ## while it waits on anything else. The search may read it on any thread.
 func search_request() -> SearchRequest:
 	return _request
 
 
-## Takes the searched play of the villager the loop stands still for, and plays on (P5.0).
+## Takes the searched play of the villager the loop stands still for, and plays on (ADR 0030).
 ## A play that is not among its legal moves or a pass is refused as any bot's is: counted
 ## in refused_bot_actions, with the first legal move played instead. Not a player command:
 ## the record writes it with the villagers' decisions, never with the commands.
@@ -1365,8 +1365,6 @@ func _aim_grudges() -> void:
 			)
 
 
-## Ends the run when a meter has reached death. Every caller sits at a state that may
-## move to the run's end.
 ## A run that dies mid-Set still remembers that Set: the round in play is folded into
 ## the Set's summary, and the summary into the village's memory, as a finished Set's is.
 func _remember_cut_short() -> void:
@@ -1378,6 +1376,8 @@ func _remember_cut_short() -> void:
 	CorruptionEvents.close_quota(state, set_log.events(), _params.base_need)
 
 
+## Ends the run when a meter has reached death. Every caller sits at a state that may
+## move to the run's end.
 func _end_if_dead() -> bool:
 	if not RunMeters.dead(state, _meters):
 		return false

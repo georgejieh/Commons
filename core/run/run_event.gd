@@ -125,8 +125,8 @@ var round_event: RoundEvent
 var grain: float = 0.0
 var rate: float = 0.0
 var zeal: float = 0.0
-## Set only for PLAY_SCORED: every change to the play's score in the order it was made
-## (P5.2a), so the table can act each one out. Never saved.
+## Set only for PLAY_SCORED: every change to the play's score in the order it was made,
+## so the table can act each one out. Never saved.
 var steps: Array[ScoreStep] = []
 ## Set only for BOOKS_CORRECTED.
 var correction: BooksCorrection = null

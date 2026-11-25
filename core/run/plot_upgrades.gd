@@ -1,8 +1,8 @@
 class_name PlotUpgrades
 extends RefCounted
-## Private-plot upgrades sold at the black market (P4.10): room for one more card, or
+## Private-plot upgrades sold at the black market: room for one more card, or
 ## one more swap each round. Each is bought with coupons up to a limit, and raises the
-## bonus the plot already reads from the run state (P4.8).
+## bonus the plot already reads from the run state.
 
 const CAPACITY: String = "capacity"
 const SWAPS: String = "swaps"

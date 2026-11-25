@@ -10,7 +10,7 @@ extends RefCounted
 ## - At the stage past the last (ArtStages.FILED_STAGE) every figure reads as a success:
 ##   the Quota as fulfilled, every meter as "None reported", coupons as ample. The true
 ##   figures are only on the small ledger, which shows them as the stages before it do.
-## A run with no dark figure, below that stage, shows every figure exactly as before.
+## A run with no dark figure, below that stage, shows every figure as it is.
 
 const COUPONS: String = "coupons"
 const PROGRESS: String = "progress"

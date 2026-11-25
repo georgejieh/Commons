@@ -1,6 +1,6 @@
 class_name Roster
 extends RefCounted
-## The village's households during a run (P4.5). Before every Set, families in
+## The village's households during a run. Before every Set, families in
 ## reeducation count down and may return, sent-down youth arrive while fewer than two
 ## opponents are available, and two available families are seated. All draws are on
 ## the events stream, but an arriving youth's given name, which is on the names stream.

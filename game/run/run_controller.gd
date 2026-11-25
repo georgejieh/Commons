@@ -51,7 +51,7 @@ const AWAIT_STORE: int = RunLoop.Awaiting.SHOP
 const AWAIT_RUN_OVER: int = RunLoop.Awaiting.RUN_OVER
 const AWAIT_REEDUCATION: int = RunLoop.Awaiting.REEDUCATION
 const AWAIT_OPENING: int = RunLoop.Awaiting.PLAYER_OPENING
-## A villager's play is being searched (P5.0): nothing to do but wait for it.
+## A villager's play is being searched (ADR 0030): nothing to do but wait for it.
 const AWAIT_VILLAGER: int = RunLoop.Awaiting.VILLAGER_SEARCH
 ## A Campaign that can be used now (CampaignEffect.Reason.OK).
 const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
@@ -65,7 +65,7 @@ const OK: int = RunLoop.Reason.OK
 
 ## True while the run's searching villagers decide under the ExpertRunner's deadline, as
 ## the live game plays (ADR 0030). In the tree the loop then stands still while one
-## thinks, and the search runs on the worker pool while frames go on (P5.0); outside it
+## thinks, and the search runs on the worker pool while frames go on (ADR 0030); outside it
 ## each is searched at once on the calling thread. A tool or test that must stay
 ## repeatable sets it false before it starts or resumes a run, and they search with no
 ## limit inside the loop.
@@ -81,10 +81,10 @@ var _loop: RunLoop
 ## Decides for the loop's searcher, and for a villager answered at once outside the tree.
 ## Every decision blocks until its samples finish.
 var _runner: ExpertRunner = ExpertRunner.new()
-## The searches run on the pool for villagers the loop stands still for (P5.0).
+## The searches run on the pool for villagers the loop stands still for (ADR 0030).
 var _searches: VillagerSearches = VillagerSearches.new()
 var _saves: SaveService = null
-## The profile save, which the village's memory outlives runs in (P4.6).
+## The profile save, which the village's memory outlives runs in.
 var _profile: SaveService = null
 var _definitions: Dictionary[String, ModifierDef] = {}
 var _directives: Dictionary[String, DirectiveDef] = {}
@@ -153,7 +153,7 @@ func _take_over(loop: RunLoop, saves: SaveService, profile: SaveService, loaded:
 	_attach(loop, saves)
 	if file_watch.resumed(_loop, loaded):
 		_save()
-	# A save written while a villager thought resumes standing still for it (P5.0).
+	# A save written while a villager thought resumes standing still for it (ADR 0030).
 	if _serve():
 		_save()
 	_remember(_loop.flow.state())
@@ -222,7 +222,7 @@ func bid(claim: bool) -> int:
 	return _act("bid", _loop.player_bid.bind(claim))
 
 
-## The most cards the player may swap this round (P4.8).
+## The most cards the player may swap this round.
 func swap_limit() -> int:
 	return _loop.swap_limit()
 
@@ -302,28 +302,32 @@ func directive(slot: int) -> int:
 	return _act("directive", _loop.player_directive.bind(slot))
 
 
-## A Directive's name and rules, and the hand types it raises, as Pattern.Type values.
+## A Directive's name.
 func directive_name(directive_id: String) -> String:
 	return tr(_directives[directive_id].name_key)
 
 
+## A Directive's rules.
 func directive_text(directive_id: String) -> String:
 	return tr(_directives[directive_id].text_key)
 
 
+## The hand types a Directive raises, as Pattern.Type values.
 func directive_types(directive_id: String) -> Array[int]:
 	return _directives[directive_id].hand_types.duplicate()
 
 
-## A hand type's level in this run, and its Rate at a level, from the scorer's table.
+## A hand type's level in this run.
 func hand_level(type: int) -> int:
 	return _loop.state.hand_levels.level_of(type as Pattern.Type)
 
 
+## A hand type's Rate at a level, from the scorer's table.
 func hand_rate(type: int, level: int) -> int:
 	return Scorer.DEFAULT_PARAMS.rate_for(type, level)
 
 
+## The highest level a hand type reaches.
 func max_hand_level() -> int:
 	return Scorer.DEFAULT_PARAMS.max_level
 
@@ -399,11 +403,12 @@ func deck_card(slot: int) -> CardInstance:
 	return card
 
 
-## The Campaigns the player holds, in slot order, and how many they can hold.
+## The Campaigns the player holds, in slot order.
 func held_campaigns() -> Array[String]:
 	return _loop.state.inventory.consumables.duplicate()
 
 
+## How many Campaigns the player can hold at once, Reforms included.
 func campaign_slots() -> int:
 	return RunReforms.campaign_slots(_loop.state)
 
@@ -419,23 +424,25 @@ static func campaign_reason_key(reason: int) -> String:
 	return "campaign.reason." + String(CampaignEffect.Reason.keys()[reason]).to_lower()
 
 
-## A Campaign's name, rules, prompt and card counts, with its numbers filled in.
+## A Campaign's name.
 func campaign_name(campaign_id: String) -> String:
 	return tr(_campaign(campaign_id).name_key)
 
 
+## A Campaign's rules, with its numbers filled in.
 func campaign_text(campaign_id: String) -> String:
 	var definition: CampaignDef = _campaign(campaign_id)
 	return tr(definition.text_key).format(definition.text_values())
 
 
+## What a Campaign asks the player to choose, with its numbers filled in.
 func campaign_prompt(campaign_id: String) -> String:
 	var definition: CampaignDef = _campaign(campaign_id)
 	return tr(definition.prompt_key).format(definition.text_values())
 
 
-## Every Campaign's prompt, held or not, and every surname a seat can show, for the
-## table's pieces that must have room for the longest (ADR 0034).
+## Every Campaign's prompt, held or not, for the table's pieces that must have room for
+## the longest (ADR 0034).
 func every_campaign_prompt() -> Array[String]:
 	var prompts: Array[String] = []
 	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
@@ -444,6 +451,7 @@ func every_campaign_prompt() -> Array[String]:
 	return prompts
 
 
+## Every surname a seat can show, for the same pieces.
 func every_surname() -> Array[String]:
 	return RunPeople.every_surname()
 
@@ -459,6 +467,7 @@ func campaign_parameter(campaign_id: String, key: String) -> int:
 	return _campaign(campaign_id).parameters.get(key, 0)
 
 
+## True for a Campaign tagged private.
 func is_private_campaign(campaign_id: String) -> bool:
 	return _campaign(campaign_id).tag == ModifierDef.Tag.PRIVATE
 
@@ -779,7 +788,7 @@ func set_aside_names() -> String:
 	return ", ".join(names)
 
 
-## The current Set's boss twist ID, or an empty string outside boss Sets (P4.7).
+## The current Set's boss twist ID, or an empty string outside boss Sets.
 func boss() -> String:
 	return _loop.state.boss_id
 
@@ -1050,7 +1059,7 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 
 
 ## Hands in a searched villager's play when its search on the pool has finished, and
-## starts the search for a villager the loop stands still for if none runs (P5.0).
+## starts the search for a villager the loop stands still for if none runs (ADR 0030).
 func _process(_delta: float) -> void:
 	var play: BotPlay = _searches.poll(_loop)
 	if play != null:
@@ -1087,10 +1096,10 @@ func _awaits_villager() -> bool:
 	return _loop != null and _loop.awaiting() == RunLoop.Awaiting.VILLAGER_SEARCH
 
 
-## Answers a villager the loop stands still for (P5.0). In the tree its search starts on
+## Answers a villager the loop stands still for (ADR 0030). In the tree its search starts on
 ## the pool and _process hands the play in. Outside it, as for a caller that never runs
-## frames, each such villager is searched at once on this thread, as before P5.0. True
-## when plays went in here.
+## frames, each such villager is searched at once on this thread. True when plays went
+## in here.
 func _serve() -> bool:
 	if not _awaits_villager():
 		return false
@@ -1110,7 +1119,7 @@ func _search_now() -> BotPlay:
 
 ## A searched play goes in as a command's result does: its events out, the run saved,
 ## and the second book sealed again over the figures the play changed, since a play can
-## end a round and bank Grain (P4.19), before anyone is told what the run waits on now.
+## end a round and bank Grain, before anyone is told what the run waits on now.
 func _hand_in(play: BotPlay) -> void:
 	var reason: RunLoop.Reason = _loop.villager_play(play)
 	assert(reason == RunLoop.Reason.OK, "The loop refused the play it stood still for")

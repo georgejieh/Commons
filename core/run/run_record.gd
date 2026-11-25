@@ -64,7 +64,7 @@ static func migrate_from_2(data: Dictionary) -> Dictionary:
 	return data
 
 
-## Version 3 saves predate the state store's limited stock (P4.10): nothing sold yet.
+## Version 3 saves predate the state store's limited stock: nothing sold yet.
 ## Schema 3 was written all through Phase 4 while its fields were still being added, so
 ## a save from the middle of it may lack some: every Phase 4 field missing gets the
 ## value a run starts with.
@@ -87,7 +87,7 @@ static func migrate_from_4(data: Dictionary) -> Dictionary:
 	return data
 
 
-## Version 5 saves predate saved marks and hand levels (P4.11): no card marked, and
+## Version 5 saves predate saved marks and hand levels: no card marked, and
 ## every hand type at its first level.
 static func migrate_from_5(data: Dictionary) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
@@ -302,7 +302,7 @@ static func is_valid(data: Dictionary) -> bool:
 ## Returns null when a saved command or a written decision no longer applies, so the
 ## caller can fall back. The searcher decides searching villagers once the replay is
 ## over; data without the written marker replays as a record from before it. With
-## outside, searches are answered from outside the loop (P5.0): a villager the record
+## outside, searches are answered from outside the loop (ADR 0030): a villager the record
 ## ends before, as in a save written while it was thinking, is not decided here, and the
 ## loop comes back standing still for it.
 static func resume(

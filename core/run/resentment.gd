@@ -1,6 +1,6 @@
 class_name Resentment
 extends RefCounted
-## The village's Resentment of the player's private gains (P4.2). It rises from private
+## The village's Resentment of the player's private gains. It rises from private
 ## purchases, private Cadres, stamped cards scored and grabbing the landlord seat. It
 ## feeds Denunciation at each Set's end through one data curve, and sharpens every bot's
 ## grudge against the player.

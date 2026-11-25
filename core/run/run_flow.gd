@@ -23,7 +23,7 @@ enum Reason { OK, ILLEGAL_TRANSITION }
 ## Bidding loops on itself for a redeal. A round ends in bidding when the landlord lost,
 ## or straight into play when the seat is kept. Death can end the run at any boundary
 ## where a meter moves. A boss Set whose risen villager already holds the seat goes from
-## its intro straight into play (P4.7).
+## its intro straight into play.
 const TRANSITIONS: Dictionary[State, Array] = {
 	State.RUN_START: [State.SET_INTRO],
 	State.SET_INTRO: [State.BIDDING, State.ROUND_PLAY],
