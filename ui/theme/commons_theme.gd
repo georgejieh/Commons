@@ -190,7 +190,7 @@ static func _controls(theme: Theme) -> void:
 
 ## A round ink seal with a paper rim, for the slider's knob.
 static func _seal(ink: Color) -> ImageTexture:
-	var image: Image = Image.create(KNOB, KNOB, false, Image.FORMAT_RGBA8)
+	var image: Image = Image.create_empty(KNOB, KNOB, false, Image.FORMAT_RGBA8)
 	var middle: Vector2 = Vector2(KNOB, KNOB) / 2.0
 	for y: int in KNOB:
 		for x: int in KNOB:
@@ -208,7 +208,7 @@ static func _seal(ink: Color) -> ImageTexture:
 
 ## An inked box on paper; checked, it is filled with a vermilion stamp.
 static func _check_box(checked: bool) -> ImageTexture:
-	var image: Image = Image.create(BOX, BOX, false, Image.FORMAT_RGBA8)
+	var image: Image = Image.create_empty(BOX, BOX, false, Image.FORMAT_RGBA8)
 	for y: int in BOX:
 		for x: int in BOX:
 			var edge: int = mini(mini(x, y), mini(BOX - 1 - x, BOX - 1 - y))
