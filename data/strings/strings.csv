@@ -1160,3 +1160,15 @@ controls.pad.dpad_up,D-pad up
 controls.pad.dpad_down,D-pad down
 controls.pad.dpad_left,D-pad left
 controls.pad.dpad_right,D-pad right
+deck.open,Deck
+deck.open_tip,"The deck and your plot, card by card, with their marks"
+deck.eyebrow,Brigade records
+deck.title,The deck
+deck.plot,Your plot
+deck.plot_card,{card} (your plot)
+deck.how,"Every card the deal shares out, then the cards in your plot. A mark stays on its card for the run, whoever is dealt it."
+deck.close,Close
+deck.marks,Marks: {marks}
+deck.marks.none,No marks
+deck.legend.none,No card is marked yet
+deck.legend.entry,{mark} ×{count}

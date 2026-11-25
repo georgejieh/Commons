@@ -77,6 +77,8 @@ var _envelope_stall: EnvelopeStall = EnvelopeStall.new()
 var _picker: RankPicker = RankPicker.new()
 ## Sells back the held Cadres and Campaigns (ADR 0040).
 var _sale: SellDesk = SellDesk.new()
+## The whole deck and the plot, with their marks (ADR 0041).
+var _deck: DeckSheet = DeckSheet.new()
 ## The household's true figures, shown only at the stage past the last (ADR 0022).
 var _books: SmallLedger = SmallLedger.new(2)
 ## The page's main blocks by name, for the layout test.
@@ -113,6 +115,9 @@ func open(app: DemoApp) -> void:
 	add_child(_seal)
 	add_child(_picker)
 	add_child(_slip)
+	add_child(_deck)
+	_deck.setup(app.controller)
+	_deck.closed.connect(_on_deck_closed)
 	_shown_coupons = app.controller.state_copy().coupons
 	_shown_resentment = app.controller.state_copy().resentment
 	_refresh()
@@ -207,15 +212,18 @@ func _button_row(column: VBoxContainer) -> Button:
 	var leave: Button = ScreenKit.button(
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
 	)
+	var deck: Button = ScreenKit.button(tr("deck.open"), CommonsTheme.GHOST)
+	deck.tooltip_text = tr("deck.open_tip")
+	deck.pressed.connect(_open_deck)
 	var buttons: HBoxContainer
 	if market:
 		leave.pressed.connect(_back)
-		buttons = ScreenKit.row([leave, _reroll, _upgrades])
+		buttons = ScreenKit.row([leave, _reroll, _upgrades, deck])
 	else:
 		leave.pressed.connect(_leave)
 		var door: Button = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
 		door.pressed.connect(_to_market)
-		buttons = ScreenKit.row([leave, _reroll, door])
+		buttons = ScreenKit.row([leave, _reroll, door, deck])
 	_blocks["buttons"] = buttons
 	column.add_child(buttons)
 	return leave
@@ -349,7 +357,7 @@ func is_issuing() -> bool:
 	var directing: bool = _directives != null and _directives.is_busy()
 	var stalls: bool = _campaign_stall.is_busy() or _reform_stall.is_busy()
 	stalls = stalls or _envelope_stall.is_busy()
-	return _busy or _picker.is_open() or stalls or directing
+	return _busy or _picker.is_open() or stalls or directing or _deck.is_open()
 
 
 ## Coupons were paid elsewhere on the page: they roll down while the purchase plays.
@@ -405,6 +413,17 @@ func _on_reroll() -> void:
 				fresh.append(child as Control)
 	UiMotion.enter(fresh)
 	ScarceStamp.press_under(_counter, UiMotion.PRESETS.scarce_wait)
+
+
+## The deck sheet, read-only, over the page.
+func _open_deck() -> void:
+	if not is_issuing():
+		_slip.hide_slip()
+		_deck.open_deck()
+
+
+func _on_deck_closed() -> void:
+	(_blocks["buttons"].get_child(0) as Button).grab_focus()
 
 
 ## An envelope was answered: the page shows what it gave, wherever that went.

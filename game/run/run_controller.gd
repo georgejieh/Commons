@@ -352,6 +352,16 @@ func sell_campaign(index: int, market: bool = false) -> int:
 	return _act("sell_campaign", _loop.player_sell_campaign.bind(index, market))
 
 
+## The 54 deck cards as the next deal will find them, in deck order, each a copy with
+## the marks the run has saved on it (ADR 0041).
+func deck_cards() -> Array[CardInstance]:
+	var cards: Array[CardInstance] = []
+	for deck_id: int in Deck.SIZE:
+		cards.append(CardInstance.from_deck_id(deck_id))
+	_loop.state.card_marks.apply(cards)
+	return cards
+
+
 ## The Campaigns the player holds, in slot order, and how many they can hold.
 func held_campaigns() -> Array[String]:
 	return _loop.state.inventory.consumables.duplicate()
