@@ -16,6 +16,9 @@ const WATCHED: StringName = &"detail_slip_watched"
 
 ## Returns true while the slip must stay closed; unset, it never must.
 var quiet: Callable = Callable()
+## The part of the screen whose buttons the slip keeps off: a sheet over the page, whose
+## own buttons are the only ones that show; unset, the whole screen.
+var within: Node = null
 var _anchor: Control = null
 var _above: bool = true
 var _rule: String = ""
@@ -81,4 +84,5 @@ func _place() -> void:
 	var screen: Rect2 = get_viewport_rect().grow(-MARGIN)
 	var around: Rect2 = SlipPlacer.on_screen(_anchor)
 	var side: int = SlipPlacer.ABOVE if _above else SlipPlacer.BELOW
-	global_position = SlipPlacer.place(size, around, GAP, screen, get_tree().root, self, side)
+	var root: Node = within if within != null else get_tree().root
+	global_position = SlipPlacer.place(size, around, GAP, screen, root, self, side)
