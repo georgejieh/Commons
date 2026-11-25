@@ -88,14 +88,13 @@ static func _cadre_problems(
 static func validate_directive(
 	definition: DirectiveDef, string_keys: Dictionary[String, bool]
 ) -> PackedStringArray:
-	var problems: PackedStringArray = []
-	for key: String in [definition.name_key, definition.text_key]:
-		if not string_keys.has(key):
-			problems.append("%s: missing string key %s" % [definition.id, key])
-	if definition.cost <= 0:
-		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
-	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
-		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	var problems: PackedStringArray = _bought(
+		definition.id,
+		PackedStringArray([definition.name_key, definition.text_key]),
+		definition.cost,
+		definition.unlock_tier,
+		string_keys
+	)
 	if definition.hand_types.is_empty():
 		problems.append("%s: raises no hand type" % definition.id)
 	var seen: Dictionary[int, bool] = {}
@@ -111,14 +110,13 @@ static func validate_directive(
 static func validate_campaign(
 	definition: CampaignDef, string_keys: Dictionary[String, bool]
 ) -> PackedStringArray:
-	var problems: PackedStringArray = []
-	for key: String in [definition.name_key, definition.text_key, definition.prompt_key]:
-		if not string_keys.has(key):
-			problems.append("%s: missing string key %s" % [definition.id, key])
-	if definition.cost <= 0:
-		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
-	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
-		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	var problems: PackedStringArray = _bought(
+		definition.id,
+		PackedStringArray([definition.name_key, definition.text_key, definition.prompt_key]),
+		definition.cost,
+		definition.unlock_tier,
+		string_keys
+	)
 	var counts_ok: bool = definition.min_cards >= 0 and definition.min_cards <= definition.max_cards
 	if not counts_ok or definition.max_cards > Dealer.HAND_SIZE:
 		problems.append("%s: bad card count" % definition.id)
@@ -136,14 +134,13 @@ static func validate_campaign(
 static func validate_reform(
 	definition: ReformDef, string_keys: Dictionary[String, bool]
 ) -> PackedStringArray:
-	var problems: PackedStringArray = []
-	for key: String in [definition.name_key, definition.text_key]:
-		if not string_keys.has(key):
-			problems.append("%s: missing string key %s" % [definition.id, key])
-	if definition.cost <= 0:
-		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
-	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
-		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	var problems: PackedStringArray = _bought(
+		definition.id,
+		PackedStringArray([definition.name_key, definition.text_key]),
+		definition.cost,
+		definition.unlock_tier,
+		string_keys
+	)
 	if not ReformRegistry.has_effect(definition.id):
 		problems.append("%s: no effect script" % definition.id)
 		return problems
@@ -158,14 +155,13 @@ static func validate_reform(
 static func validate_envelope(
 	definition: EnvelopeDef, string_keys: Dictionary[String, bool]
 ) -> PackedStringArray:
-	var problems: PackedStringArray = []
-	for key: String in [definition.name_key, definition.text_key]:
-		if not string_keys.has(key):
-			problems.append("%s: missing string key %s" % [definition.id, key])
-	if definition.cost <= 0:
-		problems.append("%s: bad cost %d" % [definition.id, definition.cost])
-	if definition.unlock_tier < 0 or definition.unlock_tier > RunUnlocks.LAST_TIER:
-		problems.append("%s: bad unlock tier %d" % [definition.id, definition.unlock_tier])
+	var problems: PackedStringArray = _bought(
+		definition.id,
+		PackedStringArray([definition.name_key, definition.text_key]),
+		definition.cost,
+		definition.unlock_tier,
+		string_keys
+	)
 	if definition.choices <= 0:
 		problems.append("%s: bad choices %d" % [definition.id, definition.choices])
 	if definition.contents.is_empty():
@@ -182,4 +178,24 @@ static func validate_envelope(
 			problems.append("%s: bad weight for content %d" % [definition.id, kind])
 	if definition.wrapping < 0 or definition.wrapping >= EnvelopeDef.Wrapping.size():
 		problems.append("%s: bad wrapping %d" % [definition.id, definition.wrapping])
+	return problems
+
+
+## What every definition the player buys must have: its strings, a cost above 0 and an
+## unlock tier the run knows.
+static func _bought(
+	id: String,
+	keys: PackedStringArray,
+	cost: int,
+	unlock_tier: int,
+	string_keys: Dictionary[String, bool]
+) -> PackedStringArray:
+	var problems: PackedStringArray = []
+	for key: String in keys:
+		if not string_keys.has(key):
+			problems.append("%s: missing string key %s" % [id, key])
+	if cost <= 0:
+		problems.append("%s: bad cost %d" % [id, cost])
+	if unlock_tier < 0 or unlock_tier > RunUnlocks.LAST_TIER:
+		problems.append("%s: bad unlock tier %d" % [id, unlock_tier])
 	return problems
