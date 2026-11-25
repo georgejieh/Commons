@@ -1712,6 +1712,12 @@ func _tour(table: Node) -> void:
 	await _shot("tour_menu_controls")
 	await _press(_button_in(pause, tr("settings.back")))
 	await _frames(10)
+	# The Window page and back, looked at and left as it is.
+	await _press(_button_in(pause, tr("settings.window")))
+	await _frames(30)
+	await _shot("tour_menu_window")
+	await _press(_button_in(pause, tr("settings.back")))
+	await _frames(10)
 	await _press(_button_in(pause, tr("settings.back")))
 	await _frames(10)
 	await _press(_button_in(pause, tr("pause.resume")))

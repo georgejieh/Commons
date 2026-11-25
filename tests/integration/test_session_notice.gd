@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 ## ADR 0037's two notices: "already open" and, on the title after a session that did not
-## close, where its files were copied. Each stands whole inside the window at both sizes
+## close, where its files were copied; and the question after a new window mode. Each
+## stands whole inside the window at both sizes
 ## and every text size, with its buttons on the sheet; the title's is said once, with OK
 ## focused, taken by keyboard, and a button that opens the folder.
 
@@ -50,7 +51,7 @@ func _assert_whole(notice: SessionNotice, where: String) -> void:
 		assert_bool(sheet.grow(SLACK).encloses(rect)).override_failure_message(where).is_true()
 
 
-func test_both_notices_stand_whole_at_every_size() -> void:
+func test_every_notice_stands_whole_at_every_size() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in SIZES:
@@ -58,6 +59,7 @@ func test_both_notices_stand_whole_at_every_size() -> void:
 			var notices: Array[SessionNotice] = [
 				SessionNotice.already_open(20, func() -> void: pass, func() -> void: pass),
 				SessionNotice.kept(KEPT),
+				SessionNotice.display_check(10, func() -> void: pass, func() -> void: pass),
 			]
 			for notice: SessionNotice in notices:
 				_app.add_child(notice)

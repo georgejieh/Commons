@@ -5,7 +5,8 @@ extends Control
 ## (ADR 0028). The two sheets stand as tall as each other, the name at the foot of its
 ## sheet. Changes apply at once and save on the way back. A new text size (ADR 0034)
 ## builds the screen again at once, with the focus on the size chosen. Controls opens the
-## key bindings (ADR 0035) as a screen of its own. Replay the arrival is on the title.
+## key bindings (ADR 0035) and Window the window's mode and size (WindowSheet), each as a
+## screen of its own. Replay the arrival is on the title.
 
 var _app: DemoApp = null
 var _card_backs: CardBackRow
@@ -54,18 +55,18 @@ func open(app: DemoApp) -> void:
 			Settings.save()
 			app.back()
 	)
-	# Controls stands here with Back, where it is always whole: at the sheet's foot it
-	# was cut in half by the fold.
-	var controls: Button = ScreenKit.button(tr("controls.open"), CommonsTheme.SECONDARY)
-	controls.name = SettingsPanel.CONTROLS_BUTTON
-	controls.pressed.connect(
-		func() -> void:
-			Settings.save()
-			app.show_screen("controls")
-	)
-	column.add_child(ScreenKit.row([back, controls]))
+	# The pages' tickets stand here with Back, where they are always whole: at the sheet's
+	# foot they were cut in half by the fold.
+	var row: Array[Control] = [back]
+	row.append_array(SettingsPanel.pages(_open.bind("controls"), _open.bind("window")))
+	column.add_child(ScreenKit.row(row))
 	ScreenKit.reveal(column)
 	back.grab_focus()
+
+
+func _open(screen_id: String) -> void:
+	Settings.save()
+	_app.show_screen(screen_id)
 
 
 ## A settings page no longer on screen does not build itself again.

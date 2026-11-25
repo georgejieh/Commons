@@ -26,6 +26,7 @@ const SCREENS: Dictionary[String, String] = {
 	"year_summary": "res://ui/screens/year_summary_screen.tscn",
 	"settings": "res://ui/screens/settings_screen.tscn",
 	"controls": "res://ui/screens/controls_screen.tscn",
+	"window": "res://ui/screens/window_screen.tscn",
 	"demo_complete": "res://ui/screens/demo_complete_screen.tscn",
 	"dossier": "res://ui/screens/dossier_screen.tscn",
 	"content_note": "res://ui/screens/content_note_screen.tscn",
@@ -68,6 +69,8 @@ var _menu: PauseMenu = null
 
 func _ready() -> void:
 	_apply_text_size()
+	# The window takes the player's mode before anything shows in it, the gate's notice too.
+	add_child(DisplayWindow.for_app(self))
 	# A launch of the game itself first asks whether another copy is open, or the last one
 	# stopped (ADR 0037); a tool or test that builds the app opens it at once.
 	if not LaunchGate.guards(self):

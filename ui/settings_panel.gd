@@ -2,8 +2,10 @@ class_name SettingsPanel
 extends RefCounted
 ## The settings controls on one paper sheet, shared by the settings screen and the
 ## pause menu. Changes apply at once; the caller saves. A new text size (ADR 0034)
-## rebuilds the theme at once, and the sheet's owner builds the sheet again. At its foot a
-## ticket opens the Controls page (ADR 0035), which each owner shows its own way.
+## rebuilds the theme at once, and the sheet's owner builds the sheet again. Two pages
+## open from it, each owner showing them its own way: Controls (ADR 0035) and Window
+## (WindowSheet), which has a page of its own because this sheet has no room for it at
+## the largest text size.
 
 const VOLUMES: Array[String] = ["music_volume", "effects_volume", "voice_volume"]
 const TOGGLES: Array[String] = ["reduced_motion", "post_process", "no_flash", "show_hint"]
@@ -27,16 +29,28 @@ const NAME_WIDTH: float = 200.0
 const ROW_GAPS: Array[int] = [18, 14, 6]
 ## The toggles flow two to a line where they fit.
 const TOGGLE_GAP: int = 28
-## The name of the ticket that opens the Controls page, for the focus and for tests.
+## The names of the tickets that open the Controls and Window pages, for the focus and
+## for tests.
 const CONTROLS_BUTTON: String = "OpenControls"
+const WINDOW_BUTTON: String = "OpenWindow"
+const WIDTH: float = 760.0
 
 
 ## With at_table, a line under the text sizes says the table takes a new one at the next
-## deal (ADR 0034). With open_controls, the sheet ends in a Controls ticket that calls it.
-static func build(at_table: bool = false, open_controls: Callable = Callable()) -> Control:
-	var sheet: VBoxContainer = ScreenKit.card(Vector2(760, 0))
+## deal (ADR 0034). Given open_controls and open_window, the sheet ends in the tickets
+## that open the two pages.
+static func build(
+	at_table: bool = false,
+	open_controls: Callable = Callable(),
+	open_window: Callable = Callable(),
+) -> Control:
+	var sheet: VBoxContainer = ScreenKit.card(Vector2(WIDTH, 0))
 	sheet.add_theme_constant_override("separation", ROW_GAPS[TextSize.level()])
-	var names: float = _name_width()
+	var keys: Array[String] = []
+	keys.append_array(VOLUMES)
+	keys.append_array(DISPLAY_SLIDERS)
+	keys.append_array([TextSize.SETTING, PACE_SETTING])
+	var names: float = name_width(keys)
 	sheet.add_child(ScreenKit.eyebrow(TranslationServer.translate("settings.audio")))
 	for key: String in VOLUMES:
 		sheet.add_child(_slider(key, names))
@@ -44,30 +58,60 @@ static func build(at_table: bool = false, open_controls: Callable = Callable()) 
 	for key: String in DISPLAY_SLIDERS:
 		sheet.add_child(_slider(key, names))
 	sheet.add_child(_text_sizes(names, at_table))
-	sheet.add_child(_paces(names))
+	sheet.add_child(choices(PACE_SETTING, names, "settings.table_pace.", PACES, PACE_BOX))
 	var toggles: HFlowContainer = HFlowContainer.new()
 	toggles.add_theme_constant_override("h_separation", TOGGLE_GAP)
 	toggles.add_theme_constant_override("v_separation", ROW_GAPS[TextSize.level()])
 	for key: String in TOGGLES:
-		var toggle: CheckBox = CheckBox.new()
-		toggle.text = TranslationServer.translate("settings." + key)
-		toggle.button_pressed = bool(Settings.value(key))
-		toggle.toggled.connect(func(on: bool) -> void: Settings.set_value(key, on))
-		toggles.add_child(toggle)
+		toggles.add_child(toggle(key))
 	sheet.add_child(toggles)
-	if open_controls.is_valid():
-		var controls: Button = ScreenKit.button(
-			TranslationServer.translate("controls.open"), CommonsTheme.SECONDARY
-		)
-		controls.name = CONTROLS_BUTTON
-		controls.pressed.connect(open_controls)
-		sheet.add_child(controls)
+	if open_controls.is_valid() and open_window.is_valid():
+		sheet.add_child(ScreenKit.row(pages(open_controls, open_window)))
 	return ScreenKit.card_panel(sheet)
+
+
+## The Controls ticket and the Window ticket, calling open_controls and open_window.
+static func pages(open_controls: Callable, open_window: Callable) -> Array[Control]:
+	var controls: Button = ScreenKit.button(
+		TranslationServer.translate("controls.open"), CommonsTheme.SECONDARY
+	)
+	controls.name = CONTROLS_BUTTON
+	controls.pressed.connect(open_controls)
+	var window: Button = ScreenKit.button(
+		TranslationServer.translate("settings.window"), CommonsTheme.SECONDARY
+	)
+	window.name = WINDOW_BUTTON
+	window.pressed.connect(open_window)
+	return [controls, window]
 
 
 ## The ticket that opens the Controls page under root, or null.
 static func controls_button(root: Node) -> Button:
 	return root.find_child(CONTROLS_BUTTON, true, false) as Button
+
+
+## The ticket that opens the Window page under root, or null.
+static func window_button(root: Node) -> Button:
+	return root.find_child(WINDOW_BUTTON, true, false) as Button
+
+
+## A box that turns one setting on and off.
+static func toggle(key: String) -> CheckBox:
+	var made: CheckBox = CheckBox.new()
+	made.text = TranslationServer.translate("settings." + key)
+	made.button_pressed = bool(Settings.value(key))
+	made.toggled.connect(func(on: bool) -> void: Settings.set_value(key, on))
+	return made
+
+
+## A setting's boxes, one for each value in order, named by the ends of their keys.
+static func choices(
+	key: String, names: float, prefix: String, ends: Array[String], box_name: String
+) -> SettingChoices:
+	var made: Dictionary[int, String] = {}
+	for value: int in ends.size():
+		made[value] = TranslationServer.translate(prefix + ends[value])
+	return SettingChoices.new(key, name_label(key, names), made, box_name)
 
 
 ## A named slider from 0 to 1 bound to one setting.
@@ -79,30 +123,17 @@ static func _slider(key: String, names: float) -> HBoxContainer:
 	slider.step = 0.05
 	slider.value = float(Settings.value(key))
 	slider.value_changed.connect(func(value: float) -> void: Settings.set_value(key, value))
-	return ScreenKit.row([_name(key, names), slider])
+	return ScreenKit.row([name_label(key, names), slider])
 
 
-## The text size: its name and a box for each size, the chosen one ticked. The boxes are
-## one group, so arrows move between them and accept picks one, like the sheet's toggles.
-## At the table the line saying when the table takes a new size stands close under the
-## boxes, in line with them, so it reads as theirs.
+## The text size: its name and a box for each size, the chosen one ticked. At the table
+## the line saying when the table takes a new size stands close under the boxes, in line
+## with them, so it reads as theirs.
 static func _text_sizes(names: float, at_table: bool) -> Control:
 	assert(TEXT_SIZES.size() == TextSize.count(), "A text size has no name")
-	var group: ButtonGroup = ButtonGroup.new()
-	var row: Array[Control] = [_name(TextSize.SETTING, names)]
-	for level: int in TEXT_SIZES.size():
-		var choice: CheckBox = CheckBox.new()
-		choice.name = TEXT_SIZE_BOX % level
-		choice.button_group = group
-		choice.text = TranslationServer.translate("settings.text_size." + TEXT_SIZES[level])
-		choice.button_pressed = level == TextSize.level()
-		choice.toggled.connect(
-			func(on: bool) -> void:
-				if on and level != TextSize.level():
-					Settings.set_value(TextSize.SETTING, level)
-		)
-		row.append(choice)
-	var boxes: HBoxContainer = ScreenKit.row(row)
+	var boxes: SettingChoices = choices(
+		TextSize.SETTING, names, "settings.text_size.", TEXT_SIZES, TEXT_SIZE_BOX
+	)
 	if not at_table:
 		return boxes
 	var block: VBoxContainer = VBoxContainer.new()
@@ -116,27 +147,6 @@ static func _text_sizes(names: float, at_table: bool) -> Control:
 	indent.add_child(note)
 	block.add_child(indent)
 	return block
-
-
-## The table's pace: its name and a box for each pace, the chosen one ticked, one group
-## as the text sizes are. It takes hold at once, at a table already open.
-static func _paces(names: float) -> Control:
-	var group: ButtonGroup = ButtonGroup.new()
-	var row: Array[Control] = [_name(PACE_SETTING, names)]
-	var chosen: int = clampi(int(Settings.value(PACE_SETTING)), 0, PACES.size() - 1)
-	for pace: int in PACES.size():
-		var choice: CheckBox = CheckBox.new()
-		choice.name = PACE_BOX % pace
-		choice.button_group = group
-		choice.text = TranslationServer.translate("settings.table_pace." + PACES[pace])
-		choice.button_pressed = pace == chosen
-		choice.toggled.connect(
-			func(on: bool) -> void:
-				if on:
-					Settings.set_value(PACE_SETTING, pace)
-		)
-		row.append(choice)
-	return ScreenKit.row(row)
 
 
 ## The box for the text size chosen now under root, for the focus after a rebuild.
@@ -159,25 +169,20 @@ static func rebuild_screen(app: DemoApp) -> void:
 	app.arrival.shown(app.switcher.current_id())
 
 
-## A setting's name, beside its control, on one line.
-static func _name(key: String, names: float) -> Label:
-	var name: Label = ScreenKit.styled(
+## A setting's name, beside its control, on one line, names wide.
+static func name_label(key: String, names: float) -> Label:
+	var label: Label = ScreenKit.styled(
 		TranslationServer.translate("settings." + key), CommonsTheme.TITLE
 	)
-	name.add_theme_font_size_override("font_size", TextSize.px(NAME_SIZE))
-	name.autowrap_mode = TextServer.AUTOWRAP_OFF
-	name.custom_minimum_size = Vector2(names, 0)
-	return name
+	label.add_theme_font_size_override("font_size", TextSize.px(NAME_SIZE))
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.custom_minimum_size = Vector2(names, 0)
+	return label
 
 
-## The room the names take: the widest of them at the chosen size, or NAME_WIDTH.
-static func _name_width() -> float:
+## The room the names of keys take: the widest of them at the chosen size, or NAME_WIDTH.
+static func name_width(keys: Array[String]) -> float:
 	var widest: float = NAME_WIDTH
-	var keys: Array[String] = []
-	keys.append_array(VOLUMES)
-	keys.append_array(DISPLAY_SLIDERS)
-	keys.append(TextSize.SETTING)
-	keys.append(PACE_SETTING)
 	for key: String in keys:
 		var words: String = TranslationServer.translate("settings." + key)
 		var shown: Vector2 = CommonsTheme.BOLD.get_string_size(

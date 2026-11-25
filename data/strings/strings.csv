@@ -1169,3 +1169,16 @@ session.kept.title,The game did not close properly
 session.kept.body,"Your save was kept and loads as before. A copy of it, with the game's log from that session, is in this folder:"
 session.kept.ok,OK
 session.kept.open,Open the folder
+settings.window_mode,Mode
+settings.window_mode.windowed,Windowed
+settings.window_mode.borderless,Borderless full screen
+settings.window_mode.exclusive,Exclusive full screen
+settings.window_size,Window size
+settings.window_size.choice,{width} × {height}
+settings.vsync,Vertical sync
+display.check.eyebrow,Window
+display.check.title,Keep this window mode?
+display.check.body,"If you choose nothing, the window goes back to how it was in {seconds} seconds."
+display.check.keep,Keep
+display.check.back,Undo
+settings.window,Window
