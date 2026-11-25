@@ -92,7 +92,7 @@ static func scan(root: String) -> PackedStringArray:
 		return PackedStringArray(["%s: folder not found" % root])
 	var pattern: RegEx = RegEx.create_from_string("\\b(%s)\\b" % "|".join(FORBIDDEN_WORDS))
 	var found: PackedStringArray = []
-	for path: String in _files(root):
+	for path: String in ToolFiles.under(root, EXTENSIONS):
 		var lines: PackedStringArray = FileAccess.get_file_as_string(path).split("\n")
 		for index: int in lines.size():
 			var code: String = lines[index].get_slice("#", 0)
@@ -100,13 +100,3 @@ static func scan(root: String) -> PackedStringArray:
 			if hit != null:
 				found.append("%s:%d: %s" % [path, index + 1, hit.get_string()])
 	return found
-
-
-static func _files(root: String) -> PackedStringArray:
-	var files: PackedStringArray = []
-	for name: String in DirAccess.get_files_at(root):
-		if name.get_extension() in EXTENSIONS:
-			files.append(root.path_join(name))
-	for folder: String in DirAccess.get_directories_at(root):
-		files.append_array(_files(root.path_join(folder)))
-	return files

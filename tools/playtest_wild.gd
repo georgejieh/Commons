@@ -1,22 +1,17 @@
-extends RefCounted
+extends WalkBase
 ## The playtest's frames of wild ranks (ADR 0029), in sandboxes put back after, the way
 ## the playtest's debuff and Campaign frames are: at the table, two Model Workers and
 ## Industrialization are handed over through the run's state and the first is used before
 ## the first play, so the call-out, the rules strip with one rank, the hand's ribbons at
-## corruption stages 0, 4 and 9, the call-out and strip with two ranks and the Rules sheet's
-## section are the real path; the picker with three or more readings and a soft bomb on
-## the pile with its stand-ins, then a villager's pair of the wild rank landing plain, are
-## laid out from cards built here. In the state store each
-## of the three items is put on its counter in turn. In the collection, a profile of three
-## finished runs shows the wild tier locked. It also forces a Cadre of the top rarity
-## onto either shop's counter, for its Scarce stamp landing and at rest (scarce()). Loaded
-## at run time by playtest.gd, so it
-## reaches every UI node as Object, Node or Control, never by a ui/ class name.
+## corruption stages 0, 4 and 9, the call-out and strip with two ranks and the Rules
+## sheet's section are the real path; the picker with three or more readings and a soft
+## bomb on the pile with its stand-ins, then a villager's pair of the wild rank landing
+## plain, are laid out from cards built here. In the state store each of the three items
+## is put on its counter in turn. In the collection, a profile of three finished runs
+## shows the wild tier locked. It also forces a Cadre of the top rarity onto either
+## shop's counter, for its Scarce stamp landing and at rest (scarce()).
 ## Development only; tools/ never ships.
 
-const SETTLE_SECONDS: float = 1.8
-const SNAP_SECONDS: float = 0.22
-const WAIT_SECONDS: float = 20.0
 ## The corruption stages the hand's ribbons are photographed at.
 const RIBBON_STAGES: Array[int] = [0, 4, 9]
 const STEPS: int = 400
@@ -30,27 +25,11 @@ const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 ## How far through its landing the Scarce stamp is photographed, as shares of its time.
 const LANDING: Array[float] = [0.3, 0.6]
 
-var shots: int = 0
-var misclicks: int = 0
-
-var _tree: SceneTree
-var _app: Node
-var _out: String
-var _headless: bool
-
-
-func _init(tree: SceneTree, app: Node, out: String, headless: bool, shot_count: int) -> void:
-	_tree = tree
-	_app = app
-	_out = out
-	_headless = headless
-	shots = shot_count
-
 
 ## The table's frames, from the round under way, put back as they were after.
 func table(driver: Object) -> void:
-	var controller: Object = _app.get("controller")
-	var loop: RunLoop = controller.get("_loop")
+	var controller: Object = _controller()
+	var loop: RunLoop = _loop()
 	var snapshot: Dictionary = loop.record.to_dict()
 	var was: int = ArtStages.stage_override
 	loop.state.inventory.consumables.assign(["model_worker", "model_worker"])
@@ -61,33 +40,29 @@ func table(driver: Object) -> void:
 	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
 	params.targets = params.targets.duplicate()
 	params.targets.fill(1e9)
-	loop.set("_sets", SetConfig.new(params))
-	loop.call("_rebuild_modifiers")
-	_app.call("show_screen", "table", true)
+	assign(loop, "_sets", SetConfig.new(params))
+	invoke(loop, "_rebuild_modifiers")
+	app.call("show_screen", "table", true)
 	await _frames(20)
 	if await _to_the_opening(controller, driver):
 		await _use_and_photograph(controller)
 	ArtStages.stage_override = was
-	var saves: Object = _tree.root.get_node("Saves").call("run_service")
-	saves.call("save", snapshot, ContentStamp.extras())
-	_app.call("resume_to_screen")
-	await _frames(30)
+	await _restore(snapshot)
 
 
 ## Each of the three items on the state store's counter in turn, then the stock put back.
 func store() -> void:
-	var controller: Object = _app.get("controller")
-	var loop: RunLoop = controller.get("_loop")
+	var controller: Object = _controller()
+	var loop: RunLoop = _loop()
 	var campaigns: Array[String] = loop.shop.campaigns.stock()
 	var reforms: Array[String] = loop.shop.reforms.stock()
 	# The demo's counters are drawn from the tiers below the wild ranks', so for these
 	# frames they look items up in the whole pools; both are put back after.
-	var campaign_pool: Array[CampaignDef] = loop.shop.campaigns.get("_pool")
-	var reform_pool: Array[ReformDef] = loop.shop.reforms.get("_pool")
-	loop.shop.campaigns.set("_pool", RunPools.STORE_CAMPAIGNS.campaigns.duplicate())
-	loop.shop.reforms.set("_pool", RunPools.REFORMS.reforms.duplicate())
-	var switcher: Object = _app.get("switcher")
-	var screen: Node = switcher.call("current")
+	var campaign_pool: Array[CampaignDef] = member(loop.shop.campaigns, "_pool")
+	var reform_pool: Array[ReformDef] = member(loop.shop.reforms, "_pool")
+	assign(loop.shop.campaigns, "_pool", RunPools.STORE_CAMPAIGNS.campaigns.duplicate())
+	assign(loop.shop.reforms, "_pool", RunPools.REFORMS.reforms.duplicate())
+	var screen: Node = _current()
 	for item_id: String in ITEMS:
 		var campaign_stock: Array[String] = campaigns.duplicate()
 		var reform_stock: Array[String] = reforms.duplicate()
@@ -99,16 +74,16 @@ func store() -> void:
 			if reform_stock.is_empty():
 				reform_stock.append(item_id)
 			reform_stock[0] = item_id
-		loop.shop.campaigns.set("_stock", campaign_stock)
-		loop.shop.reforms.set("_stock", reform_stock)
-		screen.call("_refresh")
+		assign(loop.shop.campaigns, "_stock", campaign_stock)
+		assign(loop.shop.reforms, "_stock", reform_stock)
+		invoke(screen, "_refresh")
 		await _frames(10)
 		await _shot("store_wild_%s" % item_id)
-	loop.shop.campaigns.set("_stock", campaigns)
-	loop.shop.reforms.set("_stock", reforms)
-	loop.shop.campaigns.set("_pool", campaign_pool)
-	loop.shop.reforms.set("_pool", reform_pool)
-	screen.call("_refresh")
+	assign(loop.shop.campaigns, "_stock", campaigns)
+	assign(loop.shop.reforms, "_stock", reforms)
+	assign(loop.shop.campaigns, "_pool", campaign_pool)
+	assign(loop.shop.reforms, "_pool", reform_pool)
+	invoke(screen, "_refresh")
 	await _frames(10)
 
 
@@ -116,21 +91,20 @@ func store() -> void:
 ## with market), stamped Scarce: the stamp part way through its landing, its clock held,
 ## then at rest. The counter is put back after.
 func scarce(market: bool) -> void:
-	var controller: Object = _app.get("controller")
-	var loop: RunLoop = controller.get("_loop")
+	var controller: Object = _controller()
+	var loop: RunLoop = _loop()
 	var shop: RunShop = loop.market if market else loop.shop
 	var stock: Array[String] = shop.stock()
-	var pool: Array[ModifierDef] = shop.get("_pool")
+	var pool: Array[ModifierDef] = member(shop, "_pool")
 	var whole: CadrePool = load(POOLS[int(market)])
 	var forced: Array[String] = stock.duplicate()
 	if forced.is_empty():
 		forced.append(SCARCE[int(market)])
 	forced[0] = SCARCE[int(market)]
-	shop.set("_pool", whole.cadres.duplicate())
-	shop.set("_stock", forced)
-	var switcher: Object = _app.get("switcher")
-	var screen: Node = switcher.call("current")
-	screen.call("_refresh")
+	assign(shop, "_pool", whole.cadres.duplicate())
+	assign(shop, "_stock", forced)
+	var screen: Node = _current()
+	invoke(screen, "_refresh")
 	await _frames(10)
 	var name: String = "market_scarce" if market else "store_scarce"
 	var stamp: Control = null
@@ -152,17 +126,16 @@ func scarce(market: bool) -> void:
 				await _picture("%s_landing_%d" % [name, index])
 			landing.custom_step(PRESETS.stamp_time)
 		await _shot(name)
-	shop.set("_stock", stock)
-	shop.set("_pool", pool)
-	screen.call("_refresh")
+	assign(shop, "_stock", stock)
+	assign(shop, "_pool", pool)
+	invoke(screen, "_refresh")
 	await _frames(10)
 
 
 ## The collection as a profile of three finished runs sees it, scrolled to the first
 ## locked sheet: the wild tier's, saying it opens after one more run.
 func collection(locked_index: int) -> void:
-	var switcher: Object = _app.get("switcher")
-	var screen: Node = switcher.call("current")
+	var screen: Node = _current()
 	var entries: Array = screen.call("entries")
 	if locked_index < 0 or locked_index >= entries.size():
 		_fail("NO LOCKED WILD SHEET")
@@ -329,59 +302,3 @@ static func _plain_rank(wild: Array[int]) -> int:
 		if not wild.has(rank):
 			return rank
 	return Ranks.THREE
-
-
-func _idle() -> bool:
-	var events: Object = _part("_player")
-	return events == null or bool(events.call("is_idle"))
-
-
-## A part of the table now on screen, by its property or method name, or null off it.
-func _part(part: String) -> Object:
-	var switcher: Object = _app.get("switcher")
-	var screen: Node = switcher.call("current")
-	if screen == null or not is_instance_valid(screen) or screen.get("_player") == null:
-		return null
-	if screen.has_method(part):
-		return screen.call(part)
-	return screen.get(part)
-
-
-func _until(ready: Callable, seconds: float = WAIT_SECONDS) -> bool:
-	var deadline: int = Time.get_ticks_msec() + int(seconds * 1000.0)
-	while not bool(ready.call()):
-		if Time.get_ticks_msec() > deadline:
-			return false
-		await _frames(1)
-	return true
-
-
-func _fail(reason: String) -> void:
-	print("MISS %s" % reason)
-	misclicks += 1
-
-
-func _frames(count: int) -> void:
-	for _frame: int in count:
-		await _tree.process_frame
-
-
-func _snap(name: String) -> void:
-	await _tree.create_timer(SNAP_SECONDS).timeout
-	await _picture(name)
-
-
-func _shot(name: String) -> void:
-	await _tree.create_timer(SETTLE_SECONDS).timeout
-	_tree.call("audit_layout", name)
-	await _picture(name)
-
-
-func _picture(name: String) -> void:
-	shots += 1
-	if _headless:
-		print("FRAME %02d_%s" % [shots, name])
-		return
-	await RenderingServer.frame_post_draw
-	var path: String = _out.path_join("%02d_%s.png" % [shots, name])
-	_tree.root.get_texture().get_image().save_png(ProjectSettings.globalize_path(path))

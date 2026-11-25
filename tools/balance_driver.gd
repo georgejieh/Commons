@@ -38,14 +38,9 @@ var _directive_bought: bool = false
 
 
 ## errors, when given, is the logger whose count for this thread fails the run.
-func _init(
-	strategy: BalanceStrategy,
-	stake: int = 0,
-	errors: BalanceErrors = null,
-	numbers: BalanceParams = PARAMS
-) -> void:
+func _init(strategy: BalanceStrategy, stake: int = 0, errors: BalanceErrors = null) -> void:
 	_strategy = strategy
-	_params = numbers
+	_params = PARAMS
 	_stake = stake
 	_errors = errors
 	_last_hand.resize(Ranks.COUNT)
@@ -93,6 +88,7 @@ func request(seed_value: int) -> RunRequest:
 	return asked
 
 
+## Plays the run of seed_value to its end, or until it fails, and returns its result.
 func play(seed_value: int) -> BalanceResult:
 	var began: int = Time.get_ticks_usec()
 	result.seed_value = seed_value
@@ -124,7 +120,7 @@ func play(seed_value: int) -> BalanceResult:
 
 func _finish() -> void:
 	# The controller keeps the loop's bot count to itself; the tests read it the same way.
-	var loop: RunLoop = _controller.get("_loop")
+	var loop: RunLoop = WalkBase.member(_controller, "_loop")
 	var refused: int = loop.refused_bot_actions
 	if refused > 0:
 		_fail("%d bot actions refused" % refused)

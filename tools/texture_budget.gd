@@ -1,6 +1,6 @@
 extends SceneTree
-## Measures the texture memory of a full table scene (P3C.4): a seeded run on the table
-## with every Cadre slot filled and all 54 card faces shown (so every court and joker
+## Measures the texture memory of a full table scene: a seeded run on the table with
+## every Cadre slot filled and every card face shown (so every court and joker
 ## picture is loaded), at corruption stages 0, 4 and 9 in turn, reading the profiler's
 ## texture-memory monitor each time. Stage art loads on demand, so this also catches
 ## art from an earlier stage that stays resident. Cadre pictures load only when shown
@@ -15,25 +15,25 @@ const SEED: int = 4242
 const SETTLE_FRAMES: int = 30
 const MB: float = 1024.0 * 1024.0
 const STAGES: Array[int] = [0, 4, 9]
-const DECK_SIZE: int = 54
+const USAGE: String = "texture_budget.gd -- [--budget-mb MB] [--profile NAME]"
+const DEFAULT_BUDGET_MB: float = 128.0
 
-var _budget_mb: float = 128.0
+var _budget_mb: float = DEFAULT_BUDGET_MB
+var _options: ToolOptions
 
 
 func _initialize() -> void:
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = args.find("--budget-mb")
-	if at >= 0 and at + 1 < args.size():
-		_budget_mb = args[at + 1].to_float()
+	_options = ToolOptions.new(USAGE)
+	_budget_mb = _options.number("budget-mb", DEFAULT_BUDGET_MB, 1.0)
+	if _options.failed():
+		quit(2)
+		return
 	_run.call_deferred()
 
 
 func _run() -> void:
+	WalkProfile.keep_run(root, "texture_budget", _options)
 	# Loaded at run time: the demo names autoloads, which a --script tool can't see.
-	# A run save of its own, in the sandbox, never the player's (tools/walk_profile.gd).
-	load("res://tools/walk_profile.gd").call(
-		"keep_run", root, "texture_budget", OS.get_cmdline_user_args()
-	)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	var app: Node = scene.instantiate()
 	root.add_child(app)
@@ -42,7 +42,7 @@ func _run() -> void:
 	for stage: int in STAGES:
 		ArtStages.stage_override = stage
 		var table: Node = app.call("show_screen", "table", true)
-		_show_all_cadres(table.get("_board"))
+		_show_all_cadres(WalkBase.member(table, "_board"))
 		_show_all_cards(table)
 		for _frame: int in SETTLE_FRAMES:
 			await process_frame
@@ -70,8 +70,8 @@ func _show_all_cadres(board: Node) -> void:
 
 ## Binds the whole deck to free views from the table's own pool.
 func _show_all_cards(table: Node) -> void:
-	var pool: CardPool = table.get("_pool")
-	for deck_id: int in DECK_SIZE:
+	var pool: CardPool = WalkBase.member(table, "_pool")
+	for deck_id: int in Deck.SIZE:
 		var view: CardView = pool.acquire()
 		if view == null:
 			return

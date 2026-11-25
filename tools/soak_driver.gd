@@ -24,11 +24,13 @@ func _init(strategy: BalanceStrategy, stake: int, run_log: SoakLog, folder: Stri
 	saves = SaveService.for_run(folder.path_join("run.json"))
 
 
+## Plays the run of seed_value as the harness does, saving and resuming it, and fails it
+## on any fault it counted.
 func play(seed_value: int) -> BalanceResult:
 	saves.delete()
-	_log.take(SoakFaults.new())
+	_log.take_into(SoakFaults.new())
 	super(seed_value)
-	var first: String = _log.take(faults)
+	var first: String = _log.take_into(faults)
 	if faults.errors > 0:
 		_fail("%d errors, first: %s" % [faults.errors, first])
 	if faults.save_failures + faults.load_failures > 0:
@@ -54,7 +56,7 @@ func _send(command: String, reason: int) -> void:
 
 
 func _finish() -> void:
-	var loop: RunLoop = _controller.get("_loop")
+	var loop: RunLoop = WalkBase.member(_controller, "_loop")
 	faults.bot_actions += _refused_before + loop.refused_bot_actions
 	if _refused_before > 0:
 		_fail("%d bot actions refused before the last resume" % _refused_before)
@@ -75,7 +77,7 @@ func _resume() -> void:
 	if resumed.state_copy().to_dict() != before or resumed.awaiting() != awaited:
 		faults.mismatches += 1
 		_fail("the run resumed at Year %d is not the run saved" % _year())
-	var loop: RunLoop = _controller.get("_loop")
+	var loop: RunLoop = WalkBase.member(_controller, "_loop")
 	_refused_before += loop.refused_bot_actions
 	_controller.event_emitted.disconnect(_on_event)
 	_controller.free()

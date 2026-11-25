@@ -8,6 +8,7 @@ var illegal_actions: int = 0
 var _usec: PackedInt64Array = PackedInt64Array()
 
 
+## Adds one game played from seat, and whether that seat's side won.
 func add(result: SelfPlayResult, seat: int, won: bool) -> void:
 	games += 1
 	wins += 1 if won else 0
@@ -17,6 +18,7 @@ func add(result: SelfPlayResult, seat: int, won: bool) -> void:
 			_usec.append(result.decision_usec[decision])
 
 
+## This row's games, wins, win rate, decision times and illegal actions as CSV cells.
 func csv() -> String:
 	var sorted: PackedInt64Array = _usec.duplicate()
 	sorted.sort()
@@ -25,6 +27,5 @@ func csv() -> String:
 		total += usec
 	var count: int = sorted.size()
 	var mean: float = float(total) / count if count > 0 else 0.0
-	@warning_ignore("integer_division")
-	var p99: int = sorted[count * 99 / 100] if count > 0 else 0
+	var p99: int = int(ToolStats.nearest_rank(PackedFloat64Array(Array(sorted)), 99))
 	return "%d,%d,%.4f,%.1f,%d,%d" % [games, wins, float(wins) / games, mean, p99, illegal_actions]

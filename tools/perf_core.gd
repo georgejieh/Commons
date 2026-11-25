@@ -34,11 +34,11 @@ func classification(hands: int) -> PerfRow:
 		var started: int = Time.get_ticks_usec()
 		Classifier.classify(counts, _rules, _map)
 		usec.append(Time.get_ticks_usec() - started)
-	var sorted: PackedFloat64Array = PerfRow.sorted_of(usec)
-	var p99: float = PerfRow.percentile(sorted, 0.99)
+	var sorted: PackedFloat64Array = ToolStats.sorted_of(usec)
+	var p99: float = ToolStats.nearest_rank(sorted, 99)
 	var measured: String = (
 		"median %.1f us, p99 %.1f us, worst %.1f us"
-		% [PerfRow.percentile(sorted, 0.5), p99, sorted[-1]]
+		% [ToolStats.nearest_rank(sorted, 50), p99, sorted[-1]]
 	)
 	return PerfRow.judged(
 		"Hand classification",
@@ -63,12 +63,12 @@ func move_generation(hands: int) -> PerfRow:
 		var started: int = Time.get_ticks_usec()
 		MoveGenerator.generate(counts, mask, current, _rules, _map)
 		usec.append(Time.get_ticks_usec() - started)
-	var sorted: PackedFloat64Array = PerfRow.sorted_of(usec)
-	var median: float = PerfRow.percentile(sorted, 0.5)
+	var sorted: PackedFloat64Array = ToolStats.sorted_of(usec)
+	var median: float = ToolStats.nearest_rank(sorted, 50)
 	return PerfRow.judged(
 		"Legal moves, 20-card hand",
 		"median under %.0f us" % PerfLimits.MOVEGEN_MEDIAN_MAX_USEC,
-		"median %.0f us, p99 %.0f us" % [median, PerfRow.percentile(sorted, 0.99)],
+		"median %.0f us, p99 %.0f us" % [median, ToolStats.nearest_rank(sorted, 99)],
 		median < PerfLimits.MOVEGEN_MEDIAN_MAX_USEC,
 		"%d hands, half leading and half following" % hands
 	)
@@ -90,14 +90,16 @@ func expert(deals: int) -> PerfRow:
 	for index: int in deals:
 		play.expert_wins(SelfPlay.deal_from_seed(_seed + index), limit)
 	if play.times.is_empty():
-		return PerfRow.unmeasured("Bot decision, Expert", _expert_budget(), "no deals asked for")
+		return PerfRow.unmeasured(
+			"Bot decision, Expert", PerfLimits.expert_budget(), "no deals asked for"
+		)
 	var p99_ms: float = play.p99_usec() / USEC_PER_MSEC
 	var note: String = "at the %d ms deadline on %d worker threads" % [limit / 1000, _threads()]
 	if play.illegal > 0:
 		note += ", %d illegal actions" % play.illegal
 	return PerfRow.judged(
 		"Bot decision, Expert",
-		_expert_budget(),
+		PerfLimits.expert_budget(),
 		"p99 %.1f ms" % p99_ms,
 		p99_ms < PerfLimits.EXPERT_P99_MAX_MS and play.illegal == 0,
 		(
@@ -106,10 +108,6 @@ func expert(deals: int) -> PerfRow:
 		),
 		note
 	)
-
-
-func _expert_budget() -> String:
-	return "p99 under %.0f ms, worker thread with deadline" % PerfLimits.EXPERT_P99_MAX_MS
 
 
 func _threads() -> int:
@@ -130,9 +128,9 @@ func _bot_row(tier_name: String, deals: int) -> PerfRow:
 		illegal += result.illegal_actions
 		for taken: int in result.decision_usec:
 			usec.append(taken)
-	var sorted: PackedFloat64Array = PerfRow.sorted_of(usec)
-	var median_ms: float = PerfRow.percentile(sorted, 0.5) / USEC_PER_MSEC
-	var p99_ms: float = PerfRow.percentile(sorted, 0.99) / USEC_PER_MSEC
+	var sorted: PackedFloat64Array = ToolStats.sorted_of(usec)
+	var median_ms: float = ToolStats.nearest_rank(sorted, 50) / USEC_PER_MSEC
+	var p99_ms: float = ToolStats.nearest_rank(sorted, 99) / USEC_PER_MSEC
 	var ok: bool = (
 		not sorted.is_empty()
 		and median_ms < PerfLimits.BOT_MEDIAN_MAX_MS

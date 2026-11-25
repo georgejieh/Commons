@@ -21,42 +21,41 @@ const DEATHS: Array[Array] = [
 ]
 
 
-## setup names the run: seeds, first_seed, stake, minutes, jobs and wall_seconds, and
-## expert_samples when the harness lowered them.
-static func markdown(tally: BalanceTally, setup: Dictionary) -> String:
+## The whole report of tally, opened by what setup says the run was.
+static func markdown(tally: BalanceTally, setup: BalanceSetup) -> String:
 	var lines: PackedStringArray = PackedStringArray(["# Balance harness", ""])
 	lines.append_array(_setup(tally, setup))
 	lines.append_array(_table(tally))
 	lines.append_array(_endings(tally))
 	lines.append_array(BalanceCurve.sections(tally))
-	lines.append_array(_verdict(tally, int(setup["seeds"])))
+	lines.append_array(_verdict(tally, setup.seeds))
 	lines.append_array(_failures(tally))
 	lines.append_array(_extremes(tally))
 	return "\n".join(lines) + "\n"
 
 
-static func _setup(tally: BalanceTally, setup: Dictionary) -> PackedStringArray:
-	var seeds: int = int(setup["seeds"])
-	var first: int = int(setup["first_seed"])
+static func _setup(tally: BalanceTally, setup: BalanceSetup) -> PackedStringArray:
+	var seeds: int = setup.seeds
+	var first: int = setup.first_seed
 	var lines: PackedStringArray = PackedStringArray()
 	lines.append(
 		(
 			"%d seeds a strategy (%d to %d), stake %d, Poor Peasants, every unlock tier open."
-			% [seeds, first, first + seeds - 1, int(setup["stake"])]
+			% [seeds, first, first + seeds - 1, setup.stake]
 		)
 	)
 	var budget: String = "no time budget"
-	if float(setup["minutes"]) > 0.0:
-		budget = "a %s-minute budget" % str(setup["minutes"])
+	if setup.minutes > 0.0:
+		budget = "a %s-minute budget" % str(setup.minutes)
 	lines.append(
 		(
 			"Played in %.0f s on %d jobs, %s. The Hard bot plays the player's cards."
-			% [float(setup["wall_seconds"]), int(setup["jobs"]), budget]
+			% [setup.wall_seconds, setup.jobs, budget]
 		)
 	)
 	lines.append("Strategies: %s." % ", ".join(tally.strategies))
 	var own: int = BotConfig.DEFAULT_WEIGHTS.expert_samples
-	var samples: int = int(setup.get("expert_samples", 0))
+	var samples: int = setup.expert_samples
 	if samples > 0:
 		lines.append(
 			(

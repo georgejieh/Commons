@@ -7,13 +7,14 @@ extends SceneTree
 ##   godot --headless --path . --script res://tools/soak.gd -- --runs 100
 ## Options: --runs N (100 unless set), --seed S the first seed, --jobs J worker threads,
 ## --expert-samples N the deals an Expert villager samples (the game's own unless set;
-## never fewer than a search decides on), --out DIR. Exits 2 on bad options.
+## never fewer than a search decides on), --out DIR. Exits 2 on bad options. Each run
+## keeps its save while it plays in a folder by seed under the tool's own folder in the
+## sandbox (WalkProfile), user://tools/soak/; a failed run's save is left there to be read.
 
+const USAGE: String = "soak.gd -- [--runs N] [--seed S] [--jobs J] [--expert-samples N] [--out DIR]"
 const DEFAULT_RUNS: int = 100
-const DEFAULT_OUT: String = "res://reports"
-## Where each run keeps its save while it plays: a folder by seed. A failed run's save is
-## left there to be read.
-const SAVE_ROOT: String = "user://soak"
+const DEFAULT_OUT: String = "reports"
+const SAVE_BASE: String = "soak"
 
 var _runs: int = DEFAULT_RUNS
 var _first_seed: int = 0
@@ -24,25 +25,31 @@ var _failed: Array[BalanceResult] = []
 var _mutex: Mutex = Mutex.new()
 var _next: int = 0
 var _done: int = 0
+var _save_root: String
 
 
 func _initialize() -> void:
-	var options: Dictionary[String, String] = _options()
-	var problem: String = _read(options)
-	if not problem.is_empty():
-		printerr(problem)
+	var options: ToolOptions = ToolOptions.new(USAGE)
+	_runs = options.integer("runs", DEFAULT_RUNS, 1)
+	_first_seed = options.integer("seed", 0)
+	# Never fewer than a search decides on (ADR 0030); 0 keeps the game's own number.
+	_expert_samples = options.integer(
+		"expert-samples", 0, BotConfig.DEFAULT_WEIGHTS.expert_min_samples
+	)
+	var jobs: int = options.integer("jobs", 1, 1)
+	var out: String = options.path("out", DEFAULT_OUT)
+	if options.failed():
 		quit(2)
 		return
-	var jobs: int = maxi(int(options.get("jobs", "1")), 1)
+	_save_root = WalkProfile.folder(SAVE_BASE, options)
 	var began: int = Time.get_ticks_msec()
 	# Worked out once here: every save is stamped with it, from every worker.
 	ContentStamp.current()
 	OS.add_logger(_log)
-	_play_all(jobs)
+	WorkerPool.run(_work, jobs)
 	OS.remove_logger(_log)
 	var seconds: float = (Time.get_ticks_msec() - began) / 1000.0
-	var out: String = options.get("out", DEFAULT_OUT)
-	var saved: bool = _save(out.path_join("soak.md"), _report(seconds, jobs))
+	var saved: bool = ToolFiles.write(out.path_join("soak.md"), _report(seconds, jobs))
 	for result: BalanceResult in _failed:
 		printerr("Failed: seed %d, %s: %s" % [result.seed_value, result.strategy, result.failure])
 	print("%d runs, %d failed, %d faults." % [_done, _failed.size(), _totals.total()])
@@ -57,15 +64,16 @@ static func plan(index: int) -> Vector2i:
 	return Vector2i(index % strategies, (index / strategies) % stakes)
 
 
-## The report: what was played, each count, and each failed run's seed and reason.
+## The report: what was played from first_seed, with note on how, each count, and each
+## failed run's seed and reason.
 static func markdown(
-	totals: SoakFaults, failed: Array[BalanceResult], runs: int, setup: Dictionary
+	totals: SoakFaults, failed: Array[BalanceResult], runs: int, first_seed: int, note: String
 ) -> String:
 	var lines: PackedStringArray = ["# Soak", ""]
 	lines.append(
 		(
 			"%d full runs from seed %d, saved and resumed at every Set's end. %s."
-			% [runs, setup.get("first_seed", 0), setup.get("note", "")]
+			% [runs, first_seed, note]
 		)
 	)
 	lines.append_array(["", "| Fault | Count |", "| --- | --- |"])
@@ -95,33 +103,7 @@ func _report(seconds: float, jobs: int) -> String:
 		else "Expert villagers sampled the game's own number of deals"
 	)
 	var note: String = "%s; %d jobs; %.0f seconds" % [samples, jobs, seconds]
-	return markdown(_totals, _failed, _done, {"first_seed": _first_seed, "note": note})
-
-
-## Reads the options. Returns what is wrong with them, or "".
-func _read(options: Dictionary[String, String]) -> String:
-	_runs = int(options.get("runs", str(DEFAULT_RUNS)))
-	_first_seed = int(options.get("seed", "0"))
-	_expert_samples = int(options.get("expert-samples", "0"))
-	if _runs < 1:
-		return "Needs --runs N of at least 1."
-	var fewest: int = BotConfig.DEFAULT_WEIGHTS.expert_min_samples
-	if options.has("expert-samples") and _expert_samples < fewest:
-		return "Needs --expert-samples of at least %d, the fewest a search decides on." % fewest
-	return ""
-
-
-func _play_all(jobs: int) -> void:
-	if jobs == 1:
-		_work()
-		return
-	var threads: Array[Thread] = []
-	for job: int in jobs:
-		var thread: Thread = Thread.new()
-		thread.start(_work)
-		threads.append(thread)
-	for thread: Thread in threads:
-		thread.wait_to_finish()
+	return markdown(_totals, _failed, _done, _first_seed, note)
 
 
 ## Takes runs until none are left. Each driver is made under the lock: duplicating a
@@ -139,7 +121,7 @@ func _work() -> void:
 		var strategy: BalanceStrategy = BalanceDriver.strategy_named(
 			BalanceDriver.STRATEGIES[turn.x]
 		)
-		var folder: String = SAVE_ROOT.path_join(str(seed_value))
+		var folder: String = _save_root.path_join(str(seed_value))
 		var driver: SoakDriver = SoakDriver.new(strategy, turn.y, _log, folder)
 		if _expert_samples > 0:
 			driver.search_weights = BalanceDriver.sampling(_expert_samples)
@@ -170,24 +152,3 @@ func _progress(result: BalanceResult, faults: SoakFaults) -> String:
 			result.seconds,
 		]
 	)
-
-
-func _options() -> Dictionary[String, String]:
-	var options: Dictionary[String, String] = {}
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = 0
-	while at < args.size():
-		var name: String = args[at].trim_prefix("--")
-		var has_value: bool = at + 1 < args.size() and not args[at + 1].begins_with("--")
-		options[name] = args[at + 1] if has_value else ""
-		at += 2 if has_value else 1
-	return options
-
-
-func _save(path: String, text: String) -> bool:
-	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
-	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
-		printerr("Can't write %s" % path)
-		return false
-	return file.store_string(text)

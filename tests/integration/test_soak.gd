@@ -56,7 +56,7 @@ func test_a_damaged_save_fails_the_run_and_is_counted() -> void:
 	assert_int(spoilt.faults.load_failures).is_equal(1)
 	assert_int(spoilt.faults.total()).is_equal(1)
 	var failed: Array[BalanceResult] = [result]
-	var report: String = load(SOAK).call("markdown", spoilt.faults, failed, 1, {})
+	var report: String = load(SOAK).call("markdown", spoilt.faults, failed, 1, SEED, "")
 	assert_str(report).contains("| load failures | 1 |").contains("- seed %d," % SEED)
 	spoilt.saves.delete()
 

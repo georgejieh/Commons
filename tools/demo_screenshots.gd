@@ -18,35 +18,38 @@ const SETTLE_FRAMES: int = 110
 const NOTICE: String = "res://ui/screens/session_notice.gd"
 const GATE: String = "res://ui/launch_gate.gd"
 const SESSION: String = "res://data/session/session_params.tres"
-## A folder named as the game names one.
+## The kept session's folder the notice names, in the form the game names one. It is
+## only shown in the notice; nothing is made there.
 const KEPT: String = "user://crashes/2026-11-24T21.07.45"
+const USAGE: String = (
+	"demo_screenshots.gd -- [--out DIR] [--text-size N] [--grayscale] [--reduced-motion]"
+	+ " [--profile NAME]"
+)
+const DEFAULT_OUT: String = "reports/shots"
 
-var _out: String = "res://reports/shots"
-var _args: PackedStringArray = []
+var _out: String
+var _options: ToolOptions
+## False once a picture could not be saved, which fails the run.
+var _saved: bool = true
 
 
 func _initialize() -> void:
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = args.find("--out")
-	if at >= 0 and at + 1 < args.size():
-		_out = "res://" + args[at + 1]
-	_args = args
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out))
+	_options = ToolOptions.new(USAGE)
+	_out = _options.path("out", DEFAULT_OUT)
+	DisplayFlags.text_size(_options)
+	if _options.failed():
+		quit(2)
+		return
 	_run.call_deferred()
 
 
 func _run() -> void:
-	# Loaded at run time: the demo names autoloads, which a --script tool can't see when
-	# it compiles.
-	var flags: GDScript = load("res://tools/display_flags.gd")
-	print(flags.call("apply", root, _args))
-	# Standard unless a size was asked for, whatever the player's file says.
-	if int(flags.call("text_size", _args)) < 0:
-		root.get_node("Settings").call("set_value", "text_size", 0)
-	# A run save of its own, in the sandbox, never the player's (tools/walk_profile.gd).
-	load("res://tools/walk_profile.gd").call(
-		"keep_run", root, "demo_screenshots", OS.get_cmdline_user_args()
-	)
+	print(DisplayFlags.apply(root, _options))
+	# Standard unless a size was asked for, whatever the sandbox's settings file says.
+	if DisplayFlags.text_size(_options) < 0:
+		DisplayFlags.settings(root).set_value(DisplayFlags.TEXT_SIZE_KEY, 0)
+	WalkProfile.keep_run(root, "demo_screenshots", _options)
+	# Loaded at run time: the demo names autoloads, which a --script tool can't see.
 	var scene: PackedScene = load("res://ui/main.tscn")
 	var app: Node = scene.instantiate()
 	root.add_child(app)
@@ -60,7 +63,7 @@ func _run() -> void:
 		app.call("show_screen", screen_id, true)
 		await _settle()
 		await _shot(screen_id)
-	quit(0)
+	quit(0 if _saved else 1)
 
 
 ## The "already open" notice over the title, then the title as it opens after a session
@@ -96,10 +99,9 @@ func _settle() -> void:
 
 
 func _shot(name: String) -> void:
+	print("FRAME %s" % name)
 	if DisplayServer.get_name() == "headless":
-		print("frame ", name)
 		return
 	await RenderingServer.frame_post_draw
 	var image: Image = root.get_texture().get_image()
-	image.save_png(ProjectSettings.globalize_path(_out.path_join(name + ".png")))
-	print("saved ", name)
+	_saved = ToolFiles.save_png(image, _out.path_join(name + ".png")) and _saved

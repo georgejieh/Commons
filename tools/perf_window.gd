@@ -14,33 +14,37 @@ const NO_WINDOW: String = "needs a window and a GPU: run without --headless, wit
 var _tree: SceneTree
 var _seed: int
 var _seconds: float
+var _options: ToolOptions
 
 
-func _init(tree: SceneTree, first_seed: int, seconds: float) -> void:
+func _init(tree: SceneTree, first_seed: int, seconds: float, options: ToolOptions) -> void:
 	_tree = tree
 	_seed = first_seed
 	_seconds = seconds
+	_options = options
 
 
 ## Every windowed row not measured, each saying why.
 static func unmeasured(why: String) -> Array[PerfRow]:
 	return [
-		PerfRow.unmeasured("Startup to title", _startup_budget(), why),
-		PerfRow.unmeasured("Frame time during play", _frame_budget(), why),
+		PerfRow.unmeasured("Startup to title", PerfLimits.startup_budget(), why),
+		PerfRow.unmeasured("Frame time during play", PerfLimits.frame_budget(), why),
 		PerfRow.unmeasured("Nodes made during a round", "none", why),
-		PerfRow.unmeasured("Resident memory, table open", _memory_budget(), why),
+		PerfRow.unmeasured("Resident memory, table open", PerfLimits.memory_budget(), why),
 	]
 
 
+## True when the tool runs with a window and a GPU to measure.
 static func has_window() -> bool:
 	return DisplayServer.get_name() != WINDOWLESS
 
 
+## Measures every windowed row, in the report's order.
 func measure() -> Array[PerfRow]:
 	var rows: Array[PerfRow] = []
 	rows.append(await _startup())
 	var play: TablePlay = TablePlay.new()
-	play.open(_tree, _start_demo)
+	play.open(_tree, _start_demo, _options)
 	await play.warm_up(_tree)
 	await play.play_set(_tree, _seconds, Callable(), true)
 	rows.append(_frame_row(play))
@@ -83,10 +87,12 @@ func _startup() -> PerfRow:
 	if opened != TITLE:
 		note += "; the app opened on %s, so the title was shown by the tool" % opened
 	if shown != TITLE:
-		return PerfRow.unmeasured("Startup to title", _startup_budget(), "the title was not shown")
+		return PerfRow.unmeasured(
+			"Startup to title", PerfLimits.startup_budget(), "the title was not shown"
+		)
 	return PerfRow.judged(
 		"Startup to title",
-		_startup_budget(),
+		PerfLimits.startup_budget(),
 		"%d ms" % msec,
 		msec < PerfLimits.STARTUP_MAX_MS,
 		"1 start",
@@ -95,17 +101,19 @@ func _startup() -> PerfRow:
 
 
 func _frame_row(play: TablePlay) -> PerfRow:
-	var sorted: PackedFloat64Array = PerfRow.sorted_of(play.frame_ms)
+	var sorted: PackedFloat64Array = ToolStats.sorted_of(play.frame_ms)
 	if sorted.is_empty():
-		return PerfRow.unmeasured("Frame time during play", _frame_budget(), "no frames drawn")
-	var p99: float = PerfRow.percentile(sorted, 0.99)
+		return PerfRow.unmeasured(
+			"Frame time during play", PerfLimits.frame_budget(), "no frames drawn"
+		)
+	var p99: float = ToolStats.nearest_rank(sorted, 99)
 	var measured: String = (
 		"p50 %.2f ms, p99 %.2f ms, worst %.2f ms"
-		% [PerfRow.percentile(sorted, 0.5), p99, sorted[-1]]
+		% [ToolStats.nearest_rank(sorted, 50), p99, sorted[-1]]
 	)
 	return PerfRow.judged(
 		"Frame time during play",
-		_frame_budget(),
+		PerfLimits.frame_budget(),
 		measured,
 		p99 < PerfLimits.FRAME_MAX_MS + PerfLimits.FRAME_SLACK_MS,
 		"%d frames over %.0f s of a bot-played Set" % [sorted.size(), _seconds],
@@ -144,7 +152,7 @@ func _memory_row(frames: int) -> PerfRow:
 	if resident == PerfMemory.NOT_AVAILABLE:
 		return PerfRow.new(
 			"Resident memory, table open",
-			_memory_budget(),
+			PerfLimits.memory_budget(),
 			"resident memory was not measured on this platform; engine reports %s" % engine,
 			PerfRow.Verdict.NOT_MEASURED,
 			"",
@@ -152,21 +160,9 @@ func _memory_row(frames: int) -> PerfRow:
 		)
 	return PerfRow.judged(
 		"Resident memory, table open",
-		_memory_budget(),
+		PerfLimits.memory_budget(),
 		"resident %s" % PerfMemory.megabytes(resident),
 		resident < PerfLimits.MEMORY_MAX_BYTES,
 		"once, after %d frames of play" % frames,
 		"%s; resident is the process's working set from the operating system" % engine
 	)
-
-
-static func _startup_budget() -> String:
-	return "under %.0f s" % (PerfLimits.STARTUP_MAX_MS / 1000.0)
-
-
-static func _frame_budget() -> String:
-	return "under %.1f ms (60 fps)" % PerfLimits.FRAME_MAX_MS
-
-
-static func _memory_budget() -> String:
-	return "under %s resident" % PerfMemory.megabytes(PerfLimits.MEMORY_MAX_BYTES)

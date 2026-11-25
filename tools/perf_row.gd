@@ -49,10 +49,12 @@ static func judged(
 	return PerfRow.new(row_name, row_budget, row_measured, verdict_of, row_samples, row_note)
 
 
+## The verdict as the report writes it.
 func verdict_text() -> String:
 	return NAMES[verdict]
 
 
+## The row as one line of the tool's own output.
 func line() -> String:
 	return (
 		"%s | budget %s | measured %s | %s | samples %s"
@@ -60,22 +62,10 @@ func line() -> String:
 	)
 
 
+## The row as a line of the report's table.
 func table_line() -> String:
 	var shown: String = measured if note.is_empty() else "%s (%s)" % [measured, note]
 	return (
 		"| %s | %s | %s | %s | %s |"
 		% [name, budget, shown.replace("|", "/"), verdict_text(), samples]
 	)
-
-
-## The value at fraction (0 to 1) of the sorted values, by nearest rank. 0 when empty.
-static func percentile(sorted: PackedFloat64Array, fraction: float) -> float:
-	if sorted.is_empty():
-		return 0.0
-	return sorted[mini(sorted.size() - 1, int(sorted.size() * fraction))]
-
-
-static func sorted_of(values: PackedFloat64Array) -> PackedFloat64Array:
-	var copy: PackedFloat64Array = values.duplicate()
-	copy.sort()
-	return copy
