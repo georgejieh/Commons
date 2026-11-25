@@ -8,12 +8,8 @@ extends RefCounted
 ## is judged as the trick will stand once it is down, under the standings that hold after
 ## a bomb (Cultural Revolution turns its holder's order over), when the caller gives them.
 
-const BOMB_WIDTH: int = 4
-
 ## One flag per group of the decomposition.
 var flags: Array[bool] = []
-var bomb_possible: bool = false
-var rocket_possible: bool = false
 var effective_hands: int = 0
 
 
@@ -29,16 +25,6 @@ func _init(
 	var answering: Array[BotTable] = rivals
 	if answering.is_empty():
 		answering = [table]
-	rocket_possible = unseen[Ranks.SMALL_JOKER] > 0 and unseen[Ranks.BIG_JOKER] > 0
-	var wild_rules: RuleSet = threat_rules(table, rivals)
-	var supply: WildSupply = WildSupply.of(unseen, wild_rules)
-	var wilds: int = 0 if supply == null else supply.total
-	for rank: int in Ranks.COUNT:
-		if unseen[rank] >= BOMB_WIDTH:
-			bomb_possible = true
-		elif wilds > 0 and rank <= Ranks.TWO and unseen[rank] > 0:
-			var others: int = wilds - (unseen[rank] if wild_rules.is_wild(rank) else 0)
-			bomb_possible = bomb_possible or unseen[rank] + others >= BOMB_WIDTH
 	var mask: int = UnseenCards.mask_of(unseen)
 	var controls: int = 0
 	for group: Pattern in groups:

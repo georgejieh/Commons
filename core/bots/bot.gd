@@ -37,7 +37,7 @@ static func decide_play(
 	if config.tier == BotConfig.Tier.EASY:
 		return GreedyPolicy.choose(view, legal, table, config)
 	var job: BotSearchJob = search_job(view, legal, table, config)
-	if not ExpertSearch.applies(config):
+	if not config.searches():
 		return job.fallback
 	return ExpertSearch.run(job, budget)
 
@@ -56,7 +56,7 @@ static func search_job(
 		return BotSearchJob.new(position, none, SlackPolicy.choose(position, legal))
 	var play: BotPlay = _by_policy(position, legal)
 	var candidates: Array[Pattern] = []
-	if ExpertSearch.applies(config):
+	if config.searches():
 		candidates = legal
 	return BotSearchJob.new(position, candidates, play)
 

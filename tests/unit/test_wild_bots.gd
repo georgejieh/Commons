@@ -122,7 +122,3 @@ func test_hard_counts_a_wild_answer_as_possible() -> void:
 		groups, RankText.counts("A8"), 10, BotTable.new(RuleSet.default_rules(), _map)
 	)
 	assert_bool(plain.flags[0]).is_true()
-	var bombs: Controls = Controls.new(
-		groups, RankText.counts("9997"), 10, BotTable.new(sevens, _map)
-	)
-	assert_bool(bombs.bomb_possible).is_true()

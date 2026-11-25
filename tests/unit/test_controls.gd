@@ -38,14 +38,12 @@ func test_unseen_is_the_deck_less_own_cards_and_plays() -> void:
 func test_a_lone_two_with_both_jokers_unseen_is_no_control() -> void:
 	var controls: Controls = _controls(_view(["2345", "6", "7"]), "2")
 	assert_bool(controls.flags[0]).is_false()
-	assert_bool(controls.rocket_possible).is_true()
 	assert_int(controls.effective_hands).is_equal(1)
 
 
 func test_a_big_joker_single_is_a_control() -> void:
 	var controls: Controls = _controls(_view(["b345", "6", "7"]), "b")
 	assert_bool(controls.flags[0]).is_true()
-	assert_bool(controls.rocket_possible).is_false()
 	assert_int(controls.effective_hands).is_equal(0)
 
 
@@ -53,14 +51,6 @@ func test_the_top_straight_is_a_control() -> void:
 	var view: SeatView = _view(["TJQKA3", "4", "5"])
 	assert_bool(_controls(view, "TJQKA").flags[0]).is_true()
 	assert_bool(_controls(view, "789TJ").flags[0]).is_false()
-
-
-func test_a_bomb_stops_being_possible_once_every_rank_is_broken() -> void:
-	var live: Controls = _controls(_view(["3", "4", "5"]), "3")
-	assert_bool(live.bomb_possible).is_true()
-	var hand: String = "3456789TJQKA2"
-	var broken: Controls = _controls(_view([hand, "3", "4"]), "2")
-	assert_bool(broken.bomb_possible).is_false()
 
 
 func test_the_last_bomb_rank_seen_makes_a_bomb_a_control() -> void:

@@ -6,10 +6,6 @@ extends RefCounted
 ## Only Expert searches. A pure job, so a runner may spread it over threads.
 
 
-static func applies(config: BotConfig) -> bool:
-	return config.searches()
-
-
 ## Runs a job's samples in turn until the deadline, then decides on those it finished.
 static func run(job: BotSearchJob, budget: BotBudget) -> BotPlay:
 	if not job.is_ready():

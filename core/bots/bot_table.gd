@@ -72,15 +72,6 @@ func is_uniform() -> bool:
 	return _maps.is_empty()
 
 
-func rules_of(other: int) -> RuleSet:
-	return rules if is_uniform() else _seat_rules[_index(other, bombed)]
-
-
-## Another seat's standings in the trick as it stands.
-func standing_of(other: int) -> PackedByteArray:
-	return standing if is_uniform() else _standings[_index(other, bombed)]
-
-
 ## Another seat's own order in the trick as it stands.
 func map_of(other: int) -> PackedByteArray:
 	return rank_map if is_uniform() else _maps[_index(other, bombed)]
