@@ -174,7 +174,10 @@ func _resumed(data: Dictionary, configs: Array[BotConfig], sets: SetConfig) -> R
 	var params: RunParams = RunLoop.DEFAULT_PARAMS
 	var pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs
 	var meters: MeterTable = RunLoop.DEFAULT_METERS
-	return RunRecord.resume(data, configs, sets, params, pool, meters, Callable(), live_search)
+	var searcher: Callable = Callable()
+	return RunRecord.resume(
+		data, configs, sets, params, pool, meters, searcher, live_search, search_weights
+	)
 
 
 func has_run() -> bool:

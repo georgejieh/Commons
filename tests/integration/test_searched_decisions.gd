@@ -11,6 +11,8 @@ const DIR: String = "user://test_searched/"
 ## Searcher calls, and those that played something other than the policy's play.
 var _calls: int = 0
 var _overturned: int = 0
+## Searcher calls made by the command a save is taken inside.
+var _asked: int = 0
 
 
 func before_test() -> void:
@@ -144,30 +146,62 @@ func test_a_written_decision_that_no_longer_fits_fails_the_resume() -> void:
 ## resume decides them then, with the searcher, landing where the run did.
 func test_a_save_written_inside_its_last_command_goes_on_live() -> void:
 	var loop: RunLoop = _loop(_overturn, TURNS)
+	var saved: Dictionary = _saved_inside_a_command(loop)
+	assert_int(_asked).is_greater(0)
+	_calls = 0
+	var resumed: RunLoop = _resume(saved, _overturn)
+	assert_object(resumed).is_not_null()
+	assert_int(_calls).is_equal(_asked)
+	assert_int(resumed.awaiting()).is_equal(loop.awaiting())
+	assert_str(_text(resumed.state.to_dict())).is_equal(_text(loop.state.to_dict()))
+	assert_str(_text(resumed.record.to_dict())).is_equal(_text(loop.record.to_dict()))
+
+
+## The villagers such a resume decides take the weights a tool hands in, as the run that
+## was saved gave them (ADR 0027).
+func test_a_resume_decides_with_the_weights_handed_in() -> void:
+	var saved: Dictionary = _saved_inside_a_command(_loop(_overturn, TURNS))
+	var seen: Array[int] = []
+	var watching: Callable = func(
+		view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
+	) -> BotPlay:
+		seen.append(config.weights.expert_samples)
+		return _overturn(view, legal, table, config)
+	var resumed: RunLoop = RunRecord.resume(
+		saved,
+		_configs(),
+		SetConfig.new(),
+		RunLoop.DEFAULT_PARAMS,
+		RunPools.DEBUFFS.debuffs,
+		RunLoop.DEFAULT_METERS,
+		watching,
+		false,
+		BalanceDriver.sampling(12)
+	)
+	assert_object(resumed).is_not_null()
+	assert_int(seen.size()).is_greater(0)
+	for samples: int in seen:
+		assert_int(samples).is_equal(12)
+
+
+## Plays on until a command sets a searching villager playing, and returns the record as
+## a save made inside that command reads back: without the plays the command led to.
+func _saved_inside_a_command(loop: RunLoop) -> Dictionary:
 	var script: RunScript = RunScript.new()
 	var before: int = loop.record.decisions.size()
-	var commands: int = loop.record.commands.size()
-	var asked: int = 0
 	for _turn: int in 40:
 		before = loop.record.decisions.size()
-		commands = loop.record.commands.size()
-		asked = _calls
+		var commands: int = loop.record.commands.size()
+		var asked: int = _calls
 		assert_bool(script.act(loop)).is_true()
-		asked = _calls - asked
-		if asked > 0 and loop.record.commands.size() == commands + 1:
+		_asked = _calls - asked
+		if _asked > 0 and loop.record.commands.size() == commands + 1:
 			break
-	assert_int(asked).is_greater(0)
 	var saved: Dictionary = _through_disk(loop.record.to_dict())
 	var written: Array = saved["decisions"]
 	written.resize(before)
 	assert_bool(RunRecord.is_valid(saved)).is_true()
-	_calls = 0
-	var resumed: RunLoop = _resume(saved, _overturn)
-	assert_object(resumed).is_not_null()
-	assert_int(_calls).is_equal(asked)
-	assert_int(resumed.awaiting()).is_equal(loop.awaiting())
-	assert_str(_text(resumed.state.to_dict())).is_equal(_text(loop.state.to_dict()))
-	assert_str(_text(resumed.record.to_dict())).is_equal(_text(loop.record.to_dict()))
+	return saved
 
 
 func test_written_decisions_of_the_wrong_shape_are_a_damaged_save() -> void:
