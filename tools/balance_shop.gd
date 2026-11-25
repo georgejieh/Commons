@@ -99,9 +99,26 @@ static func buy(controller: RunController, offer: BalanceOffer, rank: int) -> in
 	return controller.upgrade(offer.item_id)
 
 
-## The open envelope's first item the player can keep, or the pick that keeps nothing.
-static func envelope_pick(shelf: EnvelopeShelf) -> int:
+## Keeps the open envelope's first item the player can keep, or nothing, and returns the
+## controller's answer. A card for the communal deck goes in place of the deck's weakest
+## card (ADR 0042).
+static func keep_from(controller: RunController, shelf: EnvelopeShelf) -> int:
+	var pick: int = RunController.TAKE_NOTHING
 	for index: int in shelf.count():
 		if shelf.can_take(index):
-			return index
-	return RunController.TAKE_NOTHING
+			pick = index
+			break
+	var out: int = RunController.NO_CARD
+	if pick != RunController.TAKE_NOTHING and shelf.is_deck_card(pick):
+		out = _weakest_slot(controller.deck_cards())
+	return controller.envelope_pick(pick, out)
+
+
+## The first slot of the lowest rank the deck holds, which every strategy trades away.
+## Never a joker's, which may not leave: the jokers rank above every other card.
+static func _weakest_slot(deck: Array[CardInstance]) -> int:
+	var weakest: CardInstance = deck[0]
+	for card: CardInstance in deck:
+		if card.base_rank() < weakest.base_rank():
+			weakest = card
+	return weakest.id()

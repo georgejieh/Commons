@@ -313,7 +313,7 @@ func _shop() -> void:
 func _shop_step(state: RunState) -> String:
 	var opened: EnvelopeShelf = _controller.opened_envelope()
 	if opened != null:
-		_send("envelope_pick", _controller.envelope_pick(BalanceShop.envelope_pick(opened)))
+		_send("envelope_pick", BalanceShop.keep_from(_controller, opened))
 		return "envelopes"
 	if _use_campaign():
 		return "campaigns"
