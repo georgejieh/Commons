@@ -54,14 +54,14 @@ func table(driver: Object) -> void:
 func store() -> void:
 	var controller: Object = _controller()
 	var loop: RunLoop = _loop()
-	var campaigns: Array[String] = loop.shop.campaigns.stock()
-	var reforms: Array[String] = loop.shop.reforms.stock()
+	var campaigns: Array[String] = loop.visit.shop.campaigns.stock()
+	var reforms: Array[String] = loop.visit.shop.reforms.stock()
 	# The demo's counters are drawn from the tiers below the wild ranks', so for these
 	# frames they look items up in the whole pools; both are put back after.
-	var campaign_pool: Array[CampaignDef] = member(loop.shop.campaigns, "_pool")
-	var reform_pool: Array[ReformDef] = member(loop.shop.reforms, "_pool")
-	assign(loop.shop.campaigns, "_pool", RunPools.STORE_CAMPAIGNS.campaigns.duplicate())
-	assign(loop.shop.reforms, "_pool", RunPools.REFORMS.reforms.duplicate())
+	var campaign_pool: Array[CampaignDef] = member(loop.visit.shop.campaigns, "_pool")
+	var reform_pool: Array[ReformDef] = member(loop.visit.shop.reforms, "_pool")
+	assign(loop.visit.shop.campaigns, "_pool", RunPools.STORE_CAMPAIGNS.campaigns.duplicate())
+	assign(loop.visit.shop.reforms, "_pool", RunPools.REFORMS.reforms.duplicate())
 	var screen: Node = _current()
 	for item_id: String in ITEMS:
 		var campaign_stock: Array[String] = campaigns.duplicate()
@@ -74,15 +74,15 @@ func store() -> void:
 			if reform_stock.is_empty():
 				reform_stock.append(item_id)
 			reform_stock[0] = item_id
-		assign(loop.shop.campaigns, "_stock", campaign_stock)
-		assign(loop.shop.reforms, "_stock", reform_stock)
+		assign(loop.visit.shop.campaigns, "_stock", campaign_stock)
+		assign(loop.visit.shop.reforms, "_stock", reform_stock)
 		invoke(screen, "_refresh")
 		await _frames(10)
 		await _shot("store_wild_%s" % item_id)
-	assign(loop.shop.campaigns, "_stock", campaigns)
-	assign(loop.shop.reforms, "_stock", reforms)
-	assign(loop.shop.campaigns, "_pool", campaign_pool)
-	assign(loop.shop.reforms, "_pool", reform_pool)
+	assign(loop.visit.shop.campaigns, "_stock", campaigns)
+	assign(loop.visit.shop.reforms, "_stock", reforms)
+	assign(loop.visit.shop.campaigns, "_pool", campaign_pool)
+	assign(loop.visit.shop.reforms, "_pool", reform_pool)
 	invoke(screen, "_refresh")
 	await _frames(10)
 
@@ -93,7 +93,7 @@ func store() -> void:
 func scarce(market: bool) -> void:
 	var controller: Object = _controller()
 	var loop: RunLoop = _loop()
-	var shop: RunShop = loop.market if market else loop.shop
+	var shop: RunShop = loop.visit.market if market else loop.visit.shop
 	var stock: Array[String] = shop.stock()
 	var pool: Array[ModifierDef] = member(shop, "_pool")
 	var whole: CadrePool = load(POOLS[int(market)])

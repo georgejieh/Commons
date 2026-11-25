@@ -200,15 +200,15 @@ func test_corrections_compound() -> void:
 func test_both_shops_prices_rise_by_the_coupons_proportion() -> void:
 	var loop: RunLoop = _at_set_over(10)
 	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	var store: int = loop.shop.price(0)
-	var market: int = loop.market.price(0)
-	var reroll: int = loop.shop.reroll_price()
+	var store: int = loop.visit.shop.price(0)
+	var market: int = loop.visit.market.price(0)
+	var reroll: int = loop.visit.shop.reroll_price()
 	var upgrades: PlotUpgradeParams = RunDefaults.PLOT_UPGRADES
 	var upgrade: int = PlotUpgrades.price(PlotUpgrades.SWAPS, upgrades, loop.state)
 	loop.player_books({"coupons": loop.state.coupons * 2})
-	assert_int(loop.shop.price(0)).is_equal(store * 2)
-	assert_int(loop.market.price(0)).is_equal(market * 2)
-	assert_int(loop.shop.reroll_price()).is_equal(reroll * 2)
+	assert_int(loop.visit.shop.price(0)).is_equal(store * 2)
+	assert_int(loop.visit.market.price(0)).is_equal(market * 2)
+	assert_int(loop.visit.shop.reroll_price()).is_equal(reroll * 2)
 	var raised: int = PlotUpgrades.price(PlotUpgrades.SWAPS, upgrades, loop.state)
 	assert_int(raised).is_equal(upgrade * 2)
 

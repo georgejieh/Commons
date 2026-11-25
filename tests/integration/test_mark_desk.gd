@@ -34,20 +34,20 @@ func test_the_store_offers_one_enhancement_a_visit_drawn_the_same_on_a_replay() 
 	var offers: Dictionary[String, bool] = {}
 	for seed_value: int in range(30, 42):
 		var loop: RunLoop = _at_the_shops(seed_value)
-		assert_bool(loop.shop.desk.is_open).is_true()
-		assert_bool(CardInstance.ENHANCEMENTS.has(loop.shop.desk.offer)).is_true()
-		offers[loop.shop.desk.offer] = true
-		assert_bool(loop.market.desk.stamps()).is_true()
+		assert_bool(loop.visit.shop.desk.is_open).is_true()
+		assert_bool(CardInstance.ENHANCEMENTS.has(loop.visit.shop.desk.offer)).is_true()
+		offers[loop.visit.shop.desk.offer] = true
+		assert_bool(loop.visit.market.desk.stamps()).is_true()
 		var again: RunLoop = RunRecord.resume(
 			loop.record.to_dict(), RunScript.bots(), SetConfig.new()
 		)
-		assert_str(again.shop.desk.offer).is_equal(loop.shop.desk.offer)
+		assert_str(again.visit.shop.desk.offer).is_equal(loop.visit.shop.desk.offer)
 	assert_int(offers.size()).is_greater(1)
 
 
 func test_the_store_desk_marks_a_deck_card_for_the_run() -> void:
 	var loop: RunLoop = _at_the_shops(31)
-	var offer: String = loop.shop.desk.offer
+	var offer: String = loop.visit.shop.desk.offer
 	var coupons: int = loop.state.coupons
 	var resentment: int = loop.state.resentment
 	assert_int(loop.player_mark_card(CARD)).is_equal(RunLoop.Reason.OK)
@@ -69,11 +69,11 @@ func test_the_store_desk_marks_a_deck_card_for_the_run() -> void:
 func test_a_new_mark_replaces_the_old_one() -> void:
 	var loop: RunLoop = _at_the_shops(31)
 	var other: String = CardInstance.MODEL
-	if loop.shop.desk.offer == CardInstance.MODEL:
+	if loop.visit.shop.desk.offer == CardInstance.MODEL:
 		other = CardInstance.SURPLUS
 	CardMarks.enhance(loop.state, Deck.new().card(CARD), other)
 	assert_int(loop.player_mark_card(CARD)).is_equal(RunLoop.Reason.OK)
-	assert_str(loop.state.card_marks.enhancements[CARD]).is_equal(loop.shop.desk.offer)
+	assert_str(loop.state.card_marks.enhancements[CARD]).is_equal(loop.visit.shop.desk.offer)
 
 
 func test_the_black_market_stamps_the_card_and_adds_resentment() -> void:
@@ -95,16 +95,16 @@ func test_the_black_market_stamps_the_card_and_adds_resentment() -> void:
 
 func test_a_refused_use_changes_nothing() -> void:
 	var poor: RunLoop = _at_the_shops(34, STORE.desk_price - 1)
-	assert_int(poor.shop.desk.check(CARD, RunLoop.PLAYER)).is_equal(MarkDesk.Reason.TOO_POOR)
+	assert_int(poor.visit.shop.desk.check(CARD, RunLoop.PLAYER)).is_equal(MarkDesk.Reason.TOO_POOR)
 	_refused(poor, CARD, false)
 	var loop: RunLoop = _at_the_shops(34)
-	CardMarks.enhance(loop.state, Deck.new().card(CARD), loop.shop.desk.offer)
+	CardMarks.enhance(loop.state, Deck.new().card(CARD), loop.visit.shop.desk.offer)
 	CardMarks.stamp(loop.state, Deck.new().card(CARD + 1), RunLoop.PLAYER)
-	assert_int(loop.shop.desk.check(CARD, 0)).is_equal(MarkDesk.Reason.ALREADY_MARKED)
+	assert_int(loop.visit.shop.desk.check(CARD, 0)).is_equal(MarkDesk.Reason.ALREADY_MARKED)
 	_refused(loop, CARD, false)
-	assert_int(loop.market.desk.check(CARD + 1, 0)).is_equal(MarkDesk.Reason.ALREADY_MARKED)
+	assert_int(loop.visit.market.desk.check(CARD + 1, 0)).is_equal(MarkDesk.Reason.ALREADY_MARKED)
 	_refused(loop, CARD + 1, true)
-	assert_int(loop.shop.desk.check(Deck.SIZE, 0)).is_equal(MarkDesk.Reason.NO_SUCH_CARD)
+	assert_int(loop.visit.shop.desk.check(Deck.SIZE, 0)).is_equal(MarkDesk.Reason.NO_SUCH_CARD)
 	_refused(loop, Deck.SIZE, false)
 	_refused(loop, CardInstance.FIRST_PLOT_ID, false)
 
@@ -132,8 +132,8 @@ func test_a_use_replays_from_a_save_and_an_older_save_still_loads() -> void:
 	var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_dict(resumed.state.to_dict()).is_equal(loop.state.to_dict())
-	assert_bool(resumed.shop.desk.used()).is_true()
-	assert_bool(resumed.market.desk.used()).is_true()
+	assert_bool(resumed.visit.shop.desk.used()).is_true()
+	assert_bool(resumed.visit.market.desk.used()).is_true()
 
 
 ## A refused use leaves the state and the record as they were.

@@ -110,7 +110,7 @@ func test_steps_grow_by_one_a_quota_up_to_the_most() -> void:
 	for index: int in expected.size():
 		var before: int = loop.state.famine
 		var logged: int = _stood_by(loop).size()
-		loop._count_standing_by()
+		_count_standing_by(loop)
 		var steps: int = expected[index]
 		assert_int(loop.state.seatless_sets).is_equal(index + 1)
 		assert_int(loop.state.famine - before).is_equal(steps * row)
@@ -150,7 +150,7 @@ func test_the_amount_is_the_steps_times_the_row() -> void:
 	assert_bool(YearClass.held_seat(loop.events(), RunLoop.PLAYER)).is_false()
 	state.famine = 0
 	state.seatless_sets = RunDefaults.PARAMS.seat_grace_sets + 1
-	loop._count_standing_by()
+	_count_standing_by(loop)
 	assert_int(state.famine).is_equal(2 * 5)
 
 
@@ -163,7 +163,7 @@ func test_the_cost_goes_through_the_meter_change_hook() -> void:
 	var stack: ModifierStack = loop.get("_stack")
 	stack.add_entry(ActiveModifier.new(definition, Double.new()))
 	loop.state.seatless_sets = RunDefaults.PARAMS.seat_grace_sets + 2
-	loop._count_standing_by()
+	_count_standing_by(loop)
 	var row: int = RunDefaults.METERS.source(RunMeters.STOOD_BY).amount
 	assert_int(loop.state.famine).is_equal(3 * row * 2)
 	assert_float(_stood_by(loop)[-1].amount).is_equal(float(3 * row * 2))
@@ -238,3 +238,9 @@ func test_a_schema_13_save_migrates() -> void:
 	var resumed: RunLoop = RunRecord.resume(loaded.data, RunScript.bots(), _easy_sets())
 	assert_object(resumed).is_not_null()
 	assert_int(resumed.state.seatless_sets).is_equal(0)
+
+
+## Counts the Quota just played as one the player stood by in, or not, as its close does.
+func _count_standing_by(loop: RunLoop) -> void:
+	var close: QuotaClose = loop.get("_quota_close")
+	close.call("_count_standing_by")

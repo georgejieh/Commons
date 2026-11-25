@@ -78,7 +78,9 @@ func test_every_cadre_fits_its_shop_card() -> void:
 				ids.append(cadre.id)
 			for start: int in range(0, ids.size(), 3):
 				var stock: Array[String] = ids.slice(start, start + 3)
-				var shop: RunShop = _loop().market if screen_id == "black_market" else _loop().shop
+				var shop: RunShop = (
+					_loop().visit.market if screen_id == "black_market" else _loop().visit.shop
+				)
 				# The run's pool holds only what it has open: every Cadre of the counter here.
 				shop.set("_pool", counters[screen_id])
 				shop.set("_stock", stock)
@@ -127,7 +129,7 @@ func test_every_directive_fits_its_store_document() -> void:
 		get_tree().root.size = screen
 		for start: int in range(0, ids.size(), 2):
 			var stock: Array[String] = ids.slice(start, start + 2)
-			_loop().shop.set("_directive_stock", stock)
+			_loop().visit.shop.set("_directive_stock", stock)
 			var store: StoreScreen = _app.show_screen("store", true)
 			await await_idle_frame()
 			await await_idle_frame()

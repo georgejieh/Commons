@@ -43,11 +43,11 @@ func test_short_supply_cuts_a_cadre_from_the_next_store_and_stacks_with_rationin
 		loop.state.rationed = rationed
 		assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
 		var ration: int = RunDefaults.METERS.rationing_shop_cut if rationed else 0
-		assert_int(loop.shop.short_cut).is_equal(1)
-		assert_int(loop.shop.slot_count()).is_equal(STORE.slots - 1 - ration)
-		assert_int(loop.shop.stock().size()).is_equal(STORE.slots - 1 - ration)
+		assert_int(loop.visit.shop.short_cut).is_equal(1)
+		assert_int(loop.visit.shop.slot_count()).is_equal(STORE.slots - 1 - ration)
+		assert_int(loop.visit.shop.stock().size()).is_equal(STORE.slots - 1 - ration)
 		# The black market's counter is not the state store.
-		assert_int(loop.market.short_cut).is_equal(0)
+		assert_int(loop.visit.market.short_cut).is_equal(0)
 
 
 ## A Short Supply drawn for a round the Quota never reached never came into force.

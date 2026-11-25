@@ -36,7 +36,7 @@ func parcel() -> void:
 		EnvelopeItem.new(EnvelopeDef.Content.STAMPED_CARD, "", Ranks.KING, 1),
 		EnvelopeItem.new(EnvelopeDef.Content.MODEL_CARD, "", Ranks.SEVEN, 3),
 	]
-	assign(loop.market.envelopes, "_items", handed)
+	assign(loop.visit.market.envelopes, "_items", handed)
 	var first: Node = stall.call("overlay")
 	first.queue_free()
 	assign(stall, "_overlay", null)
@@ -64,7 +64,7 @@ func counter() -> void:
 	var screen: Node = _current()
 	var controller: Object = _controller()
 	var state: RunState = _loop().state
-	var market: Object = _loop().market
+	var market: Object = _loop().visit.market
 	var held: Array[String] = state.inventory.cadres.duplicate()
 	var memos: Dictionary = state.cadre_memos.to_dict()
 	var stock: Array[String] = member(market, "_stock")

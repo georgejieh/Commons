@@ -7,6 +7,11 @@ extends RefCounted
 const FORBIDDEN_WORDS: PackedStringArray = [
 	"RunLoop",
 	"RunRecord",
+	"RunRecordMigrations",
+	"RunShopVisit",
+	"RoundSettlement",
+	"QuotaClose",
+	"RunSeating",
 	"RoundState",
 	"RoundAction",
 	"ModifierStack",

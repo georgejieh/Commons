@@ -341,7 +341,7 @@ func mark_card(card_id: int, market: bool = false) -> int:
 ## The state store's desk this visit, or with market the black market's, as a screen
 ## reads it (ADR 0041).
 func mark_desk(market: bool) -> DeskView:
-	return DeskView.new((_loop.market if market else _loop.shop).desk, _loop.state)
+	return DeskView.new((_loop.visit.market if market else _loop.visit.shop).desk, _loop.state)
 
 
 ## The 54 deck cards as the next deal will find them, in slot order, each a copy with
@@ -451,7 +451,7 @@ func lifted_debuff() -> String:
 
 ## The Campaigns on the state store's counter, or the black market's.
 func campaign_shelf(market: bool) -> CampaignShelf:
-	return CampaignShelf.new(_loop.market.campaigns if market else _loop.shop.campaigns)
+	return CampaignShelf.new(_loop.visit.market.campaigns if market else _loop.visit.shop.campaigns)
 
 
 ## Enacts the state store's Reform for the rest of the run (ADR 0021).
@@ -461,7 +461,7 @@ func reform(slot: int) -> int:
 
 ## The Reform on the state store's counter, for a screen to read.
 func reform_shelf() -> ReformShelf:
-	return ReformShelf.new(_loop.shop.reforms)
+	return ReformShelf.new(_loop.visit.shop.reforms)
 
 
 ## Buys the envelope on the state store's counter, or the black market's Parcel, and
@@ -486,12 +486,12 @@ func exchange_card(slot: int, out: int) -> int:
 
 ## The state store's stall of cards for the deck this visit, for a screen to read.
 func deck_stall() -> DeckStallView:
-	return DeckStallView.new(_loop.deck_stall)
+	return DeckStallView.new(_loop.visit.deck_stall)
 
 
 ## The envelope on the state store's counter, or the black market's, for a screen to read.
 func envelope_shelf(market: bool) -> EnvelopeShelf:
-	var counter: RunShop = _loop.market if market else _loop.shop
+	var counter: RunShop = _loop.visit.market if market else _loop.visit.shop
 	return EnvelopeShelf.new(counter.envelopes, RunLoop.PLAYER, market)
 
 
@@ -542,10 +542,12 @@ func reform_text(reform_id: String) -> String:
 func desk(market: bool) -> ShopDesk:
 	if market:
 		var upgrades: PlotUpgradeParams = RunDefaults.PLOT_UPGRADES
-		var at_market: ShopDesk = ShopDesk.new(_loop.market, _loop.state, upgrades, _loop.stall)
+		var at_market: ShopDesk = ShopDesk.new(
+			_loop.visit.market, _loop.state, upgrades, _loop.visit.stall
+		)
 		at_market.bound = _loop.debuffs.confiscated_ids()
 		return at_market
-	var at_store: ShopDesk = ShopDesk.new(_loop.shop, _loop.state)
+	var at_store: ShopDesk = ShopDesk.new(_loop.visit.shop, _loop.state)
 	at_store.bound = _loop.debuffs.confiscated_ids()
 	return at_store
 
@@ -576,7 +578,7 @@ func is_last_set() -> bool:
 
 ## The store's stock per slot, an empty ID for a sold slot.
 func store_stock() -> Array[String]:
-	return _loop.shop.stock()
+	return _loop.visit.shop.stock()
 
 
 ## Coupons the current Set pays when its Quota is met, a Reform's extra included.
@@ -647,7 +649,7 @@ func lie_cost() -> int:
 
 
 func can_buy(slot: int) -> bool:
-	return _loop.shop.check_buy(slot) == RunShop.Reason.OK
+	return _loop.visit.shop.check_buy(slot) == RunShop.Reason.OK
 
 
 ## The current Set's events so far, for a view that joins mid-Set.
@@ -798,7 +800,7 @@ func hand_shown() -> bool:
 
 ## Cadres Short Supply keeps off the state store's counter this visit.
 func short_supply() -> int:
-	return _loop.shop.short_cut
+	return _loop.visit.shop.short_cut
 
 
 ## Values a modifier's text takes from the run: the Slogan's hand type, and the meter rise

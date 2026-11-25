@@ -99,8 +99,8 @@ func test_each_number_reaches_the_run() -> void:
 		assert_int(budget).is_equal(LADDER.severity_budgets[type] + 1)
 	# The store shows one Cadre fewer.
 	top.state.coupons = 100
-	top.shop.open()
-	assert_int(top.shop.stock().size()).is_equal(RunPools.STORE.slots - 1)
+	top.visit.shop.open()
+	assert_int(top.visit.shop.stock().size()).is_equal(RunPools.STORE.slots - 1)
 	# The loop's first target is the raised one.
 	assert_float(top.target()).is_equal_approx(sets.target(1, RunState.SetType.SMALL) * 1.1, 0.001)
 

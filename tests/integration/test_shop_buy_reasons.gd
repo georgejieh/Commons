@@ -106,7 +106,7 @@ func test_plot_cards_say_buy_and_their_price() -> void:
 ## coupons, and cannot be pressed (ADR 0040).
 func test_a_campaign_sold_back_says_it_returns_next_visit() -> void:
 	_loop().state.coupons = 40
-	var campaign_id: String = _loop().shop.campaigns.stock()[0]
+	var campaign_id: String = _loop().visit.shop.campaigns.stock()[0]
 	_loop().state.inventory.consumables.append(campaign_id)
 	_app.controller.reseal_book()
 	var index: int = _loop().state.inventory.consumables.size() - 1
@@ -122,7 +122,7 @@ func test_a_campaign_sold_back_says_it_returns_next_visit() -> void:
 ## The same for a Cadre sold back while a counter still offers it.
 func test_a_cadre_sold_back_says_it_returns_next_visit() -> void:
 	_loop().state.coupons = 40
-	var cadre_id: String = _loop().shop.stock()[0]
+	var cadre_id: String = _loop().visit.shop.stock()[0]
 	_loop().state.inventory.cadres.append(cadre_id)
 	_app.controller.reseal_book()
 	var index: int = _loop().state.inventory.cadres.size() - 1

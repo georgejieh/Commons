@@ -40,8 +40,8 @@ func _store() -> StoreScreen:
 	var loop: RunLoop = _app.controller.run_loop()
 	var pool: Array[ModifierDef] = POOL.cadres.duplicate()
 	var stock: Array[String] = [RARE, COMMON]
-	loop.shop.set("_pool", pool)
-	loop.shop.set("_stock", stock)
+	loop.visit.shop.set("_pool", pool)
+	loop.visit.shop.set("_stock", stock)
 	var store: StoreScreen = _app.show_screen("store", true)
 	await await_idle_frame()
 	return store

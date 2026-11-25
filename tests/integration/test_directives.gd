@@ -123,11 +123,11 @@ func test_each_directive_raises_its_family_and_nothing_else() -> void:
 ## A raised level reaches the table: the next Set's Pairs score at level 2's Rate.
 func test_a_raised_level_scores_in_play() -> void:
 	var loop: RunLoop = _at_the_shops(31)
-	var counter: Array[String] = loop.shop.directive_stock()
+	var counter: Array[String] = loop.visit.shop.directive_stock()
 	var slot: int = counter.find("on_hand_tools")
 	while slot < 0:
 		assert_int(loop.player_reroll()).is_equal(RunLoop.Reason.OK)
-		slot = loop.shop.directive_stock().find("on_hand_tools")
+		slot = loop.visit.shop.directive_stock().find("on_hand_tools")
 	assert_int(loop.player_directive(slot)).is_equal(RunLoop.Reason.OK)
 	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var script: RunScript = RunScript.new()
@@ -148,12 +148,12 @@ func test_a_raised_level_scores_in_play() -> void:
 
 func test_buying_spends_coupons_and_is_refused_without_them() -> void:
 	var loop: RunLoop = _at_the_shops(32, 0)
-	assert_int(loop.shop.directive_stock().size()).is_equal(STORE.directive_slots)
+	assert_int(loop.visit.shop.directive_stock().size()).is_equal(STORE.directive_slots)
 	var before: Array[int] = loop.state.hand_levels.to_array()
 	assert_int(loop.player_directive(0)).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_array(loop.state.hand_levels.to_array()).is_equal(before)
 	assert_int(loop.state.coupons).is_equal(0)
-	var price: int = loop.shop.directive_price(0)
+	var price: int = loop.visit.shop.directive_price(0)
 	loop.state.coupons = price
 	assert_int(loop.player_directive(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.coupons).is_equal(0)
@@ -164,7 +164,7 @@ func test_buying_spends_coupons_and_is_refused_without_them() -> void:
 	assert_int(loop.state.coupons).is_equal(RICH)
 	# The black market issues none.
 	assert_int(MARKET.directive_slots).is_equal(0)
-	assert_array(loop.market.directive_stock()).is_empty()
+	assert_array(loop.visit.market.directive_stock()).is_empty()
 
 
 func test_the_directive_stock_is_the_same_for_the_same_seed() -> void:
@@ -172,12 +172,16 @@ func test_the_directive_stock_is_the_same_for_the_same_seed() -> void:
 	for seed_value: int in SEEDS:
 		var first: RunLoop = _at_the_shops(seed_value)
 		var second: RunLoop = _at_the_shops(seed_value)
-		assert_array(first.shop.directive_stock()).is_equal(second.shop.directive_stock())
-		assert_int(first.shop.directive_stock().size()).is_equal(STORE.directive_slots)
+		assert_array(first.visit.shop.directive_stock()).is_equal(
+			second.visit.shop.directive_stock()
+		)
+		assert_int(first.visit.shop.directive_stock().size()).is_equal(STORE.directive_slots)
 		assert_int(first.player_reroll()).is_equal(RunLoop.Reason.OK)
 		assert_int(second.player_reroll()).is_equal(RunLoop.Reason.OK)
-		assert_array(first.shop.directive_stock()).is_equal(second.shop.directive_stock())
-		seen[",".join(first.shop.directive_stock())] = true
+		assert_array(first.visit.shop.directive_stock()).is_equal(
+			second.visit.shop.directive_stock()
+		)
+		seen[",".join(first.visit.shop.directive_stock())] = true
 	assert_int(seen.size()).is_greater(10)
 
 
@@ -242,7 +246,7 @@ func test_levels_survive_a_save_a_load_and_a_replay() -> void:
 	var levels: Array[int] = loop.state.hand_levels.to_array()
 	assert_array(resumed.state.hand_levels.to_array()).is_equal(levels)
 	assert_int(resumed.state.coupons).is_equal(loop.state.coupons)
-	assert_array(resumed.shop.directive_stock()).is_equal(loop.shop.directive_stock())
+	assert_array(resumed.visit.shop.directive_stock()).is_equal(loop.visit.shop.directive_stock())
 	# Raised levels are part of the run, so they outlast the shop.
 	var text: String = JSON.stringify(loop.state.to_dict())
 	var copy: RunState = RunState.from_dict(JSON.parse_string(text))

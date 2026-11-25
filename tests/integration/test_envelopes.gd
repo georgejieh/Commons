@@ -29,7 +29,7 @@ func _at_the_shops(seed_value: int, reforms: Array[String] = []) -> RunLoop:
 ## Puts one kind on the state store's counter, as only tests do.
 func _offer(loop: RunLoop, envelope_id: String) -> void:
 	var stock: Array[String] = [envelope_id]
-	loop.shop.envelopes.set("_stock", stock)
+	loop.visit.shop.envelopes.set("_stock", stock)
 
 
 func _ids(items: Array[EnvelopeItem]) -> Array[String]:
@@ -56,17 +56,19 @@ func test_each_shop_offers_its_envelopes_the_same_for_the_same_seed() -> void:
 	for seed_value: int in SEEDS:
 		var first: RunLoop = _at_the_shops(seed_value)
 		var second: RunLoop = _at_the_shops(seed_value)
-		var offer: Array[String] = first.shop.envelopes.stock()
+		var offer: Array[String] = first.visit.shop.envelopes.stock()
 		assert_int(offer.size()).is_equal(1)
 		assert_bool(KINDS.has(offer[0])).is_true()
-		assert_array(offer).is_equal(second.shop.envelopes.stock())
-		assert_array(first.market.envelopes.stock()).is_equal(["parcel"])
-		assert_int(first.shop.envelopes.price(0)).is_equal(4)
+		assert_array(offer).is_equal(second.visit.shop.envelopes.stock())
+		assert_array(first.visit.market.envelopes.stock()).is_equal(["parcel"])
+		assert_int(first.visit.shop.envelopes.price(0)).is_equal(4)
 		var dear: int = ceili(4 * MARKET.price_percent / 100.0)
-		assert_int(first.market.envelopes.price(0)).is_equal(dear)
+		assert_int(first.visit.market.envelopes.price(0)).is_equal(dear)
 		first.player_reroll()
 		second.player_reroll()
-		assert_array(first.shop.envelopes.stock()).is_equal(second.shop.envelopes.stock())
+		assert_array(first.visit.shop.envelopes.stock()).is_equal(
+			second.visit.shop.envelopes.stock()
+		)
 		seen[offer[0]] = true
 	assert_int(seen.size()).is_equal(KINDS.size())
 
@@ -80,7 +82,9 @@ func test_envelopes_leave_every_other_draw_alone() -> void:
 		var bare: RunLoop = RunLoop.new(bare_state, RunScript.bots(), SetConfig.new())
 		var none: ShopParams = STORE.duplicate()
 		none.envelope_offers = 0
-		bare.shop.envelopes = EnvelopeCounter.new(bare_state, none, [], [], RunDefaults.PARAMS)
+		bare.visit.shop.envelopes = EnvelopeCounter.new(
+			bare_state, none, [], [], RunDefaults.PARAMS
+		)
 		bare.start_set()
 		RunScript.new().play_until_set_over(bare)
 		bare.state.coupons = RICH
@@ -94,49 +98,57 @@ func test_envelopes_leave_every_other_draw_alone() -> void:
 		assert_int(twin.player_reroll()).is_equal(RunLoop.Reason.OK)
 		_same_stock(twin, loop)
 		# Once bought, the place stays sold through a reroll.
-		assert_array(loop.shop.envelopes.stock()).is_equal([EnvelopeCounter.SOLD])
+		assert_array(loop.visit.shop.envelopes.stock()).is_equal([EnvelopeCounter.SOLD])
 
 
 func _same_stock(expected: RunLoop, loop: RunLoop) -> void:
-	assert_array(loop.shop.stock()).is_equal(expected.shop.stock())
-	assert_array(loop.market.stock()).is_equal(expected.market.stock())
-	assert_array(loop.shop.directive_stock()).is_equal(expected.shop.directive_stock())
-	assert_array(loop.shop.campaigns.stock()).is_equal(expected.shop.campaigns.stock())
-	assert_array(loop.market.campaigns.stock()).is_equal(expected.market.campaigns.stock())
-	assert_array(loop.shop.reforms.stock()).is_equal(expected.shop.reforms.stock())
-	for slot: int in loop.stall.offers.count():
-		assert_int(loop.stall.offers.rank(slot)).is_equal(expected.stall.offers.rank(slot))
-		assert_int(loop.stall.offers.suit(slot)).is_equal(expected.stall.offers.suit(slot))
+	assert_array(loop.visit.shop.stock()).is_equal(expected.visit.shop.stock())
+	assert_array(loop.visit.market.stock()).is_equal(expected.visit.market.stock())
+	assert_array(loop.visit.shop.directive_stock()).is_equal(expected.visit.shop.directive_stock())
+	assert_array(loop.visit.shop.campaigns.stock()).is_equal(expected.visit.shop.campaigns.stock())
+	assert_array(loop.visit.market.campaigns.stock()).is_equal(
+		expected.visit.market.campaigns.stock()
+	)
+	assert_array(loop.visit.shop.reforms.stock()).is_equal(expected.visit.shop.reforms.stock())
+	for slot: int in loop.visit.stall.offers.count():
+		assert_int(loop.visit.stall.offers.rank(slot)).is_equal(
+			expected.visit.stall.offers.rank(slot)
+		)
+		assert_int(loop.visit.stall.offers.suit(slot)).is_equal(
+			expected.visit.stall.offers.suit(slot)
+		)
 
 
 func test_buying_opens_the_envelope_with_the_same_contents_for_a_seed() -> void:
 	for seed_value: int in 8:
 		var loop: RunLoop = _at_the_shops(seed_value)
 		var twin: RunLoop = _at_the_shops(seed_value)
-		var price: int = loop.shop.envelopes.price(0)
+		var price: int = loop.visit.shop.envelopes.price(0)
 		assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 		assert_int(twin.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 		assert_int(loop.state.coupons).is_equal(RICH - price)
 		assert_dict(loop.record.commands[-1]).is_equal({"type": "envelope_buy", "slot": 0})
-		assert_object(loop.open_envelope()).is_same(loop.shop.envelopes)
-		var items: Array[EnvelopeItem] = loop.shop.envelopes.items()
+		assert_object(loop.visit.open_envelope()).is_same(loop.visit.shop.envelopes)
+		var items: Array[EnvelopeItem] = loop.visit.shop.envelopes.items()
 		assert_int(items.size()).is_equal(3)
-		assert_array(_ids(items)).is_equal(_ids(twin.shop.envelopes.items()))
+		assert_array(_ids(items)).is_equal(_ids(twin.visit.shop.envelopes.items()))
 		# No item twice.
 		var ids: Array[String] = _ids(items)
 		for index: int in ids.size():
 			assert_int(ids.count(ids[index])).is_equal(1)
-		var envelope: EnvelopeDef = loop.shop.envelopes.definition(loop.shop.envelopes.opened_id())
+		var envelope: EnvelopeDef = loop.visit.shop.envelopes.definition(
+			loop.visit.shop.envelopes.opened_id()
+		)
 		for item: EnvelopeItem in items:
 			assert_bool(envelope.contents.has(item.content)).is_true()
 
 
 func test_too_few_coupons_or_nothing_to_show_refuses_the_envelope() -> void:
 	var loop: RunLoop = _at_the_shops(3)
-	loop.state.coupons = loop.shop.envelopes.price(0) - 1
+	loop.state.coupons = loop.visit.shop.envelopes.price(0) - 1
 	var commands: int = loop.record.commands.size()
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_object(loop.open_envelope()).is_null()
+	assert_object(loop.visit.open_envelope()).is_null()
 	assert_int(loop.record.commands.size()).is_equal(commands)
 	assert_int(loop.player_envelope_buy(4)).is_equal(RunLoop.Reason.ILLEGAL)
 	# With every hand type at the top level the Directive envelope has nothing to show.
@@ -145,11 +157,11 @@ func test_too_few_coupons_or_nothing_to_show_refuses_the_envelope() -> void:
 		for type: int in range(1, Pattern.Type.size()):
 			while not maxed.state.hand_levels.is_max(type as Pattern.Type):
 				maxed.state.hand_levels.raise(type as Pattern.Type)
-		maxed.shop.envelopes.clear()
-		maxed.shop.envelopes.draw()
+		maxed.visit.shop.envelopes.clear()
+		maxed.visit.shop.envelopes.draw()
 		# The Campaign envelope and the Requisition are left to draw from (ADR 0042).
-		assert_array(maxed.shop.envelopes.stock()).not_contains(["directive_envelope"])
-		assert_bool(maxed.shop.envelopes.reroll_changes()).is_true()
+		assert_array(maxed.visit.shop.envelopes.stock()).not_contains(["directive_envelope"])
+		assert_bool(maxed.visit.shop.envelopes.reroll_changes()).is_true()
 		_offer(maxed, "directive_envelope")
 		assert_int(maxed.player_envelope_buy(0)).is_equal(RunLoop.Reason.ILLEGAL)
 
@@ -161,7 +173,7 @@ func test_while_open_every_other_shop_command_waits() -> void:
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 	# A black-market Cadre that needs a rank is refused as every other command is, rank or not.
 	var ranked: Array[String] = ["planned_allocation"]
-	loop.market.set("_stock", ranked)
+	loop.visit.market.set("_stock", ranked)
 	var before: String = JSON.stringify(loop.state.to_dict())
 	var commands: int = loop.record.commands.size()
 	var refused: Array[Callable] = [
@@ -195,10 +207,10 @@ func test_while_open_every_other_shop_command_waits() -> void:
 	assert_int(loop.record.commands.size()).is_equal(commands)
 	# A pick out of range is refused and leaves it open.
 	assert_int(loop.player_envelope_pick(9)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_object(loop.open_envelope()).is_not_null()
+	assert_object(loop.visit.open_envelope()).is_not_null()
 	assert_int(loop.player_envelope_pick(EnvelopeCounter.NOTHING)).is_equal(RunLoop.Reason.OK)
 	assert_dict(loop.record.commands[-1]).is_equal({"type": "envelope_pick", "index": -1})
-	assert_object(loop.open_envelope()).is_null()
+	assert_object(loop.visit.open_envelope()).is_null()
 	assert_int(loop.player_envelope_pick(EnvelopeCounter.NOTHING)).is_equal(
 		RunLoop.Reason.NOT_AWAITED
 	)
@@ -211,7 +223,7 @@ func test_keeping_a_directive_issues_it_as_the_counter_does() -> void:
 	var loop: RunLoop = _at_the_shops(6)
 	_offer(loop, "directive_envelope")
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
-	var items: Array[EnvelopeItem] = loop.shop.envelopes.items()
+	var items: Array[EnvelopeItem] = loop.visit.shop.envelopes.items()
 	var directive: DirectiveDef = null
 	for candidate: DirectiveDef in RunPools.DIRECTIVES.directives:
 		if candidate.id == items[1].item_id:
@@ -226,7 +238,7 @@ func test_keeping_a_directive_issues_it_as_the_counter_does() -> void:
 		var type: Pattern.Type = directive.hand_types[index] as Pattern.Type
 		assert_int(loop.state.hand_levels.level_of(type)).is_equal(levels[index] + 1)
 	assert_int(loop.state.coupons).is_equal(coupons)
-	assert_object(loop.open_envelope()).is_null()
+	assert_object(loop.visit.open_envelope()).is_null()
 
 
 ## A Directive whose family is all at the top level is never put in an envelope; with
@@ -239,7 +251,7 @@ func test_a_maxed_directive_never_appears() -> void:
 				loop.state.hand_levels.raise(type as Pattern.Type)
 		_offer(loop, "directive_envelope")
 		assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
-		assert_array(_ids(loop.shop.envelopes.items())).is_equal(["0:on_hand_tools:-1:-1"])
+		assert_array(_ids(loop.visit.shop.envelopes.items())).is_equal(["0:on_hand_tools:-1:-1"])
 
 
 func test_keeping_a_campaign_needs_room_and_nothing_is_always_allowed() -> void:
@@ -247,13 +259,13 @@ func test_keeping_a_campaign_needs_room_and_nothing_is_always_allowed() -> void:
 	_offer(loop, "campaign_envelope")
 	loop.state.inventory.consumables.assign(["grain_loan", "appeal"])
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
-	var items: Array[EnvelopeItem] = loop.shop.envelopes.items()
+	var items: Array[EnvelopeItem] = loop.visit.shop.envelopes.items()
 	var pool: Array[String] = []
 	for campaign: CampaignDef in RunPools.STORE_CAMPAIGNS.campaigns:
 		pool.append(campaign.id)
 	for item: EnvelopeItem in items:
 		assert_bool(pool.has(item.item_id)).is_true()
-	assert_int(loop.shop.envelopes.check_pick(0)).is_equal(RunShop.Reason.CAMPAIGNS_FULL)
+	assert_int(loop.visit.shop.envelopes.check_pick(0)).is_equal(RunShop.Reason.CAMPAIGNS_FULL)
 	assert_int(loop.player_envelope_pick(0)).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_int(loop.state.inventory.consumables.size()).is_equal(2)
 	loop.state.inventory.consumables.assign(["grain_loan"])
@@ -265,10 +277,10 @@ func test_supply_cooperative_adds_a_choice_to_every_envelope() -> void:
 	for seed_value: int in 4:
 		var loop: RunLoop = _at_the_shops(seed_value, ["supply_cooperative"])
 		assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
-		assert_int(loop.shop.envelopes.items().size()).is_equal(4)
+		assert_int(loop.visit.shop.envelopes.items().size()).is_equal(4)
 		loop.player_envelope_pick(EnvelopeCounter.NOTHING)
 		assert_int(loop.player_market_envelope(0)).is_equal(RunLoop.Reason.OK)
-		assert_int(loop.market.envelopes.items().size()).is_equal(4)
+		assert_int(loop.visit.market.envelopes.items().size()).is_equal(4)
 
 
 ## The Parcel holds private Campaigns and marked plot cards, adds Resentment when it is
@@ -281,12 +293,12 @@ func test_the_parcel_mixes_its_contents_and_is_resented_when_bought() -> void:
 	for seed_value: int in 12:
 		var loop: RunLoop = _at_the_shops(seed_value)
 		var resentment: int = loop.state.resentment
-		var price: int = loop.market.envelopes.price(0)
+		var price: int = loop.visit.market.envelopes.price(0)
 		assert_int(loop.player_market_envelope(0)).is_equal(RunLoop.Reason.OK)
 		assert_dict(loop.record.commands[-1]).is_equal({"type": "market_envelope", "slot": 0})
 		assert_int(loop.state.resentment).is_equal(resentment + RESENTMENT.private_purchase)
 		assert_int(loop.state.coupons).is_equal(RICH - price)
-		for item: EnvelopeItem in loop.market.envelopes.items():
+		for item: EnvelopeItem in loop.visit.market.envelopes.items():
 			kinds[item.content] = true
 			if item.content == EnvelopeDef.Content.CAMPAIGN:
 				assert_bool(pool.has(item.item_id)).is_true()

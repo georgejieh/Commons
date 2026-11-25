@@ -314,7 +314,7 @@ func test_rationing_cuts_a_store_slot_until_famine_falls() -> void:
 	assert_bool(state.rationed).is_true()
 	loop.open_shop()
 	var cut: int = RunDefaults.METERS.rationing_shop_cut
-	assert_int(loop.shop.stock().size()).is_equal(RunPools.STORE.slots - cut)
+	assert_int(loop.visit.shop.stock().size()).is_equal(RunPools.STORE.slots - cut)
 
 
 ## Every bot always lies, and the player always declares above true need, so each audit

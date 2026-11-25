@@ -48,7 +48,7 @@ func _loop() -> RunLoop:
 ## Holds count Cadres the counters do not offer, and one Campaign.
 func _hold(count: int) -> void:
 	var state: RunState = _loop().state
-	var offered: Array[String] = _loop().shop.stock() + _loop().market.stock()
+	var offered: Array[String] = _loop().visit.shop.stock() + _loop().visit.market.stock()
 	for definition: ModifierDef in RunLoop.all_cadres():
 		if state.inventory.cadres.size() >= count:
 			break

@@ -232,30 +232,30 @@ func test_back_door_frees_the_first_black_market_reroll_and_replays() -> void:
 	loop.state.reeducation_due = false
 	loop.state.coupons = 200
 	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	assert_int(loop.market.reroll_price()).is_greater(0)
+	assert_int(loop.visit.market.reroll_price()).is_greater(0)
 	var rerolled: int = 0
 	for _reroll: int in 60:
-		if loop.market.stock().has("back_door"):
+		if loop.visit.market.stock().has("back_door"):
 			break
 		assert_int(loop.player_market_reroll()).is_equal(RunLoop.Reason.OK)
 		rerolled += 1
-	var slot: int = loop.market.stock().find("back_door")
+	var slot: int = loop.visit.market.stock().find("back_door")
 	assert_int(slot).is_greater_equal(0)
 	assert_int(loop.player_market_buy(slot)).is_equal(RunLoop.Reason.OK)
 	# Bought now, it works at once, unless this visit's first reroll is already spent.
-	assert_bool(loop.market.reroll_price() == 0).is_equal(rerolled == 0)
+	assert_bool(loop.visit.market.reroll_price() == 0).is_equal(rerolled == 0)
 	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	_play_set(loop)
 	loop.state.reeducation_due = false
 	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
 	var coupons: int = loop.state.coupons
-	assert_int(loop.market.reroll_price()).is_equal(0)
+	assert_int(loop.visit.market.reroll_price()).is_equal(0)
 	assert_int(loop.player_market_reroll()).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.coupons).is_equal(coupons)
-	assert_int(loop.market.reroll_price()).is_greater(0)
+	assert_int(loop.visit.market.reroll_price()).is_greater(0)
 	var saved: Dictionary = loop.record.to_dict()
 	saved["checkpoint"]["reeducation_due"] = false
 	var resumed: RunLoop = RunRecord.resume(saved, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_int(resumed.state.coupons).is_equal(coupons)
-	assert_int(resumed.market.reroll_price()).is_equal(loop.market.reroll_price())
+	assert_int(resumed.visit.market.reroll_price()).is_equal(loop.visit.market.reroll_price())

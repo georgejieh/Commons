@@ -51,25 +51,29 @@ func test_each_shop_offers_its_campaign_the_same_for_the_same_seed() -> void:
 	for seed_value: int in SEEDS:
 		var first: RunLoop = _at_the_shops(seed_value)
 		var second: RunLoop = _at_the_shops(seed_value)
-		var store: Array[String] = first.shop.campaigns.stock()
+		var store: Array[String] = first.visit.shop.campaigns.stock()
 		assert_int(store.size()).is_equal(STORE.campaign_offers)
 		assert_bool(_in_pool(STORE_POOL, store[0])).is_true()
-		assert_bool(_in_pool(MARKET_POOL, first.market.campaigns.stock()[0])).is_true()
-		assert_array(store).is_equal(second.shop.campaigns.stock())
-		assert_array(first.market.campaigns.stock()).is_equal(second.market.campaigns.stock())
+		assert_bool(_in_pool(MARKET_POOL, first.visit.market.campaigns.stock()[0])).is_true()
+		assert_array(store).is_equal(second.visit.shop.campaigns.stock())
+		assert_array(first.visit.market.campaigns.stock()).is_equal(
+			second.visit.market.campaigns.stock()
+		)
 		# A reroll redraws, as repeatably.
 		assert_int(first.player_reroll()).is_equal(RunLoop.Reason.OK)
 		assert_int(second.player_reroll()).is_equal(RunLoop.Reason.OK)
-		assert_array(first.shop.campaigns.stock()).is_equal(second.shop.campaigns.stock())
-		seen["%s>%s" % [store[0], first.shop.campaigns.stock()[0]]] = true
+		assert_array(first.visit.shop.campaigns.stock()).is_equal(
+			second.visit.shop.campaigns.stock()
+		)
+		seen["%s>%s" % [store[0], first.visit.shop.campaigns.stock()[0]]] = true
 	assert_int(seen.size()).is_greater(4)
 
 
 func test_buying_fills_the_slots_and_a_third_is_refused() -> void:
 	var loop: RunLoop = _at_the_shops(5)
 	var coupons: int = loop.state.coupons
-	var price: int = loop.shop.campaigns.price(0)
-	var bought: String = loop.shop.campaigns.stock()[0]
+	var price: int = loop.visit.shop.campaigns.price(0)
+	var bought: String = loop.visit.shop.campaigns.stock()[0]
 	assert_int(loop.player_campaign_buy(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.coupons).is_equal(coupons - price)
 	assert_array(loop.state.inventory.consumables).is_equal([bought])
@@ -79,7 +83,7 @@ func test_buying_fills_the_slots_and_a_third_is_refused() -> void:
 	assert_int(loop.state.resentment).is_greater(resentment)
 	assert_int(loop.state.inventory.consumables.size()).is_equal(STORE.campaign_slots)
 	assert_int(loop.player_reroll()).is_equal(RunLoop.Reason.OK)
-	assert_int(loop.shop.campaigns.check(0)).is_equal(RunShop.Reason.CAMPAIGNS_FULL)
+	assert_int(loop.visit.shop.campaigns.check(0)).is_equal(RunShop.Reason.CAMPAIGNS_FULL)
 	var before: Dictionary = loop.state.to_dict()
 	assert_int(loop.player_campaign_buy(0)).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_dict(loop.state.to_dict()).is_equal(before)
@@ -87,11 +91,11 @@ func test_buying_fills_the_slots_and_a_third_is_refused() -> void:
 
 func test_the_market_charges_its_percent_rounded_up() -> void:
 	var loop: RunLoop = _at_the_shops(9)
-	var offered: String = loop.market.campaigns.stock()[0]
+	var offered: String = loop.visit.market.campaigns.stock()[0]
 	var cost: int = RunDefinitions.campaigns[offered].cost
 	assert_int(MARKET.price_percent).is_greater(100)
 	var dear: int = ceili(cost * MARKET.price_percent / 100.0)
-	assert_int(loop.market.campaigns.price(0)).is_equal(dear)
+	assert_int(loop.visit.market.campaigns.price(0)).is_equal(dear)
 
 
 ## Plays the player's seat, sometimes trying a held Campaign on random cards first. Every

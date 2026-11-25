@@ -72,13 +72,13 @@ func test_the_store_offers_one_reform_the_same_for_the_same_seed() -> void:
 	for seed_value: int in SEEDS:
 		var first: RunLoop = _at_the_shops(seed_value)
 		var second: RunLoop = _at_the_shops(seed_value)
-		var offer: Array[String] = first.shop.reforms.stock()
+		var offer: Array[String] = first.visit.shop.reforms.stock()
 		assert_int(offer.size()).is_equal(1)
-		assert_array(offer).is_equal(second.shop.reforms.stock())
-		assert_array(first.market.reforms.stock()).is_empty()
+		assert_array(offer).is_equal(second.visit.shop.reforms.stock())
+		assert_array(first.visit.market.reforms.stock()).is_empty()
 		assert_int(first.player_reroll()).is_equal(RunLoop.Reason.OK)
 		assert_int(second.player_reroll()).is_equal(RunLoop.Reason.OK)
-		assert_array(first.shop.reforms.stock()).is_equal(second.shop.reforms.stock())
+		assert_array(first.visit.shop.reforms.stock()).is_equal(second.visit.shop.reforms.stock())
 		seen[offer[0]] = true
 	# Every Reform a run outside the profile may be offered turns up across the seeds, Supply
 	# Cooperative too; the wild ranks' tier is not among them (ADR 0029).
@@ -92,16 +92,16 @@ func test_the_reform_draw_leaves_the_other_stock_alone() -> void:
 		var loop: RunLoop = _at_the_shops(seed_value)
 		# The same run with a Reform counter that offers nothing.
 		var bare: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-		bare.shop.reforms = ReformCounter.new(bare.state, MARKET, POOL.reforms)
+		bare.visit.shop.reforms = ReformCounter.new(bare.state, MARKET, POOL.reforms)
 		bare.start_set()
 		RunScript.new().play_until_set_over(bare)
 		bare.state.coupons = RICH
 		bare.open_shop()
-		assert_array(bare.shop.reforms.stock()).is_empty()
-		assert_array(bare.shop.stock()).is_equal(loop.shop.stock())
-		assert_array(bare.market.stock()).is_equal(loop.market.stock())
-		assert_array(bare.shop.campaigns.stock()).is_equal(loop.shop.campaigns.stock())
-		assert_array(bare.shop.directive_stock()).is_equal(loop.shop.directive_stock())
+		assert_array(bare.visit.shop.reforms.stock()).is_empty()
+		assert_array(bare.visit.shop.stock()).is_equal(loop.visit.shop.stock())
+		assert_array(bare.visit.market.stock()).is_equal(loop.visit.market.stock())
+		assert_array(bare.visit.shop.campaigns.stock()).is_equal(loop.visit.shop.campaigns.stock())
+		assert_array(bare.visit.shop.directive_stock()).is_equal(loop.visit.shop.directive_stock())
 
 
 func test_a_held_reform_is_never_offered() -> void:
@@ -109,7 +109,7 @@ func test_a_held_reform_is_never_offered() -> void:
 	for seed_value: int in SEEDS:
 		var loop: RunLoop = _at_the_shops(seed_value, held)
 		for _reroll: int in 3:
-			var offer: Array[String] = loop.shop.reforms.stock()
+			var offer: Array[String] = loop.visit.shop.reforms.stock()
 			assert_bool(held.has(offer[0])).is_false()
 			loop.player_reroll()
 	var state: RunState = RunState.new(1)
@@ -124,8 +124,8 @@ func test_a_held_reform_is_never_offered() -> void:
 
 func test_buying_needs_the_coupons_and_is_a_saved_command() -> void:
 	var loop: RunLoop = _at_the_shops(3)
-	var offered: String = loop.shop.reforms.stock()[0]
-	var price: int = loop.shop.reforms.price(0)
+	var offered: String = loop.visit.shop.reforms.stock()[0]
+	var price: int = loop.visit.shop.reforms.price(0)
 	assert_int(price).is_equal(RunDefinitions.reforms[offered].cost)
 	loop.state.coupons = price - 1
 	var commands: int = loop.record.commands.size()
@@ -146,7 +146,7 @@ func test_buying_needs_the_coupons_and_is_a_saved_command() -> void:
 func test_held_reforms_survive_save_load_and_replay() -> void:
 	var loop: RunLoop = _at_the_shops(8)
 	loop.state.coupons = RICH
-	var offered: String = loop.shop.reforms.stock()[0]
+	var offered: String = loop.visit.shop.reforms.stock()[0]
 	assert_int(loop.player_reform(0)).is_equal(RunLoop.Reason.OK)
 	var saved: Dictionary = JSON.parse_string(JSON.stringify(loop.record.to_dict()))
 	assert_bool(RunRecordCheck.is_valid(saved)).is_true()
@@ -197,15 +197,15 @@ func test_enlarged_committee_raises_the_one_cadre_limit_everywhere() -> void:
 	var five: Array[String] = ["iron_rice_bowl", "canteen", "red_banner", "peek", "red_ink"]
 	loop.state.inventory.cadres.assign(five)
 	assert_int(RunReforms.cadre_slots(loop.state)).is_equal(STORE.cadre_slots)
-	assert_bool(loop.shop.has_room()).is_false()
-	assert_bool(loop.market.has_room()).is_false()
+	assert_bool(loop.visit.shop.has_room()).is_false()
+	assert_bool(loop.visit.market.has_room()).is_false()
 	loop.state.reforms.append("enlarged_committee")
 	assert_int(RunReforms.cadre_slots(loop.state)).is_equal(STORE.cadre_slots + 1)
-	assert_bool(loop.shop.has_room()).is_true()
-	assert_bool(loop.market.has_room()).is_true()
+	assert_bool(loop.visit.shop.has_room()).is_true()
+	assert_bool(loop.visit.market.has_room()).is_true()
 	assert_int(loop.player_buy(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.inventory.cadres.size()).is_equal(6)
-	assert_bool(loop.shop.has_room()).is_false()
+	assert_bool(loop.visit.shop.has_room()).is_false()
 	assert_int(loop.player_market_buy(_rankless(loop))).is_equal(RunLoop.Reason.ILLEGAL)
 	# Reeducation exchanges one of the six in its place; The Purge takes from all six.
 	var stream: RandomStream = RandomStream.new(4)
@@ -222,7 +222,7 @@ func test_enlarged_committee_raises_the_one_cadre_limit_everywhere() -> void:
 
 ## A black market slot whose Cadre needs no rank, so only the limit can refuse it.
 func _rankless(loop: RunLoop) -> int:
-	var stock: Array[String] = loop.market.stock()
+	var stock: Array[String] = loop.visit.market.stock()
 	for slot: int in stock.size():
 		for cadre: ModifierDef in RunLoop.all_cadres():
 			if cadre.id == stock[slot] and not cadre.needs_rank:
@@ -233,15 +233,15 @@ func _rankless(loop: RunLoop) -> int:
 func test_couriers_bag_raises_the_campaign_limit_at_both_shops() -> void:
 	var loop: RunLoop = _at_the_shops(10)
 	loop.state.inventory.consumables.assign(["grain_loan", "appeal"])
-	assert_bool(loop.shop.campaigns.has_room()).is_false()
-	assert_bool(loop.market.campaigns.has_room()).is_false()
+	assert_bool(loop.visit.shop.campaigns.has_room()).is_false()
+	assert_bool(loop.visit.market.campaigns.has_room()).is_false()
 	loop.state.reforms.append("couriers_bag")
 	assert_int(RunReforms.campaign_slots(loop.state)).is_equal(STORE.campaign_slots + 1)
-	assert_bool(loop.market.campaigns.has_room()).is_true()
+	assert_bool(loop.visit.market.campaigns.has_room()).is_true()
 	assert_int(loop.player_campaign_buy(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.inventory.consumables.size()).is_equal(3)
 	assert_int(loop.player_market_campaign(0)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_int(loop.market.campaigns.check(0)).is_equal(RunShop.Reason.CAMPAIGNS_FULL)
+	assert_int(loop.visit.market.campaigns.check(0)).is_equal(RunShop.Reason.CAMPAIGNS_FULL)
 
 
 func test_supply_cooperative_reports_its_extra_envelope_choice() -> void:

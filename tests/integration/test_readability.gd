@@ -56,7 +56,7 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 	_to_store()
 	var loop: RunLoop = _app.controller.run_loop()
 	var offered: Array[String] = ["rehabilitation", "hidden_reserves", "last_sheaf"]
-	loop.market.set("_stock", offered)
+	loop.visit.market.set("_stock", offered)
 	for screen_id: String in ["store", "black_market"]:
 		var store: StoreScreen = await _open(screen_id)
 		var counter: HBoxContainer = store.get("_counter")

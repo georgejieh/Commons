@@ -42,16 +42,16 @@ func test_both_counters_draw_the_same_stock_for_the_same_seed() -> void:
 	for seed_value: int in SEEDS:
 		var first: RunLoop = _at_the_shops(seed_value)
 		var second: RunLoop = _at_the_shops(seed_value)
-		assert_array(first.shop.stock()).is_equal(second.shop.stock())
-		assert_array(first.market.stock()).is_equal(second.market.stock())
-		assert_int(first.market.stock().size()).is_equal(MARKET.slots)
-		for item_id: String in first.market.stock():
+		assert_array(first.visit.shop.stock()).is_equal(second.visit.shop.stock())
+		assert_array(first.visit.market.stock()).is_equal(second.visit.market.stock())
+		assert_int(first.visit.market.stock().size()).is_equal(MARKET.slots)
+		for item_id: String in first.visit.market.stock():
 			assert_bool(MARKET_POOL.cadres.any(_is(item_id))).is_true()
 		# A reroll is a draw too, and is as repeatable.
 		assert_int(first.player_market_reroll()).is_equal(RunLoop.Reason.OK)
 		assert_int(second.player_market_reroll()).is_equal(RunLoop.Reason.OK)
-		assert_array(first.market.stock()).is_equal(second.market.stock())
-		seen[",".join(first.market.stock())] = true
+		assert_array(first.visit.market.stock()).is_equal(second.visit.market.stock())
+		seen[",".join(first.visit.market.stock())] = true
 	assert_int(seen.size()).is_greater(10)
 
 
@@ -59,8 +59,8 @@ func test_buying_from_the_black_market_always_raises_resentment() -> void:
 	var bought: int = 0
 	for seed_value: int in SEEDS:
 		var loop: RunLoop = _at_the_shops(seed_value)
-		for slot: int in loop.market.stock().size():
-			if loop.market.check_buy(slot) != RunShop.Reason.OK:
+		for slot: int in loop.visit.market.stock().size():
+			if loop.visit.market.check_buy(slot) != RunShop.Reason.OK:
 				continue
 			var before: int = loop.state.resentment
 			var events: int = _resentment_events(loop)
@@ -85,7 +85,7 @@ func test_a_refused_market_purchase_raises_nothing() -> void:
 func test_the_state_store_never_raises_resentment() -> void:
 	var loop: RunLoop = _at_the_shops(12)
 	var before: int = loop.state.resentment
-	for slot: int in loop.shop.stock().size():
+	for slot: int in loop.visit.shop.stock().size():
 		assert_int(loop.player_buy(slot)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.resentment).is_equal(before)
 
@@ -112,16 +112,16 @@ func test_the_market_charges_more_than_the_store_for_the_same_cost() -> void:
 
 func test_the_state_store_runs_out_of_an_item_and_the_market_does_not() -> void:
 	var loop: RunLoop = _at_the_shops(13)
-	var item_id: String = loop.shop.stock()[0]
-	assert_int(loop.shop.left(item_id)).is_equal(STORE.stock_per_item)
+	var item_id: String = loop.visit.shop.stock()[0]
+	assert_int(loop.visit.shop.left(item_id)).is_equal(STORE.stock_per_item)
 	assert_int(loop.player_buy(0)).is_equal(RunLoop.Reason.OK)
-	assert_int(loop.shop.left(item_id)).is_equal(0)
+	assert_int(loop.visit.shop.left(item_id)).is_equal(0)
 	# Lost again, as to a purge, it is still not restocked.
 	loop.state.inventory.cadres.erase(item_id)
 	for _reroll: int in 5:
 		loop.player_reroll()
-		assert_array(loop.shop.stock()).not_contains([item_id])
-	assert_int(loop.market.left(loop.market.stock()[0])).is_equal(-1)
+		assert_array(loop.visit.shop.stock()).not_contains([item_id])
+	assert_int(loop.visit.market.left(loop.visit.market.stock()[0])).is_equal(-1)
 	# The sold count is part of the run, so it survives a save.
 	var copy: RunState = RunState.from_dict(loop.state.to_dict())
 	assert_int(copy.store_sold[item_id]).is_equal(1)
@@ -172,7 +172,7 @@ func test_market_commands_replay_from_a_save() -> void:
 	assert_array(resumed.state.inventory.cadres).is_equal(loop.state.inventory.cadres)
 	assert_int(resumed.state.swap_bonus).is_equal(1)
 	assert_int(resumed.state.resentment).is_equal(loop.state.resentment)
-	assert_array(resumed.market.stock()).is_equal(loop.market.stock())
+	assert_array(resumed.visit.market.stock()).is_equal(loop.visit.market.stock())
 
 
 func _resentment_events(loop: RunLoop) -> int:
@@ -203,19 +203,23 @@ func test_the_market_sells_cards_for_the_plot_the_same_for_the_same_seed() -> vo
 	for seed_value: int in 60:
 		var first: RunLoop = _at_the_shops(seed_value)
 		var second: RunLoop = _at_the_shops(seed_value)
-		assert_int(first.stall.offers.count()).is_equal(RunPools.PLOT_CARDS.offers)
-		for slot: int in first.stall.offers.count():
-			assert_int(first.stall.offers.rank(slot)).is_equal(second.stall.offers.rank(slot))
-			assert_int(first.stall.offers.suit(slot)).is_equal(second.stall.offers.suit(slot))
-			assert_array(RunPools.PLOT_CARDS.ranks).contains([first.stall.offers.rank(slot)])
+		assert_int(first.visit.stall.offers.count()).is_equal(RunPools.PLOT_CARDS.offers)
+		for slot: int in first.visit.stall.offers.count():
+			assert_int(first.visit.stall.offers.rank(slot)).is_equal(
+				second.visit.stall.offers.rank(slot)
+			)
+			assert_int(first.visit.stall.offers.suit(slot)).is_equal(
+				second.visit.stall.offers.suit(slot)
+			)
+			assert_array(RunPools.PLOT_CARDS.ranks).contains([first.visit.stall.offers.rank(slot)])
 
 
 func test_a_bought_plot_card_enters_the_plot_and_raises_resentment() -> void:
 	var loop: RunLoop = _at_the_shops(16)
-	var rank: int = loop.stall.offers.rank(0)
+	var rank: int = loop.visit.stall.offers.rank(0)
 	var before: int = loop.state.resentment
 	var coupons: int = loop.state.coupons
-	var price: int = loop.stall.offers.price(0)
+	var price: int = loop.visit.stall.offers.price(0)
 	assert_int(loop.player_plot_card(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.inventory.plot.size()).is_equal(1)
 	var card: CardInstance = loop.state.inventory.plot[0]
@@ -245,7 +249,7 @@ func test_a_full_plot_takes_no_more_cards() -> void:
 		loop.state.inventory.plot.append(
 			CardInstance.new(loop.state.take_plot_id(), 12, 0, CardInstance.Origin.PLOT)
 		)
-	assert_int(loop.stall.check_buy(0)).is_equal(PlotStall.Reason.PLOT_FULL)
+	assert_int(loop.visit.stall.check_buy(0)).is_equal(PlotStall.Reason.PLOT_FULL)
 	assert_int(loop.player_plot_card(0)).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_int(loop.state.inventory.plot.size()).is_equal(room)
 
@@ -271,8 +275,8 @@ func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
 	cadres_only.open()
 	assert_bool(cadres_only.reroll_changes()).is_false()
 	assert_int(RunPools.DIRECTIVES.directives.size()).is_greater(STORE.directive_slots)
-	assert_bool(loop.shop.reroll_changes()).is_true()
-	assert_bool(loop.market.reroll_changes()).is_true()
+	assert_bool(loop.visit.shop.reroll_changes()).is_true()
+	assert_bool(loop.visit.market.reroll_changes()).is_true()
 
 
 func test_a_save_from_the_middle_of_phase_4_gains_every_missing_field() -> void:

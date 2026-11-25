@@ -39,7 +39,7 @@ func _loop() -> RunLoop:
 func test_the_store_desk_marks_the_chosen_card() -> void:
 	var store: StoreScreen = _app.show_screen("store", true)
 	await await_idle_frame()
-	var offer: String = _loop().shop.desk.offer
+	var offer: String = _loop().visit.shop.desk.offer
 	var other: String = CardInstance.SURPLUS if offer == CardInstance.MODEL else CardInstance.MODEL
 	CardMarks.enhance(_loop().state, Deck.new().card(CARD), other)
 	var stall: DeskStall = store.get("_desk_stall")
@@ -63,7 +63,9 @@ func test_the_store_desk_marks_the_chosen_card() -> void:
 	await await_idle_frame()
 	assert_bool(sheet.is_open()).is_false()
 	assert_str(_loop().state.card_marks.enhancements[CARD]).is_equal(offer)
-	assert_int(_app.controller.state_copy().coupons).is_equal(coupons - _loop().shop.desk.price())
+	assert_int(_app.controller.state_copy().coupons).is_equal(
+		coupons - _loop().visit.shop.desk.price()
+	)
 	assert_str(stall.ticket.text).is_equal(tr("desk.used"))
 	assert_bool(stall.ticket.disabled).is_true()
 
@@ -71,7 +73,7 @@ func test_the_store_desk_marks_the_chosen_card() -> void:
 func test_a_card_the_desk_refuses_says_why_and_cannot_be_confirmed() -> void:
 	var store: StoreScreen = _app.show_screen("store", true)
 	await await_idle_frame()
-	CardMarks.enhance(_loop().state, Deck.new().card(CARD), _loop().shop.desk.offer)
+	CardMarks.enhance(_loop().state, Deck.new().card(CARD), _loop().visit.shop.desk.offer)
 	var stall: DeskStall = store.get("_desk_stall")
 	stall.ticket.pressed.emit()
 	await await_idle_frame()
@@ -82,7 +84,7 @@ func test_a_card_the_desk_refuses_says_why_and_cannot_be_confirmed() -> void:
 	assert_str(sheet.status_text()).contains(name)
 	sheet.back_button().pressed.emit()
 	assert_bool(sheet.is_open()).is_false()
-	assert_bool(_loop().shop.desk.used()).is_false()
+	assert_bool(_loop().visit.shop.desk.used()).is_false()
 
 
 func test_the_black_market_desk_stamps_the_card() -> void:

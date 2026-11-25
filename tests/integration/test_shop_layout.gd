@@ -60,11 +60,11 @@ func _fill() -> void:
 	state.resentment = 88
 	_app.controller.reseal_book()
 	var tall: Array[String] = ["on_combined_brigades", "on_launching_satellites"]
-	_loop().shop.set("_directive_stock", tall)
+	_loop().visit.shop.set("_directive_stock", tall)
 	# The black market's counter is set, not drawn, so a larger pool does not change what
 	# the page is checked with; the Tally Clerk stands in its empty frame (ADR 0043).
 	var counter: Array[String] = ["the_tally_clerk", "last_sheaf", "the_bookkeeper"]
-	_loop().market.set("_stock", counter)
+	_loop().visit.market.set("_stock", counter)
 
 
 func test_both_shops_fit_a_fresh_run() -> void:
@@ -168,7 +168,7 @@ func test_the_rank_picker_opens_on_the_screen() -> void:
 		_loop().state.coupons = 40
 		_app.controller.reseal_book()
 		var offered: Array[String] = ["rehabilitation", "steel_target", "last_sheaf"]
-		_loop().market.set("_stock", offered)
+		_loop().visit.market.set("_stock", offered)
 		var market: StoreScreen = _app.show_screen("black_market", true)
 		await await_idle_frame()
 		var counter: HBoxContainer = market.get("_counter")
@@ -197,12 +197,12 @@ func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
 					var screen_id: String = "black_market" if kind == "parcel" else "store"
 					_loop().state.coupons = 60
 					_app.controller.reseal_book()
-					_loop().shop.envelopes.clear()
-					_loop().market.envelopes.clear()
+					_loop().visit.shop.envelopes.clear()
+					_loop().visit.market.envelopes.clear()
 					var stock: Array[String] = [kind]
-					var counter: EnvelopeCounter = _loop().market.envelopes
+					var counter: EnvelopeCounter = _loop().visit.market.envelopes
 					if kind != "parcel":
-						counter = _loop().shop.envelopes
+						counter = _loop().visit.shop.envelopes
 					counter.set("_stock", stock)
 					var store: StoreScreen = _app.show_screen(screen_id, true)
 					await await_idle_frame()

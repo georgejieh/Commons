@@ -46,7 +46,7 @@ func _open() -> StoreScreen:
 func _price_of(campaign_id: String) -> int:
 	for definition: CampaignDef in RunCampaigns.all():
 		if definition.id == campaign_id:
-			return _loop().shop.campaigns.sale_price(definition)
+			return _loop().visit.shop.campaigns.sale_price(definition)
 	return -1
 
 
@@ -66,7 +66,7 @@ func test_a_campaign_bought_into_an_empty_tray_gets_its_ticket() -> void:
 	_app.controller.reseal_book()
 	var store: StoreScreen = await _open()
 	var stall: CampaignStall = store.get("_campaign_stall")
-	var bought: String = _loop().shop.campaigns.stock()[0]
+	var bought: String = _loop().visit.shop.campaigns.stock()[0]
 	stall.panel(0).buy.pressed.emit()
 	await await_idle_frame()
 	assert_array(_app.controller.held_campaigns()).is_equal([bought])
