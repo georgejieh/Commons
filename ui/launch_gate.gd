@@ -18,6 +18,10 @@ signal opened(kept: String)
 
 const PARAMS: SessionParams = preload("res://data/session/session_params.tres")
 
+## What Quit on the notice does: the tree quits, which frees the app and the gate with it.
+## A test that cannot end its own run sets another.
+var leave: Callable = Callable()
+
 var _params: SessionParams
 var _file: SessionFile
 var _keep: CrashKeep
@@ -41,6 +45,12 @@ func _init(
 static func guards(app: Node) -> bool:
 	var tree: SceneTree = app.get_tree()
 	return tree.get_script() == null and tree.current_scene == app
+
+
+## The most seconds the "already open" notice can stand once the other copy has stopped:
+## the stale beats, and the beat it is read at.
+static func wait_seconds(params: SessionParams) -> int:
+	return ceili(params.stale_after() + params.beat_seconds)
 
 
 func _ready() -> void:
@@ -70,8 +80,9 @@ func notice() -> SessionNotice:
 
 
 func _show_notice() -> void:
-	var seconds: int = ceili(_params.stale_after() + _params.beat_seconds)
-	_notice = SessionNotice.already_open(seconds, get_tree().quit, _open_anyway)
+	if not leave.is_valid():
+		leave = get_tree().quit
+	_notice = SessionNotice.already_open(wait_seconds(_params), leave, _open_anyway)
 	add_child(_notice)
 	_timer.start()
 

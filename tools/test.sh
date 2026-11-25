@@ -7,7 +7,22 @@ godot="${GODOT_BIN:-godot}"
 log="$(mktemp)"
 trap 'rm -f "$log"' EXIT
 
-if ! "$godot" --headless --path . --import > "$log" 2>&1; then
+if [ -n "${APPDATA:-}" ]; then
+	user_dir="$APPDATA/Godot/app_userdata/Commons"
+elif [ "$(uname)" = "Darwin" ]; then
+	user_dir="$HOME/Library/Application Support/Godot/app_userdata/Commons"
+else
+	user_dir="${XDG_DATA_HOME:-$HOME/.local/share}/godot/app_userdata/Commons"
+fi
+# The run logs to a file of its own (the engine's --log-file), so it never rotates the
+# game's logs/commons.log, whose last dated copy a crash folder keeps (ADR 0037). It is
+# named after the run's settings file, so two runs at once keep apart.
+settings_name="${COMMONS_SETTINGS:-user://test_run_settings.cfg}"
+settings_name="${settings_name#user://}"
+engine_log="$user_dir/logs/tools/${settings_name%.cfg}.log"
+mkdir -p "$(dirname "$engine_log")"
+
+if ! "$godot" --headless --log-file "$engine_log" --path . --import > "$log" 2>&1; then
 	cat "$log"
 	exit 1
 fi
@@ -17,13 +32,6 @@ fi
 # A second run at the same time, as from another worktree, names a file of its own in
 # COMMONS_SETTINGS (user://NAME.cfg) so the two do not share one.
 export COMMONS_SETTINGS="${COMMONS_SETTINGS:-user://test_run_settings.cfg}"
-if [ -n "${APPDATA:-}" ]; then
-	user_dir="$APPDATA/Godot/app_userdata/Commons"
-elif [ "$(uname)" = "Darwin" ]; then
-	user_dir="$HOME/Library/Application Support/Godot/app_userdata/Commons"
-else
-	user_dir="${XDG_DATA_HOME:-$HOME/.local/share}/godot/app_userdata/Commons"
-fi
 rm -f "$user_dir/${COMMONS_SETTINGS#user://}"
 
 if [ $# -eq 0 ]; then
@@ -35,7 +43,7 @@ fi
 limit="${TEST_TIMEOUT:-3600}"
 cap="${TEST_LOG_MAX:-200000000}"
 # The unbound debug port stops a parse error from hanging in the interactive debugger.
-"$godot" --headless --path . -s -d --remote-debug tcp://127.0.0.1:0 \
+"$godot" --headless --log-file "$engine_log" --path . -s -d --remote-debug tcp://127.0.0.1:0 \
 	res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode --continue "$@" > "$log" 2>&1 &
 run=$!
 tail -n +1 -f "$log" &

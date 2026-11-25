@@ -55,6 +55,8 @@ func _said(part: String) -> bool:
 func test_a_run_logs_its_start_resume_and_end_with_its_seed() -> void:
 	GameLog.started()
 	assert_bool(_said("renderer, screen ")).is_true()
+	# The crash step knows the game's own log by how this line begins.
+	assert_str(_lines.said[0]).starts_with(GameLog.STARTED.strip_edges())
 	assert_bool(_app.new_run(SEED)).is_true()
 	(
 		assert_bool(

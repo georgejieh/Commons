@@ -47,21 +47,21 @@ const MENU_SCREENS: Array[String] = [
 
 ## True when New Run starts the demo. Tools set it before the app enters the tree.
 var demo: bool = OS.get_cmdline_user_args().has(DEMO_FLAG)
-var controller: RunController = RunController.new()
+var controller: RunController = null
 var hand: HandModel
-var switcher: SceneSwitcher = SceneSwitcher.new()
-var post: PostProcess = PostProcess.new()
+var switcher: SceneSwitcher = null
+var post: PostProcess = null
 ## The arrival (ADR 0026): offered on a first launch, and the one-time tooltips. Screens
 ## ask it whether an action is allowed.
 var arrival: Arrival
 ## The state's notice when the books are corrected (ADR 0022), over every screen.
-var notice: BooksNotice = BooksNotice.new()
+var notice: BooksNotice = null
 ## The folder the last session's files were copied to when it did not close (ADR 0037),
 ## until the title has told the player; empty otherwise.
 var kept_crash: String = ""
-var _wipe: ColorRect = ColorRect.new()
-var _wipe_layer: CanvasLayer = CanvasLayer.new()
-var _menu: PauseMenu = PauseMenu.new()
+var _wipe: ColorRect = null
+var _wipe_layer: CanvasLayer = null
+var _menu: PauseMenu = null
 
 @onready var _host: Control = $Screens
 
@@ -84,6 +84,15 @@ func _open(kept: String = "") -> void:
 	kept_crash = kept
 	# Read before anything can write a profile save.
 	arrival = Arrival.new(self, not ProfileSeen.exists(Saves.profile_service()))
+	# Made here, not before: an app that never opens, as after Quit on the "already open"
+	# notice, leaves nothing outside the tree.
+	controller = RunController.new()
+	switcher = SceneSwitcher.new()
+	post = PostProcess.new()
+	notice = BooksNotice.new()
+	_wipe = ColorRect.new()
+	_wipe_layer = CanvasLayer.new()
+	_menu = PauseMenu.new()
 	add_child(controller)
 	add_child(switcher)
 	add_child(post)
@@ -121,7 +130,7 @@ func _exit_tree() -> void:
 ## Escape opens the menu on a run's screens away from the table (the table handles its
 ## own, first).
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed("ui_cancel") or _menu.visible:
+	if _menu == null or not event.is_action_pressed("ui_cancel") or _menu.visible:
 		return
 	if MENU_SCREENS.has(switcher.current_id()):
 		_menu.open()
@@ -129,7 +138,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func menu_is_open() -> bool:
-	return _menu.visible
+	return _menu != null and _menu.visible
 
 
 ## The content note on first launch, then the title ever after.

@@ -7,10 +7,13 @@ extends RefCounted
 ## are already written so that a stop between any two steps leaves one that loads.
 ##
 ## The engine copies the last session's log to a file named after its base name with the
-## time when the game starts, so by the time this runs that copy is the newest of them.
+## time when the game starts, so by the time this runs that copy is the newest of them
+## that holds the game's start line.
 
 const ROOT: String = "user://crashes"
 const LOG_PATH_SETTING: String = "debug/file_logging/log_path"
+## How far into a log its start line is looked for: past the engine's own first lines.
+const START_LINES: int = 40
 
 var _files: Array[String]
 var _root: String
@@ -66,8 +69,11 @@ static func stamp_now() -> String:
 	return Time.get_datetime_string_from_system().replace(":", ".")
 
 
-## The newest dated copy of the engine's log: a file beside it whose name is its base name
-## followed by a time, with its extension. Times sort as text.
+## The newest dated copy of the engine's log that the game itself wrote: a file beside it
+## whose name is its base name followed by a time, with its extension, and whose first
+## lines hold the game's start line. A tool or test run without its own --log-file logs
+## to the same file, so its copies sit among the game's; they are passed over. Times sort
+## as text.
 func _last_log() -> String:
 	var folder: String = _log_path.get_base_dir()
 	var base: String = _log_path.get_file().get_basename()
@@ -78,10 +84,26 @@ func _last_log() -> String:
 			continue
 		if name.get_extension() == extension:
 			dated.append(name)
-	if dated.is_empty():
-		return ""
 	dated.sort()
-	return folder.path_join(dated.back())
+	dated.reverse()
+	for name: String in dated:
+		if _is_the_games(folder.path_join(name)):
+			return folder.path_join(name)
+	return ""
+
+
+## True when the log's first lines hold the game's start line, which a launch prints
+## before anything else of the game's.
+static func _is_the_games(log_path: String) -> bool:
+	var file: FileAccess = FileAccess.open(log_path, FileAccess.READ)
+	if file == null:
+		return false
+	for _line: int in START_LINES:
+		if file.eof_reached():
+			break
+		if file.get_line().begins_with(GameLog.STARTED):
+			return true
+	return false
 
 
 func _prune(kept: int) -> void:
