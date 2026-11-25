@@ -3,12 +3,22 @@ extends GdUnitTestSuite
 ## is read back, the run save and the profile both, through the backup path too, over
 ## real saves taken all through a run and over values JSON does not round-trip. A file
 ## from before the seal is no offence; a hand edit, a missing seal or a changed extra
-## still loads and is noticed; a file only reformatted still verifies.
+## still loads and is noticed; a file only reformatted still verifies; a write that reads
+## back changed fails.
 
 const DIR: String = "user://test_save_seal/"
 const RUN_PATH: String = DIR + "run.json"
 const PROFILE_PATH: String = DIR + "profile.json"
 const SEED: int = 6113
+
+
+## A disk that hands back other bytes than were written to it.
+class ChangingDisk:
+	extends SaveService
+
+	func _store(file_path: String, text: String) -> Error:
+		return super(file_path, text.replace("7", "8"))
+
 
 var _saves: SaveService
 var _profile: SaveService
@@ -86,6 +96,20 @@ func test_values_json_does_not_round_trip_still_verify() -> void:
 		assert_int(generic.save(data, {"ledger": round_trip})).is_equal(OK)
 		_assert_sealed(generic, "values %d" % round_trip)
 	generic.delete()
+
+
+## The bytes on disk are not the bytes written: the write fails, and the save it would
+## have replaced is still the one that loads, with its seal whole.
+func test_a_file_that_reads_back_changed_is_a_failed_write() -> void:
+	var path: String = DIR + "changed.json"
+	var kept: SaveService = SaveService.new(path)
+	assert_int(kept.save({"turn": 1})).is_equal(OK)
+	assert_int(ChangingDisk.new(path).save({"turn": 7})).is_equal(ERR_FILE_CORRUPT)
+	var loaded: SaveLoad = kept.load_save()
+	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
+	assert_int(int(loaded.data["turn"])).is_equal(1)
+	assert_bool(loaded.tampered).is_false()
+	kept.delete()
 
 
 func test_the_backup_verifies_on_its_own() -> void:

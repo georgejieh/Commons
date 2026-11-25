@@ -14,7 +14,6 @@ const MARGIN: float = 16.0
 const PADDING: int = 20
 ## The gap between Wang's face and his line.
 const FACE_GAP: int = 14
-const ALARM: Color = Color("b02a17")
 const ALARM_WIDTH: float = 5.0
 ## Seconds the red border holds under reduced motion.
 const ALARM_SECONDS: float = 0.6
@@ -134,10 +133,6 @@ func refuse() -> void:
 	tween.tween_callback(_calm)
 
 
-func is_alarmed() -> bool:
-	return _alarm
-
-
 func _calm() -> void:
 	_alarm = false
 	queue_redraw()
@@ -156,10 +151,11 @@ func shows_cross() -> bool:
 func _draw() -> void:
 	if not _alarm:
 		return
-	draw_rect(Rect2(Vector2.ZERO, size), ALARM, false, ALARM_WIDTH)
+	var alarm: Color = CommonsTheme.STYLE.vermilion
+	draw_rect(Rect2(Vector2.ZERO, size), alarm, false, ALARM_WIDTH)
 	# Two quick strokes of red pencil, not quite straight and not quite meeting.
 	var box: Rect2 = cross_rect()
-	var ink: Color = BowlGrime.faded(ALARM, BowlGrime.wear())
+	var ink: Color = BowlGrime.faded(alarm, BowlGrime.wear())
 	var bend: Vector2 = Vector2(1.5, -1.0)
 	draw_polyline(
 		PackedVector2Array([box.position, box.get_center() + bend, box.end]), ink, CROSS_WIDTH, true

@@ -3,9 +3,9 @@ extends RefCounted
 ## Runs one Expert decision on the worker pool and enforces its deadline. Core stays free
 ## of threads and clocks (ADR 0009). At the deadline it decides on the samples finished:
 ## no sample starts after it, and one already running has the grace in the weights to
-## finish before it is abandoned. decide() waits for
-## the decision on the calling thread; start() returns at once, and is_finished() moves
-## the decision on each time it is asked, so the game can poll it once a frame (P5.0).
+## finish before it is abandoned. decide() waits for the decision on the calling
+## thread; start() returns at once, and is_finished() moves the decision on each time
+## it is asked, so the game can poll it once a frame (ADR 0030).
 
 enum Stage { IDLE, BUILDING, SEARCHING, DONE }
 
@@ -40,10 +40,6 @@ func decide(
 	if not _job.is_ready() or Time.get_ticks_usec() >= deadline:
 		return _job.fallback
 	var group: int = WorkerThreadPool.add_group_task(_run_sample, _job.sample_count(), _threads())
-	while not WorkerThreadPool.is_group_task_completed(group):
-		if Time.get_ticks_usec() >= deadline:
-			_expired = true
-		OS.delay_msec(WAIT_STEP_MSEC)
 	WorkerThreadPool.wait_for_group_task_completion(group)
 	return _job.best()
 
@@ -128,8 +124,8 @@ func _done(decided: BotPlay) -> void:
 
 
 ## The pool threads the samples are spread over: all but one, which is left to the thread
-## that draws the table while a villager thinks (P5.0). decide() keeps to the same count,
-## so a tool that measures it measures what the game plays with.
+## that draws the table while a villager thinks. decide() keeps to the same count, so a
+## tool that measures it measures what the game plays with.
 static func _threads() -> int:
 	return maxi(1, OS.get_processor_count() - 1)
 

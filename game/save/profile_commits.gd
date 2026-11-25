@@ -38,16 +38,15 @@ static func start_run(profile: SaveService, state: RunState) -> Dictionary:
 
 
 ## Takes what the run has reached: the Quota just ended, and at the run's end its record.
-## Returns true when it wrote the profile.
+## Returns true when it wrote the profile; false when there was nothing to take, or the
+## write failed, which marks nothing as taken.
 static func commit(profile: SaveService, state: RunState, finished: bool) -> bool:
 	var data: ProfileData = Profile.read(profile)
 	var changed: bool = _take_quota(data, state)
 	if finished and state.identity.is_full() and not data.has_run(state.identity.id):
 		_record(data, state)
 		changed = true
-	if changed:
-		Profile.write(profile, data)
-	return changed
+	return changed and Profile.write(profile, data) == OK
 
 
 ## The run's Set count, from 0: the Quota now ending or just ended.

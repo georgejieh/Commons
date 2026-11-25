@@ -2,25 +2,23 @@ class_name DemoApp
 extends Control
 ## The game's root (ADR 0017): the run controller, the hand model, the scene switcher
 ## and the screen host. Screens get the app in open() and reach the run only through
-## its controller. The table scene is the 2D or the 3D one, chosen at export. New Run
-## starts the full eight-Year run, or the one-Year demo when the app was launched with
-## --demo after -- on the command line (ADR 0025). On a first launch, with no profile save,
-## it asks the family's name (ADR 0028), then offers the arrival (ADR 0026): a scripted
-## first evening at the table, played over its own layer, never saved, that writes the
-## profile's first save, with that name, when it ends.
+## its controller. New Run starts the full eight-Year run, or the one-Year demo when the
+## app was launched with --demo after -- on the command line (ADR 0025). On a first
+## launch, with no profile save, it asks the family's name (ADR 0028), then offers the
+## arrival (ADR 0026): a scripted first evening at the table, played over its own layer,
+## never saved, that writes the profile's first save, with that name, when it ends.
 
 const DEMO: DemoParams = preload("res://data/run/demo.tres")
 ## The command-line flag that makes New Run start the demo.
 const DEMO_FLAG: String = "--demo"
+## The setting that is true once the content note has been seen.
+const CONTENT_NOTE_SEEN: String = "content_note_seen"
 ## The demo seats' voices, by villager name.
 const DEMO_VOICE: String = "res://data/ui/voices/%s.tres"
-const MOTION: MotionPresets = preload("res://data/ui/motion_presets.tres")
-const TABLE_3D_FEATURE: String = "table_3d"
 const SCREENS: Dictionary[String, String] = {
 	"title": "res://ui/screens/title_screen.tscn",
 	"set_intro": "res://ui/screens/set_intro_screen.tscn",
 	"table": "res://ui/table2d/table_screen.tscn",
-	"table_3d": "res://ui/table3d/table_3d_screen.tscn",
 	"set_summary": "res://ui/screens/set_summary_screen.tscn",
 	"store": "res://ui/screens/store_screen.tscn",
 	"year_summary": "res://ui/screens/year_summary_screen.tscn",
@@ -120,8 +118,7 @@ func _open(kept: String = "") -> void:
 	hand = HandModel.new(controller)
 	var scenes: Dictionary[String, PackedScene] = {}
 	for screen_id: String in SCREENS:
-		if ResourceLoader.exists(SCREENS[screen_id]):
-			scenes[screen_id] = load(SCREENS[screen_id])
+		scenes[screen_id] = load(SCREENS[screen_id])
 	switcher.setup(_host, scenes)
 	show_screen(_opening_screen(), true)
 
@@ -145,26 +142,23 @@ func menu_is_open() -> bool:
 	return _menu != null and _menu.visible
 
 
-## The content note on first launch, then the title ever after.
-func first_screen() -> String:
-	return "title" if bool(Settings.value("content_note_seen")) else "content_note"
-
-
-## The first screen of this launch: the content note until it is seen, then where it
-## leads.
+## The first screen of this launch: the content note until it is seen, then where the
+## arrival leads.
 func _opening_screen() -> String:
-	var first: String = first_screen()
-	return first if first == "content_note" else arrival.next_screen()
+	if not bool(Settings.value(CONTENT_NOTE_SEEN)):
+		return "content_note"
+	return arrival.next_screen()
 
 
 ## Shows a screen and hands it the app. replace drops the way back.
 func show_screen(screen_id: String, replace: bool = false) -> Node:
 	_play_wipe()
-	var screen: Node = switcher.replace(screen_id) if replace else switcher.push(screen_id)
-	if screen.has_method("open"):
-		screen.call("open", self)
-	arrival.shown(screen_id)
-	return screen
+	return _opened(switcher.replace(screen_id) if replace else switcher.push(screen_id))
+
+
+## Builds the screen shown again, keeping the way back, and hands it the app.
+func reopen() -> void:
+	_opened(switcher.reload())
 
 
 ## Screens cut through a quick ink fade, like a page turning under a lamp.
@@ -180,12 +174,12 @@ func _play_wipe() -> void:
 
 ## A new text size (ADR 0034) reaches everything drawn from the theme at once; pieces that
 ## set their own sizes take it when their screen is built again.
-## The project's fallback theme takes the size too, for anything drawn outside the app.
 func _on_setting(key: String) -> void:
 	if key == TextSize.SETTING:
 		_apply_text_size()
 
 
+## The project's fallback theme takes the size too, for anything drawn outside the app.
 func _apply_text_size() -> void:
 	theme = CommonsTheme.build()
 	var fallback: Theme = ThemeDB.get_project_theme()
@@ -197,15 +191,21 @@ func _apply_text_size() -> void:
 func back() -> bool:
 	if not switcher.back():
 		return false
-	if switcher.current().has_method("open"):
-		switcher.current().call("open", self)
-	arrival.shown(switcher.current_id())
+	_opened(switcher.current())
 	return true
 
 
-## The table this build plays on.
+## Hands the screen just shown the app, and tells the arrival which it is.
+func _opened(screen: Node) -> Node:
+	if screen.has_method("open"):
+		screen.call("open", self)
+	arrival.shown(switcher.current_id())
+	return screen
+
+
+## The table's screen.
 func table_id() -> String:
-	return "table_3d" if OS.has_feature(TABLE_3D_FEATURE) else "table"
+	return "table"
 
 
 ## Starts the demo, or with full the eight-Year run with the village's roster, as the
@@ -243,7 +243,7 @@ func leave_run() -> void:
 			var over: bool = controller.awaiting() == RunController.AWAIT_RUN_OVER
 			GameLog.run_ended(controller.state_copy().run_seed, "finished" if over else "abandoned")
 		# The run is let go before its save is cleared, so a villager still thinking
-		# cannot hand in a play afterwards and write the save back (P5.2a).
+		# cannot hand in a play afterwards and write the save back.
 		controller.drop()
 		Saves.run_service().delete()
 	show_screen("title", true)
@@ -278,29 +278,28 @@ func has_saved_run() -> bool:
 
 ## The seat's surname, as the table and speech call a villager.
 func seat_name(seat: int) -> String:
-	var key: String = _controller_call("seated_name_key", seat, "")
+	var key: String = controller.seated_name_key(seat) if _in_run() else ""
 	return tr(key if not key.is_empty() else DEMO.name_keys[seat])
 
 
 ## The seated family's own speech lines, or null for the demo's fixed seats.
 func seat_speech(seat: int) -> SpeechBook:
-	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	var family: FamilyDef = _seated_family(seat)
 	return null if family == null else family.speech
 
 
-## The seated family's voice (P3B.13) as its generation has drifted it, or the demo
-## seat's by its villager name.
+## The seated family's voice as its generation has drifted it, or the demo seat's by its
+## villager name.
 func seat_voice(seat: int) -> VoiceProfile:
-	var family: FamilyDef = _controller_call("seated_family", seat, null)
-	if family != null:
-		return _controller_call("seated_voice", seat, family.voice)
+	if _seated_family(seat) != null:
+		return controller.seated_voice(seat)
 	var path: String = DEMO_VOICE % seat_voice_bank(seat)
 	return load(path) if ResourceLoader.exists(path) else null
 
 
 ## The name of the seat's letter bank under audio/voices: the family's id.
 func seat_voice_bank(seat: int) -> String:
-	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	var family: FamilyDef = _seated_family(seat)
 	if family != null:
 		return family.id
 	if seat >= DEMO.name_keys.size():
@@ -308,16 +307,9 @@ func seat_voice_bank(seat: int) -> String:
 	return DEMO.name_keys[seat].trim_prefix("villager.")
 
 
-## Asks the controller about a seat, or gives fallback before any run exists.
-func _controller_call(method: String, seat: int, fallback: Variant) -> Variant:
-	if controller == null or not controller.has_run():
-		return fallback
-	return controller.call(method, seat)
-
-
 ## The seat's portrait cropped around its face for a box of the given shape.
 func seat_portrait(seat: int, box: Vector2 = Vector2.ZERO) -> Texture2D:
-	var family: FamilyDef = _controller_call("seated_family", seat, null)
+	var family: FamilyDef = _seated_family(seat)
 	if family != null:
 		if family.portrait == null:
 			return null
@@ -343,16 +335,24 @@ func sets_per_year() -> int:
 
 ## The most rounds a Set of the run in play takes.
 func max_rounds() -> int:
-	if controller != null and controller.has_run():
-		return controller.max_rounds()
-	return DEMO.sets.max_rounds
+	return controller.max_rounds() if _in_run() else DEMO.sets.max_rounds
 
 
 ## Seconds between table events: shorter under reduced motion, longer through the
 ## arrival, where every play and every score is new.
 func motion_step() -> float:
-	var reduced: bool = bool(Settings.value("reduced_motion"))
-	var step: float = MOTION.event_step * (MOTION.reduced_scale if reduced else 1.0)
-	var pace: int = clampi(int(Settings.value("table_pace")), 0, MOTION.pace_scales.size() - 1)
-	step *= MOTION.pace_scales[pace]
-	return step * (MOTION.arrival_scale if arrival.is_running() else 1.0)
+	var presets: MotionPresets = UiMotion.PRESETS
+	var pace: int = clampi(
+		int(Settings.value(SettingsPanel.PACE_SETTING)), 0, presets.pace_scales.size() - 1
+	)
+	var step: float = UiMotion.seconds(presets.event_step) * presets.pace_scales[pace]
+	return step * (presets.arrival_scale if arrival.is_running() else 1.0)
+
+
+func _in_run() -> bool:
+	return controller != null and controller.has_run()
+
+
+## The family in the seat, or null before any run and for the demo's fixed seats.
+func _seated_family(seat: int) -> FamilyDef:
+	return controller.seated_family(seat) if _in_run() else null

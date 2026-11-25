@@ -1,11 +1,13 @@
 class_name PostProcess
 extends CanvasLayer
-## The one full-screen pass over every screen (P3B.7), drawn above the UI. The quality
-## setting turns it off. At the table the dread layers (P3B.12) write its parameters;
-## they never change what the player reads, only how the paper looks.
+## The one full-screen pass over every screen, drawn above the UI. The quality setting
+## turns it off. At the table the dread layers write its parameters; they never change
+## what the player reads, only how the paper looks.
 
 const SHADER: Shader = preload("res://shaders/post_process.gdshader")
 const LAYER: int = 100
+## The quality setting that turns the pass on and off.
+const SETTING: String = "post_process"
 
 var _rect: ColorRect = ColorRect.new()
 var _material: ShaderMaterial = ShaderMaterial.new()
@@ -32,9 +34,9 @@ func is_on() -> bool:
 
 
 func _on_setting(key: String) -> void:
-	if key == "post_process":
+	if key == SETTING:
 		_apply_quality()
 
 
 func _apply_quality() -> void:
-	_rect.visible = bool(Settings.value("post_process"))
+	_rect.visible = bool(Settings.value(SETTING))

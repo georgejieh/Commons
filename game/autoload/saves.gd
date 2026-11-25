@@ -1,6 +1,5 @@
-class_name SaveHub
 extends Node
-## The Saves autoload: the run save service (P3A.6) and the profile save (P4.6).
+## The Saves autoload: the run save service and the profile save.
 ## Both only write and read files; the run lives in RunController, so nothing here holds
 ## run state.
 
@@ -26,11 +25,6 @@ func use_default_paths() -> void:
 	var normal: bool = SavePaths.normal_launch(get_tree())
 	_run = SaveService.for_run(SavePaths.of(SaveService.RUN_PATH, normal))
 	_profile = Profile.service(SavePaths.of(SaveService.PROFILE_PATH, normal))
-
-
-## Points the profile save at another file, for tests.
-func use_profile_path(path: String) -> void:
-	_profile = Profile.service(path)
 
 
 ## Points the run save at another file, for tests, and the profile at one beside it, so

@@ -56,8 +56,10 @@ func test_a_bombed_family_opens_the_next_run_more_hostile() -> void:
 	summary.add(ZHAO, SetSummary.Kind.BOMBED, BOMBS_LAST_RUN)
 	last_run.record(summary)
 	var profile: SaveService = Profile.service(PATH)
-	Profile.save_memory(profile, last_run)
-	var carried: VillageMemory = Profile.memory(profile).carried(RunLoop.DEFAULT_MEMORY)
+	var kept: ProfileData = ProfileData.new()
+	kept.memory = last_run
+	Profile.write(profile, kept)
+	var carried: VillageMemory = Profile.read(profile).memory.carried(RunLoop.DEFAULT_MEMORY)
 	assert_float(carried.pull(ZHAO, RunLoop.DEFAULT_MEMORY)).is_greater(0.0)
 	var remembered: int = _zhao_answers(profile)
 	print("zhao answers the player's tricks: %d fresh, %d after being bombed" % [calm, remembered])

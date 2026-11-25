@@ -1,10 +1,11 @@
 class_name GameLog
 extends RefCounted
 ## The few lines the game adds to the engine's log (ADR 0037): one at start, one when a
-## run starts, resumes or ends, and one for each save or load that fails or falls back to
-## its backup. Nothing is printed each frame or each turn. No line holds a family name,
-## anything the player typed, or a path outside the game's own folder: a file is named by
-## its name alone. Every line starts with PREFIX, so a tool can pick them out.
+## run starts, resumes or ends, and one for each save or load that fails, falls back to
+## its backup or meets a save from a newer version. Nothing is printed each frame or each
+## turn. No line holds a family name, anything the player typed, or a path outside the
+## game's own folder: a file is named by its name alone. Every line starts with PREFIX,
+## so a tool can pick them out.
 
 const PREFIX: String = "Commons: "
 const VERSION_SETTING: String = "application/config/version"
@@ -59,6 +60,20 @@ static func load_fell_back(file_path: String) -> void:
 
 static func load_failed(file_path: String) -> void:
 	_line("load of %s failed: neither it nor its backup reads" % file_path.get_file())
+
+
+static func load_found_newer(file_path: String) -> void:
+	_line("load of %s found a save from a newer version, which is kept" % file_path.get_file())
+
+
+## A save from a newer version was moved aside before this build wrote over its path.
+static func save_set_aside(file_path: String, aside_path: String) -> void:
+	_line(
+		(
+			"%s is from a newer version and was moved aside to %s"
+			% [file_path.get_file(), aside_path.get_file()]
+		)
+	)
 
 
 ## The last session did not close, and its files were copied into a folder.

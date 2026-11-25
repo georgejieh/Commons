@@ -14,7 +14,7 @@ const HEX_LENGTH: int = 64
 
 ## The seal over a save's schema version, data and extras, as hex.
 static func of(version: int, data: Variant, extras: Variant) -> String:
-	var form: String = canonical({"schema_version": version, "data": data, "extra": extras})
+	var form: String = _canonical({"schema_version": version, "data": data, "extra": extras})
 	var crypto: Crypto = Crypto.new()
 	var digest: PackedByteArray = crypto.hmac_digest(
 		HashingContext.HASH_SHA256, KEY.to_utf8_buffer(), form.to_utf8_buffer()
@@ -32,7 +32,7 @@ static func is_shaped(seal: Variant) -> bool:
 
 ## One text for a value, the same however the value was built: a dictionary by its sorted
 ## keys, a number by its bits as a double, a string escaped as JSON escapes it.
-static func canonical(value: Variant) -> String:
+static func _canonical(value: Variant) -> String:
 	if value is Dictionary:
 		var dictionary: Dictionary = value
 		var keys: Array[String] = []
@@ -41,13 +41,13 @@ static func canonical(value: Variant) -> String:
 		keys.sort()
 		var parts: PackedStringArray = []
 		for key: String in keys:
-			parts.append(JSON.stringify(key) + ":" + canonical(dictionary[key]))
+			parts.append(JSON.stringify(key) + ":" + _canonical(dictionary[key]))
 		return "{" + ",".join(parts) + "}"
 	if value is Array:
 		var items: Array = value
 		var parts: PackedStringArray = []
 		for item: Variant in items:
-			parts.append(canonical(item))
+			parts.append(_canonical(item))
 		return "[" + ",".join(parts) + "]"
 	if value is int or value is float:
 		return "#" + RunState.float_text(float(value))

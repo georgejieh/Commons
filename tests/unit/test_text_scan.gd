@@ -168,7 +168,7 @@ func test_the_key_scan_catches_a_missing_key() -> void:
 				'tr("settings." + key)',
 				'tr("modifier.%s.name" % id)',
 				"tr(key)",
-				'Strings.format("intro.seated", {"names": names})',
+				'Strings.count("summary.paid", paid)',
 			]
 		)
 	)

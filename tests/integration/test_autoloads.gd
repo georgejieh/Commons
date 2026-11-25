@@ -90,11 +90,34 @@ func test_settings_default_then_round_trip_through_the_file() -> void:
 	DirAccess.remove_absolute(path)
 
 
-func test_strings_resolve_table_keys() -> void:
+## Settings are written whole and renamed into place: a write that cannot be finished
+## leaves the last file as it was.
+func test_a_settings_write_that_cannot_finish_leaves_the_last_file() -> void:
+	var folder: String = "user://test_settings_write/"
+	var path: String = folder + "settings.cfg"
+	DirAccess.make_dir_recursive_absolute(folder)
+	var settings: SettingsStore = auto_free(SettingsStore.new())
+	settings.load_from(path)
+	settings.set_value("music_volume", 0.25)
+	assert_int(settings.save()).is_equal(OK)
+	var last: String = FileAccess.get_file_as_string(path)
+	# A folder where the temporary file would go: the write cannot open it.
+	DirAccess.make_dir_recursive_absolute(path + SaveService.TEMP_SUFFIX)
+	settings.set_value("music_volume", 0.75)
+	assert_int(settings.save()).is_not_equal(OK)
+	assert_str(FileAccess.get_file_as_string(path)).is_equal(last)
+	DirAccess.remove_absolute(path + SaveService.TEMP_SUFFIX)
+	assert_int(settings.save()).is_equal(OK)
+	assert_bool(FileAccess.file_exists(path + SaveService.TEMP_SUFFIX)).is_false()
+	DirAccess.remove_absolute(path)
+	DirAccess.remove_absolute(folder)
+
+
+func test_strings_count_with_the_one_form_when_the_table_has_it() -> void:
 	var strings: StringTable = auto_free(StringTable.new())
-	assert_str(strings.text("rank.a")).is_equal("A")
-	assert_bool(strings.has("rank.a")).is_true()
-	assert_bool(strings.has("no.such.key")).is_false()
+	assert_str(strings.count("summary.paid", 1)).is_equal(tr("summary.paid.one"))
+	assert_str(strings.count("summary.paid", 3)).is_equal(tr("summary.paid").format({"count": 3}))
+	assert_str(strings.count("file.stamp.entries", 0)).contains("0")
 
 
 func test_audio_adds_the_three_buses() -> void:

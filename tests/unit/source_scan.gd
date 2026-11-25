@@ -24,10 +24,7 @@ const DEVELOPER_CALLS: String = (
 	+ r"|print_debug|Color|load|preload|RegEx\.create_from_string|@export_group"
 	+ r"|@export_subgroup|@export_category|@export_enum)\s*\("
 )
-const KEY_CALLS: String = (
-	r"(?<![\w.])(?:tr|_tr|TranslationServer\.translate"
-	+ r"|Strings\.(?:text|format|count|has))\s*\("
-)
+const KEY_CALLS: String = r"(?<![\w.])(?:tr|_tr|TranslationServer\.translate|Strings\.count)\s*\("
 const FORMAT_CALLS: String = r"\.format\s*\("
 const TEXT_CALLS: String = (
 	r"(?<!\w)(?:draw_string|draw_multiline_string|append_text|add_text"

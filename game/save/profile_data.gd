@@ -46,7 +46,7 @@ var stake: int = 0
 var corruption: float = 0.0:
 	set(value):
 		corruption = clampf(value, 0.0, CORRUPTION_MAX)
-## One-time tooltips already shown (P4.15), and the family's surname (P4.17).
+## One-time tooltips already shown (ADR 0026), and the family's surname (ADR 0028).
 var seen: Array[String] = []
 var surname: String = ""
 ## The run whose Quotas the profile last took, and the last Quota it took from it, so a
@@ -84,7 +84,7 @@ static func from_dict(data: Dictionary) -> ProfileData:
 	profile.committed_run = str(committed["run_id"])
 	profile.committed_quota = int(committed["quota"])
 	profile.drift = VillageDrift.from_dict(data["drift"])
-	for entry: Dictionary in data.get("file", []):
+	for entry: Dictionary in data["file"]:
 		profile.file.append(FileEntry.from_dict(entry))
 	return profile
 
@@ -231,8 +231,9 @@ static func _committed_valid(value: Variant) -> bool:
 		return false
 	var committed: Dictionary = value
 	var quota: Variant = committed.get("quota")
-	var whole: bool = (quota is int or quota is float) and quota == floorf(quota)
-	return committed.get("run_id") is String and whole and quota >= -1
+	# From -1, for no Quota taken yet.
+	var number: bool = quota is int or quota is float
+	return committed.get("run_id") is String and number and is_count(quota + 1)
 
 
 ## A float saved as its 16 hex digits of bits (RunState.float_text).

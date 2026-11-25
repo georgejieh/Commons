@@ -4,10 +4,12 @@ extends RefCounted
 ## pieces that fade and settle in one after another, numbers that roll, and stamps that
 ## land. Motion uses scale and fade, never position, so containers keep their layout.
 ## Every tween belongs to the node it moves. Reduced motion shortens or skips it all.
-## Each kind of motion has its own sound (P5.2a), filled in through Audio.fill only where
+## Each kind of motion has its own sound, filled in through Audio.fill only where
 ## the moment's event has none, and played under reduced motion too.
 
 const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
+## The reduced-motion setting (ADR 0035).
+const SETTING: String = "reduced_motion"
 ## A piece starts its entrance this much smaller.
 const ENTER_SCALE: float = 0.96
 ## Where a control keeps its hover tween, so a new one replaces it.
@@ -23,7 +25,7 @@ const DIGITS: String = "0123456789"
 
 
 static func reduced() -> bool:
-	return bool(Settings.value("reduced_motion"))
+	return bool(Settings.value(SETTING))
 
 
 static func seconds(base: float) -> float:

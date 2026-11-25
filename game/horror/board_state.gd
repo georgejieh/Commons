@@ -1,6 +1,6 @@
 class_name BoardState
 extends RefCounted
-## The board's dread (P3B.12): turns cached meter, class and corruption values into a
+## The board's dread: turns cached meter, class and corruption values into a
 ## weight from 0 to 1 for each HorrorLayer, eased over a few seconds. It reads values it
 ## is given and owns nothing else, so it can never change a card, count, rank or score.
 ## Targets change only when set_inputs() is called, which the table does at round
@@ -42,10 +42,8 @@ func set_inputs(famine: int, denunciation: int, landlord: bool, corruption_stage
 	stage = clampi(corruption_stage, 0, CORRUPTION_STAGES - 1)
 	for index: int in _config.layers.size():
 		var layer: HorrorLayer = _config.layers[index]
-		var value: float = input_value(
-			layer.input, famine, denunciation, landlord, corruption_stage
-		)
-		var gate: float = input_value(layer.gate, famine, denunciation, landlord, corruption_stage)
+		var value: float = input_value(layer.input, famine, denunciation, landlord, stage)
+		var gate: float = input_value(layer.gate, famine, denunciation, landlord, stage)
 		targets[index] = clampf(layer.weight_for(value) * layer.gate_for(gate), 0.0, 1.0)
 
 

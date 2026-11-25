@@ -116,6 +116,8 @@ func _release(index: int) -> void:
 		_director.release()
 
 
+## Laid out every frame while the arrival runs: what a step lights can move under it,
+## as cards do while they are dealt and played.
 func _process(_delta: float) -> void:
 	if _director != null:
 		_layout()

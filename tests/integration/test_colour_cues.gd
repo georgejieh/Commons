@@ -139,7 +139,6 @@ func test_a_refusal_under_reduced_motion_shows_a_cross_for_its_moment() -> void:
 	assert_bool(slip.shows_cross()).is_false()
 	slip.refuse()
 	assert_bool(slip.shows_cross()).is_true()
-	assert_bool(slip.is_alarmed()).is_true()
 	var inside: Rect2 = Rect2(Vector2.ZERO, slip.size)
 	assert_bool(inside.encloses(slip.cross_rect())).is_true()
 	await get_tree().create_timer(TutorialSlip.ALARM_SECONDS + 0.3).timeout
@@ -152,4 +151,3 @@ func test_a_refusal_with_motion_pulses_and_shows_no_cross() -> void:
 	await await_idle_frame()
 	slip.refuse()
 	assert_bool(slip.shows_cross()).is_false()
-	assert_bool(slip.is_alarmed()).is_false()

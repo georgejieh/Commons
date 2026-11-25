@@ -1,7 +1,7 @@
 class_name ArtStages
 extends RefCounted
-## Picks every key asset's art for the hidden corruption stage (P3B.12, ADR 0018, ADR
-## 0025). Screens ask for an asset by its base texture, or a Cadre or ending picture by
+## Picks every key asset's art for the hidden corruption stage (ADR 0018, ADR 0025).
+## Screens ask for an asset by its base texture, or a Cadre or ending picture by
 ## its file, and get that stage's variant, so the art itself changes across a profile,
 ## under the meter layers' effects. Variant files load only when shown.
 ##
@@ -108,11 +108,7 @@ static func art_stage() -> int:
 static func intensity() -> float:
 	if intensity_override >= 0.0:
 		return intensity_override
-	var tree: SceneTree = Engine.get_main_loop() as SceneTree
-	var settings: Node = null if tree == null else tree.root.get_node_or_null("Settings")
-	if settings == null:
-		return 1.0
-	return float(settings.call("value", INTENSITY_KEY))
+	return float(SettingsStore.value_or(INTENSITY_KEY, 1.0))
 
 
 ## The art to show for texture at a stage (the current one when -1), never above the

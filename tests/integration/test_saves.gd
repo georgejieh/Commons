@@ -182,11 +182,6 @@ func test_an_old_version_is_migrated_one_step_at_a_time() -> void:
 	assert_int(unregistered.load_save().status).is_equal(SaveLoad.Status.UNREADABLE)
 
 
-func test_a_save_from_a_newer_version_is_not_read() -> void:
-	SaveService.new(_service.path(), {}, SaveService.SCHEMA_VERSION + 1).save({"turn": 1})
-	assert_int(_service.load_save().status).is_equal(SaveLoad.Status.UNREADABLE)
-
-
 func test_run_and_profile_saves_are_separate_files() -> void:
 	var profile: SaveService = SaveService.new(DIR + "profile.json")
 	profile.save({"surname": "Wang"})

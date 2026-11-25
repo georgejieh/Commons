@@ -12,6 +12,11 @@ extends RefCounted
 ## before it replaces the save. A file from before that version has none and is not an
 ## offence. A file at or past it whose seal is missing or wrong still loads when its shape
 ## is valid; the load says so, and the service remembers it until it is taken.
+##
+## A save a newer build wrote is not damaged, only beyond this build (ADR 0037). It is
+## never deleted or written over: before this build writes over its path, or deletes it,
+## it is moved aside beside it, under NEWER_SUFFIX, and a write whose move fails is
+## refused.
 
 const SCHEMA_VERSION: int = 19
 ## The first run save schema that carries a seal.
@@ -22,6 +27,9 @@ const BACKUP_SUFFIX: String = ".bak"
 const TEMP_SUFFIX: String = ".tmp"
 const RESTORED_KEY: String = "save.restored_from_backup"
 const UNREADABLE_KEY: String = "save.unreadable"
+const NEWER_KEY: String = "save.newer_version"
+## What a save from a newer version is renamed to, beside it: one a path, the latest.
+const NEWER_SUFFIX: String = ".newer_version"
 const SEAL_KEY: String = "seal"
 const EXTRA_KEY: String = "extra"
 
@@ -105,11 +113,20 @@ func _replace(data: Dictionary, extras: Dictionary) -> Error:
 	var written: Error = _write(temp, data, extras)
 	if written != OK:
 		return written
-	# A damaged main file never replaces the backup, which may be the only good save.
-	if _read(_path) != null:
+	var main: Variant = _parse(_path)
+	if _is_newer(main):
+		var aside: Error = _set_aside(_path)
+		if aside != OK:
+			return aside
+	elif _data_of(main) != null:
+		# The backup is replaced only by a whole main file, never by a damaged one, which
+		# leaves it the only good save.
+		var kept: Error = _keep_if_newer(backup_path())
+		if kept != OK:
+			return kept
 		if FileAccess.file_exists(backup_path()):
 			DirAccess.remove_absolute(backup_path())
-		var kept: Error = DirAccess.rename_absolute(_path, backup_path())
+		kept = DirAccess.rename_absolute(_path, backup_path())
 		if kept != OK:
 			return kept
 	elif FileAccess.file_exists(_path):
@@ -117,14 +134,24 @@ func _replace(data: Dictionary, extras: Dictionary) -> Error:
 	return DirAccess.rename_absolute(temp, _path)
 
 
+## The main file, or else its backup. A newer version's file is reported as that, and
+## when the backup loads in its place the notice says so too.
 func load_save() -> SaveLoad:
-	var main: Variant = _read(_path)
-	if main != null:
-		return _loaded(SaveLoad.Status.OK, main, _path)
-	var backup: Variant = _read(backup_path())
-	if backup != null:
+	var main: Variant = _parse(_path)
+	var data: Variant = _data_of(main)
+	if data != null:
+		return _loaded(SaveLoad.Status.OK, data, main)
+	var backup: Variant = _parse(backup_path())
+	var newer: bool = _is_newer(main) or _is_newer(backup)
+	if newer:
+		GameLog.load_found_newer(_path)
+	data = _data_of(backup)
+	if data != null:
 		GameLog.load_fell_back(_path)
-		return _loaded(SaveLoad.Status.RESTORED_FROM_BACKUP, backup, backup_path(), RESTORED_KEY)
+		var key: String = NEWER_KEY if newer else RESTORED_KEY
+		return _loaded(SaveLoad.Status.RESTORED_FROM_BACKUP, data, backup, key)
+	if newer:
+		return SaveLoad.new(SaveLoad.Status.NEWER_VERSION, {}, NEWER_KEY)
 	if not FileAccess.file_exists(_path) and not FileAccess.file_exists(backup_path()):
 		return SaveLoad.new(SaveLoad.Status.MISSING)
 	GameLog.load_failed(_path)
@@ -150,9 +177,11 @@ func kept_extras() -> Dictionary:
 	return extras if extras is Dictionary else {}
 
 
+## Removes the save, its backup and its companions. A file from a newer version is moved
+## aside instead, or left where it is when it cannot be.
 func delete() -> void:
 	for file_path: String in [_path, backup_path(), _path + TEMP_SUFFIX]:
-		if FileAccess.file_exists(file_path):
+		if _keep_if_newer(file_path) == OK and FileAccess.file_exists(file_path):
 			DirAccess.remove_absolute(file_path)
 	for companion: String in companions:
 		if FileAccess.file_exists(companion):
@@ -161,9 +190,8 @@ func delete() -> void:
 
 ## Writes the file and reads it back. The seal is made over the values as JSON reads the
 ## very text written: the seal is the last key in sorted order, so it is spliced onto the
-## end of that text and every other byte stays as it was sealed. What reached the disk is
-## then checked before the file is used; should it ever fail, it is sealed again from
-## what was read, so a save this service wrote never fails its own seal.
+## end of that text and every other byte stays as it was sealed. A file that does not read
+## back as the text written is a failed write, so the save it would replace is kept.
 func _write(file_path: String, data: Dictionary, extras: Dictionary) -> Error:
 	var wrapper: Dictionary = {"schema_version": _version, "data": data}
 	if not extras.is_empty():
@@ -182,16 +210,7 @@ func _write(file_path: String, data: Dictionary, extras: Dictionary) -> Error:
 	if stored != OK or not sealed:
 		return stored
 	# The same text reads as the same values, so it holds the seal it was given.
-	if FileAccess.get_file_as_string(file_path) == text:
-		return OK
-	var back: Variant = _parse(file_path)
-	if back == null:
-		return ERR_FILE_CORRUPT
-	if _seal_holds(back):
-		return OK
-	var again: Dictionary = back
-	again[SEAL_KEY] = _seal_of(back)
-	return _store(file_path, JSON.stringify(again, "", true, true))
+	return OK if FileAccess.get_file_as_string(file_path) == text else ERR_FILE_CORRUPT
 
 
 func _store(file_path: String, text: String) -> Error:
@@ -203,16 +222,12 @@ func _store(file_path: String, text: String) -> Error:
 	return OK if stored else ERR_FILE_CANT_WRITE
 
 
-## What a load found: the data, the extras beside it, and whether its seal failed. The
-## file is parsed again, since migrating changed the copy the data came from.
+## What a load found: the data, the extras beside it, and whether the seal of the file
+## it came from, save, failed.
 func _loaded(
-	status: SaveLoad.Status, data: Variant, file_path: String, key: String = ""
+	status: SaveLoad.Status, data: Variant, save: Dictionary, key: String = ""
 ) -> SaveLoad:
 	var result: SaveLoad = SaveLoad.new(status, data, key)
-	var parsed: Variant = _parse(file_path)
-	if parsed == null:
-		return result
-	var save: Dictionary = parsed
 	var extras: Variant = save.get(EXTRA_KEY, {})
 	result.extras = extras if extras is Dictionary else {}
 	var version: int = int(save["schema_version"])
@@ -247,15 +262,44 @@ func _parse(file_path: String) -> Variant:
 	return save
 
 
-## Returns the migrated data, or null when the file is missing, damaged or too new.
-func _read(file_path: String) -> Variant:
-	var save: Variant = _parse(file_path)
+## True for a parsed save that a newer build wrote.
+func _is_newer(save: Variant) -> bool:
+	if save == null:
+		return false
+	var parsed: Dictionary = save
+	return int(parsed["schema_version"]) > _version
+
+
+## Moves a file from a newer version aside, so nothing this build does can touch it, and
+## logs the move. Any other file is left as it is.
+func _keep_if_newer(file_path: String) -> Error:
+	return _set_aside(file_path) if _is_newer(_parse(file_path)) else OK
+
+
+## Renames the file to its aside name, over an older aside of the same path.
+func _set_aside(file_path: String) -> Error:
+	var aside: String = file_path + NEWER_SUFFIX
+	var moved: Error = DirAccess.rename_absolute(file_path, aside)
+	if moved == OK:
+		GameLog.save_set_aside(file_path, aside)
+	return moved
+
+
+## The migrated data of a parsed save, or null when there is none or it is damaged or
+## too new. An older save is migrated on a copy, so the parsed values its seal was made
+## over stay as they were read.
+func _data_of(save: Variant) -> Variant:
 	if save == null:
 		return null
-	var data: Variant = _migrate(save["data"], int(save["schema_version"]))
-	if data == null or (_validator.is_valid() and not _validator.call(data)):
+	var parsed: Dictionary = save
+	var version: int = int(parsed["schema_version"])
+	var data: Dictionary = parsed["data"]
+	if version < _version:
+		data = data.duplicate(true)
+	var migrated: Variant = _migrate(data, version)
+	if migrated == null or (_validator.is_valid() and not _validator.call(migrated)):
 		return null
-	return data
+	return migrated
 
 
 ## Brings data up to this version, or returns null when it is newer or a step is missing.

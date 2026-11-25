@@ -93,7 +93,7 @@ func _values(state: RunState) -> PackedInt64Array:
 	var values: PackedInt64Array = PackedInt64Array()
 	for figure: String in FIGURES:
 		if figure == RunCorrections.PROGRESS:
-			values.append(PackedFloat64Array([state.set_progress]).to_byte_array().decode_s64(0))
+			values.append(_bits_of(state.set_progress))
 		else:
 			values.append(int(_figure(state, figure)))
 	return values
@@ -112,6 +112,14 @@ static func _figure(state: RunState, figure: String) -> Variant:
 		RunCorrections.RESENTMENT:
 			return state.resentment
 	return state.norm_steps
+
+
+## A float's bits as a whole number, so it is masked like the other figures.
+static func _bits_of(value: float) -> int:
+	var bytes: PackedByteArray = PackedByteArray()
+	bytes.resize(8)
+	bytes.encode_double(0, value)
+	return bytes.decode_s64(0)
 
 
 static func _float_of(bits: int) -> float:

@@ -54,7 +54,7 @@ func test_a_new_profile_holds_every_field_empty() -> void:
 	var saved: Dictionary = data.to_dict()
 	for key: String in ProfileData.KEYS:
 		assert_bool(saved.has(key)).override_failure_message(key).is_true()
-	assert_bool(Profile.is_valid(saved)).is_true()
+	assert_bool(ProfileData.is_valid(saved)).is_true()
 
 
 func test_schema_1_migrates_and_keeps_the_memory() -> void:
@@ -70,11 +70,11 @@ func test_schema_1_migrates_and_keeps_the_memory() -> void:
 
 func test_validation_is_strict() -> void:
 	var whole: Dictionary = ProfileData.new().to_dict()
-	assert_bool(Profile.is_valid(whole)).is_true()
+	assert_bool(ProfileData.is_valid(whole)).is_true()
 	for key: String in ProfileData.KEYS:
 		var missing: Dictionary = whole.duplicate(true)
 		missing.erase(key)
-		assert_bool(Profile.is_valid(missing)).override_failure_message(key).is_false()
+		assert_bool(ProfileData.is_valid(missing)).override_failure_message(key).is_false()
 	var cases: Dictionary[String, Variant] = {
 		"generation": -1,
 		"wins": 1.5,
@@ -89,7 +89,7 @@ func test_validation_is_strict() -> void:
 	for key: String in cases:
 		var broken: Dictionary = whole.duplicate(true)
 		broken[key] = cases[key]
-		assert_bool(Profile.is_valid(broken)).override_failure_message(key).is_false()
+		assert_bool(ProfileData.is_valid(broken)).override_failure_message(key).is_false()
 
 
 func test_corruption_is_clamped_and_saved_exactly() -> void:
@@ -116,7 +116,7 @@ func test_history_keeps_the_newest_fifty() -> void:
 	var over: Dictionary = data.to_dict()
 	var entries: Array = over["history"]
 	entries.append(HistoryEntry.new().to_dict())
-	assert_bool(Profile.is_valid(over)).is_false()
+	assert_bool(ProfileData.is_valid(over)).is_false()
 
 
 ## A full run's state at a boundary: a Set's end, or the run's end.
