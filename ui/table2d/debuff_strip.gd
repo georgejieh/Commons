@@ -24,6 +24,9 @@ const HEAD_SIZE: int = 16
 const PADDING: int = 22
 ## Between names in the named forms.
 const SEPARATOR: String = "  ·  "
+## Closes a rule's name before its text, so the two never read as one where a line breaks
+## between them, at any text size and without its red.
+const NAME_END: String = ":"
 
 ## The round's wild ranks as the table's events have named them (ADR 0029), the strip's
 ## first line.
@@ -126,7 +129,7 @@ func _full() -> String:
 			continue
 		rows.append(_head(group[0]))
 		for rule: Dictionary in rules:
-			var row: String = "%s  %s" % [_name(rule["name"]), rule["rule"]]
+			var row: String = _row(rule["name"], rule["rule"])
 			# Appeal lifts this round's debuff: it stays listed, struck through (ADR 0021).
 			if bool(rule["lifted"]):
 				row = "[s]%s[/s]  %s" % [row, _escape(tr("table.debuff_lifted"))]
@@ -171,7 +174,7 @@ func _wild_row() -> PackedStringArray:
 	if not wild_ranks.is_empty():
 		var named: String = _escape(ReadingText.wild_line(wild_ranks))
 		var whose: String = _escape(tr("wild.strip"))
-		rows.append("%s  %s" % [_name(named), whose])
+		rows.append(_row(named, whose))
 	return rows
 
 
@@ -200,6 +203,11 @@ func _head(key: String) -> String:
 
 func _name(name: String) -> String:
 	return "[b][color=#%s]%s[/color][/b]" % [NAME_HEX, name]
+
+
+## A rule's name, closed by NAME_END, then its text.
+func _row(name: String, text: String) -> String:
+	return "%s %s" % [_name(name + NAME_END), text]
 
 
 func _set_type(font_size: int) -> void:
