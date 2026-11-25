@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArtLibrary" load_steps=16 format=3]
+[gd_resource type="Resource" script_class="ArtLibrary" load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://data/ui/art_library.gd" id="1"]
 [ext_resource type="Texture2D" path="res://art/backdrops/table_surface.png" id="2"]
@@ -15,6 +15,7 @@
 [ext_resource type="Texture2D" path="res://art/ui/panel_paper.png" id="19"]
 [ext_resource type="Texture2D" path="res://art/backdrops/title_night.png" id="20"]
 [ext_resource type="Texture2D" path="res://art/backdrops/watchers.png" id="21"]
+[ext_resource type="FontFile" path="res://art/fonts/NotoSerifSC-Black-subset.ttf" id="22"]
 
 [resource]
 script = ExtResource("1")
@@ -85,3 +86,4 @@ endings = Dictionary[String, String]({
 "death_famine": "res://art/endings/ending_death_famine.png",
 "death_denunciation": "res://art/endings/ending_death_denunciation.png"
 })
+hanzi_font = ExtResource("22")

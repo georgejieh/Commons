@@ -356,8 +356,6 @@ func test_an_ending_without_art_sets_its_title_in_the_frame() -> void:
 	endings["full_granary"] = kept
 	assert_int(screen.find_children("EndingPicture", "TextureRect", true, false).size()).is_equal(0)
 	assert_int(screen.find_children("*", "ArtFrame", true, false).size()).is_equal(1)
-	# No face here holds the seal's characters, so Struggled's seal is left out, not boxed.
-	assert_bool(HanziSeal.can_draw("斗地主")).is_equal(ScreenKit.ART.hanzi_font != null)
 
 
 ## Nothing under root clips, as ClipCheck says (ADR 0034).
@@ -365,3 +363,16 @@ func _clips(root: Node, where: String) -> void:
 	var problems: PackedStringArray = []
 	ClipCheck.check(root, "%s at text size %d" % [where, TextSize.level()], problems)
 	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()
+
+
+## The Struggled ending's title carries its seal, drawn from the Chinese face (ADR 0024);
+## an ending with no seal carries none.
+func test_struggled_carries_its_seal_and_no_other_ending_does() -> void:
+	var struggled: EndingScreen = _finish("struggled")
+	await await_idle_frame()
+	assert_int(struggled.find_children("*", "HanziSeal", true, false).size()).is_equal(1)
+	struggled.queue_free()
+	await await_idle_frame()
+	var granary: EndingScreen = _finish("full_granary")
+	await await_idle_frame()
+	assert_int(granary.find_children("*", "HanziSeal", true, false).size()).is_equal(0)

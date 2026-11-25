@@ -10,6 +10,7 @@
 | [pytest](https://github.com/pytest-dev/pytest) | 8.4.1 | MIT | Tests for the Python tools in `tools/`; development only | Nothing |
 | [Oswald](https://github.com/googlefonts/OswaldFont) (`art/fonts/Oswald-Variable.ttf`) | google/fonts `ofl/oswald`, fetched 2026-11-03, SHA-256 in the font note below | SIL OFL 1.1 (`art/fonts/Oswald-OFL.txt`) | Condensed poster face for all UI text, titles and card ranks; ships | Godot's default font |
 | [Courier Prime](https://github.com/quoteunquoteapps/CourierPrime) (`art/fonts/CourierPrime-*.ttf`) | google/fonts `ofl/courierprime`, fetched 2026-11-03 | SIL OFL 1.1 (`art/fonts/CourierPrime-OFL.txt`) | Typewriter face for the work-point ledger; ships | Godot's default font |
+| [Noto Serif SC](https://github.com/notofonts/noto-cjk) (`art/fonts/NotoSerifSC-Black-subset.ttf`) | google/fonts `ofl/notoserifsc`, the variable font fetched 2026-11-24 and cut by `tools/subset_hanzi_font.py` to weight 900 and the 17 characters the data holds | SIL OFL 1.1 (`art/fonts/NotoSerifSC-OFL.txt`); no Reserved Font Name | Decorative Chinese face for seals: the Struggled ending's 斗地主 and the families' hanzi (ADR 0024); ships | Leaving the seal out (the full font is 25 MB) |
 | Godot Engine | 4.7.2-stable | MIT, plus bundled third-party licenses | The engine; ships in every build, and its notices ship as `THIRD-PARTY-NOTICES.txt` | Nothing |
 | [godot-ci image](https://github.com/abarichello/godot-ci) | 4.7.2, digest pinned | MIT | CI environment; not shipped | Nothing |
 | [appimagetool](https://github.com/AppImage/appimagetool) | 1.9.1, SHA-256 pinned | MIT | Builds the Linux AppImage in CI; not shipped | Nothing |
@@ -32,5 +33,7 @@ The fonts are pinned by SHA-256. Re-download only from the google/fonts reposito
 - `Oswald-Variable.ttf` 5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817
 - `CourierPrime-Regular.ttf` 72f793376f8e2841656bf21d77a5de010f2929bd6956a22ee848ad0c7eb978af
 - `CourierPrime-Bold.ttf` ff1f38786c849d1c41fa8e447960abdb2bd75fdfb0cfcdeb524fad65a5af3638
+- `NotoSerifSC[wght].ttf` (the source, not in the repository) 050080d9255a86808f2945bffac582b31ef32bc36411ce29563b4961670c66f9
+- `NotoSerifSC-Black-subset.ttf` (what `python tools/subset_hanzi_font.py PATH/TO/NotoSerifSC[wght].ttf` writes from that source) b5ebb32ac762178b988fb115c67f6bba1ca5599994f5caa8898b91ba1ca9f0c9
 
 The OFL requires the license to travel with the fonts, so every export preset includes `art/fonts/*.txt`.
