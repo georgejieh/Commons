@@ -1,0 +1,11 @@
+{"name": "ambience_wind", "description": "Wind in the roof: a low moan through the eaves, in slow gusts. Rises with Famine as the chatter goes.",
+ "duration": 14,
+ "layers": [
+  {"wave": "noise", "filters": [{"type": "bandpass", "cutoff": 380, "q": 1.2}, {"type": "lowpass", "cutoff": 1200}], "gain_db": -4, "env": {"attack": 7.0, "hold": 0, "release": 7.0, "curve": 1}, "at": [0.0, 3.5, 7.0, 10.5]},
+  {"wave": "noise", "at": [0.5], "env": {"attack": 1.834, "hold": 0.611, "release": 1.63, "curve": 1.4}, "filters": [{"type": "bandpass", "cutoff": [[0, 308.98686937439066], [2.038, 428.6640569809671], [4.075, 308.98686937439066]], "q": 2.6}, {"type": "lowpass", "cutoff": 1400}], "gain_db": -0.495},
+  {"wave": "noise", "at": [3.178], "env": {"attack": 1.424, "hold": 0.475, "release": 1.266, "curve": 1.4}, "filters": [{"type": "bandpass", "cutoff": [[0, 297.84042335994076], [1.582, 476.911706941039], [3.165, 297.84042335994076]], "q": 2.6}, {"type": "lowpass", "cutoff": 1400}], "gain_db": -2.041},
+  {"wave": "noise", "at": [6.61], "env": {"attack": 2.448, "hold": 0.816, "release": 2.176, "curve": 1.4}, "filters": [{"type": "bandpass", "cutoff": [[0, 291.7749025971237], [2.72, 549.7060857297708], [5.439, 291.7749025971237]], "q": 2.6}, {"type": "lowpass", "cutoff": 1400}], "gain_db": -2.457},
+  {"wave": "noise", "at": [9.65], "env": {"attack": 1.351, "hold": 0.45, "release": 1.201, "curve": 1.4}, "filters": [{"type": "bandpass", "cutoff": [[0, 288.5160474923351], [1.501, 493.5792659918823], [3.002, 288.5160474923351]], "q": 2.6}, {"type": "lowpass", "cutoff": 1400}], "gain_db": -2.763},
+  {"wave": "noise", "at": [13.415], "env": {"attack": 2.135, "hold": 0.712, "release": 1.898, "curve": 1.4}, "filters": [{"type": "bandpass", "cutoff": [[0, 306.7598219273857], [2.372, 487.0761451626402], [4.744, 306.7598219273857]], "q": 2.6}, {"type": "lowpass", "cutoff": 1400}], "gain_db": -0.621}
+ ],
+ "master": {"lufs": -30, "peak_db": -3, "highpass": 60}}

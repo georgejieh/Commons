@@ -1,0 +1,9 @@
+{"name": "ambience_drone", "description": "The belly drone: an abstract low hum on G that beats slowly. Famine high. No stomach, no body.",
+ "duration": 16,
+ "layers": [
+  {"wave": "sine", "freq": 49.0, "drive": 0.6, "env": {"attack": 8.0, "hold": 0, "release": 8.0, "curve": 1}, "at": [0.0, 4.0, 8.0, 12.0]},
+  {"wave": "sine", "freq": 49.25, "drive": 0.6, "gain_db": -2, "env": {"attack": 8.0, "hold": 0, "release": 8.0, "curve": 1}, "at": [0.0, 4.0, 8.0, 12.0]},
+  {"wave": "triangle", "freq": 73.5, "filters": [{"type": "lowpass", "cutoff": 220}], "gain_db": -12, "env": {"attack": 8.0, "hold": 0, "release": 8.0, "curve": 1}, "at": [0.0, 4.0, 8.0, 12.0]},
+  {"wave": "noise", "filters": [{"type": "bandpass", "cutoff": 90, "q": 1.2}], "gain_db": -18, "env": {"attack": 8.0, "hold": 0, "release": 8.0, "curve": 1}, "at": [0.0, 4.0, 8.0, 12.0]}
+ ],
+ "master": {"lufs": -28, "peak_db": -3, "highpass": 30}}

@@ -1,0 +1,9 @@
+{"name": "ambience_hollow", "description": "The landlord's room: the same room gone hollow, low resonances on G and D and a long tail.",
+ "duration": 11,
+ "layers": [
+  {"wave": "noise", "filters": [{"type": "bandpass", "cutoff": 98, "q": 5}], "gain_db": 0, "env": {"attack": 5.5, "hold": 0, "release": 5.5, "curve": 1}, "at": [0.0, 2.75, 5.5, 8.25]},
+  {"wave": "noise", "filters": [{"type": "bandpass", "cutoff": 146.8, "q": 5}], "gain_db": -3, "env": {"attack": 5.5, "hold": 0, "release": 5.5, "curve": 1}, "at": [0.0, 2.75, 5.5, 8.25]},
+  {"wave": "noise", "filters": [{"type": "bandpass", "cutoff": 196, "q": 4}], "gain_db": -8, "env": {"attack": 5.5, "hold": 0, "release": 5.5, "curve": 1}, "at": [0.0, 2.75, 5.5, 8.25]},
+  {"wave": "noise", "filters": [{"type": "lowpass", "cutoff": 250}], "gain_db": -6, "env": {"attack": 5.5, "hold": 0, "release": 5.5, "curve": 1}, "at": [0.0, 2.75, 5.5, 8.25]}
+ ],
+ "master": {"lufs": -29, "peak_db": -3, "highpass": 40, "reverb": {"mix": 0.45, "decay": 2.4}}}

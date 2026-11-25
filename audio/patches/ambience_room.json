@@ -1,0 +1,7 @@
+{"name": "ambience_room", "description": "The table's room: a small, close, quiet room with nobody speaking. Under every board state.",
+ "duration": 12,
+ "layers": [
+  {"wave": "noise", "filters": [{"type": "lowpass", "cutoff": 320}, {"type": "lowpass", "cutoff": 320}], "env": {"attack": 6.0, "hold": 0, "release": 6.0, "curve": 1}, "at": [0.0, 3.0, 6.0, 9.0]},
+  {"wave": "noise", "filters": [{"type": "bandpass", "cutoff": 900, "q": 0.7}], "gain_db": -16, "env": {"attack": 6.0, "hold": 0, "release": 6.0, "curve": 1}, "at": [0.0, 3.0, 6.0, 9.0]}
+ ],
+ "master": {"lufs": -30, "peak_db": -3, "highpass": 40}}
