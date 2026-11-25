@@ -2,7 +2,7 @@ class_name ModifierDef
 extends Resource
 ## One modifier of any kind. Behavior lives in the effect script registered under id.
 
-enum Kind { CADRE, CAMPAIGN, DIRECTIVE, REFORM, DEBUFF, BOSS_TWIST }
+enum Kind { CADRE, REFORM, DEBUFF, BOSS_TWIST }
 enum Tag { COLLECTIVE, PRIVATE }
 enum Lever { RULE, RANK, SCORING, ECONOMY, HAND, METERS, INFO }
 

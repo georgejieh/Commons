@@ -93,7 +93,7 @@ func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 
 
 func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
-	var mark: int = SfxPlayer.BANK.meter_marks[0]
+	var mark: int = TableSounds.METERS.famine.low
 	var state: RunState = _loop().state
 	state.famine = mark
 	_app.controller.reseal_book()

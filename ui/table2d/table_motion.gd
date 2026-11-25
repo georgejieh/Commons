@@ -42,8 +42,8 @@ func duration(seconds: float) -> float:
 func move(node: Control, to: Vector2, angle: float, seconds: float) -> Tween:
 	var view: CardView = node as CardView
 	var tween: Tween = (view.tween() if view != null else node.create_tween()).set_parallel(true)
-	tween.set_trans(PRESETS.transition as Tween.TransitionType)
-	tween.set_ease(PRESETS.ease as Tween.EaseType)
+	tween.set_trans(PRESETS.move_transition)
+	tween.set_ease(PRESETS.move_ease)
 	tween.tween_property(node, "position", to, duration(seconds))
 	tween.tween_property(node, "rotation", angle, duration(seconds))
 	return tween

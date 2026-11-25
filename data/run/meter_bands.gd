@@ -40,5 +40,10 @@ func least(of_band: Band) -> int:
 	return 0
 
 
+## The values a meter rises past into a worse band: the low, mid and high thresholds.
+func marks() -> Array[int]:
+	return [low, mid, high]
+
+
 func rearms_at(value: int) -> bool:
 	return value < mid - rearm_margin
