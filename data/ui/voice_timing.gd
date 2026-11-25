@@ -1,8 +1,7 @@
 class_name VoiceTiming
 extends Resource
 ## How a villager's babble is timed and pitched (P3B.13), shared by every voice. The
-## same numbers render the prototype in tools/voice_proto/voice_proto.py, which the owner
-## approved by ear on 2026-11-06.
+## same numbers lay out a line in tools/voice_proto/voice_synth.py.
 
 ## Profiles give pace in syllables per second; a syllable is about this many letters.
 @export var letters_per_syllable: float = 2.6

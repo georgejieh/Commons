@@ -1,33 +1,27 @@
-"""Villager voice prototype (P3B.13), to judge by ear before anything enters the game.
+"""Villager babble synthesis: the sounds behind every letter of a spoken line.
 
-Renders about ten table lines in three voices as WAV files. Each letter of the line
-plays one short sound as it would type out, in the way of Animalese-style babble: a
-consonant onset and a vowel taken from how the letter sounds in English, by formant
-synthesis (a buzzing glottal source shaped by three vowel resonators). No TTS and no
-recordings. Standard library only.
+Each letter of a line plays one short sound as it would type out, in the way of
+Animalese-style babble: a consonant onset and a vowel taken from how the letter sounds in
+English, by formant synthesis (a buzzing glottal source shaped by three vowel resonators).
+No TTS and no recordings. Standard library only. `render_bank.py` renders each villager's
+letter bank from `render_letter`; `events_for` and `render_line` lay a whole line out in
+pitch and pauses, which the in-game player (data/ui/voice_timing.gd) follows.
 
-    python tools/voice_proto/voice_proto.py --out reports/voice_proto
-
-What to listen for:
-- Each voice is recognizable, and the three are told apart.
-- The babble follows the words: long words take longer, spaces and punctuation pause.
-- Each word steps its own pitch and the sentence drifts down. Only the last word
-  carries the ending: questions rise, statements fall, exclamations come faster and
-  louder, and lines ending in "..." trail off.
-- It must not read as imitation Mandarin: every letter holds one flat pitch with no
-  per-letter tone shapes, and the sounds come from English letters.
+A line's pitch is shaped so it reads as speech and not as imitation Mandarin: each word
+steps its own pitch and the sentence drifts down. Only the last word carries the ending:
+questions rise, statements fall, exclamations come faster and louder, and lines ending in
+"..." trail off. Every letter holds one flat pitch with no per-letter tone shapes.
 
 The same line always gives the same sounds: letters map to fixed sounds, and the small
 pitch wobble comes from a seed derived from the line.
 """
 
-import argparse
 import math
-import os
 import random
 import struct
 import wave
 import zlib
+from pathlib import Path
 
 RATE = 22050
 VOWELS = {
@@ -41,11 +35,31 @@ VOWELS = {
 # Each letter's sound: its onset consonant ("" for none) and its vowel, close to how
 # the letter is said in English words.
 LETTERS = {
-    "a": ("", "a"), "b": ("b", "i"), "c": ("k", "a"), "d": ("d", "e"), "e": ("", "e"),
-    "f": ("f", "e"), "g": ("g", "o"), "h": ("h", "a"), "i": ("", "i"), "j": ("j", "a"),
-    "k": ("k", "e"), "l": ("l", "a"), "m": ("m", "a"), "n": ("n", "e"), "o": ("", "o"),
-    "p": ("p", "i"), "q": ("k", "u"), "r": ("r", "o"), "s": ("s", "e"), "t": ("t", "i"),
-    "u": ("", "u"), "v": ("v", "i"), "w": ("w", "u"), "x": ("k", "e"), "y": ("w", "i"),
+    "a": ("", "a"),
+    "b": ("b", "i"),
+    "c": ("k", "a"),
+    "d": ("d", "e"),
+    "e": ("", "e"),
+    "f": ("f", "e"),
+    "g": ("g", "o"),
+    "h": ("h", "a"),
+    "i": ("", "i"),
+    "j": ("j", "a"),
+    "k": ("k", "e"),
+    "l": ("l", "a"),
+    "m": ("m", "a"),
+    "n": ("n", "e"),
+    "o": ("", "o"),
+    "p": ("p", "i"),
+    "q": ("k", "u"),
+    "r": ("r", "o"),
+    "s": ("s", "e"),
+    "t": ("t", "i"),
+    "u": ("", "u"),
+    "v": ("v", "i"),
+    "w": ("w", "u"),
+    "x": ("k", "e"),
+    "y": ("w", "i"),
     "z": ("z", "i"),
 }
 # Onset kinds: a short noise puff, a longer hiss, or a voiced hum.
@@ -75,30 +89,28 @@ MOODS = {
     "tired": (0.6, 0.8, 0.8, 0.95),
 }
 
-LINES = [
-    ("I'll call.", "calm"),
-    ("Pass.", "calm"),
-    ("You going to play that, or hold it till the thaw?", ""),
-    ("Give me the seat!", "eager"),
-    ("Down to 2.", "eager"),
-    ("Sorry. I had to.", "sly"),
-    ("Try topping that!", "eager"),
-    ("Bad cards from the start...", "tired"),
-    ("Who dealt this?", "sour"),
-    ("Only 1 now. Careful.", "sly"),
-]
+# The whole sentence drifts down by this much from its first word to its last.
+DECLINATION = 0.1
+# Per-word pitch steps: longer words tend to carry the stress and step up.
+LONG_WORD = 4
+LONG_ACCENT = (0.04, 0.14)
+SHORT_ACCENT = (-0.07, 0.04)
+
+# A line's event: ("letter", letter, bend, ending) or ("pause", length, 1.0, ending).
+Event = tuple[str, str | float, float, str]
 
 
-def line_seed(text):
+def line_seed(text: str) -> int:
+    """A seed that depends only on the text."""
     return zlib.crc32(text.encode("utf-8"))
 
 
-def spoken_text(text):
+def spoken_text(text: str) -> str:
     """The line with digits spelled out, so "Down to 2." babbles "two"."""
     return "".join(DIGITS[int(c)] if c.isdigit() else c for c in text)
 
 
-def sentences(text):
+def sentences(text: str) -> list[tuple[str, str]]:
     """Splits the line into (sentence, ending) pairs; the ending sets its contour."""
     result = []
     current = ""
@@ -120,7 +132,7 @@ def sentences(text):
     return result
 
 
-def contour(ending):
+def contour(ending: str) -> tuple[float, float, float, float]:
     """The last word's pitch at its start and end, and the sentence's loudness and pace.
 
     Only the last word carries the ending, as in speech: a long question stays level
@@ -135,24 +147,16 @@ def contour(ending):
     return (1.0, 0.85, 1.0, 1.0)
 
 
-# The whole sentence drifts down by this much from its first word to its last.
-DECLINATION = 0.1
-# Per-word pitch steps: longer words tend to carry the stress and step up.
-LONG_WORD = 4
-LONG_ACCENT = (0.04, 0.14)
-SHORT_ACCENT = (-0.07, 0.04)
-
-
-def word_accent(word):
+def word_accent(word: str) -> float:
     """A fixed pitch step for a word, so the same word always sounds the same."""
     rng = random.Random(line_seed(word))
     low, high = LONG_ACCENT if len(word) >= LONG_WORD else SHORT_ACCENT
     return rng.uniform(low, high)
 
 
-def _words(sentence):
+def _words(sentence: str) -> list[tuple[str, list[float]]]:
     """Each word as its spoken letters, with the pause characters that follow it."""
-    words = []
+    words: list[tuple[str, list[float]]] = []
     letters = ""
     for char in sentence.lower():
         if char in LETTERS:
@@ -168,13 +172,13 @@ def _words(sentence):
     return words
 
 
-def events_for(text):
+def events_for(text: str) -> list[Event]:
     """The line as ("letter", letter, bend, ending) and ("pause", lengths, 1.0, ending).
 
     Bend is the letter's pitch multiplier before the mood's range is applied: a slow
     drift down across the sentence, a step per word, and the ending on the last word.
     """
-    events = []
+    events: list[Event] = []
     for sentence, ending in sentences(spoken_text(text)):
         words = _words(sentence)
         last_start, last_end = contour(ending)[:2]
@@ -188,8 +192,7 @@ def events_for(text):
                 else:
                     bend = drift * (1.0 + word_accent(word))
                 events.append(("letter", char, bend, ending))
-            for length in pauses:
-                events.append(("pause", length, 1.0, ending))
+            events.extend(("pause", length, 1.0, ending) for length in pauses)
         if ending == "...":
             events.append(("pause", TRAIL_PAUSE, 1.0, ending))
     return events
@@ -198,7 +201,7 @@ def events_for(text):
 class Resonator:
     """A two-pole band-pass filter at one formant."""
 
-    def __init__(self, freq, bandwidth):
+    def __init__(self, freq: float, bandwidth: float) -> None:
         r = math.exp(-math.pi * bandwidth / RATE)
         self.b1 = 2.0 * r * math.cos(2.0 * math.pi * freq / RATE)
         self.b2 = -r * r
@@ -206,17 +209,19 @@ class Resonator:
         self.y1 = 0.0
         self.y2 = 0.0
 
-    def step(self, x):
+    def step(self, x: float) -> float:
+        """Filters one sample."""
         y = self.gain * x + self.b1 * self.y1 + self.b2 * self.y2
         self.y2, self.y1 = self.y1, y
         return y
 
 
-def letter_seconds(voice):
+def letter_seconds(voice: dict[str, float]) -> float:
+    """How long one letter lasts at the voice's current pace."""
     return 1.0 / (voice["pace_now"] * LETTERS_PER_SYLLABLE)
 
 
-def _onset_length(onset):
+def _onset_length(onset: str) -> int:
     if not onset:
         return 0
     if onset in FRICATIVES:
@@ -224,7 +229,14 @@ def _onset_length(onset):
     return int(RATE * 0.018)
 
 
-def render_letter(letter, f0, voice, loud, rng, out):
+def render_letter(
+    letter: str,
+    f0: float,
+    voice: dict[str, float],
+    loud: float,
+    rng: random.Random,
+    out: list[float],
+) -> None:
     """Appends one letter's sound: a short onset, then a flat-pitched vowel."""
     onset, vowel = LETTERS[letter]
     tone = voice["tone"]
@@ -252,13 +264,16 @@ def render_letter(letter, f0, voice, loud, rng, out):
         out.append(sample * envelope * loud)
 
 
-def render_line(text, mood, voice_name):
+def render_line(
+    text: str, mood: str, voice_name: str
+) -> tuple[list[float], list[str], list[float]]:
+    """Renders a whole line; returns its samples, its letters and each letter's pitch in Hz."""
     voice = dict(VOICES[voice_name])
     span, pace, loud_mood, shift = MOODS[mood]
     rng = random.Random(line_seed(text) ^ line_seed(voice_name))
-    out = []
-    letters = []
-    pitches = []
+    out: list[float] = []
+    letters: list[str] = []
+    pitches: list[float] = []
     for kind, value, bend, ending in events_for(text):
         loud_line, pace_line = contour(ending)[2:]
         voice["pace_now"] = voice["pace"] * pace * pace_line
@@ -273,32 +288,11 @@ def render_line(text, mood, voice_name):
     return out, letters, pitches
 
 
-def write_wav(path, samples, peak):
+def write_wav(path: Path, samples: list[float], peak: float) -> None:
     """Writes with one shared peak, so louder and softer lines stay that way."""
     scale = 0.8 * 32767 / peak
-    with wave.open(path, "wb") as handle:
+    with wave.open(str(path), "wb") as handle:
         handle.setnchannels(1)
         handle.setsampwidth(2)
         handle.setframerate(RATE)
         handle.writeframes(b"".join(struct.pack("<h", int(s * scale)) for s in samples))
-
-
-def main():
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--out", default="reports/voice_proto")
-    args = parser.parse_args()
-    os.makedirs(args.out, exist_ok=True)
-    rendered = []
-    for voice_name in VOICES:
-        for number, (text, mood) in enumerate(LINES, 1):
-            rendered.append((voice_name, number, text) + render_line(text, mood, voice_name))
-    peak = max(1e-6, max(max(abs(s) for s in item[3]) for item in rendered))
-    for voice_name, number, text, samples, letters, _pitches in rendered:
-        path = os.path.join(args.out, f"{voice_name}_{number:02d}.wav")
-        write_wav(path, samples, peak)
-        seconds = len(samples) / RATE
-        print(f"{path}: {len(letters)} letters, {seconds:.2f} s | {text}")
-
-
-if __name__ == "__main__":
-    main()

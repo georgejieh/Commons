@@ -1,111 +1,109 @@
-"""Tests for the letter bank renderer (P3B.13). Run with: python -m pytest tools"""
+"""The letter bank renders identical files for every family, and the synthesis shapes a line."""
 
 import filecmp
-import os
 import subprocess
 import sys
+from pathlib import Path
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(os.path.dirname(HERE))
-sys.path.insert(0, HERE)
-import render_bank  # noqa: E402
+import render_bank
+import voice_synth
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent.parent
 
 
-def test_every_profile_reads_all_four_numbers():
-    folder = os.path.join(ROOT, render_bank.PROFILE_DIR)
-    names = [name for name in os.listdir(folder) if name.endswith(".tres")]
+def test_every_profile_reads_all_four_numbers() -> None:
+    names = sorted((ROOT / render_bank.PROFILE_DIR).glob("*.tres"))
     assert names
     for name in names:
-        profile = render_bank.read_profile(os.path.join(folder, name))
+        profile = render_bank.read_profile(name)
         assert set(profile) == set(render_bank.FIELDS)
 
 
-def test_the_bank_covers_every_letter_and_is_byte_identical(tmp_path):
+def test_the_bank_covers_every_letter_and_is_byte_identical(tmp_path: Path) -> None:
     outputs = []
     for run in ("a", "b"):
         out = tmp_path / run
         subprocess.run(
-            [sys.executable, os.path.join(HERE, "render_bank.py"), "--out", str(out)],
+            [sys.executable, str(HERE / "render_bank.py"), "--out", str(out)],
             cwd=ROOT,
             check=True,
         )
         outputs.append(out)
     first, second = outputs
-    voices = sorted(os.listdir(first))
-    assert voices == sorted(os.listdir(second))
+    voices = sorted(path.name for path in first.iterdir())
+    assert voices == sorted(path.name for path in second.iterdir())
     for voice in voices:
-        files = sorted(os.listdir(first / voice))
+        files = sorted(path.name for path in (first / voice).iterdir())
         assert len(files) == len(render_bank.bank_letters())
-        match, mismatch, errors = filecmp.cmpfiles(first / voice, second / voice, files, False)
-        assert not mismatch and not errors
+        _match, mismatch, errors = filecmp.cmpfiles(first / voice, second / voice, files, False)
+        assert not mismatch
+        assert not errors
 
 
-def test_every_family_and_youth_has_a_voice():
+def test_every_family_and_youth_has_a_voice() -> None:
     profiles = render_bank.family_profiles()
-    assert len(profiles) == 16
+    templates = [
+        file for folder in render_bank.FAMILY_DIRS for file in (ROOT / folder).glob("*.tres")
+    ]
+    assert len(profiles) == len(templates)
     assert profiles["wang"] == render_bank.read_profile(
-        os.path.join(ROOT, render_bank.PROFILE_DIR, "wang.tres")
+        ROOT / render_bank.PROFILE_DIR / "wang.tres"
     )
     for profile in profiles.values():
         assert set(profile) == set(render_bank.FIELDS)
 
 
-def test_a_profile_saved_with_default_values_still_reads(tmp_path):
+def test_a_profile_saved_with_default_values_still_reads(tmp_path: Path) -> None:
     defaults = render_bank.profile_defaults()
     assert set(defaults) == set(render_bank.FIELDS)
     path = tmp_path / "plain.tres"
     path.write_text('[resource]\nscript = ExtResource("1")\npitch = 1.2e2\n', encoding="utf-8")
-    profile = render_bank.read_profile(str(path))
+    profile = render_bank.read_profile(path)
     assert profile["pitch"] == 120.0
     assert profile["tone"] == defaults["tone"]
 
 
-def test_each_letter_plays_once_and_punctuation_pauses():
-    import voice_proto
-
-    events = voice_proto.events_for("Down to 2.")
+def test_each_letter_plays_once_and_punctuation_pauses() -> None:
+    events = voice_synth.events_for("Down to 2.")
     letters = "".join(value for kind, value, _p, _e in events if kind == "letter")
     assert letters == "downtotwo"
     pauses = [value for kind, value, _p, _e in events if kind == "pause"]
-    assert pauses == [voice_proto.PAUSES[" "], voice_proto.PAUSES[" "], voice_proto.PAUSES["."]]
+    assert pauses == [voice_synth.PAUSES[" "], voice_synth.PAUSES[" "], voice_synth.PAUSES["."]]
 
 
-def test_each_sentence_takes_its_own_contour_and_a_line_is_repeatable():
-    import voice_proto
-
-    trail = [e for e in voice_proto.events_for("Bad cards...") if e[0] == "pause"]
-    assert [e[1] for e in trail] == [voice_proto.PAUSES[" "], voice_proto.TRAIL_PAUSE]
-    endings = [ending for _s, ending in voice_proto.sentences("Sorry. I had to?")]
+def test_each_sentence_takes_its_own_contour_and_a_line_is_repeatable() -> None:
+    trail = [e for e in voice_synth.events_for("Bad cards...") if e[0] == "pause"]
+    assert [e[1] for e in trail] == [voice_synth.PAUSES[" "], voice_synth.TRAIL_PAUSE]
+    endings = [ending for _s, ending in voice_synth.sentences("Sorry. I had to?")]
     assert endings == [".", "?"]
-    _out, _letters, pitches = voice_proto.render_line("Who dealt this?", "", "zhao")
+    _out, _letters, pitches = voice_synth.render_line("Who dealt this?", "", "zhao")
     assert pitches[-1] > pitches[0] * 1.15
-    _out, _letters, pitches = voice_proto.render_line("Bad cards from the start...", "", "zhao")
+    _out, _letters, pitches = voice_synth.render_line("Bad cards from the start...", "", "zhao")
     assert pitches[-1] < pitches[0] * 0.75
-    first = voice_proto.render_line("Pass.", "calm", "wang")[0]
-    assert first == voice_proto.render_line("Pass.", "calm", "wang")[0]
+    first = voice_synth.render_line("Pass.", "calm", "wang")[0]
+    assert first == voice_synth.render_line("Pass.", "calm", "wang")[0]
 
 
-def test_a_long_question_stays_level_until_its_last_word_rises():
-    import voice_proto
-
+def test_a_long_question_stays_level_until_its_last_word_rises() -> None:
     line = "You going to play that, or hold it till the thaw?"
-    _out, letters, pitches = voice_proto.render_line(line, "", "zhao")
+    _out, _letters, pitches = voice_synth.render_line(line, "", "zhao")
     last = len("thaw")
     body = pitches[:-last]
-    base = voice_proto.VOICES["zhao"]["pitch"]
+    base = voice_synth.VOICES["zhao"]["pitch"]
     assert max(body) < base * 1.2
     assert min(body) > base * 0.85
     assert len({round(p) for p in body}) > 5
     assert pitches[-1] > max(body)
 
 
-def test_logging_replaces_only_the_voice_rows(tmp_path):
+def test_logging_replaces_only_the_voice_rows(tmp_path: Path) -> None:
     manifest = tmp_path / "manifest.csv"
     manifest.write_text(
         "file,type,license\naudio/sfx/a.wav,sfx,CC0\naudio/voices/old/a.wav,voice,Original\n",
         encoding="utf-8",
     )
-    render_bank.log_banks(["wang"], str(manifest), "2026-11-06")
+    render_bank.log_banks(["wang"], manifest, "2026-11-06")
     lines = manifest.read_text(encoding="utf-8").splitlines()
     assert lines[1] == "audio/sfx/a.wav,sfx,CC0"
     assert not any("voices/old" in line for line in lines)
