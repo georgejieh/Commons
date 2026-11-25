@@ -15,6 +15,7 @@ const TEXT_SIZE: int = 24
 var _app: DemoApp
 var _queue: Array[String] = []
 var _shown: String = ""
+var _paper: PanelContainer
 var _text: Label
 var _got_it: Button
 var _before: Control = null
@@ -56,11 +57,11 @@ func _ready() -> void:
 		center.anchor_left = 0.5
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(center)
-	var paper: PanelContainer = PanelContainer.new()
-	paper.add_theme_stylebox_override("panel", ScreenKit.paper_style(22))
+	_paper = PanelContainer.new()
+	_paper.add_theme_stylebox_override("panel", ScreenKit.paper_style(22))
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", 16)
-	paper.add_child(column)
+	_paper.add_child(column)
 	_text = ScreenKit.label("", TEXT_SIZE, ScreenKit.INK)
 	_text.custom_minimum_size = Vector2(WIDTH, 0)
 	column.add_child(_text)
@@ -68,7 +69,7 @@ func _ready() -> void:
 	_got_it.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_got_it.pressed.connect(_dismiss)
 	column.add_child(_got_it)
-	center.add_child(paper)
+	center.add_child(_paper)
 
 
 ## The tooltip shown now, or "" once all are dismissed.
@@ -82,7 +83,7 @@ func got_it_button() -> Button:
 
 ## Where the paper stands on screen.
 func paper_rect() -> Rect2:
-	return (_text.get_parent().get_parent() as Control).get_global_rect()
+	return _paper.get_global_rect()
 
 
 func _next() -> void:

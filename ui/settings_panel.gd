@@ -163,10 +163,7 @@ static func chosen_text_size(root: Node) -> CheckBox:
 static func rebuild_screen(app: DemoApp) -> void:
 	if app.arrival.is_running() or app.switcher.current_id() == app.table_id():
 		return
-	var screen: Node = app.switcher.reload()
-	if screen.has_method("open"):
-		screen.call("open", app)
-	app.arrival.shown(app.switcher.current_id())
+	app.reopen()
 
 
 ## A setting's name, beside its control, on one line, names wide.

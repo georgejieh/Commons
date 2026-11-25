@@ -46,32 +46,31 @@ static func build() -> Theme:
 	return theme
 
 
+## Each kind of button is a ticket of the card stock dyed in its own ink.
 static func _buttons(theme: Theme) -> void:
-	var kinds: Array[Array] = [
-		[SECONDARY, STYLE.ticket_kraft, STYLE.paper_bright],
-		[PRIMARY, STYLE.ticket_red, STYLE.paper_bright],
-		[COUPON, STYLE.ticket_green, STYLE.paper_bright],
-		[GHOST, Color.WHITE, STYLE.ink],
-	]
-	for kind: Array in kinds:
-		var name: String = kind[0]
-		var ink: Color = kind[1]
-		var text: Color = kind[2]
-		if name != SECONDARY:
-			theme.set_type_variation(name, "Button")
-		theme.set_stylebox("normal", name, _ticket(ink, false))
-		theme.set_stylebox("hover", name, _ticket(ink.lightened(HOVER_LIGHTEN), false))
-		theme.set_stylebox("pressed", name, _ticket(ink.darkened(PRESS_DARKEN), true))
-		theme.set_stylebox("hover_pressed", name, _ticket(ink.darkened(PRESS_DARKEN), true))
-		theme.set_stylebox("disabled", name, _ticket(Color(ink, DISABLED_ALPHA), false))
-		theme.set_stylebox("focus", name, _focus_ring())
-		theme.set_font("font", name, BOLD)
-		theme.set_font_size("font_size", name, TextSize.px(STYLE.button_size))
-		for state: String in ["font_color", "font_hover_color", "font_pressed_color"]:
-			theme.set_color(state, name, text)
-		theme.set_color("font_hover_pressed_color", name, text)
-		theme.set_color("font_focus_color", name, text)
-		theme.set_color("font_disabled_color", name, Color(text, DISABLED_ALPHA + 0.2))
+	_button(theme, SECONDARY, STYLE.ticket_kraft, STYLE.paper_bright)
+	_button(theme, PRIMARY, STYLE.ticket_red, STYLE.paper_bright)
+	_button(theme, COUPON, STYLE.ticket_green, STYLE.paper_bright)
+	_button(theme, GHOST, Color.WHITE, STYLE.ink)
+
+
+## One kind of button: its tickets for every state, dyed ink, with text in text.
+static func _button(theme: Theme, name: String, ink: Color, text: Color) -> void:
+	if name != SECONDARY:
+		theme.set_type_variation(name, "Button")
+	theme.set_stylebox("normal", name, _ticket(ink, false))
+	theme.set_stylebox("hover", name, _ticket(ink.lightened(HOVER_LIGHTEN), false))
+	theme.set_stylebox("pressed", name, _ticket(ink.darkened(PRESS_DARKEN), true))
+	theme.set_stylebox("hover_pressed", name, _ticket(ink.darkened(PRESS_DARKEN), true))
+	theme.set_stylebox("disabled", name, _ticket(Color(ink, DISABLED_ALPHA), false))
+	theme.set_stylebox("focus", name, _focus_ring())
+	theme.set_font("font", name, BOLD)
+	theme.set_font_size("font_size", name, TextSize.px(STYLE.button_size))
+	for state: String in ["font_color", "font_hover_color", "font_pressed_color"]:
+		theme.set_color(state, name, text)
+	theme.set_color("font_hover_pressed_color", name, text)
+	theme.set_color("font_focus_color", name, text)
+	theme.set_color("font_disabled_color", name, Color(text, DISABLED_ALPHA + 0.2))
 
 
 ## A printed ticket: the panels' own card stock with its ruled border, dyed with the
@@ -101,18 +100,18 @@ static func _focus_ring() -> StyleBoxFlat:
 
 static func _labels(theme: Theme) -> void:
 	theme.set_color("font_color", "Label", STYLE.ink)
-	var levels: Array[Array] = [
-		[HEADLINE, BOLD, STYLE.headline_size, STYLE.vermilion],
-		[TITLE, BOLD, STYLE.title_size, STYLE.ink],
-		[EYEBROW, _tracked(), STYLE.eyebrow_size, STYLE.ink_soft],
-		[CAPTION, MEDIUM, STYLE.caption_size, STYLE.ink_soft],
-	]
-	for level: Array in levels:
-		var name: String = level[0]
-		theme.set_type_variation(name, "Label")
-		theme.set_font("font", name, level[1])
-		theme.set_font_size("font_size", name, TextSize.px(level[2]))
-		theme.set_color("font_color", name, level[3])
+	_level(theme, HEADLINE, BOLD, STYLE.headline_size, STYLE.vermilion)
+	_level(theme, TITLE, BOLD, STYLE.title_size, STYLE.ink)
+	_level(theme, EYEBROW, _tracked(), STYLE.eyebrow_size, STYLE.ink_soft)
+	_level(theme, CAPTION, MEDIUM, STYLE.caption_size, STYLE.ink_soft)
+
+
+## One level of the type scale, as a label variation.
+static func _level(theme: Theme, name: String, font: Font, base: int, color: Color) -> void:
+	theme.set_type_variation(name, "Label")
+	theme.set_font("font", name, font)
+	theme.set_font_size("font_size", name, TextSize.px(base))
+	theme.set_color("font_color", name, color)
 
 
 ## The medium face with wide letter spacing, for small uppercase labels.

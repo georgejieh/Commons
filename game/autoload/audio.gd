@@ -45,7 +45,7 @@ func _ready() -> void:
 	ensure_buses()
 	Settings.changed.connect(_on_setting_changed)
 	for bus: String in BUSES:
-		apply_volume(bus)
+		_apply_volume(bus)
 	get_tree().node_added.connect(_on_node_added)
 
 
@@ -64,7 +64,7 @@ func ensure_buses() -> void:
 	AudioServer.add_bus_effect(0, AudioEffectHardLimiter.new())
 
 
-func apply_volume(bus: String) -> void:
+func _apply_volume(bus: String) -> void:
 	var linear: float = float(Settings.value(BUSES[bus]))
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(bus), linear_to_db(linear))
 
@@ -72,7 +72,7 @@ func apply_volume(bus: String) -> void:
 func _on_setting_changed(key: String) -> void:
 	for bus: String in BUSES:
 		if BUSES[bus] == key:
-			apply_volume(bus)
+			_apply_volume(bus)
 
 
 ## Plays the sound for a named event, semitones above its own pitch.

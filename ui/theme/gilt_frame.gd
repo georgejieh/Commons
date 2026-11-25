@@ -6,7 +6,6 @@ extends RefCounted
 ## in uneven strokes at stage 0, and at each corruption stage more of it has flaked off.
 
 const GILT: Color = Color("f6c955")
-const HALO: Color = Color("b02a17")
 const UNDER: Color = Color(0.09, 0.07, 0.05, 0.6)
 const WIDTH: float = 4.0
 const RADIUS: float = 10.0
@@ -48,9 +47,10 @@ static func path(rect: Rect2, radius: float = RADIUS) -> PackedVector2Array:
 
 ## The soft light round the frame, reaching reach px past it, at alpha a pass.
 static func halo(canvas: CanvasItem, frame: PackedVector2Array, reach: float, alpha: float) -> void:
+	var color: Color = Color(CommonsTheme.STYLE.vermilion, alpha)
 	for step: int in PASSES:
 		var wide: float = WIDTH + reach * 2.0 * float(PASSES - step) / PASSES
-		canvas.draw_polyline(frame, Color(HALO, alpha), wide, true)
+		canvas.draw_polyline(frame, color, wide, true)
 
 
 ## The frame itself, stroke by stroke over a dark underline, so it reads on paper and on

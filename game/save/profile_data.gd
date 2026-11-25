@@ -231,8 +231,9 @@ static func _committed_valid(value: Variant) -> bool:
 		return false
 	var committed: Dictionary = value
 	var quota: Variant = committed.get("quota")
-	var whole: bool = (quota is int or quota is float) and quota == floorf(quota)
-	return committed.get("run_id") is String and whole and quota >= -1
+	# From -1, for no Quota taken yet.
+	var number: bool = quota is int or quota is float
+	return committed.get("run_id") is String and number and is_count(quota + 1)
 
 
 ## A float saved as its 16 hex digits of bits (RunState.float_text).

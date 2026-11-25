@@ -53,7 +53,7 @@ func remember(loaded: SaveLoad) -> void:
 	forget()
 	if loaded == null or loaded.status != SaveLoad.Status.OK:
 		return
-	_accepted = numbers(loaded.extras)
+	_accepted = _numbers(loaded.extras)
 	_fresh = _accepted.is_empty()
 
 
@@ -73,7 +73,7 @@ func peek(saves: SaveService) -> void:
 	var number: int = _read()
 	if number == NONE or _accepted.has(number):
 		return
-	var held: Array[int] = numbers(saves.kept_extras())
+	var held: Array[int] = _numbers(saves.kept_extras())
 	if held.is_empty():
 		return
 	_accepted = held
@@ -123,11 +123,11 @@ func write(coupons: int, before: int) -> void:
 
 
 ## The whole numbers a save kept for the ledger.
-static func numbers(extras: Dictionary) -> Array[int]:
+static func _numbers(extras: Dictionary) -> Array[int]:
 	var found: Array[int] = []
 	for key: String in [NUMBER_KEY, BEFORE_KEY]:
 		var number: Variant = extras.get(key)
-		if (number is int or number is float) and number >= 0 and number == floorf(number):
+		if ProfileData.is_count(number):
 			found.append(int(number))
 	return found
 

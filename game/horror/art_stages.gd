@@ -108,11 +108,7 @@ static func art_stage() -> int:
 static func intensity() -> float:
 	if intensity_override >= 0.0:
 		return intensity_override
-	var tree: SceneTree = Engine.get_main_loop() as SceneTree
-	var settings: Node = null if tree == null else tree.root.get_node_or_null("Settings")
-	if settings == null:
-		return 1.0
-	return float(settings.call("value", INTENSITY_KEY))
+	return float(SettingsStore.value_or(INTENSITY_KEY, 1.0))
 
 
 ## The art to show for texture at a stage (the current one when -1), never above the

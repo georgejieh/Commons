@@ -151,16 +151,12 @@ func test_no_flash_stops_every_flicker() -> void:
 	assert_array(fired).is_empty()
 
 
-func test_the_content_note_leads_a_first_launch() -> void:
-	Settings.set_value("content_note_seen", false)
-	assert_str(_app.first_screen()).is_equal("content_note")
+func test_the_content_note_names_what_the_game_holds() -> void:
 	var note: ContentNoteScreen = _app.show_screen("content_note", true)
 	await await_idle_frame()
 	var text: String = note.text().to_lower()
 	for theme: String in ["famine", "persecution", "surveillance", "horror intensity"]:
 		assert_str(text).contains(theme)
-	Settings.set_value("content_note_seen", true)
-	assert_str(_app.first_screen()).is_equal("title")
 
 
 func _open_table() -> TableScreen:

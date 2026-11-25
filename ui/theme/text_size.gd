@@ -6,9 +6,8 @@ extends RefCounted
 ## from px() to least(), so it is never smaller than at Standard. Art that holds a
 ## letter (rank glyphs, seals, stamps) keeps its size and does not come here.
 
-const PARAMS: SettingsParams = preload("res://data/settings/default_settings.tres")
+const PARAMS: SettingsParams = SettingsStore.DEFAULTS
 const SETTING: String = "text_size"
-const AUTOLOAD: String = "Settings"
 
 
 ## The size to draw text of the given Standard size at. Display type, a base of
@@ -34,14 +33,10 @@ static func factor() -> float:
 	return PARAMS.text_scales[level()]
 
 
-## The chosen size: 0 for Standard, up to count() - 1 for Largest. The Settings autoload
-## is looked up when asked, so a tool script that compiles without autoloads still loads
-## the pieces that ask here; with no Settings it is Standard.
+## The chosen size: 0 for Standard, up to count() - 1 for Largest; Standard with no
+## Settings autoload.
 static func level() -> int:
-	var tree: SceneTree = Engine.get_main_loop() as SceneTree
-	var store: Node = null if tree == null else tree.root.get_node_or_null(AUTOLOAD)
-	var chosen: int = 0 if store == null else int(store.call("value", SETTING))
-	return clampi(chosen, 0, count() - 1)
+	return clampi(int(SettingsStore.value_or(SETTING, 0)), 0, count() - 1)
 
 
 static func count() -> int:

@@ -6,6 +6,8 @@ extends CanvasLayer
 
 const SHADER: Shader = preload("res://shaders/post_process.gdshader")
 const LAYER: int = 100
+## The quality setting that turns the pass on and off.
+const SETTING: String = "post_process"
 
 var _rect: ColorRect = ColorRect.new()
 var _material: ShaderMaterial = ShaderMaterial.new()
@@ -32,9 +34,9 @@ func is_on() -> bool:
 
 
 func _on_setting(key: String) -> void:
-	if key == "post_process":
+	if key == SETTING:
 		_apply_quality()
 
 
 func _apply_quality() -> void:
-	_rect.visible = bool(Settings.value("post_process"))
+	_rect.visible = bool(Settings.value(SETTING))

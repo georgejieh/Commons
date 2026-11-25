@@ -11,6 +11,8 @@ const PATH: String = "user://settings.cfg"
 ## the table actions (ADR 0035) live in the same file, in their own section, and are
 ## applied to the InputMap as the game starts, before any screen.
 const PATH_OVERRIDE: String = "COMMONS_SETTINGS"
+## The autoload's node name under the root.
+const AUTOLOAD: String = "Settings"
 const SECTION: String = "settings"
 const DEFAULTS: SettingsParams = preload("res://data/settings/default_settings.tres")
 const KEYS: Array[String] = [
@@ -49,6 +51,17 @@ static func start_path(debug: bool, override: String, normal: bool) -> String:
 	if debug and not override.is_empty():
 		return override
 	return SavePaths.of(PATH, normal)
+
+
+## A setting's value from the Settings autoload, or fallback when the tree has none, as a
+## tool script that compiles without autoloads has not. Pieces such a script may load ask
+## here instead of naming the autoload.
+static func value_or(key: String, fallback: Variant) -> Variant:
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	var store: SettingsStore = (
+		null if tree == null else tree.root.get_node_or_null(AUTOLOAD) as SettingsStore
+	)
+	return fallback if store == null else store.value(key)
 
 
 ## Reads settings from path, falling back to the defaults for anything missing.
