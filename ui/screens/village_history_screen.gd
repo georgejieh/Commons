@@ -148,4 +148,4 @@ static func history_lines(app: DemoApp) -> PackedStringArray:
 			return app.seat_name(seat)
 		var key: String = app.controller.family_name_key(family)
 		return TranslationServer.translate(key) if not key.is_empty() else family
-	return HistoryView.run_lines(state.summaries, name_of)
+	return HistoryView.run_lines(state, name_of)

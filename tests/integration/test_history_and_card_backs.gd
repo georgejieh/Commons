@@ -161,9 +161,11 @@ func test_the_run_reads_as_a_record() -> void:
 		_summary(2, {}),
 		_summary(3, {"wang": [3, 4, 0, 1]}),
 	]
+	var state: RunState = RunState.new(1)
+	state.summaries = summaries
 	var name_of: Callable = func(family: String) -> String: return family.capitalize()
 	(
-		assert_array(Array(HistoryView.run_lines(summaries, name_of)))
+		assert_array(Array(HistoryView.run_lines(state, name_of)))
 		. is_equal(
 			[
 				"Quota 1. Wang was fed twice.",

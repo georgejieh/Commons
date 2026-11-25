@@ -5,8 +5,9 @@ extends RefCounted
 ## in. A record only: the generation, the ending's title (a death's page title for a
 ## death), the class and the Year, then the families that died, joined as the epilogue
 ## joins names. The run in progress reads as a record too: one line per family each
-## Quota touched, only what happened, in words. The family's file (ADR 0022) reads as the
-## state keeps it: one line an entry, oldest first, and that the file is kept.
+## Quota touched, in roster order, only what happened, in words. The family's file (ADR
+## 0022) reads as the state keeps it: one line an entry, oldest first, and that the file
+## is kept.
 
 ## Each kind of deed in SetSummary.Kind order, by its string key.
 const DEEDS: Array[String] = [
@@ -53,14 +54,25 @@ static func _t(key: String) -> String:
 
 
 ## The run's Quotas as a record: "Quota 1. Wang: fed twice." for each family a Quota
-## touched, in the order it was touched, or "Quota 3. Nothing to record." name_of turns a
-## family ID into the name to print.
-static func run_lines(summaries: Array[SetSummary], name_of: Callable) -> PackedStringArray:
+## touched, in roster order (the table's for a run with no roster), or "Quota 3. Nothing
+## to record." A save writes a Quota's families in name order, so the roster's order is
+## what keeps a loaded run's lines as they read live. name_of turns a family ID into the
+## name to print.
+static func run_lines(state: RunState, name_of: Callable) -> PackedStringArray:
+	var order: Array[String] = []
+	for entry: RosterEntry in state.roster:
+		order.append(entry.family_id)
+	if order.is_empty():
+		order = state.table.duplicate()
 	var lines: PackedStringArray = []
-	for summary: SetSummary in summaries:
+	for summary: SetSummary in state.summaries:
 		var number: int = summary.set_number + 1
 		var before: int = lines.size()
+		var families: Array[String] = order.duplicate()
 		for family: String in summary.counts:
+			if not families.has(family):
+				families.append(family)
+		for family: String in families:
 			var deeds: String = deeds_of(summary, family)
 			if deeds.is_empty():
 				continue
