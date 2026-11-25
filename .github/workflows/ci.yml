@@ -60,3 +60,7 @@ jobs:
           godot --headless --path . --export-release Linux build/linux/Commons.x86_64
           test -s build/windows/Commons.exe
           bash tools/packaging/smoke.sh build/linux/Commons.x86_64
+      - name: Check nothing ships that should not
+        run: |
+          command -v python3 || (apt-get update && apt-get install -y --no-install-recommends python3)
+          python3 tools/pack_check.py build/windows/Commons.exe build/linux/Commons.pck

@@ -1,10 +1,10 @@
 class_name SessionNotice
 extends Control
 ## A notice about the game's own session (ADR 0037), over everything: that another copy
-## is already open, or that the last session did not close and where its files were
-## copied. A sheet of paper on a dim, with its buttons in a row; the first has the focus
-## and the focus stays among them by keyboard and gamepad, and the dim stops the mouse
-## short of anything under it.
+## is already open, that the last session did not close and where its files were copied,
+## or whether to keep a new window mode (DisplayWindow). A sheet of paper on a dim, with
+## its buttons in a row; the first has the focus and the focus stays among them by
+## keyboard and gamepad, and the dim stops the mouse short of anything under it.
 
 ## Above every screen and the arrival's layer, as the books notice is.
 const DRAW_ORDER: int = BooksNotice.DRAW_ORDER
@@ -17,6 +17,8 @@ var _body: String
 var _line: String
 var _buttons: Array[Button]
 var _panel: Control = null
+## What Escape or the pad's back button does, if anything.
+var _cancel: Callable = Callable()
 
 
 ## line is a smaller line under the body, such as a folder's path, or empty.
@@ -68,6 +70,27 @@ static func kept(folder: String) -> SessionNotice:
 	return notice
 
 
+## The question after a new window mode or size: Keep, with the focus, and Go back, which
+## Escape and the pad's back button also choose. The old display comes back by itself
+## after seconds.
+static func display_check(seconds: int, keep: Callable, restore: Callable) -> SessionNotice:
+	var kept: Button = ScreenKit.button(
+		TranslationServer.translate("display.check.keep"), CommonsTheme.PRIMARY
+	)
+	kept.pressed.connect(keep)
+	var back: Button = ScreenKit.button(TranslationServer.translate("display.check.back"))
+	back.pressed.connect(restore)
+	var body: String = TranslationServer.translate("display.check.body")
+	var notice: SessionNotice = SessionNotice.new(
+		TranslationServer.translate("display.check.eyebrow"),
+		TranslationServer.translate("display.check.title"),
+		body.format({"seconds": seconds}),
+		[kept, back]
+	)
+	notice._cancel = restore
+	return notice
+
+
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -114,6 +137,13 @@ func buttons() -> Array[Button]:
 ## The paper the notice is printed on, for layout tests.
 func sheet() -> Control:
 	return _panel
+
+
+## Escape goes to the notice before any screen or menu under it can take it.
+func _input(event: InputEvent) -> void:
+	if _cancel.is_valid() and event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_cancel.call()
 
 
 ## Focus that leaves the notice's buttons, for a screen under it, comes back.

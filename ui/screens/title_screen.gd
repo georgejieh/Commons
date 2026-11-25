@@ -1,9 +1,9 @@
 class_name TitleScreen
 extends Control
 ## The title: start a new run through run setup, continue a saved one, or open the
-## collection, village history or settings, or, once the profile has finished or skipped
-## the arrival, play it again (ADR 0026). While the family's file holds an entry, its
-## stamp stands in the top right corner (ADR 0022). After a session that did not close,
+## collection, village history, settings or credits, or, once the profile has finished or
+## skipped the arrival, play it again (ADR 0026). While the family's file holds an entry,
+## its stamp stands in the top right corner (ADR 0022). After a session that did not close,
 ## a notice over the page says where its files were copied (ADR 0037).
 ## The page arrives in order and is whole in about a second and a half: the poster is
 ## laid down, the eyebrow fades in, the name is pressed letter by letter (TitleWord, the
@@ -64,6 +64,8 @@ func open(app: DemoApp) -> void:
 	column.add_child(starts)
 	var settings: Button = ScreenKit.button(tr("title.settings"), CommonsTheme.GHOST)
 	settings.pressed.connect(func() -> void: app.show_screen("settings"))
+	var credits: Button = ScreenKit.button(tr("title.credits"), CommonsTheme.GHOST)
+	credits.pressed.connect(func() -> void: app.show_screen("credits"))
 	var quit: Button = ScreenKit.button(tr("title.quit"), CommonsTheme.GHOST)
 	quit.pressed.connect(func() -> void: get_tree().quit())
 	var collection: Button = ScreenKit.button(tr("title.collection"), CommonsTheme.GHOST)
@@ -73,7 +75,7 @@ func open(app: DemoApp) -> void:
 	var minors: Array[Control] = [collection, history]
 	if ProfileSeen.has(Saves.profile_service(), ProfileSeen.TUTORIAL):
 		minors.append(_replay_button(app))
-	minors.append_array([settings, quit])
+	minors.append_array([settings, credits, quit])
 	var minor: HBoxContainer = ScreenKit.row(minors)
 	column.add_child(minor)
 	_arrive(column, eyebrow, starts, minor)

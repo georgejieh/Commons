@@ -24,6 +24,13 @@ extends Resource
 @export var table_pace: int = 1
 ## Whether the table offers its Hint button (HintSetting).
 @export var show_hint: bool = true
+## The window (DisplayWindow): 0 a window, 1 borderless full screen, 2 exclusive full
+## screen.
+@export var window_mode: int = 1
+## The size of a window: an index into window_sizes.
+@export var window_size: int = 2
+## Whether each frame waits for the screen's refresh.
+@export var vsync: bool = true
 
 @export_group("Text size")
 ## What each text size multiplies every font size by: Standard, Large, Largest. Not saved.
@@ -33,3 +40,13 @@ extends Resource
 ## Display type holds (ADR 0034): a base size this large or larger, the title and
 ## headline steps and the ending's title, does not grow. Not saved.
 @export var display_text_px: int = 40
+
+@export_group("Display")
+## The sizes offered for a window, smallest first, all 16:9 like the canvas, which
+## stretches to fill them. Not saved.
+@export var window_sizes: Array[Vector2i] = [
+	Vector2i(1280, 720), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440)
+]
+## How many seconds a new window mode or size stands unkept before the old one comes
+## back. Not saved.
+@export var display_check_seconds: int = 10
