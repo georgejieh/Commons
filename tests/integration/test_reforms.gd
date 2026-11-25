@@ -145,7 +145,7 @@ func test_buying_needs_the_coupons_and_is_a_saved_command() -> void:
 	assert_int(loop.state.coupons).is_equal(0)
 	assert_dict(loop.record.commands[-1]).is_equal({"type": "reform", "slot": 0})
 	assert_int(loop.player_reform(0)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_reform(0)).is_equal(RunLoop.Reason.NOT_AWAITED)
 
 
@@ -163,7 +163,7 @@ func test_held_reforms_survive_save_load_and_replay() -> void:
 	assert_str(JSON.stringify(resumed.state.to_dict())).is_equal(
 		JSON.stringify(loop.state.to_dict())
 	)
-	loop.next_set()
+	RunScript.next_set(loop)
 	var at_start: Dictionary = JSON.parse_string(JSON.stringify(loop.record.to_dict()))
 	var later: RunLoop = RunRecord.resume(at_start, RunScript.bots(), SetConfig.new())
 	assert_array(later.state.reforms).is_equal([offered])

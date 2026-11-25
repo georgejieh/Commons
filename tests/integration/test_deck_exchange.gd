@@ -157,7 +157,7 @@ func test_the_next_deal_deals_the_exchanged_deck() -> void:
 	var mark: String = loop.deck_stall.offers.enhancement(0)
 	var rank: int = loop.deck_stall.offers.rank(0)
 	assert_int(loop.player_deck_card(0, THREE)).is_equal(RunLoop.Reason.OK)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var held: Array[CardInstance] = _dealt(loop)
 	var counts: PackedByteArray = CardSelection.printed_counts(held)
 	assert_bool(counts == loop.state.deck.rank_counts()).is_true()
@@ -187,7 +187,7 @@ func test_a_run_with_exchanges_resumes_to_the_same_deck_at_every_checkpoint() ->
 	assert_int(loop.player_deck_card(1, THREE)).is_equal(RunLoop.Reason.OK)
 	_same_deck(loop)
 	# The next Set's start is a checkpoint of its own, with the deck in it.
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	_same_deck(loop)
 	var script: RunScript = RunScript.new()
 	for _step: int in 40:

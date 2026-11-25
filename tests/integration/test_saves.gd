@@ -222,8 +222,11 @@ func test_a_long_run_save_stays_under_64_kb() -> void:
 func _drive(loop: RunLoop, snapshots: PackedStringArray, waits: Array[int]) -> String:
 	var script: RunScript = RunScript.new()
 	while loop.awaiting() != RunLoop.Awaiting.RUN_OVER:
-		if loop.awaiting() == RunLoop.Awaiting.SET_OVER:
-			loop.next_set()
+		var between: Array[int] = [
+			RunLoop.Awaiting.SET_OVER, RunLoop.Awaiting.SHOP, RunLoop.Awaiting.REEDUCATION
+		]
+		if between.has(loop.awaiting()):
+			RunScript.next_set(loop)
 		elif script.act(loop):
 			_snapshot(loop, snapshots, waits, loop.awaiting())
 		else:

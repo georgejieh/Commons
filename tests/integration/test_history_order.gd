@@ -21,7 +21,7 @@ func _played(seed_value: int) -> RunLoop:
 		RunScript.new().play_until_set_over(loop)
 		if quota < QUOTAS - 1:
 			loop.open_shop()
-			loop.next_set()
+			RunScript.next_set(loop)
 	return loop
 
 

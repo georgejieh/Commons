@@ -14,33 +14,6 @@ signal awaiting_changed(awaiting: int)
 ## A command the loop refused, with its reason.
 signal command_refused(command: String, reason: int)
 
-## Every command the UI may send. Selection is the hand model's, not the run's.
-const COMMANDS: Array[String] = [
-	"bid",
-	"swap",
-	"play",
-	"pass",
-	"declare_need",
-	"finish_set",
-	"buy",
-	"reroll",
-	"market_buy",
-	"market_reroll",
-	"upgrade",
-	"plot_card",
-	"directive",
-	"campaign",
-	"begin_round",
-	"campaign_buy",
-	"reform",
-	"envelope_buy",
-	"envelope_pick",
-	"leave_store",
-	"books",
-	"sell_cadre",
-	"sell_campaign",
-	"mark_card",
-]
 ## What the run waits on, for views that may not name the loop.
 const AWAIT_BID: int = RunLoop.Awaiting.PLAYER_BID
 const AWAIT_SWAP: int = RunLoop.Awaiting.PLAYER_SWAP
@@ -581,21 +554,21 @@ func purchase_resentment() -> int:
 
 ## Leaves the store for the next Set, or the run's end.
 func leave_store() -> int:
-	return _act("leave_store", _loop.next_set)
+	return _act("leave_store", _loop.leave_store)
 
 
 ## Returns from reeducation to the next Set, or the run's end.
 func leave_reeducation() -> int:
-	return _act("leave_reeducation", _loop.next_set)
+	return _act("leave_reeducation", _loop.leave_reeducation)
 
 
 func awaiting() -> int:
 	return _loop.awaiting()
 
 
+## True while the Set in play, or the one just ended, is the run's last.
 func is_last_set() -> bool:
-	var state: RunState = _loop.state
-	return state.set_type == RunState.SetType.BOSS and state.year == _loop.sets().years()
+	return _loop.is_last_set()
 
 
 ## The store's stock per slot, an empty ID for a sold slot.

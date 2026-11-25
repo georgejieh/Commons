@@ -167,7 +167,7 @@ func test_false_report_raises_progress_and_the_norm_for_later_quotas() -> void:
 		assert_bool(RunScript.new().act(loop)).is_true()
 	var steps: int = loop.state.norm_steps
 	assert_int(steps).is_greater_equal(1)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.reported_steps).is_equal(0)
 	var base: float = loop.sets().target(loop.state.year, loop.state.set_type)
 	assert_float(loop.target()).is_equal_approx(loop.sets().normed(base, steps), 0.001)

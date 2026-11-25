@@ -157,10 +157,15 @@ func test_too_few_coupons_or_nothing_to_show_refuses_the_envelope() -> void:
 func test_while_open_every_other_shop_command_waits() -> void:
 	var loop: RunLoop = _at_the_shops(5)
 	loop.state.inventory.consumables.assign(["grain_loan"])
+	loop.state.inventory.cadres.assign(["rehabilitation"])
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
+	# A black-market Cadre that needs a rank is refused as every other command is, rank or not.
+	var ranked: Array[String] = ["planned_allocation"]
+	loop.market.set("_stock", ranked)
 	var before: String = JSON.stringify(loop.state.to_dict())
 	var commands: int = loop.record.commands.size()
 	var refused: Array[Callable] = [
+		loop.player_market_buy.bind(0, Ranks.INVALID),
 		loop.player_buy.bind(0),
 		loop.player_reroll,
 		loop.player_directive.bind(0),
@@ -174,7 +179,15 @@ func test_while_open_every_other_shop_command_waits() -> void:
 		loop.player_market_envelope.bind(0),
 		loop.player_envelope_buy.bind(0),
 		loop.player_campaign.bind(0, [] as Array[int]),
+		loop.player_sell_cadre.bind(0),
+		loop.player_sell_cadre.bind(0, true),
+		loop.player_sell_campaign.bind(0),
+		loop.player_sell_campaign.bind(0, true),
+		loop.player_mark_card.bind(0),
+		loop.player_mark_card.bind(0, true),
+		loop.player_deck_card.bind(0, 0),
 		loop.next_set,
+		loop.leave_store,
 	]
 	for command: Callable in refused:
 		assert_int(command.call()).is_equal(RunLoop.Reason.NOT_AWAITED)
@@ -190,7 +203,7 @@ func test_while_open_every_other_shop_command_waits() -> void:
 		RunLoop.Reason.NOT_AWAITED
 	)
 	assert_int(loop.player_buy(0)).is_equal(RunLoop.Reason.OK)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_envelope_pick(0)).is_equal(RunLoop.Reason.NOT_AWAITED)
 
 

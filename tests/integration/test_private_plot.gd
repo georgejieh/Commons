@@ -96,7 +96,7 @@ func test_swaps_across_rounds_never_change_the_plot_or_lose_a_card() -> void:
 				elif not script.act(loop):
 					break
 				assert_str(_plot_text(state)).is_equal(plot_before)
-			loop.next_set()
+			RunScript.next_set(loop)
 		assert_int(state.next_plot_id).is_equal(next_id)
 	assert_int(swaps).is_greater(10)
 

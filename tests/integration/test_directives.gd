@@ -129,7 +129,7 @@ func test_a_raised_level_scores_in_play() -> void:
 		assert_int(loop.player_reroll()).is_equal(RunLoop.Reason.OK)
 		slot = loop.shop.directive_stock().find("on_hand_tools")
 	assert_int(loop.player_directive(slot)).is_equal(RunLoop.Reason.OK)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var script: RunScript = RunScript.new()
 	var checked: int = 0
 	while loop.awaiting() != RunLoop.Awaiting.SET_OVER and script.act(loop):

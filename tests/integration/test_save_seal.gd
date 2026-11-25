@@ -74,7 +74,7 @@ func test_every_run_save_of_a_run_verifies_after_a_write_and_a_read() -> void:
 		loop.open_shop()
 		_saves.save(loop.record.to_dict())
 		_assert_sealed(_saves, "shop")
-		loop.next_set()
+		RunScript.next_set(loop)
 	assert_int(saves).is_greater(10)
 
 

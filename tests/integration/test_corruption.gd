@@ -205,7 +205,7 @@ func test_every_market_purchase_in_high_famine_counts_and_a_reroll_does_not() ->
 	assert_int(calm.state.famine_market_buys).is_equal(0)
 	# The count goes to the next Quota to end, first in its list, and starts again.
 	loop.state.famine = 0
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	RunScript.new().play_until_set_over(loop)
 	assert_array(loop.state.quota_corruption.slice(0, 2)).is_equal(
 		[CorruptionEvents.FAMINE_PURCHASE, CorruptionEvents.FAMINE_PURCHASE]

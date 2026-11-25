@@ -244,7 +244,7 @@ func test_back_door_frees_the_first_black_market_reroll_and_replays() -> void:
 	assert_int(loop.player_market_buy(slot)).is_equal(RunLoop.Reason.OK)
 	# Bought now, it works at once, unless this visit's first reroll is already spent.
 	assert_bool(loop.market.reroll_price() == 0).is_equal(rerolled == 0)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	_play_set(loop)
 	loop.state.reeducation_due = false
 	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)

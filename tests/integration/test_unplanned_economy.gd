@@ -157,7 +157,7 @@ func test_the_next_quota_starts_shuffled() -> void:
 	loop.start_set()
 	RunScript.new().play_until_set_over(loop)
 	assert_array(loop.state.deck_order).is_empty()
-	loop.next_set()
+	RunScript.next_set(loop)
 	assert_array(loop.state.deck_order).is_empty()
 
 

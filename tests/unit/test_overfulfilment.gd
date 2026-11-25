@@ -88,12 +88,12 @@ func test_an_overfulfilled_set_pays_the_bonus_and_raises_later_targets() -> void
 	)
 	# The next Set's target carries the raised norm, and the one after adds to it.
 	var expected: float = 100.0 + steps * SETS.norm_percent_per_step
-	loop.next_set()
+	RunScript.next_set(loop)
 	var base: float = sets.target(state.year, state.set_type)
 	assert_float(loop.target()).is_equal_approx(base * expected / 100.0, 1e-9)
 	RunScript.new().play_until_set_over(loop)
 	assert_int(state.norm_steps).is_equal(steps * 2)
-	loop.next_set()
+	RunScript.next_set(loop)
 	base = sets.target(state.year, state.set_type)
 	# The third Set is the Year's boss, and a boss may change its Quota (Great Leap).
 	for boss: ModifierDef in RunPools.BOSSES.all():
@@ -149,7 +149,7 @@ func test_a_replay_from_the_record_reproduces_the_state() -> void:
 	loop.start_set()
 	var script: RunScript = RunScript.new()
 	script.play_until_set_over(loop)
-	loop.next_set()
+	RunScript.next_set(loop)
 	for _turn: int in 3:
 		script.act(loop)
 	var saved: Dictionary = JSON.parse_string(JSON.stringify(loop.record.to_dict()))

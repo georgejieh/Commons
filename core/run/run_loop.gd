@@ -515,9 +515,10 @@ func player_need(need: int) -> Reason:
 	return Reason.OK
 
 
-## Leaves a finished Set for the state store, or for reeducation when it is owed.
+## Leaves a finished Set for the state store, or for reeducation when it is owed. The
+## run's last Set has no shops after it: next_set() ends the run.
 func open_shop() -> Reason:
-	if _awaiting != Awaiting.SET_OVER:
+	if _awaiting != Awaiting.SET_OVER or is_last_set():
 		return Reason.NOT_AWAITED
 	record.add({"type": "shop"})
 	if state.reeducation_due:
@@ -569,12 +570,12 @@ func player_directive(slot: int) -> Reason:
 ## Resentment. A Cadre that needs a rank is refused without one from 3 to 2 (ADR 0021).
 func player_market_buy(slot: int, rank: int = Ranks.INVALID) -> Reason:
 	var bought: ModifierDef = _stocked(market, slot)
-	if _awaiting == Awaiting.SHOP and not RunCadres.rank_fits(bought, rank):
-		return Reason.ILLEGAL
 	var command: Dictionary = {"type": "market_buy", "slot": slot}
 	if rank != Ranks.INVALID:
 		command["rank"] = rank
-	var reason: Reason = _shop_command(command, _done(market.buy.bind(slot)))
+	var act: Callable = func() -> bool:
+		return RunCadres.rank_fits(bought, rank) and market.buy(slot) == RunShop.Reason.OK
+	var reason: Reason = _shop_command(command, act)
 	if reason == Reason.OK:
 		RunCadres.bought(state, bought, rank)
 		_read_shop_rules()
@@ -682,10 +683,13 @@ func player_upgrade(kind: String) -> Reason:
 	return reason
 
 
-## Moves past a finished Set or the shop: a Year's end after the boss, then the next Set.
-## From a finished Set it passes through the shop without stopping.
+## Moves past the shops, reeducation or the run's last Set: a Year's end after the boss,
+## then the next Set or the run's end. Any other finished Set goes to the shops first,
+## through open_shop(), so a reeducation that is due is never passed by.
 func next_set() -> Reason:
 	if not [Awaiting.SET_OVER, Awaiting.SHOP, Awaiting.REEDUCATION].has(_awaiting):
+		return Reason.NOT_AWAITED
+	if _awaiting == Awaiting.SET_OVER and not is_last_set():
 		return Reason.NOT_AWAITED
 	# An open envelope is answered before the shops are left.
 	if open_envelope() != null:
@@ -706,6 +710,26 @@ func next_set() -> Reason:
 	state.set_index = (state.set_index + 1) % SetConfig.SETS_PER_YEAR
 	state.set_type = state.set_index as RunState.SetType
 	return start_set()
+
+
+## Leaves the shops for the next Set, or the run's end.
+func leave_store() -> Reason:
+	if _awaiting != Awaiting.SHOP:
+		return Reason.NOT_AWAITED
+	return next_set()
+
+
+## Leaves reeducation for the next Set, or the run's end.
+func leave_reeducation() -> Reason:
+	if _awaiting != Awaiting.REEDUCATION:
+		return Reason.NOT_AWAITED
+	return next_set()
+
+
+## True while the Set in play, or the one just ended, is the run's last: its last Year's
+## boss Set.
+func is_last_set() -> bool:
+	return state.set_type == RunState.SetType.BOSS and state.year == _sets.years()
 
 
 func sets() -> SetConfig:

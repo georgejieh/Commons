@@ -4,32 +4,10 @@ extends GdUnitTestSuite
 
 const FIXTURES: String = "res://tests/fixtures/ui_boundary/"
 const SEED: int = 3701
-const UI_ACTIONS: Array[String] = [
-	"bid",
-	"swap",
-	"play",
-	"pass",
-	"declare_need",
-	"finish_set",
-	"buy",
-	"reroll",
-	"market_buy",
-	"market_reroll",
-	"upgrade",
-	"plot_card",
-	"directive",
-	"campaign",
-	"begin_round",
-	"campaign_buy",
-	"reform",
-	"envelope_buy",
-	"envelope_pick",
-	"leave_store",
-	"books",
-	"sell_cadre",
-	"sell_campaign",
-	"mark_card",
-]
+const CONTROLLER: String = "res://game/run/run_controller.gd"
+const LOOP: Script = preload("res://core/run/run_loop.gd")
+## The loop's commands that are not named player_*.
+const MOVES: Array[String] = ["open_shop", "next_set", "leave_store", "leave_reeducation"]
 
 
 func test_ui_has_no_core_mutator_references() -> void:
@@ -42,12 +20,52 @@ func test_checker_flags_a_mutator_and_ignores_comments() -> void:
 	assert_array(UiBoundaryCheck.scan(FIXTURES + "missing")).has_size(1)
 
 
-func test_every_ui_action_is_a_controller_command() -> void:
+## Every command the loop takes from the player is sent by the controller, and only
+## through _act(), which saves the run and reports a refusal: read from both scripts, so
+## a command added to the loop is checked without a list to keep.
+func test_every_player_command_goes_through_act() -> void:
+	var commands: Array[String] = []
+	for method: Dictionary in LOOP.get_script_method_list():
+		var name: String = method["name"]
+		# A command answers with a reason; a query such as player_cards() does not.
+		var reason: bool = str(method["return"]["class_name"]).ends_with("Reason")
+		if reason and (name.begins_with("player_") or MOVES.has(name)):
+			commands.append(name)
+	assert_int(commands.size()).is_greater(MOVES.size())
+	var source: String = FileAccess.get_file_as_string(CONTROLLER)
+	var lines: PackedStringArray = source.split("\n")
+	for command: String in commands:
+		var sent: bool = false
+		for line: String in lines:
+			if not line.contains("_loop.%s" % command):
+				continue
+			var called: String = line.get_slice("_loop.%s" % command, 1)
+			if not called.is_empty() and (called[0] == "_" or called[0].is_valid_identifier()):
+				continue
+			sent = true
+			assert_bool(line.contains("_act(")).override_failure_message(line).is_true()
+		assert_bool(sent).override_failure_message(command).is_true()
+
+
+## The store is left only from the store, and reeducation only from reeducation.
+func test_each_leave_command_is_refused_outside_its_own_phase() -> void:
 	var controller: RunController = auto_free(RunController.new())
-	assert_array(RunController.COMMANDS).contains_exactly(UI_ACTIONS)
-	for command: String in RunController.COMMANDS:
-		var method: String = "pass_turn" if command == "pass" else command
-		assert_bool(controller.has_method(method)).override_failure_message(command).is_true()
+	controller.start_run(SEED, RunScript.bots())
+	var script: ControllerScript = ControllerScript.new()
+	while script.act(controller):
+		pass
+	assert_int(controller.finish_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(controller.awaiting()).is_equal(RunController.AWAIT_STORE)
+	assert_int(controller.leave_reeducation()).is_equal(RunLoop.Reason.NOT_AWAITED)
+	assert_int(controller.leave_store()).is_equal(RunLoop.Reason.OK)
+	var loop: RunLoop = controller.get("_loop")
+	while script.act(controller):
+		pass
+	loop.state.reeducation_due = true
+	assert_int(controller.finish_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(controller.awaiting()).is_equal(RunController.AWAIT_REEDUCATION)
+	assert_int(controller.leave_store()).is_equal(RunLoop.Reason.NOT_AWAITED)
+	assert_int(controller.leave_reeducation()).is_equal(RunLoop.Reason.OK)
 
 
 func test_signals_carry_every_logged_event_through_a_set() -> void:

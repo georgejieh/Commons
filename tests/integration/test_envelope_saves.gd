@@ -127,7 +127,7 @@ func test_marked_plot_cards_survive_save_load_and_a_swap() -> void:
 	# The second mark through the same path a Parcel's Model card takes.
 	var item: EnvelopeItem = EnvelopeItem.new(EnvelopeDef.Content.MODEL_CARD, "", Ranks.FIVE, 2)
 	EnvelopeContents.take(item, loop.state, RunLoop.DEFAULT_PARAMS, RunLoop.PLAYER, [])
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var resumed: RunLoop = RunRecord.resume(_saved(loop), RunScript.bots(), SetConfig.new())
 	var plot: Array[CardInstance] = resumed.state.inventory.plot
 	assert_int(plot.size()).is_equal(2)

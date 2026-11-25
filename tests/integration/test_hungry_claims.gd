@@ -71,7 +71,7 @@ func test_below_the_band_no_claim_is_counted() -> void:
 func test_a_save_from_before_the_count_loads_with_none() -> void:
 	var loop: RunLoop = _loop(SEED, 0)
 	_play(loop)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var data: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = data["checkpoint"]
 	var rows: Dictionary = checkpoint["observations"]

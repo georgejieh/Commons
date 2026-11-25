@@ -167,7 +167,7 @@ func test_commands_out_of_turn_are_refused() -> void:
 	if loop.awaiting() != RunLoop.Awaiting.PLAYER_BID:
 		assert_int(loop.player_bid(false)).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_int(loop.player_swap(none, none)).is_equal(RunLoop.Reason.NOT_AWAITED)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.NOT_AWAITED)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(before)
 
 
@@ -269,7 +269,7 @@ func test_famine_at_death_ends_the_run() -> void:
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)
 	assert_int(loop.flow.state()).is_equal(RunFlow.State.RUN_END)
 	assert_str(loop.events()[-1].text).is_equal(RunMeters.FAMINE)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.NOT_AWAITED)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.NOT_AWAITED)
 
 
 func test_denunciation_at_death_ends_the_run() -> void:
@@ -312,7 +312,7 @@ func test_mid_denunciation_sends_you_to_reeducation_in_place_of_the_store() -> v
 	)
 	assert_int(resumed.awaiting()).is_equal(RunLoop.Awaiting.REEDUCATION)
 	assert_array(resumed.state.inventory.cadres).is_equal(state.inventory.cadres)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.flow.state()).is_not_equal(RunFlow.State.REEDUCATION)
 	assert_int(state.set_index).is_equal(1)
 
@@ -373,7 +373,7 @@ func test_a_roster_run_seats_families_and_reeducates_the_denounced() -> void:
 	RunScript.new().play_until_set_over(loop)
 	assert_int(Roster.entry(state, seated[0]).status).is_equal(RosterEntry.Status.REEDUCATION)
 	assert_int(state.villager_denunciation[seated[0]]).is_equal(0)
-	loop.next_set()
+	RunScript.next_set(loop)
 	assert_bool(state.table.has(seated[0])).is_false()
 
 

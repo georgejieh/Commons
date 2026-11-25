@@ -46,7 +46,7 @@ func test_a_quota_ended_in_high_famine_takes_a_seated_family() -> void:
 	# take nobody: one death a Year.
 	for set_count: int in 2:
 		state.famine = RunLoop.DEFAULT_METERS.famine.high
-		loop.next_set()
+		RunScript.next_set(loop)
 		assert_bool(state.table.has(dead)).is_false()
 		RunScript.new().play_until_set_over(loop)
 		assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.SET_OVER)
@@ -55,7 +55,7 @@ func test_a_quota_ended_in_high_famine_takes_a_seated_family() -> void:
 	assert_int(state.year_starved).is_equal(1)
 	# The next Year may take another.
 	state.famine = RunLoop.DEFAULT_METERS.famine.high
-	loop.next_set()
+	RunScript.next_set(loop)
 	assert_int(state.year).is_equal(2)
 	assert_int(state.year_starved).is_equal(0)
 	RunScript.new().play_until_set_over(loop)
@@ -84,7 +84,7 @@ func test_a_met_boss_quota_deposes_the_risen_villager_until_the_next_year() -> v
 	assert_int(_events_of(loop, RunEvent.Type.DEPOSED).size()).is_equal(1)
 	assert_int(Roster.entry(state, "zhao").status).is_equal(RosterEntry.Status.DEPOSED)
 	assert_bool(state.risen_used.has("zhao")).is_true()
-	loop.next_set()
+	RunScript.next_set(loop)
 	assert_int(state.year).is_equal(3)
 	assert_int(Roster.entry(state, "zhao").status).is_equal(RosterEntry.Status.ACTIVE)
 

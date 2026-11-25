@@ -38,7 +38,7 @@ func before() -> void:
 	while loop.awaiting() != RunLoop.Awaiting.RUN_OVER:
 		if loop.awaiting() == RunLoop.Awaiting.SET_OVER:
 			_check_set(loop)
-			loop.next_set()
+			RunScript.next_set(loop)
 		elif not script.act(loop):
 			break
 

@@ -60,7 +60,7 @@ func test_the_raised_norm_waits_for_the_next_quota() -> void:
 	assert_float(cheated.target()).is_equal(before)
 	for loop: RunLoop in [honest, cheated]:
 		RunScript.new().play_until_set_over(loop)
-		assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+		assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	assert_float(cheated.target()).is_equal_approx(honest.target() * 2.0, 0.001)
 
 

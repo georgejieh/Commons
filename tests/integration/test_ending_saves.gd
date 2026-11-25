@@ -47,9 +47,9 @@ func test_the_loop_counts_the_years_rounds_and_a_new_year_starts_them_again() ->
 		if loop.awaiting() != RunLoop.Awaiting.SET_OVER:
 			return
 		if set_index < SetConfig.SETS_PER_YEAR - 1:
-			loop.next_set()
+			RunScript.next_set(loop)
 	assert_int(loop.state.year_rounds).is_equal(SetConfig.SETS_PER_YEAR * sets.max_rounds())
-	loop.next_set()
+	RunScript.next_set(loop)
 	assert_int(loop.state.year).is_equal(2)
 	assert_int(loop.state.year_rounds).is_equal(0)
 	assert_int(loop.state.year_landlord_rounds).is_equal(0)

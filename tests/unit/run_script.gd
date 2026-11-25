@@ -18,6 +18,14 @@ static func bots() -> Array[BotConfig]:
 	]
 
 
+## Leaves a finished Set as the player does: through the shops, or reeducation when it
+## is due, then on; the run's last Set straight to its end. Elsewhere it is next_set().
+static func next_set(loop: RunLoop) -> RunLoop.Reason:
+	if loop.awaiting() == RunLoop.Awaiting.SET_OVER and not loop.is_last_set():
+		loop.open_shop()
+	return loop.next_set()
+
+
 ## Acts until the loop waits on something other than the player.
 func play_until_set_over(loop: RunLoop) -> void:
 	while act(loop):
