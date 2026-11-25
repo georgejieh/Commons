@@ -17,6 +17,8 @@ var result: BalanceResult = BalanceResult.new()
 ## Weights Expert villagers search with in place of the game's, from sampling(), or
 ## null for the game's own (ADR 0027).
 var search_weights: BotWeights = null
+## The save the run is written to as it plays, as the app writes one, or null for none.
+var saves: SaveService = null
 
 var _strategy: BalanceStrategy
 var _params: BalanceParams
@@ -101,7 +103,7 @@ func play(seed_value: int) -> BalanceResult:
 		_errors.take()
 	_controller = new_controller()
 	_controller.event_emitted.connect(_on_event)
-	if not _controller.start(request(seed_value)):
+	if not _controller.start(request(seed_value), saves):
 		_fail("the run did not start")
 	while not result.failed() and _controller.awaiting() != RunController.AWAIT_RUN_OVER:
 		if _commands >= _params.max_commands:

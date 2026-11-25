@@ -54,3 +54,26 @@ jobs:
             reports/balance.md
             reports/balance_runs.csv
             reports/balance_quotas.csv
+  # ADR 0037: 100 full runs, each saved through the real SaveService as it plays and
+  # resumed from its save at every Set's end, on a job of its own. It fails on any
+  # refused command, refused bot action, error, failed save or load, or a resumed run
+  # that is not the run saved. Expert villagers sample 12 deals so the runs finish in
+  # the job's time; the report says so.
+  soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    container:
+      image: barichello/godot-ci:4.7.2@sha256:cdcca31e9194fd59a68a63f4b1b9c3981716819c520cd6f7966c5d72ca7246bd
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - run: godot --headless --path . --import
+      - name: Soak
+        run: godot --headless --path . --script res://tools/soak.gd -- --runs 100 --jobs "$(nproc)" --expert-samples 12
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: soak
+          path: reports/soak.md
