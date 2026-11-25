@@ -222,7 +222,8 @@ func _walk_chain(
 		var chain_key: int = key
 		var takes: int = 0
 		var budget: int = _budget
-		# A chain may take one wild card per rank where it falls short (ADR 0029).
+		# The chain walk of _chains_at, written out again rather than shared through a call
+		# per rank: this is the decomposer's innermost loop.
 		while (
 			start + length <= _last
 			and (
