@@ -63,5 +63,17 @@ func rank_mask() -> int:
 	return _rank_mask
 
 
+## The ranks of which every card here carries the seat's stamp (Class Label, ADR 0021).
+func stamp_mask(seat: int) -> int:
+	var stamped: int = 0
+	var plain: int = 0
+	for card: CardInstance in _cards:
+		if card.owner_stamp() == seat:
+			stamped |= 1 << card.base_rank()
+		else:
+			plain |= 1 << card.base_rank()
+	return stamped & ~plain
+
+
 func cards() -> Array[CardInstance]:
 	return _cards.duplicate()

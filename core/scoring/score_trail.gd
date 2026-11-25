@@ -23,8 +23,11 @@ var steps: Array[ScoreStep] = []
 
 ## The card steps after the printed Grain, held until the base is laid out.
 var _card_steps: Array[ScoreStep] = []
-## The play context's fields after each hook that moved one, with the hook's definition.
-var _hooks: Array[Array] = []
+## Each play hook that moved a field of the play context, and the fields after it.
+var _hook_defs: Array[ModifierDef] = []
+var _hook_fields: Array[PackedFloat64Array] = []
+## The play context's fields before any play hook ran, and after the last one.
+var _start: PackedFloat64Array = PackedFloat64Array()
 var _last: PackedFloat64Array = PackedFloat64Array()
 ## The Zeal the cards' marks gave the play, in its add_zeal before any hook ran.
 var _mark_zeal: float = 0.0
@@ -68,14 +71,16 @@ func card_hook(definition: ModifierDef, context: CardContext, before: float) -> 
 
 ## The play hooks are about to run on context.
 func start_play(context: PlayContext) -> void:
-	_last = _fields(context)
+	_start = _fields(context)
+	_last = _start
 
 
 ## A play hook has run: what it moved is kept for finish().
 func play_hook(definition: ModifierDef, context: PlayContext) -> void:
 	var now: PackedFloat64Array = _fields(context)
 	if now != _last:
-		_hooks.append([definition, now])
+		_hook_defs.append(definition)
+		_hook_fields.append(now)
 		_last = now
 
 
@@ -87,13 +92,13 @@ func finish(base_rate: float, level_rate: float, min_zeal: float) -> void:
 	if level_rate != base_rate:
 		steps.append(_add(ScoreStep.Figure.RATE, ScoreStep.Source.LEVEL, level_rate - base_rate))
 	steps.append_array(_card_steps)
-	var before: PackedFloat64Array = PackedFloat64Array([0.0, _mark_zeal, 1.0, 100.0, INF, 1.0])
+	var before: PackedFloat64Array = _start
 	var start_zeal: float = Scorer.STARTING_ZEAL + _mark_zeal
 	var running: PackedFloat64Array = PackedFloat64Array([level_rate, start_zeal])
-	for hook: Array in _hooks:
-		var now: PackedFloat64Array = hook[1]
+	for index: int in _hook_defs.size():
+		var now: PackedFloat64Array = _hook_fields[index]
 		for step: ScoreStep in _hook_steps(before, now, level_rate, min_zeal, running):
-			steps.append(_named(step, hook[0]))
+			steps.append(_named(step, _hook_defs[index]))
 		before = now
 	_chain()
 
@@ -122,8 +127,8 @@ func _hook_steps(
 		made.append(_moved(ScoreStep.Figure.ZEAL, running[1], zeal, times, false))
 		running[1] = zeal
 	if now[TOTAL_SCALE] != before[TOTAL_SCALE]:
-		var scale: Array[float] = [before[TOTAL_SCALE], now[TOTAL_SCALE]]
-		made.append(_moved(ScoreStep.Figure.TOTAL, scale[0], scale[1], true, false))
+		var total: ScoreStep.Figure = ScoreStep.Figure.TOTAL
+		made.append(_moved(total, before[TOTAL_SCALE], now[TOTAL_SCALE], true, false))
 	return made
 
 

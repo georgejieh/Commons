@@ -47,7 +47,8 @@ func _init(counts: PackedByteArray, ranks: Array[int]) -> void:
 		total += wild[rank]
 		if wild[rank] > 0:
 			order.append(rank)
-	var sorted: Array = Array(order)
+	var sorted: Array[int] = []
+	sorted.assign(order)
 	sorted.sort_custom(_taken_first)
 	order = PackedByteArray(sorted)
 

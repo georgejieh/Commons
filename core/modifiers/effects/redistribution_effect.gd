@@ -15,19 +15,14 @@ func required_parameters() -> PackedStringArray:
 func round_start(context: RoundContext) -> void:
 	if context.round_state == null or context.stream == null:
 		return
-	var drawn: Array[Array] = []
-	for seat: int in Seats.COUNT:
-		drawn.append(_draw(context, seat))
 	# Seat a passes to b, b to c and c to a: two one-for-one trades make the turn.
 	var a: int = FIRST_SEAT
 	var b: int = Seats.left(a)
 	var c: int = Seats.left(b)
-	var from_a: Array[int] = []
-	from_a.assign(drawn[a])
-	var from_b: Array[int] = []
-	from_b.assign(drawn[b])
-	var from_c: Array[int] = []
-	from_c.assign(drawn[c])
+	# Every seat draws before a card moves, in seat order: a, then c, then b.
+	var from_a: Array[int] = _draw(context, a)
+	var from_c: Array[int] = _draw(context, c)
+	var from_b: Array[int] = _draw(context, b)
 	_trade(context, a, from_a, b, from_b)
 	_trade(context, a, from_b, c, from_c)
 	context.moves.append(CardPass.new(a, b, from_a))
@@ -46,6 +41,8 @@ func _draw(context: RoundContext, seat: int) -> Array[int]:
 	return picked
 
 
+## Trades as RoundContext.trade does, but records no move: the three passes are
+## recorded as the table shows them, not as the two trades that make them.
 func _trade(
 	context: RoundContext, seat_a: int, ids_a: Array[int], seat_b: int, ids_b: Array[int]
 ) -> void:

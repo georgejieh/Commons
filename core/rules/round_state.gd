@@ -124,12 +124,13 @@ func trade(seat_a: int, ids_a: Array[int], seat_b: int, ids_b: Array[int]) -> Re
 		return Reason.ROUND_OVER
 	if ids_a.size() != ids_b.size() or seat_a == seat_b:
 		return Reason.ILLEGAL_PLAY
-	for side: Array in [[seat_a, ids_a], [seat_b, ids_b]]:
+	for side: int in 2:
+		var hand: Hand = _hands[seat_a if side == 0 else seat_b]
 		var seen: Dictionary[int, bool] = {}
-		for card_id: int in side[1]:
+		for card_id: int in ids_a if side == 0 else ids_b:
 			if seen.has(card_id):
 				return Reason.REPEATED_CARD
-			if _hands[side[0]].find(card_id) == null:
+			if hand.find(card_id) == null:
 				return Reason.UNKNOWN_CARD
 			seen[card_id] = true
 	var from_a: Array[CardInstance] = _take(seat_a, ids_a)
@@ -366,18 +367,7 @@ func _sync_stamps() -> void:
 	for seat: int in Seats.COUNT:
 		if _current != null and seat == _trick_leader:
 			continue
-		_table.set_stamped(seat, _stamp_mask(seat))
-
-
-func _stamp_mask(seat: int) -> int:
-	var stamped: int = 0
-	var plain: int = 0
-	for card: CardInstance in _hands[seat].cards():
-		if card.owner_stamp() == seat:
-			stamped |= 1 << card.base_rank()
-		else:
-			plain |= 1 << card.base_rank()
-	return stamped & ~plain
+		_table.set_stamped(seat, _hands[seat].stamp_mask(seat))
 
 
 func _finish(seat: int) -> void:
