@@ -7,6 +7,8 @@ extends PanelContainer
 ## nothing the player reads at the table comes from it, and it gives way to the rules slip
 ## when the column needs the room (TableColumns).
 
+## The founding families, read from the village's own data.
+const VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
 const NAME_SIZE: int = 16
 ## Inside the paper's printed border.
 const PADDING: int = 22
@@ -40,7 +42,7 @@ func _init() -> void:
 	grid.add_theme_constant_override("h_separation", COLUMN_GAP)
 	column.add_child(grid)
 	var families: Array[FamilyDef] = []
-	families.assign(RunLoop.DEFAULT_VILLAGE.families)
+	families.assign(VILLAGE.families)
 	_order.resize(families.size())
 	_ink.resize(families.size())
 	for index: int in families.size():
