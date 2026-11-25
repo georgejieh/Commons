@@ -10,9 +10,11 @@ const FOLDER: String = "user://test_launch_gate"
 const APP: String = "res://ui/main.tscn"
 const PARAMS: SessionParams = preload("res://data/session/session_params.tres")
 const SAVE_NAMES: Array[String] = ["run.json", "run.json.bak", "profile.json", "private_ledger.txt"]
+## The live log, the last session's dated copy, and a newer copy a tool's run left.
 const LOGS: Array[String] = [
 	"commons.log", "commons2026-11-01T09.00.00.log", "commons2026-11-02T09.00.00.log"
 ]
+const ENGINE_LINE: String = "Godot Engine v4.7.2.stable.official"
 
 var _params: SessionParams
 var _file: SessionFile
@@ -32,8 +34,10 @@ func before_test() -> void:
 	for name: String in SAVE_NAMES:
 		saves.append(FOLDER.path_join("saves").path_join(name))
 		_write(saves.back(), "the %s as the last session left it" % name)
-	for name: String in LOGS:
-		_write(FOLDER.path_join("logs").path_join(name), "log %s" % name)
+	var game_log: String = "%s\n%sunnumbered, development build\n" % [ENGINE_LINE, GameLog.STARTED]
+	_write(FOLDER.path_join("logs").path_join(LOGS[0]), game_log)
+	_write(FOLDER.path_join("logs").path_join(LOGS[1]), game_log)
+	_write(FOLDER.path_join("logs").path_join(LOGS[2]), "%s\nA tool's run.\n" % ENGINE_LINE)
 	var log_path: String = FOLDER.path_join("logs").path_join(LOGS[0])
 	_keep = CrashKeep.new(saves, FOLDER.path_join("crashes"), log_path)
 	_opened.clear()
@@ -121,7 +125,8 @@ func test_a_stale_file_keeps_the_saves_and_the_last_log_before_anything_opens() 
 	var kept: String = _opened[0]
 	assert_str(kept.get_base_dir()).is_equal(FOLDER.path_join("crashes"))
 	var expected: Array[String] = SAVE_NAMES.duplicate()
-	expected.append(LOGS[2])
+	# The game's own last log, not the newer one a tool's run left.
+	expected.append(LOGS[1])
 	assert_array(Array(seen_at_open[0])).contains_exactly_in_any_order(expected)
 	for name: String in SAVE_NAMES:
 		var copy: String = FileAccess.get_file_as_string(kept.path_join(name))
@@ -229,3 +234,11 @@ func test_quit_from_the_notice_leaves_nothing_of_the_app() -> void:
 	var left: float = Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
 	assert_float(left).is_equal(orphans)
 	assert_str(FileAccess.get_file_as_string(_file.path())).is_equal(before)
+
+
+## With only tools' logs beside the live one, no log is kept, and the saves still are.
+func test_a_tools_log_is_never_kept_as_the_games() -> void:
+	DirAccess.remove_absolute(FOLDER.path_join("logs").path_join(LOGS[1]))
+	var kept: String = _keep.preserve("2026-11-24T10.00.00", _params.crash_folders_kept)
+	var expected: Array[String] = SAVE_NAMES.duplicate()
+	assert_array(Array(DirAccess.get_files_at(kept))).contains_exactly_in_any_order(expected)

@@ -8,6 +8,8 @@ extends RefCounted
 
 const PREFIX: String = "Commons: "
 const VERSION_SETTING: String = "application/config/version"
+## How the start line begins, which marks a log as the game's own and not a tool's.
+const STARTED: String = PREFIX + "version "
 ## How the line for a load that fell back to its backup ends.
 const FELL_BACK: String = "fell back to its backup"
 
