@@ -373,7 +373,7 @@ func test_an_all_open_request_opens_everything_without_a_profile() -> void:
 	assert_int(envelopes).is_equal(
 		RunPools.STORE.envelopes.size() + RunPools.MARKET.envelopes.size()
 	)
-	assert_int(state.roster.size()).is_equal(RunLoop.DEFAULT_VILLAGE.families.size())
+	assert_int(state.roster.size()).is_equal(RunDefaults.VILLAGE.families.size())
 	assert_int(state.identity.generation).is_equal(0)
 	# The same request without the option is held to a new profile's limits.
 	var limited: RunRequest = RunRequest.new(RunRequest.FULL, 6800, 1)

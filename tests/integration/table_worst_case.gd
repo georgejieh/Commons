@@ -273,8 +273,8 @@ static func speech_lines() -> Array[String]:
 	lines.append_array(TableSpeech.BOOK.lines)
 	lines.append_array(TableSpeech.VISIT.lines)
 	var families: Array[FamilyDef] = []
-	families.append_array(RunLoop.DEFAULT_VILLAGE.families)
-	families.append_array(RunLoop.DEFAULT_VILLAGE.youth_templates)
+	families.append_array(RunDefaults.VILLAGE.families)
+	families.append_array(RunDefaults.VILLAGE.youth_templates)
 	for family: FamilyDef in families:
 		if family.speech != null:
 			lines.append_array(family.speech.lines)

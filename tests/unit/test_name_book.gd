@@ -73,12 +73,12 @@ func test_every_pool_is_forty_capitalised_pinyin_names_none_blocked_or_twice() -
 func test_the_offered_surnames_and_the_fallback_belong_to_no_village_family() -> void:
 	assert_int(BOOK.offered_surnames.size()).is_equal(OFFERED)
 	var village: Array[String] = []
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		village.append(tr(family.name_key))
 	for surname: String in BOOK.offered_surnames + [BOOK.fallback_surname]:
 		assert_bool(village.has(surname)).override_failure_message(surname).is_false()
 	# The fallback is no youth's either, so a run with no profile moves no youth's surname.
-	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
+	for key: String in RunDefaults.VILLAGE.youth_surnames:
 		assert_str(tr(key)).is_not_equal(BOOK.fallback_surname)
 
 

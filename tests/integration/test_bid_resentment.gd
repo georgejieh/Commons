@@ -56,7 +56,7 @@ func test_grabbing_the_seat_back_is_charged_too() -> void:
 			continue
 		assert_int(loop.bid_holder()).is_not_equal(Seats.NONE)
 		assert_int(loop.player_bid(true)).is_equal(RunLoop.Reason.OK)
-		assert_int(state.resentment).is_equal(RunLoop.DEFAULT_RESENTMENT.grab)
+		assert_int(state.resentment).is_equal(RunDefaults.RESENTMENT.grab)
 		# It is logged before the round it starts, so the villagers' grudge counts it.
 		var types: Array = loop.events().map(func(event: RunEvent) -> int: return event.type)
 		assert_int(types.find(RunEvent.Type.RESENTMENT)).is_less(

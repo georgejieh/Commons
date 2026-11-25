@@ -80,9 +80,9 @@ func _resume(data: Dictionary, searcher: Callable = Callable()) -> RunLoop:
 		data,
 		_configs(),
 		SetConfig.new(),
-		RunLoop.DEFAULT_PARAMS,
+		RunDefaults.PARAMS,
 		RunPools.DEBUFFS.debuffs,
-		RunLoop.DEFAULT_METERS,
+		RunDefaults.METERS,
 		searcher
 	)
 
@@ -175,9 +175,9 @@ func test_a_resume_decides_with_the_weights_handed_in() -> void:
 		saved,
 		_configs(),
 		SetConfig.new(),
-		RunLoop.DEFAULT_PARAMS,
+		RunDefaults.PARAMS,
 		RunPools.DEBUFFS.debuffs,
-		RunLoop.DEFAULT_METERS,
+		RunDefaults.METERS,
 		watching,
 		false,
 		BalanceDriver.sampling(12)

@@ -197,9 +197,9 @@ func test_a_households_famine_adds_to_the_stakes() -> void:
 	var sum: StakeDef = StakeDef.new()
 	sum.famine = 5
 	RunOpening.household(
-		state, RunStarter.HOUSEHOLDS.household("mutual_aid_team"), null, RunLoop.DEFAULT_PARAMS
+		state, RunStarter.HOUSEHOLDS.household("mutual_aid_team"), null, RunDefaults.PARAMS
 	)
-	RunOpening.stake(state, sum, RunLoop.DEFAULT_PARAMS)
+	RunOpening.stake(state, sum, RunDefaults.PARAMS)
 	assert_int(state.famine).is_equal(15)
 
 

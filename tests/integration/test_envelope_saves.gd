@@ -59,7 +59,7 @@ func test_a_kept_plot_card_enters_the_plot_marked_and_a_full_plot_refuses() -> v
 		var loop: RunLoop = found[0]
 		var index: int = found[1]
 		var item: EnvelopeItem = loop.market.envelopes.items()[index]
-		var room: int = PlotSwap.capacity(loop.state, RunLoop.DEFAULT_PARAMS)
+		var room: int = PlotSwap.capacity(loop.state, RunDefaults.PARAMS)
 		var plot: Array[CardInstance] = loop.state.inventory.plot
 		while plot.size() < room:
 			plot.append(CardInstance.new(loop.state.take_plot_id(), 0, 0, CardInstance.Origin.PLOT))
@@ -126,7 +126,7 @@ func test_marked_plot_cards_survive_save_load_and_a_swap() -> void:
 	assert_int(loop.player_envelope_pick(stamped[1])).is_equal(RunLoop.Reason.OK)
 	# The second mark through the same path a Parcel's Model card takes.
 	var item: EnvelopeItem = EnvelopeItem.new(EnvelopeDef.Content.MODEL_CARD, "", Ranks.FIVE, 2)
-	EnvelopeContents.take(item, loop.state, RunLoop.DEFAULT_PARAMS, RunLoop.PLAYER, [])
+	EnvelopeContents.take(item, loop.state, RunDefaults.PARAMS, RunLoop.PLAYER, [])
 	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var resumed: RunLoop = RunRecord.resume(_saved(loop), RunScript.bots(), SetConfig.new())
 	var plot: Array[CardInstance] = resumed.state.inventory.plot

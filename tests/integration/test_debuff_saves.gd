@@ -32,7 +32,7 @@ func _resume(loop: RunLoop, debuff_id: String) -> RunLoop:
 		data,
 		RunScript.bots(),
 		DebuffScript.hard_sets(),
-		RunLoop.DEFAULT_PARAMS,
+		RunDefaults.PARAMS,
 		DebuffScript.pool([debuff_id])
 	)
 

@@ -42,7 +42,7 @@ func test_short_supply_cuts_a_cadre_from_the_next_store_and_stacks_with_rationin
 		DebuffScript.play(loop)
 		loop.state.rationed = rationed
 		assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-		var ration: int = RunLoop.DEFAULT_METERS.rationing_shop_cut if rationed else 0
+		var ration: int = RunDefaults.METERS.rationing_shop_cut if rationed else 0
 		assert_int(loop.shop.short_cut).is_equal(1)
 		assert_int(loop.shop.slot_count()).is_equal(STORE.slots - 1 - ration)
 		assert_int(loop.shop.stock().size()).is_equal(STORE.slots - 1 - ration)
@@ -247,11 +247,11 @@ func _check_loss_meter(debuff_id: String, meter: String, seed_value: int) -> voi
 func _loss_meter_set(debuff_id: String, meter: String, seed_value: int) -> int:
 	var loop: RunLoop = DebuffScript.loop_with(seed_value, debuff_id)
 	DebuffScript.play(loop)
-	var band: int = RunLoop.DEFAULT_METERS.famine.low
+	var band: int = RunDefaults.METERS.famine.low
 	var row: String = RunMeters.DEBUFF_FAMINE
 	if meter == RunMeters.DENUNCIATION:
 		row = RunMeters.DEBUFF_DENUNCIATION
-	assert_int(RunLoop.DEFAULT_METERS.source(row).amount).is_equal(band)
+	assert_int(RunDefaults.METERS.source(row).amount).is_equal(band)
 	var results: Array[Dictionary] = _results(loop)
 	var rises: Dictionary[int, Array] = DebuffScript.per_round(loop, RunEvent.Type.METER_CHANGED)
 	var lost: int = 0

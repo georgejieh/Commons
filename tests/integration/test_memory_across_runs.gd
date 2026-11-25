@@ -17,7 +17,7 @@ func after_test() -> void:
 
 
 func _configs() -> Array[BotConfig]:
-	var village: VillageBook = RunLoop.DEFAULT_VILLAGE
+	var village: VillageBook = RunDefaults.VILLAGE
 	return [
 		BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM),
 		BotConfig.from_personality(village.family(ZHAO).personality, 11),
@@ -59,8 +59,8 @@ func test_a_bombed_family_opens_the_next_run_more_hostile() -> void:
 	var kept: ProfileData = ProfileData.new()
 	kept.memory = last_run
 	Profile.write(profile, kept)
-	var carried: VillageMemory = Profile.read(profile).memory.carried(RunLoop.DEFAULT_MEMORY)
-	assert_float(carried.pull(ZHAO, RunLoop.DEFAULT_MEMORY)).is_greater(0.0)
+	var carried: VillageMemory = Profile.read(profile).memory.carried(RunDefaults.MEMORY)
+	assert_float(carried.pull(ZHAO, RunDefaults.MEMORY)).is_greater(0.0)
 	var remembered: int = _zhao_answers(profile)
 	print("zhao answers the player's tricks: %d fresh, %d after being bombed" % [calm, remembered])
 	assert_int(remembered).is_greater(calm)
@@ -79,7 +79,7 @@ func test_a_run_that_dies_mid_set_still_remembers_that_set() -> void:
 		if loop.awaiting() != RunLoop.Awaiting.PLAYER_NEED:
 			continue
 		# One point short of starving, then a claim the Commons can't cover.
-		state.famine = RunLoop.DEFAULT_METERS.famine.death - 1
+		state.famine = RunDefaults.METERS.famine.death - 1
 		loop.player_need(Banking.MAX_NEED)
 		if loop.awaiting() != RunLoop.Awaiting.RUN_OVER:
 			continue

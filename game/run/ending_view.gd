@@ -26,7 +26,7 @@ var player_name: String = ""
 static func of(state: RunState, surname: String) -> EndingView:
 	var params: EndingParams = Endings.DEFAULT_PARAMS
 	var view: EndingView = EndingView.new()
-	view.id = Endings.outcome(state, RunLoop.DEFAULT_METERS, params)
+	view.id = Endings.outcome(state, RunDefaults.METERS, params)
 	view.death = Endings.is_death(view.id)
 	view.title = TranslationServer.translate(Endings.title_key(view.id))
 	var text_values: Dictionary[String, Variant] = {"surname": surname, "year": state.year}
@@ -35,7 +35,7 @@ static func of(state: RunState, surname: String) -> EndingView:
 	view.denunciation = state.denunciation
 	view.landlord = YearClass.is_landlord(state)
 	var epilogue: Array[EpilogueLine] = Endings.epilogue(
-		state, view.id, RunLoop.DEFAULT_VILLAGE, RunLoop.DEFAULT_MEMORY, params
+		state, view.id, RunDefaults.VILLAGE, RunDefaults.MEMORY, params
 	)
 	for line: EpilogueLine in epilogue:
 		var names: PackedStringArray = []

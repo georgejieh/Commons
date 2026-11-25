@@ -139,13 +139,13 @@ func test_a_save_from_before_limited_stock_loads_with_nothing_sold() -> void:
 
 func test_plot_upgrades_enlarge_the_plot_up_to_their_limit_and_raise_resentment() -> void:
 	var loop: RunLoop = _at_the_shops(14)
-	var room: int = PlotSwap.capacity(loop.state, RunLoop.DEFAULT_PARAMS)
+	var room: int = PlotSwap.capacity(loop.state, RunDefaults.PARAMS)
 	var coupons: int = loop.state.coupons
 	for step: int in UPGRADES.capacity_max:
 		var before: int = loop.state.resentment
 		assert_int(loop.player_upgrade(PlotUpgrades.CAPACITY)).is_equal(RunLoop.Reason.OK)
 		assert_int(loop.state.resentment).is_greater(before)
-		assert_int(PlotSwap.capacity(loop.state, RunLoop.DEFAULT_PARAMS)).is_equal(room + step + 1)
+		assert_int(PlotSwap.capacity(loop.state, RunDefaults.PARAMS)).is_equal(room + step + 1)
 	assert_int(loop.state.coupons).is_equal(
 		coupons - UPGRADES.capacity_cost * UPGRADES.capacity_max
 	)
@@ -240,7 +240,7 @@ func test_a_bought_plot_card_enters_the_plot_and_raises_resentment() -> void:
 
 func test_a_full_plot_takes_no_more_cards() -> void:
 	var loop: RunLoop = _at_the_shops(17)
-	var room: int = PlotSwap.capacity(loop.state, RunLoop.DEFAULT_PARAMS)
+	var room: int = PlotSwap.capacity(loop.state, RunDefaults.PARAMS)
 	for index: int in room:
 		loop.state.inventory.plot.append(
 			CardInstance.new(loop.state.take_plot_id(), 12, 0, CardInstance.Origin.PLOT)

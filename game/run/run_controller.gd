@@ -171,9 +171,9 @@ func resume_saved(
 ## The save's run replayed, with searches answered from outside when this controller
 ## searches live, so a villager the record ends before is searched again, not here.
 func _resumed(data: Dictionary, configs: Array[BotConfig], sets: SetConfig) -> RunLoop:
-	var params: RunParams = RunLoop.DEFAULT_PARAMS
+	var params: RunParams = RunDefaults.PARAMS
 	var pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs
-	var meters: MeterTable = RunLoop.DEFAULT_METERS
+	var meters: MeterTable = RunDefaults.METERS
 	var searcher: Callable = Callable()
 	return RunRecord.resume(
 		data, configs, sets, params, pool, meters, searcher, live_search, search_weights
@@ -515,7 +515,7 @@ func envelope_card_text(kind: int, key: String, card: CardInstance) -> String:
 	}
 	var model: float = Scorer.DEFAULT_PARAMS.model_grain_percent / 100.0
 	var values: Dictionary[String, Variant] = {
-		"resentment": RunLoop.DEFAULT_RESENTMENT.stamped_card,
+		"resentment": RunDefaults.RESENTMENT.stamped_card,
 		"model_times": ModifierDef.multiple(model),
 		"card": CardName.of(card),
 		"mark":
@@ -541,7 +541,7 @@ func reform_text(reform_id: String) -> String:
 ## The state store's counter, or the black market's, for a screen to read.
 func desk(market: bool) -> ShopDesk:
 	if market:
-		var upgrades: PlotUpgradeParams = RunLoop.DEFAULT_PLOT_UPGRADES
+		var upgrades: PlotUpgradeParams = RunDefaults.PLOT_UPGRADES
 		var at_market: ShopDesk = ShopDesk.new(_loop.market, _loop.state, upgrades, _loop.stall)
 		at_market.bound = _loop.debuffs.confiscated_ids()
 		return at_market
@@ -552,7 +552,7 @@ func desk(market: bool) -> ShopDesk:
 
 ## The Resentment every black market purchase adds.
 func purchase_resentment() -> int:
-	return RunLoop.DEFAULT_RESENTMENT.private_purchase
+	return RunDefaults.RESENTMENT.private_purchase
 
 
 ## Leaves the store for the next Set, or the run's end.
@@ -617,7 +617,7 @@ func is_rationed() -> bool:
 
 ## The Famine value rationing must fall below to lift.
 func rationing_lifts_below() -> int:
-	var bands: MeterBands = RunLoop.DEFAULT_METERS.famine
+	var bands: MeterBands = RunDefaults.METERS.famine
 	return bands.mid - bands.rearm_margin
 
 
@@ -628,12 +628,12 @@ func cadre_slots() -> int:
 
 ## What every villager declares by default, a fair need to start the player's choice.
 func base_need() -> int:
-	return RunLoop.DEFAULT_PARAMS.base_need
+	return RunDefaults.PARAMS.base_need
 
 
 ## The Resentment the player's grab of a held landlord seat adds.
 func grab_cost() -> int:
-	return RunLoop.DEFAULT_RESENTMENT.grab
+	return RunDefaults.RESENTMENT.grab
 
 
 ## The chance, 0 to 1, that each claim on the Commons is audited this round.
@@ -643,7 +643,7 @@ func audit_chance() -> float:
 
 ## The Denunciation a lie about need costs when an audit catches it.
 func lie_cost() -> int:
-	return RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
+	return RunDefaults.METERS.source(RunMeters.CAUGHT_LIE).amount
 
 
 func can_buy(slot: int) -> bool:
@@ -819,7 +819,7 @@ func _run_values(modifier_id: String) -> Dictionary[String, Variant]:
 		values[HandicapEffect.CARDS] = HandicapEffect.count_at(effect.parameters, _loop.state.year)
 	if effect is LossMeterEffect:
 		var source: String = (effect as LossMeterEffect).source()
-		values["amount"] = RunLoop.DEFAULT_METERS.source(source).amount
+		values["amount"] = RunDefaults.METERS.source(source).amount
 	return values
 
 
@@ -839,10 +839,10 @@ func shift_line(seat: int) -> String:
 		return ""
 	var family_id: String = state.table[seat]
 	var count: int = state.observations.count(family_id, Observations.Kind.SHIFTED_CLAIMS)
-	var shift: TraitShift = TraitShifts.seen_shift(RunLoop.DEFAULT_VILLAGE, state, family_id)
+	var shift: TraitShift = TraitShifts.seen_shift(RunDefaults.VILLAGE, state, family_id)
 	if count == 0 or shift == null:
 		return ""
-	var at: int = RunLoop.DEFAULT_METERS.bands(shift.meter).least(shift.band)
+	var at: int = RunDefaults.METERS.bands(shift.meter).least(shift.band)
 	return tr(shift.seen_key).format({"count": count, "at": at})
 
 
@@ -858,13 +858,13 @@ func seated(seat: int) -> RosterEntry:
 ## The family in a villager's seat, or null when the run seats no roster.
 func seated_family(seat: int) -> FamilyDef:
 	var entry: RosterEntry = seated(seat)
-	return null if entry == null else Roster.definition(RunLoop.DEFAULT_VILLAGE, entry)
+	return null if entry == null else Roster.definition(RunDefaults.VILLAGE, entry)
 
 
 ## The surname key shown for a villager's seat, or "" when the run seats no roster.
 func seated_name_key(seat: int) -> String:
 	var entry: RosterEntry = seated(seat)
-	return "" if entry == null else Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
+	return "" if entry == null else Roster.name_key(RunDefaults.VILLAGE, entry)
 
 
 ## The full name of the family in a villager's seat, "Jianguo Wang", or its surname
@@ -891,7 +891,7 @@ func ending() -> EndingView:
 ## The surname key of a family in the run's roster, or "" for one it does not hold.
 func family_name_key(family_id: String) -> String:
 	var entry: RosterEntry = Roster.entry(_loop.state, family_id)
-	return "" if entry == null else Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
+	return "" if entry == null else Roster.name_key(RunDefaults.VILLAGE, entry)
 
 
 ## True when the family in a villager's seat is gone from the village: dead, or deposed

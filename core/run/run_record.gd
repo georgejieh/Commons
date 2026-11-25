@@ -56,9 +56,9 @@ static func resume(
 	data: Dictionary,
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
-	params: RunParams = RunLoop.DEFAULT_PARAMS,
+	params: RunParams = RunDefaults.PARAMS,
 	pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs,
-	meters: MeterTable = RunLoop.DEFAULT_METERS,
+	meters: MeterTable = RunDefaults.METERS,
 	searcher: Callable = Callable(),
 	outside: bool = false,
 	weights: BotWeights = null

@@ -39,7 +39,7 @@ static func helps(campaign_id: String, state: RunState, params: BalanceParams) -
 			return state.famine >= params.relief_famine_at
 		SELF_CRITICISM:
 			var rise: int = _campaign(campaign_id).parameters[SelfCriticismEffect.DENUNCIATION]
-			var safe: bool = state.denunciation + rise < RunLoop.DEFAULT_METERS.denunciation.death
+			var safe: bool = state.denunciation + rise < RunDefaults.METERS.denunciation.death
 			return safe and state.resentment >= params.criticism_resentment_at
 	return true
 

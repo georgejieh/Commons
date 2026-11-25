@@ -98,7 +98,7 @@ static func inherited_line(kind: String, values: Dictionary) -> String:
 static func _loyal_line(families: Array[String]) -> String:
 	var names: Array[String] = []
 	for family_id: String in families:
-		var family: FamilyDef = RunLoop.DEFAULT_VILLAGE.family(family_id)
+		var family: FamilyDef = RunDefaults.VILLAGE.family(family_id)
 		if family != null:
 			names.append(TranslationServer.translate(family.name_key))
 	if names.is_empty():

@@ -14,7 +14,7 @@ func _name_of(family: String) -> String:
 ## Plays QUOTAS Quotas of a run that seats the village, passing through each shop.
 func _played(seed_value: int) -> RunLoop:
 	var state: RunState = RunState.new(seed_value)
-	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	Roster.start(state, RunDefaults.VILLAGE, [])
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots(), SetConfig.new())
 	loop.start_set()
 	for quota: int in QUOTAS:

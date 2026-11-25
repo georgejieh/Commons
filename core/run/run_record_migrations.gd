@@ -136,7 +136,7 @@ static func migrate_from_13(data: Dictionary) -> Dictionary:
 static func migrate_from_14(data: Dictionary, texts: Dictionary[String, String] = {}) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
 		var checkpoint: Dictionary = data["checkpoint"]
-		RunNames.name_saved(checkpoint, RunLoop.DEFAULT_VILLAGE, texts)
+		RunNames.name_saved(checkpoint, RunDefaults.VILLAGE, texts)
 		checkpoint["drift"] = {}
 	return data
 

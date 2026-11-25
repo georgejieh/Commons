@@ -17,7 +17,7 @@ func _easy_sets() -> SetConfig:
 
 func _roster_state(seed_value: int = SEED) -> RunState:
 	var state: RunState = RunState.new(seed_value)
-	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	Roster.start(state, RunDefaults.VILLAGE, [])
 	return state
 
 
@@ -31,12 +31,12 @@ func _events_of(loop: RunLoop, type: RunEvent.Type) -> Array[RunEvent]:
 
 func test_a_quota_ended_in_high_famine_takes_a_seated_family() -> void:
 	var state: RunState = _roster_state()
-	state.famine = RunLoop.DEFAULT_METERS.famine.high
+	state.famine = RunDefaults.METERS.famine.high
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots(), _easy_sets())
 	loop.start_set()
 	var seated: Array[String] = state.table.slice(1)
 	RunScript.new().play_until_set_over(loop)
-	assert_int(RunLoop.DEFAULT_METERS.famine.band(state.famine)).is_equal(MeterBands.Band.HIGH)
+	assert_int(RunDefaults.METERS.famine.band(state.famine)).is_equal(MeterBands.Band.HIGH)
 	var starved: Array[RunEvent] = _events_of(loop, RunEvent.Type.STARVED)
 	assert_int(starved.size()).is_equal(1)
 	var dead: String = starved[0].text
@@ -45,7 +45,7 @@ func test_a_quota_ended_in_high_famine_takes_a_seated_family() -> void:
 	# The dead family never sits again this run, and the Year's other high-Famine Quotas
 	# take nobody: one death a Year.
 	for set_count: int in 2:
-		state.famine = RunLoop.DEFAULT_METERS.famine.high
+		state.famine = RunDefaults.METERS.famine.high
 		RunScript.next_set(loop)
 		assert_bool(state.table.has(dead)).is_false()
 		RunScript.new().play_until_set_over(loop)
@@ -54,7 +54,7 @@ func test_a_quota_ended_in_high_famine_takes_a_seated_family() -> void:
 		assert_array(_events_of(loop, RunEvent.Type.STARVED)).is_empty()
 	assert_int(state.year_starved).is_equal(1)
 	# The next Year may take another.
-	state.famine = RunLoop.DEFAULT_METERS.famine.high
+	state.famine = RunDefaults.METERS.famine.high
 	RunScript.next_set(loop)
 	assert_int(state.year).is_equal(2)
 	assert_int(state.year_starved).is_equal(0)

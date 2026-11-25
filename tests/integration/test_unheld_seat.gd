@@ -101,8 +101,8 @@ func test_holding_the_seat_in_any_round_resets_the_count() -> void:
 ## each Quota pays a step more, up to the most, and each step is the stood_by row.
 func test_steps_grow_by_one_a_quota_up_to_the_most() -> void:
 	var loop: RunLoop = _seatless_set(SEEDS[0])
-	var params: RunParams = RunLoop.DEFAULT_PARAMS
-	var row: int = RunLoop.DEFAULT_METERS.source(RunMeters.STOOD_BY).amount
+	var params: RunParams = RunDefaults.PARAMS
+	var row: int = RunDefaults.METERS.source(RunMeters.STOOD_BY).amount
 	assert_int(params.seat_grace_sets).is_equal(3)
 	assert_int(params.seat_max_steps).is_equal(4)
 	assert_int(row).is_equal(1)
@@ -127,9 +127,9 @@ func test_steps_grow_by_one_a_quota_up_to_the_most() -> void:
 ## The cost is the row times the steps, so a bigger row costs more.
 func test_the_amount_is_the_steps_times_the_row() -> void:
 	var state: RunState = RunState.new(SEEDS[0])
-	var meters: MeterTable = RunLoop.DEFAULT_METERS.duplicate()
+	var meters: MeterTable = RunDefaults.METERS.duplicate()
 	var sources: Array[MeterSource] = []
-	for source: MeterSource in RunLoop.DEFAULT_METERS.sources:
+	for source: MeterSource in RunDefaults.METERS.sources:
 		if source.id != RunMeters.STOOD_BY:
 			sources.append(source)
 	var row: MeterSource = MeterSource.new()
@@ -139,12 +139,7 @@ func test_the_amount_is_the_steps_times_the_row() -> void:
 	sources.append(row)
 	meters.sources = sources
 	var loop: RunLoop = RunLoop.new(
-		state,
-		RunScript.bots(),
-		_easy_sets(),
-		RunLoop.DEFAULT_PARAMS,
-		RunPools.DEBUFFS.debuffs,
-		meters
+		state, RunScript.bots(), _easy_sets(), RunDefaults.PARAMS, RunPools.DEBUFFS.debuffs, meters
 	)
 	loop.start_set()
 	while loop.awaiting() != RunLoop.Awaiting.SET_OVER:
@@ -154,7 +149,7 @@ func test_the_amount_is_the_steps_times_the_row() -> void:
 			break
 	assert_bool(YearClass.held_seat(loop.events(), RunLoop.PLAYER)).is_false()
 	state.famine = 0
-	state.seatless_sets = RunLoop.DEFAULT_PARAMS.seat_grace_sets + 1
+	state.seatless_sets = RunDefaults.PARAMS.seat_grace_sets + 1
 	loop._count_standing_by()
 	assert_int(state.famine).is_equal(2 * 5)
 
@@ -167,9 +162,9 @@ func test_the_cost_goes_through_the_meter_change_hook() -> void:
 	definition.hooks.assign([Hooks.METER_CHANGE])
 	var stack: ModifierStack = loop.get("_stack")
 	stack.add_entry(ActiveModifier.new(definition, Double.new()))
-	loop.state.seatless_sets = RunLoop.DEFAULT_PARAMS.seat_grace_sets + 2
+	loop.state.seatless_sets = RunDefaults.PARAMS.seat_grace_sets + 2
 	loop._count_standing_by()
-	var row: int = RunLoop.DEFAULT_METERS.source(RunMeters.STOOD_BY).amount
+	var row: int = RunDefaults.METERS.source(RunMeters.STOOD_BY).amount
 	assert_int(loop.state.famine).is_equal(3 * row * 2)
 	assert_float(_stood_by(loop)[-1].amount).is_equal(float(3 * row * 2))
 
@@ -179,8 +174,8 @@ func test_a_run_that_dies_of_it_ends_as_a_famine_death() -> void:
 	var died: int = 0
 	for seed_value: int in SEEDS:
 		var state: RunState = RunState.new(seed_value)
-		state.famine = RunLoop.DEFAULT_METERS.famine.death - 1
-		state.seatless_sets = RunLoop.DEFAULT_PARAMS.seat_grace_sets
+		state.famine = RunDefaults.METERS.famine.death - 1
+		state.seatless_sets = RunDefaults.PARAMS.seat_grace_sets
 		var loop: RunLoop = _play_set(state, false)
 		var paid: Array[RunEvent] = _stood_by(loop)
 		if paid.is_empty():

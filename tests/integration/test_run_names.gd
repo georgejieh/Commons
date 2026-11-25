@@ -58,7 +58,7 @@ func _bring_youth(state: RunState, times: int) -> void:
 	for _time: int in times:
 		for entry: RosterEntry in state.roster:
 			entry.status = RosterEntry.Status.DEAD
-		Roster.prepare_set(state, RunLoop.DEFAULT_VILLAGE, events)
+		Roster.prepare_set(state, RunDefaults.VILLAGE, events)
 
 
 ## Each person's surname as it reads, by the ID their given name is kept under.
@@ -66,7 +66,7 @@ func _surname_of(state: RunState, family_id: String) -> String:
 	if family_id == RunNames.PLAYER:
 		return state.names.player_surname
 	var entry: RosterEntry = Roster.entry(state, family_id)
-	return tr(Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry))
+	return tr(Roster.name_key(RunDefaults.VILLAGE, entry))
 
 
 func test_ten_thousand_runs_hold_no_name_twice_and_no_blocked_name() -> void:
@@ -132,7 +132,7 @@ func test_naming_moves_no_other_draw() -> void:
 
 
 func test_a_youth_never_shares_the_players_surname() -> void:
-	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
+	for key: String in RunDefaults.VILLAGE.youth_surnames:
 		var surname: String = tr(key)
 		for seed_value: int in 20:
 			var state: RunState = RunStarter.state(_full(seed_value, 2, surname))

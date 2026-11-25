@@ -20,14 +20,14 @@ var _sets_played: int = 0
 
 func before() -> void:
 	# Death is out of reach here, so the run lasts all 24 Sets whatever the bots score.
-	var meters: MeterTable = RunLoop.DEFAULT_METERS.duplicate(true)
-	meters.famine.death = RunLoop.DEFAULT_PARAMS.meter_max + 1
-	meters.denunciation.death = RunLoop.DEFAULT_PARAMS.meter_max + 1
+	var meters: MeterTable = RunDefaults.METERS.duplicate(true)
+	meters.famine.death = RunDefaults.PARAMS.meter_max + 1
+	meters.denunciation.death = RunDefaults.PARAMS.meter_max + 1
 	var loop: RunLoop = RunLoop.new(
 		RunState.new(SEED),
 		RunScript.bots(),
 		SetConfig.new(),
-		RunLoop.DEFAULT_PARAMS,
+		RunDefaults.PARAMS,
 		RunPools.DEBUFFS.debuffs,
 		meters
 	)

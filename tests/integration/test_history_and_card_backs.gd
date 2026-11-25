@@ -51,7 +51,7 @@ func _entry(generation: int, outcome: String, landlord: bool, dead: Array[String
 func _keys(count: int) -> Array[String]:
 	var keys: Array[String] = []
 	for index: int in count:
-		keys.append(RunLoop.DEFAULT_VILLAGE.families[index].name_key)
+		keys.append(RunDefaults.VILLAGE.families[index].name_key)
 	return keys
 
 

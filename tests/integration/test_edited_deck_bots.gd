@@ -35,7 +35,7 @@ func _shaped(most: Array[int], empty: Array[int]) -> Deck:
 		if deck.rank_of(slot) == Ranks.SEVEN or empty.has(deck.rank_of(slot)):
 			spare.append(slot)
 	for rank: int in most:
-		while deck.rank_counts()[rank] < RunLoop.DEFAULT_PARAMS.deck_rank_most:
+		while deck.rank_counts()[rank] < RunDefaults.PARAMS.deck_rank_most:
 			deck.replace(spare.pop_back(), rank, deck.rank_counts()[rank] % Deck.SUITS)
 	for slot: int in spare:
 		if empty.has(deck.rank_of(slot)):

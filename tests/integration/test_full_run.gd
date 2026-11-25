@@ -98,7 +98,7 @@ func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:
 	var data: ProfileData = Profile.read(_profile)
 	assert_int(data.history.size()).is_equal(1)
 	assert_int(data.finished_runs).is_equal(1)
-	var outcome: String = Endings.outcome(final, RunLoop.DEFAULT_METERS)
+	var outcome: String = Endings.outcome(final, RunDefaults.METERS)
 	assert_int(data.wins).is_equal(0 if Endings.is_death(outcome) else 1)
 	var entry: HistoryEntry = data.history[0]
 	assert_str(entry.run_id).is_equal(opening.identity.id)

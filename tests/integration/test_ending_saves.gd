@@ -109,7 +109,7 @@ func _finished(famine: int, denunciation: int, landlord_rounds: int) -> RunState
 	state.denunciation = denunciation
 	state.year_rounds = 4
 	state.year_landlord_rounds = landlord_rounds
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		state.roster.append(RosterEntry.new(family.id))
 	state.roster[2].status = RosterEntry.Status.DEAD
 	return state
@@ -159,7 +159,7 @@ func test_a_run_that_dies_in_play_reloads_to_its_death() -> void:
 		RunState.new(SEED),
 		RunScript.bots(),
 		_hard_sets(),
-		RunLoop.DEFAULT_PARAMS,
+		RunDefaults.PARAMS,
 		RunPools.DEBUFFS.debuffs,
 		table
 	)

@@ -174,7 +174,7 @@ func test_grain_speculator_adds_to_what_each_step_pays_and_costs() -> void:
 	assert_int(results[1].norm_steps).is_equal(results[0].norm_steps)
 	assert_int(results[1].coupons).is_equal(results[0].coupons + steps)
 	# A private Cadre held at the Quota's end is resented as every one is.
-	var held: int = RunLoop.DEFAULT_RESENTMENT.private_cadre
+	var held: int = RunDefaults.RESENTMENT.private_cadre
 	assert_int(results[1].resentment).is_equal(results[0].resentment + steps + held)
 
 

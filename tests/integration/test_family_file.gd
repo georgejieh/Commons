@@ -52,7 +52,7 @@ func test_the_file_outlives_the_collective_ending_and_every_new_run() -> void:
 	state.famine = 10
 	state.denunciation = 10
 	state.year_rounds = 4
-	assert_str(Endings.outcome(state, RunLoop.DEFAULT_METERS)).is_equal(Endings.THE_COMMONS)
+	assert_str(Endings.outcome(state, RunDefaults.METERS)).is_equal(Endings.THE_COMMONS)
 	ProfileCommits.commit(_kit.profile, state, true)
 	assert_float(_corruption()).is_equal(0.0)
 	assert_int(_kit.entries().size()).is_equal(1)

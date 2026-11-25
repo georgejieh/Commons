@@ -156,7 +156,7 @@ func test_the_split_after_a_caught_lie_uses_honest_needs() -> void:
 	state.commons_pool = 1000
 	var events: Array[RunEvent] = []
 	var caught: Array[int] = []
-	var params: RunParams = RunLoop.DEFAULT_PARAMS
+	var params: RunParams = RunDefaults.PARAMS
 	RoundBanking.split(state, 0, 90, RunScript.bots(), params, events, PARAMS.die_sides, caught)
 	assert_array(caught).contains([0])
 	var honest: PackedInt64Array = Banking.split(
@@ -175,7 +175,7 @@ func _simulate(faces: int) -> float:
 	var configs: Array[BotConfig] = RunScript.bots()
 	for config: BotConfig in configs:
 		config.honesty = 0.0
-	var params: RunParams = RunLoop.DEFAULT_PARAMS
+	var params: RunParams = RunDefaults.PARAMS
 	var declared: int = 0
 	var checked: int = 0
 	for index: int in SPLITS:

@@ -119,7 +119,7 @@ func test_the_ending_names_the_dead() -> void:
 	var state: RunState = _state(["li", "chen"], [0, 1], METERS.famine.high)
 	VillageFates.starve(state, METERS.famine, VILLAGE.starvations_per_year, SetLog.new())
 	var lines: Array[EpilogueLine] = Endings.epilogue(
-		state, Endings.LEAN_YEARS, VILLAGE, RunLoop.DEFAULT_MEMORY
+		state, Endings.LEAN_YEARS, VILLAGE, RunDefaults.MEMORY
 	)
 	var named: Array[String] = []
 	for line: EpilogueLine in lines:

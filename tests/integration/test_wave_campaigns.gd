@@ -82,7 +82,7 @@ func test_self_criticism_in_a_shop_stops_resentment_at_zero() -> void:
 func test_a_self_criticism_that_denounces_the_player_to_death_ends_the_run() -> void:
 	var loop: RunLoop = _find(["self_criticism"], _my_turn)
 	_to_shop(loop)
-	loop.state.denunciation = RunLoop.DEFAULT_METERS.denunciation.death - 1
+	loop.state.denunciation = RunDefaults.METERS.denunciation.death - 1
 	var none: Array[int] = []
 	assert_int(loop.player_campaign(0, none)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)

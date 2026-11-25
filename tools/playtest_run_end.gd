@@ -213,7 +213,7 @@ func _history_frames(profile: SaveService) -> void:
 		entry.class_id = values[2]
 		entry.year = 3 if Endings.is_death(entry.outcome) else 8
 		for family: int in values[3]:
-			entry.dead.append(RunLoop.DEFAULT_VILLAGE.families[family].name_key)
+			entry.dead.append(RunDefaults.VILLAGE.families[family].name_key)
 		data.add_history(entry)
 	data.finished_runs = runs.size()
 	Profile.write(profile, data)
@@ -322,7 +322,7 @@ func _finished_run(values: Array) -> RunState:
 	state.resentment = values[2]
 	state.year_rounds = 4
 	state.year_landlord_rounds = values[3]
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		state.roster.append(RosterEntry.new(family.id))
 	state.roster[1].status = RosterEntry.Status.REEDUCATION
 	state.roster[4].status = RosterEntry.Status.DEPOSED

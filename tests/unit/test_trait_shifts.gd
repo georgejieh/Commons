@@ -34,9 +34,9 @@ func _configs() -> Array[BotConfig]:
 func _claims(famine: int) -> Array[int]:
 	var state: RunState = _qin_run(famine)
 	var configs: Array[BotConfig] = _configs()
-	TraitShifts.apply(state, configs, VILLAGE, RunLoop.DEFAULT_METERS)
+	TraitShifts.apply(state, configs, VILLAGE, RunDefaults.METERS)
 	var stream: RandomStream = RandomStream.new(SEED)
-	var fair: int = RunLoop.DEFAULT_PARAMS.base_need
+	var fair: int = RunDefaults.PARAMS.base_need
 	var claims: Array[int] = []
 	for _claim: int in CLAIMS:
 		claims.append(Bot.declare_need(fair, configs[1], stream, BotBudget.unlimited()))
@@ -61,12 +61,12 @@ func test_every_familys_shifts_name_a_real_meter_trait_and_line() -> void:
 
 
 func test_qins_honesty_falls_at_the_band_and_returns_below_it() -> void:
-	var high: int = RunLoop.DEFAULT_METERS.famine.high
+	var high: int = RunDefaults.METERS.famine.high
 	var table: PersonalityTable = BotConfig.TABLE
 	for case: Array in [[high - 1, Personality.Level.MID], [high, Personality.Level.LOW]]:
 		var state: RunState = _qin_run(case[0])
 		var configs: Array[BotConfig] = _configs()
-		var shifted: Array[int] = TraitShifts.apply(state, configs, VILLAGE, RunLoop.DEFAULT_METERS)
+		var shifted: Array[int] = TraitShifts.apply(state, configs, VILLAGE, RunDefaults.METERS)
 		assert_float(configs[1].honesty).is_equal_approx(table.honesty[case[1]], 1e-6)
 		assert_float(configs[1].lie_share).is_equal_approx(table.lie_share[case[1]], 1e-6)
 		assert_array(shifted).is_equal([1] if case[1] == Personality.Level.LOW else [])
@@ -77,14 +77,14 @@ func test_qins_honesty_falls_at_the_band_and_returns_below_it() -> void:
 	# Once Famine falls back under the band, Qin's own honesty is back on the same config.
 	var state: RunState = _qin_run(high)
 	var configs: Array[BotConfig] = _configs()
-	TraitShifts.apply(state, configs, VILLAGE, RunLoop.DEFAULT_METERS)
+	TraitShifts.apply(state, configs, VILLAGE, RunDefaults.METERS)
 	state.famine = high - 1
-	TraitShifts.apply(state, configs, VILLAGE, RunLoop.DEFAULT_METERS)
+	TraitShifts.apply(state, configs, VILLAGE, RunDefaults.METERS)
 	assert_float(configs[1].honesty).is_equal_approx(table.honesty[Personality.Level.MID], 1e-6)
 
 
 func test_qins_claims_either_side_of_the_band_are_golden() -> void:
-	var high: int = RunLoop.DEFAULT_METERS.famine.high
+	var high: int = RunDefaults.METERS.famine.high
 	assert_array(_claims(high - 1)).is_equal(GOLDEN_BELOW)
 	assert_array(_claims(high)).is_equal(GOLDEN_AT)
 
@@ -92,14 +92,14 @@ func test_qins_claims_either_side_of_the_band_are_golden() -> void:
 ## Drift moves a family's own level; while the shift holds, the shift's level stands in
 ## its place, and below the band the drifted level is what Qin plays by.
 func test_the_shift_stands_over_drift_and_drift_returns_below_the_band() -> void:
-	var high: int = RunLoop.DEFAULT_METERS.famine.high
+	var high: int = RunDefaults.METERS.famine.high
 	var state: RunState = _qin_run(high - 1)
 	state.drift = VillageDrift.new()
 	state.drift.levels["qin"] = {TraitShifts.HONESTY: 1}
 	var configs: Array[BotConfig] = _configs()
-	TraitShifts.apply(state, configs, VILLAGE, RunLoop.DEFAULT_METERS)
+	TraitShifts.apply(state, configs, VILLAGE, RunDefaults.METERS)
 	var table: PersonalityTable = BotConfig.TABLE
 	assert_float(configs[1].honesty).is_equal_approx(table.honesty[Personality.Level.HIGH], 1e-6)
 	state.famine = high
-	TraitShifts.apply(state, configs, VILLAGE, RunLoop.DEFAULT_METERS)
+	TraitShifts.apply(state, configs, VILLAGE, RunDefaults.METERS)
 	assert_float(configs[1].honesty).is_equal_approx(table.honesty[Personality.Level.LOW], 1e-6)

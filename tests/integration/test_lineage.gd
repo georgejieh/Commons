@@ -7,8 +7,8 @@ extends GdUnitTestSuite
 const DIR: String = "user://test_lineage/"
 const PROFILE_PATH: String = DIR + "profile.json"
 const START_TIME: int = 1_763_500_000
-const METERS: MeterTable = RunLoop.DEFAULT_METERS
-const MEMORY: MemoryParams = RunLoop.DEFAULT_MEMORY
+const METERS: MeterTable = RunDefaults.METERS
+const MEMORY: MemoryParams = RunDefaults.MEMORY
 
 var _profile: SaveService
 
@@ -35,7 +35,7 @@ func _ended(famine: int, denunciation: int, resentment: int, landlord_rounds: in
 	state.resentment = resentment
 	state.year_rounds = 4
 	state.year_landlord_rounds = landlord_rounds
-	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	Roster.start(state, RunDefaults.VILLAGE, [])
 	return state
 
 
@@ -119,7 +119,7 @@ func test_the_loyal_family_rule() -> void:
 	assert_array(RunLineage.loyal_families(state, MEMORY, 1)).is_equal(["wang"])
 	# The lowest grudge wins over roster order.
 	_feed(state, "li", 1)
-	assert_array(RunLoop.DEFAULT_VILLAGE.families.slice(0, 2).map(_id)).is_equal(["wang", "li"])
+	assert_array(RunDefaults.VILLAGE.families.slice(0, 2).map(_id)).is_equal(["wang", "li"])
 	assert_array(RunLineage.loyal_families(state, MEMORY, 1)).is_equal(["li"])
 	# Only families still active count.
 	Roster.entry(state, "li").status = RosterEntry.Status.DEAD

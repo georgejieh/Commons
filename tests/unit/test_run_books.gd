@@ -113,8 +113,8 @@ func test_a_lowered_meter_goes_dark_and_keeps_counting() -> void:
 
 func test_a_raised_meter_brings_its_setback() -> void:
 	var loop: RunLoop = _loop()
-	var mid: int = RunLoop.DEFAULT_METERS.famine.mid
-	loop.player_books({"famine": mid, "denunciation": RunLoop.DEFAULT_METERS.denunciation.mid})
+	var mid: int = RunDefaults.METERS.famine.mid
+	loop.player_books({"famine": mid, "denunciation": RunDefaults.METERS.denunciation.mid})
 	assert_int(loop.state.famine).is_equal(mid)
 	assert_bool(loop.state.rationed).is_true()
 	assert_bool(loop.state.reeducation_due).is_true()
@@ -150,7 +150,7 @@ func test_the_norm_raised_is_accepted_and_lowered_goes_dark() -> void:
 
 func test_a_raised_meter_at_its_death_ends_the_run_away_from_the_table() -> void:
 	var loop: RunLoop = _at_set_over()
-	loop.player_books({"famine": RunLoop.DEFAULT_METERS.famine.death})
+	loop.player_books({"famine": RunDefaults.METERS.famine.death})
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)
 	assert_int(loop.state.phase).is_equal(RunFlow.State.RUN_END)
 
@@ -167,9 +167,9 @@ func test_figures_past_their_fields_are_clamped() -> void:
 	}
 	assert_int(loop.player_books(figures)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.coupons).is_equal(BOOKS.coupons_max)
-	assert_int(loop.state.famine).is_equal(RunLoop.DEFAULT_PARAMS.meter_max)
+	assert_int(loop.state.famine).is_equal(RunDefaults.PARAMS.meter_max)
 	assert_int(loop.state.denunciation).is_equal(0)
-	assert_int(loop.state.resentment).is_equal(RunLoop.DEFAULT_RESENTMENT.max)
+	assert_int(loop.state.resentment).is_equal(RunDefaults.RESENTMENT.max)
 	assert_int(loop.state.norm_steps).is_equal(BOOKS.norm_steps_max)
 	assert_float(loop.state.set_progress).is_equal(Scorer.MAX_SCORE)
 	var saved: Dictionary = loop.record.commands[-1]["figures"]
@@ -203,7 +203,7 @@ func test_both_shops_prices_rise_by_the_coupons_proportion() -> void:
 	var store: int = loop.shop.price(0)
 	var market: int = loop.market.price(0)
 	var reroll: int = loop.shop.reroll_price()
-	var upgrades: PlotUpgradeParams = RunLoop.DEFAULT_PLOT_UPGRADES
+	var upgrades: PlotUpgradeParams = RunDefaults.PLOT_UPGRADES
 	var upgrade: int = PlotUpgrades.price(PlotUpgrades.SWAPS, upgrades, loop.state)
 	loop.player_books({"coupons": loop.state.coupons * 2})
 	assert_int(loop.shop.price(0)).is_equal(store * 2)
@@ -234,7 +234,7 @@ func test_true_figures_change_nothing_but_are_still_recorded() -> void:
 
 func test_refused_while_the_loop_waits_on_nothing_from_the_player() -> void:
 	var loop: RunLoop = _at_set_over()
-	loop.player_books({"famine": RunLoop.DEFAULT_METERS.famine.death})
+	loop.player_books({"famine": RunDefaults.METERS.famine.death})
 	assert_int(loop.player_books({"coupons": 99})).is_equal(RunLoop.Reason.NOT_AWAITED)
 
 

@@ -66,7 +66,7 @@ var wave_uses: Dictionary[String, int] = {}
 
 ## Fills the run's final numbers from its last state.
 func finish(state: RunState) -> void:
-	outcome = Endings.outcome(state, RunLoop.DEFAULT_METERS)
+	outcome = Endings.outcome(state, RunDefaults.METERS)
 	survived = not Endings.is_death(outcome)
 	year = state.year
 	quota = (state.year - 1) * SetConfig.SETS_PER_YEAR + state.set_index + 1

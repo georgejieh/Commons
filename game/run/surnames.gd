@@ -11,7 +11,7 @@ const LENGTH_KEY: String = "surname.length"
 
 
 ## Every village and youth surname key's text, for naming a run.
-static func texts(village: VillageBook = RunLoop.DEFAULT_VILLAGE) -> Dictionary[String, String]:
+static func texts(village: VillageBook = RunDefaults.VILLAGE) -> Dictionary[String, String]:
 	var found: Dictionary[String, String] = {}
 	for family: FamilyDef in village.families + village.youth_templates:
 		found[family.name_key] = TranslationServer.translate(family.name_key)
@@ -48,7 +48,7 @@ static func refusal(surname: String) -> String:
 
 ## True when a family of the village is called this.
 static func village_holds(surname: String) -> bool:
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		if TranslationServer.translate(family.name_key).to_lower() == surname.to_lower():
 			return true
 	return false

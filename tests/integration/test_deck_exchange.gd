@@ -28,8 +28,8 @@ func _at_the_shops(seed_value: int, coupons: int = RICH) -> RunLoop:
 
 
 func test_the_most_copies_of_a_rank_fits_what_a_count_key_holds() -> void:
-	var params: RunParams = RunLoop.DEFAULT_PARAMS
-	var plot_most: int = params.plot_capacity + RunLoop.DEFAULT_PLOT_UPGRADES.capacity_max
+	var params: RunParams = RunDefaults.PARAMS
+	var plot_most: int = params.plot_capacity + RunDefaults.PLOT_UPGRADES.capacity_max
 	assert_int(params.deck_rank_most).is_equal(8)
 	assert_int(params.deck_rank_most + plot_most).is_less_equal(CountKey.MAX_COUNT)
 	assert_int(params.deck_rank_most).is_greater_equal(4)
@@ -84,7 +84,7 @@ func test_a_bought_card_takes_the_named_slot_for_the_run_and_its_marks_go() -> v
 func test_a_marked_offer_costs_its_mark_more() -> void:
 	for seed_value: int in range(1, 200):
 		var state: RunState = RunState.new(seed_value)
-		var stall: DeckStall = DeckStall.new(state, STALL, RunLoop.DEFAULT_PARAMS)
+		var stall: DeckStall = DeckStall.new(state, STALL, RunDefaults.PARAMS)
 		stall.open(false)
 		for slot: int in stall.offers.count():
 			var rank: int = stall.offers.rank(slot)
@@ -120,7 +120,7 @@ func test_nothing_is_exchanged_away_from_the_shops() -> void:
 
 
 func test_a_rank_at_the_most_is_never_offered_nor_raised_past_it() -> void:
-	var run: RunParams = RunLoop.DEFAULT_PARAMS
+	var run: RunParams = RunDefaults.PARAMS
 	for seed_value: int in range(1, 60):
 		var state: RunState = RunState.new(seed_value)
 		_fill_to_most(state, run.deck_rank_most)

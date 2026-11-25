@@ -162,7 +162,7 @@ func test_the_year_and_round_pages_and_the_ending_show_none_reported() -> void:
 		await await_idle_frame()
 		_never_shows(page, [FAMINE, DENUNCIATION])
 	# A dark Famine at its death still ends the run as Famine does.
-	_loop().state.famine = RunLoop.DEFAULT_METERS.famine.death
+	_loop().state.famine = RunDefaults.METERS.famine.death
 	_app.controller.reseal_book()
 	assert_str(_app.controller.ending().id).is_equal(Endings.DEATH_FAMINE)
 	var ending: Node = _app.show_screen("ending", true)
@@ -181,6 +181,6 @@ func test_the_setback_still_comes_for_a_dark_meter() -> void:
 	state.famine = 30
 	loop.player_books({"famine": 0})
 	assert_bool(ShownFigures.is_true(loop.state, "famine")).is_false()
-	loop.player_books({"famine": RunLoop.DEFAULT_METERS.famine.mid})
+	loop.player_books({"famine": RunDefaults.METERS.famine.mid})
 	assert_bool(loop.state.rationed).is_true()
 	assert_bool(ShownFigures.is_true(loop.state, "famine")).is_false()

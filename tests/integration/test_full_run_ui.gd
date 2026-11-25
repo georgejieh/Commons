@@ -133,7 +133,7 @@ func test_the_endings_way_home_clears_the_run_save() -> void:
 	state.year = 8
 	state.year_rounds = 4
 	state.identity.kind = RunIdentity.Kind.FULL
-	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	Roster.start(state, RunDefaults.VILLAGE, [])
 	var record: RunRecord = RunRecord.new()
 	record.mark(state)
 	Saves.run_service().save(record.to_dict())
@@ -154,7 +154,7 @@ func test_the_endings_way_home_clears_the_run_save() -> void:
 func test_the_summary_names_the_family_that_starved() -> void:
 	_app.new_run(SEED, true)
 	var loop: RunLoop = _app.controller.run_loop()
-	loop.state.famine = RunLoop.DEFAULT_METERS.famine.high
+	loop.state.famine = RunDefaults.METERS.famine.high
 	_app.controller.reseal_book()
 	# A Quota met at its first round, so no missed Quota moves Famine before its end.
 	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
@@ -208,7 +208,7 @@ func _seatless_summary(seatless: int) -> SetSummaryScreen:
 
 ## ADR 0031: the last free Quota warns that the next one without the seat costs.
 func test_the_summary_warns_on_the_last_free_quota() -> void:
-	var grace: int = RunLoop.DEFAULT_PARAMS.seat_grace_sets
+	var grace: int = RunDefaults.PARAMS.seat_grace_sets
 	var summary: SetSummaryScreen = _seatless_summary(grace - 1)
 	assert_object(summary).is_not_null()
 	if summary == null:
@@ -222,12 +222,12 @@ func test_the_summary_warns_on_the_last_free_quota() -> void:
 
 ## ADR 0031: a Quota past the grace says how many in a row, and the Famine they added.
 func test_the_summary_names_the_famine_the_unheld_seat_cost() -> void:
-	var grace: int = RunLoop.DEFAULT_PARAMS.seat_grace_sets
+	var grace: int = RunDefaults.PARAMS.seat_grace_sets
 	var summary: SetSummaryScreen = _seatless_summary(grace + 1)
 	assert_object(summary).is_not_null()
 	if summary == null:
 		return
-	var rise: int = 2 * RunLoop.DEFAULT_METERS.source(RunMeters.STOOD_BY).amount
+	var rise: int = 2 * RunDefaults.METERS.source(RunMeters.STOOD_BY).amount
 	var line: String = (
 		"Famine rose by %d for %d Quotas in a row without the landlord's seat." % [rise, grace + 2]
 	)

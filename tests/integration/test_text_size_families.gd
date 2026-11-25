@@ -181,8 +181,8 @@ func test_every_speech_line_fits_its_seat() -> void:
 	lines.append_array(TableSpeech.BOOK.lines)
 	lines.append_array(TableSpeech.VISIT.lines)
 	var families: Array[FamilyDef] = []
-	families.append_array(RunLoop.DEFAULT_VILLAGE.families)
-	families.append_array(RunLoop.DEFAULT_VILLAGE.youth_templates)
+	families.append_array(RunDefaults.VILLAGE.families)
+	families.append_array(RunDefaults.VILLAGE.youth_templates)
 	for family: FamilyDef in families:
 		if family.speech != null:
 			lines.append_array(family.speech.lines)
@@ -346,10 +346,10 @@ func _keys(prefix: String) -> Array[String]:
 ## The village's longest surname, as a seat is named by it.
 func _longest_surname() -> String:
 	var longest: String = ""
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		var name: String = tr(family.name_key)
 		longest = name if name.length() > longest.length() else longest
-	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
+	for key: String in RunDefaults.VILLAGE.youth_surnames:
 		var name: String = tr(key)
 		longest = name if name.length() > longest.length() else longest
 	return longest

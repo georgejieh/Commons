@@ -58,7 +58,7 @@ func _finish(outcome: String) -> EndingScreen:
 	state.resentment = 0 if outcome == "the_commons" else 40
 	state.year_rounds = 4
 	state.year_landlord_rounds = values[2]
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		state.roster.append(RosterEntry.new(family.id))
 	state.roster[1].status = RosterEntry.Status.REEDUCATION
 	state.roster[4].status = RosterEntry.Status.DEPOSED

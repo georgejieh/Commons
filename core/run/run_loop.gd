@@ -28,13 +28,6 @@ enum Awaiting {
 enum Reason { OK, NOT_AWAITED, ILLEGAL }
 
 const PLAYER: int = 0
-const DEFAULT_PARAMS: RunParams = preload("res://data/run/default_run.tres")
-const DEFAULT_PLOT_UPGRADES: PlotUpgradeParams = preload("res://data/run/plot_upgrades.tres")
-const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
-const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
-const DEFAULT_FREE_RIDE: FreeRideParams = preload("res://data/run/free_ride.tres")
-const DEFAULT_VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
-const DEFAULT_MEMORY: MemoryParams = preload("res://data/villagers/memory.tres")
 ## What the loop waits on when a books command may come: the player is to act.
 const BOOKS_AWAITING: Array[Awaiting] = [
 	Awaiting.PLAYER_BID,
@@ -101,9 +94,9 @@ func _init(
 	run_state: RunState,
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
-	params: RunParams = DEFAULT_PARAMS,
+	params: RunParams = RunDefaults.PARAMS,
 	pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs,
-	meters: MeterTable = DEFAULT_METERS
+	meters: MeterTable = RunDefaults.METERS
 ) -> void:
 	state = run_state
 	flow = RunFlow.new(run_state.phase)
@@ -327,7 +320,7 @@ func player_bid(claim: bool) -> Reason:
 	# It is charged before the bid is recorded: a grab can end the bidding and start the
 	# round, and the villagers' grudge for that round must already count it.
 	if claim and bid_holder() != Seats.NONE:
-		_resent(DEFAULT_RESENTMENT.grab, Resentment.GRAB)
+		_resent(RunDefaults.RESENTMENT.grab, Resentment.GRAB)
 	_record_bid(PLAYER, claim)
 	advance()
 	return Reason.OK
@@ -478,10 +471,18 @@ func player_books(figures: Dictionary) -> Reason:
 	if not RunCorrections.is_valid(figures):
 		return Reason.ILLEGAL
 	var books: BooksParams = RunBooks.DEFAULT_PARAMS
-	var kept: Dictionary = RunCorrections.clamped(figures, _params, DEFAULT_RESENTMENT, books)
+	var kept: Dictionary = RunCorrections.clamped(figures, _params, RunDefaults.RESENTMENT, books)
 	record.add({"type": "books", "figures": kept})
 	var correction: BooksCorrection = RunCorrections.apply(
-		state, kept, target(), _meters, _params, DEFAULT_RESENTMENT, books, set_log.events(), PLAYER
+		state,
+		kept,
+		target(),
+		_meters,
+		_params,
+		RunDefaults.RESENTMENT,
+		books,
+		set_log.events(),
+		PLAYER
 	)
 	var corrected: RunEvent = RunEvent.new(
 		RunEvent.Type.BOOKS_CORRECTED,
@@ -676,7 +677,8 @@ func player_plot_card(slot: int) -> Reason:
 
 ## Buys a private-plot upgrade at the black market: a private purchase like any other.
 func player_upgrade(kind: String) -> Reason:
-	var act: Callable = func() -> bool: return PlotUpgrades.buy(state, kind, DEFAULT_PLOT_UPGRADES)
+	var act: Callable = func() -> bool:
+		return PlotUpgrades.buy(state, kind, RunDefaults.PLOT_UPGRADES)
 	var reason: Reason = _shop_command({"type": "upgrade", "kind": kind}, act)
 	if reason == Reason.OK:
 		_market_bought()
@@ -885,7 +887,7 @@ func _campaign_moment() -> CampaignContext.Moment:
 
 func _create_round() -> void:
 	# Families play the round by their traits as the meters stand at its start (ADR 0043).
-	TraitShifts.apply(state, _configs, DEFAULT_VILLAGE, _meters)
+	TraitShifts.apply(state, _configs, RunDefaults.VILLAGE, _meters)
 	_aim_grudges()
 	# The round's wild ranks (ADR 0029), none unless an item drew them. Every item that
 	# draws one is the player's, so they are the player's seat's alone (ADR 0039).
@@ -998,7 +1000,7 @@ func _collect_round_events() -> void:
 				_resent(
 					(
 						Resentment.stamped(event.cards, PLAYER, event.pattern)
-						* DEFAULT_RESENTMENT.stamped_card
+						* RunDefaults.RESENTMENT.stamped_card
 					),
 					Resentment.STAMPED_CARD
 				)
@@ -1067,7 +1069,7 @@ func _split_commons(player_need: int) -> void:
 	var caught: Array[int] = []
 	var events: Array[RunEvent] = set_log.events()
 	# A claim reads the meters as they stand when it is made (ADR 0043).
-	var shifted: Array[int] = TraitShifts.apply(state, _configs, DEFAULT_VILLAGE, _meters)
+	var shifted: Array[int] = TraitShifts.apply(state, _configs, RunDefaults.VILLAGE, _meters)
 	var claims_from: int = events.size()
 	if RoundBanking.split(
 		state,
@@ -1105,7 +1107,11 @@ func _settle_need(player_need: int, caught: Array[int]) -> void:
 	)
 	if settled.resentment_fall > 0:
 		Resentment.lower(
-			state, settled.resentment_fall, Resentment.CADRE, DEFAULT_RESENTMENT, set_log.events()
+			state,
+			settled.resentment_fall,
+			Resentment.CADRE,
+			RunDefaults.RESENTMENT,
+			set_log.events()
 		)
 	RunCadres.announce(state, set_log, PLAYER)
 
@@ -1173,7 +1179,7 @@ func _end_set() -> void:
 			set_log.events()
 		)
 	# A family that starves is dead before reeducation could take it (ADR 0025).
-	VillageFates.starve(state, _meters.famine, DEFAULT_VILLAGE.starvations_per_year, set_log)
+	VillageFates.starve(state, _meters.famine, RunDefaults.VILLAGE.starvations_per_year, set_log)
 	if met:
 		VillageFates.depose(state, RunPools.BOSSES.risen.id, set_log)
 	_reeducate_villagers()
@@ -1182,11 +1188,11 @@ func _end_set() -> void:
 	_count_standing_by()
 	CorruptionEvents.close_quota(state, set_log.events(), _params.base_need)
 	var held: int = Resentment.private_cadres(state.inventory.cadres, all_cadres())
-	_resent(held * DEFAULT_RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
-	_resent(steps * DEFAULT_RESENTMENT.overfulfilment, Resentment.OVERFULFILMENT)
+	_resent(held * RunDefaults.RESENTMENT.private_cadre, Resentment.PRIVATE_CADRE)
+	_resent(steps * RunDefaults.RESENTMENT.overfulfilment, Resentment.OVERFULFILMENT)
 	# What a Cadre adds for the steps on top of that (Grain Speculator, ADR 0032).
 	_resent(ending.add_resentment, Resentment.CADRE)
-	var owed: int = Resentment.denunciation(state.resentment, DEFAULT_RESENTMENT)
+	var owed: int = Resentment.denunciation(state.resentment, RunDefaults.RESENTMENT)
 	if owed > 0:
 		RunMeters.apply_amount(
 			state, RunMeters.RESENTMENT, owed, _meters, _stack, _params, PLAYER, set_log.events()
@@ -1244,7 +1250,7 @@ func _choose_boss() -> void:
 		state.table[1] = state.boss_family
 		var entry: RosterEntry = Roster.entry(state, state.boss_family)
 		if entry != null:
-			_configs[1] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(1), state.drift)
+			_configs[1] = Roster.config_for(RunDefaults.VILLAGE, entry, _seat_seed(1), state.drift)
 		state.landlord_seat = 1
 	elif boss == RunPools.BOSSES.new_landlord:
 		PlayerStyle.mirror(_configs[1], state.styles, RunPools.BOSSES)
@@ -1292,11 +1298,13 @@ func _seat_seed(seat: int) -> int:
 func _seat_roster() -> void:
 	if state.roster.is_empty():
 		return
-	Roster.prepare_set(state, DEFAULT_VILLAGE, state.streams.stream(RandomStreams.EVENTS))
+	Roster.prepare_set(state, RunDefaults.VILLAGE, state.streams.stream(RandomStreams.EVENTS))
 	for seat: int in range(1, Seats.COUNT):
 		var entry: RosterEntry = Roster.entry(state, state.table[seat])
-		_configs[seat] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(seat), state.drift)
-		if Roster.definition(DEFAULT_VILLAGE, entry).mirrors_player:
+		_configs[seat] = Roster.config_for(
+			RunDefaults.VILLAGE, entry, _seat_seed(seat), state.drift
+		)
+		if Roster.definition(RunDefaults.VILLAGE, entry).mirrors_player:
 			PlayerStyle.mirror(_configs[seat], state.styles, RunPools.BOSSES)
 
 
@@ -1313,7 +1321,7 @@ func _reeducate_villagers() -> void:
 		var entry: RosterEntry = Roster.entry(state, family_id)
 		if entry == null or entry.status != RosterEntry.Status.ACTIVE:
 			continue
-		Roster.reeducate(state, family_id, DEFAULT_VILLAGE)
+		Roster.reeducate(state, family_id, RunDefaults.VILLAGE)
 		state.villager_denunciation[family_id] = 0
 		set_log.add(
 			RunEvent.new(RunEvent.Type.ROSTER_CHANGED, Seats.NONE, entry.status, 0.0, family_id)
@@ -1323,7 +1331,7 @@ func _reeducate_villagers() -> void:
 ## Every black-market purchase is resented, and counted when it comes in a famine.
 ## In the arrival someone sees it, too, and Denunciation rises by its own row (ADR 0026).
 func _market_bought() -> void:
-	_resent(DEFAULT_RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
+	_resent(RunDefaults.RESENTMENT.private_purchase, Resentment.PRIVATE_PURCHASE)
 	CorruptionEvents.note_purchase(state, _meters.famine)
 	if tutorial != null:
 		RunMeters.apply_amount(
@@ -1340,30 +1348,30 @@ func _market_bought() -> void:
 
 func _resent(amount: int, cause: String) -> void:
 	if amount != 0:
-		Resentment.add(state, amount, cause, DEFAULT_RESENTMENT, set_log.events())
+		Resentment.add(state, amount, cause, RunDefaults.RESENTMENT, set_log.events())
 
 
 ## Every bot holds the player's Resentment against them, plus its family's memory.
 ## The player's teammate, when they have one, slacks as the player's Commons share grows,
 ## and covers for the player more as its family's warmth grows.
 func _aim_grudges() -> void:
-	var held: float = Resentment.grudge(state.resentment, DEFAULT_RESENTMENT)
+	var held: float = Resentment.grudge(state.resentment, RunDefaults.RESENTMENT)
 	var share: float = FreeRiding.share(state)
 	for seat: int in Seats.COUNT:
 		if seat == PLAYER:
 			continue
 		var memory: PackedFloat32Array = _configs[seat].memory
-		memory[PLAYER] = held + state.memory.pull(state.table[seat], DEFAULT_MEMORY)
+		memory[PLAYER] = held + state.memory.pull(state.table[seat], RunDefaults.MEMORY)
 		_configs[seat].memory = memory
 		var teammate: bool = state.landlord_seat != PLAYER and state.landlord_seat != seat
 		_configs[seat].effort = 1.0
 		# Loyalty is for the player's teammate only: it never throws a game (ADR 0025).
 		_configs[seat].loyalty = 0.0
 		if teammate:
-			var warmth: float = state.memory.warmth(state.table[seat], DEFAULT_MEMORY)
-			_configs[seat].loyalty = warmth * DEFAULT_MEMORY.loyal_cooperation
+			var warmth: float = state.memory.warmth(state.table[seat], RunDefaults.MEMORY)
+			_configs[seat].loyalty = warmth * RunDefaults.MEMORY.loyal_cooperation
 			_configs[seat].effort = FreeRiding.effort(
-				share, _configs[seat].team_cooperation(), DEFAULT_FREE_RIDE
+				share, _configs[seat].team_cooperation(), RunDefaults.FREE_RIDE
 			)
 
 
