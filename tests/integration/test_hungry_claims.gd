@@ -78,12 +78,12 @@ func test_a_save_from_before_the_count_loads_with_none() -> void:
 	assert_bool(rows.is_empty()).is_false()
 	for family: String in rows:
 		var row: Array = rows[family]
-		row.resize(Observations.KIND_COUNT - 1)
+		row.resize(Observations.Kind.size() - 1)
 	var migrated: Dictionary = RunRecord.migrate_from_19(data)
 	assert_bool(RunRecord.is_valid(migrated)).is_true()
 	for family: String in rows:
 		var row: Array = rows[family]
-		assert_int(row.size()).is_equal(Observations.KIND_COUNT)
+		assert_int(row.size()).is_equal(Observations.Kind.size())
 		assert_int(int(row[Observations.Kind.SHIFTED_CLAIMS])).is_zero()
 	var resumed: RunLoop = RunRecord.resume(migrated, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()

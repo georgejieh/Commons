@@ -70,7 +70,7 @@ static func whole(value: float) -> String:
 ## rises, or writes "None reported" while it is not shown as it is, with no pulse (ADR
 ## 0022). Returns the value the count now shows.
 static func count_resentment(count: Label, shown: float, state: RunState) -> float:
-	if not ShownFigures.is_true(state, ShownFigures.RESENTMENT):
+	if not ShownFigures.is_true(state, RunCorrections.RESENTMENT):
 		count.text = ShownFigures.none_reported()
 		return shown
 	UiMotion.count(count, shown, state.resentment, whole)

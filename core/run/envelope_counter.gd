@@ -9,7 +9,6 @@ extends RefCounted
 ## one item or none, and nothing else in the shops can be done.
 
 const SOLD: String = ""
-const PERCENT: int = 100
 ## The pick that keeps nothing.
 const NOTHING: int = -1
 
@@ -49,8 +48,7 @@ func stock() -> Array[String]:
 
 
 func price(slot: int) -> int:
-	var cost: int = (definition(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
-	return RunBooks.priced(_state, cost)
+	return RunShop.price_of(_state, _params, definition(_stock[slot]).cost)
 
 
 ## How many items an envelope of this kind shows: its own number and the Reforms'.
@@ -190,5 +188,5 @@ func _shows_anything(envelope: EnvelopeDef) -> bool:
 ## One key per visit and envelope: a counter sells at most one envelope a visit, and the
 ## visit is the Set just finished.
 func _key() -> String:
-	var visit: int = (_state.year - 1) * SetConfig.SETS_PER_YEAR + _state.set_index
+	var visit: int = _state.set_number()
 	return "envelope:%d:%s" % [visit, _opened.id]

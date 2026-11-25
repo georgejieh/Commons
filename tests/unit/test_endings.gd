@@ -284,6 +284,6 @@ func test_every_key_the_endings_use_is_in_the_string_table() -> void:
 func _add(memory: VillageMemory, family_id: String, kind: SetSummary.Kind, amount: float) -> void:
 	if not memory.counts.has(family_id):
 		var row: PackedFloat64Array = []
-		row.resize(SetSummary.KIND_COUNT)
+		row.resize(SetSummary.Kind.size())
 		memory.counts[family_id] = row
 	memory.counts[family_id][kind] += amount

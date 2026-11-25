@@ -6,7 +6,6 @@ extends RefCounted
 ## Reform lasts the run.
 
 const SOLD: String = ""
-const PERCENT: int = 100
 
 var _state: RunState
 var _params: ShopParams
@@ -26,8 +25,7 @@ func stock() -> Array[String]:
 
 
 func price(slot: int) -> int:
-	var cost: int = (_reform(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
-	return RunBooks.priced(_state, cost)
+	return RunShop.price_of(_state, _params, _reform(_stock[slot]).cost)
 
 
 ## True when a reroll could offer another Reform.

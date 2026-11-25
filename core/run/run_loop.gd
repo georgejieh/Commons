@@ -251,7 +251,7 @@ func start_set() -> Reason:
 	RunBooks.start_quota(state)
 	record.mark(state)
 	_seat_roster()
-	set_log.start_set(state, set_number())
+	set_log.start_set(state, state.set_number())
 	_move(RunFlow.State.SET_INTRO)
 	state.round_index = 0
 	state.set_progress = 0.0
@@ -266,7 +266,9 @@ func start_set() -> Reason:
 	state.slogan_type = RunDebuffs.draw_slogan(state.debuff_ladder, ladder_stream)
 	var ladder_text: String = ",".join(state.debuff_ladder.slice(1))
 	set_log.add(
-		RunEvent.new(RunEvent.Type.SET_STARTED, Seats.NONE, set_number(), target(), ladder_text)
+		RunEvent.new(
+			RunEvent.Type.SET_STARTED, Seats.NONE, state.set_number(), target(), ladder_text
+		)
 	)
 	_start_round()
 	return Reason.OK
@@ -416,12 +418,12 @@ func player_begin() -> Reason:
 ## Buys the state store's Campaign, or the black market's, which adds Resentment as any
 ## purchase there does.
 func player_campaign_buy(slot: int) -> Reason:
-	var act: Callable = shop.campaigns.buy.bind(slot)
+	var act: Callable = _done(shop.campaigns.buy.bind(slot))
 	return _shop_command({"type": "campaign_buy", "slot": slot}, act)
 
 
 func player_market_campaign(slot: int) -> Reason:
-	var act: Callable = market.campaigns.buy.bind(slot)
+	var act: Callable = _done(market.campaigns.buy.bind(slot))
 	var reason: Reason = _shop_command({"type": "market_campaign", "slot": slot}, act)
 	if reason == Reason.OK:
 		_market_bought()
@@ -430,19 +432,19 @@ func player_market_campaign(slot: int) -> Reason:
 
 ## Enacts the state store's Reform: it lasts the rest of the run (ADR 0021).
 func player_reform(slot: int) -> Reason:
-	return _shop_command({"type": "reform", "slot": slot}, shop.reforms.buy.bind(slot))
+	return _shop_command({"type": "reform", "slot": slot}, _done(shop.reforms.buy.bind(slot)))
 
 
 ## Buys the state store's envelope, which opens it at once (ADR 0021). Until the player
 ## keeps one of its items or nothing, every other shop command is refused.
 func player_envelope_buy(slot: int) -> Reason:
-	var act: Callable = shop.envelopes.buy.bind(slot)
+	var act: Callable = _done(shop.envelopes.buy.bind(slot))
 	return _shop_command({"type": "envelope_buy", "slot": slot}, act)
 
 
 ## Buys the black market's Parcel: a private purchase, resented when it is bought.
 func player_market_envelope(slot: int) -> Reason:
-	var act: Callable = market.envelopes.buy.bind(slot)
+	var act: Callable = _done(market.envelopes.buy.bind(slot))
 	var reason: Reason = _shop_command({"type": "market_envelope", "slot": slot}, act)
 	if reason == Reason.OK:
 		_market_bought()
@@ -547,7 +549,7 @@ func open_shop() -> Reason:
 
 func player_buy(slot: int) -> Reason:
 	var bought: ModifierDef = _stocked(shop, slot)
-	var reason: Reason = _shop_command({"type": "buy", "slot": slot}, shop.buy.bind(slot))
+	var reason: Reason = _shop_command({"type": "buy", "slot": slot}, _done(shop.buy.bind(slot)))
 	if reason == Reason.OK:
 		RunCadres.bought(state, bought, Ranks.INVALID)
 		_read_shop_rules()
@@ -555,12 +557,12 @@ func player_buy(slot: int) -> Reason:
 
 
 func player_reroll() -> Reason:
-	return _shop_command({"type": "reroll"}, shop.reroll)
+	return _shop_command({"type": "reroll"}, _done(shop.reroll))
 
 
 ## Issues a Directive from the state store: its hand types rise a level at once.
 func player_directive(slot: int) -> Reason:
-	return _shop_command({"type": "directive", "slot": slot}, shop.buy_directive.bind(slot))
+	return _shop_command({"type": "directive", "slot": slot}, _done(shop.buy_directive.bind(slot)))
 
 
 ## Buys from the black market. Every purchase there is a private one, and adds
@@ -572,7 +574,7 @@ func player_market_buy(slot: int, rank: int = Ranks.INVALID) -> Reason:
 	var command: Dictionary = {"type": "market_buy", "slot": slot}
 	if rank != Ranks.INVALID:
 		command["rank"] = rank
-	var reason: Reason = _shop_command(command, market.buy.bind(slot))
+	var reason: Reason = _shop_command(command, _done(market.buy.bind(slot)))
 	if reason == Reason.OK:
 		RunCadres.bought(state, bought, rank)
 		_read_shop_rules()
@@ -590,7 +592,7 @@ func player_sell_cadre(index: int, at_market: bool = false) -> Reason:
 	var cadre_id: String = held[index] if index >= 0 and index < held.size() else ""
 	var definition: ModifierDef = RunDefinitions.modifiers.get(cadre_id)
 	var paid: int = 0 if definition == null else counter.sale_price(definition.cost)
-	var act: Callable = counter.sell.bind(index, definition, debuffs.confiscated_ids())
+	var act: Callable = _done(counter.sell.bind(index, definition, debuffs.confiscated_ids()))
 	var command: Dictionary = {"type": "sell_cadre", "index": index, "market": at_market}
 	var reason: Reason = _shop_command(command, act)
 	if reason == Reason.OK:
@@ -610,7 +612,7 @@ func player_sell_campaign(index: int, at_market: bool = false) -> Reason:
 	var definition: CampaignDef = RunDefinitions.campaigns.get(campaign_id)
 	var paid: int = 0 if definition == null else counter.sale_price(definition)
 	var command: Dictionary = {"type": "sell_campaign", "index": index, "market": at_market}
-	var reason: Reason = _shop_command(command, counter.sell.bind(index, definition))
+	var reason: Reason = _shop_command(command, _done(counter.sell.bind(index, definition)))
 	if reason == Reason.OK:
 		shop.campaigns.withheld.append(campaign_id)
 		market.campaigns.withheld.append(campaign_id)
@@ -624,9 +626,7 @@ func player_sell_campaign(index: int, at_market: bool = false) -> Reason:
 func player_mark_card(card_id: int, at_market: bool = false) -> Reason:
 	var desk: MarkDesk = (market if at_market else shop).desk
 	var paid: int = desk.price()
-	var act: Callable = func() -> RunShop.Reason:
-		var marked: bool = desk.mark(card_id, PLAYER) == MarkDesk.Reason.OK
-		return RunShop.Reason.OK if marked else RunShop.Reason.TOO_POOR
+	var act: Callable = func() -> bool: return desk.mark(card_id, PLAYER) == MarkDesk.Reason.OK
 	var command: Dictionary = {"type": "mark_card", "card": card_id, "market": at_market}
 	var reason: Reason = _shop_command(command, act)
 	if reason == Reason.OK:
@@ -642,7 +642,7 @@ func player_mark_card(card_id: int, at_market: bool = false) -> Reason:
 ## in out, for the rest of the run (ADR 0042).
 func player_deck_card(slot: int, out: int) -> Reason:
 	var command: Dictionary = {"type": "deck_card", "slot": slot, "out": out}
-	return _shop_command(command, deck_stall.buy.bind(slot, out))
+	return _shop_command(command, _done(deck_stall.buy.bind(slot, out)))
 
 
 ## What the held Cadres change about this visit's counters, read as it opens and again
@@ -661,14 +661,12 @@ func _stocked(counter: RunShop, slot: int) -> ModifierDef:
 
 
 func player_market_reroll() -> Reason:
-	return _shop_command({"type": "market_reroll"}, market.reroll)
+	return _shop_command({"type": "market_reroll"}, _done(market.reroll))
 
 
 ## Buys a card for the private plot at the black market: a private purchase too.
 func player_plot_card(slot: int) -> Reason:
-	var act: Callable = func() -> RunShop.Reason:
-		var bought: bool = stall.buy(slot) == PlotStall.Reason.OK
-		return RunShop.Reason.OK if bought else RunShop.Reason.TOO_POOR
+	var act: Callable = func() -> bool: return stall.buy(slot) == PlotStall.Reason.OK
 	var reason: Reason = _shop_command({"type": "plot_card", "slot": slot}, act)
 	if reason == Reason.OK:
 		_market_bought()
@@ -677,9 +675,7 @@ func player_plot_card(slot: int) -> Reason:
 
 ## Buys a private-plot upgrade at the black market: a private purchase like any other.
 func player_upgrade(kind: String) -> Reason:
-	var act: Callable = func() -> RunShop.Reason:
-		var bought: bool = PlotUpgrades.buy(state, kind, DEFAULT_PLOT_UPGRADES)
-		return RunShop.Reason.OK if bought else RunShop.Reason.TOO_POOR
+	var act: Callable = func() -> bool: return PlotUpgrades.buy(state, kind, DEFAULT_PLOT_UPGRADES)
 	var reason: Reason = _shop_command({"type": "upgrade", "kind": kind}, act)
 	if reason == Reason.OK:
 		_market_bought()
@@ -714,11 +710,6 @@ func next_set() -> Reason:
 
 func sets() -> SetConfig:
 	return _sets
-
-
-## Counts Sets across the run from 0.
-func set_number() -> int:
-	return (state.year - 1) * SetConfig.SETS_PER_YEAR + state.set_index
 
 
 ## Cadres in slot order, then the ladder's debuffs so far, as the hook order says.
@@ -1214,7 +1205,7 @@ func _choose_boss() -> void:
 	var boss: ModifierDef = Bosses.choose(state, RunPools.BOSSES, _sets.years(), stream)
 	state.boss_id = boss.id
 	set_log.add(RunEvent.new(RunEvent.Type.BOSS_CHOSEN, Seats.NONE, 0, 0.0, boss.id))
-	var purge: int = boss.parameters.get("purge", 0)
+	var purge: int = boss.parameters.get(BossMarkerEffect.PURGE, 0)
 	for cadre_id: String in Bosses.purge(state.inventory, purge, stream):
 		set_log.add(RunEvent.new(RunEvent.Type.CADRE_PURGED, PLAYER, 0, 0.0, cadre_id))
 	state.cadre_memos.keep_only(state.inventory.cadres)
@@ -1269,7 +1260,7 @@ func _count_standing_by() -> void:
 
 
 func _seat_seed(seat: int) -> int:
-	return RandomStreams.derive_seed(state.run_seed, "seat:%d:%d" % [set_number(), seat])
+	return RandomStreams.derive_seed(state.run_seed, "seat:%d:%d" % [state.set_number(), seat])
 
 
 ## Seats two families from the roster and plays them by their personalities. A run
@@ -1394,13 +1385,21 @@ func _reeducate() -> void:
 	_awaiting = Awaiting.REEDUCATION
 
 
+## Runs a shop command while the shops wait on the player and no envelope is open, and
+## records it when act, which returns whether it was done, did it.
 func _shop_command(command: Dictionary, act: Callable) -> Reason:
 	if _awaiting != Awaiting.SHOP or open_envelope() != null:
 		return Reason.NOT_AWAITED
-	if act.call() != RunShop.Reason.OK:
+	if not act.call():
 		return Reason.ILLEGAL
 	record.add(command)
 	return Reason.OK
+
+
+## A shop command for _shop_command(): act returns a RunShop.Reason, and it was done when
+## that is OK.
+static func _done(act: Callable) -> Callable:
+	return func() -> bool: return act.call() == RunShop.Reason.OK
 
 
 ## Every move the loop makes is in the table, so a refusal is a bug. A checkpoint move

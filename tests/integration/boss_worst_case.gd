@@ -60,8 +60,7 @@ static func _set_aside(app: DemoApp, handicap: bool) -> void:
 	var slots: Array[int] = []
 	for slot: int in Deck.SIZE:
 		slots.append(slot)
-	var named: Callable = func(slot: int) -> int:
-		return app.controller.card_name(deck.card(slot)).length()
+	var named: Callable = func(slot: int) -> int: return CardName.of(deck.card(slot)).length()
 	slots.sort_custom(func(a: int, b: int) -> bool: return named.call(a) > named.call(b))
 	for index: int in MOST_ASIDE:
 		deal.set_aside.append(deck.card(slots[index]))

@@ -31,7 +31,7 @@ static func of(correction: BooksCorrection, dark: Array[String]) -> BooksNoticeT
 		var figure: String = correction.figures[index]
 		var reported: float = correction.reported[index]
 		if dark.has(figure) or correction.dark.has(figure):
-			var key: String = "notice.dark.norm" if figure == ShownFigures.NORM else "notice.dark"
+			var key: String = "notice.dark.norm" if figure == RunCorrections.NORM else "notice.dark"
 			var values: Dictionary = {"name": _name(figure), "reported": _value(figure, reported)}
 			text.lines.append(TranslationServer.translate(key).format(values))
 			continue
@@ -66,6 +66,6 @@ static func _name(figure: String) -> String:
 
 ## Progress as a score; every other figure is a whole number.
 static func _value(figure: String, value: float) -> String:
-	if figure == ShownFigures.PROGRESS:
+	if figure == RunCorrections.PROGRESS:
 		return Strings.score(value)
 	return str(roundi(value))

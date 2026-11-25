@@ -76,9 +76,11 @@ func open(app: DemoApp) -> void:
 	var cost: int = _famine_rise(controller)
 	var tiles: Array[Control] = [
 		_figure(
-			tr("summary.coupons_label"), ShownFigures.COUPONS, state.coupons - paid, state.coupons
+			tr("summary.coupons_label"), RunCorrections.COUPONS, state.coupons - paid, state.coupons
 		),
-		_figure(tr("summary.famine_label"), ShownFigures.FAMINE, state.famine - cost, state.famine),
+		_figure(
+			tr("summary.famine_label"), RunCorrections.FAMINE, state.famine - cost, state.famine
+		),
 	]
 	# The tiles share the sheet's width, so no half of the row stands empty.
 	for tile: Control in tiles:
@@ -143,7 +145,7 @@ func _seal_room(bar: QuotaBar) -> MarginContainer:
 ## raises it, and the line says by how much and to what; beaten by less, it says the norm
 ## stayed. Nothing while the norm is dark or the Quota was missed or only just met.
 func _norm_line(controller: RunController, state: RunState) -> Label:
-	if not _met or not ShownFigures.is_true(state, ShownFigures.NORM):
+	if not _met or not ShownFigures.is_true(state, RunCorrections.NORM):
 		return null
 	var target: float = controller.target()
 	if not target > 0.0:
@@ -224,7 +226,7 @@ func _seat_lines(controller: RunController, count: int) -> Array[Label]:
 		if event.value == 0 and controller.is_last_set():
 			continue
 		var key: String = "summary.stood_by" if event.value > 0 else "summary.stood_by_last"
-		if event.value > 0 and not ShownFigures.is_true(_state, ShownFigures.FAMINE):
+		if event.value > 0 and not ShownFigures.is_true(_state, RunCorrections.FAMINE):
 			key = "summary.stood_by.unreported"
 		var text: String = tr(key).format({"count": count, "rise": roundi(event.amount)})
 		lines.append(_line(text, ScreenKit.RED if event.value > 0 else ScreenKit.INK))
@@ -288,7 +290,7 @@ func _on_filled() -> void:
 ## shown as it is.
 func _figure(caption: String, figure: String, from: int, to: int) -> Control:
 	var words: String = ShownFigures.tile_text(_state, figure)
-	var ink: Color = ScreenKit.COUPON if figure == ShownFigures.COUPONS else ScreenKit.RED
+	var ink: Color = ScreenKit.COUPON if figure == RunCorrections.COUPONS else ScreenKit.RED
 	if words.is_empty():
 		return _stat(caption, from, to, ink)
 	var tile: VBoxContainer = ScreenKit.card(Vector2(240, 0))
@@ -330,7 +332,7 @@ func _consequence(controller: RunController, famine: int) -> Label:
 	var text: String = tr("summary.cost").format(
 		{"rise": _famine_rise(controller), "famine": famine}
 	)
-	if not ShownFigures.is_true(_state, ShownFigures.FAMINE):
+	if not ShownFigures.is_true(_state, RunCorrections.FAMINE):
 		text = tr("summary.famine").format({"value": ShownFigures.none_reported()})
 	return _line(text, ScreenKit.RED)
 

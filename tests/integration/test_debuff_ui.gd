@@ -170,7 +170,7 @@ func test_levy_and_redistribution_slide_cards_left_or_leave_the_end_state() -> v
 		beats.on_event(given, false)
 		assert_bool(beats.is_playing()).is_equal(not reduced)
 		var said: String = tr("beat.levy.given").format(
-			{"card": _app.controller.card_name(mine), "name": _app.seat_name(2)}
+			{"card": CardName.of(mine), "name": _app.seat_name(2)}
 		)
 		assert_str(beats.note_text()).is_equal("" if reduced else said)
 		_check_note(beats, reduced)

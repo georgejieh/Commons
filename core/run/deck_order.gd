@@ -71,7 +71,7 @@ static func is_valid(value: Variant) -> bool:
 		return false
 	var seen: Dictionary[int, bool] = {}
 	for entry: Variant in order:
-		if not (entry is int or entry is float):
+		if not RunState.is_whole(entry):
 			return false
 		var card_id: int = int(entry)
 		if card_id < 0 or card_id >= Deck.SIZE or seen.has(card_id):

@@ -247,12 +247,12 @@ func _on_cursor(card_id: int) -> void:
 	var card: CardInstance = _board.card_of(card_id)
 	if view == null or card == null:
 		return
-	var title: String = PlotSwapSheet.card_name(card)
+	var title: String = CardName.of(card)
 	var rule: String = marks_text(card)
 	if _board.is_plot(card_id):
 		title = tr("deck.plot_card").format({"card": title})
 	elif _controller.replaced(card_id) != null:
-		var plain: String = PlotSwapSheet.card_name(_controller.replaced(card_id))
+		var plain: String = CardName.of(_controller.replaced(card_id))
 		rule = tr("deck.exchanged").format({"marks": rule, "card": plain})
 	_slip.show_for(view, title, rule)
 

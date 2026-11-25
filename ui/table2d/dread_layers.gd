@@ -105,8 +105,10 @@ static func table_materials(
 func refresh(state: RunState, settle_now: bool = false, landlord: Variant = null) -> void:
 	var is_landlord: bool = state.landlord_seat == 0 if landlord == null else bool(landlord)
 	# A meter not shown as it is gives the room no dread (ADR 0022).
-	var famine: int = ShownFigures.board(state, ShownFigures.FAMINE, state.famine)
-	var denunciation: int = ShownFigures.board(state, ShownFigures.DENUNCIATION, state.denunciation)
+	var famine: int = ShownFigures.board(state, RunCorrections.FAMINE, state.famine)
+	var denunciation: int = ShownFigures.board(
+		state, RunCorrections.DENUNCIATION, state.denunciation
+	)
 	board.set_inputs(famine, denunciation, is_landlord, corruption())
 	_choose_music(is_landlord)
 	if settle_now:

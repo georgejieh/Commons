@@ -64,10 +64,10 @@ func _check_set(loop: RunLoop) -> void:
 	var expected: SetSummary = _recount(loop.events(), loop.state.table)
 	var actual: SetSummary = loop.state.summaries[-1]
 	# Asserts here would add gdUnit objects to the count, so mismatches are tallied.
-	if actual.set_number != loop.set_number():
+	if actual.set_number != loop.state.set_number():
 		_mismatches += 1
 	for family: String in loop.state.table:
-		for kind: int in SetSummary.KIND_COUNT:
+		for kind: int in SetSummary.Kind.size():
 			var want: int = expected.count(family, kind as SetSummary.Kind)
 			if actual.count(family, kind as SetSummary.Kind) != want:
 				_mismatches += 1

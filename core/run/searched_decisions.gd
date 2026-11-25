@@ -71,12 +71,12 @@ static func _is_decision(entry: Dictionary) -> bool:
 	if reading and not ReadingCodec.is_valid(entry[ReadingCodec.KEY]):
 		return false
 	var seat: Variant = entry.get("seat")
-	if not _is_whole(seat) or seat < 1 or seat >= Seats.COUNT:
+	if not RunState.is_whole(seat) or seat < 1 or seat >= Seats.COUNT:
 		return false
 	if not entry.get("cards") is Array:
 		return false
 	for card: Variant in entry["cards"]:
-		if not _is_whole(card) or card < 0:
+		if not RunState.is_whole(card) or card < 0:
 			return false
 	return true
 
@@ -186,8 +186,3 @@ func _live() -> bool:
 func write(seat: int, config: BotConfig, card_ids: Array[int], reading: Pattern = null) -> void:
 	if searches(config):
 		_record.decide(seat, card_ids, reading)
-
-
-## JSON reads every number as a float.
-static func _is_whole(value: Variant) -> bool:
-	return (value is int or value is float) and value == floorf(value)

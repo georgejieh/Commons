@@ -6,8 +6,6 @@ extends RefCounted
 ## the player's own name in it, drawn from the seed the run will start with (ADR 0028).
 ## Only the first locked stake says how it opens, since its line names the stake below.
 
-const SUIT_KEYS: Array[String] = RunController.SUIT_KEYS
-
 var households: Array[UnlockSheet] = []
 var stakes: Array[UnlockSheet] = []
 ## What was inherited, in one line, or empty for nothing.
@@ -83,15 +81,10 @@ static func inherited_line(kind: String, values: Dictionary) -> String:
 	match kind:
 		RunLineage.HEIRLOOM:
 			var rank: int = int(values.get(RunLineage.RANK, Ranks.INVALID))
-			var suit: int = int(values.get(RunLineage.SUIT, -1))
-			if not Ranks.is_valid(rank) or suit < 0 or suit >= SUIT_KEYS.size():
+			var suit: int = int(values.get(RunLineage.SUIT, Deck.NO_SUIT))
+			if not Ranks.is_valid(rank) or suit < 0 or suit >= Deck.SUITS:
 				return ""
-			var card: String = TranslationServer.translate("card.name").format(
-				{
-					"rank": TranslationServer.translate(Ranks.label_key(rank)),
-					"suit": TranslationServer.translate(SUIT_KEYS[suit])
-				}
-			)
+			var card: String = CardName.of_rank(rank, suit)
 			return TranslationServer.translate("lineage.heirloom").format({"card": card})
 		RunLineage.LOYAL:
 			return _loyal_line(RunLineage.families(values))

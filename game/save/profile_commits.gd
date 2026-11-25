@@ -51,7 +51,7 @@ static func commit(profile: SaveService, state: RunState, finished: bool) -> boo
 
 ## The run's Set count, from 0: the Quota now ending or just ended.
 static func quota_number(state: RunState) -> int:
-	return (state.year - 1) * SetConfig.SETS_PER_YEAR + state.set_index
+	return state.set_number()
 
 
 static func _take_quota(data: ProfileData, state: RunState) -> bool:

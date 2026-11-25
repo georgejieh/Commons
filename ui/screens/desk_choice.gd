@@ -52,7 +52,7 @@ func commit(controller: RunController, card_id: int) -> bool:
 
 func _values(card: CardInstance) -> Dictionary[String, Variant]:
 	return {
-		"card": PlotSwapSheet.card_name(card),
+		"card": CardName.of(card),
 		"mark": DeckSheet.mark_name(_desk.offer()),
 		"old": DeckSheet.mark_name(card.enhancement_id()),
 		"price": _desk.price(),

@@ -234,7 +234,7 @@ static func migrate_from_19(data: Dictionary) -> Dictionary:
 			for family: Variant in rows:
 				if rows[family] is Array:
 					var row: Array = rows[family]
-					while row.size() < Observations.KIND_COUNT:
+					while row.size() < Observations.Kind.size():
 						row.append(0)
 	return data
 
@@ -430,18 +430,18 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 		return false
 	# The file's count is in every identity saved since the books (schema 17).
 	var identity: Dictionary = checkpoint["identity"]
-	if not _counters_valid(identity.get("file_entries"), 0):
+	if not RunState.is_count(identity.get("file_entries")):
 		return false
 	if not RunBooks.is_valid(checkpoint["books"]):
 		return false
-	if not _counters_valid(checkpoint["year_starved"], 0):
+	if not RunState.is_count(checkpoint["year_starved"]):
 		return false
-	if not _counters_valid(checkpoint["famine_market_buys"], 0):
+	if not RunState.is_count(checkpoint["famine_market_buys"]):
 		return false
-	if not _counters_valid(checkpoint["seatless_sets"], 0):
+	if not RunState.is_count(checkpoint["seatless_sets"]):
 		return false
 	# False Report's steps are a whole count, none past the norm they raised (ADR 0032).
-	if not _counters_valid(checkpoint["reported_steps"], 0):
+	if not RunState.is_count(checkpoint["reported_steps"]):
 		return false
 	if checkpoint["reported_steps"] > checkpoint["norm_steps"]:
 		return false
@@ -459,7 +459,7 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 ## rounds as landlord than rounds played.
 static func _counters_valid(rounds: Variant, landlord: Variant) -> bool:
 	for value: Variant in [rounds, landlord]:
-		if not (value is int or value is float) or value < 0 or value != floorf(value):
+		if not RunState.is_count(value):
 			return false
 	return landlord <= rounds
 

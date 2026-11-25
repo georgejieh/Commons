@@ -9,7 +9,12 @@ extends RefCounted
 const PERCENT: int = 100
 const DEFAULT_PARAMS: BooksParams = preload("res://data/run/books.tres")
 ## The figures that can go dark: a lowered meter, or a lowered norm.
-const DARKENS: Array[String] = ["famine", "denunciation", "resentment", "norm"]
+const DARKENS: Array[String] = [
+	RunCorrections.FAMINE,
+	RunCorrections.DENUNCIATION,
+	RunCorrections.RESENTMENT,
+	RunCorrections.NORM,
+]
 
 ## Figures shown from now on as "None reported", in the order they went dark. The true
 ## figure goes on counting where the player cannot see it.
@@ -66,7 +71,7 @@ static func is_valid(value: Variant) -> bool:
 		seen.append(figure)
 	for key: String in ["norm_percent", "norm_in_force", "price_percent", "corrections"]:
 		var number: Variant = data.get(key)
-		if not (number is int or number is float) or number < 0 or number != floorf(number):
+		if not RunState.is_count(number):
 			return false
 	return data["norm_in_force"] <= data["norm_percent"]
 

@@ -7,8 +7,6 @@ extends RefCounted
 ## shifts held (ADR 0043).
 enum Kind { BIDS, CALLS, BOMBS, PASSES, BEAT_TEAMMATE, WENT_OUT, LANDLORD_ROUNDS, SHIFTED_CLAIMS }
 
-const KIND_COUNT: int = 8
-
 ## Family ID to counts indexed by Kind.
 var counts: Dictionary[String, PackedInt64Array] = {}
 
@@ -17,9 +15,9 @@ static func from_dict(data: Dictionary) -> Observations:
 	var observations: Observations = Observations.new()
 	for family_id: String in data:
 		var row: PackedInt64Array = []
-		row.resize(KIND_COUNT)
+		row.resize(Kind.size())
 		var saved: Array = data[family_id]
-		for index: int in mini(saved.size(), KIND_COUNT):
+		for index: int in mini(saved.size(), Kind.size()):
 			row[index] = int(saved[index])
 		observations.counts[family_id] = row
 	return observations
@@ -28,7 +26,7 @@ static func from_dict(data: Dictionary) -> Observations:
 func add(family_id: String, kind: Kind, amount: int = 1) -> void:
 	if not counts.has(family_id):
 		var row: PackedInt64Array = []
-		row.resize(KIND_COUNT)
+		row.resize(Kind.size())
 		counts[family_id] = row
 	counts[family_id][kind] += amount
 

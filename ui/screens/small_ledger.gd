@@ -54,8 +54,8 @@ func show_table(state: RunState, target: float) -> void:
 		return
 	var quota: String = ShownFigures.ledger_quota(state, state.set_progress, target)
 	_write(0, tr("keyword.quota.name"), quota)
-	_write(1, tr("meter.famine"), _meter(state, ShownFigures.FAMINE, state.famine))
-	var denunciation: String = _meter(state, ShownFigures.DENUNCIATION, state.denunciation)
+	_write(1, tr("meter.famine"), _meter(state, RunCorrections.FAMINE, state.famine))
+	var denunciation: String = _meter(state, RunCorrections.DENUNCIATION, state.denunciation)
 	_write(2, tr("meter.denunciation"), denunciation)
 	_write(3, tr("summary.coupons_label"), str(state.coupons))
 
@@ -66,10 +66,10 @@ func show_shop(state: RunState) -> void:
 	if not _shows():
 		return
 	_write(0, tr("summary.coupons_label"), str(state.coupons))
-	var resentment: String = _meter(state, ShownFigures.RESENTMENT, state.resentment)
+	var resentment: String = _meter(state, RunCorrections.RESENTMENT, state.resentment)
 	_write(1, tr("keyword.resentment.name"), resentment)
-	_write(2, tr("meter.famine"), _meter(state, ShownFigures.FAMINE, state.famine))
-	var denunciation: String = _meter(state, ShownFigures.DENUNCIATION, state.denunciation)
+	_write(2, tr("meter.famine"), _meter(state, RunCorrections.FAMINE, state.famine))
+	var denunciation: String = _meter(state, RunCorrections.DENUNCIATION, state.denunciation)
 	_write(3, tr("meter.denunciation"), denunciation)
 
 

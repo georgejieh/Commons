@@ -121,6 +121,6 @@ static func _make_loyal(state: RunState, family_id: String, params: LineageParam
 	if Roster.entry(state, family_id) == null:
 		return
 	var row: PackedFloat64Array = []
-	row.resize(SetSummary.KIND_COUNT)
+	row.resize(SetSummary.Kind.size())
 	row[SetSummary.Kind.FED] = params.loyal_feedings
 	state.memory.counts[family_id] = row

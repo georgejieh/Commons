@@ -59,8 +59,6 @@ const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
 const TAKE_NOTHING: int = EnvelopeCounter.NOTHING
 ## An envelope pick that names no deck card to take out.
 const NO_CARD: int = Deck.NO_SLOT
-## Suit names in suit order: spade, heart, club, diamond.
-const SUIT_KEYS: Array[String] = ["suit.spades", "suit.hearts", "suit.clubs", "suit.diamonds"]
 const OK: int = RunLoop.Reason.OK
 
 ## True while the run's searching villagers decide under the ExpertRunner's deadline, as
@@ -530,15 +528,8 @@ func opened_envelope() -> EnvelopeShelf:
 	return null
 
 
-## A plot card's name, "7 of Hearts", and what a card from an envelope is: its name, text
-## or caption by key, with its mark's numbers from data. kind is one of EnvelopeShelf's
-## card kinds.
-func card_name(card: CardInstance) -> String:
-	var rank: String = tr(Ranks.label_key(card.base_rank()))
-	var suit: String = tr(SUIT_KEYS[card.suit()])
-	return tr("card.name").format({"rank": rank, "suit": suit})
-
-
+## What a card from an envelope is: its name, text or caption by key, with its mark's
+## numbers from data. kind is one of EnvelopeShelf's card kinds.
 func envelope_card_text(kind: int, key: String, card: CardInstance) -> String:
 	var marks: Dictionary[int, String] = {
 		EnvelopeShelf.KIND_STAMPED: "stamped",
@@ -550,7 +541,7 @@ func envelope_card_text(kind: int, key: String, card: CardInstance) -> String:
 	var values: Dictionary[String, Variant] = {
 		"resentment": RunLoop.DEFAULT_RESENTMENT.stamped_card,
 		"model_times": ModifierDef.multiple(model),
-		"card": card_name(card),
+		"card": CardName.of(card),
 		"mark":
 		"" if card.enhancement_id().is_empty() else tr("keyword.%s.name" % card.enhancement_id()),
 	}
@@ -782,7 +773,7 @@ func ladder() -> Array[String]:
 func set_aside_names() -> String:
 	var names: PackedStringArray = []
 	for card: CardInstance in _loop.set_aside_cards():
-		names.append(card_name(card))
+		names.append(CardName.of(card))
 	return ", ".join(names)
 
 

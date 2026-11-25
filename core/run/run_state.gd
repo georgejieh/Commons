@@ -267,6 +267,11 @@ func to_dict() -> Dictionary:
 	}
 
 
+## Counts Sets across the run from 0: the Set in play, or the one just ended.
+func set_number() -> int:
+	return (year - 1) * SetConfig.SETS_PER_YEAR + set_index
+
+
 ## A plot ID no card in the run has held. Past every ID in the plot, so plot cards
 ## made before the counter existed are never repeated.
 func take_plot_id() -> int:
@@ -281,6 +286,16 @@ func take_plot_id() -> int:
 static func float_text(value: float) -> String:
 	var bits: int = PackedFloat64Array([value]).to_byte_array().decode_s64(0)
 	return "%08x%08x" % [(bits >> 32) & 0xFFFFFFFF, bits & 0xFFFFFFFF]
+
+
+## True when a value read from JSON, where every number is a float, is a whole number.
+static func is_whole(value: Variant) -> bool:
+	return (value is int or value is float) and value == floorf(value)
+
+
+## True when a value read from JSON is a whole number of things: whole, and not below 0.
+static func is_count(value: Variant) -> bool:
+	return is_whole(value) and value >= 0
 
 
 static func float_from_text(text: String) -> float:
