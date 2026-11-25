@@ -3,8 +3,7 @@ extends Control
 ## The player's hand as a fan along the bottom of the table. Positions sit on an arc,
 ## computed in O(n). Click toggles a card; press and drag across cards selects or
 ## clears them all the way the first card went. Keyboard and gamepad move a cursor
-## along the fan and toggle the card under it (P3B.11). Selection lives in the
-## HandModel.
+## along the fan and toggle the card under it. Selection lives in the HandModel.
 
 enum Sort { RANK, SUIT, GROUPS }
 
@@ -39,6 +38,8 @@ var _dragging: bool = false
 var _drag_selects: bool = true
 ## The card the keyboard or gamepad points at, or -1 before either is used.
 var _cursor: int = -1
+## Where each rank counts, read when the cards are laid out and kept for the sort.
+var _rank_map: PackedByteArray = PackedByteArray()
 
 
 func setup(model: HandModel, pool: CardPool) -> void:
@@ -50,6 +51,7 @@ func setup(model: HandModel, pool: CardPool) -> void:
 ## Lays out the model's cards with pooled views, in the current sort order.
 func show_cards() -> void:
 	_hinted.clear()
+	_rank_map = _model.rank_map()
 	for view: CardView in _views:
 		_disconnect(view)
 		_pool.release(view)
@@ -250,8 +252,8 @@ func _by_suit(a: CardInstance, b: CardInstance) -> bool:
 ## Lowest first, by where each card ranks now: a Cadre or debuff that re-ranks a card
 ## moves it in the fan too.
 func _before(a: CardInstance, b: CardInstance) -> bool:
-	var a_value: int = _model.rank_value(a)
-	var b_value: int = _model.rank_value(b)
+	var a_value: int = _rank_map[a.base_rank()]
+	var b_value: int = _rank_map[b.base_rank()]
 	if a_value != b_value:
 		return a_value < b_value
 	if a.base_rank() != b.base_rank():
@@ -280,7 +282,7 @@ func _input(event: InputEvent) -> void:
 
 ## Marks a card a debuff makes rank as another, such as "as 3" on a 2.
 func _note_fold(view: CardView, card: CardInstance) -> void:
-	var folded: int = _model.folded_rank(card)
+	var folded: int = HandModel.fold(card.base_rank(), _rank_map)
 	if folded >= 0:
 		view.set_rank_note(tr("card.rank_as").format({"rank": tr(CardView.RANK_KEYS[folded])}))
 

@@ -23,7 +23,7 @@ const DRAG_START: float = 8.0
 const MOVE_TIME: float = 0.16
 var trade: PlotTrade
 var _pool: CardPool
-var _hand_model: HandModel
+var _rank_map: PackedByteArray = PackedByteArray()
 var _wild: Array[int] = []
 var _hand: Array[CardInstance] = []
 var _plot: Array[CardInstance] = []
@@ -63,7 +63,7 @@ func show_cards(
 ) -> void:
 	clear()
 	_pool = pool
-	_hand_model = hand_model
+	_rank_map = hand_model.rank_map()
 	_wild = wild.duplicate()
 	trade = PlotTrade.new(limit)
 	_hand = _sorted(hand)
@@ -79,7 +79,7 @@ func show_cards(
 		view.bind(card)
 		view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		view.set_wild(_wild.has(card.base_rank()))
-		var folded: int = hand_model.folded_rank(card)
+		var folded: int = HandModel.fold(card.base_rank(), _rank_map)
 		if folded >= 0:
 			view.set_rank_note(tr("card.rank_as").format({"rank": tr(CardView.RANK_KEYS[folded])}))
 		_views[card.id()] = view
@@ -179,8 +179,8 @@ func _sorted(cards: Array[CardInstance]) -> Array[CardInstance]:
 
 ## Lowest first, by where each card ranks now, as the table's hand sorts by rank.
 func _before(a: CardInstance, b: CardInstance) -> bool:
-	var a_value: int = _hand_model.rank_value(a)
-	var b_value: int = _hand_model.rank_value(b)
+	var a_value: int = _rank_map[a.base_rank()]
+	var b_value: int = _rank_map[b.base_rank()]
 	if a_value != b_value:
 		return a_value < b_value
 	if a.base_rank() != b.base_rank():

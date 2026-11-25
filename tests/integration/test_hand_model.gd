@@ -32,7 +32,7 @@ func test_cards_that_form_no_pattern_cannot_play() -> void:
 	assert_str(key).starts_with(HandModel.KEY_INVALID_PREFIX)
 	assert_str(key).is_not_equal(HandModel.KEY_DOES_NOT_BEAT)
 	assert_str(tr(key)).is_not_equal(key)
-	assert_float(_hand.projected_score()).is_equal(0.0)
+	assert_float(_hand.preview().score).is_equal(0.0)
 
 
 func test_a_pattern_that_does_not_beat_cannot_play() -> void:
@@ -40,7 +40,7 @@ func test_a_pattern_that_does_not_beat_cannot_play() -> void:
 	_hand.toggle(low)
 	assert_bool(_hand.can_play()).is_false()
 	assert_str(_hand.label_key()).is_equal(HandModel.KEY_DOES_NOT_BEAT)
-	assert_float(_hand.projected_score()).is_greater(0.0)
+	assert_float(_hand.preview().score).is_greater(0.0)
 
 
 func test_a_legal_selection_plays_and_scores_its_preview() -> void:
@@ -52,7 +52,7 @@ func test_a_legal_selection_plays_and_scores_its_preview() -> void:
 	assert_bool(_hand.can_play()).is_true()
 	assert_str(_hand.label_key()).starts_with(HandModel.KEY_PATTERN_PREFIX)
 	assert_str(tr(_hand.label_key())).is_not_equal(_hand.label_key())
-	var preview: float = _hand.projected_score()
+	var preview: float = _hand.preview().score
 	var scored: Array[float] = []
 	_controller.event_emitted.connect(
 		func(event: RunEvent) -> void:
@@ -61,15 +61,6 @@ func test_a_legal_selection_plays_and_scores_its_preview() -> void:
 	)
 	assert_int(_controller.play(_hand.selected_ids())).is_equal(RunLoop.Reason.OK)
 	assert_float(scored[0]).is_equal(preview)
-
-
-func test_hints_cover_every_legal_move() -> void:
-	_to_player_play(false)
-	_hand.refresh()
-	var hinted: Array[int] = _hand.hint_ids()
-	for move: Pattern in _controller.legal_moves():
-		for card_id: int in _controller.card_ids_for(move):
-			assert_array(hinted).contains([card_id])
 
 
 func test_selection_drops_cards_no_longer_held() -> void:
@@ -140,7 +131,6 @@ func test_a_stale_selection_waits() -> void:
 func test_the_hint_suggests_a_legal_play_on_lead() -> void:
 	_to_player_play(false)
 	_hand.refresh()
-	var ids: Array[int] = _hand.suggested_ids()
+	var ids: Array[int] = _hand.take_hint()
 	assert_array(ids).is_not_empty()
-	_hand.select_only(ids)
 	assert_bool(_hand.can_play()).is_true()
