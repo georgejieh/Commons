@@ -16,6 +16,7 @@ var _last_grain: float = 0.0
 var _last_rate: float = 0.0
 var _last_zeal: float = 0.0
 var _last_stamps_resented: bool = true
+var _last_surplus: Array[int] = []
 ## What changed the last real play's score, in order (P5.2a). A preview keeps none.
 var _last_steps: Array[ScoreStep] = []
 ## The run's Year in play, for the hooks that grow with it (ADR 0032).
@@ -70,6 +71,11 @@ func last_stamps_resented() -> bool:
 	return _last_stamps_resented
 
 
+## The scored Surplus cards of the last play, which pay the player (ADR 0041).
+func last_surplus_cards() -> Array[int]:
+	return _last_surplus
+
+
 func scores() -> PackedFloat64Array:
 	return _scores
 
@@ -111,5 +117,6 @@ func _score_cards(
 	_last_rate = breakdown.rate
 	_last_zeal = breakdown.zeal
 	_last_stamps_resented = breakdown.stamps_resented
+	_last_surplus = breakdown.surplus_cards
 	_last_steps = breakdown.trail
 	return breakdown.total

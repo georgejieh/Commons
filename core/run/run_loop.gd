@@ -93,6 +93,7 @@ var _stack: ModifierStack = ModifierStack.new()
 var _table: SeatRules
 var _seat: LandlordSeat = LandlordSeat.new()
 var _scoring: RoundScoring
+var _surplus: SurplusPay = SurplusPay.new()
 var _awaiting: Awaiting = Awaiting.NOTHING
 var _deal: DealResult
 var _bidding: Bidding
@@ -809,6 +810,7 @@ func _create_round() -> void:
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
 	_scoring.start(state.landlord_seat, state.year)
+	_surplus.start_round()
 	# Debuffs move cards here, after the kitty and before the plot swap (ADR 0023).
 	var opening: RoundContext = debuffs.round_context(_round, _table, campaigns.flags.round_debuff)
 	_stack.run_round_start(opening)
@@ -922,6 +924,9 @@ func _collect_round_events() -> void:
 			scored.rate = _scoring.last_rate()
 			scored.zeal = _scoring.last_zeal()
 			scored.steps = _scoring.last_steps()
+			if event.seat == PLAYER:
+				var surplus: Array[int] = _scoring.last_surplus_cards()
+				scored.steps.append_array(_surplus.pay(state, surplus, Scorer.DEFAULT_PARAMS))
 			set_log.add(scored)
 			_take_turn(event)
 		elif event.type == RoundEvent.Type.PASSED:

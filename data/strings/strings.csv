@@ -561,6 +561,8 @@ score.step.add,+{value} {figure}
 score.step.less,−{value} {figure}
 score.step.times,×{value} {figure}
 score.step.set,{figure} {value}
+score.step.coupon,coupon
+score.step.coupons,coupons
 ledger.scaled,× {percent}%
 hand.scaled,(after × {percent}%)
 callout.audit,Audit!
@@ -574,6 +576,12 @@ keyword.stamp.name,Stamp
 keyword.stamp.text,"Stamp: a card marked as yours. Red Ink and Class Label act on it, and scoring one adds Resentment."
 keyword.model.name,Model
 keyword.model.text,Model: a card that scores double Grain for whoever scores it.
+keyword.sheaf.name,Sheaf
+keyword.sheaf.text,Sheaf: a card that scores +{sheaf_grain} Grain for whoever scores it.
+keyword.pennant.name,Pennant
+keyword.pennant.text,"Pennant: a card that adds +{pennant_zeal} Zeal to the play that scores it, whoever plays it."
+keyword.surplus.name,Surplus
+keyword.surplus.text,"Surplus: a card that pays you {surplus_coupons} coupon when you score it, up to {surplus_most} coupons a round. A villager who scores it is paid nothing."
 directive.on_hand_tools.name,On Hand Tools
 directive.on_hand_tools.text,Raises Single and Pair by one level.
 directive.on_work_teams.name,On Work Teams

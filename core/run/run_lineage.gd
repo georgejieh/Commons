@@ -98,7 +98,7 @@ static func apply(
 			var card: CardInstance = CardInstance.new(
 				state.take_plot_id(), rank, suit, CardInstance.Origin.PLOT
 			)
-			CardMarks.make_model(state, card)
+			CardMarks.enhance(state, card, CardInstance.MODEL)
 			PlotSwap.store(state, card, run)
 		LOYAL:
 			for family_id: String in families(values):

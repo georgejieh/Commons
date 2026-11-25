@@ -209,7 +209,7 @@ func test_the_ribbon_keeps_clear_of_the_index_and_every_mark_in_the_narrowest_fa
 		var parts: Array[Control] = [
 			view.get_node("Frame/Suit"),
 			view.get("_chop"),
-			view.get("_rosette"),
+			view.get("_badge"),
 		]
 		if not note.is_empty():
 			parts.append(view.get_node("Frame/RankNote"))

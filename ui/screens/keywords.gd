@@ -18,6 +18,9 @@ const TERMS: PackedStringArray = [
 	"rocket",
 	"stamp",
 	"model",
+	"sheaf",
+	"pennant",
+	"surplus",
 	"quota",
 	"coupon",
 	"norm",
@@ -40,6 +43,8 @@ const SLIP_WIDTH: float = 400.0
 const SLIP_SIZE: int = 20
 const WRAP_COLUMNS: int = 52
 const SOFT: Color = Color("5a4a36")
+## The scoring numbers the marks' meanings quote, so a meaning never disagrees with data.
+const SCORING: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 
 static var _patterns: Dictionary[String, RegEx] = {}
 
@@ -71,7 +76,13 @@ static func found(text: String) -> PackedStringArray:
 
 
 static func meaning(id: String) -> String:
-	return TranslationServer.translate("keyword.%s.text" % id)
+	var values: Dictionary[String, Variant] = {
+		"sheaf_grain": SCORING.sheaf_grain,
+		"pennant_zeal": Strings.factor(SCORING.pennant_zeal),
+		"surplus_coupons": SCORING.surplus_coupons,
+		"surplus_most": SCORING.surplus_round_most,
+	}
+	return TranslationServer.translate("keyword.%s.text" % id).format(values)
 
 
 ## The meaning of every keyword text names, one per line, for a plain tooltip.

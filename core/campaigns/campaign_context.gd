@@ -77,11 +77,14 @@ func trade(seat: int, given: Array[int], taken: Array[int]) -> void:
 	add_event(RunEvent.new(RunEvent.Type.CARDS_MOVED, seat, player, 0.0, _joined(taken)))
 
 
-## Marks each chosen card for the run: Model, or the player's stamp.
-func mark_chosen(model: bool) -> void:
+## Marks each chosen card for the run: with the enhancement, or with the player's stamp
+## when it is CardInstance.NO_ID.
+func mark_chosen(enhancement_id: String) -> void:
+	var stamping: bool = enhancement_id == CardInstance.NO_ID
+	var mark: Callable = _stamp if stamping else _enhance.bind(enhancement_id)
 	for card_id: int in card_ids:
-		round_state.mark(player, card_id, _make_model if model else _stamp)
-	var value: int = 1 if model else 0
+		round_state.mark(player, card_id, mark)
+	var value: int = CardInstance.mark_value(enhancement_id)
 	add_event(RunEvent.new(RunEvent.Type.CARDS_MARKED, player, value, 0.0, _joined(card_ids)))
 
 
@@ -89,8 +92,8 @@ func _stamp(card: CardInstance) -> void:
 	CardMarks.stamp(state, card, player)
 
 
-func _make_model(card: CardInstance) -> void:
-	CardMarks.make_model(state, card)
+func _enhance(card: CardInstance, enhancement_id: String) -> void:
+	CardMarks.enhance(state, card, enhancement_id)
 
 
 static func _joined(card_ids: Array[int]) -> String:

@@ -195,7 +195,7 @@ func test_a_use_plays_out_marks_the_hand_and_leaves_no_node_behind() -> void:
 	for child: Node in hand_view.get_children():
 		var view: CardView = child as CardView
 		if view != null and view.visible and chosen.has(view.card_id):
-			assert_bool(view.shows_model()).is_true()
+			assert_bool(view.shown_enhancement() == CardInstance.MODEL).is_true()
 			marked += 1
 	assert_int(marked).is_equal(2)
 	assert_bool(campaigns.tray.leaflet(0).visible).is_false()

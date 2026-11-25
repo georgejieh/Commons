@@ -2,8 +2,9 @@ class_name CardView
 extends Control
 ## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
 ## a picture, enhancement overlay, seal, and the marks that outlast a round, both on the
-## left edge a fan leaves showing: a red and gold rosette under the suit pip for a Model
-## card, a red chop at the foot for an owner's stamp. A number card shows its suit
+## left edge a fan leaves showing: an enhancement's mark under the suit pip (CardMark: a
+## Model card's rosette, a Sheaf, a Pennant or a Surplus coupon), a red chop at the foot
+## for an owner's stamp. A number card shows its suit
 ## faintly in the corner; a court card or joker is a picture card, its art filling the
 ## face and fading to bare card stock in the corner, where the rank and suit are printed
 ## straight on, as on a playing card.
@@ -44,14 +45,16 @@ const FADE_SOLID: float = 0.45
 const RANK_OUTLINE: int = 6
 const NOTE_COLOR: Color = Color("9e1b16")
 ## Where the marks sit: both down the left edge, the strip a fanned hand leaves showing,
-## the rosette under the suit pip and the chop at the foot, inside the selection edge.
+## the enhancement's mark under the suit pip and the chop at the foot, inside the
+## selection edge.
 const CHOP_AT: Vector2 = Vector2(9, 128)
-const ROSETTE_AT: Vector2 = Vector2(13, 92)
-## Under a rank note the rosette moves down beside the chop, clear of the note.
-const ROSETTE_BY_NOTE: Vector2 = Vector2(40, 128)
-## A wild card's ribbon hangs down the very edge (ADR 0029); the rosette and the rank note
-## move right of it, the note narrowed so it still shows where the next card lies.
-const ROSETTE_BY_RIBBON: Vector2 = Vector2(16, 92)
+const ENHANCEMENT_AT: Vector2 = Vector2(13, 92)
+## Under a rank note the enhancement's mark moves down beside the chop, clear of the note.
+const ENHANCEMENT_BY_NOTE: Vector2 = Vector2(40, 128)
+## A wild card's ribbon hangs down the very edge (ADR 0029); the enhancement's mark and the
+## rank note move right of it, the note narrowed so it still shows where the next card
+## lies.
+const ENHANCEMENT_BY_RIBBON: Vector2 = Vector2(16, 92)
 const NOTE_SPAN: Vector2 = Vector2(8, 72)
 const NOTE_SPAN_BY_RIBBON: Vector2 = Vector2(15, 61)
 ## The rank note's type and the height of its tag on the card: the card is art of a fixed
@@ -83,7 +86,7 @@ var card_id: int = -1
 
 var _cursor_mark: ColorRect = ColorRect.new()
 var _chop: CardMark = CardMark.new(CardMark.Kind.STAMP)
-var _rosette: CardMark = CardMark.new(CardMark.Kind.MODEL)
+var _badge: CardMark = CardMark.new(CardMark.Kind.MODEL)
 var _ribbon: WildRibbon = WildRibbon.new()
 var _tick: HintTick = HintTick.new()
 
@@ -123,11 +126,11 @@ func _ready() -> void:
 	_rank_note.add_theme_stylebox_override("normal", tag)
 	_index.texture = _corner_fade()
 	_rank.add_theme_color_override("font_outline_color", STOCK)
-	for mark: CardMark in [_chop, _rosette]:
+	for mark: CardMark in [_chop, _badge]:
 		_frame.add_child(mark)
 	_frame.add_child(_ribbon)
 	_chop.position = CHOP_AT
-	_rosette.position = ROSETTE_AT
+	_badge.position = ENHANCEMENT_AT
 
 
 ## The card parts in use.
@@ -178,9 +181,13 @@ func bind(card: CardInstance) -> void:
 	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
 	_rank.add_theme_color_override("font_color", RED if red else INK)
-	var model: bool = card.enhancement_id() == CardInstance.MODEL
-	_enhancement.visible = card.enhancement_id() != CardInstance.NO_ID and not model
-	_rosette.visible = model
+	var enhancement: String = card.enhancement_id()
+	var drawn: bool = CardMark.draws(enhancement)
+	_enhancement.visible = enhancement != CardInstance.NO_ID and not drawn
+	_badge.visible = drawn
+	if drawn and _badge.kind != CardMark.KINDS[enhancement]:
+		_badge.kind = CardMark.KINDS[enhancement]
+		_badge.queue_redraw()
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
 	_chop.visible = card.owner_stamp() != CardInstance.NO_OWNER
 	_ribbon.show_on(false)
@@ -228,24 +235,27 @@ func ribbon_rect() -> Rect2:
 	return Rect2(_ribbon.position, _ribbon.size)
 
 
-## The rosette and the rank note keep clear of each other and of the ribbon.
+## The enhancement's mark and the rank note keep clear of each other and of the ribbon.
 func _place_marks() -> void:
 	var span: Vector2 = NOTE_SPAN_BY_RIBBON if _ribbon.visible else NOTE_SPAN
 	_rank_note.offset_left = span.x
 	_rank_note.offset_right = span.y
 	if _rank_note.visible:
-		_rosette.position = ROSETTE_BY_NOTE
+		_badge.position = ENHANCEMENT_BY_NOTE
 	else:
-		_rosette.position = ROSETTE_BY_RIBBON if _ribbon.visible else ROSETTE_AT
+		_badge.position = ENHANCEMENT_BY_RIBBON if _ribbon.visible else ENHANCEMENT_AT
 
 
-## The marks shown, for tests and playtests: a stamp's chop, a Model card's rosette.
+## The marks shown, for tests and playtests: a stamp's chop, and the enhancement whose
+## mark the card shows, or "" for none.
 func shows_stamp() -> bool:
 	return _chop.visible
 
 
-func shows_model() -> bool:
-	return _rosette.visible
+func shown_enhancement() -> String:
+	if not _badge.visible:
+		return CardInstance.NO_ID
+	return CardMark.KINDS.find_key(_badge.kind)
 
 
 ## True when the face is a picture card: art over the whole face under a corner index.

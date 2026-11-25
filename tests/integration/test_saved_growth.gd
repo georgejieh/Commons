@@ -56,7 +56,7 @@ func test_a_schema_5_run_save_gains_marks_and_levels_and_both_are_saved() -> voi
 	state.hand_levels.raise(Pattern.Type.BOMB)
 	state.hand_levels.raise(Pattern.Type.BOMB)
 	CardMarks.stamp(state, CardInstance.from_deck_id(12), 0)
-	CardMarks.make_model(state, CardInstance.from_deck_id(40))
+	CardMarks.enhance(state, CardInstance.from_deck_id(40), CardInstance.MODEL)
 	var record: RunRecord = RunRecord.new()
 	record.mark(state)
 	_service.save(record.to_dict())

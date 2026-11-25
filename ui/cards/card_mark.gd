@@ -1,14 +1,18 @@
 class_name CardMark
 extends Control
-## A mark that outlasts its round, drawn small on a card's left edge (ADR 0021): a stamped
-## card carries a red seal chop, the square of a name seal pressed in vermilion, and a
-## Model card a red and gold rosette with two ribbon tails, like a prize pinned on a
-## worker.
-## Both are drawn, so they need no art, and both have a dark edge to read over pictures.
-## Neither is ever fresh (art/STYLE.md): the chop prints with gaps where the ink did not
-## take and the rosette is tarnished, a little at stage 0 and more with every stage.
+## A mark that outlasts its round, drawn small on a card's left edge (ADR 0021, ADR 0041).
+## A stamped card carries a red seal chop, the square of a name seal pressed in vermilion.
+## An enhanced card carries one of four, each its own shape so they tell apart in
+## grayscale and at hand size: a Model card a red and gold rosette with two ribbon tails,
+## like a prize pinned on a worker; a Sheaf card an ear of wheat bound with a band, in the
+## Grain's ochre; a Pennant card a red pennant on its staff, in the Zeal's ink; a Surplus
+## card a green ration coupon with both ends torn along its perforation.
+## All are drawn, so they need no art, and all have a dark edge to read over pictures.
+## None is ever fresh (art/STYLE.md): the chop prints with gaps where the ink did not take,
+## the rosette and the wheat are tarnished, the pennant frays and the coupon is foxed, a
+## little at stage 0 and more with every stage.
 
-enum Kind { STAMP, MODEL }
+enum Kind { STAMP, MODEL, SHEAF, PENNANT, SURPLUS }
 
 ## Each mark's box, in card pixels.
 const SIZE: Vector2 = Vector2(30, 32)
@@ -17,13 +21,28 @@ const SIZE: Vector2 = Vector2(30, 32)
 const VERMILION: Color = Color("b02a17")
 const GOLD: Color = Color("e0b84a")
 const GOLD_DARK: Color = Color("8a5a12")
+const RATION_GREEN: Color = Color("3f6338")
 const PAPER: Color = Color("f6e6c4")
 const EDGE: Color = Color("1e1a16")
 const CHOP_TILT: float = -0.12
+## The coupon leans the other way from the chop, so the two never read as one.
+const COUPON_TILT: float = 0.2
 const PETALS: int = 8
+## Grains on the ear, alternating sides up the stalk.
+const KERNELS: int = 6
+## Teeth along each torn end of the coupon.
+const PERFORATIONS: int = 4
 const SEED: int = 3307
-## Spots where the chop's ink did not take, at stage 0 and at the last stage.
+## Spots where the chop's ink did not take, at stage 0 and at the last stage; the coupon's
+## foxing takes the same count.
 const GAPS: Vector2i = Vector2i(2, 7)
+## Each enhancement's mark.
+const KINDS: Dictionary[String, Kind] = {
+	CardInstance.MODEL: Kind.MODEL,
+	CardInstance.SHEAF: Kind.SHEAF,
+	CardInstance.PENNANT: Kind.PENNANT,
+	CardInstance.SURPLUS: Kind.SURPLUS,
+}
 
 var kind: Kind = Kind.STAMP
 
@@ -36,11 +55,23 @@ func _init(mark_kind: Kind) -> void:
 	visible = false
 
 
+## True when the enhancement has a drawn mark.
+static func draws(enhancement_id: String) -> bool:
+	return KINDS.has(enhancement_id)
+
+
 func _draw() -> void:
-	if kind == Kind.STAMP:
-		_draw_chop()
-	else:
-		_draw_rosette()
+	match kind:
+		Kind.STAMP:
+			_draw_chop()
+		Kind.MODEL:
+			_draw_rosette()
+		Kind.SHEAF:
+			_draw_sheaf()
+		Kind.PENNANT:
+			_draw_pennant()
+		Kind.SURPLUS:
+			_draw_coupon()
 
 
 ## A square of red ink with a paper border cut inside it and three strokes and a stem,
@@ -95,3 +126,97 @@ func _draw_rosette() -> void:
 	# Tarnish creeps round the boss from one side.
 	var tarnish: Color = Color(BowlGrime.TEA, 0.25 + 0.45 * worn)
 	draw_arc(center, radius * 0.44, 0.6, 0.6 + PI * (0.4 + 0.8 * worn), 16, tarnish, 1.5, true)
+
+
+## An ear of wheat on its stalk: grains in turn up a leaning stem, two awns at the tip and
+## a red band tied round the foot, ochre over a dark edge, the band rubbed with wear.
+func _draw_sheaf() -> void:
+	var worn: float = BowlGrime.wear()
+	var ochre: Color = BowlGrime.faded(GOLD_DARK, worn)
+	var gold: Color = BowlGrime.aged(GOLD, worn * 0.6)
+	var edge: Color = Color(EDGE, 0.8)
+	var foot: Vector2 = Vector2(size.x * 0.42, size.y - 2.0)
+	var tip: Vector2 = Vector2(size.x * 0.6, 3.0)
+	draw_line(foot, tip, edge, 4.0, true)
+	draw_line(foot, tip, ochre, 2.0, true)
+	var along: Vector2 = (tip - foot).normalized()
+	var across: Vector2 = along.orthogonal()
+	for kernel: int in KERNELS:
+		var at: Vector2 = foot.lerp(tip, 0.32 + 0.6 * kernel / float(KERNELS))
+		var side: float = -1.0 if kernel % 2 == 0 else 1.0
+		draw_colored_polygon(_kernel(at + across * side * 3.2, along, side, 1.0), edge)
+		draw_colored_polygon(_kernel(at + across * side * 3.0, along, side, 0.72), gold)
+	for side: float in [-1.0, 1.0]:
+		draw_line(tip, tip + (along + across * side * 0.5) * 5.0, ochre, 1.2, true)
+	var band: Vector2 = foot.lerp(tip, 0.2)
+	draw_line(band - across * 5.0, band + across * 5.0, edge, 4.5)
+	draw_line(band - across * 4.0, band + across * 4.0, BowlGrime.faded(VERMILION, worn), 2.5)
+	draw_circle(band + across * (1.0 - 2.0 * worn), 0.6 + worn, Color(BowlGrime.TEA, 0.5))
+
+
+## A grain of the ear: a lozenge leaning out from the stalk, at share of its full size.
+static func _kernel(at: Vector2, along: Vector2, side: float, share: float) -> PackedVector2Array:
+	var lean: Vector2 = (along + along.orthogonal() * side * 0.6).normalized()
+	var width: Vector2 = lean.orthogonal() * 2.4 * share
+	return PackedVector2Array(
+		[at - lean * 3.0 * share, at + width, at + lean * 4.0 * share, at - width]
+	)
+
+
+## A red pennant on a dark staff, long and pointed, with a paper stripe at its hoist and
+## a cut in its fly that deepens as it frays.
+func _draw_pennant() -> void:
+	var worn: float = BowlGrime.wear()
+	var staff_x: float = 6.0
+	draw_line(Vector2(staff_x, 2.0), Vector2(staff_x, size.y - 1.0), Color(EDGE, 0.85), 3.0)
+	draw_circle(Vector2(staff_x, 2.5), 2.0, BowlGrime.aged(GOLD, worn))
+	var hoist_top: Vector2 = Vector2(staff_x + 1.0, 4.0)
+	var hoist_foot: Vector2 = Vector2(staff_x + 1.0, 20.0)
+	var fly: Vector2 = Vector2(size.x - 1.0, 12.0)
+	var cut: Vector2 = fly.lerp(Vector2(staff_x + 1.0, 12.0), 0.12 + 0.16 * worn)
+	var flag: PackedVector2Array = [
+		hoist_top, fly + Vector2(0.0, -2.0), cut, fly + Vector2(0.0, 2.0), hoist_foot
+	]
+	draw_colored_polygon(flag, BowlGrime.faded(VERMILION, worn))
+	var outline: PackedVector2Array = flag.duplicate()
+	outline.append(hoist_top)
+	draw_polyline(outline, Color(EDGE, 0.8), 1.5, true)
+	var paper: Color = BowlGrime.aged(PAPER, worn)
+	draw_line(hoist_top + Vector2(3.0, 2.0), hoist_foot + Vector2(3.0, -2.0), paper, 2.0)
+
+
+## A ration coupon, wider than tall and leaning, green with a paper border inside it and
+## two printed lines, both ends torn along the perforation; foxing spots it with wear.
+func _draw_coupon() -> void:
+	var worn: float = BowlGrime.wear()
+	var paper: Color = BowlGrime.aged(PAPER, worn)
+	var half: Vector2 = Vector2(size.x / 2.0 - 2.0, 7.5)
+	draw_set_transform(size / 2.0, COUPON_TILT)
+	draw_colored_polygon(_torn_slip(half + Vector2(1.5, 1.5)), Color(EDGE, 0.85))
+	draw_colored_polygon(_torn_slip(half), BowlGrime.faded(RATION_GREEN, worn))
+	var border: Vector2 = half - Vector2(4.0, 2.5)
+	draw_rect(Rect2(-border, border * 2.0), paper, false, 1.2)
+	for row: float in [-1.5, 2.0]:
+		draw_line(Vector2(-half.x + 7.0, row), Vector2(half.x - 7.0, row), paper, 1.3)
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = SEED + 1
+	for _spot: int in roundi(lerpf(GAPS.x, GAPS.y, worn)):
+		var at: Vector2 = Vector2(rng.randf_range(-1, 1), rng.randf_range(-1, 1)) * half * 0.85
+		draw_circle(at, rng.randf_range(0.5, 1.0 + worn * 0.5), Color(BowlGrime.TEA, 0.45))
+	draw_set_transform(Vector2.ZERO, 0.0)
+
+
+## The coupon's outline about its middle: straight long sides, and both short ends cut in
+## teeth, as a coupon torn off its sheet.
+static func _torn_slip(half: Vector2) -> PackedVector2Array:
+	var points: PackedVector2Array = [Vector2(-half.x, -half.y), Vector2(half.x, -half.y)]
+	var teeth: int = PERFORATIONS * 2
+	for tooth: int in range(1, teeth):
+		var bite: float = 1.8 if tooth % 2 == 1 else 0.0
+		points.append(Vector2(half.x - bite, lerpf(-half.y, half.y, tooth / float(teeth))))
+	points.append(Vector2(half.x, half.y))
+	points.append(Vector2(-half.x, half.y))
+	for tooth: int in range(teeth - 1, 0, -1):
+		var bite: float = 1.8 if tooth % 2 == 1 else 0.0
+		points.append(Vector2(-half.x + bite, lerpf(-half.y, half.y, tooth / float(teeth))))
+	return points

@@ -2,10 +2,13 @@ class_name Scorer
 extends RefCounted
 ## Scores a play as Grain × Rate × Zeal (ADR 0020). Grain is the scored cards' values
 ## plus additive Grain from hooks; kickers don't score. A Model card's own value is
-## raised by the data's percent before any hook sees it, for whoever scores it
-## (ADR 0021). Rate comes from the hand type and its level, then a hook's share of it
-## rounded up (ADR 0023), then a hook's Rate cap. Zeal starts at 1 and changes only
-## through hooks: additive Zeal, then multiplicative Zeal, never below the data's minimum.
+## raised by the data's percent, and a Sheaf card's by the data's Grain, before any hook
+## sees it, for whoever scores it (ADR 0021, ADR 0041); each scored Pennant card gives the
+## play Zeal before the hooks run, and each scored Surplus card is listed for the loop to
+## pay. Rate comes from the hand type and its level, then a hook's share of it
+## rounded up (ADR 0023), then a hook's Rate cap. Zeal starts at 1, takes the Pennant
+## cards' Zeal, then changes through hooks: additive Zeal, then multiplicative Zeal, never
+## below the data's minimum.
 ## With a wild card standing in (ADR 0029) Grain still comes from the printed cards, and a
 ## card is body or kicker by where the reading puts it (PlayPlacement); Rate comes from
 ## the reading's type.
@@ -44,16 +47,22 @@ static func score_play(
 			kicker_cards.append(cards[index].base_rank())
 	var breakdown: ScoreBreakdown = ScoreBreakdown.new(scored)
 	var grain: float = 0.0
+	var mark_zeal: float = 0.0
 	for index: int in cards.size():
 		var card: CardInstance = cards[index]
 		if body[index]:
 			var printed: float = params.card_grain[card.base_rank()]
-			var base: float = printed
-			if card.enhancement_id() == CardInstance.MODEL:
-				base = base * params.model_grain_percent / PERCENT
+			var base: float = marked_grain(card, printed, params)
+			var enhancement: String = card.enhancement_id()
 			if trail != null:
 				trail.card(card.id(), printed)
-				trail.mark(card.id(), CardInstance.MODEL, base - printed)
+				trail.mark(card.id(), enhancement, base - printed)
+			if enhancement == CardInstance.PENNANT:
+				mark_zeal += params.pennant_zeal
+				if trail != null:
+					trail.mark_zeal(card.id(), enhancement, params.pennant_zeal)
+			elif enhancement == CardInstance.SURPLUS:
+				breakdown.surplus_cards.append(card.id())
 			var context: CardContext = CardContext.new(seat, is_landlord, card, base)
 			context.printed_grain = printed
 			context.landlord = Seats.NONE if facts == null else facts.landlord
@@ -61,7 +70,7 @@ static func score_play(
 			breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)
 			grain += context.grain
 
-	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, 0.0, 1.0)
+	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, mark_zeal, 1.0)
 	play.plays_before = plays_before
 	if facts != null:
 		play.landlord = facts.landlord
@@ -98,6 +107,17 @@ static func score_play(
 		trail.finish(base_rate, level_rate, params.min_zeal)
 		breakdown.trail = trail.steps
 	return breakdown
+
+
+## A scored card's Grain before any hook, from its printed Grain and its enhancement: a
+## Model card's at the data's percent, a Sheaf card's with the data's Grain added.
+static func marked_grain(card: CardInstance, printed: float, params: ScoreParams) -> float:
+	match card.enhancement_id():
+		CardInstance.MODEL:
+			return printed * params.model_grain_percent / PERCENT
+		CardInstance.SHEAF:
+			return printed + params.sheaf_grain
+	return printed
 
 
 ## A hand's Rate at its level once a hook's share of it (ADR 0023), rounded up, and a cap

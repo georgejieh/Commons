@@ -94,7 +94,7 @@ func test_a_kitty_card_that_leaves_the_landlord_leaves_the_public_kitty() -> voi
 func test_a_mark_lands_on_the_live_card() -> void:
 	var round_state: RoundState = _round(["345", "678", "9TJ"], "", 0)
 	var context: CampaignContext = _context(round_state, [_id_of(round_state, 0, Ranks.FOUR)])
-	context.mark_chosen(true)
+	context.mark_chosen(CardInstance.MODEL)
 	for card: CardInstance in round_state.view_for(0).own_cards:
 		var model: bool = card.enhancement_id() == CardInstance.MODEL
 		assert_bool(model).is_equal(card.base_rank() == Ranks.FOUR)

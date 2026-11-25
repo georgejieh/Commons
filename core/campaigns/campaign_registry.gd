@@ -17,9 +17,9 @@ static func create(definition: CampaignDef) -> CampaignEffect:
 static func _build(campaign_id: String) -> CampaignEffect:
 	match campaign_id:
 		"model_harvest":
-			return MarkCardsEffect.new(true)
+			return MarkCardsEffect.new(CardInstance.MODEL)
 		"registration_drive":
-			return MarkCardsEffect.new(false)
+			return MarkCardsEffect.new(CardInstance.NO_ID)
 		"mutual_aid":
 			return MutualAidEffect.new()
 		"overfulfillment":

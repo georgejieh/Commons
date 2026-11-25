@@ -221,7 +221,7 @@ func test_a_plot_the_old_rule_reissued_into_still_loads_and_swaps() -> void:
 	var reissued: CardInstance = CardInstance.new(
 		CardInstance.FIRST_PLOT_ID + 7, Ranks.FOUR, 2, CardInstance.Origin.PLOT
 	)
-	CardMarks.make_model(state, reissued)
+	CardMarks.enhance(state, reissued, CardInstance.MODEL)
 	state.inventory.plot.append(reissued)
 	state.next_plot_id = CardInstance.FIRST_PLOT_ID + 8
 	var data: Dictionary = JSON.parse_string(JSON.stringify(state.to_dict()))

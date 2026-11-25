@@ -98,7 +98,7 @@ static func take(
 			if item.content == EnvelopeDef.Content.STAMPED_CARD:
 				CardMarks.stamp(state, card, seat)
 			else:
-				CardMarks.make_model(state, card)
+				CardMarks.enhance(state, card, CardInstance.MODEL)
 			PlotSwap.store(state, card, run)
 	return RunShop.Reason.OK
 
