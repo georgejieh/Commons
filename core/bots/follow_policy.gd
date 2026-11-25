@@ -34,7 +34,7 @@ static func open_moves(position: BotPosition, legal: Array[Pattern]) -> Array[Pa
 
 
 ## What a grudge adds to answering the seat that owns the trick.
-static func spite(position: BotPosition) -> float:
+static func _spite(position: BotPosition) -> float:
 	return position.config.grudge * position.config.memory[position.trick_owner()]
 
 
@@ -45,7 +45,7 @@ static func _leaves_it_to_teammate(position: BotPosition) -> bool:
 	var teammate_owns: bool = position.trick_owner() == position.teammate
 	if not teammate_owns:
 		return false
-	return position.roll() < position.config.team_cooperation() / (1.0 + spite(position))
+	return position.roll() < position.config.team_cooperation() / (1.0 + _spite(position))
 
 
 static func _without_teammate_bombs(position: BotPosition, legal: Array[Pattern]) -> Array[Pattern]:
@@ -157,7 +157,7 @@ static func is_bomb(move: Pattern) -> bool:
 static func _best_response(position: BotPosition, moves: Array[Pattern]) -> BotPlay:
 	var best: Pattern = null
 	var best_score: float = position.scorer.score_pass()
-	var extra: float = spite(position)
+	var extra: float = _spite(position)
 	for move: Pattern in moves:
 		var score: float = position.scorer.score_play(move) + extra
 		var ties: bool = best != null and is_equal_approx(score, best_score)
