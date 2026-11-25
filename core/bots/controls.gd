@@ -25,7 +25,7 @@ func _init(
 	var answering: Array[BotTable] = rivals
 	if answering.is_empty():
 		answering = [table]
-	var mask: int = UnseenCards.mask_of(unseen)
+	var mask: int = UnseenCards.mask_of(unseen) if counts_cards else 0
 	var controls: int = 0
 	for group: Pattern in groups:
 		var high: bool = table.rank_map[group.main_rank] >= Ranks.TWO

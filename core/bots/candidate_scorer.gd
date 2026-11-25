@@ -2,7 +2,9 @@ class_name CandidateScorer
 extends RefCounted
 ## Scores a candidate by the hand it leaves: the sum of group values less a cost for each
 ## round still needed (sm9sun's baseline). Passing keeps the hand and costs one more round.
-## One instance serves one decision, so every candidate shares the search's memo.
+## One instance serves one decision, so every candidate shares the search's memo. A
+## caller that decides again and again under the same rules and order may hand in one
+## decomposer for all of them, so they share its memo too.
 
 ## Bonus per Pattern.Type added to every play's score. Empty for none.
 var _bias: PackedFloat32Array = PackedFloat32Array()
@@ -17,13 +19,16 @@ func _init(
 	counts: PackedByteArray,
 	table: BotTable,
 	weights: BotWeights,
-	bias: PackedFloat32Array = PackedFloat32Array()
+	bias: PackedFloat32Array = PackedFloat32Array(),
+	decomposer: HandDecomposer = null
 ) -> void:
 	_bias = bias
 	_counts = counts
 	_weights = weights
 	_rank_map = table.rank_map
-	_decomposer = HandDecomposer.new(table.rules, table.rank_map, weights.memo_cap)
+	_decomposer = decomposer
+	if _decomposer == null:
+		_decomposer = HandDecomposer.new(table.rules, table.rank_map, weights.memo_cap)
 
 
 ## Each move is scored once per decision: the policy and the search weigh the same moves.

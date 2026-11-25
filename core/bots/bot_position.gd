@@ -13,10 +13,13 @@ var teammate: int = Seats.NONE
 ## Fewest cards any opponent holds.
 var opponent_cards: int = NO_CARDS
 var teammate_cards: int = NO_CARDS
-var unseen: PackedByteArray
+## The cards this seat has not seen (UnseenCards). Counted only for a tier that reads the
+## table, since no other tier looks at them; empty otherwise.
+var unseen: PackedByteArray = PackedByteArray()
 ## The unseen cards an opponent could hold: all of them, unless a hand shown to the table
 ## (Glass Walls) tells the bot which of them a teammate holds or which seat holds what.
-var threats: PackedByteArray
+## Empty when unseen is.
+var threats: PackedByteArray = PackedByteArray()
 ## How many of the threats are wild cards (ADR 0029).
 var wild_threats: int = 0
 var groups: Array[Pattern]
@@ -47,15 +50,17 @@ func _init(
 	scorer = scorer_in
 	seat = view.seat
 	_read_seats()
-	unseen = UnseenCards.from_view(view)
-	threats = _threats()
+	var counts_cards: bool = config.reads_the_table()
+	if counts_cards:
+		unseen = UnseenCards.from_view(view)
+		threats = _threats()
 	groups = scorer.decompose_own_hand().groups
 	rivals = _rivals()
 	_threat_rules = Controls.threat_rules(table, rivals)
-	var supply: WildSupply = WildSupply.of(threats, _threat_rules)
-	wild_threats = 0 if supply == null else supply.total
+	if counts_cards:
+		var supply: WildSupply = WildSupply.of(threats, _threat_rules)
+		wild_threats = 0 if supply == null else supply.total
 	bombed = BombedSide.of(table, seat, _opponents())
-	var counts_cards: bool = config.reads_the_table()
 	var largest: int = _largest_opposing_hand()
 	controls = Controls.new(groups, threats, largest, table, counts_cards, rivals, bombed)
 

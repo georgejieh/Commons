@@ -21,9 +21,17 @@ static func decide_bid(
 	return points >= BidPolicy.threshold(is_grab, is_last, config.weights) - config.ambition
 
 
-## legal is what MoveGenerator lists. Returns a pass only when following.
+## legal is what MoveGenerator lists. Returns a pass only when following. A caller that
+## decides many times under one table may pass a decomposer built for it, whose memo then
+## serves every decision (Rollout); a decomposition reads nothing but the table's rules and
+## order and the hand, so it reads the same from a shared memo.
 static func decide_play(
-	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig, budget: BotBudget
+	view: SeatView,
+	legal: Array[Pattern],
+	table: BotTable,
+	config: BotConfig,
+	budget: BotBudget,
+	decomposer: HandDecomposer = null
 ) -> BotPlay:
 	if config.scripted != null:
 		return config.scripted.play(view, legal)
@@ -34,7 +42,7 @@ static func decide_play(
 		return SlackPolicy.choose(view, legal)
 	if config.tier == BotConfig.Tier.EASY:
 		return GreedyPolicy.choose(view, legal, table, config)
-	var job: BotSearchJob = _job(view, legal, table, config)
+	var job: BotSearchJob = _job(view, legal, table, config, decomposer)
 	if not config.searches():
 		return job.fallback
 	return ExpertSearch.run(job, budget)
@@ -64,10 +72,14 @@ static func considered(legal: Array[Pattern]) -> Array[Pattern]:
 ## The policy's play and the search's candidates, over moves already considered, for a
 ## bot that is trying.
 static func _job(
-	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
+	view: SeatView,
+	legal: Array[Pattern],
+	table: BotTable,
+	config: BotConfig,
+	decomposer: HandDecomposer = null
 ) -> BotSearchJob:
 	var scorer: CandidateScorer = CandidateScorer.new(
-		view.own_counts, table, config.weights, config.type_bias
+		view.own_counts, table, config.weights, config.type_bias, decomposer
 	)
 	var position: BotPosition = BotPosition.new(view, table, config, scorer)
 	var play: BotPlay = _by_policy(position, legal)
