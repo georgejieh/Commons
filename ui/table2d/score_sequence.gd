@@ -7,13 +7,15 @@ extends Node
 ## order the engine applied it. What fired moves (a Cadre's card jiggles on the board and
 ## its count updates, a marked card flashes on the pile, the rules slip swells), a handbell
 ## sounds a step higher than the last, or a dull gong a step lower for a cut, its figure on
-## the tally bumps to the new value, and a tag beside it says what it added. Then the total
-## rolls up a bead at a time and is stamped home, harder and with a shake of the tally for
-## a play worth much of the Quota. The table's pace scales it, a villager's goes quicker,
-## and a click or Enter hurries what is left. Reduced motion keeps every figure, tag and
-## sound and drops the jiggle, flash, swell, bump and shake. The table's events wait for
-## it (EventPlayer.waits_on). It keeps the tally inside the room the table gives it, clear
-## of the laid cards, the hand and the seats, through all its motion.
+## the tally bumps to the new value, and a tag beside it says what it added. Coupons a
+## Surplus card paid (ADR 0041) come last, a tag on the card with no figure of the
+## tally's. Then the total rolls up a bead at a time and is stamped home, harder and with
+## a shake of the tally for a play worth much of the Quota. The table's pace scales it, a
+## villager's goes quicker, and a click or Enter hurries what is left. Reduced motion
+## keeps every figure, tag and sound and drops the jiggle, flash, swell, bump and shake.
+## The table's events wait for it (EventPlayer.waits_on). It keeps the tally inside the
+## room the table gives it, clear of the laid cards, the hand and the seats, through all
+## its motion.
 
 ## The sequence is hurried: anything timed to it goes speed times as fast from now.
 signal hurried(speed: float)
@@ -174,7 +176,7 @@ func place() -> void:
 func _reserve() -> void:
 	var texts: Array[Array] = [[Strings.score(0.0)], [], [], [Strings.score(_event.amount)]]
 	for step: ScoreStep in _steps:
-		if step.figure != ScoreStep.Figure.TOTAL:
+		if step.figure < ScoreStep.Figure.TOTAL:
 			texts[step.figure].append(_figure_text(step.figure, step.after))
 	for index: int in texts.size():
 		var each: Array[String] = []
@@ -226,7 +228,9 @@ static func _made(
 ## What a step added, in a few words, such as "+30 Grain" or "×1.5 Zeal".
 static func tag_text(step: ScoreStep) -> String:
 	var name_key: String = "tally.total"
-	if step.figure != ScoreStep.Figure.TOTAL:
+	if step.figure == ScoreStep.Figure.COUPONS:
+		name_key = "score.step.coupons" if step.value != 1.0 else "score.step.coupon"
+	elif step.figure != ScoreStep.Figure.TOTAL:
 		name_key = "keyword.%s.name" % ScoreTally.WORDS[step.figure]
 	var name: String = TranslationServer.translate(name_key)
 	var key: String = "score.step.set"
@@ -241,7 +245,7 @@ static func tag_text(step: ScoreStep) -> String:
 
 
 static func _figure_text(figure: ScoreStep.Figure, value: float) -> String:
-	if figure == ScoreStep.Figure.GRAIN or figure == ScoreStep.Figure.TOTAL:
+	if figure != ScoreStep.Figure.RATE and figure != ScoreStep.Figure.ZEAL:
 		return Strings.score(value)
 	return Strings.factor(value)
 
@@ -280,10 +284,11 @@ func _fire(step: ScoreStep, seconds: float) -> void:
 	if step.figure == ScoreStep.Figure.TOTAL:
 		var product: float = step.before
 		tally.scaled(ScoreTally.scale_percent(1.0, 1.0, product, step.after))
-	else:
+	elif step.figure != ScoreStep.Figure.COUPONS:
 		tally.figure(step.figure, _figure_text(step.figure, step.after), true)
 	if not around.has_area():
-		var chit: Vector2 = tally.tile_center(step.figure)
+		# A coupon has no chit of its own: its tag stands over the total's.
+		var chit: Vector2 = tally.tile_center(mini(step.figure, ScoreStep.Figure.TOTAL))
 		around = Rect2(chit - Vector2(1.0, tally.size.y * tally.scale.y / 2.0), Vector2(2.0, 2.0))
 	fx.tag(ScoreSequence.tag_text(step), around, ScoreSequence.ink_of(step))
 	if step.is_cut():
@@ -300,6 +305,8 @@ static func ink_of(step: ScoreStep) -> Color:
 		return LOSS
 	if step.figure == ScoreStep.Figure.TOTAL:
 		return ScoreTally.TOTAL_INK
+	if step.figure == ScoreStep.Figure.COUPONS:
+		return ScreenKit.COUPON
 	return Color(Keywords.INKS[ScoreTally.WORDS[step.figure]])
 
 
@@ -365,9 +372,9 @@ func _done() -> void:
 
 func _show_at_once() -> void:
 	for step: ScoreStep in _steps:
-		if step.figure != ScoreStep.Figure.TOTAL:
+		if step.figure < ScoreStep.Figure.TOTAL:
 			tally.figure(step.figure, _figure_text(step.figure, step.after), false)
-		else:
+		elif step.figure == ScoreStep.Figure.TOTAL:
 			tally.scaled(ScoreTally.scale_percent(1.0, 1.0, step.before, step.after))
 	var total_text: String = Strings.score(_event.amount)
 	tally.figure(ScoreTally.TOTAL, total_text, false)

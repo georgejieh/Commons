@@ -9,8 +9,16 @@ enum Origin { DECK, PLOT }
 const FIRST_PLOT_ID: int = 1000
 const NO_ID: String = ""
 const NO_OWNER: int = -1
-## The enhancement that makes a card score more Grain for whoever scores it (ADR 0021).
+## The enhancements a deck or plot card may carry, one at a time (ADR 0021, ADR 0041).
+## Model scores its printed Grain at a percent for whoever scores it; a Sheaf adds a flat
+## Grain; Pennant gives the play that scores it Zeal; Surplus pays the household a coupon
+## when the player scores it.
 const MODEL: String = "model"
+const SHEAF: String = "sheaf"
+const PENNANT: String = "pennant"
+const SURPLUS: String = "surplus"
+## Every enhancement, in the order the game lists them.
+const ENHANCEMENTS: Array[String] = [MODEL, SHEAF, PENNANT, SURPLUS]
 
 var _id: int
 var _base_rank: int
@@ -46,6 +54,19 @@ static func from_dict(data: Dictionary) -> CardInstance:
 ## Returns an independent copy, for views of a hand.
 func snapshot() -> CardInstance:
 	return CardInstance.from_dict(to_dict())
+
+
+## The number an event gives a mark: 0 for the player's stamp, else the enhancement's
+## place in ENHANCEMENTS after one, so Model is 1.
+static func mark_value(enhancement_id: String) -> int:
+	return ENHANCEMENTS.find(enhancement_id) + 1
+
+
+## The enhancement a mark's number names, or NO_ID for the player's stamp.
+static func marked_by(value: int) -> String:
+	if value < 1 or value > ENHANCEMENTS.size():
+		return NO_ID
+	return ENHANCEMENTS[value - 1]
 
 
 func id() -> int:

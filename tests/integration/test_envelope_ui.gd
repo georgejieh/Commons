@@ -288,7 +288,8 @@ func test_parcel_cards_show_their_marks() -> void:
 				var view: CardView = paper.item as CardView
 				assert_object(view).is_not_null()
 				assert_bool(view.shows_stamp()).is_equal(kind == EnvelopeShelf.KIND_STAMPED)
-				assert_bool(view.shows_model()).is_equal(kind == EnvelopeShelf.KIND_MODEL)
+				var model: bool = view.shown_enhancement() == CardInstance.MODEL
+				assert_bool(model).is_equal(kind == EnvelopeShelf.KIND_MODEL)
 				assert_str(paper.caption()).is_not_empty()
 				assert_str(paper.caption()).not_contains("{")
 				seen += 1

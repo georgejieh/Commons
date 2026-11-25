@@ -14,6 +14,8 @@ signal quit_game
 signal dossier
 signal last_round
 signal abandon
+## At the table, the player asked for the deck sheet (ADR 0041).
+signal deck_sheet
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.78)
 
@@ -121,6 +123,8 @@ func _menu() -> VBoxContainer:
 	sheet.add_child(ScreenKit.header(tr("pause.eyebrow"), tr("pause.title"), ScreenKit.INK))
 	_resume = _wide(tr("pause.resume"), CommonsTheme.PRIMARY, close)
 	sheet.add_child(_resume)
+	if at_table:
+		sheet.add_child(_wide(tr("deck.open"), CommonsTheme.SECONDARY, _leave.bind(deck_sheet)))
 	sheet.add_child(_wide(tr("dossier.open"), CommonsTheme.SECONDARY, _leave.bind(dossier)))
 	sheet.add_child(_wide(tr("pause.last_round"), CommonsTheme.SECONDARY, _leave.bind(last_round)))
 	var settings: Callable = func() -> void: _show_page(_settings)

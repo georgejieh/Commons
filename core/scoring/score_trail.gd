@@ -4,9 +4,11 @@ extends RefCounted
 ## act out. The stack tells it after each hook; it compares the context with what it saw
 ## last, so it changes nothing and needs nothing from an effect. The steps run: each
 ## scored card's printed Grain; the hand's Rate and Zeal's start; the hand's level; each
-## card's mark and card hooks, card by card; then each play hook in the order it ran, with
-## every figure it moved. A figure's steps follow the scorer's own formula over the hooks
-## so far, so applied in order they land on the play's final figures. A preview keeps none.
+## card's mark (its Grain, or a Pennant's Zeal) and card hooks, card by card; then each
+## play hook in the order it ran, with every figure it moved. A figure's steps follow the
+## scorer's own formula over the hooks so far, so applied in order they land on the play's
+## final figures. A preview keeps none. The coupons a Surplus card pays come after, from
+## the loop (SurplusPay), as steps of their own figure.
 
 const FIGURES: int = 4
 ## Indexes into a play hook's fields.
@@ -24,6 +26,8 @@ var _card_steps: Array[ScoreStep] = []
 ## The play context's fields after each hook that moved one, with the hook's definition.
 var _hooks: Array[Array] = []
 var _last: PackedFloat64Array = PackedFloat64Array()
+## The Zeal the cards' marks gave the play, in its add_zeal before any hook ran.
+var _mark_zeal: float = 0.0
 
 
 ## A scored card's printed Grain.
@@ -41,6 +45,15 @@ func mark(card_id: int, enhancement_id: String, change: float) -> void:
 	step.card_id = card_id
 	step.source_id = enhancement_id
 	_card_steps.append(step)
+
+
+## A card's own enhancement gave its play change Zeal (ADR 0041).
+func mark_zeal(card_id: int, enhancement_id: String, change: float) -> void:
+	var step: ScoreStep = _add(ScoreStep.Figure.ZEAL, ScoreStep.Source.MARK, change)
+	step.card_id = card_id
+	step.source_id = enhancement_id
+	_card_steps.append(step)
+	_mark_zeal += change
 
 
 ## A card hook changed a card's Grain from before to its context's Grain now.
@@ -74,8 +87,9 @@ func finish(base_rate: float, level_rate: float, min_zeal: float) -> void:
 	if level_rate != base_rate:
 		steps.append(_add(ScoreStep.Figure.RATE, ScoreStep.Source.LEVEL, level_rate - base_rate))
 	steps.append_array(_card_steps)
-	var before: PackedFloat64Array = PackedFloat64Array([0.0, 0.0, 1.0, 100.0, INF, 1.0])
-	var running: PackedFloat64Array = PackedFloat64Array([level_rate, Scorer.STARTING_ZEAL])
+	var before: PackedFloat64Array = PackedFloat64Array([0.0, _mark_zeal, 1.0, 100.0, INF, 1.0])
+	var start_zeal: float = Scorer.STARTING_ZEAL + _mark_zeal
+	var running: PackedFloat64Array = PackedFloat64Array([level_rate, start_zeal])
 	for hook: Array in _hooks:
 		var now: PackedFloat64Array = hook[1]
 		for step: ScoreStep in _hook_steps(before, now, level_rate, min_zeal, running):
@@ -119,7 +133,7 @@ func _chain() -> void:
 	var running: PackedFloat64Array = PackedFloat64Array()
 	running.resize(FIGURES)
 	for step: ScoreStep in steps:
-		if step.figure == ScoreStep.Figure.TOTAL:
+		if step.figure >= ScoreStep.Figure.TOTAL:
 			continue
 		step.before = running[step.figure]
 		step.after = ScoreStep.applied(step.op, step.before, step.value)

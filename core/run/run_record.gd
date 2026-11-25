@@ -34,6 +34,7 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"books": ["figures"],
 	"sell_cadre": ["index", "market"],
 	"sell_campaign": ["index", "market"],
+	"mark_card": ["card", "market"],
 }
 ## The fields of one written decision: the villager's seat and the card IDs it played,
 ## none for a pass.
@@ -368,6 +369,8 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_sell_cadre(int(command["index"]), bool(command["market"]))
 		"sell_campaign":
 			return loop.player_sell_campaign(int(command["index"]), bool(command["market"]))
+		"mark_card":
+			return loop.player_mark_card(int(command["card"]), bool(command["market"]))
 	return RunLoop.Reason.ILLEGAL
 
 

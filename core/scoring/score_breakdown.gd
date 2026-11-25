@@ -15,6 +15,8 @@ var zeal: float = 0.0
 var total: float = 0.0
 ## False when a hook waived the Resentment the play's stamped cards add (ADR 0032).
 var stamps_resented: bool = true
+## The scored Surplus cards' IDs, in play order, which pay the player coupons (ADR 0041).
+var surplus_cards: Array[int] = []
 var steps: PackedFloat64Array = PackedFloat64Array()
 var step_count: int = 0
 ## Every change to the score, one at a time, for the table to act out (P5.2a). Kept only

@@ -31,3 +31,8 @@ extends Resource
 ## What this counter pays for a held Cadre or Campaign sold back to it, as a percent of
 ## the item's price here now, rounded down, never under one coupon (ADR 0040).
 @export var sell_percent: int = 50
+## What the counter's desk asks to mark a deck card of the player's choice, before any
+## raise the books made, and whether it stamps the card as the player's rather than
+## giving it an enhancement (ADR 0041). 0 means the counter has no desk.
+@export var desk_price: int = 0
+@export var desk_stamps: bool = false

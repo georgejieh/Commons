@@ -576,6 +576,8 @@ score.step.add,+{value} {figure}
 score.step.less,−{value} {figure}
 score.step.times,×{value} {figure}
 score.step.set,{figure} {value}
+score.step.coupon,coupon
+score.step.coupons,coupons
 ledger.scaled,× {percent}%
 hand.scaled,(after × {percent}%)
 callout.audit,Audit!
@@ -589,6 +591,12 @@ keyword.stamp.name,Stamp
 keyword.stamp.text,"Stamp: a card marked as yours. Red Ink and Class Label act on it, and scoring one adds Resentment."
 keyword.model.name,Model
 keyword.model.text,Model: a card that scores double Grain for whoever scores it.
+keyword.sheaf.name,Sheaf
+keyword.sheaf.text,Sheaf: a card that scores +{sheaf_grain} Grain for whoever scores it.
+keyword.pennant.name,Pennant
+keyword.pennant.text,"Pennant: a card that adds +{pennant_zeal} Zeal to the play that scores it, whoever plays it."
+keyword.surplus.name,Surplus
+keyword.surplus.text,"Surplus: a card that pays you {surplus_coupons} coupon when you score it, up to {surplus_most} coupons a round. A villager who scores it is paid nothing."
 directive.on_hand_tools.name,On Hand Tools
 directive.on_hand_tools.text,Raises Single and Pair by one level.
 directive.on_work_teams.name,On Work Teams
@@ -626,6 +634,15 @@ campaign.grain_loan.prompt,Press Use to take {coupons} coupons for {famine} Fami
 campaign.registration_drive.name,Registration Drive
 campaign.registration_drive.text,"Stamp {min_cards} to {max_cards} cards in your hand as yours, for the rest of the run. Use on your turn."
 campaign.registration_drive.prompt,Choose {min_cards} to {max_cards} cards to stamp as yours.
+campaign.autumn_gleaning.name,Autumn Gleaning
+campaign.autumn_gleaning.text,"Mark {min_cards} or {max_cards} cards in your hand as Sheaf, for the rest of the run. Use on your turn."
+campaign.autumn_gleaning.prompt,Choose {min_cards} or {max_cards} cards to mark as Sheaf.
+campaign.emulation_contest.name,Emulation Contest
+campaign.emulation_contest.text,"Mark {min_cards} or {max_cards} cards in your hand as Pennant, for the rest of the run. Use on your turn."
+campaign.emulation_contest.prompt,Choose {min_cards} or {max_cards} cards to mark as Pennant.
+campaign.surplus_sale.name,Surplus Sale
+campaign.surplus_sale.text,"Mark {min_cards} or {max_cards} cards in your hand as Surplus, for the rest of the run. Use on your turn."
+campaign.surplus_sale.prompt,Choose {min_cards} or {max_cards} cards to mark as Surplus.
 campaign.seizure_notice.name,Seizure Notice
 campaign.seizure_notice.text,"Take the highest card from the opponent holding the most cards, and give them your lowest. On a tie, it is the opponent who plays next. Adds {resentment} Resentment. Use on your turn. Both hands must hold 2 or more cards."
 campaign.seizure_notice.prompt,Press Use to seize a card.
@@ -1199,3 +1216,37 @@ credits.built.line,"{name} {version}. {licence}."
 credits.engine,Godot Engine
 credits.engine.line,"Commons is built with Godot Engine. Its licence follows, then the notices of the components inside it and the licences they use."
 credits.engine.licence_of,Licence: {licence}
+deck.open,Deck
+deck.open_tip,"The deck and your plot, card by card, with their marks"
+deck.eyebrow,Brigade records
+deck.title,The deck
+deck.plot,Your plot
+deck.plot_card,{card} (your plot)
+deck.how,"Every card the deal shares out, then the cards in your plot. A mark stays on its card for the run, whoever is dealt it."
+deck.close,Close
+deck.marks,Marks: {marks}
+deck.marks.none,No marks
+deck.legend.none,No card is marked yet
+deck.legend.entry,{mark} ×{count}
+deck.back,Back
+deck.desk.store,State store desk
+deck.desk.market,Black market desk
+deck.desk.title,Mark a card {mark}
+deck.desk.stamp_title,Stamp a card as yours
+deck.desk.mark,Mark for {price} coupons
+deck.desk.stamp,Stamp for {price} coupons
+deck.desk.how,"Pick a card from the deck. What the desk puts on it stays for the run, whoever is dealt it."
+deck.change.mark,The {card} becomes {mark}.
+deck.change.replace,"The {card} becomes {mark}, and loses its {old}."
+deck.change.stamp,"The {card} is stamped as yours. Like every purchase here, it adds Resentment."
+deck.refused.poor,You need {price} coupons.
+deck.refused.marked,The {card} is {mark} already.
+deck.refused.stamped,The {card} carries your stamp already.
+deck.refused.used,The desk has done its one card this visit.
+desk.stamp,Your stamp
+desk.rule.mark,"Mark one card in the deck {mark} for the rest of the run, in place of any Model, Sheaf, Pennant or Surplus it carries. One card a visit."
+desk.rule.stamp,"Stamp one card in the deck as yours for the rest of the run. One card a visit. Like every purchase here, it adds Resentment."
+desk.ticket,Mark {mark} · {price} coupons
+desk.ticket.stamp,Stamp · {price} coupons
+desk.used,Desk: marked
+desk.used.stamp,Desk: stamped

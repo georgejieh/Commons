@@ -48,7 +48,7 @@ func grant(loop: RunLoop) -> void:
 			loop.state.take_plot_id(), Ranks.KING - index * 4, index, CardInstance.Origin.PLOT
 		)
 		if index == 0:
-			CardMarks.make_model(loop.state, card)
+			CardMarks.enhance(loop.state, card, CardInstance.MODEL)
 		else:
 			CardMarks.stamp(loop.state, card, RunLoop.PLAYER)
 		loop.state.inventory.plot.append(card)

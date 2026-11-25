@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CampaignDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/campaign_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "autumn_gleaning"
+tag = 0
+cost = 3
+unlock_tier = 0
+when = 0
+min_cards = 1
+max_cards = 2
+parameters = Dictionary[String, int]({})
+name_key = "campaign.autumn_gleaning.name"
+text_key = "campaign.autumn_gleaning.text"
+prompt_key = "campaign.autumn_gleaning.prompt"

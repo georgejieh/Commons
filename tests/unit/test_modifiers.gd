@@ -137,9 +137,9 @@ func test_every_definition_in_data_is_valid() -> void:
 			assert_array(Array(ModifierValidator.validate_reform(reform, keys))).is_empty()
 	assert_bool(checked >= 4).is_true()
 	# ADR 0021's six Directives and eight Campaigns (P4.11), ADR 0029's Model Worker,
-	# Mass Line and Industrialization, and ADR 0032's three Campaigns.
+	# Mass Line and Industrialization, ADR 0032's three Campaigns and ADR 0041's three.
 	assert_int(directives).is_equal(6)
-	assert_int(campaigns).is_equal(12)
+	assert_int(campaigns).is_equal(15)
 	assert_int(reforms).is_equal(8)
 
 

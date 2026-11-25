@@ -19,7 +19,7 @@ func _marked_state(seed_value: int = SEED) -> RunState:
 	for deck_id: int in STAMPED:
 		CardMarks.stamp(state, CardInstance.from_deck_id(deck_id), RunLoop.PLAYER)
 	for deck_id: int in MODELS:
-		CardMarks.make_model(state, CardInstance.from_deck_id(deck_id))
+		CardMarks.enhance(state, CardInstance.from_deck_id(deck_id), CardInstance.MODEL)
 	return state
 
 
@@ -74,7 +74,7 @@ func test_marks_survive_every_deal_of_a_whole_set() -> void:
 		var plot_card: CardInstance = CardInstance.new(
 			state.take_plot_id(), Ranks.NINE, index, CardInstance.Origin.PLOT
 		)
-		CardMarks.make_model(state, plot_card)
+		CardMarks.enhance(state, plot_card, CardInstance.MODEL)
 		state.inventory.plot.append(plot_card)
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	var script: RunScript = RunScript.new()
@@ -136,7 +136,7 @@ func test_a_card_marked_mid_set_keeps_its_marks_next_round() -> void:
 	loop.start_set()
 	_to_play(loop, script)
 	var card: CardInstance = loop.player_cards()[0]
-	CardMarks.make_model(state, card)
+	CardMarks.enhance(state, card, CardInstance.MODEL)
 	CardMarks.stamp(state, card, RunLoop.PLAYER)
 	assert_str(card.enhancement_id()).is_equal(CardInstance.MODEL)
 	var round_index: int = state.round_index
@@ -158,7 +158,7 @@ func test_a_plot_card_saves_its_own_marks() -> void:
 	state.inventory.plot.append(plot_card)
 	# Marked through another copy, as a view would hold: the plot's own card changes.
 	var copy: CardInstance = plot_card.snapshot()
-	CardMarks.make_model(state, copy)
+	CardMarks.enhance(state, copy, CardInstance.MODEL)
 	CardMarks.stamp(state, copy, RunLoop.PLAYER)
 	assert_str(plot_card.enhancement_id()).is_equal(CardInstance.MODEL)
 	assert_int(plot_card.owner_stamp()).is_equal(RunLoop.PLAYER)
@@ -175,12 +175,12 @@ func test_a_swap_keeps_marks_both_ways() -> void:
 	var state: RunState = RunState.new(SEED)
 	for deck_id: int in DECK_SIZE:
 		CardMarks.stamp(state, CardInstance.from_deck_id(deck_id), RunLoop.PLAYER)
-		CardMarks.make_model(state, CardInstance.from_deck_id(deck_id))
+		CardMarks.enhance(state, CardInstance.from_deck_id(deck_id), CardInstance.MODEL)
 	var plot_card: CardInstance = CardInstance.new(
 		state.take_plot_id(), Ranks.NINE, 1, CardInstance.Origin.PLOT
 	)
 	CardMarks.stamp(state, plot_card, RunLoop.PLAYER)
-	CardMarks.make_model(state, plot_card)
+	CardMarks.enhance(state, plot_card, CardInstance.MODEL)
 	state.inventory.plot.append(plot_card)
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	var script: RunScript = RunScript.new()
@@ -248,7 +248,7 @@ func test_a_model_card_doubles_its_grain_for_whoever_scores_it() -> void:
 func test_a_model_card_dealt_to_an_opponent_doubles_for_them() -> void:
 	var state: RunState = RunState.new(SEED)
 	for deck_id: int in DECK_SIZE:
-		CardMarks.make_model(state, CardInstance.from_deck_id(deck_id))
+		CardMarks.enhance(state, CardInstance.from_deck_id(deck_id), CardInstance.MODEL)
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	var script: RunScript = RunScript.new()
 	loop.start_set()

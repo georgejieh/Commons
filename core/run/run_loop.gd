@@ -93,6 +93,7 @@ var _stack: ModifierStack = ModifierStack.new()
 var _table: SeatRules
 var _seat: LandlordSeat = LandlordSeat.new()
 var _scoring: RoundScoring
+var _surplus: SurplusPay = SurplusPay.new()
 var _awaiting: Awaiting = Awaiting.NOTHING
 var _deal: DealResult
 var _bidding: Bidding
@@ -519,6 +520,9 @@ func open_shop() -> Reason:
 	# The envelopes last of all, so they leave every draw before them as it was.
 	shop.envelopes.draw()
 	market.envelopes.draw()
+	# The desks draw on a stream of their own, and the arrival has none (ADR 0041).
+	shop.desk.open(tutorial != null)
+	market.desk.open(tutorial != null)
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -593,6 +597,26 @@ func player_sell_campaign(index: int, at_market: bool = false) -> Reason:
 		shop.campaigns.withheld.append(campaign_id)
 		market.campaigns.withheld.append(campaign_id)
 		set_log.add(RunEvent.new(RunEvent.Type.CAMPAIGN_SOLD, PLAYER, paid, 0.0, campaign_id))
+	return reason
+
+
+## Marks the deck card with ID card_id at the state store's desk, or with at_market at the
+## black market's, for the rest of the run (ADR 0041). The black market's stamps it as the
+## player's and is a private purchase, which adds Resentment.
+func player_mark_card(card_id: int, at_market: bool = false) -> Reason:
+	var desk: MarkDesk = (market if at_market else shop).desk
+	var paid: int = desk.price()
+	var act: Callable = func() -> RunShop.Reason:
+		var marked: bool = desk.mark(card_id, PLAYER) == MarkDesk.Reason.OK
+		return RunShop.Reason.OK if marked else RunShop.Reason.TOO_POOR
+	var command: Dictionary = {"type": "mark_card", "card": card_id, "market": at_market}
+	var reason: Reason = _shop_command(command, act)
+	if reason == Reason.OK:
+		var value: int = CardInstance.mark_value(desk.offer)
+		var text: String = str(card_id)
+		set_log.add(RunEvent.new(RunEvent.Type.DECK_CARD_MARKED, PLAYER, value, paid, text))
+		if at_market:
+			_market_bought()
 	return reason
 
 
@@ -809,6 +833,7 @@ func _create_round() -> void:
 	_round = RoundState.new(_deal, state.landlord_seat, _table)
 	_round_seen = 0
 	_scoring.start(state.landlord_seat, state.year)
+	_surplus.start_round()
 	# Debuffs move cards here, after the kitty and before the plot swap (ADR 0023).
 	var opening: RoundContext = debuffs.round_context(_round, _table, campaigns.flags.round_debuff)
 	_stack.run_round_start(opening)
@@ -922,6 +947,9 @@ func _collect_round_events() -> void:
 			scored.rate = _scoring.last_rate()
 			scored.zeal = _scoring.last_zeal()
 			scored.steps = _scoring.last_steps()
+			if event.seat == PLAYER:
+				var surplus: Array[int] = _scoring.last_surplus_cards()
+				scored.steps.append_array(_surplus.pay(state, surplus, Scorer.DEFAULT_PARAMS))
 			set_log.add(scored)
 			_take_turn(event)
 		elif event.type == RoundEvent.Type.PASSED:

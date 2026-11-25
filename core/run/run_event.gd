@@ -44,8 +44,8 @@ enum Type {
 	OVERFULFILLED,
 	## The player used a held Campaign (ADR 0021): value is its slot, text its ID.
 	CAMPAIGN_USED,
-	## Cards in the player's hand took a mark for the run: value 1 for Model, 0 for the
-	## player's stamp; text is the card IDs, joined by commas.
+	## Cards in the player's hand took a mark for the run: value is CardInstance.mark_value()
+	## of the mark, 0 for the player's stamp; text is the card IDs, joined by commas.
 	CARDS_MARKED,
 	## Cards moved from seat to the seat in value mid-round; text is their IDs.
 	CARDS_MOVED,
@@ -101,6 +101,10 @@ enum Type {
 	## The player sold a held Campaign back at a shop (ADR 0040): value is the coupons
 	## paid, text its ID.
 	CAMPAIGN_SOLD,
+	## A shop's desk marked a deck card for the run (ADR 0041): value is
+	## CardInstance.mark_value() of the mark, 0 for the player's stamp, amount the coupons
+	## paid, and text the card's ID.
+	DECK_CARD_MARKED,
 }
 
 var type: Type

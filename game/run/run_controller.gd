@@ -39,6 +39,7 @@ const COMMANDS: Array[String] = [
 	"books",
 	"sell_cadre",
 	"sell_campaign",
+	"mark_card",
 ]
 ## What the run waits on, for views that may not name the loop.
 const AWAIT_BID: int = RunLoop.Awaiting.PLAYER_BID
@@ -350,6 +351,28 @@ func sell_cadre(index: int, market: bool = false) -> int:
 ## Sells the held Campaign at index back to the state store, or the black market.
 func sell_campaign(index: int, market: bool = false) -> int:
 	return _act("sell_campaign", _loop.player_sell_campaign.bind(index, market))
+
+
+## Marks a deck card at the state store's desk, or the black market's, for the rest of
+## the run (ADR 0041).
+func mark_card(card_id: int, market: bool = false) -> int:
+	return _act("mark_card", _loop.player_mark_card.bind(card_id, market))
+
+
+## The state store's desk this visit, or with market the black market's, as a screen
+## reads it (ADR 0041).
+func mark_desk(market: bool) -> DeskView:
+	return DeskView.new((_loop.market if market else _loop.shop).desk, _loop.state)
+
+
+## The 54 deck cards as the next deal will find them, in deck order, each a copy with
+## the marks the run has saved on it (ADR 0041).
+func deck_cards() -> Array[CardInstance]:
+	var cards: Array[CardInstance] = []
+	for deck_id: int in Deck.SIZE:
+		cards.append(CardInstance.from_deck_id(deck_id))
+	_loop.state.card_marks.apply(cards)
+	return cards
 
 
 ## The Campaigns the player holds, in slot order, and how many they can hold.

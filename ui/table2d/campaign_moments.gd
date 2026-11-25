@@ -69,9 +69,9 @@ func _ready() -> void:
 		ticket.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		ticket.draw.connect(_draw_ticket.bind(ticket))
 		_tickets.append(ticket)
-	for kind: CardMark.Kind in [CardMark.Kind.STAMP, CardMark.Kind.MODEL]:
+	for kind: int in CardMark.Kind.values():
 		for _index: int in MARKS_PER_KIND:
-			_marks.append(CardMark.new(kind))
+			_marks.append(CardMark.new(kind as CardMark.Kind))
 	var parts: Array[Control] = [_leaflet, _note]
 	parts.append_array(_tickets)
 	parts.append_array(_marks)
@@ -126,7 +126,7 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 			_on_used(event, quiet)
 		RunEvent.Type.CARDS_MARKED:
 			if not quiet:
-				_press_marks(_ids(event.text), event.value == 1)
+				_press_marks(_ids(event.text), CardInstance.marked_by(event.value))
 		RunEvent.Type.CARDS_MOVED:
 			if not quiet:
 				_move_cards(event)
@@ -199,13 +199,14 @@ func _shout_stake() -> void:
 
 ## Marks drop onto the chosen cards like a seal pressed from above, one after another,
 ## then the hand shows them as its own.
-func _press_marks(card_ids: Array[int], model: bool) -> void:
+func _press_marks(card_ids: Array[int], enhancement_id: String) -> void:
 	if UiMotion.reduced():
 		_show_hand.call()
 		return
 	var tween: Tween = _start_beat()
-	var kind: CardMark.Kind = CardMark.Kind.MODEL if model else CardMark.Kind.STAMP
-	var spot: Vector2 = CardView.ROSETTE_AT if model else CardView.CHOP_AT
+	var stamping: bool = enhancement_id == CardInstance.NO_ID
+	var kind: CardMark.Kind = CardMark.Kind.STAMP if stamping else CardMark.KINDS[enhancement_id]
+	var spot: Vector2 = CardView.CHOP_AT if stamping else CardView.ENHANCEMENT_AT
 	var used: int = 0
 	for mark: CardMark in _marks:
 		if mark.kind != kind or used >= card_ids.size():

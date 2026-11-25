@@ -19,3 +19,5 @@ rarity_weights = Array[int]([50, 35, 15])
 price_percent = 120
 stock_per_item = 0
 sell_percent = 50
+desk_price = 3
+desk_stamps = true

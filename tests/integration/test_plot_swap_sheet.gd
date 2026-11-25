@@ -40,7 +40,7 @@ func _to_swap() -> TableScreen:
 			CardInstance.FIRST_PLOT_ID + index, Ranks.QUEEN - index, index, CardInstance.Origin.PLOT
 		)
 		if index == 0:
-			CardMarks.make_model(state, card)
+			CardMarks.enhance(state, card, CardInstance.MODEL)
 		if index == 1:
 			CardMarks.stamp(state, card, RunLoop.PLAYER)
 		state.inventory.plot.append(card)
@@ -101,7 +101,8 @@ func test_the_board_shows_real_cards_in_rank_order_with_their_marks() -> void:
 		assert_bool(_app.hand.rank_value(before) <= _app.hand.rank_value(after)).is_true()
 	var plot: Array[int] = board.place_ids(SwapBoard.Place.PLOT)
 	assert_int(plot.size()).is_equal(PLOT_CARDS)
-	assert_bool(board.view_of(CardInstance.FIRST_PLOT_ID).shows_model()).is_true()
+	var shown: String = board.view_of(CardInstance.FIRST_PLOT_ID).shown_enhancement()
+	assert_str(shown).is_equal(CardInstance.MODEL)
 	assert_bool(board.view_of(CardInstance.FIRST_PLOT_ID + 1).shows_stamp()).is_true()
 	for card_id: int in hand + plot:
 		assert_vector(board.view_of(card_id).size).is_equal(SwapFit.CARD)

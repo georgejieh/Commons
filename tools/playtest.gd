@@ -95,6 +95,9 @@ var _scarce_market_shot: bool = false
 ## The walk through the plot swap (tools/playtest_swap.gd), made at the first bid.
 var _swap_walk: Object = null
 var _file_store_shot: bool = false
+## The deck sheet and the state store's desk photographed (tools/playtest_marks.gd).
+var _marks_store_shot: bool = false
+var _marks_table_shot: bool = false
 ## No window to photograph: frames are named, not saved.
 var _headless: bool = false
 ## True for the arrival's own short run (--tutorial).
@@ -210,6 +213,7 @@ func _step() -> void:
 			await _click_first_button()
 		"store":
 			await _shot("store")
+			await _marks_store_frames()
 			await _file_store_frames()
 			await _wild_store_frames()
 			await _reform_frames()
@@ -301,6 +305,9 @@ func _play_turn(table: Node, controller: Node) -> void:
 	if _turns_in_round == 1 or _turns_in_round % SHOT_EVERY == 0:
 		await _shot("round%d_turn%d" % [_rounds_seen, _turns_in_round])
 	_check_fan(table, controller)
+	if _rounds_seen >= 2 and not _marks_table_shot:
+		_marks_table_shot = true
+		await _marks_table_frames()
 	if not _toured:
 		_toured = true
 		await _tour(table)
@@ -861,6 +868,29 @@ func _file_meta_frames(profile: SaveService) -> void:
 	var walk: Object = _file_walk()
 	await walk.call("meta", profile)
 	_took(walk)
+
+
+## The deck sheet read-only and one use of the state store's desk, once a run, with real
+## clicks (tools/playtest_marks.gd).
+func _marks_store_frames() -> void:
+	if _marks_store_shot:
+		return
+	_marks_store_shot = true
+	var walk: Object = _marks_walk()
+	await walk.call("store")
+	_took(walk)
+
+
+## The hand with a card of each enhancement in it, on the player's first turn after round 1.
+func _marks_table_frames() -> void:
+	var walk: Object = _marks_walk()
+	await walk.call("table")
+	_took(walk)
+
+
+func _marks_walk() -> Object:
+	var script: GDScript = load("res://tools/playtest_marks.gd")
+	return script.new(self, _app, _out, _headless, _shots)
 
 
 func _file_walk() -> Object:

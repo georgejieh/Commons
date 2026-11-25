@@ -59,6 +59,7 @@ var _you: Label = Label.new()
 var _motion: TableMotion = TableMotion.new()
 var _replaying: bool = false
 var _pause: PauseMenu = PauseMenu.new()
+var _deck: DeckSheet = null
 var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
 var _speech: TableSpeech = TableSpeech.new()
@@ -202,6 +203,7 @@ func open(app: DemoApp) -> void:
 	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
 	_set_pace()
 	_hud.menu.pressed.connect(_open_pause)
+	_deck = TableDeck.attach(self, _pause, _controller, _player)
 	_pause.resumed.connect(func() -> void: _player.set_process(true))
 	# The events wait behind the books' notice until it is acknowledged (ADR 0022).
 	app.notice.hold(_player)

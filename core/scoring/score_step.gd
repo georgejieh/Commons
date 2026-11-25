@@ -6,10 +6,13 @@ extends RefCounted
 ## and the product of those three, with the Total steps applied, gives its total. The table
 ## acts them out one at a time.
 
-enum Figure { GRAIN, RATE, ZEAL, TOTAL }
+## COUPONS is what a Surplus card paid the player (ADR 0041): never part of the score, so
+## it changes no other figure.
+enum Figure { GRAIN, RATE, ZEAL, TOTAL, COUPONS }
 ## CARD is a scored card's printed Grain; HAND the hand type's Rate at its first level;
 ## START Zeal before any hook; LEVEL what the hand type's level adds to its Rate; MARK a
-## card's own enhancement; MODIFIER a held Cadre, a debuff, a Reform or a boss twist.
+## card's own enhancement, for its Grain, its play's Zeal or the coupons it paid;
+## MODIFIER a held Cadre, a debuff, a Reform or a boss twist.
 enum Source { CARD, HAND, START, LEVEL, MARK, MODIFIER }
 ## ADD adds value to the figure, MUL multiplies it by value, SET makes it value.
 enum Op { ADD, MUL, SET }

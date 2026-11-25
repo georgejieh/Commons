@@ -9,7 +9,10 @@
 [ext_resource type="Resource" path="res://data/modifiers/campaigns/model_worker.tres" id="7"]
 [ext_resource type="Resource" path="res://data/modifiers/campaigns/self_criticism.tres" id="8"]
 [ext_resource type="Resource" path="res://data/modifiers/campaigns/relief_grain.tres" id="9"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/autumn_gleaning.tres" id="10"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/emulation_contest.tres" id="11"]
+[ext_resource type="Resource" path="res://data/modifiers/campaigns/surplus_sale.tres" id="12"]
 
 [resource]
 script = ExtResource("1")
-campaigns = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9")])
+campaigns = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12")])

@@ -34,6 +34,8 @@ const FORBIDDEN_WORDS: PackedStringArray = [
 	"player_market_campaign",
 	"player_sell_cadre",
 	"player_sell_campaign",
+	"player_mark_card",
+	"MarkDesk",
 	"player_reform",
 	"player_envelope_buy",
 	"player_market_envelope",
