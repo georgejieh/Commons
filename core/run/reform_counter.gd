@@ -1,12 +1,10 @@
 class_name ReformCounter
 extends RefCounted
 ## The state store's Reforms (ADR 0021): reform_offers of them drawn evenly from the pool
-## after every other draw on the shop stream, never one the player holds or one held
-## back, redrawn by the counter's reroll and bought at the counter's price. A bought
-## Reform lasts the run.
+## after every other draw on the shop stream, never one the player holds, redrawn by the
+## counter's reroll and bought at the counter's price. A bought Reform lasts the run.
 
 const SOLD: String = ""
-const PERCENT: int = 100
 
 var _state: RunState
 var _params: ShopParams
@@ -26,8 +24,7 @@ func stock() -> Array[String]:
 
 
 func price(slot: int) -> int:
-	var cost: int = (_reform(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
-	return RunBooks.priced(_state, cost)
+	return RunShop.price_of(_state, _params, _reform(_stock[slot]).cost)
 
 
 ## True when a reroll could offer another Reform.
@@ -72,12 +69,9 @@ func draw() -> void:
 		open.remove_at(index)
 
 
-## The Reforms that can be offered: not held, and not held back, in pool order.
+## The Reforms that can be offered: those not held, in pool order.
 func _open() -> Array[ReformDef]:
-	return _pool.filter(
-		func(reform: ReformDef) -> bool:
-			return not reform.held_back and not _state.reforms.has(reform.id)
-	)
+	return _pool.filter(func(reform: ReformDef) -> bool: return not _state.reforms.has(reform.id))
 
 
 func _reform(reform_id: String) -> ReformDef:

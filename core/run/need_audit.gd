@@ -1,6 +1,6 @@
 class_name NeedAudit
 extends RefCounted
-## Checks declared needs before a Commons split (P4.3). Each declaring seat rolls one die
+## Checks declared needs before a Commons split. Each declaring seat rolls one die
 ## on the audit stream, and a face at or below the audit faces means its claim is
 ## checked. The faces are the base, plus one for an informer in the village, then the
 ## audit hook, and never every face. A checked declaration above true need is a caught

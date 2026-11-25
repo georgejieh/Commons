@@ -8,6 +8,5 @@ id = "unplanned_economy"
 cost = 8
 unlock_tier = 3
 parameters = Dictionary[String, int]({})
-held_back = false
 name_key = "reform.unplanned_economy.name"
 text_key = "reform.unplanned_economy.text"

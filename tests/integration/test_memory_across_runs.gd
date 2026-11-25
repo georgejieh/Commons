@@ -85,7 +85,7 @@ func test_a_run_that_dies_mid_set_still_remembers_that_set() -> void:
 			continue
 		var summary: SetSummary = state.summaries[-1]
 		for family_id: String in summary.counts:
-			for kind: int in SetSummary.KIND_COUNT:
+			for kind: int in SetSummary.Kind.size():
 				var kept: float = state.memory.count(family_id, kind as SetSummary.Kind)
 				assert_float(kept).is_equal_approx(float(summary.counts[family_id][kind]), 0.001)
 				if summary.counts[family_id][kind] > 0.0:

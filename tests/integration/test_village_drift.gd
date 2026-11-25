@@ -118,8 +118,7 @@ func test_a_seated_family_plays_and_speaks_as_it_drifted() -> void:
 		state.table = ["player", entry.family_id, entry.family_id]
 		var voice: VoiceProfile = RunPeople.seat_voice(state, 1)
 		if voice != null:
-			var pitch: float = family.voice.pitch * drift.pitch_factor(family.id)
-			assert_float(voice.pitch).is_equal_approx(pitch, 1e-6)
+			assert_float(voice.pitch).is_equal(family.voice.pitch)
 			var factor: float = drift.pitch_factor(family.id)
 			assert_float(voice.playback_pitch).is_equal_approx(factor, 1e-9)
 			var plan: VoicePlan = VoiceScript.plan("Go on.", "", voice)

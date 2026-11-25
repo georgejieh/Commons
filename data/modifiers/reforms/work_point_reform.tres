@@ -8,6 +8,5 @@ id = "work_point_reform"
 cost = 8
 unlock_tier = 0
 parameters = Dictionary[String, int]({"coupons": 1})
-held_back = false
 name_key = "reform.work_point_reform.name"
 text_key = "reform.work_point_reform.text"

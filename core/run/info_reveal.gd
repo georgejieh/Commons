@@ -1,6 +1,6 @@
 class_name InfoReveal
 extends RefCounted
-## Fills the player's InfoView from the information flags their modifiers turn on (P4.9).
+## Fills the player's InfoView from the information flags their modifiers turn on.
 ## Bots never get one, so with no flags the player sees exactly the public view. Each
 ## opponent's hand is read under that opponent's own rules (ADR 0039), never the player's.
 

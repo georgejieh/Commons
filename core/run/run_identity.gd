@@ -72,6 +72,6 @@ static func is_valid(value: Variant) -> bool:
 		keys.append("file_entries")
 	for key: String in keys:
 		var number: Variant = data.get(key)
-		if not (number is int or number is float) or number < 0 or number != floorf(number):
+		if not RunState.is_count(number):
 			return false
 	return int(data["kind"]) < Kind.size()

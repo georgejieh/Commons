@@ -187,7 +187,7 @@ static func is_valid(value: Variant) -> bool:
 	if not data.get("active") is bool or not data.get("player_surname") is String:
 		return false
 	var number: Variant = data.get("generation")
-	if not (number is int or number is float) or number < 0 or number != floorf(number):
+	if not RunState.is_count(number):
 		return false
 	return _texts_valid(data.get("given")) and _texts_valid(data.get("youth_texts"))
 

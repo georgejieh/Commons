@@ -21,7 +21,7 @@ enum Awaiting {
 	## Before the first play, a peasant player holding a Campaign for that moment may use
 	## it, then plays on with player_begin() (ADR 0021).
 	PLAYER_OPENING,
-	## A searching villager's play is being decided outside the loop (P5.0): read what the
+	## A searching villager's play is being decided outside the loop (ADR 0030): read what the
 	## search needs from search_request() and hand the play in with villager_play().
 	VILLAGER_SEARCH,
 }
@@ -29,22 +29,12 @@ enum Reason { OK, NOT_AWAITED, ILLEGAL }
 
 const PLAYER: int = 0
 const DEFAULT_PARAMS: RunParams = preload("res://data/run/default_run.tres")
-const DEFAULT_POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
-const DEFAULT_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
-## Private items the black market sells (P4.9 effects, P4.10 stock).
-const DEFAULT_MARKET: CadrePool = preload("res://data/run/market_pool.tres")
-const DEFAULT_SHOP: ShopParams = preload("res://data/run/default_shop.tres")
-const DEFAULT_BLACK_MARKET: ShopParams = preload("res://data/run/black_market.tres")
-## The Directives the state store sells (ADR 0021).
-const DEFAULT_DIRECTIVES: DirectivePool = preload("res://data/run/directive_pool.tres")
 const DEFAULT_PLOT_UPGRADES: PlotUpgradeParams = preload("res://data/run/plot_upgrades.tres")
 const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
-const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
 const DEFAULT_FREE_RIDE: FreeRideParams = preload("res://data/run/free_ride.tres")
 const DEFAULT_VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
 const DEFAULT_MEMORY: MemoryParams = preload("res://data/villagers/memory.tres")
-const DEFAULT_BOSSES: BossPool = preload("res://data/run/boss_pool.tres")
 ## What the loop waits on when a books command may come: the player is to act.
 const BOOKS_AWAITING: Array[Awaiting] = [
 	Awaiting.PLAYER_BID,
@@ -90,7 +80,6 @@ var _sets: SetConfig
 var _params: RunParams
 var _meters: MeterTable
 var _pool: Array[ModifierDef]
-var _pool_by_id: Dictionary[String, ModifierDef] = {}
 var _stack: ModifierStack = ModifierStack.new()
 var _table: SeatRules
 var _seat: LandlordSeat = LandlordSeat.new()
@@ -113,7 +102,7 @@ func _init(
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	params: RunParams = DEFAULT_PARAMS,
-	pool: Array[ModifierDef] = DEFAULT_POOL.debuffs,
+	pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs,
 	meters: MeterTable = DEFAULT_METERS
 ) -> void:
 	state = run_state
@@ -124,9 +113,6 @@ func _init(
 	_params = params
 	_meters = meters
 	_pool = pool
-	var known: Array[ModifierDef] = pool + all_cadres()
-	for definition: ModifierDef in known + DEFAULT_BOSSES.all():
-		_pool_by_id[definition.id] = definition
 	shop = RunShop.new(
 		state,
 		pools.store,
@@ -163,7 +149,7 @@ func _init(
 
 ## Every Cadre either shop sells: the collective ones and the private ones.
 static func all_cadres() -> Array[ModifierDef]:
-	return DEFAULT_CADRES.cadres + DEFAULT_MARKET.cadres
+	return RunPools.STORE_CADRES.cadres + RunPools.MARKET_CADRES.cadres
 
 
 func awaiting() -> Awaiting:
@@ -203,7 +189,7 @@ func set_aside_cards() -> Array[CardInstance]:
 
 
 ## The player's view of the round: the public view and their own cards, plus whatever
-## their information upgrades reveal (P4.9). Null between rounds.
+## their information upgrades reveal. Null between rounds.
 func player_view() -> SeatView:
 	if _round == null:
 		return null
@@ -225,7 +211,7 @@ func bid_info() -> InfoView:
 func _info_flags() -> int:
 	var held: Array[ModifierDef] = []
 	for cadre_id: String in state.inventory.cadres:
-		held.append(_pool_by_id[cadre_id])
+		held.append(RunDefinitions.modifiers[cadre_id])
 	return InfoReveal.flags(held)
 
 
@@ -243,12 +229,12 @@ func seat_table(seat: int) -> BotTable:
 
 ## The current Set's target: the curve's, any boss's change, then the norm in force for
 ## this Set, which leaves out what the Set itself earned once it is over and what a False
-## Report raised it by in the Set (ADR 0032), then the
-## family's file and the corrections in force (ADR 0022).
+## Report raised it by in the Set (ADR 0032), then the family's file and the corrections
+## in force (ADR 0022).
 func target() -> float:
 	var base: float = _sets.target(state.year, state.set_type)
 	if state.boss_id != RunState.NO_BOSS:
-		var boss: ModifierDef = _pool_by_id[state.boss_id]
+		var boss: ModifierDef = RunDefinitions.modifiers[state.boss_id]
 		var percent: int = boss.parameters.get(GreatLeapEffect.QUOTA_PERCENT, 100)
 		base = base * percent / 100.0
 	var steps: int = state.norm_steps - state.over_steps - state.reported_steps
@@ -265,7 +251,7 @@ func start_set() -> Reason:
 	RunBooks.start_quota(state)
 	record.mark(state)
 	_seat_roster()
-	set_log.start_set(state, set_number())
+	set_log.start_set(state, state.set_number())
 	_move(RunFlow.State.SET_INTRO)
 	state.round_index = 0
 	state.set_progress = 0.0
@@ -280,7 +266,9 @@ func start_set() -> Reason:
 	state.slogan_type = RunDebuffs.draw_slogan(state.debuff_ladder, ladder_stream)
 	var ladder_text: String = ",".join(state.debuff_ladder.slice(1))
 	set_log.add(
-		RunEvent.new(RunEvent.Type.SET_STARTED, Seats.NONE, set_number(), target(), ladder_text)
+		RunEvent.new(
+			RunEvent.Type.SET_STARTED, Seats.NONE, state.set_number(), target(), ladder_text
+		)
 	)
 	_start_round()
 	return Reason.OK
@@ -430,12 +418,12 @@ func player_begin() -> Reason:
 ## Buys the state store's Campaign, or the black market's, which adds Resentment as any
 ## purchase there does.
 func player_campaign_buy(slot: int) -> Reason:
-	var act: Callable = shop.campaigns.buy.bind(slot)
+	var act: Callable = _done(shop.campaigns.buy.bind(slot))
 	return _shop_command({"type": "campaign_buy", "slot": slot}, act)
 
 
 func player_market_campaign(slot: int) -> Reason:
-	var act: Callable = market.campaigns.buy.bind(slot)
+	var act: Callable = _done(market.campaigns.buy.bind(slot))
 	var reason: Reason = _shop_command({"type": "market_campaign", "slot": slot}, act)
 	if reason == Reason.OK:
 		_market_bought()
@@ -444,19 +432,19 @@ func player_market_campaign(slot: int) -> Reason:
 
 ## Enacts the state store's Reform: it lasts the rest of the run (ADR 0021).
 func player_reform(slot: int) -> Reason:
-	return _shop_command({"type": "reform", "slot": slot}, shop.reforms.buy.bind(slot))
+	return _shop_command({"type": "reform", "slot": slot}, _done(shop.reforms.buy.bind(slot)))
 
 
 ## Buys the state store's envelope, which opens it at once (ADR 0021). Until the player
 ## keeps one of its items or nothing, every other shop command is refused.
 func player_envelope_buy(slot: int) -> Reason:
-	var act: Callable = shop.envelopes.buy.bind(slot)
+	var act: Callable = _done(shop.envelopes.buy.bind(slot))
 	return _shop_command({"type": "envelope_buy", "slot": slot}, act)
 
 
 ## Buys the black market's Parcel: a private purchase, resented when it is bought.
 func player_market_envelope(slot: int) -> Reason:
-	var act: Callable = market.envelopes.buy.bind(slot)
+	var act: Callable = _done(market.envelopes.buy.bind(slot))
 	var reason: Reason = _shop_command({"type": "market_envelope", "slot": slot}, act)
 	if reason == Reason.OK:
 		_market_bought()
@@ -527,16 +515,17 @@ func player_need(need: int) -> Reason:
 	return Reason.OK
 
 
-## Leaves a finished Set for the state store, or for reeducation when it is owed.
+## Leaves a finished Set for the state store, or for reeducation when it is owed. The
+## run's last Set has no shops after it: next_set() ends the run.
 func open_shop() -> Reason:
-	if _awaiting != Awaiting.SET_OVER:
+	if _awaiting != Awaiting.SET_OVER or is_last_set():
 		return Reason.NOT_AWAITED
 	record.add({"type": "shop"})
 	if state.reeducation_due:
 		_reeducate()
 		return Reason.OK
 	_move(RunFlow.State.SHOP)
-	shop.short_cut = RunDebuffs.store_cut(state, _pool_by_id, PLAYER)
+	shop.short_cut = RunDebuffs.store_cut(state, RunDefinitions.modifiers, PLAYER)
 	shop.open()
 	market.open()
 	_read_shop_rules()
@@ -561,7 +550,7 @@ func open_shop() -> Reason:
 
 func player_buy(slot: int) -> Reason:
 	var bought: ModifierDef = _stocked(shop, slot)
-	var reason: Reason = _shop_command({"type": "buy", "slot": slot}, shop.buy.bind(slot))
+	var reason: Reason = _shop_command({"type": "buy", "slot": slot}, _done(shop.buy.bind(slot)))
 	if reason == Reason.OK:
 		RunCadres.bought(state, bought, Ranks.INVALID)
 		_read_shop_rules()
@@ -569,24 +558,24 @@ func player_buy(slot: int) -> Reason:
 
 
 func player_reroll() -> Reason:
-	return _shop_command({"type": "reroll"}, shop.reroll)
+	return _shop_command({"type": "reroll"}, _done(shop.reroll))
 
 
 ## Issues a Directive from the state store: its hand types rise a level at once.
 func player_directive(slot: int) -> Reason:
-	return _shop_command({"type": "directive", "slot": slot}, shop.buy_directive.bind(slot))
+	return _shop_command({"type": "directive", "slot": slot}, _done(shop.buy_directive.bind(slot)))
 
 
 ## Buys from the black market. Every purchase there is a private one, and adds
 ## Resentment. A Cadre that needs a rank is refused without one from 3 to 2 (ADR 0021).
 func player_market_buy(slot: int, rank: int = Ranks.INVALID) -> Reason:
 	var bought: ModifierDef = _stocked(market, slot)
-	if _awaiting == Awaiting.SHOP and not RunCadres.rank_fits(bought, rank):
-		return Reason.ILLEGAL
 	var command: Dictionary = {"type": "market_buy", "slot": slot}
 	if rank != Ranks.INVALID:
 		command["rank"] = rank
-	var reason: Reason = _shop_command(command, market.buy.bind(slot))
+	var act: Callable = func() -> bool:
+		return RunCadres.rank_fits(bought, rank) and market.buy(slot) == RunShop.Reason.OK
+	var reason: Reason = _shop_command(command, act)
 	if reason == Reason.OK:
 		RunCadres.bought(state, bought, rank)
 		_read_shop_rules()
@@ -602,9 +591,9 @@ func player_sell_cadre(index: int, at_market: bool = false) -> Reason:
 	var counter: RunShop = market if at_market else shop
 	var held: Array[String] = state.inventory.cadres
 	var cadre_id: String = held[index] if index >= 0 and index < held.size() else ""
-	var definition: ModifierDef = _pool_by_id.get(cadre_id)
+	var definition: ModifierDef = RunDefinitions.modifiers.get(cadre_id)
 	var paid: int = 0 if definition == null else counter.sale_price(definition.cost)
-	var act: Callable = counter.sell.bind(index, definition, debuffs.confiscated_ids())
+	var act: Callable = _done(counter.sell.bind(index, definition, debuffs.confiscated_ids()))
 	var command: Dictionary = {"type": "sell_cadre", "index": index, "market": at_market}
 	var reason: Reason = _shop_command(command, act)
 	if reason == Reason.OK:
@@ -621,10 +610,10 @@ func player_sell_campaign(index: int, at_market: bool = false) -> Reason:
 	var counter: CampaignCounter = market.campaigns if at_market else shop.campaigns
 	var held: Array[String] = state.inventory.consumables
 	var campaign_id: String = held[index] if index >= 0 and index < held.size() else ""
-	var definition: CampaignDef = campaigns.definition(campaign_id)
+	var definition: CampaignDef = RunDefinitions.campaigns.get(campaign_id)
 	var paid: int = 0 if definition == null else counter.sale_price(definition)
 	var command: Dictionary = {"type": "sell_campaign", "index": index, "market": at_market}
-	var reason: Reason = _shop_command(command, counter.sell.bind(index, definition))
+	var reason: Reason = _shop_command(command, _done(counter.sell.bind(index, definition)))
 	if reason == Reason.OK:
 		shop.campaigns.withheld.append(campaign_id)
 		market.campaigns.withheld.append(campaign_id)
@@ -638,9 +627,7 @@ func player_sell_campaign(index: int, at_market: bool = false) -> Reason:
 func player_mark_card(card_id: int, at_market: bool = false) -> Reason:
 	var desk: MarkDesk = (market if at_market else shop).desk
 	var paid: int = desk.price()
-	var act: Callable = func() -> RunShop.Reason:
-		var marked: bool = desk.mark(card_id, PLAYER) == MarkDesk.Reason.OK
-		return RunShop.Reason.OK if marked else RunShop.Reason.TOO_POOR
+	var act: Callable = func() -> bool: return desk.mark(card_id, PLAYER) == MarkDesk.Reason.OK
 	var command: Dictionary = {"type": "mark_card", "card": card_id, "market": at_market}
 	var reason: Reason = _shop_command(command, act)
 	if reason == Reason.OK:
@@ -656,13 +643,13 @@ func player_mark_card(card_id: int, at_market: bool = false) -> Reason:
 ## in out, for the rest of the run (ADR 0042).
 func player_deck_card(slot: int, out: int) -> Reason:
 	var command: Dictionary = {"type": "deck_card", "slot": slot, "out": out}
-	return _shop_command(command, deck_stall.buy.bind(slot, out))
+	return _shop_command(command, _done(deck_stall.buy.bind(slot, out)))
 
 
 ## What the held Cadres change about this visit's counters, read as it opens and again
 ## after a Cadre is bought, so one bought now works at once (Back Door, ADR 0032).
 func _read_shop_rules() -> void:
-	var rules: ShopContext = RunCadres.shop_rules(state, _pool_by_id, PLAYER)
+	var rules: ShopContext = RunCadres.shop_rules(state, RunDefinitions.modifiers, PLAYER)
 	market.free_rerolls = rules.free_market_rerolls
 
 
@@ -671,18 +658,16 @@ func _stocked(counter: RunShop, slot: int) -> ModifierDef:
 	var stock: Array[String] = counter.stock()
 	if slot < 0 or slot >= stock.size() or stock[slot] == RunShop.SOLD:
 		return null
-	return _pool_by_id[stock[slot]]
+	return RunDefinitions.modifiers[stock[slot]]
 
 
 func player_market_reroll() -> Reason:
-	return _shop_command({"type": "market_reroll"}, market.reroll)
+	return _shop_command({"type": "market_reroll"}, _done(market.reroll))
 
 
 ## Buys a card for the private plot at the black market: a private purchase too.
 func player_plot_card(slot: int) -> Reason:
-	var act: Callable = func() -> RunShop.Reason:
-		var bought: bool = stall.buy(slot) == PlotStall.Reason.OK
-		return RunShop.Reason.OK if bought else RunShop.Reason.TOO_POOR
+	var act: Callable = func() -> bool: return stall.buy(slot) == PlotStall.Reason.OK
 	var reason: Reason = _shop_command({"type": "plot_card", "slot": slot}, act)
 	if reason == Reason.OK:
 		_market_bought()
@@ -691,19 +676,20 @@ func player_plot_card(slot: int) -> Reason:
 
 ## Buys a private-plot upgrade at the black market: a private purchase like any other.
 func player_upgrade(kind: String) -> Reason:
-	var act: Callable = func() -> RunShop.Reason:
-		var bought: bool = PlotUpgrades.buy(state, kind, DEFAULT_PLOT_UPGRADES)
-		return RunShop.Reason.OK if bought else RunShop.Reason.TOO_POOR
+	var act: Callable = func() -> bool: return PlotUpgrades.buy(state, kind, DEFAULT_PLOT_UPGRADES)
 	var reason: Reason = _shop_command({"type": "upgrade", "kind": kind}, act)
 	if reason == Reason.OK:
 		_market_bought()
 	return reason
 
 
-## Moves past a finished Set or the shop: a Year's end after the boss, then the next Set.
-## From a finished Set it passes through the shop without stopping.
+## Moves past the shops, reeducation or the run's last Set: a Year's end after the boss,
+## then the next Set or the run's end. Any other finished Set goes to the shops first,
+## through open_shop(), so a reeducation that is due is never passed by.
 func next_set() -> Reason:
 	if not [Awaiting.SET_OVER, Awaiting.SHOP, Awaiting.REEDUCATION].has(_awaiting):
+		return Reason.NOT_AWAITED
+	if _awaiting == Awaiting.SET_OVER and not is_last_set():
 		return Reason.NOT_AWAITED
 	# An open envelope is answered before the shops are left.
 	if open_envelope() != null:
@@ -726,20 +712,35 @@ func next_set() -> Reason:
 	return start_set()
 
 
+## Leaves the shops for the next Set, or the run's end.
+func leave_store() -> Reason:
+	if _awaiting != Awaiting.SHOP:
+		return Reason.NOT_AWAITED
+	return next_set()
+
+
+## Leaves reeducation for the next Set, or the run's end.
+func leave_reeducation() -> Reason:
+	if _awaiting != Awaiting.REEDUCATION:
+		return Reason.NOT_AWAITED
+	return next_set()
+
+
+## True while the Set in play, or the one just ended, is the run's last: its last Year's
+## boss Set.
+func is_last_set() -> bool:
+	return state.set_type == RunState.SetType.BOSS and state.year == _sets.years()
+
+
 func sets() -> SetConfig:
 	return _sets
-
-
-## Counts Sets across the run from 0.
-func set_number() -> int:
-	return (state.year - 1) * SetConfig.SETS_PER_YEAR + state.set_index
 
 
 ## Cadres in slot order, then the ladder's debuffs so far, as the hook order says.
 func _rebuild_modifiers() -> void:
 	_stack.clear()
 	for cadre_id: String in state.inventory.cadres:
-		_stack.add(_pool_by_id[cadre_id], PLAYER, state.cadre_memos.entry(cadre_id))
+		_stack.add(RunDefinitions.modifiers[cadre_id], PLAYER, state.cadre_memos.entry(cadre_id))
 	# A Reform's rule for the player's seat, such as Industrialization's bigger bombs
 	# (ADR 0029, ADR 0039).
 	for rule: ActiveModifier in RunReforms.table_rules(state, PLAYER):
@@ -748,12 +749,12 @@ func _rebuild_modifiers() -> void:
 		var id: String = state.debuff_ladder[round_index]
 		if id == RunState.NO_DEBUFF:
 			continue
-		var entry: ActiveModifier = _stack.add(_pool_by_id[id], PLAYER)
+		var entry: ActiveModifier = _stack.add(RunDefinitions.modifiers[id], PLAYER)
 		if round_index == state.round_index:
 			campaigns.flags.round_debuff = entry
 			set_log.add(RunEvent.new(RunEvent.Type.DEBUFF_ADDED, PLAYER, round_index, 0.0, id))
 	if state.boss_id != RunState.NO_BOSS:
-		_stack.add(_pool_by_id[state.boss_id], PLAYER)
+		_stack.add(RunDefinitions.modifiers[state.boss_id], PLAYER)
 	debuffs.rebuilt()
 
 
@@ -925,13 +926,13 @@ func _bot_play() -> void:
 	_play_bot(seat, config, legal, play)
 
 
-## What the search for the villager the loop stands still for reads (P5.0), or null
+## What the search for the villager the loop stands still for reads (ADR 0030), or null
 ## while it waits on anything else. The search may read it on any thread.
 func search_request() -> SearchRequest:
 	return _request
 
 
-## Takes the searched play of the villager the loop stands still for, and plays on (P5.0).
+## Takes the searched play of the villager the loop stands still for, and plays on (ADR 0030).
 ## A play that is not among its legal moves or a pass is refused as any bot's is: counted
 ## in refused_bot_actions, with the first legal move played instead. Not a player command:
 ## the record writes it with the villagers' decisions, never with the commands.
@@ -1174,7 +1175,7 @@ func _end_set() -> void:
 	# A family that starves is dead before reeducation could take it (ADR 0025).
 	VillageFates.starve(state, _meters.famine, DEFAULT_VILLAGE.starvations_per_year, set_log)
 	if met:
-		VillageFates.depose(state, DEFAULT_BOSSES.risen.id, set_log)
+		VillageFates.depose(state, RunPools.BOSSES.risen.id, set_log)
 	_reeducate_villagers()
 	state.memory.record(state.summaries[-1])
 	_record_style_and_risen()
@@ -1225,14 +1226,14 @@ func _choose_boss() -> void:
 	if state.set_type != RunState.SetType.BOSS:
 		return
 	var stream: RandomStream = state.streams.stream(RandomStreams.EVENTS)
-	var boss: ModifierDef = Bosses.choose(state, DEFAULT_BOSSES, _sets.years(), stream)
+	var boss: ModifierDef = Bosses.choose(state, RunPools.BOSSES, _sets.years(), stream)
 	state.boss_id = boss.id
 	set_log.add(RunEvent.new(RunEvent.Type.BOSS_CHOSEN, Seats.NONE, 0, 0.0, boss.id))
-	var purge: int = boss.parameters.get("purge", 0)
+	var purge: int = boss.parameters.get(BossMarkerEffect.PURGE, 0)
 	for cadre_id: String in Bosses.purge(state.inventory, purge, stream):
 		set_log.add(RunEvent.new(RunEvent.Type.CADRE_PURGED, PLAYER, 0, 0.0, cadre_id))
 	state.cadre_memos.keep_only(state.inventory.cadres)
-	if boss == DEFAULT_BOSSES.risen:
+	if boss == RunPools.BOSSES.risen:
 		# The risen family takes seat 1; if the roster already sat it in seat 2, the two
 		# seats trade so no family sits twice.
 		if state.table[2] == state.boss_family:
@@ -1245,15 +1246,15 @@ func _choose_boss() -> void:
 		if entry != null:
 			_configs[1] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(1), state.drift)
 		state.landlord_seat = 1
-	elif boss == DEFAULT_BOSSES.new_landlord:
-		PlayerStyle.mirror(_configs[1], state.styles, DEFAULT_BOSSES)
+	elif boss == RunPools.BOSSES.new_landlord:
+		PlayerStyle.mirror(_configs[1], state.styles, RunPools.BOSSES)
 
 
 ## Keeps the player's last few Sets of play, and marks a villager who held the landlord
 ## seat all Set as risen.
 func _record_style_and_risen() -> void:
 	state.styles.append(PlayerStyle.from_events(set_log.events(), PLAYER))
-	while state.styles.size() > DEFAULT_BOSSES.style_sets:
+	while state.styles.size() > RunPools.BOSSES.style_sets:
 		state.styles.pop_front()
 	var holder: String = Bosses.full_set_holder(set_log.events(), state.table, PLAYER)
 	if holder != Bosses.NO_FAMILY and not state.risen.has(holder):
@@ -1283,7 +1284,7 @@ func _count_standing_by() -> void:
 
 
 func _seat_seed(seat: int) -> int:
-	return RandomStreams.derive_seed(state.run_seed, "seat:%d:%d" % [set_number(), seat])
+	return RandomStreams.derive_seed(state.run_seed, "seat:%d:%d" % [state.set_number(), seat])
 
 
 ## Seats two families from the roster and plays them by their personalities. A run
@@ -1296,14 +1297,15 @@ func _seat_roster() -> void:
 		var entry: RosterEntry = Roster.entry(state, state.table[seat])
 		_configs[seat] = Roster.config_for(DEFAULT_VILLAGE, entry, _seat_seed(seat), state.drift)
 		if Roster.definition(DEFAULT_VILLAGE, entry).mirrors_player:
-			PlayerStyle.mirror(_configs[seat], state.styles, DEFAULT_BOSSES)
+			PlayerStyle.mirror(_configs[seat], state.styles, RunPools.BOSSES)
 
 
 ## A family whose own Denunciation reached mid is sent to reeducation, and its count
 ## starts again.
 func _reeducate_villagers() -> void:
 	# In name order: a save sorts its keys, so insertion order would not survive one.
-	var families: Array = state.villager_denunciation.keys()
+	var families: Array[String] = []
+	families.assign(state.villager_denunciation.keys())
 	families.sort()
 	for family_id: String in families:
 		if state.villager_denunciation[family_id] < _meters.denunciation.mid:
@@ -1365,8 +1367,6 @@ func _aim_grudges() -> void:
 			)
 
 
-## Ends the run when a meter has reached death. Every caller sits at a state that may
-## move to the run's end.
 ## A run that dies mid-Set still remembers that Set: the round in play is folded into
 ## the Set's summary, and the summary into the village's memory, as a finished Set's is.
 func _remember_cut_short() -> void:
@@ -1378,6 +1378,8 @@ func _remember_cut_short() -> void:
 	CorruptionEvents.close_quota(state, set_log.events(), _params.base_need)
 
 
+## Ends the run when a meter has reached death. Every caller sits at a state that may
+## move to the run's end.
 func _end_if_dead() -> bool:
 	if not RunMeters.dead(state, _meters):
 		return false
@@ -1408,13 +1410,21 @@ func _reeducate() -> void:
 	_awaiting = Awaiting.REEDUCATION
 
 
+## Runs a shop command while the shops wait on the player and no envelope is open, and
+## records it when act, which returns whether it was done, did it.
 func _shop_command(command: Dictionary, act: Callable) -> Reason:
 	if _awaiting != Awaiting.SHOP or open_envelope() != null:
 		return Reason.NOT_AWAITED
-	if act.call() != RunShop.Reason.OK:
+	if not act.call():
 		return Reason.ILLEGAL
 	record.add(command)
 	return Reason.OK
+
+
+## A shop command for _shop_command(): act returns a RunShop.Reason, and it was done when
+## that is OK.
+static func _done(act: Callable) -> Callable:
+	return func() -> bool: return act.call() == RunShop.Reason.OK
 
 
 ## Every move the loop makes is in the table, so a refusal is a bug. A checkpoint move

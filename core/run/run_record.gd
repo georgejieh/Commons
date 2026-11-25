@@ -58,18 +58,13 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 	return data
 
 
-## Version 2 saves predate the meter setbacks (P4.1): armed, with none in force, and
-## Resentment (P4.2) at zero, villagers' Denunciation (P4.3) empty, and no
-## Commons paid yet (P4.4), no memory carried in (P4.6), and no
-## bosses or styles yet (P4.7), and the plot counter at its start (P4.8).
+## Version 2 saves lack every field the meters, the village and the shops added before
+## schema 4; migrate_from_3, which always runs next, fills them in.
 static func migrate_from_2(data: Dictionary) -> Dictionary:
-	if data.get("checkpoint") is Dictionary:
-		var checkpoint: Dictionary = data["checkpoint"]
-		checkpoint.merge(_phase_4_defaults())
 	return data
 
 
-## Version 3 saves predate the state store's limited stock (P4.10): nothing sold yet.
+## Version 3 saves predate the state store's limited stock: nothing sold yet.
 ## Schema 3 was written all through Phase 4 while its fields were still being added, so
 ## a save from the middle of it may lack some: every Phase 4 field missing gets the
 ## value a run starts with.
@@ -92,7 +87,7 @@ static func migrate_from_4(data: Dictionary) -> Dictionary:
 	return data
 
 
-## Version 5 saves predate saved marks and hand levels (P4.11): no card marked, and
+## Version 5 saves predate saved marks and hand levels: no card marked, and
 ## every hand type at its first level.
 static func migrate_from_5(data: Dictionary) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
@@ -239,7 +234,7 @@ static func migrate_from_19(data: Dictionary) -> Dictionary:
 			for family: Variant in rows:
 				if rows[family] is Array:
 					var row: Array = rows[family]
-					while row.size() < Observations.KIND_COUNT:
+					while row.size() < Observations.Kind.size():
 						row.append(0)
 	return data
 
@@ -307,18 +302,20 @@ static func is_valid(data: Dictionary) -> bool:
 ## Returns null when a saved command or a written decision no longer applies, so the
 ## caller can fall back. The searcher decides searching villagers once the replay is
 ## over; data without the written marker replays as a record from before it. With
-## outside, searches are answered from outside the loop (P5.0): a villager the record
+## outside, searches are answered from outside the loop (ADR 0030): a villager the record
 ## ends before, as in a save written while it was thinking, is not decided here, and the
-## loop comes back standing still for it.
+## loop comes back standing still for it. weights, when given, are what searching villagers
+## decide with in place of their own, from the replay on, as the run saved did (ADR 0027).
 static func resume(
 	data: Dictionary,
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	params: RunParams = RunLoop.DEFAULT_PARAMS,
-	pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs,
+	pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs,
 	meters: MeterTable = RunLoop.DEFAULT_METERS,
 	searcher: Callable = Callable(),
-	outside: bool = false
+	outside: bool = false,
+	weights: BotWeights = null
 ) -> RunLoop:
 	var loop: RunLoop = RunLoop.new(
 		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool, meters
@@ -328,6 +325,7 @@ static func resume(
 	loop.record.mark(loop.state)
 	loop.decisions.searcher = searcher
 	loop.decisions.answered_outside = outside
+	loop.decisions.weights = weights
 	# Before the checkpoint resumes, since villagers can act before the first command.
 	var written: Array[Dictionary] = []
 	written.assign(data.get("decisions", []))
@@ -435,18 +433,18 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 		return false
 	# The file's count is in every identity saved since the books (schema 17).
 	var identity: Dictionary = checkpoint["identity"]
-	if not _counters_valid(identity.get("file_entries"), 0):
+	if not RunState.is_count(identity.get("file_entries")):
 		return false
 	if not RunBooks.is_valid(checkpoint["books"]):
 		return false
-	if not _counters_valid(checkpoint["year_starved"], 0):
+	if not RunState.is_count(checkpoint["year_starved"]):
 		return false
-	if not _counters_valid(checkpoint["famine_market_buys"], 0):
+	if not RunState.is_count(checkpoint["famine_market_buys"]):
 		return false
-	if not _counters_valid(checkpoint["seatless_sets"], 0):
+	if not RunState.is_count(checkpoint["seatless_sets"]):
 		return false
 	# False Report's steps are a whole count, none past the norm they raised (ADR 0032).
-	if not _counters_valid(checkpoint["reported_steps"], 0):
+	if not RunState.is_count(checkpoint["reported_steps"]):
 		return false
 	if checkpoint["reported_steps"] > checkpoint["norm_steps"]:
 		return false
@@ -464,7 +462,7 @@ static func _shapes_valid(checkpoint: Dictionary) -> bool:
 ## rounds as landlord than rounds played.
 static func _counters_valid(rounds: Variant, landlord: Variant) -> bool:
 	for value: Variant in [rounds, landlord]:
-		if not (value is int or value is float) or value < 0 or value != floorf(value):
+		if not RunState.is_count(value):
 			return false
 	return landlord <= rounds
 

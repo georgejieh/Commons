@@ -16,7 +16,7 @@ static func play(event: RunEvent, landlord: int, controller: RunController) -> v
 			Audio.ambience.hush()
 		return
 	var state: RunState = controller.state_copy()
-	if not ShownFigures.warns(state, event.text):
+	if not ShownFigures.is_true(state, event.text):
 		return
 	Audio.play(AudioEvents.name_for(event, landlord))
 	if _rose(event, state):

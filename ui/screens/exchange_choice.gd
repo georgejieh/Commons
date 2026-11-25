@@ -22,7 +22,7 @@ func _init(card: CardInstance, confirm: String, refuse: Callable, act: Callable)
 
 ## A card's name with its enhancement, "King of Spades, Model", or its name alone.
 static func card_text(card: CardInstance) -> String:
-	var named: String = PlotSwapSheet.card_name(card)
+	var named: String = CardName.of(card)
 	if not CardMark.draws(card.enhancement_id()):
 		return named
 	var mark: String = DeckSheet.mark_name(card.enhancement_id())
@@ -55,9 +55,7 @@ func refusal(card: CardInstance) -> String:
 
 
 func change(card: CardInstance) -> String:
-	var values: Dictionary[String, Variant] = {
-		"in": card_text(_card), "out": PlotSwapSheet.card_name(card)
-	}
+	var values: Dictionary[String, Variant] = {"in": card_text(_card), "out": CardName.of(card)}
 	var marks: PackedStringArray = []
 	if CardMark.draws(card.enhancement_id()):
 		marks.append(DeckSheet.mark_name(card.enhancement_id()))

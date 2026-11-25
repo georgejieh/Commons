@@ -2,10 +2,10 @@ class_name CardOffers
 extends RefCounted
 ## The cards a stall offers one visit, each a rank and a suit and perhaps an enhancement,
 ## at a price by its rank and its mark under any raise the books made (ADR 0022). The
-## black market's plot stall (P4.10) and the state store's deck stall (ADR 0042) each
+## black market's plot stall and the state store's deck stall (ADR 0042) each
 ## offer through one, from their own CardStallParams. An offer is drawn as its rank, then
 ## its suit, then, where the data marks some, whether it carries an enhancement and which,
-## so a stall that marks none draws as the plot stall always has. Offers are never saved:
+## so a stall that marks none draws only a rank and a suit. Offers are never saved:
 ## a save in the shop replays the visit, which draws them again.
 
 const SOLD: int = Ranks.INVALID

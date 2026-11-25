@@ -8,6 +8,5 @@ id = "industrialization"
 cost = 8
 unlock_tier = 4
 parameters = Dictionary[String, int]({"zeal_percent_per_card": 100})
-held_back = false
 name_key = "reform.industrialization.name"
 text_key = "reform.industrialization.text"

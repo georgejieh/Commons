@@ -1,6 +1,6 @@
 class_name Bosses
 extends RefCounted
-## Chooses who runs each boss Set (P4.7). The run's last boss is always the New Landlord.
+## Chooses who runs each boss Set. The run's last boss is always the New Landlord.
 ## Before that, odd Years bring an official and even Years a risen villager, falling back
 ## to an official when no risen villager is left. Officials do not repeat until all have
 ## run. Draws are on the events stream.

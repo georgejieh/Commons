@@ -39,7 +39,7 @@ func open(shut: bool) -> void:
 	is_open = _params.desk_price > 0 and not shut
 	if not is_open or stamps():
 		return
-	var visit: int = (_state.year - 1) * SetConfig.SETS_PER_YEAR + _state.set_index
+	var visit: int = _state.set_number()
 	var key: String = "mark_desk:%d" % visit
 	var stream: RandomStream = RandomStream.new(RandomStreams.derive_seed(_state.run_seed, key))
 	var kinds: Array[String] = CardInstance.ENHANCEMENTS

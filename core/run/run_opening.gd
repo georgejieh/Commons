@@ -8,8 +8,6 @@ extends RefCounted
 
 ## The stream a household's plot cards are drawn on, seeded from the run alone.
 const HOUSEHOLD_STREAM: String = "household"
-const DEFAULT_RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
-const DEFAULT_METERS: MeterTable = preload("res://data/run/meters.tres")
 ## The cause a starting Resentment is logged under.
 const OPENING: String = "household"
 
@@ -65,7 +63,7 @@ static func plot_cards(
 static func raise(state: RunState, meter: String, amount: int, run: RunParams) -> void:
 	if amount == 0:
 		return
-	var bands: MeterBands = DEFAULT_METERS.bands(meter)
+	var bands: MeterBands = RunLoop.DEFAULT_METERS.bands(meter)
 	var after: int = clampi(RunMeters.value(state, meter) + amount, 0, run.meter_max)
 	var armed: bool = after < bands.mid
 	if meter == RunMeters.FAMINE:
@@ -78,7 +76,7 @@ static func raise(state: RunState, meter: String, amount: int, run: RunParams) -
 
 static func resent(state: RunState, amount: int) -> void:
 	var unseen: Array[RunEvent] = []
-	Resentment.add(state, amount, OPENING, DEFAULT_RESENTMENT, unseen)
+	Resentment.add(state, amount, OPENING, RunLoop.DEFAULT_RESENTMENT, unseen)
 
 
 static func _in_plot(state: RunState, rank: int, suit: int) -> bool:

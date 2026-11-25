@@ -80,7 +80,7 @@ func test_envelopes_leave_every_other_draw_alone() -> void:
 		var bare: RunLoop = RunLoop.new(bare_state, RunScript.bots(), SetConfig.new())
 		var none: ShopParams = STORE.duplicate()
 		none.envelope_offers = 0
-		bare.shop.envelopes = EnvelopeCounter.new(bare_state, none, [], [])
+		bare.shop.envelopes = EnvelopeCounter.new(bare_state, none, [], [], RunLoop.DEFAULT_PARAMS)
 		bare.start_set()
 		RunScript.new().play_until_set_over(bare)
 		bare.state.coupons = RICH
@@ -157,10 +157,15 @@ func test_too_few_coupons_or_nothing_to_show_refuses_the_envelope() -> void:
 func test_while_open_every_other_shop_command_waits() -> void:
 	var loop: RunLoop = _at_the_shops(5)
 	loop.state.inventory.consumables.assign(["grain_loan"])
+	loop.state.inventory.cadres.assign(["rehabilitation"])
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
+	# A black-market Cadre that needs a rank is refused as every other command is, rank or not.
+	var ranked: Array[String] = ["planned_allocation"]
+	loop.market.set("_stock", ranked)
 	var before: String = JSON.stringify(loop.state.to_dict())
 	var commands: int = loop.record.commands.size()
 	var refused: Array[Callable] = [
+		loop.player_market_buy.bind(0, Ranks.INVALID),
 		loop.player_buy.bind(0),
 		loop.player_reroll,
 		loop.player_directive.bind(0),
@@ -174,7 +179,15 @@ func test_while_open_every_other_shop_command_waits() -> void:
 		loop.player_market_envelope.bind(0),
 		loop.player_envelope_buy.bind(0),
 		loop.player_campaign.bind(0, [] as Array[int]),
+		loop.player_sell_cadre.bind(0),
+		loop.player_sell_cadre.bind(0, true),
+		loop.player_sell_campaign.bind(0),
+		loop.player_sell_campaign.bind(0, true),
+		loop.player_mark_card.bind(0),
+		loop.player_mark_card.bind(0, true),
+		loop.player_deck_card.bind(0, 0),
 		loop.next_set,
+		loop.leave_store,
 	]
 	for command: Callable in refused:
 		assert_int(command.call()).is_equal(RunLoop.Reason.NOT_AWAITED)
@@ -190,7 +203,7 @@ func test_while_open_every_other_shop_command_waits() -> void:
 		RunLoop.Reason.NOT_AWAITED
 	)
 	assert_int(loop.player_buy(0)).is_equal(RunLoop.Reason.OK)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_envelope_pick(0)).is_equal(RunLoop.Reason.NOT_AWAITED)
 
 
@@ -200,7 +213,7 @@ func test_keeping_a_directive_issues_it_as_the_counter_does() -> void:
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 	var items: Array[EnvelopeItem] = loop.shop.envelopes.items()
 	var directive: DirectiveDef = null
-	for candidate: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+	for candidate: DirectiveDef in RunPools.DIRECTIVES.directives:
 		if candidate.id == items[1].item_id:
 			directive = candidate
 	assert_object(directive).is_not_null()
@@ -236,7 +249,7 @@ func test_keeping_a_campaign_needs_room_and_nothing_is_always_allowed() -> void:
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 	var items: Array[EnvelopeItem] = loop.shop.envelopes.items()
 	var pool: Array[String] = []
-	for campaign: CampaignDef in RunCampaigns.STORE_POOL.campaigns:
+	for campaign: CampaignDef in RunPools.STORE_CAMPAIGNS.campaigns:
 		pool.append(campaign.id)
 	for item: EnvelopeItem in items:
 		assert_bool(pool.has(item.item_id)).is_true()
@@ -263,7 +276,7 @@ func test_supply_cooperative_adds_a_choice_to_every_envelope() -> void:
 func test_the_parcel_mixes_its_contents_and_is_resented_when_bought() -> void:
 	var kinds: Dictionary[int, bool] = {}
 	var pool: Array[String] = []
-	for campaign: CampaignDef in RunCampaigns.MARKET_POOL.campaigns:
+	for campaign: CampaignDef in RunPools.MARKET_CAMPAIGNS.campaigns:
 		pool.append(campaign.id)
 	for seed_value: int in 12:
 		var loop: RunLoop = _at_the_shops(seed_value)

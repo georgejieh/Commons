@@ -9,9 +9,6 @@ extends Resource
 ## Finished runs needed before it is offered; RunUnlocks reads it (ADR 0025).
 @export var unlock_tier: int = 0
 @export var parameters: Dictionary[String, int]
-## Kept out of the state store's draw while set, for a Reform whose rule waits on
-## something not built yet. None is held back now.
-@export var held_back: bool = false
 @export var name_key: String
 @export var text_key: String
 

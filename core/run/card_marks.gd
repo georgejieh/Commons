@@ -1,13 +1,13 @@
 class_name CardMarks
 extends RefCounted
 ## The marks saved on deck cards, so a stamp or an enhancement outlasts its round (ADR
-## 0021, ADR 0041). Every
-## deal builds the deck fresh, and apply() puts the saved marks back on it. A plot card
-## carries its own marks, saved with the plot; one swapped into the hand is a copy, and a
-## mark made on that copy reaches the plot's card by its ID (ADR 0038). A deck card a swap
-## took out keeps its saved marks for the next deal. stamp() and enhance() are the only
-## ways to mark a card for the run: both change the card through CardModifiers and save
-## it. A card holds one enhancement at a time, so a new one replaces the old.
+## 0021, ADR 0041). Every deal builds the deck fresh, and apply() puts the saved marks
+## back on it. A plot card carries its own marks, saved with the plot; one swapped into
+## the hand is a copy, and a mark made on that copy reaches the plot's card by its ID (ADR
+## 0038). A deck card a swap took out keeps its saved marks for the next deal. stamp()
+## and enhance() are the only ways to mark a card for the run: both change the card
+## through CardModifiers and save it. A card holds one enhancement at a time, so a new
+## one replaces the old.
 
 ## Deck card ID to the seat whose stamp it carries, and to its enhancement ID. An
 ## unmarked card has no entry.

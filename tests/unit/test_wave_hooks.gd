@@ -108,8 +108,8 @@ func test_back_door_makes_the_first_black_market_reroll_free() -> void:
 	state.inventory.cadres.assign(["back_door"])
 	var rules: ShopContext = RunCadres.shop_rules(state, definitions, HOLDER)
 	assert_int(rules.free_market_rerolls).is_equal(1)
-	var params: ShopParams = RunLoop.DEFAULT_BLACK_MARKET
-	var market: RunShop = RunShop.new(state, params, RunLoop.DEFAULT_MARKET.cadres)
+	var params: ShopParams = RunPools.MARKET
+	var market: RunShop = RunShop.new(state, params, RunPools.MARKET_CADRES.cadres)
 	market.open()
 	market.free_rerolls = rules.free_market_rerolls
 	state.coupons = 0

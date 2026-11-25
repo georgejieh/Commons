@@ -124,8 +124,8 @@ static func is_valid(value: Variant) -> bool:
 		var moved: Dictionary = row[LEVELS_KEY]
 		for trait_name: Variant in moved:
 			var steps: Variant = moved[trait_name]
-			if not TRAITS.has(trait_name) or not (steps is int or steps is float):
+			if not TRAITS.has(trait_name) or not RunState.is_whole(steps):
 				return false
-			if steps != floorf(steps) or absf(steps) > Personality.Level.HIGH:
+			if absf(steps) > Personality.Level.HIGH:
 				return false
 	return true

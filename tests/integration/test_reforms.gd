@@ -104,7 +104,7 @@ func test_the_reform_draw_leaves_the_other_stock_alone() -> void:
 		assert_array(bare.shop.directive_stock()).is_equal(loop.shop.directive_stock())
 
 
-func test_a_held_or_held_back_reform_is_never_offered() -> void:
+func test_a_held_reform_is_never_offered() -> void:
 	var held: Array[String] = ["work_point_reform", "grain_reserve", "couriers_bag"]
 	for seed_value: int in SEEDS:
 		var loop: RunLoop = _at_the_shops(seed_value, held)
@@ -112,13 +112,6 @@ func test_a_held_or_held_back_reform_is_never_offered() -> void:
 			var offer: Array[String] = loop.shop.reforms.stock()
 			assert_bool(held.has(offer[0])).is_false()
 			loop.player_reroll()
-	# A Reform held back in data is never offered.
-	var held_back: ReformDef = RunReforms.definition("work_point_reform").duplicate()
-	held_back.held_back = true
-	var one: Array[ReformDef] = [held_back]
-	var withheld: ReformCounter = ReformCounter.new(RunState.new(1), STORE, one)
-	withheld.draw()
-	assert_array(withheld.stock()).is_empty()
 	var state: RunState = RunState.new(1)
 	state.reforms.assign(["work_point_reform", "enlarged_committee", "grain_reserve"])
 	state.reforms.append_array(["couriers_bag", "unplanned_economy", "supply_cooperative"])
@@ -133,7 +126,7 @@ func test_buying_needs_the_coupons_and_is_a_saved_command() -> void:
 	var loop: RunLoop = _at_the_shops(3)
 	var offered: String = loop.shop.reforms.stock()[0]
 	var price: int = loop.shop.reforms.price(0)
-	assert_int(price).is_equal(RunReforms.definition(offered).cost)
+	assert_int(price).is_equal(RunDefinitions.reforms[offered].cost)
 	loop.state.coupons = price - 1
 	var commands: int = loop.record.commands.size()
 	assert_int(loop.player_reform(0)).is_equal(RunLoop.Reason.ILLEGAL)
@@ -145,7 +138,7 @@ func test_buying_needs_the_coupons_and_is_a_saved_command() -> void:
 	assert_int(loop.state.coupons).is_equal(0)
 	assert_dict(loop.record.commands[-1]).is_equal({"type": "reform", "slot": 0})
 	assert_int(loop.player_reform(0)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_reform(0)).is_equal(RunLoop.Reason.NOT_AWAITED)
 
 
@@ -163,7 +156,7 @@ func test_held_reforms_survive_save_load_and_replay() -> void:
 	assert_str(JSON.stringify(resumed.state.to_dict())).is_equal(
 		JSON.stringify(loop.state.to_dict())
 	)
-	loop.next_set()
+	RunScript.next_set(loop)
 	var at_start: Dictionary = JSON.parse_string(JSON.stringify(loop.record.to_dict()))
 	var later: RunLoop = RunRecord.resume(at_start, RunScript.bots(), SetConfig.new())
 	assert_array(later.state.reforms).is_equal([offered])
@@ -174,7 +167,7 @@ func test_work_point_reform_pays_only_on_a_met_quota() -> void:
 	var plain: RunLoop = _played_set(41, [], easy)
 	var reformed: RunLoop = _played_set(41, ["work_point_reform"], easy)
 	assert_bool(plain.state.set_progress >= plain.target()).is_true()
-	var extra: int = RunReforms.definition("work_point_reform").parameters["coupons"]
+	var extra: int = RunDefinitions.reforms["work_point_reform"].parameters["coupons"]
 	assert_int(reformed.state.coupons).is_equal(plain.state.coupons + extra)
 	var hard: SetConfig = _sets(1e9)
 	var missed: RunLoop = _played_set(41, ["work_point_reform"], hard)
@@ -185,7 +178,7 @@ func test_grain_reserve_takes_famine_off_a_miss_down_to_none() -> void:
 	var hard: SetConfig = _sets(1e9)
 	var plain: RunLoop = _played_set(52, [], hard)
 	var reserved: RunLoop = _played_set(52, ["grain_reserve"], hard)
-	var relief: int = RunReforms.definition("grain_reserve").parameters["famine"]
+	var relief: int = RunDefinitions.reforms["grain_reserve"].parameters["famine"]
 	var amount: int = METERS.source(RunMeters.MISSED_TARGET).amount
 	assert_int(plain.state.famine - reserved.state.famine).is_equal(mini(relief, amount))
 	var state: RunState = RunState.new(1)
@@ -255,11 +248,9 @@ func test_supply_cooperative_reports_its_extra_envelope_choice() -> void:
 	var state: RunState = RunState.new(1)
 	assert_int(RunReforms.extra_envelope_choices(state)).is_equal(0)
 	state.reforms.append("supply_cooperative")
-	var choices: int = RunReforms.definition("supply_cooperative").parameters["choices"]
+	var choices: int = RunDefinitions.reforms["supply_cooperative"].parameters["choices"]
 	assert_int(choices).is_equal(1)
 	assert_int(RunReforms.extra_envelope_choices(state)).is_equal(choices)
-	# Envelopes exist, so the state store can offer it.
-	assert_bool(RunReforms.definition("supply_cooperative").held_back).is_false()
 	# Its only effect is the envelope accessor: no limit, payment or deal changes.
 	assert_int(RunReforms.cadre_slots(state)).is_equal(STORE.cadre_slots)
 	assert_int(RunReforms.quota_coupons(state)).is_equal(0)

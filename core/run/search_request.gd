@@ -1,7 +1,7 @@
 class_name SearchRequest
 extends RefCounted
 ## What a searching villager's play is decided from while the loop stands still for it
-## (P5.0): the seat, and copies of its view, its legal moves, its rules and its config.
+## (ADR 0030): the seat, and copies of its view, its legal moves, its rules and its config.
 ## Nothing here is the live round's, so a search may read it on another thread while the
 ## table is drawn, and nothing the search does reaches the run.
 

@@ -81,7 +81,7 @@ func _try_campaign(loop: RunLoop, stream: RandomStream) -> bool:
 	if held.is_empty() or stream.next_int(0, 99) >= TRY_PERCENT:
 		return false
 	var slot: int = stream.next_int(0, held.size() - 1)
-	var definition: CampaignDef = loop.campaigns.definition(held[slot])
+	var definition: CampaignDef = RunDefinitions.campaigns[held[slot]]
 	var hand: Array[CardInstance] = loop.player_cards()
 	var ids: Array[int] = []
 	var count: int = mini(stream.next_int(definition.min_cards, definition.max_cards), hand.size())

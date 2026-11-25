@@ -7,8 +7,6 @@ extends RefCounted
 ## so a ladder never runs dry; a draw that would spend more is redrawn a tier lower.
 ## Cost is O(rounds × pool size).
 
-const DEFAULT_PARAMS: LadderParams = preload("res://data/run/default_ladder.tres")
-
 
 ## Returns one debuff ID per round. A round with nothing left to draw stays clean.
 static func draw(
@@ -16,7 +14,7 @@ static func draw(
 	set_type: RunState.SetType,
 	rounds: int,
 	stream: RandomStream,
-	params: LadderParams = DEFAULT_PARAMS
+	params: LadderParams = RunPools.LADDER
 ) -> Array[String]:
 	var ladder: Array[String] = [RunState.NO_DEBUFF]
 	var used_ids: Dictionary[String, bool] = {}

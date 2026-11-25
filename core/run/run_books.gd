@@ -1,7 +1,7 @@
 class_name RunBooks
 extends RefCounted
 ## What the run's books hold after figures reported from outside the game were taken as
-## official (ADR 0022, P4.19): the figures that went dark, how far corrections raised
+## official (ADR 0022): the figures that went dark, how far corrections raised
 ## the norm and the shops' prices, and how many corrections there were. A raised norm is
 ## kept here as a percent of each target, apart from the overfulfilment steps, and so is
 ## a raised price. Both compound: each correction multiplies what the last left.
@@ -9,7 +9,12 @@ extends RefCounted
 const PERCENT: int = 100
 const DEFAULT_PARAMS: BooksParams = preload("res://data/run/books.tres")
 ## The figures that can go dark: a lowered meter, or a lowered norm.
-const DARKENS: Array[String] = ["famine", "denunciation", "resentment", "norm"]
+const DARKENS: Array[String] = [
+	RunCorrections.FAMINE,
+	RunCorrections.DENUNCIATION,
+	RunCorrections.RESENTMENT,
+	RunCorrections.NORM,
+]
 
 ## Figures shown from now on as "None reported", in the order they went dark. The true
 ## figure goes on counting where the player cannot see it.
@@ -66,7 +71,7 @@ static func is_valid(value: Variant) -> bool:
 		seen.append(figure)
 	for key: String in ["norm_percent", "norm_in_force", "price_percent", "corrections"]:
 		var number: Variant = data.get(key)
-		if not (number is int or number is float) or number < 0 or number != floorf(number):
+		if not RunState.is_count(number):
 			return false
 	return data["norm_in_force"] <= data["norm_percent"]
 

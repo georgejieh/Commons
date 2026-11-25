@@ -143,7 +143,7 @@ func test_the_amount_is_the_steps_times_the_row() -> void:
 		RunScript.bots(),
 		_easy_sets(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		meters
 	)
 	loop.start_set()

@@ -106,7 +106,7 @@ func _set_aside(cards: Array[CardInstance]) -> void:
 	_pile.show_play(cards, _hand_view.global_position + _hand_view.size / 2.0)
 	var names: PackedStringArray = []
 	for card: CardInstance in cards:
-		names.append(_controller.card_name(card))
+		names.append(CardName.of(card))
 	var boss: String = _controller.modifier_name(_controller.boss())
 	_show_words(
 		tr("table.set_aside_word"),

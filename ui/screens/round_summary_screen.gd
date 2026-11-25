@@ -18,7 +18,7 @@ func open(app: DemoApp) -> void:
 		ScreenKit.stat(tr("round.score"), float(last.get("score", 0.0))),
 		ScreenKit.stat(tr("round.share"), float(last.get("share", 0))),
 		ScreenKit.figure_stat(
-			tr("round.progress"), state, ShownFigures.PROGRESS, state.set_progress
+			tr("round.progress"), state, RunCorrections.PROGRESS, state.set_progress
 		),
 	]
 	sheet.add_child(ScreenKit.row(tiles, 20))

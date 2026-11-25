@@ -8,30 +8,19 @@ extends RefCounted
 ## rules a Reform gives the player's seat (ADR 0039). A held ID with no definition changes
 ## nothing.
 
-const POOL: ReformPool = preload("res://data/run/reform_pool.tres")
-## The player's limits before any Reform are the state store's numbers.
-const LIMITS: ShopParams = preload("res://data/run/default_shop.tres")
-
 
 ## Every Reform the state store sells.
 static func all() -> Array[ReformDef]:
-	return POOL.reforms
+	return RunPools.REFORMS.reforms
 
 
-static func definition(reform_id: String) -> ReformDef:
-	for reform: ReformDef in POOL.reforms:
-		if reform.id == reform_id:
-			return reform
-	return null
-
-
-## Cadres the player can hold at once. Both shops, both boards and every rule that
-## counts a full board read this.
+## Cadres the player can hold at once: the state store's number and the Reforms'. Both
+## shops, both boards and every rule that counts a full board read this.
 static func cadre_slots(state: RunState) -> int:
 	var extra: int = 0
 	for effect: ReformEffect in _effects(state):
 		extra += effect.extra_cadres()
-	return LIMITS.cadre_slots + extra
+	return RunPools.STORE.cadre_slots + extra
 
 
 ## Campaigns the player can hold at once.
@@ -39,10 +28,10 @@ static func campaign_slots(state: RunState) -> int:
 	var extra: int = 0
 	for effect: ReformEffect in _effects(state):
 		extra += effect.extra_campaigns()
-	return LIMITS.campaign_slots + extra
+	return RunPools.STORE.campaign_slots + extra
 
 
-## More items every envelope holds to choose from, for the envelopes (P4.11g).
+## More items every envelope holds to choose from, for the envelopes (ADR 0021).
 static func extra_envelope_choices(state: RunState) -> int:
 	var extra: int = 0
 	for effect: ReformEffect in _effects(state):
@@ -86,12 +75,12 @@ static func wild_ranks_per_round(state: RunState) -> int:
 
 ## The rules held Reforms give the holder's seat, which is the player's, in the order they
 ## were enacted, each as a stack entry of kind REFORM that runs only its own hooks and
-## builds the holder's seat alone (SeatScope): today Industrialization's bigger bombs
+## builds the holder's seat alone (SeatScope), such as Industrialization's bigger bombs
 ## (ADR 0029, ADR 0039).
 static func table_rules(state: RunState, holder: int) -> Array[ActiveModifier]:
 	var rules: Array[ActiveModifier] = []
 	for reform_id: String in state.reforms:
-		var reform: ReformDef = definition(reform_id)
+		var reform: ReformDef = RunDefinitions.reforms.get(reform_id)
 		if reform == null or not ReformRegistry.has_effect(reform_id):
 			continue
 		var effect: ReformEffect = ReformRegistry.create(reform)
@@ -122,7 +111,7 @@ static func table_rule_ids(state: RunState) -> Array[String]:
 static func _effects(state: RunState) -> Array[ReformEffect]:
 	var effects: Array[ReformEffect] = []
 	for reform_id: String in state.reforms:
-		var reform: ReformDef = definition(reform_id)
+		var reform: ReformDef = RunDefinitions.reforms.get(reform_id)
 		if reform != null and ReformRegistry.has_effect(reform_id):
 			effects.append(ReformRegistry.create(reform))
 	return effects

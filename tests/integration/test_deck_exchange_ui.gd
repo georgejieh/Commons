@@ -122,7 +122,7 @@ func test_a_ticket_opens_the_sheet_and_back_changes_nothing() -> void:
 	assert_str(sheet.status_text()).is_equal(tr("exchange.refused.joker"))
 	sheet.board().press(THREE)
 	assert_bool(sheet.confirm_button().disabled).is_false()
-	var three: String = PlotSwapSheet.card_name(Deck.new().card(THREE))
+	var three: String = CardName.of(Deck.new().card(THREE))
 	var names: Dictionary[String, Variant] = {"in": ExchangeChoice.card_text(coming), "out": three}
 	assert_str(sheet.status_text()).is_equal(tr("exchange.change").format(names))
 	sheet.back_button().pressed.emit()
@@ -174,7 +174,7 @@ func test_the_sheet_tells_an_exchanged_deck_from_a_plain_one() -> void:
 	assert_str(threes.text).is_equal(tr("deck.rank_count").format({"rank": three, "count": 0}))
 	assert_str(sheet.status_text()).contains(tr("deck.exchanges").format({"count": 4}))
 	sheet.board().point_at(THREE)
-	var plain: String = PlotSwapSheet.card_name(Deck.new().card(THREE))
+	var plain: String = CardName.of(Deck.new().card(THREE))
 	assert_str(sheet.slip().shown_rule()).contains(plain)
 	# The cursor crosses the row with the empty group and never lands on nothing.
 	sheet.board().point_at(sheet.board().card_ids()[0])

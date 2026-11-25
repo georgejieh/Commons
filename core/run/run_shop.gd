@@ -1,21 +1,10 @@
 class_name RunShop
 extends RefCounted
-## One counter between Sets: the state store or the black market (P4.10). Stock is drawn
-## on the shop stream by rarity weight from the counter's pool, leaving out what the
-## player holds and what the counter has run out of, and bought with coupons at the
-## counter's price. A reroll draws new stock for a price that rises with each reroll in
-## the visit. Stock is never saved: a save in the shop replays the visit from the Set's
-## end, which draws the same stock. A counter with Directive slots also offers Directives
-## (ADR 0021), drawn evenly after every Cadre on the stream and redrawn by the same
-## reroll; one whose whole family is at the top level is not offered. A counter with
-## Campaign offers draws them last of all, evenly from its pool, and the same reroll
-## redraws them; a Campaign is refused while the player holds as many as they can. A
-## counter with Reform offers draws them after its Campaigns, and the reroll redraws
-## them too. A counter with envelope offers draws them after everything else, and the
-## reroll redraws them until one is bought (EnvelopeCounter). How many Cadres the player
-## can hold is RunReforms.cadre_slots(). A held Cadre may be sold back to either counter
-## for part of its price there (ADR 0040); it is not offered again that visit. Each
-## counter's desk marks one deck card a visit (MarkDesk, ADR 0041).
+## One counter between Sets: the state store or the black market. It holds the visit's
+## Cadres and Directives, and through its counters its Campaigns, Reforms, envelopes and
+## mark desk, each drawn on the shop stream in the order RunLoop.open_shop() gives and
+## bought with coupons at the counter's price. Stock is never saved: a save in the shop
+## replays the visit from the Set's end, which draws the same stock.
 
 enum Reason {
 	OK,
@@ -64,7 +53,7 @@ var withheld: Array[String] = []
 var _state: RunState
 var _params: ShopParams
 var _pool: Array[ModifierDef]
-## Slots lost while rationing is in force (P4.1).
+## Slots lost while rationing is in force.
 var _ration_cut: int
 var _stock: Array[String] = []
 var _rerolls: int = 0
@@ -80,7 +69,7 @@ func _init(
 	directives: Array[DirectiveDef] = [],
 	offered: Array[CampaignDef] = [],
 	reformed: Array[ReformDef] = [],
-	run: RunParams = null
+	run: RunParams = RunLoop.DEFAULT_PARAMS
 ) -> void:
 	_state = state
 	_params = params
@@ -121,8 +110,7 @@ func stock() -> Array[String]:
 ## The counter's price for a slot: the item's cost at price_percent, rounded up, then
 ## under any raise the books made (ADR 0022). Every price on both counters follows them.
 func price(slot: int) -> int:
-	var cost: int = (_definition(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
-	return RunBooks.priced(_state, cost)
+	return price_of(_state, _params, _definition(_stock[slot]).cost)
 
 
 ## True when the Cadre in a slot is of the top rarity, the kind seldom drawn.
@@ -200,9 +188,15 @@ func sale_price(cost: int) -> int:
 	return sale_of(_state, _params, cost)
 
 
+## What a counter pays for a held item listed at cost (sale_price()).
 static func sale_of(state: RunState, params: ShopParams, cost: int) -> int:
-	var price: int = RunBooks.priced(state, (cost * params.price_percent + PERCENT - 1) / PERCENT)
-	return maxi(1, price * params.sell_percent / PERCENT)
+	return maxi(1, price_of(state, params, cost) * params.sell_percent / PERCENT)
+
+
+## What a counter with params charges for an item listed at cost: the cost at its
+## price_percent, rounded up, then under any raise the books made (ADR 0022).
+static func price_of(state: RunState, params: ShopParams, cost: int) -> int:
+	return RunBooks.priced(state, (cost * params.price_percent + PERCENT - 1) / PERCENT)
 
 
 ## Why the held Cadre at index cannot be sold here now, or OK. bound names the Cadres a
@@ -253,8 +247,7 @@ func directive_stock() -> Array[String]:
 
 
 func directive_price(slot: int) -> int:
-	var cost: int = _directive(_directive_stock[slot]).cost
-	return RunBooks.priced(_state, (cost * _params.price_percent + PERCENT - 1) / PERCENT)
+	return price_of(_state, _params, _directive(_directive_stock[slot]).cost)
 
 
 func check_directive(slot: int) -> Reason:
@@ -262,7 +255,7 @@ func check_directive(slot: int) -> Reason:
 		return Reason.NO_SUCH_SLOT
 	if _directive_stock[slot] == SOLD:
 		return Reason.SOLD_OUT
-	if _is_maxed(_directive(_directive_stock[slot])):
+	if EnvelopeContents.is_maxed(_state, _directive(_directive_stock[slot])):
 		return Reason.LEVELS_MAXED
 	if _state.coupons < directive_price(slot):
 		return Reason.TOO_POOR
@@ -317,15 +310,9 @@ func _restock() -> void:
 ## The Directives with a hand type still below the top level, in pool order.
 func _open_directives() -> Array[DirectiveDef]:
 	return _directives.filter(
-		func(directive: DirectiveDef) -> bool: return not _is_maxed(directive)
+		func(directive: DirectiveDef) -> bool:
+			return not EnvelopeContents.is_maxed(_state, directive)
 	)
-
-
-func _is_maxed(directive: DirectiveDef) -> bool:
-	for type: int in directive.hand_types:
-		if not _state.hand_levels.is_max(type as Pattern.Type):
-			return false
-	return true
 
 
 func _directive(directive_id: String) -> DirectiveDef:

@@ -5,8 +5,6 @@ extends RefCounted
 
 enum Kind { FED, BOMBED, DENOUNCED, BETRAYED }
 
-const KIND_COUNT: int = 4
-
 var set_number: int
 ## Family ID to counts indexed by Kind.
 var counts: Dictionary[String, PackedInt64Array] = {}
@@ -30,7 +28,7 @@ static func from_dict(data: Dictionary) -> SetSummary:
 func add(family_id: String, kind: Kind, amount: int = 1) -> void:
 	if not counts.has(family_id):
 		var row: PackedInt64Array = []
-		row.resize(KIND_COUNT)
+		row.resize(Kind.size())
 		counts[family_id] = row
 	counts[family_id][kind] += amount
 

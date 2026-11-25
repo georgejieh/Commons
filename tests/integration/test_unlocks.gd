@@ -151,7 +151,6 @@ func test_a_held_item_of_a_locked_tier_still_works_after_a_load() -> void:
 	assert_array(resumed.state.inventory.cadres).contains_exactly(
 		["rehabilitation", "steel_target"]
 	)
-	assert_object(resumed.campaigns.definition("seizure_notice")).is_not_null()
 	assert_bool(RunReforms.gathers_deck(resumed.state)).is_true()
 	# The held Cadres are in play: the view and the round read their definitions.
 	RunScript.new().play_until_set_over(resumed)
@@ -166,8 +165,8 @@ func test_a_demo_run_opens_every_tier_but_the_wild_ranks() -> void:
 	var below: Callable = func(item: Resource) -> bool:
 		return int(item.get("unlock_tier")) < RunUnlocks.WILD_TIER
 	# ADR 0032's tier 4 and 5 Cadres stay out of it as the wild ranks' items do.
-	var store: int = RunLoop.DEFAULT_CADRES.cadres.filter(below).size()
-	var market: int = RunLoop.DEFAULT_MARKET.cadres.filter(below).size()
+	var store: int = RunPools.STORE_CADRES.cadres.filter(below).size()
+	var market: int = RunPools.MARKET_CADRES.cadres.filter(below).size()
 	assert_int(loop.pools.store_cadres.size()).is_equal(store)
 	assert_int(loop.pools.market_cadres.size()).is_equal(market)
 	assert_int(loop.pools.reforms.size()).is_equal(RunReforms.all().filter(below).size())
@@ -224,8 +223,8 @@ func test_a_save_keeps_the_pools_it_started_with() -> void:
 	var loop: RunLoop = resumed.get("_loop")
 	assert_int(loop.state.identity.finished_runs).is_equal(1)
 	var open: int = (
-		RunLoop
-		. DEFAULT_CADRES
+		RunPools
+		. STORE_CADRES
 		. cadres
 		. filter(func(item: ModifierDef) -> bool: return item.unlock_tier <= 1)
 		. size()
@@ -364,8 +363,8 @@ func test_an_all_open_request_opens_everything_without_a_profile() -> void:
 	var state: RunState = RunStarter.state(request)
 	assert_object(state).is_not_null()
 	var loop: RunLoop = _loop(state)
-	assert_int(loop.pools.store_cadres.size()).is_equal(RunLoop.DEFAULT_CADRES.cadres.size())
-	assert_int(loop.pools.market_cadres.size()).is_equal(RunLoop.DEFAULT_MARKET.cadres.size())
+	assert_int(loop.pools.store_cadres.size()).is_equal(RunPools.STORE_CADRES.cadres.size())
+	assert_int(loop.pools.market_cadres.size()).is_equal(RunPools.MARKET_CADRES.cadres.size())
 	assert_int(loop.pools.directives.size()).is_equal(RunPools.DIRECTIVES.directives.size())
 	assert_int(loop.pools.reforms.size()).is_equal(RunReforms.all().size())
 	var campaigns: int = loop.pools.store_campaigns.size() + loop.pools.market_campaigns.size()

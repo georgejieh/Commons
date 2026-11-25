@@ -212,8 +212,9 @@ func table_id() -> String:
 ## household and at the stake run setup chose. False when the profile has not unlocked
 ## them, and nothing starts.
 func new_run(seed_value: int, full: bool = false, household: String = "", stake: int = 0) -> bool:
-	var kind: int = RunRequest.FULL if full else RunRequest.DEMO
-	var request: RunRequest = RunRequest.new(kind, seed_value)
+	var request: RunRequest = RunRequest.new(
+		RunRequest.FULL if full else RunRequest.DEMO, seed_value
+	)
 	if full:
 		request.household = household
 		request.stake = stake

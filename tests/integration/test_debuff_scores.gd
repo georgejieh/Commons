@@ -134,7 +134,7 @@ func test_work_point_audit_adds_two_audit_faces_for_every_claim() -> void:
 	var loop: RunLoop = DebuffScript.loop_with(17, "work_point_audit")
 	DebuffScript.play(loop)
 	var rolls: Dictionary[int, Array] = DebuffScript.per_round(loop, RunEvent.Type.AUDIT_ROLLED)
-	var audit: AuditParams = RunLoop.DEFAULT_AUDIT
+	var audit: AuditParams = RunPools.AUDIT
 	for round_index: int in rolls:
 		var faces: int = audit.base_faces + (2 if round_index >= 1 else 0)
 		for roll: RunEvent in rolls[round_index]:
@@ -151,7 +151,7 @@ func test_work_point_audit_adds_two_audit_faces_for_every_claim() -> void:
 func test_work_point_audit_stays_under_the_audit_cap() -> void:
 	var stack: ModifierStack = ModifierStack.new()
 	stack.add(DebuffScript.definition("work_point_audit"), RunLoop.PLAYER)
-	var params: AuditParams = RunLoop.DEFAULT_AUDIT.duplicate()
+	var params: AuditParams = RunPools.AUDIT.duplicate()
 	var state: RunState = RunState.new(1)
 	state.table.assign(["player", "zhou", "seat_2"])
 	assert_int(NeedAudit.faces(state, params, stack)).is_equal(4)

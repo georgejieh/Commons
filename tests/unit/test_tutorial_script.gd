@@ -120,7 +120,7 @@ func test_the_quota_cannot_be_met_and_draws_no_debuff() -> void:
 	assert_float(sets.target(1, RunState.SetType.SMALL)).is_equal(6000.0)
 	var stream: RandomStream = RandomStreams.new(SCRIPT.seed_value).stream(RandomStreams.DEBUFF)
 	var ladder: Array[String] = DebuffLadder.draw(
-		RunLoop.DEFAULT_POOL.debuffs, RunState.SetType.SMALL, 2, stream, SCRIPT.ladder
+		RunPools.DEBUFFS.debuffs, RunState.SetType.SMALL, 2, stream, SCRIPT.ladder
 	)
 	assert_array(ladder).is_equal([RunState.NO_DEBUFF, RunState.NO_DEBUFF])
 	assert_int(SCRIPT.starting_coupons).is_equal(10)

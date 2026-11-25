@@ -14,33 +14,6 @@ signal awaiting_changed(awaiting: int)
 ## A command the loop refused, with its reason.
 signal command_refused(command: String, reason: int)
 
-## Every command the UI may send. Selection is the hand model's, not the run's.
-const COMMANDS: Array[String] = [
-	"bid",
-	"swap",
-	"play",
-	"pass",
-	"declare_need",
-	"finish_set",
-	"buy",
-	"reroll",
-	"market_buy",
-	"market_reroll",
-	"upgrade",
-	"plot_card",
-	"directive",
-	"campaign",
-	"begin_round",
-	"campaign_buy",
-	"reform",
-	"envelope_buy",
-	"envelope_pick",
-	"leave_store",
-	"books",
-	"sell_cadre",
-	"sell_campaign",
-	"mark_card",
-]
 ## What the run waits on, for views that may not name the loop.
 const AWAIT_BID: int = RunLoop.Awaiting.PLAYER_BID
 const AWAIT_SWAP: int = RunLoop.Awaiting.PLAYER_SWAP
@@ -51,7 +24,7 @@ const AWAIT_STORE: int = RunLoop.Awaiting.SHOP
 const AWAIT_RUN_OVER: int = RunLoop.Awaiting.RUN_OVER
 const AWAIT_REEDUCATION: int = RunLoop.Awaiting.REEDUCATION
 const AWAIT_OPENING: int = RunLoop.Awaiting.PLAYER_OPENING
-## A villager's play is being searched (P5.0): nothing to do but wait for it.
+## A villager's play is being searched (ADR 0030): nothing to do but wait for it.
 const AWAIT_VILLAGER: int = RunLoop.Awaiting.VILLAGER_SEARCH
 ## A Campaign that can be used now (CampaignEffect.Reason.OK).
 const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
@@ -59,13 +32,11 @@ const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
 const TAKE_NOTHING: int = EnvelopeCounter.NOTHING
 ## An envelope pick that names no deck card to take out.
 const NO_CARD: int = Deck.NO_SLOT
-## Suit names in suit order: spade, heart, club, diamond.
-const SUIT_KEYS: Array[String] = ["suit.spades", "suit.hearts", "suit.clubs", "suit.diamonds"]
 const OK: int = RunLoop.Reason.OK
 
 ## True while the run's searching villagers decide under the ExpertRunner's deadline, as
 ## the live game plays (ADR 0030). In the tree the loop then stands still while one
-## thinks, and the search runs on the worker pool while frames go on (P5.0); outside it
+## thinks, and the search runs on the worker pool while frames go on (ADR 0030); outside it
 ## each is searched at once on the calling thread. A tool or test that must stay
 ## repeatable sets it false before it starts or resumes a run, and they search with no
 ## limit inside the loop.
@@ -81,13 +52,11 @@ var _loop: RunLoop
 ## Decides for the loop's searcher, and for a villager answered at once outside the tree.
 ## Every decision blocks until its samples finish.
 var _runner: ExpertRunner = ExpertRunner.new()
-## The searches run on the pool for villagers the loop stands still for (P5.0).
+## The searches run on the pool for villagers the loop stands still for (ADR 0030).
 var _searches: VillagerSearches = VillagerSearches.new()
 var _saves: SaveService = null
-## The profile save, which the village's memory outlives runs in (P4.6).
+## The profile save, which the village's memory outlives runs in.
 var _profile: SaveService = null
-var _definitions: Dictionary[String, ModifierDef] = {}
-var _directives: Dictionary[String, DirectiveDef] = {}
 
 
 ## Starts a new run from seed, with one bot config per seat. It begins as a demo run
@@ -115,8 +84,8 @@ func start(request: RunRequest, saves: SaveService = null, profile: SaveService 
 	var state: RunState = RunStarter.state(request, used)
 	if state == null:
 		return false
-	var kind: int = request.kind
-	_begin(state, RunStarter.configs(kind), RunStarter.sets(kind), saves, used)
+	var kind: RunIdentity.Kind = request.kind
+	_begin(state, RunStarter.configs(), RunStarter.sets(kind), saves, used)
 	return true
 
 
@@ -137,22 +106,23 @@ func _begin(
 	awaiting_changed.emit(_loop.awaiting())
 
 
-## Takes over a loop that was resumed from a save. A save written just before a crash
-## may stand past a boundary the profile never took, so the profile is offered it again;
-## it takes nothing twice.
+## For tests: takes over a loop built outside the controller, as resume_saved() takes
+## over one replayed from a save, so a test can set up a run state no save would reach.
 func resume(loop: RunLoop, saves: SaveService = null, profile: SaveService = null) -> void:
 	_take_over(loop, saves, profile, null)
 
 
-## What resume() does, with what the load found, which the file's detectors act on: a
-## seal that failed, or a ledger the save does not hold (ADR 0022).
+## Takes over a loop resumed from a save, with what the load found, which the file's
+## detectors act on: a seal that failed, or a ledger the save does not hold (ADR 0022). A
+## save written just before a crash may stand past a boundary the profile never took, so
+## the profile is offered it again; it takes nothing twice.
 func _take_over(loop: RunLoop, saves: SaveService, profile: SaveService, loaded: SaveLoad) -> void:
 	_profile = profile
 	file_watch.attach(saves, profile)
 	_attach(loop, saves)
 	if file_watch.resumed(_loop, loaded):
 		_save()
-	# A save written while a villager thought resumes standing still for it (P5.0).
+	# A save written while a villager thought resumes standing still for it (ADR 0030).
 	if _serve():
 		_save()
 	_remember(_loop.flow.state())
@@ -170,8 +140,8 @@ func continue_saved(saves: SaveService, profile: SaveService = null) -> bool:
 		and loaded.status != SaveLoad.Status.RESTORED_FROM_BACKUP
 	):
 		return false
-	var kind: int = RunStarter.saved_kind(loaded.data)
-	return resume_saved(saves, RunStarter.configs(kind), RunStarter.sets(kind), profile)
+	var kind: RunIdentity.Kind = RunStarter.saved_kind(loaded.data)
+	return resume_saved(saves, RunStarter.configs(), RunStarter.sets(kind), profile)
 
 
 ## Resumes the run in the save, falling back to its backup. False when neither loads.
@@ -202,9 +172,12 @@ func resume_saved(
 ## searches live, so a villager the record ends before is searched again, not here.
 func _resumed(data: Dictionary, configs: Array[BotConfig], sets: SetConfig) -> RunLoop:
 	var params: RunParams = RunLoop.DEFAULT_PARAMS
-	var pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs
+	var pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs
 	var meters: MeterTable = RunLoop.DEFAULT_METERS
-	return RunRecord.resume(data, configs, sets, params, pool, meters, Callable(), live_search)
+	var searcher: Callable = Callable()
+	return RunRecord.resume(
+		data, configs, sets, params, pool, meters, searcher, live_search, search_weights
+	)
 
 
 func has_run() -> bool:
@@ -221,7 +194,7 @@ func bid(claim: bool) -> int:
 	return _act("bid", _loop.player_bid.bind(claim))
 
 
-## The most cards the player may swap this round (P4.8).
+## The most cards the player may swap this round.
 func swap_limit() -> int:
 	return _loop.swap_limit()
 
@@ -270,16 +243,16 @@ func market_buy(slot: int, rank: int = Ranks.INVALID) -> int:
 
 ## True when buying the Cadre asks for a rank first (ADR 0021).
 func needs_rank(cadre_id: String) -> bool:
-	return _definitions.has(cadre_id) and _definitions[cadre_id].needs_rank
+	return RunDefinitions.modifiers.has(cadre_id) and RunDefinitions.modifiers[cadre_id].needs_rank
 
 
 ## Where a held Cadre stands in the run: its state line and badge count, both empty when
 ## it keeps no state or is not held.
 func cadre_standing(cadre_id: String) -> CadreStanding:
 	var state: RunState = _loop.state
-	if not _definitions.has(cadre_id) or not state.inventory.cadres.has(cadre_id):
+	if not RunDefinitions.modifiers.has(cadre_id) or not state.inventory.cadres.has(cadre_id):
 		return CadreStanding.new()
-	return CadreStanding.of(_definitions[cadre_id], state.cadre_memos.peek(cadre_id))
+	return CadreStanding.of(RunDefinitions.modifiers[cadre_id], state.cadre_memos.peek(cadre_id))
 
 
 func market_reroll() -> int:
@@ -301,28 +274,32 @@ func directive(slot: int) -> int:
 	return _act("directive", _loop.player_directive.bind(slot))
 
 
-## A Directive's name and rules, and the hand types it raises, as Pattern.Type values.
+## A Directive's name.
 func directive_name(directive_id: String) -> String:
-	return tr(_directives[directive_id].name_key)
+	return tr(RunDefinitions.directives[directive_id].name_key)
 
 
+## A Directive's rules.
 func directive_text(directive_id: String) -> String:
-	return tr(_directives[directive_id].text_key)
+	return tr(RunDefinitions.directives[directive_id].text_key)
 
 
+## The hand types a Directive raises, as Pattern.Type values.
 func directive_types(directive_id: String) -> Array[int]:
-	return _directives[directive_id].hand_types.duplicate()
+	return RunDefinitions.directives[directive_id].hand_types.duplicate()
 
 
-## A hand type's level in this run, and its Rate at a level, from the scorer's table.
+## A hand type's level in this run.
 func hand_level(type: int) -> int:
 	return _loop.state.hand_levels.level_of(type as Pattern.Type)
 
 
+## A hand type's Rate at a level, from the scorer's table.
 func hand_rate(type: int, level: int) -> int:
 	return Scorer.DEFAULT_PARAMS.rate_for(type, level)
 
 
+## The highest level a hand type reaches.
 func max_hand_level() -> int:
 	return Scorer.DEFAULT_PARAMS.max_level
 
@@ -398,11 +375,12 @@ func deck_card(slot: int) -> CardInstance:
 	return card
 
 
-## The Campaigns the player holds, in slot order, and how many they can hold.
+## The Campaigns the player holds, in slot order.
 func held_campaigns() -> Array[String]:
 	return _loop.state.inventory.consumables.duplicate()
 
 
+## How many Campaigns the player can hold at once, Reforms included.
 func campaign_slots() -> int:
 	return RunReforms.campaign_slots(_loop.state)
 
@@ -418,23 +396,25 @@ static func campaign_reason_key(reason: int) -> String:
 	return "campaign.reason." + String(CampaignEffect.Reason.keys()[reason]).to_lower()
 
 
-## A Campaign's name, rules, prompt and card counts, with its numbers filled in.
+## A Campaign's name.
 func campaign_name(campaign_id: String) -> String:
-	return tr(_campaign(campaign_id).name_key)
+	return tr(RunDefinitions.campaigns[campaign_id].name_key)
 
 
+## A Campaign's rules, with its numbers filled in.
 func campaign_text(campaign_id: String) -> String:
-	var definition: CampaignDef = _campaign(campaign_id)
+	var definition: CampaignDef = RunDefinitions.campaigns[campaign_id]
 	return tr(definition.text_key).format(definition.text_values())
 
 
+## What a Campaign asks the player to choose, with its numbers filled in.
 func campaign_prompt(campaign_id: String) -> String:
-	var definition: CampaignDef = _campaign(campaign_id)
+	var definition: CampaignDef = RunDefinitions.campaigns[campaign_id]
 	return tr(definition.prompt_key).format(definition.text_values())
 
 
-## Every Campaign's prompt, held or not, and every surname a seat can show, for the
-## table's pieces that must have room for the longest (ADR 0034).
+## Every Campaign's prompt, held or not, for the table's pieces that must have room for
+## the longest (ADR 0034).
 func every_campaign_prompt() -> Array[String]:
 	var prompts: Array[String] = []
 	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
@@ -443,23 +423,25 @@ func every_campaign_prompt() -> Array[String]:
 	return prompts
 
 
+## Every surname a seat can show, for the same pieces.
 func every_surname() -> Array[String]:
 	return RunPeople.every_surname()
 
 
 ## The fewest and most hand cards a Campaign asks for, as x and y.
 func campaign_cards(campaign_id: String) -> Vector2i:
-	var definition: CampaignDef = _campaign(campaign_id)
+	var definition: CampaignDef = RunDefinitions.campaigns[campaign_id]
 	return Vector2i(definition.min_cards, definition.max_cards)
 
 
 ## One of a Campaign's numbers from its data, or 0.
 func campaign_parameter(campaign_id: String, key: String) -> int:
-	return _campaign(campaign_id).parameters.get(key, 0)
+	return RunDefinitions.campaigns[campaign_id].parameters.get(key, 0)
 
 
+## True for a Campaign tagged private.
 func is_private_campaign(campaign_id: String) -> bool:
-	return _campaign(campaign_id).tag == ModifierDef.Tag.PRIVATE
+	return RunDefinitions.campaigns[campaign_id].tag == ModifierDef.Tag.PRIVATE
 
 
 ## The debuff Appeal lifted this round, or an empty ID.
@@ -522,15 +504,8 @@ func opened_envelope() -> EnvelopeShelf:
 	return null
 
 
-## A plot card's name, "7 of Hearts", and what a card from an envelope is: its name, text
-## or caption by key, with its mark's numbers from data. kind is one of EnvelopeShelf's
-## card kinds.
-func card_name(card: CardInstance) -> String:
-	var rank: String = tr(Ranks.label_key(card.base_rank()))
-	var suit: String = tr(SUIT_KEYS[card.suit()])
-	return tr("card.name").format({"rank": rank, "suit": suit})
-
-
+## What a card from an envelope is: its name, text or caption by key, with its mark's
+## numbers from data. kind is one of EnvelopeShelf's card kinds.
 func envelope_card_text(kind: int, key: String, card: CardInstance) -> String:
 	var marks: Dictionary[int, String] = {
 		EnvelopeShelf.KIND_STAMPED: "stamped",
@@ -542,7 +517,7 @@ func envelope_card_text(kind: int, key: String, card: CardInstance) -> String:
 	var values: Dictionary[String, Variant] = {
 		"resentment": RunLoop.DEFAULT_RESENTMENT.stamped_card,
 		"model_times": ModifierDef.multiple(model),
-		"card": card_name(card),
+		"card": CardName.of(card),
 		"mark":
 		"" if card.enhancement_id().is_empty() else tr("keyword.%s.name" % card.enhancement_id()),
 	}
@@ -555,12 +530,12 @@ func held_reforms() -> Array[String]:
 
 
 func reform_name(reform_id: String) -> String:
-	return tr(RunReforms.definition(reform_id).name_key)
+	return tr(RunDefinitions.reforms[reform_id].name_key)
 
 
 ## A Reform's rules with its numbers filled in, the limits it raises included.
 func reform_text(reform_id: String) -> String:
-	return ItemText.reform(RunReforms.definition(reform_id))
+	return ItemText.reform(RunDefinitions.reforms[reform_id])
 
 
 ## The state store's counter, or the black market's, for a screen to read.
@@ -582,21 +557,21 @@ func purchase_resentment() -> int:
 
 ## Leaves the store for the next Set, or the run's end.
 func leave_store() -> int:
-	return _act("leave_store", _loop.next_set)
+	return _act("leave_store", _loop.leave_store)
 
 
 ## Returns from reeducation to the next Set, or the run's end.
 func leave_reeducation() -> int:
-	return _act("leave_reeducation", _loop.next_set)
+	return _act("leave_reeducation", _loop.leave_reeducation)
 
 
 func awaiting() -> int:
 	return _loop.awaiting()
 
 
+## True while the Set in play, or the one just ended, is the run's last.
 func is_last_set() -> bool:
-	var state: RunState = _loop.state
-	return state.set_type == RunState.SetType.BOSS and state.year == _loop.sets().years()
+	return _loop.is_last_set()
 
 
 ## The store's stock per slot, an empty ID for a sold slot.
@@ -633,12 +608,6 @@ func norm_step_percent() -> int:
 ## How far the Set just finished raised the norm, in percent.
 func norm_added_percent() -> int:
 	return _loop.sets().norm_percent(_loop.state.over_steps)
-
-
-## How much Famine a missed Quota adds, after any Reform's relief.
-func famine_per_miss() -> int:
-	var amount: int = RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount
-	return RunReforms.missed_famine(_loop.state, amount)
 
 
 ## True while high Famine cuts the store's slots.
@@ -780,11 +749,11 @@ func ladder() -> Array[String]:
 func set_aside_names() -> String:
 	var names: PackedStringArray = []
 	for card: CardInstance in _loop.set_aside_cards():
-		names.append(card_name(card))
+		names.append(CardName.of(card))
 	return ", ".join(names)
 
 
-## The current Set's boss twist ID, or an empty string outside boss Sets (P4.7).
+## The current Set's boss twist ID, or an empty string outside boss Sets.
 func boss() -> String:
 	return _loop.state.boss_id
 
@@ -792,13 +761,13 @@ func boss() -> String:
 ## True when a Cadre's scoring also pays on the player's teammate's plays while the player
 ## is a peasant (ADR 0039). No Cadre changes another seat's rules or ranks.
 func counts_for_teammate(modifier_id: String) -> bool:
-	var definition: ModifierDef = _definitions[modifier_id]
+	var definition: ModifierDef = RunDefinitions.modifiers[modifier_id]
 	return definition.counts_for_teammate
 
 
 ## A modifier's rules text with its parameters filled in.
 func modifier_text(modifier_id: String) -> String:
-	return CadreText.rules(_definitions[modifier_id], _run_values(modifier_id))
+	return CadreText.rules(RunDefinitions.modifiers[modifier_id], _run_values(modifier_id))
 
 
 ## A modifier's name; a Slogan's names the hand type it was drawn with (ADR 0023).
@@ -806,7 +775,7 @@ func modifier_name(modifier_id: String) -> String:
 	var type: int = _loop.state.slogan_type
 	if modifier_id == RunDebuffs.SLOGAN_ID and type != RunState.NO_SLOGAN:
 		return tr("modifier.slogan_of_the_week.named").format({"type": _type_plural(type)})
-	return tr(_definitions[modifier_id].name_key)
+	return tr(RunDefinitions.modifiers[modifier_id].name_key)
 
 
 ## Why the player may not pass now, as a string key, or "" when they may (Night Shift).
@@ -827,14 +796,6 @@ func hand_shown() -> bool:
 	return _loop.round_state() != null and player_table().rules.hand_shown()
 
 
-## Copies of the plot cards Plot Seized destroyed this round.
-func seized_cards() -> Array[CardInstance]:
-	var cards: Array[CardInstance] = []
-	for card: CardInstance in _loop.debuffs.seized:
-		cards.append(card.snapshot())
-	return cards
-
-
 ## Cadres Short Supply keeps off the state store's counter this visit.
 func short_supply() -> int:
 	return _loop.shop.short_cut
@@ -851,7 +812,9 @@ func _run_values(modifier_id: String) -> Dictionary[String, Variant]:
 			if type == RunState.NO_SLOGAN
 			else _type_plural(type)
 		)
-	var effect: ModifierEffect = EffectRegistry.create(_definitions[modifier_id], RunLoop.PLAYER)
+	var effect: ModifierEffect = EffectRegistry.create(
+		RunDefinitions.modifiers[modifier_id], RunLoop.PLAYER
+	)
 	if effect is HandicapEffect:
 		values[HandicapEffect.CARDS] = HandicapEffect.count_at(effect.parameters, _loop.state.year)
 	if effect is LossMeterEffect:
@@ -1009,13 +972,6 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	# A replayed loop may hold events banking appended unseen; the view reads those from
 	# set_events(), so the listener starts after them.
 	_loop.set_log.flush()
-	var known: Array[ModifierDef] = (
-		RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres + RunLoop.DEFAULT_MARKET.cadres
-	)
-	for definition: ModifierDef in known + RunLoop.DEFAULT_BOSSES.all():
-		_definitions[definition.id] = definition
-	for directive_def: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
-		_directives[directive_def.id] = directive_def
 	_saves = saves
 	_latch_stage()
 	_loop.set_log.on_add = func(event: RunEvent) -> void:
@@ -1032,10 +988,6 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 func _latch_stage() -> void:
 	if _profile != null:
 		ArtStages.latch(_profile)
-
-
-func _campaign(campaign_id: String) -> CampaignDef:
-	return _loop.campaigns.definition(campaign_id)
 
 
 ## Handles one command: the file's detectors look first, and what they correct is saved
@@ -1063,7 +1015,7 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 
 
 ## Hands in a searched villager's play when its search on the pool has finished, and
-## starts the search for a villager the loop stands still for if none runs (P5.0).
+## starts the search for a villager the loop stands still for if none runs (ADR 0030).
 func _process(_delta: float) -> void:
 	var play: BotPlay = _searches.poll(_loop)
 	if play != null:
@@ -1100,10 +1052,10 @@ func _awaits_villager() -> bool:
 	return _loop != null and _loop.awaiting() == RunLoop.Awaiting.VILLAGER_SEARCH
 
 
-## Answers a villager the loop stands still for (P5.0). In the tree its search starts on
+## Answers a villager the loop stands still for (ADR 0030). In the tree its search starts on
 ## the pool and _process hands the play in. Outside it, as for a caller that never runs
-## frames, each such villager is searched at once on this thread, as before P5.0. True
-## when plays went in here.
+## frames, each such villager is searched at once on this thread. True when plays went
+## in here.
 func _serve() -> bool:
 	if not _awaits_villager():
 		return false
@@ -1123,7 +1075,7 @@ func _search_now() -> BotPlay:
 
 ## A searched play goes in as a command's result does: its events out, the run saved,
 ## and the second book sealed again over the figures the play changed, since a play can
-## end a round and bank Grain (P4.19), before anyone is told what the run waits on now.
+## end a round and bank Grain, before anyone is told what the run waits on now.
 func _hand_in(play: BotPlay) -> void:
 	var reason: RunLoop.Reason = _loop.villager_play(play)
 	assert(reason == RunLoop.Reason.OK, "The loop refused the play it stood still for")

@@ -49,7 +49,7 @@ func test_set_aside_cards_lie_on_the_pile_and_the_slip_names_them() -> void:
 		deal.set_aside.append(card)
 		pile.clear()
 		beats.on_event(RunEvent.new(RunEvent.Type.CARDS_SET_ASIDE, 0, 0, 0.0, str(ASIDE)), false)
-		var name: String = _app.controller.card_name(card)
+		var name: String = CardName.of(card)
 		var said: String = tr("beat.set_aside").format(
 			{"name": tr("modifier.the_handicap.name"), "cards": name}
 		)

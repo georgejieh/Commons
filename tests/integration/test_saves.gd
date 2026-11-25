@@ -44,7 +44,7 @@ func test_a_kill_at_any_boundary_or_command_continues_exactly() -> void:
 		var inside_set: bool = resumed.awaiting() < RunLoop.Awaiting.SET_OVER
 		if _drive(resumed, PackedStringArray(), [] as Array[int]) != expected:
 			mismatches += 1
-		elif inside_set and resumed.set_number() == loop.set_number():
+		elif inside_set and resumed.state.set_number() == loop.state.set_number():
 			if _log_lines(resumed) != expected_log:
 				mismatches += 1
 	assert_int(mismatches).is_equal(0)
@@ -205,7 +205,7 @@ func test_a_long_run_save_stays_under_64_kb() -> void:
 	for set_number: int in 24:
 		var summary: SetSummary = SetSummary.new(set_number)
 		for index: int in 16:
-			for kind: int in SetSummary.KIND_COUNT:
+			for kind: int in SetSummary.Kind.size():
 				summary.add("family_%d" % index, kind as SetSummary.Kind, 999)
 		state.summaries.append(summary)
 	var record: RunRecord = RunRecord.new()
@@ -222,8 +222,11 @@ func test_a_long_run_save_stays_under_64_kb() -> void:
 func _drive(loop: RunLoop, snapshots: PackedStringArray, waits: Array[int]) -> String:
 	var script: RunScript = RunScript.new()
 	while loop.awaiting() != RunLoop.Awaiting.RUN_OVER:
-		if loop.awaiting() == RunLoop.Awaiting.SET_OVER:
-			loop.next_set()
+		var between: Array[int] = [
+			RunLoop.Awaiting.SET_OVER, RunLoop.Awaiting.SHOP, RunLoop.Awaiting.REEDUCATION
+		]
+		if between.has(loop.awaiting()):
+			RunScript.next_set(loop)
 		elif script.act(loop):
 			_snapshot(loop, snapshots, waits, loop.awaiting())
 		else:

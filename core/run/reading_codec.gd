@@ -46,12 +46,12 @@ static func is_valid(value: Variant) -> bool:
 		if not data.has(field):
 			return false
 	var type: Variant = data["type"]
-	if not _is_whole(type) or type <= Pattern.Type.PASS or type >= Pattern.Type.size():
+	if not RunState.is_whole(type) or type <= Pattern.Type.PASS or type >= Pattern.Type.size():
 		return false
 	if not _is_rank(data["main"]) or not data["kickers"] is Array:
 		return false
 	for whole: Variant in [data["chain"], data["cards"]]:
-		if not _is_whole(whole) or whole < 1 or whole > MAX_CARDS:
+		if not RunState.is_whole(whole) or whole < 1 or whole > MAX_CARDS:
 			return false
 	for rank: Variant in data["kickers"]:
 		if not _is_rank(rank):
@@ -80,9 +80,4 @@ static func wild_ranks_valid(value: Variant) -> bool:
 
 
 static func _is_rank(value: Variant) -> bool:
-	return _is_whole(value) and Ranks.is_valid(int(value))
-
-
-## JSON reads every number as a float.
-static func _is_whole(value: Variant) -> bool:
-	return (value is int or value is float) and value == floorf(value)
+	return RunState.is_whole(value) and Ranks.is_valid(int(value))

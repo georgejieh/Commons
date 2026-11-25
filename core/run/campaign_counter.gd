@@ -7,7 +7,6 @@ extends RefCounted
 ## visit, and a copy of it already on the counter cannot be bought until the next.
 
 const SOLD: String = ""
-const PERCENT: int = 100
 
 ## Campaigns sold back this visit: not offered again until the next.
 var withheld: Array[String] = []
@@ -30,8 +29,7 @@ func stock() -> Array[String]:
 
 
 func price(slot: int) -> int:
-	var cost: int = (_campaign(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
-	return RunBooks.priced(_state, cost)
+	return RunShop.price_of(_state, _params, _campaign(_stock[slot]).cost)
 
 
 ## True while the player can hold another Campaign.

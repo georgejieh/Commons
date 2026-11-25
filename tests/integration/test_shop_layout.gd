@@ -320,7 +320,7 @@ func _check_aligned(overlay: EnvelopeOverlay, where: String) -> void:
 func test_every_directive_document_fits_the_smaller_place() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+		for directive: DirectiveDef in RunPools.DIRECTIVES.directives:
 			var paper: ChoicePaper = auto_free(ChoicePaper.new())
 			# Under the app, so the game's theme sets its type.
 			_app.add_child(paper)

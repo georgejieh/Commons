@@ -1,6 +1,6 @@
 class_name VillageMemory
 extends RefCounted
-## What each family remembers of the player, across runs (P4.6): how often the player
+## What each family remembers of the player, across runs: how often the player
 ## fed, bombed, denounced and betrayed them, built from Set summaries. Counts fade by a
 ## data rate at each new run, so old harm weighs less than new harm but lingers.
 
@@ -33,9 +33,9 @@ func record(summary: SetSummary) -> void:
 	for family_id: String in summary.counts:
 		if not counts.has(family_id):
 			var row: PackedFloat64Array = []
-			row.resize(SetSummary.KIND_COUNT)
+			row.resize(SetSummary.Kind.size())
 			counts[family_id] = row
-		for kind: int in SetSummary.KIND_COUNT:
+		for kind: int in SetSummary.Kind.size():
 			counts[family_id][kind] += summary.counts[family_id][kind]
 
 
@@ -59,7 +59,7 @@ func carried(params: MemoryParams) -> VillageMemory:
 ## The family's grudge score: each count times its kind's weight.
 func grudge(family_id: String, params: MemoryParams) -> float:
 	var score: float = 0.0
-	for kind: int in SetSummary.KIND_COUNT:
+	for kind: int in SetSummary.Kind.size():
 		score += count(family_id, kind as SetSummary.Kind) * params.weight(kind)
 	return score
 

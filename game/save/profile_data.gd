@@ -211,7 +211,7 @@ static func _memory_valid(value: Variant) -> bool:
 		if not row is Array:
 			return false
 		var counts: Array = row
-		if counts.size() != SetSummary.KIND_COUNT:
+		if counts.size() != SetSummary.Kind.size():
 			return false
 		for count: Variant in counts:
 			if not _float_text_valid(count):

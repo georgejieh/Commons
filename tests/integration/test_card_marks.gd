@@ -143,7 +143,7 @@ func test_a_card_marked_mid_set_keeps_its_marks_next_round() -> void:
 	while state.round_index == round_index and loop.awaiting() != RunLoop.Awaiting.SET_OVER:
 		script.act(loop)
 	if loop.awaiting() == RunLoop.Awaiting.SET_OVER:
-		loop.next_set()
+		RunScript.next_set(loop)
 	_to_play(loop, script)
 	var dealt: CardInstance = _held(loop)[card.id()]
 	assert_str(dealt.enhancement_id()).is_equal(CardInstance.MODEL)
@@ -208,7 +208,7 @@ func test_a_swap_keeps_marks_both_ways() -> void:
 	while state.round_index == round_index and loop.awaiting() != RunLoop.Awaiting.SET_OVER:
 		script.act(loop)
 	if loop.awaiting() == RunLoop.Awaiting.SET_OVER:
-		loop.next_set()
+		RunScript.next_set(loop)
 	while loop.round_state() == null or loop.awaiting() == RunLoop.Awaiting.PLAYER_BID:
 		assert_bool(script.act(loop)).is_true()
 	var next: Dictionary[int, CardInstance] = _held(loop)

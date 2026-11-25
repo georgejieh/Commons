@@ -22,10 +22,6 @@ static func open_tier(identity: RunIdentity) -> int:
 	return identity.finished_runs if identity.is_full() else WILD_TIER - 1
 
 
-static func is_open(unlock_tier: int, open: int) -> bool:
-	return unlock_tier <= open
-
-
 ## Finished runs still needed before a tier opens, 0 once it is open.
 static func runs_left(unlock_tier: int, finished_runs: int) -> int:
 	return maxi(unlock_tier - finished_runs, 0)

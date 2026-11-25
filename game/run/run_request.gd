@@ -1,15 +1,15 @@
 class_name RunRequest
 extends RefCounted
 ## What a new run is asked to be (ADR 0025): its kind, seed, household, stake and lineage,
-## and whether it writes the profile. The app, the demo, and later the tutorial and the
-## balance harness all start runs from one of these, through RunStarter.
+## and whether it writes the profile. The app, the demo, the arrival and the balance
+## harness all start runs from one of these, through RunStarter.
 
-const DEMO: int = RunIdentity.Kind.DEMO
-const FULL: int = RunIdentity.Kind.FULL
+const DEMO: RunIdentity.Kind = RunIdentity.Kind.DEMO
+const FULL: RunIdentity.Kind = RunIdentity.Kind.FULL
 ## The arrival (ADR 0026): authored, never saved, and never written to the profile.
-const TUTORIAL: int = RunIdentity.Kind.TUTORIAL
+const TUTORIAL: RunIdentity.Kind = RunIdentity.Kind.TUTORIAL
 
-var kind: int = FULL
+var kind: RunIdentity.Kind = FULL
 var seed_value: int = 0
 ## Seconds since the epoch when the run starts, which with the seed makes its ID. 0 takes
 ## the clock's.
@@ -35,7 +35,7 @@ var writes_profile: bool = true
 var all_open: bool = false
 
 
-func _init(run_kind: int = FULL, seed_in: int = 0, start: int = 0) -> void:
+func _init(run_kind: RunIdentity.Kind = FULL, seed_in: int = 0, start: int = 0) -> void:
 	kind = run_kind
 	seed_value = seed_in
 	start_time = start

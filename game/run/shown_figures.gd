@@ -10,14 +10,8 @@ extends RefCounted
 ## - At the stage past the last (ArtStages.FILED_STAGE) every figure reads as a success:
 ##   the Quota as fulfilled, every meter as "None reported", coupons as ample. The true
 ##   figures are only on the small ledger, which shows them as the stages before it do.
-## A run with no dark figure, below that stage, shows every figure exactly as before.
+## A run with no dark figure, below that stage, shows every figure as it is.
 
-const COUPONS: String = "coupons"
-const PROGRESS: String = "progress"
-const FAMINE: String = "famine"
-const DENUNCIATION: String = "denunciation"
-const RESENTMENT: String = "resentment"
-const NORM: String = "norm"
 const NONE_REPORTED: String = "figure.none_reported"
 const AMPLE: String = "figure.coupons.ample"
 const FULFILLED: String = "figure.quota.fulfilled"
@@ -30,7 +24,8 @@ static func all_success() -> bool:
 	return ArtStages.past_last()
 
 
-## True when the screens show figure as it truly is.
+## True when the screens show figure as it truly is. Only then may a change to it be
+## signalled: a pulse, a sound, a band, the board's dread.
 static func is_true(state: RunState, figure: String) -> bool:
 	return not all_success() and not is_dark(state, figure)
 
@@ -40,15 +35,9 @@ static func is_dark(state: RunState, figure: String) -> bool:
 	return state.books.is_dark(figure)
 
 
-## True when a change to figure may be signalled: a pulse, a sound, a band, the board's
-## dread. Only a figure shown as it is.
-static func warns(state: RunState, figure: String) -> bool:
-	return is_true(state, figure)
-
-
 ## What the board's dread reads for a meter: its value while it is shown, else none.
 static func board(state: RunState, figure: String, value: int) -> int:
-	return value if warns(state, figure) else 0
+	return value if is_true(state, figure) else 0
 
 
 ## A meter's or the norm's value as text: the number, or "None reported".
@@ -59,22 +48,22 @@ static func meter(state: RunState, figure: String, value: int) -> String:
 ## Coupons as text through a count key: the count, or ample at the stage past the last.
 ## Coupons never go dark.
 static func coupons(amount: int, key: String) -> String:
-	return tr_of(AMPLE) if all_success() else Strings.count(key, amount)
+	return TranslationServer.translate(AMPLE) if all_success() else Strings.count(key, amount)
 
 
 ## True when the Quota's target is shown.
 static func shows_target(state: RunState) -> bool:
-	return is_true(state, NORM)
+	return is_true(state, RunCorrections.NORM)
 
 
 ## The Quota's progress against its target as the bar writes it: both, the progress
 ## alone beside "None reported" under a dark norm, or fulfilled at the last stage.
 static func quota(state: RunState, progress: float, target: float) -> String:
 	if all_success():
-		return tr_of(FULFILLED)
+		return TranslationServer.translate(FULFILLED)
 	if not shows_target(state):
-		return tr_of(QUOTA_DARK).format({"progress": Strings.score(progress)})
-	return tr_of(QUOTA).format(
+		return TranslationServer.translate(QUOTA_DARK).format({"progress": Strings.score(progress)})
+	return TranslationServer.translate(QUOTA).format(
 		{"progress": Strings.score(progress), "target": Strings.score(target)}
 	)
 
@@ -89,10 +78,10 @@ static func tile_text(state: RunState, figure: String) -> String:
 	if is_true(state, figure):
 		return ""
 	match figure:
-		COUPONS:
-			return tr_of(AMPLE)
-		PROGRESS:
-			return tr_of(FULFILLED)
+		RunCorrections.COUPONS:
+			return TranslationServer.translate(AMPLE)
+		RunCorrections.PROGRESS:
+			return TranslationServer.translate(FULFILLED)
 	return none_reported()
 
 
@@ -105,16 +94,12 @@ static func ledger_meter(state: RunState, figure: String, value: int) -> String:
 ## The Quota as the small ledger writes it: progress and target, or the progress alone
 ## under a dark norm.
 static func ledger_quota(state: RunState, progress: float, target: float) -> String:
-	if is_dark(state, NORM):
-		return tr_of(QUOTA_DARK).format({"progress": Strings.score(progress)})
-	return tr_of(QUOTA).format(
+	if is_dark(state, RunCorrections.NORM):
+		return TranslationServer.translate(QUOTA_DARK).format({"progress": Strings.score(progress)})
+	return TranslationServer.translate(QUOTA).format(
 		{"progress": Strings.score(progress), "target": Strings.score(target)}
 	)
 
 
 static func none_reported() -> String:
-	return tr_of(NONE_REPORTED)
-
-
-static func tr_of(key: String) -> String:
-	return str(TranslationServer.translate(key))
+	return TranslationServer.translate(NONE_REPORTED)

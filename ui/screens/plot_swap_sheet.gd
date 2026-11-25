@@ -191,19 +191,10 @@ func _refresh() -> void:
 
 ## "1. 9 of Spades in, 3 of Hearts sits out", by the pair's number.
 func _pair_text(trade: PlotTrade, index: int) -> String:
-	var brought: String = card_name(_board.card_of(trade.plot_ids[index]))
-	var set_aside: String = card_name(_board.card_of(trade.hand_ids[index]))
+	var brought: String = CardName.of(_board.card_of(trade.plot_ids[index]))
+	var set_aside: String = CardName.of(_board.card_of(trade.hand_ids[index]))
 	var text: String = tr("plot.pair").format({"in": brought, "out": set_aside})
 	return "%d. %s" % [index + 1, text]
-
-
-## A card's name, "9 of Spades", or a joker's alone.
-static func card_name(card: CardInstance) -> String:
-	var rank: String = TranslationServer.translate(Ranks.label_key(card.base_rank()))
-	if card.base_rank() >= Ranks.SMALL_JOKER:
-		return rank
-	var suit: String = TranslationServer.translate(RunController.SUIT_KEYS[card.suit()])
-	return TranslationServer.translate("card.name").format({"rank": rank, "suit": suit})
 
 
 ## A pick past the round's swaps is refused where the count is: it says why, and pulses.

@@ -187,7 +187,7 @@ func _say(event: RunEvent, card_ids: Array[int]) -> void:
 	var text: String = tr("beat.redistribution").format({"count": card_ids.size()})
 	if _controller.active_debuff_ids().has("levy") and not card_ids.is_empty():
 		var card: CardInstance = _card(card_ids[0])
-		var shown: String = _controller.card_name(card) if card != null else ""
+		var shown: String = CardName.of(card) if card != null else ""
 		var from_you: bool = event.seat == 0
 		var key: String = "beat.levy.given" if from_you else "beat.levy.taken"
 		var other: String = names.get(event.value if from_you else event.seat, "")
@@ -230,7 +230,7 @@ func _seize(event: RunEvent) -> void:
 	var card: CardInstance = CardInstance.new(
 		event.value, parts[0].to_int(), parts[1].to_int(), CardInstance.Origin.PLOT
 	)
-	var sub: String = tr("callout.plot_seized.sub").format({"card": _controller.card_name(card)})
+	var sub: String = tr("callout.plot_seized.sub").format({"card": CardName.of(card)})
 	var shout: float = _table.callout.shout(
 		tr("callout.plot_seized"), Callout.Tier.CUT_IN, TableMoments.LOSS, sub
 	)

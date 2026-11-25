@@ -7,7 +7,7 @@ extends RefCounted
 ## on its own path, never through the round's fallback for an illegal bot action. A list
 ## that ends inside the record's last command is a save written at a boundary before
 ## those villagers played, and they decide then as they would have. When the game answers
-## searches from outside (P5.0), the loop stands still for each live one instead of
+## searches from outside (ADR 0030), the loop stands still for each live one instead of
 ## asking the searcher.
 
 enum Mode {
@@ -26,7 +26,7 @@ var searcher: Callable = Callable()
 ## Weights a searching seat decides with in place of its own, so a tool can sample fewer
 ## deals; null for its own. The seat's config gets its own back after each decision.
 var weights: BotWeights = null
-## True when the game answers a searching seat's live plays from outside the loop (P5.0):
+## True when the game answers a searching seat's live plays from outside the loop (ADR 0030):
 ## the loop then stands still for each, as it does for the player, and is handed the play.
 ## Off, as for every tool and test, the loop asks the searcher itself.
 var answered_outside: bool = false
@@ -71,12 +71,12 @@ static func _is_decision(entry: Dictionary) -> bool:
 	if reading and not ReadingCodec.is_valid(entry[ReadingCodec.KEY]):
 		return false
 	var seat: Variant = entry.get("seat")
-	if not _is_whole(seat) or seat < 1 or seat >= Seats.COUNT:
+	if not RunState.is_whole(seat) or seat < 1 or seat >= Seats.COUNT:
 		return false
 	if not entry.get("cards") is Array:
 		return false
 	for card: Variant in entry["cards"]:
-		if not _is_whole(card) or card < 0:
+		if not RunState.is_whole(card) or card < 0:
 			return false
 	return true
 
@@ -160,7 +160,7 @@ func decide(view: SeatView, legal: Array[Pattern], table: BotTable, config: BotC
 
 ## True when the loop stands still for this seat's play to be answered from outside: a
 ## searching seat deciding live with moves to choose from, while searches are answered
-## outside. A seat with no move passes, and a replay reads the record, as before.
+## outside. A seat with no move passes, and a replay reads the record.
 func stands_for(config: BotConfig, legal: Array[Pattern]) -> bool:
 	return answered_outside and searches(config) and _live() and not legal.is_empty()
 
@@ -186,8 +186,3 @@ func _live() -> bool:
 func write(seat: int, config: BotConfig, card_ids: Array[int], reading: Pattern = null) -> void:
 	if searches(config):
 		_record.decide(seat, card_ids, reading)
-
-
-## JSON reads every number as a float.
-static func _is_whole(value: Variant) -> bool:
-	return (value is int or value is float) and value == floorf(value)

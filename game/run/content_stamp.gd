@@ -24,8 +24,9 @@ static func current() -> String:
 	return _current
 
 
-## Everything a run draws from, in a fixed order: the pools' definitions, the boss
-## officials (ADR 0043), then the numbers that size each shelf and the ladder.
+## Everything a run draws from, in a fixed order: the pools' definitions, the bosses
+## and their pool's numbers (ADR 0043), the village and every family it seats with its
+## personality and trait shifts, then the numbers that size each shelf and the ladder.
 static func drawn() -> Array[Resource]:
 	var found: Array[Resource] = []
 	found.append_array(RunPools.STORE_CADRES.cadres)
@@ -34,11 +35,25 @@ static func drawn() -> Array[Resource]:
 	found.append_array(RunPools.STORE_CAMPAIGNS.campaigns)
 	found.append_array(RunPools.MARKET_CAMPAIGNS.campaigns)
 	found.append_array(RunPools.REFORMS.reforms)
-	found.append_array(RunLoop.DEFAULT_POOL.debuffs)
-	found.append_array(RunLoop.DEFAULT_BOSSES.officials)
+	found.append_array(RunPools.DEBUFFS.debuffs)
+	found.append_array(RunPools.BOSSES.all())
+	found.append(RunPools.BOSSES)
+	found.append_array(_village(RunLoop.DEFAULT_VILLAGE))
 	found.append_array([RunPools.STORE, RunPools.MARKET, RunPools.LADDER, RunPools.PLOT_CARDS])
 	found.append_array([RunPools.DECK_CARDS, RunLoop.DEFAULT_PLOT_UPGRADES, RunLoop.DEFAULT_PARAMS])
 	found.append_array(RunPools.STORE.envelopes + RunPools.MARKET.envelopes)
+	return found
+
+
+## The village book and each family and sent-down youth it seats, each with its
+## personality and trait shifts, which choose and play the villagers a Quota seats.
+static func _village(village: VillageBook) -> Array[Resource]:
+	var found: Array[Resource] = [village]
+	for family: FamilyDef in village.families + village.youth_templates:
+		found.append(family)
+		if family.personality != null:
+			found.append(family.personality)
+		found.append_array(family.shifts)
 	return found
 
 

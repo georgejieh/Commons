@@ -8,6 +8,5 @@ id = "supply_cooperative"
 cost = 8
 unlock_tier = 0
 parameters = Dictionary[String, int]({"choices": 1})
-held_back = false
 name_key = "reform.supply_cooperative.name"
 text_key = "reform.supply_cooperative.text"

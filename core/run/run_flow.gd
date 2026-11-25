@@ -11,6 +11,8 @@ enum State {
 	ROUND_END,
 	SET_END,
 	SHOP,
+	## No move leads here. The member keeps its place because a save holds the phase as a
+	## number, and every state after it would shift without it.
 	EVENT,
 	YEAR_END,
 	RUN_END,
@@ -21,7 +23,7 @@ enum Reason { OK, ILLEGAL_TRANSITION }
 ## Bidding loops on itself for a redeal. A round ends in bidding when the landlord lost,
 ## or straight into play when the seat is kept. Death can end the run at any boundary
 ## where a meter moves. A boss Set whose risen villager already holds the seat goes from
-## its intro straight into play (P4.7).
+## its intro straight into play.
 const TRANSITIONS: Dictionary[State, Array] = {
 	State.RUN_START: [State.SET_INTRO],
 	State.SET_INTRO: [State.BIDDING, State.ROUND_PLAY],
@@ -29,8 +31,8 @@ const TRANSITIONS: Dictionary[State, Array] = {
 	State.ROUND_PLAY: [State.ROUND_END],
 	State.ROUND_END: [State.BIDDING, State.ROUND_PLAY, State.SET_END, State.RUN_END],
 	State.SET_END: [State.SHOP, State.REEDUCATION, State.RUN_END],
-	State.SHOP: [State.EVENT, State.SET_INTRO, State.YEAR_END, State.RUN_END],
-	State.EVENT: [State.SET_INTRO, State.YEAR_END, State.RUN_END],
+	State.SHOP: [State.SET_INTRO, State.YEAR_END, State.RUN_END],
+	State.EVENT: [],
 	State.YEAR_END: [State.SET_INTRO, State.RUN_END],
 	State.REEDUCATION: [State.SET_INTRO, State.YEAR_END, State.RUN_END],
 	State.RUN_END: [],

@@ -211,7 +211,7 @@ func test_the_set_intro_names_the_reforms_in_force() -> void:
 ## never off the screen: every Reform in force makes the sheet too tall.
 func test_a_set_intro_too_tall_for_the_page_keeps_begin_on_screen() -> void:
 	var held: Array[String] = []
-	for reform: ReformDef in RunReforms.POOL.reforms:
+	for reform: ReformDef in RunPools.REFORMS.reforms:
 		held.append(reform.id)
 	_loop().state.reforms.assign(held)
 	_app.controller.leave_store()

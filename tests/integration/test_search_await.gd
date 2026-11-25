@@ -106,7 +106,7 @@ func _resume(data: Dictionary) -> RunLoop:
 		configs(),
 		SetConfig.new(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		RunLoop.DEFAULT_METERS,
 		Callable(),
 		true
@@ -184,7 +184,7 @@ func test_the_loop_stands_still_for_a_searching_villager() -> void:
 		loop.player_books({RunCorrections.COUPONS: 1}),
 		loop.player_campaign(0, none),
 		loop.open_shop(),
-		loop.next_set(),
+		RunScript.next_set(loop),
 	]
 	for reason: int in refused:
 		assert_int(reason).is_equal(RunLoop.Reason.NOT_AWAITED)
