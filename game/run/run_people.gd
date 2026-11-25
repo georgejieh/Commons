@@ -11,8 +11,10 @@ static func seat_full_name(state: RunState, seat: int) -> String:
 	var entry: RosterEntry = _seated(state, seat)
 	if entry == null:
 		var keys: Array[String] = RunStarter.DEMO_RUN.name_keys
-		return _t(keys[seat]) if seat >= 0 and seat < keys.size() else ""
-	var surname: String = _t(Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry))
+		return TranslationServer.translate(keys[seat]) if seat >= 0 and seat < keys.size() else ""
+	var surname: String = TranslationServer.translate(
+		Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
+	)
 	return Surnames.full_name(state.names.given_name(entry.family_id), surname)
 
 
@@ -45,9 +47,9 @@ static func seat_voice(state: RunState, seat: int) -> VoiceProfile:
 static func every_surname() -> Array[String]:
 	var names: Array[String] = []
 	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
-		names.append(_t(family.name_key))
+		names.append(TranslationServer.translate(family.name_key))
 	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
-		names.append(_t(key))
+		names.append(TranslationServer.translate(key))
 	return names
 
 
@@ -55,7 +57,3 @@ static func _seated(state: RunState, seat: int) -> RosterEntry:
 	if state.roster.is_empty() or seat <= 0 or seat >= state.table.size():
 		return null
 	return Roster.entry(state, state.table[seat])
-
-
-static func _t(key: String) -> String:
-	return str(TranslationServer.translate(key))

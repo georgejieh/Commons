@@ -15,9 +15,9 @@ const LENGTH_KEY: String = "surname.length"
 static func texts(village: VillageBook = RunLoop.DEFAULT_VILLAGE) -> Dictionary[String, String]:
 	var found: Dictionary[String, String] = {}
 	for family: FamilyDef in village.families + village.youth_templates:
-		found[family.name_key] = _t(family.name_key)
+		found[family.name_key] = TranslationServer.translate(family.name_key)
 	for key: String in village.youth_surnames:
-		found[key] = _t(key)
+		found[key] = TranslationServer.translate(key)
 	return found
 
 
@@ -41,16 +41,16 @@ static func clean(typed: String) -> String:
 static func refusal(surname: String) -> String:
 	var cleaned: String = clean(surname)
 	if cleaned.is_empty() or cleaned != surname:
-		return _t(LENGTH_KEY)
+		return TranslationServer.translate(LENGTH_KEY)
 	if village_holds(surname):
-		return _t(REFUSED_KEY).format({"name": surname})
+		return TranslationServer.translate(REFUSED_KEY).format({"name": surname})
 	return ""
 
 
 ## True when a family of the village is called this.
 static func village_holds(surname: String) -> bool:
 	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
-		if _t(family.name_key).to_lower() == surname.to_lower():
+		if TranslationServer.translate(family.name_key).to_lower() == surname.to_lower():
 			return true
 	return false
 
@@ -90,8 +90,4 @@ static func change(profile: SaveService, surname: String) -> bool:
 static func full_name(given: String, surname: String) -> String:
 	if given.is_empty():
 		return surname
-	return _t("name.full").format({"given": given, "surname": surname})
-
-
-static func _t(key: String) -> String:
-	return str(TranslationServer.translate(key))
+	return TranslationServer.translate("name.full").format({"given": given, "surname": surname})

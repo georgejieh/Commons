@@ -59,7 +59,7 @@ static func meter(state: RunState, figure: String, value: int) -> String:
 ## Coupons as text through a count key: the count, or ample at the stage past the last.
 ## Coupons never go dark.
 static func coupons(amount: int, key: String) -> String:
-	return tr_of(AMPLE) if all_success() else Strings.count(key, amount)
+	return TranslationServer.translate(AMPLE) if all_success() else Strings.count(key, amount)
 
 
 ## True when the Quota's target is shown.
@@ -71,10 +71,10 @@ static func shows_target(state: RunState) -> bool:
 ## alone beside "None reported" under a dark norm, or fulfilled at the last stage.
 static func quota(state: RunState, progress: float, target: float) -> String:
 	if all_success():
-		return tr_of(FULFILLED)
+		return TranslationServer.translate(FULFILLED)
 	if not shows_target(state):
-		return tr_of(QUOTA_DARK).format({"progress": Strings.score(progress)})
-	return tr_of(QUOTA).format(
+		return TranslationServer.translate(QUOTA_DARK).format({"progress": Strings.score(progress)})
+	return TranslationServer.translate(QUOTA).format(
 		{"progress": Strings.score(progress), "target": Strings.score(target)}
 	)
 
@@ -90,9 +90,9 @@ static func tile_text(state: RunState, figure: String) -> String:
 		return ""
 	match figure:
 		COUPONS:
-			return tr_of(AMPLE)
+			return TranslationServer.translate(AMPLE)
 		PROGRESS:
-			return tr_of(FULFILLED)
+			return TranslationServer.translate(FULFILLED)
 	return none_reported()
 
 
@@ -106,15 +106,11 @@ static func ledger_meter(state: RunState, figure: String, value: int) -> String:
 ## under a dark norm.
 static func ledger_quota(state: RunState, progress: float, target: float) -> String:
 	if is_dark(state, NORM):
-		return tr_of(QUOTA_DARK).format({"progress": Strings.score(progress)})
-	return tr_of(QUOTA).format(
+		return TranslationServer.translate(QUOTA_DARK).format({"progress": Strings.score(progress)})
+	return TranslationServer.translate(QUOTA).format(
 		{"progress": Strings.score(progress), "target": Strings.score(target)}
 	)
 
 
 static func none_reported() -> String:
-	return tr_of(NONE_REPORTED)
-
-
-static func tr_of(key: String) -> String:
-	return str(TranslationServer.translate(key))
+	return TranslationServer.translate(NONE_REPORTED)

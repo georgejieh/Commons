@@ -28,9 +28,9 @@ static func of(state: RunState, surname: String) -> EndingView:
 	var view: EndingView = EndingView.new()
 	view.id = Endings.outcome(state, RunLoop.DEFAULT_METERS, params)
 	view.death = Endings.is_death(view.id)
-	view.title = _t(Endings.title_key(view.id))
+	view.title = TranslationServer.translate(Endings.title_key(view.id))
 	var text_values: Dictionary[String, Variant] = {"surname": surname, "year": state.year}
-	view.text = _t(Endings.text_key(view.id)).format(text_values)
+	view.text = TranslationServer.translate(Endings.text_key(view.id)).format(text_values)
 	view.famine = state.famine
 	view.denunciation = state.denunciation
 	view.landlord = YearClass.is_landlord(state)
@@ -40,16 +40,16 @@ static func of(state: RunState, surname: String) -> EndingView:
 	for line: EpilogueLine in epilogue:
 		var names: PackedStringArray = []
 		for name_key: String in line.name_keys:
-			names.append(_t(name_key))
+			names.append(TranslationServer.translate(name_key))
 		# The dead line's key lists its names with commas; the others join them in words.
 		var values: Dictionary[String, Variant] = {
 			"name": joined(names), "surname": surname, "names": ", ".join(names)
 		}
-		view.lines.append(_t(line.key).format(values))
+		view.lines.append(TranslationServer.translate(line.key).format(values))
 	if Endings.NOTED.has(view.id):
-		view.note = _t(Endings.NOTE_KEY)
+		view.note = TranslationServer.translate(Endings.NOTE_KEY)
 	view.seal = params.seals.get(view.id, "")
-	view.player_name = _t("end.name").format(
+	view.player_name = TranslationServer.translate("end.name").format(
 		{"name": Surnames.full_name(state.names.player_given_name(), surname)}
 	)
 	return view
@@ -60,10 +60,6 @@ static func joined(names: PackedStringArray) -> String:
 	if names.size() <= 1:
 		return "" if names.is_empty() else names[0]
 	if names.size() == 2:
-		return _t("list.pair").format({"a": names[0], "b": names[1]})
+		return TranslationServer.translate("list.pair").format({"a": names[0], "b": names[1]})
 	var rest: String = ", ".join(names.slice(0, names.size() - 1))
-	return _t("list.last").format({"rest": rest, "last": names[-1]})
-
-
-static func _t(key: String) -> String:
-	return str(TranslationServer.translate(key))
+	return TranslationServer.translate("list.last").format({"rest": rest, "last": names[-1]})

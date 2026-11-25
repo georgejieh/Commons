@@ -36,21 +36,23 @@ static func line(entry: HistoryEntry) -> String:
 	)
 	var values: Dictionary[String, Variant] = {
 		"number": entry.generation,
-		"ending": _t(Endings.title_key(entry.outcome)),
-		"class": _t(class_key),
+		"ending": TranslationServer.translate(Endings.title_key(entry.outcome)),
+		"class": TranslationServer.translate(class_key),
 		"year": entry.year,
 	}
-	var text: String = _t("hist.generation").format(values)
+	var text: String = TranslationServer.translate("hist.generation").format(values)
 	if entry.dead.is_empty():
 		return text
 	var names: PackedStringArray = []
 	for name_key: String in entry.dead:
-		names.append(_t(name_key))
-	return text + " " + _t("hist.not_at_roll_call").format({"names": EndingView.joined(names)})
-
-
-static func _t(key: String) -> String:
-	return str(TranslationServer.translate(key))
+		names.append(TranslationServer.translate(name_key))
+	return (
+		text
+		+ " "
+		+ TranslationServer.translate("hist.not_at_roll_call").format(
+			{"names": EndingView.joined(names)}
+		)
+	)
 
 
 ## The run's Quotas as a record: "Quota 1. Wang: fed twice." for each family a Quota
@@ -79,9 +81,11 @@ static func run_lines(state: RunState, name_of: Callable) -> PackedStringArray:
 			var values: Dictionary[String, Variant] = {
 				"number": number, "name": str(name_of.call(family)), "deeds": deeds
 			}
-			lines.append(_t("hist.quota_line").format(values))
+			lines.append(TranslationServer.translate("hist.quota_line").format(values))
 		if lines.size() == before:
-			lines.append(_t("hist.quota_nothing").format({"number": number}))
+			lines.append(
+				TranslationServer.translate("hist.quota_nothing").format({"number": number})
+			)
 	return lines
 
 
@@ -92,15 +96,15 @@ static func deeds_of(summary: SetSummary, family: String) -> String:
 	for kind: int in DEEDS.size():
 		var count: int = summary.count(family, kind as SetSummary.Kind)
 		if count > 0:
-			parts.append(_t(DEEDS[kind]).format({"times": times(count)}))
+			parts.append(TranslationServer.translate(DEEDS[kind]).format({"times": times(count)}))
 	return ", ".join(parts)
 
 
 ## "once", "twice", "three times", then "4 times".
 static func times(count: int) -> String:
 	if count <= WORDED:
-		return _t("hist.times.%d" % count)
-	return _t("hist.times.many").format({"count": count})
+		return TranslationServer.translate("hist.times.%d" % count)
+	return TranslationServer.translate("hist.times.many").format({"count": count})
 
 
 ## The family's file as its page in the history shows it, oldest first: when, and what
@@ -115,13 +119,15 @@ static func file_lines(profile: SaveService) -> PackedStringArray:
 ## "Generation 2, Year 3, Quota 1. The brigade's books were corrected to the household's
 ## figures for coupons and Famine." An entry from no run's Quota has no date.
 static func file_line(entry: FileEntry) -> String:
-	var what: String = _t("hist.file.seal")
+	var what: String = TranslationServer.translate("hist.file.seal")
 	if not entry.figures.is_empty():
 		var names: PackedStringArray = []
 		for figure: String in RunCorrections.FIGURES:
 			if entry.figures.has(figure):
-				names.append(_t(FILE_FIGURE % figure))
-		what = _t("hist.file.corrected").format({"figures": EndingView.joined(names)})
+				names.append(TranslationServer.translate(FILE_FIGURE % figure))
+		what = TranslationServer.translate("hist.file.corrected").format(
+			{"figures": EndingView.joined(names)}
+		)
 	if entry.year <= 0:
 		return what
 	var values: Dictionary[String, Variant] = {
@@ -129,4 +135,4 @@ static func file_line(entry: FileEntry) -> String:
 		"year": entry.year,
 		"quota": entry.quota % SetConfig.SETS_PER_YEAR + 1,
 	}
-	return _t("hist.file.when").format(values) + " " + what
+	return TranslationServer.translate("hist.file.when").format(values) + " " + what
