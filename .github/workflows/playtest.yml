@@ -49,7 +49,7 @@ jobs:
             --script res://tools/playtest.gd -- --demo --rounds "${{ inputs.rounds || '8' }}" \
             --out reports/playtest 2>&1 | tee reports/playtest.log
           grep -E 'rounds=' reports/playtest.log
-          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR|COMMONS FILE MISMATCH' reports/playtest.log
+          ! grep -E '^MISS |MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR|COMMONS FILE MISMATCH' reports/playtest.log
       - name: Play through the UI in grayscale, with reduced motion and the largest text
         # The same walk on the same terms, seen without colour (ADR 0035).
         if: always()
@@ -64,7 +64,7 @@ jobs:
             --grayscale --reduced-motion --text-size 2 \
             --out reports/playtest_access 2>&1 | tee reports/playtest_access.log
           grep -E 'rounds=' reports/playtest_access.log
-          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR|COMMONS FILE MISMATCH' reports/playtest_access.log
+          ! grep -E '^MISS |MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR|COMMONS FILE MISMATCH' reports/playtest_access.log
       - name: Play the arrival
         # Its own short run: the tutorial from a first launch with no profile to run setup.
         if: always()
@@ -78,7 +78,7 @@ jobs:
             --script res://tools/playtest.gd -- --tutorial \
             --out reports/tutorial 2>&1 | tee reports/tutorial.log
           grep -E 'tutorial shots=' reports/tutorial.log
-          ! grep -E 'MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR|COMMONS FILE MISMATCH' reports/tutorial.log
+          ! grep -E '^MISS |MISCLICK|FAN MISMATCH|NO BUTTON|RESUME WRONG|SCRIPT ERROR|COMMONS FILE MISMATCH' reports/tutorial.log
       - name: Screens
         if: always()
         env:
