@@ -66,3 +66,15 @@ It writes `reports/soak.md` with the count of each and the seeds of any run that
 - A crash that happens before the session file is written leaves no trace beyond the engine's log.
 - The game writes one small file every few seconds while it is open.
 - A second copy started while the first is stalled for longer than three beats will take the first for dead and open. The hole of ADR 0022 is narrowed to that case and to Open anyway, not closed.
+
+## Amendment, 2026-11-25: a save from a newer version
+
+The owner keeps several builds on one PC. Before this amendment an older build took a save whose schema was newer than its own for a damaged one: its next write deleted the newer main file, and the write after that rotated over the newer backup, so two writes by an older build lost a newer profile's history, file and corruption, or a newer run, for good.
+
+**A save from a newer version is not damaged, and is never deleted or written over.** `SaveService` tells the two apart: a file that parses as a save and whose `schema_version` is above this build's is from a newer version. This holds for every file that goes through `SaveService`: the run save, the profile and their backups.
+
+- **Loading reports it.** With the main file from a newer version, a backup this build can read loads in its place, as for a damaged main file, but its notice says the latest save is from a newer version and was kept (`save.newer_version`). With nothing this build can read, the load's status is `SaveLoad.Status.NEWER_VERSION`, with the same notice, never `UNREADABLE`. The game log says so in a line of its own.
+- **It is moved aside before it could be touched.** Before this build first writes over its path, or deletes it (abandoning a run deletes the run save), the newer file is renamed beside it with `.newer_version` added: `run.json.newer_version`, `profile.json.bak.newer_version`. Each path keeps one aside, the latest: a later aside of the same path replaces it. The move is written to the game log. If the move fails, the write is refused with an error and the newer file stays where it was; a delete leaves it.
+- **Nothing restores it.** This build cannot read it, and a newer build reads its own files at their own names. A player who goes back to the newer build and wants that save again puts it back by hand: delete the older build's file of that name and rename the aside to it, `run.json.newer_version` to `run.json`, in the game's folder beside the saves (`user://`). For a run save, delete `private_ledger.txt` beside it too, since the older build rewrote it with its own run's coupons and the newer build would otherwise take that number as an edit (ADR 0022); a missing ledger is nothing.
+
+This does not reach the crash copy above, which only copies, nor ADR 0033, which is about a save from the same schema written against other content: such a save still loads, at its checkpoint. A save from an older schema still migrates as before.
