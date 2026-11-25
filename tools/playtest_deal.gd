@@ -44,7 +44,11 @@ func table() -> void:
 	strip.call("show_debuffs", controller)
 	var line: String = tr("table.set_aside").format({"cards": controller.call("set_aside_names")})
 	var lines: Object = member(strip, "_lines")
-	_expect(str(lines.call("get_parsed_text")).contains(line), "NO SET ASIDE ON SLIP")
+	# The slip spells out each rule only when the full form fits; at the largest text sizes
+	# it names the rules alone, and the set-aside line goes with the boss's rule.
+	var full: bool = int(member(strip, "_form")) == DebuffStrip.Form.FULL
+	var said: bool = str(lines.call("get_parsed_text")).contains(line)
+	_expect(said or not full, "NO SET ASIDE ON SLIP")
 	await _shot("table_set_aside_slip")
 	var kitty: PackedStringArray = []
 	for card: CardInstance in deal.kitty:
