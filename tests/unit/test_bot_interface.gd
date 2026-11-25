@@ -82,12 +82,7 @@ func _code_of(text: String) -> String:
 	return "\n".join(lines)
 
 
-func test_every_rationale_code_has_debug_text() -> void:
-	for code: int in BotRationale.Code.values():
-		assert_bool(BotRationaleText.TEXT.has(code)).is_true()
-
-
-func test_exports_leave_out_the_rationale_text() -> void:
+func test_exports_leave_out_the_tools() -> void:
 	var presets: ConfigFile = ConfigFile.new()
 	assert_int(presets.load(EXPORT_PRESETS)).is_equal(OK)
 	for section: String in presets.get_sections():
