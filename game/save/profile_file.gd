@@ -7,7 +7,8 @@ extends RefCounted
 ## data, growing with corruption as every act does. Nothing here ever takes one out.
 
 
-## Files the entry and adds its corruption, in one write. Returns true when it was new.
+## Files the entry and adds its corruption, in one write. Returns true when it was new and
+## the write held; false when the file already had it, or the profile could not be written.
 static func add(
 	profile: SaveService, entry: FileEntry, params: BooksParams = RunBooks.DEFAULT_PARAMS
 ) -> bool:
@@ -16,8 +17,7 @@ static func add(
 		return false
 	data.file.append(entry)
 	data.corruption = corrupted(data.corruption, params)
-	Profile.write(profile, data)
-	return true
+	return Profile.write(profile, data) == OK
 
 
 ## The corruption after one entry: its amount times (1 + growth * corruption / 100), as
