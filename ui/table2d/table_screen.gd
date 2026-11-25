@@ -78,6 +78,7 @@ var _close: RoundClose = RoundClose.new()
 var _sit_out: SitOut = SitOut.new()
 var _swap_sheet: PlotSwapSheet = PlotSwapSheet.new()
 var _kept: KeptSeatCall = KeptSeatCall.new()
+var _turn: TurnMark = TurnMark.new()
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -157,6 +158,8 @@ func open(app: DemoApp) -> void:
 	_pile.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
 	_build_seats()
+	add_child(_turn)
+	_turn.setup(_seats, _player, _controller)
 	# The moments layer lies over everything, seats included, so a takeover dims it all.
 	move_child(_moments, -1)
 	_speech.setup(_seats, app)
