@@ -31,7 +31,7 @@ static func state(request: RunRequest, profile: SaveService = null) -> RunState:
 	if start == 0:
 		start = int(Time.get_unix_time_from_system())
 	opening.identity.id = RunIdentity.make_id(request.seed_value, start)
-	opening.identity.kind = request.kind as RunIdentity.Kind
+	opening.identity.kind = request.kind
 	opening.identity.household = request.household
 	opening.identity.stake = request.stake
 	if request.all_open:
@@ -51,7 +51,9 @@ static func state(request: RunRequest, profile: SaveService = null) -> RunState:
 
 ## A full run names the player and every family; the demo and the arrival name nobody
 ## new, and keep only the player's surname.
-static func _name(opening: RunState, kind: int, surname: String, generation: int) -> void:
+static func _name(
+	opening: RunState, kind: RunIdentity.Kind, surname: String, generation: int
+) -> void:
 	if kind != RunRequest.FULL:
 		opening.names.player_surname = surname
 		return
@@ -109,7 +111,7 @@ static func unlocked_families(data: ProfileData) -> Array[String]:
 	return unlocked
 
 
-static func starting_coupons(kind: int) -> int:
+static func starting_coupons(kind: RunIdentity.Kind) -> int:
 	match kind:
 		RunRequest.FULL:
 			return FULL_RUN.starting_coupons
@@ -120,7 +122,7 @@ static func starting_coupons(kind: int) -> int:
 
 ## The Sets a kind of run plays: the full run's eight Years, the demo's one, or the
 ## arrival's one Quota.
-static func sets(kind: int) -> SetConfig:
+static func sets(kind: RunIdentity.Kind) -> SetConfig:
 	match kind:
 		RunRequest.FULL:
 			return SetConfig.new(FULL_RUN.sets)
@@ -147,7 +149,7 @@ static func configs() -> Array[BotConfig]:
 
 ## The kind of run a save holds, read from its checkpoint, or the demo's for a save that
 ## names none.
-static func saved_kind(data: Dictionary) -> int:
+static func saved_kind(data: Dictionary) -> RunIdentity.Kind:
 	var checkpoint: Variant = data.get("checkpoint")
 	if not checkpoint is Dictionary:
 		return RunRequest.DEMO

@@ -1304,7 +1304,8 @@ func _seat_roster() -> void:
 ## starts again.
 func _reeducate_villagers() -> void:
 	# In name order: a save sorts its keys, so insertion order would not survive one.
-	var families: Array = state.villager_denunciation.keys()
+	var families: Array[String] = []
+	families.assign(state.villager_denunciation.keys())
 	families.sort()
 	for family_id: String in families:
 		if state.villager_denunciation[family_id] < _meters.denunciation.mid:

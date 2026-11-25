@@ -84,7 +84,7 @@ func start(request: RunRequest, saves: SaveService = null, profile: SaveService 
 	var state: RunState = RunStarter.state(request, used)
 	if state == null:
 		return false
-	var kind: int = request.kind
+	var kind: RunIdentity.Kind = request.kind
 	_begin(state, RunStarter.configs(), RunStarter.sets(kind), saves, used)
 	return true
 
@@ -140,7 +140,7 @@ func continue_saved(saves: SaveService, profile: SaveService = null) -> bool:
 		and loaded.status != SaveLoad.Status.RESTORED_FROM_BACKUP
 	):
 		return false
-	var kind: int = RunStarter.saved_kind(loaded.data)
+	var kind: RunIdentity.Kind = RunStarter.saved_kind(loaded.data)
 	return resume_saved(saves, RunStarter.configs(), RunStarter.sets(kind), profile)
 
 

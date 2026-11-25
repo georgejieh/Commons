@@ -35,18 +35,48 @@ static func for_runs(runs: int) -> CollectionView:
 	for _key: String in SECTION_KEYS:
 		view._sections.append([])
 	for definition: ModifierDef in RunPools.STORE_CADRES.cadres:
-		view._add(COLLECTIVE, definition, ItemText.cadre(definition))
+		view._add(
+			COLLECTIVE,
+			definition.unlock_tier,
+			definition.id,
+			definition.name_key,
+			ItemText.cadre(definition)
+		)
 	for definition: ModifierDef in RunPools.MARKET_CADRES.cadres:
-		view._add(PRIVATE, definition, ItemText.cadre(definition))
+		view._add(
+			PRIVATE,
+			definition.unlock_tier,
+			definition.id,
+			definition.name_key,
+			ItemText.cadre(definition)
+		)
 	for definition: CampaignDef in RunCampaigns.all():
-		view._add(CAMPAIGNS, definition, ItemText.campaign(definition))
+		view._add(
+			CAMPAIGNS,
+			definition.unlock_tier,
+			definition.id,
+			definition.name_key,
+			ItemText.campaign(definition)
+		)
 	for definition: DirectiveDef in RunPools.DIRECTIVES.directives:
-		view._add(DIRECTIVES, definition, ItemText.directive(definition))
+		view._add(
+			DIRECTIVES,
+			definition.unlock_tier,
+			definition.id,
+			definition.name_key,
+			ItemText.directive(definition)
+		)
 	for definition: ReformDef in RunReforms.all():
-		view._add(REFORMS, definition, ItemText.reform(definition))
+		view._add(
+			REFORMS,
+			definition.unlock_tier,
+			definition.id,
+			definition.name_key,
+			ItemText.reform(definition)
+		)
 	for definition: EnvelopeDef in RunPools.STORE.envelopes + RunPools.MARKET.envelopes:
 		var rules: String = ItemText.envelope(definition, definition.choices)
-		view._add(ENVELOPES, definition, rules)
+		view._add(ENVELOPES, definition.unlock_tier, definition.id, definition.name_key, rules)
 	return view
 
 
@@ -84,13 +114,12 @@ func open_line() -> String:
 	return TranslationServer.translate("coll.open").format(values)
 
 
-## Adds an item's sheet. Every kind of item carries an ID, a name key and a tier.
-func _add(section: int, item: Resource, rules: String) -> void:
-	var left: int = RunUnlocks.runs_left(int(item.get("unlock_tier")), finished_runs)
+## Adds an item's sheet, open once its tier is.
+func _add(section: int, tier: int, item_id: String, name_key: String, rules: String) -> void:
+	var left: int = RunUnlocks.runs_left(tier, finished_runs)
 	var sheet: UnlockSheet = UnlockSheet.locked(UnlockSheet.runs_line(left))
-	var item_id: String = str(item.get("id"))
 	if left == 0:
-		var name: String = TranslationServer.translate(str(item.get("name_key")))
+		var name: String = TranslationServer.translate(name_key)
 		sheet = UnlockSheet.opened(item_id, name, rules)
 		if section == COLLECTIVE or section == PRIVATE:
 			sheet.art_id = item_id
