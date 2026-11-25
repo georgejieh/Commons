@@ -70,6 +70,21 @@ func _score(text: String, stack: ModifierStack = _stack) -> ScoreBreakdown:
 	return Scorer.score_play(_cards(text), _pattern(text), 1, 0, false, stack)
 
 
+## Scores as a real play does, keeping the trail of every change.
+func _recorded(text: String, stack: ModifierStack) -> ScoreBreakdown:
+	return Scorer.score_play(
+		_cards(text), _pattern(text), 1, 0, false, stack, Scorer.DEFAULT_PARAMS, 0, null, true
+	)
+
+
+func _modifier_steps(result: ScoreBreakdown) -> Array[ScoreStep]:
+	var found: Array[ScoreStep] = []
+	for step: ScoreStep in result.trail:
+		if step.source == ScoreStep.Source.MODIFIER:
+			found.append(step)
+	return found
+
+
 func test_a_pair_scores_card_grain_times_rate_times_zeal() -> void:
 	var result: ScoreBreakdown = _score("99")
 	assert_float(result.grain).is_equal(9.0 + 9.0)
@@ -108,26 +123,22 @@ func test_a_rocket_scores_both_jokers() -> void:
 
 func test_hooks_apply_grain_then_rate_then_added_then_multiplied_zeal() -> void:
 	var stack: ModifierStack = _scoring_stack(Adder.new())
-	var result: ScoreBreakdown = _score("9", stack)
+	var result: ScoreBreakdown = _recorded("9", stack)
 	assert_float(result.grain).is_equal(9.0 + 1.0 + 10.0)
 	assert_float(result.rate).is_equal(1.0)
 	assert_float(result.zeal).is_equal((1.0 + 2.0) * 3.0)
 	assert_float(result.total).is_equal(20.0 * 9.0)
-	var kinds: Array[int] = []
-	for index: int in result.step_count:
-		kinds.append(result.step_kind(index))
-	(
-		assert_array(kinds)
-		. is_equal(
-			[
-				ScoreBreakdown.Step.CARD_GRAIN,
-				ScoreBreakdown.Step.ADD_GRAIN,
-				ScoreBreakdown.Step.RATE,
-				ScoreBreakdown.Step.ADD_ZEAL,
-				ScoreBreakdown.Step.MUL_ZEAL,
-			]
-		)
-	)
+	# The trail lays the base out first, then the card hook, then the play hook's Grain
+	# and its one Zeal step, which lands on (1 + 2) * 3.
+	var trail: Array[ScoreStep] = result.trail
+	var figures: Array[int] = []
+	for step: ScoreStep in trail:
+		figures.append(step.figure)
+	var grain: int = ScoreStep.Figure.GRAIN
+	var zeal: int = ScoreStep.Figure.ZEAL
+	assert_array(figures).is_equal([grain, ScoreStep.Figure.RATE, zeal, grain, grain, zeal])
+	assert_float(trail[4].after).is_equal(20.0)
+	assert_float(trail[5].after).is_equal(9.0)
 
 
 func test_zeal_never_falls_below_the_minimum() -> void:
@@ -138,20 +149,20 @@ func test_zeal_never_falls_below_the_minimum() -> void:
 
 
 func test_a_rate_cap_limits_the_rate_and_shows_as_a_step() -> void:
-	var result: ScoreBreakdown = _score("9999", _scoring_stack(Capper.new()))
+	var result: ScoreBreakdown = _recorded("9999", _scoring_stack(Capper.new()))
 	assert_float(result.rate).is_equal(2.0)
 	assert_float(result.total).is_equal(36.0 * 2.0)
-	var kinds: Array[int] = []
-	for index: int in result.step_count:
-		kinds.append(result.step_kind(index))
-	assert_array(kinds).contains([ScoreBreakdown.Step.RATE_CAP])
+	var capped: Array[ScoreStep] = _modifier_steps(result)
+	assert_int(capped.size()).is_equal(1)
+	assert_int(capped[0].figure).is_equal(ScoreStep.Figure.RATE)
+	assert_int(capped[0].op).is_equal(ScoreStep.Op.SET)
+	assert_float(capped[0].after).is_equal(2.0)
 
 
 func test_a_rate_under_the_cap_is_left_alone() -> void:
-	var result: ScoreBreakdown = _score("9", _scoring_stack(Capper.new()))
+	var result: ScoreBreakdown = _recorded("9", _scoring_stack(Capper.new()))
 	assert_float(result.rate).is_equal(1.0)
-	for index: int in result.step_count:
-		assert_int(result.step_kind(index)).is_not_equal(ScoreBreakdown.Step.RATE_CAP)
+	assert_array(_modifier_steps(result)).is_empty()
 
 
 func test_hooks_receive_the_seat_and_role() -> void:
@@ -178,15 +189,6 @@ func test_a_score_through_the_hooks_clamps() -> void:
 	assert_float(result.zeal).is_equal(Scorer.MAX_SCORE)
 	assert_float(result.total).is_equal(Scorer.MAX_SCORE)
 	assert_float(Scorer.round_total(Scorer.MAX_SCORE, 3.0)).is_equal(Scorer.MAX_SCORE)
-
-
-func test_steps_fill_one_array_of_a_known_size() -> void:
-	for text: String in ["9999", "sb", "33344456", "3334445556667778TJQK"]:
-		var result: ScoreBreakdown = _score(text)
-		var scored: int = text.length() - _pattern(text).kicker_ranks.size()
-		var size: int = (scored + ScoreBreakdown.FIXED_STEPS) * ScoreBreakdown.VALUES_PER_STEP
-		assert_int(result.steps.size()).is_equal(size)
-		assert_bool(result.step_count * ScoreBreakdown.VALUES_PER_STEP <= size).is_true()
 
 
 func test_round_multipliers() -> void:

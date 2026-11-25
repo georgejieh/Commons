@@ -33,44 +33,10 @@ static func score_play(
 	facts: PlayFacts = null,
 	record: bool = false
 ) -> ScoreBreakdown:
-	# A real play records each change for the table to act out (P5.2a); a preview doesn't.
+	# A real play records each change for the table to act out; a preview doesn't.
 	var trail: ScoreTrail = ScoreTrail.new() if record else null
-	var body: Array[bool] = body_flags(cards, pattern)
-	var scored: int = 0
-	var kicker_cards: PackedByteArray = PackedByteArray()
-	var body_cards: PackedByteArray = PackedByteArray()
-	for index: int in cards.size():
-		if body[index]:
-			scored += 1
-			body_cards.append(cards[index].base_rank())
-		else:
-			kicker_cards.append(cards[index].base_rank())
-	var breakdown: ScoreBreakdown = ScoreBreakdown.new(scored)
-	var grain: float = 0.0
-	var mark_zeal: float = 0.0
-	for index: int in cards.size():
-		var card: CardInstance = cards[index]
-		if body[index]:
-			var printed: float = params.card_grain[card.base_rank()]
-			var base: float = marked_grain(card, printed, params)
-			var enhancement: String = card.enhancement_id()
-			if trail != null:
-				trail.card(card.id(), printed)
-				trail.mark(card.id(), enhancement, base - printed)
-			if enhancement == CardInstance.PENNANT:
-				mark_zeal += params.pennant_zeal
-				if trail != null:
-					trail.mark_zeal(card.id(), enhancement, params.pennant_zeal)
-			elif enhancement == CardInstance.SURPLUS:
-				breakdown.surplus_cards.append(card.id())
-			var context: CardContext = CardContext.new(seat, is_landlord, card, base)
-			context.printed_grain = printed
-			context.landlord = Seats.NONE if facts == null else facts.landlord
-			stack.run_card_scored(context, trail)
-			breakdown.add_step(ScoreBreakdown.Step.CARD_GRAIN, context.grain)
-			grain += context.grain
-
-	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, mark_zeal, 1.0)
+	var breakdown: ScoreBreakdown = ScoreBreakdown.new()
+	var play: PlayContext = PlayContext.new(seat, is_landlord, pattern, 0.0, 0.0, 1.0)
 	play.plays_before = plays_before
 	if facts != null:
 		play.landlord = facts.landlord
@@ -78,33 +44,14 @@ static func score_play(
 		play.seat_plays = facts.seat_plays
 		play.seat_grain = facts.seat_grain
 		play.year = facts.year
-	play.grain = grain
 	play.card_grain = params.card_grain
-	play.kicker_cards = kicker_cards
-	play.body_cards = body_cards
+	var card_grain: float = _score_cards(cards, play, stack, params, trail, breakdown)
 	stack.run_play_scored(play, trail)
 	breakdown.stamps_resented = play.stamps_resented
-	grain += play.add_grain
-	breakdown.add_step(ScoreBreakdown.Step.ADD_GRAIN, play.add_grain)
-
-	var level_rate: float = params.rate_for(pattern.type, level)
-	var rate: float = rate_after(level_rate, play.rate_percent, INF)
-	breakdown.add_step(ScoreBreakdown.Step.RATE, rate)
-	if rate > play.rate_cap:
-		rate = play.rate_cap
-		breakdown.add_step(ScoreBreakdown.Step.RATE_CAP, play.rate_cap)
-
-	var zeal: float = maxf(params.min_zeal, (STARTING_ZEAL + play.add_zeal) * play.mul_zeal)
-	breakdown.add_step(ScoreBreakdown.Step.ADD_ZEAL, play.add_zeal)
-	breakdown.add_step(ScoreBreakdown.Step.MUL_ZEAL, play.mul_zeal)
-
-	breakdown.grain = clamp_score(grain)
-	breakdown.rate = clamp_score(rate)
-	breakdown.zeal = clamp_score(zeal)
-	breakdown.total = clamp_score(grain * rate * zeal * play.total_scale)
+	_total(card_grain + play.add_grain, play, level, params, breakdown)
 	if trail != null:
 		var base_rate: float = params.rate_for(pattern.type, HandLevels.FIRST_LEVEL)
-		trail.finish(base_rate, level_rate, params.min_zeal)
+		trail.finish(base_rate, params.rate_for(pattern.type, level), params.min_zeal)
 		breakdown.trail = trail.steps
 	return breakdown
 
@@ -159,15 +106,72 @@ static func clamp_score(value: float) -> float:
 	return maxf(value, -MAX_SCORE)
 
 
-## True when a card of a play with no stand-in scores Grain: its body, not its kickers.
-## A play with a stand-in places its cards together, through body_flags.
-static func is_scored(card: CardInstance, pattern: Pattern) -> bool:
-	return PlayPlacement.is_body(card.base_rank(), pattern)
-
-
 ## Per card, in order, true when the reading puts it in the body, which scores Grain.
 static func body_flags(cards: Array[CardInstance], pattern: Pattern) -> Array[bool]:
 	var flags: Array[bool] = []
 	for rank: int in PlayPlacement.stands_for(cards, pattern):
 		flags.append(PlayPlacement.is_body(rank, pattern))
 	return flags
+
+
+## Scores the play's cards: each body card's printed Grain, its mark and the card hooks,
+## in play order. Fills the play's body and kicker cards and gives it the Pennant cards'
+## Zeal; the scored Surplus cards go on the breakdown. Returns the cards' Grain.
+static func _score_cards(
+	cards: Array[CardInstance],
+	play: PlayContext,
+	stack: ModifierStack,
+	params: ScoreParams,
+	trail: ScoreTrail,
+	breakdown: ScoreBreakdown
+) -> float:
+	var body: Array[bool] = body_flags(cards, play.pattern)
+	var body_cards: PackedByteArray = PackedByteArray()
+	var kicker_cards: PackedByteArray = PackedByteArray()
+	for index: int in cards.size():
+		if body[index]:
+			body_cards.append(cards[index].base_rank())
+		else:
+			kicker_cards.append(cards[index].base_rank())
+	play.body_cards = body_cards
+	play.kicker_cards = kicker_cards
+	var grain: float = 0.0
+	for index: int in cards.size():
+		if not body[index]:
+			continue
+		var card: CardInstance = cards[index]
+		var printed: float = params.card_grain[card.base_rank()]
+		var base: float = marked_grain(card, printed, params)
+		var enhancement: String = card.enhancement_id()
+		if trail != null:
+			trail.card(card.id(), printed)
+			trail.mark(card.id(), enhancement, base - printed)
+		if enhancement == CardInstance.PENNANT:
+			play.add_zeal += params.pennant_zeal
+			if trail != null:
+				trail.mark_zeal(card.id(), enhancement, params.pennant_zeal)
+		elif enhancement == CardInstance.SURPLUS:
+			breakdown.surplus_cards.append(card.id())
+		var context: CardContext = CardContext.new(play.seat, play.is_landlord, card, base)
+		context.printed_grain = printed
+		context.landlord = play.landlord
+		stack.run_card_scored(context, trail)
+		grain += context.grain
+	play.grain = grain
+	return grain
+
+
+## Sets the breakdown's figures once the play hooks have run: Rate from the hand type at
+## its level, its share and its cap, Zeal never below the data's floor, and the total.
+static func _total(
+	grain: float, play: PlayContext, level: int, params: ScoreParams, breakdown: ScoreBreakdown
+) -> void:
+	var level_rate: float = params.rate_for(play.pattern.type, level)
+	var rate: float = rate_after(level_rate, play.rate_percent, INF)
+	if rate > play.rate_cap:
+		rate = play.rate_cap
+	var zeal: float = maxf(params.min_zeal, (STARTING_ZEAL + play.add_zeal) * play.mul_zeal)
+	breakdown.grain = clamp_score(grain)
+	breakdown.rate = clamp_score(rate)
+	breakdown.zeal = clamp_score(zeal)
+	breakdown.total = clamp_score(grain * rate * zeal * play.total_scale)

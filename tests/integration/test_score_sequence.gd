@@ -86,7 +86,7 @@ func test_each_change_fires_in_order_with_its_tag_and_sound() -> void:
 	# One tag per change, in the engine's order, each saying what it did.
 	var changes: Array[String] = []
 	for each: ScoreStep in event.steps:
-		if not each.is_base():
+		if not _is_base(each):
 			changes.append(ScoreSequence.tag_text(each))
 	assert_array(tags).is_equal(changes)
 	var landed: Array[String] = [AudioEvents.SCORE_LAND, AudioEvents.SCORE_LAND_HEAVY]
@@ -219,7 +219,16 @@ func test_reduced_motion_keeps_every_tag_figure_and_sound_and_moves_nothing() ->
 	assert_bool(moved[0]).is_false()
 	var changes: int = 0
 	for each: ScoreStep in event.steps:
-		changes += 0 if each.is_base() else 1
+		changes += 0 if _is_base(each) else 1
 	assert_int(tags.size()).is_equal(changes)
 	assert_str(Audio.last_played).is_equal(AudioEvents.SCORE_LAND_HEAVY)
 	assert_str(moments.tally.shown()).ends_with(Strings.score(event.amount))
+
+
+## The steps that build the score before anything changes it, which take no tag: the
+## cards' printed Grain, the hand's Rate and Zeal's start.
+func _is_base(step: ScoreStep) -> bool:
+	var base: Array[ScoreStep.Source] = [
+		ScoreStep.Source.CARD, ScoreStep.Source.HAND, ScoreStep.Source.START
+	]
+	return base.has(step.source)

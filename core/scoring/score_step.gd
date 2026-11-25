@@ -61,9 +61,3 @@ static func applied(step_op: Op, from: float, by: float) -> float:
 ## True when the step lowered its figure, as a debuff that cuts the score does.
 func is_cut() -> bool:
 	return after < before
-
-
-## True for the steps that build the score before anything changes it: the cards'
-## printed Grain, the hand's Rate and Zeal's start.
-func is_base() -> bool:
-	return source == Source.CARD or source == Source.HAND or source == Source.START
