@@ -1,8 +1,9 @@
 class_name TableInput
 extends RefCounted
 ## Keyboard and gamepad at the table (P3B.11). Shortcuts press the same buttons a click
-## does; Escape or the gamepad's B closes the rules card or opens the menu; on the
-## player's turn the cursor actions move along the hand and pick cards.
+## does, and Deck opens the deck sheet as the menu's Deck does (ADR 0041); Escape or the
+## gamepad's B closes the rules card or opens the menu; on the player's turn the cursor
+## actions move along the hand and pick cards.
 
 ## The Campaign tray, which takes its keys first.
 var tray: CampaignTray = null
@@ -15,6 +16,7 @@ var _actions: ActionBar
 var _hand_view: HandView
 var _controller: RunController
 var _open_pause: Callable
+var _open_deck: Callable
 
 
 func setup(
@@ -23,7 +25,8 @@ func setup(
 	actions: ActionBar,
 	hand_view: HandView,
 	controller: RunController,
-	open_pause: Callable
+	open_pause: Callable,
+	open_deck: Callable
 ) -> void:
 	_pause = pause
 	_cheat_sheet = cheat_sheet
@@ -31,6 +34,7 @@ func setup(
 	_hand_view = hand_view
 	_controller = controller
 	_open_pause = open_pause
+	_open_deck = open_deck
 
 
 ## Acts on event and returns true when it used it.
@@ -47,6 +51,9 @@ func handle(event: InputEvent) -> bool:
 		return true
 	if _pause.visible or _cheat_sheet.visible:
 		return false
+	if event.is_action_pressed("commons_deck"):
+		_open_deck.call()
+		return true
 	return _hand_cursor(event) or _shortcut(event)
 
 

@@ -210,7 +210,7 @@ func open(app: DemoApp) -> void:
 	app.notice.hold(_player)
 	_pause.wire(app)
 	_resize.setup(self, app, _pause)
-	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause)
+	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause, _open_deck)
 	_input.tray = _campaigns.tray
 	_wild.setup(_hand_view, _pile, _debuffs, _moments, _player, _commands, _input)
 	_setup_dread(app)
@@ -268,6 +268,12 @@ func tutorial() -> TableTutorial:
 func _open_pause() -> void:
 	_player.set_process(false)
 	_pause.open()
+
+
+## The deck sheet over the table, its events held until it is closed, as from the menu.
+func _open_deck() -> void:
+	_player.set_process(false)
+	_deck.open_deck()
 
 
 ## Keyboard and gamepad go through TableInput (P3B.11).
