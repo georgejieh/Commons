@@ -51,8 +51,9 @@ static func checked(
 
 ## The documented order: true when a reads before b.
 static func stronger(a: Pattern, b: Pattern, rules: RuleSet) -> bool:
-	if PlayComparator.beats(a, b, rules) != PlayComparator.beats(b, a, rules):
-		return PlayComparator.beats(a, b, rules)
+	var a_beats: bool = PlayComparator.beats(a, b, rules)
+	if a_beats != PlayComparator.beats(b, a, rules):
+		return a_beats
 	if a.type != b.type:
 		return a.type > b.type
 	if a.key != b.key:
