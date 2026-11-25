@@ -78,7 +78,7 @@ func test_a_schema_9_save_starts_its_counts_at_nothing() -> void:
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("year_rounds")
 	checkpoint.erase("year_landlord_rounds")
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	var file: FileAccess = FileAccess.open(PATH, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": 9, "data": data}))
 	file.close()
@@ -97,7 +97,7 @@ func test_counters_out_of_order_are_a_damaged_save() -> void:
 		var data: Dictionary = record.to_dict()
 		data["checkpoint"]["year_rounds"] = counts[0]
 		data["checkpoint"]["year_landlord_rounds"] = counts[1]
-		assert_bool(RunRecord.is_valid(data)).override_failure_message(str(counts)).is_false()
+		assert_bool(RunRecordCheck.is_valid(data)).override_failure_message(str(counts)).is_false()
 
 
 ## A finished run at the run's end, saved and loaded back through the controller.

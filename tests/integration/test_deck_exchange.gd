@@ -172,9 +172,9 @@ func test_a_save_before_the_exchange_loads_as_a_plain_deck() -> void:
 	var data: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("deck")
-	assert_bool(RunRecord.is_valid(data)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_18(data)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_18(data)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	var resumed: RunLoop = RunRecord.resume(migrated, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_array(resumed.state.deck.changed_slots()).is_empty()
@@ -199,7 +199,7 @@ func test_a_run_with_exchanges_resumes_to_the_same_deck_at_every_checkpoint() ->
 ## Resumes the loop's record and finds the same deck and the same marks.
 func _same_deck(loop: RunLoop) -> void:
 	var record: Dictionary = JSON.parse_string(JSON.stringify(loop.record.to_dict()))
-	assert_bool(RunRecord.is_valid(record)).is_true()
+	assert_bool(RunRecordCheck.is_valid(record)).is_true()
 	var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_dict(resumed.state.deck.to_dict()).is_equal(loop.state.deck.to_dict())

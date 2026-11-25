@@ -188,12 +188,12 @@ func test_a_schema_17_save_migrates_to_no_reported_steps() -> void:
 	var data: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("reported_steps")
-	assert_bool(RunRecord.is_valid(data)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_17(data)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_17(data)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	assert_int(int(migrated["checkpoint"]["reported_steps"])).is_equal(0)
 	migrated["checkpoint"]["reported_steps"] = -1
-	assert_bool(RunRecord.is_valid(migrated)).is_false()
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_false()
 	migrated["checkpoint"]["reported_steps"] = 1
 	migrated["checkpoint"]["norm_steps"] = 0
-	assert_bool(RunRecord.is_valid(migrated)).is_false()
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_false()

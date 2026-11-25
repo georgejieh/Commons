@@ -39,7 +39,7 @@ func test_a_schema_5_run_save_gains_marks_and_levels_and_both_are_saved() -> voi
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("hand_levels")
 	checkpoint.erase("card_marks")
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	var file: FileAccess = FileAccess.open(_service.path(), FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": 5, "data": data}))
 	file.close()
@@ -84,5 +84,5 @@ func test_damaged_marks_or_levels_fail_validation() -> void:
 		var data: Dictionary = _record(2)
 		var checkpoint: Dictionary = data["checkpoint"]
 		checkpoint.merge(change, true)
-		assert_bool(RunRecord.is_valid(data)).override_failure_message(str(change)).is_false()
-	assert_bool(RunRecord.is_valid(_record(2))).is_true()
+		assert_bool(RunRecordCheck.is_valid(data)).override_failure_message(str(change)).is_false()
+	assert_bool(RunRecordCheck.is_valid(_record(2))).is_true()

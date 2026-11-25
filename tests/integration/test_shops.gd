@@ -130,7 +130,9 @@ func test_the_state_store_runs_out_of_an_item_and_the_market_does_not() -> void:
 func test_a_save_from_before_limited_stock_loads_with_nothing_sold() -> void:
 	var data: Dictionary = RunState.new(3).to_dict()
 	data.erase("store_sold")
-	var migrated: Dictionary = RunRecord.migrate_from_3({"checkpoint": data, "commands": []})
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_3(
+		{"checkpoint": data, "commands": []}
+	)
 	var checkpoint: Dictionary = migrated["checkpoint"]
 	assert_bool(RunState.from_dict(checkpoint).store_sold.is_empty()).is_true()
 
@@ -278,6 +280,8 @@ func test_a_save_from_the_middle_of_phase_4_gains_every_missing_field() -> void:
 	for field: String in ["store_sold", "styles", "boss_family", "swap_bonus", "memory", "risen"]:
 		data.erase(field)
 	var record: Dictionary = {"checkpoint": data, "commands": []}
-	assert_bool(RunRecord.is_valid(record)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_12(RunRecord.migrate_from_3(record))
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(record)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_12(
+		RunRecordMigrations.migrate_from_3(record)
+	)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()

@@ -121,14 +121,14 @@ func test_a_use_replays_from_a_save_and_an_older_save_still_loads() -> void:
 	var older: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = older["checkpoint"]
 	checkpoint["coupons"] = RICH
-	assert_bool(RunRecord.is_valid(older)).is_true()
+	assert_bool(RunRecordCheck.is_valid(older)).is_true()
 	assert_object(RunRecord.resume(older, RunScript.bots(), SetConfig.new())).is_not_null()
 	assert_int(loop.player_mark_card(CARD)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_mark_card(CARD + 5, true)).is_equal(RunLoop.Reason.OK)
 	var record: Dictionary = loop.record.to_dict()
 	var saved: Dictionary = record["checkpoint"]
 	saved["coupons"] = RICH
-	assert_bool(RunRecord.is_valid(record)).is_true()
+	assert_bool(RunRecordCheck.is_valid(record)).is_true()
 	var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_dict(resumed.state.to_dict()).is_equal(loop.state.to_dict())

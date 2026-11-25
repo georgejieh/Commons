@@ -272,7 +272,7 @@ func test_a_run_save_with_a_broken_identity_falls_back() -> void:
 	var record: RunRecord = RunRecord.new()
 	record.mark(RunState.new(SEED))
 	var data: Dictionary = record.to_dict()
-	assert_bool(RunRecord.is_valid(data)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_true()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint["identity"] = {"id": 4, "kind": 9}
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()

@@ -95,7 +95,7 @@ func test_a_save_mid_opening_loads_into_the_same_envelope() -> void:
 			loop.player_envelope_buy(0)
 		var counter: EnvelopeCounter = loop.open_envelope()
 		var saved: Dictionary = _saved(loop)
-		assert_bool(RunRecord.is_valid(saved)).is_true()
+		assert_bool(RunRecordCheck.is_valid(saved)).is_true()
 		var resumed: RunLoop = RunRecord.resume(saved, RunScript.bots(), SetConfig.new())
 		assert_object(resumed).is_not_null()
 		assert_object(resumed.open_envelope()).is_not_null()

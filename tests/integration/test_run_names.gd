@@ -189,10 +189,10 @@ func _old_record(seed_value: int, generation: int) -> Dictionary:
 func test_the_migration_names_an_old_save_the_same_way_twice() -> void:
 	var old: Dictionary = _old_record(606, 3)
 	var texts: Dictionary[String, String] = Surnames.texts()
-	var first: Dictionary = RunRecord.migrate_from_14(old.duplicate(true), texts)
-	var second: Dictionary = RunRecord.migrate_from_14(old.duplicate(true), texts)
+	var first: Dictionary = RunRecordMigrations.migrate_from_14(old.duplicate(true), texts)
+	var second: Dictionary = RunRecordMigrations.migrate_from_14(old.duplicate(true), texts)
 	assert_dict(first).is_equal(second)
-	assert_bool(RunRecord.is_valid(first)).is_true()
+	assert_bool(RunRecordCheck.is_valid(first)).is_true()
 	var names: RunNames = RunNames.from_dict(first["checkpoint"]["names"])
 	assert_bool(names.active).is_true()
 	assert_str(names.player_surname).is_equal(BOOK.fallback_surname)
@@ -219,9 +219,9 @@ func test_a_damaged_names_field_fails_validation() -> void:
 	record.mark(RunStarter.state(_full(5, 1, "")))
 	var data: Dictionary = JSON.parse_string(JSON.stringify(record.to_dict()))
 	data["checkpoint"]["names"]["given"] = {"player": 3}
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	data["checkpoint"]["names"] = []
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 
 
 func test_the_surname_stays_across_runs_while_the_given_name_changes() -> void:

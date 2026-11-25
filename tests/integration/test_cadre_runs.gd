@@ -72,7 +72,7 @@ func test_a_market_buy_saved_before_the_picker_still_replays() -> void:
 	assert_int(loop.player_market_buy(slot)).is_equal(RunLoop.Reason.OK)
 	assert_bool(loop.record.commands[-1].has("rank")).is_false()
 	var record: Dictionary = _rich_record(loop)
-	assert_bool(RunRecord.is_valid(record)).is_true()
+	assert_bool(RunRecordCheck.is_valid(record)).is_true()
 	var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
 	assert_array(resumed.state.inventory.cadres).is_equal(loop.state.inventory.cadres)
 

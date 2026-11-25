@@ -79,8 +79,8 @@ func test_a_save_from_before_the_count_loads_with_none() -> void:
 	for family: String in rows:
 		var row: Array = rows[family]
 		row.resize(Observations.Kind.size() - 1)
-	var migrated: Dictionary = RunRecord.migrate_from_19(data)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_19(data)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	for family: String in rows:
 		var row: Array = rows[family]
 		assert_int(row.size()).is_equal(Observations.Kind.size())

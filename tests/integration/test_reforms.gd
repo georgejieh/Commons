@@ -149,7 +149,7 @@ func test_held_reforms_survive_save_load_and_replay() -> void:
 	var offered: String = loop.shop.reforms.stock()[0]
 	assert_int(loop.player_reform(0)).is_equal(RunLoop.Reason.OK)
 	var saved: Dictionary = JSON.parse_string(JSON.stringify(loop.record.to_dict()))
-	assert_bool(RunRecord.is_valid(saved)).is_true()
+	assert_bool(RunRecordCheck.is_valid(saved)).is_true()
 	var resumed: RunLoop = RunRecord.resume(saved, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_array(resumed.state.reforms).is_equal([offered])
@@ -268,7 +268,7 @@ func test_a_schema_7_save_migrates_and_bad_shapes_fail() -> void:
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("reforms")
 	checkpoint.erase("deck_order")
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	var dir: String = "user://test_reforms/"
 	DirAccess.make_dir_recursive_absolute(dir)
 	var service: SaveService = SaveService.for_run(dir + "run.json")
@@ -294,11 +294,11 @@ func test_a_schema_7_save_migrates_and_bad_shapes_fail() -> void:
 		var bad: Dictionary = record.to_dict()
 		var bad_checkpoint: Dictionary = bad["checkpoint"]
 		bad_checkpoint.merge(change, true)
-		assert_bool(RunRecord.is_valid(bad)).override_failure_message(str(change)).is_false()
+		assert_bool(RunRecordCheck.is_valid(bad)).override_failure_message(str(change)).is_false()
 	var fine: Dictionary = record.to_dict()
 	var fine_checkpoint: Dictionary = fine["checkpoint"]
 	fine_checkpoint.merge({"deck_order": range(Deck.SIZE), "reforms": ["x"]}, true)
-	assert_bool(RunRecord.is_valid(fine)).is_true()
+	assert_bool(RunRecordCheck.is_valid(fine)).is_true()
 	var text: String = JSON.stringify(fine_checkpoint)
 	var round_trip: RunState = RunState.from_dict(JSON.parse_string(text))
 	assert_int(round_trip.deck_order.size()).is_equal(Deck.SIZE)

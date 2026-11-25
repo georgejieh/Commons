@@ -170,7 +170,7 @@ func test_sales_replay_from_a_save_and_an_older_save_still_loads() -> void:
 	var older: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = older["checkpoint"]
 	checkpoint["coupons"] = RICH
-	assert_bool(RunRecord.is_valid(older)).is_true()
+	assert_bool(RunRecordCheck.is_valid(older)).is_true()
 	assert_object(RunRecord.resume(older, RunScript.bots(), SetConfig.new())).is_not_null()
 	assert_int(loop.player_buy(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_sell_cadre(loop.state.inventory.cadres.size() - 1)).is_equal(
@@ -180,7 +180,7 @@ func test_sales_replay_from_a_save_and_an_older_save_still_loads() -> void:
 	var record: Dictionary = loop.record.to_dict()
 	var saved: Dictionary = record["checkpoint"]
 	saved["coupons"] = RICH
-	assert_bool(RunRecord.is_valid(record)).is_true()
+	assert_bool(RunRecordCheck.is_valid(record)).is_true()
 	var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_int(resumed.state.coupons).is_equal(loop.state.coupons)

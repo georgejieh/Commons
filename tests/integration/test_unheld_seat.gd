@@ -211,16 +211,16 @@ func test_the_count_survives_save_and_resume() -> void:
 func test_a_bad_count_is_a_damaged_save() -> void:
 	var state: RunState = RunState.new(SEEDS[0])
 	var data: Dictionary = {"checkpoint": state.to_dict(), "commands": []}
-	data = RunRecord.migrate_from_12(data)
-	assert_bool(RunRecord.is_valid(data)).is_true()
+	data = RunRecordMigrations.migrate_from_12(data)
+	assert_bool(RunRecordCheck.is_valid(data)).is_true()
 	for wrong: Variant in [-1, 1.5, "2", null]:
 		var broken: Dictionary = data.duplicate(true)
 		broken["checkpoint"]["seatless_sets"] = wrong
-		assert_bool(RunRecord.is_valid(broken)).override_failure_message(str(wrong)).is_false()
+		assert_bool(RunRecordCheck.is_valid(broken)).override_failure_message(str(wrong)).is_false()
 	var missing: Dictionary = data.duplicate(true)
 	var checkpoint: Dictionary = missing["checkpoint"]
 	checkpoint.erase("seatless_sets")
-	assert_bool(RunRecord.is_valid(missing)).is_false()
+	assert_bool(RunRecordCheck.is_valid(missing)).is_false()
 
 
 ## A schema 13 save has no count: it loads with none, and the run counts from there.
@@ -231,9 +231,9 @@ func test_a_schema_13_save_migrates() -> void:
 	var old: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = old["checkpoint"]
 	checkpoint.erase("seatless_sets")
-	assert_bool(RunRecord.is_valid(old)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_13(old.duplicate(true))
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(old)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_13(old.duplicate(true))
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	assert_int(int(migrated["checkpoint"]["seatless_sets"])).is_equal(0)
 	var file: FileAccess = FileAccess.open(DIR + "run.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": 13, "data": old}))

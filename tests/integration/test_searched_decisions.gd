@@ -137,7 +137,11 @@ func test_a_written_decision_that_no_longer_fits_fails_the_resume() -> void:
 	}
 	for name: String in tampered:
 		# Each keeps the shape a save may have: the replay refuses it, not the validator.
-		assert_bool(RunRecord.is_valid(tampered[name])).override_failure_message(name).is_true()
+		(
+			assert_bool(RunRecordCheck.is_valid(tampered[name]))
+			. override_failure_message(name)
+			. is_true()
+		)
 		assert_object(_resume(tampered[name])).override_failure_message(name).is_null()
 
 
@@ -200,7 +204,7 @@ func _saved_inside_a_command(loop: RunLoop) -> Dictionary:
 	var saved: Dictionary = _through_disk(loop.record.to_dict())
 	var written: Array = saved["decisions"]
 	written.resize(before)
-	assert_bool(RunRecord.is_valid(saved)).is_true()
+	assert_bool(RunRecordCheck.is_valid(saved)).is_true()
 	return saved
 
 
@@ -210,7 +214,7 @@ func test_written_decisions_of_the_wrong_shape_are_a_damaged_save() -> void:
 	var empty: Array[int] = []
 	record.decide(1, [5, 6])
 	record.decide(2, empty)
-	assert_bool(RunRecord.is_valid(record.to_dict())).is_true()
+	assert_bool(RunRecordCheck.is_valid(record.to_dict())).is_true()
 	var wrong: Array = [
 		["decisions", {}],
 		["decisions", [{"seat": 0, "cards": []}]],
@@ -229,12 +233,12 @@ func test_written_decisions_of_the_wrong_shape_are_a_damaged_save() -> void:
 	for change: Array in wrong:
 		var data: Dictionary = record.to_dict()
 		data[change[0]] = change[1]
-		assert_bool(RunRecord.is_valid(data)).override_failure_message(str(change)).is_false()
+		assert_bool(RunRecordCheck.is_valid(data)).override_failure_message(str(change)).is_false()
 	var unmarked: Dictionary = record.to_dict()
 	unmarked.erase(RunRecord.WRITTEN_KEY)
-	assert_bool(RunRecord.is_valid(unmarked)).is_false()
-	var none_written: Dictionary = RunRecord.migrate_from_12(record.to_dict())
-	assert_bool(RunRecord.is_valid(none_written)).is_true()
+	assert_bool(RunRecordCheck.is_valid(unmarked)).is_false()
+	var none_written: Dictionary = RunRecordMigrations.migrate_from_12(record.to_dict())
+	assert_bool(RunRecordCheck.is_valid(none_written)).is_true()
 
 
 ## A schema 12 save with an Expert seat replays with the unlimited search, as it was made,

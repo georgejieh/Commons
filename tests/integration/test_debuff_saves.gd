@@ -27,7 +27,7 @@ func _setup(debuff_id: String) -> Callable:
 
 func _resume(loop: RunLoop, debuff_id: String) -> RunLoop:
 	var data: Dictionary = JSON.parse_string(JSON.stringify(loop.record.to_dict()))
-	assert_bool(RunRecord.is_valid(data)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_true()
 	return RunRecord.resume(
 		data,
 		RunScript.bots(),
@@ -75,9 +75,9 @@ func test_a_schema_8_save_gains_no_slogan() -> void:
 	var data: Dictionary = record.to_dict()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("slogan_type")
-	assert_bool(RunRecord.is_valid(data)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_8(data)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_8(data)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	var state: RunState = RunState.from_dict(migrated["checkpoint"])
 	assert_int(state.slogan_type).is_equal(RunState.NO_SLOGAN)
 	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(9)
