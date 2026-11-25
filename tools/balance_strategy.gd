@@ -64,7 +64,7 @@ static func store_purchase(visit: BalanceVisit, budget: int) -> BalanceOffer:
 	var directive: BalanceOffer = directive_purchase(visit, budget)
 	if directive != null:
 		return directive
-	for kind: int in [
+	for kind: BalanceOffer.Kind in [
 		BalanceOffer.Kind.CADRE,
 		BalanceOffer.Kind.REFORM,
 		BalanceOffer.Kind.ENVELOPE,

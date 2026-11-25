@@ -5,7 +5,7 @@ extends BalanceStrategy
 ## nothing else from the state store, buys everything it can at the black market, uses
 ## every Campaign and swaps its plot in.
 
-const MARKET_ORDER: Array[int] = [
+const MARKET_ORDER: Array[BalanceOffer.Kind] = [
 	BalanceOffer.Kind.CADRE,
 	BalanceOffer.Kind.PARCEL,
 	BalanceOffer.Kind.PLOT_CARD,
@@ -29,7 +29,7 @@ func purchase(visit: BalanceVisit) -> BalanceOffer:
 	var directive: BalanceOffer = directive_purchase(visit, visit.coupons)
 	if directive != null:
 		return directive
-	for kind: int in MARKET_ORDER:
+	for kind: BalanceOffer.Kind in MARKET_ORDER:
 		var offer: BalanceOffer = BalanceOffer.dearest(visit.market, kind, visit.coupons)
 		if offer != null:
 			return offer
