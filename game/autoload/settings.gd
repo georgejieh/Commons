@@ -6,8 +6,9 @@ extends Node
 signal changed(key: String)
 
 const PATH: String = "user://settings.cfg"
-## A debug build reads this environment variable for another file, so the test run keeps
-## its own settings and never touches the player's (tools/test.sh sets it). The keys of
+## A debug build reads this environment variable for another file. The sandbox already
+## keeps every test and tool off the player's file (SavePaths); this keeps two test runs
+## at once, as from two worktrees, off each other's (tools/test.sh sets it). The keys of
 ## the table actions (ADR 0035) live in the same file, in their own section, and are
 ## applied to the InputMap as the game starts, before any screen.
 const PATH_OVERRIDE: String = "COMMONS_SETTINGS"

@@ -101,7 +101,8 @@ func accepted() -> Array[int]:
 
 ## Writes the coupons into the ledger through a temporary file, so a crash never leaves
 ## half a number there, once the save that names them is written. before is what the
-## save kept as the ledger's number before.
+## save kept as the ledger's number before. A write that fails is not reported: the
+## ledger keeps the number before, which the save accepts, so nothing is taken.
 func write(coupons: int, before: int) -> void:
 	_fresh = false
 	_accepted.clear()

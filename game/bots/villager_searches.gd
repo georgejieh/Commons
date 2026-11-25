@@ -1,7 +1,7 @@
 class_name VillagerSearches
 extends RefCounted
 ## The searches a controller runs on the worker pool for villagers its loop stands still
-## for (P5.0). One at most belongs to the loop's request now. A search let go of while it
+## for (ADR 0030). One at most belongs to the loop's request now. A search let go of while it
 ## runs, because the run was replaced, dropped or left the tree, is kept until its samples
 ## finish and is then thrown away, so no worker is left calling into a runner that is gone
 ## and no play reaches a loop that no longer waits for it.

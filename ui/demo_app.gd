@@ -243,7 +243,7 @@ func leave_run() -> void:
 			var over: bool = controller.awaiting() == RunController.AWAIT_RUN_OVER
 			GameLog.run_ended(controller.state_copy().run_seed, "finished" if over else "abandoned")
 		# The run is let go before its save is cleared, so a villager still thinking
-		# cannot hand in a play afterwards and write the save back (P5.2a).
+		# cannot hand in a play afterwards and write the save back.
 		controller.drop()
 		Saves.run_service().delete()
 	show_screen("title", true)

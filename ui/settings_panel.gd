@@ -16,7 +16,7 @@ const TEXT_SIZES: Array[String] = ["standard", "large", "largest"]
 ## The name of the box for each text size, for the focus and for tests.
 const TEXT_SIZE_BOX: String = "TextSize%d"
 ## The table's paces under Display, by the end of their string keys, slowest first, and
-## the name of the box for each (P5.2a).
+## the name of the box for each.
 const PACES: Array[String] = ["slow", "standard", "fast"]
 const PACE_SETTING: String = "table_pace"
 const PACE_BOX: String = "TablePace%d"
@@ -25,7 +25,7 @@ const NAME_SIZE: int = 26
 ## so every slider starts at one edge.
 const NAME_WIDTH: float = 200.0
 ## The gap between the sheet's rows at each text size: closer at the larger sizes, so the
-## sheet stands whole on the page at every size (P5.2a).
+## sheet stands whole on the page at every size.
 const ROW_GAPS: Array[int] = [18, 14, 6]
 ## The toggles flow two to a line where they fit.
 const TOGGLE_GAP: int = 28

@@ -1,8 +1,8 @@
 class_name Profile
 extends RefCounted
-## The profile save, which outlives every run (P4.6, ADR 0025). It is a separate file from
-## the run save, with its own schema version, and deleting the run save never touches
-## it. Its fields are ProfileData's; ProfileCommits decides what a run writes to it.
+## The profile save, which outlives every run (ADR 0025). It is a separate file from the
+## run save, with its own schema version, and deleting the run save never touches it.
+## Its fields are ProfileData's; ProfileCommits decides what a run writes to it.
 
 const SCHEMA_VERSION: int = 4
 ## The first profile schema that carries a seal (ADR 0022).

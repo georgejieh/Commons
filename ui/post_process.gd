@@ -1,8 +1,8 @@
 class_name PostProcess
 extends CanvasLayer
-## The one full-screen pass over every screen (P3B.7), drawn above the UI. The quality
-## setting turns it off. At the table the dread layers (P3B.12) write its parameters;
-## they never change what the player reads, only how the paper looks.
+## The one full-screen pass over every screen, drawn above the UI. The quality setting
+## turns it off. At the table the dread layers write its parameters; they never change
+## what the player reads, only how the paper looks.
 
 const SHADER: Shader = preload("res://shaders/post_process.gdshader")
 const LAYER: int = 100

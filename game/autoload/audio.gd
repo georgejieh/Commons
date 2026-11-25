@@ -2,8 +2,8 @@ class_name AudioMixer
 extends Node
 ## The Audio autoload: the Music, Effects and Voice buses and their volumes, set from the
 ## Settings autoload, and the Ambience bus under Effects. play() takes a named audio
-## event (P3B.10) and plays its sound effect (P3C.8); a name with no sound is silent.
-## Every button clicks.
+## event and plays its sound effect; a name with no sound is silent. Every button
+## clicks.
 
 const BUSES: Dictionary[String, String] = {
 	"Music": "music_volume", "Effects": "effects_volume", "Voice": "voice_volume"
@@ -15,18 +15,18 @@ const AMBIENCE_SEND: String = "Effects"
 ## The click every button makes when pressed.
 const CLICK: String = "button_click"
 ## A motion's own sound plays only into a silence: not when another effect started this
-## close before it, as when the event it shows already has a sound (P5.2a).
+## close before it, as when the event it shows already has a sound.
 const FILL_GUARD_MSEC: int = 70
 
-## The last event name played, for tests and a debug overlay.
+## The last event name played, for tests.
 var last_played: String = ""
-## The music cues and their stems (P3C.9).
+## The music cues and their stems.
 var music: MusicPlayer = MusicPlayer.new()
-## Villager voices (P3B.13).
+## Villager voices.
 var voice: VoicePlayer = VoicePlayer.new()
-## The sound effects (P3C.8).
+## The sound effects.
 var effects: SfxPlayer = SfxPlayer.new()
-## The beds under the table (P3C.8).
+## The beds under the table.
 var ambience: AmbiencePlayer = AmbiencePlayer.new()
 ## The last motion sound filled in, for tests.
 var last_filled: String = ""

@@ -4,7 +4,7 @@ extends RefCounted
 ## pieces that fade and settle in one after another, numbers that roll, and stamps that
 ## land. Motion uses scale and fade, never position, so containers keep their layout.
 ## Every tween belongs to the node it moves. Reduced motion shortens or skips it all.
-## Each kind of motion has its own sound (P5.2a), filled in through Audio.fill only where
+## Each kind of motion has its own sound, filled in through Audio.fill only where
 ## the moment's event has none, and played under reduced motion too.
 
 const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")

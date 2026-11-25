@@ -1,7 +1,7 @@
 class_name ArtStages
 extends RefCounted
-## Picks every key asset's art for the hidden corruption stage (P3B.12, ADR 0018, ADR
-## 0025). Screens ask for an asset by its base texture, or a Cadre or ending picture by
+## Picks every key asset's art for the hidden corruption stage (ADR 0018, ADR 0025).
+## Screens ask for an asset by its base texture, or a Cadre or ending picture by
 ## its file, and get that stage's variant, so the art itself changes across a profile,
 ## under the meter layers' effects. Variant files load only when shown.
 ##

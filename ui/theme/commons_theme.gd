@@ -1,6 +1,6 @@
 class_name CommonsTheme
 extends RefCounted
-## Builds the demo's component theme from UiStyle tokens: ticket buttons in four kinds,
+## Builds the game's component theme from UiStyle tokens: ticket buttons in four kinds,
 ## a gold focus ring, paper sheets, meters, form controls and a type scale. Screens pick
 ## a kind with theme_type_variation; nothing styles itself by hand. Its font sizes come
 ## from TextSize, so the app builds it again when the text size changes.
@@ -9,7 +9,7 @@ const STYLE: UiStyle = preload("res://data/ui/ui_style.tres")
 const MEDIUM: FontVariation = preload("res://ui/theme/oswald_medium.tres")
 const BOLD: FontVariation = preload("res://ui/theme/oswald_bold.tres")
 const PANEL_PAPER: Texture2D = preload("res://art/ui/panel_paper.png")
-## Button kinds: [variation name, face, bottom edge, text color].
+## The button kinds, by theme type variation.
 const PRIMARY: String = "PrimaryButton"
 const SECONDARY: String = "Button"
 const COUPON: String = "CouponButton"
@@ -21,7 +21,7 @@ const CAPTION: String = "Caption"
 const SHEET: String = "Sheet"
 ## The card stock's border, in texture pixels, that a sheet never stretches.
 const SHEET_BORDER: float = 26.0
-## How much a hovered face lightens, and a disabled one fades.
+## How much a hovered ticket's ink lightens, and a pressed one's darkens.
 const HOVER_LIGHTEN: float = 0.12
 const PRESS_DARKEN: float = 0.15
 ## A ticket is the sheet's card stock at this scale, so its ruled border stays clear of
@@ -30,6 +30,7 @@ const TICKET_SCALE: float = 0.4
 ## Pixel sizes of the drawn slider knob and check box.
 const KNOB: int = 26
 const BOX: int = 26
+## How far a disabled ticket fades.
 const DISABLED_ALPHA: float = 0.45
 
 static var _stock: ImageTexture = null

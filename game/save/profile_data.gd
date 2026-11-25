@@ -46,7 +46,7 @@ var stake: int = 0
 var corruption: float = 0.0:
 	set(value):
 		corruption = clampf(value, 0.0, CORRUPTION_MAX)
-## One-time tooltips already shown (P4.15), and the family's surname (P4.17).
+## One-time tooltips already shown (ADR 0026), and the family's surname (ADR 0028).
 var seen: Array[String] = []
 var surname: String = ""
 ## The run whose Quotas the profile last took, and the last Quota it took from it, so a
