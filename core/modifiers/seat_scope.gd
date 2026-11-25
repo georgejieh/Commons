@@ -43,9 +43,7 @@ static func reaches(reach: Reach, holder: int, seat: int, landlord: int) -> bool
 
 ## True when both seats are this round's peasants and not the same seat.
 static func are_teammates(holder: int, seat: int, landlord: int) -> bool:
-	if landlord == Seats.NONE or holder == seat:
-		return false
-	return is_peasant(holder, landlord) and is_peasant(seat, landlord)
+	return seat != Seats.NONE and seat == Seats.teammate(holder, landlord)
 
 
 ## True when the seat is a peasant in a round whose landlord is known.

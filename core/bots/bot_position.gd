@@ -158,11 +158,7 @@ func could_hold(rank: int, width: int) -> bool:
 
 
 func _read_seats() -> void:
-	var landlord: int = view.public.landlord
-	if seat != landlord:
-		for other: int in Seats.COUNT:
-			if other != seat and other != landlord:
-				teammate = other
+	teammate = Seats.teammate(seat, view.public.landlord)
 	for other: int in Seats.COUNT:
 		if other == teammate and other != seat:
 			teammate_cards = view.public.remaining[other]

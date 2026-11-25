@@ -63,12 +63,7 @@ func _init(
 
 ## The other peasant's seat when this seat is a peasant, else Seats.NONE.
 func teammate() -> int:
-	if landlord == Seats.NONE or seat == landlord:
-		return Seats.NONE
-	for other: int in Seats.COUNT:
-		if other != seat and other != landlord:
-			return other
-	return Seats.NONE
+	return Seats.teammate(seat, landlord)
 
 
 ## True for a Bomb or a Rocket.
