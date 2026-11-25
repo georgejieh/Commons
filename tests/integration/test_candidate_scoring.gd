@@ -54,3 +54,19 @@ func test_bad_weights_lower_the_win_rate() -> void:
 	var rate: float = float(wins) / (deals * 2)
 	print("good weights beat bad weights %.3f over %d deals" % [rate, deals])
 	assert_float(rate).is_greater(BETTER_THAN_EVEN)
+
+
+## A group is valued by its highest card in the seat's own order. Under Inverted Order a
+## Straight of 3 to 7 stands highest at its 3, so that is its top, not a rank past the end
+## of the order.
+func test_a_chain_is_valued_by_its_highest_card_in_a_turned_order() -> void:
+	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS
+	var straight: float = weights.type_bonus[Pattern.Type.STRAIGHT] - weights.rank_offset
+	var turned: PackedByteArray = Ranks.identity_map()
+	ReversedRanks.reverse(turned)
+	for map: PackedByteArray in [_map, turned]:
+		var table: BotTable = BotTable.new(_rules, map)
+		var scorer: CandidateScorer = CandidateScorer.new(RankText.counts("34567"), table, weights)
+		var top: int = maxi(map[Ranks.THREE], map[Ranks.SEVEN])
+		var expected: float = top + straight - weights.round_penalty * 2
+		assert_float(scorer.score_pass()).is_equal(expected)

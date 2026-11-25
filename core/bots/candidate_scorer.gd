@@ -69,6 +69,10 @@ func _hand_value(counts: PackedByteArray, extra_rounds: int) -> float:
 	return value - _weights.round_penalty * (groups.size() + extra_rounds)
 
 
+## A group is worth its highest card in the seat's own order. A chain's last card is not
+## always that: under a turned order a Straight stands highest at its first.
 func _group_value(group: Pattern) -> float:
-	var top: int = _rank_map[group.main_rank] + group.chain_length - 1
+	var top: int = _rank_map[group.main_rank]
+	for offset: int in range(1, group.chain_length):
+		top = maxi(top, _rank_map[group.main_rank + offset])
 	return top - _weights.rank_offset + _weights.type_bonus[group.type]
