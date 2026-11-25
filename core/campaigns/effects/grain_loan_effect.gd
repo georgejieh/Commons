@@ -16,13 +16,4 @@ func apply(context: CampaignContext) -> void:
 	context.add_event(
 		RunEvent.new(RunEvent.Type.COUPONS_GAINED, context.player, parameters[COUPONS])
 	)
-	RunMeters.apply_amount(
-		context.state,
-		CampaignContext.FAMINE_SOURCE,
-		parameters[FAMINE],
-		context.meters,
-		context.stack,
-		context.params,
-		context.player,
-		context.set_log.events()
-	)
+	context.move_meter(CampaignContext.FAMINE_SOURCE, parameters[FAMINE])
