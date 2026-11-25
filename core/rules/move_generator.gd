@@ -383,4 +383,4 @@ func _spends(move: Pattern) -> bool:
 func _build(
 	type: Pattern.Type, main: int, chain: int, cards: int, kickers: PackedByteArray
 ) -> Pattern:
-	return Pattern.new(type, main, chain, cards, kickers, _rank_map[main])
+	return Pattern.new(type, main, chain, cards, kickers, _rank_map[main]).read_under(_rules)

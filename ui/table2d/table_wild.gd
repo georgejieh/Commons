@@ -3,9 +3,11 @@ extends RefCounted
 ## Wild ranks at the table (ADR 0029), from the run's events alone: a WILD_RANKS event
 ## names the ranks wild now, and a new deal clears them. When a rank becomes wild a
 ## call-out on red cloth names it, the rules strip names the round's wild ranks, every
-## wild card in the hand and on the pile carries its ribbon, and a played stand-in names
-## the rank it stands for. It also holds the reading picker the table's Play opens when
-## the chosen cards can be played more than one way now.
+## wild card in the hand and every one the player plays carries its ribbon, and a played
+## stand-in names the rank it stands for. The ranks are the player's alone (ADR 0039): a
+## villager's card of one lands on the pile plain, and the words say whose they are. It
+## also holds the reading picker the table's Play opens when the chosen cards can be
+## played more than one way now.
 
 var picker: ReadingPicker = ReadingPicker.new()
 ## The ranks wild now as the events played so far have named them, in the order drawn.

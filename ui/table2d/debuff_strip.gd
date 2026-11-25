@@ -2,10 +2,10 @@ class_name DebuffStrip
 extends PanelContainer
 ## The rules in force this round, on a paper slip under the right seat (ADR 0034, rule
 ## 6), so a rule that changes play is always in view, not only on the Rules sheet: first
-## the round's wild ranks on one line (ADR 0029), then the round's debuffs, then a
-## Reform's rule that changes play for the whole table. A Cadre is never here: it works
-## for the player's household alone (ADR 0039), and its card is on the board. Hidden while
-## none applies.
+## the round's wild ranks on one line (ADR 0029), then the round's debuffs, then the
+## rules of the player's Reforms that change play. Those are the player's alone, as wild
+## ranks are (ADR 0039), and each line says so. A Cadre is never here: it works for the
+## player's household alone too, and its card is on the board. Hidden while none applies.
 ##
 ## The slip keeps to a room the table gives it and steps down one form at a time until
 ## it fits (rule 7): in full; by name, with a line that points to the Rules sheet; by name
@@ -36,7 +36,7 @@ var allow_count: bool = true
 var _lines: KeywordText = KeywordText.new()
 var _form: Form = Form.FULL
 var _yours: Array[Dictionary] = []
-var _everyone: Array[Dictionary] = []
+var _reforms: Array[Dictionary] = []
 
 
 func _init() -> void:
@@ -55,7 +55,7 @@ func _init() -> void:
 
 func show_debuffs(controller: RunController) -> void:
 	_yours.clear()
-	_everyone = _table_rules(controller)
+	_reforms = _reform_rules(controller)
 	for modifier_id: String in controller.active_debuff_ids():
 		_yours.append(_rule(controller, modifier_id))
 	refit()
@@ -106,7 +106,7 @@ func is_named() -> bool:
 
 ## How many rules the named forms name: the debuffs and the table's rules.
 func _named_count() -> int:
-	return _yours.size() + _everyone.size()
+	return _yours.size() + _reforms.size()
 
 
 func _fit_type() -> void:
@@ -119,7 +119,7 @@ func _fit_type() -> void:
 ## Every rule in full: the wild ranks' line, then each group under its head.
 func _full() -> String:
 	var rows: PackedStringArray = _wild_row()
-	for group: Array in [["table.debuffs", _yours], ["table.rules_everyone", _everyone]]:
+	for group: Array in [["table.debuffs", _yours], ["table.rules_reforms", _reforms]]:
 		var rules: Array[Dictionary] = []
 		rules.assign(group[1])
 		if rules.is_empty():
@@ -138,7 +138,7 @@ func _full() -> String:
 ## lifted debuff struck through, and the line that points to the Rules sheet.
 func _by_name() -> String:
 	var rows: PackedStringArray = _wild_row()
-	for group: Array in [["table.debuffs", _yours], ["table.rules_everyone", _everyone]]:
+	for group: Array in [["table.debuffs", _yours], ["table.rules_reforms", _reforms]]:
 		var rules: Array[Dictionary] = []
 		rules.assign(group[1])
 		if rules.is_empty():
@@ -175,8 +175,9 @@ func _wild_row() -> PackedStringArray:
 	return rows
 
 
-## Each held Reform that changes play for every seat, such as Industrialization.
-func _table_rules(controller: RunController) -> Array[Dictionary]:
+## Each held Reform whose rule changes how the player's seat plays, such as
+## Industrialization.
+func _reform_rules(controller: RunController) -> Array[Dictionary]:
 	var rules: Array[Dictionary] = []
 	for reform_id: String in controller.table_rule_reforms():
 		var name: String = _escape(controller.reform_name(reform_id))

@@ -30,13 +30,14 @@ func _init(
 	if answering.is_empty():
 		answering = [table]
 	rocket_possible = unseen[Ranks.SMALL_JOKER] > 0 and unseen[Ranks.BIG_JOKER] > 0
-	var supply: WildSupply = WildSupply.of(unseen, table.rules)
+	var wild_rules: RuleSet = threat_rules(table, rivals)
+	var supply: WildSupply = WildSupply.of(unseen, wild_rules)
 	var wilds: int = 0 if supply == null else supply.total
 	for rank: int in Ranks.COUNT:
 		if unseen[rank] >= BOMB_WIDTH:
 			bomb_possible = true
 		elif wilds > 0 and rank <= Ranks.TWO and unseen[rank] > 0:
-			var others: int = wilds - (unseen[rank] if table.rules.is_wild(rank) else 0)
+			var others: int = wilds - (unseen[rank] if wild_rules.is_wild(rank) else 0)
 			bomb_possible = bomb_possible or unseen[rank] + others >= BOMB_WIDTH
 	var mask: int = UnseenCards.mask_of(unseen)
 	var controls: int = 0
@@ -53,6 +54,19 @@ func _init(
 		flags.append(is_control)
 		controls += 1 if is_control else 0
 	effective_hands = groups.size() - controls
+
+
+## The rules that say which unseen cards are wild: the opponents', since a wild rank may
+## be one seat's alone (ADR 0039), so the player's wild rank makes no villager's card a
+## threat and a villager bot still fears the player's. Of the rivals, the one with the
+## most wild ranks; with none, every seat plays as this one.
+static func threat_rules(table: BotTable, rivals: Array[BotTable]) -> RuleSet:
+	var found: RuleSet = table.rules
+	for index: int in rivals.size():
+		var rival: RuleSet = rivals[index].rules
+		if index == 0 or rival.wild_ranks().size() > found.wild_ranks().size():
+			found = rival
+	return found
 
 
 ## A rival must hold the whole answer, so an answer larger than any hand does not count.

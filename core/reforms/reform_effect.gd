@@ -43,13 +43,14 @@ func gathers_deck() -> bool:
 	return false
 
 
-## Ranks drawn wild with every deal, for every seat (ADR 0029).
+## Ranks drawn wild with every deal, for the player's seat alone (ADR 0029, ADR 0039).
 func wild_ranks_per_round() -> int:
 	return 0
 
 
-## The hooks of a rule this Reform puts on the table for every seat, or none. The run
-## adds the rule to the modifier stack each round, after the Cadres (ADR 0029).
+## The hooks of a rule this Reform gives the player's seat, or none. The run adds the rule
+## to the modifier stack each round, after the Cadres, held by the player (ADR 0029,
+## ADR 0039).
 func rule_hooks() -> Array[String]:
 	return []
 

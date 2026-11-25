@@ -671,7 +671,8 @@ func preview_play(card_ids: Array[int], reading: Pattern = null) -> PlayPreview:
 	return _loop.preview_play(card_ids.duplicate(), wanted)
 
 
-## The ranks wild for every seat now (ADR 0029), in the order they were drawn.
+## The ranks wild now (ADR 0029), in the order they were drawn: the player's alone, since
+## every item that draws one is the player's (ADR 0039).
 func wild_ranks() -> Array[int]:
 	return _loop.state.wild_ranks.duplicate()
 
@@ -681,8 +682,8 @@ func big_bombs() -> bool:
 	return player_table().rules.five_plus_is_bomb()
 
 
-## The held Reforms that put a rule on the table for every seat, such as
-## Industrialization, for the rules strip.
+## The held Reforms that give the player's seat a rule that changes play, such as
+## Industrialization, for the rules strip and the Rules sheet.
 func table_rule_reforms() -> Array[String]:
 	return RunReforms.table_rule_ids(_loop.state)
 

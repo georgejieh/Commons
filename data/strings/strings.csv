@@ -485,7 +485,7 @@ need.honest,A fair claim. Audit chance: {chance}%.
 need.lie,"More than your half. Audit chance: {chance}%. If caught, you get your fair half and {rise} Denunciation."
 need.less,Less than your half. {name} gets more of the pool.
 need.percent,{percent}%
-table.rules_everyone,Rules for the whole table
+table.rules_reforms,Your Reforms
 table.rules_named,Each is on the Rules sheet in full.
 table.rules_named.one,It is on the Rules sheet in full.
 table.rules_counted,{count} rules in force. Each is on the Rules sheet in full.
@@ -1003,7 +1003,7 @@ settings.family_name,Family name
 settings.change_name,Change
 settings.name_locked,Finish or abandon your run to change it.
 campaign.model_worker.name,Model Worker
-campaign.model_worker.text,"Before the first play: one rank, drawn at random, is wild for every seat this round. A wild card may stand in for any rank from 3 to 2. With a rank wild already, this adds a second. It cannot be used while two are wild."
+campaign.model_worker.text,"Before the first play: one rank, drawn at random, is wild for you this round. Your wild cards may stand in for any rank from 3 to 2. A villager's cards of that rank stay plain. With a rank wild already, this adds a second. It cannot be used while two are wild."
 campaign.model_worker.prompt,Press Use to make a rank wild this round.
 campaign.self_criticism.name,Self-Criticism
 campaign.self_criticism.text,"Resentment falls {resentment}. Denunciation rises {denunciation}. Use on your turn, or in either shop."
@@ -1016,9 +1016,9 @@ campaign.false_report.text,"This Quota's progress rises by {percent}% of its tar
 campaign.false_report.prompt,"Press Use to report {percent}% of the target as done. The norm and Resentment rise."
 campaign.reason.wild_full,Two ranks are wild already.
 reform.mass_line.name,Mass Line
-reform.mass_line.text,"Every round, {ranks} rank drawn with the deal is wild for every seat, named before the bid. A wild card may stand in for any rank from 3 to 2."
+reform.mass_line.text,"Every round, {ranks} rank drawn with the deal is wild for you, named before the bid. Your wild cards may stand in for any rank from 3 to 2. A villager's cards of that rank stay plain."
 reform.industrialization.name,Industrialization
-reform.industrialization.text,"Bombs may hold 5 or more cards, for every seat, and more cards beat fewer. Each card past the fourth adds {zeal_percent_per_card} Zeal to that play."
+reform.industrialization.text,"Your Bombs may hold 5 or more cards, and more cards beat fewer. A villager can beat one that big only with the Rocket. Each card past the fourth adds {zeal_percent_per_card} Zeal to that play."
 rank.plural.3,Threes
 rank.plural.4,Fours
 rank.plural.5,Fives
@@ -1034,13 +1034,13 @@ rank.plural.a,Aces
 rank.plural.2,Twos
 wild.one,{rank} are wild
 wild.two,{first} and {second} are wild
-wild.strip,"For every seat, this round."
-callout.wild.sub,"For every seat, this round only."
-callout.wild.sub.two,"{ranks}, for every seat, this round only."
+wild.strip,"Yours alone, this round."
+callout.wild.sub,"Yours alone, this round only."
+callout.wild.sub.two,"{ranks}, yours alone, this round only."
 cheat.wild,Wild ranks
-cheat.wild.stand_in,"A wild card may stand in for any rank from 3 to 2, never a Joker. Wild cards played alone keep one at its own rank."
-cheat.wild.order,"Bombs from high to low: the Rocket, four wild cards of one rank played as that rank, a Bomb with no stand-in, then a Bomb with one. Within each, the higher rank wins."
-cheat.wild.order.big,"Bombs from high to low: the Rocket, then more cards over fewer. At the same size: four wild cards of one rank played as that rank, a Bomb with no stand-in, then a Bomb with one. Within each, the higher rank wins."
+cheat.wild.stand_in,"Your wild cards may stand in for any rank from 3 to 2, never a Joker. Wild cards played alone keep one at its own rank. A villager's cards of a wild rank are plain cards."
+cheat.wild.order,"Bombs from high to low: the Rocket, four of your wild cards of one rank played as that rank, a Bomb with no stand-in, then a Bomb with one. Within each, the higher rank wins."
+cheat.wild.order.big,"Bombs from high to low: the Rocket, then more cards over fewer. At the same size: four of your wild cards of one rank played as that rank, a Bomb with no stand-in, then a Bomb with one. Within each, the higher rank wins."
 cheat.wild.grain,"Grain comes from each card as printed, not the rank it stands in for."
 reading.title,Play these cards as
 reading.cancel,Cancel

@@ -347,7 +347,8 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 	if cards.is_empty() or _player.step <= 0.0:
 		return
 	_pile.clear()
-	_pile.show_play(cards, KITTY_FROM)
+	# The kitty's wild cards are wild only when they go to you (ADR 0039).
+	_pile.show_play(cards, KITTY_FROM, [], null, seat == 0)
 	_kitty_label.reset_size()
 	_kitty_label.position = KITTY_LABEL_AT - _kitty_label.size / 2.0
 	_kitty_label.visible = true

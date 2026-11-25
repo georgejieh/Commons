@@ -5,7 +5,8 @@ extends RefCounted
 ## the first play, so the call-out, the rules strip with one rank, the hand's ribbons at
 ## corruption stages 0, 4 and 9, the call-out and strip with two ranks and the Rules sheet's
 ## section are the real path; the picker with three or more readings and a soft bomb on
-## the pile with its stand-ins are laid out from cards built here. In the state store each
+## the pile with its stand-ins, then a villager's pair of the wild rank landing plain, are
+## laid out from cards built here. In the state store each
 ## of the three items is put on its counter in turn. In the collection, a profile of three
 ## finished runs shows the wild tier locked. It also forces a Cadre of the top rarity
 ## onto either shop's counter, for its Scarce stamp landing and at rest (scarce()). Loaded
@@ -286,6 +287,14 @@ func _pile_frame(controller: Object) -> void:
 	pile.call("show_play", cards, PILE_FROM, none, reading)
 	await _frames(30)
 	await _shot("wild_pile_soft_bomb")
+	# A villager's pair of the player's wild rank lands plain (ADR 0039): no ribbon.
+	var pair: Array[CardInstance] = [
+		CardInstance.from_deck_id(wild[0] * Deck.SUITS),
+		CardInstance.from_deck_id(wild[0] * Deck.SUITS + 1),
+	]
+	pile.call("show_play", pair, PILE_FROM, none, null, false)
+	await _frames(30)
+	await _shot("wild_pile_villager_plain")
 	pile.call("clear")
 
 

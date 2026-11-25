@@ -147,7 +147,7 @@ func refresh() -> void:
 				% [_controller.modifier_name(modifier_id), _controller.modifier_text(modifier_id)]
 			)
 		)
-	# A Reform's rule for every seat, such as Industrialization, is in play too.
+	# A Reform's rule for the player's seat, such as Industrialization, is in play too.
 	for reform_id: String in _controller.table_rule_reforms():
 		var rule: String = _controller.reform_text(reform_id)
 		active.append("%s: %s" % [_controller.reform_name(reform_id), rule])
@@ -158,8 +158,9 @@ func refresh() -> void:
 	_show_wild()
 
 
-## The wild ranks' section, while one is in force: which ranks, what a wild card may stand
-## in for, the bomb order, by size first under bigger bombs, and where Grain comes from.
+## The wild ranks' section, while one is in force: which ranks, what the player's wild
+## cards may stand in for and that a villager's are plain (ADR 0039), the bomb order, by
+## size first under bigger bombs, and where Grain comes from.
 func _show_wild() -> void:
 	var ranks: Array[int] = _controller.wild_ranks()
 	_wild_head.visible = not ranks.is_empty()

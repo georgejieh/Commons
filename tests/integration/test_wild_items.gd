@@ -1,8 +1,9 @@
 extends GdUnitTestSuite
 ## ADR 0029's three items played through the run loop. Model Worker makes one rank wild for
-## every seat for the round it is used in, a second beside one already wild, never a third,
-## and only before the first play. Mass Line draws a rank with every deal, after it, so
-## the deal is the same with or without it, and every seat knows it before the bid. Each
+## the player's seat alone (ADR 0039) for the round it is used in, a second beside one
+## already wild, never a third, and only before the first play. Mass Line draws a rank
+## with every deal, after it, so the deal is the same with or without it, and the rank is
+## named before the bid, for the player's seat alone. Each
 ## draw replays from a save. Industrialization is test_wild_bombs.gd.
 ## The golden numbers are this seed's draws and scores; they change only with the rules.
 
@@ -81,10 +82,14 @@ func _through_json(loop: RunLoop) -> Dictionary:
 	return loaded.data
 
 
-func _every_seat_has_wild(loop: RunLoop, ranks: Array[int]) -> void:
+## The player's seat holds the ranks wild; a villager's cards of them are plain cards.
+func _only_the_player_has_wild(loop: RunLoop, ranks: Array[int]) -> void:
 	for seat: int in Seats.COUNT:
 		var rules: RuleSet = loop.seat_table(seat).rules
-		assert_array(rules.wild_ranks()).contains_exactly_in_any_order(ranks)
+		if seat == RunLoop.PLAYER:
+			assert_array(rules.wild_ranks()).contains_exactly_in_any_order(ranks)
+		else:
+			assert_array(rules.wild_ranks()).is_empty()
 
 
 func test_model_worker_makes_one_rank_wild_then_a_second_then_refuses() -> void:
@@ -97,7 +102,7 @@ func test_model_worker_makes_one_rank_wild_then_a_second_then_refuses() -> void:
 	assert_int(loop.state.wild_ranks.size()).is_equal(1)
 	var first: int = loop.state.wild_ranks[0]
 	assert_bool(first >= Ranks.THREE and first <= Ranks.TWO).is_true()
-	_every_seat_has_wild(loop, [first])
+	_only_the_player_has_wild(loop, [first])
 	var named: Array[RunEvent] = _events_of(loop, RunEvent.Type.WILD_RANKS)
 	assert_int(named.size()).is_equal(1)
 	assert_int(named[0].value).is_equal(first)
@@ -107,7 +112,7 @@ func test_model_worker_makes_one_rank_wild_then_a_second_then_refuses() -> void:
 	assert_int(loop.state.wild_ranks.size()).is_equal(2)
 	var second: int = loop.state.wild_ranks[1]
 	assert_int(second).is_not_equal(first)
-	_every_seat_has_wild(loop, [first, second])
+	_only_the_player_has_wild(loop, [first, second])
 	assert_str(_events_of(loop, RunEvent.Type.WILD_RANKS)[1].text).is_equal(
 		"%d,%d" % [first, second]
 	)
@@ -156,7 +161,7 @@ func test_model_worker_lasts_one_round() -> void:
 		. is_true()
 	)
 	assert_array(loop.state.wild_ranks).is_empty()
-	_every_seat_has_wild(loop, [])
+	_only_the_player_has_wild(loop, [])
 
 
 func test_model_worker_replays_from_a_save_mid_round() -> void:
@@ -173,7 +178,7 @@ func test_model_worker_replays_from_a_save_mid_round() -> void:
 	assert_object(resumed).is_not_null()
 	assert_array(resumed.state.wild_ranks).is_equal(loop.state.wild_ranks)
 	assert_array(_log_lines(resumed)).is_equal(_log_lines(loop))
-	_every_seat_has_wild(resumed, loop.state.wild_ranks)
+	_only_the_player_has_wild(resumed, loop.state.wild_ranks)
 
 
 func test_mass_line_leaves_the_deal_as_it_was() -> void:
@@ -204,8 +209,9 @@ func test_mass_line_names_the_rank_before_anyone_bids() -> void:
 	assert_int(named).is_equal(dealt + 1)
 	var bid: int = kinds.find(RunEvent.Type.BID)
 	assert_bool(bid == -1 or bid > named).is_true()
-	# The bots bid knowing it: every seat's rules hold it during the bidding.
-	_every_seat_has_wild(loop, loop.state.wild_ranks)
+	# Only the player's rules hold it during the bidding: a villager bids its cards of the
+	# rank as plain cards.
+	_only_the_player_has_wild(loop, loop.state.wild_ranks)
 
 
 func test_mass_line_draws_a_rank_every_round_as_the_stream_gives() -> void:
@@ -257,7 +263,7 @@ func test_mass_line_replays_from_a_save_mid_round() -> void:
 	assert_object(resumed).is_not_null()
 	assert_array(resumed.state.wild_ranks).is_equal(loop.state.wild_ranks)
 	assert_array(_log_lines(resumed)).is_equal(_log_lines(loop))
-	_every_seat_has_wild(resumed, loop.state.wild_ranks)
+	_only_the_player_has_wild(resumed, loop.state.wild_ranks)
 
 
 ## A redeal draws Mass Line's rank again with the new deal, never adding a second.

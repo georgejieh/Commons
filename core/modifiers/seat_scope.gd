@@ -1,19 +1,25 @@
 class_name SeatScope
 extends RefCounted
-## Whose seat a modifier acts for (ADR 0039). A Cadre works for the household that holds
-## it: its rule and rank hooks build the holder's seat alone, and its scoring hooks pay on
-## the holder's plays, and on the teammate's while the holder is a peasant when its
-## definition says it counts for them. Debuffs, boss twists and Reforms keep the reach
-## their own effects give them. The stack asks this before it runs a seat hook, so no
+## Whose seat a modifier acts for (ADR 0039). Whatever the player buys works for the
+## household that holds it: the rule and rank hooks of a Cadre or a Reform build the
+## holder's seat alone, so no villager gains a rule the player paid for. A Cadre's scoring
+## hooks pay on the holder's plays, and on the teammate's while the holder is a peasant
+## when its definition says it counts for them; a Reform's score whatever play its rule
+## allows, which only the holder can make. Debuffs and boss twists keep the reach their
+## own effects give them. The stack asks this before it runs a seat hook, so no
 ## effect needs a guard of its own, and a helper an effect shares with a debuff keeps its
 ## meaning.
 
 enum Reach { TABLE, HOLDER, SIDE }
 
 
-## Whose seats a definition's build_ruleset and build_rank_map hooks build.
+## Whose seats a definition's build_ruleset and build_rank_map hooks build: the holder's
+## alone for anything the player buys, every seat for a debuff or a boss twist.
 static func rules_reach(definition: ModifierDef) -> Reach:
-	return Reach.HOLDER if definition.kind == ModifierDef.Kind.CADRE else Reach.TABLE
+	match definition.kind:
+		ModifierDef.Kind.DEBUFF, ModifierDef.Kind.BOSS_TWIST:
+			return Reach.TABLE
+	return Reach.HOLDER
 
 
 ## Whose plays a definition's play_scored and card_scored hooks score.

@@ -40,6 +40,10 @@ var key: int
 ## The printed rank counts of the cards spent, or empty when they are the reading's own
 ## counts, as they always are with no wild card standing in.
 var spent: PackedByteArray = PackedByteArray()
+## True when the seat that read the play holds its main rank wild. Wild ranks can be one
+## seat's alone (ADR 0039), so four of them read as that rank are the pure-wild bomb by
+## the rules of the seat that played them, whoever compares the play.
+var main_wild: bool = false
 
 
 func _init(
@@ -79,6 +83,7 @@ func rekeyed(effective_main: int) -> Pattern:
 		type, main_rank, chain_length, card_count, kickers, effective_main
 	)
 	result.spent = spent.duplicate()
+	result.main_wild = main_wild
 	return result
 
 
@@ -142,6 +147,12 @@ func same_reading(other: Pattern) -> bool:
 ## The same reading of the same cards.
 func equals(other: Pattern) -> bool:
 	return same_reading(other) and spent == other.spent
+
+
+## Notes whether the rules of the seat reading the play hold its main rank wild.
+func read_under(rules: RuleSet) -> Pattern:
+	main_wild = rules.is_wild(main_rank)
+	return self
 
 
 ## Records the printed counts the play spends, kept only when they differ from the

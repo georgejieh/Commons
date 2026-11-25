@@ -1,8 +1,9 @@
 extends GdUnitTestSuite
 ## Industrialization (ADR 0029, rule 6): five or more cards read as one rank are a bomb
-## for every seat, through the private plot's fifth copy and through wild cards, a bigger
-## bomb beats a smaller one and the Rocket beats both, and each card past the fourth adds
-## its Zeal. With it not held nothing changes. The golden numbers are five Nines' score.
+## for the player's seat alone (ADR 0039), through the private plot's fifth copy and
+## through wild cards, a bigger bomb beats a smaller one and the Rocket beats both, and
+## each card past the fourth adds its Zeal. With it not held nothing changes. The golden
+## numbers are five Nines' score.
 
 const SEED: int = 7301
 ## Five Nines as a bomb under Industrialization, the fifth from the plot: Grain, Rate, Zeal
@@ -24,7 +25,7 @@ func _rules(reforms: Array[String], wild: Array[int]) -> SeatRules:
 	var state: RunState = RunState.new(SEED)
 	state.reforms.assign(reforms)
 	var stack: ModifierStack = ModifierStack.new()
-	for rule: ActiveModifier in RunReforms.table_rules(state):
+	for rule: ActiveModifier in RunReforms.table_rules(state, RunLoop.PLAYER):
 		stack.add_entry(rule)
 	var table: SeatRules = SeatRules.new(stack)
 	table.set_wild_ranks(wild)
@@ -39,19 +40,24 @@ func _has_bomb(readings: Array[Pattern], cards: int) -> bool:
 	)
 
 
-func test_industrialization_makes_five_of_a_rank_a_bomb_for_every_seat() -> void:
+## Sevens wild for every seat here, as a test or the tournament makes them, so only the
+## Reform's reach differs between seats.
+func test_industrialization_makes_five_of_a_rank_a_bomb_for_the_player_alone() -> void:
 	var sevens: Array[int] = [Ranks.SEVEN]
 	var big: SeatRules = _rules(["industrialization"], sevens)
 	var plain: SeatRules = _rules([], sevens)
 	var map: PackedByteArray = Ranks.identity_map()
 	for seat: int in Seats.COUNT:
-		assert_bool(big.rules_for(seat).five_plus_is_bomb()).is_true()
+		var holds: bool = seat == RunLoop.PLAYER
+		assert_bool(big.rules_for(seat).five_plus_is_bomb()).is_equal(holds)
 		assert_bool(plain.rules_for(seat).five_plus_is_bomb()).is_false()
 		# Through the private plot: five natural Nines.
 		var natural: Classification = Classifier.classify(
 			RankText.counts("99999"), big.rules_for(seat), map
 		)
-		assert_int(natural.pattern.type).is_equal(Pattern.Type.BOMB)
+		assert_bool(natural.is_valid()).is_equal(holds)
+		if holds:
+			assert_int(natural.pattern.type).is_equal(Pattern.Type.BOMB)
 		(
 			assert_bool(
 				Classifier.classify(RankText.counts("99999"), plain.rules_for(seat), map).is_valid()
@@ -60,7 +66,7 @@ func test_industrialization_makes_five_of_a_rank_a_bomb_for_every_seat() -> void
 		)
 		# Through wild cards: four Nines and a wild Seven.
 		var counts: PackedByteArray = RankText.counts("99997")
-		assert_bool(_has_bomb(Readings.of(counts, big.rules_for(seat), map), 5)).is_true()
+		assert_bool(_has_bomb(Readings.of(counts, big.rules_for(seat), map), 5)).is_equal(holds)
 		assert_bool(_has_bomb(Readings.of(counts, plain.rules_for(seat), map), 5)).is_false()
 
 
@@ -116,11 +122,12 @@ func _nines(count: int) -> Array[CardInstance]:
 	return cards
 
 
-func test_industrialization_holds_at_the_table_for_every_seat() -> void:
+func test_industrialization_holds_at_the_table_for_the_player_alone() -> void:
 	var loop: RunLoop = _loop(SEED, ["industrialization"])
 	var bare: RunLoop = _loop(SEED, [])
 	for seat: int in Seats.COUNT:
-		assert_bool(loop.seat_table(seat).rules.five_plus_is_bomb()).is_true()
+		var holds: bool = seat == RunLoop.PLAYER
+		assert_bool(loop.seat_table(seat).rules.five_plus_is_bomb()).is_equal(holds)
 		assert_bool(bare.seat_table(seat).rules.five_plus_is_bomb()).is_false()
-	# It is a rule for the table: no rank is made wild by it.
+	# It is a rule about bombs: no rank is made wild by it.
 	assert_array(loop.state.wild_ranks).is_empty()

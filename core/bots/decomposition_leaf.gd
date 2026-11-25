@@ -264,4 +264,5 @@ func _trio(rank: int, type: Pattern.Type, kicker: int, width: int) -> Pattern:
 
 
 func _group(type: Pattern.Type, main: int, chain: int, cards: int) -> Pattern:
-	return Pattern.new(type, main, chain, cards, PackedByteArray(), _rank_map[main])
+	var group: Pattern = Pattern.new(type, main, chain, cards, PackedByteArray(), _rank_map[main])
+	return group.read_under(_rules)

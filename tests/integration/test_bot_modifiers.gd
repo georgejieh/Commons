@@ -29,6 +29,19 @@ const PAIR_GAMES: int = 4
 ## Cultural Revolution, then Rehabilitation on the 4, then Inverted Order: after a bomb the
 ## 4 climbs past the turned-over 3 and is turned over again.
 const CLIMB: Array[String] = ["cultural_revolution", "rehabilitation", "inverted_order"]
+## What the player buys that changes play, held by seat 0 alone (ADR 0039, second note of
+## 2026-11-24): wild ranks (Mass Line, Model Worker), Industrialization, and each with a
+## rank Cadre and a rule Cadre. Each row: the wild ranks, the Reforms, the Cadres.
+const HOUSEHOLD: Array[Array] = [
+	[[Ranks.SEVEN], [], []],
+	[[Ranks.SEVEN, Ranks.QUEEN], [], []],
+	[[], ["industrialization"], []],
+	[[Ranks.SEVEN], ["industrialization"], []],
+	[[Ranks.SEVEN, Ranks.QUEEN], ["industrialization"], ["promotion_of_the_masses"]],
+	[[Ranks.SEVEN], [], ["shock_brigade"]],
+	[[Ranks.NINE], ["industrialization"], ["shock_brigade", "promotion_of_the_masses"]],
+]
+const HOUSEHOLD_GAMES: int = 5
 
 
 func _random_table(stream: RandomStream) -> SeatRules:
@@ -143,3 +156,36 @@ func test_no_bot_acts_illegally_while_the_holder_turns_a_climbed_rank_over() -> 
 		var label: String = "climb game %d" % game
 		assert_int(result.illegal_actions).override_failure_message(label).is_equal(0)
 		assert_bool(result.winner != Seats.NONE).override_failure_message(label).is_true()
+
+
+func _household_table(row: Array) -> SeatRules:
+	var stack: ModifierStack = ModifierStack.new()
+	for name: String in row[2]:
+		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), 0)
+	var state: RunState = RunState.new(1)
+	state.reforms.assign(row[1])
+	for rule: ActiveModifier in RunReforms.table_rules(state, 0):
+		stack.add_entry(rule)
+	var table: SeatRules = SeatRules.new(stack)
+	var wild: Array[int] = []
+	wild.assign(row[0])
+	table.set_wild_ranks(wild, 0)
+	return table
+
+
+## The player's wild ranks and bigger bombs held by seat 0 alone, with every tier at every
+## seat and Expert in one game each: no bot makes an illegal action against them, and none
+## while holding them.
+func test_no_bot_acts_illegally_against_the_players_wild_ranks_and_big_bombs() -> void:
+	var expert: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.EXPERT)
+	for row: Array in HOUSEHOLD:
+		var table: SeatRules = _household_table(row)
+		for game: int in HOUSEHOLD_GAMES + 1:
+			var seats: Array[BotConfig] = [expert, expert, expert]
+			if game < HOUSEHOLD_GAMES:
+				seats = _random_seats(RandomStream.new(game + 91))
+			var deal: DealResult = SelfPlay.deal_from_seed(4500 + game)
+			var result: SelfPlayResult = SelfPlay.play_round(deal, game % Seats.COUNT, seats, table)
+			var label: String = "%s game %d" % [row, game]
+			assert_int(result.illegal_actions).override_failure_message(label).is_equal(0)
+			assert_bool(result.winner != Seats.NONE).override_failure_message(label).is_true()
