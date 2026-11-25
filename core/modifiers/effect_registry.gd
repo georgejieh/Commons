@@ -10,7 +10,7 @@ const LOSS_METERS: Dictionary[String, String] = {
 }
 
 ## Every other effect script, by the ID of the definition it serves.
-static var _scripts: Dictionary[String, GDScript] = {
+static var _scripts: Dictionary[String, Script] = {
 	"cultural_revolution": CulturalRevolutionEffect,
 	"promotion_of_the_masses": PromotionEffect,
 	"criticism_meeting": RankAsEffect,
@@ -100,4 +100,6 @@ static func create(
 static func _build(modifier_id: String) -> ModifierEffect:
 	if LOSS_METERS.has(modifier_id):
 		return LossMeterEffect.new(LOSS_METERS[modifier_id])
-	return _scripts[modifier_id].new()
+	# Only a GDScript has new(), and core names no engine script class, so the effect
+	# is made through call.
+	return _scripts[modifier_id].call("new")
