@@ -70,7 +70,7 @@ func test_every_cadre_fits_its_shop_card() -> void:
 	for screen: Vector2i in SIZES:
 		get_tree().root.size = screen
 		var counters: Dictionary[String, Array] = {
-			"store": RunLoop.DEFAULT_CADRES.cadres, "black_market": RunLoop.DEFAULT_MARKET.cadres
+			"store": RunPools.STORE_CADRES.cadres, "black_market": RunPools.MARKET_CADRES.cadres
 		}
 		for screen_id: String in counters:
 			var ids: Array[String] = []
@@ -120,7 +120,7 @@ func test_every_cadre_fits_the_board_and_its_tip() -> void:
 func test_every_directive_fits_its_store_document() -> void:
 	_to_store()
 	var ids: Array[String] = []
-	for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+	for directive: DirectiveDef in RunPools.DIRECTIVES.directives:
 		ids.append(directive.id)
 	var problems: PackedStringArray = []
 	for screen: Vector2i in SIZES:

@@ -86,8 +86,6 @@ var _searches: VillagerSearches = VillagerSearches.new()
 var _saves: SaveService = null
 ## The profile save, which the village's memory outlives runs in.
 var _profile: SaveService = null
-var _definitions: Dictionary[String, ModifierDef] = {}
-var _directives: Dictionary[String, DirectiveDef] = {}
 
 
 ## Starts a new run from seed, with one bot config per seat. It begins as a demo run
@@ -203,7 +201,7 @@ func resume_saved(
 ## searches live, so a villager the record ends before is searched again, not here.
 func _resumed(data: Dictionary, configs: Array[BotConfig], sets: SetConfig) -> RunLoop:
 	var params: RunParams = RunLoop.DEFAULT_PARAMS
-	var pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs
+	var pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs
 	var meters: MeterTable = RunLoop.DEFAULT_METERS
 	return RunRecord.resume(data, configs, sets, params, pool, meters, Callable(), live_search)
 
@@ -271,16 +269,16 @@ func market_buy(slot: int, rank: int = Ranks.INVALID) -> int:
 
 ## True when buying the Cadre asks for a rank first (ADR 0021).
 func needs_rank(cadre_id: String) -> bool:
-	return _definitions.has(cadre_id) and _definitions[cadre_id].needs_rank
+	return RunDefinitions.modifiers.has(cadre_id) and RunDefinitions.modifiers[cadre_id].needs_rank
 
 
 ## Where a held Cadre stands in the run: its state line and badge count, both empty when
 ## it keeps no state or is not held.
 func cadre_standing(cadre_id: String) -> CadreStanding:
 	var state: RunState = _loop.state
-	if not _definitions.has(cadre_id) or not state.inventory.cadres.has(cadre_id):
+	if not RunDefinitions.modifiers.has(cadre_id) or not state.inventory.cadres.has(cadre_id):
 		return CadreStanding.new()
-	return CadreStanding.of(_definitions[cadre_id], state.cadre_memos.peek(cadre_id))
+	return CadreStanding.of(RunDefinitions.modifiers[cadre_id], state.cadre_memos.peek(cadre_id))
 
 
 func market_reroll() -> int:
@@ -304,17 +302,17 @@ func directive(slot: int) -> int:
 
 ## A Directive's name.
 func directive_name(directive_id: String) -> String:
-	return tr(_directives[directive_id].name_key)
+	return tr(RunDefinitions.directives[directive_id].name_key)
 
 
 ## A Directive's rules.
 func directive_text(directive_id: String) -> String:
-	return tr(_directives[directive_id].text_key)
+	return tr(RunDefinitions.directives[directive_id].text_key)
 
 
 ## The hand types a Directive raises, as Pattern.Type values.
 func directive_types(directive_id: String) -> Array[int]:
-	return _directives[directive_id].hand_types.duplicate()
+	return RunDefinitions.directives[directive_id].hand_types.duplicate()
 
 
 ## A hand type's level in this run.
@@ -426,18 +424,18 @@ static func campaign_reason_key(reason: int) -> String:
 
 ## A Campaign's name.
 func campaign_name(campaign_id: String) -> String:
-	return tr(_campaign(campaign_id).name_key)
+	return tr(RunDefinitions.campaigns[campaign_id].name_key)
 
 
 ## A Campaign's rules, with its numbers filled in.
 func campaign_text(campaign_id: String) -> String:
-	var definition: CampaignDef = _campaign(campaign_id)
+	var definition: CampaignDef = RunDefinitions.campaigns[campaign_id]
 	return tr(definition.text_key).format(definition.text_values())
 
 
 ## What a Campaign asks the player to choose, with its numbers filled in.
 func campaign_prompt(campaign_id: String) -> String:
-	var definition: CampaignDef = _campaign(campaign_id)
+	var definition: CampaignDef = RunDefinitions.campaigns[campaign_id]
 	return tr(definition.prompt_key).format(definition.text_values())
 
 
@@ -458,18 +456,18 @@ func every_surname() -> Array[String]:
 
 ## The fewest and most hand cards a Campaign asks for, as x and y.
 func campaign_cards(campaign_id: String) -> Vector2i:
-	var definition: CampaignDef = _campaign(campaign_id)
+	var definition: CampaignDef = RunDefinitions.campaigns[campaign_id]
 	return Vector2i(definition.min_cards, definition.max_cards)
 
 
 ## One of a Campaign's numbers from its data, or 0.
 func campaign_parameter(campaign_id: String, key: String) -> int:
-	return _campaign(campaign_id).parameters.get(key, 0)
+	return RunDefinitions.campaigns[campaign_id].parameters.get(key, 0)
 
 
 ## True for a Campaign tagged private.
 func is_private_campaign(campaign_id: String) -> bool:
-	return _campaign(campaign_id).tag == ModifierDef.Tag.PRIVATE
+	return RunDefinitions.campaigns[campaign_id].tag == ModifierDef.Tag.PRIVATE
 
 
 ## The debuff Appeal lifted this round, or an empty ID.
@@ -565,12 +563,12 @@ func held_reforms() -> Array[String]:
 
 
 func reform_name(reform_id: String) -> String:
-	return tr(RunReforms.definition(reform_id).name_key)
+	return tr(RunDefinitions.reforms[reform_id].name_key)
 
 
 ## A Reform's rules with its numbers filled in, the limits it raises included.
 func reform_text(reform_id: String) -> String:
-	return ItemText.reform(RunReforms.definition(reform_id))
+	return ItemText.reform(RunDefinitions.reforms[reform_id])
 
 
 ## The state store's counter, or the black market's, for a screen to read.
@@ -796,13 +794,13 @@ func boss() -> String:
 ## True when a Cadre's scoring also pays on the player's teammate's plays while the player
 ## is a peasant (ADR 0039). No Cadre changes another seat's rules or ranks.
 func counts_for_teammate(modifier_id: String) -> bool:
-	var definition: ModifierDef = _definitions[modifier_id]
+	var definition: ModifierDef = RunDefinitions.modifiers[modifier_id]
 	return definition.counts_for_teammate
 
 
 ## A modifier's rules text with its parameters filled in.
 func modifier_text(modifier_id: String) -> String:
-	return CadreText.rules(_definitions[modifier_id], _run_values(modifier_id))
+	return CadreText.rules(RunDefinitions.modifiers[modifier_id], _run_values(modifier_id))
 
 
 ## A modifier's name; a Slogan's names the hand type it was drawn with (ADR 0023).
@@ -810,7 +808,7 @@ func modifier_name(modifier_id: String) -> String:
 	var type: int = _loop.state.slogan_type
 	if modifier_id == RunDebuffs.SLOGAN_ID and type != RunState.NO_SLOGAN:
 		return tr("modifier.slogan_of_the_week.named").format({"type": _type_plural(type)})
-	return tr(_definitions[modifier_id].name_key)
+	return tr(RunDefinitions.modifiers[modifier_id].name_key)
 
 
 ## Why the player may not pass now, as a string key, or "" when they may (Night Shift).
@@ -847,7 +845,9 @@ func _run_values(modifier_id: String) -> Dictionary[String, Variant]:
 			if type == RunState.NO_SLOGAN
 			else _type_plural(type)
 		)
-	var effect: ModifierEffect = EffectRegistry.create(_definitions[modifier_id], RunLoop.PLAYER)
+	var effect: ModifierEffect = EffectRegistry.create(
+		RunDefinitions.modifiers[modifier_id], RunLoop.PLAYER
+	)
 	if effect is HandicapEffect:
 		values[HandicapEffect.CARDS] = HandicapEffect.count_at(effect.parameters, _loop.state.year)
 	if effect is LossMeterEffect:
@@ -1005,13 +1005,6 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	# A replayed loop may hold events banking appended unseen; the view reads those from
 	# set_events(), so the listener starts after them.
 	_loop.set_log.flush()
-	var known: Array[ModifierDef] = (
-		RunLoop.DEFAULT_POOL.debuffs + RunLoop.DEFAULT_CADRES.cadres + RunLoop.DEFAULT_MARKET.cadres
-	)
-	for definition: ModifierDef in known + RunLoop.DEFAULT_BOSSES.all():
-		_definitions[definition.id] = definition
-	for directive_def: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
-		_directives[directive_def.id] = directive_def
 	_saves = saves
 	_latch_stage()
 	_loop.set_log.on_add = func(event: RunEvent) -> void:
@@ -1028,10 +1021,6 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 func _latch_stage() -> void:
 	if _profile != null:
 		ArtStages.latch(_profile)
-
-
-func _campaign(campaign_id: String) -> CampaignDef:
-	return _loop.campaigns.definition(campaign_id)
 
 
 ## Handles one command: the file's detectors look first, and what they correct is saved

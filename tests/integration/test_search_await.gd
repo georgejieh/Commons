@@ -106,7 +106,7 @@ func _resume(data: Dictionary) -> RunLoop:
 		configs(),
 		SetConfig.new(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		RunLoop.DEFAULT_METERS,
 		Callable(),
 		true

@@ -255,7 +255,7 @@ func _missed_set(meters: MeterTable, state: RunState) -> RunLoop:
 		RunScript.bots(),
 		_hard_sets(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		meters
 	)
 	loop.start_set()
@@ -282,7 +282,7 @@ func test_denunciation_at_death_ends_the_run() -> void:
 
 func test_mid_denunciation_sends_you_to_reeducation_in_place_of_the_store() -> void:
 	var state: RunState = RunState.new(MISSED_SEED)
-	state.inventory.cadres.assign([RunLoop.DEFAULT_CADRES.cadres[0].id])
+	state.inventory.cadres.assign([RunPools.STORE_CADRES.cadres[0].id])
 	var meters: MeterTable = _meters_with_miss(RunMeters.DENUNCIATION, 50)
 	var loop: RunLoop = _missed_set(meters, state)
 	assert_bool(state.reeducation_due).is_true()
@@ -297,7 +297,7 @@ func test_mid_denunciation_sends_you_to_reeducation_in_place_of_the_store() -> v
 	assert_int(loop.flow.state()).is_equal(RunFlow.State.REEDUCATION)
 	assert_bool(state.inventory.plot.is_empty()).is_true()
 	assert_int(state.inventory.cadres.size()).is_equal(1)
-	assert_str(state.inventory.cadres[0]).is_not_equal(RunLoop.DEFAULT_CADRES.cadres[0].id)
+	assert_str(state.inventory.cadres[0]).is_not_equal(RunPools.STORE_CADRES.cadres[0].id)
 	assert_bool(state.reeducation_due).is_false()
 	# A save taken in reeducation replays to the same place and the same exchange.
 	var commands: Array = saved["commands"]
@@ -307,7 +307,7 @@ func test_mid_denunciation_sends_you_to_reeducation_in_place_of_the_store() -> v
 		RunScript.bots(),
 		_hard_sets(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		meters
 	)
 	assert_int(resumed.awaiting()).is_equal(RunLoop.Awaiting.REEDUCATION)
@@ -324,14 +324,14 @@ func test_rationing_cuts_a_store_slot_until_famine_falls() -> void:
 	assert_bool(state.rationed).is_true()
 	loop.open_shop()
 	var cut: int = RunLoop.DEFAULT_METERS.rationing_shop_cut
-	assert_int(loop.shop.stock().size()).is_equal(RunLoop.DEFAULT_SHOP.slots - cut)
+	assert_int(loop.shop.stock().size()).is_equal(RunPools.STORE.slots - cut)
 
 
 ## Every bot always lies, and the player always declares above true need, so each audit
 ## that lands catches someone; an informer at the table makes audits likelier.
 func test_caught_lies_raise_the_liars_denunciation() -> void:
 	var state: RunState = RunState.new(SEEDS[0])
-	state.table.assign(["player", RunLoop.DEFAULT_AUDIT.informer_families[0], "li"])
+	state.table.assign(["player", RunPools.AUDIT.informer_families[0], "li"])
 	var configs: Array[BotConfig] = RunScript.bots()
 	for config: BotConfig in configs:
 		config.honesty = 0.0
@@ -386,7 +386,7 @@ func test_a_risen_villager_runs_an_even_years_boss_set_as_landlord() -> void:
 	state.risen.assign(["zhao"])
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	loop.start_set()
-	assert_str(state.boss_id).is_equal(RunLoop.DEFAULT_BOSSES.risen.id)
+	assert_str(state.boss_id).is_equal(RunPools.BOSSES.risen.id)
 	assert_str(state.table[1]).is_equal("zhao")
 	var chosen: bool = false
 	# The first round has no bidding: it starts with the risen villager already landlord.

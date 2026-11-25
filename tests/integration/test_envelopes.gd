@@ -200,7 +200,7 @@ func test_keeping_a_directive_issues_it_as_the_counter_does() -> void:
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 	var items: Array[EnvelopeItem] = loop.shop.envelopes.items()
 	var directive: DirectiveDef = null
-	for candidate: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+	for candidate: DirectiveDef in RunPools.DIRECTIVES.directives:
 		if candidate.id == items[1].item_id:
 			directive = candidate
 	assert_object(directive).is_not_null()
@@ -236,7 +236,7 @@ func test_keeping_a_campaign_needs_room_and_nothing_is_always_allowed() -> void:
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 	var items: Array[EnvelopeItem] = loop.shop.envelopes.items()
 	var pool: Array[String] = []
-	for campaign: CampaignDef in RunCampaigns.STORE_POOL.campaigns:
+	for campaign: CampaignDef in RunPools.STORE_CAMPAIGNS.campaigns:
 		pool.append(campaign.id)
 	for item: EnvelopeItem in items:
 		assert_bool(pool.has(item.item_id)).is_true()
@@ -263,7 +263,7 @@ func test_supply_cooperative_adds_a_choice_to_every_envelope() -> void:
 func test_the_parcel_mixes_its_contents_and_is_resented_when_bought() -> void:
 	var kinds: Dictionary[int, bool] = {}
 	var pool: Array[String] = []
-	for campaign: CampaignDef in RunCampaigns.MARKET_POOL.campaigns:
+	for campaign: CampaignDef in RunPools.MARKET_CAMPAIGNS.campaigns:
 		pool.append(campaign.id)
 	for seed_value: int in 12:
 		var loop: RunLoop = _at_the_shops(seed_value)

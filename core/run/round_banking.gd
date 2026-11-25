@@ -4,8 +4,6 @@ extends RefCounted
 ## the Commons pool, which is then split by declared need and emptied. Only what reaches
 ## the player counts toward the Set's target.
 
-const DEFAULT_AUDIT: AuditParams = preload("res://data/run/audit.tres")
-
 
 ## Records each seat's total, banks the landlord and fills the pool.
 static func bank(
@@ -40,7 +38,7 @@ static func split(
 	events: Array[RunEvent],
 	audit_faces: int = 0,
 	caught: Array[int] = [],
-	audit: AuditParams = DEFAULT_AUDIT,
+	audit: AuditParams = RunPools.AUDIT,
 	cut: BankCut = null
 ) -> bool:
 	var peasants: Array[int] = []

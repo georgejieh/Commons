@@ -268,7 +268,7 @@ func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
 	var cadres_only: RunShop = RunShop.new(loop.state, STORE, few)
 	cadres_only.open()
 	assert_bool(cadres_only.reroll_changes()).is_false()
-	assert_int(RunLoop.DEFAULT_DIRECTIVES.directives.size()).is_greater(STORE.directive_slots)
+	assert_int(RunPools.DIRECTIVES.directives.size()).is_greater(STORE.directive_slots)
 	assert_bool(loop.shop.reroll_changes()).is_true()
 	assert_bool(loop.market.reroll_changes()).is_true()
 

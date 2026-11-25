@@ -236,7 +236,7 @@ func test_frames_go_on_while_two_experts_think() -> void:
 		_configs(SLOW_SAMPLES),
 		SetConfig.new(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		RunLoop.DEFAULT_METERS,
 		Callable(),
 		true

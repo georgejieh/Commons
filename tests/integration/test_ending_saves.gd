@@ -160,7 +160,7 @@ func test_a_run_that_dies_in_play_reloads_to_its_death() -> void:
 		RunScript.bots(),
 		_hard_sets(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		table
 	)
 	loop.start_set()

@@ -5,9 +5,6 @@ extends RefCounted
 ## applies its effect, and holds what a Campaign keeps in force for the round, which
 ## starts fresh with every round. Bots never hold or use one.
 
-const STORE_POOL: CampaignPool = preload("res://data/run/campaign_pool.tres")
-const MARKET_POOL: CampaignPool = preload("res://data/run/market_campaign_pool.tres")
-
 ## What Campaigns hold in force this round.
 var flags: CampaignRound = CampaignRound.new()
 ## Returns the Quota's target in force now, for a Campaign that reads it (ADR 0032).
@@ -20,7 +17,6 @@ var _meters: MeterTable
 var _params: RunParams
 var _log: SetLog
 var _player: int
-var _definitions: Dictionary[String, CampaignDef] = {}
 
 
 func _init(
@@ -39,17 +35,11 @@ func _init(
 	_params = params
 	_log = set_log
 	_player = player
-	for definition: CampaignDef in all():
-		_definitions[definition.id] = definition
 
 
 ## Every Campaign either shop sells.
 static func all() -> Array[CampaignDef]:
-	return STORE_POOL.campaigns + MARKET_POOL.campaigns
-
-
-func definition(campaign_id: String) -> CampaignDef:
-	return _definitions.get(campaign_id)
+	return RunPools.STORE_CAMPAIGNS.campaigns + RunPools.MARKET_CAMPAIGNS.campaigns
 
 
 ## A new round: nothing a Campaign held stays in force.
@@ -104,7 +94,7 @@ func wants_opening(round_state: RoundState) -> bool:
 	if round_state.landlord() == _player:
 		return false
 	for slot: int in _state.inventory.consumables.size():
-		var held: CampaignDef = definition(_state.inventory.consumables[slot])
+		var held: CampaignDef = RunDefinitions.campaigns.get(_state.inventory.consumables[slot])
 		if held == null or held.when != CampaignDef.When.OPENING:
 			continue
 		var moment: CampaignContext.Moment = CampaignContext.Moment.OPENING
@@ -148,10 +138,10 @@ func _context(
 	slot: int, card_ids: Array[int], moment: CampaignContext.Moment, round_state: RoundState
 ) -> CampaignContext:
 	var held: Array[String] = _state.inventory.consumables
-	if slot < 0 or slot >= held.size() or definition(held[slot]) == null:
+	if slot < 0 or slot >= held.size() or not RunDefinitions.campaigns.has(held[slot]):
 		return null
 	var context: CampaignContext = CampaignContext.new()
-	context.definition = definition(held[slot])
+	context.definition = RunDefinitions.campaigns[held[slot]]
 	context.state = _state
 	context.round_state = round_state if moment != CampaignContext.Moment.SHOP else null
 	context.table = _table

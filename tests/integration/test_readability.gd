@@ -252,10 +252,10 @@ func test_no_name_breaks_inside_a_word() -> void:
 				_clips(paper, "campaign choice %s %d" % [campaign.id, count])
 		for reform: ReformDef in RunReforms.all():
 			await _check_panel(tr(reform.name_key))
-		for params: ShopParams in [RunLoop.DEFAULT_SHOP, RunLoop.DEFAULT_BLACK_MARKET]:
+		for params: ShopParams in [RunPools.STORE, RunPools.MARKET]:
 			for envelope: EnvelopeDef in params.envelopes:
 				await _check_panel(tr(envelope.name_key))
-		for directive: DirectiveDef in RunLoop.DEFAULT_DIRECTIVES.directives:
+		for directive: DirectiveDef in RunPools.DIRECTIVES.directives:
 			for count: int in [3, 4]:
 				var paper: ChoicePaper = await _choice(count)
 				paper.show_directive(_app.controller, directive.id)

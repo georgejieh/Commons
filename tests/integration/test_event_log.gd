@@ -28,7 +28,7 @@ func before() -> void:
 		RunScript.bots(),
 		SetConfig.new(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		meters
 	)
 	loop.state.table.assign(["player", "wang", "li"])

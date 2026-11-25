@@ -86,15 +86,9 @@ static func _open(opening: RunState, request: RunRequest, lineage: Dictionary) -
 	RunLineage.apply(opening, str(lineage["kind"]), lineage["values"], run)
 	var chosen: HouseholdDef = HOUSEHOLDS.household(request.household)
 	if chosen != null:
-		RunOpening.household(opening, chosen, _cadre(chosen.cadre_id), run)
+		var cadre: ModifierDef = RunDefinitions.modifiers.get(chosen.cadre_id)
+		RunOpening.household(opening, chosen, cadre, run)
 	RunOpening.stake(opening, RunStakes.total(request.stake), run)
-
-
-static func _cadre(cadre_id: String) -> ModifierDef:
-	for definition: ModifierDef in RunLoop.all_cadres():
-		if definition.id == cadre_id:
-			return definition
-	return null
 
 
 ## The families the profile has unlocked beyond those every village starts with (ADR

@@ -88,7 +88,7 @@ func test_buying_fills_the_slots_and_a_third_is_refused() -> void:
 func test_the_market_charges_its_percent_rounded_up() -> void:
 	var loop: RunLoop = _at_the_shops(9)
 	var offered: String = loop.market.campaigns.stock()[0]
-	var cost: int = loop.campaigns.definition(offered).cost
+	var cost: int = RunDefinitions.campaigns[offered].cost
 	assert_int(MARKET.price_percent).is_greater(100)
 	var dear: int = ceili(cost * MARKET.price_percent / 100.0)
 	assert_int(loop.market.campaigns.price(0)).is_equal(dear)
@@ -121,8 +121,8 @@ func _try_campaign(loop: RunLoop, stream: RandomStream) -> bool:
 		return false
 	var slot: int = stream.next_int(0, held.size() - 1)
 	var cards: Vector2i = Vector2i(
-		loop.campaigns.definition(held[slot]).min_cards,
-		loop.campaigns.definition(held[slot]).max_cards
+		RunDefinitions.campaigns[held[slot]].min_cards,
+		RunDefinitions.campaigns[held[slot]].max_cards
 	)
 	var hand: Array[CardInstance] = loop.player_cards()
 	var ids: Array[int] = []

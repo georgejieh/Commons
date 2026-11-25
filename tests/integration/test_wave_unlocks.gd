@@ -84,8 +84,8 @@ func test_every_piece_has_the_adrs_tier_tag_and_cost() -> void:
 		"grain_speculator": [5, true, 5],
 		"prize_exhibit": [5, true, 5],
 	}
-	var store: Array[ModifierDef] = RunLoop.DEFAULT_CADRES.cadres
-	var market: Array[ModifierDef] = RunLoop.DEFAULT_MARKET.cadres
+	var store: Array[ModifierDef] = RunPools.STORE_CADRES.cadres
+	var market: Array[ModifierDef] = RunPools.MARKET_CADRES.cadres
 	for definition: ModifierDef in store + market:
 		if not cadres.has(definition.id):
 			continue

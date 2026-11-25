@@ -65,20 +65,14 @@ func _held_cadre(index: int) -> ModifierDef:
 	var held: Array[String] = _state.inventory.cadres
 	if index < 0 or index >= held.size():
 		return null
-	for definition: ModifierDef in RunLoop.all_cadres():
-		if definition.id == held[index]:
-			return definition
-	return null
+	return RunDefinitions.modifiers.get(held[index])
 
 
 func _held_campaign(index: int) -> CampaignDef:
 	var held: Array[String] = _state.inventory.consumables
 	if index < 0 or index >= held.size():
 		return null
-	for definition: CampaignDef in RunCampaigns.all():
-		if definition.id == held[index]:
-			return definition
-	return null
+	return RunDefinitions.campaigns.get(held[index])
 
 
 func reroll_price() -> int:

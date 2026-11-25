@@ -6,8 +6,6 @@ extends RefCounted
 ## the player's own name in it, drawn from the seed the run will start with (ADR 0028).
 ## Only the first locked stake says how it opens, since its line names the stake below.
 
-const HOUSEHOLDS: HouseholdPool = preload("res://data/run/households/households.tres")
-const LINEAGE: LineageParams = preload("res://data/run/lineage.tres")
 const SUIT_KEYS: Array[String] = RunController.SUIT_KEYS
 
 var households: Array[UnlockSheet] = []
@@ -34,7 +32,7 @@ static func from_data(data: ProfileData, seed_value: int = 0) -> SetupView:
 	view.player_name = Surnames.full_name(given, surname)
 	view.top_stake = mini(data.stake, RunStakes.last())
 	var base: int = RunStarter.FULL_RUN.starting_coupons
-	for household: HouseholdDef in HOUSEHOLDS.households:
+	for household: HouseholdDef in RunStarter.HOUSEHOLDS.households:
 		var left: int = RunUnlocks.runs_left(household.unlock_tier, data.finished_runs)
 		var sheet: UnlockSheet = UnlockSheet.locked(UnlockSheet.runs_line(left))
 		if left == 0:
@@ -66,7 +64,7 @@ static func from_data(data: ProfileData, seed_value: int = 0) -> SetupView:
 
 ## The household run setup opens on.
 func default_household() -> String:
-	return HOUSEHOLDS.default_id
+	return RunStarter.HOUSEHOLDS.default_id
 
 
 ## The rules a stake plays under, one line each: its own and every lower stake's, which it
@@ -99,7 +97,7 @@ static func inherited_line(kind: String, values: Dictionary) -> String:
 			return _loyal_line(RunLineage.families(values))
 		RunLineage.LABEL:
 			return TranslationServer.translate("lineage.label").format(
-				{"amount": LINEAGE.label_denunciation}
+				{"amount": RunLineage.DEFAULT_PARAMS.label_denunciation}
 			)
 	return ""
 

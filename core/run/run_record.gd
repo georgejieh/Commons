@@ -310,7 +310,7 @@ static func resume(
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	params: RunParams = RunLoop.DEFAULT_PARAMS,
-	pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs,
+	pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs,
 	meters: MeterTable = RunLoop.DEFAULT_METERS,
 	searcher: Callable = Callable(),
 	outside: bool = false

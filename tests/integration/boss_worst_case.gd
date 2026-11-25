@@ -14,7 +14,7 @@ static func worst(app: DemoApp, suite: GdUnitTestSuite, named: bool) -> String:
 	var loop: RunLoop = app.controller.get("_loop")
 	var state: RunState = loop.state
 	var ids: Array[String] = []
-	for boss: ModifierDef in RunLoop.DEFAULT_BOSSES.all():
+	for boss: ModifierDef in RunPools.BOSSES.all():
 		ids.append(boss.id)
 	var chosen: String = ""
 	if named:

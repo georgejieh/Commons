@@ -22,7 +22,7 @@ static func directive(definition: DirectiveDef) -> String:
 ## A Reform's rules, the limits it raises included.
 static func reform(definition: ReformDef) -> String:
 	var values: Dictionary[String, Variant] = definition.text_values()
-	var limits: ShopParams = RunReforms.LIMITS
+	var limits: ShopParams = RunPools.STORE
 	values["cadre_limit"] = limits.cadre_slots + definition.parameters.get("cadres", 0)
 	values["campaign_limit"] = limits.campaign_slots + definition.parameters.get("campaigns", 0)
 	return TranslationServer.translate(definition.text_key).format(values)

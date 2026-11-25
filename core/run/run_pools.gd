@@ -1,12 +1,15 @@
 class_name RunPools
 extends RefCounted
-## What one run may be offered, and the numbers its stake changes (ADR 0025), made once
+## The one home of every pool a run draws from, as constants, and what one run may be
+## offered of them, with the numbers its stake changes (ADR 0025), made once
 ## when the loop is built, from the run's identity alone, so a loaded save rebuilds the
 ## same pools and numbers. Every way an item is offered or handed over draws from here:
 ## both counters' Cadres, Directives, Campaigns, Reforms and envelope kinds, what the
 ## envelopes hold, and the Cadre reeducation gives in exchange. Lookups by ID stay on the
 ## whole pools. The arrival's counters hold only what its script puts on them (ADR 0026).
 
+const DEBUFFS: DebuffPool = preload("res://data/run/debuff_pool.tres")
+const BOSSES: BossPool = preload("res://data/run/boss_pool.tres")
 const STORE_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
 const MARKET_CADRES: CadrePool = preload("res://data/run/market_pool.tres")
 const DIRECTIVES: DirectivePool = preload("res://data/run/directive_pool.tres")

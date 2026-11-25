@@ -36,7 +36,7 @@ static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> T
 	state.slogan_type = longest_slogan_type()
 	var debuffs: Array[String] = []
 	if named:
-		for reform: ReformDef in RunReforms.POOL.reforms:
+		for reform: ReformDef in RunPools.REFORMS.reforms:
 			if not state.reforms.has(reform.id):
 				state.reforms.append(reform.id)
 		state.inventory.cadres.assign(longest_named_cadres(app.controller))

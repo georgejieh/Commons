@@ -49,7 +49,7 @@ func _full_quota_page(memory: bool) -> Node:
 	assert_bool(_app.new_run(SEED, true)).is_true()
 	var state: RunState = _loop().state
 	if state.debuff_ladder.size() > 1:
-		state.debuff_ladder[1] = RunLoop.DEFAULT_POOL.debuffs[0].id
+		state.debuff_ladder[1] = RunPools.DEBUFFS.debuffs[0].id
 	if memory:
 		state.memory.counts[state.table[1]] = PackedFloat64Array([1.0, 0.0, 0.0, 0.0])
 	return _app.show_screen("set_intro", true)

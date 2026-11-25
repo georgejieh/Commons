@@ -956,7 +956,7 @@ func _force_debuff(loop: RunLoop, debuff_id: String) -> void:
 	if round_index >= 1:
 		return
 	var stack: ModifierStack = loop.get("_stack")
-	for definition: ModifierDef in RunLoop.DEFAULT_POOL.debuffs:
+	for definition: ModifierDef in RunPools.DEBUFFS.debuffs:
 		if definition.id == debuff_id:
 			loop.campaigns.flags.round_debuff = stack.add(definition, RunLoop.PLAYER)
 	loop.debuffs.rebuilt()

@@ -32,7 +32,7 @@ const TABLE: Array[Array] = [
 	["inverted_order", 4, ModifierDef.Lever.RANK],
 ]
 
-var _params: LadderParams = DebuffLadder.DEFAULT_PARAMS
+var _params: LadderParams = RunPools.LADDER
 
 
 func test_random_ladders_never_break_a_rule() -> void:

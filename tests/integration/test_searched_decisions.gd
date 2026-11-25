@@ -79,7 +79,7 @@ func _resume(data: Dictionary, searcher: Callable = Callable()) -> RunLoop:
 		_configs(),
 		SetConfig.new(),
 		RunLoop.DEFAULT_PARAMS,
-		RunLoop.DEFAULT_POOL.debuffs,
+		RunPools.DEBUFFS.debuffs,
 		RunLoop.DEFAULT_METERS,
 		searcher
 	)

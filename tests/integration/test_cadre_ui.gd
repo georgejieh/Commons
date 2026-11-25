@@ -143,8 +143,8 @@ func test_the_collections_sections_scroll_with_focus() -> void:
 	await await_idle_frame()
 	var flows: Array[Node] = collection.find_children("*", "HFlowContainer", true, false)
 	assert_int(flows.size()).is_equal(CollectionView.SECTION_KEYS.size())
-	assert_int(flows[0].get_child_count()).is_equal(RunLoop.DEFAULT_CADRES.cadres.size())
-	assert_int(flows[1].get_child_count()).is_equal(RunLoop.DEFAULT_MARKET.cadres.size())
+	assert_int(flows[0].get_child_count()).is_equal(RunPools.STORE_CADRES.cadres.size())
+	assert_int(flows[1].get_child_count()).is_equal(RunPools.MARKET_CADRES.cadres.size())
 	var entries: Array[Control] = collection.entries()
 	assert_int(entries.size()).is_equal(CollectionView.for_runs(0).total())
 	for entry: Control in entries:

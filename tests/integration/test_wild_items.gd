@@ -310,7 +310,7 @@ func test_the_three_items_are_tier_four_at_the_state_store() -> void:
 	assert_int(worker.when).is_equal(CampaignDef.When.OPENING)
 	var costs: Dictionary[String, int] = {"mass_line": 10, "industrialization": 8}
 	for reform_id: String in costs:
-		var reform: ReformDef = RunReforms.definition(reform_id)
+		var reform: ReformDef = RunDefinitions.reforms[reform_id]
 		assert_int(reform.cost).is_equal(costs[reform_id])
 		assert_int(reform.unlock_tier).is_equal(RunUnlocks.WILD_TIER)
 	assert_bool(RunPools.MARKET_CAMPAIGNS.campaigns.any(_is_worker)).is_false()

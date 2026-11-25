@@ -4,7 +4,6 @@ extends RefCounted
 ## surnames it refuses, the surnames it offers, and the name a run and its pages use.
 ## Village and youth surnames are string keys, so they are compared as they read.
 
-const BOOK: NameBook = preload("res://data/villagers/names.tres")
 ## The most letters a surname may have.
 const LONGEST: int = 12
 const REFUSED_KEY: String = "surname.refused"
@@ -57,13 +56,15 @@ static func village_holds(surname: String) -> bool:
 
 ## The common surnames the first launch offers as tickets.
 static func offered() -> Array[String]:
-	return BOOK.offered_surnames.duplicate()
+	return RunNames.BOOK.offered_surnames.duplicate()
 
 
 ## One of the offered surnames, drawn from seed.
 static func pick(seed_value: int) -> String:
 	var stream: RandomStream = RandomStream.new(seed_value)
-	return BOOK.offered_surnames[stream.next_int(0, BOOK.offered_surnames.size() - 1)]
+	return RunNames.BOOK.offered_surnames[stream.next_int(
+		0, RunNames.BOOK.offered_surnames.size() - 1
+	)]
 
 
 ## The surname the profile holds, or the fallback for one that holds none.
@@ -72,7 +73,7 @@ static func of_profile(profile: SaveService) -> String:
 
 
 static func or_fallback(surname: String) -> String:
-	return BOOK.fallback_surname if surname.is_empty() else surname
+	return RunNames.BOOK.fallback_surname if surname.is_empty() else surname
 
 
 ## Writes a new surname to the profile, keeping all else. False, with nothing written,
