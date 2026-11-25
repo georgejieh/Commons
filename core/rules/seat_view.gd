@@ -10,7 +10,7 @@ var own_cards: Array[CardInstance]
 ## and after the seat's own plot swap, less what it set aside and with what it brought
 ## in. Packed arrays copy on write, so the round's own counts never change through it.
 var deck_counts: PackedByteArray
-## Information upgrades for the player only (P4.9). Bots' views never have one.
+## Information upgrades for the player only. Bots' views never have one.
 var info: InfoView = null
 ## The rank counts of each other seat whose hand is shown to the table (Glass Walls),
 ## by seat. Empty while no hand is shown.

@@ -4,7 +4,7 @@ extends RefCounted
 
 var landlord: int
 var deal: DealResult
-## The deal stream, for effects that draw while dealing (P4.9).
+## The deal stream, for effects that draw while dealing.
 var stream: RandomStream
 ## The Year in play, for an effect whose size grows with the run (ADR 0043).
 var year: int

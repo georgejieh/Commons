@@ -23,7 +23,7 @@ func extra_campaigns() -> int:
 	return 0
 
 
-## More items in every envelope to choose from (P4.11g).
+## More items in every envelope to choose from.
 func extra_envelope_choices() -> int:
 	return 0
 

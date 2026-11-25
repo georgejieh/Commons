@@ -10,6 +10,6 @@ var total: float = 0.0
 var stamps_resented: bool = true
 ## The scored Surplus cards' IDs, in play order, which pay the player coupons (ADR 0041).
 var surplus_cards: Array[int] = []
-## Every change to the score, one at a time, for the table to act out (P5.2a). Kept only
+## Every change to the score, one at a time, for the table to act out. Kept only
 ## when the scorer was asked to record, as for a real play; empty for a preview.
 var trail: Array[ScoreStep] = []

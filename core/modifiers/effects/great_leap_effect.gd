@@ -1,6 +1,6 @@
 class_name GreatLeapEffect
 extends ModifierEffect
-## Boss (P4.7): every play the holder makes gains flat Zeal, given in hundredths. The run
+## Boss: every play the holder makes gains flat Zeal, given in hundredths. The run
 ## loop doubles the Quota from the definition's quota_percent.
 
 const ZEAL_PERCENT: String = "zeal_percent"

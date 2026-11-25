@@ -39,7 +39,7 @@ static func _spite(position: BotPosition) -> float:
 
 
 ## A grudge against the teammate who owns the trick makes covering for them less likely:
-## cooperation is divided by one plus the spite (P4.2). A warm family's loyalty to the
+## cooperation is divided by one plus the spite. A warm family's loyalty to the
 ## player counts in its cooperation (ADR 0025).
 static func _leaves_it_to_teammate(position: BotPosition) -> bool:
 	var teammate_owns: bool = position.trick_owner() == position.teammate

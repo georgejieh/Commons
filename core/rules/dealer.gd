@@ -44,7 +44,7 @@ static func arrange(
 	return order
 
 
-## Biases a finished deal in place, as arrange() would have (P4.9). The deal hook
+## Biases a finished deal in place, as arrange() would have. The deal hook
 ## uses this, so Planned Allocation runs with every other deal effect.
 static func rebias(deal: DealResult, bias: DealBias, stream: RandomStream) -> void:
 	if bias == null or bias.multiplier <= 1.0:

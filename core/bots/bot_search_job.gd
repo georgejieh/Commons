@@ -40,7 +40,7 @@ func sample_count() -> int:
 
 
 ## Runs one sample. If stop expires before it is done the sample is abandoned and
-## counts as not finished, so a search can be held to a ceiling (P5.0).
+## counts as not finished, so a search can be held to a ceiling.
 func run_sample(sample: int, stop: BotBudget) -> void:
 	var hands: Array[PackedByteArray] = []
 	hands.assign(_hands[sample])

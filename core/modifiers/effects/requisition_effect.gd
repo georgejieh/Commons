@@ -1,6 +1,6 @@
 class_name RequisitionEffect
 extends ModifierEffect
-## Boss (P4.7): the holder's Bombs and Rockets score nothing.
+## Boss: the holder's Bombs and Rockets score nothing.
 
 
 func play_scored(context: PlayContext) -> void:

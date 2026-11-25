@@ -1,6 +1,6 @@
 class_name InfoView
 extends RefCounted
-## What information upgrades add to the player's view (P4.9). Only the flags turned on
+## What information upgrades add to the player's view. Only the flags turned on
 ## are filled; with none, the player's view has no InfoView and matches a bot's.
 
 ## Flags, combined as bits in a definition's info parameter.

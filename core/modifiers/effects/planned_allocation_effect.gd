@@ -1,6 +1,6 @@
 class_name PlannedAllocationEffect
 extends ModifierEffect
-## A chosen rank is dealt to the holder more often than chance (P4.9), through the deal
+## A chosen rank is dealt to the holder more often than chance, through the deal
 ## hook's bounded swaps. The player picks the rank when buying it (ADR 0021); the data's
 ## rank stands in when none was picked.
 

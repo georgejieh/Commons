@@ -4,7 +4,7 @@ extends RefCounted
 ## round still needed (sm9sun's baseline). Passing keeps the hand and costs one more round.
 ## One instance serves one decision, so every candidate shares the search's memo.
 
-## Bonus per Pattern.Type added to every play's score (P4.7). Empty for none.
+## Bonus per Pattern.Type added to every play's score. Empty for none.
 var _bias: PackedFloat32Array = PackedFloat32Array()
 var _counts: PackedByteArray
 var _weights: BotWeights

@@ -156,6 +156,6 @@ func read_under(rules: RuleSet) -> Pattern:
 
 
 ## Records the printed counts the play spends, kept only when they differ from the
-## reading's, so a play with no stand-in compares as it always has.
+## reading's, so a play with no stand-in has an empty spent.
 func spend(printed: PackedByteArray) -> void:
 	spent = PackedByteArray() if printed == counts() else printed.duplicate()

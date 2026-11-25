@@ -31,7 +31,7 @@ func _init(seat_rules: RuleSet, seat_map: PackedByteArray) -> void:
 
 ## The seat's table in the round as it stands, knowing every seat. While every seat
 ## plays under the same rules and order on both sides of a bomb, as with no seat-only
-## modifier in force, it is the plain table it always was.
+## modifier in force, it is a plain table.
 static func of_seat(table: SeatRules, at: int) -> BotTable:
 	var known: BotTable = BotTable.new(table.rules_for(at), table.map_for(at))
 	known.standing = table.standing_for(at)

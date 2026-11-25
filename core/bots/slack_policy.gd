@@ -1,6 +1,6 @@
 class_name SlackPolicy
 extends RefCounted
-## A bot that isn't trying (P4.4): it passes when following, and leads its weakest move.
+## A bot that isn't trying: it passes when following, and leads its weakest move.
 ## It still plays only legal moves.
 
 ## Keeps the effort roll apart from the cooperation roll.

@@ -1,6 +1,6 @@
 class_name ScoreTrail
 extends RefCounted
-## Records what changed a play's score as the scorer applies it (P5.2a), for the table to
+## Records what changed a play's score as the scorer applies it, for the table to
 ## act out. The stack tells it after each hook; it compares the context with what it saw
 ## last, so it changes nothing and needs nothing from an effect. The steps run: each
 ## scored card's printed Grain; the hand's Rate and Zeal's start; the hand's level; each

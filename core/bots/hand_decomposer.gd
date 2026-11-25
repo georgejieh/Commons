@@ -56,10 +56,14 @@ func _init(rules: RuleSet, rank_map: PackedByteArray, memo_cap: int) -> void:
 	_leaf = DecompositionLeaf.new(rules, rank_map)
 
 
+## The hands a score counts. Strength is subtracted below the low singles field and can
+## borrow from the fields above it, so the most strength a hand can have is added back
+## before the shift.
 static func hands_in(score_value: int) -> int:
 	return (score_value + STRENGTH_SPAN - 1) >> HAND_SHIFT
 
 
+## The low singles a score counts, read past the borrowed strength as hands_in reads.
 static func low_singles_in(score_value: int) -> int:
 	return ((score_value + STRENGTH_SPAN - 1) >> LOW_SINGLE_SHIFT) & LOW_FIELD_MASK
 

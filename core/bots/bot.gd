@@ -5,7 +5,8 @@ extends RefCounted
 ## that carries a scripted villager is answered from its script (ADR 0026).
 
 
-## True claims the landlord seat. counts is the bot's own dealt hand.
+## True claims the landlord seat. counts is the bot's own dealt hand. A bid is decided
+## at once, so its budget goes unread; ADR 0009 gives every decision one all the same.
 static func decide_bid(
 	counts: PackedByteArray,
 	is_grab: bool,
@@ -83,6 +84,7 @@ static func _by_policy(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 
 
 ## Returns the need the bot declares before a Commons split. A dishonest bot inflates it.
+## Decided at once, so its budget goes unread, as a bid's does (ADR 0009).
 static func declare_need(
 	true_need: int, config: BotConfig, stream: RandomStream, _budget: BotBudget
 ) -> int:
@@ -99,7 +101,7 @@ static func choose_gift(view: SeatView, table: BotTable, count: int) -> Array[in
 	return AidChoice.choose(view, table.rank_map, count)
 
 
-## A hand split into its fewest plays (P2.2), for a view that sorts cards by group.
+## A hand split into its fewest plays, for a view that sorts cards by group.
 static func suggest_groups(
 	counts: PackedByteArray, table: BotTable, config: BotConfig
 ) -> Array[Pattern]:
