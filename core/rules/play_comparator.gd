@@ -33,8 +33,8 @@ static func beats(play: Pattern, current: Pattern, rules: RuleSet) -> bool:
 	if play.type == Pattern.Type.ROCKET:
 		return false
 	if play.type == Pattern.Type.BOMB and play.card_count == current.card_count:
-		var kind: int = bomb_kind(play, rules)
-		var other: int = bomb_kind(current, rules)
+		var kind: int = bomb_kind(play)
+		var other: int = bomb_kind(current)
 		if kind != other:
 			return kind > other
 	return play.key > current.key
@@ -44,7 +44,7 @@ static func beats(play: Pattern, current: Pattern, rules: RuleSet) -> bool:
 ## read as that rank, natural otherwise. Whether the rank is wild is the playing seat's
 ## to say (Pattern.main_wild): a villager's four of the player's wild rank are a natural
 ## bomb, and the player's four are pure-wild against anyone (ADR 0039).
-static func bomb_kind(bomb: Pattern, _rules: RuleSet) -> int:
+static func bomb_kind(bomb: Pattern) -> int:
 	if bomb.stand_ins() > 0:
 		return SOFT
 	if bomb.card_count == PURE_WILD_CARDS and bomb.main_wild:
@@ -58,6 +58,6 @@ static func tier(pattern: Pattern, rules: RuleSet) -> int:
 		return TIER_ABOVE_TOP if rules.rocket_above_wild_bomb() else TIER_TOP
 	if pattern.type != Pattern.Type.BOMB:
 		return TIER_PLAIN
-	if not rules.rocket_above_wild_bomb() and bomb_kind(pattern, rules) == PURE_WILD:
+	if not rules.rocket_above_wild_bomb() and bomb_kind(pattern) == PURE_WILD:
 		return TIER_ABOVE_TOP
 	return TIER_BOMB

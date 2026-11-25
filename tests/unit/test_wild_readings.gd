@@ -36,7 +36,7 @@ func test_four_wild_sevens_are_first_the_pure_wild_bomb() -> void:
 	var readings: Array[Pattern] = _readings("7777")
 	assert_int(readings[0].type).is_equal(Pattern.Type.BOMB)
 	assert_int(readings[0].main_rank).is_equal(Ranks.SEVEN)
-	assert_int(PlayComparator.bomb_kind(readings[0], _sevens)).is_equal(PlayComparator.PURE_WILD)
+	assert_int(PlayComparator.bomb_kind(readings[0])).is_equal(PlayComparator.PURE_WILD)
 	for reading: Pattern in readings:
 		assert_bool(reading.counts()[Ranks.SEVEN] > 0).is_true()
 
@@ -45,7 +45,7 @@ func test_three_nines_and_a_wild_are_a_soft_bomb_and_a_trio_with_a_single() -> v
 	var names: PackedStringArray = _names(_readings("9997"))
 	assert_array(Array(names)).is_equal(["BOMB 9 x1 ", "TRIO_SINGLE 9 x1 7"])
 	var bomb: Pattern = _readings("9997")[0]
-	assert_int(PlayComparator.bomb_kind(bomb, _sevens)).is_equal(PlayComparator.SOFT)
+	assert_int(PlayComparator.bomb_kind(bomb)).is_equal(PlayComparator.SOFT)
 	assert_int(bomb.stand_ins()).is_equal(1)
 	assert_array(Array(bomb.spent_counts())).is_equal(Array(RankText.counts("9997")))
 

@@ -107,7 +107,7 @@ func test_deal_applies_its_bias_and_a_large_one_places_every_copy() -> void:
 	for _i: int in 200:
 		var bias: DealBias = DealBias.new(1, Ranks.ACE, CERTAIN_MULTIPLIER)
 		var result: DealResult = Dealer.deal(_deck(), stream, bias)
-		assert_int(result.hands[1].count_of(Ranks.ACE)).is_equal(4)
+		assert_int(result.hands[1].counts()[Ranks.ACE]).is_equal(4)
 
 
 func _assert_bias_hits_target(rank: int, seat: int, multiplier: float) -> void:

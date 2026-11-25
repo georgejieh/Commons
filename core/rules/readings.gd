@@ -32,10 +32,7 @@ static func checked(
 		return null
 	var ranks: PackedByteArray = reading.counts()
 	var classified: Classification = Classifier.classify(ranks, rules, rank_map)
-	if (
-		not classified.is_valid()
-		or not classified.pattern.same_reading(reading.rekeyed(rank_map[reading.main_rank]))
-	):
+	if not classified.is_valid() or not classified.pattern.same_reading(reading):
 		return null
 	var total: int = 0
 	for rank: int in Ranks.COUNT:

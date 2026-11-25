@@ -46,7 +46,7 @@ func test_adding_the_same_card_twice_is_rejected() -> void:
 	var card: CardInstance = Deck.new().card(0)
 	assert_bool(hand.add(card)).is_true()
 	assert_bool(hand.add(card)).is_false()
-	assert_int(hand.count_of(Ranks.THREE)).is_equal(1)
+	assert_int(hand.counts()[Ranks.THREE]).is_equal(1)
 
 
 func test_mask_keeps_a_rank_until_its_last_copy_leaves() -> void:
@@ -64,7 +64,7 @@ func test_counts_are_a_copy_callers_cannot_change() -> void:
 	hand.add(Deck.new().card(0))
 	var counts: PackedByteArray = hand.counts()
 	counts[Ranks.THREE] = 9
-	assert_int(hand.count_of(Ranks.THREE)).is_equal(1)
+	assert_int(hand.counts()[Ranks.THREE]).is_equal(1)
 
 
 func _all_cards() -> Array[CardInstance]:

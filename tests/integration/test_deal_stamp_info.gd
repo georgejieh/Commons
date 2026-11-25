@@ -71,7 +71,7 @@ func test_planned_allocation_doubles_the_rank_through_the_deal_hook() -> void:
 		cards.append_array(Deck.new().cards())
 		var deal: DealResult = Dealer.deal(cards, stream)
 		stack.run_on_deal(DealContext.new(Seats.NONE, deal, stream))
-		reached += deal.hands[0].count_of(rank)
+		reached += deal.hands[0].counts()[rank]
 		copies += 4
 		assert_int(deal.hands[0].size()).is_equal(17)
 	var rate: float = float(reached) / copies

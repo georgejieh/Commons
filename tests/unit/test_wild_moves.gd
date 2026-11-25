@@ -254,8 +254,8 @@ func _order_breaks(a: Pattern, b: Pattern, sample: Array[Pattern], rules: RuleSe
 	if ab and ba:
 		breaks += 1
 	var meet: bool = a.shape() == b.shape() or FollowPolicy.is_bomb(a) or FollowPolicy.is_bomb(b)
-	var same: String = WildReference.shape_of(a, rules)
-	var tied: bool = a.key == b.key and same == WildReference.shape_of(b, rules)
+	var same: String = WildReference.shape_of(a)
+	var tied: bool = a.key == b.key and same == WildReference.shape_of(b)
 	if meet and not tied and not ab and not ba:
 		breaks += 1
 	if ab:

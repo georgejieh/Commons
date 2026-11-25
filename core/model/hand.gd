@@ -54,10 +54,6 @@ func size() -> int:
 	return _cards.size()
 
 
-func count_of(rank: int) -> int:
-	return _counts[rank]
-
-
 ## Returns a copy, because packed arrays are shared by reference.
 func counts() -> PackedByteArray:
 	return _counts.duplicate()
