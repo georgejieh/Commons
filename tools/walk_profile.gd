@@ -14,3 +14,12 @@ static func folder(base: String, args: PackedStringArray) -> String:
 	if at < 0 or at + 1 >= args.size():
 		return "user://%s/" % base
 	return "user://%s_%s/" % [base, args[at + 1].validate_filename()]
+
+
+## Points the Saves autoload at a run save, with its profile beside it, in the tool's own
+## folder under the sandbox (user://tools/base/), and returns the folder. For a tool that
+## plays a run in the app, so two such tools at once never share one.
+static func keep_run(root: Node, base: String, args: PackedStringArray) -> String:
+	var kept: String = folder("tools/" + base, args)
+	root.get_node("Saves").call("use_run_path", kept + "run.json")
+	return kept

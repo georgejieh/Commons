@@ -112,6 +112,8 @@ godot --headless --path . --script res://tools/soak.gd -- --runs 100
 
 Plays full runs headless with the balance harness's drivers, the strategies and the stakes taken in turn, each saved through the real `SaveService` as it plays and resumed from its save at every Set's end ([ADR 0037](docs/adr/0037-stability.md)), and writes `reports/soak.md` with the count of refused commands, refused bot actions, errors, failed saves and loads, and resumes that are not the run saved, and the seeds of failed runs. Exits 1 on any fault. Add `--seed S`, `--jobs J`, `--expert-samples N` or `--out DIR`. The nightly workflow runs 100; locally, give it a few with `--runs N`, since a run takes from seconds to minutes.
 
+Tools and tests never touch the player's saves or settings: a tree run by a script keeps the default run save, backup, ledger, profile and settings under `user://tools/` (`SavePaths`), because a tool once overwrote the owner's run. A tool that plays a run takes a folder of its own there through `tools/walk_profile.gd`.
+
 A Godot run writes the engine's log to `user://logs/commons.log` and rotates it, as the game does, unless it is given `--log-file PATH` (absolute, or relative to the project). `tools/test.sh` sends its runs to `logs/tools/` in the user folder. Give a long tool run the same, as in `godot --headless --log-file "$APPDATA/Godot/app_userdata/Commons/logs/tools/balance.log" --path . --script ...`, so it does not push the game's own logs out of the ten kept. A crash folder keeps only a log that holds the game's start line, whatever else rotated in ([ADR 0037](docs/adr/0037-stability.md)).
 
 ## Layers

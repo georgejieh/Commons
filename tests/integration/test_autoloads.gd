@@ -104,12 +104,18 @@ func test_audio_adds_the_three_buses() -> void:
 
 
 ## A debug build takes another settings file from the environment, which is how the test
-## run stays out of the player's settings; a release build never does.
+## run keeps a file of its own; a release build never does. Without one, the game keeps the
+## player's file and a tool or test the sandbox's.
 func test_settings_file_can_be_overridden_only_in_a_debug_build() -> void:
 	var other: String = "user://other.cfg"
-	assert_str(SettingsStore.start_path(true, other)).is_equal(other)
-	assert_str(SettingsStore.start_path(true, "")).is_equal(SettingsStore.PATH)
-	assert_str(SettingsStore.start_path(false, other)).is_equal(SettingsStore.PATH)
+	var sandboxed: String = SavePaths.of(SettingsStore.PATH, false)
+	for normal: bool in [true, false]:
+		assert_str(SettingsStore.start_path(true, other, normal)).is_equal(other)
+	assert_str(SettingsStore.start_path(true, "", true)).is_equal(SettingsStore.PATH)
+	assert_str(SettingsStore.start_path(false, other, true)).is_equal(SettingsStore.PATH)
+	assert_str(SettingsStore.start_path(true, "", false)).is_equal(sandboxed)
+	assert_str(SettingsStore.start_path(false, other, false)).is_equal(sandboxed)
+	assert_str(sandboxed).is_equal("user://tools/settings.cfg")
 
 
 func test_the_test_run_uses_its_own_settings_file() -> void:

@@ -35,14 +35,17 @@ var _path: String = PATH
 
 
 func _ready() -> void:
-	load_from(start_path(OS.is_debug_build(), OS.get_environment(PATH_OVERRIDE)))
+	var normal: bool = SavePaths.normal_launch(get_tree())
+	load_from(start_path(OS.is_debug_build(), OS.get_environment(PATH_OVERRIDE), normal))
 	bindings.apply()
 
 
-## The file settings start from: the player's, or in a debug build the override when one
-## is given.
-static func start_path(debug: bool, override: String) -> String:
-	return override if debug and not override.is_empty() else PATH
+## The file settings start from: in a debug build the override when one is given, else
+## the player's on a launch of the game, or the sandbox's for a tool or test (SavePaths).
+static func start_path(debug: bool, override: String, normal: bool) -> String:
+	if debug and not override.is_empty():
+		return override
+	return SavePaths.of(PATH, normal)
 
 
 ## Reads settings from path, falling back to the defaults for anything missing.
@@ -72,6 +75,7 @@ func save() -> Error:
 	for key: String in KEYS:
 		file.set_value(SECTION, key, _values[key])
 	bindings.write(file)
+	DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	return file.save(_path)
 
 
