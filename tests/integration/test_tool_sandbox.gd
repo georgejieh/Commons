@@ -2,6 +2,8 @@ extends GdUnitTestSuite
 ## Under the test runner, as under every tool, an app made with no path of its own reads
 ## and writes only in the sandbox: starting a run, playing a Set and finishing it leaves
 ## the player's run save, backup, ledger, profile and settings exactly as they were.
+## Every folder a tool names for its own saves (WalkProfile) is in the sandbox too, whatever
+## name --profile gives it.
 
 const SEED: int = 5113
 const PLAYERS: Array[String] = [
@@ -54,3 +56,18 @@ func test_an_app_with_no_paths_of_its_own_stays_in_the_sandbox() -> void:
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_true()
 	_app.leave_run()
 	assert_array(_hashes()).is_equal(before)
+
+
+func test_a_tools_own_folders_are_in_the_sandbox() -> void:
+	for args: PackedStringArray in [
+		PackedStringArray(),
+		PackedStringArray(["--profile", "second"]),
+		PackedStringArray(["--profile", "../../escape"]),
+	]:
+		var options: ToolOptions = ToolOptions.new("", args)
+		for base: String in ["playtest", "playtest_tutorial", "soak", "perf_budget"]:
+			var folder: String = WalkProfile.folder(base, options)
+			assert_str(folder).starts_with(SavePaths.SANDBOX + "/")
+			assert_str(folder.trim_prefix(SavePaths.SANDBOX + "/").trim_suffix("/")).not_contains(
+				"/"
+			)

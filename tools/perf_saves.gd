@@ -2,19 +2,21 @@ class_name PerfSaves
 extends RefCounted
 ## The save rows of the budget, and the memory of a loaded run. It plays a real full run
 ## through RunController for a few Sets, as a player would (the first Cadre it can afford
-## at each store), with the run's autosaves going to a sandbox under user://, then
-## measures the largest save the run wrote, and the time to write and to read it back.
-## The player's own run save and profile are never touched, and the sandbox is removed.
+## at each store), with the run's autosaves going to the tool's folder in the sandbox,
+## then measures the largest save the run wrote, and the time to write and to read it
+## back. The player's own run save and profile are never touched, and the folder is
+## removed after. Fewer repetitions than PerfLimits.MIN_SAVE_REPS, and the save and load
+## times are reported as not measured.
 
-const START_TIME: int = 1_763_200_000
 ## A run that is still going after this many player turns is cut off.
 const MAX_TURNS: int = 200000
 const MSEC: float = 1000.0
-const RESUME_BUDGET: String = "none (the 50 ms is for the file)"
 
 var _sets_wanted: int
 var _reps: int
 var _seed: int
+## The folder the run saves into, with its trailing slash.
+var _folder: String
 var _largest: String = ""
 var _largest_bytes: int = 0
 var _cadres: int = 0
@@ -24,10 +26,11 @@ var _static_bytes: int = 0
 var _resident_bytes: int = PerfMemory.NOT_AVAILABLE
 
 
-func _init(first_seed: int, sets: int, reps: int) -> void:
+func _init(first_seed: int, sets: int, reps: int, folder: String) -> void:
 	_seed = first_seed
 	_sets_wanted = sets
 	_reps = reps
+	_folder = folder
 
 
 ## The rows: the largest save's size, the time to save, the time to load, the engine's
@@ -36,10 +39,10 @@ func rows() -> Array[PerfRow]:
 	_clear()
 	_play()
 	var rows_made: Array[PerfRow] = []
-	var big_path: String = PerfLimits.SANDBOX + "largest.json"
-	var file: FileAccess = FileAccess.open(big_path, FileAccess.WRITE)
-	file.store_string(_largest)
-	file.close()
+	var big_path: String = _folder + "largest.json"
+	if not ToolFiles.write(big_path, _largest):
+		_clear()
+		return _unmeasured("the largest save could not be written")
 	var service: SaveService = SaveService.for_run(big_path)
 	var loaded: SaveLoad = service.load_save()
 	if loaded.status != SaveLoad.Status.OK:
@@ -58,11 +61,13 @@ func rows() -> Array[PerfRow]:
 
 
 func _play() -> void:
-	var saves: SaveService = SaveService.for_run(PerfLimits.SANDBOX + "run.json")
-	var profile: SaveService = Profile.service(PerfLimits.SANDBOX + "profile.json")
+	var saves: SaveService = SaveService.for_run(_folder + "run.json")
+	var profile: SaveService = Profile.service(_folder + "profile.json")
 	var controller: RunController = RunController.new()
 	controller.live_search = false
-	controller.start(RunRequest.new(RunRequest.FULL, _seed, START_TIME), saves, profile)
+	controller.start(
+		RunRequest.new(RunRequest.FULL, _seed, BalanceDriver.PARAMS.start_time), saves, profile
+	)
 	var script: ControllerScript = ControllerScript.new()
 	while _sets_played < _sets_wanted and _turns < MAX_TURNS:
 		while _act(controller, script):
@@ -151,7 +156,7 @@ func _size_row() -> PerfRow:
 	var kib: float = _largest_bytes / 1024.0
 	return PerfRow.judged(
 		"Save file size",
-		"under %d KB" % (PerfLimits.SAVE_MAX_BYTES / 1024),
+		PerfLimits.save_size_budget(),
 		"%.1f KB (%d bytes), the largest of the run's autosaves" % [kib, _largest_bytes],
 		_largest_bytes < PerfLimits.SAVE_MAX_BYTES,
 		"%d Sets played, %d player turns, %d Cadres held" % [_sets_played, _turns, _cadres],
@@ -159,14 +164,21 @@ func _size_row() -> PerfRow:
 	)
 
 
-## Judged on the worst of the timed repetitions; shown with the median.
+## Judged on the worst of the timed repetitions; shown with the median. Too few
+## repetitions to judge a time, and it is not measured.
 func _time_row(row_name: String, msec: PackedFloat64Array, note: String) -> PerfRow:
-	var sorted: PackedFloat64Array = PerfRow.sorted_of(msec)
+	if msec.size() < PerfLimits.MIN_SAVE_REPS:
+		var why: String = (
+			"%d repetitions, fewer than the %d a time is judged on"
+			% [msec.size(), PerfLimits.MIN_SAVE_REPS]
+		)
+		return PerfRow.unmeasured(row_name, PerfLimits.save_time_budget(), why)
+	var sorted: PackedFloat64Array = ToolStats.sorted_of(msec)
 	var worst: float = sorted[-1]
 	return PerfRow.judged(
 		row_name,
-		"under %.0f ms" % PerfLimits.SAVE_TIME_MAX_MS,
-		"median %.2f ms, worst %.2f ms" % [PerfRow.percentile(sorted, 0.5), worst],
+		PerfLimits.save_time_budget(),
+		"median %.2f ms, worst %.2f ms" % [ToolStats.nearest_rank(sorted, 50), worst],
 		worst < PerfLimits.SAVE_TIME_MAX_MS,
 		"%d repetitions of the largest save" % sorted.size(),
 		note
@@ -206,11 +218,11 @@ func _memory_rows() -> Array[PerfRow]:
 ## Continue replays the run's record after the file is loaded, so it grows with the run.
 ## The budget's "load" is the file; this is reported and not judged.
 func _resume_row(msec: PackedFloat64Array) -> PerfRow:
-	var sorted: PackedFloat64Array = PerfRow.sorted_of(msec)
+	var sorted: PackedFloat64Array = ToolStats.sorted_of(msec)
 	return PerfRow.new(
 		"Resume time",
-		RESUME_BUDGET,
-		"median %.2f ms, worst %.2f ms" % [PerfRow.percentile(sorted, 0.5), sorted[-1]],
+		PerfLimits.resume_budget(),
+		"median %.2f ms, worst %.2f ms" % [ToolStats.nearest_rank(sorted, 50), sorted[-1]],
 		PerfRow.Verdict.INFO,
 		"%d repetitions of the largest save" % sorted.size(),
 		"Continue: the load, then the run replayed to where it was; grows with the run"
@@ -219,17 +231,17 @@ func _resume_row(msec: PackedFloat64Array) -> PerfRow:
 
 func _unmeasured(why: String) -> Array[PerfRow]:
 	return [
-		PerfRow.unmeasured("Save file size", "under 64 KB", why),
-		PerfRow.unmeasured("Save time", "under 50 ms", why),
-		PerfRow.unmeasured("Load time", "under 50 ms", why),
-		PerfRow.unmeasured("Resume time", RESUME_BUDGET, why),
+		PerfRow.unmeasured("Save file size", PerfLimits.save_size_budget(), why),
+		PerfRow.unmeasured("Save time", PerfLimits.save_time_budget(), why),
+		PerfRow.unmeasured("Load time", PerfLimits.save_time_budget(), why),
+		PerfRow.unmeasured("Resume time", PerfLimits.resume_budget(), why),
 	]
 
 
 func _clear() -> void:
-	var directory: DirAccess = DirAccess.open(PerfLimits.SANDBOX)
+	var directory: DirAccess = DirAccess.open(_folder)
 	if directory == null:
 		return
 	for file_name: String in directory.get_files():
 		directory.remove(file_name)
-	DirAccess.remove_absolute(PerfLimits.SANDBOX)
+	DirAccess.remove_absolute(_folder)

@@ -45,18 +45,22 @@ static func _kib_in(text: String, from_last_field: bool) -> int:
 	return int(digits) if not digits.is_empty() else NOT_AVAILABLE
 
 
+## The texture memory the renderer holds now, in bytes.
 static func texture_bytes() -> int:
 	return int(Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED))
 
 
+## The video memory the renderer holds now, in bytes.
 static func video_bytes() -> int:
 	return int(Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED))
 
 
+## The machine's physical memory in bytes, or -1 when the system gives no figure.
 static func total_ram_bytes() -> int:
 	var info: Dictionary = OS.get_memory_info()
 	return int(info.get("physical", -1))
 
 
+## bytes as megabytes, to one place.
 static func megabytes(bytes: int) -> String:
 	return "%.1f MB" % (float(bytes) / (KIB * KIB))

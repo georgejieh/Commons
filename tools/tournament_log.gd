@@ -6,6 +6,7 @@ const VERSION: int = 1
 const SYMBOLS: String = "3456789TJQKA2XD"
 
 
+## One game, the seed, the deal, the seats' configs and every play, as a line of JSON.
 static func line(
 	game_seed: int, deal: DealResult, names: Array[String], result: SelfPlayResult
 ) -> String:

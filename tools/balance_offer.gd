@@ -24,27 +24,34 @@ func _init(
 	item_id = id
 
 
-## The dearest offer of a kind at or under budget, the first on the shelf on a tie, or
-## null. A negative kind matches every kind.
-static func dearest(offers: Array[BalanceOffer], wanted: int, budget: int) -> BalanceOffer:
+## The dearest offer of kind wanted at or under budget, the first on the shelf on a tie,
+## or null.
+static func dearest(offers: Array[BalanceOffer], wanted: Kind, budget: int) -> BalanceOffer:
+	return _best(
+		offers.filter(func(offer: BalanceOffer) -> bool: return offer.kind == wanted), budget, true
+	)
+
+
+## The dearest offer of any kind at or under budget, the first on the shelf on a tie, or
+## null.
+static func dearest_of_any(offers: Array[BalanceOffer], budget: int) -> BalanceOffer:
+	return _best(offers, budget, true)
+
+
+## The cheapest offer of kind wanted at or under budget, the first on the shelf on a tie,
+## or null.
+static func cheapest(offers: Array[BalanceOffer], wanted: Kind, budget: int) -> BalanceOffer:
+	return _best(
+		offers.filter(func(offer: BalanceOffer) -> bool: return offer.kind == wanted), budget, false
+	)
+
+
+## The dearest offer, or the cheapest, at or under budget; the first on a tie.
+static func _best(offers: Array, budget: int, dearer: bool) -> BalanceOffer:
 	var best: BalanceOffer = null
 	for offer: BalanceOffer in offers:
-		if wanted >= 0 and offer.kind != wanted:
-			continue
 		if offer.price > budget:
 			continue
-		if best == null or offer.price > best.price:
-			best = offer
-	return best
-
-
-## The cheapest offer of a kind at or under budget, the first on the shelf on a tie, or
-## null.
-static func cheapest(offers: Array[BalanceOffer], wanted: int, budget: int) -> BalanceOffer:
-	var best: BalanceOffer = null
-	for offer: BalanceOffer in offers:
-		if offer.kind != wanted or offer.price > budget:
-			continue
-		if best == null or offer.price < best.price:
+		if best == null or (offer.price > best.price if dearer else offer.price < best.price):
 			best = offer
 	return best

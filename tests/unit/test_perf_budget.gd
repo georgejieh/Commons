@@ -1,7 +1,9 @@
 extends GdUnitTestSuite
 ## tools/perf_budget.gd, run headless with tiny samples in its own process: it writes a
 ## report with every headless row, and every windowed row marked NOT MEASURED even when
-## asked for, since there is no window. It exits 1 exactly when a measured row missed.
+## asked for, since there is no window. Its two save repetitions are fewer than a time is
+## judged on, so the save and load times are NOT MEASURED too. It exits 1 exactly when a
+## measured row missed.
 
 const REPORT: String = "user://test_perf_budget/report.md"
 const HEADLESS_ROWS: Array[String] = [
@@ -12,12 +14,12 @@ const HEADLESS_ROWS: Array[String] = [
 	"Bot decision, Hard",
 	"Bot decision, Expert",
 	"Save file size",
-	"Save time",
-	"Load time",
 	"Resume time",
 	"Static memory, run loaded (headless)",
 	"Resident memory, run loaded (headless)",
 ]
+## Timed fewer times than PerfLimits.MIN_SAVE_REPS by the tiny run.
+const TIME_ROWS: Array[String] = ["Save time", "Load time"]
 const WINDOWED_ROWS: Array[String] = [
 	"Startup to title",
 	"Frame time during play",
@@ -75,6 +77,9 @@ func test_the_headless_report_has_every_row_and_the_exit_code_follows_the_misses
 		var line: String = _row(text, row_name)
 		assert_str(line).override_failure_message("no row %s" % row_name).is_not_empty()
 		assert_str(line).override_failure_message(line).not_contains("NOT MEASURED")
+	for row_name: String in TIME_ROWS:
+		assert_str(_row(text, row_name)).contains("| NOT MEASURED |")
+		assert_str(_row(text, row_name)).contains("fewer than the %d" % PerfLimits.MIN_SAVE_REPS)
 	for row_name: String in WINDOWED_ROWS:
 		assert_str(_row(text, row_name)).contains("| NOT MEASURED |")
 		assert_str(_row(text, row_name)).contains("needs a window")

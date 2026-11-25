@@ -61,7 +61,7 @@ static func scan(root: String) -> PackedStringArray:
 	var random: RegEx = RegEx.create_from_string(random_names + "|" + SEED_CALL_PATTERN)
 	var problems: PackedStringArray = []
 	var setters: RegEx = RegEx.create_from_string(CARD_SETTER_PATTERN)
-	for path: String in _files_under(root):
+	for path: String in ToolFiles.under(root):
 		if path.get_extension() == "gd":
 			problems.append_array(_check_script(path, forbidden, random))
 			problems.append_array(_check_card_setters(path, setters))
@@ -202,12 +202,3 @@ static func _is_allowed_path(path: String) -> bool:
 		if path.begins_with(prefix):
 			return true
 	return false
-
-
-static func _files_under(root: String) -> PackedStringArray:
-	var files: PackedStringArray = []
-	for file: String in DirAccess.get_files_at(root):
-		files.append(root.path_join(file))
-	for directory: String in DirAccess.get_directories_at(root):
-		files.append_array(_files_under(root.path_join(directory)))
-	return files

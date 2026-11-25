@@ -9,7 +9,11 @@ extends SceneTree
 ## --check (exit 1 when the ordering does not hold). Exits 1 on any failed run, 2 on bad
 ## options.
 
-const DEFAULT_OUT: String = "res://reports"
+const USAGE: String = (
+	"balance.gd -- [--runs N] [--seed S] [--strategies a,b] [--minutes M] [--out DIR]"
+	+ " [--stake K] [--jobs J] [--expert-samples N] [--check]"
+)
+const DEFAULT_OUT: String = "reports"
 ## Seeds a strategy when neither --runs nor --minutes limits them.
 const DEFAULT_RUNS: int = 20
 
@@ -32,35 +36,34 @@ var _tally: BalanceTally
 
 
 func _initialize() -> void:
-	var options: Dictionary[String, String] = _options()
-	var problem: String = _read(options)
-	if not problem.is_empty():
-		printerr(problem)
+	var options: ToolOptions = ToolOptions.new(USAGE)
+	_read(options)
+	var minutes: float = options.number("minutes", 0.0, 0.0)
+	var jobs: int = options.integer("jobs", 1, 1)
+	var out: String = options.path("out", DEFAULT_OUT)
+	if options.failed():
 		quit(2)
 		return
-	var minutes: float = float(options.get("minutes", "0"))
-	var jobs: int = maxi(int(options.get("jobs", "1")), 1)
 	var began: int = Time.get_ticks_msec()
 	_deadline_msec = began + int(minutes * 60_000.0) if minutes > 0.0 else 0
 	_tally = BalanceTally.new(_strategies)
 	OS.add_logger(_errors)
-	_play_all(jobs)
+	WorkerPool.run(_work, jobs)
 	OS.remove_logger(_errors)
-	var setup: Dictionary = {
-		"seeds": _finished,
-		"first_seed": _first_seed,
-		"stake": _stake,
-		"minutes": minutes,
-		"jobs": jobs,
-		"wall_seconds": (Time.get_ticks_msec() - began) / 1000.0,
-		"expert_samples": _expert_samples,
-	}
+	var setup: BalanceSetup = BalanceSetup.new()
+	setup.seeds = _finished
+	setup.first_seed = _first_seed
+	setup.stake = _stake
+	setup.minutes = minutes
+	setup.jobs = jobs
+	setup.wall_seconds = (Time.get_ticks_msec() - began) / 1000.0
+	setup.expert_samples = _expert_samples
 	print(_wild_line())
 	print(_wave_line())
-	var out: String = options.get("out", DEFAULT_OUT)
-	var saved: bool = _save(out.path_join("balance_runs.csv"), _tally.csv())
-	saved = _save(out.path_join("balance_quotas.csv"), _tally.quotas_csv()) and saved
-	saved = _save(out.path_join("balance.md"), BalanceReport.markdown(_tally, setup)) and saved
+	var saved: bool = ToolFiles.write(out.path_join("balance_runs.csv"), _tally.csv())
+	saved = ToolFiles.write(out.path_join("balance_quotas.csv"), _tally.quotas_csv()) and saved
+	var report: String = BalanceReport.markdown(_tally, setup)
+	saved = ToolFiles.write(out.path_join("balance.md"), report) and saved
 	quit(_exit_code(saved, options.has("check")))
 
 
@@ -111,39 +114,25 @@ func _wave_line() -> String:
 	)
 
 
-## Reads the options into the run's fields. Returns what is wrong with them, or "".
-func _read(options: Dictionary[String, String]) -> String:
-	_first_seed = int(options.get("seed", "0"))
-	_stake = int(options.get("stake", "0"))
+## Reads the options into the run's fields; a fault is kept in options.
+func _read(options: ToolOptions) -> void:
+	_first_seed = options.integer("seed", 0)
+	_stake = options.integer("stake", 0, 0, RunStakes.last())
 	var limit: int = DEFAULT_RUNS if not options.has("minutes") else 1 << 30
-	_seeds = int(options.get("runs", str(limit)))
-	var names: String = options.get("strategies", ",".join(BalanceDriver.STRATEGIES))
+	_seeds = options.integer("runs", limit, 1)
+	var names: String = options.text("strategies", ",".join(BalanceDriver.STRATEGIES))
 	for strategy: String in names.split(",", false):
 		if BalanceDriver.strategy_named(strategy) == null or _strategies.has(strategy):
-			return "Unknown or repeated strategy %s: use collective, private, mixed." % strategy
+			options.refuse(
+				"Unknown or repeated strategy %s: use collective, private, mixed." % strategy
+			)
+			return
 		_strategies.append(strategy)
-	if _strategies.is_empty() or _seeds < 1:
-		return "Needs --runs N of at least 1 and at least one strategy."
-	if _stake < 0 or _stake > RunStakes.last():
-		return "Needs --stake from 0 to %d." % RunStakes.last()
-	_expert_samples = int(options.get("expert-samples", "0"))
+	if _strategies.is_empty():
+		options.refuse("Needs at least one strategy.")
+	# Never fewer than a search decides on (ADR 0030); 0 keeps the game's own number.
 	var fewest: int = BotConfig.DEFAULT_WEIGHTS.expert_min_samples
-	if options.has("expert-samples") and _expert_samples < fewest:
-		return "Needs --expert-samples of at least %d, the fewest a search decides on." % fewest
-	return ""
-
-
-func _play_all(jobs: int) -> void:
-	if jobs == 1:
-		_work()
-		return
-	var threads: Array[Thread] = []
-	for job: int in jobs:
-		var thread: Thread = Thread.new()
-		thread.start(_work)
-		threads.append(thread)
-	for thread: Thread in threads:
-		thread.wait_to_finish()
+	_expert_samples = options.integer("expert-samples", 0, fewest)
 
 
 ## Takes runs until the seeds or the time run out. A seed is taken only while time is
@@ -207,25 +196,3 @@ func _exit_code(saved: bool, check: bool) -> int:
 	if not saved or not failed.is_empty():
 		return 1
 	return 1 if check and not verdict.passed else 0
-
-
-func _options() -> Dictionary[String, String]:
-	var options: Dictionary[String, String] = {}
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = 0
-	while at < args.size():
-		var name: String = args[at].trim_prefix("--")
-		var has_value: bool = at + 1 < args.size() and not args[at + 1].begins_with("--")
-		options[name] = args[at + 1] if has_value else ""
-		at += 2 if has_value else 1
-	return options
-
-
-func _save(path: String, text: String) -> bool:
-	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
-	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
-		printerr("Can't write %s" % path)
-		return false
-	file.store_string(text)
-	return true

@@ -4,14 +4,3 @@
 
 [resource]
 script = ExtResource("1")
-kept_back = 0
-resentment_limit = 40
-over_claim_percent = 50
-over_claim_faces = 1
-shunned_campaigns = Array[String](["anonymous_letter", "seizure_notice"])
-giving_campaigns = Array[String](["mutual_aid"])
-relief_famine_at = 6
-criticism_resentment_at = 6
-max_commands = 50000
-start_time = 1763200000
-household = "poor_peasants"

@@ -32,7 +32,7 @@ func purchase(visit: BalanceVisit) -> BalanceOffer:
 		return offer
 	if visit.market_bought > 0 or visit.resentment >= params.resentment_limit:
 		return null
-	return BalanceOffer.dearest(visit.market, -1, visit.coupons)
+	return BalanceOffer.dearest_of_any(visit.market, visit.coupons)
 
 
 func swaps() -> bool:

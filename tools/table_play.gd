@@ -18,11 +18,9 @@ var table: Node = null
 
 
 ## Loads the app, lets start begin the run on it (it takes the app), then shows the table.
-func open(tree: SceneTree, start: Callable) -> Node:
-	# A run save of its own, in the sandbox, never the player's (tools/walk_profile.gd).
-	load("res://tools/walk_profile.gd").call(
-		"keep_run", tree.root, "table_play", OS.get_cmdline_user_args()
-	)
+## The run saves in the tool's own sandbox folder (WalkProfile), as options name it.
+func open(tree: SceneTree, start: Callable, options: ToolOptions) -> Node:
+	WalkProfile.keep_run(tree.root, "table_play", options)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	app = scene.instantiate()
 	tree.root.add_child(app)
@@ -31,6 +29,7 @@ func open(tree: SceneTree, start: Callable) -> Node:
 	return table
 
 
+## Lets the table settle for a few frames before anything is timed.
 func warm_up(tree: SceneTree) -> void:
 	for _frame: int in WARMUP_FRAMES:
 		await tree.process_frame
@@ -56,6 +55,6 @@ func play_set(tree: SceneTree, seconds: float, on_frame: Callable, act: bool) ->
 			node_counts.append(int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
 		if not is_instance_valid(table) or table.get_parent() == null:
 			break
-		var events: Node = table.get("_player")
+		var events: Node = WalkBase.member(table, "_player")
 		if events.call("is_idle") and act:
 			driver.call("act", controller)

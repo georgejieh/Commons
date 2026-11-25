@@ -4,16 +4,20 @@ extends SceneTree
 ##   godot --headless --path . --script res://tools/ladder_report.gd -- --ladders 100000
 ## Options: --seed N, --out PATH.
 
-const DEFAULT_OUT: String = "res://reports/ladder_tiers.csv"
+const USAGE: String = "ladder_report.gd -- --ladders N [--seed N] [--out PATH]"
+const DEFAULT_OUT: String = "reports/ladder_tiers.csv"
 const ROUNDS: int = 4
 const POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
 
 
 func _initialize() -> void:
-	var options: Dictionary[String, String] = _options()
-	var ladders: int = int(options.get("ladders", "0"))
-	if ladders < 1:
-		printerr("Needs --ladders N of at least 1.")
+	var options: ToolOptions = ToolOptions.new(USAGE)
+	if not options.has("ladders"):
+		options.refuse("Needs --ladders N.")
+	var ladders: int = options.integer("ladders", 0, 1)
+	var seed_value: int = options.integer("seed", 0)
+	var out: String = options.path("out", DEFAULT_OUT)
+	if options.failed():
 		quit(2)
 		return
 	var pool: Array[ModifierDef] = POOL.debuffs
@@ -24,7 +28,7 @@ func _initialize() -> void:
 	# counts[(set_type * ROUNDS + round) * (max_tier + 1) + tier]; tier 0 is a clean round.
 	var counts: PackedInt64Array = []
 	counts.resize(RunState.SetType.size() * ROUNDS * (max_tier + 1))
-	var stream: RandomStream = RandomStream.new(int(options.get("seed", "0")))
+	var stream: RandomStream = RandomStream.new(seed_value)
 	for index: int in ladders:
 		var set_type: int = index % RunState.SetType.size()
 		var ladder: Array[String] = DebuffLadder.draw(
@@ -33,8 +37,7 @@ func _initialize() -> void:
 		for round_index: int in ROUNDS:
 			var tier: int = tiers.get(ladder[round_index], 0)
 			counts[(set_type * ROUNDS + round_index) * (max_tier + 1) + tier] += 1
-	var out: String = options.get("out", DEFAULT_OUT)
-	var saved: bool = _save(out, _csv(counts, ladders, max_tier))
+	var saved: bool = ToolFiles.write(out, _csv(counts, ladders, max_tier))
 	print("%d ladders, CSV at %s" % [ladders, out])
 	quit(0 if saved else 1)
 
@@ -59,25 +62,3 @@ func _csv(counts: PackedInt64Array, ladders: int, max_tier: int) -> String:
 					)
 				)
 	return "\n".join(lines) + "\n"
-
-
-func _options() -> Dictionary[String, String]:
-	var options: Dictionary[String, String] = {}
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = 0
-	while at < args.size():
-		var name: String = args[at].trim_prefix("--")
-		var has_value: bool = at + 1 < args.size() and not args[at + 1].begins_with("--")
-		options[name] = args[at + 1] if has_value else ""
-		at += 2 if has_value else 1
-	return options
-
-
-func _save(path: String, text: String) -> bool:
-	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
-	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
-		printerr("Can't write %s" % path)
-		return false
-	file.store_string(text)
-	return true

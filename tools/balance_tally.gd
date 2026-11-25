@@ -11,6 +11,7 @@ func _init(names: Array[String] = BalanceDriver.STRATEGIES) -> void:
 	strategies = names.duplicate()
 
 
+## Adds one run's result.
 func add(result: BalanceResult) -> void:
 	_runs.append(result)
 
@@ -34,6 +35,7 @@ func played(strategy: String) -> Array[BalanceResult]:
 	)
 
 
+## The runs that failed, in seed and strategy order.
 func failures() -> Array[BalanceResult]:
 	return runs().filter(func(run: BalanceResult) -> bool: return run.failed())
 
@@ -50,6 +52,7 @@ func survivals() -> Dictionary[String, Vector2i]:
 	return out
 
 
+## Whether the strategies' survival holds the order ADR 0027 asks for.
 func verdict() -> BalanceVerdict:
 	return BalanceVerdict.judge(survivals())
 
@@ -107,6 +110,8 @@ func quotas_csv() -> String:
 	return "\n".join(lines) + "\n"
 
 
+## Every run as a row of reports/balance_runs.csv; without with_seconds the time a run
+## took is left out, so two runs of the same seeds compare byte for byte.
 func csv(with_seconds: bool = true) -> String:
 	var lines: PackedStringArray = PackedStringArray([BalanceResult.HEADER])
 	for run: BalanceResult in runs():

@@ -22,6 +22,8 @@ const SPENT_LABELS: Dictionary[String, String] = {
 const QUARTILES: Array[float] = [0.25, 0.5, 0.75]
 
 
+## The report's sections on how far each strategy got: Quota by Quota, then growth and
+## coupons.
 static func sections(tally: BalanceTally) -> PackedStringArray:
 	var lines: PackedStringArray = PackedStringArray()
 	for strategy: String in tally.strategies:
@@ -29,16 +31,6 @@ static func sections(tally: BalanceTally) -> PackedStringArray:
 	lines.append_array(_growth(tally))
 	lines.append_array(_coupons(tally))
 	return lines
-
-
-## The percentile at fraction of sorted values, read between the two nearest.
-static func percentile(sorted: PackedFloat64Array, fraction: float) -> float:
-	if sorted.is_empty():
-		return 0.0
-	var at: float = fraction * (sorted.size() - 1)
-	var below: int = floori(at)
-	var above: int = mini(below + 1, sorted.size() - 1)
-	return lerpf(sorted[below], sorted[above], at - below)
 
 
 static func _targets(tally: BalanceTally, strategy: String) -> PackedStringArray:
@@ -76,11 +68,11 @@ static func _targets(tally: BalanceTally, strategy: String) -> PackedStringArray
 				str(reached),
 				str(rows.size()),
 				"%.0f%%" % (100.0 * met / rows.size()),
-				"%.0f" % percentile(targets, 0.5),
+				"%.0f" % ToolStats.interpolated(targets, 0.5),
 			]
 		)
 		for fraction: float in QUARTILES:
-			cells.append("%.2f" % percentile(shares, fraction))
+			cells.append("%.2f" % ToolStats.interpolated(shares, fraction))
 		lines.append("| %s |" % " | ".join(cells))
 	lines.append("")
 	return lines
@@ -102,7 +94,7 @@ static func _growth(tally: BalanceTally) -> PackedStringArray:
 			var per_round: PackedFloat64Array = _sorted(
 				rows, func(row: BalanceQuota) -> float: return row.per_round()
 			)
-			cells.append("" if rows.is_empty() else "%.0f" % percentile(per_round, 0.5))
+			cells.append("" if rows.is_empty() else "%.0f" % ToolStats.interpolated(per_round, 0.5))
 		lines.append("| %s |" % " | ".join(cells))
 	lines.append("")
 	return lines

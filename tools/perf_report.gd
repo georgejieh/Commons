@@ -5,35 +5,33 @@ extends RefCounted
 const GIT_ARGS: PackedStringArray = ["rev-parse", "--short", "HEAD"]
 
 
-## The date-free facts of this machine and build, as label and value.
-static func machine_facts() -> Array[PackedStringArray]:
-	var facts: Array[PackedStringArray] = []
-	facts.append(PackedStringArray(["OS", "%s %s" % [OS.get_name(), OS.get_version()]]))
-	facts.append(PackedStringArray(["Processor", OS.get_processor_name()]))
-	facts.append(PackedStringArray(["Logical processors", str(OS.get_processor_count())]))
+## The date-free facts of this machine and build, each value under its label, in the
+## order the report lists them.
+static func machine_facts() -> Dictionary[String, String]:
+	var facts: Dictionary[String, String] = {}
+	facts["OS"] = "%s %s" % [OS.get_name(), OS.get_version()]
+	facts["Processor"] = OS.get_processor_name()
+	facts["Logical processors"] = str(OS.get_processor_count())
 	var ram: int = PerfMemory.total_ram_bytes()
-	var ram_text: String = PerfMemory.megabytes(ram) if ram > 0 else "unknown"
-	facts.append(PackedStringArray(["Total RAM", ram_text]))
+	facts["Total RAM"] = PerfMemory.megabytes(ram) if ram > 0 else "unknown"
 	var adapter: String = RenderingServer.get_video_adapter_name()
-	facts.append(
-		PackedStringArray(["Graphics adapter", adapter if not adapter.is_empty() else "none"])
-	)
-	var method: String = RenderingServer.get_current_rendering_method()
-	facts.append(PackedStringArray(["Rendering method", method]))
-	facts.append(PackedStringArray(["Display server", DisplayServer.get_name()]))
-	facts.append(PackedStringArray(["Godot", String(Engine.get_version_info()["string"])]))
+	facts["Graphics adapter"] = adapter if not adapter.is_empty() else "none"
+	facts["Rendering method"] = RenderingServer.get_current_rendering_method()
+	facts["Display server"] = DisplayServer.get_name()
+	facts["Godot"] = String(Engine.get_version_info()["string"])
 	var commit: String = _commit()
 	if not commit.is_empty():
-		facts.append(PackedStringArray(["Commit", commit]))
+		facts["Commit"] = commit
 	return facts
 
 
+## The whole report: facts, the line that says how it was run, then the rows.
 static func markdown(
-	rows: Array[PerfRow], facts: Array[PackedStringArray], run_line: String
+	rows: Array[PerfRow], facts: Dictionary[String, String], run_line: String
 ) -> String:
 	var lines: PackedStringArray = ["# Performance budget", ""]
-	for fact: PackedStringArray in facts:
-		lines.append("- %s: %s" % [fact[0], fact[1]])
+	for label: String in facts:
+		lines.append("- %s: %s" % [label, facts[label]])
 	lines.append("- Run: %s" % run_line)
 	lines.append("")
 	lines.append("| Row | Budget | Measured | Result | Samples |")
@@ -52,6 +50,7 @@ static func markdown(
 	return "\n".join(lines) + "\n"
 
 
+## The count of rows of each verdict, as one line.
 static func summary(rows: Array[PerfRow]) -> String:
 	var counts: Array[int] = [0, 0, 0, 0]
 	for row: PerfRow in rows:
@@ -67,6 +66,7 @@ static func summary(rows: Array[PerfRow]) -> String:
 	)
 
 
+## How many rows missed their budget.
 static func missed(rows: Array[PerfRow]) -> int:
 	var count: int = 0
 	for row: PerfRow in rows:

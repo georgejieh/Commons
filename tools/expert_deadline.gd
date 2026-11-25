@@ -5,6 +5,7 @@ extends SceneTree
 ## ranks in force for every seat, drawn per deal as the tournament draws them (ADR 0029).
 ## The play itself is ExpertPlay, which tools/perf_budget.gd shares.
 
+const USAGE: String = "expert_deadline.gd -- [--deals N] [--seed N] [--limit-usec N] [--wild N]"
 const DEFAULT_DEALS: int = 1000
 const PROGRESS_DEALS: int = 50
 
@@ -12,11 +13,16 @@ var _play: ExpertPlay = ExpertPlay.new()
 
 
 func _initialize() -> void:
-	var deals: int = _option("--deals", DEFAULT_DEALS)
-	var first_seed: int = _option("--seed", 0)
+	var options: ToolOptions = ToolOptions.new(USAGE)
+	var deals: int = options.integer("deals", DEFAULT_DEALS, 1)
+	var first_seed: int = options.integer("seed", 0)
 	# The live game's deadline unless asked otherwise (ADR 0030).
-	var limit: int = _option("--limit-usec", BotConfig.DEFAULT_WEIGHTS.expert_deadline_usec)
-	var wild: int = _option("--wild", 0)
+	var deadline: int = BotConfig.DEFAULT_WEIGHTS.expert_deadline_usec
+	var limit: int = options.integer("limit-usec", deadline, 1)
+	var wild: int = options.integer("wild", 0, 0, TournamentRun.MAX_WILD)
+	if options.failed():
+		quit(2)
+		return
 	var wins: int = 0
 	for index: int in deals:
 		var deal: DealResult = SelfPlay.deal_from_seed(first_seed + index)
@@ -33,9 +39,3 @@ func _initialize() -> void:
 	)
 	print(_play.samples_line())
 	quit(1 if _play.illegal > 0 else 0)
-
-
-func _option(name: String, fallback: int) -> int:
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = args.find(name)
-	return int(args[at + 1]) if at >= 0 else fallback

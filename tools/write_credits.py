@@ -14,16 +14,18 @@ and from art/fonts/, which every export carries.
 import argparse
 import csv
 import json
-import os
 import re
 import sys
+from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "data", "credits", "credits.json")
-SOUNDS = os.path.join(ROOT, "audio", "sources", "manifest.csv")
-PICTURES = os.path.join(ROOT, "art", "sources", "manifest.csv")
-DEPENDENCIES = os.path.join(ROOT, "docs", "DEPENDENCIES.md")
-LICENCE = os.path.join(ROOT, "LICENSE")
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "data" / "credits" / "credits.json"
+SOUNDS = ROOT / "audio" / "sources" / "manifest.csv"
+PICTURES = ROOT / "art" / "sources" / "manifest.csv"
+DEPENDENCIES = ROOT / "docs" / "DEPENDENCIES.md"
+LICENCE = ROOT / "LICENSE"
+LF = "\n"
+CRLF = "\r\n"
 # A sound or voice the project made itself, which is counted, not credited by name.
 ORIGINAL = "Original"
 URL = re.compile(r"https?://[^\s)]+")
@@ -31,12 +33,12 @@ LINK = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 CODE = re.compile(r"`([^`]+)`")
 
 
-def _rows(path):
-    with open(path, encoding="utf-8", newline="") as handle:
+def _rows(path: Path) -> list[dict[str, str]]:
+    with path.open(encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle))
 
 
-def sounds(rows):
+def sounds(rows: list[dict[str, str]]) -> dict:
     """Each outside source's works by author and licence, and how many the project made."""
     made = 0
     credited = {}
@@ -64,7 +66,7 @@ def sounds(rows):
     return {"made": made, "credited": list(credited.values())}
 
 
-def pictures(rows):
+def pictures(rows: list[dict[str, str]]) -> list[dict]:
     """How many pictures each image model made, the ones cut from them counted with them."""
     counts = {}
     derived = []
@@ -81,7 +83,7 @@ def pictures(rows):
     return [{"model": model, "count": count} for model, count in counts.items()]
 
 
-def _table(text):
+def _table(text: str) -> list[list[str]]:
     """The rows of the first Markdown table in text, as lists of cells."""
     found = []
     for line in text.splitlines():
@@ -95,12 +97,12 @@ def _table(text):
     return found[1:]
 
 
-def _plain(cell):
+def _plain(cell: str) -> str:
     """A Markdown cell's words, links reduced to their text and code marks dropped."""
     return CODE.sub(r"\1", LINK.sub(r"\1", cell))
 
 
-def shipped(text):
+def shipped(text: str) -> tuple[list[dict], list[dict]]:
     """The fonts and other components the table says ship, each with its licence."""
     fonts = []
     components = []
@@ -110,19 +112,24 @@ def shipped(text):
         title = LINK.search(name).group(1) if LINK.search(name) else _plain(name).split(" (")[0]
         files = [path for path in CODE.findall(licence) if path.startswith("art/fonts/")]
         if files:
-            fonts.append({"name": title, "licence": _plain(licence).split(" (")[0], "file": files[0]})
+            fonts.append(
+                {"name": title, "licence": _plain(licence).split(" (")[0], "file": files[0]}
+            )
         else:
             components.append(
-                {"name": title, "version": _plain(version).split(",")[0], "licence": _plain(licence)}
+                {
+                    "name": title,
+                    "version": _plain(version).split(",")[0],
+                    "licence": _plain(licence),
+                }
             )
     return fonts, components
 
 
-def credits():
-    with open(DEPENDENCIES, encoding="utf-8") as handle:
-        fonts, components = shipped(handle.read())
-    with open(LICENCE, encoding="utf-8") as handle:
-        licence = handle.read().strip()
+def credits() -> dict:
+    """Everything the credits screen shows, as the JSON document's value."""
+    fonts, components = shipped(DEPENDENCIES.read_text(encoding="utf-8"))
+    licence = LICENCE.read_text(encoding="utf-8").strip()
     return {
         "licence": licence,
         "fonts": fonts,
@@ -132,24 +139,24 @@ def credits():
     }
 
 
-def text():
+def text() -> str:
+    """The credits file as it is committed."""
     return json.dumps(credits(), indent="\t", ensure_ascii=False) + "\n"
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
+    """Writes the credits file, or with --check says whether it is current."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true", help="exit 1 if the file is not current")
     args = parser.parse_args(argv)
     if args.check:
-        with open(OUT, encoding="utf-8", newline="") as handle:
-            # A Windows checkout may turn the file's line ends to CRLF.
-            current = handle.read().replace("\r\n", "\n") == text()
+        # A Windows checkout may turn the file's line ends to CRLF.
+        current = OUT.read_bytes().decode("utf-8").replace(CRLF, LF) == text()
         if not current:
             print("data/credits/credits.json is out of date: run tools/write_credits.py")
         return 0 if current else 1
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    with open(OUT, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write(text())
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(text(), encoding="utf-8", newline=LF)
     return 0
 
 

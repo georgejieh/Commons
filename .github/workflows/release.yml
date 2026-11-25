@@ -71,7 +71,7 @@ jobs:
           godot --headless --path . --export-release Windows build/windows/Commons.exe
           godot --headless --path . --export-release Linux build/linux/Commons.x86_64
           godot --headless --path . --export-release macOS build/macos/Commons.zip
-          godot --headless --path . --script res://tools/write_notices.gd -- "$PWD/THIRD-PARTY-NOTICES.txt"
+          godot --headless --path . --script res://tools/write_notices.gd -- --out "$PWD/THIRD-PARTY-NOTICES.txt"
           test -s THIRD-PARTY-NOTICES.txt
           cp THIRD-PARTY-NOTICES.txt build/windows/
           cp THIRD-PARTY-NOTICES.txt build/linux/

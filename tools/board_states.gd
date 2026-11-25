@@ -1,14 +1,15 @@
 extends SceneTree
-## Renders the table in each of the Plan's seven board states (P3B.12), the last
-## corruption stage, and the clean board at every stage, then the four slow horrors (P5.2c)
-## with both meters high at stages 0, 4 and 9: the eyes on the seats' card backs turned
-## toward a pointer at the hand, the trembling hand twice a moment apart, the roster's
-## names, and both villagers speaking; and the turn's frame on a seat. One screenshot per
-## state, for checking by eye. Needs a
-## real window, not --headless:
+## Renders the table in each of the seven board states, the last corruption stage, and
+## the clean board at every stage, then the four slow horrors with both meters high at
+## stages 0, 4 and 9: the eyes on the seats' card backs turned toward a pointer at the
+## hand, the trembling hand twice a moment apart, the roster's names, and both villagers
+## speaking; and the turn's frame on a seat. One screenshot per state, for checking by
+## eye. Needs a real window for its pictures; with --headless it names each frame:
 ##   godot --path . --script res://tools/board_states.gd -- --out reports/board_states
 ## Development only; tools/ never ships.
 
+const USAGE: String = "board_states.gd -- [--out DIR] [--profile NAME]"
+const DEFAULT_OUT: String = "reports/board_states"
 const SEED: int = 4242
 const SETTLE_FRAMES: int = 40
 const LAST_STAGE: int = 9
@@ -18,31 +19,31 @@ const POINTER_AT: Vector2 = Vector2(300, 940)
 ## Seconds between the two frames of the trembling hand.
 const TREMBLE_GAP: float = 0.07
 
-var _out: String = "res://reports/board_states"
+var _out: String
+var _options: ToolOptions
+## False once a picture could not be saved, which fails the run.
+var _saved: bool = true
 
 
 func _initialize() -> void:
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = args.find("--out")
-	if at >= 0 and at + 1 < args.size():
-		_out = "res://" + args[at + 1]
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out))
+	_options = ToolOptions.new(USAGE)
+	_out = _options.path("out", DEFAULT_OUT)
+	if _options.failed():
+		quit(2)
+		return
 	_run.call_deferred()
 
 
 func _run() -> void:
+	WalkProfile.keep_run(root, "board_states", _options)
 	# Loaded at run time: the demo names autoloads, which a --script tool can't see.
-	# A run save of its own, in the sandbox, never the player's (tools/walk_profile.gd).
-	load("res://tools/walk_profile.gd").call(
-		"keep_run", root, "board_states", OS.get_cmdline_user_args()
-	)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	var app: Node = scene.instantiate()
 	root.add_child(app)
 	app.call("new_run", SEED)
 	var table: Node = app.call("show_screen", "table", true)
 	await _settle()
-	var dread: Node = table.get("_dread")
+	var dread: Node = WalkBase.member(table, "_dread")
 	var states: Dictionary = load("res://game/horror/board_state.gd").get("BOARD_STATES")
 	for state: String in states:
 		var inputs: Vector3 = states[state]
@@ -58,12 +59,12 @@ func _run() -> void:
 		await _settle()
 		await _shot("clean_stage_%d" % stage)
 	await _effect_frames(table, dread)
-	quit(0)
+	quit(0 if _saved else 1)
 
 
 ## The slow horrors at three stages, then the turn's frame on the right seat.
 func _effect_frames(table: Node, dread: Node) -> void:
-	var speech: Object = table.get("_speech")
+	var speech: Object = WalkBase.member(table, "_speech")
 	speech.set("hurry", true)
 	Input.warp_mouse(POINTER_AT)
 	for stage: int in EFFECT_STAGES:
@@ -75,7 +76,7 @@ func _effect_frames(table: Node, dread: Node) -> void:
 		await create_timer(TREMBLE_GAP).timeout
 		await _shot("horrors_stage_%d_later" % stage)
 	dread.call("force", 10, 10, false, 0)
-	var turn: Object = table.get("_turn")
+	var turn: Object = WalkBase.member(table, "_turn")
 	turn.call("mark", 1)
 	await _settle()
 	await _shot("turn_mark")
@@ -87,7 +88,9 @@ func _settle() -> void:
 
 
 func _shot(name: String) -> void:
+	print("FRAME %s" % name)
+	if DisplayServer.get_name() == "headless":
+		return
 	await RenderingServer.frame_post_draw
 	var image: Image = root.get_texture().get_image()
-	image.save_png("%s/%s.png" % [_out, name])
-	print("saved %s" % name)
+	_saved = ToolFiles.save_png(image, _out.path_join(name + ".png")) and _saved

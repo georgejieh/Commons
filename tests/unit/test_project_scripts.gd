@@ -43,6 +43,7 @@ func _check_in_new_process(path: String) -> int:
 		"--script",
 		"res://tools/check_script.gd",
 		"--",
+		"--check",
 		path,
 	]
 	return OS.execute(OS.get_executable_path(), arguments)

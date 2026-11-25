@@ -16,17 +16,10 @@ const SKIPPED_FOLDERS: PackedStringArray = [
 
 ## Every script under root, skipping vendored code and deliberately broken fixtures.
 static func scripts_under(root: String) -> PackedStringArray:
-	var scripts: PackedStringArray = []
-	if SKIPPED_FOLDERS.has(root):
-		return scripts
-	for file: String in DirAccess.get_files_at(root):
-		if file.get_extension() == "gd":
-			scripts.append(root.path_join(file))
-	for directory: String in DirAccess.get_directories_at(root):
-		scripts.append_array(scripts_under(root.path_join(directory)))
-	return scripts
+	return ToolFiles.under(root, ["gd"], SKIPPED_FOLDERS)
 
 
+## True when the script at path loads and compiles.
 static func compiles(path: String) -> bool:
 	var resource: Resource = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_REUSE)
 	var script: GDScript = resource as GDScript

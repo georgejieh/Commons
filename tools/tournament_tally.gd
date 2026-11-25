@@ -11,6 +11,7 @@ var illegal_actions: int = 0
 var _rows: Dictionary[String, TournamentRow] = {}
 
 
+## Adds one game of mode, with the seats' config names, to every row it counts for.
 func add(mode: String, names: Array[String], result: SelfPlayResult) -> void:
 	illegal_actions += result.illegal_actions
 	for seat: int in Seats.COUNT:
@@ -37,6 +38,7 @@ func win_rate(mode: String, config: String) -> float:
 	return wins / sides if sides > 0 else 0.0
 
 
+## Every row as reports/tournament.csv.
 func csv() -> String:
 	var lines: PackedStringArray = PackedStringArray([HEADER])
 	for key: String in _rows:

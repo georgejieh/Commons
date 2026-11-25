@@ -1,10 +1,10 @@
 """Lists what a Godot pack holds and fails if anything in it should never ship.
 
-Reads a .pck, a Windows .exe with its pack embedded, or a macOS .zip holding one, in the pack formats Godot 4 writes
-(versions 2 to 4) when the directory is not encrypted. Prints every path, one a line, with
---list, and exits 1 naming each path under FORBIDDEN. The release and CI exports run it
-on every preset's build, so a filter that lets a tool, a test, a development add-on or a
-working file into the game fails the build.
+Reads a .pck, a Windows .exe with its pack embedded, or a macOS .zip holding one, in the
+pack formats Godot 4 writes (versions 2 to 4) when the directory is not encrypted. Prints
+every path, one a line, with --list, and exits 1 naming each path under FORBIDDEN. The
+release and CI exports run it on every preset's build, so a filter that lets a tool, a
+test, a development add-on or a working file into the game fails the build.
 
     python tools/pack_check.py PACK [PACK ...] [--list]
 """
@@ -13,6 +13,7 @@ import argparse
 import struct
 import sys
 import zipfile
+from pathlib import Path
 
 MAGIC = 0x43504447  # "GDPC"
 ENCRYPTED_DIRECTORY = 1
@@ -46,10 +47,10 @@ FORBIDDEN = (
 
 
 class PackError(Exception):
-    pass
+    """The file is not a pack this tool can read."""
 
 
-def _start(data):
+def _start(data: bytes) -> int:
     """Where the pack starts: at 0 for a .pck, or before the trailer of an embedded one."""
     if len(data) >= 4 and struct.unpack_from("<I", data, 0)[0] == MAGIC:
         return 0
@@ -61,12 +62,12 @@ def _start(data):
     raise PackError("no Godot pack found")
 
 
-def paths(data):
+def paths(data: bytes) -> list[str]:
     """The res:// paths a pack holds, without the res:// prefix, in the pack's order."""
     start = _start(data)
     version, _major, _minor, _patch, flags = struct.unpack_from("<5I", data, start + 4)
     if version not in (2, 3, 4):
-        raise PackError("pack format %d is not read" % version)
+        raise PackError(f"pack format {version} is not read")
     if flags & ENCRYPTED_DIRECTORY:
         raise PackError("the pack's directory is encrypted")
     at = start + 24 + 8  # magic, five words, the file base
@@ -86,24 +87,25 @@ def paths(data):
     return found
 
 
-def read(pack):
+def read(pack: str | Path) -> bytes:
     """The bytes of the pack in a file: the file itself, or the .pck inside a .zip."""
-    if pack.endswith(".zip"):
+    pack = Path(pack)
+    if pack.suffix == ".zip":
         with zipfile.ZipFile(pack) as bundle:
             inside = [name for name in bundle.namelist() if name.endswith(".pck")]
             if len(inside) != 1:
-                raise PackError("%s holds %d packs" % (pack, len(inside)))
+                raise PackError(f"{pack} holds {len(inside)} packs")
             return bundle.read(inside[0])
-    with open(pack, "rb") as handle:
-        return handle.read()
+    return pack.read_bytes()
 
 
-def forbidden(names):
+def forbidden(names: list[str]) -> list[str]:
     """The names that are under a forbidden prefix."""
     return [name for name in names if name.startswith(FORBIDDEN)]
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
+    """Checks each pack named on the command line; returns the process exit code."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("packs", nargs="+")
     parser.add_argument("--list", action="store_true", help="print every path in each pack")
@@ -115,9 +117,9 @@ def main(argv=None):
             print("\n".join(names))
         bad = forbidden(names)
         for name in bad:
-            print("%s: %s must not ship" % (pack, name), file=sys.stderr)
+            print(f"{pack}: {name} must not ship", file=sys.stderr)
         failed = failed or bool(bad)
-        print("%s: %d files, %d that must not ship" % (pack, len(names), len(bad)))
+        print(f"{pack}: {len(names)} files, {len(bad)} that must not ship")
     return 1 if failed else 0
 
 

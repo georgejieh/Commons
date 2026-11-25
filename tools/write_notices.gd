@@ -1,8 +1,19 @@
 extends SceneTree
-## Writes Godot's license and third-party notices to the path given after `--`.
+## Writes Godot's license and third-party notices to the file --out names. Exits 1 when it
+## cannot write it, 2 without --out. Run:
+##   godot --headless --path . --script res://tools/write_notices.gd -- --out PATH
+
+const USAGE: String = "write_notices.gd -- --out PATH"
 
 
 func _initialize() -> void:
+	var options: ToolOptions = ToolOptions.new(USAGE)
+	if not options.has("out"):
+		options.refuse("Needs --out PATH.")
+	var out: String = options.path("out", "")
+	if options.failed():
+		quit(2)
+		return
 	var text: String = "Commons is built with Godot Engine.\n\n" + Engine.get_license_text()
 	for component: Dictionary in Engine.get_copyright_info():
 		text += "\n\n%s\n" % component["name"]
@@ -13,7 +24,4 @@ func _initialize() -> void:
 	for license_name: String in licenses:
 		text += "\n\n%s\n\n%s" % [license_name, licenses[license_name]]
 
-	var file: FileAccess = FileAccess.open(OS.get_cmdline_user_args()[0], FileAccess.WRITE)
-	file.store_string(text)
-	file.close()
-	quit()
+	quit(0 if ToolFiles.write(out, text) else 1)

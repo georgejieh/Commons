@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Lints and format-checks project GDScript. Vendored addons are skipped.
+# Lints and format-checks project GDScript (gdlint, gdformat) and the Python tools (ruff).
+# Vendored addons are skipped.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
@@ -14,4 +15,12 @@ if command -v gdlint > /dev/null; then
 else
 	uvx --from "$(grep -m1 "^gdtoolkit" requirements-dev.txt)" gdlint "${files[@]}"
 	uvx --from "$(grep -m1 "^gdtoolkit" requirements-dev.txt)" gdformat --check "${files[@]}"
+fi
+
+if command -v ruff > /dev/null; then
+	ruff check tools
+	ruff format --check tools
+else
+	uvx --from "$(grep -m1 "^ruff" requirements-dev.txt)" ruff check tools
+	uvx --from "$(grep -m1 "^ruff" requirements-dev.txt)" ruff format --check tools
 fi

@@ -119,10 +119,10 @@ func test_the_cheapest_offer_of_a_kind() -> void:
 
 func test_the_percentile_reads_between_values() -> void:
 	var values: PackedFloat64Array = PackedFloat64Array([0.1, 0.2, 0.4, 1.0])
-	assert_float(BalanceCurve.percentile(values, 0.5)).is_equal_approx(0.3, 0.0001)
-	assert_float(BalanceCurve.percentile(values, 0.25)).is_equal_approx(0.175, 0.0001)
-	assert_float(BalanceCurve.percentile(values, 1.0)).is_equal_approx(1.0, 0.0001)
-	assert_float(BalanceCurve.percentile(PackedFloat64Array([0.7]), 0.75)).is_equal(0.7)
+	assert_float(ToolStats.interpolated(values, 0.5)).is_equal_approx(0.3, 0.0001)
+	assert_float(ToolStats.interpolated(values, 0.25)).is_equal_approx(0.175, 0.0001)
+	assert_float(ToolStats.interpolated(values, 1.0)).is_equal_approx(1.0, 0.0001)
+	assert_float(ToolStats.interpolated(PackedFloat64Array([0.7]), 0.75)).is_equal(0.7)
 
 
 func test_the_sampled_weights_are_a_copy() -> void:
@@ -341,10 +341,10 @@ func test_a_hand_made_tally_reads_its_runs() -> void:
 	assert_str(rows[0]).is_equal(BalanceResult.HEADER)
 	assert_str(rows[1]).starts_with("0,collective,")
 	assert_str(rows[2]).starts_with("0,private,")
-	var report: String = BalanceReport.markdown(
-		tally,
-		{"seeds": 10, "first_seed": 0, "stake": 0, "minutes": 0.0, "jobs": 1, "wall_seconds": 1.0}
-	)
+	var setup: BalanceSetup = BalanceSetup.new()
+	setup.seeds = 10
+	setup.wall_seconds = 1.0
+	var report: String = BalanceReport.markdown(tally, setup)
 	assert_str(report).contains("FAIL")
 	assert_str(report).contains("fewer than the 300")
 	assert_str(report).contains("bid refused")

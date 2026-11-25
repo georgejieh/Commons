@@ -5,38 +5,38 @@ extends SceneTree
 ## --wild N (0 to 2 ranks wild in every game, drawn per deal) and --big-bombs (five or more
 ## cards of a rank are a bomb), both for every seat (ADR 0029).
 
-const DEFAULT_OUT: String = "res://reports/tournament.csv"
+const USAGE: String = (
+	"tournament.gd -- --games N --a TIER --b TIER [--seed N] [--out PATH] [--log PATH]"
+	+ " [--bidding] [--wild N] [--big-bombs]"
+)
+const DEFAULT_OUT: String = "reports/tournament.csv"
 
 
 func _initialize() -> void:
-	var options: Dictionary[String, String] = _options()
-	var first: String = options.get("a", "")
-	var second: String = options.get("b", "")
-	var games: int = int(options.get("games", "0"))
-	var wild: int = int(options.get("wild", "0"))
-	if games < 2 or first == second or not _known(first) or not _known(second):
-		printerr(
-			"Needs --games N of at least 2 and two different --a and --b from easy, medium, hard, expert."
-		)
+	var options: ToolOptions = ToolOptions.new(USAGE)
+	var first: String = options.text("a")
+	var second: String = options.text("b")
+	if not options.has("games"):
+		options.refuse("Needs --games N.")
+	var games: int = options.integer("games", 0, 2)
+	var wild: int = options.integer("wild", 0, 0, TournamentRun.MAX_WILD)
+	var seed_value: int = options.integer("seed", 0)
+	if first == second or not _known(first) or not _known(second):
+		options.refuse("Needs two different --a and --b from easy, medium, hard, expert.")
+	var out: String = options.path("out", DEFAULT_OUT)
+	var log_path: String = options.path("log", "") if options.has("log") else ""
+	if options.failed():
 		quit(2)
 		return
-	if wild < 0 or wild > TournamentRun.MAX_WILD:
-		printerr("--wild takes 0, 1 or 2.")
-		quit(2)
-		return
-	var log_path: String = options.get("log", "")
-	var run: TournamentRun = TournamentRun.new(
-		first, second, int(options.get("seed", "0")), not log_path.is_empty()
-	)
+	var run: TournamentRun = TournamentRun.new(first, second, seed_value, not log_path.is_empty())
 	run.wild = wild
 	run.big_bombs = options.has("big-bombs")
 	run.play_duplicate(games)
 	if options.has("bidding"):
 		run.play_bidding(games)
-	var out: String = options.get("out", DEFAULT_OUT)
-	var saved: bool = _save(out, run.tally.csv())
+	var saved: bool = ToolFiles.write(out, run.tally.csv())
 	if not log_path.is_empty():
-		saved = _save(log_path, "\n".join(run.log_lines) + "\n") and saved
+		saved = ToolFiles.write(log_path, "\n".join(run.log_lines) + "\n") and saved
 	var rate: float = run.tally.win_rate(TournamentRun.DUPLICATE, first)
 	var illegal: int = run.tally.illegal_actions
 	var rules: String = ""
@@ -53,25 +53,3 @@ func _initialize() -> void:
 
 func _known(name: String) -> bool:
 	return TournamentRun.CONFIGS.has(name)
-
-
-func _options() -> Dictionary[String, String]:
-	var options: Dictionary[String, String] = {}
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var at: int = 0
-	while at < args.size():
-		var name: String = args[at].trim_prefix("--")
-		var has_value: bool = at + 1 < args.size() and not args[at + 1].begins_with("--")
-		options[name] = args[at + 1] if has_value else ""
-		at += 2 if has_value else 1
-	return options
-
-
-func _save(path: String, text: String) -> bool:
-	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
-	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
-	if file == null:
-		printerr("Can't write %s" % path)
-		return false
-	file.store_string(text)
-	return true

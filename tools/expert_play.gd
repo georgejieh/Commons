@@ -45,8 +45,7 @@ func expert_wins(deal: DealResult, limit_usec: int) -> int:
 func p99_usec() -> int:
 	var sorted: PackedInt64Array = times.duplicate()
 	sorted.sort()
-	@warning_ignore("integer_division")
-	return sorted[sorted.size() * 99 / 100]
+	return int(ToolStats.nearest_rank(PackedFloat64Array(Array(sorted)), 99))
 
 
 ## How many samples the searched decisions finished by the deadline.
@@ -66,6 +65,8 @@ func samples_line() -> String:
 	)
 
 
+## Plays deal through with Expert in expert_seats at limit_usec a decision and Hard in the
+## others; true when the landlord's side won.
 func landlord_won(deal: DealResult, expert_seats: Array[int], limit_usec: int) -> bool:
 	var round_state: RoundState = RoundState.new(deal, LANDLORD, _table)
 	while not round_state.is_over():

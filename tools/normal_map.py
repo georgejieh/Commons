@@ -1,4 +1,4 @@
-"""Makes a tangent-space normal map from an image's brightness (P3C.6).
+"""Makes a tangent-space normal map from an image's brightness.
 
 Brightness is read as height: paper grain, folds and ink ridges become a gentle
 surface for 2D lights. Height is blurred once, then Sobel gradients give the normal,
@@ -15,7 +15,8 @@ from PIL import Image, ImageFilter
 BLUR_RADIUS = 1.5
 
 
-def height_field(image, size):
+def height_field(image: Image.Image, size: int) -> Image.Image:
+    """The image as a blurred grey height field, shrunk so its longest side is size (0 keeps it)."""
     gray = image.convert("L")
     if size:
         scale = size / max(gray.size)
@@ -25,13 +26,14 @@ def height_field(image, size):
     return gray.filter(ImageFilter.GaussianBlur(BLUR_RADIUS))
 
 
-def normal_map(height, strength):
+def normal_map(height: Image.Image, strength: float) -> Image.Image:
+    """Packs the Sobel normals of a height field as an RGB image."""
     width, rows = height.size
     values = height.load()
     out = Image.new("RGB", (width, rows))
     pixels = out.load()
 
-    def at(x, y):
+    def at(x: int, y: int) -> float:
         return values[min(max(x, 0), width - 1), min(max(y, 0), rows - 1)] / 255.0
 
     for y in range(rows):
@@ -46,11 +48,14 @@ def normal_map(height, strength):
             # expects); image y runs down, so a height rising downward tilts it up.
             nx, ny, nz = -dx * strength, dy * strength, 1.0
             length = math.sqrt(nx * nx + ny * ny + nz * nz)
-            pixels[x, y] = tuple(round((component / length * 0.5 + 0.5) * 255) for component in (nx, ny, nz))
+            pixels[x, y] = tuple(
+                round((component / length * 0.5 + 0.5) * 255) for component in (nx, ny, nz)
+            )
     return out
 
 
-def main():
+def main() -> None:
+    """Writes the normal map of one image."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("source")
     parser.add_argument("target")

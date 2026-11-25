@@ -24,6 +24,7 @@ func counts() -> Array[int]:
 	return [refused_commands, bot_actions, errors, save_failures, load_failures, mismatches]
 
 
+## Every fault counted, of every kind.
 func total() -> int:
 	var sum: int = 0
 	for count: int in counts():
@@ -31,6 +32,7 @@ func total() -> int:
 	return sum
 
 
+## Adds other's counts to these.
 func add(other: SoakFaults) -> void:
 	refused_commands += other.refused_commands
 	bot_actions += other.bot_actions

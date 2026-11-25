@@ -6,8 +6,10 @@
 | [awesome-gamedev-agent-skills](https://github.com/gamedev-skills/awesome-gamedev-agent-skills) (16 skills in `.claude/skills`) | `19d93f9` | Apache-2.0 | Godot 4.7 and game-design guidance for agents; not shipped | Nothing |
 | [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4) (`addons/gdUnit4`) | v6.2.2 (`0127a55`) | MIT | Test framework, ADR 0003; development only | Hand-written runner |
 | [gdtoolkit](https://github.com/Scony/godot-gdscript-toolkit) | 4.5.0 | MIT | Lint and format, ADR 0004; development only | Nothing |
-| [Pillow](https://github.com/python-pillow/Pillow) | 12.0.0 | MIT-CMU | Image work in the art cleanup script (P3C.3); development only | Nothing |
+| [Pillow](https://github.com/python-pillow/Pillow) | 12.0.0 | MIT-CMU | Image work in the art cleanup script; development only | Nothing |
 | [pytest](https://github.com/pytest-dev/pytest) | 8.4.1 | MIT | Tests for the Python tools in `tools/`; development only | Nothing |
+| [Ruff](https://github.com/astral-sh/ruff) | 0.12.9 | MIT | Lint and format for the Python tools, configured in `ruff.toml`; development only | Nothing |
+| [fontTools](https://github.com/fonttools/fonttools) | 4.63.0 | MIT | Cuts the Chinese face in `tools/subset_hanzi_font.py`; development only | Nothing |
 | [Oswald](https://github.com/googlefonts/OswaldFont) (`art/fonts/Oswald-Variable.ttf`) | google/fonts `ofl/oswald`, fetched 2026-11-03, SHA-256 in the font note below | SIL OFL 1.1 (`art/fonts/Oswald-OFL.txt`) | Condensed poster face for all UI text, titles and card ranks; ships | Godot's default font |
 | [Courier Prime](https://github.com/quoteunquoteapps/CourierPrime) (`art/fonts/CourierPrime-*.ttf`) | google/fonts `ofl/courierprime`, fetched 2026-11-03 | SIL OFL 1.1 (`art/fonts/CourierPrime-OFL.txt`) | Typewriter face for the work-point ledger; ships | Godot's default font |
 | [Noto Serif SC](https://github.com/notofonts/noto-cjk) (`art/fonts/NotoSerifSC-Black-subset.ttf`) | google/fonts `ofl/notoserifsc`, the variable font fetched 2026-11-24 and cut by `tools/subset_hanzi_font.py` to weight 900 and the 17 characters the data holds | SIL OFL 1.1 (`art/fonts/NotoSerifSC-OFL.txt`); no Reserved Font Name | Decorative Chinese face for seals: the Struggled ending's 斗地主 and the families' hanzi (ADR 0024); ships | Leaving the seal out (the full font is 25 MB) |

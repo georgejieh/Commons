@@ -1,10 +1,10 @@
 extends RefCounted
-## Looks over everything on screen for layout faults a person would see (P5.2a), so the
+## Looks over everything on screen for layout faults a person would see, so the
 ## playtest's walk finds them on every screen it visits and not only where a layout test
 ## was written: text cut off by its box, a piece of text or a panel partly off the screen,
 ## text that runs out of the paper it is on, text drawn over other text, text partly under
 ## another paper, and type under 16 px. It reads the tree and never changes it. What is
-## behind a full-screen dim (a dialog or an open envelope over a page) is not compared
+## behind a dim over the page (a dialog, the deck sheet or an open envelope) is not compared
 ## with what is in front of it, nor what a large sheet covers with the sheet; cards in a
 ## fan cover one another on purpose; and what a ScrollContainer cuts off is scrolled.
 ## A finding is a line to read, not a failure: a slip that explains a card covers part of
@@ -74,6 +74,9 @@ func _walk(
 	_count += 1
 	var control: Control = node as Control
 	if control != null:
+		# Draw order as one number: the canvas layer first, then z (raised by 4096, the
+		# engine's lowest z, to stay positive), then tree order, each in a band wide
+		# enough for the one under it.
 		var order: int = layer * 100000000 + (z + 4096) * 10000 + _count
 		var box: Rect2 = _global(control, Rect2(Vector2.ZERO, control.size))
 		if _is_paper(control):
@@ -224,12 +227,24 @@ static func _is_paper(control: Control) -> bool:
 	return style != null and not style is StyleBoxEmpty
 
 
+## A dim over the page: a ColorRect dark enough to see by that covers the canvas the game
+## lays its pages out on. The canvas, not the window: a window taller than the canvas
+## (a headless run's is square) leaves a band no page fills, and a sheet that dims the
+## canvas, as the deck sheet does, is a dim all the same.
 static func _is_curtain(control: Control, box: Rect2) -> bool:
 	var rect: ColorRect = control as ColorRect
 	if rect == null or rect.color.a < 0.2:
 		return false
-	var screen: Rect2 = Rect2(Vector2.ZERO, control.get_viewport_rect().size)
-	return box.intersection(screen).get_area() >= screen.get_area() * CURTAIN
+	var canvas: Rect2 = Rect2(Vector2.ZERO, _canvas_size())
+	return box.intersection(canvas).get_area() >= canvas.get_area() * CURTAIN
+
+
+## The size of the canvas the game lays its pages out on, from the project's settings.
+static func _canvas_size() -> Vector2:
+	return Vector2(
+		ProjectSettings.get_setting("display/window/size/viewport_width"),
+		ProjectSettings.get_setting("display/window/size/viewport_height")
+	)
 
 
 ## Where a text's ink lies on the screen, as near as its font and alignment tell.
