@@ -8,7 +8,7 @@ Architecture is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), decisions in [d
 
 ## Commands
 
-Run these from the repository root, in Bash. `godot` must be Godot 4.7.2; set `GODOT_BIN` if it has another name. `tools/lint.sh` needs `gdlint` and `gdformat` from `requirements-dev.txt`, or `uvx`.
+Run these from the repository root, in Bash. `godot` must be Godot 4.7.2; set `GODOT_BIN` if it has another name. `tools/lint.sh` needs `gdlint` and `gdformat` (gdtoolkit) and `ruff` from `requirements-dev.txt`, or `uvx`.
 
 ```bash
 git config core.hooksPath .githooks
@@ -32,7 +32,7 @@ Runs every test, including the layer check and a check that every project script
 bash tools/lint.sh
 ```
 
-Lints and format-checks project GDScript. Add-ons are skipped.
+Lints and format-checks project GDScript, and lints and format-checks the Python tools with ruff. Add-ons are skipped.
 
 ```bash
 python -m pytest -q tools

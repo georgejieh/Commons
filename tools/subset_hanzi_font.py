@@ -34,6 +34,8 @@ def collect_characters(root: Path = ROOT) -> str:
 
 
 def write_subset(source: Path, output: Path, characters: str) -> None:
+    """Writes the font cut to the characters at one heavy weight; fails if it lacks one."""
+    """Writes the font cut to the characters, at one heavy weight; fails if it lacks one."""
     from fontTools import subset
     from fontTools.ttLib import TTFont
     from fontTools.varLib import instancer
@@ -56,6 +58,8 @@ def write_subset(source: Path, output: Path, characters: str) -> None:
 
 
 def main(arguments: list[str]) -> int:
+    """Subsets the font named on the command line; returns the process exit code."""
+    """Subsets the font named on the command line; returns the process exit code."""
     if len(arguments) != 1:
         print(__doc__)
         return 2

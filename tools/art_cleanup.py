@@ -1,4 +1,4 @@
-"""Batch cleanup for generated art (P3C.3).
+"""Batch cleanup for generated art.
 
 Each image goes through the same fixed steps, in order:
 
@@ -21,11 +21,11 @@ idempotent (cleaning a cleaned image changes nothing).
 
 import argparse
 import json
-import os
+from pathlib import Path
 
 from PIL import Image
 
-PALETTE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "art", "palette.json")
+PALETTE_PATH = Path(__file__).resolve().parent.parent / "art" / "palette.json"
 ALPHA_CUT = 128
 # Largest per-channel difference from the key color that still counts as background.
 # Kept below the gap between the key and the palette's lightest color, so a cleaned
@@ -36,22 +36,23 @@ OUTLINE_LUMA = 80
 INK_NAME = "ink"
 IMAGE_TYPES = (".png", ".webp", ".jpg", ".jpeg")
 
+RGB = tuple[int, int, int]
 
-def load_palette(path=PALETTE_PATH):
+
+def load_palette(path: Path = PALETTE_PATH) -> tuple[list[RGB], RGB]:
     """The palette as a list of (r, g, b), and the ink color."""
-    with open(path, encoding="utf-8") as handle:
-        data = json.load(handle)
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
     colors = [_rgb(entry["hex"]) for entry in data["colors"]]
     ink = next(_rgb(entry["hex"]) for entry in data["colors"] if entry["name"] == INK_NAME)
     return colors, ink
 
 
-def _rgb(hex_text):
+def _rgb(hex_text: str) -> RGB:
     value = hex_text.lstrip("#")
     return tuple(int(value[index : index + 2], 16) for index in (0, 2, 4))
 
 
-def key_out(image, key):
+def key_out(image: Image.Image, key: RGB) -> Image.Image:
     """Makes every pixel close to the key color fully transparent."""
     result = image.copy()
     pixels = result.load()
@@ -64,21 +65,25 @@ def key_out(image, key):
     return result
 
 
-def trim(image):
+def trim(image: Image.Image) -> Image.Image:
+    """Crops away fully transparent edges."""
     box = image.getchannel("A").getbbox()
     return image.crop(box) if box else image
 
 
-def threshold_alpha(image):
+def threshold_alpha(image: Image.Image) -> Image.Image:
+    """Makes every pixel fully transparent or fully opaque."""
     alpha = image.getchannel("A").point(lambda value: 255 if value >= ALPHA_CUT else 0)
     result = image.copy()
     result.putalpha(alpha)
     return result
 
 
-def resize(image, size):
-    """Shrinks the image to fit inside size, keeping its aspect ratio. An image that
-    already fits is left alone, so a second pass changes nothing."""
+def resize(image: Image.Image, size: tuple[int, int] | None) -> Image.Image:
+    """Shrinks the image to fit inside size, keeping its aspect ratio.
+
+    An image that already fits is left alone, so a second pass changes nothing.
+    """
     if size is None or (image.size[0] <= size[0] and image.size[1] <= size[1]):
         return image
     scale = min(size[0] / image.size[0], size[1] / image.size[1])
@@ -88,7 +93,7 @@ def resize(image, size):
     return image.resize(target, Image.Resampling.LANCZOS)
 
 
-def quantize(image, colors, dither):
+def quantize(image: Image.Image, colors: list[RGB], dither: bool) -> Image.Image:
     """Maps every opaque pixel to its palette color; transparent pixels stay clear."""
     flat = [channel for color in colors for channel in color]
     holder = Image.new("P", (1, 1))
@@ -100,7 +105,7 @@ def quantize(image, colors, dither):
     return result
 
 
-def normalize_outlines(image, ink):
+def normalize_outlines(image: Image.Image, ink: RGB) -> Image.Image:
     """Dark pixels that touch transparency, or the image edge, become pure ink."""
     pixels = image.load()
     width, height = image.size
@@ -112,14 +117,16 @@ def normalize_outlines(image, ink):
                 continue
             if 0.299 * red + 0.587 * green + 0.114 * blue > OUTLINE_LUMA:
                 continue
-            if _touches_clear(pixels, x, y, width, height):
+            if _touches_clear(image, x, y):
                 changes.append((x, y))
     for x, y in changes:
         pixels[x, y] = ink + (255,)
     return image
 
 
-def _touches_clear(pixels, x, y, width, height):
+def _touches_clear(image: Image.Image, x: int, y: int) -> bool:
+    pixels = image.load()
+    width, height = image.size
     for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
         nx, ny = x + dx, y + dy
         if nx < 0 or ny < 0 or nx >= width or ny >= height or pixels[nx, ny][3] == 0:
@@ -127,7 +134,15 @@ def _touches_clear(pixels, x, y, width, height):
     return False
 
 
-def clean(image, colors, ink, size=None, dither=False, key=None):
+def clean(
+    image: Image.Image,
+    colors: list[RGB],
+    ink: RGB,
+    size: tuple[int, int] | None = None,
+    dither: bool = False,
+    key: RGB | None = None,
+) -> Image.Image:
+    """Runs every step of the module docstring on one image and returns the result."""
     image = image.convert("RGBA")
     if key is not None:
         image = key_out(image, key)
@@ -137,19 +152,22 @@ def clean(image, colors, ink, size=None, dither=False, key=None):
     return normalize_outlines(image, ink)
 
 
-def save(image, path):
+def save(image: Image.Image, path: Path) -> None:
+    """Writes a PNG whose bytes depend only on the pixels."""
     # Fixed PNG settings and no metadata, so output bytes depend only on the pixels.
     image.save(path, format="PNG", optimize=False, compress_level=9)
 
 
-def parse_size(text):
+def parse_size(text: str | None) -> tuple[int, int] | None:
+    """Reads WIDTHxHEIGHT, or None for no size."""
     if not text:
         return None
     width, height = text.lower().split("x")
     return int(width), int(height)
 
 
-def main():
+def main() -> None:
+    """Cleans every image in a folder into another."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("source")
     parser.add_argument("target")
@@ -158,17 +176,18 @@ def main():
     parser.add_argument("--palette", default=PALETTE_PATH)
     parser.add_argument("--key", help="background color to cut out, as hex")
     args = parser.parse_args()
-    colors, ink = load_palette(args.palette)
-    os.makedirs(args.target, exist_ok=True)
-    for name in sorted(os.listdir(args.source)):
-        if not name.lower().endswith(IMAGE_TYPES):
+    colors, ink = load_palette(Path(args.palette))
+    target = Path(args.target)
+    target.mkdir(parents=True, exist_ok=True)
+    key = _rgb(args.key) if args.key else None
+    for source in sorted(Path(args.source).iterdir()):
+        if source.suffix.lower() not in IMAGE_TYPES:
             continue
-        with Image.open(os.path.join(args.source, name)) as image:
-            key = _rgb(args.key) if args.key else None
+        with Image.open(source) as image:
             result = clean(image, colors, ink, parse_size(args.size), args.dither, key)
-        out_name = os.path.splitext(name)[0] + ".png"
-        save(result, os.path.join(args.target, out_name))
-        print(f"{name} -> {out_name} {result.size[0]}x{result.size[1]}")
+        out_name = source.stem + ".png"
+        save(result, target / out_name)
+        print(f"{source.name} -> {out_name} {result.size[0]}x{result.size[1]}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,29 @@
+# Lints and formats the Python tools; tools/lint.sh runs it.
+line-length = 100
+target-version = "py311"
+src = ["tools"]
+
+[lint]
+select = [
+    "E", "W",  # pycodestyle
+    "F",       # pyflakes
+    "I",       # isort
+    "UP",      # pyupgrade
+    "B",       # bugbear
+    "N",       # pep8-naming
+    "ANN",     # a type hint on every function
+    "PTH",     # pathlib in place of os.path
+    "D",       # docstrings, Google convention
+]
+ignore = [
+    "D105",  # magic methods
+    "D107",  # __init__: the class docstring covers it
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.per-file-ignores]
+# A test's name says what it proves; the module docstring says what the file proves.
+"**/test_*.py" = ["D101", "D102", "D103"]
+"**/conftest.py" = ["D103"]

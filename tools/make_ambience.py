@@ -12,8 +12,8 @@ bed's rate, mono 16-bit. Every file is logged in audio/sources/manifest.csv.
 """
 
 import argparse
-import os
 import sys
+from types import ModuleType
 
 import make_sfx
 
@@ -38,20 +38,20 @@ ANTIALIAS_PASSES = 3
 PEAK_DB = -3.0
 
 
-def renders(names=None):
+def renders(names: list[str] | None = None) -> list[tuple[str, int, list[float], bytes]]:
     """Every loop as (file name, rate, samples, WAV bytes), in a fixed order."""
     sfx = make_sfx.load_sfx()
     made = []
     for name, rate in BEDS.items():
         if names and name not in names:
             continue
-        patch = sfx.load_patch(os.path.join(make_sfx.PATCHES, name + ".json"))
+        patch = sfx.load_patch(str(make_sfx.PATCHES / f"{name}.json"))
         samples = decimate(sfx, sfx.render(patch, SEED), sfx.SR // rate)
         made.append((name + ".wav", rate, samples, make_sfx.wav_bytes(samples, rate)))
     return made
 
 
-def decimate(sfx, loop, factor):
+def decimate(sfx: ModuleType, loop: list[float], factor: int) -> list[float]:
     """The loop at 1 / factor of its rate, low-passed round the wrap so the seam stays whole."""
     if factor == 1:
         return loop
@@ -66,23 +66,26 @@ def decimate(sfx, loop, factor):
     return [v * ceiling / peak for v in out] if peak > ceiling else out
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--check", action="store_true", help="fail if a rendered file differs from the one on disk")
+def main() -> None:
+    """Renders the ambience loops, or with --check compares them with the files on disk."""
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--check", action="store_true", help="fail if a rendered file differs from the one on disk"
+    )
     parser.add_argument("names", nargs="*", help="beds to render; all when none are named")
     args = parser.parse_args()
     differs = []
     total = 0
     for file_name, _rate, _samples, data in renders(args.names):
-        path = os.path.join(make_sfx.OUT, file_name)
+        path = make_sfx.OUT / file_name
         total += len(data)
         if args.check:
-            with open(path, "rb") as existing:
-                if existing.read() != data:
-                    differs.append(file_name)
+            if path.read_bytes() != data:
+                differs.append(file_name)
             continue
-        with open(path, "wb") as out:
-            out.write(data)
+        path.write_bytes(data)
         print(f"{file_name}: {len(data)} bytes")
     print(f"{total} bytes in all")
     if differs:
