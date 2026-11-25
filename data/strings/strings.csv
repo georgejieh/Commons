@@ -1182,3 +1182,20 @@ display.check.body,"If you choose nothing, the window goes back to how it was in
 display.check.keep,Keep
 display.check.back,Undo
 settings.window,Window
+title.credits,Credits
+credits.eyebrow,Commons
+credits.title,Credits
+credits.game,"A roguelike deckbuilder built on Fight the Landlord, the card game for three."
+credits.licence,The game's licence
+credits.pictures,Pictures
+credits.pictures.line,"{count} pictures were made with {model}, from prompts written for this game."
+credits.sounds,Sound
+credits.sounds.made,"{count} sounds and voices were made for this game by synthesis."
+credits.sounds.line,"{works}, by {by}, from {source}. {licence}."
+credits.type,Type
+credits.type.line,"{name}, under the {licence}:"
+credits.built,Built with
+credits.built.line,"{name} {version}. {licence}."
+credits.engine,Godot Engine
+credits.engine.line,"Commons is built with Godot Engine. Its licence follows, then the notices of the components inside it and the licences they use."
+credits.engine.licence_of,Licence: {licence}

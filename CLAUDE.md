@@ -47,6 +47,12 @@ python tools/pack_check.py build/windows/Commons.exe build/linux/Commons.pck --l
 Lists what an exported build packs and exits 1 if it holds anything that must never ship: tools, tests, documents, development add-ons, working files. CI and the release run it on every export.
 
 ```bash
+python tools/write_credits.py
+```
+
+Writes `data/credits/credits.json`, the credits screen's account of `LICENSE`, the art and sound manifests and `docs/DEPENDENCIES.md`. Run it after changing any of them; `python -m pytest -q tools` fails while the committed file is behind.
+
+```bash
 python tools/art_cleanup.py IN_DIR OUT_DIR --size 512x512
 ```
 

@@ -1,0 +1,70 @@
+{
+	"licence": "Copyright (c) 2026 George Jieh. All rights reserved.\n\nThis repository and the game Commons are proprietary. You may download and play\nreleased builds free of charge. No other right is granted: you may not copy,\nmodify, redistribute, sell or create derivative works from the code, art, audio,\ntext or data in this repository without written permission.\n\nThird-party components keep their own licenses. See docs/DEPENDENCIES.md and the\nlicense files in addons/ and .claude/skills/.",
+	"fonts": [
+		{
+			"name": "Oswald",
+			"licence": "SIL OFL 1.1",
+			"file": "art/fonts/Oswald-OFL.txt"
+		},
+		{
+			"name": "Courier Prime",
+			"licence": "SIL OFL 1.1",
+			"file": "art/fonts/CourierPrime-OFL.txt"
+		},
+		{
+			"name": "Noto Serif SC",
+			"licence": "SIL OFL 1.1",
+			"file": "art/fonts/NotoSerifSC-OFL.txt"
+		}
+	],
+	"components": [
+		{
+			"name": "Godot Engine",
+			"version": "4.7.2-stable",
+			"licence": "MIT, plus bundled third-party licenses"
+		},
+		{
+			"name": "AppImage type2-runtime",
+			"version": "20251108",
+			"licence": "MIT"
+		}
+	],
+	"sounds": {
+		"made": 435,
+		"credited": [
+			{
+				"source": "Kenney",
+				"by": "Kenney Vleugels",
+				"licence": "CC0",
+				"works": [
+					"Casino Audio 1.1",
+					"Impact Sounds 1.0"
+				]
+			},
+			{
+				"source": "Freesound",
+				"by": "radwoc",
+				"licence": "CC0",
+				"works": [
+					"piecz_07.wav",
+					"piecz_01.wav",
+					"piecz_04.wav"
+				]
+			},
+			{
+				"source": "Freesound",
+				"by": "ani_music",
+				"licence": "CC0",
+				"works": [
+					"Pencil writing on paper"
+				]
+			}
+		]
+	},
+	"pictures": [
+		{
+			"model": "GPT Image via Codex image_gen",
+			"count": 161
+		}
+	]
+}
