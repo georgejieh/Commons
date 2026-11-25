@@ -2,8 +2,8 @@ class_name MusicScore
 extends Resource
 ## Which cue plays for the board, and how the dread layers thin it (P3C.9). Stems thin the
 ## music as a layer rises; slowing and long silences need their own Famine cues, because
-## muting stems can't produce them. Any layer stem name the cue doesn't have (whispers,
-## clock, crowd, chatter, room_tone) is a sound effect and is left to the effects layer.
+## muting stems can't produce them. Any layer stem name the cue doesn't have is an
+## ambience bed (data/audio/ambience_score.tres), which AmbiencePlayer plays.
 
 @export var cues: Array[MusicCue] = []
 @export var village: String = "village_master"

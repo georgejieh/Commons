@@ -155,6 +155,7 @@ func apply() -> void:
 	_apply_swaps(intensity)
 	Audio.music.follow(board, config.layers, intensity)
 	Audio.voice.follow(board, config.layers.size(), intensity)
+	Audio.ambience.follow(board, config.layers, intensity)
 	if _materials.has("lamp"):
 		var breathe: float = NO_FLASH_BREATHE if bool(Settings.value("no_flash")) else _breathe
 		_materials["lamp"].set_shader_parameter("breathe", breathe)
@@ -169,6 +170,7 @@ func clear() -> void:
 		_tremble.still()
 	Audio.music.relax()
 	Audio.voice.reset()
+	Audio.ambience.silence()
 	Audio.music.request(MusicPlayer.SCORE.village)
 
 

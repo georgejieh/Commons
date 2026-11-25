@@ -152,6 +152,15 @@ static func name_for(event: RunEvent, landlord: int = Seats.NONE) -> String:
 	return ROUND_NAMES[round_event.type]
 
 
+## True when the event is the player laying cards on the table.
+static func played_by_player(event: RunEvent) -> bool:
+	return (
+		event.type == RunEvent.Type.ROUND
+		and event.round_event.type == RoundEvent.Type.PLAYED
+		and event.round_event.seat == PLAYER
+	)
+
+
 ## True when a meter moving from before to after rises past any of the marks.
 static func meter_rose(before: int, after: int, marks: Array[int]) -> bool:
 	for mark: int in marks:

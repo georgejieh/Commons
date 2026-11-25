@@ -30,7 +30,8 @@ const SWAP_AT: float = 0.5
 ## Slot name to the texture shown there once the layer's weight passes SWAP_AT. Slots
 ## are the table's swappable art, such as table_surface. Empty until the art pass.
 @export var texture_swaps: Dictionary[String, Texture2D] = {}
-## Music stems this layer fades (P3C.9); silent until the music exists.
+## Music stems this layer fades (P3C.9), silent until the music exists, and the
+## ambience beds it moves (P3C.8, AmbienceBed).
 @export var audio_stems: Array[String] = []
 
 

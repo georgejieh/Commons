@@ -25,7 +25,7 @@ Each master is split into five stems with the same names the game uses: `melody`
 | Both high (struggle) | `counter`, `harmony`, `bass` | Current cue, left nearly empty |
 | Landlord, Famine below mid | None | `landlord_master` |
 
-Whispers, the clock, crowd murmur, chatter and room tone are sound effects (P3C.8), not music. The thresholds live in `data/audio/music_score.tres`.
+Whispers, the clock, crowd murmur, chatter and room tone are ambience beds (P3C.8, `data/audio/ambience_score.tres`), not music. The thresholds live in `data/audio/music_score.tres`.
 
 **Loops.** Stems of one master share one timeline and one loop. Never trim them separately or cut their leading silence. Set WAV `loop_begin` and `loop_end` in samples, or Ogg `loop_offset` in seconds, from the measured downbeats, then write the measured BPM into the cue's data. A cue change waits for the next bar line of the cue playing.
 

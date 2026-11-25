@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="AmbienceScore" format=3]
+
+[ext_resource type="Script" path="res://data/audio/ambience_score.gd" id="1"]
+[ext_resource type="Script" path="res://data/audio/ambience_bed.gd" id="2"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_room.wav" id="room_wav"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_hollow.wav" id="hollow_wav"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_chatter.wav" id="chatter_wav"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_wind.wav" id="wind_wav"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_drone.wav" id="drone_wav"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_rustle.wav" id="rustle_wav"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_whispers.wav" id="whispers_wav"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_clock.wav" id="clock_wav"]
+[ext_resource type="AudioStream" path="res://audio/sfx/ambience_crowd.wav" id="crowd_wav"]
+
+[sub_resource type="Resource" id="room"]
+script = ExtResource("2")
+id = "room"
+stream = ExtResource("room_wav")
+volume_db = -10.0
+on_clean_board = true
+
+[sub_resource type="Resource" id="hollow"]
+script = ExtResource("2")
+id = "hollow"
+stream = ExtResource("hollow_wav")
+volume_db = -8.0
+
+[sub_resource type="Resource" id="chatter"]
+script = ExtResource("2")
+id = "chatter"
+stream = ExtResource("chatter_wav")
+volume_db = -8.0
+on_clean_board = true
+response = PackedVector2Array(0, 0, 0.42, 0.6, 0.85, 1)
+
+[sub_resource type="Resource" id="wind"]
+script = ExtResource("2")
+id = "wind"
+stream = ExtResource("wind_wav")
+volume_db = -10.0
+response = PackedVector2Array(0, 0, 0.1, 0, 0.42, 0.7, 0.89, 1)
+
+[sub_resource type="Resource" id="drone"]
+script = ExtResource("2")
+id = "drone"
+stream = ExtResource("drone_wav")
+volume_db = -6.0
+response = PackedVector2Array(0, 0, 0.45, 0, 0.89, 1)
+
+[sub_resource type="Resource" id="rustle"]
+script = ExtResource("2")
+id = "rustle"
+stream = ExtResource("rustle_wav")
+volume_db = -8.0
+response = PackedVector2Array(0, 0, 0.15, 0, 0.42, 1, 0.89, 0.6, 1, 0.6)
+
+[sub_resource type="Resource" id="whispers"]
+script = ExtResource("2")
+id = "whispers"
+stream = ExtResource("whispers_wav")
+volume_db = -8.0
+response = PackedVector2Array(0, 0, 0.45, 0, 0.89, 1)
+
+[sub_resource type="Resource" id="clock"]
+script = ExtResource("2")
+id = "clock"
+stream = ExtResource("clock_wav")
+volume_db = -10.0
+response = PackedVector2Array(0, 0, 0.5, 0, 0.89, 1)
+
+[sub_resource type="Resource" id="crowd"]
+script = ExtResource("2")
+id = "crowd"
+stream = ExtResource("crowd_wav")
+volume_db = -8.0
+response = PackedVector2Array(0, 0, 0.85, 1)
+
+[resource]
+script = ExtResource("1")
+beds = Array[ExtResource("2")]([SubResource("room"), SubResource("hollow"), SubResource("chatter"), SubResource("wind"), SubResource("drone"), SubResource("rustle"), SubResource("whispers"), SubResource("clock"), SubResource("crowd")])
+duck_events = Array[String](["bomb_played", "rocket_played", "quota_met", "quota_missed"])
+hush_beds = Array[String](["crowd"])
