@@ -43,6 +43,10 @@ func _run() -> void:
 	# Standard unless a size was asked for, whatever the player's file says.
 	if int(flags.call("text_size", _args)) < 0:
 		root.get_node("Settings").call("set_value", "text_size", 0)
+	# A run save of its own, in the sandbox, never the player's (tools/walk_profile.gd).
+	load("res://tools/walk_profile.gd").call(
+		"keep_run", root, "demo_screenshots", OS.get_cmdline_user_args()
+	)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	var app: Node = scene.instantiate()
 	root.add_child(app)

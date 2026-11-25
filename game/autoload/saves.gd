@@ -4,8 +4,13 @@ extends Node
 ## Both only write and read files; the run lives in RunController, so nothing here holds
 ## run state.
 
-var _run: SaveService = SaveService.for_run()
-var _profile: SaveService = Profile.service()
+var _run: SaveService = null
+var _profile: SaveService = null
+
+
+## The defaults are chosen once the tree is known: a tool's or a test's are in the sandbox.
+func _enter_tree() -> void:
+	use_default_paths()
 
 
 func run_service() -> SaveService:
@@ -14,6 +19,13 @@ func run_service() -> SaveService:
 
 func profile_service() -> SaveService:
 	return _profile
+
+
+## The game's own files on a launch of the game, the sandbox's otherwise (SavePaths).
+func use_default_paths() -> void:
+	var normal: bool = SavePaths.normal_launch(get_tree())
+	_run = SaveService.for_run(SavePaths.of(SaveService.RUN_PATH, normal))
+	_profile = Profile.service(SavePaths.of(SaveService.PROFILE_PATH, normal))
 
 
 ## Points the profile save at another file, for tests.

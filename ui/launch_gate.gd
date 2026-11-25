@@ -43,8 +43,7 @@ func _init(
 ## True for the app the engine launched as the main scene, with no tool's script running
 ## the tree.
 static func guards(app: Node) -> bool:
-	var tree: SceneTree = app.get_tree()
-	return tree.get_script() == null and tree.current_scene == app
+	return SavePaths.normal_launch(app.get_tree()) and app.get_tree().current_scene == app
 
 
 ## The most seconds the "already open" notice can stand once the other copy has stopped:

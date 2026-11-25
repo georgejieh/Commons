@@ -21,6 +21,10 @@ func _initialize() -> void:
 
 func _run() -> void:
 	# Loaded at run time: the demo names autoloads, which a --script tool can't see.
+	# A run save of its own, in the sandbox, never the player's (tools/walk_profile.gd).
+	load("res://tools/walk_profile.gd").call(
+		"keep_run", root, "table_moment", OS.get_cmdline_user_args()
+	)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	var app: Node = scene.instantiate()
 	root.add_child(app)

@@ -19,6 +19,10 @@ var table: Node = null
 
 ## Loads the app, lets start begin the run on it (it takes the app), then shows the table.
 func open(tree: SceneTree, start: Callable) -> Node:
+	# A run save of its own, in the sandbox, never the player's (tools/walk_profile.gd).
+	load("res://tools/walk_profile.gd").call(
+		"keep_run", tree.root, "table_play", OS.get_cmdline_user_args()
+	)
 	var scene: PackedScene = load("res://ui/main.tscn")
 	app = scene.instantiate()
 	tree.root.add_child(app)
