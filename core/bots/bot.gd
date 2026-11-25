@@ -29,14 +29,11 @@ static func decide_play(
 	legal = considered(legal)
 	if legal.is_empty():
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.PASS_NOTHING_BEATS)
-	if config.effort < 1.0 and config.tier == BotConfig.Tier.EASY:
-		var scorer: CandidateScorer = CandidateScorer.new(view.own_counts, table, config.weights)
-		var slack: BotPosition = BotPosition.new(view, table, config, scorer)
-		if slack.slacks():
-			return SlackPolicy.choose(slack, legal)
+	if SlackPolicy.slacks(view, config):
+		return SlackPolicy.choose(view, legal)
 	if config.tier == BotConfig.Tier.EASY:
 		return GreedyPolicy.choose(view, legal, table, config)
-	var job: BotSearchJob = search_job(view, legal, table, config)
+	var job: BotSearchJob = _job(view, legal, table, config)
 	if not config.searches():
 		return job.fallback
 	return ExpertSearch.run(job, budget)
@@ -47,18 +44,10 @@ static func search_job(
 	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
 ) -> BotSearchJob:
 	legal = considered(legal)
-	var scorer: CandidateScorer = CandidateScorer.new(
-		view.own_counts, table, config.weights, config.type_bias
-	)
-	var position: BotPosition = BotPosition.new(view, table, config, scorer)
-	if position.slacks():
+	if SlackPolicy.slacks(view, config):
 		var none: Array[Pattern] = []
-		return BotSearchJob.new(position, none, SlackPolicy.choose(position, legal))
-	var play: BotPlay = _by_policy(position, legal)
-	var candidates: Array[Pattern] = []
-	if config.searches():
-		candidates = legal
-	return BotSearchJob.new(position, candidates, play)
+		return BotSearchJob.new(null, none, SlackPolicy.choose(view, legal))
+	return _job(view, legal, table, config)
 
 
 ## The legal moves a bot weighs: every one, less the wild plays it never needs
@@ -69,6 +58,22 @@ static func considered(legal: Array[Pattern]) -> Array[Pattern]:
 		if WildSupply.is_lean(move):
 			kept.append(move)
 	return legal if kept.size() == legal.size() or kept.is_empty() else kept
+
+
+## The policy's play and the search's candidates, over moves already considered, for a
+## bot that is trying.
+static func _job(
+	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
+) -> BotSearchJob:
+	var scorer: CandidateScorer = CandidateScorer.new(
+		view.own_counts, table, config.weights, config.type_bias
+	)
+	var position: BotPosition = BotPosition.new(view, table, config, scorer)
+	var play: BotPlay = _by_policy(position, legal)
+	var candidates: Array[Pattern] = []
+	if config.searches():
+		candidates = legal
+	return BotSearchJob.new(position, candidates, play)
 
 
 static func _by_policy(position: BotPosition, legal: Array[Pattern]) -> BotPlay:

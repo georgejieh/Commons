@@ -12,6 +12,7 @@ var _hands: Array[Array] = []
 var _results: Array[PackedInt32Array] = []
 
 
+## position is null for a decision with nothing to search, as when the bot slacks.
 func _init(position: BotPosition, legal: Array[Pattern], policy_play: BotPlay) -> void:
 	_position = position
 	fallback = policy_play

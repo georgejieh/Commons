@@ -3,8 +3,6 @@ extends RefCounted
 ## What one decision knows about the table, worked out once from the seat's own view.
 
 const NO_CARDS: int = 99
-## Keeps the effort roll apart from the cooperation roll.
-const SLACK_SALT: int = 0x5A1AC
 
 var view: SeatView
 var table: BotTable
@@ -31,6 +29,13 @@ var rivals: Array[BotTable] = []
 var bombed: BombedSide = null
 ## Which of the threats are wild: the opponents' rules (Controls.threat_rules).
 var _threat_rules: RuleSet
+
+
+## A repeatable roll from 0 to 1 for the decision the view stands at, apart from every
+## other roll of it by its salt.
+static func roll_for(seat_view: SeatView, bot_config: BotConfig, salt: int) -> float:
+	var state: int = CountKey.encode(seat_view.own_counts) ^ (seat_view.public.history.size() << 8)
+	return RandomStream.new(bot_config.search_seed ^ state ^ salt).next_float()
 
 
 func _init(
@@ -121,18 +126,7 @@ func read_groups(other: Array[Pattern]) -> Controls:
 
 ## A repeatable roll for this decision, from 0 to 1.
 func roll() -> float:
-	return _roll(0)
-
-
-## True when this decision is one the bot doesn't try on, from its own salted roll so it
-## never moves with the cooperation roll.
-func slacks() -> bool:
-	return config.effort < 1.0 and _roll(SLACK_SALT) >= config.effort
-
-
-func _roll(salt: int) -> float:
-	var state: int = CountKey.encode(view.own_counts) ^ (view.public.history.size() << 8)
-	return RandomStream.new(config.search_seed ^ state ^ salt).next_float()
+	return roll_for(view, config, 0)
 
 
 func rank_of(rank: int) -> int:
