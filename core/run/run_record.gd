@@ -58,14 +58,9 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 	return data
 
 
-## Version 2 saves predate the meter setbacks (P4.1): armed, with none in force, and
-## Resentment (P4.2) at zero, villagers' Denunciation (P4.3) empty, and no
-## Commons paid yet (P4.4), no memory carried in (P4.6), and no
-## bosses or styles yet (P4.7), and the plot counter at its start (P4.8).
+## Version 2 saves lack every field the meters, the village and the shops added before
+## schema 4; migrate_from_3, which always runs next, fills them in.
 static func migrate_from_2(data: Dictionary) -> Dictionary:
-	if data.get("checkpoint") is Dictionary:
-		var checkpoint: Dictionary = data["checkpoint"]
-		checkpoint.merge(_phase_4_defaults())
 	return data
 
 

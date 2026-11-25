@@ -145,13 +145,9 @@ stateDiagram-v2
     SET_INTRO --> ROUND_PLAY
     SET_END --> REEDUCATION
     SET_END --> RUN_END
-    SHOP --> EVENT
     SHOP --> SET_INTRO
     SHOP --> YEAR_END
     SHOP --> RUN_END
-    EVENT --> SET_INTRO
-    EVENT --> YEAR_END
-    EVENT --> RUN_END
     YEAR_END --> SET_INTRO
     YEAR_END --> RUN_END
     REEDUCATION --> SET_INTRO

@@ -116,7 +116,7 @@ func start(request: RunRequest, saves: SaveService = null, profile: SaveService 
 	if state == null:
 		return false
 	var kind: int = request.kind
-	_begin(state, RunStarter.configs(kind), RunStarter.sets(kind), saves, used)
+	_begin(state, RunStarter.configs(), RunStarter.sets(kind), saves, used)
 	return true
 
 
@@ -137,15 +137,16 @@ func _begin(
 	awaiting_changed.emit(_loop.awaiting())
 
 
-## Takes over a loop that was resumed from a save. A save written just before a crash
-## may stand past a boundary the profile never took, so the profile is offered it again;
-## it takes nothing twice.
+## For tests: takes over a loop built outside the controller, as resume_saved() takes
+## over one replayed from a save, so a test can set up a run state no save would reach.
 func resume(loop: RunLoop, saves: SaveService = null, profile: SaveService = null) -> void:
 	_take_over(loop, saves, profile, null)
 
 
-## What resume() does, with what the load found, which the file's detectors act on: a
-## seal that failed, or a ledger the save does not hold (ADR 0022).
+## Takes over a loop resumed from a save, with what the load found, which the file's
+## detectors act on: a seal that failed, or a ledger the save does not hold (ADR 0022). A
+## save written just before a crash may stand past a boundary the profile never took, so
+## the profile is offered it again; it takes nothing twice.
 func _take_over(loop: RunLoop, saves: SaveService, profile: SaveService, loaded: SaveLoad) -> void:
 	_profile = profile
 	file_watch.attach(saves, profile)
@@ -171,7 +172,7 @@ func continue_saved(saves: SaveService, profile: SaveService = null) -> bool:
 	):
 		return false
 	var kind: int = RunStarter.saved_kind(loaded.data)
-	return resume_saved(saves, RunStarter.configs(kind), RunStarter.sets(kind), profile)
+	return resume_saved(saves, RunStarter.configs(), RunStarter.sets(kind), profile)
 
 
 ## Resumes the run in the save, falling back to its backup. False when neither loads.
@@ -635,12 +636,6 @@ func norm_added_percent() -> int:
 	return _loop.sets().norm_percent(_loop.state.over_steps)
 
 
-## How much Famine a missed Quota adds, after any Reform's relief.
-func famine_per_miss() -> int:
-	var amount: int = RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount
-	return RunReforms.missed_famine(_loop.state, amount)
-
-
 ## True while high Famine cuts the store's slots.
 func is_rationed() -> bool:
 	return _loop.state.rationed
@@ -825,14 +820,6 @@ func confiscated_cadres() -> Array[String]:
 ## True while the villagers see the player's hand (Glass Walls).
 func hand_shown() -> bool:
 	return _loop.round_state() != null and player_table().rules.hand_shown()
-
-
-## Copies of the plot cards Plot Seized destroyed this round.
-func seized_cards() -> Array[CardInstance]:
-	var cards: Array[CardInstance] = []
-	for card: CardInstance in _loop.debuffs.seized:
-		cards.append(card.snapshot())
-	return cards
 
 
 ## Cadres Short Supply keeps off the state store's counter this visit.

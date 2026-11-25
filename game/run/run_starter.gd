@@ -144,7 +144,7 @@ static func tutorial() -> RunRequest:
 
 ## One config per seat. A full run seats its roster each Set, which replaces the
 ## villagers' configs; the demo plays its two fixed villagers by its tiers.
-static func configs(_kind: int) -> Array[BotConfig]:
+static func configs() -> Array[BotConfig]:
 	var configs_out: Array[BotConfig] = []
 	for tier: int in DEMO_RUN.tiers:
 		configs_out.append(BotConfig.new(BotConfig.DEFAULT_WEIGHTS, tier as BotConfig.Tier))

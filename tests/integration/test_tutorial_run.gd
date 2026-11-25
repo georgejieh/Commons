@@ -121,7 +121,7 @@ func _play_through() -> Array[RunEvent]:
 	_controller.event_emitted.connect(func(event: RunEvent) -> void: events.append(event))
 	_report()
 	var guard: int = 0
-	while not _director.is_done() and guard < 100:
+	while _director.phase() != TutorialDirector.Phase.DONE and guard < 100:
 		guard += 1
 		var step: TutorialStep = _director.step()
 		assert_int(_director.phase()).override_failure_message("step %s" % step.id).is_equal(
@@ -145,7 +145,7 @@ func _play_through() -> Array[RunEvent]:
 
 func test_the_arrival_plays_through_with_its_authored_inputs() -> void:
 	var events: Array[RunEvent] = _play_through()
-	assert_bool(_director.is_done()).is_true()
+	assert_int(_director.phase()).is_equal(TutorialDirector.Phase.DONE)
 	assert_int(_director.index()).is_equal(20)
 	assert_int(_loop().refused_bot_actions).is_equal(0)
 	assert_int(_loop().tutorial.faults).is_equal(0)

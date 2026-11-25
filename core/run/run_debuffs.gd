@@ -15,9 +15,8 @@ var swap_cap: int = RoundContext.NO_CAP
 var cut: BankCut = BankCut.new()
 ## Meter table rows the round's end raises.
 var meter_sources: Array[String] = []
-## The Cadres left out of this round, and copies of the plot cards it destroyed.
+## The Cadres left out of this round.
 var confiscated: Array[ActiveModifier] = []
-var seized: Array[CardInstance] = []
 
 var _state: RunState
 var _stack: ModifierStack
@@ -63,7 +62,6 @@ func rebuilt() -> void:
 	cut = BankCut.new()
 	meter_sources.clear()
 	confiscated.clear()
-	seized.clear()
 	var cadres: Array[ActiveModifier] = []
 	var takers: Array[ConfiscationEffect] = []
 	for entry: ActiveModifier in _stack.ordered_entries():
@@ -112,7 +110,6 @@ func started(context: RoundContext) -> void:
 		if plot.is_empty():
 			return
 		var card: CardInstance = plot.pop_at(context.stream.next_int(0, plot.size() - 1))
-		seized.append(card.snapshot())
 		var named: String = "%d,%d" % [card.base_rank(), card.suit()]
 		_log.add(RunEvent.new(RunEvent.Type.PLOT_SEIZED, _player, card.id(), 0.0, named))
 

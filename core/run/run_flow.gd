@@ -11,6 +11,8 @@ enum State {
 	ROUND_END,
 	SET_END,
 	SHOP,
+	## No move leads here. The member keeps its place because a save holds the phase as a
+	## number, and every state after it would shift without it.
 	EVENT,
 	YEAR_END,
 	RUN_END,
@@ -29,8 +31,8 @@ const TRANSITIONS: Dictionary[State, Array] = {
 	State.ROUND_PLAY: [State.ROUND_END],
 	State.ROUND_END: [State.BIDDING, State.ROUND_PLAY, State.SET_END, State.RUN_END],
 	State.SET_END: [State.SHOP, State.REEDUCATION, State.RUN_END],
-	State.SHOP: [State.EVENT, State.SET_INTRO, State.YEAR_END, State.RUN_END],
-	State.EVENT: [State.SET_INTRO, State.YEAR_END, State.RUN_END],
+	State.SHOP: [State.SET_INTRO, State.YEAR_END, State.RUN_END],
+	State.EVENT: [],
 	State.YEAR_END: [State.SET_INTRO, State.RUN_END],
 	State.REEDUCATION: [State.SET_INTRO, State.YEAR_END, State.RUN_END],
 	State.RUN_END: [],

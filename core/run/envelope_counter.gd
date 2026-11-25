@@ -12,7 +12,6 @@ const SOLD: String = ""
 const PERCENT: int = 100
 ## The pick that keeps nothing.
 const NOTHING: int = -1
-const DEFAULT_RUN: RunParams = preload("res://data/run/default_run.tres")
 
 ## The counter's Campaigns, whose sold-back ones an envelope may not hand back that visit.
 var sold_back: CampaignCounter = null
@@ -35,13 +34,13 @@ func _init(
 	params: ShopParams,
 	directives: Array[DirectiveDef],
 	campaigns: Array[CampaignDef],
-	run: RunParams = null
+	run: RunParams
 ) -> void:
 	_state = state
 	_params = params
 	_directives = directives
 	_campaigns = campaigns
-	_run = run if run != null else DEFAULT_RUN
+	_run = run
 
 
 ## Envelope IDs per slot; SOLD marks one already bought.

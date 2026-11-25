@@ -80,7 +80,7 @@ func test_envelopes_leave_every_other_draw_alone() -> void:
 		var bare: RunLoop = RunLoop.new(bare_state, RunScript.bots(), SetConfig.new())
 		var none: ShopParams = STORE.duplicate()
 		none.envelope_offers = 0
-		bare.shop.envelopes = EnvelopeCounter.new(bare_state, none, [], [])
+		bare.shop.envelopes = EnvelopeCounter.new(bare_state, none, [], [], RunLoop.DEFAULT_PARAMS)
 		bare.start_set()
 		RunScript.new().play_until_set_over(bare)
 		bare.state.coupons = RICH

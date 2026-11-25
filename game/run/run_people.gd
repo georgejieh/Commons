@@ -26,8 +26,8 @@ static func player_full_name(state: RunState) -> String:
 	return Surnames.full_name(state.names.player_given_name(), player_surname(state))
 
 
-## A copy of the seated family's voice, its pitch moved by the village's drift, or null
-## when the run seats no roster. Sent-down youth never drift.
+## A copy of the seated family's voice, played back at the pitch the village's drift
+## moved it to, or null when the run seats no roster. Sent-down youth never drift.
 static func seat_voice(state: RunState, seat: int) -> VoiceProfile:
 	var entry: RosterEntry = _seated(state, seat)
 	if entry == null:
@@ -37,7 +37,6 @@ static func seat_voice(state: RunState, seat: int) -> VoiceProfile:
 		return null
 	var voice: VoiceProfile = family.voice.duplicate() as VoiceProfile
 	if entry.template_id.is_empty():
-		voice.pitch *= state.drift.pitch_factor(family.id)
 		voice.playback_pitch = state.drift.pitch_factor(family.id)
 	return voice
 

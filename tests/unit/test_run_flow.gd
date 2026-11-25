@@ -44,13 +44,15 @@ func test_sample_of_illegal_moves_is_refused() -> void:
 		assert_int(flow.move(sample[1])).is_equal(RunFlow.Reason.ILLEGAL_TRANSITION)
 
 
-func test_every_state_has_an_entry_and_every_state_is_reachable() -> void:
+## EVENT keeps its place for the saved phase numbers after it, and nothing moves to it.
+func test_every_state_has_an_entry_and_every_state_but_event_is_reachable() -> void:
 	var reached: Dictionary[int, bool] = {RunFlow.State.RUN_START: true}
 	for from: int in RunFlow.State.size():
 		assert_bool(RunFlow.TRANSITIONS.has(from)).is_true()
 		for to: int in RunFlow.TRANSITIONS[from]:
 			reached[to] = true
-	assert_int(reached.size()).is_equal(RunFlow.State.size())
+	assert_bool(reached.has(RunFlow.State.EVENT)).is_false()
+	assert_int(reached.size()).is_equal(RunFlow.State.size() - 1)
 
 
 func test_architecture_diagram_matches_the_table() -> void:

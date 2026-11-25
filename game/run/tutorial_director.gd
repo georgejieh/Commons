@@ -54,10 +54,6 @@ func phase() -> Phase:
 	return _phase
 
 
-func is_done() -> bool:
-	return _phase == Phase.DONE
-
-
 ## True while a follow-up shows and holds its beat before the next prompt may show.
 func is_held() -> bool:
 	return _held and not _unseen

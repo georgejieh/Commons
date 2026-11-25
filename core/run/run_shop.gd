@@ -80,7 +80,7 @@ func _init(
 	directives: Array[DirectiveDef] = [],
 	offered: Array[CampaignDef] = [],
 	reformed: Array[ReformDef] = [],
-	run: RunParams = null
+	run: RunParams = RunLoop.DEFAULT_PARAMS
 ) -> void:
 	_state = state
 	_params = params

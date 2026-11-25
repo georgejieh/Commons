@@ -147,7 +147,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.reeducation_due = bool(data["reeducation_due"])
 	state.resentment = int(data["resentment"])
 	state.seatless_sets = int(data["seatless_sets"])
-	for rank: Variant in data.get("wild_ranks", []):
+	for rank: Variant in data["wild_ranks"]:
 		state.wild_ranks.append(int(rank))
 	state.commons_received = str(data["commons_received"]).to_int()
 	state.commons_paid = str(data["commons_paid"]).to_int()
@@ -195,8 +195,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.famine_market_buys = int(data["famine_market_buys"])
 	state.names = RunNames.from_dict(data["names"])
 	state.drift = VillageDrift.from_dict(data["drift"])
-	# Saves before schema 17 have none; RunRecord validates the field where it belongs.
-	state.books = RunBooks.from_dict(data.get("books", {}))
+	state.books = RunBooks.from_dict(data["books"])
 	return state
 
 

@@ -7,21 +7,14 @@ extends RefCounted
 ## The ending's ID, or the death's.
 var id: String = ""
 var death: bool = false
-var title_key: String = ""
-var text_key: String = ""
-var text_values: Dictionary[String, Variant] = {}
 var title: String = ""
 var text: String = ""
 var famine: int = 0
 var denunciation: int = 0
 var landlord: bool = false
-## One string key per epilogue line, in order, with the values that fill it and the
-## filled line.
-var line_keys: Array[String] = []
-var line_values: Array[Dictionary] = []
+## The epilogue's lines, filled in, in order.
 var lines: Array[String] = []
 ## The historical note under the epilogue, or empty for an ending without one.
-var note_key: String = ""
 var note: String = ""
 ## Decorative Chinese for the title card, or empty.
 var seal: String = ""
@@ -30,20 +23,14 @@ var player_name: String = ""
 
 
 ## surname is the player's family name, as the endings call them.
-static func of(
-	state: RunState,
-	surname: String,
-	meters: MeterTable = RunLoop.DEFAULT_METERS,
-	params: EndingParams = Endings.DEFAULT_PARAMS
-) -> EndingView:
+static func of(state: RunState, surname: String) -> EndingView:
+	var params: EndingParams = Endings.DEFAULT_PARAMS
 	var view: EndingView = EndingView.new()
-	view.id = Endings.outcome(state, meters, params)
+	view.id = Endings.outcome(state, RunLoop.DEFAULT_METERS, params)
 	view.death = Endings.is_death(view.id)
-	view.title_key = Endings.title_key(view.id)
-	view.text_key = Endings.text_key(view.id)
-	view.text_values = {"surname": surname, "year": state.year}
-	view.title = _t(view.title_key)
-	view.text = _t(view.text_key).format(view.text_values)
+	view.title = _t(Endings.title_key(view.id))
+	var text_values: Dictionary[String, Variant] = {"surname": surname, "year": state.year}
+	view.text = _t(Endings.text_key(view.id)).format(text_values)
 	view.famine = state.famine
 	view.denunciation = state.denunciation
 	view.landlord = YearClass.is_landlord(state)
@@ -54,16 +41,13 @@ static func of(
 		var names: PackedStringArray = []
 		for name_key: String in line.name_keys:
 			names.append(_t(name_key))
-		# The dead line lists its names with commas, as it always has.
+		# The dead line's key lists its names with commas; the others join them in words.
 		var values: Dictionary[String, Variant] = {
 			"name": joined(names), "surname": surname, "names": ", ".join(names)
 		}
-		view.line_keys.append(line.key)
-		view.line_values.append(values)
 		view.lines.append(_t(line.key).format(values))
 	if Endings.NOTED.has(view.id):
-		view.note_key = Endings.NOTE_KEY
-		view.note = _t(view.note_key)
+		view.note = _t(Endings.NOTE_KEY)
 	view.seal = params.seals.get(view.id, "")
 	view.player_name = _t("end.name").format(
 		{"name": Surnames.full_name(state.names.player_given_name(), surname)}
