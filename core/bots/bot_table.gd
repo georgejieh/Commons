@@ -31,7 +31,7 @@ func _init(seat_rules: RuleSet, seat_map: PackedByteArray) -> void:
 
 ## The seat's table in the round as it stands, knowing every seat. While every seat
 ## plays under the same rules and order on both sides of a bomb, as with no seat-only
-## modifier in force, it is the plain table it always was.
+## modifier in force, it is a plain table.
 static func of_seat(table: SeatRules, at: int) -> BotTable:
 	var known: BotTable = BotTable.new(table.rules_for(at), table.map_for(at))
 	known.standing = table.standing_for(at)
@@ -70,15 +70,6 @@ func copied() -> BotTable:
 ## True when every seat plays under this seat's rules and order, on both sides of a bomb.
 func is_uniform() -> bool:
 	return _maps.is_empty()
-
-
-func rules_of(other: int) -> RuleSet:
-	return rules if is_uniform() else _seat_rules[_index(other, bombed)]
-
-
-## Another seat's standings in the trick as it stands.
-func standing_of(other: int) -> PackedByteArray:
-	return standing if is_uniform() else _standings[_index(other, bombed)]
 
 
 ## Another seat's own order in the trick as it stands.

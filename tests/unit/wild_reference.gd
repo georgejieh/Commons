@@ -45,10 +45,10 @@ static func subsets(counts: PackedByteArray) -> Array[PackedByteArray]:
 
 
 ## What a comparison sees: type, main rank, length, cards and, for a bomb, its kind.
-static func shape_of(pattern: Pattern, rules: RuleSet) -> String:
+static func shape_of(pattern: Pattern) -> String:
 	var kind: int = 0
 	if pattern.type == Pattern.Type.BOMB:
-		kind = PlayComparator.bomb_kind(pattern, rules)
+		kind = PlayComparator.bomb_kind(pattern)
 	return (
 		"%d %d %d %d %d"
 		% [pattern.type, pattern.main_rank, pattern.chain_length, pattern.card_count, kind]
@@ -59,7 +59,7 @@ static func shape_of(pattern: Pattern, rules: RuleSet) -> String:
 ## a bomb of the same rank and size.
 static func covered(reading: Pattern, moves: Array[Pattern], rules: RuleSet) -> bool:
 	for move: Pattern in moves:
-		if shape_of(move, rules) == shape_of(reading, rules):
+		if shape_of(move) == shape_of(reading):
 			return true
 		var same_bomb: bool = (
 			move.type == Pattern.Type.BOMB

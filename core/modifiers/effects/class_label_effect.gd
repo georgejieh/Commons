@@ -7,7 +7,7 @@ extends ModifierEffect
 
 
 func build_rank_map(context: RankMapContext) -> void:
-	if context.seat != holder_seat or context.landlord != holder_seat or context.stamped == 0:
+	if context.landlord != holder_seat or context.stamped == 0:
 		return
 	for rank: int in Ranks.TWO:
 		if context.stamped & (1 << rank) == 0:

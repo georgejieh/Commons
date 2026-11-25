@@ -6,10 +6,6 @@ extends RefCounted
 ## Only Expert searches. A pure job, so a runner may spread it over threads.
 
 
-static func applies(config: BotConfig) -> bool:
-	return config.searches()
-
-
 ## Runs a job's samples in turn until the deadline, then decides on those it finished.
 static func run(job: BotSearchJob, budget: BotBudget) -> BotPlay:
 	if not job.is_ready():
@@ -32,15 +28,15 @@ static func top_candidates(
 	if position.view.public.current_play != null:
 		moves = FollowPolicy.open_moves(position, legal)
 		_add_new(top, Pattern.pass_play())
-	var spite: float = FollowPolicy.spite(position)
-	var scored: Array[Array] = []
-	for move: Pattern in moves:
-		scored.append([position.scorer.score_play(move) + spite, move])
-	scored.sort_custom(_scores_higher)
-	for entry: Array in scored:
+	var scorer: CandidateScorer = position.scorer
+	var ranked: Array[Pattern] = moves.duplicate()
+	ranked.sort_custom(
+		func(a: Pattern, b: Pattern) -> bool: return scorer.score_play(a) > scorer.score_play(b)
+	)
+	for move: Pattern in ranked:
 		if top.size() >= position.config.search_candidates():
 			break
-		_add_new(top, entry[1])
+		_add_new(top, move)
 	return top
 
 
@@ -149,7 +145,3 @@ static func _add_new(moves: Array[Pattern], move: Pattern) -> void:
 		if other.equals(move):
 			return
 	moves.append(move)
-
-
-static func _scores_higher(first: Array, second: Array) -> bool:
-	return first[0] > second[0]

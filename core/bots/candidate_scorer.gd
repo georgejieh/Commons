@@ -2,9 +2,11 @@ class_name CandidateScorer
 extends RefCounted
 ## Scores a candidate by the hand it leaves: the sum of group values less a cost for each
 ## round still needed (sm9sun's baseline). Passing keeps the hand and costs one more round.
-## One instance serves one decision, so every candidate shares the search's memo.
+## One instance serves one decision, so every candidate shares the search's memo. A
+## caller that decides again and again under the same rules and order may hand in one
+## decomposer for all of them, so they share its memo too.
 
-## Bonus per Pattern.Type added to every play's score (P4.7). Empty for none.
+## Bonus per Pattern.Type added to every play's score. Empty for none.
 var _bias: PackedFloat32Array = PackedFloat32Array()
 var _counts: PackedByteArray
 var _weights: BotWeights
@@ -17,13 +19,16 @@ func _init(
 	counts: PackedByteArray,
 	table: BotTable,
 	weights: BotWeights,
-	bias: PackedFloat32Array = PackedFloat32Array()
+	bias: PackedFloat32Array = PackedFloat32Array(),
+	decomposer: HandDecomposer = null
 ) -> void:
 	_bias = bias
 	_counts = counts
 	_weights = weights
 	_rank_map = table.rank_map
-	_decomposer = HandDecomposer.new(table.rules, table.rank_map, weights.memo_cap)
+	_decomposer = decomposer
+	if _decomposer == null:
+		_decomposer = HandDecomposer.new(table.rules, table.rank_map, weights.memo_cap)
 
 
 ## Each move is scored once per decision: the policy and the search weigh the same moves.
@@ -64,6 +69,10 @@ func _hand_value(counts: PackedByteArray, extra_rounds: int) -> float:
 	return value - _weights.round_penalty * (groups.size() + extra_rounds)
 
 
+## A group is worth its highest card in the seat's own order. A chain's last card is not
+## always that: under a turned order a Straight stands highest at its first.
 func _group_value(group: Pattern) -> float:
-	var top: int = _rank_map[group.main_rank] + group.chain_length - 1
+	var top: int = _rank_map[group.main_rank]
+	for offset: int in range(1, group.chain_length):
+		top = maxi(top, _rank_map[group.main_rank + offset])
 	return top - _weights.rank_offset + _weights.type_bonus[group.type]

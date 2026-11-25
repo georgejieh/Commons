@@ -10,6 +10,12 @@ var holder_seat: int = Seats.NONE
 var memo: CadreMemo = CadreMemo.new()
 
 
+## A number given in hundredths as a fraction, as every parameter named in percent or in
+## hundredths is read: 150 is 1.5.
+static func fraction(hundredths: float) -> float:
+	return hundredths / Scorer.PERCENT
+
+
 ## Names every parameter the definition must supply.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray()
@@ -54,10 +60,6 @@ func play_scored(_context: PlayContext) -> void:
 
 
 func card_scored(_context: CardContext) -> void:
-	pass
-
-
-func trick_won(_context: TrickContext) -> void:
 	pass
 
 

@@ -5,7 +5,8 @@ extends RefCounted
 ## that carries a scripted villager is answered from its script (ADR 0026).
 
 
-## True claims the landlord seat. counts is the bot's own dealt hand.
+## True claims the landlord seat. counts is the bot's own dealt hand. A bid is decided
+## at once, so its budget goes unread; ADR 0009 gives every decision one all the same.
 static func decide_bid(
 	counts: PackedByteArray,
 	is_grab: bool,
@@ -20,24 +21,29 @@ static func decide_bid(
 	return points >= BidPolicy.threshold(is_grab, is_last, config.weights) - config.ambition
 
 
-## legal is what MoveGenerator lists. Returns a pass only when following.
+## legal is what MoveGenerator lists. Returns a pass only when following. A caller that
+## decides many times under one table may pass a decomposer built for it, whose memo then
+## serves every decision (Rollout); a decomposition reads nothing but the table's rules and
+## order and the hand, so it reads the same from a shared memo.
 static func decide_play(
-	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig, budget: BotBudget
+	view: SeatView,
+	legal: Array[Pattern],
+	table: BotTable,
+	config: BotConfig,
+	budget: BotBudget,
+	decomposer: HandDecomposer = null
 ) -> BotPlay:
 	if config.scripted != null:
 		return config.scripted.play(view, legal)
 	legal = considered(legal)
 	if legal.is_empty():
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.PASS_NOTHING_BEATS)
-	if config.effort < 1.0 and config.tier == BotConfig.Tier.EASY:
-		var scorer: CandidateScorer = CandidateScorer.new(view.own_counts, table, config.weights)
-		var slack: BotPosition = BotPosition.new(view, table, config, scorer)
-		if slack.slacks():
-			return SlackPolicy.choose(slack, legal)
+	if SlackPolicy.slacks(view, config):
+		return SlackPolicy.choose(view, legal)
 	if config.tier == BotConfig.Tier.EASY:
 		return GreedyPolicy.choose(view, legal, table, config)
-	var job: BotSearchJob = search_job(view, legal, table, config)
-	if not ExpertSearch.applies(config):
+	var job: BotSearchJob = _job(view, legal, table, config, decomposer)
+	if not config.searches():
 		return job.fallback
 	return ExpertSearch.run(job, budget)
 
@@ -47,18 +53,10 @@ static func search_job(
 	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
 ) -> BotSearchJob:
 	legal = considered(legal)
-	var scorer: CandidateScorer = CandidateScorer.new(
-		view.own_counts, table, config.weights, config.type_bias
-	)
-	var position: BotPosition = BotPosition.new(view, table, config, scorer)
-	if position.slacks():
+	if SlackPolicy.slacks(view, config):
 		var none: Array[Pattern] = []
-		return BotSearchJob.new(position, none, SlackPolicy.choose(position, legal))
-	var play: BotPlay = _by_policy(position, legal)
-	var candidates: Array[Pattern] = []
-	if ExpertSearch.applies(config):
-		candidates = legal
-	return BotSearchJob.new(position, candidates, play)
+		return BotSearchJob.new(null, none, SlackPolicy.choose(view, legal))
+	return _job(view, legal, table, config)
 
 
 ## The legal moves a bot weighs: every one, less the wild plays it never needs
@@ -71,6 +69,26 @@ static func considered(legal: Array[Pattern]) -> Array[Pattern]:
 	return legal if kept.size() == legal.size() or kept.is_empty() else kept
 
 
+## The policy's play and the search's candidates, over moves already considered, for a
+## bot that is trying.
+static func _job(
+	view: SeatView,
+	legal: Array[Pattern],
+	table: BotTable,
+	config: BotConfig,
+	decomposer: HandDecomposer = null
+) -> BotSearchJob:
+	var scorer: CandidateScorer = CandidateScorer.new(
+		view.own_counts, table, config.weights, config.type_bias, decomposer
+	)
+	var position: BotPosition = BotPosition.new(view, table, config, scorer)
+	var play: BotPlay = _by_policy(position, legal)
+	var candidates: Array[Pattern] = []
+	if config.searches():
+		candidates = legal
+	return BotSearchJob.new(position, candidates, play)
+
+
 static func _by_policy(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 	if position.view.public.current_play == null:
 		return LeadPolicy.choose(position, legal)
@@ -78,6 +96,7 @@ static func _by_policy(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 
 
 ## Returns the need the bot declares before a Commons split. A dishonest bot inflates it.
+## Decided at once, so its budget goes unread, as a bid's does (ADR 0009).
 static func declare_need(
 	true_need: int, config: BotConfig, stream: RandomStream, _budget: BotBudget
 ) -> int:
@@ -94,7 +113,7 @@ static func choose_gift(view: SeatView, table: BotTable, count: int) -> Array[in
 	return AidChoice.choose(view, table.rank_map, count)
 
 
-## A hand split into its fewest plays (P2.2), for a view that sorts cards by group.
+## A hand split into its fewest plays, for a view that sorts cards by group.
 static func suggest_groups(
 	counts: PackedByteArray, table: BotTable, config: BotConfig
 ) -> Array[Pattern]:

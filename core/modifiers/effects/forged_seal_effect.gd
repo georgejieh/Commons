@@ -5,5 +5,4 @@ extends ModifierEffect
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat == holder_seat:
-		context.stamps_resented = false
+	context.stamps_resented = false

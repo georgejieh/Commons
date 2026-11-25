@@ -18,5 +18,5 @@ func round_end(context: RoundContext) -> void:
 	if not peasants_won or context.landlord_cards <= 0:
 		return
 	var grown: int = parameters[PERCENT] * context.landlord_cards
-	context.commons_scale *= (100 + grown) / 100.0
+	context.commons_scale *= fraction(100 + grown)
 	memo.fire(grown)

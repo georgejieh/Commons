@@ -45,18 +45,9 @@ static func is_valid(rank: int) -> bool:
 	return rank >= 0 and rank < COUNT
 
 
-static func is_chainable(rank: int) -> bool:
-	return rank >= 0 and rank <= LAST_CHAINABLE
-
-
 ## Returns the string table key for a valid rank.
 static func label_key(rank: int) -> String:
 	return LABEL_KEYS[rank]
-
-
-## Returns the rank for a label key, or INVALID.
-static func from_label_key(key: String) -> int:
-	return LABEL_KEYS.find(key)
 
 
 ## Returns the map where every rank is its own effective rank.

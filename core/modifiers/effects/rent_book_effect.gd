@@ -15,8 +15,8 @@ func required_parameters() -> PackedStringArray:
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat == holder_seat and context.is_landlord:
-		context.add_zeal += _zeal_percent() / 100.0
+	if context.is_landlord:
+		context.add_zeal += fraction(_zeal_percent())
 
 
 func turn_taken(context: TurnContext) -> void:
@@ -31,7 +31,7 @@ func turn_taken(context: TurnContext) -> void:
 
 
 func state_values() -> Dictionary[String, Variant]:
-	var zeal: float = _zeal_percent() / 100.0
+	var zeal: float = fraction(_zeal_percent())
 	return {"zeal": zeal, "wins": memo.value(WINS), "count": zeal}
 
 

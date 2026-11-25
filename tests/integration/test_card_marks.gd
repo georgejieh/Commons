@@ -263,9 +263,10 @@ func test_a_model_card_dealt_to_an_opponent_doubles_for_them() -> void:
 				continue
 			var played: RoundEvent = events[index - 1].round_event
 			var grain: float = 0.0
-			for card: CardInstance in played.cards:
-				if Scorer.is_scored(card, played.pattern):
-					grain += Scorer.DEFAULT_PARAMS.card_grain[card.base_rank()]
+			var body: Array[bool] = Scorer.body_flags(played.cards, played.pattern)
+			for at: int in played.cards.size():
+				if body[at]:
+					grain += Scorer.DEFAULT_PARAMS.card_grain[played.cards[at].base_rank()]
 			assert_float(events[index].grain).is_equal(grain * 2.0)
 			checked += 1
 		seen = events.size()
@@ -280,9 +281,10 @@ func test_a_model_kicker_still_scores_nothing() -> void:
 		Classifier.classify(counts, RuleSet.default_rules(), Ranks.identity_map()).pattern
 	)
 	var plain: float = Scorer.score_play(cards, pattern, 1, 0, false, stack).total
-	for card: CardInstance in cards:
-		if not Scorer.is_scored(card, pattern):
-			CardModifiers.enhance(card, CardInstance.MODEL)
+	var body: Array[bool] = Scorer.body_flags(cards, pattern)
+	for at: int in cards.size():
+		if not body[at]:
+			CardModifiers.enhance(cards[at], CardInstance.MODEL)
 	assert_float(Scorer.score_play(cards, pattern, 1, 0, false, stack).total).is_equal(plain)
 
 

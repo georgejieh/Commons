@@ -73,7 +73,7 @@ func run_round_start(context: RoundContext) -> void:
 		entry.effect.round_start(context)
 
 
-## With a trail, each hook's change is recorded as it runs, for the table (P5.2a).
+## With a trail, each hook's change is recorded as it runs, for the table.
 func run_play_scored(context: PlayContext, trail: ScoreTrail = null) -> void:
 	if trail != null:
 		trail.start_play(context)
@@ -93,11 +93,6 @@ func run_card_scored(context: CardContext, trail: ScoreTrail = null) -> void:
 		entry.effect.card_scored(context)
 		if trail != null:
 			trail.card_hook(entry.definition, context, before)
-
-
-func run_trick_won(context: TrickContext) -> void:
-	for entry: ActiveModifier in _by_hook[Hooks.TRICK_WON]:
-		entry.effect.trick_won(context)
 
 
 func run_round_end(context: RoundContext) -> void:

@@ -19,10 +19,10 @@ func required_parameters() -> PackedStringArray:
 
 
 func play_scored(context: PlayContext) -> void:
-	if context.seat != holder_seat or context.pattern.type != Pattern.Type.STRAIGHT:
+	if context.pattern.type != Pattern.Type.STRAIGHT:
 		return
 	var extra: int = maxi(0, context.pattern.card_count - parameters[BASE_LENGTH])
-	context.add_zeal += extra * _per_card() / 100.0
+	context.add_zeal += fraction(extra * _per_card())
 
 
 func turn_taken(context: TurnContext) -> void:
@@ -35,7 +35,7 @@ func turn_taken(context: TurnContext) -> void:
 
 
 func state_values() -> Dictionary[String, Variant]:
-	var zeal: float = _per_card() / 100.0
+	var zeal: float = fraction(_per_card())
 	return {"zeal": zeal, "count": zeal}
 
 

@@ -220,9 +220,7 @@ func _sample(stream: RandomStream, rules: RuleSet, count: int) -> Array[Pattern]
 		var moves: Array[Pattern] = _generate(
 			_hand(stream, FULL_HAND, stream.next_int(0, 5), rules), null, rules
 		)
-		var bombs: Array[Pattern] = moves.filter(
-			func(move: Pattern) -> bool: return FollowPolicy.is_bomb(move)
-		)
+		var bombs: Array[Pattern] = moves.filter(func(move: Pattern) -> bool: return move.is_bomb())
 		sample.append(moves[stream.next_int(0, moves.size() - 1)])
 		if not bombs.is_empty():
 			sample.append(bombs[stream.next_int(0, bombs.size() - 1)])
@@ -253,9 +251,9 @@ func _order_breaks(a: Pattern, b: Pattern, sample: Array[Pattern], rules: RuleSe
 	var ba: bool = PlayComparator.beats(b, a, rules)
 	if ab and ba:
 		breaks += 1
-	var meet: bool = a.shape() == b.shape() or FollowPolicy.is_bomb(a) or FollowPolicy.is_bomb(b)
-	var same: String = WildReference.shape_of(a, rules)
-	var tied: bool = a.key == b.key and same == WildReference.shape_of(b, rules)
+	var meet: bool = a.shape() == b.shape() or a.is_bomb() or b.is_bomb()
+	var same: String = WildReference.shape_of(a)
+	var tied: bool = a.key == b.key and same == WildReference.shape_of(b)
 	if meet and not tied and not ab and not ba:
 		breaks += 1
 	if ab:

@@ -1,6 +1,6 @@
 class_name ScoreStep
 extends RefCounted
-## One change to a play's score, as plain data (P5.2a): a card counted for Grain, the hand
+## One change to a play's score, as plain data: a card counted for Grain, the hand
 ## type's Rate, Zeal's start, a Directive's level, a card's mark, or a modifier's hook. A
 ## play's steps, taken in order and applied to each figure, give its Grain, Rate and Zeal,
 ## and the product of those three, with the Total steps applied, gives its total. The table
@@ -61,9 +61,3 @@ static func applied(step_op: Op, from: float, by: float) -> float:
 ## True when the step lowered its figure, as a debuff that cuts the score does.
 func is_cut() -> bool:
 	return after < before
-
-
-## True for the steps that build the score before anything changes it: the cards'
-## printed Grain, the hand's Rate and Zeal's start.
-func is_base() -> bool:
-	return source == Source.CARD or source == Source.HAND or source == Source.START

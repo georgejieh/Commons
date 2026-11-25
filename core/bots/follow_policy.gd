@@ -34,18 +34,18 @@ static func open_moves(position: BotPosition, legal: Array[Pattern]) -> Array[Pa
 
 
 ## What a grudge adds to answering the seat that owns the trick.
-static func spite(position: BotPosition) -> float:
+static func _spite(position: BotPosition) -> float:
 	return position.config.grudge * position.config.memory[position.trick_owner()]
 
 
 ## A grudge against the teammate who owns the trick makes covering for them less likely:
-## cooperation is divided by one plus the spite (P4.2). A warm family's loyalty to the
+## cooperation is divided by one plus the spite. A warm family's loyalty to the
 ## player counts in its cooperation (ADR 0025).
 static func _leaves_it_to_teammate(position: BotPosition) -> bool:
 	var teammate_owns: bool = position.trick_owner() == position.teammate
 	if not teammate_owns:
 		return false
-	return position.roll() < position.config.team_cooperation() / (1.0 + spite(position))
+	return position.roll() < position.config.team_cooperation() / (1.0 + _spite(position))
 
 
 static func _without_teammate_bombs(position: BotPosition, legal: Array[Pattern]) -> Array[Pattern]:
@@ -53,7 +53,7 @@ static func _without_teammate_bombs(position: BotPosition, legal: Array[Pattern]
 		return legal
 	var kept: Array[Pattern] = []
 	for move: Pattern in legal:
-		if not is_bomb(move):
+		if not move.is_bomb():
 			kept.append(move)
 	return kept
 
@@ -100,7 +100,7 @@ static func _block(position: BotPosition, legal: Array[Pattern]) -> Pattern:
 	var bomb: Pattern = null
 	var groups: Array[Pattern] = []
 	for move: Pattern in legal:
-		if is_bomb(move):
+		if move.is_bomb():
 			if bomb == null:
 				bomb = move
 			continue
@@ -121,7 +121,7 @@ static func _ungated(position: BotPosition, legal: Array[Pattern]) -> Array[Patt
 	var open_bombs: bool = _bombs_open(position)
 	var kept: Array[Pattern] = []
 	for move: Pattern in legal:
-		if is_bomb(move):
+		if move.is_bomb():
 			if open_bombs:
 				kept.append(move)
 		elif (
@@ -149,15 +149,11 @@ static func _bombs_open(position: BotPosition) -> bool:
 	return runaway and not position.is_landlord()
 
 
-static func is_bomb(move: Pattern) -> bool:
-	return move.type == Pattern.Type.BOMB or move.type == Pattern.Type.ROCKET
-
-
 ## Best score change, lower rank on ties, and a pass when nothing beats passing.
 static func _best_response(position: BotPosition, moves: Array[Pattern]) -> BotPlay:
 	var best: Pattern = null
 	var best_score: float = position.scorer.score_pass()
-	var extra: float = spite(position)
+	var extra: float = _spite(position)
 	for move: Pattern in moves:
 		var score: float = position.scorer.score_play(move) + extra
 		var ties: bool = best != null and is_equal_approx(score, best_score)

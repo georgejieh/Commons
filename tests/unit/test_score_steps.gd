@@ -52,7 +52,7 @@ func _hand(text: String) -> Array[CardInstance]:
 
 func _pattern(cards: Array[CardInstance]) -> Pattern:
 	var rules: RuleSet = RuleSet.default_rules()
-	return CardSelection.classify_cards(cards, rules, Ranks.identity_map()).pattern
+	return RoundScript.classify(cards, rules, Ranks.identity_map()).pattern
 
 
 func _score(

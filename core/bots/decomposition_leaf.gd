@@ -72,18 +72,18 @@ func groups(counts: PackedByteArray, planes: PackedInt32Array) -> Array[Pattern]
 			result.append(_trio(trio, Pattern.Type.TRIO_PAIR, spare_pairs[0], 2))
 			spare_pairs.remove_at(0)
 		else:
-			result.append(_group(Pattern.Type.TRIO, trio, 1, HandDecomposer.TRIO_WIDTH))
+			result.append(_group(Pattern.Type.TRIO, trio, 1, Pattern.TRIO_WIDTH))
 	for rank: int in loose:
 		result.append(_group(Pattern.Type.SINGLE, rank, 1, 1))
 	for rank: int in spare_pairs:
-		result.append(_group(Pattern.Type.PAIR, rank, 1, HandDecomposer.PAIR_WIDTH))
+		result.append(_group(Pattern.Type.PAIR, rank, 1, Pattern.PAIR_WIDTH))
 	for rank: int in _bombs:
-		var width: int = HandDecomposer.BOMB_WIDTH
+		var width: int = Pattern.MIN_BOMB_WIDTH
 		if _rules.five_plus_is_bomb():
 			width = counts[rank]
 		result.append(_group(Pattern.Type.BOMB, rank, 1, width))
 	if _has_rocket:
-		var cards: int = HandDecomposer.PAIR_WIDTH
+		var cards: int = Pattern.PAIR_WIDTH
 		result.append(_group(Pattern.Type.ROCKET, Ranks.SMALL_JOKER, 1, cards))
 	return result
 
@@ -109,18 +109,18 @@ func _sort_ranks(counts: PackedByteArray) -> void:
 		var count: int = counts[rank]
 		if _has_rocket and rank >= Ranks.SMALL_JOKER:
 			count -= 1
-		if count >= HandDecomposer.BOMB_WIDTH and _rules.five_plus_is_bomb():
+		if count >= Pattern.MIN_BOMB_WIDTH and _rules.five_plus_is_bomb():
 			_bombs.append(rank)
 			continue
-		while count >= HandDecomposer.BOMB_WIDTH:
+		while count >= Pattern.MIN_BOMB_WIDTH:
 			_bombs.append(rank)
-			count -= HandDecomposer.BOMB_WIDTH
+			count -= Pattern.MIN_BOMB_WIDTH
 		match count:
-			HandDecomposer.SINGLE_WIDTH:
+			Pattern.SINGLE_WIDTH:
 				_singles.append(rank)
-			HandDecomposer.PAIR_WIDTH:
+			Pattern.PAIR_WIDTH:
 				_pairs.append(rank)
-			HandDecomposer.TRIO_WIDTH:
+			Pattern.TRIO_WIDTH:
 				_trios.append(rank)
 
 
@@ -149,9 +149,9 @@ func _try_wings(
 	_try_wings(index + 1, singles, pairs, absorbed, low)
 	if _rules.single_wings_allowed():
 		_try_kind(index, Wing.SINGLES, length, singles, pairs, absorbed, low)
-		if _rules.single_wings_may_pair() and length % HandDecomposer.PAIR_WIDTH == 0:
+		if _rules.single_wings_may_pair() and length % Pattern.PAIR_WIDTH == 0:
 			@warning_ignore("integer_division")
-			var slots: int = length / HandDecomposer.PAIR_WIDTH
+			var slots: int = length / Pattern.PAIR_WIDTH
 			_try_kind(index, Wing.PAIRS_IN_SINGLE_SLOTS, slots, singles, pairs, absorbed, low)
 	if _rules.pair_wings_allowed():
 		_try_kind(index, Wing.PAIRS, length, singles, pairs, absorbed, low)
@@ -227,14 +227,14 @@ func _loose_pairs() -> PackedByteArray:
 func _wing_slots(index: int) -> int:
 	if _best_wings[index] == Wing.PAIRS_IN_SINGLE_SLOTS:
 		@warning_ignore("integer_division")
-		return _plane_length(index) / HandDecomposer.PAIR_WIDTH
+		return _plane_length(index) / Pattern.PAIR_WIDTH
 	return _plane_length(index)
 
 
 func _plane_group(index: int) -> Pattern:
 	var start: int = _plane_start(index)
 	var length: int = _plane_length(index)
-	var body: int = length * HandDecomposer.TRIO_WIDTH
+	var body: int = length * Pattern.TRIO_WIDTH
 	var kind: int = _best_wings[index]
 	if kind == Wing.NONE:
 		return _group(Pattern.Type.AIRPLANE, start, length, body)
@@ -259,7 +259,7 @@ func _trio(rank: int, type: Pattern.Type, kicker: int, width: int) -> Pattern:
 	var kickers: PackedByteArray = PackedByteArray()
 	kickers.resize(width)
 	kickers.fill(kicker)
-	var cards: int = HandDecomposer.TRIO_WIDTH + width
+	var cards: int = Pattern.TRIO_WIDTH + width
 	return Pattern.new(type, rank, 1, cards, kickers, _rank_map[rank])
 
 

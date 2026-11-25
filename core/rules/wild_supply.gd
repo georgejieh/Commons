@@ -29,8 +29,7 @@ static func of(counts: PackedByteArray, rules: RuleSet) -> WildSupply:
 		return null
 	var held: int = 0
 	for rank: int in ranks:
-		if Ranks.is_valid(rank) and rank <= Ranks.TWO:
-			held += counts[rank]
+		held += counts[rank]
 	if held == 0:
 		return null
 	return WildSupply.new(counts, ranks)
@@ -40,14 +39,13 @@ func _init(counts: PackedByteArray, ranks: Array[int]) -> void:
 	natural = counts.duplicate()
 	wild.resize(Ranks.COUNT)
 	for rank: int in ranks:
-		if not Ranks.is_valid(rank) or rank > Ranks.TWO or wild[rank] > 0:
-			continue
 		wild[rank] = natural[rank]
 		natural[rank] = 0
 		total += wild[rank]
 		if wild[rank] > 0:
 			order.append(rank)
-	var sorted: Array = Array(order)
+	var sorted: Array[int] = []
+	sorted.assign(order)
 	sorted.sort_custom(_taken_first)
 	order = PackedByteArray(sorted)
 

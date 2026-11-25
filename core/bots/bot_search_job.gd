@@ -12,6 +12,7 @@ var _hands: Array[Array] = []
 var _results: Array[PackedInt32Array] = []
 
 
+## position is null for a decision with nothing to search, as when the bot slacks.
 func _init(position: BotPosition, legal: Array[Pattern], policy_play: BotPlay) -> void:
 	_position = position
 	fallback = policy_play
@@ -39,7 +40,7 @@ func sample_count() -> int:
 
 
 ## Runs one sample. If stop expires before it is done the sample is abandoned and
-## counts as not finished, so a search can be held to a ceiling (P5.0).
+## counts as not finished, so a search can be held to a ceiling.
 func run_sample(sample: int, stop: BotBudget) -> void:
 	var hands: Array[PackedByteArray] = []
 	hands.assign(_hands[sample])

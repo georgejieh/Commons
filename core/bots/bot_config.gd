@@ -26,10 +26,10 @@ var ambition: float = 0.0
 var grudge: float = 0.0
 ## How much this bot holds against each seat, from villager memory.
 var memory: PackedFloat32Array = PackedFloat32Array([0.0, 0.0, 0.0])
-## The chance, from 0 to 1, that this bot tries on a decision; the rest it slacks (P4.4).
+## The chance, from 0 to 1, that this bot tries on a decision; the rest it slacks.
 var effort: float = 1.0
 ## A bonus per Pattern.Type added to every play the bot scores, so it favors the hand
-## types someone else played (P4.7). Empty for none.
+## types someone else played. Empty for none.
 var type_bias: PackedFloat32Array = PackedFloat32Array()
 ## The authored villager that answers every decision in place of the tiers, or null for a
 ## bot that thinks (ADR 0026). The run that holds the script sets it.
@@ -63,7 +63,7 @@ func take_traits(personality: Personality) -> void:
 
 
 ## A copy that shares nothing the run changes, for a search that reads it on another
-## thread (P5.0). The weights and script are shared: nothing changes them in play.
+## thread. The weights and script are shared: nothing changes them in play.
 func copy() -> BotConfig:
 	var made: BotConfig = BotConfig.new(weights, tier, search_seed)
 	made.bomb_shift = bomb_shift
@@ -85,7 +85,7 @@ func team_cooperation() -> float:
 	return maxf(cooperation, minf(cooperation + loyalty, MAX_COOPERATION))
 
 
-## True for a tier that searches before it plays, Expert today (ADR 0030).
+## True for a tier that searches before it plays (ADR 0030).
 func searches() -> bool:
 	return tier == Tier.EXPERT
 

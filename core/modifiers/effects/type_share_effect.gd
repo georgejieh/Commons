@@ -16,7 +16,7 @@ func required_parameters() -> PackedStringArray:
 func play_scored(context: PlayContext) -> void:
 	if context.seat != holder_seat or context.pattern.type != parameters[TYPE]:
 		return
-	var share: float = parameters[PERCENT] / 100.0
+	var share: float = fraction(parameters[PERCENT])
 	if parameters[WHOLE] == 1:
 		context.total_scale *= share
 	else:

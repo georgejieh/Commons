@@ -70,7 +70,7 @@ func _big_play() -> RunEvent:
 		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % id), 0)
 	var cards: Array[CardInstance] = RoundScript.stacked_deal(["333444"], "").hands[0].cards()
 	var rules: RuleSet = RuleSet.default_rules()
-	var pattern: Pattern = CardSelection.classify_cards(cards, rules, Ranks.identity_map()).pattern
+	var pattern: Pattern = RoundScript.classify(cards, rules, Ranks.identity_map()).pattern
 	var score: ScoreBreakdown = Scorer.score_play(
 		cards, pattern, 3, 0, false, stack, Scorer.DEFAULT_PARAMS, 0, null, true
 	)

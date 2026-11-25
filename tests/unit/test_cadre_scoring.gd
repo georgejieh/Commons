@@ -36,7 +36,7 @@ func _card(rank: int, suit: int) -> CardInstance:
 
 func _pattern(cards: Array[CardInstance]) -> Pattern:
 	var rules: RuleSet = RuleSet.default_rules()
-	return CardSelection.classify_cards(cards, rules, Ranks.identity_map()).pattern
+	return RoundScript.classify(cards, rules, Ranks.identity_map()).pattern
 
 
 func _score(
@@ -131,10 +131,25 @@ func test_model_poor_peasants_red_banner_and_red_ink_stack_in_any_order() -> voi
 	for order: Array in orders:
 		var ids: Array[String] = []
 		ids.assign(order)
-		var breakdown: ScoreBreakdown = _score(_stack(ids), [card])
+		var breakdown: ScoreBreakdown = Scorer.score_play(
+			[card],
+			_pattern([card]),
+			1,
+			HOLDER,
+			false,
+			_stack(ids),
+			Scorer.DEFAULT_PARAMS,
+			0,
+			null,
+			true
+		)
 		assert_float(breakdown.grain).is_equal(32.0)
-		# The breakdown's card step carries the whole card, so the steps add up.
-		assert_float(breakdown.step_value(0)).is_equal(32.0)
+		# The card's steps on the trail carry the whole card, so they add up.
+		var last_grain: float = 0.0
+		for step: ScoreStep in breakdown.trail:
+			if step.figure == ScoreStep.Figure.GRAIN:
+				last_grain = step.after
+		assert_float(last_grain).is_equal(32.0)
 	# The teammate scoring the same card gets the Model, the Association and the banner,
 	# but not the stamp; an opponent gets the Model alone.
 	var first: Array[String] = []

@@ -23,6 +23,13 @@ enum Type {
 	ROCKET,
 }
 
+## Cards of one rank in a single, a pair and a trio.
+const SINGLE_WIDTH: int = 1
+const PAIR_WIDTH: int = 2
+const TRIO_WIDTH: int = 3
+## The fewest cards of one rank that are a bomb, and the four of a four with two. With
+## bigger bombs a bomb may hold more (ADR 0029, rule 6).
+const MIN_BOMB_WIDTH: int = 4
 const KEY_RANK_BITS: int = 8
 const KEY_CHAIN_SHIFT: int = 8
 const KEY_COUNT_SHIFT: int = 16
@@ -73,7 +80,7 @@ static func pass_play() -> Pattern:
 
 ## Returns an independent copy, so a view can never reach the round's own play.
 func copy() -> Pattern:
-	return rekeyed(key & ((1 << KEY_RANK_BITS) - 1))
+	return rekeyed(effective_rank())
 
 
 ## Returns a copy compared at a new effective rank.
@@ -89,6 +96,16 @@ func rekeyed(effective_main: int) -> Pattern:
 
 func shape() -> int:
 	return key >> KEY_RANK_BITS
+
+
+## The main rank the key compares, on the scale the play was read on.
+func effective_rank() -> int:
+	return key & ((1 << KEY_RANK_BITS) - 1)
+
+
+## True for a Bomb or the Rocket.
+func is_bomb() -> bool:
+	return type == Type.BOMB or type == Type.ROCKET
 
 
 ## Cards per rank in the body.
@@ -156,6 +173,6 @@ func read_under(rules: RuleSet) -> Pattern:
 
 
 ## Records the printed counts the play spends, kept only when they differ from the
-## reading's, so a play with no stand-in compares as it always has.
+## reading's, so a play with no stand-in has an empty spent.
 func spend(printed: PackedByteArray) -> void:
 	spent = PackedByteArray() if printed == counts() else printed.duplicate()

@@ -13,13 +13,15 @@ var _owner: int
 var _passes: int
 var _table: BotTable
 var _config: BotConfig
-## The round's cards by rank as the searching seat knows them, which every seat's sketch
-## counts unseen cards against.
+## The round's cards by rank as the searching seat knows them, which every seat's view in
+## the sketch carries.
 var _deck_counts: PackedByteArray
 var _bombed: bool
 ## Each seat's table, before a bomb at index seat and after one at COUNT + seat, made the
-## first time the seat decides.
+## first time the seat decides, and a decomposer for each, whose memo every decision under
+## that table shares for the whole rollout.
 var _tables: Array[BotTable] = []
+var _decomposers: Array[HandDecomposer] = []
 
 
 func _init(
@@ -44,6 +46,7 @@ func _init(
 	_deck_counts = deck_counts
 	_bombed = table.bombed
 	_tables.resize(Seats.COUNT * 2)
+	_decomposers.resize(Seats.COUNT * 2)
 
 
 ## Applies a move for the seat to act. A pass pattern passes.
@@ -96,14 +99,24 @@ func _decide() -> Pattern:
 	var legal: Array[Pattern] = MoveGenerator.generate(
 		counts, mask, _current, table.rules, table.standing, true
 	)
-	return Bot.decide_play(_view(), legal, table, _config, BotBudget.unlimited()).pattern
+	var budget: BotBudget = BotBudget.unlimited()
+	var decomposer: HandDecomposer = _decomposers[_table_index(_turn)]
+	return Bot.decide_play(_view(), legal, table, _config, budget, decomposer).pattern
 
 
 func _seat_table(at: int) -> BotTable:
-	var index: int = (Seats.COUNT if _bombed else 0) + at
+	var index: int = _table_index(at)
 	if _tables[index] == null:
-		_tables[index] = _table.as_seat(at, _bombed)
+		var table: BotTable = _table.as_seat(at, _bombed)
+		_tables[index] = table
+		_decomposers[index] = HandDecomposer.new(
+			table.rules, table.rank_map, _config.weights.memo_cap
+		)
 	return _tables[index]
+
+
+func _table_index(at: int) -> int:
+	return (Seats.COUNT if _bombed else 0) + at
 
 
 func _view() -> SeatView:

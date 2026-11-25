@@ -2,9 +2,86 @@ class_name EffectRegistry
 extends RefCounted
 ## Maps modifier IDs to effect scripts. Definitions stay data; behavior stays here.
 
+## The meter each loss-meter debuff raises, by ID. Its effect is the one built with an
+## argument.
+const LOSS_METERS: Dictionary[String, String] = {
+	"big_character_poster": RunMeters.DEBUFF_DENUNCIATION,
+	"hungry_winter": RunMeters.DEBUFF_FAMINE,
+}
+
+## Every other effect script, by the ID of the definition it serves.
+static var _scripts: Dictionary[String, Script] = {
+	"cultural_revolution": CulturalRevolutionEffect,
+	"promotion_of_the_masses": PromotionEffect,
+	"criticism_meeting": RankAsEffect,
+	"inverted_order": InvertedOrderEffect,
+	"iron_rice_bowl": IronRiceBowlEffect,
+	"stakhanovite": StakhanoviteEffect,
+	"hidden_reserves": HiddenReservesEffect,
+	"landlords_ledger": LandlordsLedgerEffect,
+	"ration_cut": RationCutEffect,
+	"paperwork": TypeShareEffect,
+	"straightened_lines": TypeShareEffect,
+	"morning_meeting": MorningMeetingEffect,
+	"struggle_session": StruggleSessionEffect,
+	"requisition": RequisitionEffect,
+	"great_leap": GreatLeapEffect,
+	"the_handicap": HandicapEffect,
+	"the_purge": BossMarkerEffect,
+	"risen_villager": BossMarkerEffect,
+	"new_landlord": BossMarkerEffect,
+	"planned_allocation": PlannedAllocationEffect,
+	"red_ink": OwnerStampEffect,
+	"the_informant": InfoMarkerEffect,
+	"peek": InfoMarkerEffect,
+	"the_tally_clerk": InfoMarkerEffect,
+	"rehabilitation": RehabilitationEffect,
+	"class_label": ClassLabelEffect,
+	"collective_farm": CollectiveFarmEffect,
+	"show_trial": ShowTrialEffect,
+	"model_commune": ModelCommuneEffect,
+	"ration_coupon": RationCouponEffect,
+	"shock_brigade": ShockBrigadeEffect,
+	"canteen": CanteenEffect,
+	"red_banner": RedBannerEffect,
+	"poor_peasants_association": PoorPeasantsEffect,
+	"seed_grain": SeedGrainEffect,
+	"the_bookkeeper": BookkeeperEffect,
+	"last_sheaf": LastSheafEffect,
+	"steel_target": SteelTargetEffect,
+	"short_supply": ShortSupplyEffect,
+	"slogan_of_the_week": SloganEffect,
+	"levy": LevyEffect,
+	"work_point_audit": AuditFacesEffect,
+	"night_shift": NightShiftEffect,
+	"grain_tax": GrainTaxEffect,
+	"shared_kitchen": SharedKitchenEffect,
+	"confiscation": ConfiscationEffect,
+	"glass_walls": GlassWallsEffect,
+	"redistribution": RedistributionEffect,
+	"overtime": OvertimeEffect,
+	"plot_seized": PlotSeizedEffect,
+	"night_school": NightSchoolEffect,
+	"iron_and_coal": IronAndCoalEffect,
+	"advanced_cooperative": AdvancedCooperativeEffect,
+	"double_share_plough": DoubleSharePloughEffect,
+	"open_accounts": OpenAccountsEffect,
+	"tractor_station": TractorStationEffect,
+	"the_gleaners": GleanersEffect,
+	"public_granary": PublicGranaryEffect,
+	"five_year_plan": FiveYearPlanEffect,
+	"back_door": BackDoorEffect,
+	"informers_reward": InformersRewardEffect,
+	"forged_seal": ForgedSealEffect,
+	"loudspeaker": LoudspeakerEffect,
+	"rent_book": RentBookEffect,
+	"grain_speculator": GrainSpeculatorEffect,
+	"prize_exhibit": PrizeExhibitEffect,
+}
+
 
 static func has_effect(modifier_id: String) -> bool:
-	return _build(modifier_id) != null
+	return _scripts.has(modifier_id) or LOSS_METERS.has(modifier_id)
 
 
 ## Returns a new effect for the definition, held by the seat, with the Cadre's saved run
@@ -21,149 +98,8 @@ static func create(
 
 
 static func _build(modifier_id: String) -> ModifierEffect:
-	match modifier_id:
-		"cultural_revolution":
-			return CulturalRevolutionEffect.new()
-		"promotion_of_the_masses":
-			return PromotionEffect.new()
-		"criticism_meeting":
-			return RankAsEffect.new()
-		"inverted_order":
-			return InvertedOrderEffect.new()
-		"iron_rice_bowl":
-			return IronRiceBowlEffect.new()
-		"stakhanovite":
-			return StakhanoviteEffect.new()
-		"hidden_reserves":
-			return HiddenReservesEffect.new()
-		"landlords_ledger":
-			return LandlordsLedgerEffect.new()
-		"ration_cut":
-			return RationCutEffect.new()
-		"paperwork", "straightened_lines":
-			return TypeShareEffect.new()
-		"morning_meeting":
-			return MorningMeetingEffect.new()
-		"struggle_session":
-			return StruggleSessionEffect.new()
-		"requisition":
-			return RequisitionEffect.new()
-		"great_leap":
-			return GreatLeapEffect.new()
-		"the_handicap":
-			return HandicapEffect.new()
-		"the_purge", "risen_villager", "new_landlord":
-			return BossMarkerEffect.new()
-		"planned_allocation":
-			return PlannedAllocationEffect.new()
-		"red_ink":
-			return OwnerStampEffect.new()
-		"the_informant", "peek", "the_tally_clerk":
-			return InfoMarkerEffect.new()
-	return _build_starter(modifier_id)
-
-
-## The Cadres ADR 0021 adds.
-static func _build_starter(modifier_id: String) -> ModifierEffect:
-	match modifier_id:
-		"rehabilitation":
-			return RehabilitationEffect.new()
-		"class_label":
-			return ClassLabelEffect.new()
-		"collective_farm":
-			return CollectiveFarmEffect.new()
-		"show_trial":
-			return ShowTrialEffect.new()
-		"model_commune":
-			return ModelCommuneEffect.new()
-		"ration_coupon":
-			return RationCouponEffect.new()
-		"shock_brigade":
-			return ShockBrigadeEffect.new()
-		"canteen":
-			return CanteenEffect.new()
-		"red_banner":
-			return RedBannerEffect.new()
-		"poor_peasants_association":
-			return PoorPeasantsEffect.new()
-		"seed_grain":
-			return SeedGrainEffect.new()
-		"the_bookkeeper":
-			return BookkeeperEffect.new()
-		"last_sheaf":
-			return LastSheafEffect.new()
-		"steel_target":
-			return SteelTargetEffect.new()
-	return _build_debuff(modifier_id)
-
-
-## The debuffs ADR 0023 adds.
-static func _build_debuff(modifier_id: String) -> ModifierEffect:
-	match modifier_id:
-		"short_supply":
-			return ShortSupplyEffect.new()
-		"slogan_of_the_week":
-			return SloganEffect.new()
-		"levy":
-			return LevyEffect.new()
-		"work_point_audit":
-			return AuditFacesEffect.new()
-		"night_shift":
-			return NightShiftEffect.new()
-		"grain_tax":
-			return GrainTaxEffect.new()
-		"shared_kitchen":
-			return SharedKitchenEffect.new()
-		"confiscation":
-			return ConfiscationEffect.new()
-		"glass_walls":
-			return GlassWallsEffect.new()
-		"redistribution":
-			return RedistributionEffect.new()
-		"overtime":
-			return OvertimeEffect.new()
-		"big_character_poster":
-			return LossMeterEffect.new(RunMeters.DEBUFF_DENUNCIATION)
-		"hungry_winter":
-			return LossMeterEffect.new(RunMeters.DEBUFF_FAMINE)
-		"plot_seized":
-			return PlotSeizedEffect.new()
-	return _build_second_wave(modifier_id)
-
-
-## The Cadres ADR 0032 adds.
-static func _build_second_wave(modifier_id: String) -> ModifierEffect:
-	match modifier_id:
-		"night_school":
-			return NightSchoolEffect.new()
-		"iron_and_coal":
-			return IronAndCoalEffect.new()
-		"advanced_cooperative":
-			return AdvancedCooperativeEffect.new()
-		"double_share_plough":
-			return DoubleSharePloughEffect.new()
-		"open_accounts":
-			return OpenAccountsEffect.new()
-		"tractor_station":
-			return TractorStationEffect.new()
-		"the_gleaners":
-			return GleanersEffect.new()
-		"public_granary":
-			return PublicGranaryEffect.new()
-		"five_year_plan":
-			return FiveYearPlanEffect.new()
-		"back_door":
-			return BackDoorEffect.new()
-		"informers_reward":
-			return InformersRewardEffect.new()
-		"forged_seal":
-			return ForgedSealEffect.new()
-		"loudspeaker":
-			return LoudspeakerEffect.new()
-		"rent_book":
-			return RentBookEffect.new()
-		"grain_speculator":
-			return GrainSpeculatorEffect.new()
-		"prize_exhibit":
-			return PrizeExhibitEffect.new()
-	return null
+	if LOSS_METERS.has(modifier_id):
+		return LossMeterEffect.new(LOSS_METERS[modifier_id])
+	# Only a GDScript has new(), and core names no engine script class, so the effect
+	# is made through call.
+	return _scripts[modifier_id].call("new")

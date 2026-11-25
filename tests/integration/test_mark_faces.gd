@@ -93,7 +93,7 @@ func test_a_marked_play_acts_out_each_mark() -> void:
 		_card(Ranks.NINE * Deck.SUITS + 2, CardInstance.SURPLUS),
 	]
 	var rules: RuleSet = RuleSet.default_rules()
-	var pattern: Pattern = CardSelection.classify_cards(cards, rules, Ranks.identity_map()).pattern
+	var pattern: Pattern = RoundScript.classify(cards, rules, Ranks.identity_map()).pattern
 	var score: ScoreBreakdown = Scorer.score_play(
 		cards, pattern, 1, HOLDER, false, ModifierStack.new(), Scorer.DEFAULT_PARAMS, 0, null, true
 	)

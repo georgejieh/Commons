@@ -1,6 +1,6 @@
 class_name OwnerStampEffect
 extends ModifierEffect
-## Cards stamped with the holder's mark score extra Grain (P4.9), only when the holder
+## Cards stamped with the holder's mark score extra Grain, only when the holder
 ## plays them: dealt to anyone else a stamped card is plain. A private Cadre scores only
 ## the holder's plays (SeatScope, ADR 0039), so nothing here can open it to another seat.
 

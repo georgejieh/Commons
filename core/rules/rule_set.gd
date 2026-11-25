@@ -12,6 +12,13 @@ var _params: RuleParams
 
 func _init(params: RuleParams) -> void:
 	_params = params.copy()
+	# Only a rank from 3 to 2 can be wild (ADR 0029), and a rank listed twice is one. Every
+	# reader of the wild ranks trusts this.
+	var wild: Array[int] = []
+	for rank: int in params.wild_ranks:
+		if Ranks.is_valid(rank) and rank <= Ranks.TWO and not wild.has(rank):
+			wild.append(rank)
+	_params.wild_ranks = wild
 
 
 static func default_rules() -> RuleSet:

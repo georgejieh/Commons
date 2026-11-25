@@ -20,13 +20,13 @@ var value: int
 func _init(
 	event_type: Type,
 	event_seat: int,
-	cards: Array[int] = [],
+	ids: Array[int] = [],
 	played: Pattern = null,
 	event_value: int = 0
 ) -> void:
 	type = event_type
 	seat = event_seat
-	card_ids = cards
+	card_ids = ids
 	pattern = played
 	value = event_value
 

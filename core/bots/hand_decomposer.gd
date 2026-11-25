@@ -18,10 +18,6 @@ const LOW_FIELD_MASK: int = (1 << (HAND_SHIFT - LOW_SINGLE_SHIFT)) - 1
 const NO_SCORE: int = 1 << 56
 const PLANE_LENGTH_SHIFT: int = 4
 const PLANE_CODE_SHIFT: int = 8
-const SINGLE_WIDTH: int = 1
-const PAIR_WIDTH: int = 2
-const TRIO_WIDTH: int = 3
-const BOMB_WIDTH: int = 4
 const BUDGET_SHIFT: int = 40
 ## The budget takes five bits: two wild ranks at the deck's most copies (ADR 0042) can put
 ## sixteen wild cards in one hand.
@@ -46,6 +42,8 @@ var _own: PackedByteArray = PackedByteArray()
 ## The hand's wild cards by printed rank, packed, so hands that differ only there differ
 ## in the memo.
 var _own_code: int = 0
+## Places the spare wild cards at a leaf, made once a score for a hand that holds any.
+var _wild_leaf: WildLeaf = null
 
 
 func _init(rules: RuleSet, rank_map: PackedByteArray, memo_cap: int) -> void:
@@ -56,10 +54,14 @@ func _init(rules: RuleSet, rank_map: PackedByteArray, memo_cap: int) -> void:
 	_leaf = DecompositionLeaf.new(rules, rank_map)
 
 
+## The hands a score counts. Strength is subtracted below the low singles field and can
+## borrow from the fields above it, so the most strength a hand can have is added back
+## before the shift.
 static func hands_in(score_value: int) -> int:
 	return (score_value + STRENGTH_SPAN - 1) >> HAND_SHIFT
 
 
+## The low singles a score counts, read past the borrowed strength as hands_in reads.
 static func low_singles_in(score_value: int) -> int:
 	return ((score_value + STRENGTH_SPAN - 1) >> LOW_SINGLE_SHIFT) & LOW_FIELD_MASK
 
@@ -89,8 +91,6 @@ func _split_wilds() -> void:
 	_wilds = 0
 	_own_code = 0
 	for rank: int in _rules.wild_ranks():
-		if rank > Ranks.TWO:
-			continue
 		# A wild rank held in no card still takes its place in the code, so the memo
 		# tells one wild rank's cards from the other's.
 		_own_code = (_own_code << CountKey.BITS_PER_RANK) | _counts[rank]
@@ -100,6 +100,7 @@ func _split_wilds() -> void:
 		_wilds += _counts[rank]
 		_counts[rank] = 0
 	_budget = _wilds
+	_wild_leaf = WildLeaf.new(_leaf, _own) if _wilds > 0 else null
 
 
 func decompose(counts: PackedByteArray) -> Decomposition:
@@ -136,12 +137,12 @@ func _search(position: int, key: int, plane_code: int) -> int:
 func _leaf_counts() -> PackedByteArray:
 	if _budget == 0:
 		return _counts
-	return WildLeaf.new(_leaf, _own).placed(_counts, _planes, _budget, _budget == _wilds)
+	return _wild_leaf.placed(_counts, _planes, _budget, _budget == _wilds)
 
 
 func _chains_at(start: int, key: int, plane_code: int) -> int:
 	var best: int = NO_SCORE
-	for width: int in range(SINGLE_WIDTH, TRIO_WIDTH + 1):
+	for width: int in range(Pattern.SINGLE_WIDTH, Pattern.TRIO_WIDTH + 1):
 		var length: int = 0
 		var minimum: int = _minimum_length(width)
 		var chain_key: int = key
@@ -176,7 +177,7 @@ func _restore(start: int, length: int, takes: int) -> void:
 
 func _after_chain(start: int, length: int, width: int, key: int, plane_code: int) -> int:
 	var chain: int = (1 << HAND_SHIFT) - _rank_map[start]
-	if width != TRIO_WIDTH:
+	if width != Pattern.TRIO_WIDTH:
 		return chain + _search(start, key, plane_code)
 	_planes.append((start << PLANE_LENGTH_SHIFT) | length)
 	var rest: int = _search(start, key, _code_with(plane_code))
@@ -186,9 +187,9 @@ func _after_chain(start: int, length: int, width: int, key: int, plane_code: int
 
 func _minimum_length(width: int) -> int:
 	match width:
-		SINGLE_WIDTH:
+		Pattern.SINGLE_WIDTH:
 			return _rules.min_straight_length()
-		PAIR_WIDTH:
+		Pattern.PAIR_WIDTH:
 			return _rules.min_pair_chain_length()
 	return _rules.min_airplane_length()
 
@@ -213,12 +214,13 @@ func _walk(position: int, key: int, plane_code: int, groups: Array[Pattern]) -> 
 func _walk_chain(
 	start: int, key: int, plane_code: int, target: int, groups: Array[Pattern]
 ) -> void:
-	for width: int in range(SINGLE_WIDTH, TRIO_WIDTH + 1):
+	for width: int in range(Pattern.SINGLE_WIDTH, Pattern.TRIO_WIDTH + 1):
 		var length: int = 0
 		var chain_key: int = key
 		var takes: int = 0
 		var budget: int = _budget
-		# A chain may take one wild card per rank where it falls short (ADR 0029).
+		# The chain walk of _chains_at, written out again rather than shared through a call
+		# per rank: this is the decomposer's innermost loop.
 		while (
 			start + length <= _last
 			and (
@@ -244,12 +246,12 @@ func _walk_chain(
 func _keep_chain(
 	start: int, length: int, width: int, key: int, plane_code: int, groups: Array[Pattern]
 ) -> void:
-	if width == TRIO_WIDTH:
+	if width == Pattern.TRIO_WIDTH:
 		_planes.append((start << PLANE_LENGTH_SHIFT) | length)
 		_walk(start, key, _code_with(plane_code), groups)
 		return
 	var type: Pattern.Type = Pattern.Type.STRAIGHT
-	if width == PAIR_WIDTH:
+	if width == Pattern.PAIR_WIDTH:
 		type = Pattern.Type.PAIR_CHAIN
 	var kickers: PackedByteArray = PackedByteArray()
 	groups.append(Pattern.new(type, start, length, length * width, kickers, _rank_map[start]))

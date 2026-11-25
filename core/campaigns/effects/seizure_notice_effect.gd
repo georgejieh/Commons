@@ -22,9 +22,9 @@ func check(context: CampaignContext) -> Reason:
 
 func apply(context: CampaignContext) -> void:
 	var seat: int = target(context)
-	var taken: CardInstance = _extreme(context, seat, true)
-	var given: CardInstance = _extreme(context, context.player, false)
-	context.trade(seat, [given.id()], [taken.id()])
+	var taken: int = _extreme(context, seat, true)
+	var given: int = _extreme(context, context.player, false)
+	context.trade(seat, [given], [taken])
 	context.resent(parameters[RESENTMENT])
 
 
@@ -43,21 +43,8 @@ static func target(context: CampaignContext) -> int:
 	return best
 
 
-## The seat's highest card, or its lowest, by its own rank order.
-static func _extreme(context: CampaignContext, seat: int, highest: bool) -> CardInstance:
+## The ID of the seat's highest card, or its lowest, by its own rank order (CardPick).
+static func _extreme(context: CampaignContext, seat: int, highest: bool) -> int:
 	var rank_map: PackedByteArray = context.seat_table(seat).rank_map
-	var chosen: CardInstance = null
-	for card: CardInstance in context.round_state.view_for(seat).own_cards:
-		if chosen == null or _ahead(card, chosen, rank_map, highest):
-			chosen = card
-	return chosen
-
-
-static func _ahead(
-	card: CardInstance, other: CardInstance, rank_map: PackedByteArray, highest: bool
-) -> bool:
-	var rank: int = rank_map[card.base_rank()]
-	var other_rank: int = rank_map[other.base_rank()]
-	if rank != other_rank:
-		return rank > other_rank if highest else rank < other_rank
-	return card.id() > other.id() if highest else card.id() < other.id()
+	var cards: Array[CardInstance] = context.round_state.view_for(seat).own_cards
+	return CardPick.extremes(cards, rank_map, highest, 1)[0]

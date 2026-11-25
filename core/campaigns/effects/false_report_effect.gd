@@ -15,7 +15,7 @@ func required_parameters() -> PackedStringArray:
 
 
 func apply(context: CampaignContext) -> void:
-	var reported: float = context.target * parameters[PERCENT] / 100.0
+	var reported: float = ModifierEffect.fraction(context.target * parameters[PERCENT])
 	context.state.set_progress += reported
 	context.state.norm_steps += parameters[STEPS]
 	context.state.reported_steps += parameters[STEPS]

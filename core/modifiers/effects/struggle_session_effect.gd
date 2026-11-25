@@ -1,6 +1,6 @@
 class_name StruggleSessionEffect
 extends ModifierEffect
-## Boss (P4.7): at each deal the holder's highest card is confiscated into the kitty, in
+## Boss: at each deal the holder's highest card is confiscated into the kitty, in
 ## exchange for the kitty's lowest card, so every card stays in play.
 
 

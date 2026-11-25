@@ -7,10 +7,6 @@ extends RefCounted
 ## gone into a chain, all of them at their own rank is weighed too, so four of a wild rank
 ## can stay a pure-wild bomb. Plans are readings: a wild card counts as the rank it joins.
 
-const SINGLE: int = 1
-const PAIR: int = 2
-const TRIO: int = 3
-
 var _leaf: DecompositionLeaf
 ## Printed counts of the hand's wild cards.
 var _own: PackedByteArray
@@ -49,17 +45,17 @@ func _target(counts: PackedByteArray, planes: int) -> int:
 	var by_count: PackedInt32Array = PackedInt32Array([0, 0, 0, 0])
 	for rank: int in Ranks.TWO + 1:
 		var count: int = counts[rank]
-		if count >= SINGLE and count <= TRIO:
+		if count >= Pattern.SINGLE_WIDTH and count <= Pattern.TRIO_WIDTH:
 			by_count[count] += 1
 			if lowest[count] < 0:
 				lowest[count] = rank
-			if count == TRIO:
+			if count == Pattern.TRIO_WIDTH:
 				highest_trio = rank
-	var loose: int = by_count[SINGLE] + by_count[PAIR]
-	if lowest[PAIR] >= 0 and loose > by_count[TRIO] + planes:
-		return lowest[PAIR]
-	if lowest[SINGLE] >= 0:
-		return lowest[SINGLE]
+	var loose: int = by_count[Pattern.SINGLE_WIDTH] + by_count[Pattern.PAIR_WIDTH]
+	if lowest[Pattern.PAIR_WIDTH] >= 0 and loose > by_count[Pattern.TRIO_WIDTH] + planes:
+		return lowest[Pattern.PAIR_WIDTH]
+	if lowest[Pattern.SINGLE_WIDTH] >= 0:
+		return lowest[Pattern.SINGLE_WIDTH]
 	return highest_trio
 
 

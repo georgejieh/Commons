@@ -32,10 +32,7 @@ static func checked(
 		return null
 	var ranks: PackedByteArray = reading.counts()
 	var classified: Classification = Classifier.classify(ranks, rules, rank_map)
-	if (
-		not classified.is_valid()
-		or not classified.pattern.same_reading(reading.rekeyed(rank_map[reading.main_rank]))
-	):
+	if not classified.is_valid() or not classified.pattern.same_reading(reading):
 		return null
 	var total: int = 0
 	for rank: int in Ranks.COUNT:
@@ -54,8 +51,9 @@ static func checked(
 
 ## The documented order: true when a reads before b.
 static func stronger(a: Pattern, b: Pattern, rules: RuleSet) -> bool:
-	if PlayComparator.beats(a, b, rules) != PlayComparator.beats(b, a, rules):
-		return PlayComparator.beats(a, b, rules)
+	var a_beats: bool = PlayComparator.beats(a, b, rules)
+	if a_beats != PlayComparator.beats(b, a, rules):
+		return a_beats
 	if a.type != b.type:
 		return a.type > b.type
 	if a.key != b.key:

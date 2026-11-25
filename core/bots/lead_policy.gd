@@ -5,8 +5,6 @@ extends RefCounted
 
 const ONE_CARD: int = 1
 const TWO_CARDS: int = 2
-const SINGLE_WIDTH: int = 1
-const PAIR_WIDTH: int = 2
 const LOW_LIMIT_RANK: int = Ranks.TEN
 
 
@@ -48,9 +46,9 @@ static func _safe_moves(position: BotPosition, legal: Array[Pattern]) -> Array[P
 	if not position.config.reads_the_table():
 		return moves
 	if position.opponent_cards == ONE_CARD:
-		moves = _without_low(position, moves, Pattern.Type.SINGLE, SINGLE_WIDTH)
+		moves = _without_low(position, moves, Pattern.Type.SINGLE, Pattern.SINGLE_WIDTH)
 	elif position.opponent_cards == TWO_CARDS:
-		moves = _without_low(position, moves, Pattern.Type.PAIR, PAIR_WIDTH)
+		moves = _without_low(position, moves, Pattern.Type.PAIR, Pattern.PAIR_WIDTH)
 	return moves
 
 
@@ -152,7 +150,7 @@ static func _bare(group: Pattern) -> Pattern:
 	if group.chain_length > 1:
 		type = Pattern.Type.AIRPLANE
 	var body: int = group.card_count - group.kicker_ranks.size()
-	var effective: int = group.key & ((1 << Pattern.KEY_RANK_BITS) - 1)
+	var effective: int = group.effective_rank()
 	var kickers: PackedByteArray = PackedByteArray()
 	return Pattern.new(type, group.main_rank, group.chain_length, body, kickers, effective)
 

@@ -59,7 +59,7 @@ func test_a_search_never_bombs_a_teammate() -> void:
 	var policy: BotPlay = FollowPolicy.choose(position, legal)
 	assert_str(BotScript.text_of(policy)).is_not_equal("3333")
 	for move: Pattern in ExpertSearch.top_candidates(position, legal, policy):
-		assert_bool(FollowPolicy.is_bomb(move)).is_false()
+		assert_bool(move.is_bomb()).is_false()
 
 
 func test_a_rollout_remembers_a_pass_already_made() -> void:

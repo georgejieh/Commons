@@ -8,7 +8,6 @@ const ON_DEAL: String = "on_deal"
 const ROUND_START: String = "round_start"
 const PLAY_SCORED: String = "play_scored"
 const CARD_SCORED: String = "card_scored"
-const TRICK_WON: String = "trick_won"
 const ROUND_END: String = "round_end"
 const SET_END: String = "set_end"
 const SHOP_OPEN: String = "shop_open"
@@ -26,7 +25,6 @@ const ALL: PackedStringArray = [
 	ROUND_START,
 	PLAY_SCORED,
 	CARD_SCORED,
-	TRICK_WON,
 	ROUND_END,
 	SET_END,
 	SHOP_OPEN,

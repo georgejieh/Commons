@@ -20,13 +20,6 @@ static func pick(hand: Hand, pattern: Pattern) -> Array[CardInstance]:
 	return chosen
 
 
-## Validates a player's own selection through the classifier, as printed.
-static func classify_cards(
-	cards: Array[CardInstance], rules: RuleSet, rank_map: PackedByteArray
-) -> Classification:
-	return Classifier.classify(printed_counts(cards), rules, rank_map)
-
-
 ## Every legal reading of the cards, strongest first (Readings).
 static func readings(
 	cards: Array[CardInstance], rules: RuleSet, rank_map: PackedByteArray

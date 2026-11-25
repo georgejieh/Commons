@@ -8,14 +8,12 @@ extends RefCounted
 ## above another lands in the gap and nothing else moves. Within a seat both orders agree;
 ## only comparisons between seats, through a play's key, read standings.
 
-## The lowest printed rank stands one STEP up, so there is a gap below it as well as
-## above the highest: turning standings over (ReversedRanks) puts a rank moved above the
-## top in the gap below the bottom, and every value stays between 1 and 255.
-
 ## Room between two printed ranks: enough for every rank a Cadre may stand between them.
 ## The highest printed rank and the gap above it stay within a key's rank bits.
 const STEP: int = 16
-## Where the lowest printed rank stands.
+## Where the lowest printed rank stands: one STEP up, so there is a gap below it as well
+## as above the highest. Turning standings over (ReversedRanks) puts a rank moved above
+## the top in the gap below the bottom, and every value stays between 1 and 255.
 const FLOOR: int = STEP
 ## Standings turn over about this: printed ranks land on printed ranks, and a value in a
 ## gap lands in the gap mirrored across the scale.

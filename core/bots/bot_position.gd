@@ -3,8 +3,6 @@ extends RefCounted
 ## What one decision knows about the table, worked out once from the seat's own view.
 
 const NO_CARDS: int = 99
-## Keeps the effort roll apart from the cooperation roll.
-const SLACK_SALT: int = 0x5A1AC
 
 var view: SeatView
 var table: BotTable
@@ -15,10 +13,13 @@ var teammate: int = Seats.NONE
 ## Fewest cards any opponent holds.
 var opponent_cards: int = NO_CARDS
 var teammate_cards: int = NO_CARDS
-var unseen: PackedByteArray
+## The cards this seat has not seen (UnseenCards). Counted only for a tier that reads the
+## table, since no other tier looks at them; empty otherwise.
+var unseen: PackedByteArray = PackedByteArray()
 ## The unseen cards an opponent could hold: all of them, unless a hand shown to the table
 ## (Glass Walls) tells the bot which of them a teammate holds or which seat holds what.
-var threats: PackedByteArray
+## Empty when unseen is.
+var threats: PackedByteArray = PackedByteArray()
 ## How many of the threats are wild cards (ADR 0029).
 var wild_threats: int = 0
 var groups: Array[Pattern]
@@ -33,6 +34,13 @@ var bombed: BombedSide = null
 var _threat_rules: RuleSet
 
 
+## A repeatable roll from 0 to 1 for the decision the view stands at, apart from every
+## other roll of it by its salt.
+static func roll_for(seat_view: SeatView, bot_config: BotConfig, salt: int) -> float:
+	var state: int = CountKey.encode(seat_view.own_counts) ^ (seat_view.public.history.size() << 8)
+	return RandomStream.new(bot_config.search_seed ^ state ^ salt).next_float()
+
+
 func _init(
 	seat_view: SeatView, seat_table: BotTable, bot_config: BotConfig, scorer_in: CandidateScorer
 ) -> void:
@@ -42,15 +50,17 @@ func _init(
 	scorer = scorer_in
 	seat = view.seat
 	_read_seats()
-	unseen = UnseenCards.from_view(view)
-	threats = _threats()
+	var counts_cards: bool = config.reads_the_table()
+	if counts_cards:
+		unseen = UnseenCards.from_view(view)
+		threats = _threats()
 	groups = scorer.decompose_own_hand().groups
 	rivals = _rivals()
 	_threat_rules = Controls.threat_rules(table, rivals)
-	var supply: WildSupply = WildSupply.of(threats, _threat_rules)
-	wild_threats = 0 if supply == null else supply.total
+	if counts_cards:
+		var supply: WildSupply = WildSupply.of(threats, _threat_rules)
+		wild_threats = 0 if supply == null else supply.total
 	bombed = BombedSide.of(table, seat, _opponents())
-	var counts_cards: bool = config.reads_the_table()
 	var largest: int = _largest_opposing_hand()
 	controls = Controls.new(groups, threats, largest, table, counts_cards, rivals, bombed)
 
@@ -121,18 +131,7 @@ func read_groups(other: Array[Pattern]) -> Controls:
 
 ## A repeatable roll for this decision, from 0 to 1.
 func roll() -> float:
-	return _roll(0)
-
-
-## True when this decision is one the bot doesn't try on, from its own salted roll so it
-## never moves with the cooperation roll.
-func slacks() -> bool:
-	return config.effort < 1.0 and _roll(SLACK_SALT) >= config.effort
-
-
-func _roll(salt: int) -> float:
-	var state: int = CountKey.encode(view.own_counts) ^ (view.public.history.size() << 8)
-	return RandomStream.new(config.search_seed ^ state ^ salt).next_float()
+	return roll_for(view, config, 0)
 
 
 func rank_of(rank: int) -> int:
@@ -164,11 +163,7 @@ func could_hold(rank: int, width: int) -> bool:
 
 
 func _read_seats() -> void:
-	var landlord: int = view.public.landlord
-	if seat != landlord:
-		for other: int in Seats.COUNT:
-			if other != seat and other != landlord:
-				teammate = other
+	teammate = Seats.teammate(seat, view.public.landlord)
 	for other: int in Seats.COUNT:
 		if other == teammate and other != seat:
 			teammate_cards = view.public.remaining[other]
