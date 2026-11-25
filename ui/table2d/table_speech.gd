@@ -9,6 +9,9 @@ extends RefCounted
 ## at once, silently. In a run that began with an entry in the family's file (ADR 0022),
 ## a villager's line for one moment is now and then about the work team's visit instead,
 ## drawn on the table's own seeded stream; a run with no entry draws nothing.
+## On a corrupted profile under Denunciation, ordinary lines turn by degrees into the
+## speech book's slogans (P5.2c), the share from the dread's slogan weight on a fixed
+## sequence; at the last stages the other villager says the same slogan at once.
 
 ## A villager said a line: the voice (P3B.13) listens here.
 signal spoke(seat: int, event: String, line: SpeechLine)
@@ -20,9 +23,14 @@ const SEAT_SALT: int = 7
 ## The most lines that wait at once, and the events that are only chatter.
 const QUEUE_MAX: int = 3
 const CHATTER: Array[String] = ["pass", "call", "no_call"]
+## Steps each seat's count of lines along an even spread from 0 to 1, so the share of
+## slogans comes out the same over any run of lines; the golden ratio's fraction.
+const SPREAD: float = 0.618034
 
 ## True while the table skips ahead: every line shows at once, with no voice.
 var hurry: bool = false
+## The board's dread, whose slogan weight turns lines into slogans; none says none.
+var dread: DreadLayers = null
 
 var _seats: Dictionary[int, SeatPanel] = {}
 var _said: Dictionary[int, int] = {}
@@ -108,15 +116,28 @@ func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 		return
 	var said: int = _said.get(seat, 0)
 	_said[seat] = said + 1
+	var salt: int = said + seat * SEAT_SALT
 	var choices: Array[SpeechLine] = BOOK.lines_for(event)
 	if _books.has(seat):
 		choices = _books[seat].lines_for(event) + choices
 	if choices.is_empty():
 		return
-	var line: SpeechLine = choices[posmod(said + seat * SEAT_SALT, choices.size())]
+	var line: SpeechLine = choices[posmod(salt, choices.size())]
+	var slogan: SpeechLine = _slogan(event, salt)
+	if slogan != null:
+		line = slogan
 	var visit: SpeechLine = _visit_line(event)
 	if visit != null:
 		line = visit
+	_speak(seat, event, line, fields)
+	if line == slogan and _slogan_weight() >= dread.config.effect_tuning.unison_at:
+		for other: int in _seats:
+			if other != seat:
+				_speak(other, event, line, fields)
+
+
+## Shows and voices line at seat now.
+func _speak(seat: int, event: String, line: SpeechLine, fields: Dictionary) -> void:
 	var text: String = tr(line.text_key).format(fields)
 	var reveal: PackedFloat32Array = PackedFloat32Array()
 	if _voices.has(seat):
@@ -126,6 +147,23 @@ func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	spoke.emit(seat, event, line)
 	if hurry:
 		_seats[seat].skip_speech()
+
+
+## A slogan in place of the line salt picks for event, at the share the slogan weight
+## gives, or null.
+func _slogan(event: String, salt: int) -> SpeechLine:
+	var weight: float = _slogan_weight()
+	if (
+		weight <= 0.0
+		or fposmod(salt * SPREAD, 1.0) >= dread.config.effect_tuning.slogan_share(weight)
+	):
+		return null
+	var slogans: Array[SpeechLine] = BOOK.slogans_for(event)
+	return null if slogans.is_empty() else slogans[posmod(salt, slogans.size())]
+
+
+func _slogan_weight() -> float:
+	return 0.0 if dread == null else dread.effect_weight(DreadEffects.SLOGANS)
 
 
 ## The stream the work team's lines draw on, seeded from the run, the Year and the Quota,

@@ -3,9 +3,10 @@ extends Control
 ## The dread layers' set dressing (P3B.12), drawn over the room and under the cards,
 ## seats and controls: empty chairs at the room's edge, a notice about your household
 ## under the Cadre board, black bars over the brigade notice, a spotlight on your seat and
-## gilt trim for a landlord. Shapes are placeholders until the art pass (P3C). Each piece
-## fades with its weight; none covers anything the player reads, and the rules slip may
-## stand in front of the right chair (ADR 0034, rule 6).
+## gilt trim for a landlord, and the brigade's roster under the right seat, whose names
+## fade as the roster effect grows (P5.2c). Shapes are placeholders until the art pass
+## (P3C). Each piece fades with its weight; none covers anything the player reads, and the
+## rules slip may stand in front of the right chair (ADR 0034, rule 6).
 
 const LAMP_SHADER: Shader = preload("res://shaders/lamp_light.gdshader")
 const WOOD: Color = Color("2a1a10")
@@ -26,6 +27,8 @@ const EXTRA_CHAIR_SPOT: Vector2 = Vector2(1030, 690)
 const REDACTION_LINES: int = 3
 ## The brigade notice changes with every deal: this many notices for each stretch of a
 ## run, and the last Year of the early and of the middle stretch.
+## The roster's left edge: the right seat's, under it.
+const ROSTER_X: float = 1120.0
 const NOTICES: int = 4
 const EARLY_UNTIL: int = 2
 const MID_UNTIL: int = 5
@@ -45,6 +48,7 @@ var _bars: Control = Control.new()
 ## True while the notice is taken down for the Campaign tray (ADR 0034, rule 8).
 var _notice_down: bool = false
 var _notice_fade: Tween = null
+var _roster: WallRoster = WallRoster.new()
 
 
 func _ready() -> void:
@@ -59,6 +63,8 @@ func _ready() -> void:
 
 
 ## Where the brigade notice hangs on screen, for what must keep clear of it; nothing
+	_roster.visible = false
+	add_child(_roster)
 ## while it is taken down.
 func notice_rect() -> Rect2:
 	if not _notice.is_inside_tree() or _notice_down:
@@ -131,6 +137,24 @@ func is_notice_down() -> bool:
 ## Fades a piece to weight; at 0 it is hidden.
 func show_piece(piece: String, weight: float) -> void:
 	if not _pieces.has(piece):
+## Hangs the roster with its foot at foot when it fits below top, or takes it down: it is
+## the first thing the right column gives up.
+func hang_roster(top: float, foot: float) -> void:
+	var extent: Vector2 = _roster.get_combined_minimum_size()
+	_roster.size = extent
+	_roster.position = Vector2(ROSTER_X, foot - extent.y)
+	_roster.visible = foot - extent.y >= top
+
+
+func roster() -> WallRoster:
+	return _roster
+
+
+## Where the roster hangs on screen, or nothing while it is down.
+func roster_rect() -> Rect2:
+	return _roster.get_global_rect() if _roster.is_visible_in_tree() else Rect2()
+
+
 		return
 	var flashing: bool = Time.get_ticks_msec() < _flash_until.get(piece, 0)
 	var control: Control = _pieces[piece]

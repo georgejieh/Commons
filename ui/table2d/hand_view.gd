@@ -149,9 +149,10 @@ func mark_wild(ranks: Array[int]) -> void:
 				view.set_wild(wild_ranks.has(held.base_rank()))
 
 
-## The views in the fan, left to right, for tests and playtests.
+## The views in the fan, left to right, as shown now. The array is the hand's own, so a
+## frame's tremble reads it without a copy: read it, never change it.
 func views() -> Array[CardView]:
-	return _views.duplicate()
+	return _views
 
 
 ## Lights these cards with the hint edge until the hand next changes.

@@ -281,7 +281,8 @@ func _setup_dread(app: DemoApp) -> void:
 	var panels: Array[SeatPanel] = []
 	panels.assign(_seats.values())
 	var slots: Dictionary[String, TextureRect] = {"table_surface": _surface}
-	_dread.setup(materials, _dressing, panels, slots)
+	_dread.setup(materials, _dressing, panels, slots, _hand_view)
+	_speech.dread = _dread
 	_dread.refresh(_controller.state_copy(), true)
 
 

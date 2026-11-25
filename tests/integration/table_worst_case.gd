@@ -134,6 +134,7 @@ static func pieces(table: TableScreen) -> Dictionary[String, Rect2]:
 		"ledger": (ledger.get_parent() as Control).get_global_rect(),
 		"household notice": _piece_rect(dressing, "poster"),
 		"extra chair": _piece_rect(dressing, "extra_chair"),
+		"wall roster": dressing.roster_rect(),
 	}
 	return found
 

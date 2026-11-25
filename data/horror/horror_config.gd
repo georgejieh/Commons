@@ -7,5 +7,7 @@ extends Resource
 ## Per key asset, its art at each corruption stage. Empty until the art pass (P3C).
 @export var art: Array[ArtVariant] = []
 @export var flickers: Array[FlickerDef] = []
+## What the slow effects' weights look like on the table.
+@export var effect_tuning: DreadEffects = DreadEffects.new()
 ## Seconds for a weight to ease all the way from 0 to 1.
 @export var ease_seconds: float = 4.0

@@ -3,9 +3,11 @@ extends Node
 ## Puts the board's dread on screen (P3B.12). A BoardState eases one weight per
 ## HorrorLayer; each frame this writes those weights, scaled by the horror-intensity
 ## setting, into the table's shader materials and set dressing, with no allocation.
-## Brief flickers run on cooldowns and never under no-flash. It reads cached run values
-## only and touches nothing the player reads: cards, counts, ranks and scores are
-## drawn by other nodes it never changes.
+## Brief flickers run on cooldowns and never under no-flash. The Plan's slow effects
+## (P5.2c) take their weights here too: the eyes on the card backs (BackEyes), the hand's
+## tremble (HandTremble), the roster's names (WallRoster) and the slogans TableSpeech asks
+## for. It reads cached run values only and touches nothing the player reads: cards,
+## counts, ranks and scores are drawn by other nodes it never changes.
 
 signal flickered(kind: String)
 
@@ -40,6 +42,10 @@ var _effect_delta: PackedFloat32Array = []
 var _piece_ids: Array[String] = []
 var _piece_weight: PackedFloat32Array = []
 var _piece_layers: Array[PackedInt32Array] = []
+## Per slow effect, in DreadEffects.NAMES order, its weight this frame and its layers.
+var _effect_weight: PackedFloat32Array = []
+var _effect_layers: Array[PackedInt32Array] = []
+var _tremble: HandTremble = null
 var _flicker_wait: PackedFloat32Array = []
 var _flicker_seat: int = 0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -53,9 +59,11 @@ func setup(
 	materials: Dictionary[String, ShaderMaterial],
 	dressing: DreadDressing,
 	seats: Array[SeatPanel],
-	slots: Dictionary[String, TextureRect] = {}
+	slots: Dictionary[String, TextureRect] = {},
+	hand: HandView = null
 ) -> void:
 	board = BoardState.new(config)
+	_tremble = null if hand == null else HandTremble.new(hand, config.effect_tuning)
 	_materials = materials
 	_slots = slots
 	for slot: String in slots:
@@ -67,6 +75,7 @@ func setup(
 	_rng.seed = FLICKER_SEED
 	_bind_params()
 	_bind_dressing()
+	_bind_effects()
 	_flicker_wait.resize(config.flickers.size())
 	for index: int in config.flickers.size():
 		_flicker_wait[index] = _cooldown(config.flickers[index])
@@ -136,6 +145,13 @@ func apply() -> void:
 			weight = maxf(weight, board.shown(layer, intensity))
 		_piece_weight[index] = weight
 		_dressing.show_piece(_piece_ids[index], weight)
+	for index: int in _effect_layers.size():
+		var weight: float = 0.0
+		for layer: int in _effect_layers[index]:
+			weight = maxf(weight, board.shown(layer, intensity))
+		_effect_weight[index] = weight
+	BackEyes.shown = effect_weight(DreadEffects.EYES)
+	_dressing.roster().show_weight(effect_weight(DreadEffects.ROSTER), config.effect_tuning)
 	_apply_swaps(intensity)
 	Audio.music.follow(board, config.layers, intensity)
 	Audio.voice.follow(board, config.layers.size(), intensity)
@@ -148,6 +164,9 @@ func apply() -> void:
 func clear() -> void:
 	for index: int in _param_clean.size():
 		_param_material[index].set_shader_parameter(_param_name[index], _param_clean[index])
+	BackEyes.shown = 0.0
+	if _tremble != null:
+		_tremble.still()
 	Audio.music.relax()
 	Audio.voice.reset()
 	Audio.music.request(MusicPlayer.SCORE.village)
@@ -167,6 +186,12 @@ func _apply_swaps(intensity: float) -> void:
 				shown = layer.texture_swaps[slot]
 		if Lighting.diffuse(_slots[slot].texture) != shown:
 			_slots[slot].texture = Lighting.lit(shown)
+
+
+## The weight a slow effect (a DreadEffects name) shows this frame, intensity included.
+func effect_weight(effect: String) -> float:
+	var index: int = DreadEffects.NAMES.find(effect)
+	return _effect_weight[index] if index >= 0 and index < _effect_weight.size() else 0.0
 
 
 ## The weight a dressing piece shows this frame, for tests.
@@ -194,6 +219,8 @@ func _process(delta: float) -> void:
 	board.step(delta)
 	apply()
 	tick_flickers(delta)
+	if _tremble != null:
+		_tremble.step(delta, effect_weight(DreadEffects.TREMBLE))
 
 
 ## Counts down each flicker and fires those that are ready and allowed.
@@ -265,6 +292,17 @@ func _bind_dressing() -> void:
 			var layers: PackedInt32Array = _piece_layers[index]
 			layers.append(layer_index)
 			_piece_layers[index] = layers
+
+
+func _bind_effects() -> void:
+	_effect_weight.resize(DreadEffects.NAMES.size())
+	_effect_layers.resize(DreadEffects.NAMES.size())
+	for index: int in DreadEffects.NAMES.size():
+		var layers: PackedInt32Array = PackedInt32Array()
+		for layer_index: int in config.layers.size():
+			if config.layers[layer_index].effects.has(DreadEffects.NAMES[index]):
+				layers.append(layer_index)
+		_effect_layers[index] = layers
 
 
 func _key(index: int) -> String:
