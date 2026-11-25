@@ -189,9 +189,8 @@ func delete() -> void:
 
 ## Writes the file and reads it back. The seal is made over the values as JSON reads the
 ## very text written: the seal is the last key in sorted order, so it is spliced onto the
-## end of that text and every other byte stays as it was sealed. What reached the disk is
-## then checked before the file is used; should it ever fail, it is sealed again from
-## what was read, so a save this service wrote never fails its own seal.
+## end of that text and every other byte stays as it was sealed. A file that does not read
+## back as the text written is a failed write, so the save it would replace is kept.
 func _write(file_path: String, data: Dictionary, extras: Dictionary) -> Error:
 	var wrapper: Dictionary = {"schema_version": _version, "data": data}
 	if not extras.is_empty():
@@ -210,16 +209,7 @@ func _write(file_path: String, data: Dictionary, extras: Dictionary) -> Error:
 	if stored != OK or not sealed:
 		return stored
 	# The same text reads as the same values, so it holds the seal it was given.
-	if FileAccess.get_file_as_string(file_path) == text:
-		return OK
-	var back: Variant = _parse(file_path)
-	if back == null:
-		return ERR_FILE_CORRUPT
-	if _seal_holds(back):
-		return OK
-	var again: Dictionary = back
-	again[SEAL_KEY] = _seal_of(back)
-	return _store(file_path, JSON.stringify(again, "", true, true))
+	return OK if FileAccess.get_file_as_string(file_path) == text else ERR_FILE_CORRUPT
 
 
 func _store(file_path: String, text: String) -> Error:
