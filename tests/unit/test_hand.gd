@@ -35,7 +35,7 @@ func test_counts_and_mask_match_a_recount_after_random_operations() -> void:
 
 func test_removing_an_absent_card_changes_nothing() -> void:
 	var hand: Hand = Hand.new()
-	hand.add(CardInstance.from_deck_id(0))
+	hand.add(Deck.new().card(0))
 	assert_object(hand.remove(1)).is_null()
 	assert_int(hand.size()).is_equal(1)
 	assert_bool(_matches_recount(hand)).is_true()
@@ -43,7 +43,7 @@ func test_removing_an_absent_card_changes_nothing() -> void:
 
 func test_adding_the_same_card_twice_is_rejected() -> void:
 	var hand: Hand = Hand.new()
-	var card: CardInstance = CardInstance.from_deck_id(0)
+	var card: CardInstance = Deck.new().card(0)
 	assert_bool(hand.add(card)).is_true()
 	assert_bool(hand.add(card)).is_false()
 	assert_int(hand.count_of(Ranks.THREE)).is_equal(1)
@@ -51,8 +51,8 @@ func test_adding_the_same_card_twice_is_rejected() -> void:
 
 func test_mask_keeps_a_rank_until_its_last_copy_leaves() -> void:
 	var hand: Hand = Hand.new()
-	hand.add(CardInstance.from_deck_id(0))
-	hand.add(CardInstance.from_deck_id(1))
+	hand.add(Deck.new().card(0))
+	hand.add(Deck.new().card(1))
 	hand.remove(0)
 	assert_int(hand.rank_mask()).is_equal(1)
 	hand.remove(1)
@@ -61,7 +61,7 @@ func test_mask_keeps_a_rank_until_its_last_copy_leaves() -> void:
 
 func test_counts_are_a_copy_callers_cannot_change() -> void:
 	var hand: Hand = Hand.new()
-	hand.add(CardInstance.from_deck_id(0))
+	hand.add(Deck.new().card(0))
 	var counts: PackedByteArray = hand.counts()
 	counts[Ranks.THREE] = 9
 	assert_int(hand.count_of(Ranks.THREE)).is_equal(1)
@@ -69,8 +69,7 @@ func test_counts_are_a_copy_callers_cannot_change() -> void:
 
 func _all_cards() -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
-	for id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(id))
+	cards.append_array(Deck.new().cards())
 	return cards
 
 

@@ -13,7 +13,8 @@ var _map: PackedByteArray = Ranks.identity_map()
 
 
 func _random_counts(stream: RandomStream, cards: int) -> PackedByteArray:
-	var deck: PackedInt32Array = Deck.generate()
+	var plain: Deck = Deck.new()
+	var deck: PackedInt32Array = PackedInt32Array(range(Deck.SIZE))
 	var result: PackedByteArray = PackedByteArray()
 	result.resize(Ranks.COUNT)
 	for index: int in cards:
@@ -21,7 +22,7 @@ func _random_counts(stream: RandomStream, cards: int) -> PackedByteArray:
 		var card: int = deck[pick]
 		deck[pick] = deck[index]
 		deck[index] = card
-		result[Deck.rank_of(card)] += 1
+		result[plain.rank_of(card)] += 1
 	return result
 
 

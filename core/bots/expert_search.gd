@@ -61,7 +61,8 @@ static func roll(
 		position.trick_owner(),
 		position.passes_on_table(),
 		position.table,
-		position.config.rollout_config()
+		position.config.rollout_config(),
+		view.deck_counts
 	)
 	rollout.step(move)
 	var winner: int = rollout.play_out(position.config.weights.search_step_limit, stop)

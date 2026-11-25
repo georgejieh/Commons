@@ -114,7 +114,7 @@ func _nines(count: int) -> Array[CardInstance]:
 	for index: int in count:
 		var suit: int = index % Deck.SUITS
 		if index < Deck.SUITS:
-			cards.append(CardInstance.from_deck_id(Ranks.NINE * Deck.SUITS + suit))
+			cards.append(Deck.new().card(Ranks.NINE * Deck.SUITS + suit))
 		else:
 			cards.append(
 				CardInstance.new(PLOT_ID + index, Ranks.NINE, suit, CardInstance.Origin.PLOT)

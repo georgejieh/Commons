@@ -11,14 +11,13 @@ var _map: PackedByteArray = Ranks.identity_map()
 func _hand_of(deck_ids: Array[int]) -> Hand:
 	var hand: Hand = Hand.new()
 	for deck_id: int in deck_ids:
-		hand.add(CardInstance.from_deck_id(deck_id))
+		hand.add(Deck.new().card(deck_id))
 	return hand
 
 
 func _dealt_hand(seed_value: int) -> Hand:
 	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
+	cards.append_array(Deck.new().cards())
 	return Dealer.deal(cards, RandomStream.new(seed_value)).hands[0]
 
 
@@ -68,6 +67,6 @@ func test_a_hand_that_lacks_the_cards_gets_nothing() -> void:
 
 
 func test_a_player_selection_goes_through_the_classifier() -> void:
-	var bad: Array[CardInstance] = [CardInstance.from_deck_id(0), CardInstance.from_deck_id(4)]
+	var bad: Array[CardInstance] = [Deck.new().card(0), Deck.new().card(4)]
 	var result: Classification = CardSelection.classify_cards(bad, _rules, _map)
 	assert_bool(result.is_valid()).is_false()

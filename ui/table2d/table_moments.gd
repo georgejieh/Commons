@@ -41,6 +41,8 @@ var dice: DiceBowl = DiceBowl.new()
 var fx: TableFx = TableFx.new()
 ## The bar the Quota and meters are shown on, when the table has one.
 var hud: TableHud = null
+## The run, for the kitty's cards, which the round names by slot alone.
+var controller: RunController = null
 ## A seat an Anonymous Letter makes pass next: its pass is tagged as forced.
 var forced_seat: int = Seats.NONE
 
@@ -343,7 +345,7 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 	var cards: Array[CardInstance] = []
 	for card_id: int in card_ids:
 		if card_id < Deck.SIZE:
-			cards.append(CardInstance.from_deck_id(card_id))
+			cards.append(controller.deck_card(card_id))
 	if cards.is_empty() or _player.step <= 0.0:
 		return
 	_pile.clear()

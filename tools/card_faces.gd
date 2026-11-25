@@ -33,7 +33,7 @@ func _run() -> void:
 		root.add_child(view)
 		var cell: Vector2 = view.custom_minimum_size + GAP
 		view.position = GAP + Vector2(deck_id % COLUMNS, deck_id / COLUMNS) * cell
-		view.call("bind", CardInstance.from_deck_id(deck_id))
+		view.call("bind", Deck.new().card(deck_id))
 	for _frame: int in SETTLE_FRAMES:
 		await process_frame
 	await RenderingServer.frame_post_draw

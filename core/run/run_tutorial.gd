@@ -29,9 +29,10 @@ func _init(script: TutorialScript, configs: Array[BotConfig]) -> void:
 		_villagers.append(villager)
 
 
-## The round's authored deal, with each villager's decisions and the audit's faces set
-## for it. A round past the script deals the last round's deck again, as a fault.
-func deal(round_index: int, audit: AuditParams) -> DealResult:
+## The round's authored deal of the deck's cards, with each villager's decisions and the
+## audit's faces set for it. A round past the script deals the last round's deck again, as
+## a fault.
+func deal(round_index: int, audit: AuditParams, deck: Deck) -> DealResult:
 	if round_index >= _script.rounds.size():
 		push_error("The arrival has no round %d" % (round_index + 1))
 		_fault()
@@ -42,7 +43,7 @@ func deal(round_index: int, audit: AuditParams) -> DealResult:
 	audit.shown_faces = authored.audit_faces.duplicate()
 	var cards: Array[CardInstance] = []
 	for deck_id: int in authored.deal:
-		cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append(deck.card(deck_id))
 	return Dealer.deal_in_order(cards)
 
 

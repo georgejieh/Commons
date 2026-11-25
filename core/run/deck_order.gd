@@ -47,12 +47,15 @@ static func cut(order: Array[int], at: int) -> Array[int]:
 	return order.slice(at) + order.slice(0, at)
 
 
-## Deals the gathered order after one cut drawn on stream, with the saved marks put back.
-static func deal(order: Array[int], marks: CardMarks, stream: RandomStream) -> DealResult:
+## Deals the gathered order of the deck's cards after one cut drawn on stream, with the
+## saved marks put back.
+static func deal(
+	order: Array[int], deck: Deck, marks: CardMarks, stream: RandomStream
+) -> DealResult:
 	var cut_order: Array[int] = cut(order, stream.next_int(1, order.size() - 1))
 	var cards: Array[CardInstance] = []
 	for deck_id: int in cut_order:
-		cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append(deck.card(deck_id))
 	marks.apply(cards)
 	return Dealer.deal_in_order(cards)
 

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CardStallParams" format=3]
+
+[ext_resource type="Script" path="res://data/run/card_stall_params.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+offers = 2
+ranks = Array[int]([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+costs = Array[int]([2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5])
+marked_percent = 25
+mark_cost = 2

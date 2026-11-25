@@ -65,8 +65,7 @@ func _wait_idle(table: TableScreen) -> void:
 ## Two cards of the rank, as a seat's play of them reads under that seat's rules.
 func _pair_event(seat: int, rank: int) -> RoundEvent:
 	var cards: Array[CardInstance] = [
-		CardInstance.from_deck_id(rank * Deck.SUITS),
-		CardInstance.from_deck_id(rank * Deck.SUITS + 1)
+		Deck.new().card(rank * Deck.SUITS), Deck.new().card(rank * Deck.SUITS + 1)
 	]
 	var table: BotTable = _loop().seat_table(seat)
 	var counts: PackedByteArray = CardSelection.printed_counts(cards)

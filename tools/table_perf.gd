@@ -84,7 +84,7 @@ func _run_stress(table: Node) -> void:
 			push_error("the pool ran out at card %d" % deck_id)
 			return
 		view.reparent(parent, false)
-		view.bind(CardInstance.from_deck_id(deck_id))
+		view.bind(Deck.new().card(deck_id))
 		views.append(view)
 	print("visible_cards=%d pool_size=%d" % [views.size(), pool.size()])
 	var started: int = Time.get_ticks_msec()

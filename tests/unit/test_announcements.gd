@@ -17,8 +17,7 @@ func test_every_crossing_announces_once_over_random_games() -> void:
 	var crossings: int = 0
 	for game: int in GAMES:
 		var cards: Array[CardInstance] = []
-		for deck_id: int in Deck.generate():
-			cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append_array(Deck.new().cards())
 		var round_state: RoundState = RoundState.new(
 			Dealer.deal(cards, stream), game % Seats.COUNT, SeatRules.uniform(_rules, _map)
 		)

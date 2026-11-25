@@ -23,7 +23,9 @@ const PAIR_WIDTH: int = 2
 const TRIO_WIDTH: int = 3
 const BOMB_WIDTH: int = 4
 const BUDGET_SHIFT: int = 40
-const OWN_SHIFT: int = 44
+## The budget takes five bits: two wild ranks at the deck's most copies (ADR 0042) can put
+## sixteen wild cards in one hand.
+const OWN_SHIFT: int = 45
 const TAKE_BITS: int = 2
 const TAKE_MASK: int = 3
 

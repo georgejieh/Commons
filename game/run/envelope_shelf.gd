@@ -8,6 +8,8 @@ const KIND_DIRECTIVE: int = EnvelopeDef.Content.DIRECTIVE
 const KIND_CAMPAIGN: int = EnvelopeDef.Content.CAMPAIGN
 const KIND_STAMPED: int = EnvelopeDef.Content.STAMPED_CARD
 const KIND_MODEL: int = EnvelopeDef.Content.MODEL_CARD
+const KIND_DECK: int = EnvelopeDef.Content.DECK_CARD
+const KIND_MARKED_DECK: int = EnvelopeDef.Content.MARKED_DECK_CARD
 ## The wrappings, for the screen's drawings.
 const STRING_TIE: int = EnvelopeDef.Wrapping.STRING_TIE
 const WAX_SEAL: int = EnvelopeDef.Wrapping.WAX_SEAL
@@ -80,11 +82,19 @@ func item_id(index: int) -> String:
 	return _counter.items()[index].item_id
 
 
-## A plot card in the envelope as it would enter the plot, its mark on it. A stand-in
-## to show: the card gets its real plot ID when it is kept.
+## A card in the envelope as it would enter the plot or the deck, its mark on it. A
+## stand-in to show: a plot card gets its real plot ID when it is kept, and a deck card
+## the slot of the card it replaces.
 func card(index: int) -> CardInstance:
 	var item: EnvelopeItem = _counter.items()[index]
-	if not item.is_card():
+	if item.is_deck_card():
+		var dealt: CardInstance = CardInstance.new(
+			-1 - index, item.rank, item.suit, CardInstance.Origin.DECK
+		)
+		if item.enhancement != CardInstance.NO_ID:
+			CardModifiers.enhance(dealt, item.enhancement)
+		return dealt
+	if not item.is_plot_card():
 		return null
 	var shown: CardInstance = CardInstance.new(
 		-1 - index, item.rank, item.suit, CardInstance.Origin.PLOT
@@ -94,6 +104,25 @@ func card(index: int) -> CardInstance:
 	else:
 		CardModifiers.enhance(shown, CardInstance.MODEL)
 	return shown
+
+
+## True for a card for the communal deck, which is kept by naming the deck card it
+## replaces (ADR 0042).
+func is_deck_card(index: int) -> bool:
+	return _counter.items()[index].is_deck_card()
+
+
+## Why the deck card at index could not replace the deck card in out, as the key of the
+## words that say so, or "" when it could.
+func exchange_refusal(index: int, out: int) -> String:
+	match _counter.check_pick(index, out):
+		RunShop.Reason.OK:
+			return ""
+		RunShop.Reason.JOKER:
+			return "exchange.refused.joker"
+		RunShop.Reason.AT_MOST:
+			return "exchange.refused.at_most"
+	return "exchange.refused.other"
 
 
 func can_take(index: int) -> bool:
@@ -111,4 +140,6 @@ func refusal_key(index: int) -> String:
 			return "envelope.refused.plot_full"
 		RunShop.Reason.SOLD_BACK:
 			return "envelope.refused.sold_back"
+		RunShop.Reason.AT_MOST:
+			return "exchange.refused.at_most"
 	return "envelope.refused.other"

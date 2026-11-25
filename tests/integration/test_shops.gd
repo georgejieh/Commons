@@ -201,19 +201,19 @@ func test_the_market_sells_cards_for_the_plot_the_same_for_the_same_seed() -> vo
 	for seed_value: int in 60:
 		var first: RunLoop = _at_the_shops(seed_value)
 		var second: RunLoop = _at_the_shops(seed_value)
-		assert_int(first.stall.count()).is_equal(UPGRADES.card_offers)
-		for slot: int in first.stall.count():
-			assert_int(first.stall.rank(slot)).is_equal(second.stall.rank(slot))
-			assert_int(first.stall.suit(slot)).is_equal(second.stall.suit(slot))
-			assert_array(UPGRADES.card_ranks).contains([first.stall.rank(slot)])
+		assert_int(first.stall.offers.count()).is_equal(RunPools.PLOT_CARDS.offers)
+		for slot: int in first.stall.offers.count():
+			assert_int(first.stall.offers.rank(slot)).is_equal(second.stall.offers.rank(slot))
+			assert_int(first.stall.offers.suit(slot)).is_equal(second.stall.offers.suit(slot))
+			assert_array(RunPools.PLOT_CARDS.ranks).contains([first.stall.offers.rank(slot)])
 
 
 func test_a_bought_plot_card_enters_the_plot_and_raises_resentment() -> void:
 	var loop: RunLoop = _at_the_shops(16)
-	var rank: int = loop.stall.rank(0)
+	var rank: int = loop.stall.offers.rank(0)
 	var before: int = loop.state.resentment
 	var coupons: int = loop.state.coupons
-	var price: int = loop.stall.price(0)
+	var price: int = loop.stall.offers.price(0)
 	assert_int(loop.player_plot_card(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.inventory.plot.size()).is_equal(1)
 	var card: CardInstance = loop.state.inventory.plot[0]

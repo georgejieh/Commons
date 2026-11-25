@@ -35,6 +35,13 @@ enum Reason {
 	## A purchase of a Cadre or Campaign sold back this visit, at either counter, or a
 	## Campaign so sold kept from an envelope (ADR 0040).
 	SOLD_BACK,
+	## The deck stall shut, as through the arrival (ADR 0042).
+	CLOSED,
+	## A card for the deck of a rank it holds the most copies of already (ADR 0042).
+	AT_MOST,
+	## A deck card to take out that is no deck card, or a joker, which never leaves.
+	NO_SUCH_CARD,
+	JOKER,
 }
 
 const SOLD: String = ""

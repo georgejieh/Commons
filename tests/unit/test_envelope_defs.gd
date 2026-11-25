@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
 ## The envelope kinds in data (ADR 0021) pass the validator, and a broken one is caught.
 
-const KINDS: Array[String] = ["directive_envelope", "campaign_envelope", "parcel"]
+const KINDS: Array[String] = ["directive_envelope", "campaign_envelope", "parcel", "deck_envelope"]
 
 const DATA: String = "res://data/"
 const STRINGS: String = "res://data/strings/strings.csv"

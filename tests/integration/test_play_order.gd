@@ -98,7 +98,7 @@ func _read(cards: Array[CardInstance]) -> Pattern:
 func _cards(ids: Array[int]) -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
 	for card_id: int in ids:
-		cards.append(CardInstance.from_deck_id(card_id))
+		cards.append(Deck.new().card(card_id))
 	return cards
 
 

@@ -11,8 +11,7 @@ const PASS_EVERY: int = 3
 func _game_log(seed_value: int) -> PackedStringArray:
 	var streams: RandomStreams = RandomStreams.new(seed_value)
 	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
+	cards.append_array(Deck.new().cards())
 	var deal: DealResult = Dealer.deal(cards, streams.stream(RandomStreams.DEAL))
 	var landlord: int = seed_value % Seats.COUNT
 	var round_state: RoundState = RoundState.new(

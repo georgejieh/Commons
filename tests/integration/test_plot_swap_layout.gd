@@ -77,7 +77,7 @@ func _sheet(table: TableScreen) -> PlotSwapSheet:
 func _fill(table: TableScreen) -> void:
 	var hand: Array[CardInstance] = []
 	for deck_id: int in LANDLORD_HAND:
-		hand.append(CardInstance.from_deck_id(deck_id * 2 + 1))
+		hand.append(Deck.new().card(deck_id * 2 + 1))
 	var plot: Array[CardInstance] = _loop().state.inventory.plot
 	var sheet: PlotSwapSheet = _sheet(table)
 	var board: SwapBoard = sheet.board()

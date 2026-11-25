@@ -71,6 +71,8 @@ var shop: RunShop
 var market: RunShop
 ## The black market's cards for the private plot.
 var stall: PlotStall
+## The state store's cards for the communal deck (ADR 0042).
+var deck_stall: DeckStall
 ## The player's Campaigns and what they hold in force this round. Use them through the
 ## commands.
 var campaigns: RunCampaigns
@@ -148,6 +150,7 @@ func _init(
 		params
 	)
 	stall = PlotStall.new(state, pools.plot_cards, params)
+	deck_stall = DeckStall.new(state, pools.deck_cards, params)
 	if run_state.identity.is_tutorial():
 		tutorial = RunTutorial.new(RunTutorial.SCRIPT, configs)
 		tutorial.on_fault = func() -> void: refused_bot_actions += 1
@@ -438,14 +441,18 @@ func player_market_envelope(slot: int) -> Reason:
 
 
 ## Keeps the open envelope's item at index, or nothing with EnvelopeCounter.NOTHING, and
-## closes it. A refused pick changes nothing and leaves it open.
-func player_envelope_pick(index: int) -> Reason:
+## closes it. A card for the deck goes in place of the deck card in out (ADR 0042). A
+## refused pick changes nothing and leaves it open.
+func player_envelope_pick(index: int, out: int = Deck.NO_SLOT) -> Reason:
 	var opened: EnvelopeCounter = open_envelope()
 	if _awaiting != Awaiting.SHOP or opened == null:
 		return Reason.NOT_AWAITED
-	if opened.pick(index, PLAYER) != RunShop.Reason.OK:
+	if opened.pick(index, PLAYER, out) != RunShop.Reason.OK:
 		return Reason.ILLEGAL
-	record.add({"type": "envelope_pick", "index": index})
+	var command: Dictionary = {"type": "envelope_pick", "index": index}
+	if out != Deck.NO_SLOT:
+		command["out"] = out
+	record.add(command)
 	return Reason.OK
 
 
@@ -520,9 +527,11 @@ func open_shop() -> Reason:
 	# The envelopes last of all, so they leave every draw before them as it was.
 	shop.envelopes.draw()
 	market.envelopes.draw()
-	# The desks draw on a stream of their own, and the arrival has none (ADR 0041).
+	# The desks and the deck stall draw on streams of their own, and the arrival has none
+	# of them (ADR 0041, ADR 0042).
 	shop.desk.open(tutorial != null)
 	market.desk.open(tutorial != null)
+	deck_stall.open(tutorial != null)
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -618,6 +627,13 @@ func player_mark_card(card_id: int, at_market: bool = false) -> Reason:
 		if at_market:
 			_market_bought()
 	return reason
+
+
+## Buys the state store's card in slot for the communal deck, in place of the deck card
+## in out, for the rest of the run (ADR 0042).
+func player_deck_card(slot: int, out: int) -> Reason:
+	var command: Dictionary = {"type": "deck_card", "slot": slot, "out": out}
+	return _shop_command(command, deck_stall.buy.bind(slot, out))
 
 
 ## What the held Cadres change about this visit's counters, read as it opens and again
@@ -719,18 +735,17 @@ func _rebuild_modifiers() -> void:
 
 
 ## Shuffles a fresh deck, or under Unplanned Economy cuts the one the last round left
-## (DeckOrder). Either way the marks saved on deck cards go back on (ADR 0021). The
-## arrival deals its authored decks (ADR 0026).
+## (DeckOrder). Either way it is the run's deck, as the state store's exchanges left it
+## (ADR 0042), with the marks saved on its cards back on (ADR 0021). The arrival deals its
+## authored decks (ADR 0026).
 func _deal_cards() -> void:
 	var stream: RandomStream = state.streams.stream(RandomStreams.DEAL)
 	if tutorial != null:
-		_deal = tutorial.deal(state.round_index, pools.audit)
+		_deal = tutorial.deal(state.round_index, pools.audit, state.deck)
 	elif RunReforms.gathers_deck(state) and not state.deck_order.is_empty():
-		_deal = DeckOrder.deal(state.deck_order, state.card_marks, stream)
+		_deal = DeckOrder.deal(state.deck_order, state.deck, state.card_marks, stream)
 	else:
-		var cards: Array[CardInstance] = []
-		for deck_id: int in Deck.generate():
-			cards.append(CardInstance.from_deck_id(deck_id))
+		var cards: Array[CardInstance] = state.deck.cards()
 		state.card_marks.apply(cards)
 		_deal = Dealer.deal(cards, stream)
 	_stack.run_on_deal(DealContext.new(state.landlord_seat, _deal, stream))

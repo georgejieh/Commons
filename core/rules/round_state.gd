@@ -37,6 +37,10 @@ var _history: Array[PublicPlay] = []
 var _announced: PackedInt32Array = PackedInt32Array()
 ## 1 once a seat has answered a play on the table this round, played or passed.
 var _answered: PackedByteArray = PackedByteArray()
+## What each seat knows the round's cards to be, rank by rank: the deck as dealt, and for
+## a seat that swapped with its plot, less the cards it set aside and with those it brought
+## in (ADR 0042). Every seat shares the dealt counts until it swaps.
+var _known_counts: Array[PackedByteArray] = []
 
 
 ## The landlord takes the kitty and leads.
@@ -47,6 +51,8 @@ func _init(deal: DealResult, landlord: int, table: SeatRules) -> void:
 			hand.add(card)
 		_hands.append(hand)
 	_kitty = deal.kitty.duplicate()
+	for _seat: int in Seats.COUNT:
+		_known_counts.append(deal.deck_counts)
 	_plays_by_seat.resize(Seats.COUNT)
 	_announced.resize(Seats.COUNT)
 	_answered.resize(Seats.COUNT)
@@ -92,12 +98,19 @@ func pass_reason() -> Reason:
 
 ## Before anyone plays, trades cards in a seat's hand for others one for one: the
 ## plot swap (ADR 0038). A kitty card taken out leaves the public kitty, as in trade().
-## Returns the cards taken out, in the order of out_ids.
+## The cards taken out are out of the round, and only the seat knows which they were and
+## which came in, so only its own count of the round's cards changes. Returns the cards
+## taken out, in the order of out_ids.
 func exchange(seat: int, out_ids: Array[int], cards_in: Array[CardInstance]) -> Array[CardInstance]:
 	assert(_history.is_empty(), "Cards change hands only before the first play")
 	var taken: Array[CardInstance] = _take(seat, out_ids)
+	var known: PackedByteArray = _known_counts[seat].duplicate()
+	for card: CardInstance in taken:
+		known[card.base_rank()] -= 1
 	for card: CardInstance in cards_in:
 		_hands[seat].add(card)
+		known[card.base_rank()] += 1
+	_known_counts[seat] = known
 	return taken
 
 
@@ -221,7 +234,9 @@ func view_for(seat: int) -> SeatView:
 	var cards: Array[CardInstance] = []
 	for card: CardInstance in _hands[seat].cards():
 		cards.append(card.snapshot())
-	var view: SeatView = SeatView.new(seat, public_view(), _hands[seat].counts(), cards)
+	var view: SeatView = SeatView.new(
+		seat, public_view(), _hands[seat].counts(), cards, _known_counts[seat]
+	)
 	for other: int in Seats.COUNT:
 		if other != seat and _table.rules_for(other).hand_shown():
 			view.exposed[other] = _hands[other].counts()

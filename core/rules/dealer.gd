@@ -26,6 +26,9 @@ static func deal_in_order(order: Array[CardInstance]) -> DealResult:
 			hand.add(order[seat * HAND_SIZE + offset])
 		result.hands.append(hand)
 	result.kitty = order.slice(SEATS * HAND_SIZE)
+	result.deck_counts.resize(Ranks.COUNT)
+	for card: CardInstance in order:
+		result.deck_counts[card.base_rank()] += 1
 	return result
 
 

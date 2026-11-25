@@ -32,7 +32,8 @@ func test_a_rollout_ends_at_once_when_its_stop_has_expired() -> void:
 	]
 	var table: BotTable = BotTable.new(_rules, _map)
 	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
-	var rollout: Rollout = Rollout.new(hands, 0, 0, null, Seats.NONE, 0, table, config)
+	var deck: PackedByteArray = Deck.new().rank_counts()
+	var rollout: Rollout = Rollout.new(hands, 0, 0, null, Seats.NONE, 0, table, config, deck)
 	var expired: BotBudget = BotBudget.new(1, func() -> int: return Time.get_ticks_usec() * 1000)
 	OS.delay_msec(1)
 	var steps: int = BotConfig.DEFAULT_WEIGHTS.search_step_limit

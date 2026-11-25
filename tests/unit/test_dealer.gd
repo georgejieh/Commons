@@ -149,8 +149,7 @@ func _destination(index: int) -> int:
 
 func _deck() -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
-	for id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(id))
+	cards.append_array(Deck.new().cards())
 	return cards
 
 

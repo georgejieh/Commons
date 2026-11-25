@@ -31,7 +31,7 @@ func _stack(ids: Array[String]) -> ModifierStack:
 
 
 func _card(rank: int, suit: int) -> CardInstance:
-	return CardInstance.from_deck_id(rank * Deck.SUITS + suit)
+	return Deck.new().card(rank * Deck.SUITS + suit)
 
 
 func _pattern(cards: Array[CardInstance]) -> Pattern:
@@ -90,7 +90,7 @@ func test_red_banner_adds_to_the_holders_sides_hearts_and_diamonds_not_jokers() 
 		assert_float(_score_at(stack, [_card(Ranks.SEVEN, SPADE)], at).grain).is_equal(7.0)
 	for at: Vector2i in UNPAID:
 		assert_float(_score_at(stack, [_card(Ranks.SEVEN, HEART)], at).grain).is_equal(7.0)
-	var joker: Array[CardInstance] = [CardInstance.from_deck_id(Deck.BIG_JOKER_ID)]
+	var joker: Array[CardInstance] = [Deck.new().card(Deck.BIG_JOKER_ID)]
 	assert_float(_score(stack, joker).grain).is_equal(17.0)
 
 
@@ -207,7 +207,7 @@ func test_steel_target_counts_the_holders_bombs_into_later_zeal() -> void:
 	stack.run_turn_taken(turn)
 	assert_int(turn.resentment).is_equal(2)
 	var rocket: Array[CardInstance] = [
-		CardInstance.from_deck_id(Deck.SMALL_JOKER_ID), CardInstance.from_deck_id(Deck.BIG_JOKER_ID)
+		Deck.new().card(Deck.SMALL_JOKER_ID), Deck.new().card(Deck.BIG_JOKER_ID)
 	]
 	stack.run_turn_taken(TurnContext.new(HOLDER, OTHER, _pattern(rocket), 8, HOLDER))
 	# Another seat's bomb and the holder's pass count for nothing.

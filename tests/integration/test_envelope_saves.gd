@@ -104,8 +104,12 @@ func test_a_save_mid_opening_loads_into_the_same_envelope() -> void:
 		_same_state(loop, resumed)
 		assert_int(resumed.player_reroll()).is_equal(RunLoop.Reason.NOT_AWAITED)
 		var pick: int = 0 if loop.open_envelope().check_pick(0) == RunShop.Reason.OK else -1
-		assert_int(loop.player_envelope_pick(pick)).is_equal(RunLoop.Reason.OK)
-		assert_int(resumed.player_envelope_pick(pick)).is_equal(RunLoop.Reason.OK)
+		# A card for the deck is kept in place of a deck card (ADR 0042).
+		var out: int = Deck.NO_SLOT
+		if pick == 0 and loop.open_envelope().items()[0].is_deck_card():
+			out = 1
+		assert_int(loop.player_envelope_pick(pick, out)).is_equal(RunLoop.Reason.OK)
+		assert_int(resumed.player_envelope_pick(pick, out)).is_equal(RunLoop.Reason.OK)
 		_same_state(loop, resumed)
 		loop.player_reroll()
 		var replayed: RunLoop = RunRecord.resume(_saved(loop), RunScript.bots(), SetConfig.new())
@@ -190,8 +194,8 @@ func _check_class_label(stamped: CardInstance) -> void:
 		label.add(load("res://data/modifiers/class_label.tres"), RunLoop.PLAYER)
 		var table: SeatRules = SeatRules.new(label)
 		var deck: Array[CardInstance] = []
-		for deck_id: int in Deck.generate():
-			var card: CardInstance = CardInstance.from_deck_id(deck_id)
+		for deck_id: int in Deck.SIZE:
+			var card: CardInstance = Deck.new().card(deck_id)
 			if card.base_rank() == stamped.base_rank():
 				CardModifiers.stamp(card, RunLoop.PLAYER)
 			deck.append(card)

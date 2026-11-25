@@ -61,7 +61,7 @@ func test_the_store_desk_marks_a_deck_card_for_the_run() -> void:
 	# Once a visit: a second card is refused, and changes nothing.
 	_refused(loop, CARD + 1, false)
 	# A deal builds the deck fresh and puts the saved mark back on the card.
-	var dealt: Array[CardInstance] = [CardInstance.from_deck_id(CARD)]
+	var dealt: Array[CardInstance] = [Deck.new().card(CARD)]
 	loop.state.card_marks.apply(dealt)
 	assert_str(dealt[0].enhancement_id()).is_equal(offer)
 
@@ -71,7 +71,7 @@ func test_a_new_mark_replaces_the_old_one() -> void:
 	var other: String = CardInstance.MODEL
 	if loop.shop.desk.offer == CardInstance.MODEL:
 		other = CardInstance.SURPLUS
-	CardMarks.enhance(loop.state, CardInstance.from_deck_id(CARD), other)
+	CardMarks.enhance(loop.state, Deck.new().card(CARD), other)
 	assert_int(loop.player_mark_card(CARD)).is_equal(RunLoop.Reason.OK)
 	assert_str(loop.state.card_marks.enhancements[CARD]).is_equal(loop.shop.desk.offer)
 
@@ -98,8 +98,8 @@ func test_a_refused_use_changes_nothing() -> void:
 	assert_int(poor.shop.desk.check(CARD, RunLoop.PLAYER)).is_equal(MarkDesk.Reason.TOO_POOR)
 	_refused(poor, CARD, false)
 	var loop: RunLoop = _at_the_shops(34)
-	CardMarks.enhance(loop.state, CardInstance.from_deck_id(CARD), loop.shop.desk.offer)
-	CardMarks.stamp(loop.state, CardInstance.from_deck_id(CARD + 1), RunLoop.PLAYER)
+	CardMarks.enhance(loop.state, Deck.new().card(CARD), loop.shop.desk.offer)
+	CardMarks.stamp(loop.state, Deck.new().card(CARD + 1), RunLoop.PLAYER)
 	assert_int(loop.shop.desk.check(CARD, 0)).is_equal(MarkDesk.Reason.ALREADY_MARKED)
 	_refused(loop, CARD, false)
 	assert_int(loop.market.desk.check(CARD + 1, 0)).is_equal(MarkDesk.Reason.ALREADY_MARKED)

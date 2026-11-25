@@ -191,6 +191,7 @@ func open(app: DemoApp) -> void:
 	_kept.setup(_player, _moments.callout, names, faces)
 	_swap_sheet.setup(app, _pool)
 	_moments.hud = _hud
+	_moments.controller = _controller
 	_moments.sequence.attach(_board, _debuffs, _controller)
 	add_child(_close)
 	_close.setup(_player, _pile, _moments, _hand, _hand_view, _seat_center)

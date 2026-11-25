@@ -10,7 +10,7 @@ const MARKET: ShopParams = preload("res://data/run/black_market.tres")
 const RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
 const SEEDS: int = 24
 const RICH: int = 1000
-const KINDS: Array[String] = ["directive_envelope", "campaign_envelope"]
+const KINDS: Array[String] = ["directive_envelope", "campaign_envelope", "deck_envelope"]
 
 
 func _at_the_shops(seed_value: int, reforms: Array[String] = []) -> RunLoop:
@@ -104,9 +104,9 @@ func _same_stock(expected: RunLoop, loop: RunLoop) -> void:
 	assert_array(loop.shop.campaigns.stock()).is_equal(expected.shop.campaigns.stock())
 	assert_array(loop.market.campaigns.stock()).is_equal(expected.market.campaigns.stock())
 	assert_array(loop.shop.reforms.stock()).is_equal(expected.shop.reforms.stock())
-	for slot: int in loop.stall.count():
-		assert_int(loop.stall.rank(slot)).is_equal(expected.stall.rank(slot))
-		assert_int(loop.stall.suit(slot)).is_equal(expected.stall.suit(slot))
+	for slot: int in loop.stall.offers.count():
+		assert_int(loop.stall.offers.rank(slot)).is_equal(expected.stall.offers.rank(slot))
+		assert_int(loop.stall.offers.suit(slot)).is_equal(expected.stall.offers.suit(slot))
 
 
 func test_buying_opens_the_envelope_with_the_same_contents_for_a_seed() -> void:
@@ -147,8 +147,9 @@ func test_too_few_coupons_or_nothing_to_show_refuses_the_envelope() -> void:
 				maxed.state.hand_levels.raise(type as Pattern.Type)
 		maxed.shop.envelopes.clear()
 		maxed.shop.envelopes.draw()
-		assert_array(maxed.shop.envelopes.stock()).is_equal(["campaign_envelope"])
-		assert_bool(maxed.shop.envelopes.reroll_changes()).is_false()
+		# The Campaign envelope and the Requisition are left to draw from (ADR 0042).
+		assert_array(maxed.shop.envelopes.stock()).not_contains(["directive_envelope"])
+		assert_bool(maxed.shop.envelopes.reroll_changes()).is_true()
 		_offer(maxed, "directive_envelope")
 		assert_int(maxed.player_envelope_buy(0)).is_equal(RunLoop.Reason.ILLEGAL)
 
@@ -277,7 +278,7 @@ func test_the_parcel_mixes_its_contents_and_is_resented_when_bought() -> void:
 			if item.content == EnvelopeDef.Content.CAMPAIGN:
 				assert_bool(pool.has(item.item_id)).is_true()
 			else:
-				assert_bool(item.is_card()).is_true()
+				assert_bool(item.is_plot_card()).is_true()
 				assert_bool(Ranks.is_valid(item.rank) and item.rank <= Ranks.TWO).is_true()
 				assert_bool(item.suit >= 0 and item.suit < Deck.SUITS).is_true()
 		var after_buy: int = loop.state.resentment

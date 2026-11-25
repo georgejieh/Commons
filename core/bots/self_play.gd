@@ -62,12 +62,9 @@ static func bid_round(
 	return bidding
 
 
-## Deals one seeded hand from a fresh deck.
+## Deals one seeded hand from a fresh plain deck.
 static func deal_from_seed(deal_seed: int) -> DealResult:
-	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
-	return Dealer.deal(cards, RandomStream.new(deal_seed))
+	return Dealer.deal(Deck.new().cards(), RandomStream.new(deal_seed))
 
 
 ## True for a pass or a legal move. The round would read a play it can't find cards for

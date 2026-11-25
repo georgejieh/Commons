@@ -128,4 +128,4 @@ func _card_for(card_id: int) -> CardInstance:
 	for card: CardInstance in _hand.cards() + _controller.player_cards():
 		if card.id() == card_id:
 			return card
-	return CardInstance.from_deck_id(card_id) if card_id < Deck.SIZE else null
+	return _controller.deck_card(card_id) if card_id < Deck.SIZE else null

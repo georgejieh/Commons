@@ -136,7 +136,7 @@ func _slow_presets() -> void:
 func _cards(count: int) -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
 	for deck_id: int in count:
-		cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append(Deck.new().card(deck_id))
 	return cards
 
 

@@ -121,7 +121,7 @@ func test_a_gathered_deal_puts_the_saved_marks_back() -> void:
 	marks.enhancements[40] = CardInstance.MODEL
 	var order: Array[int] = []
 	order.assign(range(Deck.SIZE))
-	var deal: DealResult = DeckOrder.deal(order, marks, RandomStream.new(3))
+	var deal: DealResult = DeckOrder.deal(order, Deck.new(), marks, RandomStream.new(3))
 	var seen: Dictionary[int, CardInstance] = {}
 	for hand: Hand in deal.hands:
 		assert_int(hand.size()).is_equal(Dealer.HAND_SIZE)

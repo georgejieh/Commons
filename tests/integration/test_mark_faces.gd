@@ -15,7 +15,7 @@ func _view() -> CardView:
 
 
 func _card(deck_id: int, enhancement: String) -> CardInstance:
-	var card: CardInstance = CardInstance.from_deck_id(deck_id)
+	var card: CardInstance = Deck.new().card(deck_id)
 	CardModifiers.enhance(card, enhancement)
 	return card
 
@@ -31,7 +31,7 @@ func test_each_enhancement_draws_its_own_mark_and_a_card_shows_one() -> void:
 		kinds.append(badge.kind)
 		assert_vector(badge.position).is_equal(CardView.ENHANCEMENT_AT)
 		await await_idle_frame()
-	view.bind(CardInstance.from_deck_id(20))
+	view.bind(Deck.new().card(20))
 	assert_str(view.shown_enhancement()).is_empty()
 
 

@@ -1,10 +1,9 @@
 class_name UnseenCards
 extends RefCounted
-## Counts what a seat has not seen: the deck less its own hand and every card played.
-## The kitty counts as unseen until played, because it went into the landlord's hand.
-
-const PER_RANK: int = 4
-const PER_JOKER: int = 1
+## Counts what a seat has not seen: the round's cards as the seat knows them less its own
+## hand and every card played. The kitty counts as unseen until played, because it went
+## into the landlord's hand. Another seat's plot card is a card the seat could not know
+## of, so a rank it has seen more of than it knew stays at none unseen.
 
 
 static func from_view(view: SeatView) -> PackedByteArray:
@@ -16,8 +15,7 @@ static func from_view(view: SeatView) -> PackedByteArray:
 	var unseen: PackedByteArray = PackedByteArray()
 	unseen.resize(Ranks.COUNT)
 	for rank: int in Ranks.COUNT:
-		var in_deck: int = PER_JOKER if rank >= Ranks.SMALL_JOKER else PER_RANK
-		unseen[rank] = maxi(0, in_deck - seen[rank])
+		unseen[rank] = maxi(0, view.deck_counts[rank] - seen[rank])
 	return unseen
 
 

@@ -119,8 +119,7 @@ func test_the_round_reads_class_labels_ranks_from_the_hand() -> void:
 
 func _deck() -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
+	cards.append_array(Deck.new().cards())
 	return cards
 
 

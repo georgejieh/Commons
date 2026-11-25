@@ -83,6 +83,8 @@ var reported_steps: int = 0
 ## (P4.11).
 var hand_levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
 var card_marks: CardMarks = CardMarks.new()
+## The communal deck, slot by slot, as the state store's exchanges left it (ADR 0042).
+var deck: Deck = Deck.new()
 ## Each held Cadre's own run state, such as a picked rank or a count it keeps (ADR 0021).
 var cadre_memos: CadreMemos = CadreMemos.new()
 ## The Reforms enacted this run, in the order they were bought, and the deck as Unplanned
@@ -166,6 +168,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	var max_level: int = Scorer.DEFAULT_PARAMS.max_level
 	state.hand_levels = HandLevels.from_array(data["hand_levels"], max_level)
 	state.card_marks = CardMarks.from_dict(data["card_marks"])
+	state.deck = Deck.from_dict(data["deck"])
 	state.cadre_memos = CadreMemos.from_dict(data["cadre_memos"])
 	state.reforms.assign(data["reforms"])
 	for deck_id: Variant in data["deck_order"]:
@@ -240,6 +243,7 @@ func to_dict() -> Dictionary:
 		"reported_steps": reported_steps,
 		"hand_levels": hand_levels.to_array(),
 		"card_marks": card_marks.to_dict(),
+		"deck": deck.to_dict(),
 		"cadre_memos": cadre_memos.to_dict(),
 		"reforms": reforms.duplicate(),
 		"deck_order": deck_order.duplicate(),

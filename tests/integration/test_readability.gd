@@ -150,7 +150,7 @@ func test_the_reforms_strip_and_board_names_fit_without_clipping() -> void:
 func test_card_marks_sit_in_the_strip_a_fan_leaves_showing() -> void:
 	var view: CardView = auto_free(CARD_SCENE.instantiate())
 	add_child(view)
-	var card: CardInstance = CardInstance.from_deck_id(41)
+	var card: CardInstance = Deck.new().card(41)
 	CardModifiers.stamp(card, 0)
 	CardModifiers.enhance(card, CardInstance.MODEL)
 	view.bind(card)
@@ -340,7 +340,7 @@ func _assert_fits(label: Label, where: String) -> void:
 func test_whole_multiples_print_without_a_decimal() -> void:
 	assert_str(ModifierDef.multiple(2.0)).is_equal("2")
 	assert_str(ModifierDef.multiple(1.5)).is_equal("1.5")
-	var card: CardInstance = CardInstance.from_deck_id(20)
+	var card: CardInstance = Deck.new().card(20)
 	var caption: String = _app.controller.envelope_card_text(
 		EnvelopeShelf.KIND_MODEL, "caption", card
 	)

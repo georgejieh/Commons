@@ -19,17 +19,8 @@ func test_round_trip_is_lossless_for_random_instances() -> void:
 	assert_int(failures).is_equal(0)
 
 
-func test_base_instances_reuse_deck_ids() -> void:
-	for deck_id: int in Deck.generate():
-		var card: CardInstance = CardInstance.from_deck_id(deck_id)
-		assert_int(card.id()).is_equal(deck_id)
-		assert_int(card.base_rank()).is_equal(Deck.rank_of(deck_id))
-		assert_int(card.suit()).is_equal(Deck.suit_of(deck_id))
-		assert_int(card.origin()).is_equal(CardInstance.Origin.DECK)
-
-
 func test_new_instance_has_no_enhancement_seal_or_stamp() -> void:
-	var card: CardInstance = CardInstance.from_deck_id(0)
+	var card: CardInstance = Deck.new().card(0)
 	assert_str(card.enhancement_id()).is_equal(CardInstance.NO_ID)
 	assert_str(card.seal_id()).is_equal(CardInstance.NO_ID)
 	assert_int(card.owner_stamp()).is_equal(CardInstance.NO_OWNER)

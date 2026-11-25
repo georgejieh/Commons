@@ -8,7 +8,9 @@ extends Control
 ## Nothing. Keeping a paper lifts it
 ## under a seal, Kept, or Issued with each Rate ticking for a Directive, while the others
 ## fall away; taking nothing lets them all fall. Then the overlay closes and frees
-## everything it made. Reduced motion skips to each end.
+## everything it made. Reduced motion skips to each end. A card for the deck is kept
+## through the deck sheet, which asks for the card it replaces (EnvelopeExchange, ADR
+## 0042); backing out of it leaves the envelope as it was.
 ##
 ## Keyboard and gamepad: focus lands on the first paper that can be kept, left and right
 ## move, accept keeps. Cancel never throws an envelope away at once: it moves focus to
@@ -69,6 +71,8 @@ var _seal: InkSeal = InkSeal.new()
 var _opening: EnvelopeOpening = EnvelopeOpening.new()
 var _busy: bool = true
 var _blocks: Dictionary[String, Control] = {}
+## Keeps a card for the deck, or null where the page has no deck sheet.
+var _exchange: EnvelopeExchange = null
 
 
 func _init() -> void:
@@ -120,6 +124,12 @@ func open(controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate:
 		_opening.play(self, _dim, _figure, _column, _papers, from, _settle)
 	else:
 		_settle()
+
+
+## Keeps cards for the deck through sheet, which stands over the envelope.
+func use_deck_sheet(sheet: DeckSheet) -> void:
+	var refocus: Callable = func(index: int) -> void: _papers[index].keep.grab_focus()
+	_exchange = EnvelopeExchange.new(sheet, _act_out, refocus)
 
 
 ## The papers in order, for tests and playtests.
@@ -284,7 +294,7 @@ func _input(event: InputEvent) -> void:
 			_opening.stop()
 			_settle()
 		return
-	if not event.is_action_pressed("ui_cancel"):
+	if not event.is_action_pressed("ui_cancel") or (_exchange != null and _exchange.is_open()):
 		return
 	get_viewport().set_input_as_handled()
 	if _busy:
@@ -301,18 +311,28 @@ func _ask_confirm(on: bool) -> void:
 	_nothing.text = tr("envelope.nothing.confirm" if on else "envelope.nothing")
 
 
-## Keeps the paper: the pick is sent now, then acted out.
+## Keeps the paper: the pick is sent now, or once the deck sheet has named the card a deck
+## card replaces, then acted out.
 func _keep(index: int) -> void:
-	if _busy or not _papers[index].is_takeable():
+	if _busy or not _papers[index].is_takeable() or (_exchange != null and _exchange.is_open()):
 		return
-	var paper: ChoicePaper = _papers[index]
+	if _exchange != null and _shelf.is_deck_card(index):
+		_exchange.ask(_controller, _shelf, index)
+		return
 	var directive: bool = _shelf.kind(index) == EnvelopeShelf.KIND_DIRECTIVE
 	var issued: String = _shelf.item_id(index) if directive else ""
 	var before: Array[int] = []
 	if directive:
 		before = DirectiveSheet.rates(_controller, issued)
-	if _controller.envelope_pick(index) != RunController.OK:
-		return
+	if _controller.envelope_pick(index) == RunController.OK:
+		_act_out(index, issued, before)
+
+
+## The kept paper lifts under its seal while the others fall, then the overlay closes. An
+## issued Directive's Rates tick up from before.
+func _act_out(index: int, issued: String = "", before: Array[int] = []) -> void:
+	var paper: ChoicePaper = _papers[index]
+	var directive: bool = not issued.is_empty()
 	Audio.play(AudioEvents.STORE_BUY)
 	if UiMotion.reduced():
 		_finish()
@@ -321,7 +341,7 @@ func _keep(index: int) -> void:
 	var others: Array[ChoicePaper] = _papers.filter(
 		func(other: ChoicePaper) -> bool: return other != paper
 	)
-	_fall(others)
+	EnvelopeOpening.fall(others)
 	# Once a paper is kept, Take Nothing is done with: it fades from under the seal.
 	_nothing.disabled = true
 	_nothing.create_tween().tween_property(_nothing, "modulate:a", 0.0, KEEP_TIME)
@@ -367,25 +387,11 @@ func _take_nothing() -> void:
 		_finish()
 		return
 	_busy = true
-	_fall(_papers)
+	EnvelopeOpening.fall(_papers)
 	var tween: Tween = create_tween()
 	tween.tween_interval(FALL_TIME + FAN_STAGGER * _papers.size())
 	tween.tween_property(self, "modulate:a", 0.0, CLOSE_TIME)
 	tween.tween_callback(_finish)
-
-
-func _fall(falling: Array[ChoicePaper]) -> void:
-	Audio.fill(AudioEvents.MOTION_FLY)
-	for index: int in falling.size():
-		var paper: ChoicePaper = falling[index]
-		paper.keep.disabled = true
-		var tween: Tween = paper.create_tween().set_parallel(true)
-		tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		var delay: float = index * FAN_STAGGER
-		var turn: float = FALL_TURN * (1.0 if index % 2 == 0 else -1.0)
-		tween.tween_property(paper, "position:y", FALL, FALL_TIME).set_delay(delay)
-		tween.tween_property(paper, "rotation", turn, FALL_TIME).set_delay(delay)
-		tween.tween_property(paper, "modulate:a", 0.0, FALL_TIME).set_delay(delay)
 
 
 func _finish() -> void:

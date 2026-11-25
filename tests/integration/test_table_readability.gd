@@ -174,7 +174,7 @@ func test_court_cards_and_jokers_are_picture_cards() -> void:
 	var view: CardView = auto_free(CARD_SCENE.instantiate())
 	add_child(view)
 	for rank: int in Ranks.COUNT:
-		var card: CardInstance = CardInstance.from_deck_id(_deck_id(rank))
+		var card: CardInstance = Deck.new().card(_deck_id(rank))
 		view.bind(card)
 		var picture: bool = rank >= Ranks.JACK and rank <= Ranks.KING
 		picture = picture or rank >= Ranks.SMALL_JOKER
@@ -276,7 +276,7 @@ func _twos_marked(hand_view: HandView) -> bool:
 func _cards(deck_ids: Array[int]) -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
 	for deck_id: int in deck_ids:
-		cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append(Deck.new().card(deck_id))
 	return cards
 
 
@@ -290,6 +290,6 @@ func _spots(views: Array[CardView]) -> Array[Vector2]:
 ## The first deck ID with this rank.
 func _deck_id(rank: int) -> int:
 	for deck_id: int in 54:
-		if CardInstance.from_deck_id(deck_id).base_rank() == rank:
+		if Deck.new().card(deck_id).base_rank() == rank:
 			return deck_id
 	return -1

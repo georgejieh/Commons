@@ -40,7 +40,7 @@ const SCRIPT: TutorialScript = preload("res://data/run/tutorial/arrival.tres")
 func _ranks(ids: Array) -> Array[String]:
 	var names: Array[String] = []
 	for card_id: int in ids:
-		names.append(RANK_NAMES[Deck.rank_of(card_id)])
+		names.append(RANK_NAMES[Deck.new().rank_of(card_id)])
 	names.sort()
 	return names
 
@@ -64,7 +64,7 @@ func test_each_deal_is_54_different_valid_cards() -> void:
 		assert_int(seen.size()).is_equal(Deck.SIZE)
 		var cards: Array[CardInstance] = []
 		for card_id: int in deal:
-			cards.append(CardInstance.from_deck_id(card_id))
+			cards.append(Deck.new().card(card_id))
 		var dealt: DealResult = Dealer.deal_in_order(cards)
 		for hand: Hand in dealt.hands:
 			assert_int(hand.cards().size()).is_equal(Dealer.HAND_SIZE)

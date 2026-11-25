@@ -76,7 +76,7 @@ func test_levy_gives_your_highest_card_left_and_takes_their_lowest_each_round() 
 			var hand: Array[int] = _hand_ids(at, RunLoop.PLAYER)
 			assert_bool(hand.has(given)).is_false()
 			assert_bool(hand.has(taken)).is_true()
-			var given_rank: int = CardInstance.from_deck_id(given).base_rank()
+			var given_rank: int = Deck.new().card(given).base_rank()
 			for card: CardInstance in at.player_cards():
 				if card.id() != taken:
 					assert_int(card.base_rank()).is_less_equal(given_rank)
@@ -326,7 +326,7 @@ func test_redistribution_passes_two_random_cards_left_from_every_hand() -> void:
 			var landlord: int = round_state.landlord()
 			var counts: PackedByteArray = round_state.view_for(landlord).own_counts
 			for played: int in _played(at, landlord):
-				counts[CardInstance.from_deck_id(played).base_rank()] += 1
+				counts[Deck.new().card(played).base_rank()] += 1
 			var kitty: PackedByteArray = round_state.public_view().kitty_counts
 			for rank: int in Ranks.COUNT:
 				assert_int(kitty[rank]).is_less_equal(counts[rank])

@@ -83,7 +83,7 @@ func mark(card_id: int, seat: int) -> Reason:
 		return reason
 	_state.coupons -= price()
 	_used = true
-	var card: CardInstance = CardInstance.from_deck_id(card_id)
+	var card: CardInstance = _state.deck.card(card_id)
 	if stamps():
 		CardMarks.stamp(_state, card, seat)
 	else:

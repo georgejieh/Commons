@@ -67,7 +67,15 @@ func test_a_rollout_remembers_a_pass_already_made() -> void:
 		RankText.counts("34567"), RankText.counts("A"), RankText.counts("45")
 	]
 	var rollout: Rollout = Rollout.new(
-		hands, 0, 2, _pattern("9"), 0, 1, _table, _config(BotConfig.Tier.MEDIUM)
+		hands,
+		0,
+		2,
+		_pattern("9"),
+		0,
+		1,
+		_table,
+		_config(BotConfig.Tier.MEDIUM),
+		Deck.new().rank_counts()
 	)
 	rollout.step(Pattern.pass_play())
 	assert_int(rollout.play_out(BotConfig.DEFAULT_WEIGHTS.search_step_limit)).is_equal(0)

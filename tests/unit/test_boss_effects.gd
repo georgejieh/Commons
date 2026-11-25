@@ -41,8 +41,7 @@ func test_great_leap_adds_zeal_and_doubles_the_quota() -> void:
 
 func test_struggle_session_swaps_the_highest_card_into_the_kitty() -> void:
 	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
+	cards.append_array(Deck.new().cards())
 	var deal: DealResult = Dealer.deal(cards, RandomStream.new(7))
 	var highest: int = 0
 	for card: CardInstance in deal.hands[0].cards():
@@ -78,8 +77,7 @@ func test_struggle_session_swaps_the_highest_card_into_the_kitty() -> void:
 
 func test_landlords_ledger_doubles_the_kitty_as_a_later_deal_hook_left_it() -> void:
 	var cards: Array[CardInstance] = []
-	for deck_id: int in Deck.generate():
-		cards.append(CardInstance.from_deck_id(deck_id))
+	cards.append_array(Deck.new().cards())
 	var deal: DealResult = Dealer.deal(cards, RandomStream.new(7))
 	var ledger: LandlordsLedgerEffect = LandlordsLedgerEffect.new()
 	ledger.holder_seat = 0

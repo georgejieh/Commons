@@ -47,7 +47,7 @@ func _table(level: int, screen_size: Vector2i) -> TableScreen:
 func _run_of(first: int, count: int) -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
 	for index: int in count:
-		cards.append(CardInstance.from_deck_id(first + index))
+		cards.append(Deck.new().card(first + index))
 	return cards
 
 

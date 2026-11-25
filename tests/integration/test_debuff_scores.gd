@@ -103,7 +103,7 @@ func test_the_slogan_halves_before_any_rate_cap() -> void:
 	slogan.effect.parameters[SloganEffect.TYPE] = Pattern.Type.BOMB
 	var cards: Array[CardInstance] = []
 	for deck_id: int in [0, 1, 2, 3]:
-		cards.append(CardInstance.from_deck_id(deck_id))
+		cards.append(Deck.new().card(deck_id))
 	var bomb: Pattern = (
 		Classifier
 		. classify(RankText.counts("3333"), RuleSet.default_rules(), Ranks.identity_map())

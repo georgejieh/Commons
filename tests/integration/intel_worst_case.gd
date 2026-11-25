@@ -29,7 +29,7 @@ static func holds_lines(app: DemoApp) -> Array[String]:
 			var counts: PackedByteArray = PackedByteArray()
 			counts.resize(Ranks.COUNT)
 			for card: int in deck.slice(0, size):
-				counts[CardInstance.from_deck_id(card).base_rank()] += 1
+				counts[Deck.new().card(card).base_rank()] += 1
 			var types: PackedInt32Array = PackedInt32Array()
 			types.resize(Pattern.Type.size())
 			for group: Pattern in Bot.suggest_groups(counts, table, BotConfig.new()):

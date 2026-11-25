@@ -12,7 +12,7 @@ const MOST: int = 2
 func _surplus_loop(seed_value: int) -> RunLoop:
 	var state: RunState = RunState.new(seed_value)
 	for deck_id: int in DECK_SIZE:
-		CardMarks.enhance(state, CardInstance.from_deck_id(deck_id), CardInstance.SURPLUS)
+		CardMarks.enhance(state, Deck.new().card(deck_id), CardInstance.SURPLUS)
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots(), SetConfig.new())
 	loop.start_set()
 	return loop

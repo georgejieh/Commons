@@ -190,10 +190,13 @@ func test_a_wrong_scripted_move_is_a_fault_and_falls_back_to_a_legal_one() -> vo
 	villager.on_fault = func() -> void: faults[0] += 1
 	villager.start(seat)
 	var none: Array[PublicPlay] = []
-	var cards: Array[CardInstance] = []
+	var no_kitty: Array[CardInstance] = []
+	var deck: Deck = Deck.new()
+	var cards: Array[CardInstance] = [deck.card(17), deck.card(18), deck.card(19)]
 	var sizes: PackedInt32Array = PackedInt32Array([17, 17, 20])
-	var leading: PublicView = PublicView.new(2, 2, sizes, none, cards, null, PackedInt32Array())
-	var view: SeatView = SeatView.new(2, leading, PackedByteArray(), cards)
+	var leading: PublicView = PublicView.new(2, 2, sizes, none, no_kitty, null, PackedInt32Array())
+	var counts: PackedByteArray = CardSelection.printed_counts(cards)
+	var view: SeatView = SeatView.new(2, leading, counts, cards, deck.rank_counts())
 	var single: Pattern = Pattern.new(Pattern.Type.SINGLE, Ranks.SEVEN, 1, 1, PackedByteArray(), 4)
 	var legal: Array[Pattern] = [single]
 	var answer: BotPlay = villager.play(view, legal)
