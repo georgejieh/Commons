@@ -35,7 +35,10 @@ The names are the game's: a model worker's rosette, a sheaf of wheat, an emulati
 
 **On the card face.** `CardMark` draws each in code, in the worn paper-and-ink manner of the chop and the rosette, each its own shape so they tell apart in grayscale and at the hand's size: Model's round rosette with two tails, an upright ear of wheat with a red band, a pointed pennant on a staff, and a coupon wider than tall with torn perforated ends. A card shows one at the rosette's place on the left edge; the stamp's chop stays at the foot. Every view that shows a card through `CardView` shows them: the hand, the pile, the swap sheet, the black market's plot stall and an envelope's plot cards. The informant's and Peek's views name ranks in words and show no mark, Model's included, so they are unchanged. Each has a keyword (`Keywords.TERMS`) whose meaning quotes the data's number.
 
+**Campaigns.** `MarkCardsEffect` takes the mark it gives: the player's stamp, or an enhancement. Three join Model Harvest in the state store's pool, open from the first run (unlock tier 0), with Model Harvest's numbers: one or two cards in hand, 3 coupons, collective, used on the player's turn. Autumn Gleaning gives Sheaf, Emulation Contest Pennant and Surplus Sale Surplus. A card already carrying the mark is refused, as before. The event a use logs, `CARDS_MARKED`, says which mark by `CardInstance.mark_value`: 0 for the stamp, 1 for Model as before, then Sheaf, Pennant and Surplus.
+
 ## Consequences
 
+- The state store's Campaign pool grows from eight to eleven, so a visit's one Campaign offer is a marking Campaign four times in eleven.
 - A villager who is dealt a Sheaf or Pennant card scores it; that is the owner's rule for scoring effects, and it can cut against the player as landlord.
-- Saved marks are card IDs to enhancement IDs, so no schema changes and every older save loads as before.
+- The new Campaigns change ADR 0033's content stamp, so a save made before this build resumes at its checkpoint, the start of its Quota, as every content change does. Saved marks are card IDs to enhancement IDs, so no schema changes.

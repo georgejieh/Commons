@@ -18,6 +18,12 @@ static func _build(campaign_id: String) -> CampaignEffect:
 	match campaign_id:
 		"model_harvest":
 			return MarkCardsEffect.new(CardInstance.MODEL)
+		"autumn_gleaning":
+			return MarkCardsEffect.new(CardInstance.SHEAF)
+		"emulation_contest":
+			return MarkCardsEffect.new(CardInstance.PENNANT)
+		"surplus_sale":
+			return MarkCardsEffect.new(CardInstance.SURPLUS)
 		"registration_drive":
 			return MarkCardsEffect.new(CardInstance.NO_ID)
 		"mutual_aid":

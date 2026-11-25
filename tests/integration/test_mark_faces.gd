@@ -52,6 +52,8 @@ func test_each_marks_keyword_quotes_the_data() -> void:
 	for id: String in ["sheaf", "pennant", "surplus"]:
 		assert_bool(Keywords.TERMS.has(id)).is_true()
 		assert_bool(Keywords.meaning(id).contains("{")).is_false()
+	var found: PackedStringArray = Keywords.found(tr("campaign.surplus_sale.text"))
+	assert_bool(found.has("surplus")).is_true()
 
 
 func test_a_coupon_step_and_a_pennant_step_say_what_they_gave() -> void:
