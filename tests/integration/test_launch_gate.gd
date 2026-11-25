@@ -7,6 +7,7 @@ extends GdUnitTestSuite
 ## it goes. A test, like every tool, never has a gate.
 
 const FOLDER: String = "user://test_launch_gate"
+const APP: String = "res://ui/main.tscn"
 const PARAMS: SessionParams = preload("res://data/session/session_params.tres")
 const SAVE_NAMES: Array[String] = ["run.json", "run.json.bak", "profile.json", "private_ledger.txt"]
 const LOGS: Array[String] = [
@@ -190,7 +191,7 @@ func test_a_test_never_has_a_gate_or_touches_the_session_file() -> void:
 	var real: String = SessionFile.PATH
 	var was: String = FileAccess.get_file_as_string(real) if FileAccess.file_exists(real) else ""
 	var had: bool = FileAccess.file_exists(real)
-	var app: DemoApp = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
+	var app: DemoApp = auto_free((load(APP) as PackedScene).instantiate())
 	Saves.use_run_path(FOLDER.path_join("app/run.json"))
 	add_child(app)
 	await await_idle_frame()
@@ -202,3 +203,29 @@ func test_a_test_never_has_a_gate_or_touches_the_session_file() -> void:
 		assert_str(FileAccess.get_file_as_string(real)).is_equal(was)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
+
+
+## Quit on the notice ends the tree, which frees the app and its gate. The app never
+## opened, and nothing it made to open with is left outside the tree.
+func test_quit_from_the_notice_leaves_nothing_of_the_app() -> void:
+	_other_copy(Time.get_unix_time_from_system() + 3600.0)
+	var before: String = FileAccess.get_file_as_string(_file.path())
+	var orphans: float = Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
+	# The app as it stands behind its gate: made, and not yet opened.
+	var app: DemoApp = (load(APP) as PackedScene).instantiate()
+	var gate: LaunchGate = LaunchGate.new(_params, _file, _keep)
+	var quit: Array[bool] = []
+	gate.leave = func() -> void: quit.append(true)
+	gate.opened.connect(func(kept: String) -> void: _opened.append(kept))
+	add_child(gate)
+	await await_idle_frame()
+	await _key(KEY_ENTER)
+	assert_array(quit).is_equal([true])
+	assert_array(_opened).is_empty()
+	# What quitting the tree does to them.
+	gate.free()
+	app.free()
+	await await_idle_frame()
+	var left: float = Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
+	assert_float(left).is_equal(orphans)
+	assert_str(FileAccess.get_file_as_string(_file.path())).is_equal(before)

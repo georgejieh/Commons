@@ -18,6 +18,10 @@ signal opened(kept: String)
 
 const PARAMS: SessionParams = preload("res://data/session/session_params.tres")
 
+## What Quit on the notice does: the tree quits, which frees the app and the gate with it.
+## A test that cannot end its own run sets another.
+var leave: Callable = Callable()
+
 var _params: SessionParams
 var _file: SessionFile
 var _keep: CrashKeep
@@ -76,7 +80,9 @@ func notice() -> SessionNotice:
 
 
 func _show_notice() -> void:
-	_notice = SessionNotice.already_open(wait_seconds(_params), get_tree().quit, _open_anyway)
+	if not leave.is_valid():
+		leave = get_tree().quit
+	_notice = SessionNotice.already_open(wait_seconds(_params), leave, _open_anyway)
 	add_child(_notice)
 	_timer.start()
 
