@@ -73,13 +73,19 @@ func set_value(key: String, new_value: Variant) -> void:
 	changed.emit(key)
 
 
+## Writes a temporary file in full and renames it into place, as the saves are written,
+## so a crash mid-write leaves the last settings and keys, not a cut-off file.
 func save() -> Error:
 	var file: ConfigFile = ConfigFile.new()
 	for key: String in KEYS:
 		file.set_value(SECTION, key, _values[key])
 	bindings.write(file)
 	DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
-	return file.save(_path)
+	var temp: String = _path + SaveService.TEMP_SUFFIX
+	var written: Error = file.save(temp)
+	if written != OK:
+		return written
+	return DirAccess.rename_absolute(temp, _path)
 
 
 ## From now on saves go to path; the values held stay as they are. The playtest tools
