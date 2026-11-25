@@ -1,8 +1,9 @@
 class_name DossierScreen
 extends Control
 ## What you have seen each villager at the table do this run (P3B.8): bids and calls,
-## bombs, passes, plays over a teammate, first-out finishes and rounds as landlord. It
-## reads the run's observations and never names a personality.
+## bombs, passes, plays over a teammate, first-out finishes and rounds as landlord, and,
+## once seen, claims a trait shift made larger (ADR 0043). It reads the run's observations
+## and never names a personality.
 
 ## Each line's string key and the observation it reports.
 const LINES: Dictionary[String, Observations.Kind] = {
@@ -50,6 +51,10 @@ func _villager(app: DemoApp, state: RunState, seat: int) -> Control:
 	sheet.add_child(portrait)
 	sheet.add_child(ScreenKit.styled(app.controller.seated_full_name(seat), CommonsTheme.TITLE))
 	var lines: PackedStringArray = _lines(state.observations, state.table[seat])
+	# A trait that changes with a meter is told only once it was seen at work (ADR 0043).
+	var shifted: String = app.controller.shift_line(seat)
+	if not shifted.is_empty():
+		lines.append(shifted)
 	_entries[seat] = lines
 	for text: String in lines:
 		sheet.add_child(ScreenKit.label(text, 22))

@@ -3,9 +3,11 @@ extends RefCounted
 ## What the player has seen each villager do at the table this run, per family: the
 ## dossier's source (P3B.8). It holds only what happened in view, never a personality.
 
-enum Kind { BIDS, CALLS, BOMBS, PASSES, BEAT_TEAMMATE, WENT_OUT, LANDLORD_ROUNDS }
+## SHIFTED_CLAIMS counts claims above the fair half made while one of the family's honesty
+## shifts held (ADR 0043).
+enum Kind { BIDS, CALLS, BOMBS, PASSES, BEAT_TEAMMATE, WENT_OUT, LANDLORD_ROUNDS, SHIFTED_CLAIMS }
 
-const KIND_COUNT: int = 7
+const KIND_COUNT: int = 8
 
 ## Family ID to counts indexed by Kind.
 var counts: Dictionary[String, PackedInt64Array] = {}

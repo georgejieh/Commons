@@ -32,6 +32,11 @@ FAMILIES = [
     ("tang", "唐", "X", "MLHHH", "runs", 5, False, False, (104.0, 0.9, 3.9, 0.3)),
     ("deng", "邓", "H", "MLMMH", "landlord", 0, False, True, (200.0, 1.06, 5.2, 0.1)),
 ]
+# Traits that change with a run meter (ADR 0043): (meter, band, trait, level, dossier key).
+# Bands are MeterBands.Band (3 is HIGH); levels are LEVEL's.
+SHIFTS = {
+    "qin": [("famine", 3, "honesty", "L", "dossier.shift.famine")],
+}
 YOUTH = [
     ("youth_a", "", "E", "LHHLL", "start", 0, True, False, (224.0, 1.14, 5.9, 0.04)),
     ("youth_b", "", "E", "MLMML", "start", 0, True, False, (142.0, 1.03, 5.7, 0.07)),
@@ -152,6 +157,10 @@ def family_tres(row, folder, faces):
     has_portrait = os.path.exists(os.path.join(ROOT, portrait))
     if has_portrait:
         exts.append(("Texture2D", "res://" + portrait))
+    shifts = SHIFTS.get(fid, [])
+    if shifts:
+        exts.append(("Script", "res://data/villagers/trait_shift.gd"))
+    shift_ext = len(exts)
     lines = SPEECH.get(fid, [])
     out = ['[gd_resource type="Resource" script_class="FamilyDef" format=3]', ""]
     for index, (kind, path) in enumerate(exts):
@@ -195,6 +204,20 @@ def family_tres(row, folder, faces):
             'mood = "%s"' % mood,
             "",
         ]
+    shift_ids = []
+    for meter, band, trait, level, seen_key in shifts:
+        shift_id = "shift_%s" % meter
+        shift_ids.append(shift_id)
+        out += [
+            '[sub_resource type="Resource" id="%s"]' % shift_id,
+            'script = ExtResource("%d")' % shift_ext,
+            'meter = "%s"' % meter,
+            "band = %d" % band,
+            'trait_name = "%s"' % trait,
+            "level = %d" % LEVEL[level],
+            'seen_key = "%s"' % seen_key,
+            "",
+        ]
     out += [
         '[sub_resource type="Resource" id="speech"]',
         'script = ExtResource("3")',
@@ -222,8 +245,13 @@ def family_tres(row, folder, faces):
         "unlock_runs = %d" % runs,
         "rising = %s" % ("true" if rising else "false"),
         "mirrors_player = %s" % ("true" if mirrors else "false"),
-        "",
     ]
+    if shift_ids:
+        out.append(
+            'shifts = Array[ExtResource("%d")]([%s])'
+            % (shift_ext, ", ".join('SubResource("%s")' % i for i in shift_ids))
+        )
+    out.append("")
     path = os.path.join(ROOT, "data", "villagers", folder, fid + ".tres")
     with open(path, "w", encoding="utf-8", newline="\n") as handle:
         handle.write("\n".join(out))

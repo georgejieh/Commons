@@ -841,6 +841,8 @@ func _campaign_moment() -> CampaignContext.Moment:
 
 
 func _create_round() -> void:
+	# Families play the round by their traits as the meters stand at its start (ADR 0043).
+	TraitShifts.apply(state, _configs, DEFAULT_VILLAGE, _meters)
 	_aim_grudges()
 	# The round's wild ranks (ADR 0029), none unless an item drew them. Every item that
 	# draws one is the player's, so they are the player's seat's alone (ADR 0039).
@@ -1021,6 +1023,9 @@ func _split_commons(player_need: int) -> void:
 	var faces: int = NeedAudit.faces(state, pools.audit, _stack)
 	var caught: Array[int] = []
 	var events: Array[RunEvent] = set_log.events()
+	# A claim reads the meters as they stand when it is made (ADR 0043).
+	var shifted: Array[int] = TraitShifts.apply(state, _configs, DEFAULT_VILLAGE, _meters)
+	var claims_from: int = events.size()
 	if RoundBanking.split(
 		state,
 		PLAYER,
@@ -1034,6 +1039,7 @@ func _split_commons(player_need: int) -> void:
 		debuffs.cut
 	):
 		_raise(RunMeters.COMMONS_SHORTFALL)
+	TraitShifts.note_claims(state, shifted, events, claims_from, _params.base_need)
 	for seat: int in caught:
 		if seat == PLAYER:
 			_raise(RunMeters.CAUGHT_LIE)

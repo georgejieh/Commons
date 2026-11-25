@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://data/ui/speech_line.gd" id="4"]
 [ext_resource type="Script" path="res://data/ui/voice_profile.gd" id="5"]
 [ext_resource type="Texture2D" path="res://art/portraits/portrait_qin_face.png" id="6"]
+[ext_resource type="Script" path="res://data/villagers/trait_shift.gd" id="7"]
 
 [sub_resource type="Resource" id="personality"]
 script = ExtResource("2")
@@ -41,6 +42,14 @@ event = "lost"
 text_key = "speech.qin.lost.1"
 mood = "tired"
 
+[sub_resource type="Resource" id="shift_famine"]
+script = ExtResource("7")
+meter = "famine"
+band = 3
+trait_name = "honesty"
+level = 0
+seen_key = "dossier.shift.famine"
+
 [sub_resource type="Resource" id="speech"]
 script = ExtResource("3")
 lines = Array[ExtResource("4")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2")])
@@ -59,3 +68,4 @@ unlock = 0
 unlock_runs = 0
 rising = false
 mirrors_player = false
+shifts = Array[ExtResource("7")]([SubResource("shift_famine")])

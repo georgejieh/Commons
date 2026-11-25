@@ -80,16 +80,26 @@ static func config_for(
 	book: VillageBook, found: RosterEntry, seed_value: int, drift: VillageDrift = null
 ) -> BotConfig:
 	var family: FamilyDef = definition(book, found)
-	var personality: Personality = family.personality
-	if drift != null and found.template_id.is_empty():
-		personality = drift.personality(family)
-	var config: BotConfig = BotConfig.from_personality(personality, seed_value)
+	var config: BotConfig = BotConfig.from_personality(
+		personality_for(book, found, drift), seed_value
+	)
 	if family.rising:
 		@warning_ignore("integer_division")
 		var gained: int = maxi(found.sets_seated - 1, 0) / book.rise_sets
 		var tier: int = mini(config.tier + gained, BotConfig.Tier.HARD)
 		config.tier = tier as BotConfig.Tier
 	return config
+
+
+## The personality a roster entry plays by: its family's as drift has moved it, or a youth
+## template's own, since youth never drift.
+static func personality_for(
+	book: VillageBook, found: RosterEntry, drift: VillageDrift = null
+) -> Personality:
+	var family: FamilyDef = definition(book, found)
+	if drift != null and found.template_id.is_empty():
+		return drift.personality(family)
+	return family.personality
 
 
 static func _spawn_youth(state: RunState, book: VillageBook, stream: RandomStream) -> RosterEntry:

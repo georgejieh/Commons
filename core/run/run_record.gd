@@ -228,6 +228,22 @@ static func migrate_from_18(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 19 saves predate the count of claims a trait shift made larger (ADR 0043): no
+## family was seen making one.
+static func migrate_from_19(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		var observations: Variant = checkpoint.get("observations")
+		if observations is Dictionary:
+			var rows: Dictionary = observations
+			for family: Variant in rows:
+				if rows[family] is Array:
+					var row: Array = rows[family]
+					while row.size() < Observations.KIND_COUNT:
+						row.append(0)
+	return data
+
+
 ## Every field Phase 4 added to a run, at the value a run starts with.
 static func _phase_4_defaults() -> Dictionary:
 	return {

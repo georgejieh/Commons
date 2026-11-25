@@ -281,6 +281,7 @@ dossier.passes,Passes: {count}
 dossier.beat_teammate,Beat a teammate's play: {count}
 dossier.went_out,Went out first: {count}
 dossier.landlord,Rounds as landlord: {count}
+dossier.shift.famine,Claimed more than a fair half with Famine at {at} or more: {count}
 dossier.empty,Nothing seen yet.
 dossier.back,Back
 title.collection,Collection

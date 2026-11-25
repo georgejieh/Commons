@@ -25,3 +25,6 @@ enum Unlock { START, RUNS, LANDLORD_ENDING }
 @export var rising: bool = false
 ## Copies the player's habits instead of its own (P4.7 fills these in).
 @export var mirrors_player: bool = false
+## Traits that change while a run meter is high (ADR 0043), in order: a later shift of a
+## trait wins over an earlier one while both hold.
+@export var shifts: Array[TraitShift] = []

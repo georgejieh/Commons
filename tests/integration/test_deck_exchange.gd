@@ -178,7 +178,7 @@ func test_a_save_before_the_exchange_loads_as_a_plain_deck() -> void:
 	var resumed: RunLoop = RunRecord.resume(migrated, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_array(resumed.state.deck.changed_slots()).is_empty()
-	assert_int(SaveService.SCHEMA_VERSION).is_equal(19)
+	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(19)
 
 
 func test_a_run_with_exchanges_resumes_to_the_same_deck_at_every_checkpoint() -> void:
