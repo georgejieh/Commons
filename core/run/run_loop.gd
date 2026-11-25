@@ -520,6 +520,9 @@ func open_shop() -> Reason:
 	# The envelopes last of all, so they leave every draw before them as it was.
 	shop.envelopes.draw()
 	market.envelopes.draw()
+	# The desks draw on a stream of their own, and the arrival has none (ADR 0041).
+	shop.desk.open(tutorial != null)
+	market.desk.open(tutorial != null)
 	_awaiting = Awaiting.SHOP
 	return Reason.OK
 
@@ -594,6 +597,26 @@ func player_sell_campaign(index: int, at_market: bool = false) -> Reason:
 		shop.campaigns.withheld.append(campaign_id)
 		market.campaigns.withheld.append(campaign_id)
 		set_log.add(RunEvent.new(RunEvent.Type.CAMPAIGN_SOLD, PLAYER, paid, 0.0, campaign_id))
+	return reason
+
+
+## Marks the deck card with ID card_id at the state store's desk, or with at_market at the
+## black market's, for the rest of the run (ADR 0041). The black market's stamps it as the
+## player's and is a private purchase, which adds Resentment.
+func player_mark_card(card_id: int, at_market: bool = false) -> Reason:
+	var desk: MarkDesk = (market if at_market else shop).desk
+	var paid: int = desk.price()
+	var act: Callable = func() -> RunShop.Reason:
+		var marked: bool = desk.mark(card_id, PLAYER) == MarkDesk.Reason.OK
+		return RunShop.Reason.OK if marked else RunShop.Reason.TOO_POOR
+	var command: Dictionary = {"type": "mark_card", "card": card_id, "market": at_market}
+	var reason: Reason = _shop_command(command, act)
+	if reason == Reason.OK:
+		var value: int = CardInstance.mark_value(desk.offer)
+		var text: String = str(card_id)
+		set_log.add(RunEvent.new(RunEvent.Type.DECK_CARD_MARKED, PLAYER, value, paid, text))
+		if at_market:
+			_market_bought()
 	return reason
 
 

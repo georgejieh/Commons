@@ -79,6 +79,9 @@ var _picker: RankPicker = RankPicker.new()
 var _sale: SellDesk = SellDesk.new()
 ## The whole deck and the plot, with their marks (ADR 0041).
 var _deck: DeckSheet = DeckSheet.new()
+## The desk that marks a deck card (ADR 0041): its ticket is in the state store's row of
+## buttons, and under the black market's plot stall.
+var _desk_stall: DeskStall = DeskStall.new()
 ## The household's true figures, shown only at the stage past the last (ADR 0022).
 var _books: SmallLedger = SmallLedger.new(2)
 ## The page's main blocks by name, for the layout test.
@@ -118,6 +121,8 @@ func open(app: DemoApp) -> void:
 	add_child(_deck)
 	_deck.setup(app.controller)
 	_deck.closed.connect(_on_deck_closed)
+	_deck.marked.connect(_on_marked)
+	_desk_stall.setup(app.controller.mark_desk(market), market, _deck, _slip, is_issuing)
 	_shown_coupons = app.controller.state_copy().coupons
 	_shown_resentment = app.controller.state_copy().resentment
 	_refresh()
@@ -189,8 +194,13 @@ func _main_row(app: DemoApp) -> Control:
 	if market:
 		_goods = MarketGoods.new()
 		_goods.setup(app.controller, _desk, _market_buy)
-		side = _goods.panel()
-		side.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
+		var stall: Control = _goods.panel()
+		stall.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
+		# The black market's row of buttons is full with its upgrades, so its desk's
+		# ticket stands under the plot stall.
+		side = VBoxContainer.new()
+		side.add_child(stall)
+		side.add_child(_desk_stall.ticket)
 		_upgrades = _goods.upgrades
 	else:
 		_directives = DirectiveRow.new()
@@ -214,6 +224,9 @@ func _button_row(column: VBoxContainer) -> Button:
 	)
 	var deck: Button = ScreenKit.button(tr("deck.open"), CommonsTheme.GHOST)
 	deck.tooltip_text = tr("deck.open_tip")
+	# The Deck button and the desk's ticket are as wide as their words, so the black
+	# market's row keeps its upgrades.
+	deck.custom_minimum_size = Vector2.ZERO
 	deck.pressed.connect(_open_deck)
 	var buttons: HBoxContainer
 	if market:
@@ -223,7 +236,7 @@ func _button_row(column: VBoxContainer) -> Button:
 		leave.pressed.connect(_leave)
 		var door: Button = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
 		door.pressed.connect(_to_market)
-		buttons = ScreenKit.row([leave, _reroll, door, deck])
+		buttons = ScreenKit.row([leave, _reroll, door, deck, _desk_stall.ticket])
 	_blocks["buttons"] = buttons
 	column.add_child(buttons)
 	return leave
@@ -286,6 +299,7 @@ func _refresh() -> void:
 	_campaign_stall.show_offer()
 	_reform_stall.show_offer()
 	_envelope_stall.show_offer()
+	_desk_stall.show_offer()
 	_sale.refresh()
 
 
@@ -424,6 +438,13 @@ func _open_deck() -> void:
 
 func _on_deck_closed() -> void:
 	(_blocks["buttons"].get_child(0) as Button).grab_focus()
+
+
+## The desk marked a card: the coupons count down and its paper says it is done.
+func _on_marked(_card_id: int) -> void:
+	Audio.play(AudioEvents.STORE_BUY)
+	_on_spent()
+	_refresh()
 
 
 ## An envelope was answered: the page shows what it gave, wherever that went.

@@ -28,6 +28,7 @@ const UI_ACTIONS: Array[String] = [
 	"books",
 	"sell_cadre",
 	"sell_campaign",
+	"mark_card",
 ]
 
 

@@ -14,7 +14,8 @@ extends RefCounted
 ## them too. A counter with envelope offers draws them after everything else, and the
 ## reroll redraws them until one is bought (EnvelopeCounter). How many Cadres the player
 ## can hold is RunReforms.cadre_slots(). A held Cadre may be sold back to either counter
-## for part of its price there (ADR 0040); it is not offered again that visit.
+## for part of its price there (ADR 0040); it is not offered again that visit. Each
+## counter's desk marks one deck card a visit (MarkDesk, ADR 0041).
 
 enum Reason {
 	OK,
@@ -44,6 +45,7 @@ const PERCENT: int = 100
 var campaigns: CampaignCounter
 var reforms: ReformCounter
 var envelopes: EnvelopeCounter
+var desk: MarkDesk
 ## Cadre slots lost this visit to a debuff of the Quota just finished (Short Supply,
 ## ADR 0023). Set before the visit opens; it stacks with rationing.
 var short_cut: int = 0
@@ -82,6 +84,7 @@ func _init(
 	reforms = ReformCounter.new(state, params, reformed)
 	envelopes = EnvelopeCounter.new(state, params, directives, offered, run)
 	envelopes.sold_back = campaigns
+	desk = MarkDesk.new(state, params)
 
 
 ## Slots this visit offers: fewer while rationing is in force, and fewer under Short

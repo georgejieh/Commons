@@ -2,11 +2,15 @@ class_name DeckSheet
 extends Control
 ## The deck sheet (ADR 0041): a sheet over the page that shows the communal deck, all 54
 ## cards as real faces with their marks, a rank to a group in rank order, and the private
-## plot's cards after them, with a legend of the marks the run holds. It opens from both
-## shops and the table. A hover or the cursor names a card's marks in the slip beside it.
-## While open it keeps the focus and every key; Cancel closes it.
+## plot's cards after them, with a legend of the marks the run holds. It opens read-only
+## from both shops and the table, and in choosing mode from a shop's desk, where the
+## player picks one deck card, reads what will change on it, the mark it would replace
+## included, and confirms or backs out. A hover or the cursor names a card's marks in the
+## slip beside it. While open it keeps the focus and every key; Cancel closes it.
 
 signal closed
+## The desk marked the card: the page shows what the desk did.
+signal marked(card_id: int)
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.6)
 const MARGIN: float = 24.0
@@ -19,6 +23,8 @@ const STAMP: String = "stamp"
 const PLAYER: int = 0
 
 var _controller: RunController = null
+var _desk: DeskView = null
+var _market: bool = false
 var _board: DeckBoard = DeckBoard.new()
 var _scroll: ScrollContainer = ScrollContainer.new()
 var _paper: PanelContainer = PanelContainer.new()
@@ -26,6 +32,7 @@ var _eyebrow: Label = ScreenKit.eyebrow("")
 var _title: Label = ScreenKit.styled("", CommonsTheme.TITLE)
 var _legend: HBoxContainer = HBoxContainer.new()
 var _status: Label = ScreenKit.label("", RULE_SIZE)
+var _confirm: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 var _back: Button = ScreenKit.button("", CommonsTheme.SECONDARY)
 var _slip: DetailSlip = DetailSlip.new()
 
@@ -64,10 +71,12 @@ func _ready() -> void:
 	column.add_child(_scroll)
 	ScrollFade.over(_scroll)
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	column.add_child(ScreenKit.row([_status, _back]))
-	_back.text = tr("deck.close")
+	var buttons: HBoxContainer = ScreenKit.row([_confirm, _back])
+	column.add_child(ScreenKit.row([_status, buttons]))
 	_back.pressed.connect(close)
+	_confirm.pressed.connect(_on_confirm)
 	_board.cursor_moved.connect(_on_cursor)
+	_board.picked_card.connect(_on_picked)
 	add_child(_slip)
 	resized.connect(_fit)
 
@@ -86,6 +95,10 @@ func board() -> DeckBoard:
 	return _board
 
 
+func confirm_button() -> Button:
+	return _confirm
+
+
 func back_button() -> Button:
 	return _back
 
@@ -102,19 +115,25 @@ func status_text() -> String:
 	return _status.text
 
 
-## Opens on the deck as the run holds it now.
+## Opens read-only on the deck as the run holds it now.
 func open_deck() -> void:
-	visible = true
-	move_to_front()
+	_desk = null
 	_eyebrow.text = tr("deck.eyebrow")
 	_title.text = tr("deck.title")
-	_status.text = tr("deck.how")
-	var state: RunState = _controller.state_copy()
-	_board.show_cards(_controller.deck_cards(), state.inventory.plot, _room())
-	_show_legend(state)
-	_link_focus()
-	_board.grab_focus()
-	UiMotion.enter([_paper] as Array[Control])
+	_open(false)
+
+
+## Opens on the deck for the player to pick a card for desk to mark: the state store's,
+## or with market the black market's.
+func open_desk(desk: DeskView, market: bool) -> void:
+	_desk = desk
+	_market = market
+	_eyebrow.text = tr("deck.desk.market" if market else "deck.desk.store")
+	if desk.stamps():
+		_title.text = tr("deck.desk.stamp_title")
+	else:
+		_title.text = tr("deck.desk.title").format({"mark": _mark_name(desk.offer())})
+	_open(true)
 
 
 func close() -> void:
@@ -124,6 +143,21 @@ func close() -> void:
 	_slip.hide_slip()
 	_board.clear()
 	closed.emit()
+
+
+func _open(choosing: bool) -> void:
+	visible = true
+	move_to_front()
+	_board.picking = choosing
+	_confirm.visible = choosing
+	_back.text = tr("deck.back" if choosing else "deck.close")
+	var state: RunState = _controller.state_copy()
+	_board.show_cards(_controller.deck_cards(), state.inventory.plot, _room())
+	_show_legend(state)
+	_show_choice()
+	_link_focus()
+	_board.grab_focus()
+	UiMotion.enter([_paper] as Array[Control])
 
 
 ## The room the cards may take: the paper's inside, less the heading and the buttons.
@@ -200,18 +234,73 @@ func _on_cursor(card_id: int) -> void:
 	_slip.show_for(view, title, marks_text(card))
 
 
-## The focus stays on the sheet: the cards above, the button under them.
+func _on_picked(_card_id: int) -> void:
+	_show_choice()
+	_link_focus()
+
+
+## What the desk would do to the picked card, or why it cannot, and the confirm ticket.
+func _show_choice() -> void:
+	if _desk == null:
+		_status.text = tr("deck.how")
+		return
+	var price: int = _desk.price()
+	var key: String = "deck.desk.stamp" if _desk.stamps() else "deck.desk.mark"
+	_confirm.text = tr(key).format({"price": price})
+	var picked: int = _board.picked
+	if picked == DeckBoard.NONE:
+		_status.text = tr("deck.desk.how")
+		_confirm.disabled = true
+		return
+	var refusal: String = _desk.refusal(picked)
+	_confirm.disabled = not refusal.is_empty()
+	_status.text = _change_text(_board.card_of(picked), refusal, price)
+
+
+func _change_text(card: CardInstance, refusal: String, price: int) -> String:
+	var values: Dictionary[String, Variant] = {
+		"card": PlotSwapSheet.card_name(card),
+		"mark": _mark_name(_desk.offer()),
+		"old": _mark_name(card.enhancement_id()),
+		"price": price,
+	}
+	if not refusal.is_empty():
+		return tr(refusal).format(values)
+	if _desk.stamps():
+		return tr("deck.change.stamp").format(values)
+	if CardMark.draws(card.enhancement_id()):
+		return tr("deck.change.replace").format(values)
+	return tr("deck.change.mark").format(values)
+
+
+func _on_confirm() -> void:
+	var picked: int = _board.picked
+	if _desk == null or picked == DeckBoard.NONE:
+		return
+	if _controller.mark_card(picked, _market) != RunController.OK:
+		_show_choice()
+		return
+	close()
+	marked.emit(picked)
+
+
+## The focus stays on the sheet: the cards above, the buttons in a row under them.
 func _link_focus() -> void:
-	for side: String in ["left", "right", "bottom"]:
-		_back.set("focus_neighbor_" + side, _back.get_path_to(_back))
-	_back.focus_neighbor_top = _back.get_path_to(_board)
-	_back.focus_next = _back.get_path_to(_board)
-	_back.focus_previous = _back.get_path_to(_board)
-	_board.focus_neighbor_bottom = _board.get_path_to(_back)
+	var row: Array[Control] = [_back]
+	if _confirm.visible and not _confirm.disabled:
+		row.push_front(_confirm)
+	for index: int in row.size():
+		var control: Control = row[index]
+		control.focus_neighbor_left = control.get_path_to(row[maxi(0, index - 1)])
+		control.focus_neighbor_right = control.get_path_to(row[mini(row.size() - 1, index + 1)])
+		control.focus_neighbor_top = control.get_path_to(_board)
+		control.focus_neighbor_bottom = control.get_path_to(control)
+	_board.focus_neighbor_bottom = _board.get_path_to(row[0])
 	for side: String in ["top", "left", "right"]:
 		_board.set("focus_neighbor_" + side, _board.get_path_to(_board))
-	_board.focus_next = _board.get_path_to(_back)
-	_board.focus_previous = _board.get_path_to(_back)
+	_confirm.focus_next = _confirm.get_path_to(_back)
+	_back.focus_next = _back.get_path_to(_board)
+	_board.focus_next = _board.get_path_to(row[0])
 
 
 ## Cancel closes the sheet; every other key stays with it.

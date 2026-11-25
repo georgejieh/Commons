@@ -602,7 +602,7 @@ cheat.rate,Rate {rate}
 cheat.rate.level,"Rate {rate}, level {level}"
 directive.rate.now,{type}: Rate {rate}
 campaign.model_harvest.name,Model Harvest
-campaign.model_harvest.text,"Mark {min_cards} or {max_cards} cards in your hand as Model for the rest of the run, in place of Sheaf, Pennant or Surplus. Use on your turn."
+campaign.model_harvest.text,"Mark {min_cards} or {max_cards} cards in your hand as Model, for the rest of the run. Use on your turn."
 campaign.model_harvest.prompt,Choose {min_cards} or {max_cards} cards to make Model.
 campaign.mutual_aid.name,Mutual Aid
 campaign.mutual_aid.text,"As a peasant, before the first play: give your teammate {max_cards} cards. They give you their {max_cards} lowest cards, singles first."
@@ -620,13 +620,13 @@ campaign.registration_drive.name,Registration Drive
 campaign.registration_drive.text,"Stamp {min_cards} to {max_cards} cards in your hand as yours, for the rest of the run. Use on your turn."
 campaign.registration_drive.prompt,Choose {min_cards} to {max_cards} cards to stamp as yours.
 campaign.autumn_gleaning.name,Autumn Gleaning
-campaign.autumn_gleaning.text,"Mark {min_cards} or {max_cards} cards in your hand as Sheaf for the rest of the run, in place of Model, Pennant or Surplus. Use on your turn."
+campaign.autumn_gleaning.text,"Mark {min_cards} or {max_cards} cards in your hand as Sheaf, for the rest of the run. Use on your turn."
 campaign.autumn_gleaning.prompt,Choose {min_cards} or {max_cards} cards to mark as Sheaf.
 campaign.emulation_contest.name,Emulation Contest
-campaign.emulation_contest.text,"Mark {min_cards} or {max_cards} cards in your hand as Pennant for the rest of the run, in place of Model, Sheaf or Surplus. Use on your turn."
+campaign.emulation_contest.text,"Mark {min_cards} or {max_cards} cards in your hand as Pennant, for the rest of the run. Use on your turn."
 campaign.emulation_contest.prompt,Choose {min_cards} or {max_cards} cards to mark as Pennant.
 campaign.surplus_sale.name,Surplus Sale
-campaign.surplus_sale.text,"Mark {min_cards} or {max_cards} cards in your hand as Surplus for the rest of the run, in place of Model, Sheaf or Pennant. Use on your turn."
+campaign.surplus_sale.text,"Mark {min_cards} or {max_cards} cards in your hand as Surplus, for the rest of the run. Use on your turn."
 campaign.surplus_sale.prompt,Choose {min_cards} or {max_cards} cards to mark as Surplus.
 campaign.seizure_notice.name,Seizure Notice
 campaign.seizure_notice.text,"Take the highest card from the opponent holding the most cards, and give them your lowest. On a tie, it is the opponent who plays next. Adds {resentment} Resentment. Use on your turn. Both hands must hold 2 or more cards."
@@ -1172,3 +1172,25 @@ deck.marks,Marks: {marks}
 deck.marks.none,No marks
 deck.legend.none,No card is marked yet
 deck.legend.entry,{mark} ×{count}
+deck.back,Back
+deck.desk.store,State store desk
+deck.desk.market,Black market desk
+deck.desk.title,Mark a card {mark}
+deck.desk.stamp_title,Stamp a card as yours
+deck.desk.mark,Mark for {price} coupons
+deck.desk.stamp,Stamp for {price} coupons
+deck.desk.how,"Pick a card from the deck. What the desk puts on it stays for the run, whoever is dealt it."
+deck.change.mark,The {card} becomes {mark}.
+deck.change.replace,"The {card} becomes {mark}, and loses its {old}."
+deck.change.stamp,"The {card} is stamped as yours. Like every purchase here, it adds Resentment."
+deck.refused.poor,You need {price} coupons.
+deck.refused.marked,The {card} is {mark} already.
+deck.refused.stamped,The {card} carries your stamp already.
+deck.refused.used,The desk has done its one card this visit.
+desk.stamp,Your stamp
+desk.rule.mark,"Mark one card in the deck {mark} for the rest of the run, in place of any Model, Sheaf, Pennant or Surplus it carries. One card a visit."
+desk.rule.stamp,"Stamp one card in the deck as yours for the rest of the run. One card a visit. Like every purchase here, it adds Resentment."
+desk.ticket,Mark {mark} · {price} coupons
+desk.ticket.stamp,Stamp · {price} coupons
+desk.used,Desk: marked
+desk.used.stamp,Desk: stamped

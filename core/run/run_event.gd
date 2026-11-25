@@ -101,6 +101,10 @@ enum Type {
 	## The player sold a held Campaign back at a shop (ADR 0040): value is the coupons
 	## paid, text its ID.
 	CAMPAIGN_SOLD,
+	## A shop's desk marked a deck card for the run (ADR 0041): value is
+	## CardInstance.mark_value() of the mark, 0 for the player's stamp, amount the coupons
+	## paid, and text the card's ID.
+	DECK_CARD_MARKED,
 }
 
 var type: Type
