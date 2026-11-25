@@ -53,7 +53,7 @@ static func _without_teammate_bombs(position: BotPosition, legal: Array[Pattern]
 		return legal
 	var kept: Array[Pattern] = []
 	for move: Pattern in legal:
-		if not is_bomb(move):
+		if not move.is_bomb():
 			kept.append(move)
 	return kept
 
@@ -100,7 +100,7 @@ static func _block(position: BotPosition, legal: Array[Pattern]) -> Pattern:
 	var bomb: Pattern = null
 	var groups: Array[Pattern] = []
 	for move: Pattern in legal:
-		if is_bomb(move):
+		if move.is_bomb():
 			if bomb == null:
 				bomb = move
 			continue
@@ -121,7 +121,7 @@ static func _ungated(position: BotPosition, legal: Array[Pattern]) -> Array[Patt
 	var open_bombs: bool = _bombs_open(position)
 	var kept: Array[Pattern] = []
 	for move: Pattern in legal:
-		if is_bomb(move):
+		if move.is_bomb():
 			if open_bombs:
 				kept.append(move)
 		elif (
@@ -147,10 +147,6 @@ static func _bombs_open(position: BotPosition) -> bool:
 	var bar: float = position.config.weights.runaway_cards + position.config.bomb_shift
 	var runaway: bool = landlord_cards <= bar
 	return runaway and not position.is_landlord()
-
-
-static func is_bomb(move: Pattern) -> bool:
-	return move.type == Pattern.Type.BOMB or move.type == Pattern.Type.ROCKET
 
 
 ## Best score change, lower rank on ties, and a pass when nothing beats passing.

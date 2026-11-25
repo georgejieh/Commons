@@ -18,10 +18,6 @@ const LOW_FIELD_MASK: int = (1 << (HAND_SHIFT - LOW_SINGLE_SHIFT)) - 1
 const NO_SCORE: int = 1 << 56
 const PLANE_LENGTH_SHIFT: int = 4
 const PLANE_CODE_SHIFT: int = 8
-const SINGLE_WIDTH: int = 1
-const PAIR_WIDTH: int = 2
-const TRIO_WIDTH: int = 3
-const BOMB_WIDTH: int = 4
 const BUDGET_SHIFT: int = 40
 ## The budget takes five bits: two wild ranks at the deck's most copies (ADR 0042) can put
 ## sixteen wild cards in one hand.
@@ -145,7 +141,7 @@ func _leaf_counts() -> PackedByteArray:
 
 func _chains_at(start: int, key: int, plane_code: int) -> int:
 	var best: int = NO_SCORE
-	for width: int in range(SINGLE_WIDTH, TRIO_WIDTH + 1):
+	for width: int in range(Pattern.SINGLE_WIDTH, Pattern.TRIO_WIDTH + 1):
 		var length: int = 0
 		var minimum: int = _minimum_length(width)
 		var chain_key: int = key
@@ -180,7 +176,7 @@ func _restore(start: int, length: int, takes: int) -> void:
 
 func _after_chain(start: int, length: int, width: int, key: int, plane_code: int) -> int:
 	var chain: int = (1 << HAND_SHIFT) - _rank_map[start]
-	if width != TRIO_WIDTH:
+	if width != Pattern.TRIO_WIDTH:
 		return chain + _search(start, key, plane_code)
 	_planes.append((start << PLANE_LENGTH_SHIFT) | length)
 	var rest: int = _search(start, key, _code_with(plane_code))
@@ -190,9 +186,9 @@ func _after_chain(start: int, length: int, width: int, key: int, plane_code: int
 
 func _minimum_length(width: int) -> int:
 	match width:
-		SINGLE_WIDTH:
+		Pattern.SINGLE_WIDTH:
 			return _rules.min_straight_length()
-		PAIR_WIDTH:
+		Pattern.PAIR_WIDTH:
 			return _rules.min_pair_chain_length()
 	return _rules.min_airplane_length()
 
@@ -217,7 +213,7 @@ func _walk(position: int, key: int, plane_code: int, groups: Array[Pattern]) -> 
 func _walk_chain(
 	start: int, key: int, plane_code: int, target: int, groups: Array[Pattern]
 ) -> void:
-	for width: int in range(SINGLE_WIDTH, TRIO_WIDTH + 1):
+	for width: int in range(Pattern.SINGLE_WIDTH, Pattern.TRIO_WIDTH + 1):
 		var length: int = 0
 		var chain_key: int = key
 		var takes: int = 0
@@ -249,12 +245,12 @@ func _walk_chain(
 func _keep_chain(
 	start: int, length: int, width: int, key: int, plane_code: int, groups: Array[Pattern]
 ) -> void:
-	if width == TRIO_WIDTH:
+	if width == Pattern.TRIO_WIDTH:
 		_planes.append((start << PLANE_LENGTH_SHIFT) | length)
 		_walk(start, key, _code_with(plane_code), groups)
 		return
 	var type: Pattern.Type = Pattern.Type.STRAIGHT
-	if width == PAIR_WIDTH:
+	if width == Pattern.PAIR_WIDTH:
 		type = Pattern.Type.PAIR_CHAIN
 	var kickers: PackedByteArray = PackedByteArray()
 	groups.append(Pattern.new(type, start, length, length * width, kickers, _rank_map[start]))

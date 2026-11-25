@@ -64,8 +64,3 @@ func _init(
 ## The other peasant's seat when this seat is a peasant, else Seats.NONE.
 func teammate() -> int:
 	return Seats.teammate(seat, landlord)
-
-
-## True for a Bomb or a Rocket.
-func is_bomb() -> bool:
-	return pattern.type == Pattern.Type.BOMB or pattern.type == Pattern.Type.ROCKET

@@ -2,8 +2,6 @@ class_name BidPolicy
 extends RefCounted
 ## Decides whether to claim the seat, from hand points against a threshold.
 
-const BOMB_WIDTH: int = 4
-
 
 static func hand_points(counts: PackedByteArray, table: BotTable, weights: BotWeights) -> float:
 	var points: float = 0.0
@@ -12,7 +10,7 @@ static func hand_points(counts: PackedByteArray, table: BotTable, weights: BotWe
 	points += counts[Ranks.TWO] * weights.two_points
 	points += counts[Ranks.ACE] * weights.ace_points
 	for rank: int in Ranks.TWO + 1:
-		if counts[rank] >= BOMB_WIDTH:
+		if counts[rank] >= Pattern.MIN_BOMB_WIDTH:
 			points += weights.bomb_points
 	if counts[Ranks.SMALL_JOKER] > 0 and counts[Ranks.BIG_JOKER] > 0:
 		points += weights.rocket_points

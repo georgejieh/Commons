@@ -18,7 +18,7 @@ static func choose(
 	var bombs_open: bool = fewest <= config.weights.block_cards
 	var lowest: Pattern = null
 	for move: Pattern in legal:
-		var gated: bool = FollowPolicy.is_bomb(move) and not bombs_open
+		var gated: bool = move.is_bomb() and not bombs_open
 		if not gated and (lowest == null or _is_better_answer(move, lowest)):
 			lowest = move
 	if lowest == null:
@@ -28,8 +28,8 @@ static func choose(
 
 ## Plays of the same shape are ordered by key, and a bomb only ever answers last.
 static func _is_better_answer(move: Pattern, other: Pattern) -> bool:
-	if FollowPolicy.is_bomb(move) != FollowPolicy.is_bomb(other):
-		return FollowPolicy.is_bomb(other)
+	if move.is_bomb() != other.is_bomb():
+		return other.is_bomb()
 	return move.key < other.key
 
 
@@ -40,6 +40,6 @@ static func _lowest_longest(legal: Array[Pattern], table: BotTable) -> Pattern:
 		var best_rank: int = table.rank_map[best.main_rank]
 		var lower: bool = rank < best_rank
 		var longer: bool = rank == best_rank and move.card_count > best.card_count
-		if (lower or longer) and not FollowPolicy.is_bomb(move):
+		if (lower or longer) and not move.is_bomb():
 			best = move
 	return best

@@ -36,6 +36,4 @@ func is_pass() -> bool:
 
 ## True for a Bomb or a Rocket.
 func is_bomb() -> bool:
-	if pattern == null:
-		return false
-	return pattern.type == Pattern.Type.BOMB or pattern.type == Pattern.Type.ROCKET
+	return pattern != null and pattern.is_bomb()

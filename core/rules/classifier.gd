@@ -3,10 +3,6 @@ extends RefCounted
 ## Reads one play from a count vector. Works from the masks of ranks holding 1, 2, 3
 ## and 4 cards, so a call is O(15) with no subset search. See ADR 0007.
 
-const SINGLE_BODY: int = 1
-const PAIR_BODY: int = 2
-const TRIO_BODY: int = 3
-const QUAD_BODY: int = 4
 const ROCKET_MASK: int = (1 << Ranks.SMALL_JOKER) | (1 << Ranks.BIG_JOKER)
 const TWO_AND_UP_MASK: int = (1 << Ranks.TWO) | ROCKET_MASK
 const NO_KICKERS: PackedByteArray = []
@@ -41,44 +37,50 @@ func _read(counts: PackedByteArray) -> Classification:
 		present += 1
 		top_count = maxi(top_count, count)
 		top_rank = rank
-		_masks[mini(count, QUAD_BODY + 1)] |= 1 << rank
+		_masks[mini(count, Pattern.MIN_BOMB_WIDTH + 1)] |= 1 << rank
 
 	if total == 0:
 		return Classification.new(null, Classification.Reason.EMPTY)
 	if present == 1:
 		return _one_rank(top_rank, total)
-	if _masks[SINGLE_BODY] == ROCKET_MASK and present == 2:
+	if _masks[Pattern.SINGLE_WIDTH] == ROCKET_MASK and present == 2:
 		return _valid(Pattern.Type.ROCKET, Ranks.SMALL_JOKER, 1, total)
 	return _several_ranks(top_count, total)
 
 
 func _several_ranks(top_count: int, total: int) -> Classification:
-	if top_count > QUAD_BODY:
+	if top_count > Pattern.MIN_BOMB_WIDTH:
 		return _invalid(Classification.Reason.UNKNOWN_SHAPE)
-	if top_count == QUAD_BODY:
+	if top_count == Pattern.MIN_BOMB_WIDTH:
 		return _four_with_two(total)
-	if top_count == TRIO_BODY:
+	if top_count == Pattern.TRIO_WIDTH:
 		return _trios(total)
-	if _masks[SINGLE_BODY] != 0 and _masks[PAIR_BODY] != 0:
+	if _masks[Pattern.SINGLE_WIDTH] != 0 and _masks[Pattern.PAIR_WIDTH] != 0:
 		return _invalid(Classification.Reason.UNKNOWN_SHAPE)
-	if top_count == PAIR_BODY:
+	if top_count == Pattern.PAIR_WIDTH:
 		return _chain(
-			_masks[PAIR_BODY], PAIR_BODY, _rules.min_pair_chain_length(), Pattern.Type.PAIR_CHAIN
+			_masks[Pattern.PAIR_WIDTH],
+			Pattern.PAIR_WIDTH,
+			_rules.min_pair_chain_length(),
+			Pattern.Type.PAIR_CHAIN
 		)
 	return _chain(
-		_masks[SINGLE_BODY], SINGLE_BODY, _rules.min_straight_length(), Pattern.Type.STRAIGHT
+		_masks[Pattern.SINGLE_WIDTH],
+		Pattern.SINGLE_WIDTH,
+		_rules.min_straight_length(),
+		Pattern.Type.STRAIGHT
 	)
 
 
 func _one_rank(rank: int, total: int) -> Classification:
 	match total:
-		SINGLE_BODY:
+		Pattern.SINGLE_WIDTH:
 			return _valid(Pattern.Type.SINGLE, rank, 1, total)
-		PAIR_BODY:
+		Pattern.PAIR_WIDTH:
 			return _valid(Pattern.Type.PAIR, rank, 1, total)
-		TRIO_BODY:
+		Pattern.TRIO_WIDTH:
 			return _valid(Pattern.Type.TRIO, rank, 1, total)
-		QUAD_BODY:
+		Pattern.MIN_BOMB_WIDTH:
 			return _valid(Pattern.Type.BOMB, rank, 1, total)
 	if _rules.five_plus_is_bomb():
 		return _valid(Pattern.Type.BOMB, rank, 1, total)
@@ -105,17 +107,19 @@ func _chain_failure(mask: int, length: int, minimum: int) -> Classification:
 
 
 func _trios(total: int) -> Classification:
-	var trios: int = _masks[TRIO_BODY]
-	var singles: int = _masks[SINGLE_BODY]
-	var pairs: int = _masks[PAIR_BODY]
+	var trios: int = _masks[Pattern.TRIO_WIDTH]
+	var singles: int = _masks[Pattern.SINGLE_WIDTH]
+	var pairs: int = _masks[Pattern.PAIR_WIDTH]
 	var length: int = _bit_count(trios)
 	if length > 1:
 		return _airplane(trios, length, total)
 	var main: int = _lowest_rank(trios)
 	if _bit_count(pairs) == 1 and singles == 0:
-		return _valid(Pattern.Type.TRIO_PAIR, main, 1, total, _ranks_of(pairs, PAIR_BODY))
+		return _valid(Pattern.Type.TRIO_PAIR, main, 1, total, _ranks_of(pairs, Pattern.PAIR_WIDTH))
 	if _bit_count(singles) == 1 and pairs == 0:
-		return _valid(Pattern.Type.TRIO_SINGLE, main, 1, total, _ranks_of(singles, SINGLE_BODY))
+		return _valid(
+			Pattern.Type.TRIO_SINGLE, main, 1, total, _ranks_of(singles, Pattern.SINGLE_WIDTH)
+		)
 	return _invalid(Classification.Reason.BAD_KICKERS)
 
 
@@ -124,16 +128,16 @@ func _airplane(trios: int, length: int, total: int) -> Classification:
 	if failure != null:
 		return failure
 	var main: int = _lowest_rank(trios)
-	var singles: int = _masks[SINGLE_BODY]
-	var pairs: int = _masks[PAIR_BODY]
+	var singles: int = _masks[Pattern.SINGLE_WIDTH]
+	var pairs: int = _masks[Pattern.PAIR_WIDTH]
 	if singles == 0 and pairs == 0:
 		return _valid(Pattern.Type.AIRPLANE, main, length, total)
 	return _wings(main, length, total)
 
 
 func _wings(main: int, length: int, total: int) -> Classification:
-	var singles: int = _masks[SINGLE_BODY]
-	var pairs: int = _masks[PAIR_BODY]
+	var singles: int = _masks[Pattern.SINGLE_WIDTH]
+	var pairs: int = _masks[Pattern.PAIR_WIDTH]
 	if not _rules.joker_or_two_may_be_wing() and (singles | pairs) & TWO_AND_UP_MASK != 0:
 		return _invalid(Classification.Reason.BAD_WINGS)
 	if not _rules.rocket_may_be_kicker() and singles & ROCKET_MASK == ROCKET_MASK:
@@ -142,23 +146,23 @@ func _wings(main: int, length: int, total: int) -> Classification:
 	var single_ranks: int = _bit_count(singles)
 	var pair_ranks: int = _bit_count(pairs)
 	if pairs == 0 and single_ranks == length and _rules.single_wings_allowed():
-		var kickers: PackedByteArray = _ranks_of(singles, SINGLE_BODY)
+		var kickers: PackedByteArray = _ranks_of(singles, Pattern.SINGLE_WIDTH)
 		return _valid(Pattern.Type.AIRPLANE_SINGLES, main, length, total, kickers)
 	if singles == 0 and pair_ranks == length and _rules.pair_wings_allowed():
-		var kickers: PackedByteArray = _ranks_of(pairs, PAIR_BODY)
+		var kickers: PackedByteArray = _ranks_of(pairs, Pattern.PAIR_WIDTH)
 		return _valid(Pattern.Type.AIRPLANE_PAIRS, main, length, total, kickers)
-	var paired_singles: bool = singles == 0 and pair_ranks * PAIR_BODY == length
+	var paired_singles: bool = singles == 0 and pair_ranks * Pattern.PAIR_WIDTH == length
 	if paired_singles and _rules.single_wings_allowed() and _rules.single_wings_may_pair():
-		var kickers: PackedByteArray = _ranks_of(pairs, PAIR_BODY)
+		var kickers: PackedByteArray = _ranks_of(pairs, Pattern.PAIR_WIDTH)
 		return _valid(Pattern.Type.AIRPLANE_SINGLES, main, length, total, kickers)
 	return _invalid(Classification.Reason.BAD_WINGS)
 
 
 func _four_with_two(total: int) -> Classification:
-	var quads: int = _masks[QUAD_BODY]
-	var singles: int = _masks[SINGLE_BODY]
-	var pairs: int = _masks[PAIR_BODY]
-	if _bit_count(quads) != 1 or _masks[TRIO_BODY] != 0:
+	var quads: int = _masks[Pattern.MIN_BOMB_WIDTH]
+	var singles: int = _masks[Pattern.SINGLE_WIDTH]
+	var pairs: int = _masks[Pattern.PAIR_WIDTH]
+	if _bit_count(quads) != 1 or _masks[Pattern.TRIO_WIDTH] != 0:
 		return _invalid(Classification.Reason.BAD_KICKERS)
 	var main: int = _lowest_rank(quads)
 	if not _rules.rocket_may_be_kicker() and singles == ROCKET_MASK:
@@ -168,7 +172,7 @@ func _four_with_two(total: int) -> Classification:
 		if not kickers.is_empty():
 			return _valid(Pattern.Type.FOUR_TWO_SINGLES, main, 1, total, kickers)
 	if singles == 0 and _bit_count(pairs) == 2 and _rules.four_two_pairs_allowed():
-		var kickers: PackedByteArray = _ranks_of(pairs, PAIR_BODY)
+		var kickers: PackedByteArray = _ranks_of(pairs, Pattern.PAIR_WIDTH)
 		return _valid(Pattern.Type.FOUR_TWO_PAIRS, main, 1, total, kickers)
 	return _invalid(Classification.Reason.BAD_KICKERS)
 
@@ -176,10 +180,10 @@ func _four_with_two(total: int) -> Classification:
 ## Returns the two single kickers, or nothing if the cards don't form them.
 func _four_two_single_kickers(singles: int, pairs: int) -> PackedByteArray:
 	if pairs == 0 and _bit_count(singles) == 2:
-		return _ranks_of(singles, SINGLE_BODY)
+		return _ranks_of(singles, Pattern.SINGLE_WIDTH)
 	var shared: bool = singles == 0 and _bit_count(pairs) == 1
 	if shared and _rules.four_two_singles_may_share_rank():
-		return _ranks_of(pairs, PAIR_BODY)
+		return _ranks_of(pairs, Pattern.PAIR_WIDTH)
 	return PackedByteArray()
 
 

@@ -114,7 +114,7 @@ static func _record(
 ) -> void:
 	if play.is_pass():
 		return
-	if play.pattern.type == Pattern.Type.BOMB or play.pattern.type == Pattern.Type.ROCKET:
+	if play.pattern.is_bomb():
 		result.bombs[seat] += 1
 	var owner: int = round_state.trick_owner()
 	if owner != Seats.NONE:

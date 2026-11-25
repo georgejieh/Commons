@@ -8,10 +8,6 @@ extends RefCounted
 ## WildSupply offers, so readings that differ only in such a kicker are not repeated.
 ## Lean generation, for bots, leaves out every play WildSupply.is_lean() refuses unbuilt.
 
-const SINGLE_WIDTH: int = 1
-const PAIR_WIDTH: int = 2
-const TRIO_WIDTH: int = 3
-const QUAD_WIDTH: int = 4
 const FOUR_TWO_KICKERS: int = 2
 const ANY_LENGTH: int = 0
 const NO_FLOOR: int = -1
@@ -83,16 +79,17 @@ static func exact(
 
 
 func _lead() -> void:
-	_rank_groups(Pattern.Type.SINGLE, SINGLE_WIDTH)
-	_rank_groups(Pattern.Type.PAIR, PAIR_WIDTH)
-	_rank_groups(Pattern.Type.TRIO, TRIO_WIDTH)
-	_trios_with_kicker(Pattern.Type.TRIO_SINGLE, SINGLE_WIDTH)
-	_trios_with_kicker(Pattern.Type.TRIO_PAIR, PAIR_WIDTH)
-	_chains(Pattern.Type.STRAIGHT, SINGLE_WIDTH, _rules.min_straight_length(), ANY_LENGTH)
-	_chains(Pattern.Type.PAIR_CHAIN, PAIR_WIDTH, _rules.min_pair_chain_length(), ANY_LENGTH)
-	_chains(Pattern.Type.AIRPLANE, TRIO_WIDTH, _rules.min_airplane_length(), ANY_LENGTH)
-	_chains(Pattern.Type.AIRPLANE_SINGLES, TRIO_WIDTH, _rules.min_airplane_length(), ANY_LENGTH)
-	_chains(Pattern.Type.AIRPLANE_PAIRS, TRIO_WIDTH, _rules.min_airplane_length(), ANY_LENGTH)
+	_rank_groups(Pattern.Type.SINGLE, Pattern.SINGLE_WIDTH)
+	_rank_groups(Pattern.Type.PAIR, Pattern.PAIR_WIDTH)
+	_rank_groups(Pattern.Type.TRIO, Pattern.TRIO_WIDTH)
+	_trios_with_kicker(Pattern.Type.TRIO_SINGLE, Pattern.SINGLE_WIDTH)
+	_trios_with_kicker(Pattern.Type.TRIO_PAIR, Pattern.PAIR_WIDTH)
+	_chains(Pattern.Type.STRAIGHT, Pattern.SINGLE_WIDTH, _rules.min_straight_length(), ANY_LENGTH)
+	_chains(Pattern.Type.PAIR_CHAIN, Pattern.PAIR_WIDTH, _rules.min_pair_chain_length(), ANY_LENGTH)
+	var plane: int = _rules.min_airplane_length()
+	_chains(Pattern.Type.AIRPLANE, Pattern.TRIO_WIDTH, plane, ANY_LENGTH)
+	_chains(Pattern.Type.AIRPLANE_SINGLES, Pattern.TRIO_WIDTH, plane, ANY_LENGTH)
+	_chains(Pattern.Type.AIRPLANE_PAIRS, Pattern.TRIO_WIDTH, plane, ANY_LENGTH)
 	_four_two_singles()
 	_four_two_pairs()
 	_bombs(null)
@@ -100,27 +97,30 @@ func _lead() -> void:
 
 
 func _follow(current: Pattern) -> void:
-	_floor = current.key & ((1 << Pattern.KEY_RANK_BITS) - 1)
+	_floor = current.effective_rank()
 	var length: int = current.chain_length
 	match current.type:
 		Pattern.Type.SINGLE:
-			_rank_groups(Pattern.Type.SINGLE, SINGLE_WIDTH)
+			_rank_groups(Pattern.Type.SINGLE, Pattern.SINGLE_WIDTH)
 		Pattern.Type.PAIR:
-			_rank_groups(Pattern.Type.PAIR, PAIR_WIDTH)
+			_rank_groups(Pattern.Type.PAIR, Pattern.PAIR_WIDTH)
 		Pattern.Type.TRIO:
-			_rank_groups(Pattern.Type.TRIO, TRIO_WIDTH)
+			_rank_groups(Pattern.Type.TRIO, Pattern.TRIO_WIDTH)
 		Pattern.Type.TRIO_SINGLE:
-			_trios_with_kicker(Pattern.Type.TRIO_SINGLE, SINGLE_WIDTH)
+			_trios_with_kicker(Pattern.Type.TRIO_SINGLE, Pattern.SINGLE_WIDTH)
 		Pattern.Type.TRIO_PAIR:
-			_trios_with_kicker(Pattern.Type.TRIO_PAIR, PAIR_WIDTH)
+			_trios_with_kicker(Pattern.Type.TRIO_PAIR, Pattern.PAIR_WIDTH)
 		# A chain answers only at a length the follower's own rules allow: a seat without
 		# Shock Brigade has no 4-card Straight to answer one with (ADR 0039).
 		Pattern.Type.STRAIGHT:
-			_chains(current.type, SINGLE_WIDTH, maxi(length, _rules.min_straight_length()), length)
+			var shortest: int = maxi(length, _rules.min_straight_length())
+			_chains(current.type, Pattern.SINGLE_WIDTH, shortest, length)
 		Pattern.Type.PAIR_CHAIN:
-			_chains(current.type, PAIR_WIDTH, maxi(length, _rules.min_pair_chain_length()), length)
+			var shortest: int = maxi(length, _rules.min_pair_chain_length())
+			_chains(current.type, Pattern.PAIR_WIDTH, shortest, length)
 		Pattern.Type.AIRPLANE, Pattern.Type.AIRPLANE_SINGLES, Pattern.Type.AIRPLANE_PAIRS:
-			_chains(current.type, TRIO_WIDTH, maxi(length, _rules.min_airplane_length()), length)
+			var shortest: int = maxi(length, _rules.min_airplane_length())
+			_chains(current.type, Pattern.TRIO_WIDTH, shortest, length)
 		Pattern.Type.FOUR_TWO_SINGLES:
 			_four_two_singles()
 		Pattern.Type.FOUR_TWO_PAIRS:
@@ -139,10 +139,10 @@ func _rank_groups(type: Pattern.Type, width: int) -> void:
 
 
 func _trios_with_kicker(type: Pattern.Type, width: int) -> void:
-	if not _fits(TRIO_WIDTH + width):
+	if not _fits(Pattern.TRIO_WIDTH + width):
 		return
 	for rank: int in _present:
-		if _counts[rank] < TRIO_WIDTH or _rank_map[rank] <= _floor:
+		if _counts[rank] < Pattern.TRIO_WIDTH or _rank_map[rank] <= _floor:
 			continue
 		_offer_wild_kickers(1 << rank, 1)
 		for kicker: int in _present:
@@ -152,7 +152,7 @@ func _trios_with_kicker(type: Pattern.Type, width: int) -> void:
 				var kickers: PackedByteArray = PackedByteArray()
 				kickers.resize(width)
 				kickers.fill(kicker)
-				_add(type, rank, 1, TRIO_WIDTH + width, kickers)
+				_add(type, rank, 1, Pattern.TRIO_WIDTH + width, kickers)
 
 
 func _chains(type: Pattern.Type, width: int, minimum: int, fixed_length: int) -> void:
@@ -178,7 +178,7 @@ func _chain_at(type: Pattern.Type, start: int, length: int, width: int) -> void:
 	if type == Pattern.Type.AIRPLANE_SINGLES:
 		wings = length
 	elif type == Pattern.Type.AIRPLANE_PAIRS:
-		wings = length * PAIR_WIDTH
+		wings = length * Pattern.PAIR_WIDTH
 	if not _fits(body + wings):
 		return
 	match type:
@@ -186,8 +186,8 @@ func _chain_at(type: Pattern.Type, start: int, length: int, width: int) -> void:
 			_single_wings(start, length, body)
 		Pattern.Type.AIRPLANE_PAIRS:
 			if _rules.pair_wings_allowed():
-				var pool: PackedByteArray = _wing_pool(start, length, PAIR_WIDTH)
-				_kicker_sets(type, start, length, body, pool, length, PAIR_WIDTH)
+				var pool: PackedByteArray = _wing_pool(start, length, Pattern.PAIR_WIDTH)
+				_kicker_sets(type, start, length, body, pool, length, Pattern.PAIR_WIDTH)
 		_:
 			_add(type, start, length, body, PackedByteArray())
 
@@ -196,13 +196,13 @@ func _single_wings(start: int, length: int, body: int) -> void:
 	if not _rules.single_wings_allowed():
 		return
 	var type: Pattern.Type = Pattern.Type.AIRPLANE_SINGLES
-	var pool: PackedByteArray = _wing_pool(start, length, SINGLE_WIDTH)
-	_kicker_sets(type, start, length, body, pool, length, SINGLE_WIDTH)
-	if _rules.single_wings_may_pair() and length % PAIR_WIDTH == 0:
+	var pool: PackedByteArray = _wing_pool(start, length, Pattern.SINGLE_WIDTH)
+	_kicker_sets(type, start, length, body, pool, length, Pattern.SINGLE_WIDTH)
+	if _rules.single_wings_may_pair() and length % Pattern.PAIR_WIDTH == 0:
 		@warning_ignore("integer_division")
-		var pair_slots: int = length / PAIR_WIDTH
-		var pairs: PackedByteArray = _wing_pool(start, length, PAIR_WIDTH)
-		_kicker_sets(type, start, length, body, pairs, pair_slots, PAIR_WIDTH)
+		var pair_slots: int = length / Pattern.PAIR_WIDTH
+		var pairs: PackedByteArray = _wing_pool(start, length, Pattern.PAIR_WIDTH)
+		_kicker_sets(type, start, length, body, pairs, pair_slots, Pattern.PAIR_WIDTH)
 
 
 ## Returns the ranks outside the chain that hold enough cards to be a wing.
@@ -270,7 +270,7 @@ func _add_kicker_set(
 		mask |= 1 << rank
 		for _copy: int in width:
 			kickers.append(rank)
-	if width == SINGLE_WIDTH and mask & Classifier.ROCKET_MASK == Classifier.ROCKET_MASK:
+	if width == Pattern.SINGLE_WIDTH and mask & Classifier.ROCKET_MASK == Classifier.ROCKET_MASK:
 		if not _rules.rocket_may_be_kicker():
 			return
 	# Kickers of wild cards alone take the offered ranks in order, so no two plays differ
@@ -282,31 +282,33 @@ func _add_kicker_set(
 
 
 func _four_two_singles() -> void:
-	if not _rules.four_two_singles_allowed() or not _fits(QUAD_WIDTH + FOUR_TWO_KICKERS):
+	var four: int = Pattern.MIN_BOMB_WIDTH
+	if not _rules.four_two_singles_allowed() or not _fits(four + FOUR_TWO_KICKERS):
 		return
 	var type: Pattern.Type = Pattern.Type.FOUR_TWO_SINGLES
 	for rank: int in _present:
-		if _counts[rank] < QUAD_WIDTH or _rank_map[rank] <= _floor:
+		if _counts[rank] < four or _rank_map[rank] <= _floor:
 			continue
-		if not _own_or_natural(rank, QUAD_WIDTH):
+		if not _own_or_natural(rank, four):
 			continue
-		var pool: PackedByteArray = _kicker_pool(rank, SINGLE_WIDTH)
-		_kicker_sets(type, rank, 1, QUAD_WIDTH, pool, FOUR_TWO_KICKERS, SINGLE_WIDTH)
+		var pool: PackedByteArray = _kicker_pool(rank, Pattern.SINGLE_WIDTH)
+		_kicker_sets(type, rank, 1, four, pool, FOUR_TWO_KICKERS, Pattern.SINGLE_WIDTH)
 		if _rules.four_two_singles_may_share_rank():
-			var pairs: PackedByteArray = _kicker_pool(rank, PAIR_WIDTH)
-			_kicker_sets(type, rank, 1, QUAD_WIDTH, pairs, 1, PAIR_WIDTH)
+			var pairs: PackedByteArray = _kicker_pool(rank, Pattern.PAIR_WIDTH)
+			_kicker_sets(type, rank, 1, four, pairs, 1, Pattern.PAIR_WIDTH)
 
 
 func _four_two_pairs() -> void:
-	var cards: int = QUAD_WIDTH + FOUR_TWO_KICKERS * PAIR_WIDTH
+	var four: int = Pattern.MIN_BOMB_WIDTH
+	var cards: int = four + FOUR_TWO_KICKERS * Pattern.PAIR_WIDTH
 	if not _rules.four_two_pairs_allowed() or not _fits(cards):
 		return
 	var type: Pattern.Type = Pattern.Type.FOUR_TWO_PAIRS
 	for rank: int in _present:
-		var quad: bool = _counts[rank] >= QUAD_WIDTH and _own_or_natural(rank, QUAD_WIDTH)
+		var quad: bool = _counts[rank] >= four and _own_or_natural(rank, four)
 		if quad and _rank_map[rank] > _floor:
-			var pool: PackedByteArray = _kicker_pool(rank, PAIR_WIDTH)
-			_kicker_sets(type, rank, 1, QUAD_WIDTH, pool, FOUR_TWO_KICKERS, PAIR_WIDTH)
+			var pool: PackedByteArray = _kicker_pool(rank, Pattern.PAIR_WIDTH)
+			_kicker_sets(type, rank, 1, four, pool, FOUR_TWO_KICKERS, Pattern.PAIR_WIDTH)
 
 
 func _kicker_pool(body_rank: int, width: int) -> PackedByteArray:
@@ -339,9 +341,10 @@ func _fits(cards: int) -> bool:
 
 
 func _bombs(current: Pattern) -> void:
+	var fewest: int = Pattern.MIN_BOMB_WIDTH
 	for rank: int in _present:
-		var largest: int = _counts[rank] if _rules.five_plus_is_bomb() else QUAD_WIDTH
-		for size: int in range(QUAD_WIDTH, mini(largest, _counts[rank]) + 1):
+		var largest: int = _counts[rank] if _rules.five_plus_is_bomb() else fewest
+		for size: int in range(fewest, mini(largest, _counts[rank]) + 1):
 			if not _fits(size):
 				continue
 			var bomb: Pattern = _build(Pattern.Type.BOMB, rank, 1, size, PackedByteArray())
@@ -350,10 +353,11 @@ func _bombs(current: Pattern) -> void:
 
 
 func _rocket(current: Pattern) -> void:
-	if _counts[Ranks.SMALL_JOKER] == 0 or _counts[Ranks.BIG_JOKER] == 0 or not _fits(PAIR_WIDTH):
+	var cards: int = Pattern.PAIR_WIDTH
+	if _counts[Ranks.SMALL_JOKER] == 0 or _counts[Ranks.BIG_JOKER] == 0 or not _fits(cards):
 		return
 	var main: int = Ranks.SMALL_JOKER
-	var rocket: Pattern = _build(Pattern.Type.ROCKET, main, 1, PAIR_WIDTH, PackedByteArray())
+	var rocket: Pattern = _build(Pattern.Type.ROCKET, main, 1, cards, PackedByteArray())
 	if _spends(rocket) and (current == null or PlayComparator.beats(rocket, current, _rules)):
 		_moves.append(rocket)
 
