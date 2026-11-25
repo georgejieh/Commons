@@ -270,6 +270,7 @@ func _table_step() -> void:
 				await _rules_frames()
 				await _wild_table_frames()
 				await _file_table_frames()
+				await _deal_table_frames()
 				return
 			var bid_bar: Object = table.call("actions")
 			await _press(bid_bar.get("decline"))
@@ -876,6 +877,15 @@ func _wild_collection_frame() -> void:
 ## (tools/playtest_file.gd).
 func _file_table_frames() -> void:
 	var walk: Object = _file_walk()
+	await walk.call("table")
+	_took(walk)
+
+
+## ADR 0043's set-aside cards and kitty seen before the bid, in a sandbox put back after
+## (tools/playtest_deal.gd).
+func _deal_table_frames() -> void:
+	var script: GDScript = load("res://tools/playtest_deal.gd")
+	var walk: Object = script.new(self, _app, _out, _headless, _shots)
 	await walk.call("table")
 	_took(walk)
 

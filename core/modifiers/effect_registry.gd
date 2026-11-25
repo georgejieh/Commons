@@ -58,7 +58,7 @@ static func _build(modifier_id: String) -> ModifierEffect:
 			return PlannedAllocationEffect.new()
 		"red_ink":
 			return OwnerStampEffect.new()
-		"the_informant", "peek":
+		"the_informant", "peek", "the_tally_clerk":
 			return InfoMarkerEffect.new()
 	return _build_starter(modifier_id)
 

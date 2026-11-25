@@ -208,13 +208,25 @@ func player_view() -> SeatView:
 	if _round == null:
 		return null
 	var view: SeatView = _round.view_for(PLAYER)
-	var held: Array[ModifierDef] = []
-	for cadre_id: String in state.inventory.cadres:
-		held.append(_pool_by_id[cadre_id])
-	var info_flags: int = InfoReveal.flags(held)
+	var info_flags: int = _info_flags()
 	if info_flags != 0:
 		view.info = InfoReveal.build(_round, PLAYER, info_flags, seat_table(PLAYER))
 	return view
+
+
+## What the player's information upgrades show while the landlord seat is bid for (ADR
+## 0043), or null when nothing is bid for or they show nothing then. No bot reads it.
+func bid_info() -> InfoView:
+	if _bidding == null or _deal == null:
+		return null
+	return InfoReveal.bid_info(_deal, _info_flags())
+
+
+func _info_flags() -> int:
+	var held: Array[ModifierDef] = []
+	for cadre_id: String in state.inventory.cadres:
+		held.append(_pool_by_id[cadre_id])
+	return InfoReveal.flags(held)
 
 
 ## What the player's cards would score if played now, through the real scoring path, as
@@ -296,6 +308,7 @@ func _start_round() -> void:
 	if _seat.needs_bidding():
 		_move(RunFlow.State.BIDDING)
 		_bidding = Bidding.new(_first_bidder())
+		_show_kitty()
 	else:
 		_begin_play()
 	advance()
@@ -772,6 +785,14 @@ func _deal_cards() -> void:
 			_table.set_wild_ranks(state.wild_ranks, PLAYER)
 
 
+## Logs the kitty the player's information upgrade shows them before the bid (ADR 0043).
+func _show_kitty() -> void:
+	var info: InfoView = bid_info()
+	if info != null and not info.kitty.is_empty():
+		var kitty: String = _ids_text(info.kitty)
+		set_log.add(RunEvent.new(RunEvent.Type.KITTY_SEEN, PLAYER, 0, 0.0, kitty))
+
+
 static func _ids_text(cards: Array[CardInstance]) -> String:
 	var ids: PackedStringArray = []
 	for card: CardInstance in cards:
@@ -816,6 +837,7 @@ func _record_bid(seat: int, claim: bool) -> void:
 			state.wild_ranks.clear()
 		_deal_cards()
 		_bidding = Bidding.new(_first_bidder())
+		_show_kitty()
 		return
 	_seat.assign(_bidding.landlord())
 	state.landlord_seat = _bidding.landlord()

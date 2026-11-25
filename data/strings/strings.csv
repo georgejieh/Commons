@@ -474,6 +474,8 @@ modifier.the_informant.name,The Informant
 modifier.the_informant.text,Shows the hand types your opponents still hold.
 modifier.peek.name,Peek
 modifier.peek.text,Shows the cards of the other player closest to going out.
+modifier.the_tally_clerk.name,The Tally Clerk
+modifier.the_tally_clerk.text,Shows you the kitty while the landlord seat is bid for.
 keyword.grain.name,Grain
 keyword.grain.text,"Grain: the sum of the ranks of the cards that score. J is 11, Q 12, K 13, A 14, a 2 is 15, the jokers 16 and 17."
 keyword.rate.name,Rate
@@ -689,6 +691,7 @@ table.debuff_lifted,lifted by Appeal
 table.boss,Boss
 table.set_aside,Set aside this round: {cards}.
 table.set_aside_word,Set aside
+table.kitty_seen,Only you see the kitty.
 modifier.rehabilitation.name,Rehabilitation
 modifier.rehabilitation.text,"Pick a rank when you buy this. Your cards of that rank move up {first_steps} rank in the Year you buy it and {steps_per_year} more each Year after, stopping below the jokers. Moved up 1, a 7 beats an 8 and loses to a 9."
 modifier.rehabilitation.state,Your {rank}s have moved up {steps}.

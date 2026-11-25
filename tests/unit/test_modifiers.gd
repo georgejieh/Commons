@@ -160,15 +160,16 @@ func test_a_broken_reform_is_caught() -> void:
 	assert_str("\n".join(ModifierValidator.validate_reform(stray, keys))).contains("no effect")
 
 
-## ADR 0021's 24 Cadres and ADR 0032's 16: 20 collective at the state store and 20
-## private at the black market, each with its effect, its parameters, its strings, an
-## unlock tier and, where it keeps run state, the line that says where it stands.
+## ADR 0021's 24 Cadres, ADR 0032's 16 and ADR 0043's Tally Clerk: 20 collective at the
+## state store and 21 private at the black market, each with its effect, its parameters,
+## its strings, an unlock tier and, where it keeps run state, the line that says where it
+## stands.
 func test_both_pools_hold_every_cadre_each_complete() -> void:
 	var keys: Dictionary[String, bool] = _string_keys()
 	var store: CadrePool = load(DATA + "run/cadre_pool.tres")
 	var market: CadrePool = load(DATA + "run/market_pool.tres")
 	assert_int(store.cadres.size()).is_equal(20)
-	assert_int(market.cadres.size()).is_equal(20)
+	assert_int(market.cadres.size()).is_equal(21)
 	var seen: Dictionary[String, bool] = {}
 	for definition: ModifierDef in store.cadres + market.cadres:
 		assert_bool(seen.has(definition.id)).override_failure_message(definition.id).is_false()

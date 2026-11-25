@@ -3,8 +3,11 @@ extends Control
 ## What a deal shows the player before the bid (ADR 0043), on the trick pile while it is
 ## still empty. Cards a boss sets aside rise from the hand and lie face up under a stamped
 ## word and a note naming them, then are swept off the table: they are out of the round,
-## and the rules slip names them from then on.
-## Reduced motion, a replay or a skip drop the beat, whose cards the slip still names.
+## and the rules slip names them from then on. The kitty an information Cadre shows lies
+## face up where the kitty is revealed, under a note that only the player sees it, until
+## the seat is chosen and the kitty's own reveal takes the pile.
+## Reduced motion, a replay or a skip drop the set-aside beat, whose cards the slip still
+## names, and lay the kitty there still.
 
 const WORD_SIZE: int = 34
 const WORD_OUTLINE: int = 10
@@ -28,6 +31,8 @@ var _word: Label = Label.new()
 var _note: PanelContainer = PanelContainer.new()
 var _note_text: Label = Label.new()
 var _beat: Tween = null
+## True while the kitty the player alone sees lies on the pile.
+var _kitty_shown: bool = false
 
 
 func _ready() -> void:
@@ -71,14 +76,26 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 	match event.type:
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT, RunEvent.Type.REDEALT:
 			_put_away()
+		RunEvent.Type.LANDLORD_CHOSEN:
+			# The kitty's own reveal follows at once and takes the pile.
+			if _kitty_shown:
+				_pile.clear()
+			_put_away()
 		RunEvent.Type.CARDS_SET_ASIDE:
 			if not quiet and not UiMotion.reduced() and _player.step > 0.0:
 				_set_aside(_cards(event.text))
+		RunEvent.Type.KITTY_SEEN:
+			_see_kitty(_cards(event.text))
 
 
 ## The note's words while it shows, for tests.
 func note_text() -> String:
 	return _note_text.text if _note.visible else ""
+
+
+## True while the kitty the player alone sees lies on the pile, for tests.
+func kitty_shown() -> bool:
+	return _kitty_shown
 
 
 func _set_aside(cards: Array[CardInstance]) -> void:
@@ -102,6 +119,16 @@ func _set_aside(cards: Array[CardInstance]) -> void:
 	_player.hold(ASIDE_SHOW + TableMotion.PRESETS.sweep + MARGIN)
 
 
+func _see_kitty(cards: Array[CardInstance]) -> void:
+	if cards.is_empty():
+		return
+	_put_away()
+	_pile.clear()
+	_pile.show_play(cards, TableMoments.KITTY_FROM)
+	_show_words(tr("keyword.kitty.name"), tr("table.kitty_seen"))
+	_kitty_shown = true
+
+
 func _show_words(word: String, note: String) -> void:
 	_word.text = word.to_upper()
 	_word.reset_size()
@@ -121,6 +148,7 @@ func _put_away() -> void:
 	_beat = null
 	_word.visible = false
 	_note.visible = false
+	_kitty_shown = false
 
 
 ## The deck cards an event names by ID, as the deal made them.

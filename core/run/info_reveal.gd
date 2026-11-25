@@ -36,6 +36,18 @@ static func build(round_state: RoundState, seat: int, info_flags: int, table: Bo
 	return info
 
 
+## What the player sees while the seat is bid for (ADR 0043): the deal's kitty for the
+## KITTY flag. Null when no flag shows anything then.
+static func bid_info(deal: DealResult, info_flags: int) -> InfoView:
+	if not info_flags & InfoView.KITTY:
+		return null
+	var info: InfoView = InfoView.new()
+	info.flags = info_flags
+	for card: CardInstance in deal.kitty:
+		info.kitty.append(card.snapshot())
+	return info
+
+
 static func _types(counts: PackedByteArray, table: BotTable) -> PackedInt32Array:
 	var types: PackedInt32Array = PackedInt32Array()
 	types.resize(Pattern.Type.size())

@@ -2,7 +2,8 @@ extends GdUnitTestSuite
 ## Both shops fit the screen (ADR 0021): at 1920x1080 and at the Steam Deck's 1280x800,
 ## every visible control lies inside the screen and no two of the page's main blocks
 ## overlap, both with a fresh run and with the most a run can hold: six Cadres, three
-## Campaigns, all six Reforms in force, rationing's note and the two tallest Directives.
+## Campaigns, all six Reforms in force, rationing's note, the two tallest Directives and a
+## set black market counter.
 
 const SEED: int = 4242
 const SAVE_PATH: String = "user://test_shop_layout/run.json"
@@ -60,6 +61,10 @@ func _fill() -> void:
 	_app.controller.reseal_book()
 	var tall: Array[String] = ["on_combined_brigades", "on_launching_satellites"]
 	_loop().shop.set("_directive_stock", tall)
+	# The black market's counter is set, not drawn, so a larger pool does not change what
+	# the page is checked with; the Tally Clerk stands in its empty frame (ADR 0043).
+	var counter: Array[String] = ["the_tally_clerk", "last_sheaf", "the_bookkeeper"]
+	_loop().market.set("_stock", counter)
 
 
 func test_both_shops_fit_a_fresh_run() -> void:

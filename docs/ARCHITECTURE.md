@@ -343,8 +343,8 @@ The boss's modifier joins the stack after the debuffs, and the Set intro, the ru
 
 - **Deal.** `DealContext` carries the deal stream. Planned Allocation's `on_deal` calls `Dealer.rebias`, which applies P1A.7's bounded swaps to the finished deal, so it runs in hook order with the other deal effects.
 - **Stamps.** Red Ink checks `owner_stamp()` in `card_scored`. A stamped card scores extra only when its owner plays it; Red Ink is private, so the stack runs it on the holder's plays alone.
-- **Information.** Upgrades change nothing in play. Their `info` parameter sets `InfoView` flag bits. `RunLoop.player_view()` attaches an `InfoView` (opponents' remaining hand types, or the closest hand's cards) only when the player holds such a flag. Bots' views never carry one, so with no flags the player's view equals the bots' public view.
-- **Stock.** These four private items sit in `data/run/market_pool.tres`, the black market's stock for P4.10.
+- **Information.** Upgrades change nothing in play. Their `info` parameter sets `InfoView` flag bits. `RunLoop.player_view()` attaches an `InfoView` (opponents' remaining hand types, or the closest hand's cards) only when the player holds such a flag. Bots' views never carry one, so with no flags the player's view equals the bots' public view. The Tally Clerk's flag, `KITTY`, acts before there is a round ([ADR 0043](adr/0043-handicap-hungry-honesty-and-kitty-sight.md)): `RunLoop.bid_info()` is `InfoReveal.bid_info` over the deal while the seat is bid for, and the loop logs `KITTY_SEEN` with the kitty's IDs after each deal that is bid for, so `DealMoments` lays the three cards face up on the pile under a note until the seat is chosen. No bot reads it.
+- **Stock.** These private items, and the Tally Clerk, sit in `data/run/market_pool.tres`, the black market's stock for P4.10.
 
 `SetConfig` reads the run's shape from the `SetParams` Resource in `data/run/`: the number of Years, rounds per Set, coupons per Set type, and the target curve, one target per Set in play order. `validate()` rejects a curve that falls anywhere, across Years too.
 
