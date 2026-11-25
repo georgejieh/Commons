@@ -259,7 +259,9 @@ func _picker_frame(controller: Object) -> void:
 		return
 	var wild: Object = _part("_wild")
 	var picker: Object = wild.get("picker")
-	picker.call("open", readings)
+	# Beside the fan, as over cards the player had chosen; nothing here is chosen.
+	var hand: Control = _part("_hand_view") as Control
+	picker.call("open", readings, hand.get_global_rect())
 	await _frames(10)
 	await _shot("wild_picker_%d_readings" % readings.size())
 	picker.call("close")

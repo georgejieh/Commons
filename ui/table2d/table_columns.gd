@@ -9,8 +9,9 @@ extends RefCounted
 ## down; then the seat's intel line fits its type down, never under Standard.
 ##
 ## Right, between the right seat's top and the action column at its tallest: the seat,
-## then the rules slip. The slip names its rules, then fits their type down; then the
-## seat's intel line fits its type down; only then is the slip counted.
+## then the rules slip, then the wall roster at the column's foot. The roster is taken
+## down first; then the slip names its rules, then fits their type down; then the seat's
+## intel line fits its type down; only then is the slip counted.
 
 ## Between a seat's foot and what stands under it, and above the action column.
 const GAP: float = 8.0
@@ -117,7 +118,7 @@ func _fit_tray() -> bool:
 	return fitted
 
 
-## The seat and the rules slip, in that order down the right edge.
+## The seat, the rules slip and the roster, in that order down the right edge.
 func fit_right() -> void:
 	if _fitting:
 		return
@@ -137,6 +138,7 @@ func fit_right() -> void:
 	if not _strip.fits():
 		_strip.allow_count = true
 		_strip.refit()
+	_dressing.hang_roster(_strip_top() + _strip.standing() + GAP, floor_top() - GAP)
 	_fitting = false
 
 

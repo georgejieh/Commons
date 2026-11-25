@@ -3,7 +3,8 @@ extends Control
 ## A face-down card in flight between two villagers, so the player never sees a card they
 ## have no right to see (Redistribution, ADR 0023). Old paper, a border and a printed
 ## lattice in the chosen design's inks (ADR 0025), worn like everything else from
-## corruption stage 0 (BowlGrime.wear()). Settings draws its swatches with it too.
+## corruption stage 0 (BowlGrime.wear()). Settings draws its swatches with it too. Its
+## eye (BackEyes) is printed over the lattice only while the table's dread shows one.
 
 const SIZE: Vector2 = Vector2(68, 96)
 const BORDER: float = 6.0
@@ -22,6 +23,7 @@ func _init(extent: Vector2 = SIZE) -> void:
 	custom_minimum_size = extent
 	pivot_offset = extent / 2.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(BackEyes.new())
 
 
 func _draw() -> void:

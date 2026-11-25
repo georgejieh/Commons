@@ -1,7 +1,10 @@
 extends SceneTree
 ## Renders the table in each of the Plan's seven board states (P3B.12), the last
-## corruption stage, and the clean board at every stage, and saves one screenshot per
-## state for checking by eye. Needs a
+## corruption stage, and the clean board at every stage, then the four slow horrors (P5.2c)
+## with both meters high at stages 0, 4 and 9: the eyes on the seats' card backs turned
+## toward a pointer at the hand, the trembling hand twice a moment apart, the roster's
+## names, and both villagers speaking; and the turn's frame on a seat. One screenshot per
+## state, for checking by eye. Needs a
 ## real window, not --headless:
 ##   godot --path . --script res://tools/board_states.gd -- --out reports/board_states
 ## Development only; tools/ never ships.
@@ -9,6 +12,11 @@ extends SceneTree
 const SEED: int = 4242
 const SETTLE_FRAMES: int = 40
 const LAST_STAGE: int = 9
+const EFFECT_STAGES: Array[int] = [0, 4, LAST_STAGE]
+## Where the pointer rests for the eyes to look at: over the hand, low and left.
+const POINTER_AT: Vector2 = Vector2(300, 940)
+## Seconds between the two frames of the trembling hand.
+const TREMBLE_GAP: float = 0.07
 
 var _out: String = "res://reports/board_states"
 
@@ -49,7 +57,28 @@ func _run() -> void:
 		dread.call("force", 0, 0, false, stage)
 		await _settle()
 		await _shot("clean_stage_%d" % stage)
+	await _effect_frames(table, dread)
 	quit(0)
+
+
+## The slow horrors at three stages, then the turn's frame on the right seat.
+func _effect_frames(table: Node, dread: Node) -> void:
+	var speech: Object = table.get("_speech")
+	speech.set("hurry", true)
+	Input.warp_mouse(POINTER_AT)
+	for stage: int in EFFECT_STAGES:
+		dread.call("force", 100, 100, false, stage)
+		speech.call("say", 1, "pass")
+		speech.call("say", 2, "cards_left", {"count": 3})
+		await _settle()
+		await _shot("horrors_stage_%d" % stage)
+		await create_timer(TREMBLE_GAP).timeout
+		await _shot("horrors_stage_%d_later" % stage)
+	dread.call("force", 10, 10, false, 0)
+	var turn: Object = table.get("_turn")
+	turn.call("mark", 1)
+	await _settle()
+	await _shot("turn_mark")
 
 
 func _settle() -> void:

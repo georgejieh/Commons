@@ -45,7 +45,8 @@ func set_inputs(famine: int, denunciation: int, landlord: bool, corruption_stage
 		var value: float = input_value(
 			layer.input, famine, denunciation, landlord, corruption_stage
 		)
-		targets[index] = clampf(layer.weight_for(value), 0.0, 1.0)
+		var gate: float = input_value(layer.gate, famine, denunciation, landlord, corruption_stage)
+		targets[index] = clampf(layer.weight_for(value) * layer.gate_for(gate), 0.0, 1.0)
 
 
 ## Eases every weight toward its target; a full swing takes ease_seconds.

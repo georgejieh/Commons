@@ -3,9 +3,10 @@ extends Control
 ## The dread layers' set dressing (P3B.12), drawn over the room and under the cards,
 ## seats and controls: empty chairs at the room's edge, a notice about your household
 ## under the Cadre board, black bars over the brigade notice, a spotlight on your seat and
-## gilt trim for a landlord. Shapes are placeholders until the art pass (P3C). Each piece
-## fades with its weight; none covers anything the player reads, and the rules slip may
-## stand in front of the right chair (ADR 0034, rule 6).
+## gilt trim for a landlord, and the brigade's roster under the right seat, whose names
+## fade as the roster effect grows (P5.2c). Shapes are placeholders until the art pass
+## (P3C). Each piece fades with its weight; none covers anything the player reads, and the
+## rules slip may stand in front of the right chair (ADR 0034, rule 6).
 
 const LAMP_SHADER: Shader = preload("res://shaders/lamp_light.gdshader")
 const WOOD: Color = Color("2a1a10")
@@ -15,7 +16,10 @@ const RED: Color = Color("9e1b16")
 const GILT: Color = Color("c9a227")
 ## Where the pieces sit, in the table's 1920x1080 frame: wall space clear of the seats,
 ## play lanes, hand, buttons and ledger.
-const NOTICE_AT: Rect2 = Rect2(150, 622, 280, 124)
+## The brigade notice at Standard: worn paper like every sheet, its words inside the
+## paper's printed border, its right edge clear of the trick's room.
+const NOTICE_AT: Rect2 = Rect2(118, 606, 312, 140)
+const NOTICE_PADDING: int = 22
 ## The household notice, wide and low, in the strip's old place between the Cadre board's
 ## foot (y 268) and the trick's box (y 380), 6 px clear of each, its words on one line.
 const POSTER_AT: Rect2 = Rect2(492, 274, 596, 100)
@@ -23,16 +27,18 @@ const POSTER_SIZE: int = 24
 const CHAIR_SPOTS: Array[Vector2] = [Vector2(36, 560), Vector2(1440, 590)]
 ## Between the trick's foot and the hand, right of the status line.
 const EXTRA_CHAIR_SPOT: Vector2 = Vector2(1030, 690)
+## The roster's left edge: the right seat's, under it.
+const ROSTER_X: float = 1120.0
 const REDACTION_LINES: int = 3
 ## The brigade notice changes with every deal: this many notices for each stretch of a
 ## run, and the last Year of the early and of the middle stretch.
 const NOTICES: int = 4
 const EARLY_UNTIL: int = 2
 const MID_UNTIL: int = 5
-## A redaction bar's height as a share of a line of the notice's text, its left inset
-## and how much further in, and shorter, each line down starts.
+## A redaction bar's height as a share of a line of the notice's text, how far it starts
+## left of the words, and how much further in, and shorter, each line down starts.
 const BAR_SHARE: float = 22.0 / 28.0
-const BAR_INSET: float = 14.0
+const BAR_INSET: float = 4.0
 const BAR_STEP: Vector2 = Vector2(9, 30)
 
 var spotlight_material: ShaderMaterial = ShaderMaterial.new()
@@ -42,6 +48,7 @@ var _flash_until: Dictionary[String, int] = {}
 var _notice: PanelContainer = PanelContainer.new()
 var _notice_words: Label = Label.new()
 var _bars: Control = Control.new()
+var _roster: WallRoster = WallRoster.new()
 ## True while the notice is taken down for the Campaign tray (ADR 0034, rule 8).
 var _notice_down: bool = false
 var _notice_fade: Tween = null
@@ -56,6 +63,8 @@ func _ready() -> void:
 	_add_chairs("extra_chair", [EXTRA_CHAIR_SPOT] as Array[Vector2])
 	_add_poster()
 	_add_gilt()
+	_roster.visible = false
+	add_child(_roster)
 
 
 ## Where the brigade notice hangs on screen, for what must keep clear of it; nothing
@@ -128,6 +137,24 @@ func is_notice_down() -> bool:
 	return _notice_down
 
 
+## Hangs the roster with its foot at foot when it fits below top, or takes it down: it is
+## the first thing the right column gives up.
+func hang_roster(top: float, foot: float) -> void:
+	var extent: Vector2 = _roster.get_combined_minimum_size()
+	_roster.size = extent
+	_roster.position = Vector2(ROSTER_X, foot - extent.y)
+	_roster.visible = foot - extent.y >= top
+
+
+func roster() -> WallRoster:
+	return _roster
+
+
+## Where the roster hangs on screen, or nothing while it is down.
+func roster_rect() -> Rect2:
+	return _roster.get_global_rect() if _roster.is_visible_in_tree() else Rect2()
+
+
 ## Fades a piece to weight; at 0 it is hidden.
 func show_piece(piece: String, weight: float) -> void:
 	if not _pieces.has(piece):
@@ -178,14 +205,14 @@ func _add_spotlight() -> void:
 ## it never reaches the status line under it, and the bars follow the lines of its text.
 func _add_notice() -> void:
 	var notice: PanelContainer = _notice
-	notice.add_theme_stylebox_override("panel", _box(PAPER, INK, 2))
+	notice.add_theme_stylebox_override("panel", ScreenKit.paper_style(NOTICE_PADDING))
 	notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	notice.position = NOTICE_AT.position
 	notice.custom_minimum_size = NOTICE_AT.size
 	var words: Label = _notice_words
 	words.text = tr(DreadDressing.notice_key(1, 0))
 	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	words.custom_minimum_size = Vector2(NOTICE_AT.size.x - 24, 0)
+	words.custom_minimum_size = Vector2(NOTICE_AT.size.x - 2 * NOTICE_PADDING, 0)
 	words.add_theme_color_override("font_color", INK)
 	words.add_theme_font_size_override("font_size", TextSize.px(18))
 	notice.add_child(words)
@@ -220,8 +247,10 @@ func _fit_notice() -> void:
 	for line: int in _bars.get_child_count():
 		var bar: ColorRect = _bars.get_child(line) as ColorRect
 		var middle: float = _notice_words.position.y + line * pitch + line_tall / 2.0
-		bar.position = Vector2(BAR_INSET + line * BAR_STEP.x, roundf(middle - bar_tall / 2.0))
-		bar.size = Vector2(NOTICE_AT.size.x - 40.0 - line * BAR_STEP.y, bar_tall)
+		var left: float = _notice_words.position.x - BAR_INSET + line * BAR_STEP.x
+		bar.position = Vector2(left, roundf(middle - bar_tall / 2.0))
+		var wide: float = _notice_words.size.x + BAR_INSET - line * (BAR_STEP.x + BAR_STEP.y)
+		bar.size = Vector2(wide, bar_tall)
 
 
 ## The rects the redaction bars cover, on screen, for tests.

@@ -258,6 +258,20 @@ speech.won.1,Count it up.
 speech.won.2,Good. Deal again.
 speech.lost.1,"Shuffle, then."
 speech.lost.2,Bad cards from the start.
+speech.slogan.call.1,The seat is held for the brigade.
+speech.slogan.call.2,I accept the seat on behalf of the collective.
+speech.slogan.no_call.1,The seat goes where the brigade needs it.
+speech.slogan.no_call.2,I defer to the brigade's choice.
+speech.slogan.pass.1,Every household waits its turn.
+speech.slogan.pass.2,I yield to the next household.
+speech.slogan.cards_left.1,{count} cards remain. The work proceeds on schedule.
+speech.slogan.cards_left.2,"{count} cards remain, all accounted for."
+speech.slogan.bomb.1,The brigade acts together.
+speech.slogan.bomb.2,All hands to the plan.
+speech.slogan.won.1,The result goes to the brigade office.
+speech.slogan.won.2,Credit to the whole work team.
+speech.slogan.lost.1,The brigade will do better next deal.
+speech.slogan.lost.2,Shortfalls are corrected at the next count.
 dossier.open,Dossier
 dossier.eyebrow,Seen at the table
 dossier.title,Dossier
@@ -362,6 +376,7 @@ dread.notice.late.1,"Brigade notice: the shared kitchen serves at noon only. Eve
 dread.notice.late.2,"Brigade notice: the well is drawn by roster. The brigade leader keeps the roster."
 dread.notice.late.3,"Brigade notice: lamps are out by the evening bell. The store has no oil."
 dread.poster,Household under review
+dread.roster,Brigade roster
 villager.wang,Wang
 villager.li,Li
 villager.zhao,Zhao

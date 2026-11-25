@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://data/horror/horror_layer.gd" id="2"]
 [ext_resource type="Script" path="res://data/horror/flicker_def.gd" id="3"]
 [ext_resource type="Script" path="res://data/horror/art_variant.gd" id="4"]
+[ext_resource type="Script" path="res://data/horror/dread_effects.gd" id="5"]
 [ext_resource type="Texture2D" path="res://art/backdrops/table_surface.png" id="art0"]
 [ext_resource type="Texture2D" path="res://art/backdrops/title.png" id="art1"]
 [ext_resource type="Texture2D" path="res://art/backdrops/title_night.png" id="art2"]
@@ -49,6 +50,41 @@ response = PackedVector2Array(0, 0, 1, 1)
 shader_params = Dictionary[String, Vector2]({"post:warmth": Vector2(0.25, 0.05)})
 dressing = Array[String](["gilt"])
 audio_stems = Array[String](["room_tone"])
+
+[sub_resource type="Resource" id="layer_back_eyes"]
+script = ExtResource("2")
+input = "denunciation"
+response = PackedVector2Array(0, 0.3, 0.4, 0.4, 0.65, 0.75, 1, 1)
+gate = "corruption"
+gate_response = PackedVector2Array(0, 0, 1, 1)
+effects = Array[String](["back_eyes"])
+
+[sub_resource type="Resource" id="layer_tremble"]
+script = ExtResource("2")
+input = "famine"
+response = PackedVector2Array(0, 0, 0.4, 0.15, 0.65, 0.6, 1, 1)
+gate = "corruption"
+gate_response = PackedVector2Array(0, 0, 1, 1)
+effects = Array[String](["tremble"])
+
+[sub_resource type="Resource" id="layer_roster"]
+script = ExtResource("2")
+input = "famine"
+response = PackedVector2Array(0, 0.15, 0.4, 0.25, 0.65, 0.6, 1, 1)
+gate = "corruption"
+gate_response = PackedVector2Array(0, 0, 1, 1)
+effects = Array[String](["roster"])
+
+[sub_resource type="Resource" id="layer_slogans"]
+script = ExtResource("2")
+input = "denunciation"
+response = PackedVector2Array(0, 0.2, 0.4, 0.3, 0.65, 0.7, 1, 1)
+gate = "corruption"
+gate_response = PackedVector2Array(0, 0, 0.3, 0, 1, 1)
+effects = Array[String](["slogans"])
+
+[sub_resource type="Resource" id="effect_tuning"]
+script = ExtResource("5")
 
 [sub_resource type="Resource" id="layer_corruption"]
 script = ExtResource("2")
@@ -402,7 +438,8 @@ stage_paths = Array[String](["res://art/endings/stages/ending_death_denunciation
 
 [resource]
 script = ExtResource("1")
-layers = Array[ExtResource("2")]([SubResource("layer_famine"), SubResource("layer_denunciation"), SubResource("layer_struggle"), SubResource("layer_landlord"), SubResource("layer_corruption"), SubResource("layer_corruption_watchers")])
+layers = Array[ExtResource("2")]([SubResource("layer_famine"), SubResource("layer_denunciation"), SubResource("layer_struggle"), SubResource("layer_landlord"), SubResource("layer_back_eyes"), SubResource("layer_tremble"), SubResource("layer_roster"), SubResource("layer_slogans"), SubResource("layer_corruption"), SubResource("layer_corruption_watchers")])
 flickers = Array[ExtResource("3")]([SubResource("flicker_1"), SubResource("flicker_2"), SubResource("flicker_3")])
 ease_seconds = 4.0
+effect_tuning = SubResource("effect_tuning")
 art = Array[ExtResource("4")]([SubResource("art_table_surface"), SubResource("art_title"), SubResource("art_title_night"), SubResource("art_store"), SubResource("art_notice_wall"), SubResource("art_card_back"), SubResource("art_cadre_cultural_revolution"), SubResource("art_cadre_hidden_reserves"), SubResource("art_cadre_iron_rice_bowl"), SubResource("art_cadre_landlords_ledger"), SubResource("art_cadre_promotion_of_the_masses"), SubResource("art_cadre_stakhanovite"), SubResource("art_cadre_planned_allocation"), SubResource("art_cadre_the_informant"), SubResource("art_cadre_peek"), SubResource("art_cadre_red_ink"), SubResource("art_cadre_rehabilitation"), SubResource("art_cadre_class_label"), SubResource("art_cadre_collective_farm"), SubResource("art_cadre_show_trial"), SubResource("art_cadre_model_commune"), SubResource("art_cadre_ration_coupon"), SubResource("art_cadre_shock_brigade"), SubResource("art_cadre_canteen"), SubResource("art_cadre_red_banner"), SubResource("art_cadre_poor_peasants_association"), SubResource("art_cadre_seed_grain"), SubResource("art_cadre_the_bookkeeper"), SubResource("art_cadre_last_sheaf"), SubResource("art_cadre_steel_target"), SubResource("art_cadre_night_school"), SubResource("art_cadre_iron_and_coal"), SubResource("art_cadre_advanced_cooperative"), SubResource("art_cadre_double_share_plough"), SubResource("art_cadre_open_accounts"), SubResource("art_cadre_tractor_station"), SubResource("art_cadre_the_gleaners"), SubResource("art_cadre_public_granary"), SubResource("art_cadre_five_year_plan"), SubResource("art_cadre_back_door"), SubResource("art_cadre_informers_reward"), SubResource("art_cadre_forged_seal"), SubResource("art_cadre_loudspeaker"), SubResource("art_cadre_rent_book"), SubResource("art_cadre_grain_speculator"), SubResource("art_cadre_prize_exhibit"), SubResource("art_portrait_wang_face"), SubResource("art_portrait_zhao_face"), SubResource("art_court_jack"), SubResource("art_court_queen"), SubResource("art_court_king"), SubResource("art_joker_small"), SubResource("art_joker_big"), SubResource("art_ending_secret_contract"), SubResource("art_ending_the_commons"), SubResource("art_ending_lean_years"), SubResource("art_ending_labeled"), SubResource("art_ending_benevolent_landlord"), SubResource("art_ending_full_granary"), SubResource("art_ending_struggled"), SubResource("art_ending_death_famine"), SubResource("art_ending_death_denunciation")])

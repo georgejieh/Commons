@@ -2,10 +2,10 @@ class_name SeatPanel
 extends PanelContainer
 ## One villager at the table, on one paper sheet: portrait, with name, cards left and
 ## role level with its top, what an information Cadre reveals across the sheet's width
-## under them (ADR 0034, rule 9), and their last words underneath. The landlord tag lies
-## across the portrait's top. The card count turns red at 2 and 1 cards and says so in
-## words. A line types out in step with the villager's voice (P3B.13); a click shows the
-## rest at once.
+## under them (ADR 0034, rule 9), and their last words underneath. The card back by the
+## count carries the dread's eye (BackEyes). The landlord tag lies across the portrait's
+## top. The card count turns red at 2 and 1 cards and says so in words. A line types out
+## in step with the villager's voice (P3B.13); a click shows the rest at once.
 
 ## The player skipped the line typing out, so its voice should stop.
 signal speech_skipped(seat: int)
@@ -88,11 +88,9 @@ func _init() -> void:
 	_portrait.color = PAPER
 	_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_picture.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_picture.offset_left = 4
-	_picture.offset_top = 4
-	_picture.offset_right = -4
-	_picture.offset_bottom = -4
+	_picture.set_anchors_and_offsets_preset(
+		Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 4
+	)
 	_portrait.add_child(_picture)
 	_portrait.add_child(_banner)
 	_name.theme_type_variation = CommonsTheme.TITLE
@@ -116,6 +114,7 @@ func _init() -> void:
 	_back.custom_minimum_size = Vector2(30, 42)
 	_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+	_back.add_child(BackEyes.new())
 	_count_row.add_child(_back)
 	_count_row.add_child(_count)
 	_intel.add_theme_font_size_override("font_size", TextSize.px(INTEL_SIZE))
