@@ -40,3 +40,7 @@ At most the Quota in play, or the purchases of one shop visit, and only on the f
 - `RunController.resume_saved` reads the stamp before it replays. `RunRecord.resume` is unchanged and still returns null on a command that does not apply.
 - The first Continue after any change to a pool or its numbers restarts the Quota in play. That includes every balance pass.
 - `tests/integration/test_content_stamp.gd` covers a save of this build, one of another, one with no stamp, a round in play, a command that no longer applies, and what the stamp reads.
+
+## Amendment, 2026-11-25: the village and the bosses
+
+A Quota's villagers and its boss are drawn after its checkpoint too: the roster seats its families by slot, each plays by its personality and trait shifts, and a boss Set draws its boss from the pool. A change to any of them replayed a Quota's commands against other villagers or another boss without failing. The stamp now also reads the boss pool, every boss and the pool's numbers, and the village book with every family and sent-down youth it seats, their personalities and their trait shifts. The first Continue of a save written before this change resumes at its Quota's start, as after any other content change.
