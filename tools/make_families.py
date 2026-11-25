@@ -1,15 +1,24 @@
-"""Writes the village's family Resources (P4.5) from one table, so the roster's data
-stays consistent. Run from the repository root: python tools/make_families.py
+"""Writes the village's family Resources from one table, so the roster's data stays consistent.
 
-Writes data/villagers/families/*.tres, data/villagers/youth/*.tres and
-data/villagers/village.tres. A portrait is linked only when its PNG exists.
+    python tools/make_families.py [--out DIR]
+
+Writes data/villagers/families/*.tres, data/villagers/youth/*.tres,
+data/villagers/village.tres and the surnames and speech lines it owns in
+data/strings/strings.csv. A portrait is linked only when its PNG exists. DIR stands for
+the data folder (the default is the project's own); tools/test_make_families.py runs it
+into a temporary one and requires every file to equal the committed one, so the table here
+and the files never part.
 """
 
+import argparse
 import json
-import os
+from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FACES_PATH = os.path.join(ROOT, "data", "villagers", "portrait_faces.json")
+ROOT = Path(__file__).resolve().parent.parent
+DATA = ROOT / "data"
+FACES_PATH = DATA / "villagers" / "portrait_faces.json"
+STRINGS = Path("strings") / "strings.csv"
+LF = "\n"
 LEVEL = {"L": 0, "M": 1, "H": 2}
 TIER = {"E": 0, "M": 1, "H": 2, "X": 3}
 UNLOCK = {"start": 0, "runs": 1, "landlord": 2}
@@ -42,14 +51,34 @@ YOUTH = [
     ("youth_b", "", "E", "MLMML", "start", 0, True, False, (142.0, 1.03, 5.7, 0.07)),
 ]
 YOUTH_SURNAMES = [
-    ("hu", "Hu"), ("lin", "Lin"), ("zhu", "Zhu"), ("he", "He"), ("guo", "Guo"),
-    ("luo", "Luo"), ("song", "Song"), ("xie", "Xie"), ("han", "Han"), ("yang", "Yang"),
-    ("cao", "Cao"), ("peng", "Peng"),
+    ("hu", "Hu"),
+    ("lin", "Lin"),
+    ("zhu", "Zhu"),
+    ("he", "He"),
+    ("guo", "Guo"),
+    ("luo", "Luo"),
+    ("song", "Song"),
+    ("xie", "Xie"),
+    ("han", "Han"),
+    ("yang", "Yang"),
+    ("cao", "Cao"),
+    ("peng", "Peng"),
 ]
 SURNAMES = {
-    "wang": "Wang", "li": "Li", "zhao": "Zhao", "sun": "Sun", "chen": "Chen", "liu": "Liu",
-    "qin": "Qin", "gao": "Gao", "xu": "Xu", "zhou": "Zhou", "ma": "Ma", "feng": "Feng",
-    "tang": "Tang", "deng": "Deng",
+    "wang": "Wang",
+    "li": "Li",
+    "zhao": "Zhao",
+    "sun": "Sun",
+    "chen": "Chen",
+    "liu": "Liu",
+    "qin": "Qin",
+    "gao": "Gao",
+    "xu": "Xu",
+    "zhou": "Zhou",
+    "ma": "Ma",
+    "feng": "Feng",
+    "tang": "Tang",
+    "deng": "Deng",
 }
 # Family lines: (event, mood, text). Keys become speech.<id>.<event>.<n>.
 SPEECH = {
@@ -137,92 +166,46 @@ SPEECH = {
 DEFAULT_FACE = [0.2, 0.12, 0.6, 0.55]
 
 
-def tres_string(text):
+# The village book's own numbers, written after its roster, in this order.
+VILLAGE_SETTINGS = {
+    "reeducation_sets": "1",
+    "rise_sets": "2",
+    "opponents": "2",
+    "starvations_per_year": "1",
+    "drift_chance": "0.15",
+    "pitch_step": "0.04",
+    "pitch_limit": "0.12",
+}
+
+
+def tres_string(text: str) -> str:
+    """The text as a quoted resource string, Chinese characters left as they are."""
     return json.dumps(text, ensure_ascii=False)
 
 
-def family_tres(row, folder, faces):
+def _flag(value: bool) -> str:
+    return "true" if value else "false"
+
+
+def family_tres(row: tuple, faces: dict[str, list[float]]) -> str:
+    """The text of one family's or youth template's resource file."""
     fid, hanzi, tier, levels, unlock, runs, rising, mirrors, voice = row
-    exts = [
-        ('Script', "res://data/villagers/family_def.gd"),
-        ('Script', "res://data/bots/personality.gd"),
-        ('Script', "res://data/ui/speech_book.gd"),
-        ('Script', "res://data/ui/speech_line.gd"),
-    ]
-    if isinstance(voice, str):
-        exts.append(("Resource", voice))
-    else:
-        exts.append(("Script", "res://data/ui/voice_profile.gd"))
-    portrait = "art/portraits/portrait_%s_face.png" % fid
-    has_portrait = os.path.exists(os.path.join(ROOT, portrait))
-    if has_portrait:
-        exts.append(("Texture2D", "res://" + portrait))
-    shifts = SHIFTS.get(fid, [])
-    if shifts:
-        exts.append(("Script", "res://data/villagers/trait_shift.gd"))
+    exts = _externals(fid, voice)
     shift_ext = len(exts)
-    lines = SPEECH.get(fid, [])
     out = ['[gd_resource type="Resource" script_class="FamilyDef" format=3]', ""]
     for index, (kind, path) in enumerate(exts):
-        out.append('[ext_resource type="%s" path="%s" id="%d"]' % (kind, path, index + 1))
+        out.append(f'[ext_resource type="{kind}" path="{path}" id="{index + 1}"]')
     out.append("")
-    bombs, coop, honesty, ambition, grudge = (LEVEL[c] for c in levels)
-    out += [
-        '[sub_resource type="Resource" id="personality"]',
-        'script = ExtResource("2")',
-        "tier = %d" % TIER[tier],
-        "bomb_aggression = %d" % bombs,
-        "cooperation = %d" % coop,
-        "honesty = %d" % honesty,
-        "ambition = %d" % ambition,
-        "grudge = %d" % grudge,
-        "",
-    ]
+    out += _personality(tier, levels)
     if not isinstance(voice, str):
-        pitch, tone, pace, rough = voice
-        out += [
-            '[sub_resource type="Resource" id="voice"]',
-            'script = ExtResource("5")',
-            "pitch = %.1f" % pitch,
-            "tone = %.2f" % tone,
-            "pace = %.1f" % pace,
-            "roughness = %.2f" % rough,
-            "",
-        ]
-    counts = {}
-    line_ids = []
-    for event, mood, _text in lines:
-        counts[event] = counts.get(event, 0) + 1
-        key = "speech.%s.%s.%d" % (fid, event, counts[event])
-        line_id = "line_%d" % len(line_ids)
-        line_ids.append(line_id)
-        out += [
-            '[sub_resource type="Resource" id="%s"]' % line_id,
-            'script = ExtResource("4")',
-            'event = "%s"' % event,
-            'text_key = "%s"' % key,
-            'mood = "%s"' % mood,
-            "",
-        ]
-    shift_ids = []
-    for meter, band, trait, level, seen_key in shifts:
-        shift_id = "shift_%s" % meter
-        shift_ids.append(shift_id)
-        out += [
-            '[sub_resource type="Resource" id="%s"]' % shift_id,
-            'script = ExtResource("%d")' % shift_ext,
-            'meter = "%s"' % meter,
-            "band = %d" % band,
-            'trait_name = "%s"' % trait,
-            "level = %d" % LEVEL[level],
-            'seen_key = "%s"' % seen_key,
-            "",
-        ]
+        out += _voice(voice)
+    line_ids = _speech_lines(fid, out)
+    shift_ids = _shift_resources(fid, shift_ext, out)
+    line_refs = ", ".join(f'SubResource("{i}")' for i in line_ids)
     out += [
         '[sub_resource type="Resource" id="speech"]',
         'script = ExtResource("3")',
-        "lines = Array[ExtResource(\"4\")]([%s])"
-        % ", ".join('SubResource("%s")' % i for i in line_ids),
+        f'lines = Array[ExtResource("4")]([{line_refs}])',
         "",
     ]
     face = faces.get(fid, DEFAULT_FACE)
@@ -230,107 +213,209 @@ def family_tres(row, folder, faces):
     out += [
         "[resource]",
         'script = ExtResource("1")',
-        'id = "%s"' % fid,
-        'name_key = "villager.%s"' % fid,
-        "hanzi = %s" % tres_string(hanzi),
+        f'id = "{fid}"',
+        f'name_key = "villager.{fid}"',
+        f"hanzi = {tres_string(hanzi)}",
         'personality = SubResource("personality")',
-        "voice = %s" % voice_ref,
+        f"voice = {voice_ref}",
     ]
-    if has_portrait:
+    if _has_portrait(fid):
         out.append('portrait = ExtResource("6")')
     out += [
-        "portrait_face = Rect2(%s, %s, %s, %s)" % tuple(face),
+        f"portrait_face = Rect2({face[0]}, {face[1]}, {face[2]}, {face[3]})",
         'speech = SubResource("speech")',
-        "unlock = %d" % UNLOCK[unlock],
-        "unlock_runs = %d" % runs,
-        "rising = %s" % ("true" if rising else "false"),
-        "mirrors_player = %s" % ("true" if mirrors else "false"),
+        f"unlock = {UNLOCK[unlock]}",
+        f"unlock_runs = {runs}",
+        f"rising = {_flag(rising)}",
+        f"mirrors_player = {_flag(mirrors)}",
     ]
     if shift_ids:
-        out.append(
-            'shifts = Array[ExtResource("%d")]([%s])'
-            % (shift_ext, ", ".join('SubResource("%s")' % i for i in shift_ids))
-        )
+        shift_refs = ", ".join(f'SubResource("{i}")' for i in shift_ids)
+        out.append(f'shifts = Array[ExtResource("{shift_ext}")]([{shift_refs}])')
     out.append("")
-    path = os.path.join(ROOT, "data", "villagers", folder, fid + ".tres")
-    with open(path, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write("\n".join(out))
-    return "res://data/villagers/%s/%s.tres" % (folder, fid)
+    return LF.join(out)
 
 
-def village_tres(family_paths, youth_paths):
+def _portrait(fid: str) -> str:
+    return f"art/portraits/portrait_{fid}_face.png"
+
+
+def _has_portrait(fid: str) -> bool:
+    return (ROOT / _portrait(fid)).exists()
+
+
+def _externals(fid: str, voice: str | tuple) -> list[tuple[str, str]]:
+    """The file's external resources as (type, path), in the order their ids are given."""
+    exts = [
+        ("Script", "res://data/villagers/family_def.gd"),
+        ("Script", "res://data/bots/personality.gd"),
+        ("Script", "res://data/ui/speech_book.gd"),
+        ("Script", "res://data/ui/speech_line.gd"),
+    ]
+    if isinstance(voice, str):
+        exts.append(("Resource", voice))
+    else:
+        exts.append(("Script", "res://data/ui/voice_profile.gd"))
+    if _has_portrait(fid):
+        exts.append(("Texture2D", "res://" + _portrait(fid)))
+    if SHIFTS.get(fid, []):
+        exts.append(("Script", "res://data/villagers/trait_shift.gd"))
+    return exts
+
+
+def _personality(tier: str, levels: str) -> list[str]:
+    bombs, coop, honesty, ambition, grudge = (LEVEL[c] for c in levels)
+    return [
+        '[sub_resource type="Resource" id="personality"]',
+        'script = ExtResource("2")',
+        f"tier = {TIER[tier]}",
+        f"bomb_aggression = {bombs}",
+        f"cooperation = {coop}",
+        f"honesty = {honesty}",
+        f"ambition = {ambition}",
+        f"grudge = {grudge}",
+        "",
+    ]
+
+
+def _voice(voice: tuple) -> list[str]:
+    pitch, tone, pace, rough = voice
+    return [
+        '[sub_resource type="Resource" id="voice"]',
+        'script = ExtResource("5")',
+        f"pitch = {pitch:.1f}",
+        f"tone = {tone:.2f}",
+        f"pace = {pace:.1f}",
+        f"roughness = {rough:.2f}",
+        "",
+    ]
+
+
+def _speech_lines(fid: str, out: list[str]) -> list[str]:
+    """Appends a sub-resource for each of the family's speech lines; returns their ids."""
+    counts: dict[str, int] = {}
+    line_ids = []
+    for event, mood, _text in SPEECH.get(fid, []):
+        counts[event] = counts.get(event, 0) + 1
+        line_id = f"line_{len(line_ids)}"
+        line_ids.append(line_id)
+        out += [
+            f'[sub_resource type="Resource" id="{line_id}"]',
+            'script = ExtResource("4")',
+            f'event = "{event}"',
+            f'text_key = "speech.{fid}.{event}.{counts[event]}"',
+            f'mood = "{mood}"',
+            "",
+        ]
+    return line_ids
+
+
+def _shift_resources(fid: str, script_id: int, out: list[str]) -> list[str]:
+    """Appends a sub-resource for each of the family's trait shifts; returns their ids."""
+    shift_ids = []
+    for meter, band, trait, level, seen_key in SHIFTS.get(fid, []):
+        shift_id = f"shift_{meter}"
+        shift_ids.append(shift_id)
+        out += [
+            f'[sub_resource type="Resource" id="{shift_id}"]',
+            f'script = ExtResource("{script_id}")',
+            f'meter = "{meter}"',
+            f"band = {band}",
+            f'trait_name = "{trait}"',
+            f"level = {LEVEL[level]}",
+            f'seen_key = "{seen_key}"',
+            "",
+        ]
+    return shift_ids
+
+
+def village_tres(family_paths: list[str], youth_paths: list[str]) -> str:
+    """The text of the village book, which lists every family and youth template."""
     exts = ['[ext_resource type="Script" path="res://data/villagers/village_book.gd" id="1"]']
     for index, path in enumerate(family_paths + youth_paths):
-        exts.append('[ext_resource type="Resource" path="%s" id="%d"]' % (path, index + 2))
-    family_refs = ", ".join('ExtResource("%d")' % (i + 2) for i in range(len(family_paths)))
+        exts.append(f'[ext_resource type="Resource" path="{path}" id="{index + 2}"]')
+    family_refs = ", ".join(f'ExtResource("{i + 2}")' for i in range(len(family_paths)))
     youth_refs = ", ".join(
-        'ExtResource("%d")' % (i + 2 + len(family_paths)) for i in range(len(youth_paths))
+        f'ExtResource("{i + 2 + len(family_paths)}")' for i in range(len(youth_paths))
     )
-    surnames = ", ".join('"villager.youth.%s"' % key for key, _name in YOUTH_SURNAMES)
+    surnames = ", ".join(f'"villager.youth.{key}"' for key, _name in YOUTH_SURNAMES)
     out = ['[gd_resource type="Resource" script_class="VillageBook" format=3]', ""]
     out += exts
     out += [
         "",
         "[resource]",
         'script = ExtResource("1")',
-        "families = Array[Resource]([%s])" % family_refs,
-        "youth_templates = Array[Resource]([%s])" % youth_refs,
-        "youth_surnames = Array[String]([%s])" % surnames,
-        "reeducation_sets = 1",
-        "rise_sets = 2",
-        "opponents = 2",
+        f"families = Array[Resource]([{family_refs}])",
+        f"youth_templates = Array[Resource]([{youth_refs}])",
+        f"youth_surnames = Array[String]([{surnames}])",
+        *(f"{name} = {value}" for name, value in VILLAGE_SETTINGS.items()),
         "",
     ]
-    path = os.path.join(ROOT, "data", "villagers", "village.tres")
-    with open(path, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write("\n".join(out))
+    return LF.join(out)
 
 
-def string_rows():
-    rows = []
-    for fid, name in SURNAMES.items():
-        rows.append(("villager.%s" % fid, name))
-    for key, name in YOUTH_SURNAMES:
-        rows.append(("villager.youth.%s" % key, name))
+def string_rows() -> list[tuple[str, str]]:
+    """The strings.csv rows this table owns, as (key, text), in order."""
+    rows = [(f"villager.{fid}", name) for fid, name in SURNAMES.items()]
+    rows += [(f"villager.youth.{key}", name) for key, name in YOUTH_SURNAMES]
     for fid, lines in SPEECH.items():
-        counts = {}
+        counts: dict[str, int] = {}
         for event, _mood, text in lines:
             counts[event] = counts.get(event, 0) + 1
-            rows.append(("speech.%s.%s.%d" % (fid, event, counts[event]), text))
+            rows.append((f"speech.{fid}.{event}.{counts[event]}", text))
     return rows
 
 
-def csv_field(text):
+def csv_field(text: str) -> str:
+    """The text as one CSV field, quoted when it holds a comma or a quote."""
     if any(c in text for c in ',"'):
-        return '"%s"' % text.replace('"', '""')
+        return '"' + text.replace('"', '""') + '"'
     return text
 
 
-def update_strings():
-    path = os.path.join(ROOT, "data", "strings", "strings.csv")
-    with open(path, encoding="utf-8") as handle:
-        lines = handle.read().splitlines()
-    rows = string_rows()
-    generated = {key for key, _text in rows}
-    lines = [line for line in lines if line.split(",", 1)[0] not in generated]
-    for key, text in rows:
-        lines.append("%s,%s" % (key, csv_field(text)))
-    with open(path, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write("\n".join(lines) + "\n")
+def strings_text() -> str:
+    """The project's strings.csv with this table's rows updated in place or appended."""
+    lines = (DATA / STRINGS).read_text(encoding="utf-8").splitlines()
+    owned = dict(string_rows())
+    written = set()
+    for index, line in enumerate(lines):
+        key = line.split(",", 1)[0]
+        if key in owned:
+            lines[index] = f"{key},{csv_field(owned[key])}"
+            written.add(key)
+    lines += [f"{key},{csv_field(text)}" for key, text in owned.items() if key not in written]
+    return LF.join(lines) + LF
 
 
-def main():
+def _write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8", newline=LF)
+
+
+def write_all(out: Path) -> tuple[int, int]:
+    """Writes every file under out, which stands for the data folder; returns the counts."""
     faces = {}
-    if os.path.exists(FACES_PATH):
-        with open(FACES_PATH, encoding="utf-8") as handle:
-            faces = json.load(handle)
-    for folder in ("families", "youth"):
-        os.makedirs(os.path.join(ROOT, "data", "villagers", folder), exist_ok=True)
-    family_paths = [family_tres(row, "families", faces) for row in FAMILIES]
-    youth_paths = [family_tres(row, "youth", faces) for row in YOUTH]
-    village_tres(family_paths, youth_paths)
-    update_strings()
-    print("wrote %d families and %d youth templates" % (len(family_paths), len(youth_paths)))
+    if FACES_PATH.exists():
+        faces = json.loads(FACES_PATH.read_text(encoding="utf-8"))
+    family_paths = []
+    for folder, rows in (("families", FAMILIES), ("youth", YOUTH)):
+        paths = []
+        for row in rows:
+            _write(out / "villagers" / folder / f"{row[0]}.tres", family_tres(row, faces))
+            paths.append(f"res://data/villagers/{folder}/{row[0]}.tres")
+        family_paths.append(paths)
+    _write(out / "villagers" / "village.tres", village_tres(*family_paths))
+    _write(out / STRINGS, strings_text())
+    return len(FAMILIES), len(YOUTH)
+
+
+def main() -> None:
+    """Writes the family files, the village book and the strings."""
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--out", type=Path, default=DATA, help="the data folder to write into")
+    args = parser.parse_args()
+    families, youth = write_all(args.out)
+    print(f"wrote {families} families and {youth} youth templates")
 
 
 if __name__ == "__main__":
