@@ -16,7 +16,7 @@ var _ids: Array[String] = []
 
 func _init(finished_runs: int = 0) -> void:
 	add_theme_constant_override("separation", 14)
-	add_child(ScreenKit.eyebrow(TranslationServer.translate("settings.card_back")))
+	add_child(ScreenKit.eyebrow(tr("settings.card_back")))
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 16)
 	var choice: CardBackDef = CardBacks.chosen(CardBacks.choice(), finished_runs)
@@ -50,7 +50,7 @@ func _open_sheet(design: CardBackDef, index: int) -> AgedSheet:
 	var sheet: AgedSheet = AgedSheet.new(SWATCH.x, index)
 	sheet.custom_minimum_size = SWATCH
 	sheet.choosable = true
-	var name: String = TranslationServer.translate(design.name_key)
+	var name: String = tr(design.name_key)
 	sheet.accessibility_name = name
 	var holder: CenterContainer = CenterContainer.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE

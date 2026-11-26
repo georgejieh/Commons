@@ -81,7 +81,7 @@ func _offer(stall: DeckStallView, slot: int, coupons: int) -> void:
 	view.pivot_offset = Vector2.ZERO
 	view.scale = Vector2.ONE * CARD_SCALE
 	view.modulate.a = 1.0 if card != null else 0.0
-	var buy: Button = ScreenKit.button(_tr("store.sold"), CommonsTheme.COUPON)
+	var buy: Button = ScreenKit.button(tr("store.sold"), CommonsTheme.COUPON)
 	buy.custom_minimum_size = Vector2.ZERO
 	buy.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	buy.add_theme_font_size_override("font_size", TextSize.px(CounterPanel.BUY_SIZE))
@@ -94,7 +94,7 @@ func _offer(stall: DeckStallView, slot: int, coupons: int) -> void:
 			otherwise = BuyTicket.Why.AT_MOST
 		BuyTicket.dress(buy, why == DeckStallView.Why.NONE, stall.price(slot), coupons, otherwise)
 	buy.pressed.connect(_choose.bind(slot))
-	var rule: String = _tr("store.deck.tip").format({"most": stall.most()})
+	var rule: String = tr("store.deck.tip").format({"most": stall.most()})
 	var title: String = "" if card == null else ExchangeChoice.card_text(card)
 	buy.mouse_entered.connect(_slip.show_for.bind(buy, title, rule))
 	buy.focus_entered.connect(_slip.show_for.bind(buy, title, rule))
@@ -113,11 +113,7 @@ func _choose(slot: int) -> void:
 	if card == null:
 		return
 	_slip.hide_slip()
-	var confirm: String = _tr("exchange.confirm").format({"price": stall.price(slot)})
+	var confirm: String = tr("exchange.confirm").format({"price": stall.price(slot)})
 	var refuse: Callable = func(out: int) -> String: return stall.refusal(slot, out)
 	var act: Callable = func(out: int) -> int: return _controller.exchange_card(slot, out)
 	_deck.open_choice(ExchangeChoice.new(card, confirm, refuse, act))
-
-
-static func _tr(key: String) -> String:
-	return TranslationServer.translate(key)

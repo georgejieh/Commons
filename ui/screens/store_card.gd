@@ -27,7 +27,9 @@ static func make(
 ) -> Control:
 	var card: VBoxContainer = ScreenKit.card(StoreScreen.CARD)
 	if cadre_id.is_empty():
-		var sold: Label = ScreenKit.styled(_tr("store.sold"), CommonsTheme.HEADLINE)
+		var sold: Label = ScreenKit.styled(
+			TranslationServer.translate("store.sold"), CommonsTheme.HEADLINE
+		)
 		sold.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		sold.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		sold.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -36,7 +38,7 @@ static func make(
 		return ScreenKit.card_panel(card)
 	card.add_theme_constant_override("separation", 6)
 	var tip: String = ScreenKit.cadre_tip(controller, cadre_id)
-	var title: String = _tr("modifier.%s.name" % cadre_id)
+	var title: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
 	var rule: String = ScreenKit.rule_text(controller, cadre_id)
 	var picture: Control = face(cadre_id, StoreScreen.CARD.x)
 	card.add_child(picture)
@@ -44,11 +46,11 @@ static func make(
 	# What the slip says: the rules, and under them that it is scarce when it is.
 	var told: String = rule
 	if desk.is_scarce(slot):
-		var stamp: ScarceStamp = ScarceStamp.new(_tr("store.scarce"), ink)
+		var stamp: ScarceStamp = ScarceStamp.new(TranslationServer.translate("store.scarce"), ink)
 		stamp.place_on(StoreScreen.CARD.x - FACE_INSET)
 		picture.add_child(stamp)
-		tip += "\n" + _tr("store.scarce.note")
-		told += "\n\n" + _tr("store.scarce.note")
+		tip += "\n" + TranslationServer.translate("store.scarce.note")
+		told += "\n\n" + TranslationServer.translate("store.scarce.note")
 	var button: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	button.size_flags_horizontal = Control.SIZE_FILL
 	var coupons: int = controller.run.coupons()
@@ -98,7 +100,3 @@ static func words(title: String, rule: String) -> Control:
 	rules.set_rule(rule)
 	words.add_child(rules)
 	return words
-
-
-static func _tr(key: String) -> String:
-	return TranslationServer.translate(key)

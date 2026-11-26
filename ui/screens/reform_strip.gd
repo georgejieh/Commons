@@ -39,13 +39,13 @@ func _init() -> void:
 	column.add_child(_row)
 	# The head leads the row of slips, so the strip keeps to one line while they fit.
 	var head: Label = _head
-	head.text = TranslationServer.translate("reform.strip").to_upper()
+	head.text = tr("reform.strip").to_upper()
 	head.add_theme_font_size_override("font_size", TextSize.px(HEAD_SIZE))
 	for label: Label in [head, _none]:
 		label.custom_minimum_size = Vector2(0, TAG_HEIGHT)
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		_row.add_child(label)
-	_none.text = TranslationServer.translate("reform.strip.none")
+	_none.text = tr("reform.strip.none")
 	_none.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_none.add_theme_color_override("font_color", INK)
 	add_child(column)

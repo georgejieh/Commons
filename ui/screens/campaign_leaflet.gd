@@ -71,7 +71,7 @@ func _init() -> void:
 	_status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_status.add_theme_font_size_override("font_size", TextSize.px(STATUS_SIZE))
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status.text = TranslationServer.translate("campaign.not_now")
+	_status.text = tr("campaign.not_now")
 	_status.visible = false
 	for label: Label in [_eyebrow, _name, _status]:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE

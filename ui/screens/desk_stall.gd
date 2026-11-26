@@ -41,20 +41,18 @@ func show_offer() -> void:
 	var key: String = "desk.ticket.stamp" if _desk.stamps() else "desk.ticket"
 	if _desk.used():
 		key = "desk.used.stamp" if _desk.stamps() else "desk.used"
-	ticket.text = TranslationServer.translate(key).format(values)
+	ticket.text = tr(key).format(values)
 	ticket.disabled = not _desk.affordable()
 
 
 func _mark() -> String:
-	return TranslationServer.translate("keyword.%s.name" % _desk.offer())
+	return tr("keyword.%s.name" % _desk.offer())
 
 
 func _describe() -> void:
 	var stamps: bool = _desk.stamps()
-	var title: String = TranslationServer.translate("desk.stamp") if stamps else _mark()
-	var rule: String = TranslationServer.translate(
-		"desk.rule.stamp" if stamps else "desk.rule.mark"
-	)
+	var title: String = tr("desk.stamp") if stamps else _mark()
+	var rule: String = tr("desk.rule.stamp" if stamps else "desk.rule.mark")
 	_slip.show_for(ticket, title, rule.format({"mark": _mark()}))
 
 

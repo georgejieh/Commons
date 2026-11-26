@@ -28,7 +28,7 @@ func ask(controller: RunController, shelf: EnvelopeShelf, index: int) -> void:
 	_pending = index
 	var refuse: Callable = func(out: int) -> String: return shelf.exchange_refusal(index, out)
 	var act: Callable = func(out: int) -> int: return controller.envelope_pick(index, out)
-	var confirm: String = TranslationServer.translate("exchange.confirm.kept")
+	var confirm: String = tr("exchange.confirm.kept")
 	_sheet.chosen.connect(_on_chosen, CONNECT_ONE_SHOT)
 	_sheet.closed.connect(_on_closed, CONNECT_ONE_SHOT)
 	_sheet.open_choice(ExchangeChoice.new(shelf.card(index), confirm, refuse, act))

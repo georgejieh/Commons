@@ -61,15 +61,13 @@ func show_cards(deck: Array[CardInstance], plot: Array[CardInstance], room: Vect
 			if card.base_rank() == rank:
 				group.append(card)
 		_groups.append(group)
-		var name: String = TranslationServer.translate(CardView.RANK_KEYS[rank])
+		var name: String = tr(CardView.RANK_KEYS[rank])
 		if group.size() != plain[rank]:
-			name = TranslationServer.translate("deck.rank_count").format(
-				{"rank": name, "count": group.size()}
-			)
+			name = tr("deck.rank_count").format({"rank": name, "count": group.size()})
 		_names.append(_name(name))
 	if not plot.is_empty():
 		_groups.append(plot.duplicate())
-		_names.append(_name(TranslationServer.translate("deck.plot")))
+		_names.append(_name(tr("deck.plot")))
 	for index: int in _groups.size():
 		for card: CardInstance in _groups[index]:
 			var view: CardView = _pool.acquire()

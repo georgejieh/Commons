@@ -36,7 +36,7 @@ func setup(app: DemoApp, slip: DetailSlip, screen_busy: Callable, offered: bool)
 	offers.add_theme_constant_override("separation", 12)
 	strip.described.connect(_describe_held)
 	strip.left.connect(_slip.hide_for)
-	_seal.prepare(TranslationServer.translate("reform.enacted"), ScreenKit.RED, SEAL_WIDTH)
+	_seal.prepare(tr("reform.enacted"), ScreenKit.RED, SEAL_WIDTH)
 	_seal.top_level = true
 	_seal.z_index = 2
 	offers.add_child(_seal)
@@ -79,16 +79,16 @@ func panel(slot: int) -> CounterPanel:
 func _offer(slot: int, reform_id: String) -> CounterPanel:
 	var made: CounterPanel = CounterPanel.new()
 	if reform_id.is_empty():
-		made.sold(CounterPanel.Look.DECREE, TranslationServer.translate("reform.enacted"))
+		made.sold(CounterPanel.Look.DECREE, tr("reform.enacted"))
 		return made
 	var controller: RunController = _app.controller
 	made.offer(
 		CounterPanel.Look.DECREE,
-		TranslationServer.translate("reform.eyebrow"),
+		tr("reform.eyebrow"),
 		reform_id,
 		controller.texts.reform_name(reform_id),
 		controller.texts.reform_text(reform_id),
-		TranslationServer.translate("store.buy").format({"price": _shelf.price(slot)})
+		tr("store.buy").format({"price": _shelf.price(slot)})
 	)
 	var coupons: int = controller.run.coupons()
 	BuyTicket.dress(made.buy, _shelf.can_buy(slot), _shelf.price(slot), coupons)

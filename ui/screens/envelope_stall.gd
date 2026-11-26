@@ -81,16 +81,16 @@ func _offer(slot: int, envelope_id: String) -> CounterPanel:
 	if envelope_id.is_empty():
 		if not _shelf.bought_id().is_empty():
 			made.set_wrapping(_shelf.wrapping(_shelf.bought_id()))
-		made.sold(CounterPanel.Look.ENVELOPE, TranslationServer.translate("envelope.opened"))
+		made.sold(CounterPanel.Look.ENVELOPE, tr("envelope.opened"))
 		return made
 	made.set_wrapping(_shelf.wrapping(envelope_id))
 	made.offer(
 		CounterPanel.Look.ENVELOPE,
-		TranslationServer.translate("envelope.eyebrow"),
+		tr("envelope.eyebrow"),
 		envelope_id,
 		_shelf.envelope_name(envelope_id),
 		_shelf.envelope_text(envelope_id),
-		TranslationServer.translate("store.buy").format({"price": _shelf.price(slot)})
+		tr("store.buy").format({"price": _shelf.price(slot)})
 	)
 	var coupons: int = _app.controller.run.coupons()
 	var can: bool = _shelf.can_buy(slot)

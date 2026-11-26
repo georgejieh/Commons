@@ -42,15 +42,13 @@ func _show_upgrades() -> void:
 		upgrades.remove_child(child)
 		child.queue_free()
 	for kind: String in _desk.upgrade_kinds():
-		var text: String = _tr("market.upgrade." + kind).format(
-			{"price": _desk.upgrade_price(kind)}
-		)
+		var text: String = tr("market.upgrade." + kind).format({"price": _desk.upgrade_price(kind)})
 		if _desk.upgrades_left(kind) <= 0:
-			text = _tr("market.upgrade.%s.out" % kind)
+			text = tr("market.upgrade.%s.out" % kind)
 		var ticket: Button = ScreenKit.button(text, CommonsTheme.COUPON)
 		ticket.disabled = not _desk.can_upgrade(kind)
 		BuyTicket.readable(ticket)
-		ticket.tooltip_text = Keywords.wrapped(_tr("market.upgrade.%s.tip" % kind))
+		ticket.tooltip_text = Keywords.wrapped(tr("market.upgrade.%s.tip" % kind))
 		ticket.pressed.connect(_buy.bind(_controller.upgrade.bind(kind), "upgrade"))
 		upgrades.add_child(ticket)
 
@@ -62,7 +60,7 @@ func _show_stall() -> void:
 		child.queue_free()
 	_card_buttons.clear()
 	var head: Label = ScreenKit.eyebrow(
-		_tr("market.plot").format({"held": _desk.plot_size(), "room": _desk.plot_capacity()})
+		tr("market.plot").format({"held": _desk.plot_size(), "room": _desk.plot_capacity()})
 	)
 	sheet.add_child(head)
 	var cards: HBoxContainer = HBoxContainer.new()
@@ -84,7 +82,7 @@ func _show_stall() -> void:
 		view.bind(card)
 		view.visible = true
 		view.modulate.a = 1.0 if card != null else 0.0
-		var buy: Button = ScreenKit.button(_tr("store.sold"), CommonsTheme.COUPON)
+		var buy: Button = ScreenKit.button(tr("store.sold"), CommonsTheme.COUPON)
 		buy.custom_minimum_size = Vector2(view.custom_minimum_size.x, 0)
 		buy.add_theme_font_size_override("font_size", TextSize.px(CounterPanel.BUY_SIZE))
 		buy.disabled = true
@@ -92,7 +90,7 @@ func _show_stall() -> void:
 		if card != null:
 			var can: bool = _desk.can_buy_plot_card(slot)
 			BuyTicket.dress(buy, can, _desk.plot_card_price(slot), _coupons())
-		buy.tooltip_text = Keywords.wrapped(_tr("market.plot.tip"))
+		buy.tooltip_text = Keywords.wrapped(tr("market.plot.tip"))
 		buy.pressed.connect(_buy.bind(_controller.plot_card.bind(slot), "plot_card", slot))
 		item.add_child(buy)
 		_card_buttons.append(buy)
@@ -112,7 +110,3 @@ func card_button(slot: int) -> Button:
 
 func _coupons() -> int:
 	return _controller.run.coupons()
-
-
-static func _tr(key: String) -> String:
-	return TranslationServer.translate(key)

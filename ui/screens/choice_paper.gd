@@ -142,7 +142,7 @@ func setup(at: int, place: Vector2, strips: bool = true) -> void:
 
 ## The Keep tag that hangs on a pointed item's top edge: it says what a click does.
 func _make_tag() -> void:
-	_tag.text = TranslationServer.translate("envelope.keep").to_upper()
+	_tag.text = tr("envelope.keep").to_upper()
 	_tag.theme_type_variation = CommonsTheme.EYEBROW
 	_tag.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
 	var ground: StyleBoxFlat = StyleBoxFlat.new()
