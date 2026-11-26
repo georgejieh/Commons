@@ -1,6 +1,6 @@
 class_name HorrorLayer
 extends Resource
-## One dread layer (P3B.12): what it reads, how strongly it answers, and what it changes
+## One dread layer: what it reads, how strongly it answers, and what it changes
 ## on the board. Weights run 0 to 1. Everything here is decoration: no layer can touch a
 ## card, count, rank or score.
 
@@ -28,22 +28,10 @@ const SWAP_AT: float = 0.5
 ## the hand's tremble, the names leaving the wall roster and speech turning to slogans.
 @export var effects: Array[String] = []
 ## Slot name to the texture shown there once the layer's weight passes SWAP_AT. Slots
-## are the table's swappable art, such as table_surface. Empty until the art pass.
+## are the table's swappable art, such as table_surface.
 @export var texture_swaps: Dictionary[String, Texture2D] = {}
-## Music stems this layer fades (P3C.9), silent until the music exists, and the
-## ambience beds it moves (P3C.8, AmbienceBed).
+## Names of the music stems this layer fades and of the ambience beds it moves.
 @export var audio_stems: Array[String] = []
-
-
-## The weight for an input from 0 to 1. No allocation.
-func weight_for(value: float) -> float:
-	return HorrorLayer.along(response, value)
-
-
-## The share of the weight the gate lets through for its input from 0 to 1, or all of it
-## when the layer has no gate.
-func gate_for(value: float) -> float:
-	return 1.0 if gate.is_empty() else HorrorLayer.along(gate_response, value)
 
 
 ## The value of a curve of points sorted by x at x = value, flat past either end.
@@ -59,3 +47,14 @@ static func along(points: PackedVector2Array, value: float) -> float:
 			var span: float = maxf(0.0001, right.x - left.x)
 			return lerpf(left.y, right.y, (value - left.x) / span)
 	return points[-1].y
+
+
+## The weight for an input from 0 to 1. No allocation.
+func weight_for(value: float) -> float:
+	return HorrorLayer.along(response, value)
+
+
+## The share of the weight the gate lets through for its input from 0 to 1, or all of it
+## when the layer has no gate.
+func gate_for(value: float) -> float:
+	return 1.0 if gate.is_empty() else HorrorLayer.along(gate_response, value)
