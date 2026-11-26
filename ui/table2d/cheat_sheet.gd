@@ -28,6 +28,8 @@ var _order: Label = Label.new()
 ## Shown only while a rank is wild (ADR 0029): its heading and its rules.
 var _wild_head: Label
 var _wild: Label = Label.new()
+## The scrolled rules under the heading, whose spacing tightens while the wild section shows.
+var _body: VBoxContainer = VBoxContainer.new()
 var _close: Button
 var _panel: Control
 var _scroll: ProseScroll
@@ -48,32 +50,31 @@ func _ready() -> void:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(1100, 0))
 	sheet.add_theme_constant_override("separation", SPACING)
 	sheet.add_child(ScreenKit.header(tr("cheat.eyebrow"), tr("cheat.title"), ScreenKit.INK))
-	var body: VBoxContainer = VBoxContainer.new()
-	body.add_theme_constant_override("separation", SPACING)
-	_scroll = ProseScroll.new(body)
+	_body.add_theme_constant_override("separation", SPACING)
+	_scroll = ProseScroll.new(_body)
 	sheet.add_child(_scroll)
 	_types.columns = 6
 	_types.add_theme_constant_override("h_separation", 28)
 	_types.add_theme_constant_override("v_separation", 6)
-	body.add_child(_types)
-	body.add_child(ScreenKit.eyebrow(tr("cheat.active")))
+	_body.add_child(_types)
+	_body.add_child(ScreenKit.eyebrow(tr("cheat.active")))
 	for label: Label in [_active, _order]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.custom_minimum_size = Vector2(840, 0)
 		label.add_theme_font_size_override("font_size", TextSize.px(22))
-	body.add_child(_active)
-	body.add_child(_order)
+	_body.add_child(_active)
+	_body.add_child(_order)
 	_wild_head = ScreenKit.eyebrow(tr("cheat.wild"))
 	_wild.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_wild.custom_minimum_size = Vector2(840, 0)
 	_wild.add_theme_font_size_override("font_size", TextSize.px(WILD_SIZE))
 	for part: Control in [_wild_head, _wild]:
 		part.visible = false
-		body.add_child(part)
-	body.add_child(ScreenKit.eyebrow(tr("cheat.keywords")))
+		_body.add_child(part)
+	_body.add_child(ScreenKit.eyebrow(tr("cheat.keywords")))
 	var words: Label = ScreenKit.label(Keywords.glossary(WORDS, false), 18)
 	words.custom_minimum_size = Vector2(840, 0)
-	body.add_child(words)
+	_body.add_child(words)
 	_close = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
 	_close.pressed.connect(func() -> void: visible = false)
 	sheet.add_child(_close)
@@ -161,8 +162,7 @@ func _show_wild() -> void:
 	_wild_head.visible = not ranks.is_empty()
 	_wild.visible = _wild_head.visible
 	var spacing: int = WILD_SPACING if _wild.visible else SPACING
-	var sheet: VBoxContainer = _wild.get_parent() as VBoxContainer
-	sheet.add_theme_constant_override("separation", spacing)
+	_body.add_theme_constant_override("separation", spacing)
 	if ranks.is_empty():
 		_wild.text = ""
 		return

@@ -339,7 +339,7 @@ func _on_event(event: RunEvent) -> void:
 			_dread.refresh(_controller.run)
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
-			_dread.refresh(_controller.run, false, event.seat == Seats.PLAYER)
+			_dread.refresh(_controller.run, false, event.seat)
 		RunEvent.Type.CADRE_FIRED:
 			if not (_replaying or _player.flushing):
 				_board.fired(_controller, event.text, event.value)

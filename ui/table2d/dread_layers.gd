@@ -106,10 +106,11 @@ static func table_materials(
 	}
 
 
-## New targets from the run, read at a round boundary. landlord overrides the state's
-## seat when the table knows it sooner, as when a bid has just been won.
-func refresh(state: RunView, settle_now: bool = false, landlord: Variant = null) -> void:
-	var is_landlord: bool = state.landlord_seat() == 0 if landlord == null else bool(landlord)
+## New targets from the run, read at a round boundary. landlord is the landlord's seat when
+## the table knows it sooner than the state, as when a bid has just been won, else NONE.
+func refresh(state: RunView, settle_now: bool = false, landlord: int = Seats.NONE) -> void:
+	var seat: int = state.landlord_seat() if landlord == Seats.NONE else landlord
+	var is_landlord: bool = seat == Seats.PLAYER
 	# A meter not shown as it is gives the room no dread (ADR 0022).
 	var famine: int = ShownFigures.board(state, RunCorrections.FAMINE, state.famine())
 	var denunciation: int = ShownFigures.board(

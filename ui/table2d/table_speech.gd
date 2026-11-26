@@ -41,8 +41,8 @@ var _books: Dictionary[int, SpeechBook] = {}
 ## Each seat's voice and letter bank. A seat with none speaks silently.
 var _voices: Dictionary[int, VoiceProfile] = {}
 var _voice_banks: Dictionary[int, String] = {}
-## Lines waiting for the table to fall quiet, oldest first: seat, event and fields.
-var _waiting: Array[Dictionary] = []
+## Lines waiting for the table to fall quiet, oldest first.
+var _waiting: Array[WaitingLine] = []
 ## The draws for the work team's lines, or null in a run with no entry in the file.
 var _visit: RandomStream = null
 
@@ -113,7 +113,7 @@ func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	if not _seats.has(seat):
 		return
 	if not hurrying and _talking_besides(seat):
-		_wait({"seat": seat, "event": event, "fields": fields})
+		_wait(WaitingLine.new(seat, event, fields))
 		return
 	var said: int = _said.get(seat, 0)
 	_said[seat] = said + 1
@@ -194,7 +194,7 @@ func skip_all() -> void:
 	for seat: int in _seats:
 		_seats[seat].skip_speech()
 	while not _waiting.is_empty():
-		var line: Dictionary = _waiting.pop_front()
+		var line: WaitingLine = _waiting.pop_front()
 		say(line.seat, line.event, line.fields)
 	hurrying = false
 	Audio.voice.stop_all()
@@ -205,7 +205,7 @@ func skip_all() -> void:
 func _hush(seat: int) -> void:
 	if not _seats.has(seat):
 		return
-	_waiting = _waiting.filter(func(line: Dictionary) -> bool: return line.seat != seat)
+	_waiting = _waiting.filter(func(line: WaitingLine) -> bool: return line.seat != seat)
 	if _voices.has(seat):
 		Audio.voice.stop(seat)
 	_seats[seat].say("")
@@ -217,7 +217,7 @@ func waiting_count() -> int:
 	return _waiting.size()
 
 
-func _wait(line: Dictionary) -> void:
+func _wait(line: WaitingLine) -> void:
 	for index: int in _waiting.size():
 		if _waiting[index].seat == line.seat and _waiting[index].event == line.event:
 			_waiting.remove_at(index)
@@ -244,5 +244,18 @@ func _talking_besides(seat: int) -> bool:
 func _on_finished(_seat: int) -> void:
 	if _waiting.is_empty():
 		return
-	var line: Dictionary = _waiting.pop_front()
+	var line: WaitingLine = _waiting.pop_front()
 	say(line.seat, line.event, line.fields)
+
+
+## A line a villager will say once the table falls quiet.
+class WaitingLine:
+	extends RefCounted
+	var seat: int
+	var event: String
+	var fields: Dictionary
+
+	func _init(at_seat: int, for_event: String, with_fields: Dictionary) -> void:
+		seat = at_seat
+		event = for_event
+		fields = with_fields

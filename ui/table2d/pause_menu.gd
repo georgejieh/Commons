@@ -70,7 +70,7 @@ func _build_pages() -> void:
 	_settings = _settings_page()
 	_confirm = _confirm_page()
 	_controls = ControlsPage.new(true)
-	_controls.left.connect(_back_to_settings.bind(SettingsPanel.CONTROLS_BUTTON))
+	_controls.left.connect(_back_to_settings.bind(SettingsPanel.controls_button(_settings)))
 	_window = _window_page()
 	_stack.add_child(_main)
 	_stack.add_child(_settings)
@@ -161,7 +161,7 @@ func _window_page() -> VBoxContainer:
 	var page: VBoxContainer = VBoxContainer.new()
 	page.add_theme_constant_override("separation", 16)
 	page.add_child(WindowSheet.build())
-	var back: Callable = _back_to_settings.bind(SettingsPanel.WINDOW_BUTTON)
+	var back: Callable = _back_to_settings.bind(SettingsPanel.window_button(_settings))
 	page.add_child(_wide(tr("settings.back"), CommonsTheme.PRIMARY, back))
 	return page
 
@@ -204,9 +204,9 @@ func _show_page(page: VBoxContainer) -> void:
 
 ## From the Controls or Window page back to the settings, with the focus on the ticket
 ## that opened it.
-func _back_to_settings(ticket: String) -> void:
+func _back_to_settings(ticket: Button) -> void:
 	_show_page(_settings)
-	(_settings.find_child(ticket, true, false) as Button).grab_focus()
+	ticket.grab_focus()
 
 
 ## The Controls page, for tests and the playtest.
@@ -247,7 +247,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _confirm.visible:
 			_show_page(_main)
 		elif _window.visible:
-			_back_to_settings(SettingsPanel.WINDOW_BUTTON)
+			_back_to_settings(SettingsPanel.window_button(_settings))
 		else:
 			close()
 		get_viewport().set_input_as_handled()

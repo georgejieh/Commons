@@ -38,9 +38,12 @@ var allow_count: bool = true
 
 var _lines: KeywordText = KeywordText.new()
 var _form: Form = Form.FULL
-var _yours: Array[Dictionary] = []
-var _boss: Array[Dictionary] = []
-var _reforms: Array[Dictionary] = []
+## The rules in force by group, as the slip lists them: the debuffs, the boss, the table's
+## rules.
+var _yours: RuleGroup = RuleGroup.new("table.debuffs")
+var _boss: RuleGroup = RuleGroup.new("table.boss")
+var _reforms: RuleGroup = RuleGroup.new("table.rules_reforms")
+var _groups: Array[RuleGroup] = [_yours, _boss, _reforms]
 
 
 func _init() -> void:
@@ -58,18 +61,18 @@ func _init() -> void:
 
 
 func show_debuffs(controller: RunController) -> void:
-	_yours.clear()
-	_reforms = _reform_rules(controller)
+	_yours.rules.clear()
+	_reforms.rules = _reform_rules(controller)
 	for modifier_id: String in controller.items.active_debuff_ids():
-		_yours.append(_rule(controller, modifier_id))
-	_boss.clear()
+		_yours.rules.append(_rule(controller, modifier_id))
+	_boss.rules.clear()
 	if not controller.items.boss().is_empty():
-		var twist: Dictionary = _rule(controller, controller.items.boss())
+		var twist: Rule = _rule(controller, controller.items.boss())
 		var aside: String = controller.table.set_aside_names()
 		if not aside.is_empty():
 			var line: String = tr("table.set_aside").format({"cards": aside})
-			twist["rule"] = "%s %s" % [twist["rule"], Keywords.escape(line)]
-		_boss.append(twist)
+			twist.text = "%s %s" % [twist.text, Keywords.escape(line)]
+		_boss.rules.append(twist)
 	refit()
 	shown.emit()
 
@@ -118,7 +121,7 @@ func is_named() -> bool:
 
 ## How many rules the named forms name: the debuffs, the boss and the table's rules.
 func _named_count() -> int:
-	return _yours.size() + _boss.size() + _reforms.size()
+	return _yours.rules.size() + _boss.rules.size() + _reforms.rules.size()
 
 
 func _fit_type() -> void:
@@ -131,18 +134,14 @@ func _fit_type() -> void:
 ## Every rule in full: the wild ranks' line, then each group under its head.
 func _full() -> String:
 	var rows: PackedStringArray = _wild_row()
-	for group: Array in [
-		["table.debuffs", _yours], ["table.boss", _boss], ["table.rules_reforms", _reforms]
-	]:
-		var rules: Array[Dictionary] = []
-		rules.assign(group[1])
-		if rules.is_empty():
+	for group: RuleGroup in _groups:
+		if group.rules.is_empty():
 			continue
-		rows.append(_head(group[0]))
-		for rule: Dictionary in rules:
-			var row: String = _row(rule["name"], rule["rule"])
+		rows.append(_head(group.head))
+		for rule: Rule in group.rules:
+			var row: String = _row(rule.name, rule.text)
 			# Appeal lifts this round's debuff: it stays listed, struck through (ADR 0021).
-			if bool(rule["lifted"]):
+			if rule.lifted:
 				row = "[s]%s[/s]  %s" % [row, Keywords.escape(tr("table.debuff_lifted"))]
 			rows.append(row)
 	return "\n".join(rows)
@@ -152,18 +151,14 @@ func _full() -> String:
 ## lifted debuff struck through, and the line that points to the Rules sheet.
 func _by_name() -> String:
 	var rows: PackedStringArray = _wild_row()
-	for group: Array in [
-		["table.debuffs", _yours], ["table.boss", _boss], ["table.rules_reforms", _reforms]
-	]:
-		var rules: Array[Dictionary] = []
-		rules.assign(group[1])
-		if rules.is_empty():
+	for group: RuleGroup in _groups:
+		if group.rules.is_empty():
 			continue
 		var names: PackedStringArray = []
-		for rule: Dictionary in rules:
-			var name: String = _name(rule["name"])
-			names.append("[s]%s[/s]" % name if bool(rule["lifted"]) else name)
-		rows.append("%s  %s" % [_head(group[0]), SEPARATOR.join(names)])
+		for rule: Rule in group.rules:
+			var name: String = _name(rule.name)
+			names.append("[s]%s[/s]" % name if rule.lifted else name)
+		rows.append("%s  %s" % [_head(group.head), SEPARATOR.join(names)])
 	var one: bool = _named_count() == 1
 	rows.append(Keywords.escape(tr("table.rules_named.one" if one else "table.rules_named")))
 	return "\n".join(rows)
@@ -193,21 +188,21 @@ func _wild_row() -> PackedStringArray:
 
 ## Each held Reform whose rule changes how the player's seat plays, such as
 ## Industrialization.
-func _reform_rules(controller: RunController) -> Array[Dictionary]:
-	var rules: Array[Dictionary] = []
+func _reform_rules(controller: RunController) -> Array[Rule]:
+	var rules: Array[Rule] = []
 	for reform_id: String in controller.items.table_rule_reforms():
 		var name: String = Keywords.escape(controller.texts.reform_name(reform_id))
 		var text: String = Keywords.mark(controller.texts.reform_text(reform_id))
-		rules.append({"name": name, "rule": text, "lifted": false})
+		rules.append(Rule.new(name, text, false))
 	return rules
 
 
-func _rule(controller: RunController, modifier_id: String) -> Dictionary:
-	return {
-		"name": Keywords.escape(controller.texts.modifier_name(modifier_id)),
-		"rule": Keywords.mark(controller.texts.modifier_text(modifier_id)),
-		"lifted": modifier_id == controller.items.lifted_debuff(),
-	}
+func _rule(controller: RunController, modifier_id: String) -> Rule:
+	return Rule.new(
+		Keywords.escape(controller.texts.modifier_name(modifier_id)),
+		Keywords.mark(controller.texts.modifier_text(modifier_id)),
+		modifier_id == controller.items.lifted_debuff()
+	)
 
 
 func _head(key: String) -> String:
@@ -256,3 +251,26 @@ func type_size() -> int:
 ## The plain text shown, for tests.
 func shown_text() -> String:
 	return _lines.get_parsed_text() if visible else ""
+
+
+## One rule on the slip: its name and text as BBCode, and whether Appeal lifted it.
+class Rule:
+	extends RefCounted
+	var name: String
+	var text: String
+	var lifted: bool
+
+	func _init(rule_name: String, rule_text: String, is_lifted: bool) -> void:
+		name = rule_name
+		text = rule_text
+		lifted = is_lifted
+
+
+## A group of rules under its head's string key.
+class RuleGroup:
+	extends RefCounted
+	var head: String
+	var rules: Array[Rule] = []
+
+	func _init(head_key: String) -> void:
+		head = head_key
