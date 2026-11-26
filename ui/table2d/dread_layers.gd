@@ -156,7 +156,7 @@ func apply() -> void:
 	_dressing.roster().show_weight(effect_weight(DreadEffects.ROSTER), config.effect_tuning)
 	_apply_swaps(intensity)
 	Audio.music.follow(board, config.layers, intensity)
-	Audio.voice.follow(board, config.layers.size(), intensity)
+	Audio.voice.follow(board, config.layers, intensity)
 	Audio.ambience.follow(board, config.layers, intensity)
 	if _materials.has("lamp"):
 		var breathe: float = NO_FLASH_BREATHE if bool(Settings.value("no_flash")) else _breathe

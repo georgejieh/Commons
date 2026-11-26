@@ -1,7 +1,7 @@
 class_name AudioEvents
 extends RefCounted
-## Names the sound for every domain event (P3B.10). Views pass the event here and play
-## the name on the Audio autoload, which plays its sound effect (P3C.8).
+## Names the sound for every domain event. Views pass the event here and play the name on
+## the Audio autoload, which plays its sound effect.
 
 const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.SET_STARTED: "set_started",
@@ -82,9 +82,7 @@ const ROUND_LOST: String = "round_lost"
 const METER_ROSE: String = "meter_rose"
 ## A Cadre bought in the state store.
 const STORE_BUY: String = "store_buy"
-## The player's seat.
-const PLAYER: int = 0
-## A scored play acted out (P5.2a): each card counted, the Rate and Zeal landing, a
+## A scored play acted out: each card counted, the Rate and Zeal landing, a
 ## change that raised the score and one that cut it, the total rolling up and landing,
 ## harder for a big one.
 const SCORE_TICK: String = "score_tick"
@@ -95,7 +93,7 @@ const SCORE_CUT: String = "score_cut"
 const SCORE_ROLL: String = "score_roll"
 const SCORE_LAND: String = "score_land"
 const SCORE_LAND_HEAVY: String = "score_land_heavy"
-## A motion's own sound, filled in by Audio.fill only where its event has none (P5.2a):
+## A motion's own sound, filled in by Audio.fill only where its event has none:
 ## a stamp landing, a swell, a number rolling, a page's pieces arriving, a picture laid
 ## down, a hover, a figure in flight, a villager taking up their cards, the ink wipe
 ## between screens, a banner across the table, the audit's dice, and the Quota met or
@@ -113,30 +111,6 @@ const CALLOUT_CUT: String = "callout_cut"
 const DICE_ROLL: String = "dice_roll"
 const QUOTA_MET: String = "quota_met"
 const QUOTA_MISSED: String = "quota_missed"
-## Every name above, for the bank's test.
-const MOTION_NAMES: Array[String] = [
-	SCORE_TICK,
-	SCORE_RATE,
-	SCORE_ZEAL,
-	SCORE_CHIME,
-	SCORE_CUT,
-	SCORE_ROLL,
-	SCORE_LAND,
-	SCORE_LAND_HEAVY,
-	MOTION_STAMP,
-	MOTION_PULSE,
-	MOTION_COUNT,
-	MOTION_ENTER,
-	MOTION_SETTLE,
-	MOTION_HOVER,
-	MOTION_FLY,
-	MOTION_WIND,
-	MOTION_WIPE,
-	CALLOUT_CUT,
-	DICE_ROLL,
-	QUOTA_MET,
-	QUOTA_MISSED,
-]
 
 
 ## The sound for an event. ROUND events take their round event's name. With the landlord
@@ -152,7 +126,7 @@ static func name_for(event: RunEvent, landlord: int = Seats.NONE) -> String:
 		if type == Pattern.Type.BOMB:
 			return BOMB_NAME
 	if round_event.type == RoundEvent.Type.ROUND_ENDED and landlord != Seats.NONE:
-		var won: bool = (round_event.seat == landlord) == (PLAYER == landlord)
+		var won: bool = (round_event.seat == landlord) == (RunLoop.PLAYER == landlord)
 		return ROUND_WON if won else ROUND_LOST
 	return ROUND_NAMES[round_event.type]
 
@@ -162,7 +136,7 @@ static func played_by_player(event: RunEvent) -> bool:
 	return (
 		event.type == RunEvent.Type.ROUND
 		and event.round_event.type == RoundEvent.Type.PLAYED
-		and event.round_event.seat == PLAYER
+		and event.round_event.seat == RunLoop.PLAYER
 	)
 
 

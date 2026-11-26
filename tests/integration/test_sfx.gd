@@ -1,8 +1,32 @@
 extends GdUnitTestSuite
-## Sound effects (P3C.8): every sound in the bank answers an event the game names, has
+## Sound effects: every sound in the bank answers an event the game names, has
 ## takes that load, and plays them round-robin; every button clicks.
 
 const BANK: SfxBank = preload("res://data/audio/sfx_bank.tres")
+## The sounds of a scored play's beats and of motion, which every sound there must answer.
+const MOTION_NAMES: Array[String] = [
+	AudioEvents.SCORE_TICK,
+	AudioEvents.SCORE_RATE,
+	AudioEvents.SCORE_ZEAL,
+	AudioEvents.SCORE_CHIME,
+	AudioEvents.SCORE_CUT,
+	AudioEvents.SCORE_ROLL,
+	AudioEvents.SCORE_LAND,
+	AudioEvents.SCORE_LAND_HEAVY,
+	AudioEvents.MOTION_STAMP,
+	AudioEvents.MOTION_PULSE,
+	AudioEvents.MOTION_COUNT,
+	AudioEvents.MOTION_ENTER,
+	AudioEvents.MOTION_SETTLE,
+	AudioEvents.MOTION_HOVER,
+	AudioEvents.MOTION_FLY,
+	AudioEvents.MOTION_WIND,
+	AudioEvents.MOTION_WIPE,
+	AudioEvents.CALLOUT_CUT,
+	AudioEvents.DICE_ROLL,
+	AudioEvents.QUOTA_MET,
+	AudioEvents.QUOTA_MISSED,
+]
 
 var _effects: SfxPlayer
 
@@ -16,7 +40,7 @@ func test_every_sound_answers_a_named_event() -> void:
 	var names: Array[String] = []
 	names.append_array(AudioEvents.RUN_NAMES.values())
 	names.append_array(AudioEvents.ROUND_NAMES.values())
-	names.append_array(AudioEvents.MOTION_NAMES)
+	names.append_array(MOTION_NAMES)
 	(
 		names
 		. append_array(
@@ -59,9 +83,9 @@ func test_the_table_events_all_have_sounds() -> void:
 			assert_float(stream.get_length()).override_failure_message(id).is_greater(0.0)
 
 
-## Every scored play's beats and every motion's own sound have takes that load (P5.2a).
+## Every scored play's beats and every motion's own sound have takes that load.
 func test_every_motion_and_scoring_beat_has_a_sound() -> void:
-	for id: String in AudioEvents.MOTION_NAMES:
+	for id: String in MOTION_NAMES:
 		var sound: SfxSound = BANK.sound(id)
 		assert_object(sound).override_failure_message(id).is_not_null()
 		if sound == null:

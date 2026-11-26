@@ -1,6 +1,6 @@
 class_name MusicPlayer
 extends Node
-## Music (P3C.9), owned by the Audio autoload as Audio.music: plays one cue at a time
+## Music, owned by the Audio autoload as Audio.music: plays one cue at a time
 ## on the Music bus, its stems in one AudioStreamSynchronized so they share a timeline.
 ## A stem fades by volume only and keeps playing at zero gain, so it returns in the
 ## right place. A new cue starts when playback crosses the next bar line of the one
@@ -8,7 +8,6 @@ extends Node
 ## the game runs the same before the music exists.
 
 const SCORE: MusicScore = preload("res://data/audio/music_score.tres")
-const SILENT_DB: float = -80.0
 
 var _player: AudioStreamPlayer = AudioStreamPlayer.new()
 var _current: MusicCue = null
@@ -19,9 +18,29 @@ var _targets: PackedFloat32Array = []
 var _last_bar: int = -1
 
 
+## The bar that position falls in, counted from the cue's first downbeat; -1 before it.
+static func bar_at(cue: MusicCue, position: float) -> int:
+	if position < cue.downbeat:
+		return -1
+	return int(floor((position - cue.downbeat) / cue.bar_seconds()))
+
+
 func _init() -> void:
-	_player.bus = "Music"
+	_player.bus = AudioMixer.BUS_MUSIC
 	add_child(_player)
+
+
+func _process(delta: float) -> void:
+	if _current == null:
+		return
+	_check_bar(_player.get_playback_position() if _player.playing else 0.0)
+	var step: float = delta / maxf(SCORE.fade_seconds, 0.01)
+	var mix: AudioStreamSynchronized = _player.stream as AudioStreamSynchronized
+	for stem: int in _gains.size():
+		_gains[stem] = move_toward(_gains[stem], _targets[stem], step)
+		if mix != null:
+			var db: float = maxf(linear_to_db(_gains[stem]), AudioMixer.SILENT_DB)
+			mix.set_sync_stream_volume(stem, db)
 
 
 ## The id of the cue playing, or "" when silent.
@@ -55,9 +74,9 @@ func follow(board: BoardState, layers: Array[HorrorLayer], intensity: float) -> 
 		return
 	for stem: int in _targets.size():
 		var gain: float = 1.0
-		var name: String = _current.stem_names[stem]
+		var stem_name: String = _current.stem_names[stem]
 		for index: int in layers.size():
-			if layers[index].audio_stems.has(name):
+			if layers[index].audio_stems.has(stem_name):
 				gain = minf(gain, 1.0 - board.shown(index, intensity))
 		_targets[stem] = gain
 
@@ -73,26 +92,6 @@ func stem_gain(stem: String) -> float:
 		return -1.0
 	var index: int = _current.stem_names.find(stem)
 	return _gains[index] if index >= 0 else -1.0
-
-
-## The bar that position falls in, counted from the cue's first downbeat; -1 before it.
-static func bar_at(cue: MusicCue, position: float) -> int:
-	if position < cue.downbeat:
-		return -1
-	return int(floor((position - cue.downbeat) / cue.bar_seconds()))
-
-
-func _process(delta: float) -> void:
-	if _current == null:
-		return
-	_check_bar(_player.get_playback_position() if _player.playing else 0.0)
-	var step: float = delta / maxf(SCORE.fade_seconds, 0.01)
-	var mix: AudioStreamSynchronized = _player.stream as AudioStreamSynchronized
-	for stem: int in _gains.size():
-		_gains[stem] = move_toward(_gains[stem], _targets[stem], step)
-		if mix != null:
-			var db: float = maxf(linear_to_db(_gains[stem]), SILENT_DB)
-			mix.set_sync_stream_volume(stem, db)
 
 
 ## Starts the waiting cue once playback has crossed into a new bar, or wrapped round the
@@ -128,6 +127,6 @@ func _start(cue: MusicCue) -> void:
 	mix.stream_count = cue.stems.size()
 	for index: int in cue.stems.size():
 		mix.set_sync_stream(index, cue.stems[index])
-		mix.set_sync_stream_volume(index, maxf(linear_to_db(_gains[index]), SILENT_DB))
+		mix.set_sync_stream_volume(index, maxf(linear_to_db(_gains[index]), AudioMixer.SILENT_DB))
 	_player.stream = mix
 	_player.play()
