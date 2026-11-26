@@ -1,6 +1,5 @@
 extends GdUnitTestSuite
 ## Full scripted Sets play end to end through the run loop and match a golden log.
-## Set UPDATE_GOLDEN=1 to rewrite the golden file after an intended change.
 
 const GOLDEN_PATH: String = "res://tests/golden/run_sets.golden"
 const SEEDS: Array[int] = [3501, 3502, 3503]
@@ -58,11 +57,7 @@ func test_sets_are_repeatable() -> void:
 
 func test_sets_match_the_golden_file() -> void:
 	var text: String = _all_sets()
-	if OS.get_environment("UPDATE_GOLDEN") == "1":
-		var file: FileAccess = FileAccess.open(GOLDEN_PATH, FileAccess.WRITE)
-		file.store_string(text)
-		file.close()
-	assert_str(text).is_equal(FileAccess.get_file_as_string(GOLDEN_PATH))
+	assert_str(GoldenFile.text(GOLDEN_PATH, text)).is_equal(text)
 
 
 func test_a_set_ends_by_target_or_by_rounds() -> void:

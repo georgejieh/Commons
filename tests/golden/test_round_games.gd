@@ -1,7 +1,6 @@
 extends GdUnitTestSuite
 ## Games reproduce exact event logs. Seeded games play the largest legal move, or pass
 ## every third chance. Authored games cover compound plays and every finish.
-## Set UPDATE_GOLDEN=1 to rewrite the golden file after an intended change.
 
 const GOLDEN_PATH: String = "res://tests/golden/round_games.golden"
 const SEEDS: Array[int] = [101, 202, 303, 404, 505]
@@ -90,9 +89,4 @@ func test_games_are_repeatable() -> void:
 
 func test_games_match_the_golden_file() -> void:
 	var text: String = _all_games()
-	if OS.get_environment("UPDATE_GOLDEN") == "1":
-		var file: FileAccess = FileAccess.open(GOLDEN_PATH, FileAccess.WRITE)
-		file.store_string(text)
-		file.close()
-	var golden: String = FileAccess.get_file_as_string(GOLDEN_PATH)
-	assert_str(golden.replace("\r", "")).is_equal(text)
+	assert_str(GoldenFile.text(GOLDEN_PATH, text)).is_equal(text)

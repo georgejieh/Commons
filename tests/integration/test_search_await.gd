@@ -3,7 +3,6 @@ extends GdUnitTestSuite
 ## from outside, hands the search what it needs, takes the play back as a bot's, and
 ## resumes a save written while one was thinking standing still for it again. With that
 ## off it plays exactly as it did before.
-## Set UPDATE_GOLDEN=1 to rewrite the golden file after an intended change.
 
 const GOLDEN_PATH: String = "res://tests/golden/searched_turns.golden"
 const SEED: int = 5011
@@ -127,11 +126,7 @@ func test_the_flag_off_plays_as_before() -> void:
 		if not script.act(loop):
 			break
 	var text: String = log_of(loop)
-	if OS.get_environment("UPDATE_GOLDEN") == "1":
-		var file: FileAccess = FileAccess.open(GOLDEN_PATH, FileAccess.WRITE)
-		file.store_string(text)
-		file.close()
-	assert_str(text).is_equal(FileAccess.get_file_as_string(GOLDEN_PATH))
+	assert_str(GoldenFile.text(GOLDEN_PATH, text)).is_equal(text)
 
 
 ## Answered at once with the search the loop would make itself, standing still changes

@@ -1,6 +1,5 @@
 extends GdUnitTestSuite
 ## Every hand type at level 1, with and without each base multiplier.
-## Set UPDATE_GOLDEN=1 to rewrite the golden file after an intended change.
 
 const GOLDEN_PATH: String = "res://tests/golden/scoring.golden"
 const HANDS: Array[String] = [
@@ -48,11 +47,6 @@ func _lines() -> String:
 
 func test_every_hand_type_covers_every_multiplier() -> void:
 	var text: String = _lines()
-	if OS.get_environment("UPDATE_GOLDEN") == "1":
-		var file: FileAccess = FileAccess.open(GOLDEN_PATH, FileAccess.WRITE)
-		file.store_string(text)
-		file.close()
-	var golden: String = FileAccess.get_file_as_string(GOLDEN_PATH)
-	assert_str(golden.replace("\r", "")).is_equal(text)
+	assert_str(GoldenFile.text(GOLDEN_PATH, text)).is_equal(text)
 	for type: int in range(Pattern.Type.SINGLE, Pattern.Type.size()):
 		assert_str(text).contains(Pattern.Type.keys()[type] + " grain=")
