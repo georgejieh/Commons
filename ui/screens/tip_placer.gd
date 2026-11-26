@@ -21,7 +21,7 @@ func _ready() -> void:
 
 ## Moves a tooltip's panel beside the control it was added to. Anything else is left be.
 func settle(panel: Window) -> void:
-	if not is_instance_valid(panel) or not is_tooltip(panel):
+	if not is_instance_valid(panel) or not _is_tooltip(panel):
 		return
 	var owner_control: Control = panel.get_parent() as Control
 	if owner_control == null or not owner_control.is_inside_tree():
@@ -34,7 +34,7 @@ func settle(panel: Window) -> void:
 
 
 ## True for the panel the engine shows a tooltip in.
-static func is_tooltip(panel: Window) -> bool:
+static func _is_tooltip(panel: Window) -> bool:
 	return (
 		panel is PopupPanel
 		and (panel.theme_type_variation == VARIATION or panel.get_class() == "TooltipPanel")

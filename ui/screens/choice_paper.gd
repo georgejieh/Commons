@@ -215,14 +215,14 @@ func _document_height(sheet: VBoxContainer, wide: float) -> float:
 		var piece: Control = child as Control
 		var label: Label = piece as Label
 		if label != null and label.autowrap_mode != TextServer.AUTOWRAP_OFF:
-			tall += wrapped_height(label, wide) + gap
+			tall += _wrapped_height(label, wide) + gap
 		else:
 			tall += piece.get_combined_minimum_size().y + gap
 	return tall - gap
 
 
 ## How tall a label wrapping between words stands at width wide, from its font.
-static func wrapped_height(label: Label, wide: float) -> float:
+static func _wrapped_height(label: Label, wide: float) -> float:
 	var font: Font = label.get_theme_font("font")
 	var font_size: int = label.get_theme_font_size("font_size")
 	var spacing: float = float(label.get_theme_constant("line_spacing"))

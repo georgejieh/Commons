@@ -320,7 +320,7 @@ func _item(slot: int, cadre_id: String) -> Control:
 ## then it shrinks away to its place on the board. Reduced motion skips to the result. A
 ## Cadre that needs a rank asks for one over the counter first.
 func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
-	if is_issuing() or (rank == Ranks.INVALID and not _app.arrival.allows("buy", slot)):
+	if is_issuing() or (rank == Ranks.INVALID and not _app.arrival.attempt("buy", slot)):
 		return
 	var controller: RunController = _app.controller
 	if rank == Ranks.INVALID and market and controller.items.needs_rank(_desk.stock()[slot]):
@@ -403,7 +403,7 @@ func _on_sold(campaign: bool) -> void:
 
 ## A plot card or an upgrade from the black market, bought by act.
 func _market_buy(act: Callable, action: String, slot: int = -1) -> void:
-	if is_issuing() or not _app.arrival.allows(action, slot):
+	if is_issuing() or not _app.arrival.attempt(action, slot):
 		return
 	act.call()
 	Audio.play(AudioEvents.STORE_BUY)
@@ -412,7 +412,7 @@ func _market_buy(act: Callable, action: String, slot: int = -1) -> void:
 
 func _on_reroll() -> void:
 	# A reroll frees the counter's cards, so it waits for a purchase being acted out.
-	if is_issuing() or not _app.arrival.allows("reroll"):
+	if is_issuing() or not _app.arrival.attempt("reroll"):
 		return
 	if market:
 		_app.controller.market_reroll()
@@ -469,18 +469,18 @@ func _on_envelope_settled() -> void:
 ## Back to the state store, and through the door to the black market, once nothing is
 ## being acted out or chosen.
 func _back() -> void:
-	if not is_issuing() and _app.arrival.allows("back"):
+	if not is_issuing() and _app.arrival.attempt("back"):
 		_app.back()
 
 
 func _to_market() -> void:
-	if not is_issuing() and _app.arrival.allows("door"):
+	if not is_issuing() and _app.arrival.attempt("door"):
 		_app.show_screen("black_market")
 
 
 ## Leaves the store for the next Quota, once nothing is being acted out or chosen.
 func _leave() -> void:
-	if is_issuing() or not _app.arrival.allows("leave"):
+	if is_issuing() or not _app.arrival.attempt("leave"):
 		return
 	_app.controller.leave_store()
 	_app.show_screen("set_intro", true)

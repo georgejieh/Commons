@@ -18,14 +18,14 @@ var _font: Font = null
 ## A seal width wide, tall enough for the characters one above another.
 func _init(text: String = "", width: float = 0.0) -> void:
 	_text = text
-	_font = face_for(text)
+	_font = _face_for(text)
 	custom_minimum_size = Vector2(width, width * maxi(text.length(), 1) * 0.86)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 ## The face that holds every character of text: the art library's Chinese face, or the
 ## display face. Null when neither does.
-static func face_for(text: String) -> Font:
+static func _face_for(text: String) -> Font:
 	for face: Font in [ScreenKit.ART.hanzi_font, ScreenKit.DISPLAY_BOLD]:
 		if face != null and _holds(face, text):
 			return face
@@ -33,7 +33,7 @@ static func face_for(text: String) -> Font:
 
 
 static func can_draw(text: String) -> bool:
-	return not text.is_empty() and face_for(text) != null
+	return not text.is_empty() and _face_for(text) != null
 
 
 static func _holds(face: Font, text: String) -> bool:

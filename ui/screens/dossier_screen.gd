@@ -14,6 +14,8 @@ const LINES: Dictionary[String, Observations.Kind] = {
 	"dossier.landlord": Observations.Kind.LANDLORD_ROUNDS,
 }
 const PORTRAIT_SIZE: Vector2 = Vector2(150, 188)
+## A villager's lines, at Standard.
+const LINE_SIZE: int = 22
 
 var _entries: Dictionary[int, PackedStringArray] = {}
 
@@ -59,7 +61,7 @@ func _villager(app: DemoApp, state: RunView, seat: int) -> Control:
 		lines.append(shifted)
 	_entries[seat] = lines
 	for text: String in lines:
-		sheet.add_child(ScreenKit.label(text, 22))
+		sheet.add_child(ScreenKit.label(text, LINE_SIZE))
 	return ScreenKit.card_panel(sheet)
 
 

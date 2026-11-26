@@ -39,7 +39,7 @@ func more_below() -> bool:
 
 
 ## True while more lies above it.
-func more_above() -> bool:
+func _more_above() -> bool:
 	return _scroll.scroll_vertical > SLACK
 
 
@@ -47,7 +47,7 @@ func _process(_delta: float) -> void:
 	if _scroll == null or not is_instance_valid(_scroll):
 		return
 	var rect: Rect2 = _scroll.get_global_rect()
-	var bands: Vector2i = Vector2i(int(more_above()), int(more_below()))
+	var bands: Vector2i = Vector2i(int(_more_above()), int(more_below()))
 	if rect == _drawn and bands == _bands:
 		return
 	_drawn = rect

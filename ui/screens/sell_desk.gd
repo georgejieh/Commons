@@ -98,7 +98,7 @@ func _index(paper: Control, campaign: bool) -> int:
 
 func _sell(paper: Control, campaign: bool) -> void:
 	# The arrival teaches buying; it refuses a sale as it refuses any step it is not on.
-	if (_busy.is_valid() and bool(_busy.call())) or not _app.arrival.allows("sell"):
+	if (_busy.is_valid() and bool(_busy.call())) or not _app.arrival.attempt("sell"):
 		return
 	var index: int = _index(paper, campaign)
 	if campaign:

@@ -21,6 +21,9 @@ const SHEET_PADDING: int = 28
 const GAP: int = 20
 ## The room kept between the last card and the scroll's bar.
 const BAR_ROOM: int = 24
+## The open line and a sheet's rules, at Standard.
+const LINE_SIZE: int = 22
+const RULE_SIZE: int = 20
 
 var _entries: Array[Control] = []
 var _scroll: ScrollContainer = ScrollContainer.new()
@@ -39,7 +42,7 @@ func open(app: DemoApp) -> void:
 	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
 	sheet.add_child(column)
 	column.add_child(ScreenKit.header(tr("coll.eyebrow"), tr("coll.title")))
-	_open_line = ScreenKit.label(view.open_line(), 22)
+	_open_line = ScreenKit.label(view.open_line(), LINE_SIZE)
 	column.add_child(_open_line)
 	var sections: VBoxContainer = VBoxContainer.new()
 	sections.add_theme_constant_override("separation", 18)
@@ -127,7 +130,7 @@ func _entry(sheet: UnlockSheet) -> Control:
 	var title_size: int = TextSize.px(ScreenKit.STYLE.title_size)
 	NameFit.apply(name, sheet.name, width, title_size, TextSize.least(NameFit.LEAST))
 	words.add_child(name)
-	var rules: Label = ScreenKit.label(sheet.text, 20)
+	var rules: Label = ScreenKit.label(sheet.text, RULE_SIZE)
 	rules.custom_minimum_size = Vector2(width, 0)
 	words.add_child(rules)
 	row.add_child(words)

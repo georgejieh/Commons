@@ -264,7 +264,7 @@ func _open_demo(app: DemoApp) -> void:
 	base.toggle_mode = true
 	base.button_pressed = true
 	sheet.add_child(base)
-	sheet.add_child(ScreenKit.label(tr("setup.stake_base_text"), 22))
+	sheet.add_child(ScreenKit.label(tr("setup.stake_base_text"), LINE_SIZE))
 	sheet.add_child(ScreenKit.styled(tr("setup.locked"), CommonsTheme.CAPTION))
 	_start = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
 	_start.pressed.connect(

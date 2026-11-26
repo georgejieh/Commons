@@ -46,7 +46,7 @@ static func place(
 	var buttons: Array[Rect2] = []
 	var kept: Array[Rect2] = []
 	if root != null:
-		gather(root, own, buttons)
+		_gather(root, own, buttons)
 		_gather_kept(root, kept)
 	var best: Vector2 = inside(keep.position, size, screen)
 	var best_score: float = INF
@@ -83,7 +83,7 @@ static func distance(a: Rect2, b: Rect2) -> float:
 
 ## Every button visible under root into buttons, as rectangles on the screen grown by
 ## BUTTON_CLEAR, leaving out own and what it holds.
-static func gather(root: Node, own: Node, buttons: Array[Rect2]) -> void:
+static func _gather(root: Node, own: Node, buttons: Array[Rect2]) -> void:
 	for node: Node in root.find_children("*", "BaseButton", true, false):
 		var control: Control = node as Control
 		if control == own or (own != null and own.is_ancestor_of(control)):

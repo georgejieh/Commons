@@ -212,7 +212,7 @@ func _place() -> Control:
 
 
 ## The height the board needs at the text size in use.
-func needed_height() -> float:
+func _needed_height() -> float:
 	return _top() + CARD.y + CURSOR_ROOM
 
 
@@ -269,7 +269,7 @@ func _lay_out(animate: bool) -> void:
 	for card_id: int in _views:
 		if card_id != _press_id or not _dragging:
 			_move(_views[card_id], _rest(card_id), animate)
-	custom_minimum_size = Vector2(needed_width(), needed_height())
+	custom_minimum_size = Vector2(needed_width(), _needed_height())
 
 
 ## Each pair's number over its plot card in the hand, its set-aside card and the empty

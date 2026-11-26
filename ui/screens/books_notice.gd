@@ -119,7 +119,7 @@ func _show_next() -> void:
 	_shown = _queue.pop_front()
 	_eyebrow.text = _shown.eyebrow.to_upper()
 	_title.text = _shown.title
-	_body.text = BooksNotice.kept_together(_shown.body)
+	_body.text = _kept_together(_shown.body)
 	# The notice outlives screens, so it takes the text size chosen now.
 	_body.add_theme_font_size_override("font_size", TextSize.px(BODY_SIZE))
 	_filed.add_theme_font_size_override("font_size", TextSize.px(LINE_SIZE))
@@ -127,7 +127,7 @@ func _show_next() -> void:
 		_lines.remove_child(child)
 		child.queue_free()
 	for line: String in _shown.lines:
-		_lines.add_child(ScreenKit.label(kept_together(line), LINE_SIZE, ScreenKit.INK))
+		_lines.add_child(ScreenKit.label(_kept_together(line), LINE_SIZE, ScreenKit.INK))
 	_lines.visible = not _shown.lines.is_empty()
 	_filed.text = _shown.filed
 	visible = true
@@ -140,7 +140,7 @@ func _show_next() -> void:
 
 ## A line with its last two words joined by a no-break space, so a wrapped line never
 ## leaves one figure alone on its last line.
-static func kept_together(line: String) -> String:
+static func _kept_together(line: String) -> String:
 	var last: int = line.rfind(" ")
 	if last <= 0:
 		return line

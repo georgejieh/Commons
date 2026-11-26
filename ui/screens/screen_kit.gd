@@ -80,7 +80,7 @@ static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", STYLE.gap + 8)
 	margin.add_child(column)
-	var make_room: Callable = give_way.bind(root, margin, column)
+	var make_room: Callable = _give_way.bind(root, margin, column)
 	root.resized.connect(make_room)
 	column.minimum_size_changed.connect(make_room)
 	return column
@@ -89,7 +89,7 @@ static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
 ## Shrinks a page's margin, then the gaps between its rows, as far as it must for what
 ## is on it to fit the screen, and no further than LEAST_PAGE_MARGIN and LEAST_GAP_SHARE.
 ## A page that fits keeps its full margin and gaps.
-static func give_way(root: Control, margin: MarginContainer, column: VBoxContainer) -> void:
+static func _give_way(root: Control, margin: MarginContainer, column: VBoxContainer) -> void:
 	if root.size.x <= 0.0 or root.size.y <= 0.0:
 		return
 	if not column.has_meta(FULL_GAP):
@@ -172,7 +172,7 @@ static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBox
 	panel.offset_top = PAGE_MARGIN / 2.0
 	panel.offset_bottom = -PAGE_MARGIN / 2.0
 	panel.offset_right = PAGE_MARGIN + width
-	var fit: Callable = fit_side_sheet.bind(root, panel)
+	var fit: Callable = _fit_side_sheet.bind(root, panel)
 	panel.minimum_size_changed.connect(fit)
 	panel.resized.connect(fit)
 	root.resized.connect(fit)
@@ -181,7 +181,7 @@ static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBox
 
 ## Draws a side sheet smaller, from its top left corner, when what is on it is taller
 ## than the page between its margins.
-static func fit_side_sheet(root: Control, panel: Control) -> void:
+static func _fit_side_sheet(root: Control, panel: Control) -> void:
 	var room: float = root.size.y - PAGE_MARGIN
 	var tall: float = panel.get_combined_minimum_size().y
 	var fit: float = 1.0 if tall <= room or room <= 0.0 else room / tall

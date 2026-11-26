@@ -3,6 +3,9 @@ extends Control
 ## The last finished round: which side won, your score, your Commons share and
 ## where the Quota stands. Opened from the table's menu; Back returns to the table.
 
+## The stake's and the bank's lines, at Standard.
+const LINE_SIZE: int = 24
+
 
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
@@ -24,10 +27,10 @@ func open(app: DemoApp) -> void:
 	sheet.add_child(ScreenKit.row(tiles, 20))
 	# Overfulfillment's stake is part of the result: the bank multiplied, or voided.
 	if last.has("stake"):
-		sheet.add_child(ScreenKit.label(stake_line(last), 24, ScreenKit.RED))
+		sheet.add_child(ScreenKit.label(stake_line(last), LINE_SIZE, ScreenKit.RED))
 	# What debuffs took from the bank is part of the result too (ADR 0023).
 	for line: String in debuff_lines(last):
-		sheet.add_child(ScreenKit.label(line, 24, ScreenKit.RED))
+		sheet.add_child(ScreenKit.label(line, LINE_SIZE, ScreenKit.RED))
 	var back: Button = ScreenKit.button(tr("round.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(app.back)
 	sheet.add_child(back)

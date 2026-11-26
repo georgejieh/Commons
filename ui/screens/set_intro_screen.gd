@@ -8,6 +8,9 @@ extends Control
 
 const SHEET_WIDTH: float = 830.0
 const STEP_SIZE: Vector2 = Vector2(370, 170)
+## The lines under the target, and a debuff's rules, at Standard.
+const LINE_SIZE: int = 24
+const RULE_SIZE: int = 20
 
 
 func open(app: DemoApp) -> void:
@@ -35,7 +38,7 @@ func open(app: DemoApp) -> void:
 					"step": controller.figures.norm_step_percent()
 				}
 			),
-			24
+			LINE_SIZE
 		)
 		norm.add_theme_color_override("font_color", ScreenKit.RED)
 		norm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -44,10 +47,10 @@ func open(app: DemoApp) -> void:
 		var names: String = ", ".join(
 			[controller.seats.seated_full_name(1), controller.seats.seated_full_name(2)]
 		)
-		column.add_child(ScreenKit.label(tr("intro.seated").format({"names": names}), 24))
+		column.add_child(ScreenKit.label(tr("intro.seated").format({"names": names}), LINE_SIZE))
 	if not controller.items.boss().is_empty():
 		column.add_child(_boss_line(controller))
-	var reforms: Label = reforms_line(controller)
+	var reforms: Label = _reforms_line(controller)
 	if reforms != null:
 		column.add_child(reforms)
 	# The ladder's caption wraps, so at a larger text size it keeps inside the sheet.
@@ -83,14 +86,14 @@ func open(app: DemoApp) -> void:
 
 
 ## The Reforms in force, named in one line, or null while none is (ADR 0021).
-static func reforms_line(controller: RunController) -> Label:
+static func _reforms_line(controller: RunController) -> Label:
 	var names: PackedStringArray = []
 	for reform_id: String in controller.items.held_reforms():
 		names.append(controller.texts.reform_name(reform_id))
 	if names.is_empty():
 		return null
 	var text: String = TranslationServer.translate("reform.held_line")
-	var line: Label = ScreenKit.label(text.format({"names": ", ".join(names)}), 24)
+	var line: Label = ScreenKit.label(text.format({"names": ", ".join(names)}), LINE_SIZE)
 	return line
 
 
@@ -101,7 +104,7 @@ func _boss_line(controller: RunController) -> Label:
 		tr("intro.boss").format(
 			{"name": name_text, "rule": controller.texts.modifier_text(controller.items.boss())}
 		),
-		24
+		LINE_SIZE
 	)
 	line.add_theme_color_override("font_color", ScreenKit.RED)
 	return line
@@ -125,7 +128,7 @@ func _step(controller: RunController, round_index: int, debuff_id: String) -> Co
 		name.add_theme_color_override("font_color", ScreenKit.RED)
 		card.add_child(name)
 		var rule: KeywordText = KeywordText.new()
-		rule.add_theme_font_size_override("normal_font_size", TextSize.px(20))
+		rule.add_theme_font_size_override("normal_font_size", TextSize.px(RULE_SIZE))
 		rule.add_theme_color_override("default_color", ScreenKit.INK)
 		rule.set_rule(ScreenKit.rule_text(controller, debuff_id))
 		card.add_child(rule)

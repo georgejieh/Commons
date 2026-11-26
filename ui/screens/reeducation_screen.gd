@@ -3,12 +3,15 @@ extends Control
 ## Reeducation: served in place of the store after mid Denunciation. The plot is
 ## already emptied and a Cadre exchanged by the time this opens; it only reports that.
 
+## The report, at Standard.
+const BODY_SIZE: int = 26
+
 
 func open(app: DemoApp) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.watchers)
 	var heading: Control = ScreenKit.header(tr("reed.eyebrow"), tr("reed.title"))
 	sheet.add_child(heading)
-	sheet.add_child(ScreenKit.label(tr("reed.body"), 26))
+	sheet.add_child(ScreenKit.label(tr("reed.body"), BODY_SIZE))
 	var next: Button = ScreenKit.button(tr("reed.continue"), CommonsTheme.PRIMARY)
 	next.pressed.connect(_leave.bind(app))
 	sheet.add_child(next)

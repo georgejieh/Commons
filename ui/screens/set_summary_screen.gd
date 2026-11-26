@@ -31,6 +31,9 @@ const BEAT: float = 0.18
 ## The Cadre that pays coupons at a Quota's end, before the Quota pays.
 const BOOKKEEPER: String = "the_bookkeeper"
 const BOOKKEEPER_NAME: String = "modifier.the_bookkeeper.name"
+## A family's fate, and the report's other lines, at Standard.
+const FATE_SIZE: int = 22
+const LINE_SIZE: int = 26
 
 var _bar: QuotaBar = QuotaBar.new()
 var _met: bool = false
@@ -118,7 +121,7 @@ func open(app: DemoApp) -> void:
 	_next = ScreenKit.button(tr(way_on), CommonsTheme.PRIMARY)
 	_next.pressed.connect(
 		func() -> void:
-			if not app.arrival.allows("continue"):
+			if not app.arrival.attempt("continue"):
 				return
 			controller.finish_set()
 			app.show_screen(app.screen_for(controller.awaiting()), true)
@@ -213,7 +216,7 @@ func _fates(controller: RunController) -> Array[Label]:
 			continue
 		var name: String = tr(controller.seats.family_name_key(event.text))
 		var text: String = tr(key).format({"name": name})
-		var line: Label = ScreenKit.label(text, 22, ScreenKit.INK)
+		var line: Label = ScreenKit.label(text, FATE_SIZE, ScreenKit.INK)
 		line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		lines.append(line)
 		_fate_texts.append(text)
@@ -344,6 +347,6 @@ func _consequence(controller: RunController, famine: int) -> Label:
 
 func _line(text: String, ink: Color) -> Label:
 	var line: Label = ScreenKit.styled(text, CommonsTheme.TITLE)
-	line.add_theme_font_size_override("font_size", TextSize.px(26))
+	line.add_theme_font_size_override("font_size", TextSize.px(LINE_SIZE))
 	line.add_theme_color_override("font_color", ink)
 	return line

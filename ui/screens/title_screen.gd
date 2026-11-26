@@ -26,6 +26,8 @@ const FACES: Array[Rect2] = [
 
 ## The name of the Replay the arrival button, for tests.
 const REPLAY: String = "ReplayArrival"
+## The line under the name, at Standard.
+const SUBTITLE_SIZE: int = 30
 
 var _stamp: FileStamp = null
 var _word: TitleWord = null
@@ -47,7 +49,7 @@ func open(app: DemoApp) -> void:
 	_word = TitleWord.new(tr("game.title"))
 	column.add_child(_word)
 	var subtitle: Label = ScreenKit.styled(tr("title.subtitle"), CommonsTheme.TITLE)
-	subtitle.add_theme_font_size_override("font_size", TextSize.px(30))
+	subtitle.add_theme_font_size_override("font_size", TextSize.px(SUBTITLE_SIZE))
 	subtitle.add_theme_color_override("font_color", ScreenKit.PAPER)
 	subtitle.add_theme_color_override("font_outline_color", ScreenKit.INK)
 	column.add_child(subtitle)
