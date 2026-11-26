@@ -1,5 +1,5 @@
 class_name CardPool
-extends Node
+extends RefCounted
 ## Every card view the table uses, made once when the table loads and reused after, so
 ## no card is instanced during a round.
 

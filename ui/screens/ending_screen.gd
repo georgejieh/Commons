@@ -130,8 +130,8 @@ func _story() -> VBoxContainer:
 		for line: Label in [eyebrow, _name, text]:
 			line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var tiles: Array[Control] = [
-		ScreenKit.figure_stat(tr("end.famine"), _state, RunCorrections.FAMINE, _view.famine),
-		ScreenKit.figure_stat(
+		StatTile.figure(tr("end.famine"), _state, RunCorrections.FAMINE, _view.famine),
+		StatTile.figure(
 			tr("end.denunciation"), _state, RunCorrections.DENUNCIATION, _view.denunciation
 		),
 		_class_tile(),

@@ -57,6 +57,8 @@ const PAGE_MARGIN: int = 88
 const LEAST_PAGE_MARGIN: int = 24
 const LEAST_GAP_SHARE: float = 0.5
 const FULL_GAP: StringName = &"full_gap"
+## Where a page keeps the fit it connected to its root's resized, for clear_page.
+const PAGE_FIT: StringName = &"page_fit"
 const MIN_BUTTON_WIDTH: int = 260
 
 
@@ -79,6 +81,7 @@ static func page(
 	margin.add_child(column)
 	var make_room: Callable = _give_way.bind(root, margin, column)
 	root.resized.connect(make_room)
+	root.set_meta(PAGE_FIT, make_room)
 	column.minimum_size_changed.connect(make_room)
 	return column
 
@@ -137,6 +140,17 @@ static func clear(node: Node) -> void:
 		child.queue_free()
 
 
+## Takes a page built on root down, with the fit it connected to root, so the page can
+## be built on root again.
+static func clear_page(root: Control) -> void:
+	if root.has_meta(PAGE_FIT):
+		var fit: Callable = root.get_meta(PAGE_FIT)
+		if root.resized.is_connected(fit):
+			root.resized.disconnect(fit)
+		root.remove_meta(PAGE_FIT)
+	clear(root)
+
+
 ## A full-screen page over a backdrop with its content centered on one sheet, for
 ## verdicts and summaries.
 static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
@@ -173,6 +187,7 @@ static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBox
 	panel.minimum_size_changed.connect(fit)
 	panel.resized.connect(fit)
 	root.resized.connect(fit)
+	root.set_meta(PAGE_FIT, fit)
 	return sheet
 
 
@@ -326,30 +341,6 @@ static func card(min_size: Vector2) -> VBoxContainer:
 ## The card's outer panel, for adding it to a row.
 static func card_panel(column: VBoxContainer) -> Control:
 	return column.get_parent() as Control
-
-
-## A stat tile: a tracked caption over a big number that rolls up from from_value.
-static func stat(caption: String, value: float, from_value: float = 0.0) -> Control:
-	var tile: VBoxContainer = card(Vector2(240, 0))
-	tile.add_child(eyebrow(caption))
-	var number: Label = styled("", CommonsTheme.TITLE)
-	tile.add_child(number)
-	UiMotion.count(
-		number, from_value, value, func(shown: float) -> String: return Strings.score(shown)
-	)
-	return card_panel(tile)
-
-
-## A stat tile for one of the run's figures (ShownFigures names them), as ShownFigures
-## shows it: the rolling number, or its words ("None reported", ample, fulfilled).
-static func figure_stat(caption: String, state: RunView, figure: String, value: float) -> Control:
-	var words: String = ShownFigures.tile_text(state, figure)
-	if words.is_empty():
-		return stat(caption, value)
-	var tile: VBoxContainer = card(Vector2(240, 0))
-	tile.add_child(eyebrow(caption))
-	tile.add_child(styled(words, CommonsTheme.TITLE))
-	return card_panel(tile)
 
 
 ## Brings a page's pieces in one after another.

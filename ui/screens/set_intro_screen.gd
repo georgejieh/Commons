@@ -30,6 +30,24 @@ func open(app: DemoApp) -> void:
 	if not shown:
 		target = tr("intro.target.unreported").format({"rounds": app.max_rounds()})
 	column.add_child(ScreenKit.styled(target, CommonsTheme.TITLE))
+	_add_notes(column, controller, shown)
+	# The ladder's caption wraps, so at a larger text size it keeps inside the sheet.
+	var caption: Label = ScreenKit.eyebrow(tr("intro.ladder"))
+	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(caption)
+	var steps: Array[Control] = _ladder(column, controller)
+	var begin: Button = ScreenKit.button(tr("intro.begin"), CommonsTheme.PRIMARY)
+	begin.pressed.connect(func() -> void: app.show_screen(app.table_id(), true))
+	column.add_child(begin)
+	ScreenKit.reveal(column)
+	UiMotion.enter(steps)
+	begin.grab_focus()
+	_offer_tips(app)
+
+
+## The lines under the target: how far the norm raised it while it shows, who sits at
+## the table, the boss and the Reforms in force.
+func _add_notes(column: VBoxContainer, controller: RunController, shown: bool) -> void:
 	if controller.figures.norm_percent() > 0 and shown:
 		var norm: Label = ScreenKit.label(
 			tr("intro.norm").format(
@@ -53,10 +71,10 @@ func open(app: DemoApp) -> void:
 	var reforms: Label = _reforms_line(controller)
 	if reforms != null:
 		column.add_child(reforms)
-	# The ladder's caption wraps, so at a larger text size it keeps inside the sheet.
-	var caption: Label = ScreenKit.eyebrow(tr("intro.ladder"))
-	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(caption)
+
+
+## The debuff ladder, one card a round, two by two; returns the cards.
+func _ladder(column: VBoxContainer, controller: RunController) -> Array[Control]:
 	var steps: Array[Control] = []
 	var ladder: Array[String] = controller.items.ladder()
 	for round_index: int in ladder.size():
@@ -68,12 +86,12 @@ func open(app: DemoApp) -> void:
 	for step: Control in steps:
 		grid.add_child(step)
 	column.add_child(grid)
-	var begin: Button = ScreenKit.button(tr("intro.begin"), CommonsTheme.PRIMARY)
-	begin.pressed.connect(func() -> void: app.show_screen(app.table_id(), true))
-	column.add_child(begin)
-	ScreenKit.reveal(column)
-	UiMotion.enter(steps)
-	begin.grab_focus()
+	return steps
+
+
+func _offer_tips(app: DemoApp) -> void:
+	var controller: RunController = app.controller
+	var ladder: Array[String] = controller.items.ladder()
 	# The first time a Quota lists a debuff, and the first time a family that remembers
 	# the player sits down, a one-time tooltip says what that means (ADR 0026).
 	var tips: Array[String] = []

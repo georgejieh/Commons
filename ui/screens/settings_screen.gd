@@ -89,10 +89,7 @@ func _on_setting(key: String) -> void:
 func _rebuild() -> void:
 	if not is_inside_tree():
 		return
-	# The page's fit is connected again with the new page.
-	for connection: Dictionary in resized.get_connections():
-		resized.disconnect(connection["callable"])
-	ScreenKit.clear(self)
+	ScreenKit.clear_page(self)
 	_change = null
 	open(_app)
 	SettingsPanel.chosen_text_size(self).grab_focus()

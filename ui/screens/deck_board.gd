@@ -45,7 +45,6 @@ func prepare() -> void:
 	if _pool != null:
 		return
 	_pool = CardPool.new()
-	add_child(_pool)
 	_pool.fill(self)
 
 

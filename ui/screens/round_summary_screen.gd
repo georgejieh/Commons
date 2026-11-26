@@ -21,11 +21,9 @@ func open(app: DemoApp) -> void:
 	var eyebrow: String = tr("round.eyebrow").format({"round": maxi(1, state.round_index())})
 	sheet.add_child(ScreenKit.header(eyebrow, tr(title_key)))
 	var tiles: Array[Control] = [
-		ScreenKit.stat(tr("round.score"), float(last.get("score", 0.0))),
-		ScreenKit.stat(tr("round.share"), float(last.get("share", 0))),
-		ScreenKit.figure_stat(
-			tr("round.progress"), state, RunCorrections.PROGRESS, state.set_progress()
-		),
+		StatTile.rolling(tr("round.score"), float(last.get("score", 0.0))),
+		StatTile.rolling(tr("round.share"), float(last.get("share", 0))),
+		StatTile.figure(tr("round.progress"), state, RunCorrections.PROGRESS, state.set_progress()),
 	]
 	sheet.add_child(ScreenKit.row(tiles, 20))
 	# Overfulfillment's stake is part of the result: the bank multiplied, or voided.

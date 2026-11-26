@@ -151,7 +151,6 @@ func open(app: DemoApp) -> void:
 	_controller = app.controller
 	_hand = app.hand
 	_pool.fill(_pool_parent)
-	add_child(_pool)
 	add_child(_player)
 	add_child(_motion)
 	_player.motion = _motion

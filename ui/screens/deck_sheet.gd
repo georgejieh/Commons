@@ -46,11 +46,7 @@ func _ready() -> void:
 	z_index = ScreenKit.LAYER_SHEET
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var dim: ColorRect = ColorRect.new()
-	dim.color = DIM
-	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(dim)
+	add_child(Scrim.new(DIM))
 	_paper.add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	_paper.theme = ScreenKit.ink_theme()
 	add_child(_paper)

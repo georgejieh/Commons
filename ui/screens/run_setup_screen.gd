@@ -57,6 +57,27 @@ func open(app: DemoApp) -> void:
 	_rules = ScreenKit.label("", RULES_SIZE)
 	_scroll = ScrollContainer.new()
 	var page: VBoxContainer = _page()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll.follow_focus = true
+	_scroll.add_child(_choices())
+	ScrollFade.over(_scroll)
+	page.add_child(_scroll)
+	_reserve_rules()
+	_start = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
+	_start.pressed.connect(_begin)
+	_back = ScreenKit.button(tr("setup.back"), CommonsTheme.GHOST)
+	_back.pressed.connect(app.back)
+	page.add_child(ScreenKit.row([_start, _back]))
+	_wire_focus()
+	_show_choice()
+	ScreenKit.reveal(page)
+	_start.grab_focus()
+
+
+## The full run's choices in a column: the heading, what was inherited, the households,
+## and the stakes with the rules the picked one plays under.
+func _choices() -> VBoxContainer:
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", ROW_GAPS[TextSize.level()])
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -83,22 +104,7 @@ func open(app: DemoApp) -> void:
 	foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(foot)
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_scroll.follow_focus = true
-	_scroll.add_child(column)
-	ScrollFade.over(_scroll)
-	page.add_child(_scroll)
-	_reserve_rules()
-	_start = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
-	_start.pressed.connect(_begin)
-	_back = ScreenKit.button(tr("setup.back"), CommonsTheme.GHOST)
-	_back.pressed.connect(app.back)
-	page.add_child(ScreenKit.row([_start, _back]))
-	_wire_focus()
-	_show_choice()
-	ScreenKit.reveal(page)
-	_start.grab_focus()
+	return column
 
 
 ## Cancel (Escape, or B on a pad) goes back, as Back does.

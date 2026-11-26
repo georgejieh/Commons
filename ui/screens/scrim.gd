@@ -8,7 +8,7 @@ extends ColorRect
 const DIM: Color = Color(0.02, 0.015, 0.01, 0.86)
 
 
-func _init() -> void:
-	color = DIM
+func _init(dim: Color = DIM) -> void:
+	color = dim
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

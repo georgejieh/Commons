@@ -13,14 +13,10 @@ func open(app: DemoApp) -> void:
 	)
 	column.add_child(heading)
 	var tiles: Array[Control] = [
-		ScreenKit.figure_stat(
-			tr("year.coupons_label"), state, RunCorrections.COUPONS, state.coupons()
-		),
-		ScreenKit.stat(tr("year.cadres_label"), state.held_cadres().size()),
-		ScreenKit.figure_stat(
-			tr("year.famine_label"), state, RunCorrections.FAMINE, state.famine()
-		),
-		ScreenKit.figure_stat(
+		StatTile.figure(tr("year.coupons_label"), state, RunCorrections.COUPONS, state.coupons()),
+		StatTile.rolling(tr("year.cadres_label"), state.held_cadres().size()),
+		StatTile.figure(tr("year.famine_label"), state, RunCorrections.FAMINE, state.famine()),
+		StatTile.figure(
 			tr("year.denunciation_label"), state, RunCorrections.DENUNCIATION, state.denunciation()
 		),
 	]
