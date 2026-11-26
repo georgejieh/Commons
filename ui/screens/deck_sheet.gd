@@ -166,9 +166,11 @@ func _open(choosing: bool) -> void:
 	_incoming.visible = coming != null
 	if coming != null:
 		_incoming.bind(coming)
+	var deck: Array[CardInstance] = _controller.store.deck_cards()
 	var plot: Array[CardInstance] = _controller.run.plot()
-	_board.show_cards(_controller.store.deck_cards(), plot, _room())
-	_show_legend(plot)
+	_board.show_cards(deck, plot, _room())
+	deck.append_array(plot)
+	_show_legend(deck)
 	_show_choice()
 	_link_focus()
 	_board.grab_focus()
@@ -194,11 +196,9 @@ func _fit() -> void:
 
 ## One entry for each mark the deck or the plot holds now: its drawn mark, its name and
 ## how many cards carry it.
-func _show_legend(plot: Array[CardInstance]) -> void:
+func _show_legend(cards: Array[CardInstance]) -> void:
 	ScreenKit.clear(_legend)
 	var counts: Dictionary[String, int] = {}
-	var cards: Array[CardInstance] = _controller.store.deck_cards()
-	cards.append_array(plot)
 	for card: CardInstance in cards:
 		if card.owner_stamp() == Seats.PLAYER:
 			counts[STAMP] = counts.get(STAMP, 0) + 1

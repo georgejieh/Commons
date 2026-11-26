@@ -76,6 +76,13 @@ const RANK_KEYS: PackedStringArray = [
 
 ## Tests may swap the parts; null means the shipped art.
 static var art_override: CardArt = null
+## What every view draws the same, made once and shared: the card stock for the frame art
+## it was made from, the rank note's tag, and the picture card's corner fade. Nothing
+## changes them once made; each view keeps its own tilt material.
+static var _stock: StyleBoxTexture = null
+static var _stock_of: Texture2D = null
+static var _note_tag: StyleBoxFlat = null
+static var _fade: GradientTexture2D = null
 
 var card_id: int = -1
 
@@ -100,9 +107,7 @@ var _tweens: Array[Tween] = []
 
 
 func _ready() -> void:
-	var stock: StyleBoxTexture = StyleBoxTexture.new()
-	stock.texture = Lighting.lit(ArtStages.resolve(parts().frame))
-	_frame.add_theme_stylebox_override("panel", stock)
+	_frame.add_theme_stylebox_override("panel", _card_stock())
 	_frame.light_mask = Lighting.MASK
 	var tilt: ShaderMaterial = ShaderMaterial.new()
 	tilt.shader = TILT_SHADER
@@ -115,10 +120,7 @@ func _ready() -> void:
 	_cursor_mark.offset_bottom = CURSOR_BAR * 2.0
 	add_child(_cursor_mark)
 	add_child(_tick)
-	var tag: StyleBoxFlat = StyleBoxFlat.new()
-	tag.bg_color = ScreenKit.SEAL
-	tag.set_corner_radius_all(4)
-	_rank_note.add_theme_stylebox_override("normal", tag)
+	_rank_note.add_theme_stylebox_override("normal", _rank_note_tag())
 	_index.texture = _corner_fade()
 	_rank.add_theme_color_override("font_outline_color", ScreenKit.CARD_STOCK)
 	for mark: CardMark in [_chop, _badge]:
@@ -279,8 +281,30 @@ func _lay_out_face(pip: bool, joker: bool) -> void:
 	_index.size = JOKER_FADE_SIZE if joker else FADE_SIZE
 
 
+## The frame's card stock for the art in use at this stage, lit; made again only when
+## that art is another.
+static func _card_stock() -> StyleBoxTexture:
+	var frame: Texture2D = ArtStages.resolve(parts().frame)
+	if _stock == null or _stock_of != frame:
+		_stock = StyleBoxTexture.new()
+		_stock.texture = Lighting.lit(frame)
+		_stock_of = frame
+	return _stock
+
+
+## The rank note's red tag.
+static func _rank_note_tag() -> StyleBoxFlat:
+	if _note_tag == null:
+		_note_tag = StyleBoxFlat.new()
+		_note_tag.bg_color = ScreenKit.SEAL
+		_note_tag.set_corner_radius_all(4)
+	return _note_tag
+
+
 ## Card stock that is solid in the top left corner and fades out toward the art.
 static func _corner_fade() -> GradientTexture2D:
+	if _fade != null:
+		return _fade
 	var fade: Gradient = Gradient.new()
 	fade.set_color(0, ScreenKit.CARD_STOCK)
 	fade.set_color(1, Color(ScreenKit.CARD_STOCK, 0.0))
@@ -292,6 +316,7 @@ static func _corner_fade() -> GradientTexture2D:
 	corner.fill_to = Vector2(1.0, 1.0)
 	corner.width = 64
 	corner.height = 64
+	_fade = corner
 	return corner
 
 
