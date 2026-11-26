@@ -11,10 +11,6 @@ signal filled
 
 enum Shown { AS_IS, NO_TARGET, FULFILLED }
 
-const GRAIN: Color = Color("c8952b")
-const MET: Color = Color("e0b23c")
-const GROUND: Color = Color("4a4239")
-
 var _text: Label = Label.new()
 var _fill: StyleBoxFlat = StyleBoxFlat.new()
 var _seal: InkSeal = InkSeal.new()
@@ -28,9 +24,9 @@ func _init() -> void:
 	show_percentage = false
 	size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var ground: StyleBoxFlat = StyleBoxFlat.new()
-	ground.bg_color = GROUND
+	ground.bg_color = ScreenKit.BAR_GROUND
 	add_theme_stylebox_override("background", ground)
-	_fill.bg_color = GRAIN
+	_fill.bg_color = ScreenKit.GRAIN_BAR
 	add_theme_stylebox_override("fill", _fill)
 	_text.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -77,7 +73,7 @@ func show_value(shown: float) -> void:
 	var met: bool = shown >= _target
 	max_value = _target
 	value = minf(shown, _target)
-	_fill.bg_color = MET if met else GRAIN
+	_fill.bg_color = ScreenKit.GLOW if met else ScreenKit.GRAIN_BAR
 	_text.text = tr("table.quota").format(
 		{"progress": Strings.score(shown), "target": Strings.score(_target)}
 	)
@@ -89,7 +85,7 @@ func show_value(shown: float) -> void:
 	if _mode == Shown.FULFILLED:
 		met = true
 		value = _target
-		_fill.bg_color = MET
+		_fill.bg_color = ScreenKit.GLOW
 		_text.text = tr(ShownFigures.FULFILLED)
 	if met and not _seal.visible:
 		_seal.prepare(tr("table.quota_met"), ScreenKit.RED, _seal.size.x)

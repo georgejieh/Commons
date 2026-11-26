@@ -3,19 +3,13 @@
 class_name TableScreen
 extends Control
 ## The 2D table (ADR 0017), seen as a play area rather than a whole table: a wooden rail
-## frames the screen, the two villagers sit along the top edge with their lanes in front
-## of them, the ledger is set into the right rail and your hand runs along the bottom.
-## Under the left seat is the Campaign tray, under the right one the rules slip; the
-## trick lies between them (ADR 0034, rules 6 to 9).
-## It renders the run's events one step apart and sends commands; it never changes the
-## run.
+## frames the screen, the two villagers sit along the top edge with their lanes in front of
+## them, the ledger is set into the right rail and your hand runs along the bottom. Under
+## the left seat is the Campaign tray, under the right one the rules slip; the trick lies
+## between them (ADR 0034, rules 6 to 9). It renders the run's events one step apart and
+## sends commands; it never changes the run.
 
-const PAPER: Color = Color("efe3c8")
-const RAIL: Color = Color("6b4a2e")
 const RAIL_EDGE: Color = Color("3e2a19")
-const SURFACE: Color = Color("e9dcbc")
-const INK: Color = Color("1e1a16")
-const RED: Color = Color("9e1b16")
 ## The play area's middle in x, and the seats' width and gap from that middle. The
 ## Cadre board centers on it between the seats.
 const PLAY_CENTER: float = 790.0
@@ -92,7 +86,7 @@ func _ready() -> void:
 	rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_surface = ScreenKit.cover(ScreenKit.ART.table_surface)
 	# The room fills the screen below the bar, so a 16:10 screen shows more table, not
-	# a band of nothing (P3B.11).
+	# a band of nothing.
 	for backdrop: Control in [rail, _surface, _atmosphere]:
 		add_child(backdrop)
 		backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -280,7 +274,7 @@ func _open_deck() -> void:
 	_deck.open_deck()
 
 
-## Keyboard and gamepad go through TableInput (P3B.11).
+## Keyboard and gamepad go through TableInput.
 func _unhandled_input(event: InputEvent) -> void:
 	if _input.handle(event):
 		get_viewport().set_input_as_handled()
@@ -410,8 +404,9 @@ func _on_drained() -> void:
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
 	_clear_for_sheet()
 	if awaiting == RunController.AWAIT_NEED:
-		var pool: int = _controller.run.commons_pool()
-		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.figures.audit_chance())
+		_need_panel.ask(
+			state.commons_pool(), _app.seat_name(3 - _landlord), _controller.figures.audit_chance()
+		)
 	_hand.refresh()
 	_hand_view.show_cards()
 	_campaigns.refresh()

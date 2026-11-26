@@ -2,16 +2,12 @@ class_name TableHud
 extends PanelContainer
 ## The bar across the top of the table: where you are in the run, the Quota as a bar
 ## that fills as work points reach you and is sealed when met, both meters and your
-## coupons. It reads a copy of the run state and never changes it. Each figure shows as
+## coupons. It reads the run through its view and never changes it. Each figure shows as
 ## ShownFigures says (ADR 0022): a dark meter is "None reported" in place of its bar and
 ## never pulses, a dark norm hides the Quota's target, and at the stage past the last
 ## every figure reads as a success.
 
-const INK: Color = Color("1e1a16")
-const PAPER: Color = Color("efe3c8")
-const GRAIN: Color = Color("c8952b")
 const ZEAL: Color = Color("c8341e")
-const COUPON: Color = Color("6f9a62")
 
 ## The sizes of the bars.
 const QUOTA_BAR: Vector2 = Vector2(300, 30)
@@ -46,7 +42,7 @@ var _tweens: Dictionary[String, Tween] = {}
 
 func _ready() -> void:
 	var style: StyleBoxFlat = StyleBoxFlat.new()
-	style.bg_color = INK
+	style.bg_color = ScreenKit.INK
 	style.content_margin_left = 32
 	style.content_margin_right = 32
 	style.content_margin_top = 14
@@ -54,7 +50,7 @@ func _ready() -> void:
 	add_theme_stylebox_override("panel", style)
 	var row: HBoxContainer = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 24)
-	status.add_theme_color_override("font_color", PAPER)
+	status.add_theme_color_override("font_color", ScreenKit.PAPER)
 	status.add_theme_font_size_override("font_size", TextSize.px(STATUS_SIZE))
 	status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -62,10 +58,10 @@ func _ready() -> void:
 	status.resized.connect(_fit_status)
 	row.add_child(status)
 	row.add_child(_quota_box())
-	row.add_child(_meter(FAMINE, famine, GRAIN, ScreenKit.ART.icon_famine))
+	row.add_child(_meter(FAMINE, famine, ScreenKit.GRAIN_BAR, ScreenKit.ART.icon_famine))
 	row.add_child(_meter(DENUNCIATION, denunciation, ZEAL, ScreenKit.ART.icon_denunciation))
 	row.add_child(_icon(ScreenKit.ART.icon_coupon))
-	coupons.add_theme_color_override("font_color", COUPON)
+	coupons.add_theme_color_override("font_color", ScreenKit.COUPON_ON_DARK)
 	coupons.add_theme_font_size_override("font_size", TextSize.px(26))
 	coupons.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	row.add_child(coupons)
@@ -126,11 +122,6 @@ func end_line(progress: float, target: float) -> String:
 	if _state == null or QuotaBar.mode_for(_state) == QuotaBar.Shown.AS_IS:
 		return ""
 	return ShownFigures.quota(_state, progress, target)
-
-
-## True when the Set's end reads as met: when it was, or at the stage past the last.
-func reads_met(met: bool) -> bool:
-	return ShownFigures.reads_met(met)
 
 
 ## Puts every bar where the run says it is, at once, unless it is already heading there.
@@ -220,7 +211,7 @@ func _quota_box() -> Control:
 	var label: Label = Label.new()
 	label.theme_type_variation = CommonsTheme.EYEBROW
 	label.text = tr("keyword.quota.name").to_upper()
-	label.add_theme_color_override("font_color", PAPER)
+	label.add_theme_color_override("font_color", ScreenKit.PAPER)
 	quota.setup(QUOTA_BAR, SEAL_WIDTH, 20)
 	box.add_child(label)
 	box.add_child(quota)
@@ -233,12 +224,12 @@ func _meter(meter: String, bar: ProgressBar, color: Color, icon: Texture2D) -> H
 	var label: Label = Label.new()
 	label.theme_type_variation = CommonsTheme.EYEBROW
 	label.text = tr("meter." + meter).to_upper()
-	label.add_theme_color_override("font_color", PAPER)
+	label.add_theme_color_override("font_color", ScreenKit.PAPER)
 	bar.custom_minimum_size = METER_BAR
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	bar.show_percentage = false
 	var ground: StyleBoxFlat = StyleBoxFlat.new()
-	ground.bg_color = Color("4a4239")
+	ground.bg_color = ScreenKit.BAR_GROUND
 	bar.add_theme_stylebox_override("background", ground)
 	bar.max_value = 100
 	var fill: StyleBoxFlat = StyleBoxFlat.new()
@@ -250,7 +241,7 @@ func _meter(meter: String, bar: ProgressBar, color: Color, icon: Texture2D) -> H
 	var none: Label = Label.new()
 	none.text = ShownFigures.none_reported()
 	none.custom_minimum_size = Vector2(METER_BAR.x, 0)
-	none.add_theme_color_override("font_color", PAPER)
+	none.add_theme_color_override("font_color", ScreenKit.PAPER)
 	none.add_theme_font_size_override("font_size", TextSize.px(NONE_SIZE))
 	none.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	none.visible = false

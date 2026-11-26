@@ -1,6 +1,6 @@
 class_name TableInput
 extends RefCounted
-## Keyboard and gamepad at the table (P3B.11). Shortcuts press the same buttons a click
+## Keyboard and gamepad at the table. Shortcuts press the same buttons a click
 ## does, and Deck opens the deck sheet as the menu's Deck does (ADR 0041); Escape or the
 ## gamepad's B closes the rules card or opens the menu; on the player's turn the cursor
 ## actions move along the hand and pick cards.
@@ -41,7 +41,7 @@ func setup(
 func handle(event: InputEvent) -> bool:
 	if picker != null and picker.handle(event):
 		return true
-	if handle_tray(event):
+	if _handle_tray(event):
 		return true
 	if event.is_action_pressed("ui_cancel") and not _pause.visible:
 		if _cheat_sheet.visible:
@@ -58,7 +58,7 @@ func handle(event: InputEvent) -> bool:
 
 
 ## The tray goes first, so Cancel takes back an armed Campaign before it opens the menu.
-func handle_tray(event: InputEvent) -> bool:
+func _handle_tray(event: InputEvent) -> bool:
 	return tray != null and not _pause.visible and not _cheat_sheet.visible and tray.handle(event)
 
 

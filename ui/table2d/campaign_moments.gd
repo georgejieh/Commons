@@ -9,7 +9,6 @@ extends Control
 ## long as it runs and is taken down at once by the next, so nothing outlives it. Quiet
 ## events, from a replay or a skip, leave only the end state.
 
-const COUPON: Color = Color("6f9a62")
 const SLAP_SCALE: float = 1.35
 const LIFT_TIME: float = 0.14
 const SLAM_TIME: float = 0.1
@@ -36,8 +35,6 @@ var _hand_view: HandView
 var _pool: CardPool
 var _player: EventPlayer
 var _table: TableMoments
-var _seats: Dictionary[int, SeatPanel] = {}
-var _names: Dictionary[int, String] = {}
 var _debuffs: DebuffStrip
 ## Finds a card's face by ID, and puts the hand back as the run holds it.
 var _card_for: Callable
@@ -87,8 +84,6 @@ func setup(
 	pool: CardPool,
 	player: EventPlayer,
 	table: TableMoments,
-	seats: Dictionary[int, SeatPanel],
-	names: Dictionary[int, String],
 	debuffs: DebuffStrip,
 	card_for: Callable,
 	show_hand: Callable
@@ -98,8 +93,6 @@ func setup(
 	_pool = pool
 	_player = player
 	_table = table
-	_seats = seats
-	_names = names
 	_debuffs = debuffs
 	_card_for = card_for
 	_show_hand = show_hand
@@ -242,7 +235,7 @@ func _move_cards(event: RunEvent) -> void:
 	var tween: Tween = _start_beat()
 	var wait: float = 0.0
 	if seizing and event.seat == 0:
-		var name: String = _names.get(event.value, "")
+		var name: String = _table.names().get(event.value, "")
 		var sub: String = tr("callout.seizure.sub").format({"name": name})
 		wait = _table.callout.shout(
 			tr("callout.seizure"), Callout.Tier.TAKEOVER, ScreenKit.RED, sub
@@ -281,7 +274,7 @@ func _settle(won: bool, amount: float) -> void:
 	var word: String = tr("callout.stake.won" if won else "callout.stake.lost")
 	var sub: String = tr("callout.stake.won.sub" if won else "callout.stake.lost.sub")
 	sub = sub.format({"amount": Strings.score(amount)})
-	var cloth: Color = ScreenKit.RED if won else TableMoments.LOSS
+	var cloth: Color = ScreenKit.RED if won else ScreenKit.LOSS
 	_player.hold(_table.callout.shout(word, Callout.Tier.CUT_IN, cloth, sub))
 
 
@@ -316,7 +309,7 @@ func _set_letter(out: bool, animate: bool = false) -> void:
 	if _note_tween != null and _note_tween.is_valid():
 		_note_tween.kill()
 	_note_tween = null
-	var seat: SeatPanel = _seats.get(1)
+	var seat: SeatPanel = _table.seats().get(1)
 	if seat == null:
 		_note.visible = false
 		return
@@ -372,7 +365,7 @@ func _point(seat: int, card_id: int) -> Vector2:
 		if card_id >= 0:
 			return _hand_view.card_center(card_id)
 		return _hand_view.global_position + _hand_view.size / 2.0
-	var panel: SeatPanel = _seats[seat]
+	var panel: SeatPanel = _table.seats()[seat]
 	return panel.global_position + panel.size / 2.0
 
 
@@ -383,7 +376,7 @@ func _draw_note() -> void:
 func _draw_ticket(ticket: Control) -> void:
 	var worn: float = BowlGrime.wear()
 	var rect: Rect2 = Rect2(Vector2.ZERO, TICKET)
-	ticket.draw_rect(rect, CampaignPaper.ink(COUPON, worn))
+	ticket.draw_rect(rect, CampaignPaper.ink(ScreenKit.COUPON_ON_DARK, worn))
 	ticket.draw_rect(rect.grow(-3.0), Color(CampaignPaper.paper(worn), 0.5), false, 1.0)
 
 

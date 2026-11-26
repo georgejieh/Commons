@@ -24,14 +24,11 @@ const DIM: float = 0.3
 ## Face changes while a die tumbles, and the bounces it makes.
 const FLIPS: int = 9
 const BOUNCES: float = 3.5
-const FADED: float = 1.0
 const PORCELAIN: Color = Color("f5f7f9")
 const GLAZE: Color = Color("dfe6f0")
 const COBALT: Color = Color("1f3f8f")
 const COBALT_SOFT: Color = Color("6f8cc4")
 const PIP_RED: Color = Color("c0221a")
-const PIP_BLACK: Color = Color("1e1a16")
-const RING: Color = Color("b02a17")
 const SHADOW: Color = Color(0.08, 0.06, 0.04, 0.32)
 ## Each seat's die and tag: the player ivory, seat 1 celadon, seat 2 pale indigo.
 const TINTS: Dictionary[int, Color] = {
@@ -75,8 +72,6 @@ var drop: float = 0.0
 var tumble: float = 0.0
 var hop: float = 0.0
 var lift: float = 0.0
-## How far the dice that were not audited have faded, from 0 to 1.
-var fade: float = 0.0
 
 var _seats: Array[int] = []
 var _faces: Array[int] = []
@@ -116,7 +111,6 @@ func roll(seats: Array[int], faces: Array[int], audit_faces: int, names: Array[S
 	if UiMotion.reduced():
 		drop = 1.0
 		tumble = 1.0
-		fade = 1.0
 		queue_redraw()
 		return UiMotion.seconds(ROLL + REST)
 	_rolling = true
@@ -128,8 +122,9 @@ func roll(seats: Array[int], faces: Array[int], audit_faces: int, names: Array[S
 	_tween.tween_callback(_settle)
 	var up: PropertyTweener = _tween.tween_property(self, "hop", 1.0, HOP * 0.5)
 	up.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_tween.parallel().tween_property(self, "fade", 1.0, HOP)
-	var down: PropertyTweener = _tween.chain().tween_property(self, "hop", 0.0, HOP * 0.5)
+	# The die stays up for as long as it took to rise, then drops back.
+	_tween.tween_interval(HOP * 0.5)
+	var down: PropertyTweener = _tween.tween_property(self, "hop", 0.0, HOP * 0.5)
 	down.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	_tween.tween_interval(REST - HOP)
 	return DROP + ROLL + REST
@@ -209,7 +204,6 @@ func _hide() -> void:
 	tumble = 0.0
 	hop = 0.0
 	lift = 0.0
-	fade = 0.0
 
 
 func _draw() -> void:
@@ -289,16 +283,15 @@ func _draw_die(index: int, middle: Vector2, scale_now: float, alpha: float) -> v
 	var at: Vector2 = path + Vector2(0, -lifted * 14.0)
 	var shade: float = alpha * (1.0 - height * 0.6)
 	draw_circle(path + Vector2(6, 10) * (1.0 + height * 3.0), DIE * 0.5, Color(SHADOW, shade))
-	var faded: float = 1.0 if audited else lerpf(1.0, FADED, fade)
 	draw_set_transform(at, angle, Vector2.ONE * grow)
 	var half: Vector2 = Vector2.ONE * DIE / 2.0
-	var body: StyleBoxFlat = _body(_seats[index], alpha * faded)
+	var body: StyleBoxFlat = _body(_seats[index], alpha)
 	draw_style_box(body, Rect2(-half, half * 2.0))
-	_draw_pips(_shown_face(index), alpha * faded)
-	BowlGrime.die(self, DIE, alpha * faded, BowlGrime.wear(), index)
+	_draw_pips(_shown_face(index), alpha)
+	BowlGrime.die(self, DIE, alpha, BowlGrime.wear(), index)
 	draw_set_transform(Vector2.ZERO, 0.0)
 	if audited and tumble >= 1.0:
-		var ring: Color = Color(RING, alpha)
+		var ring: Color = Color(ScreenKit.RED, alpha)
 		draw_arc(at, DIE * 0.86 * scale_now, 0.0, TAU, 48, ring, 5.0, true)
 
 
@@ -306,7 +299,7 @@ func _draw_die(index: int, middle: Vector2, scale_now: float, alpha: float) -> v
 func _draw_pips(face: int, alpha: float) -> void:
 	var red: bool = face == 1 or face == 4
 	var radius: float = DIE * (0.17 if face == 1 else 0.085)
-	var ink: Color = Color(PIP_RED if red else PIP_BLACK, alpha)
+	var ink: Color = Color(PIP_RED if red else ScreenKit.INK, alpha)
 	for place: Vector2 in PIPS.get(face, []):
 		draw_circle(place * DIE, radius, ink)
 	if face == 1 and BowlGrime.watching():
@@ -329,9 +322,9 @@ func _draw_tag(index: int, middle: Vector2, scale_now: float, alpha: float) -> v
 	var shown: float = alpha * clampf(tumble * 3.0, 0.0, 1.0)
 	var paper: Color = BowlGrime.aged(tint_for(_seats[index]), BowlGrime.wear())
 	draw_rect(box, Color(paper, shown))
-	draw_rect(box, Color(PIP_BLACK, shown * 0.6), false, 2.0)
+	draw_rect(box, Color(ScreenKit.INK, shown * 0.6), false, 2.0)
 	var baseline: Vector2 = at + Vector2(-width / 2.0, tag_px * 0.36)
-	var ink: Color = Color(PIP_BLACK, shown)
+	var ink: Color = Color(ScreenKit.INK, shown)
 	draw_string(font, baseline, text, HORIZONTAL_ALIGNMENT_LEFT, -1, tag_px, ink)
 
 

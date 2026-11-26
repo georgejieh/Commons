@@ -1,12 +1,12 @@
 class_name ReadingPicker
 extends Control
-## Asks how the chosen cards are played when they can be played more than one way now
-## (ADR 0029): a paper slip beside the chosen cards it asks about, placed as every slip is
+## Asks how the chosen cards are played when they can be played more than one way now (ADR
+## 0029): a paper slip beside the chosen cards it asks about, placed as every slip is
 ## (SlipPlacer: above them first, never on them or on a button), listing each reading in
-## words, strongest first. Focus starts on the strongest; up and down move
-## it, confirm plays the one focused and cancel closes the slip with the selection kept. A
-## click outside the slip cancels too. The table stays visible, a little dimmed, so the
-## lifted cards can still be seen. Buttons sound as every button does.
+## words, strongest first. Focus starts on the strongest; up and down move it, confirm
+## plays the one focused and cancel closes the slip with the selection kept. A click
+## outside the slip cancels too. The table stays visible, a little dimmed, so the lifted
+## cards can still be seen. Buttons sound as every button does.
 
 signal chosen(reading: Pattern)
 signal closed
@@ -23,7 +23,6 @@ const FONT_SIZE: int = 22
 var _holder: Control = Control.new()
 var _slip: PanelContainer = PanelContainer.new()
 var _list: VBoxContainer = VBoxContainer.new()
-var _title: Label
 var _cancel: Button
 var _buttons: Array[Button] = []
 var _readings: Array[Pattern] = []
@@ -44,8 +43,7 @@ func _ready() -> void:
 	_holder.add_child(_slip)
 	_list.add_theme_constant_override("separation", 10)
 	_slip.add_child(_list)
-	_title = ScreenKit.eyebrow(tr("reading.title"))
-	_list.add_child(_title)
+	_list.add_child(ScreenKit.eyebrow(tr("reading.title")))
 	_cancel = ScreenKit.button(tr("reading.cancel"), CommonsTheme.GHOST)
 	_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_cancel.pressed.connect(close)

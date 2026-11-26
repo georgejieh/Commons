@@ -1,9 +1,9 @@
 class_name TableMotion
 extends Node
-## The table's motion (P3B.6): card moves as tweens bound to the moving node, so a
-## freed card takes its tween with it; screen shake from a decaying trauma value; and a
-## brief hit-stop when a bomb lands. Reduced motion shortens every move and turns shake
-## and hit-stop off. Every number comes from MotionPresets.
+## The table's motion: card moves as tweens bound to the moving node, so a freed card takes
+## its tween with it; screen shake from a decaying trauma value; and a brief hit-stop when
+## a bomb lands. Reduced motion shortens every move and turns shake and hit-stop off. Every
+## number comes from MotionPresets.
 
 const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 ## Where a seat keeps its wind-up's tween, so the next one replaces it.

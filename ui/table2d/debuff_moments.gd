@@ -4,12 +4,10 @@ extends Control
 ## beat (art/STYLE.md, Motion): cards a Levy or Redistribution moves slide to the seat on
 ## the left, the player's own face up and a villager's face down; a confiscated Cadre's
 ## card is struck through and stamped on the notice board; a seized plot card is torn in
-## two beside a cut-in's words. A slip of paper by the moving cards says which debuff
-## moved them and what moved. Glass Walls lays its glass over the hand while it is in
-## force.
-## Reduced motion and quiet events, from a replay or a skip, leave only the end state.
-## It listens to the table's event player itself, after the table has rendered each
-## event.
+## two beside a cut-in's words. A slip of paper by the moving cards says which debuff moved
+## them and what moved. Glass Walls lays its glass over the hand while it is in force.
+## Reduced motion and quiet events, from a replay or a skip, leave only the end state. It
+## listens to the table's event player itself, after the table has rendered each event.
 
 const FLY_TIME: float = 0.5
 const FLY_STAGGER: float = 0.1
@@ -232,7 +230,7 @@ func _seize(event: RunEvent) -> void:
 	)
 	var sub: String = tr("callout.plot_seized.sub").format({"card": CardName.of(card)})
 	var shout: float = _table.callout.shout(
-		tr("callout.plot_seized"), Callout.Tier.CUT_IN, TableMoments.LOSS, sub
+		tr("callout.plot_seized"), Callout.Tier.CUT_IN, ScreenKit.LOSS, sub
 	)
 	# The card is held up at the left end of the cloth, clear of the words.
 	var words: Rect2 = _table.callout.text_rect()

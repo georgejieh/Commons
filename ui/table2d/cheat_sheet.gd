@@ -1,12 +1,11 @@
 class_name CheatSheet
 extends Control
-## The always-available rules card (P3B.5): every hand type with a small example and its
-## Rate at the run's level for it, naming the level once a Directive has raised it, the
-## rule changes active now, the current rank order, low to high, and while a rank is wild
-## a section on wild cards (ADR 0029). While open it
-## redraws on every run event, so a changed rule shows the frame it changes. A sheet
-## with more rules than the screen has room for scrolls between its heading and Close,
-## never cut off and never drawn smaller (ADR 0034).
+## The always-available rules card: every hand type with a small example and its Rate at
+## the run's level for it, naming the level once a Directive has raised it, the rule
+## changes active now, the current rank order, low to high, and while a rank is wild a
+## section on wild cards (ADR 0029). While open it redraws on every run event, so a changed
+## rule shows the frame it changes. A sheet with more rules than the screen has room for
+## scrolls between its heading and Close, never cut off and never drawn smaller (ADR 0034).
 
 const TYPES: Array[String] = [
 	"single",
@@ -25,9 +24,9 @@ const TYPES: Array[String] = [
 	"rocket",
 ]
 
-## How dark the table goes behind the open card.
 ## The keywords the sheet spells out; the rest explain themselves on hover.
 const WORDS: PackedStringArray = ["grain", "rate", "zeal", "commons", "kitty", "kicker"]
+## How dark the table goes behind the open card.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.72)
 ## The wild ranks' section in the smallest rules type, and the sheet's spacing while it
 ## shows, so the sheet still fits 1080 with every part of it shown.

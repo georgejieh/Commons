@@ -5,17 +5,13 @@ extends PanelContainer
 ## under them (ADR 0034, rule 9), and their last words underneath. The card back by the
 ## count carries the dread's eye (BackEyes). The landlord tag lies across the portrait's
 ## top. The card count turns red at 2 and 1 cards and says so in words. A line types out
-## in step with the villager's voice (P3B.13); a click shows the rest at once.
+## in step with the villager's voice; a click shows the rest at once.
 
 ## The player skipped the line typing out, so its voice should stop.
 signal speech_skipped(seat: int)
 ## The line typing out finished or was skipped.
 signal speech_finished(seat: int)
 
-const INK: Color = Color("1e1a16")
-const LANDLORD_RED: Color = Color("9e1b16")
-const GOLD: Color = Color("c9a227")
-const PAPER: Color = Color("d9c8a4")
 ## The portrait's frame, and the picture inside it after the frame's 4 px edge.
 const PORTRAIT_BOX: Vector2 = Vector2(110, 138)
 const PICTURE_BOX: Vector2 = Vector2(102, 130)
@@ -51,7 +47,6 @@ var _back: TextureRect = TextureRect.new()
 var _count_row: HBoxContainer = HBoxContainer.new()
 var _row: HBoxContainer = HBoxContainer.new()
 var _stack: VBoxContainer = VBoxContainer.new()
-var _mood: String = ""
 ## What the role line says at rest, and the tween that puts it back after a flash.
 var _role_text: String = ""
 var _flash: Tween = null
@@ -85,7 +80,7 @@ func _init() -> void:
 	_banner.offset_top = 6
 	_portrait.custom_minimum_size = PORTRAIT_BOX
 	_portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	_portrait.color = PAPER
+	_portrait.color = ScreenKit.OLD_PAPER
 	_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_picture.set_anchors_and_offsets_preset(
@@ -96,10 +91,10 @@ func _init() -> void:
 	_name.theme_type_variation = CommonsTheme.TITLE
 	_name.add_theme_font_size_override("font_size", TextSize.px(36))
 	_count.add_theme_font_size_override("font_size", TextSize.px(COUNT_SIZE))
-	_count.add_theme_color_override("font_color", INK)
+	_count.add_theme_color_override("font_color", ScreenKit.INK)
 	_role.theme_type_variation = CommonsTheme.EYEBROW
 	_speech.add_theme_font_size_override("font_size", TextSize.px(SPEECH_SIZE))
-	_speech.add_theme_color_override("font_color", INK)
+	_speech.add_theme_color_override("font_color", ScreenKit.INK)
 	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	# Two lines of room, said or not, so the sheet never changes height; _ready makes it
 	# as tall as two lines of the type really stand.
@@ -108,7 +103,6 @@ func _init() -> void:
 	_speech.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	_speech.mouse_filter = Control.MOUSE_FILTER_STOP
 	_speech.gui_input.connect(_on_speech_input)
-	set_process(false)
 	_row.add_child(_portrait)
 	_back.texture = CardBacks.picture(CardBacks.current())
 	_back.custom_minimum_size = Vector2(30, 42)
@@ -118,7 +112,7 @@ func _init() -> void:
 	_count_row.add_child(_back)
 	_count_row.add_child(_count)
 	_intel.add_theme_font_size_override("font_size", TextSize.px(INTEL_SIZE))
-	_intel.add_theme_color_override("font_color", LANDLORD_RED)
+	_intel.add_theme_color_override("font_color", ScreenKit.SEAL)
 	_intel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_intel.visible = false
 	for child: Control in [_name, _count_row, _role]:
@@ -180,7 +174,7 @@ func set_count(cards: int) -> void:
 	if _count.text != text and not _count.text.is_empty():
 		UiMotion.pulse(_count)
 	_count.text = text
-	_count.add_theme_color_override("font_color", LANDLORD_RED if cards <= 2 else INK)
+	_count.add_theme_color_override("font_color", ScreenKit.SEAL if cards <= 2 else ScreenKit.INK)
 	# Print beside the portrait: it fits the room the sheet leaves, never under Standard.
 	var font: Font = _count.get_theme_font("font")
 	var gap: float = _count_row.get_theme_constant("separation")
@@ -206,7 +200,7 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 		_banner.scale = Vector2.ONE
 		_banner.rotation = 0.0
 	_banner.modulate.a = 1.0 if is_landlord else 0.0
-	_portrait.color = GOLD if is_landlord else PAPER
+	_portrait.color = ScreenKit.HINT if is_landlord else ScreenKit.OLD_PAPER
 	if is_landlord:
 		_rest_role(tr("table.role.landlord"))
 	elif teammate:
@@ -314,14 +308,11 @@ func _info_room() -> float:
 	return size.x - edges - PORTRAIT_BOX.x - _row.get_theme_constant("separation")
 
 
-## Shows a line; mood is the line's mood tag. With reveal times from the voice plan
-## (P3B.13) it types out, one character at each time; without, it shows at once.
-func say(
-	text: String, mood: String = "", reveal: PackedFloat32Array = PackedFloat32Array()
-) -> void:
+## Shows a line. With reveal times from the voice plan it types out, one character at
+## each time; without, it shows at once.
+func say(text: String, reveal: PackedFloat32Array = PackedFloat32Array()) -> void:
 	_speech.text = text
 	_fit_speech(text)
-	_mood = mood
 	_reveal = reveal
 	_typed = 0.0
 	_speech.visible_characters = -1 if reveal.is_empty() else 0
@@ -383,8 +374,8 @@ func _on_speech_input(event: InputEvent) -> void:
 			_speech.accept_event()
 
 
-## Dims the portrait for a moment, as a flicker (P3B.12). The tween belongs to the
-## picture, so it dies with it.
+## Dims the portrait for a moment, as a flicker. The tween belongs to the picture, so it
+## dies with it.
 func blink(seconds: float) -> void:
 	var tween: Tween = _picture.create_tween()
 	tween.tween_property(_picture, "modulate:v", 0.1, seconds * 0.3)
@@ -393,7 +384,3 @@ func blink(seconds: float) -> void:
 
 func speech() -> String:
 	return _speech.text
-
-
-func mood() -> String:
-	return _mood

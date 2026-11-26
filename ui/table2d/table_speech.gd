@@ -1,19 +1,20 @@
 class_name TableSpeech
 extends RefCounted
-## Turns run events into what villagers say at the table (P3B.8). Lines come from the
-## SpeechBook by event. Each seat cycles through a salt, so the same events in the same
-## order always give the same lines, with no global random. One villager talks at a
-## time: a line for another seat waits in a short queue until the one typing out ends.
-## A seat's newer line for the same event replaces its older one, and when the queue
-## overflows, idle chatter goes before announcements. Skipping shows every waiting line
-## at once, silently. In a run that began with an entry in the family's file (ADR 0022),
-## a villager's line for one moment is now and then about the work team's visit instead,
-## drawn on the table's own seeded stream; a run with no entry draws nothing.
-## On a corrupted profile under Denunciation, ordinary lines turn by degrees into the
-## speech book's slogans (P5.2c), the share from the dread's slogan weight on a fixed
-## sequence; at the last stages the other villager says the same slogan at once.
+## Turns run events into what villagers say at the table. Lines come from the SpeechBook by
+## event. Each seat cycles through a salt, so the same events in the same order always give
+## the same lines, with no global random. One villager talks at a time: a line for another
+## seat waits in a short queue until the one typing out ends. A seat's newer line for the
+## same event replaces its older one, and when the queue overflows, idle chatter goes
+## before announcements. Skipping shows every waiting line at once, silently. In a run that
+## began with an entry in the family's file (ADR 0022), a villager's line for one moment is
+## now and then about the work team's visit instead, drawn on the table's own seeded
+## stream; a run with no entry draws nothing. On a corrupted profile under Denunciation,
+## ordinary lines turn by degrees into the speech book's slogans, the share from the
+## dread's slogan weight on a fixed sequence; at the last stages the other villager says
+## the same slogan at once.
 
-## A villager said a line: the voice (P3B.13) listens here.
+## A villager said a line, for tests: the table voices the line itself, and tests count
+## what was said here.
 signal spoke(seat: int, event: String, line: SpeechLine)
 
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
@@ -35,9 +36,9 @@ var dread: DreadLayers = null
 var _seats: Dictionary[int, SeatPanel] = {}
 var _said: Dictionary[int, int] = {}
 var _landlord: int = Seats.NONE
-## Each seated family's own lines (P4.5), said alongside the shared book's.
+## Each seated family's own lines, said alongside the shared book's.
 var _books: Dictionary[int, SpeechBook] = {}
-## Each seat's voice and letter bank (P3B.13). A seat with none speaks silently.
+## Each seat's voice and letter bank. A seat with none speaks silently.
 var _voices: Dictionary[int, VoiceProfile] = {}
 var _voice_banks: Dictionary[int, String] = {}
 ## Lines waiting for the table to fall quiet, oldest first: seat, event and fields.
@@ -143,7 +144,7 @@ func _speak(seat: int, event: String, line: SpeechLine, fields: Dictionary) -> v
 	if _voices.has(seat):
 		var voice: VoiceProfile = _voices[seat]
 		reveal = Audio.voice.speak(seat, text, line.mood, voice, _voice_banks[seat]).reveal
-	_seats[seat].say(text, line.mood, reveal)
+	_seats[seat].say(text, reveal)
 	spoke.emit(seat, event, line)
 	if hurry:
 		_seats[seat].skip_speech()

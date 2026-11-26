@@ -4,7 +4,7 @@ extends VBoxContainer
 ## Commons pool with each peasant's part of it, then the last few plays: who played what,
 ## and under it Grain × Rate × Zeal = its score, on one line each so a score is never left
 ## alone on a line. Rows are made once and reused, so scoring a play instances nothing. A
-## seat's total counts up as its play is stamped in (P3B.6). At the stage past the last
+## seat's total counts up as its play is stamped in. At the stage past the last
 ## the household's small ledger sits at its foot, with the run's true figures (ADR 0022).
 
 const MAX_PLAYS: int = 5
@@ -15,8 +15,6 @@ const SUM_FACE: String = "res://ui/theme/oswald_medium.tres"
 const SCORE_FACE: String = "res://ui/theme/oswald_bold.tres"
 ## Rows wrap inside the ledger's paper.
 const ROW_WIDTH: float = 270.0
-const INK: Color = Color("1e1a16")
-const SOFT: Color = Color("5a4a36")
 
 ## The household's small ledger, at the panel's foot at the stage past the last.
 var books: SmallLedger = SmallLedger.new()
@@ -46,7 +44,7 @@ func _ready() -> void:
 	title.text = tr("ledger.title")
 	title.add_theme_font_size_override("font_size", TextSize.px(26))
 	title.add_theme_font_override("font", ScreenKit.TYPEWRITER_BOLD)
-	title.add_theme_color_override("font_color", INK)
+	title.add_theme_color_override("font_color", ScreenKit.INK)
 	add_child(title)
 	_as_head(_landlord_head, "ledger.landlord")
 	_as_head(_plays_head, "ledger.plays")
@@ -83,7 +81,7 @@ func _ready() -> void:
 	_plays.add_theme_font_override("bold_font", ScreenKit.TYPEWRITER_BOLD)
 	_plays.add_theme_font_size_override("normal_font_size", TextSize.px(18))
 	_plays.add_theme_font_size_override("bold_font_size", TextSize.px(18))
-	_plays.add_theme_color_override("default_color", INK)
+	_plays.add_theme_color_override("default_color", ScreenKit.INK)
 	add_child(_plays)
 	_foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -245,13 +243,13 @@ func _show() -> void:
 func _as_head(label: Label, key: String) -> void:
 	label.text = tr(key).to_upper()
 	label.theme_type_variation = CommonsTheme.EYEBROW
-	label.add_theme_color_override("font_color", SOFT)
+	label.add_theme_color_override("font_color", ScreenKit.FAINT_INK)
 
 
 func _as_text(label: Label) -> void:
 	label.add_theme_font_size_override("font_size", TextSize.px(22))
 	label.add_theme_font_override("font", ScreenKit.TYPEWRITER)
-	label.add_theme_color_override("font_color", INK)
+	label.add_theme_color_override("font_color", ScreenKit.INK)
 
 
 func _as_amount(label: Label) -> void:

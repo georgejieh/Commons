@@ -1,13 +1,13 @@
 class_name DreadLayers
 extends Node
-## Puts the board's dread on screen (P3B.12). A BoardState eases one weight per
-## HorrorLayer; each frame this writes those weights, scaled by the horror-intensity
-## setting, into the table's shader materials and set dressing, with no allocation.
-## Brief flickers run on cooldowns and never under no-flash. The Plan's slow effects
-## (P5.2c) take their weights here too: the eyes on the card backs (BackEyes), the hand's
-## tremble (HandTremble), the roster's names (WallRoster) and the slogans TableSpeech asks
-## for. It reads cached run values only and touches nothing the player reads: cards,
-## counts, ranks and scores are drawn by other nodes it never changes.
+## Puts the board's dread on screen. A BoardState eases one weight per HorrorLayer; each
+## frame this writes those weights, scaled by the horror-intensity setting, into the
+## table's shader materials and set dressing, with no allocation. Brief flickers run on
+## cooldowns and never under no-flash. The slow effects of Famine and Denunciation take
+## their weights here too: the eyes on the card backs (BackEyes), the hand's tremble
+## (HandTremble), the roster's names (WallRoster) and the slogans TableSpeech asks for. It
+## reads cached run values only and touches nothing the player reads: cards, counts, ranks
+## and scores are drawn by other nodes it never changes.
 
 signal flickered(kind: String)
 
@@ -109,7 +109,7 @@ func refresh(state: RunView, settle_now: bool = false, landlord: Variant = null)
 	var denunciation: int = ShownFigures.board(
 		state, RunCorrections.DENUNCIATION, state.denunciation()
 	)
-	board.set_inputs(famine, denunciation, is_landlord, corruption())
+	board.set_inputs(famine, denunciation, is_landlord, ArtStages.stage())
 	_choose_music(is_landlord)
 	if settle_now:
 		board.settle()
@@ -122,11 +122,6 @@ func force(famine: int, denunciation: int, landlord: bool, stage: int = 0) -> vo
 	_choose_music(landlord)
 	board.settle()
 	apply()
-
-
-## The hidden corruption stage (ADR 0018), from ArtStages.
-static func corruption() -> int:
-	return ArtStages.stage()
 
 
 ## Writes the current weights into every material and piece.
@@ -317,7 +312,7 @@ func _key(index: int) -> String:
 
 
 ## Picks the music cue for the board at a round boundary: the Famine layer's target,
-## scaled by horror intensity, and the landlord seat (P3C.9).
+## scaled by horror intensity, and the landlord seat.
 func _choose_music(landlord: bool) -> void:
 	var famine: float = 0.0
 	for index: int in config.layers.size():

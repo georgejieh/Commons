@@ -1,14 +1,13 @@
 class_name PlayOrder
 extends RefCounted
-## The order a play's cards lie in on the trick (P5.2a): the body of its reading first,
-## low to high with each rank's cards together, then its kickers low to high. A wild card
-## standing in lies with the rank it stands for, after the natural cards of that rank
-## (ADR 0029). The run hands the cards over in whatever order they were chosen, a
-## villager's by value and the player's by the hand, so the pile sorts them itself.
-##
-## Ranks here are printed ranks, never a seat's rank order: a chain is a run of printed
-## ranks (Classifier) whatever a Cadre or debuff does to how ranks compare, so a pair run
-## reads 5 5 6 6 7 7 at every seat.
+## The order a play's cards lie in on the trick: the body of its reading first, low to high
+## with each rank's cards together, then its kickers low to high. A wild card standing in
+## lies with the rank it stands for, after the natural cards of that rank (ADR 0029). The
+## run hands the cards over in whatever order they were chosen, a villager's by value and
+## the player's by the hand, so the pile sorts them itself.  Ranks here are printed ranks,
+## never a seat's rank order: a chain is a run of printed ranks (Classifier) whatever a
+## Cadre or debuff does to how ranks compare, so a pair run reads 5 5 6 6 7 7 at every
+## seat.
 
 
 ## The indices of cards in the order they lie, as reading reads them; with no reading,

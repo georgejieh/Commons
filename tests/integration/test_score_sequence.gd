@@ -107,7 +107,7 @@ func test_a_tag_says_what_a_step_added() -> void:
 		ScoreStep.Figure.ZEAL, ScoreStep.Source.MODIFIER, ScoreStep.Op.ADD, -0.5, 1.5, 1.0
 	)
 	assert_str(ScoreSequence.tag_text(cut)).is_equal("−0.5 " + tr("keyword.zeal.name"))
-	assert_bool(ScoreSequence.ink_of(cut) == ScoreSequence.LOSS).is_true()
+	assert_bool(ScoreSequence.ink_of(cut) == ScreenKit.LOSS).is_true()
 
 
 func test_the_table_waits_for_the_sequence_and_a_click_hurries_it() -> void:

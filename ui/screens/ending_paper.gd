@@ -8,7 +8,6 @@ extends PanelContainer
 ## fixed seed, so the same sheet comes out every time.
 
 const TEA: Color = Color("6b4a24")
-const DIRT: Color = Color("3a2c1e")
 const SEED: int = 7703
 ## The printed frame's insets from the paper's edge, and its corner marks.
 const OUTER: float = 18.0
@@ -91,7 +90,7 @@ func _stains(rng: RandomNumberGenerator, worn: float) -> void:
 		draw_circle(spot + Vector2(reach * 0.4, -reach * 0.3), reach * 0.6, wash)
 	for _speck: int in _count(SPECKS, worn):
 		var at: Vector2 = Vector2(rng.randf() * size.x, rng.randf() * size.y)
-		draw_circle(at, rng.randf_range(0.6, 1.8), Color(DIRT, 0.1 + 0.2 * worn))
+		draw_circle(at, rng.randf_range(0.6, 1.8), Color(BowlGrime.CRACK, 0.1 + 0.2 * worn))
 	var torn: float = clampf((worn - 0.6) / 0.4, 0.0, 1.0)
 	if torn > 0.0:
 		var reach: float = 90.0 * torn

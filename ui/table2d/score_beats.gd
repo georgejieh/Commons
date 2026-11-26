@@ -1,6 +1,6 @@
 class_name ScoreBeats
 extends RefCounted
-## The timing of a scored play acted out (P5.2a): one beat per step of the play's score,
+## The timing of a scored play acted out: one beat per step of the play's score,
 ## then the total's roll and stamp. The cards tick quicker as they go, and so do the steps
 ## that change the score after the first, each to score_quicken of the one before but
 ## never under its least; the whole stays within score_most, so a ten-step chain never
@@ -51,16 +51,6 @@ func total() -> float:
 	var sum: float = 0.0
 	for each: float in seconds:
 		sum += each
-	return sum
-
-
-## Seconds until the total starts to roll: the steps before it.
-func until_roll() -> float:
-	var sum: float = 0.0
-	for index: int in kinds.size():
-		if kinds[index] == Kind.ROLL:
-			return sum
-		sum += seconds[index]
 	return sum
 
 

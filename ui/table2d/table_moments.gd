@@ -1,16 +1,13 @@
 class_name TableMoments
 extends Control
 ## The table acted out, as one layer over the play area. Small beats stay where they
-## happen: a pass is tagged on the seat that passed, a card lands with weight, a score
-## is acted out on chits under the trick (ScoreSequence) and flies to the ledger. Big
-## beats take the
-## whole screen for a moment through the Callout: a call or grab for the landlord
-## seat, a bomb, the end of a round. It holds the event queue still for as long as
-## each beat needs, and shows only what the run already says; the ledger, seats and
-## meters hold the same facts at rest.
+## happen: a pass is tagged on the seat that passed, a card lands with weight, a score is
+## acted out on chits under the trick (ScoreSequence) and flies to the ledger. Big beats
+## take the whole screen for a moment through the Callout: a call or grab for the landlord
+## seat, a bomb, the end of a round. It holds the event queue still for as long as each
+## beat needs, and shows only what the run already says; the ledger, seats and meters hold
+## the same facts at rest.
 
-const GRAIN: Color = Color("8a5a12")
-const LOSS: Color = Color("3a322b")
 ## Where the audit slip sits, its middle. The tally keeps to the room ScoreSequence
 ## gives it, between the laid cards and the hand.
 const SLIP_AT: Vector2 = Vector2(790, 520)
@@ -227,7 +224,7 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 			var landlord_won: bool = event.seat == _landlord
 			var player_won: bool = landlord_won == (_landlord == 0)
 			var line: String = tr("banner.landlord_wins" if landlord_won else "banner.peasants_win")
-			var cloth: Color = ScreenKit.RED if player_won else LOSS
+			var cloth: Color = ScreenKit.RED if player_won else ScreenKit.LOSS
 			var word: String = tr("callout.won" if player_won else "callout.lost")
 			_shout(word, Callout.Tier.TAKEOVER, cloth, line, Seats.NONE)
 
@@ -255,7 +252,8 @@ func _on_scored(event: RunEvent, quiet: bool) -> void:
 func _on_landed(total_text: String) -> void:
 	if _scoring == Seats.NONE or _ledger == null:
 		return
-	fx.fly("+" + total_text, tally.total_center(), _ledger.amount_center(_scoring), GRAIN)
+	var to: Vector2 = _ledger.amount_center(_scoring)
+	fx.fly("+" + total_text, tally.total_center(), to, Color(Keywords.INKS["grain"]))
 
 
 ## Work points reach the player: the number flies to the Quota bar, which fills as it
@@ -263,7 +261,7 @@ func _on_landed(total_text: String) -> void:
 func _gain(amount: float, from: Vector2) -> void:
 	if hud == null or amount <= 0.0:
 		return
-	fx.fly("+" + Strings.score(amount), from, hud.progress_center(), GRAIN)
+	fx.fly("+" + Strings.score(amount), from, hud.progress_center(), Color(Keywords.INKS["grain"]))
 	hud.add_progress(amount, TableFx.FLY_TIME)
 
 
@@ -277,10 +275,10 @@ func _on_set_ended(met: bool, progress: float) -> void:
 	if hud != null:
 		var shown: String = hud.end_line(progress, _target)
 		line = line if shown.is_empty() else shown
-		met = hud.reads_met(met)
+		met = ShownFigures.reads_met(met)
 	var word: String = tr("callout.quota.met" if met else "callout.quota.missed")
 	Audio.play(AudioEvents.QUOTA_MET if met else AudioEvents.QUOTA_MISSED)
-	_shout(word, Callout.Tier.TAKEOVER, ScreenKit.RED if met else LOSS, line, Seats.NONE)
+	_shout(word, Callout.Tier.TAKEOVER, ScreenKit.RED if met else ScreenKit.LOSS, line, Seats.NONE)
 
 
 ## Every claim's audit roll arrives together. Once each claim on the slip has rolled, the

@@ -98,7 +98,7 @@ func test_a_second_villager_waits_until_the_first_finishes() -> void:
 	var speech: TableSpeech = TableSpeech.new()
 	var seats: Dictionary[int, SeatPanel] = {1: first, 2: second}
 	speech.setup(seats)
-	first.say("You going to play that?", "", PackedFloat32Array([0.1, 0.2, 0.3]))
+	first.say("You going to play that?", PackedFloat32Array([0.1, 0.2, 0.3]))
 	speech.say(2, "pass")
 	assert_int(speech.waiting_count()).is_equal(1)
 	assert_str(second.speech()).is_empty()

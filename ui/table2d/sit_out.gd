@@ -1,14 +1,13 @@
 class_name SitOut
 extends Node
-## Sitting out a trick (P5.2a, the owner's request of 2026-11-24). When it is the
-## player's turn to follow and the legal-move generator gives them nothing but a pass,
-## a Sit out button stands beside Pass. Pressed, it passes for them for the rest of the
-## trick while the villagers play at a faster step. On each of the player's turns in that
-## trick the generator is asked again, for the seat's rank order can change mid-trick: the
-## moment any play is legal, a bomb or rocket included, sitting out stops and the turn is
-## theirs. It ends with the trick and never carries into the next. Every pass it makes is
-## the Pass button's own command, sent through the controller; nothing else changes the
-## run. It is never offered during the arrival.
+## Sitting out a trick. When it is the player's turn to follow and the legal-move generator
+## gives them nothing but a pass, a Sit out button stands beside Pass. Pressed, it passes
+## for them for the rest of the trick while the villagers play at a faster step. On each of
+## the player's turns in that trick the generator is asked again, for the seat's rank order
+## can change mid-trick: the moment any play is legal, a bomb or rocket included, sitting
+## out stops and the turn is theirs. It ends with the trick and never carries into the
+## next. Every pass it makes is the Pass button's own command, sent through the controller;
+## nothing else changes the run. It is never offered during the arrival.
 
 ## The table's step is to be read again: sitting out began or ended.
 signal pace_changed

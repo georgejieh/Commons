@@ -37,7 +37,7 @@ func test_the_seat_count_says_few_cards_in_words() -> void:
 	for cards: int in [3, 2, 1, 0]:
 		panel.set_count(cards)
 		assert_str(count.text).is_equal(SeatPanel.count_text(cards))
-		var red: bool = count.get_theme_color("font_color") == SeatPanel.LANDLORD_RED
+		var red: bool = count.get_theme_color("font_color") == ScreenKit.SEAL
 		assert_bool(red).override_failure_message(str(cards)).is_equal(cards <= 2)
 
 

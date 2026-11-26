@@ -3,10 +3,9 @@ extends RefCounted
 ## The player's Campaigns at the table (ADR 0021): the held leaflets at full size in a row
 ## under the left seat, with Use and Cancel under them, clear of the brigade notice, the
 ## trick, the hand, the buttons and the prompt line, and not shown at all while none is
-## held; the
-## Play on button at the opening before the first play; and the layer
-## that acts each use out. While a leaflet is armed the action bar's reading says what
-## to choose, and the hand's selection is the Campaign's.
+## held; the Play on button at the opening before the first play; and the layer that acts
+## each use out. While a leaflet is armed the action bar's reading says what to choose, and
+## the hand's selection is the Campaign's.
 
 ## Where the tray's top left corner sits at 1920x1080: under the left seat, which ends at
 ## y 354, left of the trick, which starts at x 470, with its buttons above the notice at
@@ -61,18 +60,7 @@ func setup(
 ## Hands the moments layer the table's card pool and debuff strip, and puts it in front.
 func attach(pool: CardPool, debuffs: DebuffStrip) -> void:
 	moments.tray = tray
-	moments.setup(
-		_controller,
-		_hand_view,
-		pool,
-		_player,
-		_table,
-		_table.seats(),
-		_table.names(),
-		debuffs,
-		_card_for,
-		_show_hand
-	)
+	moments.setup(_controller, _hand_view, pool, _player, _table, debuffs, _card_for, _show_hand)
 	moments.move_to_front()
 
 

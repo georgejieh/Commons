@@ -144,10 +144,13 @@ func test_the_tally_keeps_clear_of_the_notice_and_the_buttons() -> void:
 	var dressing: DreadDressing = table.get("_dressing")
 	var moments: TableMoments = table.get("_moments")
 	for wide: bool in [false, true]:
-		if wide:
-			moments.tally.show_score(9999.0, 96.0, 12.5, 999999.0)
-		else:
-			moments.tally.show_score(54.0, 7.0, 1.5, 567.0)
+		var scored: RunEvent = RunEvent.new(
+			RunEvent.Type.PLAY_SCORED, 0, 0, 999999.0 if wide else 567.0
+		)
+		scored.grain = 9999.0 if wide else 54.0
+		scored.rate = 96.0 if wide else 7.0
+		scored.zeal = 12.5 if wide else 1.5
+		moments.sequence.play(scored, 0.0)
 		await await_idle_frame()
 		await await_idle_frame()
 		var tally: Rect2 = moments.tally.get_global_rect()

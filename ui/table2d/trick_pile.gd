@@ -190,14 +190,14 @@ func _fly(view: CardView, start: Vector2, rest: Vector2, angle: float, order: in
 
 ## How far below the pile's top any laid card can reach, in pixels: the lowest a play
 ## lands, scattered, at its most turned and at its longest, with its cards turned too. A
-## card only ever hops up from there, so nothing laid on the pile is lower (P5.2a).
+## card only ever hops up from there, so nothing laid on the pile is lower.
 func reach_below() -> float:
 	var card_size: Vector2 = CARD * PLAY_SCALE
 	var along: float = maxf(0.0, size.x - card_size.x - 2.0 * LEAN)
 	return (size.y + card_size.y) / 2.0 + SCATTER.y + along * sin(PLAY_TILT) + LEAN
 
 
-## Hops a card of the top play over seconds as its Grain is counted (P5.2a).
+## Hops a card of the top play over seconds as its Grain is counted.
 func tick_card(card_id: int, seconds: float) -> void:
 	var view: CardView = _view_of(card_id)
 	if view != null and not _motion.reduced and seconds > 0.0:

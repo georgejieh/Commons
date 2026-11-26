@@ -1,11 +1,11 @@
 class_name TableFx
 extends Control
-## Numbers in flight over the table: a play's points leaving the tally for the ledger,
-## and the small tags of what each thing that fired added to a play's score, beside it
-## (P5.2a). Labels are made once and reused in turn. Nothing here takes the mouse. A
-## flight carries nothing the table doesn't show at rest, so reduced motion drops it; a
-## tag still shows under reduced motion, standing still, since it says what the tally's
-## figures only show the sum of.
+## Numbers in flight over the table: a play's points leaving the tally for the ledger, and
+## the small tags of what each thing that fired added to a play's score, beside it . Labels
+## are made once and reused in turn. Nothing here takes the mouse. A flight carries nothing
+## the table doesn't show at rest, so reduced motion drops it; a tag still shows under
+## reduced motion, standing still, since it says what the tally's figures only show the sum
+## of.
 
 const FLIERS: int = 6
 const FLY_SIZE: int = 38

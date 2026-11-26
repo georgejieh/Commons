@@ -1,6 +1,6 @@
 class_name RoundClose
 extends Node
-## A finished round is played out and put away before the next hand is dealt (P5.2a). The
+## A finished round is played out and put away before the next hand is dealt. The
 ## run deals the next hand the moment the round is settled, so the table must not read the
 ## hand from the run while the old round's events are still being shown: the player's last
 ## play leaves the fan, and the fan stays empty until the deal plays. Before the deal, the
@@ -44,11 +44,6 @@ func own_play(event: RoundEvent) -> void:
 		return
 	_hand.refresh()
 	_hand_view.show_cards()
-
-
-## True while the finished round is still on the table, waiting to be put away.
-func is_closing() -> bool:
-	return _beat != null and _beat.is_valid() and _beat.is_running()
 
 
 func _on_played(event: RunEvent) -> void:

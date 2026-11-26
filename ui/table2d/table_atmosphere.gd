@@ -3,7 +3,7 @@ extends Control
 ## The dark room around the table: near-black outside one weak lamp's pool of light,
 ## and faint eyes watching from beyond it. It sits over the table surface and under
 ## the cards, seats and controls, so it never covers anything the player reads. The
-## dread layers (P3B.12) drive its materials: the pool shrinks as Famine rises, and more
+## dread layers drive its materials: the pool shrinks as Famine rises, and more
 ## eyes show as Denunciation rises, though some are always there.
 
 const LAMP_SHADER: Shader = preload("res://shaders/lamp_light.gdshader")
@@ -14,7 +14,7 @@ var _lamp: ColorRect = ColorRect.new()
 var _watchers: TextureRect = ScreenKit.cover(ScreenKit.ART.watchers)
 var _lamp_material: ShaderMaterial = ShaderMaterial.new()
 var _eyes_material: ShaderMaterial = ShaderMaterial.new()
-## The lamp as a 2D light, for the normal-mapped table and cards (P3C.6).
+## The lamp as a 2D light, for the normal-mapped table and cards.
 var _light: PointLight2D = Lighting.light(LIGHT)
 
 
@@ -33,6 +33,7 @@ func _ready() -> void:
 	_place_light()
 
 
+## The lamp's light, for the table's performance tool, which measures the table without it.
 func light() -> PointLight2D:
 	return _light
 

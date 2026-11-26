@@ -1,11 +1,11 @@
 class_name WallRoster
 extends PanelContainer
-## The brigade's roster pinned on the wall under the right seat (P5.2c, the Plan's Famine
-## rows): every founding family's surname, typed in two columns on worn paper. On a
-## corrupted profile names leave it as Famine rises, one after another in a fixed order
-## that skips about the sheet, each fading to a scraped patch of paper. It is decoration:
-## nothing the player reads at the table comes from it, and it gives way to the rules slip
-## when the column needs the room (TableColumns).
+## The brigade's roster pinned on the wall under the right seat: every founding family's
+## surname, typed in two columns on worn paper. On a corrupted profile names leave it as
+## Famine rises, one after another in a fixed order that skips about the sheet, each fading
+## to a scraped patch of paper. It is decoration: nothing the player reads at the table
+## comes from it, and it gives way to the rules slip when the column needs the room
+## (TableColumns).
 
 ## The founding families, read from the village's own data.
 const VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
@@ -17,7 +17,6 @@ const COLUMN_GAP: int = 28
 ## Names leave in steps of this many down the list, so the gaps do not run down one
 ## column; it shares no factor with the number of families.
 const VANISH_STEP: int = 5
-const INK: Color = Color("1e1a16")
 ## The stain left where a name was scraped off, at its darkest.
 const SCRAPED: Color = Color(0.35, 0.24, 0.12, 0.16)
 ## A name's ink is set again only when it moves by more than this.
@@ -61,7 +60,7 @@ func show_weight(weight: float, tuning: DreadEffects) -> void:
 		if ink == _ink[index] or near:
 			continue
 		_ink[index] = ink
-		var typed: Color = BowlGrime.faded(INK, worn)
+		var typed: Color = BowlGrime.faded(ScreenKit.INK, worn)
 		_names[index].add_theme_color_override("font_color", Color(typed, ink))
 		_patches[index].bg_color = Color(SCRAPED, SCRAPED.a * (1.0 - ink))
 
@@ -84,7 +83,7 @@ func _name_label(text: String) -> Label:
 	label.text = text
 	label.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 	label.add_theme_font_size_override("font_size", TextSize.px(NAME_SIZE))
-	label.add_theme_color_override("font_color", BowlGrime.faded(INK, BowlGrime.wear()))
+	label.add_theme_color_override("font_color", BowlGrime.faded(ScreenKit.INK, BowlGrime.wear()))
 	var patch: StyleBoxFlat = StyleBoxFlat.new()
 	patch.bg_color = Color(SCRAPED, 0.0)
 	label.add_theme_stylebox_override("normal", patch)

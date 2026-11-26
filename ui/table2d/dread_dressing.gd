@@ -1,27 +1,24 @@
 class_name DreadDressing
 extends Control
-## The dread layers' set dressing (P3B.12), drawn over the room and under the cards,
-## seats and controls: empty chairs at the room's edge, a notice about your household
-## under the Cadre board, black bars over the brigade notice, a spotlight on your seat and
-## gilt trim for a landlord, and the brigade's roster under the right seat, whose names
-## fade as the roster effect grows (P5.2c). Shapes are placeholders until the art pass
-## (P3C). Each piece fades with its weight; none covers anything the player reads, and the
-## rules slip may stand in front of the right chair (ADR 0034, rule 6).
+## The dread layers' set dressing, drawn over the room and under the cards, seats and
+## controls: empty chairs at the room's edge, a notice about your household under the Cadre
+## board, black bars over the brigade notice, a spotlight on your seat and gilt trim for a
+## landlord, and the brigade's roster under the right seat, whose names fade as the roster
+## effect grows. The chairs, bars, spotlight and trim are flat rectangles and boxes drawn
+## in code. Each piece fades with its weight; none covers anything the player reads, and
+## the rules slip may stand in front of the right chair (ADR 0034, rule 6).
 
 const LAMP_SHADER: Shader = preload("res://shaders/lamp_light.gdshader")
 const WOOD: Color = Color("2a1a10")
-const PAPER: Color = Color("d9c8a4")
-const INK: Color = Color("1e1a16")
-const RED: Color = Color("9e1b16")
-const GILT: Color = Color("c9a227")
-## Where the pieces sit, in the table's 1920x1080 frame: wall space clear of the seats,
-## play lanes, hand, buttons and ledger.
-## The brigade notice at Standard: worn paper like every sheet, its words inside the
-## paper's printed border, its right edge clear of the trick's room.
+## Where the brigade notice sits at Standard, in the table's 1920x1080 frame, on wall
+## space clear of the seats, play lanes, hand, buttons and ledger: worn paper like every
+## sheet, its words inside the paper's printed border, its right edge clear of the trick's
+## room.
 const NOTICE_AT: Rect2 = Rect2(118, 606, 312, 140)
 const NOTICE_PADDING: int = 22
-## The household notice, wide and low, in the strip's old place between the Cadre board's
-## foot (y 268) and the trick's box (y 380), 6 px clear of each, its words on one line.
+## The household notice, wide and low, between the Cadre board's foot (y 268) and the
+## trick's box (y 380), 6 px clear of each, so it never covers either; its words on one
+## line.
 const POSTER_AT: Rect2 = Rect2(492, 274, 596, 100)
 const POSTER_SIZE: int = 24
 const CHAIR_SPOTS: Array[Vector2] = [Vector2(36, 560), Vector2(1440, 590)]
@@ -165,8 +162,8 @@ func show_piece(piece: String, weight: float) -> void:
 	control.visible = (flashing or weight > 0.01) and not (piece == "redaction" and _notice_down)
 
 
-## Shows a piece in full for a moment, as a flicker.
-## Pieces no layer drives, such as the extra chair, hide again on their own.
+## Shows a piece in full for a moment, as a flicker. Pieces no layer drives, such as the
+## extra chair, hide again on their own.
 func flash_piece(piece: String, seconds: float) -> void:
 	if not _pieces.has(piece):
 		return
@@ -213,14 +210,14 @@ func _add_notice() -> void:
 	words.text = tr(DreadDressing.notice_key(1, 0))
 	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	words.custom_minimum_size = Vector2(NOTICE_AT.size.x - 2 * NOTICE_PADDING, 0)
-	words.add_theme_color_override("font_color", INK)
+	words.add_theme_color_override("font_color", ScreenKit.INK)
 	words.add_theme_font_size_override("font_size", TextSize.px(18))
 	notice.add_child(words)
 	add_child(notice)
 	_bars.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for line: int in REDACTION_LINES:
 		var bar: ColorRect = ColorRect.new()
-		bar.color = INK
+		bar.color = ScreenKit.INK
 		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_bars.add_child(bar)
 	_place("redaction", _bars, NOTICE_AT)
@@ -284,12 +281,12 @@ func _add_chairs(piece: String, spots: Array[Vector2]) -> void:
 
 func _add_poster() -> void:
 	var poster: PanelContainer = PanelContainer.new()
-	poster.add_theme_stylebox_override("panel", _box(PAPER, RED, 6))
+	poster.add_theme_stylebox_override("panel", _box(ScreenKit.OLD_PAPER, ScreenKit.SEAL, 6))
 	var words: Label = Label.new()
 	words.text = tr("dread.poster")
 	words.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	words.add_theme_color_override("font_color", RED)
+	words.add_theme_color_override("font_color", ScreenKit.SEAL)
 	poster.add_child(words)
 	_place("poster", poster, POSTER_AT)
 	# One line, print in a fixed box: it fits down, never under its Standard size.
@@ -302,7 +299,7 @@ func _add_poster() -> void:
 
 func _add_gilt() -> void:
 	var trim: Panel = Panel.new()
-	var style: StyleBoxFlat = _box(Color.TRANSPARENT, GILT, 10)
+	var style: StyleBoxFlat = _box(Color.TRANSPARENT, ScreenKit.HINT, 10)
 	style.draw_center = false
 	trim.add_theme_stylebox_override("panel", style)
 	_place("gilt", trim, Rect2(0, 72, 1920, 1008))

@@ -33,6 +33,10 @@ const HINT: Color = STYLE.hint
 const CARD_STOCK: Color = STYLE.card_stock
 const PRINT_RED: Color = STYLE.print_red
 const ENDING_INK: Color = STYLE.ending_ink
+const OLD_PAPER: Color = STYLE.old_paper
+const GRAIN_BAR: Color = STYLE.grain_bar
+const BAR_GROUND: Color = STYLE.bar_ground
+const GLOW: Color = STYLE.glow
 ## The layers a page draws in over its own pieces, lowest first, as z_index: a piece being
 ## acted out lifts over its row; a seal, a flying paper and the rank picker's question
 ## stand over every piece; the shop's slip explains any of those; an opened envelope

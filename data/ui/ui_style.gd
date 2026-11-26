@@ -46,7 +46,8 @@ extends Resource
 @export var faint_ink: Color = Color("5a4a36")
 ## The brown line of a fold across paper.
 @export var fold: Color = Color("8a7653")
-## The gold of a hint: a hinted card's edge and a usable Campaign's mark.
+## The gold of a hint: a hinted card's edge and a usable Campaign's mark; also the gilt a
+## landlord's seat is trimmed in.
 @export var hint: Color = Color("c9a227")
 ## The cream card stock a playing card is printed on.
 @export var card_stock: Color = Color("f6e6c4")
@@ -54,6 +55,14 @@ extends Resource
 @export var print_red: Color = Color("b8231a")
 ## The red of an ending's title and frame.
 @export var ending_ink: Color = Color("9a2a1a")
+## The older, darker paper of a portrait's mount and a notice posted on the wall.
+@export var old_paper: Color = Color("d9c8a4")
+## The wheat ochre a Quota bar and the Famine meter fill with.
+@export var grain_bar: Color = Color("c8952b")
+## The empty ground of a bar on the table's top bar and the Quota bar.
+@export var bar_ground: Color = Color("4a4239")
+## The warm gold of a met Quota's bar and of a callout's rays.
+@export var glow: Color = Color("e0b23c")
 
 @export_group("Shape")
 ## Corner radius of buttons and chips, in pixels. Paper panels keep their torn edges.

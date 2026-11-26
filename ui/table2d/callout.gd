@@ -22,8 +22,6 @@ const SLAM: float = 0.2
 const WHIP_OUT: float = 0.16
 const SLAM_FROM: float = 2.6
 const RAY_ALPHA: float = 0.3
-## The rays are the poster sun's own gold.
-const RAY_INK: Color = Color("e0b23c")
 const RAY_SPEED: float = 0.45
 const EDGE: float = 6.0
 const FACE_SIZE: float = 190.0
@@ -185,7 +183,7 @@ func _draw() -> void:
 func _draw_rays(middle: Vector2) -> void:
 	var reach: float = size.length()
 	var wedge: float = TAU / RAYS
-	var ink: Color = Color(RAY_INK, RAY_ALPHA * glow)
+	var ink: Color = Color(ScreenKit.GLOW, RAY_ALPHA * glow)
 	for ray: int in range(0, RAYS, 2):
 		var angle: float = _spin + wedge * ray
 		var points: PackedVector2Array = PackedVector2Array(

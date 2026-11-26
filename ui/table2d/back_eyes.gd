@@ -1,15 +1,13 @@
 class_name BackEyes
 extends Control
-## The eye printed on a card back (P5.2c, the Plan's Denunciation rows): faint ink at
-## first, a little darker as the board's dread grows, and from DreadEffects.eyes_follow_at
-## its gaze turns, slowly, toward the pointer. It lies over a back as drawn, a seat's or a
-## card in flight, takes no input and draws nothing on a clean profile, away from the
-## table or at the lowest horror intensity. Under reduced motion it looks straight ahead.
-## Worn like every printed thing (BowlGrime): the lids are uneven from the first stage.
+## The eye printed on a card back: faint ink at first, a little darker as the board's dread
+## grows, and from DreadEffects.eyes_follow_at its gaze turns, slowly, toward the pointer.
+## It lies over a back as drawn, a seat's or a card in flight, takes no input and draws
+## nothing on a clean profile, away from the table or at the lowest horror intensity. Under
+## reduced motion it looks straight ahead. Worn like every printed thing (BowlGrime): the
+## lids are uneven from the first stage.
 
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
-const INK: Color = Color("1e1a16")
-const PAPER: Color = Color("efe3c8")
 ## The eye's width as a share of the back's, its height as a share of its width, and its
 ## middle as a share of the back's size.
 const WIDTH_SHARE: float = 0.62
@@ -88,7 +86,7 @@ func _draw() -> void:
 	var worn: float = BowlGrime.wear()
 	if worn != _shaped_wear:
 		_shape_lids(worn)
-	var ink: Color = Color(BowlGrime.faded(INK, worn), _drawn_ink)
+	var ink: Color = Color(BowlGrime.faded(ScreenKit.INK, worn), _drawn_ink)
 	var middle: Vector2 = size * MIDDLE
 	var width: float = size.x * WIDTH_SHARE
 	var tall: float = width * HEIGHT_SHARE
@@ -102,7 +100,7 @@ func _draw() -> void:
 	# The wet glint comes with the gaze, on paper, never a clean white.
 	var glint: float = CONFIG.effect_tuning.follow_share(shown)
 	if glint > 0.0:
-		var light: Color = Color(BowlGrime.aged(PAPER, worn), _drawn_ink * glint)
+		var light: Color = Color(BowlGrime.aged(ScreenKit.PAPER, worn), _drawn_ink * glint)
 		draw_circle(at + Vector2(-0.35, -0.4) * iris * PUPIL, iris * 0.16, light)
 	draw_set_transform(Vector2.ZERO)
 

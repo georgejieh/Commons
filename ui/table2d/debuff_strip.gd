@@ -18,7 +18,6 @@ signal shown
 
 enum Form { FULL, NAMED, FITTED, COUNTED }
 
-const NAME_HEX: String = "9e1b16"
 const FONT_SIZE: int = 20
 const HEAD_SIZE: int = 16
 ## Room inside the paper's printed border.
@@ -216,7 +215,7 @@ func _head(key: String) -> String:
 
 
 func _name(name: String) -> String:
-	return "[b][color=#%s]%s[/color][/b]" % [NAME_HEX, name]
+	return "[b][color=#%s]%s[/color][/b]" % [ScreenKit.SEAL.to_html(false), name]
 
 
 ## A rule's name, closed by NAME_END, then its text.

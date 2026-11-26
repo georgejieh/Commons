@@ -1,21 +1,20 @@
 class_name ScoreSequence
 extends Node
-## A scored play acted out as a small counting-house slot machine (P5.2a, the owner's
-## playtest of 2026-11-24): each scored card ticks on the pile as its Grain is counted,
-## an abacus bead a step higher each time; the hand's Rate and the play's Zeal are stamped
-## on; then every Cadre, card mark, level or debuff that changed the score fires in the
-## order the engine applied it. What fired moves (a Cadre's card jiggles on the board and
-## its count updates, a marked card flashes on the pile, the rules slip swells), a handbell
-## sounds a step higher than the last, or a dull gong a step lower for a cut, its figure on
-## the tally bumps to the new value, and a tag beside it says what it added. Coupons a
-## Surplus card paid (ADR 0041) come last, a tag on the card with no figure of the
-## tally's. Then the total rolls up a bead at a time and is stamped home, harder and with
-## a shake of the tally for a play worth much of the Quota. The table's pace scales it, a
-## villager's goes quicker, and a click or Enter hurries what is left. Reduced motion
-## keeps every figure, tag and sound and drops the jiggle, flash, swell, bump and shake.
-## The table's events wait for it (EventPlayer.waits_on). It keeps the tally inside the
-## room the table gives it, clear of the laid cards, the hand and the seats, through all
-## its motion.
+## A scored play acted out as a small counting-house slot machine: each scored card ticks
+## on the pile as its Grain is counted, an abacus bead a step higher each time; the hand's
+## Rate and the play's Zeal are stamped on; then every Cadre, card mark, level or debuff
+## that changed the score fires in the order the engine applied it. What fired moves (a
+## Cadre's card jiggles on the board and its count updates, a marked card flashes on the
+## pile, the rules slip swells), a handbell sounds a step higher than the last, or a dull
+## gong a step lower for a cut, its figure on the tally bumps to the new value, and a tag
+## beside it says what it added. Coupons a Surplus card paid (ADR 0041) come last, a tag on
+## the card with no figure of the tally's. Then the total rolls up a bead at a time and is
+## stamped home, harder and with a shake of the tally for a play worth much of the Quota.
+## The table's pace scales it, a villager's goes quicker, and a click or Enter hurries what
+## is left. Reduced motion keeps every figure, tag and sound and drops the jiggle, flash,
+## swell, bump and shake. The table's events wait for it (EventPlayer.waits_on). It keeps
+## the tally inside the room the table gives it, clear of the laid cards, the hand and the
+## seats, through all its motion.
 
 ## The sequence is hurried: anything timed to it goes speed times as fast from now.
 signal hurried(speed: float)
@@ -24,13 +23,10 @@ signal beat(kind: int, step_index: int)
 signal finished
 
 const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
-const LOSS: Color = Color("3a322b")
 ## How far above the first chime the Zeal's stamp is pitched, in semitones.
 const ZEAL_LIFT: float = 5.0
 ## Room kept between the tally's motion and the laid cards, the hand and the column.
 const GAP: float = 6.0
-## The player's own seat, whose plays are never hurried for sitting out.
-const OWN_SEAT: int = 0
 ## The share of its beat the total takes to roll up.
 const ROLL_SHARE: float = 0.85
 
@@ -91,7 +87,7 @@ func play(event: RunEvent, pace: float) -> float:
 		_tween.tween_interval(_beats.seconds[index])
 	_tween.tween_callback(_done)
 	_speed = 1.0
-	if hurry_villagers and event.seat != OWN_SEAT:
+	if hurry_villagers and event.seat != Seats.PLAYER:
 		hurry()
 	return _beats.total() / _speed
 
@@ -184,7 +180,9 @@ func _reserve() -> void:
 		tally.reserve(index, each)
 
 
-## A play with no recorded steps, such as one a test makes up, shown as its plain sum.
+## A play with no recorded steps shown as its plain sum. Every play the run scores records
+## its steps, a resumed run's too, since a save is replayed through the run loop; only a
+## play a test or a tool makes up has none.
 static func plain_steps(event: RunEvent) -> Array[ScoreStep]:
 	var trail: Array[ScoreStep] = []
 	trail.append(
@@ -302,9 +300,9 @@ func _fire(step: ScoreStep, seconds: float) -> void:
 ## The ink a step's tag is written in: its figure's, or dull for a cut.
 static func ink_of(step: ScoreStep) -> Color:
 	if step.is_cut():
-		return LOSS
+		return ScreenKit.LOSS
 	if step.figure == ScoreStep.Figure.TOTAL:
-		return ScoreTally.TOTAL_INK
+		return ScreenKit.SEAL
 	if step.figure == ScoreStep.Figure.COUPONS:
 		return ScreenKit.COUPON
 	return Color(Keywords.INKS[ScoreTally.WORDS[step.figure]])

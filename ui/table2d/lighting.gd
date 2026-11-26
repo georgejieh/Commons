@@ -1,6 +1,6 @@
 class_name Lighting
 extends RefCounted
-## 2D lighting for the table (P3C.6). A texture is lit by pairing it with its normal map,
+## 2D lighting for the table. A texture is lit by pairing it with its normal map,
 ## found by name: art/normals/<name>_n.png for art/.../<name>.png. Every stage version
 ## has its own, so the relief always matches the art shown. Only items on MASK take
 ## the table light, so labels and controls are never lit.
