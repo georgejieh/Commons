@@ -116,6 +116,9 @@ func lay_out(room: Vector2) -> void:
 		for place: int in cards.size():
 			var card: CardInstance = cards[place]
 			var view: CardView = _views[card.id()]
+			# Scaled from its corner, so it stands in the place the fit gave it and its
+			# foot stays above the next row's names.
+			view.pivot_offset = Vector2.ZERO
 			view.scale = Vector2.ONE * _fit.scale
 			view.position = at + Vector2(place * _fit.steps[index], name_height)
 			view.z_index = 0
