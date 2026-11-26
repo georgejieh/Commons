@@ -12,8 +12,6 @@ const STRUGGLE: int = 2
 const LANDLORD: int = 3
 const SETTINGS: Array[String] = ["horror_intensity", "no_flash", "content_note_seen"]
 
-static var _save_path: String = TestFolder.of("test_dread_layers") + "run.json"
-
 var _app: DemoApp
 var _saved: Dictionary[String, Variant] = {}
 
@@ -24,11 +22,8 @@ func before_test() -> void:
 	Settings.set_value("horror_intensity", 1.0)
 	Settings.set_value("no_flash", false)
 	Settings.set_value("content_note_seen", true)
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

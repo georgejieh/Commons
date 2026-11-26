@@ -7,17 +7,12 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const LOAN: String = "grain_loan"
 
-static var _save_path: String = TestFolder.of("test_shop_sell_tickets") + "run.json"
-
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:

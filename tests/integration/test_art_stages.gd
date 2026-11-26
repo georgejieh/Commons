@@ -9,8 +9,6 @@ const EARLY: String = "res://art/backdrops/stages/table_surface_s0.png"
 const LATE: String = "res://art/backdrops/stages/table_surface_s4.png"
 const BACK_EARLY: String = "res://art/cards/stages/card_back_s0.png"
 
-static var _save_path: String = TestFolder.of("test_art_stages") + "run.json"
-
 var _app: DemoApp
 
 
@@ -23,11 +21,8 @@ func before_test() -> void:
 	back.stage_paths = [BACK_EARLY]
 	ArtStages.variants_override = [surface, back]
 	ArtStages.stage_override = 0
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

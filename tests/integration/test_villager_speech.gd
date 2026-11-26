@@ -6,8 +6,6 @@ extends GdUnitTestSuite
 const SEED: int = 4301
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
 
-static var _save_path: String = TestFolder.of("test_villager_speech") + "run.json"
-
 var _app: DemoApp
 var _announced: Dictionary[int, int] = {}
 var _spoken: Dictionary[int, int] = {}
@@ -15,11 +13,8 @@ var _said_any: int = 0
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

@@ -40,9 +40,7 @@ func after_test() -> void:
 
 
 func test_every_line_at_the_table_follows_what_it_describes() -> void:
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	await await_idle_frame()
 	_app.arrival.start()
 	var shown: String = ""

@@ -9,8 +9,6 @@ const SEED: int = 7211
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.5
 
-static var _save_path: String = TestFolder.of("test_books_notice") + "run.json"
-
 var _app: DemoApp
 var _lines: PackedStringArray = []
 var _was_size: Vector2i
@@ -18,13 +16,9 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
+	AppKit.fresh_saves(self)
 	_lines.clear()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.controller.live_search = false
 	_app.controller.file_watch.report = func(line: String) -> void: _lines.append(line)
 

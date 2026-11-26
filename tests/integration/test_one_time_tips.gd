@@ -27,9 +27,7 @@ func after_test() -> void:
 func _launch() -> void:
 	if _app != null and is_instance_valid(_app):
 		_app.free()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	await await_idle_frame()
 
 

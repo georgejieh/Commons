@@ -9,8 +9,6 @@ const WAIT_SECONDS: float = 12.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
 const WORKERS: Array[String] = ["model_worker", "model_worker"]
 
-static var _save_path: String = TestFolder.of("test_remapped_keys") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 
@@ -18,11 +16,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = SCREEN
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:

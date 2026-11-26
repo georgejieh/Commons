@@ -13,8 +13,6 @@ const SEED: int = 9321
 ## The darkest a page's ink may be read as light: its luminance stays under this.
 const DARK_INK: float = 0.35
 
-static var _save_path: String = TestFolder.of("test_history_and_card_backs") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 var _was_back: String
@@ -23,12 +21,8 @@ var _was_back: String
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	_was_back = str(Settings.value(CardBacks.SETTING))
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:

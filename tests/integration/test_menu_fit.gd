@@ -11,8 +11,6 @@ const SLACK: float = 1.5
 ## How far a dialog sheet may leave its board uncovered at an edge, the board's own frame.
 const BOARD_SLACK: float = 30.0
 
-static var _save_path: String = TestFolder.of("test_menu_fit") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 
@@ -20,12 +18,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:

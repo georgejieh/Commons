@@ -7,8 +7,6 @@ extends GdUnitTestSuite
 const SEED: int = 5303
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 
-static var _save_path: String = TestFolder.of("test_summary_seals") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 
@@ -16,11 +14,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:

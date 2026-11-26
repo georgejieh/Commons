@@ -9,8 +9,6 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const WAIT_SECONDS: float = 5.0
 
-static var _save_path: String = TestFolder.of("test_envelope_ui") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 
@@ -18,11 +16,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = Vector2i(1920, 1080)
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:

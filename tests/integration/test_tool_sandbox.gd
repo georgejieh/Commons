@@ -41,8 +41,7 @@ func test_an_app_with_no_paths_of_its_own_stays_in_the_sandbox() -> void:
 	var before: Array[String] = _hashes()
 	assert_str(Saves.run_service().path()).is_equal(SavePaths.SANDBOX.path_join("run.json"))
 	assert_str(Saves.profile_service().path()).is_equal(SavePaths.SANDBOX.path_join("profile.json"))
-	_app = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.controller.live_search = false
 	assert_bool(_app.new_run(SEED)).is_true()
 	var driver: ControllerScript = ControllerScript.new()

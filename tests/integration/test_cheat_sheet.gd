@@ -6,8 +6,6 @@ extends GdUnitTestSuite
 const SEED: int = 3
 const RANK_DEBUFF: String = "criticism_meeting"
 
-static var _save_path: String = TestFolder.of("test_cheat_sheet") + "run.json"
-
 var _app: DemoApp
 var _sheet: CheatSheet
 var _mismatches: PackedStringArray = []
@@ -16,11 +14,8 @@ var _saw_debuff_listed: bool = false
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

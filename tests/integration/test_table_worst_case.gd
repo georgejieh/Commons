@@ -65,9 +65,7 @@ func before_test() -> void:
 	_was_size = get_tree().root.size
 	Saves.use_run_path(TestFolder.of("test_table_worst_case") + "run.json")
 	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	# The pieces at rest: no swell or stamp caught halfway.
 	Settings.set_value("reduced_motion", true)

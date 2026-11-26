@@ -10,18 +10,13 @@ const WAIT_SECONDS: float = 40.0
 ## Seeds tried for a sit-out the table waits through on a searching villager.
 const SEARCH_SEEDS: Array[int] = [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
 
-static var _save_path: String = TestFolder.of("test_sit_out") + "run.json"
-
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
+	AppKit.fresh_saves(self)
 	Settings.set_value("reduced_motion", true)
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:

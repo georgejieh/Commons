@@ -37,8 +37,7 @@ func _launch(screen_size: Vector2i) -> void:
 	if _app != null and is_instance_valid(_app):
 		_app.free()
 	get_tree().root.size = screen_size
-	_app = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	await await_idle_frame()
 
 

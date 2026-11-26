@@ -44,8 +44,7 @@ func _timer(display: DisplayWindow) -> Timer:
 
 func _app() -> DemoApp:
 	Saves.use_run_path(_save_path)
-	var app: DemoApp = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
-	add_child(app)
+	var app: DemoApp = AppKit.make(self)
 	return app
 
 

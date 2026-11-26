@@ -9,8 +9,6 @@ const SLOW: float = 5.0
 ## Longer than any entrance on the screen shown after the table.
 const SETTLE_MS: int = 1200
 
-static var _save_path: String = TestFolder.of("test_table_motion") + "run.json"
-
 var _app: DemoApp
 var _was_reduced: bool
 var _saved_presets: Dictionary[String, float] = {}
@@ -19,11 +17,8 @@ var _saved_presets: Dictionary[String, float] = {}
 func before_test() -> void:
 	_was_reduced = bool(Settings.value("reduced_motion"))
 	Settings.set_value("reduced_motion", false)
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

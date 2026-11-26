@@ -22,8 +22,6 @@ const CASES: Dictionary[String, Array] = {
 	"death_denunciation": [40, 100, 1],
 }
 
-static var _save_path: String = TestFolder.of("test_ending_screen") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 var _was_reduced: bool
@@ -32,11 +30,8 @@ var _was_reduced: bool
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	_was_reduced = bool(Settings.value("reduced_motion"))
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:

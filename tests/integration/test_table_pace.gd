@@ -8,18 +8,13 @@ const SLOW: int = 0
 const STANDARD: int = 1
 const FAST: int = 2
 
-static var _save_path: String = TestFolder.of("test_table_pace") + "run.json"
-
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
+	AppKit.fresh_saves(self)
 	Settings.set_value("table_pace", STANDARD)
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

@@ -8,8 +8,6 @@ const SEED: int = 3
 ## Any mark that makes a card not plain.
 const ENHANCEMENT: String = "gilded"
 
-static var _save_path: String = TestFolder.of("test_play_order") + "run.json"
-
 
 ## The cause: a villager takes plain cards before marked ones, and a plot card's number
 ## is past every deck card's, so a run holding either reaches the table out of rank order.
@@ -69,11 +67,8 @@ func test_a_changed_rank_order_keeps_the_run_in_sequence() -> void:
 
 ## The trick itself lays the cards in that order, wherever they fly from.
 func test_the_pile_lays_a_play_as_it_reads() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: DemoApp = auto_free(scene.instantiate())
-	add_child(app)
+	AppKit.fresh_saves(self)
+	var app: DemoApp = AppKit.make(self)
 	app.new_run(SEED)
 	var table: TableScreen = app.show_screen("table", true)
 	await await_idle_frame()

@@ -34,9 +34,7 @@ func after_test() -> void:
 func _table(level: int, screen_size: Vector2i) -> TableScreen:
 	Settings.set_value(TextSize.SETTING, level)
 	get_tree().root.size = screen_size
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()

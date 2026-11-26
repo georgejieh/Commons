@@ -9,8 +9,6 @@ const SEED: int = 4301
 const DECK: Vector2i = Vector2i(1280, 800)
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), DECK]
 
-static var _save_path: String = TestFolder.of("test_steam_deck_layout") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 
@@ -18,11 +16,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = DECK
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

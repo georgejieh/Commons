@@ -11,17 +11,12 @@ const DENUNCIATION: int = 79
 const RESENTMENT: int = 71
 const FAMINE_LAYER: int = 0
 
-static var _save_path: String = TestFolder.of("test_dark_figures") + "run.json"
-
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

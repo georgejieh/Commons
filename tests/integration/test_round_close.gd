@@ -8,18 +8,13 @@ const SEED: int = 3
 ## Seconds the walk through a round's end may take at most.
 const WAIT_SECONDS: float = 12.0
 
-static var _save_path: String = TestFolder.of("test_round_close") + "run.json"
-
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
+	AppKit.fresh_saves(self)
 	Settings.set_value("reduced_motion", false)
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

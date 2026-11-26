@@ -11,8 +11,6 @@ const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## A tremble of the slip's edge against its subject's, in pixels.
 const SLACK: float = 0.5
 
-static var _save_path: String = TestFolder.of("test_table_marks") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 var _was_reduced: bool
@@ -21,11 +19,8 @@ var _was_reduced: bool
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	_was_reduced = bool(Settings.value("reduced_motion"))
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

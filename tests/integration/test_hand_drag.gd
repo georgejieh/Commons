@@ -6,18 +6,13 @@ const SEED: int = 4301
 ## Inside a card's uncovered left strip, clear of the next card in the fan.
 const GRIP: Vector2 = Vector2(14, 60)
 
-static var _save_path: String = TestFolder.of("test_hand_drag") + "run.json"
-
 var _app: DemoApp
 var _table: TableScreen
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	_table = _app.show_screen("table", true)
 	await await_idle_frame()

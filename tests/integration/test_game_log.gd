@@ -31,8 +31,7 @@ func before_test() -> void:
 	Saves.profile_service().delete()
 	_lines = Lines.new()
 	OS.add_logger(_lines)
-	_app = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.controller.live_search = false
 
 

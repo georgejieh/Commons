@@ -58,9 +58,7 @@ func test_the_slip_stands_over_the_trick_at_every_size() -> void:
 func _walk(where: String) -> void:
 	if _app != null and is_instance_valid(_app):
 		_app.free()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	await await_idle_frame()
 	_app.arrival.start()
 	var checked: Dictionary[String, bool] = {}

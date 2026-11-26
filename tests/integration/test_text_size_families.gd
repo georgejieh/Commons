@@ -20,19 +20,14 @@ const LONGEST_SURNAME: String = "Wwwwwwwwwwww"
 ## The table's seat width, where a villager speaks.
 const SEAT: Vector2 = Vector2(380, 0)
 
-static var _save_path: String = TestFolder.of("test_text_size_families") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	Settings.set_value(TextSize.SETTING, LARGEST)
 

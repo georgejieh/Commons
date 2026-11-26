@@ -12,17 +12,12 @@ const MARKET_PARAMS: ShopParams = preload("res://data/run/black_market.tres")
 const RARE: String = "seed_grain"
 const COMMON: String = "canteen"
 
-static var _save_path: String = TestFolder.of("test_scarce_stamp") + "run.json"
-
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:

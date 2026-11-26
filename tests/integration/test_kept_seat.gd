@@ -66,9 +66,7 @@ func test_the_table_calls_a_kept_seat_once() -> void:
 func test_a_new_run_forgets_what_the_last_one_called() -> void:
 	Saves.use_run_path(TestFolder.of("test_kept_seat") + "run.json")
 	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: DemoApp = auto_free(scene.instantiate())
-	add_child(app)
+	var app: DemoApp = AppKit.make(self)
 	KeptSeat.said = "4:2"
 	assert_bool(app.new_run(5)).is_true()
 	assert_str(KeptSeat.said).is_empty()

@@ -12,8 +12,6 @@ const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.0
 const FAR: Vector2 = Vector2(-500, -500)
 
-static var _save_path: String = TestFolder.of("test_slip_reach") + "run.json"
-
 var _was_size: Vector2i
 
 
@@ -121,11 +119,8 @@ func test_an_engine_tooltip_moves_beside_its_card() -> void:
 ## At the table: the slip for a keyword in the debuff strip, and the tooltip for a held
 ## Cadre on the notice board, at both window sizes and every text size.
 func test_slips_at_the_table_stand_beside_their_thing() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: DemoApp = auto_free(scene.instantiate())
-	add_child(app)
+	AppKit.fresh_saves(self)
+	var app: DemoApp = AppKit.make(self)
 	app.new_run(4242)
 	var loop: RunLoop = app.controller.run_loop()
 	if loop.state.inventory.cadres.is_empty():

@@ -7,18 +7,13 @@ extends GdUnitTestSuite
 const SEED: int = 3
 const WAIT_FRAMES: int = 600
 
-static var _save_path: String = TestFolder.of("test_hint_setting") + "run.json"
-
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
+	AppKit.fresh_saves(self)
 	Settings.set_value(HintSetting.SETTING, true)
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

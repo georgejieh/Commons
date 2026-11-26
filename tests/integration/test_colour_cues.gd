@@ -9,8 +9,6 @@ const CARD: PackedScene = preload("res://ui/cards/card_view.tscn")
 ## The narrowest strip of a card the fan leaves showing that the tick must sit in.
 const STRIP: float = 40.0
 
-static var _save_path: String = TestFolder.of("test_colour_cues") + "run.json"
-
 var _was_size: Vector2i
 
 
@@ -44,11 +42,8 @@ func test_the_seat_count_says_few_cards_in_words() -> void:
 
 ## The longer words fit on every seat at every text size on both screens.
 func test_the_few_cards_words_fit_every_seat() -> void:
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: DemoApp = auto_free(scene.instantiate())
-	add_child(app)
+	AppKit.fresh_saves(self)
+	var app: DemoApp = AppKit.make(self)
 	app.new_run(SEED)
 	var problems: PackedStringArray = []
 	for level: int in TextSize.count():
