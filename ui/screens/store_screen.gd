@@ -471,6 +471,12 @@ func _back() -> void:
 		_app.back()
 
 
+## Cancel (Escape, or B on a pad) goes back from the black market, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if market and ScreenKit.take_cancel(self, event):
+		_back()
+
+
 func _to_market() -> void:
 	if not is_issuing() and _app.arrival.attempt("door"):
 		_app.show_screen("black_market")

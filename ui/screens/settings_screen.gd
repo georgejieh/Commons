@@ -54,17 +54,25 @@ func open(app: DemoApp) -> void:
 	_scroll = scroll
 	column.add_child(scroll)
 	var back: Button = ScreenKit.button(tr("settings.back"), CommonsTheme.PRIMARY)
-	back.pressed.connect(
-		func() -> void:
-			Settings.save()
-			app.back()
-	)
+	back.pressed.connect(_leave)
 	# The pages' tickets stand here with Back, where they are always whole.
 	var row: Array[Control] = [back]
 	row.append_array(SettingsPanel.pages(_open.bind("controls"), _open.bind("window")))
 	column.add_child(ScreenKit.row(row))
 	ScreenKit.reveal(column)
 	back.grab_focus()
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_leave()
+
+
+## Back saves what changed and returns to the page before.
+func _leave() -> void:
+	Settings.save()
+	_app.back()
 
 
 func _open(screen_id: String) -> void:

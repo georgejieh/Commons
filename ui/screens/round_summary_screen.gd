@@ -6,8 +6,11 @@ extends Control
 ## The stake's and the bank's lines, at Standard.
 const LINE_SIZE: int = 24
 
+var _app: DemoApp
+
 
 func open(app: DemoApp) -> void:
+	_app = app
 	var controller: RunController = app.controller
 	var state: RunView = controller.run
 	var sheet: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
@@ -36,6 +39,12 @@ func open(app: DemoApp) -> void:
 	sheet.add_child(back)
 	ScreenKit.reveal(sheet)
 	back.grab_focus()
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
 
 
 ## What Overfulfillment did to the round's bank, for a result that carries a stake.

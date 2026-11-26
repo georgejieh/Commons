@@ -29,8 +29,11 @@ var _entries: Array[Control] = []
 var _scroll: ScrollContainer = ScrollContainer.new()
 var _open_line: Label
 
+var _app: DemoApp
+
 
 func open(app: DemoApp) -> void:
+	_app = app
 	var view: CollectionView = CollectionView.of(Saves.profile_service())
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
 	var sheet: PanelContainer = PanelContainer.new()
@@ -64,6 +67,12 @@ func open(app: DemoApp) -> void:
 	column.add_child(back)
 	ScreenKit.reveal(column)
 	back.grab_focus()
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
 
 
 ## The scroll takes the width of as many whole cards as fit across the sheet, and the

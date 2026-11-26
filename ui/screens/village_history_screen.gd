@@ -23,8 +23,11 @@ var _run_lines: Array[Label] = []
 var _file_lines: Array[Label] = []
 var _back: Button
 
+var _app: DemoApp
+
 
 func open(app: DemoApp) -> void:
+	_app = app
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
 	_sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
 	_sheet.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -68,6 +71,12 @@ func open(app: DemoApp) -> void:
 	column.add_child(_back)
 	ScreenKit.reveal(column)
 	_back.grab_focus()
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
 
 
 ## The past generations' sheets, newest first, for tests.

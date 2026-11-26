@@ -182,6 +182,15 @@ static func _fit_side_sheet(root: Control, panel: Control) -> void:
 	panel.scale = Vector2(fit, fit)
 
 
+## Takes a Cancel press (Escape, or B on a pad) on a page that is showing: true when the
+## event was one, and it is then handled. Every page with a Back button goes back on it.
+static func take_cancel(page: Control, event: InputEvent) -> bool:
+	if not page.is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
+		return false
+	page.get_viewport().set_input_as_handled()
+	return true
+
+
 ## A small tracked label over a big headline, the way a poster leads.
 static func header(eyebrow_text: String, headline_text: String, color: Color = RED) -> Control:
 	var block: VBoxContainer = VBoxContainer.new()

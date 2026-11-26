@@ -101,6 +101,12 @@ func open(app: DemoApp) -> void:
 	_start.grab_focus()
 
 
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
+
+
 ## The household papers and stake tickets in order, and the chosen ones, for tests and
 ## the playtest.
 func papers() -> Array[AgedSheet]:

@@ -19,8 +19,11 @@ const LINE_SIZE: int = 22
 
 var _entries: Dictionary[int, PackedStringArray] = {}
 
+var _app: DemoApp
+
 
 func open(app: DemoApp) -> void:
+	_app = app
 	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	column.add_child(ScreenKit.header(tr("dossier.eyebrow"), tr("dossier.title")))
@@ -35,6 +38,12 @@ func open(app: DemoApp) -> void:
 	column.add_child(back)
 	ScreenKit.reveal(column)
 	back.grab_focus()
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
 
 
 ## The lines shown for a seat, for tests.
