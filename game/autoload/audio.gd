@@ -5,13 +5,21 @@ extends Node
 ## event and plays its sound effect; a name with no sound is silent. Every button
 ## clicks.
 
+## The bus the music plays on.
+const BUS_MUSIC: String = "Music"
+## The bus the sound effects play on.
+const BUS_EFFECTS: String = "Effects"
+## The bus the villagers' voices play on.
+const BUS_VOICE: String = "Voice"
+## The ambience has no volume of its own: the settings sheet has no room for a fourth, so
+## its bus sends to Effects and the Effects volume governs it.
+const BUS_AMBIENCE: String = "Ambience"
+## Each bus that has a volume setting, and the key of that setting.
 const BUSES: Dictionary[String, String] = {
-	"Music": "music_volume", "Effects": "effects_volume", "Voice": "voice_volume"
+	BUS_MUSIC: "music_volume", BUS_EFFECTS: "effects_volume", BUS_VOICE: "voice_volume"
 }
-
-## The ambience has no volume of its own: the settings sheet has no room for a fourth,
-## and the Effects volume governs it through this send.
-const AMBIENCE_SEND: String = "Effects"
+## The level, in decibels, a gain of zero is held at instead of minus infinity.
+const SILENT_DB: float = -80.0
 ## The click every button makes when pressed.
 const CLICK: String = "button_click"
 ## A motion's own sound plays only into a silence: not when another effect started this
@@ -54,9 +62,9 @@ func _ready() -> void:
 func ensure_buses() -> void:
 	for bus: String in BUSES:
 		_ensure_bus(bus, "Master")
-	if _ensure_bus(AmbiencePlayer.BUS, AMBIENCE_SEND):
-		var index: int = AudioServer.get_bus_index(AmbiencePlayer.BUS)
-		AudioServer.add_bus_effect(index, AmbiencePlayer.SCORE.voice_duck(VoicePlayer.BUS))
+	if _ensure_bus(BUS_AMBIENCE, BUS_EFFECTS):
+		var index: int = AudioServer.get_bus_index(BUS_AMBIENCE)
+		AudioServer.add_bus_effect(index, AmbiencePlayer.SCORE.voice_duck(BUS_VOICE))
 	# Sounds add up, so Master never clips.
 	for effect: int in AudioServer.get_bus_effect_count(0):
 		if AudioServer.get_bus_effect(0, effect) is AudioEffectHardLimiter:

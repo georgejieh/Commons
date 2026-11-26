@@ -137,7 +137,7 @@ func test_villagers_speak_of_the_visit_only_after_an_entry() -> void:
 	assert_int(VISIT.lines.size()).is_between(8, 12)
 	assert_array(SpeechBook.EVENTS).contains([VISIT.event])
 	for line: SpeechLine in VISIT.lines:
-		assert_array(SpeechBook.MOODS).contains([line.mood])
+		assert_bool(VoiceScript.DEFAULT.moods.has(line.mood)).is_true()
 		assert_str(tr(line.text_key)).is_not_equal(line.text_key)
 
 

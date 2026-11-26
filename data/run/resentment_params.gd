@@ -1,8 +1,10 @@
 class_name ResentmentParams
 extends Resource
-## What breeds Resentment, and what it costs (P4.2). Resentment runs from 0 to max.
+## What breeds Resentment, and what it costs. Resentment runs from 0 to max.
 
+## The most Resentment there is, in points.
 @export var max: int = 100
+## Added each time the player buys from the black market.
 @export var private_purchase: int = 5
 ## Added at each Set's end for every private Cadre the player holds.
 @export var private_cadre: int = 2

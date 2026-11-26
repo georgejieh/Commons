@@ -90,7 +90,7 @@ Built so far: callouts, the score tally, thrown cards, seat tags, the Quota bar 
 
 ## Files, sizes and atlases
 
-- **Names** follow `category_name_variant`: `cadre_stakhanovite`, `portrait_wang_face`, `icon_grain`. A corruption-stage version adds `_sN`, as in `table_surface_s4`, and lives in a `stages/` folder next to its base asset.
+- **Names** follow `category_name_variant`: `cadre_stakhanovite`, `portrait_wang_face`, `icon_famine`. A corruption-stage version adds `_sN`, as in `table_surface_s4`, and lives in a `stages/` folder next to its base asset.
 - **Import sizes.** Backdrops import at full size. Cadre art, portraits, card stock and paper textures are capped at 512 px on their long side (`process/size_limit`), because nothing on screen draws them larger. A full table scene must stay under 128 MB of texture memory (`tools/texture_budget.gd`, run in the cloud playtest).
 - **Atlases.** Small UI sprites are packed by `tools/pack_atlas.py` into `art/atlases/atlas_<category>.png`, at most 4096 x 4096, with one `AtlasTexture` per sprite in `data/ui/atlas/`. The game loads the AtlasTexture, never the loose sprite. Mipmaps stay off for UI.
 

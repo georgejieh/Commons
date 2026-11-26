@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "great_leap"
-kind = 5
+kind = 3
 tag = 0
 lever = 2
 tier = 0

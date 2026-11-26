@@ -75,7 +75,7 @@ func test_the_hint_is_on_by_default_and_on_the_sheet() -> void:
 func test_with_the_hint_on_its_key_lights_a_play() -> void:
 	var table: TableScreen = await _table_at_play()
 	assert_bool(table.actions().hint.is_visible_in_tree()).is_true()
-	await _key(Settings.bindings.key(HintSetting.ACTION))
+	await _key(Settings.bindings.key(KeyBindings.HINT))
 	var hinted: bool = not _app.hand.selected_ids().is_empty()
 	var passing: bool = table.actions().reading.text == tr("hand.hint.pass")
 	assert_bool(hinted or passing).is_true()
@@ -88,7 +88,7 @@ func test_with_the_hint_off_neither_button_nor_key_does_anything() -> void:
 	var hint: Button = table.actions().hint
 	assert_bool(hint.is_visible_in_tree()).is_false()
 	var reading: String = table.actions().reading.text
-	await _key(Settings.bindings.key(HintSetting.ACTION))
+	await _key(Settings.bindings.key(KeyBindings.HINT))
 	hint.pressed.emit()
 	await await_idle_frame()
 	assert_array(_app.hand.selected_ids()).is_empty()
@@ -104,7 +104,7 @@ func test_the_controls_page_leaves_the_hint_out_while_it_is_off() -> void:
 	await await_idle_frame()
 	await await_idle_frame()
 	var page: ControlsPage = screen.page()
-	assert_bool(page.ticket(HintSetting.ACTION).is_visible_in_tree()).is_false()
+	assert_bool(page.ticket(KeyBindings.HINT).is_visible_in_tree()).is_false()
 	var labels: Array[String] = []
 	for node: Node in page.find_children("*", "Label", true, false):
 		if (node as Label).is_visible_in_tree():
@@ -120,4 +120,4 @@ func test_the_controls_page_leaves_the_hint_out_while_it_is_off() -> void:
 	page.visible = false
 	page.visible = true
 	await await_idle_frame()
-	assert_bool(page.ticket(HintSetting.ACTION).is_visible_in_tree()).is_true()
+	assert_bool(page.ticket(KeyBindings.HINT).is_visible_in_tree()).is_true()

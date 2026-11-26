@@ -2,6 +2,7 @@ class_name DemoParams
 extends Resource
 ## The demo's run (ADR 0017): one Year, and the two villagers at the table.
 
+## The demo's Years, targets and rewards.
 @export var sets: SetParams
 ## BotConfig.Tier per seat; the player's entry is unused.
 @export var tiers: Array[int] = [1, 1, 2]

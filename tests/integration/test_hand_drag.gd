@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Hand interaction through real mouse input (P3B.4): press, drag across cards and
+## Hand interaction through real mouse input: press, drag across cards and
 ## release select or clear them, and the Play button and reading follow the selection.
 
 const SEED: int = 4301

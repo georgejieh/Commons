@@ -1,15 +1,12 @@
 class_name AmbiencePlayer
 extends Node
-## The ambience under the table (P3C.8), owned by the Audio autoload as Audio.ambience:
+## The ambience under the table, owned by the Audio autoload as Audio.ambience:
 ## one looping player per bed on the Ambience bus, made once. DreadLayers passes the
 ## shown layer weights every frame; each bed's gain eases toward what they ask for over
 ## the score's fade_seconds. A bed at zero is paused, so it costs nothing in the mix. It
 ## is silent until the table first follows the board, so the title has none.
 
 const SCORE: AmbienceScore = preload("res://data/audio/ambience_score.tres")
-## Under Effects, so the Effects volume governs it (AudioMixer.ensure_buses).
-const BUS: String = "Ambience"
-const SILENT_DB: float = -80.0
 
 var _players: Array[AudioStreamPlayer] = []
 var _gains: PackedFloat32Array = []
@@ -24,18 +21,61 @@ var _hush: float = 1.0
 var _hush_wait: float = 0.0
 
 
+## How far a bed's naming layers move it from where it sits on the clean board.
+static func gain_for(
+	bed: AmbienceBed, board: BoardState, layers: Array[HorrorLayer], intensity: float
+) -> float:
+	var gain: float = 1.0 if bed.on_clean_board else 0.0
+	for index: int in layers.size():
+		if not layers[index].audio_stems.has(bed.id):
+			continue
+		var moved: float = HorrorLayer.along(bed.response, board.shown(index, intensity))
+		gain = minf(gain, 1.0 - moved) if bed.on_clean_board else maxf(gain, moved)
+	return clampf(gain, 0.0, 1.0)
+
+
+## One frame of a dip: toward low over attack seconds while held, then back to full
+## over release seconds, linear in gain.
+static func dip(
+	value: float, low: float, held: bool, attack: float, release: float, delta: float
+) -> float:
+	var seconds: float = attack if held else release
+	return move_toward(value, low if held else 1.0, delta * (1.0 - low) / maxf(seconds, 0.001))
+
+
 func _init() -> void:
 	_duck_floor = db_to_linear(SCORE.duck_db)
 	for bed: AmbienceBed in SCORE.beds:
 		var player: AudioStreamPlayer = AudioStreamPlayer.new()
 		player.stream = bed.stream
-		player.bus = BUS
-		player.volume_db = SILENT_DB
+		player.bus = AudioMixer.BUS_AMBIENCE
+		player.volume_db = AudioMixer.SILENT_DB
 		add_child(player)
 		_players.append(player)
 		_hushed.append(SCORE.hush_beds.has(bed.id))
 	_gains.resize(SCORE.beds.size())
 	_targets.resize(SCORE.beds.size())
+
+
+func _process(delta: float) -> void:
+	var step: float = delta / maxf(SCORE.fade_seconds, 0.01)
+	for index: int in _gains.size():
+		_gains[index] = move_toward(_gains[index], _targets[index], step)
+	_duck_wait = maxf(_duck_wait - delta, 0.0)
+	_duck = AmbiencePlayer.dip(
+		_duck,
+		_duck_floor,
+		_duck_wait > 0.0,
+		SCORE.duck_attack_seconds,
+		SCORE.duck_release_seconds,
+		delta
+	)
+	_hush_wait = maxf(_hush_wait - delta, 0.0)
+	_hush = AmbiencePlayer.dip(
+		_hush, 0.0, _hush_wait > 0.0, SCORE.hush_attack_seconds, SCORE.hush_release_seconds, delta
+	)
+	for index: int in _players.size():
+		_sound(_players[index], _level(index), SCORE.beds[index].volume_db)
 
 
 ## Sets each bed's target from the dread layers' shown weights. No allocation.
@@ -72,49 +112,6 @@ func bed_level(bed_id: String) -> float:
 	return _level(index) if index >= 0 else 0.0
 
 
-## How far a bed's naming layers move it from where it sits on the clean board.
-static func gain_for(
-	bed: AmbienceBed, board: BoardState, layers: Array[HorrorLayer], intensity: float
-) -> float:
-	var gain: float = 1.0 if bed.on_clean_board else 0.0
-	for index: int in layers.size():
-		if not layers[index].audio_stems.has(bed.id):
-			continue
-		var moved: float = HorrorLayer.along(bed.response, board.shown(index, intensity))
-		gain = minf(gain, 1.0 - moved) if bed.on_clean_board else maxf(gain, moved)
-	return clampf(gain, 0.0, 1.0)
-
-
-## One frame of a dip: toward low over attack seconds while held, then back to full
-## over release seconds, linear in gain.
-static func dip(
-	value: float, low: float, held: bool, attack: float, release: float, delta: float
-) -> float:
-	var seconds: float = attack if held else release
-	return move_toward(value, low if held else 1.0, delta * (1.0 - low) / maxf(seconds, 0.001))
-
-
-func _process(delta: float) -> void:
-	var step: float = delta / maxf(SCORE.fade_seconds, 0.01)
-	for index: int in _gains.size():
-		_gains[index] = move_toward(_gains[index], _targets[index], step)
-	_duck_wait = maxf(_duck_wait - delta, 0.0)
-	_duck = AmbiencePlayer.dip(
-		_duck,
-		_duck_floor,
-		_duck_wait > 0.0,
-		SCORE.duck_attack_seconds,
-		SCORE.duck_release_seconds,
-		delta
-	)
-	_hush_wait = maxf(_hush_wait - delta, 0.0)
-	_hush = AmbiencePlayer.dip(
-		_hush, 0.0, _hush_wait > 0.0, SCORE.hush_attack_seconds, SCORE.hush_release_seconds, delta
-	)
-	for index: int in _players.size():
-		_sound(_players[index], _level(index), SCORE.beds[index].volume_db)
-
-
 func _level(index: int) -> float:
 	return _gains[index] * _duck * (_hush if _hushed[index] else 1.0)
 
@@ -125,7 +122,7 @@ func _sound(player: AudioStreamPlayer, level: float, volume_db: float) -> void:
 		if player.playing:
 			player.stream_paused = true
 		return
-	player.volume_db = maxf(volume_db + linear_to_db(level), SILENT_DB)
+	player.volume_db = maxf(volume_db + linear_to_db(level), AudioMixer.SILENT_DB)
 	if player.stream_paused:
 		player.stream_paused = false
 	elif not player.playing:

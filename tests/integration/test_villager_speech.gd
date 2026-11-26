@@ -33,7 +33,7 @@ func test_every_event_has_lines_with_keys_and_known_moods() -> void:
 		assert_array(SpeechBook.EVENTS).contains([line.event])
 		assert_str(tr(line.text_key)).is_not_equal(line.text_key)
 		if not line.mood.is_empty():
-			assert_array(SpeechBook.MOODS).contains([line.mood])
+			assert_bool(VoiceScript.DEFAULT.moods.has(line.mood)).is_true()
 
 
 func test_the_same_salt_picks_the_same_line() -> void:

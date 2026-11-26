@@ -1,12 +1,14 @@
 class_name BossPool
 extends Resource
-## Who runs the boss Sets (P4.7): authored officials with rule twists, the twist a risen
+## Who runs the boss Sets: authored officials with rule twists, the twist a risen
 ## villager brings, the final New Landlord, and how closely the New Landlord copies you.
 
+## The officials who run the boss Sets, each with a rule twist.
 @export var officials: Array[ModifierDef] = []
 ## A villager who held the landlord seat for a whole Set: seated, and landlord from the
 ## first round.
 @export var risen: ModifierDef
+## The final boss, the New Landlord, who copies the player's play.
 @export var new_landlord: ModifierDef
 ## Sets of the player's play the New Landlord copies.
 @export var style_sets: int = 3

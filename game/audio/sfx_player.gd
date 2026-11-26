@@ -1,12 +1,11 @@
 class_name SfxPlayer
 extends Node
-## Sound effects (P3C.8), owned by the Audio autoload as Audio.effects: one player per
+## Sound effects, owned by the Audio autoload as Audio.effects: one player per
 ## take on the Effects bus, because changing a player's stream cuts the copies still
 ## ringing. Takes play round-robin, pitch nudged from the cosmetic random stream. Events
 ## with no sound in the bank stay silent.
 
 const BANK: SfxBank = preload("res://data/audio/sfx_bank.tres")
-const EFFECTS_BUS: String = "Effects"
 
 ## The cosmetic stream is outside any run, so sound never moves a run's random state.
 var _random: RandomStream = RandomStream.new(RandomStreams.derive_seed(0, RandomStreams.COSMETIC))
@@ -14,8 +13,8 @@ var _players: Dictionary[String, AudioStreamPlayer] = {}
 var _next_take: Dictionary[String, int] = {}
 
 
-## Plays the sound for an event name, semitones above its own pitch (P5.2a: a scored
-## play's ticks and chimes step up or down as they go). Returns false when the event has
+## Plays the sound for an event name, semitones above its own pitch, so a scored
+## play's ticks and chimes can step up or down as they go. Returns false when the event has
 ## no sound.
 func play(id: String, semitones: float = 0.0) -> bool:
 	var sound: SfxSound = BANK.sound(id)
@@ -41,7 +40,7 @@ func _player_for(sound: SfxSound, take: int) -> AudioStreamPlayer:
 		return _players[key]
 	var player: AudioStreamPlayer = AudioStreamPlayer.new()
 	player.stream = sound.streams[take]
-	player.bus = EFFECTS_BUS
+	player.bus = AudioMixer.BUS_EFFECTS
 	player.volume_db = sound.volume_db
 	player.max_polyphony = maxi(sound.voices, 1)
 	add_child(player)

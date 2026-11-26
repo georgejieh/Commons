@@ -8,19 +8,44 @@ extends RefCounted
 ## Escape and the modifier keys alone are never bound. The Settings autoload holds one,
 ## loads and saves it with the settings file under its own section, and applies it.
 
+## Plays the selected cards, or calls for the landlord seat.
+const PLAY: String = "commons_play"
+## Passes the turn, or declines the seat.
+const PASS: String = "commons_pass"
+## Offers a play.
+const HINT: String = "commons_hint"
+## Changes how the hand is sorted.
+const SORT: String = "commons_sort"
+## Opens the rules of the round.
+const RULES: String = "commons_rules"
+## Opens the Campaign tray.
+const CAMPAIGN: String = "commons_campaign"
+## Opens the deck.
+const DECK: String = "commons_deck"
+## Selects the card under the cursor.
+const SELECT: String = "commons_select"
+## Moves the cursor left along the hand.
+const CURSOR_LEFT: String = "commons_cursor_left"
+## Moves the cursor right along the hand.
+const CURSOR_RIGHT: String = "commons_cursor_right"
+## Sits out a trick the player cannot answer.
+const SIT_OUT: String = "commons_sit_out"
+## The actions that step a board's cursor, the engine's arrows and the table's own: the
+## direction is the end of each name.
+const CURSOR_STEPS: Array[String] = ["ui_left", CURSOR_LEFT, "ui_right", CURSOR_RIGHT]
 ## The actions whose keys can change, in the order the Controls page lists them.
 const ACTIONS: Array[String] = [
-	"commons_play",
-	"commons_pass",
-	"commons_hint",
-	"commons_sort",
-	"commons_rules",
-	"commons_campaign",
-	"commons_deck",
-	"commons_select",
-	"commons_cursor_left",
-	"commons_cursor_right",
-	"commons_sit_out",
+	PLAY,
+	PASS,
+	HINT,
+	SORT,
+	RULES,
+	CAMPAIGN,
+	DECK,
+	SELECT,
+	CURSOR_LEFT,
+	CURSOR_RIGHT,
+	SIT_OUT,
 ]
 ## The section of the settings file the bindings live in.
 const SECTION: String = "keys"
@@ -28,10 +53,6 @@ const SECTION: String = "keys"
 const REFUSED: Array[Key] = [KEY_ESCAPE, KEY_SHIFT, KEY_CTRL, KEY_ALT, KEY_META]
 
 var _keys: Dictionary[String, Key] = {}
-
-
-func _init() -> void:
-	_keys = defaults()
 
 
 ## Each action's key as the project's input settings give it.
@@ -75,6 +96,11 @@ static func label(key: Key) -> String:
 	return text if not text.is_empty() else OS.get_keycode_string(key)
 
 
+func _init() -> void:
+	_keys = defaults()
+
+
+## The key bound to action.
 func key(action: String) -> Key:
 	assert(_keys.has(action), "Unknown action")
 	return _keys[action]
@@ -107,10 +133,6 @@ func restore_defaults() -> void:
 	apply()
 
 
-func is_default() -> bool:
-	return _keys == defaults()
-
-
 ## Reads the bindings from file. A value that is missing, not a key, Escape or a
 ## modifier falls back to that action's default; if two actions then share a key, every
 ## binding is the default.
@@ -137,8 +159,6 @@ func write(file: ConfigFile) -> void:
 ## button and anything else it has.
 func apply() -> void:
 	for action: String in ACTIONS:
-		if not InputMap.has_action(action):
-			continue
 		for event: InputEvent in InputMap.action_get_events(action):
 			if event is InputEventKey:
 				InputMap.action_erase_event(action, event)

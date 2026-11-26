@@ -1,15 +1,15 @@
 class_name SpeechBook
 extends Resource
-## Every table speech line, by event (P3B.8). The table picks one line per event with a
+## Every table speech line, by event. The table picks one line per event with a
 ## salt it chooses, so the same salt always gives the same line. Lines in the slogan mood
-## are never picked as ordinary lines: the board's dread says them in place of one
-## (P5.2c).
+## are never picked as ordinary lines: the board's dread says them in place of one.
 
 ## The events a line can answer.
 const EVENTS: Array[String] = ["call", "no_call", "pass", "cards_left", "bomb", "won", "lost"]
+## The mood of a line the board's dread says in place of an ordinary one.
 const SLOGAN: String = "slogan"
-const MOODS: Array[String] = ["calm", "eager", "sour", "sly", "tired", SLOGAN]
 
+## Every line.
 @export var lines: Array[SpeechLine] = []
 
 

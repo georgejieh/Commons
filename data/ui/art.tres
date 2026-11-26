@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArtLibrary" load_steps=17 format=3]
+[gd_resource type="Resource" script_class="ArtLibrary" load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://data/ui/art_library.gd" id="1"]
 [ext_resource type="Texture2D" path="res://art/backdrops/table_surface.png" id="2"]
@@ -6,12 +6,10 @@
 [ext_resource type="Texture2D" path="res://art/backdrops/store.png" id="4"]
 [ext_resource type="Texture2D" path="res://art/backdrops/notice_wall.png" id="5"]
 [ext_resource type="Texture2D" path="res://art/cards/card_back.png" id="6"]
-[ext_resource type="Texture2D" path="res://art/cards/card_face.png" id="7"]
 [ext_resource type="Texture2D" path="res://art/ui/paper_texture.png" id="8"]
 [ext_resource type="Texture2D" path="res://data/ui/atlas/icon_famine.tres" id="9"]
 [ext_resource type="Texture2D" path="res://data/ui/atlas/icon_denunciation.tres" id="10"]
 [ext_resource type="Texture2D" path="res://data/ui/atlas/icon_coupon.tres" id="11"]
-[ext_resource type="Texture2D" path="res://data/ui/atlas/icon_grain.tres" id="12"]
 [ext_resource type="Texture2D" path="res://art/ui/panel_paper.png" id="19"]
 [ext_resource type="Texture2D" path="res://art/backdrops/title_night.png" id="20"]
 [ext_resource type="Texture2D" path="res://art/backdrops/watchers.png" id="21"]
@@ -26,13 +24,11 @@ notice_wall = ExtResource("5")
 title_night = ExtResource("20")
 watchers = ExtResource("21")
 card_back = ExtResource("6")
-card_face = ExtResource("7")
 paper = ExtResource("8")
 panel_paper = ExtResource("19")
 icon_famine = ExtResource("9")
 icon_denunciation = ExtResource("10")
 icon_coupon = ExtResource("11")
-icon_grain = ExtResource("12")
 cadres = Dictionary[String, String]({
 "cultural_revolution": "res://art/cadres/cadre_cultural_revolution.png",
 "promotion_of_the_masses": "res://art/cadres/cadre_promotion_of_the_masses.png",

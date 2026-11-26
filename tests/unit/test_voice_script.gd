@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Villager voices (P3B.13): one letter sound per letter as the line types out, the
+## Villager voices: one letter sound per letter as the line types out, the
 ## same line always gives the same sounds, and a sentence's ending shapes only its
 ## last word, so questions, statements, exclamations and trailing lines differ.
 

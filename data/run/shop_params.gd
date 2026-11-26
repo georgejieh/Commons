@@ -1,6 +1,6 @@
 class_name ShopParams
 extends Resource
-## One counter's numbers (P4.10): the state store's or the black market's.
+## One counter's numbers: the state store's or the black market's.
 
 ## Cadres offered per visit.
 @export var slots: int = 3
@@ -9,18 +9,21 @@ extends Resource
 ## Cadres the player can hold at once, before any Reform. The player has one limit, so
 ## only the state store's is read, through RunReforms.
 @export var cadre_slots: int = 5
-## Campaigns offered per visit from this counter's pool, and how many the player can
-## hold at once before any Reform, read like cadre_slots (ADR 0021).
+## Campaigns offered per visit from this counter's pool (ADR 0021).
 @export var campaign_offers: int = 0
+## How many Campaigns the player can hold at once before any Reform, read like
+## cadre_slots (ADR 0021).
 @export var campaign_slots: int = 2
 ## Reforms offered per visit (ADR 0021).
 @export var reform_offers: int = 0
-## Envelopes offered per visit, and the kinds this counter sells, drawn evenly from those
-## with something to show (ADR 0021).
+## Envelopes offered per visit (ADR 0021).
 @export var envelope_offers: int = 0
+## The kinds of envelope this counter sells, drawn evenly from those with something to
+## show (ADR 0021).
 @export var envelopes: Array[EnvelopeDef] = []
-## Coupons for the first reroll, and how much each later one adds.
+## Coupons for the first reroll.
 @export var reroll_base: int = 2
+## The coupons each later reroll adds.
 @export var reroll_step: int = 1
 ## Weight of each rarity, common first, when drawing stock.
 @export var rarity_weights: Array[int] = [60, 30, 10]
@@ -31,8 +34,9 @@ extends Resource
 ## What this counter pays for a held Cadre or Campaign sold back to it, as a percent of
 ## the item's price here now, rounded down, never under one coupon (ADR 0040).
 @export var sell_percent: int = 50
-## What the counter's desk asks to mark a deck card of the player's choice, before any
-## raise the books made, and whether it stamps the card as the player's rather than
-## giving it an enhancement (ADR 0041). 0 means the counter has no desk.
+## What the counter's desk asks, in coupons, to mark a deck card of the player's choice,
+## before any raise the books made (ADR 0041). 0 means the counter has no desk.
 @export var desk_price: int = 0
+## Whether the desk stamps the card as the player's rather than giving it an
+## enhancement (ADR 0041).
 @export var desk_stamps: bool = false

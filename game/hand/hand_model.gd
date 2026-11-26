@@ -1,8 +1,8 @@
 class_name HandModel
 extends RefCounted
 ## The player's hand as both table views see it: which cards are selected, how the
-## selection reads, what it would score, and which cards a hint lights. Selection is
-## local; playing it goes through RunController.
+## selection reads, what it would score, and the play a hint offers. Selection is local;
+## playing it goes through RunController.
 
 signal changed
 
@@ -22,6 +22,20 @@ var _preview: PlayPreview = null
 var _hint: Pattern = null
 var _hint_ids: Array[int] = []
 var _hint_turn: int = -1
+## The bot whose play the hint offers and whose grouping orders the hand.
+var _hinter: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
+
+
+## The rank a rank folds into when a debuff ranks it as another, such as a 2 that ranks as
+## a 3, or -1 when it ranks as itself. A reordering alone, with no two ranks equal, folds
+## nothing.
+static func fold(rank: int, rank_map: PackedByteArray) -> int:
+	if rank >= rank_map.size() or rank_map[rank] == rank:
+		return -1
+	for other: int in rank_map.size():
+		if other != rank and rank_map[other] == rank_map[rank]:
+			return other
+	return -1
 
 
 func _init(controller: RunController) -> void:
@@ -108,70 +122,10 @@ func preview() -> PlayPreview:
 	return _preview
 
 
-## What the selection would score if played now, or 0 when it forms no pattern.
-func projected_score() -> float:
-	return 0.0 if _preview == null else _preview.score
-
-
-## The rank this card counts as when a debuff folds its rank into another, such as a
-## 2 that ranks as a 3, or -1 when it ranks as itself. A reordering alone, with no two
-## ranks equal, folds nothing.
-func folded_rank(card: CardInstance) -> int:
-	return HandModel.fold(card.base_rank(), _controller.player_table().rank_map)
-
-
-## Where the card ranks now, after any Cadre or debuff has re-ranked it.
-func rank_value(card: CardInstance) -> int:
-	return _controller.player_table().rank_map[card.base_rank()]
-
-
-static func fold(rank: int, rank_map: PackedByteArray) -> int:
-	if rank >= rank_map.size() or rank_map[rank] == rank:
-		return -1
-	for other: int in rank_map.size():
-		if other != rank and rank_map[other] == rank_map[rank]:
-			return other
-	return -1
-
-
-## Cards whose rank appears in any legal move, as the cards the move spends. Moves are
-## over ranks, not instances.
-func hint_ids() -> Array[int]:
-	var ranks: Dictionary[int, bool] = {}
-	for move: Pattern in _controller.legal_moves():
-		var counts: PackedByteArray = move.spent_counts()
-		for rank: int in counts.size():
-			if counts[rank] > 0:
-				ranks[rank] = true
-	var ids: Array[int] = []
-	for card: CardInstance in _cards:
-		if ranks.has(card.base_rank()):
-			ids.append(card.id())
-	return ids
-
-
-## The cards a Medium bot would play now, or none when passing is best or it isn't the
-## player's turn.
-func suggested_ids() -> Array[int]:
-	var play: Pattern = _suggested_play()
-	var ids: Array[int] = []
-	if play != null:
-		ids = _controller.card_ids_for(play)
-	return ids
-
-
-## The play a Medium bot would make now, as its reading, or null for a pass or when it
-## isn't the player's turn.
-func _suggested_play() -> Pattern:
-	var view: SeatView = _controller.seat_view()
-	var legal: Array[Pattern] = _controller.legal_moves()
-	if view == null or legal.is_empty():
-		return null
-	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
-	var play: BotPlay = Bot.decide_play(
-		view, legal, _controller.player_table(), config, BotBudget.unlimited()
-	)
-	return null if play.is_pass() else play.pattern
+## Where each rank counts now, after any Cadre or debuff has re-ranked it, indexed by rank.
+## Read it once for a sort, not once per card.
+func rank_map() -> PackedByteArray:
+	return _controller.player_table().rank_map
 
 
 ## Selects the hint's play and keeps the reading it meant. Returns its cards, or none
@@ -198,12 +152,6 @@ func hint_reading() -> Pattern:
 	return _hint if ids == _hint_ids else null
 
 
-## Plays and passes made so far this round, which tells one turn from the next.
-func _plays_so_far() -> int:
-	var view: SeatView = _controller.seat_view()
-	return -1 if view == null else view.public.history.size()
-
-
 ## Selects exactly these cards.
 func select_only(ids: Array[int]) -> void:
 	_selected.clear()
@@ -213,7 +161,7 @@ func select_only(ids: Array[int]) -> void:
 	_update()
 
 
-## The cards in suggested play order: the hand split into its fewest plays (P2.2), each
+## The cards in suggested play order: the hand split into its fewest plays, each
 ## group's cards together, lowest rank first within the leftovers.
 func grouped_cards() -> Array[CardInstance]:
 	var counts: PackedByteArray = PackedByteArray()
@@ -225,8 +173,7 @@ func grouped_cards() -> Array[CardInstance]:
 	for card: CardInstance in left:
 		counts[card.base_rank()] += 1
 	var ordered: Array[CardInstance] = []
-	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
-	for group: Pattern in Bot.suggest_groups(counts, _controller.player_table(), config):
+	for group: Pattern in Bot.suggest_groups(counts, _controller.player_table(), _hinter):
 		var needed: PackedByteArray = group.spent_counts()
 		for card: CardInstance in left.duplicate():
 			if needed[card.base_rank()] > 0:
@@ -235,6 +182,25 @@ func grouped_cards() -> Array[CardInstance]:
 				left.erase(card)
 	ordered.append_array(left)
 	return ordered
+
+
+## The play a Medium bot would make now, or null for a pass or when it isn't the player's
+## turn.
+func _suggested_play() -> Pattern:
+	var view: SeatView = _controller.seat_view()
+	var legal: Array[Pattern] = _controller.legal_moves()
+	if view == null or legal.is_empty():
+		return null
+	var play: BotPlay = Bot.decide_play(
+		view, legal, _controller.player_table(), _hinter, BotBudget.unlimited()
+	)
+	return null if play.is_pass() else play.pattern
+
+
+## Plays and passes made so far this round, which tells one turn from the next.
+func _plays_so_far() -> int:
+	var view: SeatView = _controller.seat_view()
+	return -1 if view == null else view.public.history.size()
 
 
 ## Why a selection can't be played now. Cards that no longer read, such as cards
@@ -251,8 +217,9 @@ func _refusal_key(reading: PlayReading) -> String:
 
 
 func _any_folded() -> bool:
+	var map: PackedByteArray = rank_map()
 	for card: CardInstance in _cards:
-		if _selected.has(card.id()) and folded_rank(card) >= 0:
+		if _selected.has(card.id()) and HandModel.fold(card.base_rank(), map) >= 0:
 			return true
 	return false
 

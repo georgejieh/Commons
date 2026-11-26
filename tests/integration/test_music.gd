@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The music follows the board (P3C.9): the cue comes from the Famine weight and the
+## The music follows the board: the cue comes from the Famine weight and the
 ## landlord seat, the dread layers thin stems by volume only, and a new cue waits for a
 ## bar line. Real music arrives from Suno; these tests use generated tones.
 
@@ -117,7 +117,7 @@ func test_stems_share_one_synchronized_stream_and_fade_by_volume() -> void:
 	_music._process(SCORE.fade_seconds + 0.1)
 	# Faded, not removed: the stem keeps its place in the stream at silent volume.
 	assert_int(mix.stream_count).is_equal(2)
-	assert_float(mix.get_sync_stream_volume(1)).is_equal(MusicPlayer.SILENT_DB)
+	assert_float(mix.get_sync_stream_volume(1)).is_equal(AudioMixer.SILENT_DB)
 	assert_float(mix.get_sync_stream_volume(0)).is_equal_approx(0.0, 0.001)
 	_remove(cue)
 

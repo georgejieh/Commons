@@ -236,16 +236,18 @@ func use_armed() -> void:
 
 ## Keyboard and gamepad: true when the tray used the event.
 func handle(event: InputEvent) -> bool:
-	if event.is_action_pressed("commons_campaign"):
+	if event.is_action_pressed(KeyBindings.CAMPAIGN):
 		_step_cursor()
 		return true
-	if _armed >= 0 and event.is_action_pressed("commons_play"):
+	if _armed >= 0 and event.is_action_pressed(KeyBindings.PLAY):
 		use_armed()
 		return true
-	if _cursor >= 0 and _armed < 0 and event.is_action_pressed("commons_play"):
+	if _cursor >= 0 and _armed < 0 and event.is_action_pressed(KeyBindings.PLAY):
 		arm(_cursor)
 		return true
-	var back: bool = event.is_action_pressed("commons_pass") or event.is_action_pressed("ui_cancel")
+	var back: bool = (
+		event.is_action_pressed(KeyBindings.PASS) or event.is_action_pressed("ui_cancel")
+	)
 	if back and (_armed >= 0 or _cursor >= 0):
 		if _armed >= 0:
 			disarm()

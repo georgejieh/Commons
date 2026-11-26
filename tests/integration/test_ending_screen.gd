@@ -311,7 +311,8 @@ func test_every_ending_hangs_its_picture_in_the_frame_with_the_title_below() -> 
 			await await_idle_frame()
 			await await_idle_frame()
 			var where: String = "%s %s" % [outcome, screen_size]
-			assert_bool(ScreenKit.ART.has_ending(outcome)).override_failure_message(where).is_true()
+			var file: String = ScreenKit.ART.ending_path(outcome)
+			assert_str(file).override_failure_message(where).is_not_empty()
 			var pictures: Array[Node] = screen.find_children(
 				"EndingPicture", "TextureRect", true, false
 			)

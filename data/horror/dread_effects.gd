@@ -1,6 +1,6 @@
 class_name DreadEffects
 extends Resource
-## The thresholds and sizes of the Plan's four slow effects (P5.2c): the eyes on the card
+## The thresholds and sizes of the four slow effects: the eyes on the card
 ## backs, the hand's tremble, the names leaving the wall roster and speech turning to
 ## slogans. Each effect's weight comes from the HorrorLayers that name it, gated by the
 ## corruption stage so a clean profile shows none of them; these numbers say what a weight

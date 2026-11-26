@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The voice player (P3B.13): every family has a 26-letter bank, a line plays one sound
+## The voice player: every family has a 26-letter bank, a line plays one sound
 ## per letter and then ends, stopping plays nothing more, the seat's text types out in
 ## step and skipping it stops the voice, and playback stays inside the frame budget.
 

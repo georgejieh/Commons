@@ -1,10 +1,11 @@
 class_name AmbienceBed
 extends Resource
-## One ambience loop under the table (P3C.8): a room, chatter, wind, a drone, paper and
+## One ambience loop under the table: a room, chatter, wind, a drone, paper and
 ## footsteps, whispers, a clock, a far crowd. Dread layers name it in their
 ## audio_stems by id. A bed heard on the clean board is taken away by the layers that
 ## name it; one silent there is brought in by them.
 
+## The bed's ID, as the dread layers name it.
 @export var id: String = ""
 ## A seamless loop: the WAV imports with its loop on the whole file.
 @export var stream: AudioStream

@@ -123,7 +123,7 @@ func test_strings_count_with_the_one_form_when_the_table_has_it() -> void:
 func test_audio_adds_the_three_buses() -> void:
 	var audio: AudioMixer = auto_free(AudioMixer.new())
 	audio.ensure_buses()
-	for bus: String in ["Music", "Effects", "Voice"]:
+	for bus: String in [AudioMixer.BUS_MUSIC, AudioMixer.BUS_EFFECTS, AudioMixer.BUS_VOICE]:
 		assert_int(AudioServer.get_bus_index(bus)).is_not_equal(-1)
 
 

@@ -34,7 +34,8 @@ func test_every_family_is_complete() -> void:
 			)
 		for line: SpeechLine in family.speech.lines:
 			assert_bool(SpeechBook.EVENTS.has(line.event)).override_failure_message(where).is_true()
-			assert_bool(SpeechBook.MOODS.has(line.mood)).override_failure_message(where).is_true()
+			var voiced: bool = VoiceScript.DEFAULT.moods.has(line.mood)
+			assert_bool(voiced).override_failure_message(where).is_true()
 			assert_str(tr(line.text_key)).override_failure_message(line.text_key).is_not_equal(
 				line.text_key
 			)

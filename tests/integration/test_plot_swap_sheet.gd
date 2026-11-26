@@ -95,10 +95,11 @@ func test_the_board_shows_real_cards_in_rank_order_with_their_marks() -> void:
 	var board: SwapBoard = _sheet(table).board()
 	var hand: Array[int] = board.place_ids(SwapBoard.Place.HAND)
 	assert_int(hand.size()).is_equal(_app.controller.player_cards().size())
+	var rank_map: PackedByteArray = _app.hand.rank_map()
 	for index: int in range(1, hand.size()):
 		var before: CardInstance = _card(hand[index - 1])
 		var after: CardInstance = _card(hand[index])
-		assert_bool(_app.hand.rank_value(before) <= _app.hand.rank_value(after)).is_true()
+		assert_bool(rank_map[before.base_rank()] <= rank_map[after.base_rank()]).is_true()
 	var plot: Array[int] = board.place_ids(SwapBoard.Place.PLOT)
 	assert_int(plot.size()).is_equal(PLOT_CARDS)
 	var shown: String = board.view_of(CardInstance.FIRST_PLOT_ID).shown_enhancement()

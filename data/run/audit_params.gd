@@ -1,6 +1,6 @@
 class_name AuditParams
 extends Resource
-## How declared needs are checked before a Commons split (P4.3). Each declaring seat
+## How declared needs are checked before a Commons split. Each declaring seat
 ## rolls one die; a face at or below the audit faces means its claim is checked. The
 ## audit hook can add faces, as the Work-Point Audit debuff does.
 
@@ -12,6 +12,7 @@ extends Resource
 @export var informer_faces: int = 1
 ## The most faces an audit can have, below die_sides, so an audit is never certain.
 @export var max_faces: int = 5
+## IDs of the families whose presence in the village adds informer_faces.
 @export var informer_families: Array[String] = ["zhou"]
 ## The face each declaring seat's die shows, in seat order, in place of its roll; empty
 ## rolls them all. Only the arrival's own copy sets it, round by round (ADR 0026).

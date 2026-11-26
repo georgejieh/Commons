@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "hungry_winter"
-kind = 4
+kind = 2
 tag = 1
 lever = 5
 tier = 4

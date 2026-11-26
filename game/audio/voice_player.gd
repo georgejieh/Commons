@@ -1,13 +1,12 @@
 class_name VoicePlayer
 extends Node
-## Villager voices (P3B.13), owned by the Audio autoload as Audio.voice. Each seat
+## Villager voices, owned by the Audio autoload as Audio.voice. Each seat
 ## plays its family's pre-rendered letter sounds on the Voice bus, one per letter as the
 ## line types out, pitch-shifted for the line's contour. Nothing is synthesized live.
 ## Letters share one polyphonic stream per seat, so a new letter never cuts the last.
 ## Stopping a line plays no more letters; the one sounding is a few hundredths of a
 ## second with its own fade, so it ends cleanly on its own.
 
-const BUS: String = "Voice"
 const BANK_PATH: String = "res://audio/voices/%s/%s.wav"
 const LETTERS: String = "abcdefghijklmnopqrstuvwxyz"
 ## Letters may overlap for a moment when a fast voice outruns a clip.
@@ -19,10 +18,13 @@ var dread: float = 0.0
 var _players: Array[AudioStreamPlayer] = []
 var _playbacks: Array[AudioStreamPlaybackPolyphonic] = []
 var _plans: Array[VoicePlan] = []
+## Each seat's letter sounds by letter. A typed dictionary cannot be nested, so the values
+## are Dictionary[String, AudioStream] kept as Dictionary.
 var _banks: Array[Dictionary] = []
 var _elapsed: PackedFloat32Array = PackedFloat32Array()
 var _next: PackedInt32Array = PackedInt32Array()
 var _played: PackedInt32Array = PackedInt32Array()
+## Every bank loaded so far, by name, each a Dictionary[String, AudioStream].
 var _loaded: Dictionary[String, Dictionary] = {}
 
 
@@ -32,7 +34,7 @@ func _init() -> void:
 		var mix: AudioStreamPolyphonic = AudioStreamPolyphonic.new()
 		mix.polyphony = POLYPHONY
 		player.stream = mix
-		player.bus = BUS
+		player.bus = AudioMixer.BUS_VOICE
 		add_child(player)
 		_players.append(player)
 		_playbacks.append(null)
@@ -41,6 +43,10 @@ func _init() -> void:
 	_elapsed.resize(Seats.COUNT)
 	_next.resize(Seats.COUNT)
 	_played.resize(Seats.COUNT)
+
+
+func _process(delta: float) -> void:
+	advance(delta)
 
 
 ## Starts seat saying text in voice, from the letter bank named bank, and returns the
@@ -55,9 +61,9 @@ func speak(seat: int, text: String, mood: String, voice: VoiceProfile, bank: Str
 
 
 ## Sets dread from the dread layers' shown weights: the strongest one. No allocation.
-func follow(board: BoardState, layers: int, intensity: float) -> void:
+func follow(board: BoardState, layers: Array[HorrorLayer], intensity: float) -> void:
 	var strongest: float = 0.0
-	for index: int in layers:
+	for index: int in layers.size():
 		strongest = maxf(strongest, board.shown(index, intensity))
 	dread = strongest
 
@@ -85,10 +91,6 @@ func is_speaking(seat: int) -> bool:
 ## Letter sounds started at seat since the game began, for tests.
 func letters_played(seat: int) -> int:
 	return _played[seat]
-
-
-func _process(delta: float) -> void:
-	advance(delta)
 
 
 ## Moves every line on by seconds, starting the letters now due. No allocation.
@@ -124,13 +126,14 @@ func _playback(seat: int) -> AudioStreamPlaybackPolyphonic:
 
 
 ## A bank's letter sounds, loaded once. A missing bank stays silent.
-func _bank(bank: String) -> Dictionary:
+func _bank(bank: String) -> Dictionary[String, AudioStream]:
 	if _loaded.has(bank):
 		return _loaded[bank]
-	var sounds: Dictionary = {}
+	var sounds: Dictionary[String, AudioStream] = {}
 	for index: int in LETTERS.length():
 		var path: String = BANK_PATH % [bank, LETTERS[index]]
 		if not bank.is_empty() and ResourceLoader.exists(path):
-			sounds[LETTERS[index]] = load(path)
+			var stream: AudioStream = load(path)
+			sounds[LETTERS[index]] = stream
 	_loaded[bank] = sounds
 	return sounds

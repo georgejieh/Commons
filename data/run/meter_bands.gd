@@ -6,11 +6,15 @@ extends Resource
 
 enum Band { CALM, LOW, MID, HIGH, DEATH }
 
+## The value at which a meter enters the low band.
 @export var low: int = 25
+## The value at which a meter enters the mid band, where its setback fires.
 @export var mid: int = 50
+## The value at which a meter enters the high band.
 @export var high: int = 75
 ## Reaching this ends the run.
 @export var death: int = 100
+## How far below mid a meter must fall before its setback fires again.
 @export var rearm_margin: int = 5
 
 
@@ -38,6 +42,11 @@ func least(of_band: Band) -> int:
 		Band.DEATH:
 			return death
 	return 0
+
+
+## The values a meter rises past into a worse band: the low, mid and high thresholds.
+func marks() -> Array[int]:
+	return [low, mid, high]
 
 
 func rearms_at(value: int) -> bool:

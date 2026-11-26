@@ -3,6 +3,7 @@ extends Resource
 ## Every card back design, in the order Settings shows them. The first is the one a
 ## player has before choosing, and the one a choice falls back to.
 
+## Every card back.
 @export var backs: Array[CardBackDef] = []
 
 

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The ambience follows the board (P3C.8): every board state resolves to beds whose loops
+## The ambience follows the board: every board state resolves to beds whose loops
 ## load, the clean board holds only the room and its chatter, beds crossfade to their
 ## targets, dip under hero effects, the crowd hushes when the player plays, and the beds
 ## sit on their own bus under Effects, keyed down by voices.
@@ -153,9 +153,9 @@ func test_the_crowd_hushes_when_the_player_plays_and_returns() -> void:
 
 
 func test_only_the_players_own_play_hushes_the_crowd() -> void:
-	var mine: RunEvent = RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PLAYED, AudioEvents.PLAYER))
+	var mine: RunEvent = RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PLAYED, RunLoop.PLAYER))
 	var theirs: RunEvent = RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PLAYED, 1))
-	var passed: RunEvent = RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PASSED, AudioEvents.PLAYER))
+	var passed: RunEvent = RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PASSED, RunLoop.PLAYER))
 	assert_bool(AudioEvents.played_by_player(mine)).is_true()
 	assert_bool(AudioEvents.played_by_player(theirs)).is_false()
 	assert_bool(AudioEvents.played_by_player(passed)).is_false()
@@ -196,18 +196,18 @@ func test_players_are_made_once() -> void:
 
 
 func test_the_beds_play_on_their_bus_under_effects_and_dip_under_voices() -> void:
-	var index: int = AudioServer.get_bus_index(AmbiencePlayer.BUS)
+	var index: int = AudioServer.get_bus_index(AudioMixer.BUS_AMBIENCE)
 	assert_int(index).is_not_equal(-1)
-	assert_str(AudioServer.get_bus_send(index)).is_equal(AudioMixer.AMBIENCE_SEND)
+	assert_str(AudioServer.get_bus_send(index)).is_equal(AudioMixer.BUS_EFFECTS)
 	var keyed: bool = false
 	for effect: int in AudioServer.get_bus_effect_count(index):
 		var duck: AudioEffectCompressor = (
 			AudioServer.get_bus_effect(index, effect) as AudioEffectCompressor
 		)
-		keyed = keyed or (duck != null and duck.sidechain == VoicePlayer.BUS)
+		keyed = keyed or (duck != null and duck.sidechain == AudioMixer.BUS_VOICE)
 	assert_bool(keyed).is_true()
 	for player: int in SCORE.beds.size():
-		assert_str(_player(player).bus).is_equal(AmbiencePlayer.BUS)
+		assert_str(_player(player).bus).is_equal(AudioMixer.BUS_AMBIENCE)
 
 
 func _settle_on(state: String, intensity: float) -> void:

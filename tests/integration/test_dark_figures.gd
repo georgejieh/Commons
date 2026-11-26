@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0022's dark figures (P4.19): every screen that shows Famine, Denunciation,
+## ADR 0022's dark figures: every screen that shows Famine, Denunciation,
 ## Resentment or the Quota's target shows "None reported" for a dark one and never its
 ## true value, with no warning: no pulse, no sound and no dread on the board. The
 ## setback, or the death, still comes.
@@ -93,7 +93,7 @@ func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 
 
 func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
-	var mark: int = SfxPlayer.BANK.meter_marks[0]
+	var mark: int = TableSounds.METERS.famine.low
 	var state: RunState = _loop().state
 	state.famine = mark
 	_app.controller.reseal_book()

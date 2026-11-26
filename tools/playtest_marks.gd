@@ -66,7 +66,7 @@ func table() -> void:
 ## The deck sheet over the table, opened by the Deck key and shut by Cancel.
 func table_deck() -> void:
 	var sheet: Object = member(_current(), "_deck")
-	await _key_action("commons_deck")
+	await _key_action(KeyBindings.DECK)
 	if not await _until(func() -> bool: return bool(sheet.call("is_open"))):
 		_misclick("the Deck key did not open the deck sheet")
 		return
