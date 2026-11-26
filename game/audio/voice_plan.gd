@@ -1,6 +1,6 @@
 class_name VoicePlan
 extends RefCounted
-## One spoken line, worked out ahead (P3B.13): when each character of the text shows,
+## One spoken line, worked out ahead: when each character of the text shows,
 ## and which letter sound plays when, at what pitch and volume.
 
 ## Seconds from the line's start at which each character of the shown text appears.

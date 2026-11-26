@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## A full round can be played with each input method (P3B.11): mouse clicks on cards and
+## A full round can be played with each input method: mouse clicks on cards and
 ## buttons, the keyboard alone, and a gamepad alone. Every input goes through the
 ## engine's input path, as a player's would.
 

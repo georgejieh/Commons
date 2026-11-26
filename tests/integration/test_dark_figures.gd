@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0022's dark figures (P4.19): every screen that shows Famine, Denunciation,
+## ADR 0022's dark figures: every screen that shows Famine, Denunciation,
 ## Resentment or the Quota's target shows "None reported" for a dark one and never its
 ## true value, with no warning: no pulse, no sound and no dread on the board. The
 ## setback, or the death, still comes.

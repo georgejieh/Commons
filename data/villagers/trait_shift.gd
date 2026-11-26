@@ -6,9 +6,11 @@ extends Resource
 
 ## A meter ID, as RunMeters names them: "famine" or "denunciation".
 @export var meter: String = "famine"
+## The band of the meter from which the shift holds, and above.
 @export var band: MeterBands.Band = MeterBands.Band.HIGH
 ## One of the five personality traits, as VillageDrift.TRAITS names them.
 @export var trait_name: String = "honesty"
+## The level the trait takes while the shift holds.
 @export var level: Personality.Level = Personality.Level.LOW
 ## The dossier's line once the player has seen the shift at work: {count} the times seen,
 ## {at} the least value of the band.

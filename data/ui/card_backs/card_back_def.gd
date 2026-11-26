@@ -4,7 +4,9 @@ extends Resource
 ## changes nothing about play. Its inks colour the code-drawn back on moving cards, and its
 ## art is the picture on the seat panels, through the art's corruption stages.
 
+## The ID the setting names it by.
 @export var id: String = ""
+## The string key of its name.
 @export var name_key: String = ""
 ## Finished runs before it can be chosen.
 @export var finished_runs: int = 0
@@ -13,7 +15,9 @@ extends Resource
 @export var art: Texture2D
 ## True while it waits for its art: it shows as a locked sheet, never as a choice.
 @export var art_pending: bool = false
-## The code-drawn back's inks: its paper, its border and its printed lattice.
+## The paper of the code-drawn back.
 @export var paper: Color = Color("ecd7a2")
+## The border of the code-drawn back.
 @export var border: Color = Color("b02a17")
+## The printed lattice of the code-drawn back.
 @export var lattice: Color = Color("b02a17")

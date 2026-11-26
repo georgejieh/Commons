@@ -7,22 +7,27 @@ enum Action { BID_CALL, BID_PASS, PLAY, PASS, NEED, BUTTON }
 
 ## The step's number as its string keys hold it: "01" to "20".
 @export var id: String = ""
+## The action the step asks for.
 @export var action: Action = Action.BUTTON
 ## PLAY: the exact card IDs.
 @export var cards: PackedInt32Array = PackedInt32Array()
 ## NEED: the need to declare.
 @export var need: int = 0
-## BUTTON: the named button the step asks for, and the slot it names, or -1.
+## BUTTON: the named button the step asks for.
 @export var button: String = ""
+## The slot the named button belongs to, or -1.
 @export var slot: int = -1
-## The screen the step's prompt shows on, and the target it rings there.
+## The screen the step's prompt shows on.
 @export var screen: String = "table"
+## The target the step's prompt rings.
 @export var highlight: String = ""
-## A button allowed on the way to the action, on its own screen, which keeps the step.
+## A button allowed on the way to the action, which keeps the step.
 @export var via: String = ""
+## The screen the via button is on.
 @export var via_screen: String = ""
 ## A button that ends the step once its follow-up shows, or empty when the action does.
 @export var until: String = ""
+## The string key of the line that asks for the action.
 @export var prompt_key: String = ""
 ## The line that follows the action, or empty for none.
 @export var then_key: String = ""

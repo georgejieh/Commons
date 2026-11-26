@@ -1,6 +1,6 @@
 class_name VoiceScript
 extends RefCounted
-## Works out how a villager says a line (P3B.13), in the way of Animalese-style babble:
+## Works out how a villager says a line, in the way of Animalese-style babble:
 ## each letter plays its own sound as it types out. Spaces and punctuation pause. Each
 ## word steps its own pitch, the sentence drifts down, and only the last word carries
 ## the ending: questions rise, statements fall, exclamations come louder and faster,

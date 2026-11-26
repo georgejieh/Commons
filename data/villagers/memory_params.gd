@@ -1,12 +1,16 @@
 class_name MemoryParams
 extends Resource
-## How villagers remember the player (P4.6): what each kind of event weighs toward a
+## How villagers remember the player: what each kind of event weighs toward a
 ## family's grudge, how much survives each new run, and the grudge that counts as full.
 
-## Being fed softens a grudge, so its weight is negative.
+## What each time a family's villager was fed adds to its grudge: negative, since being
+## fed softens it.
 @export var fed_weight: float = -1.0
+## What each time a family's villager was bombed adds to its grudge.
 @export var bombed_weight: float = 2.0
+## What each time a family's villager was denounced adds to its grudge.
 @export var denounced_weight: float = 4.0
+## What each time a family's villager was betrayed adds to its grudge.
 @export var betrayed_weight: float = 1.0
 ## The share of every count kept when a new run begins.
 @export var kept_per_run: float = 0.5

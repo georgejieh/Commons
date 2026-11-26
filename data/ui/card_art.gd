@@ -1,6 +1,6 @@
 class_name CardArt
 extends Resource
-## The parts every card face is composed from (P3C.5). Ranks are drawn from the font, so
+## The parts every card face is composed from. Ranks are drawn from the font, so
 ## no face is baked: changing one part here restyles every card that uses it. Each part
 ## goes through ArtStages, so it can change with the corruption stage.
 

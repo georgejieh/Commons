@@ -11,4 +11,5 @@ extends Resource
 @export_range(0.0, 1.0) var chance: float = 0.04
 ## The name the table's stream is seeded under, with the Year and the Quota.
 @export var stream: String = "work_team:%d:%d"
+## Every line.
 @export var lines: Array[SpeechLine] = []

@@ -5,9 +5,13 @@ extends Resource
 ## as a pair ("Surname Given", as the ADR writes them), the surnames the first launch
 ## offers, and the surname a run uses when the profile holds none.
 
+## The era pools of given names, in generation order.
 @export var pools: Array[NamePool] = []
+## Given names that are never drawn, with any surname.
 @export var blocked_given: Array[String] = []
+## Full names, written "Surname Given", that are never drawn.
 @export var blocked_pairs: Array[String] = []
+## The surnames the first launch offers.
 @export var offered_surnames: Array[String] = []
 ## For a profile with no surname, which only tests and the demo can have.
 @export var fallback_surname: String = "Zhang"

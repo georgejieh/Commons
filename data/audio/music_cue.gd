@@ -1,14 +1,17 @@
 class_name MusicCue
 extends Resource
-## One music cue (P3C.9): a loop made of stems that share one timeline, so the game can
+## One music cue: a loop made of stems that share one timeline, so the game can
 ## fade instruments without losing sync. A cue with no stems is silent.
 
+## The cue's ID, as MusicScore names it.
 @export var id: String = ""
 ## Stem names in the same order as stems: melody, counter, harmony, bass, percussion.
 @export var stem_names: Array[String] = []
+## The stems, one stream each, played together on one timeline.
 @export var stems: Array[AudioStream] = []
-## Measured from the audio, not the prompt. Cue changes land on a bar line.
+## Beats a minute, measured from the audio, not the prompt. Cue changes land on a bar line.
 @export var bpm: float = 84.0
+## Beats in a bar.
 @export var beats_per_bar: int = 4
 ## Seconds from the start of the file to the first downbeat, measured from the audio.
 ## Stems keep their leading silence, so bars count from here. The loop must also start

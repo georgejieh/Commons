@@ -12,6 +12,7 @@ extends Resource
 @export var ambition: PackedFloat32Array
 ## Score added, per point of memory, for answering a seat.
 @export var grudge: PackedFloat32Array
-## A lie adds this share of true need, plus at least lie_floor.
+## The share of true need a lie adds, for each level.
 @export var lie_share: PackedFloat32Array
+## The least a lie adds to true need, in work points.
 @export var lie_floor: int

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## A play lies on the trick as a player reads it (P5.2a): the owner saw pair runs laid out
+## A play lies on the trick as a player reads it: the owner saw pair runs laid out
 ## of rank order. The run hands a play's cards over in the order they were chosen, so the
 ## pile lays them by its reading: body low to high, each rank together, then kickers, a
 ## wild card with the rank it stands for.

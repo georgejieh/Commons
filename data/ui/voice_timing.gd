@@ -1,6 +1,6 @@
 class_name VoiceTiming
 extends Resource
-## How a villager's babble is timed and pitched (P3B.13), shared by every voice. The
+## How a villager's babble is timed and pitched, shared by every voice. The
 ## same numbers lay out a line in tools/voice_proto/voice_synth.py.
 
 ## Profiles give pace in syllables per second; a syllable is about this many letters.
@@ -15,8 +15,9 @@ extends Resource
 @export var declination: float = 0.1
 ## Words this long or longer tend to carry the stress.
 @export var long_word: int = 4
-## Per-word pitch steps, as a range around 0, for long and short words.
+## Per-word pitch steps for words of long_word letters or more, as a range around 0.
 @export var long_accent: Vector2 = Vector2(0.04, 0.14)
+## Per-word pitch steps for words shorter than long_word, as a range around 0.
 @export var short_accent: Vector2 = Vector2(-0.07, 0.04)
 ## Each letter's small fixed pitch wobble, as a fraction.
 @export var wobble: float = 0.04
@@ -45,8 +46,9 @@ extends Resource
 	"tired": Vector4(0.6, 0.8, 0.8, 0.95),
 	"slogan": Vector4(0.0, 0.9, 1.0, 1.0),
 }
-## At full dread the voice slows by this fraction, narrows its pitch range by this
-## fraction, and quiets by this fraction.
+## The fraction of its pace the voice loses at full dread.
 @export var dread_slow: float = 0.3
+## The fraction of its pitch range the voice loses at full dread.
 @export var dread_narrow: float = 0.5
+## The fraction of its loudness the voice loses at full dread.
 @export var dread_quiet: float = 0.4

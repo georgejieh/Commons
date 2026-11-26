@@ -1,6 +1,6 @@
 class_name VoiceProfile
 extends Resource
-## One villager voice (P3B.13): the numbers the letter bank is rendered from, by
+## One villager voice: the numbers the letter bank is rendered from, by
 ## formant synthesis in tools/voice_proto/render_bank.py. No TTS and no recordings.
 
 ## Base pitch in Hz.

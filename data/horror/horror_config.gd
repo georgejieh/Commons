@@ -1,11 +1,13 @@
 class_name HorrorConfig
 extends Resource
 ## Every dread layer and flicker, how fast weights ease, and each key asset's art by
-## corruption stage (P3B.12, ADR 0018).
+## corruption stage (ADR 0018).
 
+## Every dread layer.
 @export var layers: Array[HorrorLayer] = []
-## Per key asset, its art at each corruption stage. Empty until the art pass (P3C).
+## Per key asset, its art at each corruption stage.
 @export var art: Array[ArtVariant] = []
+## Every flicker.
 @export var flickers: Array[FlickerDef] = []
 ## What the slow effects' weights look like on the table.
 @export var effect_tuning: DreadEffects = DreadEffects.new()

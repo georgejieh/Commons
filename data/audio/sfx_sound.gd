@@ -1,9 +1,11 @@
 class_name SfxSound
 extends Resource
-## One sound effect (P3C.8): the audio event it answers and its takes. Takes play
+## One sound effect: the audio event it answers and its takes. Takes play
 ## round-robin, so a frequent sound never repeats the same recording twice in a row.
 
+## The audio event the sound answers.
 @export var id: String = ""
+## The takes, played round-robin.
 @export var streams: Array[AudioStream] = []
 ## Runtime gain on top of the file's own level, for the mix.
 @export var volume_db: float = 0.0

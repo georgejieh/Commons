@@ -3,7 +3,7 @@ extends Resource
 ## The hidden corruption's numbers (ADR 0018, ADR 0025): each event's weight, how fast
 ## the same act costs more as corruption grows, and what counts as holding a surplus.
 ## Each event is an attribution rule: the game counts the circumstance, and does not claim
-## to prove the cause. Every number is for P4.16 to tune.
+## to prove the cause.
 
 ## Weight by event ID (CorruptionEvents names them).
 @export var weights: Dictionary[String, float] = {}

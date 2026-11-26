@@ -3,4 +3,5 @@ extends Resource
 ## The Campaigns one counter can offer: collective ones at the state store, private ones
 ## at the black market.
 
+## Every Campaign.
 @export var campaigns: Array[CampaignDef]

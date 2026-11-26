@@ -3,4 +3,5 @@ extends Resource
 ## The Cadres one counter can stock: collective ones at the state store, private ones at
 ## the black market.
 
+## Every Cadre.
 @export var cadres: Array[ModifierDef]

@@ -2,6 +2,7 @@ class_name SfxBank
 extends Resource
 ## Every sound effect by audio event name. An event with no entry is silent.
 
+## Every sound.
 @export var sounds: Array[SfxSound] = []
 
 

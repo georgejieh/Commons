@@ -9,6 +9,7 @@ const EVENTS: Array[String] = ["call", "no_call", "pass", "cards_left", "bomb", 
 ## The mood of a line the board's dread says in place of an ordinary one.
 const SLOGAN: String = "slogan"
 
+## Every line.
 @export var lines: Array[SpeechLine] = []
 
 
