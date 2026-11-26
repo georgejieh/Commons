@@ -5,7 +5,6 @@ extends Control
 ## will take, so a picture drops in without moving anything. Like all village print it is
 ## a little off true and fades with the stage (art/STYLE.md).
 
-const INK: Color = Color("5a4a36")
 const INSET: float = 4.0
 const CORNER: float = 14.0
 
@@ -17,7 +16,7 @@ func _init(extent: Vector2 = Vector2.ZERO) -> void:
 
 func _draw() -> void:
 	var worn: float = BowlGrime.wear()
-	var ink: Color = Color(BowlGrime.aged(INK, worn * 0.4), 0.55)
+	var ink: Color = Color(BowlGrime.aged(ScreenKit.FAINT_INK, worn * 0.4), 0.55)
 	var outer: Rect2 = Rect2(Vector2.ZERO, size).grow(-INSET)
 	draw_rect(outer, ink, false, 1.5)
 	var inner: Rect2 = outer.grow(-5.0)

@@ -28,7 +28,6 @@ const NAME_SIZE: int = 26
 const SEAL_WIDTH: float = 92.0
 ## The text column's width on a death's page, which has no epilogue beside it.
 const DEATH_WIDTH: float = 1180.0
-const TITLE_INK: Color = Color("9a2a1a")
 
 var _view: EndingView
 ## The run's last state, for how its figures show (ADR 0022).
@@ -165,7 +164,7 @@ func _title_card() -> Control:
 		frame.add_child(_hung(picture, printed))
 	else:
 		frame.add_child(printed)
-	_title = ScreenKit.label(_view.title, TITLE_MAX, TITLE_INK)
+	_title = ScreenKit.label(_view.title, TITLE_MAX, ScreenKit.ENDING_INK)
 	_title.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	var heading: HBoxContainer = ScreenKit.row([_title], 28)

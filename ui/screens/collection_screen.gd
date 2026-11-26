@@ -17,7 +17,6 @@ const RULES_WIDTH: float = 280.0
 ## Rules beside no art take the card's whole width, less its padding.
 const WIDE_RULES: float = 420.0
 const LOCKED_HEIGHT: float = 150.0
-const FOCUS_RING: Color = Color("b98a2c")
 const SHEET_PADDING: int = 28
 const GAP: int = 20
 ## The room kept between the last card and the scroll's bar.
@@ -140,7 +139,7 @@ func _entry(sheet: UnlockSheet) -> Control:
 	panel.accessibility_description = sheet.text
 	var ring: ReferenceRect = ReferenceRect.new()
 	ring.editor_only = false
-	ring.border_color = Color(BowlGrime.aged(FOCUS_RING, BowlGrime.wear() * 0.5), 0.9)
+	ring.border_color = Color(BowlGrime.aged(ScreenKit.FOCUS_RING, BowlGrime.wear() * 0.5), 0.9)
 	ring.border_width = 3.0
 	ring.visible = false
 	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE

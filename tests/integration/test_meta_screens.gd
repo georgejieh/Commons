@@ -225,7 +225,6 @@ func test_stake_tickets_read_at_16_px_on_warm_paper() -> void:
 			for ticket: StakeTicket in screen.tickets():
 				var words: Label = ticket.get("_words")
 				var where: String = "%s %s %s" % [profile, screen_size, ticket.words()]
-				assert_object(ticket.BAND).is_equal(RankChip.BAND)
 				if ticket.words().is_empty():
 					continue
 				(

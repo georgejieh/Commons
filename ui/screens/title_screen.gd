@@ -40,7 +40,7 @@ func open(app: DemoApp) -> void:
 	column.alignment = BoxContainer.ALIGNMENT_BEGIN
 	# Paper letters edged in ink, as the line under the name is: crisp on the poster.
 	var eyebrow: Label = ScreenKit.eyebrow(tr("title.eyebrow"))
-	eyebrow.add_theme_color_override("font_color", ScreenKit.STYLE.paper)
+	eyebrow.add_theme_color_override("font_color", ScreenKit.PAPER)
 	eyebrow.add_theme_color_override("font_outline_color", ScreenKit.INK)
 	eyebrow.add_theme_constant_override("outline_size", 6)
 	column.add_child(eyebrow)
@@ -48,7 +48,7 @@ func open(app: DemoApp) -> void:
 	column.add_child(_word)
 	var subtitle: Label = ScreenKit.styled(tr("title.subtitle"), CommonsTheme.TITLE)
 	subtitle.add_theme_font_size_override("font_size", TextSize.px(30))
-	subtitle.add_theme_color_override("font_color", ScreenKit.STYLE.paper)
+	subtitle.add_theme_color_override("font_color", ScreenKit.PAPER)
 	subtitle.add_theme_color_override("font_outline_color", ScreenKit.INK)
 	column.add_child(subtitle)
 	var spacer: Control = Control.new()

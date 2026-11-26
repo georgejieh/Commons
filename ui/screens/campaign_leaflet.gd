@@ -25,7 +25,6 @@ const STATUS_SIZE: int = 16
 ## A paper-coloured halo round the type, so stains never cross a letter.
 const HALO: int = 4
 const LIFT: float = 14.0
-const GOLD: Color = Color("c9a227")
 const RING: float = 3.0
 
 var slot: int = -1
@@ -181,5 +180,5 @@ func _draw() -> void:
 	var worn: float = BowlGrime.wear()
 	CampaignPaper.leaflet(self, Rect2(Vector2.ZERO, size), _private, worn, slot + 1)
 	if armed or cursor:
-		var edge: Color = CampaignPaper.ink(GOLD, worn * 0.5)
+		var edge: Color = CampaignPaper.ink(ScreenKit.HINT, worn * 0.5)
 		draw_rect(Rect2(Vector2.ZERO, size).grow(RING), edge, false, RING)

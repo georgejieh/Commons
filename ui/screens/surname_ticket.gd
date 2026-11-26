@@ -6,10 +6,6 @@ extends Button
 ## is stamped round in red.
 
 const SIZE: Vector2 = Vector2(120, 56)
-const INK: Color = Color("120d09")
-const PICKED: Color = Color("9e2a1d")
-const RING: Color = Color("b98a2c")
-const BAND: Color = Color("7a6446")
 const LIFT: float = 4.0
 const NAME_SIZE: int = 24
 ## Seeds after the stake tickets', so no surname ticket wears like a stake's.
@@ -34,7 +30,9 @@ func _init(offered: String, place: int) -> void:
 	accessibility_name = offered
 	for style: String in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
 		add_theme_stylebox_override(style, StyleBoxEmpty.new())
-	_words = ScreenKit.label(offered, NAME_SIZE, BowlGrime.faded(INK, BowlGrime.wear()))
+	_words = ScreenKit.label(
+		offered, NAME_SIZE, BowlGrime.faded(ScreenKit.TICKET_INK, BowlGrime.wear())
+	)
 	_words.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_words.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -54,8 +52,10 @@ func _draw() -> void:
 	var worn: float = BowlGrime.wear()
 	var lifted: bool = has_focus() or is_hovered()
 	var rect: Rect2 = Rect2(Vector2(0, -LIFT if lifted else 0.0), size)
-	PaperTicket.draw(self, rect, worn, SEED_BASE + index, BAND)
+	PaperTicket.draw(self, rect, worn, SEED_BASE + index, ScreenKit.WORN_PRINT)
 	if picked:
-		draw_rect(rect.grow(-4.0), BowlGrime.faded(PICKED, worn), false, 3.0)
+		draw_rect(rect.grow(-4.0), BowlGrime.faded(ScreenKit.PICKED, worn), false, 3.0)
 	if lifted:
-		draw_rect(rect.grow(2.5), Color(BowlGrime.aged(RING, worn * 0.5), 0.9), false, 3.0)
+		draw_rect(
+			rect.grow(2.5), Color(BowlGrime.aged(ScreenKit.FOCUS_RING, worn * 0.5), 0.9), false, 3.0
+		)

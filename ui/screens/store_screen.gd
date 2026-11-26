@@ -33,7 +33,6 @@ const NIGHT: Color = Color(0.36, 0.34, 0.46)
 const NIGHT_SHADE: Color = Color(0.03, 0.02, 0.09, 0.62)
 ## A card on the counter, the same in both shops.
 const CARD: Vector2 = Vector2(360, 470)
-const MARKET_INK: Color = Color("1e1a16")
 ## The page's rows sit closer than other pages', so four of them fit 1080.
 const ROW_GAP: int = 14
 ## Between the heading's pieces, close enough to leave the notes and all six Reforms room.
@@ -116,7 +115,7 @@ func open(app: DemoApp) -> void:
 	var leave: Button = _button_row(column)
 	column.add_child(_bottom_row())
 	var word: String = tr("market.paid" if market else "store.approved")
-	_seal.prepare(word, MARKET_INK if market else ScreenKit.RED, SEAL_WIDTH)
+	_seal.prepare(word, ScreenKit.INK if market else ScreenKit.RED, SEAL_WIDTH)
 	add_child(_seal)
 	add_child(_picker)
 	add_child(_slip)
@@ -313,7 +312,7 @@ func _refresh() -> void:
 
 func _item(slot: int, cadre_id: String) -> Control:
 	var buy: Callable = func(panel: Control) -> void: _buy(slot, panel)
-	var ink: Color = MARKET_INK if market else ScreenKit.RED
+	var ink: Color = ScreenKit.INK if market else ScreenKit.RED
 	return StoreCard.make(_app.controller, _desk, slot, cadre_id, _slip, buy, ink)
 
 

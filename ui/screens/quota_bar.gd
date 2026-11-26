@@ -14,8 +14,6 @@ enum Shown { AS_IS, NO_TARGET, FULFILLED }
 const GRAIN: Color = Color("c8952b")
 const MET: Color = Color("e0b23c")
 const GROUND: Color = Color("4a4239")
-const PAPER: Color = Color("efe3c8")
-const INK: Color = Color("1e1a16")
 
 var _text: Label = Label.new()
 var _fill: StyleBoxFlat = StyleBoxFlat.new()
@@ -38,8 +36,8 @@ func _init() -> void:
 	_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_text.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_text.add_theme_color_override("font_color", PAPER)
-	_text.add_theme_color_override("font_outline_color", INK)
+	_text.add_theme_color_override("font_color", ScreenKit.PAPER)
+	_text.add_theme_color_override("font_outline_color", ScreenKit.INK)
 	_text.add_theme_constant_override("outline_size", 6)
 	add_child(_text)
 	add_child(_seal)
@@ -121,7 +119,7 @@ func fill_to(to: float, seconds: float, delay: float = 0.0) -> void:
 func seal_short() -> void:
 	if _mode == Shown.FULFILLED:
 		return
-	_seal.prepare(tr("summary.short"), INK, _seal.size.x)
+	_seal.prepare(tr("summary.short"), ScreenKit.INK, _seal.size.x)
 	_seal.press()
 
 

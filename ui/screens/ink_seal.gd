@@ -12,7 +12,7 @@ const BAND: float = 0.36
 const WORD_FIT: float = 0.82
 
 var _word: String = ""
-var _ink: Color = Color("b02a17")
+var _ink: Color = ScreenKit.RED
 var _font: Font = ScreenKit.DISPLAY_BOLD
 
 

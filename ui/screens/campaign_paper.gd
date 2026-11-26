@@ -9,10 +9,7 @@ extends RefCounted
 ## Warm, like the other village papers, so a leaflet never reads as greyed out.
 const PAPER: Color = Color("ecd7a2")
 const SHADE: Color = Color("c9b68a")
-const FOLD: Color = Color("8a7653")
-const EDGE: Color = Color("4a3a26")
 const PRIVATE_BAND: Color = Color("2b2622")
-const COLLECTIVE_BAND: Color = Color("9e2a1d")
 const SEED: int = 7907
 const FOXING: Vector2i = Vector2i(6, 40)
 const STAINS: Vector2i = Vector2i(1, 4)
@@ -36,11 +33,13 @@ static func leaflet(
 	var rng: RandomNumberGenerator = _rng(which)
 	var body: PackedVector2Array = _worn_outline(rect, rng, worn)
 	canvas.draw_colored_polygon(body, Color(paper(worn), alpha))
-	var band_color: Color = PRIVATE_BAND if private else COLLECTIVE_BAND
+	var band_color: Color = PRIVATE_BAND if private else ScreenKit.PICKED
 	var band: Rect2 = Rect2(rect.position + Vector2(4, 4), Vector2(rect.size.x - 8, 9))
 	canvas.draw_rect(band, Color(ink(band_color, worn), alpha * 0.9))
 	_wear(canvas, rect, rng, worn, alpha)
-	canvas.draw_polyline(body + PackedVector2Array([body[0]]), Color(EDGE, alpha * 0.55), 1.5)
+	canvas.draw_polyline(
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.55), 1.5
+	)
 
 
 ## An empty place in a tray: a faint outline where a leaflet would lie, smudged.
@@ -49,7 +48,9 @@ static func empty_place(canvas: CanvasItem, rect: Rect2, worn: float, which: int
 	var outline: PackedVector2Array = _worn_outline(rect, rng, worn)
 	canvas.draw_colored_polygon(outline, Color(SHADE, 0.18 + 0.12 * worn))
 	canvas.draw_polyline(
-		outline + PackedVector2Array([outline[0]]), Color(EDGE, 0.3 + 0.2 * worn), 1.0
+		outline + PackedVector2Array([outline[0]]),
+		Color(ScreenKit.PAPER_EDGE, 0.3 + 0.2 * worn),
+		1.0
 	)
 
 
@@ -62,10 +63,15 @@ static func note(canvas: CanvasItem, rect: Rect2, worn: float, alpha: float = 1.
 	var shadow: Rect2 = Rect2(rect.position.x, crease, rect.size.x, rect.size.y * 0.55)
 	canvas.draw_rect(shadow, Color(SHADE, alpha * 0.45))
 	canvas.draw_line(
-		Vector2(rect.position.x, crease), Vector2(rect.end.x, crease), Color(FOLD, alpha), 1.5
+		Vector2(rect.position.x, crease),
+		Vector2(rect.end.x, crease),
+		Color(ScreenKit.FOLD, alpha),
+		1.5
 	)
 	_wear(canvas, rect, rng, worn, alpha)
-	canvas.draw_polyline(body + PackedVector2Array([body[0]]), Color(EDGE, alpha * 0.6), 1.5)
+	canvas.draw_polyline(
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.6), 1.5
+	)
 
 
 ## The sheet's outline, its corners a little out of true and the bottom right one worn
@@ -90,7 +96,7 @@ static func _wear(
 	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float, alpha: float
 ) -> void:
 	var fold_y: float = rect.position.y + rect.size.y * rng.randf_range(0.48, 0.58)
-	var fold: Color = Color(FOLD, alpha * (0.25 + 0.3 * worn))
+	var fold: Color = Color(ScreenKit.FOLD, alpha * (0.25 + 0.3 * worn))
 	canvas.draw_line(Vector2(rect.position.x + 2, fold_y), Vector2(rect.end.x - 2, fold_y), fold)
 	var speck: Color = Color(BowlGrime.TEA, alpha * (0.25 + 0.35 * worn))
 	for _spot: int in roundi(lerpf(FOXING.x, FOXING.y, worn)):

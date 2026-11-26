@@ -22,6 +22,38 @@ extends Resource
 @export var ticket_kraft: Color = Color("8a745c")
 ## The ink that dyes the card stock of a ticket button for buying: ration green.
 @export var ticket_green: Color = Color("86b878")
+## The green of coupons, and of what pays them, on paper.
+@export var coupon: Color = Color("3f6338")
+## The lighter green of coupons shown over the dark table.
+@export var coupon_on_dark: Color = Color("6f9a62")
+## The deep red of a seal's ink: a landlord's mark, a lie caught, a total, a rank note.
+@export var seal: Color = Color("9e1b16")
+## The faded ink of a loss counted on the table.
+@export var loss: Color = Color("3a322b")
+## The quiet brown of what is settled or waiting: a cleared audit, an idle tally.
+@export var quiet: Color = Color("8a745c")
+## The near-black printed on tickets, chips and the surname's slip.
+@export var ticket_ink: Color = Color("120d09")
+## The red of a picked ticket and of a printed band.
+@export var picked: Color = Color("9e2a1d")
+## The brass ring around a ticket or paper that has the focus.
+@export var focus_ring: Color = Color("b98a2c")
+## The worn brown of a ticket's band, a locked ticket and a perforation.
+@export var worn_print: Color = Color("7a6446")
+## The dark brown edge drawn around village paper.
+@export var paper_edge: Color = Color("4a3a26")
+## The faint brown of a printed frame, a ledger's band and a keyword's soft words.
+@export var faint_ink: Color = Color("5a4a36")
+## The brown line of a fold across paper.
+@export var fold: Color = Color("8a7653")
+## The gold of a hint: a hinted card's edge and a usable Campaign's mark.
+@export var hint: Color = Color("c9a227")
+## The cream card stock a playing card is printed on.
+@export var card_stock: Color = Color("f6e6c4")
+## The bright red printed on a wild card's ribbon and on a file's stamp.
+@export var print_red: Color = Color("b8231a")
+## The red of an ending's title and frame.
+@export var ending_ink: Color = Color("9a2a1a")
 
 @export_group("Shape")
 ## Corner radius of buttons and chips, in pixels. Paper panels keep their torn edges.

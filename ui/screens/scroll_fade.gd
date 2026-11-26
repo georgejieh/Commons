@@ -20,7 +20,7 @@ var _bands: Vector2i = Vector2i(-1, -1)
 
 
 ## Lays a fade over scroll, in the paper's colour.
-static func over(scroll: ScrollContainer, paper: Color = ScreenKit.STYLE.paper) -> ScrollFade:
+static func over(scroll: ScrollContainer, paper: Color = ScreenKit.PAPER) -> ScrollFade:
 	var fade: ScrollFade = ScrollFade.new()
 	fade._scroll = scroll
 	fade._paper = paper

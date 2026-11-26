@@ -11,11 +11,28 @@ const DISPLAY_BOLD: FontVariation = preload("res://ui/theme/oswald_bold.tres")
 ## A typewriter face for the ledger's tallies.
 const TYPEWRITER: FontFile = preload("res://art/fonts/CourierPrime-Regular.ttf")
 const TYPEWRITER_BOLD: FontFile = preload("res://art/fonts/CourierPrime-Bold.ttf")
-const PAPER: Color = Color("efe3c8")
-const INK: Color = Color("1e1a16")
-const RED: Color = Color("b02a17")
-const GOLD: Color = Color("e0b84a")
-const COUPON: Color = Color("3f6338")
+## The inks every screen shares, each defined once in the style data. A file reads these
+## names; it does not keep a colour of its own for one.
+const PAPER: Color = STYLE.paper
+const INK: Color = STYLE.ink
+const RED: Color = STYLE.vermilion
+const GOLD: Color = STYLE.gold
+const COUPON: Color = STYLE.coupon
+const COUPON_ON_DARK: Color = STYLE.coupon_on_dark
+const SEAL: Color = STYLE.seal
+const LOSS: Color = STYLE.loss
+const QUIET: Color = STYLE.quiet
+const TICKET_INK: Color = STYLE.ticket_ink
+const PICKED: Color = STYLE.picked
+const FOCUS_RING: Color = STYLE.focus_ring
+const WORN_PRINT: Color = STYLE.worn_print
+const PAPER_EDGE: Color = STYLE.paper_edge
+const FAINT_INK: Color = STYLE.faint_ink
+const FOLD: Color = STYLE.fold
+const HINT: Color = STYLE.hint
+const CARD_STOCK: Color = STYLE.card_stock
+const PRINT_RED: Color = STYLE.print_red
+const ENDING_INK: Color = STYLE.ending_ink
 ## How far the backdrop darkens under the content, so text on art stays readable.
 const SHADE: Color = Color(0.08, 0.06, 0.04, 0.3)
 ## How wide the paper halo around text on art is, in pixels.
@@ -311,7 +328,7 @@ static func reveal(column: VBoxContainer) -> void:
 ## A paper-colored edge around text that sits straight on the table, so it stays
 ## readable however dark the room behind it gets.
 static func paper_outline(label: Label) -> void:
-	label.add_theme_color_override("font_outline_color", STYLE.paper)
+	label.add_theme_color_override("font_outline_color", PAPER)
 	label.add_theme_constant_override("outline_size", 8)
 
 

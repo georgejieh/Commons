@@ -17,8 +17,6 @@ const TILT: float = -0.12
 const CARD: float = 0.84
 const CHOP: float = 0.72
 const MANILA: Color = Color("d8bf86")
-const EDGE: Color = Color("4a3a26")
-const RED: Color = Color("b8231a")
 const BORDER: float = 0.05
 const SEED: int = 8317
 const FOXING: Vector2i = Vector2i(10, 60)
@@ -53,7 +51,9 @@ func _draw() -> void:
 	rng.seed = SEED
 	draw_set_transform(size / 2.0, TILT)
 	_card(SIDE * CARD / 2.0, worn, rng)
-	var ink: Color = BowlGrime.faded(RED, worn).lerp(BowlGrime.DRIED, 0.5 * (worn - 0.3))
+	var ink: Color = BowlGrime.faded(ScreenKit.PRINT_RED, worn).lerp(
+		BowlGrime.DRIED, 0.5 * (worn - 0.3)
+	)
 	ink.a = 0.92 - 0.25 * worn
 	var half: float = SIDE * CHOP / 2.0
 	# The chop slipped as it was pressed: a faint second impression beside the first.
@@ -74,7 +74,7 @@ func _card(half: float, worn: float, rng: RandomNumberGenerator) -> void:
 		)
 		corners.append(corner * half + nudge)
 	draw_colored_polygon(corners, paper)
-	draw_polyline(corners + PackedVector2Array([corners[0]]), Color(EDGE, 0.7), 1.5)
+	draw_polyline(corners + PackedVector2Array([corners[0]]), Color(ScreenKit.PAPER_EDGE, 0.7), 1.5)
 	var fox: Color = Color(BowlGrime.TEA, 0.25 + 0.35 * worn)
 	for _spot: int in roundi(lerpf(FOXING.x, FOXING.y, worn)):
 		var at: Vector2 = Vector2(rng.randf_range(-half, half), rng.randf_range(-half, half)) * 0.95

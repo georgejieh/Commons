@@ -18,12 +18,7 @@ enum Kind { STAMP, MODEL, SHEAF, PENNANT, SURPLUS }
 const SIZE: Vector2 = Vector2(30, 32)
 ## The ink and gold only fade a little with the stage (BowlGrime.faded), so a mark reads at
 ## hand size at every stage.
-const VERMILION: Color = Color("b02a17")
-const GOLD: Color = Color("e0b84a")
 const GOLD_DARK: Color = Color("8a5a12")
-const RATION_GREEN: Color = Color("3f6338")
-const PAPER: Color = Color("f6e6c4")
-const EDGE: Color = Color("1e1a16")
 const CHOP_TILT: float = -0.12
 ## The coupon leans the other way from the chop, so the two never read as one.
 const COUPON_TILT: float = 0.2
@@ -78,12 +73,12 @@ func _draw() -> void:
 ## the way a carved name seal prints.
 func _draw_chop() -> void:
 	var worn: float = BowlGrime.wear()
-	var red: Color = BowlGrime.faded(VERMILION, worn)
-	var paper: Color = BowlGrime.aged(PAPER, worn)
+	var red: Color = BowlGrime.faded(ScreenKit.RED, worn)
+	var paper: Color = BowlGrime.aged(ScreenKit.CARD_STOCK, worn)
 	var side: float = minf(size.x, size.y) - 4.0
 	draw_set_transform(size / 2.0, CHOP_TILT)
 	var square: Rect2 = Rect2(Vector2.ONE * -side / 2.0, Vector2.ONE * side)
-	draw_rect(square.grow(1.5), Color(EDGE, 0.85))
+	draw_rect(square.grow(1.5), Color(ScreenKit.INK, 0.85))
 	draw_rect(square, red)
 	draw_rect(square.grow(-3.0), paper, false, 1.5)
 	var inner: float = side / 2.0 - 7.0
@@ -110,12 +105,12 @@ func _draw_rosette() -> void:
 			center + Vector2(side * 8.0, size.y - center.y),
 			center + Vector2(side * 3.0, size.y - center.y - 3.0),
 		]
-		draw_colored_polygon(tail, BowlGrime.faded(VERMILION, worn))
-	var gold: Color = BowlGrime.faded(GOLD, worn)
+		draw_colored_polygon(tail, BowlGrime.faded(ScreenKit.RED, worn))
+	var gold: Color = BowlGrime.faded(ScreenKit.GOLD, worn)
 	var dark: Color = BowlGrime.faded(GOLD_DARK, worn)
-	var red: Color = BowlGrime.faded(VERMILION, worn)
+	var red: Color = BowlGrime.faded(ScreenKit.RED, worn)
 	# A dark edge round the whole rosette, so it reads over stock and art alike.
-	draw_circle(center, radius * 1.08, Color(EDGE, 0.8))
+	draw_circle(center, radius * 1.08, Color(ScreenKit.INK, 0.8))
 	for petal: int in PETALS:
 		var at: Vector2 = center + Vector2.from_angle(TAU * petal / PETALS) * radius * 0.62
 		draw_circle(at, radius * 0.42, red if petal % 2 == 0 else dark)
@@ -133,8 +128,8 @@ func _draw_rosette() -> void:
 func _draw_sheaf() -> void:
 	var worn: float = BowlGrime.wear()
 	var ochre: Color = BowlGrime.faded(GOLD_DARK, worn)
-	var gold: Color = BowlGrime.aged(GOLD, worn * 0.6)
-	var edge: Color = Color(EDGE, 0.8)
+	var gold: Color = BowlGrime.aged(ScreenKit.GOLD, worn * 0.6)
+	var edge: Color = Color(ScreenKit.INK, 0.8)
 	var foot: Vector2 = Vector2(size.x * 0.42, size.y - 2.0)
 	var tip: Vector2 = Vector2(size.x * 0.6, 3.0)
 	draw_line(foot, tip, edge, 4.0, true)
@@ -150,7 +145,7 @@ func _draw_sheaf() -> void:
 		draw_line(tip, tip + (along + across * side * 0.5) * 5.0, ochre, 1.2, true)
 	var band: Vector2 = foot.lerp(tip, 0.2)
 	draw_line(band - across * 5.0, band + across * 5.0, edge, 4.5)
-	draw_line(band - across * 4.0, band + across * 4.0, BowlGrime.faded(VERMILION, worn), 2.5)
+	draw_line(band - across * 4.0, band + across * 4.0, BowlGrime.faded(ScreenKit.RED, worn), 2.5)
 	draw_circle(band + across * (1.0 - 2.0 * worn), 0.6 + worn, Color(BowlGrime.TEA, 0.5))
 
 
@@ -168,8 +163,10 @@ static func _kernel(at: Vector2, along: Vector2, side: float, share: float) -> P
 func _draw_pennant() -> void:
 	var worn: float = BowlGrime.wear()
 	var staff_x: float = 6.0
-	draw_line(Vector2(staff_x, 2.0), Vector2(staff_x, size.y - 1.0), Color(EDGE, 0.85), 3.0)
-	draw_circle(Vector2(staff_x, 2.5), 2.0, BowlGrime.aged(GOLD, worn))
+	draw_line(
+		Vector2(staff_x, 2.0), Vector2(staff_x, size.y - 1.0), Color(ScreenKit.INK, 0.85), 3.0
+	)
+	draw_circle(Vector2(staff_x, 2.5), 2.0, BowlGrime.aged(ScreenKit.GOLD, worn))
 	var hoist_top: Vector2 = Vector2(staff_x + 1.0, 4.0)
 	var hoist_foot: Vector2 = Vector2(staff_x + 1.0, 20.0)
 	var fly: Vector2 = Vector2(size.x - 1.0, 12.0)
@@ -177,11 +174,11 @@ func _draw_pennant() -> void:
 	var flag: PackedVector2Array = [
 		hoist_top, fly + Vector2(0.0, -2.0), cut, fly + Vector2(0.0, 2.0), hoist_foot
 	]
-	draw_colored_polygon(flag, BowlGrime.faded(VERMILION, worn))
+	draw_colored_polygon(flag, BowlGrime.faded(ScreenKit.RED, worn))
 	var outline: PackedVector2Array = flag.duplicate()
 	outline.append(hoist_top)
-	draw_polyline(outline, Color(EDGE, 0.8), 1.5, true)
-	var paper: Color = BowlGrime.aged(PAPER, worn)
+	draw_polyline(outline, Color(ScreenKit.INK, 0.8), 1.5, true)
+	var paper: Color = BowlGrime.aged(ScreenKit.CARD_STOCK, worn)
 	draw_line(hoist_top + Vector2(3.0, 2.0), hoist_foot + Vector2(3.0, -2.0), paper, 2.0)
 
 
@@ -189,11 +186,11 @@ func _draw_pennant() -> void:
 ## two printed lines, both ends torn along the perforation; foxing spots it with wear.
 func _draw_coupon() -> void:
 	var worn: float = BowlGrime.wear()
-	var paper: Color = BowlGrime.aged(PAPER, worn)
+	var paper: Color = BowlGrime.aged(ScreenKit.CARD_STOCK, worn)
 	var half: Vector2 = Vector2(size.x / 2.0 - 2.0, 7.5)
 	draw_set_transform(size / 2.0, COUPON_TILT)
-	draw_colored_polygon(_torn_slip(half + Vector2(1.5, 1.5)), Color(EDGE, 0.85))
-	draw_colored_polygon(_torn_slip(half), BowlGrime.faded(RATION_GREEN, worn))
+	draw_colored_polygon(_torn_slip(half + Vector2(1.5, 1.5)), Color(ScreenKit.INK, 0.85))
+	draw_colored_polygon(_torn_slip(half), BowlGrime.faded(ScreenKit.COUPON, worn))
 	var border: Vector2 = half - Vector2(4.0, 2.5)
 	draw_rect(Rect2(-border, border * 2.0), paper, false, 1.2)
 	for row: float in [-1.5, 2.0]:

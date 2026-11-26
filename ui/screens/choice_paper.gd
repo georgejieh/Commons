@@ -146,7 +146,7 @@ func _make_tag() -> void:
 	_tag.theme_type_variation = CommonsTheme.EYEBROW
 	_tag.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
 	var ground: StyleBoxFlat = StyleBoxFlat.new()
-	ground.bg_color = ScreenKit.STYLE.vermilion
+	ground.bg_color = ScreenKit.RED
 	ground.set_corner_radius_all(ScreenKit.STYLE.radius)
 	ground.content_margin_left = TAG_MARGIN
 	ground.content_margin_right = TAG_MARGIN

@@ -12,7 +12,6 @@ extends Control
 const SIZE: Vector2 = Vector2(30, 28)
 const AT: Vector2 = Vector2(6, -32)
 const GRAPHITE: Color = Color("2e2b27")
-const EDGE: Color = Color("efe3c8")
 const WIDTH: float = 3.0
 const EDGE_WIDTH: float = 6.5
 const SEED: int = 8821
@@ -50,7 +49,7 @@ func _draw() -> void:
 	rng.seed = SEED + 131 * salt
 	var shake: float = 0.6 + 2.4 * worn
 	var stroke: PackedVector2Array = [SHORT * size, FOOT * size, LONG * size]
-	draw_polyline(stroke, Color(EDGE, 0.85), EDGE_WIDTH, true)
+	draw_polyline(stroke, Color(ScreenKit.PAPER, 0.85), EDGE_WIDTH, true)
 	var graphite: Color = BowlGrime.faded(GRAPHITE, worn)
 	for _pass: int in roundi(lerpf(PASSES.x, PASSES.y, worn)):
 		var shaken: PackedVector2Array = []

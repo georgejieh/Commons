@@ -50,7 +50,9 @@ func explain(title: String, rule: String) -> void:
 		_meanings.remove_child(child)
 		child.queue_free()
 	for id: String in Keywords.found(rule):
-		var meaning: Label = ScreenKit.label(Keywords.meaning(id), MEANING_SIZE, Keywords.SOFT)
+		var meaning: Label = ScreenKit.label(
+			Keywords.meaning(id), MEANING_SIZE, ScreenKit.FAINT_INK
+		)
 		meaning.custom_minimum_size = Vector2(MEANING_WIDTH, 0)
 		meaning.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_meanings.add_child(meaning)

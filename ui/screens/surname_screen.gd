@@ -13,14 +13,10 @@ const COLUMNS: int = 8
 const FIELD_SIZE: int = 40
 const FIELD_WIDTH: float = 420.0
 const NOTE_SIZE: int = 22
-const NOTE_INK: Color = Color("9e2a1d")
 ## The field is written on a slip of the village's paper, as the tickets are: its height,
 ## the ink, the band and ring the tickets use, its own seed after theirs, and how far in
 ## the name starts, past the band.
 const FIELD_HEIGHT: float = 80.0
-const FIELD_INK: Color = Color("120d09")
-const FIELD_BAND: Color = Color("7a6446")
-const FIELD_RING: Color = Color("b98a2c")
 const FIELD_SEED: int = 120
 const FIELD_INSET: Vector4 = Vector4(24, 6, 16, 14)
 
@@ -50,7 +46,7 @@ func open(app: DemoApp) -> void:
 	_field.text_changed.connect(_on_typed)
 	_field.text_submitted.connect(func(_text: String) -> void: confirm())
 	sheet.add_child(_field_on_paper())
-	_note = ScreenKit.label("", NOTE_SIZE, NOTE_INK)
+	_note = ScreenKit.label("", NOTE_SIZE, ScreenKit.PICKED)
 	sheet.add_child(_note)
 	sheet.add_child(_ticket_grid())
 	_random = ScreenKit.button(tr("surname.random"), CommonsTheme.SECONDARY)
@@ -137,10 +133,10 @@ func _field_on_paper() -> Control:
 		bare.content_margin_right = FIELD_INSET.z
 		bare.content_margin_bottom = FIELD_INSET.w
 		_field.add_theme_stylebox_override(style, bare)
-	var ink: Color = BowlGrime.faded(FIELD_INK, BowlGrime.wear())
+	var ink: Color = BowlGrime.faded(ScreenKit.TICKET_INK, BowlGrime.wear())
 	for color: String in ["font_color", "font_selected_color", "caret_color"]:
 		_field.add_theme_color_override(color, ink)
-	_field.add_theme_color_override("selection_color", Color(NOTE_INK, 0.3))
+	_field.add_theme_color_override("selection_color", Color(ScreenKit.PICKED, 0.3))
 	_paper.add_child(_field)
 	var tall: float = maxf(FIELD_HEIGHT, _field.get_combined_minimum_size().y)
 	_paper.custom_minimum_size = Vector2(FIELD_WIDTH, tall)
@@ -153,9 +149,9 @@ func _field_on_paper() -> Control:
 func _draw_paper() -> void:
 	var worn: float = BowlGrime.wear()
 	var rect: Rect2 = Rect2(Vector2.ZERO, _paper.size)
-	PaperTicket.draw(_paper, rect, worn, FIELD_SEED, FIELD_BAND)
+	PaperTicket.draw(_paper, rect, worn, FIELD_SEED, ScreenKit.WORN_PRINT)
 	if _field.has_focus():
-		var ring: Color = Color(BowlGrime.aged(FIELD_RING, worn * 0.5), 0.9)
+		var ring: Color = Color(BowlGrime.aged(ScreenKit.FOCUS_RING, worn * 0.5), 0.9)
 		_paper.draw_rect(rect.grow(2.5), ring, false, 3.0)
 
 

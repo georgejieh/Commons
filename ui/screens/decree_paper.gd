@@ -10,8 +10,6 @@ extends RefCounted
 const PAPER: Color = Color("e6d5ab")
 const BAND: Color = Color("a8281a")
 const RULE: Color = Color("5a3a26")
-const FOLD: Color = Color("8a7653")
-const EDGE: Color = Color("4a3a26")
 const PIN: Color = Color("2b2119")
 const SEED: int = 8231
 const SPECKS: Vector2i = Vector2i(8, 46)
@@ -47,7 +45,9 @@ static func poster(
 	_stamp(canvas, rect, rng, worn, alpha)
 	_grime(canvas, rect, rng, worn, alpha)
 	_pin(canvas, Vector2(rect.get_center().x, rect.position.y + 4.0), worn, alpha)
-	canvas.draw_polyline(body + PackedVector2Array([body[0]]), Color(EDGE, alpha * 0.6), 1.4)
+	canvas.draw_polyline(
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.6), 1.4
+	)
 
 
 ## A small pinned slip for the strip of Reforms in force: the same paper and band in
@@ -67,7 +67,9 @@ static func tag(
 		var at: Vector2 = rect.position + Vector2(rng.randf(), rng.randf()) * rect.size
 		canvas.draw_circle(at, rng.randf_range(0.5, 1.3), speck)
 	_pin(canvas, Vector2(rect.position.x + 7.0, rect.get_center().y + 2.0), worn, alpha)
-	canvas.draw_polyline(body + PackedVector2Array([body[0]]), Color(EDGE, alpha * 0.55), 1.1)
+	canvas.draw_polyline(
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.55), 1.1
+	)
 
 
 ## Corners out of true, the top edge torn a little near the pin, the bottom right worn.
@@ -115,7 +117,7 @@ static func _stamp(
 static func _grime(
 	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float, alpha: float
 ) -> void:
-	var fold: Color = Color(FOLD, alpha * (0.22 + 0.3 * worn))
+	var fold: Color = Color(ScreenKit.FOLD, alpha * (0.22 + 0.3 * worn))
 	var across: float = rect.position.y + rect.size.y * rng.randf_range(0.46, 0.56)
 	canvas.draw_line(Vector2(rect.position.x + 2, across), Vector2(rect.end.x - 2, across), fold)
 	var down: float = rect.position.x + rect.size.x * rng.randf_range(0.45, 0.55)
@@ -138,7 +140,9 @@ static func _grime(
 static func _pin(canvas: CanvasItem, at: Vector2, worn: float, alpha: float) -> void:
 	canvas.draw_circle(at + Vector2(0.8, 1.2), 3.4, Color(PIN, alpha * 0.25))
 	canvas.draw_circle(at, 3.0, Color(BowlGrime.aged(PIN, worn * 0.3), alpha))
-	canvas.draw_line(at, at + Vector2(1.5, 4.0 + 3.0 * worn), Color(EDGE, alpha * 0.5), 1.0)
+	canvas.draw_line(
+		at, at + Vector2(1.5, 4.0 + 3.0 * worn), Color(ScreenKit.PAPER_EDGE, alpha * 0.5), 1.0
+	)
 
 
 static func _rng(which: int) -> RandomNumberGenerator:

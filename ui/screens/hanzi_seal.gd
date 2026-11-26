@@ -5,7 +5,6 @@ extends Control
 ## is drawn only from a face that holds every character, so it never shows the boxes of
 ## missing glyphs: without such a face, can_draw() is false and the screen leaves it out.
 
-const INK: Color = Color("b02a17")
 const INK_ALPHA: float = 0.88
 const TILT: float = 0.05
 const BORDER: float = 0.06
@@ -48,7 +47,7 @@ func _draw() -> void:
 	if _font == null or _text.is_empty():
 		return
 	var worn: float = BowlGrime.wear()
-	var ink: Color = Color(BowlGrime.faded(INK, worn), INK_ALPHA - 0.2 * worn)
+	var ink: Color = Color(BowlGrime.faded(ScreenKit.RED, worn), INK_ALPHA - 0.2 * worn)
 	draw_set_transform(size / 2.0, TILT)
 	var half: Vector2 = size / 2.0
 	var line: float = size.x * BORDER

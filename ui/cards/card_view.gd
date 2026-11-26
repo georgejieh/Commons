@@ -18,9 +18,6 @@ signal pressed(card_id: int)
 signal hovered(card_id: int)
 
 const RED_SUITS: Array[int] = [1, 3]
-const INK: Color = Color("1e1a16")
-const RED: Color = Color("b02a17")
-const HINT: Color = Color("c9a227")
 ## The edge of a selection that makes a legal play: ready to throw.
 const ARMED: Color = Color("f2c94c")
 const CURSOR: Color = Color("f4ecd8")
@@ -39,11 +36,9 @@ const ART_BOX: Vector4 = Vector4(5, 5, 115, 163)
 ## card and for a joker's word, the stock's color, and how far in the fade stays solid.
 const FADE_SIZE: Vector2 = Vector2(92, 136)
 const JOKER_FADE_SIZE: Vector2 = Vector2(120, 78)
-const STOCK: Color = Color("f6e6c4")
 const FADE_SOLID: float = 0.45
 ## A paper edge around a picture card's rank, so it reads over any art.
 const RANK_OUTLINE: int = 6
-const NOTE_COLOR: Color = Color("9e1b16")
 ## Where the marks sit: both down the left edge, the strip a fanned hand leaves showing,
 ## the enhancement's mark under the suit pip and the chop at the foot, inside the
 ## selection edge.
@@ -121,11 +116,11 @@ func _ready() -> void:
 	add_child(_cursor_mark)
 	add_child(_tick)
 	var tag: StyleBoxFlat = StyleBoxFlat.new()
-	tag.bg_color = NOTE_COLOR
+	tag.bg_color = ScreenKit.SEAL
 	tag.set_corner_radius_all(4)
 	_rank_note.add_theme_stylebox_override("normal", tag)
 	_index.texture = _corner_fade()
-	_rank.add_theme_color_override("font_outline_color", STOCK)
+	_rank.add_theme_color_override("font_outline_color", ScreenKit.CARD_STOCK)
 	for mark: CardMark in [_chop, _badge]:
 		_frame.add_child(mark)
 	_frame.add_child(_ribbon)
@@ -180,7 +175,7 @@ func bind(card: CardInstance) -> void:
 	_picture.modulate.a = art.pip_alpha if pip else 1.0
 	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
-	_rank.add_theme_color_override("font_color", RED if red else INK)
+	_rank.add_theme_color_override("font_color", ScreenKit.RED if red else ScreenKit.INK)
 	var enhancement: String = card.enhancement_id()
 	var drawn: bool = CardMark.draws(enhancement)
 	_enhancement.visible = enhancement != CardInstance.NO_ID and not drawn
@@ -282,9 +277,9 @@ func _lay_out_face(pip: bool, joker: bool) -> void:
 ## Card stock that is solid in the top left corner and fades out toward the art.
 static func _corner_fade() -> GradientTexture2D:
 	var fade: Gradient = Gradient.new()
-	fade.set_color(0, STOCK)
-	fade.set_color(1, Color(STOCK, 0.0))
-	fade.add_point(FADE_SOLID, Color(STOCK, 0.92))
+	fade.set_color(0, ScreenKit.CARD_STOCK)
+	fade.set_color(1, Color(ScreenKit.CARD_STOCK, 0.0))
+	fade.add_point(FADE_SOLID, Color(ScreenKit.CARD_STOCK, 0.92))
 	var corner: GradientTexture2D = GradientTexture2D.new()
 	corner.gradient = fade
 	corner.fill = GradientTexture2D.FILL_RADIAL
@@ -302,7 +297,7 @@ static func _corner_fade() -> GradientTexture2D:
 ## own paper-white bar under the card, so it shows on a selected card too.
 func set_marked(selected: bool, hinted: bool, cursor: bool = false, armed: bool = false) -> void:
 	_highlight.visible = selected or hinted
-	_highlight.modulate = (ARMED if armed else RED) if selected else HINT
+	_highlight.modulate = (ARMED if armed else ScreenKit.RED) if selected else ScreenKit.HINT
 	_cursor_mark.visible = cursor
 	_tick.show_on(hinted, card_id)
 
