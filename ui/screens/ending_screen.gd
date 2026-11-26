@@ -50,7 +50,7 @@ var _figures: HBoxContainer
 
 
 func open(app: DemoApp) -> void:
-	_view = app.controller.ending()
+	_view = app.controller.seats.ending()
 	_state = app.controller.state_copy()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(ScreenKit.cover(ScreenKit.ART.title_night))

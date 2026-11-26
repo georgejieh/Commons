@@ -35,7 +35,7 @@ func setup(
 ) -> void:
 	_app = app
 	_market = market
-	_shelf = app.controller.envelope_shelf(market)
+	_shelf = app.controller.store.envelope_shelf(market)
 	_slip = slip
 	_screen_busy = screen_busy
 	_host = host
@@ -71,7 +71,7 @@ func panel(slot: int) -> CounterPanel:
 
 ## Shows an envelope already open, as after a load, laid out at once.
 func resume() -> void:
-	var open: EnvelopeShelf = _app.controller.opened_envelope()
+	var open: EnvelopeShelf = _app.controller.store.opened_envelope()
 	if open != null and not is_busy():
 		_open(open, Rect2(), false)
 

@@ -169,7 +169,7 @@ func _open(choosing: bool) -> void:
 	if coming != null:
 		_incoming.bind(coming)
 	var state: RunState = _controller.state_copy()
-	_board.show_cards(_controller.deck_cards(), state.inventory.plot, _room())
+	_board.show_cards(_controller.store.deck_cards(), state.inventory.plot, _room())
 	_show_legend(state)
 	_show_choice()
 	_link_focus()
@@ -201,7 +201,7 @@ func _show_legend(state: RunState) -> void:
 		_legend.remove_child(child)
 		child.queue_free()
 	var counts: Dictionary[String, int] = {}
-	var cards: Array[CardInstance] = _controller.deck_cards()
+	var cards: Array[CardInstance] = _controller.store.deck_cards()
 	cards.append_array(state.inventory.plot)
 	for card: CardInstance in cards:
 		if card.owner_stamp() == PLAYER:
@@ -251,8 +251,8 @@ func _on_cursor(card_id: int) -> void:
 	var rule: String = marks_text(card)
 	if _board.is_plot(card_id):
 		title = tr("deck.plot_card").format({"card": title})
-	elif _controller.replaced(card_id) != null:
-		var plain: String = CardName.of(_controller.replaced(card_id))
+	elif _controller.store.replaced(card_id) != null:
+		var plain: String = CardName.of(_controller.store.replaced(card_id))
 		rule = tr("deck.exchanged").format({"marks": rule, "card": plain})
 	_slip.show_for(view, title, rule)
 
@@ -266,7 +266,7 @@ func _on_picked(_card_id: int) -> void:
 ## Read-only, how many cards the state store has exchanged.
 func _show_choice() -> void:
 	if _choice == null:
-		var changed: int = _controller.exchanged_count()
+		var changed: int = _controller.store.exchanged_count()
 		_status.text = tr("deck.how")
 		if changed > 0:
 			_status.text += " " + tr("deck.exchanges").format({"count": changed})

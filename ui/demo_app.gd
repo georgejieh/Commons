@@ -268,7 +268,7 @@ func screen_for(awaiting: int) -> String:
 			return "reeducation"
 		RunController.AWAIT_RUN_OVER:
 			# A full run ends on its ending; the demo keeps its Year summary and closing page.
-			return "ending" if controller.has_village() else "year_summary"
+			return "ending" if controller.seats.has_village() else "year_summary"
 	return table_id()
 
 
@@ -279,7 +279,7 @@ func has_saved_run() -> bool:
 
 ## The seat's surname, as the table and speech call a villager.
 func seat_name(seat: int) -> String:
-	var key: String = controller.seated_name_key(seat) if _in_run() else ""
+	var key: String = controller.seats.seated_name_key(seat) if _in_run() else ""
 	return tr(key if not key.is_empty() else DEMO.name_keys[seat])
 
 
@@ -293,7 +293,7 @@ func seat_speech(seat: int) -> SpeechBook:
 ## villager name.
 func seat_voice(seat: int) -> VoiceProfile:
 	if _seated_family(seat) != null:
-		return controller.seated_voice(seat)
+		return controller.seats.seated_voice(seat)
 	var path: String = DEMO_VOICE % seat_voice_bank(seat)
 	return load(path) if ResourceLoader.exists(path) else null
 
@@ -336,7 +336,7 @@ func sets_per_year() -> int:
 
 ## The most rounds a Set of the run in play takes.
 func max_rounds() -> int:
-	return controller.max_rounds() if _in_run() else DEMO.sets.max_rounds
+	return controller.figures.max_rounds() if _in_run() else DEMO.sets.max_rounds
 
 
 ## Seconds between table events: shorter under reduced motion, longer through the
@@ -356,4 +356,4 @@ func _in_run() -> bool:
 
 ## The family in the seat, or null before any run and for the demo's fixed seats.
 func _seated_family(seat: int) -> FamilyDef:
-	return controller.seated_family(seat) if _in_run() else null
+	return controller.seats.seated_family(seat) if _in_run() else null

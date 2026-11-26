@@ -315,7 +315,7 @@ func test_the_dossier_holds_the_longest_full_names() -> void:
 		var dossier: DossierScreen = _app.show_screen("dossier")
 		await await_idle_frame()
 		for seat: int in [1, 2]:
-			var full: String = _app.controller.seated_full_name(seat)
+			var full: String = _app.controller.seats.seated_full_name(seat)
 			assert_str(full).starts_with(given[seat - 1] + " ")
 			await _check_fits(_label_with(dossier, full), full, size)
 

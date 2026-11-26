@@ -149,7 +149,7 @@ func test_every_ending_and_death_fits_both_screens_with_a_full_village() -> void
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "%s %s" % [outcome, screen_size]
-				var view: EndingView = _app.controller.ending()
+				var view: EndingView = _app.controller.seats.ending()
 				assert_str(view.id).override_failure_message(where).is_equal(outcome)
 				_check_inside(screen, where)
 				_check_figures(screen, where)
@@ -329,7 +329,7 @@ func test_every_ending_hangs_its_picture_in_the_frame_with_the_title_below() -> 
 			assert_float(box).override_failure_message(where).is_equal_approx(
 				picture.x / picture.y, 0.06
 			)
-			var title: Label = _title_label(screen, _app.controller.ending().title)
+			var title: Label = _title_label(screen, _app.controller.seats.ending().title)
 			(
 				assert_float(title.get_global_rect().position.y)
 				. override_failure_message(where)

@@ -33,7 +33,7 @@ func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void
 	var store: Control = _app.show_screen("store")
 	await await_idle_frame()
 	var counter: HBoxContainer = store.get("_counter")
-	var stock: Array[String] = _app.controller.store_stock()
+	var stock: Array[String] = _app.controller.store.store_stock()
 	assert_int(stock.size()).is_greater(0)
 	assert_int(counter.get_child_count()).is_equal(stock.size())
 	for slot: int in stock.size():
@@ -49,7 +49,7 @@ func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void
 		)
 		assert_int(names.size()).is_equal(1)
 		var rules: KeywordText = panel.find_children("*", "KeywordText", true, false)[0]
-		var rule: String = _app.controller.modifier_text(stock[slot])
+		var rule: String = _app.controller.texts.modifier_text(stock[slot])
 		assert_str(rules.get_parsed_text()).contains(rule)
 		var bare: bool = not ScreenKit.ART.has_cadre(stock[slot])
 		assert_int(panel.find_children("*", "ArtFrame", true, false).size()).is_equal(
@@ -69,7 +69,7 @@ func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
 	await await_idle_frame()
 	# The shared slip reads it out, under the card and clear of it.
 	assert_bool(slip.visible).is_true()
-	var first: String = _app.controller.store_stock()[0]
+	var first: String = _app.controller.store.store_stock()[0]
 	assert_str(slip.shown_rule()).is_equal(ScreenKit.rule_text(_app.controller, first))
 	assert_bool(slip.get_global_rect().intersects(card.get_global_rect())).is_false()
 	buy.focus_exited.emit()
@@ -77,8 +77,8 @@ func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
 
 
 func test_the_notice_board_cards_carry_the_tooltip() -> void:
-	var stock: Array[String] = _app.controller.store_stock()
-	var slot: int = range(stock.size()).filter(_app.controller.can_buy).front()
+	var stock: Array[String] = _app.controller.store.store_stock()
+	var slot: int = range(stock.size()).filter(_app.controller.store.can_buy).front()
 	var first: String = stock[slot]
 	_app.controller.buy(slot)
 	var board: NoticeBoard = auto_free(NoticeBoard.new())
@@ -99,8 +99,8 @@ func _labels(node: Node) -> Array[Node]:
 func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
 	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
-	var stock: Array[String] = _app.controller.store_stock()
-	var slot: int = range(stock.size()).filter(_app.controller.can_buy).front()
+	var stock: Array[String] = _app.controller.store.store_stock()
+	var slot: int = range(stock.size()).filter(_app.controller.store.can_buy).front()
 	var bought: String = stock[slot]
 	var held: int = _app.controller.state_copy().inventory.cadres.size()
 	var counter: HBoxContainer = store.get("_counter")
@@ -128,7 +128,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	var market: StoreScreen = _app.show_screen("black_market")
 	await await_idle_frame()
 	assert_bool(market.market).is_true()
-	var stock: Array[String] = _app.controller.desk(true).stock()
+	var stock: Array[String] = _app.controller.store.desk(true).stock()
 	assert_int(stock.size()).is_greater(0)
 	var before: int = _app.controller.state_copy().resentment
 	var counter: HBoxContainer = market.get("_counter")
@@ -136,7 +136,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	buy.pressed.emit()
 	var state: RunState = _app.controller.state_copy()
 	assert_array(state.inventory.cadres).contains([stock[0]])
-	assert_int(state.resentment).is_equal(before + _app.controller.purchase_resentment())
+	assert_int(state.resentment).is_equal(before + _app.controller.figures.purchase_resentment())
 	var seal: InkSeal = market.get("_seal")
 	assert_str(seal.word()).is_equal(tr("market.paid").to_upper())
 	await await_millis(int((StoreScreen.SEAL_HOLD + StoreScreen.PIN_TIME) * 1000.0) + 300)
@@ -147,7 +147,9 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	enlarge.pressed.emit()
 	var after: RunState = _app.controller.state_copy()
 	assert_int(after.plot_capacity_bonus).is_equal(1)
-	assert_int(after.resentment).is_equal(before + 2 * _app.controller.purchase_resentment())
+	assert_int(after.resentment).is_equal(
+		before + 2 * _app.controller.figures.purchase_resentment()
+	)
 
 
 func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
@@ -160,11 +162,11 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	buy.pressed.emit()
 	assert_bool(store.is_buying()).is_true()
-	var stock: Array[String] = _app.controller.store_stock()
+	var stock: Array[String] = _app.controller.store.store_stock()
 	var coupons: int = _app.controller.state_copy().coupons
 	var reroll: Button = store.get("_reroll")
 	reroll.pressed.emit()
-	assert_array(_app.controller.store_stock()).is_equal(stock)
+	assert_array(_app.controller.store.store_stock()).is_equal(stock)
 	assert_int(_app.controller.state_copy().coupons).is_equal(coupons)
 	await await_millis(int((StoreScreen.SEAL_HOLD + StoreScreen.PIN_TIME) * 1000.0) + 300)
 	assert_bool(store.is_buying()).is_false()

@@ -78,10 +78,10 @@ func add_note(note: Control) -> void:
 
 ## Shows the Reforms the run holds, one slip each.
 func show_reforms(controller: RunController) -> void:
-	_ids = controller.held_reforms()
+	_ids = controller.items.held_reforms()
 	_names.clear()
 	for reform_id: String in _ids:
-		_names.append(controller.reform_name(reform_id))
+		_names.append(controller.texts.reform_name(reform_id))
 	while _tags.size() < _ids.size():
 		var tag: Control = Control.new()
 		tag.focus_mode = Control.FOCUS_ALL

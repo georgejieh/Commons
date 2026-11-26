@@ -56,11 +56,11 @@ func pace() -> float:
 ## True when the player may sit out now: their turn to follow, nothing legal but a pass,
 ## and not the arrival.
 func offered() -> bool:
-	if _active or not _my_turn() or not _controller.pass_refusal().is_empty():
+	if _active or not _my_turn() or not _controller.table.pass_refusal().is_empty():
 		return false
 	if _blocked.is_valid() and bool(_blocked.call()):
 		return false
-	return _following() and _controller.legal_moves().is_empty()
+	return _following() and _controller.table.legal_moves().is_empty()
 
 
 func _on_pressed() -> void:
@@ -77,7 +77,7 @@ func _on_drained() -> void:
 	if _active:
 		if not _my_turn():
 			return
-		if not _following() or not _controller.legal_moves().is_empty():
+		if not _following() or not _controller.table.legal_moves().is_empty():
 			_set_active(false)
 		else:
 			_pass()
@@ -120,5 +120,5 @@ func _my_turn() -> bool:
 
 ## True when there is a play on the table to follow, so a pass is open to the player.
 func _following() -> bool:
-	var view: SeatView = _controller.seat_view()
+	var view: SeatView = _controller.table.seat_view()
 	return view != null and view.public.current_play != null

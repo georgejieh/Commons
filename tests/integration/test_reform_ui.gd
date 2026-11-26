@@ -62,17 +62,17 @@ func _wait(store: StoreScreen) -> void:
 
 func test_the_store_offers_a_decree_explained_by_the_slip() -> void:
 	var store: StoreScreen = await _open()
-	var offered: String = _app.controller.reform_shelf().stock()[0]
+	var offered: String = _app.controller.store.reform_shelf().stock()[0]
 	var panel: CounterPanel = _stall(store).panel(0)
 	assert_object(panel).is_not_null()
 	assert_int(panel.look()).is_equal(CounterPanel.Look.DECREE)
-	assert_str(panel.shown_name()).is_equal(_app.controller.reform_name(offered))
+	assert_str(panel.shown_name()).is_equal(_app.controller.texts.reform_name(offered))
 	assert_bool(panel.buy.disabled).is_false()
 	panel.described.emit(panel)
 	await await_idle_frame()
 	var slip: DetailSlip = store.slip()
 	assert_bool(slip.visible).is_true()
-	assert_str(slip.shown_rule()).is_equal(_app.controller.reform_text(offered))
+	assert_str(slip.shown_rule()).is_equal(_app.controller.texts.reform_text(offered))
 	assert_bool(slip.get_global_rect().intersects(panel.get_global_rect())).is_false()
 	assert_bool(Rect2(0, 0, 1920, 1080).encloses(slip.get_global_rect())).is_true()
 	# It only explains: clicks go through it to whatever lies under.
@@ -82,19 +82,19 @@ func test_the_store_offers_a_decree_explained_by_the_slip() -> void:
 	assert_bool(slip.visible).is_false()
 	# Every rule names its numbers from data, and none is left unfilled.
 	for reform_id: String in ["enlarged_committee", "couriers_bag", "grain_reserve"]:
-		assert_str(_app.controller.reform_text(reform_id)).not_contains("{")
-	assert_str(_app.controller.reform_text("enlarged_committee")).contains("6")
-	assert_str(_app.controller.reform_text("couriers_bag")).contains("3")
+		assert_str(_app.controller.texts.reform_text(reform_id)).not_contains("{")
+	assert_str(_app.controller.texts.reform_text("enlarged_committee")).contains("6")
+	assert_str(_app.controller.texts.reform_text("couriers_bag")).contains("3")
 
 
 func test_enacting_stamps_holds_purchases_and_pins_the_decree() -> void:
 	var store: StoreScreen = await _open()
 	var stall: ReformStall = _stall(store)
-	var offered: String = _app.controller.reform_shelf().stock()[0]
+	var offered: String = _app.controller.store.reform_shelf().stock()[0]
 	var children: int = store.find_children("*", "", true, false).size()
 	var commands: int = _loop().record.commands.size()
 	stall.panel(0).buy.pressed.emit()
-	assert_array(_app.controller.held_reforms()).is_equal([offered])
+	assert_array(_app.controller.items.held_reforms()).is_equal([offered])
 	assert_int(_loop().record.commands.size()).is_equal(commands + 1)
 	assert_bool(stall.is_busy()).is_true()
 	assert_bool(store.is_issuing()).is_true()
@@ -123,7 +123,7 @@ func test_enacting_stamps_holds_purchases_and_pins_the_decree() -> void:
 	await await_idle_frame()
 	assert_int(store.find_children("*", "", true, false).size()).is_less_equal(children + 2)
 	tag.focus_entered.emit()
-	assert_str(store.slip().shown_rule()).is_equal(_app.controller.reform_text(offered))
+	assert_str(store.slip().shown_rule()).is_equal(_app.controller.texts.reform_text(offered))
 	assert_bool(store.slip().get_global_rect().intersects(tag.get_global_rect())).is_false()
 
 
@@ -144,7 +144,7 @@ func test_without_coupons_the_offer_cannot_be_bought() -> void:
 	var stall: ReformStall = _stall(store)
 	assert_bool(stall.panel(0).buy.disabled).is_true()
 	assert_int(_app.controller.reform(0)).is_not_equal(RunController.OK)
-	assert_array(_app.controller.held_reforms()).is_empty()
+	assert_array(_app.controller.items.held_reforms()).is_empty()
 
 
 func test_the_black_market_shows_the_strip_and_no_offer() -> void:

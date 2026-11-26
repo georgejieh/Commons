@@ -61,7 +61,7 @@ func refresh() -> void:
 		else:
 			tag.withdraw()
 		index += 1
-	var held: Array[String] = controller.held_campaigns()
+	var held: Array[String] = controller.items.held_campaigns()
 	for slot: int in _tray.campaign_count():
 		var tag: SellTag = _tag(_tray.leaflet(slot), true)
 		if slot < held.size():
@@ -118,10 +118,12 @@ func _explain(focused: bool, paper: Control, campaign: bool) -> void:
 	var index: int = _index(paper, campaign)
 	var controller: RunController = _app.controller
 	if campaign:
-		var held: Array[String] = controller.held_campaigns()
+		var held: Array[String] = controller.items.held_campaigns()
 		if index >= 0 and index < held.size():
 			var id: String = held[index]
-			_slip.show_for(paper, controller.campaign_name(id), controller.campaign_text(id))
+			_slip.show_for(
+				paper, controller.texts.campaign_name(id), controller.texts.campaign_text(id)
+			)
 		return
 	var cadres: Array[String] = controller.state_copy().inventory.cadres
 	if index >= 0 and index < cadres.size():

@@ -133,12 +133,12 @@ func test_a_save_at_the_runs_end_reloads_to_the_same_ending() -> void:
 		var controller: RunController = auto_free(RunController.new())
 		assert_bool(controller.resume_saved(_service, RunScript.bots(), SetConfig.new())).is_true()
 		assert_int(controller.awaiting()).is_equal(RunController.AWAIT_RUN_OVER)
-		var view: EndingView = controller.ending()
+		var view: EndingView = controller.seats.ending()
 		var fresh: EndingView = EndingView.of(state, RunPeople.player_surname(state))
 		assert_str(view.id).override_failure_message(expected).is_equal(expected)
 		assert_array(view.lines).is_equal(fresh.lines)
 		assert_str(view.text).is_equal(fresh.text)
-		assert_bool(controller.has_village()).is_true()
+		assert_bool(controller.seats.has_village()).is_true()
 
 
 ## A run that really dies, by a missed Quota whose Famine reaches death, saves at the

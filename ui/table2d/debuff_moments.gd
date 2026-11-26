@@ -124,7 +124,7 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 				_seize(event)
 		RunEvent.Type.ROUND:
 			if event.round_event.type == RoundEvent.Type.KITTY_TAKEN:
-				glass.set_shown(_controller.hand_shown(), not quiet)
+				glass.set_shown(_controller.table.hand_shown(), not quiet)
 		RunEvent.Type.DEBUFF_LIFTED:
 			refresh()
 
@@ -142,7 +142,7 @@ func clear_slip(line: Label, sheet_up: bool) -> void:
 
 ## Once the queue has drained: the glass and the notice board as the run holds them.
 func refresh() -> void:
-	glass.set_shown(_controller.hand_shown(), false)
+	glass.set_shown(_controller.table.hand_shown(), false)
 
 
 ## Cards slide from one seat to the seat on its left: the player's own and those coming to
@@ -185,7 +185,7 @@ func _pass_cards(event: RunEvent) -> void:
 func _say(event: RunEvent, card_ids: Array[int]) -> void:
 	var names: Dictionary[int, String] = _table.names()
 	var text: String = tr("beat.redistribution").format({"count": card_ids.size()})
-	if _controller.active_debuff_ids().has("levy") and not card_ids.is_empty():
+	if _controller.items.active_debuff_ids().has("levy") and not card_ids.is_empty():
 		var card: CardInstance = _card(card_ids[0])
 		var shown: String = CardName.of(card) if card != null else ""
 		var from_you: bool = event.seat == 0
@@ -244,10 +244,10 @@ func _seize(event: RunEvent) -> void:
 
 
 func _card(card_id: int) -> CardInstance:
-	for card: CardInstance in _hand.cards() + _controller.player_cards():
+	for card: CardInstance in _hand.cards() + _controller.table.player_cards():
 		if card.id() == card_id:
 			return card
-	return _controller.deck_card(card_id) if card_id < Deck.SIZE else null
+	return _controller.table.deck_card(card_id) if card_id < Deck.SIZE else null
 
 
 ## Where a seat's cards leave from or land: a card in the hand, the hand, or the seat.

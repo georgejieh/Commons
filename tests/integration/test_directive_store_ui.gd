@@ -82,7 +82,7 @@ func test_the_store_shows_each_directive_with_its_rate_lines() -> void:
 	var store: StoreScreen = await _open_store()
 	var row: DirectiveRow = _row(store)
 	assert_object(row).is_not_null()
-	var stock: Array[String] = _app.controller.desk(false).directive_stock()
+	var stock: Array[String] = _app.controller.store.desk(false).directive_stock()
 	assert_int(stock.size()).is_equal(2)
 	var documents: Array[Control] = _documents(row)
 	assert_int(documents.size()).is_equal(stock.size())
@@ -90,15 +90,15 @@ func test_the_store_shows_each_directive_with_its_rate_lines() -> void:
 	for slot: int in stock.size():
 		var texts: PackedStringArray = _texts(documents[slot])
 		assert_array(Array(texts)).contains([tr("directive.eyebrow").to_upper()])
-		assert_array(Array(texts)).contains([controller.directive_name(stock[slot])])
-		for type: int in controller.directive_types(stock[slot]):
+		assert_array(Array(texts)).contains([controller.texts.directive_name(stock[slot])])
+		for type: int in controller.items.directive_types(stock[slot]):
 			var line: String = (
 				tr("directive.rate")
 				. format(
 					{
 						"type": _type_name(type),
-						"from": controller.hand_rate(type, 1),
-						"to": controller.hand_rate(type, 2),
+						"from": controller.figures.hand_rate(type, 1),
+						"to": controller.figures.hand_rate(type, 2),
 					}
 				)
 			)
@@ -114,12 +114,12 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 	var row: DirectiveRow = _row(store)
 	var ticket: Button = _affordable(row)
 	assert_object(ticket).is_not_null()
-	var stock: Array[String] = _app.controller.desk(false).directive_stock()
+	var stock: Array[String] = _app.controller.store.desk(false).directive_stock()
 	var before: int = _app.controller.state_copy().coupons
 	ticket.pressed.emit()
 	var issued: String = ""
 	for directive_id: String in stock:
-		if not _app.controller.desk(false).directive_stock().has(directive_id):
+		if not _app.controller.store.desk(false).directive_stock().has(directive_id):
 			issued = directive_id
 	assert_str(issued).is_not_empty()
 	assert_int(_app.controller.state_copy().coupons).is_less(before)
@@ -138,8 +138,8 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 		waited += get_process_delta_time()
 	assert_bool(row.is_busy()).is_false()
 	assert_bool(row.seal().visible).is_false()
-	for type: int in _app.controller.directive_types(issued):
-		assert_int(_app.controller.hand_level(type)).is_equal(2)
+	for type: int in _app.controller.items.directive_types(issued):
+		assert_int(_app.controller.figures.hand_level(type)).is_equal(2)
 	await await_idle_frame()
 	assert_array(Array(_texts(row))).contains([tr("directive.issued")])
 	assert_int(_documents(row).size()).is_equal(stock.size())
@@ -186,19 +186,21 @@ func test_the_cheat_sheet_shows_the_raised_rate_and_level() -> void:
 	Settings.set_value("reduced_motion", true)
 	var ticket: Button = _affordable(_row(store))
 	assert_object(ticket).is_not_null()
-	var stock: Array[String] = _app.controller.desk(false).directive_stock()
+	var stock: Array[String] = _app.controller.store.desk(false).directive_stock()
 	ticket.pressed.emit()
-	var issued: String = stock[0] if _app.controller.desk(false).directive_stock()[0] == "" else ""
+	var issued: String = (
+		stock[0] if _app.controller.store.desk(false).directive_stock()[0] == "" else ""
+	)
 	if issued.is_empty():
 		issued = stock[1]
 	var sheet: CheatSheet = auto_free(CheatSheet.new())
 	add_child(sheet)
 	sheet.toggle(_app.controller)
 	var controller: RunController = _app.controller
-	var raised: Array[int] = controller.directive_types(issued)
+	var raised: Array[int] = controller.items.directive_types(issued)
 	for type: int in range(1, Pattern.Type.size()):
 		var level: int = 2 if raised.has(type) else 1
-		var rate: int = controller.hand_rate(type, level)
+		var rate: int = controller.figures.hand_rate(type, level)
 		var expected: String = tr("cheat.rate").format({"rate": rate})
 		if level > 1:
 			expected = tr("cheat.rate.level").format({"rate": rate, "level": level})

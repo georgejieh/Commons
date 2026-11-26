@@ -88,8 +88,12 @@ func test_the_slogan_halves_its_hand_types_rate_rounded_up_for_you_alone() -> vo
 	# Its name and rules say which hand type it named.
 	var controller: RunController = auto_free(RunController.new())
 	controller.resume(loop)
-	assert_str(controller.modifier_name("slogan_of_the_week")).is_equal("Slogan of the Week: Pairs")
-	assert_str(controller.modifier_text("slogan_of_the_week")).contains("Your Pairs score at 50%")
+	assert_str(controller.texts.modifier_name("slogan_of_the_week")).is_equal(
+		"Slogan of the Week: Pairs"
+	)
+	assert_str(controller.texts.modifier_text("slogan_of_the_week")).contains(
+		"Your Pairs score at 50%"
+	)
 
 
 ## The Rate is halved first; a cap such as Iron Rice Bowl's applies after.

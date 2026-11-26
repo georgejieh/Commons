@@ -84,7 +84,7 @@ func _play() -> void:
 ## The script's turn, but an honest claim on the Commons so the run is not ended early.
 func _act(controller: RunController, script: ControllerScript) -> bool:
 	if controller.awaiting() == RunController.AWAIT_NEED:
-		return controller.declare_need(controller.base_need()) == RunController.OK
+		return controller.declare_need(controller.figures.base_need()) == RunController.OK
 	return script.act(controller)
 
 
@@ -96,8 +96,8 @@ func _between(controller: RunController) -> bool:
 			_sets_played += 1
 			controller.finish_set()
 		RunController.AWAIT_STORE:
-			for slot: int in controller.store_stock().size():
-				if controller.can_buy(slot):
+			for slot: int in controller.store.store_stock().size():
+				if controller.store.can_buy(slot):
 					controller.buy(slot)
 					break
 			controller.leave_store()

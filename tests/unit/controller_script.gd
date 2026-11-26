@@ -17,10 +17,10 @@ func act(controller: RunController) -> bool:
 			return true
 		RunController.AWAIT_BID:
 			var claim: bool = Bot.decide_bid(
-				counts(controller.player_cards()),
+				counts(controller.table.player_cards()),
 				false,
 				false,
-				controller.player_table(),
+				controller.table.player_table(),
 				config,
 				BotBudget.unlimited()
 			)
@@ -44,8 +44,8 @@ func play_run(controller: RunController) -> void:
 			RunController.AWAIT_SET_OVER:
 				controller.finish_set()
 			RunController.AWAIT_STORE:
-				for slot: int in controller.store_stock().size():
-					if controller.can_buy(slot):
+				for slot: int in controller.store.store_stock().size():
+					if controller.store.can_buy(slot):
 						controller.buy(slot)
 						break
 				controller.leave_store()
@@ -57,16 +57,20 @@ func play_run(controller: RunController) -> void:
 
 ## The card IDs the script would play now; empty is a pass.
 func choose_play(controller: RunController) -> Array[int]:
-	var view: SeatView = controller.seat_view()
+	var view: SeatView = controller.table.seat_view()
 	var play: BotPlay = Bot.decide_play(
-		view, controller.legal_moves(), controller.player_table(), config, BotBudget.unlimited()
+		view,
+		controller.table.legal_moves(),
+		controller.table.player_table(),
+		config,
+		BotBudget.unlimited()
 	)
-	if play.is_pass() and not controller.pass_refusal().is_empty():
+	if play.is_pass() and not controller.table.pass_refusal().is_empty():
 		# Night Shift refuses the pass: the first legal play goes instead (ADR 0023).
-		return controller.card_ids_for(controller.legal_moves()[0])
+		return controller.table.card_ids_for(controller.table.legal_moves()[0])
 	if play.is_pass():
 		return []
-	return controller.card_ids_for(play.pattern)
+	return controller.table.card_ids_for(play.pattern)
 
 
 func _play(controller: RunController) -> bool:

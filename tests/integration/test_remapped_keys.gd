@@ -48,7 +48,7 @@ func _to_first_lead(seed_value: int, held: Array[String]) -> bool:
 	var driver: ControllerScript = ControllerScript.new()
 	for _step: int in 900:
 		var awaiting: int = _app.controller.awaiting()
-		var view: SeatView = _app.controller.seat_view()
+		var view: SeatView = _app.controller.table.seat_view()
 		if awaiting == RunController.AWAIT_PLAY and view.public.history.is_empty():
 			return true
 		if awaiting == RunController.AWAIT_SET_OVER:
@@ -156,7 +156,7 @@ func _table_with_choice() -> Array:
 
 ## Three of a rank and one other card the player could play more than one way now.
 func _choice_ids() -> Array[int]:
-	var cards: Array[CardInstance] = _app.controller.player_cards()
+	var cards: Array[CardInstance] = _app.controller.table.player_cards()
 	var by_rank: Dictionary[int, Array] = {}
 	for card: CardInstance in cards:
 		if card.base_rank() <= Ranks.TWO:
@@ -172,6 +172,6 @@ func _choice_ids() -> Array[int]:
 			var ids: Array[int] = []
 			ids.assign(by_rank[rank].slice(0, 3))
 			ids.append(other.id())
-			if _app.controller.readings_for(ids).size() > 1:
+			if _app.controller.table.readings_for(ids).size() > 1:
 				return ids
 	return []

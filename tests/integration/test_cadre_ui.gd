@@ -128,7 +128,9 @@ func test_the_quota_report_counts_the_bookkeepers_coupons_in_the_paid_line() -> 
 	var met: bool = report.get("_met")
 	var name: String = tr("modifier.the_bookkeeper.name")
 	if met:
-		var paid: int = _app.controller.quota_reward() + _app.controller.over_bonus() + 2
+		var paid: int = (
+			_app.controller.figures.quota_reward() + _app.controller.figures.over_bonus() + 2
+		)
 		var line: Label = after[1]
 		var words: Dictionary = {"count": paid, "kept": 2, "cadre": name}
 		assert_str(line.text).is_equal(tr("summary.paid_with").format(words))

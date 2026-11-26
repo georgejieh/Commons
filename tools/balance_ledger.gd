@@ -53,10 +53,10 @@ func heard(event: RunEvent, controller: RunController) -> void:
 	elif event.type == RunEvent.Type.SET_ENDED:
 		events.append(event)
 		var state: RunState = controller.state_copy()
-		var row: BalanceQuota = BalanceQuota.of(state, controller.target())
+		var row: BalanceQuota = BalanceQuota.of(state, controller.figures.target())
 		quotas.append(row)
-		var reward: int = controller.quota_reward() if event.value == 1 else 0
-		var bonus: int = controller.over_bonus()
+		var reward: int = controller.figures.quota_reward() if event.value == 1 else 0
+		var bonus: int = controller.figures.over_bonus()
 		earned["rewards"] += reward
 		earned["overfulfilment"] += bonus
 		earned[OTHER] += state.coupons - _set_start - reward - bonus

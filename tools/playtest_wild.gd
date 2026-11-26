@@ -152,7 +152,7 @@ func _to_the_opening(controller: Object, driver: Object) -> bool:
 	for _step: int in STEPS:
 		await _until(_idle)
 		var none: Array[int] = []
-		if int(controller.call("campaign_reason", 0, none, false)) == 0:
+		if int(view(controller, "items").call("campaign_reason", 0, none, false)) == 0:
 			return true
 		if not bool(driver.call("act", controller)):
 			await _frames(5)
@@ -225,7 +225,7 @@ func _rules_frame() -> void:
 ## The picker over the table on cards that read three ways or more, built from the
 ## player's rules now; it is photographed and closed, and nothing is played.
 func _picker_frame(controller: Object) -> void:
-	var table: Object = controller.call("player_table")
+	var table: Object = view(controller, "table").call("player_table")
 	var readings: Array[Pattern] = _three_readings(table.get("rules"), table.get("rank_map"))
 	if readings.size() < 3:
 		_fail("NO CARDS READ THREE WAYS")
@@ -244,8 +244,8 @@ func _picker_frame(controller: Object) -> void:
 ## A soft bomb on the pile: three of a rank and a wild card standing in, with the wild
 ## card's ribbon and the rank it stands for beside its own.
 func _pile_frame(controller: Object) -> void:
-	var wild: Array[int] = controller.call("wild_ranks")
-	var table: Object = controller.call("player_table")
+	var wild: Array[int] = view(controller, "table").call("wild_ranks")
+	var table: Object = view(controller, "table").call("player_table")
 	var rank: int = _plain_rank(wild)
 	var counts: PackedByteArray = PackedByteArray()
 	counts.resize(Ranks.COUNT)

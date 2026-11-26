@@ -45,8 +45,8 @@ func _play(controller: RunController, stop_year: int = 0) -> int:
 				sets += 1
 				controller.finish_set()
 			RunController.AWAIT_STORE:
-				for slot: int in controller.store_stock().size():
-					if controller.can_buy(slot):
+				for slot: int in controller.store.store_stock().size():
+					if controller.store.can_buy(slot):
 						controller.buy(slot)
 						break
 				controller.leave_store()
@@ -63,7 +63,7 @@ func _play(controller: RunController, stop_year: int = 0) -> int:
 ## the Denunciation the script's fixed claim draws.
 func _act(controller: RunController, script: ControllerScript) -> bool:
 	if controller.awaiting() == RunController.AWAIT_NEED:
-		return controller.declare_need(controller.base_need()) == RunController.OK
+		return controller.declare_need(controller.figures.base_need()) == RunController.OK
 	return script.act(controller)
 
 
@@ -76,7 +76,7 @@ func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:
 	var controller: RunController = auto_free(RunController.new())
 	controller.start(_request(RunRequest.FULL), _saves, _profile)
 	var opening: RunState = controller.state_copy()
-	assert_bool(controller.has_village()).is_true()
+	assert_bool(controller.seats.has_village()).is_true()
 	assert_bool(opening.identity.is_full()).is_true()
 	assert_str(opening.identity.id).is_equal(RunIdentity.make_id(SEED, START_TIME))
 	assert_int(opening.identity.generation).is_equal(1)
@@ -128,7 +128,7 @@ func _dead(state: RunState) -> int:
 func test_the_demo_never_moves_the_profiles_runs() -> void:
 	var controller: RunController = auto_free(RunController.new())
 	controller.start(_request(RunRequest.DEMO), _saves, _profile)
-	assert_bool(controller.has_village()).is_false()
+	assert_bool(controller.seats.has_village()).is_false()
 	assert_int(_loop(controller).sets().years()).is_equal(1)
 	_play(controller)
 	assert_int(controller.awaiting()).is_equal(RunController.AWAIT_RUN_OVER)
@@ -162,8 +162,8 @@ func test_continue_rebuilds_each_kind() -> void:
 		var years: int = 8 if kind == RunRequest.FULL else 1
 		assert_int(_loop(resumed).sets().years()).is_equal(years)
 		assert_int(resumed.state_copy().identity.kind).is_equal(kind)
-		assert_bool(resumed.has_village()).is_equal(kind == RunRequest.FULL)
-		assert_array(resumed.player_cards()).is_equal(controller.player_cards())
+		assert_bool(resumed.seats.has_village()).is_equal(kind == RunRequest.FULL)
+		assert_array(resumed.table.player_cards()).is_equal(controller.table.player_cards())
 
 
 func test_a_starting_full_run_is_the_next_generation() -> void:

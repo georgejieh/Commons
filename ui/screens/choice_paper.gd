@@ -159,8 +159,8 @@ func _make_tag() -> void:
 ## A Directive: its typed document, a name over one Rate line per hand type it raises,
 ## filling the item's place exactly as a leaflet or card does, its text from the top.
 func show_directive(controller: RunController, directive_id: String) -> void:
-	title = controller.directive_name(directive_id)
-	rule = controller.directive_text(directive_id)
+	title = controller.texts.directive_name(directive_id)
+	rule = controller.texts.directive_text(directive_id)
 	var sheet: VBoxContainer = ScreenKit.card(item_size)
 	sheet.add_theme_constant_override("separation", 2)
 	sheet.alignment = BoxContainer.ALIGNMENT_BEGIN
@@ -170,7 +170,7 @@ func show_directive(controller: RunController, directive_id: String) -> void:
 	_fit_one_line(name, item_size.x - DOCUMENT_INSET)
 	sheet.add_child(name)
 	sheet.add_child(HSeparator.new())
-	for type: int in controller.directive_types(directive_id):
+	for type: int in controller.items.directive_types(directive_id):
 		var line: Label = ScreenKit.label(DirectiveSheet.rate_line(controller, type), LINE_SIZE)
 		# The condensed face keeps each Rate line to two lines at 16 px in the small place.
 		line.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -256,20 +256,20 @@ static func _one_line_size(font: Font, text: String, wide: float, start: int) ->
 
 ## A Campaign: its leaflet, as the tray holds it, as large as the place allows.
 func show_campaign(controller: RunController, campaign_id: String) -> void:
-	title = controller.campaign_name(campaign_id)
-	rule = controller.campaign_text(campaign_id)
+	title = controller.texts.campaign_name(campaign_id)
+	rule = controller.texts.campaign_text(campaign_id)
 	var leaflet: CampaignLeaflet = CampaignLeaflet.new()
 	leaflet.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	leaflet.show_campaign(
-		index, campaign_id, title, "", controller.is_private_campaign(campaign_id)
+		index, campaign_id, title, "", controller.items.is_private_campaign(campaign_id)
 	)
 	_set_item(leaflet, CampaignLeaflet.SIZE)
 
 
 ## A plot card: its real face with its chop or rosette, and what the mark does.
 func show_card(controller: RunController, kind: int, card: CardInstance) -> void:
-	title = controller.envelope_card_text(kind, "name", card)
-	rule = controller.envelope_card_text(kind, "text", card)
+	title = controller.texts.envelope_card_text(kind, "name", card)
+	rule = controller.texts.envelope_card_text(kind, "text", card)
 	var view: CardView = CARD_SCENE.instantiate()
 	view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_set_item(view, view.custom_minimum_size)
@@ -278,7 +278,7 @@ func show_card(controller: RunController, kind: int, card: CardInstance) -> void
 	# Binding settles the view back to its own scale and pivot.
 	view.pivot_offset = Vector2.ZERO
 	view.scale = Vector2.ONE * _fit_scale(view.custom_minimum_size)
-	_say(controller.envelope_card_text(kind, "caption", card), ScreenKit.INK)
+	_say(controller.texts.envelope_card_text(kind, "caption", card), ScreenKit.INK)
 
 
 ## Marks whether the item can be kept: when it cannot, its Keep is off and its strip

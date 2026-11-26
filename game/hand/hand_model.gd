@@ -30,7 +30,7 @@ func _init(controller: RunController) -> void:
 
 ## Reads the player's cards again, keeping the selection of cards still held.
 func refresh() -> void:
-	_cards = _controller.player_cards()
+	_cards = _controller.table.player_cards()
 	var held: Dictionary[int, bool] = {}
 	for card: CardInstance in _cards:
 		if _selected.has(card.id()):
@@ -82,7 +82,7 @@ func can_play() -> bool:
 
 
 func can_pass() -> bool:
-	var view: SeatView = _controller.seat_view()
+	var view: SeatView = _controller.table.seat_view()
 	return (
 		_controller.awaiting() == RunLoop.Awaiting.PLAYER_PLAY
 		and view != null
@@ -117,12 +117,12 @@ func projected_score() -> float:
 ## 2 that ranks as a 3, or -1 when it ranks as itself. A reordering alone, with no two
 ## ranks equal, folds nothing.
 func folded_rank(card: CardInstance) -> int:
-	return HandModel.fold(card.base_rank(), _controller.player_table().rank_map)
+	return HandModel.fold(card.base_rank(), _controller.table.player_table().rank_map)
 
 
 ## Where the card ranks now, after any Cadre or debuff has re-ranked it.
 func rank_value(card: CardInstance) -> int:
-	return _controller.player_table().rank_map[card.base_rank()]
+	return _controller.table.player_table().rank_map[card.base_rank()]
 
 
 static func fold(rank: int, rank_map: PackedByteArray) -> int:
@@ -138,7 +138,7 @@ static func fold(rank: int, rank_map: PackedByteArray) -> int:
 ## over ranks, not instances.
 func hint_ids() -> Array[int]:
 	var ranks: Dictionary[int, bool] = {}
-	for move: Pattern in _controller.legal_moves():
+	for move: Pattern in _controller.table.legal_moves():
 		var counts: PackedByteArray = move.spent_counts()
 		for rank: int in counts.size():
 			if counts[rank] > 0:
@@ -156,20 +156,20 @@ func suggested_ids() -> Array[int]:
 	var play: Pattern = _suggested_play()
 	var ids: Array[int] = []
 	if play != null:
-		ids = _controller.card_ids_for(play)
+		ids = _controller.table.card_ids_for(play)
 	return ids
 
 
 ## The play a Medium bot would make now, as its reading, or null for a pass or when it
 ## isn't the player's turn.
 func _suggested_play() -> Pattern:
-	var view: SeatView = _controller.seat_view()
-	var legal: Array[Pattern] = _controller.legal_moves()
+	var view: SeatView = _controller.table.seat_view()
+	var legal: Array[Pattern] = _controller.table.legal_moves()
 	if view == null or legal.is_empty():
 		return null
 	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
 	var play: BotPlay = Bot.decide_play(
-		view, legal, _controller.player_table(), config, BotBudget.unlimited()
+		view, legal, _controller.table.player_table(), config, BotBudget.unlimited()
 	)
 	return null if play.is_pass() else play.pattern
 
@@ -181,7 +181,7 @@ func take_hint() -> Array[int]:
 	_hint = play
 	_hint_ids.clear()
 	if play != null:
-		_hint_ids = _controller.card_ids_for(play)
+		_hint_ids = _controller.table.card_ids_for(play)
 		_hint_ids.sort()
 		_hint_turn = _plays_so_far()
 	select_only(_hint_ids)
@@ -200,7 +200,7 @@ func hint_reading() -> Pattern:
 
 ## Plays and passes made so far this round, which tells one turn from the next.
 func _plays_so_far() -> int:
-	var view: SeatView = _controller.seat_view()
+	var view: SeatView = _controller.table.seat_view()
 	return -1 if view == null else view.public.history.size()
 
 
@@ -226,7 +226,7 @@ func grouped_cards() -> Array[CardInstance]:
 		counts[card.base_rank()] += 1
 	var ordered: Array[CardInstance] = []
 	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
-	for group: Pattern in Bot.suggest_groups(counts, _controller.player_table(), config):
+	for group: Pattern in Bot.suggest_groups(counts, _controller.table.player_table(), config):
 		var needed: PackedByteArray = group.spent_counts()
 		for card: CardInstance in left.duplicate():
 			if needed[card.base_rank()] > 0:
@@ -263,6 +263,6 @@ func _holds(card_id: int) -> bool:
 
 func _update() -> void:
 	_preview = null
-	if not _selected.is_empty() and _controller.seat_view() != null:
-		_preview = _controller.preview_play(selected_ids(), hint_reading())
+	if not _selected.is_empty() and _controller.table.seat_view() != null:
+		_preview = _controller.table.preview_play(selected_ids(), hint_reading())
 	changed.emit()

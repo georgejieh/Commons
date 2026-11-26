@@ -151,17 +151,17 @@ func test_a_save_in_the_store_resumes_with_the_same_stock() -> void:
 	controller.finish_set()
 	assert_int(controller.awaiting()).is_equal(RunController.AWAIT_STORE)
 	assert_int(controller.buy(0)).is_equal(RunController.OK)
-	var stock: Array[String] = controller.store_stock()
+	var stock: Array[String] = controller.store.store_stock()
 	var coupons: int = controller.state_copy().coupons
 	var resumed: RunController = auto_free(RunController.new())
 	assert_bool(resumed.resume_saved(service, RunScript.bots(), SetConfig.new())).is_true()
 	assert_int(resumed.awaiting()).is_equal(RunController.AWAIT_STORE)
-	assert_array(resumed.store_stock()).is_equal(stock)
+	assert_array(resumed.store.store_stock()).is_equal(stock)
 	assert_int(resumed.state_copy().coupons).is_equal(coupons)
 	# A purchase after the resume saves too, and a second resume keeps it.
-	var slot: int = resumed.store_stock().find(RunShop.SOLD) + 1
+	var slot: int = resumed.store.store_stock().find(RunShop.SOLD) + 1
 	var bought: Array[String] = resumed.state_copy().inventory.cadres
-	if resumed.can_buy(slot):
+	if resumed.store.can_buy(slot):
 		resumed.buy(slot)
 		bought = resumed.state_copy().inventory.cadres
 	var again: RunController = auto_free(RunController.new())

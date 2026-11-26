@@ -83,7 +83,7 @@ func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 	assert_bool(hud.famine.visible).is_false()
 	assert_bool(hud.denunciation.visible).is_true()
 	assert_bool(hud.shows_meter("famine")).is_false()
-	var target: String = Strings.score(_app.controller.target())
+	var target: String = Strings.score(_app.controller.figures.target())
 	assert_str(hud.quota.text()).contains(ShownFigures.none_reported()).not_contains(target)
 	assert_str(_shown(hud)).contains(ShownFigures.none_reported())
 	# A change to a dark meter moves nothing that can be seen: no tween, so no pulse.
@@ -127,7 +127,7 @@ func test_the_quota_report_shows_none_reported_and_no_rise() -> void:
 	var words: String = _shown(summary)
 	assert_str(words).contains(ShownFigures.none_reported())
 	_never_shows(summary, [FAMINE])
-	var target: String = Strings.score(_app.controller.target())
+	var target: String = Strings.score(_app.controller.figures.target())
 	assert_str(summary.bar().text()).not_contains(target)
 	assert_str(summary.over_seal_word()).is_empty()
 
@@ -139,7 +139,7 @@ func test_the_set_intro_hides_a_dark_norms_target() -> void:
 	var rounds: int = _app.max_rounds()
 	var hidden: String = tr("intro.target.unreported").format({"rounds": rounds})
 	var shown: String = tr("intro.target").format(
-		{"target": Strings.score(_app.controller.target()), "rounds": rounds}
+		{"target": Strings.score(_app.controller.figures.target()), "rounds": rounds}
 	)
 	assert_str(_shown(intro)).contains(hidden).not_contains(shown)
 
@@ -164,7 +164,7 @@ func test_the_year_and_round_pages_and_the_ending_show_none_reported() -> void:
 	# A dark Famine at its death still ends the run as Famine does.
 	_loop().state.famine = RunDefaults.METERS.famine.death
 	_app.controller.reseal_book()
-	assert_str(_app.controller.ending().id).is_equal(Endings.DEATH_FAMINE)
+	assert_str(_app.controller.seats.ending().id).is_equal(Endings.DEATH_FAMINE)
 	var ending: Node = _app.show_screen("ending", true)
 	await await_idle_frame()
 	var words: String = _shown(ending)

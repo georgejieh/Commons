@@ -52,7 +52,7 @@ func refresh() -> void:
 		strip.remove_child(child)
 		child.queue_free()
 	_buttons.clear()
-	var stall: DeckStallView = _controller.deck_stall()
+	var stall: DeckStallView = _controller.store.deck_stall()
 	strip.visible = stall.is_open()
 	if not stall.is_open():
 		return
@@ -108,7 +108,7 @@ func _offer(stall: DeckStallView, slot: int, coupons: int) -> void:
 func _choose(slot: int) -> void:
 	if _screen_busy.call():
 		return
-	var stall: DeckStallView = _controller.deck_stall()
+	var stall: DeckStallView = _controller.store.deck_stall()
 	var card: CardInstance = stall.card(slot)
 	if card == null:
 		return

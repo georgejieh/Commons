@@ -65,7 +65,7 @@ func one_command(run: RunController) -> bool:
 func _answer(run: RunController, awaiting: int) -> int:
 	match awaiting:
 		RunController.AWAIT_NEED:
-			return run.declare_need(run.base_need())
+			return run.declare_need(run.figures.base_need())
 		RunController.AWAIT_SWAP:
 			var none: Array[int] = []
 			return run.swap(none, none)
@@ -78,8 +78,8 @@ func _answer(run: RunController, awaiting: int) -> int:
 
 ## Buys the first Cadre the coupons allow, or leaves.
 func _shop(run: RunController) -> int:
-	for slot: int in run.store_stock().size():
-		if run.can_buy(slot):
+	for slot: int in run.store.store_stock().size():
+		if run.store.can_buy(slot):
 			return run.buy(slot)
 	return run.leave_store()
 

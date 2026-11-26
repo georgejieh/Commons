@@ -36,9 +36,9 @@ func _buy_through_the_screen() -> String:
 	var store: StoreScreen = _app.show_screen("store", true)
 	await await_idle_frame()
 	var bought: String = ""
-	for slot: int in _app.controller.store_stock().size():
-		if _app.controller.can_buy(slot):
-			bought = _app.controller.store_stock()[slot]
+	for slot: int in _app.controller.store.store_stock().size():
+		if _app.controller.store.can_buy(slot):
+			bought = _app.controller.store.store_stock()[slot]
 			for button: Button in store.find_children("*", "Button", true, false):
 				if button.theme_type_variation == CommonsTheme.COUPON and not button.disabled:
 					button.pressed.emit()

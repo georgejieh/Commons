@@ -104,7 +104,7 @@ func test_each_rule_name_is_closed_before_its_text() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", debuff, "", ""])
 	loop.state.round_index = 1
-	var name: String = _app.controller.modifier_name(debuff)
+	var name: String = _app.controller.texts.modifier_name(debuff)
 	var wild: String = ReadingText.wild_line([Ranks.SEVEN] as Array[int])
 	for level: int in TextSize.count():
 		for screen: Vector2i in SIZES:

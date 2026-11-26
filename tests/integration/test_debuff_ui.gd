@@ -64,8 +64,8 @@ func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "%s %s" % [debuff.id, screen_size]
-				var name: String = _app.controller.modifier_name(debuff.id)
-				var rule: String = _app.controller.modifier_text(debuff.id)
+				var name: String = _app.controller.texts.modifier_name(debuff.id)
+				var rule: String = _app.controller.texts.modifier_text(debuff.id)
 				var named: bool = false
 				for node: Node in intro.find_children("*", "Label", true, false):
 					var label: Label = node
@@ -91,7 +91,7 @@ func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 						_inside(text, where)
 				assert_bool(ruled).override_failure_message(where).is_true()
 				_clips(intro, where)
-	assert_str(_app.controller.modifier_name("slogan_of_the_week")).is_equal(
+	assert_str(_app.controller.texts.modifier_name("slogan_of_the_week")).is_equal(
 		"Slogan of the Week: Pairs"
 	)
 
@@ -114,13 +114,13 @@ func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 				var where: String = "%s %s size %d" % [debuff.id, screen_size, level]
 				var shown: String = strip.shown_text()
 				assert_str(shown).override_failure_message(where).contains(
-					_app.controller.modifier_name(debuff.id)
+					_app.controller.texts.modifier_name(debuff.id)
 				)
 				if level == 0:
 					assert_bool(strip.is_named()).override_failure_message(where).is_false()
 				if not strip.is_named():
 					assert_str(shown).override_failure_message(where).contains(
-						_app.controller.modifier_text(debuff.id)
+						_app.controller.texts.modifier_text(debuff.id)
 					)
 				assert_int(strip.form()).override_failure_message(where).is_less_equal(
 					DebuffStrip.Form.FITTED
@@ -162,7 +162,7 @@ func test_levy_and_redistribution_slide_cards_left_or_leave_the_end_state() -> v
 		await await_idle_frame()
 		var table: TableScreen = _app.switcher.current()
 		var beats: DebuffMoments = table.get("_debuff_beats")
-		var mine: CardInstance = _app.controller.player_cards()[0]
+		var mine: CardInstance = _app.controller.table.player_cards()[0]
 		# A Levy in force: the slip names it, the card and where it goes.
 		_ladder("levy")
 		_loop().state.round_index = 1
@@ -283,7 +283,7 @@ func test_night_shift_refuses_the_pass_and_says_why() -> void:
 	var said: Array[String] = []
 	var reached: bool = await _play_until(
 		func(table: TableScreen) -> bool:
-			if _app.controller.pass_refusal().is_empty():
+			if _app.controller.table.pass_refusal().is_empty():
 				return false
 			var turn: int = _loop().round_state().public_view().history.size()
 			table.actions().pass_turn.pressed.emit()

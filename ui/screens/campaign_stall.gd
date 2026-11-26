@@ -29,7 +29,7 @@ var _busy: bool = false
 func setup(app: DemoApp, market: bool, screen_busy: Callable, slip: DetailSlip) -> void:
 	_app = app
 	_market = market
-	_shelf = app.controller.campaign_shelf(market)
+	_shelf = app.controller.store.campaign_shelf(market)
 	_screen_busy = screen_busy
 	_slip = slip
 	_offers.add_theme_constant_override("separation", 12)
@@ -80,14 +80,14 @@ func _offer(slot: int, campaign_id: String) -> CounterPanel:
 		made.sold(CounterPanel.Look.LEAFLET, tr("store.sold"))
 		return made
 	var controller: RunController = _app.controller
-	var private: bool = controller.is_private_campaign(campaign_id)
+	var private: bool = controller.items.is_private_campaign(campaign_id)
 	made.set_private(private)
 	made.offer(
 		CounterPanel.Look.LEAFLET,
 		tr("campaign.eyebrow.private" if private else "campaign.eyebrow.collective"),
 		campaign_id,
-		controller.campaign_name(campaign_id),
-		controller.campaign_text(campaign_id),
+		controller.texts.campaign_name(campaign_id),
+		controller.texts.campaign_text(campaign_id),
 		tr("store.buy").format({"price": _shelf.price(slot)})
 	)
 	var coupons: int = controller.state_copy().coupons
@@ -112,7 +112,7 @@ func _describe(described: CounterPanel) -> void:
 func _buy(slot: int, offered: CounterPanel) -> void:
 	if _busy or (_screen_busy.is_valid() and _screen_busy.call()):
 		return
-	var held: int = _app.controller.held_campaigns().size()
+	var held: int = _app.controller.items.held_campaigns().size()
 	var from: Vector2 = offered.global_position
 	var shown: String = offered.shown_name()
 	var private: bool = offered.is_private()
@@ -166,5 +166,5 @@ func _show_prompt() -> void:
 	if asked.is_empty():
 		_slip.hide_for(tray)
 		return
-	var held: String = _app.controller.held_campaigns()[tray.armed_slot()]
-	_slip.show_for(tray, _app.controller.campaign_name(held), asked)
+	var held: String = _app.controller.items.held_campaigns()[tray.armed_slot()]
+	_slip.show_for(tray, _app.controller.texts.campaign_name(held), asked)

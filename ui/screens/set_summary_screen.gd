@@ -53,7 +53,7 @@ var _norm_text: String = ""
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
 	var state: RunState = controller.state_copy()
-	_met = state.set_progress >= controller.target()
+	_met = state.set_progress >= controller.figures.target()
 	_state = state
 	var sheet: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	var verdict: Control = ScreenKit.header(
@@ -63,16 +63,18 @@ func open(app: DemoApp) -> void:
 	sheet.add_child(verdict)
 	_bar.setup(BAR, SEAL_WIDTH, 30)
 	_bar.show_as(QuotaBar.mode_for(state))
-	_bar.set_target(controller.target())
+	_bar.set_target(controller.figures.target())
 	_bar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	sheet.add_child(_seal_room(_bar))
-	_steps = controller.over_steps() if _met else 0
+	_steps = controller.figures.over_steps() if _met else 0
 	_over.prepare(tr("summary.over"), OVER_INK, OVER_WIDTH)
 	var met_left: float = BAR.x - SEAL_WIDTH * 0.6
 	_over.position = Vector2(met_left - OVER_WIDTH - OVER_GAP, (BAR.y - OVER_WIDTH) / 2.0)
 	_bar.add_child(_over)
 	_kept = _bookkeeper_paid(controller)
-	var paid: int = _kept + (controller.quota_reward() + controller.over_bonus() if _met else 0)
+	var paid: int = (
+		_kept + (controller.figures.quota_reward() + controller.figures.over_bonus() if _met else 0)
+	)
 	var cost: int = _famine_rise(controller)
 	var tiles: Array[Control] = [
 		_figure(
@@ -147,7 +149,7 @@ func _seal_room(bar: QuotaBar) -> MarginContainer:
 func _norm_line(controller: RunController, state: RunState) -> Label:
 	if not _met or not ShownFigures.is_true(state, RunCorrections.NORM):
 		return null
-	var target: float = controller.target()
+	var target: float = controller.figures.target()
 	if not target > 0.0:
 		return null
 	var over: int = floori((state.set_progress - target) * 100.0 / target)
@@ -155,8 +157,8 @@ func _norm_line(controller: RunController, state: RunState) -> Label:
 		return null
 	var values: Dictionary = {
 		"over": over,
-		"added": controller.norm_added_percent(),
-		"total": controller.norm_percent(),
+		"added": controller.figures.norm_added_percent(),
+		"total": controller.figures.norm_percent(),
 	}
 	var key: String = "summary.norm_raised" if _steps > 0 else "summary.norm_kept"
 	_norm_text = tr(key).format(values)
@@ -206,7 +208,7 @@ func _fates(controller: RunController) -> Array[Label]:
 			key = "summary.deposed"
 		if key.is_empty():
 			continue
-		var name: String = tr(controller.family_name_key(event.text))
+		var name: String = tr(controller.seats.family_name_key(event.text))
 		var text: String = tr(key).format({"name": name})
 		var line: Label = ScreenKit.label(text, 22, ScreenKit.INK)
 		line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -324,7 +326,7 @@ func _consequence(controller: RunController, famine: int) -> Label:
 	if not _met and ShownFigures.all_success():
 		return _line(tr("summary.fulfilled"), ScreenKit.INK)
 	if _met:
-		var paid: int = controller.quota_reward() + controller.over_bonus() + _kept
+		var paid: int = controller.figures.quota_reward() + controller.figures.over_bonus() + _kept
 		if _kept > 0:
 			var words: Dictionary = {"count": paid, "kept": _kept, "cadre": tr(BOOKKEEPER_NAME)}
 			return _line(tr("summary.paid_with").format(words), ScreenKit.INK)

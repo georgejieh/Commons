@@ -93,7 +93,7 @@ func end() -> void:
 ## arrival, and only while the profile has not seen it.
 func tip_due(tip_id: String) -> bool:
 	var controller: RunController = _app.controller
-	if director != null or not controller.has_run() or not controller.is_full_run():
+	if director != null or not controller.has_run() or not controller.seats.is_full_run():
 		return false
 	return not ProfileSeen.has(Saves.profile_service(), tip_id)
 

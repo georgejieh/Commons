@@ -55,7 +55,7 @@ func test_short_of_coupons_every_buy_says_what_it_needs() -> void:
 	_loop().state.coupons = 0
 	_app.controller.reseal_book()
 	var store: StoreScreen = await _open("store")
-	var desk: ShopDesk = _app.controller.desk(false)
+	var desk: ShopDesk = _app.controller.store.desk(false)
 	var buy: Button = _cadre_buy(store, 0)
 	_assert_readable(buy, "cadre")
 	assert_str(buy.text).is_equal(tr("store.buy.poor").format({"price": desk.price(0)}))
@@ -81,7 +81,7 @@ func test_with_a_full_board_a_cadre_says_there_is_no_room() -> void:
 	_loop().state.inventory.cadres.assign(FIVE)
 	_app.controller.reseal_book()
 	var market: StoreScreen = await _open("black_market")
-	var desk: ShopDesk = _app.controller.desk(true)
+	var desk: ShopDesk = _app.controller.store.desk(true)
 	for slot: int in desk.stock().size():
 		if desk.stock()[slot].is_empty():
 			continue
@@ -95,7 +95,7 @@ func test_plot_cards_say_buy_and_their_price() -> void:
 	_app.controller.reseal_book()
 	var market: StoreScreen = await _open("black_market")
 	var goods: MarketGoods = market.get("_goods")
-	var desk: ShopDesk = _app.controller.desk(true)
+	var desk: ShopDesk = _app.controller.store.desk(true)
 	var button: Button = goods.card_button(0)
 	assert_object(button).is_not_null()
 	assert_bool(button.disabled).is_false()
@@ -116,7 +116,7 @@ func test_a_campaign_sold_back_says_it_returns_next_visit() -> void:
 	var panel: CounterPanel = stall.call("panel", 0)
 	_assert_readable(panel.buy, "sold back campaign")
 	assert_str(panel.buy.text).is_equal(tr("store.buy.sold_back"))
-	assert_bool(_app.controller.campaign_shelf(false).is_sold_back(0)).is_true()
+	assert_bool(_app.controller.store.campaign_shelf(false).is_sold_back(0)).is_true()
 
 
 ## The same for a Cadre sold back while a counter still offers it.

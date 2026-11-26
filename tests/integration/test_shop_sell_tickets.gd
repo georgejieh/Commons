@@ -69,7 +69,7 @@ func test_a_campaign_bought_into_an_empty_tray_gets_its_ticket() -> void:
 	var bought: String = _loop().visit.shop.campaigns.stock()[0]
 	stall.panel(0).buy.pressed.emit()
 	await await_idle_frame()
-	assert_array(_app.controller.held_campaigns()).is_equal([bought])
+	assert_array(_app.controller.items.held_campaigns()).is_equal([bought])
 	var tag: SellTag = _ticket(store, 0)
 	assert_object(tag).is_not_null()
 	assert_bool(tag.visible).is_true()
@@ -97,11 +97,11 @@ func test_a_campaign_used_in_the_shop_moves_the_next_with_its_own_price() -> voi
 	stall.tray.arm(0)
 	stall.tray.use_armed()
 	await await_idle_frame()
-	assert_array(_app.controller.held_campaigns()).is_equal([next])
+	assert_array(_app.controller.items.held_campaigns()).is_equal([next])
 	var moved: SellTag = _ticket(store, 0)
 	assert_bool(moved.is_asking()).is_false()
 	assert_str(moved.button.text).is_equal(tr("store.sell").format({"price": _price_of(next)}))
 	assert_bool(second.is_asking()).is_false()
 	# A press on the moved ticket only asks; nothing is sold by the earlier question.
 	moved.press()
-	assert_array(_app.controller.held_campaigns()).is_equal([next])
+	assert_array(_app.controller.items.held_campaigns()).is_equal([next])

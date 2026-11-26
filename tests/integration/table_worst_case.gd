@@ -311,7 +311,8 @@ static func longest_named_debuffs(controller: RunController) -> Array[String]:
 	var ids: Array[String] = []
 	for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 		ids.append(debuff.id)
-	var named: Callable = func(id: String) -> int: return controller.modifier_name(id).length()
+	var named: Callable = func(id: String) -> int:
+		return controller.texts.modifier_name(id).length()
 	ids.sort_custom(func(a: String, b: String) -> bool: return named.call(a) > named.call(b))
 	return ids.slice(0, 3)
 
@@ -322,9 +323,10 @@ static func longest_named_cadres(controller: RunController) -> Array[String]:
 	for cadre: ModifierDef in RunLoop.all_cadres():
 		if not ids.has(cadre.id):
 			ids.append(cadre.id)
-	var named: Callable = func(id: String) -> int: return controller.modifier_name(id).length()
+	var named: Callable = func(id: String) -> int:
+		return controller.texts.modifier_name(id).length()
 	ids.sort_custom(func(a: String, b: String) -> bool: return named.call(a) > named.call(b))
-	return ids.slice(0, controller.cadre_slots())
+	return ids.slice(0, controller.figures.cadre_slots())
 
 
 ## The two wild ranks whose line on the strip is longest.
@@ -357,7 +359,8 @@ static func longest_campaigns(app: DemoApp) -> Array[String]:
 	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
 		for campaign: CampaignDef in pool.campaigns:
 			ids.append(campaign.id)
-	var named: Callable = func(id: String) -> int: return app.controller.campaign_name(id).length()
+	var named: Callable = func(id: String) -> int:
+		return app.controller.texts.campaign_name(id).length()
 	ids.sort_custom(
 		func(a: String, b: String) -> bool: return int(named.call(a)) > int(named.call(b))
 	)

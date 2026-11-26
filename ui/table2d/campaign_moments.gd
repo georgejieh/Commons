@@ -158,9 +158,9 @@ func _on_used(event: RunEvent, quiet: bool) -> void:
 	_leaflet.show_campaign(
 		slot,
 		event.text,
-		_controller.campaign_name(event.text),
+		_controller.texts.campaign_name(event.text),
 		"",
-		_controller.is_private_campaign(event.text)
+		_controller.items.is_private_campaign(event.text)
 	)
 	if slot < tray.campaign_count():
 		tray.leaflet(slot).visible = false
@@ -191,7 +191,7 @@ func _stamp_leaflet() -> void:
 
 
 func _shout_stake() -> void:
-	var times: int = _controller.campaign_parameter("overfulfillment", "win_times")
+	var times: int = _controller.items.campaign_parameter("overfulfillment", "win_times")
 	var sub: String = tr("callout.overfulfil.sub").format({"times": times})
 	_table.callout.shout(tr("callout.overfulfil"), Callout.Tier.TAKEOVER, ScreenKit.RED, sub)
 	_table.bump(TableMoments.TAKEOVER_SHAKE)

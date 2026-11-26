@@ -19,7 +19,7 @@ static func holds_lines(app: DemoApp) -> Array[String]:
 		return _holds
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = INTEL_SEED
-	var table: BotTable = app.controller.player_table()
+	var table: BotTable = app.controller.table.player_table()
 	var seen: Dictionary[String, bool] = {}
 	for size: int in [17, MOST_CARDS]:
 		for _hand: int in INTEL_HANDS:

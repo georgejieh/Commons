@@ -98,7 +98,7 @@ func fired(controller: RunController, cadre_id: String, amount: int) -> void:
 	var index: int = _ids.find(cadre_id)
 	if index < 0:
 		return
-	var count: String = controller.cadre_standing(cadre_id).count
+	var count: String = controller.items.cadre_standing(cadre_id).count
 	_badges[index].show_count(count if not count.is_empty() else "+%d" % amount)
 	pulse_slot(index)
 
@@ -111,7 +111,7 @@ func jiggle(controller: RunController, cadre_id: String, seconds: float) -> Rect
 	if index < 0 or not is_visible_in_tree():
 		return Rect2()
 	var card: TipHost = _cards[index]
-	var count: String = controller.cadre_standing(cadre_id).count
+	var count: String = controller.items.cadre_standing(cadre_id).count
 	if not count.is_empty():
 		_badges[index].show_count(count)
 	if not UiMotion.reduced() and seconds > 0.0:
@@ -145,9 +145,9 @@ func count_at(index: int) -> String:
 
 ## Shows the Cadres the run holds, each with its name and rules as its tooltip.
 func show_cadres(controller: RunController) -> void:
-	_grow(controller.cadre_slots())
+	_grow(controller.figures.cadre_slots())
 	var cadre_ids: Array[String] = controller.state_copy().inventory.cadres
-	var confiscated: Array[String] = controller.confiscated_cadres()
+	var confiscated: Array[String] = controller.items.confiscated_cadres()
 	_ids = cadre_ids
 	for index: int in _cards.size():
 		var held: bool = index < cadre_ids.size()
@@ -168,7 +168,9 @@ func show_cadres(controller: RunController) -> void:
 		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null
 		var bare: bool = held and not ScreenKit.ART.has_cadre(cadre_ids[index])
 		_badges[index].show_name(tr("modifier.%s.name" % cadre_ids[index]) if bare else "")
-		_badges[index].show_count(controller.cadre_standing(cadre_ids[index]).count if held else "")
+		_badges[index].show_count(
+			controller.items.cadre_standing(cadre_ids[index]).count if held else ""
+		)
 	queue_redraw()
 
 

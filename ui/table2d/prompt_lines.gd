@@ -39,14 +39,14 @@ static func every(controller: RunController, bidding: bool) -> Array[String]:
 			}
 		)
 		texts.append(sum + " " + scaled.format({"percent": WIDE_PERCENT}))
-	texts.append_array(controller.every_campaign_prompt())
+	texts.append_array(controller.texts.every_campaign_prompt())
 	return texts
 
 
 ## The village's longest surname, as any villager may hold the seat.
 static func longest_seat_name(controller: RunController) -> String:
 	var longest: String = ""
-	for name: String in controller.every_surname():
+	for name: String in controller.texts.every_surname():
 		longest = name if name.length() > longest.length() else longest
 	return longest
 

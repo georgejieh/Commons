@@ -41,12 +41,12 @@ func _to_turn(
 			_app.controller.start_run(seed_value, configs)
 		for _step: int in 400:
 			var awaiting: int = _app.controller.awaiting()
-			var view: SeatView = _app.controller.seat_view()
+			var view: SeatView = _app.controller.table.seat_view()
 			var following: bool = view != null and view.public.current_play != null
 			if awaiting == RunController.AWAIT_PLAY and following:
-				var legal: bool = not _app.controller.legal_moves().is_empty()
+				var legal: bool = not _app.controller.table.legal_moves().is_empty()
 				var by: bool = led_by < 0 or _last_player(view) == led_by
-				if legal == answer and by and _app.controller.pass_refusal().is_empty():
+				if legal == answer and by and _app.controller.table.pass_refusal().is_empty():
 					return true
 			if awaiting == RunController.AWAIT_SET_OVER or not driver.act(_app.controller):
 				break
@@ -148,7 +148,7 @@ func _sat_out_to_the_end(seen: Dictionary, sit_out: SitOut) -> bool:
 	if not sit_out.is_active():
 		seen["dropped"] = true
 		return true
-	var view: SeatView = _app.controller.seat_view()
+	var view: SeatView = _app.controller.table.seat_view()
 	var answering: bool = view != null and view.public.current_play != null
 	if _app.controller.awaiting() == RunController.AWAIT_VILLAGER and answering:
 		seen["searched"] = true

@@ -134,10 +134,10 @@ func test_a_villagers_line_goes_when_they_act_again() -> void:
 ## counts for the teammate too, and a rank Cadre or a debuff says nothing of the kind.
 func test_a_cadre_that_pays_the_teammate_says_so() -> void:
 	var line: String = tr("modifier.counts_for_teammate")
-	assert_bool(_app.controller.counts_for_teammate("canteen")).is_true()
+	assert_bool(_app.controller.items.counts_for_teammate("canteen")).is_true()
 	assert_str(ScreenKit.rule_text(_app.controller, "canteen")).contains(line)
 	for modifier_id: String in ["promotion_of_the_masses", RANK_DEBUFF]:
-		assert_bool(_app.controller.counts_for_teammate(modifier_id)).is_false()
+		assert_bool(_app.controller.items.counts_for_teammate(modifier_id)).is_false()
 		assert_str(ScreenKit.rule_text(_app.controller, modifier_id)).not_contains(line)
 
 
@@ -204,7 +204,7 @@ func test_a_rank_debuff_shows_on_the_table_and_on_the_cards_it_changes() -> void
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", RANK_DEBUFF, "", ""])
 	loop.set("_sets", DebuffScript.hard_sets())
-	assert_array(_app.controller.ladder()).contains([RANK_DEBUFF])
+	assert_array(_app.controller.items.ladder()).contains([RANK_DEBUFF])
 	_app.show_screen("table", true)
 	await await_idle_frame()
 	var driver: ControllerScript = ControllerScript.new()
@@ -221,7 +221,7 @@ func test_a_rank_debuff_shows_on_the_table_and_on_the_cards_it_changes() -> void
 			continue
 		var strip: DebuffStrip = table.get("_debuffs")
 		var hand_view: HandView = table.get("_hand_view")
-		var active: bool = _app.controller.active_debuff_ids().has(RANK_DEBUFF)
+		var active: bool = _app.controller.items.active_debuff_ids().has(RANK_DEBUFF)
 		var name: String = tr("modifier.%s.name" % RANK_DEBUFF)
 		assert_bool(strip.shown_text().contains(name)).is_equal(active)
 		saw_strip = saw_strip or active

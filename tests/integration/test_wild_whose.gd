@@ -41,7 +41,7 @@ func _to_first_lead() -> bool:
 	var driver: ControllerScript = ControllerScript.new()
 	for _step: int in 900:
 		var awaiting: int = _app.controller.awaiting()
-		var view: SeatView = _app.controller.seat_view()
+		var view: SeatView = _app.controller.table.seat_view()
 		if awaiting == RunController.AWAIT_PLAY and view.public.history.is_empty():
 			return true
 		if awaiting == RunController.AWAIT_SET_OVER:
@@ -84,7 +84,7 @@ func test_the_words_and_the_pile_say_the_wild_rank_is_the_players() -> void:
 	var strip: DebuffStrip = table.get("_debuffs")
 	var moments: TableMoments = table.get("_moments")
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
-	var rank: int = _app.controller.wild_ranks()[0]
+	var rank: int = _app.controller.table.wild_ranks()[0]
 	var waited: float = 0.0
 	while not moments.callout.is_showing() and waited < WAIT_SECONDS:
 		await get_tree().process_frame

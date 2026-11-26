@@ -43,13 +43,13 @@ func test_new_run_starts_the_full_run_and_the_demo_under_its_flag() -> void:
 	_app.demo = false
 	_app.show_screen("run_setup", true)
 	_press(tr("setup.start"))
-	assert_bool(_app.controller.has_village()).is_true()
+	assert_bool(_app.controller.seats.has_village()).is_true()
 	assert_bool(_app.controller.state_copy().identity.is_full()).is_true()
 	assert_int(_app.controller.state_copy().coupons).is_equal(4)
 	_app.demo = true
 	_app.show_screen("run_setup", true)
 	_press(tr("setup.start"))
-	assert_bool(_app.controller.has_village()).is_false()
+	assert_bool(_app.controller.seats.has_village()).is_false()
 	assert_bool(_app.controller.state_copy().identity.is_full()).is_false()
 
 
@@ -58,7 +58,7 @@ func test_continue_shows_only_for_a_run_that_loads() -> void:
 	_app.new_run(SEED, true)
 	assert_bool(_title_has_continue()).is_true()
 	_press(tr("title.continue"))
-	assert_bool(_app.controller.has_village()).is_true()
+	assert_bool(_app.controller.seats.has_village()).is_true()
 	assert_str(_app.switcher.current_id()).is_equal(_app.table_id())
 	# A save and backup that are both damaged offer nothing to continue.
 	for path: String in [SAVE_PATH, SAVE_PATH + SaveService.BACKUP_SUFFIX]:
@@ -71,7 +71,7 @@ func test_continue_picks_up_a_demo_save_as_the_demo() -> void:
 	assert_bool(_title_has_continue()).is_true()
 	_press(tr("title.continue"))
 	assert_bool(_app.controller.has_run()).is_true()
-	assert_bool(_app.controller.has_village()).is_false()
+	assert_bool(_app.controller.seats.has_village()).is_false()
 
 
 func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
@@ -173,10 +173,10 @@ func test_the_summary_names_the_family_that_starved() -> void:
 			seat = event.seat
 	assert_str(dead).is_not_empty()
 	var summary: SetSummaryScreen = _app.show_screen("set_summary", true)
-	var name: String = tr(_app.controller.family_name_key(dead))
+	var name: String = tr(_app.controller.seats.family_name_key(dead))
 	var line: String = "The %s household did not come to the Commons." % name
 	assert_array(summary.fate_lines()).contains_exactly([line])
-	assert_bool(_app.controller.seat_gone(seat)).is_true()
+	assert_bool(_app.controller.seats.seat_gone(seat)).is_true()
 	var dossier: DossierScreen = _app.show_screen("dossier", true)
 	assert_int(dossier.entries(seat).size()).is_equal(0)
 	assert_int(dossier.entries(3 - seat).size()).is_greater(0)

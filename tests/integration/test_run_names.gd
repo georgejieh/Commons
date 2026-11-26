@@ -152,13 +152,13 @@ func test_names_survive_a_save_a_load_and_a_replay() -> void:
 		script.act(controller)
 	var names: Dictionary = controller.state_copy().names.to_dict()
 	assert_bool(names["active"]).is_true()
-	assert_str(controller.player_name()).contains(" ")
+	assert_str(controller.seats.player_name()).contains(" ")
 	var again: RunController = auto_free(RunController.new())
 	again.live_search = false
 	assert_bool(again.continue_saved(_saves, _profile)).is_true()
 	assert_dict(again.state_copy().names.to_dict()).is_equal(names)
-	assert_str(again.player_name()).is_equal(controller.player_name())
-	assert_str(again.seated_full_name(1)).is_equal(controller.seated_full_name(1))
+	assert_str(again.seats.player_name()).is_equal(controller.seats.player_name())
+	assert_str(again.seats.seated_full_name(1)).is_equal(controller.seats.seated_full_name(1))
 
 
 func test_youth_named_mid_run_survive_a_round_trip() -> void:
@@ -265,11 +265,11 @@ func test_introductions_print_full_names_and_the_table_surnames() -> void:
 	controller.live_search = false
 	controller.start(RunRequest.new(RunRequest.FULL, 2468, START_TIME))
 	for seat: int in [1, 2]:
-		var surname: String = tr(controller.seated_name_key(seat))
-		var full: String = controller.seated_full_name(seat)
+		var surname: String = tr(controller.seats.seated_name_key(seat))
+		var full: String = controller.seats.seated_full_name(seat)
 		assert_str(full).ends_with(" " + surname)
 		assert_int(full.split(" ").size()).is_equal(2)
 	var demo: RunController = auto_free(RunController.new())
 	demo.start(RunRequest.new(RunRequest.DEMO, 2468, START_TIME))
-	assert_str(demo.seated_full_name(1)).is_equal(tr(RunStarter.DEMO_RUN.name_keys[1]))
-	assert_str(demo.player_name()).is_equal(BOOK.fallback_surname)
+	assert_str(demo.seats.seated_full_name(1)).is_equal(tr(RunStarter.DEMO_RUN.name_keys[1]))
+	assert_str(demo.seats.player_name()).is_equal(BOOK.fallback_surname)

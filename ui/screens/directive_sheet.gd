@@ -9,18 +9,18 @@ const EYEBROW: String = "directive.eyebrow"
 
 ## "Pair: Rate 3 to 8", or the Rate alone once the type is at the top level.
 static func rate_line(controller: RunController, type: int) -> String:
-	var level: int = controller.hand_level(type)
-	var rate: int = controller.hand_rate(type, level)
-	if level >= controller.max_hand_level():
+	var level: int = controller.figures.hand_level(type)
+	var rate: int = controller.figures.hand_rate(type, level)
+	if level >= controller.figures.max_hand_level():
 		return _tr("directive.rate.top").format({"type": type_name(type), "rate": rate})
-	var next: int = controller.hand_rate(type, level + 1)
+	var next: int = controller.figures.hand_rate(type, level + 1)
 	return _tr("directive.rate").format({"type": type_name(type), "from": rate, "to": next})
 
 
 ## A Rate line while it ticks: the Rate alone, as the type now stands.
 static func ticked(controller: RunController, value: float, type: int) -> String:
 	var key: String = "directive.rate.now"
-	if controller.hand_level(type) >= controller.max_hand_level():
+	if controller.figures.hand_level(type) >= controller.figures.max_hand_level():
 		key = "directive.rate.top"
 	return _tr(key).format({"type": type_name(type), "rate": roundi(value)})
 
@@ -33,8 +33,8 @@ static func type_name(type: int) -> String:
 ## The Rate of each type the Directive raises, as it stands now.
 static func rates(controller: RunController, directive_id: String) -> Array[int]:
 	var now: Array[int] = []
-	for type: int in controller.directive_types(directive_id):
-		now.append(controller.hand_rate(type, controller.hand_level(type)))
+	for type: int in controller.items.directive_types(directive_id):
+		now.append(controller.figures.hand_rate(type, controller.figures.hand_level(type)))
 	return now
 
 
@@ -48,10 +48,10 @@ static func tick(
 	before: Array[int],
 	stagger: float
 ) -> void:
-	var types: Array[int] = controller.directive_types(directive_id)
+	var types: Array[int] = controller.items.directive_types(directive_id)
 	for index: int in mini(types.size(), lines.size()):
 		var type: int = types[index]
-		var after: int = controller.hand_rate(type, controller.hand_level(type))
+		var after: int = controller.figures.hand_rate(type, controller.figures.hand_level(type))
 		var line: Label = lines[index]
 		var from: int = before[index]
 		var shown: Callable = func(value: float) -> String: return ticked(controller, value, type)

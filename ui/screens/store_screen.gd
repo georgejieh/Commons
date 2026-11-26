@@ -93,7 +93,7 @@ var _blocks: Dictionary[String, Control] = {}
 func open(app: DemoApp) -> void:
 	_app = app
 	_slip.quiet = app.arrival.is_running
-	_desk = app.controller.desk(market)
+	_desk = app.controller.store.desk(market)
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.store)
 	column.add_theme_constant_override("separation", ROW_GAP)
 	if market:
@@ -107,7 +107,7 @@ func open(app: DemoApp) -> void:
 	_envelope_stall.setup(app, market, _slip, is_issuing, self, _deck)
 	_envelope_stall.spent.connect(_on_spent)
 	_envelope_stall.settled.connect(_on_envelope_settled)
-	_board.setup(app.controller.cadre_slots(), BOARD_BOX)
+	_board.setup(app.controller.figures.cadre_slots(), BOARD_BOX)
 	_board.empty_line = tr("store.shelf.empty")
 	_sale.setup(app, market, _desk, _board, _campaign_stall.tray, _slip, is_issuing)
 	_sale.sold.connect(_on_sold)
@@ -124,7 +124,7 @@ func open(app: DemoApp) -> void:
 	_deck.setup(app.controller)
 	_deck.closed.connect(_on_deck_closed)
 	_deck.chosen.connect(_on_chosen)
-	_desk_stall.setup(app.controller.mark_desk(market), market, _deck, _slip, is_issuing)
+	_desk_stall.setup(app.controller.store.mark_desk(market), market, _deck, _slip, is_issuing)
 	_shown_coupons = app.controller.state_copy().coupons
 	_shown_resentment = app.controller.state_copy().resentment
 	_refresh()
@@ -179,9 +179,9 @@ func _header_row(app: DemoApp) -> Control:
 	if market:
 		_reform_stall.strip.add_note(StoreNotes.warning(app.controller, NOTE_WIDTH))
 	else:
-		if app.controller.is_rationed():
+		if app.controller.figures.is_rationed():
 			_reform_stall.strip.add_note(StoreNotes.rationing(app.controller))
-		if app.controller.short_supply() > 0:
+		if app.controller.store.short_supply() > 0:
 			_reform_stall.strip.add_note(StoreNotes.short_supply(app.controller))
 	notes.add_child(_reform_stall.strip)
 	top.append(notes)
@@ -324,7 +324,7 @@ func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
 	if is_issuing() or (rank == Ranks.INVALID and not _app.arrival.allows("buy", slot)):
 		return
 	var controller: RunController = _app.controller
-	if rank == Ranks.INVALID and market and controller.needs_rank(_desk.stock()[slot]):
+	if rank == Ranks.INVALID and market and controller.items.needs_rank(_desk.stock()[slot]):
 		var name: String = tr("modifier.%s.name" % _desk.stock()[slot])
 		var then: Callable = func(picked: int) -> void: _buy(slot, panel, picked)
 		_picker.ask(tr("store.pick_rank").format({"name": name}), panel, then)

@@ -19,7 +19,7 @@ static func worst(app: DemoApp, suite: GdUnitTestSuite, named: bool) -> String:
 	var chosen: String = ""
 	if named:
 		var length: Callable = func(id: String) -> int:
-			return app.controller.modifier_name(id).length()
+			return app.controller.texts.modifier_name(id).length()
 		ids.sort_custom(func(a: String, b: String) -> bool: return length.call(a) > length.call(b))
 		chosen = ids[0]
 	else:

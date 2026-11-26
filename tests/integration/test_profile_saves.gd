@@ -264,7 +264,7 @@ func test_a_schema_10_save_resumes_as_a_demo_run() -> void:
 	assert_int(RunStarter.saved_kind(loaded.data)).is_equal(RunRequest.DEMO)
 	var controller: RunController = auto_free(RunController.new())
 	assert_bool(controller.continue_saved(_saves)).is_true()
-	assert_bool(controller.has_village()).is_false()
+	assert_bool(controller.seats.has_village()).is_false()
 	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(11)
 
 

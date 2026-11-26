@@ -145,9 +145,9 @@ func open() -> void:
 	# Over everything at the table; the table's menu still comes to the front when opened.
 	move_to_front()
 	_board.show_cards(
-		controller.player_cards(),
+		controller.table.player_cards(),
 		state.inventory.plot,
-		controller.swap_limit(),
+		controller.table.swap_limit(),
 		_pool,
 		_app.hand,
 		state.wild_ranks

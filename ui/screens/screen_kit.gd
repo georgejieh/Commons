@@ -352,11 +352,11 @@ static func ending_art(ending_id: String) -> Texture2D:
 
 ## A modifier's rules, saying so when a Cadre also pays on your teammate's plays.
 static func rule_text(controller: RunController, modifier_id: String) -> String:
-	var rule: String = controller.modifier_text(modifier_id)
-	if controller.counts_for_teammate(modifier_id):
+	var rule: String = controller.texts.modifier_text(modifier_id)
+	if controller.items.counts_for_teammate(modifier_id):
 		rule += " " + TranslationServer.translate("modifier.counts_for_teammate")
 	# A held Cadre with run state says where it stands (ADR 0021).
-	var standing: String = controller.cadre_standing(modifier_id).line
+	var standing: String = controller.items.cadre_standing(modifier_id).line
 	if not standing.is_empty():
 		rule += " " + standing
 	return rule

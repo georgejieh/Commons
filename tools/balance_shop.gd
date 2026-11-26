@@ -12,12 +12,12 @@ static func visit(controller: RunController, state: RunState) -> BalanceVisit:
 	seen.resentment = state.resentment
 	_store(controller, seen.store)
 	_market(controller, seen.market)
-	seen.can_reroll = controller.desk(true).can_reroll()
+	seen.can_reroll = controller.store.desk(true).can_reroll()
 	return seen
 
 
 static func _store(controller: RunController, offers: Array[BalanceOffer]) -> void:
-	var desk: ShopDesk = controller.desk(false)
+	var desk: ShopDesk = controller.store.desk(false)
 	var directives: Array[String] = desk.directive_stock()
 	for slot: int in directives.size():
 		if desk.can_buy_directive(slot):
@@ -33,19 +33,19 @@ static func _store(controller: RunController, offers: Array[BalanceOffer]) -> vo
 					BalanceOffer.Kind.CADRE, slot, desk.price(slot), false, stock[slot]
 				)
 			)
-	var reforms: ReformShelf = controller.reform_shelf()
+	var reforms: ReformShelf = controller.store.reform_shelf()
 	for slot: int in reforms.stock().size():
 		if reforms.can_buy(slot):
 			offers.append(
 				BalanceOffer.new(BalanceOffer.Kind.REFORM, slot, reforms.price(slot), false)
 			)
-	var envelopes: EnvelopeShelf = controller.envelope_shelf(false)
+	var envelopes: EnvelopeShelf = controller.store.envelope_shelf(false)
 	for slot: int in envelopes.stock().size():
 		if envelopes.can_buy(slot):
 			offers.append(
 				BalanceOffer.new(BalanceOffer.Kind.ENVELOPE, slot, envelopes.price(slot), false)
 			)
-	var campaigns: CampaignShelf = controller.campaign_shelf(false)
+	var campaigns: CampaignShelf = controller.store.campaign_shelf(false)
 	for slot: int in campaigns.stock().size():
 		if campaigns.can_buy(slot):
 			offers.append(
@@ -54,14 +54,14 @@ static func _store(controller: RunController, offers: Array[BalanceOffer]) -> vo
 
 
 static func _market(controller: RunController, offers: Array[BalanceOffer]) -> void:
-	var desk: ShopDesk = controller.desk(true)
+	var desk: ShopDesk = controller.store.desk(true)
 	var stock: Array[String] = desk.stock()
 	for slot: int in stock.size():
 		if desk.can_buy(slot):
 			offers.append(
 				BalanceOffer.new(BalanceOffer.Kind.CADRE, slot, desk.price(slot), true, stock[slot])
 			)
-	var parcels: EnvelopeShelf = controller.envelope_shelf(true)
+	var parcels: EnvelopeShelf = controller.store.envelope_shelf(true)
 	for slot: int in parcels.stock().size():
 		if parcels.can_buy(slot):
 			offers.append(
@@ -111,7 +111,7 @@ static func keep_from(controller: RunController, shelf: EnvelopeShelf) -> int:
 			break
 	var out: int = RunController.NO_CARD
 	if pick != RunController.TAKE_NOTHING and shelf.is_deck_card(pick):
-		out = _weakest_slot(controller.deck_cards())
+		out = _weakest_slot(controller.store.deck_cards())
 	return controller.envelope_pick(pick, out)
 
 

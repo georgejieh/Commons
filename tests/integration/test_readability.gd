@@ -60,7 +60,7 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 	for screen_id: String in ["store", "black_market"]:
 		var store: StoreScreen = await _open(screen_id)
 		var counter: HBoxContainer = store.get("_counter")
-		var stock: Array[String] = _app.controller.desk(screen_id == "black_market").stock()
+		var stock: Array[String] = _app.controller.store.desk(screen_id == "black_market").stock()
 		for slot: int in stock.size():
 			var card: Control = counter.get_child(slot)
 			var rules: Array[Node] = card.find_children("*", "KeywordText", true, false)
@@ -341,7 +341,7 @@ func test_whole_multiples_print_without_a_decimal() -> void:
 	assert_str(ModifierDef.multiple(2.0)).is_equal("2")
 	assert_str(ModifierDef.multiple(1.5)).is_equal("1.5")
 	var card: CardInstance = Deck.new().card(20)
-	var caption: String = _app.controller.envelope_card_text(
+	var caption: String = _app.controller.texts.envelope_card_text(
 		EnvelopeShelf.KIND_MODEL, "caption", card
 	)
 	assert_str(caption).contains("2 times")

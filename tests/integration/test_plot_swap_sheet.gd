@@ -94,7 +94,7 @@ func test_the_board_shows_real_cards_in_rank_order_with_their_marks() -> void:
 	var table: TableScreen = await _to_swap()
 	var board: SwapBoard = _sheet(table).board()
 	var hand: Array[int] = board.place_ids(SwapBoard.Place.HAND)
-	assert_int(hand.size()).is_equal(_app.controller.player_cards().size())
+	assert_int(hand.size()).is_equal(_app.controller.table.player_cards().size())
 	for index: int in range(1, hand.size()):
 		var before: CardInstance = _card(hand[index - 1])
 		var after: CardInstance = _card(hand[index])
@@ -143,7 +143,7 @@ func test_a_click_on_each_side_trades_and_undo_takes_it_back() -> void:
 	sheet.swap_button().pressed.emit()
 	assert_bool(sheet.is_open()).is_false()
 	var held: Array[int] = []
-	for card: CardInstance in _app.controller.player_cards():
+	for card: CardInstance in _app.controller.table.player_cards():
 		held.append(card.id())
 	assert_array(held).contains([taken])
 	assert_array(held).not_contains([given])
@@ -195,7 +195,7 @@ func test_with_reduced_motion_the_cards_stand_at_once() -> void:
 
 
 func _card(card_id: int) -> CardInstance:
-	for card: CardInstance in _app.controller.player_cards():
+	for card: CardInstance in _app.controller.table.player_cards():
 		if card.id() == card_id:
 			return card
 	return null

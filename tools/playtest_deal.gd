@@ -42,7 +42,9 @@ func table() -> void:
 		await _picture("table_set_aside_%d" % index)
 	var strip: Object = _part("_debuffs")
 	strip.call("show_debuffs", controller)
-	var line: String = tr("table.set_aside").format({"cards": controller.call("set_aside_names")})
+	var line: String = tr("table.set_aside").format(
+		{"cards": view(controller, "table").call("set_aside_names")}
+	)
 	var lines: Object = member(strip, "_lines")
 	# The slip spells out each rule only when the full form fits; at the largest text sizes
 	# it names the rules alone, and the set-aside line goes with the boss's rule.

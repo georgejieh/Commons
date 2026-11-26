@@ -54,6 +54,12 @@ static func member(object: Object, name: String) -> Variant:
 	return object.get(name)
 
 
+## The controller's view called name (texts, figures, table, items, store or seats), which
+## its queries are read through, failing the walk when it has none.
+static func view(controller: Object, name: String) -> Object:
+	return member(controller, name)
+
+
 ## Calls object's method called name with arguments, failing the walk when it has none.
 static func invoke(object: Object, name: String, arguments: Array = []) -> Variant:
 	if object == null or not object.has_method(name):

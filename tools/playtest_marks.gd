@@ -77,7 +77,7 @@ func table_deck() -> void:
 
 
 func _desk(screen: Node, sheet: Object) -> void:
-	var desk: Object = _controller().call("mark_desk", false)
+	var desk: Object = view(_controller(), "store").call("mark_desk", false)
 	await _afford(screen, int(desk.call("price")))
 	var stall: Object = member(screen, "_desk_stall")
 	var ticket: Button = stall.get("ticket")
@@ -104,7 +104,7 @@ func _desk(screen: Node, sheet: Object) -> void:
 ## The deck stall's first card put in the deck in place of the first card it may replace.
 func _exchange(screen: Node, sheet: Object) -> void:
 	var controller: Object = _controller()
-	var stall: Object = controller.call("deck_stall")
+	var stall: Object = view(controller, "store").call("deck_stall")
 	await _afford(screen, int(stall.call("price", 0)))
 	var goods: Object = member(screen, "_deck_goods")
 	var buy: Button = goods.call("card_button", 0)

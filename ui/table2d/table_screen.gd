@@ -165,10 +165,12 @@ func open(app: DemoApp) -> void:
 	# The moments layer lies over everything, seats included, so a takeover dims it all.
 	move_child(_moments, -1)
 	_speech.setup(_seats, app)
-	_board.setup(_controller.cadre_slots(), _board.size)
+	_board.setup(_controller.figures.cadre_slots(), _board.size)
 	# Wang's slip stands where the board is through the arrival, which holds no Cadre.
 	_board.visible = not app.arrival.is_running()
-	_need_panel.setup(_controller.base_need(), app.need_cap(), _controller.lie_cost())
+	_need_panel.setup(
+		_controller.figures.base_need(), app.need_cap(), _controller.figures.lie_cost()
+	)
 	_hand_view.setup(_hand, _pool)
 	_commands.setup(_controller, _hand, _hand_view, _actions, _need_panel, _player)
 	_commands.open_rules = _cheat_sheet.toggle.bind(_controller)
@@ -226,7 +228,7 @@ func open(app: DemoApp) -> void:
 	_still(false)
 	_replaying = false
 	_kept.after_replay(_controller.awaiting() == RunController.AWAIT_SWAP)
-	_hud.sync(_controller.state_copy(), _controller.target())
+	_hud.sync(_controller.state_copy(), _controller.figures.target())
 
 
 ## Plays every queued event at once, skipping the pacing.
@@ -396,7 +398,7 @@ func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
 	var state: RunState = _controller.state_copy()
-	_hud.sync(state, _controller.target())
+	_hud.sync(state, _controller.figures.target())
 	_dressing.post_notice(DreadDressing.notice_key(state.year, state.set_index + state.round_index))
 	_board.show_cadres(_controller)
 	# A row of empty slots says nothing: the board stands once a Cadre is held.
@@ -408,7 +410,7 @@ func _on_drained() -> void:
 	_clear_for_sheet()
 	if awaiting == RunController.AWAIT_NEED:
 		var pool: int = _controller.state_copy().commons_pool
-		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.audit_chance())
+		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.figures.audit_chance())
 	_hand.refresh()
 	_hand_view.show_cards()
 	_campaigns.refresh()
@@ -507,7 +509,7 @@ func _count_cards(seat: int, change: int) -> void:
 
 
 func _refresh_seats() -> void:
-	var view: SeatView = _controller.seat_view()
+	var view: SeatView = _controller.table.seat_view()
 	var landlord: int = _controller.state_copy().landlord_seat
 	for seat: int in _seats:
 		var panel: SeatPanel = _seats[seat]
@@ -527,7 +529,7 @@ func _refresh_seats() -> void:
 func _refresh_status() -> void:
 	var state: RunState = _controller.state_copy()
 	_hud.show_state(state, _app.max_rounds())
-	_ledger.show_books(state, _controller.target())
+	_ledger.show_books(state, _controller.figures.target())
 
 
 func _place(node: Control, at: Vector2, extent: Vector2) -> void:
