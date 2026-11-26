@@ -14,28 +14,28 @@ const FLY_TIME: float = 0.34
 const FLY_SCALE: float = 0.9
 
 var tray: CampaignTray = CampaignTray.new()
+## The offers, one CounterPanel each, for the counter row.
+var offers: HBoxContainer = HBoxContainer.new()
 
 var _app: DemoApp
 var _market: bool = false
 var _shelf: CampaignShelf
 var _slip: DetailSlip
-var _screen_busy: Callable = Callable()
-## The offers, one CounterPanel each, for the counter row.
-var _offers: HBoxContainer = HBoxContainer.new()
+var _screen_busy: Callable
 var _flier: CampaignLeaflet = CampaignLeaflet.new()
 var _busy: bool = false
 
 
-func setup(app: DemoApp, market: bool, screen_busy: Callable, slip: DetailSlip) -> void:
-	_app = app
-	_market = market
-	_shelf = app.controller.store.campaign_shelf(market)
-	_screen_busy = screen_busy
-	_slip = slip
-	_offers.add_theme_constant_override("separation", 12)
+func setup(shop: StallContext) -> void:
+	_app = shop.app
+	_market = shop.market
+	_shelf = shop.controller.store.campaign_shelf(shop.market)
+	_screen_busy = shop.busy
+	_slip = shop.slip
+	offers.add_theme_constant_override("separation", 12)
 	tray.side_buttons = true
 	tray.compact = true
-	tray.setup(app.controller)
+	tray.setup(shop.controller)
 	tray.changed.connect(_show_prompt)
 	tray.used.connect(_on_used)
 	_flier.top_level = true
@@ -45,21 +45,16 @@ func setup(app: DemoApp, market: bool, screen_busy: Callable, slip: DetailSlip) 
 	tray.add_child(_flier)
 
 
-## The counter row's Campaign offers.
-func offers() -> HBoxContainer:
-	return _offers
-
-
 func is_busy() -> bool:
 	return _busy
 
 
 ## Rebuilds the offer and the tray from the counter.
 func show_offer() -> void:
-	ScreenKit.clear(_offers)
+	ScreenKit.clear(offers)
 	var stock: Array[String] = _shelf.stock()
 	for slot: int in stock.size():
-		_offers.add_child(_offer(slot, stock[slot]))
+		offers.add_child(_offer(slot, stock[slot]))
 	tray.enabled = not _busy
 	tray.refresh()
 	_show_prompt()
@@ -67,9 +62,9 @@ func show_offer() -> void:
 
 ## The offer's panel in slot, or null.
 func panel(slot: int) -> CounterPanel:
-	if slot < 0 or slot >= _offers.get_child_count():
+	if slot < 0 or slot >= offers.get_child_count():
 		return null
-	return _offers.get_child(slot) as CounterPanel
+	return offers.get_child(slot) as CounterPanel
 
 
 func _offer(slot: int, campaign_id: String) -> CounterPanel:
@@ -108,7 +103,7 @@ func _describe(described: CounterPanel) -> void:
 
 ## Buys the offer and flies its leaflet into the tray's next place.
 func _buy(slot: int, offered: CounterPanel) -> void:
-	if _busy or (_screen_busy.is_valid() and _screen_busy.call()):
+	if _busy or _screen_busy.call():
 		return
 	var held: int = _app.controller.items.held_campaigns().size()
 	var from: Vector2 = offered.global_position

@@ -115,7 +115,8 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 func test_selling_clears_no_room_on_the_counter_in_the_same_visit() -> void:
 	_hold(RunReforms.cadre_slots(_loop().state))
 	var store: StoreScreen = await _open("store")
-	var counter: HBoxContainer = store.get("_counter")
+	var cadres: CadreCounter = store.get("_cadres")
+	var counter: HBoxContainer = cadres.row
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	assert_str(buy.text).is_equal(tr("store.buy.full"))
 	var tile: Control = _tiles(store)[0]

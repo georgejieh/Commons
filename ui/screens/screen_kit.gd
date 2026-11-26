@@ -61,13 +61,17 @@ const MIN_BUTTON_WIDTH: int = 260
 
 
 ## A full-screen page over a backdrop, or over paper when there is none, holding a
-## column.
-static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
+## column. A backdrop is tinted by tint and darkened under the column by dim.
+static func page(
+	root: Control, backdrop: Texture2D = null, dim: Color = SHADE, tint: Color = Color.WHITE
+) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.add_child(cover(backdrop if backdrop != null else ART.paper))
+	var art: TextureRect = cover(backdrop if backdrop != null else ART.paper)
+	art.modulate = tint
+	root.add_child(art)
 	if backdrop != null:
 		root.theme = _halo_theme()
-		root.add_child(shade(SHADE))
+		root.add_child(shade(dim))
 	var margin: MarginContainer = margins(PAGE_MARGIN, PAGE_MARGIN)
 	root.add_child(margin)
 	var column: VBoxContainer = VBoxContainer.new()

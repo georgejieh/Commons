@@ -30,7 +30,7 @@ var _desk: ShopDesk
 ## True while an issue is acted out: no second one, and the screen holds its rerolls.
 var _busy: bool = false
 ## The screen's own purchase in progress, which holds this row too.
-var _screen_busy: Callable = Callable()
+var _screen_busy: Callable
 var _seal: InkSeal = InkSeal.new()
 
 
@@ -38,10 +38,10 @@ func _init() -> void:
 	add_theme_constant_override("separation", 16)
 
 
-func setup(controller: RunController, desk: ShopDesk, screen_busy: Callable) -> void:
-	_controller = controller
-	_desk = desk
-	_screen_busy = screen_busy
+func setup(shop: StallContext) -> void:
+	_controller = shop.controller
+	_desk = shop.desk
+	_screen_busy = shop.busy
 	_seal.prepare(tr("directive.issued"), ScreenKit.RED, SEAL_WIDTH)
 	# Above the documents and out of the row's layout.
 	_seal.top_level = true
@@ -120,7 +120,7 @@ func _document(slot: int, directive_id: String) -> Control:
 func _issue(
 	slot: int, directive_id: String, panel: Control, lines: Array[Label], buy: Control, name: Label
 ) -> void:
-	if _busy or (_screen_busy.is_valid() and _screen_busy.call()):
+	if _busy or _screen_busy.call():
 		return
 	var before: Array[int] = DirectiveSheet.rates(_controller, directive_id)
 	if _controller.directive(slot) != RunController.OK:

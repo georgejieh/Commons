@@ -20,27 +20,20 @@ var _desk: ShopDesk
 var _board: NoticeBoard
 var _tray: CampaignTray
 var _slip: DetailSlip
-var _busy: Callable = Callable()
+var _busy: Callable
 var _tags: Dictionary[Control, SellTag] = {}
 
 
-func setup(
-	app: DemoApp,
-	market: bool,
-	desk: ShopDesk,
-	board: NoticeBoard,
-	tray: CampaignTray,
-	slip: DetailSlip,
-	busy: Callable
-) -> void:
-	_app = app
-	_market = market
-	_desk = desk
+## Offers what board and tray hold.
+func setup(shop: StallContext, board: NoticeBoard, tray: CampaignTray) -> void:
+	_app = shop.app
+	_market = shop.market
+	_desk = shop.desk
 	_board = board
 	_tray = tray
-	_slip = slip
-	_busy = busy
-	app.controller.event_emitted.connect(_on_event)
+	_slip = shop.slip
+	_busy = shop.busy
+	shop.controller.event_emitted.connect(_on_event)
 	tray.refreshed.connect(refresh)
 
 
@@ -98,7 +91,7 @@ func _index(paper: Control, campaign: bool) -> int:
 
 func _sell(paper: Control, campaign: bool) -> void:
 	# The arrival teaches buying; it refuses a sale as it refuses any step it is not on.
-	if (_busy.is_valid() and bool(_busy.call())) or not _app.arrival.attempt("sell"):
+	if bool(_busy.call()) or not _app.arrival.attempt("sell"):
 		return
 	var index: int = _index(paper, campaign)
 	if campaign:

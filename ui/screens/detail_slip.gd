@@ -55,6 +55,14 @@ func show_for(anchor: Control, title: String, rule: String, above: bool = true) 
 	_place()
 
 
+## Explains control, title over rule, while it is hovered or holds the focus.
+func follow(control: Control, title: String, rule: String) -> void:
+	control.mouse_entered.connect(show_for.bind(control, title, rule))
+	control.focus_entered.connect(show_for.bind(control, title, rule))
+	control.mouse_exited.connect(hide_for.bind(control))
+	control.focus_exited.connect(hide_for.bind(control))
+
+
 ## Hides the slip if it is explaining anchor.
 func hide_for(anchor: Control) -> void:
 	if _anchor == anchor:

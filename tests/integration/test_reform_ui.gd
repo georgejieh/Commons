@@ -102,7 +102,8 @@ func test_enacting_stamps_holds_purchases_and_pins_the_decree() -> void:
 	assert_str(stall.seal().word()).is_equal(tr("reform.enacted").to_upper())
 	# Nothing else is bought while the decree is in the air.
 	var cadres: int = _app.controller.state_copy().inventory.cadres.size()
-	var counter: HBoxContainer = store.get("_counter")
+	var counter_stall: CadreCounter = store.get("_cadres")
+	var counter: HBoxContainer = counter_stall.row
 	var cadre_buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	cadre_buy.pressed.emit()
 	var campaigns: CampaignStall = store.get("_campaign_stall")

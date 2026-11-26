@@ -22,17 +22,18 @@ var strip: ReformStrip = ReformStrip.new()
 var _app: DemoApp
 var _shelf: ReformShelf = null
 var _slip: DetailSlip
-var _screen_busy: Callable = Callable()
+var _screen_busy: Callable
 var _seal: InkSeal = InkSeal.new()
 var _busy: bool = false
 
 
-func setup(app: DemoApp, slip: DetailSlip, screen_busy: Callable, offered: bool) -> void:
-	_app = app
-	_slip = slip
-	_screen_busy = screen_busy
-	if offered:
-		_shelf = app.controller.store.reform_shelf()
+## The black market enacts no Reform: there the stall only shows the strip.
+func setup(shop: StallContext) -> void:
+	_app = shop.app
+	_slip = shop.slip
+	_screen_busy = shop.busy
+	if not shop.market:
+		_shelf = shop.controller.store.reform_shelf()
 	offers.add_theme_constant_override("separation", 12)
 	strip.described.connect(_describe_held)
 	strip.left.connect(_slip.hide_for)
@@ -111,7 +112,7 @@ func _describe_held(tag: Control, reform_id: String) -> void:
 
 ## Enacts the offer and acts it out: stamped, then flown up onto the strip.
 func _buy(slot: int, offered: CounterPanel) -> void:
-	if _busy or (_screen_busy.is_valid() and _screen_busy.call()):
+	if _busy or _screen_busy.call():
 		return
 	var held: int = _app.controller.items.held_reforms().size()
 	if _app.controller.reform(slot) != RunController.OK:

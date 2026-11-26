@@ -19,27 +19,21 @@ var _app: DemoApp
 var _market: bool = false
 var _shelf: EnvelopeShelf
 var _slip: DetailSlip
-var _screen_busy: Callable = Callable()
+var _screen_busy: Callable
 var _host: Control
 var _deck: DeckSheet
 var _overlay: EnvelopeOverlay = null
 
 
-func setup(
-	app: DemoApp,
-	market: bool,
-	slip: DetailSlip,
-	screen_busy: Callable,
-	host: Control,
-	deck: DeckSheet
-) -> void:
-	_app = app
-	_market = market
-	_shelf = app.controller.store.envelope_shelf(market)
-	_slip = slip
-	_screen_busy = screen_busy
+## An envelope bought opens over host.
+func setup(shop: StallContext, host: Control) -> void:
+	_app = shop.app
+	_market = shop.market
+	_shelf = shop.controller.store.envelope_shelf(shop.market)
+	_slip = shop.slip
+	_screen_busy = shop.busy
 	_host = host
-	_deck = deck
+	_deck = shop.deck
 	offers.add_theme_constant_override("separation", 12)
 
 
@@ -105,7 +99,7 @@ func _describe(described: CounterPanel) -> void:
 
 ## Buys the envelope and opens it over the page, from where its offer stood.
 func _buy(slot: int, offered: CounterPanel) -> void:
-	if is_busy() or (_screen_busy.is_valid() and _screen_busy.call()):
+	if is_busy() or _screen_busy.call():
 		return
 	var from: Rect2 = offered.get_global_rect()
 	if _app.controller.envelope_buy(slot, _market) != RunController.OK:

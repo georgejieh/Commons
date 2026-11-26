@@ -171,11 +171,12 @@ func test_the_rank_picker_opens_on_the_screen() -> void:
 		_loop().visit.market.set("_stock", offered)
 		var market: StoreScreen = _app.show_screen("black_market", true)
 		await await_idle_frame()
-		var counter: HBoxContainer = market.get("_counter")
+		var market_cadres: CadreCounter = market.get("_cadres")
+		var counter: HBoxContainer = market_cadres.row
 		var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 		buy.pressed.emit()
 		await await_idle_frame()
-		var picker: RankPicker = market.get("_picker")
+		var picker: RankPicker = market_cadres.picker
 		assert_bool(picker.is_open()).is_true()
 		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
 		assert_bool(screen.encloses(picker.get_global_rect())).is_true()

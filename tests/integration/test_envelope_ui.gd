@@ -133,7 +133,8 @@ func test_buying_opens_it_and_holds_every_other_purchase() -> void:
 	assert_bool(store.is_issuing()).is_true()
 	assert_bool(overlay.figure().visible).is_true()
 	var cadres: int = _app.controller.state_copy().inventory.cadres.size()
-	var counter: HBoxContainer = store.get("_counter")
+	var counter_stall: CadreCounter = store.get("_cadres")
+	var counter: HBoxContainer = counter_stall.row
 	var cadre_buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	cadre_buy.pressed.emit()
 	var reroll: Button = store.get("_reroll")

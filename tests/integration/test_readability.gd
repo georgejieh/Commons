@@ -59,7 +59,8 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 	loop.visit.market.set("_stock", offered)
 	for screen_id: String in ["store", "black_market"]:
 		var store: StoreScreen = await _open(screen_id)
-		var counter: HBoxContainer = store.get("_counter")
+		var cadres: CadreCounter = store.get("_cadres")
+		var counter: HBoxContainer = cadres.row
 		var stock: Array[String] = _app.controller.store.desk(screen_id == "black_market").stock()
 		for slot: int in stock.size():
 			var card: Control = counter.get_child(slot)
@@ -169,7 +170,8 @@ func test_card_marks_sit_in_the_strip_a_fan_leaves_showing() -> void:
 func test_the_rank_picker_stands_over_a_scrim() -> void:
 	_to_store()
 	var store: StoreScreen = await _open("black_market")
-	var picker: RankPicker = store.get("_picker")
+	var cadres: CadreCounter = store.get("_cadres")
+	var picker: RankPicker = cadres.picker
 	picker.ask("Pick", store, func(_rank: int) -> void: pass)
 	await await_idle_frame()
 	var scrim: Scrim = picker.scrim()

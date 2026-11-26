@@ -309,7 +309,7 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 
 
 func _within(button: Button, stall: CampaignStall) -> bool:
-	var offers: Control = stall.get("_offers")
+	var offers: Control = stall.offers
 	return offers.is_ancestor_of(button)
 
 
