@@ -226,18 +226,18 @@ func _moment_frames(table: Node) -> void:
 	await tree.create_timer(2.0).timeout
 	var controller: Object = _controller()
 	hud.call("sync", view(controller, "run"), view(controller, "figures").call("target"))
-	var tally: Object = moments.get("tally")
-	tally.call("show_score", 54.0, 7.0, 1.5, 567.0, 1.0)
-	for frame: int in 4:
-		await _snap("moment_tally_%d" % frame)
-	await tree.create_timer(2.0).timeout
-	# The same sum acted out as a play scores: the cards' Grain, the Rate and Zeal landing,
-	# a change to Zeal firing with its tag, then the total rolling and stamped.
 	var scored: RunEvent = RunEvent.new(RunEvent.Type.PLAY_SCORED, 0, 0, 567.0)
 	scored.grain = 54.0
 	scored.rate = 7.0
 	scored.zeal = 1.5
 	var sequence: Object = moments.get("sequence")
+	# The whole sum at once, as a replayed play shows it.
+	sequence.call("play", scored, 0.0)
+	for frame: int in 4:
+		await _snap("moment_tally_%d" % frame)
+	await tree.create_timer(2.0).timeout
+	# The same sum acted out as a play scores: the cards' Grain, the Rate and Zeal landing,
+	# a change to Zeal firing with its tag, then the total rolling and stamped.
 	sequence.call("play", scored, 1.0)
 	for frame: int in 8:
 		await _snap("moment_score_%d" % frame)

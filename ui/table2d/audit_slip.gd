@@ -7,9 +7,6 @@ extends PanelContainer
 
 const WIDTH: float = 520.0
 const SEAL: float = 34.0
-const CLEAR: Color = Color("8a745c")
-const HONEST: Color = Color("3f6338")
-const CAUGHT: Color = Color("9e1b16")
 const ROWS: int = 2
 
 ## Where the slip's middle sits.
@@ -35,7 +32,7 @@ func _ready() -> void:
 	for _index: int in ROWS:
 		var claim: Label = ScreenKit.label("", 24)
 		claim.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var paid: Label = ScreenKit.label("", 26, HONEST)
+		var paid: Label = ScreenKit.label("", 26, ScreenKit.COUPON)
 		# A wrapping label in a row shrinks to one letter a line.
 		claim.autowrap_mode = TextServer.AUTOWRAP_OFF
 		paid.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -96,32 +93,32 @@ func claim_count() -> int:
 
 
 ## A seat's die missed the audit faces: its row says so quietly, before it is paid.
-func unchecked(seat: int) -> void:
+func mark_unchecked(seat: int) -> void:
 	var row: int = _seats.find(seat)
 	if row < 0 or _verdicts.has(seat):
 		return
 	_results[row].text = tr("audit.clear")
-	_results[row].add_theme_color_override("font_color", CLEAR)
-	_tint(row, CLEAR)
+	_results[row].add_theme_color_override("font_color", ScreenKit.QUIET)
+	_tint(row, ScreenKit.QUIET)
 
 
 ## A seat's claim was checked: lied is whether it was above the fair share.
-func audited(seat: int, lied: bool) -> void:
+func set_verdict(seat: int, lied: bool) -> void:
 	_verdicts[seat] = "audit.caught" if lied else "audit.honest"
 
 
 ## A seat was paid: its seal lands on the verdict, and the payment is written in.
-func paid(seat: int, amount: int) -> void:
+func pay(seat: int, amount: int) -> void:
 	var row: int = _seats.find(seat)
 	if row < 0:
 		return
 	var key: String = _verdicts.get(seat, "audit.clear")
 	_results[row].text = tr(key)
-	var color: Color = CLEAR
+	var color: Color = ScreenKit.QUIET
 	if key == "audit.caught":
-		color = CAUGHT
+		color = ScreenKit.SEAL
 	elif key == "audit.honest":
-		color = HONEST
+		color = ScreenKit.COUPON
 	_tint(row, color)
 	_results[row].add_theme_color_override("font_color", color)
 	_paid[row].text = tr("audit.paid").format({"amount": Strings.score(amount)})

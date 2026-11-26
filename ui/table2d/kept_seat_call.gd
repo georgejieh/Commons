@@ -1,5 +1,5 @@
 class_name KeptSeatCall
-extends Node
+extends RefCounted
 ## Calls out a round that begins with no bidding, the moment it begins: "No bidding",
 ## with who keeps the landlord seat and why under it, from that seat's side. The event
 ## queue waits for the banner. When the table opens on such a round already under way,
@@ -51,6 +51,11 @@ func _say() -> void:
 	var seat: int = _reader.landlord
 	var line: String = _reader.line(_names)
 	var seconds: float = _callout.shout(
-		_reader.word(), Callout.Tier.CUT_IN, ScreenKit.RED, line, _faces.get(seat), seat != 1
+		_reader.word(),
+		Callout.Tier.CUT_IN,
+		ScreenKit.RED,
+		line,
+		_faces.get(seat),
+		seat != Seats.RIGHT
 	)
 	_player.hold(seconds)

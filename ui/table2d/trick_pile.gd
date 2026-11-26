@@ -85,7 +85,7 @@ func show_play(
 	)
 	corner.x = clampf(corner.x, LEAN, maxf(LEAN, size.x - span - LEAN))
 	# The cards lie as the reading reads them, low to high, whatever order they came in.
-	var lying: Array[int] = PlayOrder.arrange(cards, reading)
+	var lying: Array[int] = PlayOrder.arrange(cards, reading, stands)
 	for order: int in cards.size():
 		var index: int = lying[order]
 		var view: CardView = _pool.acquire()
@@ -116,16 +116,16 @@ func show_play(
 func sweep(toward: Vector2) -> void:
 	if _views.is_empty():
 		return
-	if _motion.reduced:
+	if _motion.still:
 		clear()
 		return
-	var seconds: float = _motion.duration(TableMotion.PRESETS.sweep)
+	var seconds: float = _motion.duration(UiMotion.PRESETS.sweep)
 	var last: Tween = null
 	for view: CardView in _views:
 		var target: Vector2 = view.position + (toward - view.global_position) * SWEEP_REACH
 		last = view.tween().set_parallel(true)
-		last.set_trans(TableMotion.PRESETS.sweep_transition)
-		last.set_ease(TableMotion.PRESETS.sweep_ease)
+		last.set_trans(UiMotion.PRESETS.sweep_transition)
+		last.set_ease(UiMotion.PRESETS.sweep_ease)
 		last.tween_property(view, "position", target, seconds)
 		last.tween_property(view, "scale", Vector2.ONE * LAUNCH_SCALE, seconds)
 		last.tween_property(view, "modulate:a", 0.0, seconds)
@@ -170,7 +170,7 @@ func top_views() -> Array[CardView]:
 ## Moves a card from start, a point on screen, to rest on the pile, growing from launch
 ## size, a beat after the card before it. Under reduced motion it lands at once.
 func _fly(view: CardView, start: Vector2, rest: Vector2, angle: float, order: int) -> Tween:
-	if _motion.reduced:
+	if _motion.still:
 		view.position = rest
 		view.rotation = angle
 		view.scale = Vector2.ONE * PLAY_SCALE
@@ -180,8 +180,8 @@ func _fly(view: CardView, start: Vector2, rest: Vector2, angle: float, order: in
 	view.scale = Vector2.ONE * LAUNCH_SCALE
 	var tween: Tween = view.tween().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	var seconds: float = _motion.duration(TableMotion.PRESETS.fly_time)
-	var delay: float = order * TableMotion.PRESETS.deal_stagger * 0.5
+	var seconds: float = _motion.duration(UiMotion.PRESETS.fly_time)
+	var delay: float = order * UiMotion.PRESETS.deal_stagger * 0.5
 	tween.tween_property(view, "position", rest, seconds).set_delay(delay)
 	tween.tween_property(view, "rotation", angle, seconds).set_delay(delay)
 	tween.tween_property(view, "scale", Vector2.ONE * PLAY_SCALE, seconds).set_delay(delay)
@@ -190,17 +190,17 @@ func _fly(view: CardView, start: Vector2, rest: Vector2, angle: float, order: in
 
 ## How far below the pile's top any laid card can reach, in pixels: the lowest a play
 ## lands, scattered, at its most turned and at its longest, with its cards turned too. A
-## card only ever hops up from there, so nothing laid on the pile is lower (P5.2a).
+## card only ever hops up from there, so nothing laid on the pile is lower.
 func reach_below() -> float:
 	var card_size: Vector2 = CARD * PLAY_SCALE
 	var along: float = maxf(0.0, size.x - card_size.x - 2.0 * LEAN)
 	return (size.y + card_size.y) / 2.0 + SCATTER.y + along * sin(PLAY_TILT) + LEAN
 
 
-## Hops a card of the top play over seconds as its Grain is counted (P5.2a).
+## Hops a card of the top play over seconds as its Grain is counted.
 func tick_card(card_id: int, seconds: float) -> void:
 	var view: CardView = _view_of(card_id)
-	if view != null and not _motion.reduced and seconds > 0.0:
+	if view != null and not _motion.still and seconds > 0.0:
 		_hop(view, seconds)
 
 
@@ -211,7 +211,7 @@ func flash_card(card_id: int, seconds: float) -> Rect2:
 	var view: CardView = _view_of(card_id)
 	if view == null:
 		return Rect2()
-	if not _motion.reduced and seconds > 0.0:
+	if not _motion.still and seconds > 0.0:
 		var rest: Color = view.modulate
 		var flash: Tween = view.tween()
 		flash.tween_property(

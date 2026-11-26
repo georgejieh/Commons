@@ -92,7 +92,7 @@ func test_sitting_out_passes_to_the_tricks_end_at_a_faster_step() -> void:
 	player.played.connect(_count.bind(seen, sit_out, player, normal))
 	table.actions().sit_out.pressed.emit()
 	assert_bool(sit_out.is_active()).is_true()
-	assert_float(player.step).is_equal_approx(normal * TableMotion.PRESETS.sit_out_scale, 0.0001)
+	assert_float(player.step).is_equal_approx(normal * UiMotion.PRESETS.sit_out_scale, 0.0001)
 	assert_str(table.actions().reading.text).is_equal(tr("table.sitting_out"))
 	await _until(_sat_out_to_the_end.bind(seen, sit_out))
 	await _until(player.is_idle)
@@ -191,7 +191,7 @@ func _count(
 		return
 	if (
 		sit_out.is_active()
-		and not is_equal_approx(player.step, normal * TableMotion.PRESETS.sit_out_scale)
+		and not is_equal_approx(player.step, normal * UiMotion.PRESETS.sit_out_scale)
 	):
 		seen["fast"] = false
 	if round_event.seat != 0:

@@ -49,9 +49,11 @@ func _ready() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_pass_row.add_child(button)
 	_turn_row.add_child(_pass_row)
-	for pair: Array in [[hint, "action.hint"], [sort, "action.sort"], [rules, "action.rules"]]:
-		var button: Button = pair[0]
-		_button(button, pair[1], CommonsTheme.GHOST)
+	var toggles: Array[Button] = [hint, sort, rules]
+	var keys: Array[String] = ["action.hint", "action.sort", "action.rules"]
+	for index: int in toggles.size():
+		var button: Button = toggles[index]
+		_button(button, keys[index], CommonsTheme.GHOST)
 		button.add_theme_font_size_override("font_size", TextSize.px(TOGGLE_SIZE))
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_toggles.add_child(button)

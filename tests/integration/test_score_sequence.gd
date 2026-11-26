@@ -67,7 +67,7 @@ func test_each_change_fires_in_order_with_its_tag_and_sound() -> void:
 	var event: RunEvent = _scored("555", ["red_banner", "canteen", "ration_cut"])
 	var kinds: Array[int] = []
 	var tags: Array[String] = []
-	moments.sequence.beat.connect(
+	moments.sequence.beat_began.connect(
 		func(kind: int, _at: int) -> void:
 			kinds.append(kind)
 			for label: Label in moments.fx.shown_tags():
@@ -107,7 +107,7 @@ func test_a_tag_says_what_a_step_added() -> void:
 		ScoreStep.Figure.ZEAL, ScoreStep.Source.MODIFIER, ScoreStep.Op.ADD, -0.5, 1.5, 1.0
 	)
 	assert_str(ScoreSequence.tag_text(cut)).is_equal("−0.5 " + tr("keyword.zeal.name"))
-	assert_bool(ScoreSequence.ink_of(cut) == ScoreSequence.LOSS).is_true()
+	assert_bool(ScoreSequence.ink_of(cut) == ScreenKit.LOSS).is_true()
 
 
 func test_the_table_waits_for_the_sequence_and_a_click_hurries_it() -> void:
@@ -150,9 +150,9 @@ func test_sitting_out_plays_a_villagers_score_at_the_hurried_pace() -> void:
 	event.seat = 1
 	var full: float = moments.sequence.play(event, 1.0)
 	moments.sequence.stop()
-	moments.sequence.hurry_villagers = true
+	moments.sequence.hurrying_villagers = true
 	var hurried: float = moments.sequence.play(event, 1.0)
-	assert_float(hurried).is_equal_approx(full * TableMotion.PRESETS.score_hurried, 0.01)
+	assert_float(hurried).is_equal_approx(full * UiMotion.PRESETS.score_hurried, 0.01)
 	moments.sequence.stop()
 	# The player's own play is never hurried for it.
 	var own: RunEvent = _scored("999", ["canteen"], HOLDER)
@@ -189,7 +189,7 @@ func test_the_pace_scales_it_and_a_long_chain_speeds_up_within_its_cap() -> void
 	for _index: int in 40:
 		many.append(ten[0])
 	assert_float(ScoreBeats.lay_out(many, 1.0).total()).is_less_equal(
-		TableMotion.PRESETS.score_most + 0.001
+		UiMotion.PRESETS.score_most + 0.001
 	)
 
 
@@ -202,7 +202,7 @@ func test_reduced_motion_keeps_every_tag_figure_and_sound_and_moves_nothing() ->
 	var tags: Array[String] = []
 	var moved: Array[bool] = [false]
 	var rest: Vector2 = Vector2.ZERO
-	moments.sequence.beat.connect(
+	moments.sequence.beat_began.connect(
 		func(_kind: int, _at: int) -> void:
 			for label: Label in moments.fx.shown_tags():
 				if not tags.has(label.text):

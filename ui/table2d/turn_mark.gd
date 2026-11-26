@@ -1,16 +1,14 @@
 class_name TurnMark
 extends Control
-## A heavy ink frame ruled round the villager whose turn it is (from the owner's playtest
-## of 2026-11-20), so whose turn it is reads at a glance and in grayscale, not only in the
-## wind-up's swell: a bold hand-ruled line on the sheet's outer margin, where nothing is
-## printed, with a notch at its foot pointing down into the table. It follows the events as
-## the table plays them: a bid, a play or a pass hands the turn on, a round's start gives
-## it to the landlord, a won trick to its winner, and when the queue drains it rests where
-## the run waits, on a villager still deciding. On the player's own turn no seat is marked:
-## the action column's prompt and its live Play say it is theirs. It lies wholly on its
-## seat's sheet and never takes a click.
+## A heavy ink frame ruled round the villager whose turn it is, so whose turn it is reads
+## at a glance and in grayscale, not only in the wind-up's swell: a bold hand-ruled line on
+## the sheet's outer margin, where nothing is printed, with a notch at its foot pointing
+## down into the table. It follows the events as the table plays them: a bid, a play or a
+## pass hands the turn on, a round's start gives it to the landlord, a won trick to its
+## winner, and when the queue drains it rests where the run waits, on a villager still
+## deciding. On the player's own turn no seat is marked: the action column's prompt and its
+## live Play say it is theirs. It lies wholly on its seat's sheet and never takes a click.
 
-const INK: Color = Color("1e1a16")
 ## The rule's inset from the sheet's edge and its weight, and the notch's width and depth:
 ## the notch reaches the sheet's edge and no further.
 const INSET: float = 4.0
@@ -95,7 +93,7 @@ func _on_round(event: RoundEvent) -> void:
 func _draw() -> void:
 	var worn: float = BowlGrime.wear()
 	_shape(Rect2(Vector2.ZERO, size).grow(-INSET - WEIGHT / 2.0), worn)
-	var ink: Color = BowlGrime.faded(INK, worn)
+	var ink: Color = BowlGrime.faded(ScreenKit.INK, worn)
 	draw_polyline(_edge, ink, WEIGHT, true)
 	draw_line(_edge[_edge.size() - 1], _edge[0], ink, WEIGHT, true)
 	draw_colored_polygon(_notch, ink)

@@ -1,33 +1,15 @@
 class_name CheatSheet
 extends Control
-## The always-available rules card (P3B.5): every hand type with a small example and its
-## Rate at the run's level for it, naming the level once a Directive has raised it, the
-## rule changes active now, the current rank order, low to high, and while a rank is wild
-## a section on wild cards (ADR 0029). While open it
-## redraws on every run event, so a changed rule shows the frame it changes. A sheet
-## with more rules than the screen has room for scrolls between its heading and Close,
-## never cut off and never drawn smaller (ADR 0034).
+## The always-available rules card: every hand type with a small example and its Rate at
+## the run's level for it, naming the level once a Directive has raised it, the rule
+## changes active now, the current rank order, low to high, and while a rank is wild a
+## section on wild cards (ADR 0029). While open it redraws on every run event, so a changed
+## rule shows the frame it changes. A sheet with more rules than the screen has room for
+## scrolls between its heading and Close, never cut off and never drawn smaller (ADR 0034).
 
-const TYPES: Array[String] = [
-	"single",
-	"pair",
-	"trio",
-	"trio_single",
-	"trio_pair",
-	"straight",
-	"pair_chain",
-	"airplane",
-	"airplane_singles",
-	"airplane_pairs",
-	"four_two_singles",
-	"four_two_pairs",
-	"bomb",
-	"rocket",
-]
-
-## How dark the table goes behind the open card.
 ## The keywords the sheet spells out; the rest explain themselves on hover.
 const WORDS: PackedStringArray = ["grain", "rate", "zeal", "commons", "kitty", "kicker"]
+## How dark the table goes behind the open card.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.72)
 ## The wild ranks' section in the smallest rules type, and the sheet's spacing while it
 ## shows, so the sheet still fits 1080 with every part of it shown.
@@ -39,13 +21,15 @@ const MARGIN: float = 12.0
 
 var _controller: RunController
 var _types: GridContainer = GridContainer.new()
-## Each hand type's Rate, in TYPES order.
-var _rates: Array[Label] = []
+## Each hand type's Rate, by Pattern.Type.
+var _rates: Dictionary[int, Label] = {}
 var _active: Label = Label.new()
 var _order: Label = Label.new()
 ## Shown only while a rank is wild (ADR 0029): its heading and its rules.
 var _wild_head: Label
 var _wild: Label = Label.new()
+## The scrolled rules under the heading, whose spacing tightens while the wild section shows.
+var _body: VBoxContainer = VBoxContainer.new()
 var _close: Button
 var _panel: Control
 var _scroll: ProseScroll
@@ -66,32 +50,31 @@ func _ready() -> void:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(1100, 0))
 	sheet.add_theme_constant_override("separation", SPACING)
 	sheet.add_child(ScreenKit.header(tr("cheat.eyebrow"), tr("cheat.title"), ScreenKit.INK))
-	var body: VBoxContainer = VBoxContainer.new()
-	body.add_theme_constant_override("separation", SPACING)
-	_scroll = ProseScroll.new(body)
+	_body.add_theme_constant_override("separation", SPACING)
+	_scroll = ProseScroll.new(_body)
 	sheet.add_child(_scroll)
 	_types.columns = 6
 	_types.add_theme_constant_override("h_separation", 28)
 	_types.add_theme_constant_override("v_separation", 6)
-	body.add_child(_types)
-	body.add_child(ScreenKit.eyebrow(tr("cheat.active")))
+	_body.add_child(_types)
+	_body.add_child(ScreenKit.eyebrow(tr("cheat.active")))
 	for label: Label in [_active, _order]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.custom_minimum_size = Vector2(840, 0)
 		label.add_theme_font_size_override("font_size", TextSize.px(22))
-	body.add_child(_active)
-	body.add_child(_order)
+	_body.add_child(_active)
+	_body.add_child(_order)
 	_wild_head = ScreenKit.eyebrow(tr("cheat.wild"))
 	_wild.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_wild.custom_minimum_size = Vector2(840, 0)
 	_wild.add_theme_font_size_override("font_size", TextSize.px(WILD_SIZE))
 	for part: Control in [_wild_head, _wild]:
 		part.visible = false
-		body.add_child(part)
-	body.add_child(ScreenKit.eyebrow(tr("cheat.keywords")))
+		_body.add_child(part)
+	_body.add_child(ScreenKit.eyebrow(tr("cheat.keywords")))
 	var words: Label = ScreenKit.label(Keywords.glossary(WORDS, false), 18)
 	words.custom_minimum_size = Vector2(840, 0)
-	body.add_child(words)
+	_body.add_child(words)
 	_close = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
 	_close.pressed.connect(func() -> void: visible = false)
 	sheet.add_child(_close)
@@ -124,21 +107,22 @@ func refresh() -> void:
 	if not visible or _controller == null:
 		return
 	if _types.get_child_count() == 0:
-		for type: String in TYPES:
-			var name: Label = ScreenKit.label(tr("pattern." + type), 22)
+		for type: Pattern.Type in ReadingText.hand_types():
+			var key: String = ReadingText.type_key(type)
+			var name: Label = ScreenKit.label(tr("pattern." + key), 22)
 			name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 			name.autowrap_mode = TextServer.AUTOWRAP_OFF
 			_types.add_child(name)
-			var example: Label = ScreenKit.label(tr("cheat.example." + type), 20)
+			var example: Label = ScreenKit.label(tr("cheat.example." + key), 20)
 			example.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 			example.autowrap_mode = TextServer.AUTOWRAP_OFF
 			_types.add_child(example)
 			var rate: Label = ScreenKit.label("", 20, Color(Keywords.INKS["rate"]))
 			rate.autowrap_mode = TextServer.AUTOWRAP_OFF
 			_types.add_child(rate)
-			_rates.append(rate)
-	for index: int in TYPES.size():
-		_rates[index].text = _rate_text(index + 1)
+			_rates[type] = rate
+	for type: int in _rates:
+		_rates[type].text = _rate_text(type)
 	var active: PackedStringArray = []
 	for modifier_id: String in _controller.items.active_modifier_ids():
 		active.append(
@@ -178,8 +162,7 @@ func _show_wild() -> void:
 	_wild_head.visible = not ranks.is_empty()
 	_wild.visible = _wild_head.visible
 	var spacing: int = WILD_SPACING if _wild.visible else SPACING
-	var sheet: VBoxContainer = _wild.get_parent() as VBoxContainer
-	sheet.add_theme_constant_override("separation", spacing)
+	_body.add_theme_constant_override("separation", spacing)
 	if ranks.is_empty():
 		_wild.text = ""
 		return
@@ -222,7 +205,7 @@ func _rate_text(type: int) -> String:
 
 ## The Rate shown for a hand type, a Pattern.Type value, for tests.
 func rate_text(type: int) -> String:
-	return _rates[type - 1].text
+	return _rates[type].text
 
 
 ## The Close button, which the arrival points at (ADR 0026).

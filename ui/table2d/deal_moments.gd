@@ -83,9 +83,9 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 			_put_away()
 		RunEvent.Type.CARDS_SET_ASIDE:
 			if not quiet and not UiMotion.reduced() and _player.step > 0.0:
-				_set_aside(_cards(event.text))
+				_set_aside(_cards(event))
 		RunEvent.Type.KITTY_SEEN:
-			_see_kitty(_cards(event.text))
+			_see_kitty(_cards(event))
 
 
 ## The note's words while it shows, for tests.
@@ -116,7 +116,7 @@ func _set_aside(cards: Array[CardInstance]) -> void:
 	_beat.tween_interval(ASIDE_SHOW)
 	_beat.tween_callback(_pile.sweep.bind(OFF_TABLE))
 	_beat.tween_callback(_put_away)
-	_player.hold(ASIDE_SHOW + TableMotion.PRESETS.sweep + MARGIN)
+	_player.hold(ASIDE_SHOW + UiMotion.PRESETS.sweep + MARGIN)
 
 
 func _see_kitty(cards: Array[CardInstance]) -> void:
@@ -143,8 +143,7 @@ func _show_words(word: String, note: String) -> void:
 
 
 func _put_away() -> void:
-	if _beat != null and _beat.is_valid():
-		_beat.kill()
+	UiMotion.end(_beat)
 	_beat = null
 	_word.visible = false
 	_note.visible = false
@@ -152,10 +151,9 @@ func _put_away() -> void:
 
 
 ## The deck cards an event names by ID, as the deal made them.
-func _cards(text: String) -> Array[CardInstance]:
+func _cards(event: RunEvent) -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
-	for part: String in text.split(",", false):
-		var card_id: int = part.to_int()
+	for card_id: int in event.listed():
 		if card_id < Deck.SIZE:
 			cards.append(_controller.table.deck_card(card_id))
 	return cards

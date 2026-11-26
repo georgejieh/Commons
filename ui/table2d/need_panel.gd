@@ -1,18 +1,16 @@
 class_name NeedPanel
 extends PanelContainer
-## Asks the player how much of the Commons to claim before it is split. The claim is
-## shown as a share of the pool, with what it would pay if the teammate claimed a fair
-## half, so the number is never abstract. Under it the claim is still a declared need:
-## the pool is split in proportion to the two needs, and equal needs split it evenly.
-## A claim above the fair half is a lie, and an audit that catches it costs
-## Denunciation (P4.3).
+## Asks the player how much of the Commons to claim before it is split. The claim is shown
+## as a share of the pool, with what it would pay if the teammate claimed a fair half, so
+## the number is never abstract. Under it the claim is still a declared need: the pool is
+## split in proportion to the two needs, and equal needs split it evenly. A claim above the
+## fair half is a lie, and an audit that catches it costs Denunciation.
 
 signal declared(need: int)
 
 ## Wide enough that the claim's lines wrap once at most at Standard, so the sheet stays
 ## clear of the seats above it and short over the hand.
 const WIDTH: float = 520.0
-const LIE: Color = Color("9e1b16")
 const DECLARE_WIDTH: float = 240.0
 
 ## Where the panel's middle sits; it grows and shrinks around this point.
@@ -76,7 +74,7 @@ func _ready() -> void:
 
 ## Starts the choice at the fair need, with the most a declaration may claim and what a
 ## caught lie costs.
-func setup(default_need: int, cap: int, lie_cost: int = 0) -> void:
+func setup(default_need: int, cap: int, lie_cost: int) -> void:
 	_true_need = default_need
 	_need = default_need
 	_cap = cap
@@ -87,7 +85,7 @@ func setup(default_need: int, cap: int, lie_cost: int = 0) -> void:
 ## Shows the panel for a pool of pool_units, shared with the teammate named mate, with
 ## each claim audited at audit_chance (0 to 1). The last claim is kept. Declare takes
 ## focus, so Enter or the gamepad's A declares and up and down change the claim.
-func ask(pool_units: int = 0, mate: String = "", audit_chance: float = 0.0) -> void:
+func ask(pool_units: int, mate: String, audit_chance: float) -> void:
 	_pool_units = pool_units
 	_mate = mate
 	_audit_percent = roundi(audit_chance * 100.0)
@@ -158,8 +156,8 @@ func _show() -> void:
 		)
 	)
 	var lie: bool = _need > _true_need
-	_value.add_theme_color_override("font_color", LIE if lie else ScreenKit.INK)
-	_note.add_theme_color_override("font_color", LIE if lie else ScreenKit.INK)
+	_value.add_theme_color_override("font_color", ScreenKit.SEAL if lie else ScreenKit.INK)
+	_note.add_theme_color_override("font_color", ScreenKit.SEAL if lie else ScreenKit.INK)
 	if lie:
 		_note.text = tr("need.lie").format({"rise": _lie_cost, "chance": _audit_percent})
 	elif _need < _true_need:

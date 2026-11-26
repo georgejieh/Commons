@@ -50,19 +50,12 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 			picker.close()
 			_show([])
 		RunEvent.Type.WILD_RANKS:
-			_show(ranks_of(event.text))
+			_show(event.listed())
 			if not quiet:
 				_shout(event.value)
 
 
 ## The ranks an event's text names.
-static func ranks_of(text: String) -> Array[int]:
-	var found: Array[int] = []
-	for part: String in text.split(",", false):
-		found.append(int(part))
-	return found
-
-
 func _show(now: Array[int]) -> void:
 	ranks = now
 	_hand_view.mark_wild(now)
@@ -74,8 +67,8 @@ func _show(now: Array[int]) -> void:
 func _shout(rank: int) -> void:
 	var one: Array[int] = [rank]
 	var word: String = ReadingText.wild_line(one)
-	var sub: String = TranslationServer.translate("callout.wild.sub")
+	var sub: String = tr("callout.wild.sub")
 	if ranks.size() > 1:
 		var both: Dictionary = {"ranks": ReadingText.wild_line(ranks)}
-		sub = TranslationServer.translate("callout.wild.sub.two").format(both)
+		sub = tr("callout.wild.sub.two").format(both)
 	_player.hold(_moments.callout.shout(word, Callout.Tier.CUT_IN, ScreenKit.RED, sub))

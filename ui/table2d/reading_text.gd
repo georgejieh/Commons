@@ -8,7 +8,20 @@ extends RefCounted
 
 const PLURAL_PREFIX: String = "rank.plural."
 const LABEL_PREFIX: String = "rank."
-const BOMB_CARDS: int = 4
+
+
+## A hand type's key in the string table, its enum name in lower case: "trio_pair".
+static func type_key(type: Pattern.Type) -> String:
+	return String(Pattern.Type.keys()[type]).to_lower()
+
+
+## Every hand type a play can be, all but a pass, in the enum's order.
+static func hand_types() -> Array[Pattern.Type]:
+	var types: Array[Pattern.Type] = []
+	for type: int in Pattern.Type.values():
+		if type != Pattern.Type.PASS:
+			types.append(type as Pattern.Type)
+	return types
 
 
 ## A rank's plural name, "Sevens".
@@ -35,7 +48,6 @@ static func wild_line(ranks: Array[int]) -> String:
 
 ## One reading in words.
 static func describe(reading: Pattern) -> String:
-	var type: String = String(Pattern.Type.keys()[reading.type]).to_lower()
 	var high: int = reading.main_rank + maxi(reading.chain_length, 1) - 1
 	var values: Dictionary = {
 		"rank": glyph(reading.main_rank) if reading.type != Pattern.Type.ROCKET else "",
@@ -44,8 +56,8 @@ static func describe(reading: Pattern) -> String:
 		"high": glyph(high) if high >= 0 and high < Ranks.COUNT else "",
 		"count": reading.card_count,
 	}
-	var key: String = "reading." + type
-	if reading.type == Pattern.Type.BOMB and reading.card_count > BOMB_CARDS:
+	var key: String = "reading." + ReadingText.type_key(reading.type)
+	if reading.type == Pattern.Type.BOMB and reading.card_count > Pattern.MIN_BOMB_WIDTH:
 		key = "reading.bomb_big"
 	return TranslationServer.translate(key).format(values)
 

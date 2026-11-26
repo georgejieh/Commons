@@ -5,8 +5,6 @@ extends RefCounted
 ## ambience's hush when the player plays. A meter not shown as it is (ADR 0022) moves
 ## in silence: no sound gives it away.
 
-## The Famine meter's event text. The UI may not name the core code that moves meters.
-const FAMINE: String = "famine"
 ## The meters' bands, whose thresholds a rising meter sounds as it passes.
 const METERS: MeterTable = preload("res://data/run/meters.tres")
 
@@ -28,5 +26,5 @@ static func play(event: RunEvent, landlord: int, controller: RunController) -> v
 ## A meter's events arrive in the same batch as the change, so the run's value is the
 ## value after it.
 static func _rose(event: RunEvent, state: RunView) -> bool:
-	var after: int = state.famine() if event.text == FAMINE else state.denunciation()
+	var after: int = state.famine() if event.text == RunCorrections.FAMINE else state.denunciation()
 	return AudioEvents.meter_rose(after - event.value, after, METERS.bands(event.text).marks())

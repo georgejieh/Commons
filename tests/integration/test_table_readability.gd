@@ -34,7 +34,7 @@ func test_the_newest_play_lies_on_top_upright_with_every_rank_showing() -> void:
 	var pile: TrickPile = table.get("_pile")
 	pile.show_play(_cards([0, 1]), Vector2.ZERO)
 	pile.show_play(_cards([10, 11, 12, 13, 14]), Vector2.ZERO)
-	await await_millis(int((TableMotion.PRESETS.fly_time + 0.4) * 1000.0))
+	await await_millis(int((UiMotion.PRESETS.fly_time + 0.4) * 1000.0))
 	assert_int(pile.play_count()).is_equal(2)
 	assert_array(pile.top_ids()).is_equal([10, 11, 12, 13, 14])
 	var top: Array[CardView] = pile.top_views()
@@ -58,7 +58,7 @@ func test_every_card_of_a_fresh_deal_shows_its_face() -> void:
 	var hand_view: HandView = table.get("_hand_view")
 	hand_view.show_cards()
 	hand_view.deal_in()
-	var settle: float = TableMotion.PRESETS.fly_time + 20 * TableMotion.PRESETS.deal_stagger
+	var settle: float = UiMotion.PRESETS.fly_time + 20 * UiMotion.PRESETS.deal_stagger
 	await await_millis(int((settle + 0.4) * 1000.0))
 	var shown: int = 0
 	for child: Node in hand_view.get_children():
@@ -79,7 +79,7 @@ func test_the_same_play_lands_the_same_way() -> void:
 	var pile: TrickPile = table.get("_pile")
 	Settings.set_value("reduced_motion", true)
 	var motion: TableMotion = table.get("_motion")
-	motion.set_reduced(true)
+	motion.set_still(true)
 	pile.show_play(_cards([5, 6, 7]), Vector2.ZERO)
 	var first: Array[Vector2] = _spots(pile.top_views())
 	pile.clear()
@@ -98,7 +98,7 @@ func test_a_second_villager_waits_until_the_first_finishes() -> void:
 	var speech: TableSpeech = TableSpeech.new()
 	var seats: Dictionary[int, SeatPanel] = {1: first, 2: second}
 	speech.setup(seats)
-	first.say("You going to play that?", "", PackedFloat32Array([0.1, 0.2, 0.3]))
+	first.say("You going to play that?", PackedFloat32Array([0.1, 0.2, 0.3]))
 	speech.say(2, "pass")
 	assert_int(speech.waiting_count()).is_equal(1)
 	assert_str(second.speech()).is_empty()

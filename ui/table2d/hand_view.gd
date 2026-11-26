@@ -181,7 +181,7 @@ func set_sort(mode: Sort) -> void:
 
 ## A fresh deal: every card rises into the fan from below, one after another.
 func deal_in() -> void:
-	if motion == null or motion.reduced:
+	if motion == null or motion.still:
 		return
 	for index: int in _views.size():
 		var view: CardView = _views[index]
@@ -190,8 +190,8 @@ func deal_in() -> void:
 		view.modulate.a = 0.0
 		var tween: Tween = view.tween().set_parallel(true)
 		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		var delay: float = index * TableMotion.PRESETS.deal_stagger
-		var seconds: float = TableMotion.PRESETS.fly_time
+		var delay: float = index * UiMotion.PRESETS.deal_stagger
+		var seconds: float = UiMotion.PRESETS.fly_time
 		tween.tween_property(view, "position", rest, seconds).set_delay(delay)
 		tween.tween_property(view, "modulate:a", 1.0, seconds * 0.6).set_delay(delay)
 
@@ -229,7 +229,7 @@ func _mark() -> void:
 		if motion == null:
 			view.position = to
 		else:
-			motion.move(view, to, slot.z, TableMotion.PRESETS.select)
+			motion.move(view, to, slot.z, UiMotion.PRESETS.select)
 
 
 func _sorted(cards: Array[CardInstance]) -> Array[CardInstance]:

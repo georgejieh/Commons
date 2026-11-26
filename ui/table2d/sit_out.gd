@@ -1,14 +1,13 @@
 class_name SitOut
-extends Node
-## Sitting out a trick (P5.2a, the owner's request of 2026-11-24). When it is the
-## player's turn to follow and the legal-move generator gives them nothing but a pass,
-## a Sit out button stands beside Pass. Pressed, it passes for them for the rest of the
-## trick while the villagers play at a faster step. On each of the player's turns in that
-## trick the generator is asked again, for the seat's rank order can change mid-trick: the
-## moment any play is legal, a bomb or rocket included, sitting out stops and the turn is
-## theirs. It ends with the trick and never carries into the next. Every pass it makes is
-## the Pass button's own command, sent through the controller; nothing else changes the
-## run. It is never offered during the arrival.
+extends RefCounted
+## Sitting out a trick. When it is the player's turn to follow and the legal-move generator
+## gives them nothing but a pass, a Sit out button stands beside Pass. Pressed, it passes
+## for them for the rest of the trick while the villagers play at a faster step. On each of
+## the player's turns in that trick the generator is asked again, for the seat's rank order
+## can change mid-trick: the moment any play is legal, a bomb or rocket included, sitting
+## out stops and the turn is theirs. It ends with the trick and never carries into the
+## next. Every pass it makes is the Pass button's own command, sent through the controller;
+## nothing else changes the run. It is never offered during the arrival.
 
 ## The table's step is to be read again: sitting out began or ended.
 signal pace_changed
@@ -32,11 +31,7 @@ func setup(
 	_actions = actions
 	_player = player
 	_blocked = blocked
-	var before: Callable = commands.prompt
-	commands.prompt = func() -> String:
-		if _active:
-			return tr("table.sitting_out")
-		return before.call() if before.is_valid() else ""
+	commands.sit_out_prompt = _prompt
 	actions.sit_out.pressed.connect(_on_pressed)
 	player.queued.connect(_offer)
 	player.drained.connect(_on_drained)
@@ -50,7 +45,7 @@ func is_active() -> bool:
 
 ## What the table's step is multiplied by: faster while sitting out.
 func pace() -> float:
-	return TableMotion.PRESETS.sit_out_scale if _active else 1.0
+	return UiMotion.PRESETS.sit_out_scale if _active else 1.0
 
 
 ## True when the player may sit out now: their turn to follow, nothing legal but a pass,
@@ -122,3 +117,8 @@ func _my_turn() -> bool:
 func _following() -> bool:
 	var view: SeatView = _controller.table.seat_view()
 	return view != null and view.public.current_play != null
+
+
+## The prompt line's text while the player sits out.
+func _prompt() -> String:
+	return tr("table.sitting_out") if _active else ""

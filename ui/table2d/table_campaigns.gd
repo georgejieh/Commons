@@ -3,10 +3,9 @@ extends RefCounted
 ## The player's Campaigns at the table (ADR 0021): the held leaflets at full size in a row
 ## under the left seat, with Use and Cancel under them, clear of the brigade notice, the
 ## trick, the hand, the buttons and the prompt line, and not shown at all while none is
-## held; the
-## Play on button at the opening before the first play; and the layer
-## that acts each use out. While a leaflet is armed the action bar's reading says what
-## to choose, and the hand's selection is the Campaign's.
+## held; the Play on button at the opening before the first play; and the layer that acts
+## each use out. While a leaflet is armed the action bar's reading says what to choose, and
+## the hand's selection is the Campaign's.
 
 ## Where the tray's top left corner sits at 1920x1080: under the left seat, which ends at
 ## y 354, left of the trick, which starts at x 470, with its buttons above the notice at
@@ -53,26 +52,16 @@ func setup(
 	tray.visible = not controller.items.held_campaigns().is_empty()
 	tray.selection = hand.selected_ids
 	tray.changed.connect(_on_tray_changed.bind(commands))
-	commands.prompt = _prompt
+	commands.campaign_prompt = _prompt
 	actions.play_on.pressed.connect(_play_on)
 	player.queued.connect(_hold_tray)
 
 
-## Hands the moments layer the table's card pool and debuff strip, and puts it in front.
-func attach(pool: CardPool, debuffs: DebuffStrip) -> void:
+## Hands the moments layer the table's card pool, debuff strip and cards, and puts it in
+## front.
+func attach(pool: CardPool, debuffs: DebuffStrip, cards: TableCards) -> void:
 	moments.tray = tray
-	moments.setup(
-		_controller,
-		_hand_view,
-		pool,
-		_player,
-		_table,
-		_table.seats(),
-		_table.names(),
-		debuffs,
-		_card_for,
-		_show_hand
-	)
+	moments.setup(_controller, _hand_view, pool, _player, _table, debuffs, cards)
 	moments.move_to_front()
 
 
@@ -115,17 +104,3 @@ func _on_tray_changed(commands: TableCommands) -> void:
 		_armed = tray.armed_slot()
 		_hand.clear()
 	commands.refresh()
-
-
-## Puts the hand back as the run holds it, once a moment is done with it.
-func _show_hand() -> void:
-	_hand.refresh()
-	_hand_view.show_cards()
-
-
-## A card's face: in the hand as shown, in the hand as the run holds it, or from the deck.
-func _card_for(card_id: int) -> CardInstance:
-	for card: CardInstance in _hand.cards() + _controller.table.player_cards():
-		if card.id() == card_id:
-			return card
-	return _controller.table.deck_card(card_id) if card_id < Deck.SIZE else null

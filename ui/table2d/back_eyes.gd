@@ -1,15 +1,13 @@
 class_name BackEyes
 extends Control
-## The eye printed on a card back (P5.2c, the Plan's Denunciation rows): faint ink at
-## first, a little darker as the board's dread grows, and from DreadEffects.eyes_follow_at
-## its gaze turns, slowly, toward the pointer. It lies over a back as drawn, a seat's or a
-## card in flight, takes no input and draws nothing on a clean profile, away from the
-## table or at the lowest horror intensity. Under reduced motion it looks straight ahead.
-## Worn like every printed thing (BowlGrime): the lids are uneven from the first stage.
+## The eye printed on a card back: faint ink at first, a little darker as the board's dread
+## grows, and from DreadEffects.eyes_follow_at its gaze turns, slowly, toward the pointer.
+## It lies over a back as drawn, a seat's or a card in flight, takes no input and draws
+## nothing on a clean profile, away from the table or at the lowest horror intensity. Under
+## reduced motion it looks straight ahead. Worn like every printed thing (BowlGrime): the
+## lids are uneven from the first stage.
 
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
-const INK: Color = Color("1e1a16")
-const PAPER: Color = Color("efe3c8")
 ## The eye's width as a share of the back's, its height as a share of its width, and its
 ## middle as a share of the back's size.
 const WIDTH_SHARE: float = 0.62
@@ -32,9 +30,11 @@ const LEAST_INK: float = 0.01
 const LOOK_STEP: float = 0.02
 const INK_STEP: float = 0.01
 const SEED: int = 3307
+## Every eye on screen, so the dread can wake them when they come to show.
+const GROUP: StringName = &"back_eyes"
 
 ## The weight the dread layers show the eyes at now, 0 away from the table. One value for
-## every back on screen, as the board has one dread.
+## every back on screen, as the board has one dread. Set through show_weight.
 static var shown: float = 0.0
 
 var _look: Vector2 = Vector2.ZERO
@@ -45,9 +45,30 @@ var _lids: PackedVector2Array = PackedVector2Array()
 var _shaped_wear: float = -1.0
 
 
+## Sets the weight every eye shows. An eye with nothing to show rests, unprocessed, once
+## its ink is gone and its gaze is home; the first weight that shows wakes every eye in
+## tree, which may be null where no eye is on screen.
+static func show_weight(weight: float, tree: SceneTree) -> void:
+	var was_showing: bool = BackEyes._shows(shown)
+	shown = weight
+	if tree != null and BackEyes._shows(weight) and not was_showing:
+		tree.call_group(GROUP, "set_process", true)
+
+
+## The eye's ink at a weight: none at 0, the data's full ink at 1.
+static func ink_for(weight: float) -> float:
+	return clampf(weight, 0.0, 1.0) * CONFIG.effect_tuning.eye_ink
+
+
+## True when an eye at weight has ink to draw or a gaze to turn.
+static func _shows(weight: float) -> bool:
+	return ink_for(weight) >= LEAST_INK or CONFIG.effect_tuning.follow_share(weight) > 0.0
+
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_to_group(GROUP)
 	resized.connect(_reshape)
 
 
@@ -63,11 +84,8 @@ func _process(delta: float) -> void:
 	var moved: bool = _look.distance_to(_drawn_look) >= LOOK_STEP
 	if moved or absf(ink - _drawn_ink) >= INK_STEP:
 		queue_redraw()
-
-
-## The eye's ink at a weight: none at 0, the data's full ink at 1.
-static func ink_for(weight: float) -> float:
-	return clampf(weight, 0.0, 1.0) * CONFIG.effect_tuning.eye_ink
+	elif not BackEyes._shows(shown) and _drawn_ink < LEAST_INK and _look == Vector2.ZERO:
+		set_process(false)
 
 
 ## Where the gaze points now, each axis -1 to 1, for tests.
@@ -88,7 +106,7 @@ func _draw() -> void:
 	var worn: float = BowlGrime.wear()
 	if worn != _shaped_wear:
 		_shape_lids(worn)
-	var ink: Color = Color(BowlGrime.faded(INK, worn), _drawn_ink)
+	var ink: Color = Color(BowlGrime.faded(ScreenKit.INK, worn), _drawn_ink)
 	var middle: Vector2 = size * MIDDLE
 	var width: float = size.x * WIDTH_SHARE
 	var tall: float = width * HEIGHT_SHARE
@@ -102,7 +120,7 @@ func _draw() -> void:
 	# The wet glint comes with the gaze, on paper, never a clean white.
 	var glint: float = CONFIG.effect_tuning.follow_share(shown)
 	if glint > 0.0:
-		var light: Color = Color(BowlGrime.aged(PAPER, worn), _drawn_ink * glint)
+		var light: Color = Color(BowlGrime.aged(ScreenKit.PAPER, worn), _drawn_ink * glint)
 		draw_circle(at + Vector2(-0.35, -0.4) * iris * PUPIL, iris * 0.16, light)
 	draw_set_transform(Vector2.ZERO)
 

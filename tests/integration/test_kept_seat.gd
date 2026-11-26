@@ -38,7 +38,7 @@ func test_the_table_calls_a_kept_seat_once() -> void:
 	var callout: Callout = Callout.new()
 	add_child(callout)
 	auto_free(callout)
-	var call: KeptSeatCall = auto_free(KeptSeatCall.new())
+	var call: KeptSeatCall = KeptSeatCall.new()
 	var faces: Dictionary[int, Texture2D] = {}
 	call.setup(player, callout, NAMES, faces)
 	for event: RunEvent in _events_of(1, 0, 2):

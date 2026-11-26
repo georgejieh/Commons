@@ -28,7 +28,7 @@ func before_test() -> void:
 
 func after_test() -> void:
 	for key: String in _saved_presets:
-		TableMotion.PRESETS.set(key, _saved_presets[key])
+		UiMotion.PRESETS.set(key, _saved_presets[key])
 	_saved_presets.clear()
 	Settings.set_value("reduced_motion", _was_reduced)
 	Saves.run_service().delete()
@@ -57,7 +57,7 @@ func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
 	assert_int(pool.free_count()).is_equal(free_before - 3)
 	pile.sweep(Vector2.ZERO)
 	assert_int(pile.card_count()).is_equal(3)
-	await await_millis(int((TableMotion.PRESETS.sweep + 0.3) * 1000.0))
+	await await_millis(int((UiMotion.PRESETS.sweep + 0.3) * 1000.0))
 	assert_int(pile.card_count()).is_equal(0)
 	assert_int(pool.free_count()).is_equal(free_before)
 
@@ -98,7 +98,7 @@ func test_turning_reduced_motion_on_stops_a_shake_under_way() -> void:
 	motion.impact()
 	assert_float(motion.trauma()).is_greater(0.0)
 	Settings.set_value("reduced_motion", true)
-	assert_bool(motion.reduced).is_true()
+	assert_bool(motion.still).is_true()
 	assert_float(motion.trauma()).is_equal(0.0)
 	assert_bool(motion.is_stopped()).is_false()
 
@@ -129,8 +129,8 @@ func _start_every_motion(table: TableScreen) -> void:
 
 func _slow_presets() -> void:
 	for key: String in ["fly_time", "sweep", "count_time", "stamp_time"]:
-		_saved_presets[key] = float(TableMotion.PRESETS.get(key))
-		TableMotion.PRESETS.set(key, SLOW)
+		_saved_presets[key] = float(UiMotion.PRESETS.get(key))
+		UiMotion.PRESETS.set(key, SLOW)
 
 
 func _cards(count: int) -> Array[CardInstance]:

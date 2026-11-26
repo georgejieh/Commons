@@ -110,7 +110,7 @@ func test_the_horror_intensity_caps_the_art() -> void:
 		"res://art/cadres/stages/cadre_peek_s0.png"
 	)
 	assert_float(BowlGrime.wear()).is_equal(BowlGrime.BASE_WEAR)
-	assert_int(DreadLayers.corruption()).is_equal(9)
+	assert_int(ArtStages.stage()).is_equal(9)
 
 
 ## Nothing in ui/ reads the profile's corruption value, and the string table never names

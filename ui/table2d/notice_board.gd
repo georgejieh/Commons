@@ -103,9 +103,9 @@ func fired(controller: RunController, cadre_id: String, amount: int) -> void:
 	pulse_slot(index)
 
 
-## A held Cadre changed a play's score as it was counted (P5.2a): its card jiggles on
-## its pin, unless motion is reduced, and its count shows what it is now. Returns where
-## the card stands on screen, or an empty box when the Cadre is not on the board.
+## A held Cadre changed a play's score as it was counted: its card jiggles on its pin,
+## unless motion is reduced, and its count shows what it is now. Returns where the card
+## stands on screen, or an empty box when the Cadre is not on the board.
 func jiggle(controller: RunController, cadre_id: String, seconds: float) -> Rect2:
 	var index: int = _ids.find(cadre_id)
 	if index < 0 or not is_visible_in_tree():

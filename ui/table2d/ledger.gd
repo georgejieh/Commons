@@ -4,7 +4,7 @@ extends VBoxContainer
 ## Commons pool with each peasant's part of it, then the last few plays: who played what,
 ## and under it Grain × Rate × Zeal = its score, on one line each so a score is never left
 ## alone on a line. Rows are made once and reused, so scoring a play instances nothing. A
-## seat's total counts up as its play is stamped in (P3B.6). At the stage past the last
+## seat's total counts up as its play is stamped in. At the stage past the last
 ## the household's small ledger sits at its foot, with the run's true figures (ADR 0022).
 
 const MAX_PLAYS: int = 5
@@ -15,8 +15,6 @@ const SUM_FACE: String = "res://ui/theme/oswald_medium.tres"
 const SCORE_FACE: String = "res://ui/theme/oswald_bold.tres"
 ## Rows wrap inside the ledger's paper.
 const ROW_WIDTH: float = 270.0
-const INK: Color = Color("1e1a16")
-const SOFT: Color = Color("5a4a36")
 
 ## The household's small ledger, at the panel's foot at the stage past the last.
 var books: SmallLedger = SmallLedger.new()
@@ -46,7 +44,7 @@ func _ready() -> void:
 	title.text = tr("ledger.title")
 	title.add_theme_font_size_override("font_size", TextSize.px(26))
 	title.add_theme_font_override("font", ScreenKit.TYPEWRITER_BOLD)
-	title.add_theme_color_override("font_color", INK)
+	title.add_theme_color_override("font_color", ScreenKit.INK)
 	add_child(title)
 	_as_head(_landlord_head, "ledger.landlord")
 	_as_head(_plays_head, "ledger.plays")
@@ -60,6 +58,20 @@ func _ready() -> void:
 	_commons_head.add_child(commons)
 	_commons_head.add_child(_pool)
 	add_child(_commons_head)
+	_add_rows()
+	add_child(_rule)
+	add_child(_plays_head)
+	_add_plays()
+	_foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_foot.visible = false
+	add_child(_foot)
+	add_child(books)
+	start_round(Seats.NONE)
+
+
+## One row per seat: who, and the seat's total for the round.
+func _add_rows() -> void:
 	_totals.resize(Seats.COUNT)
 	for seat: int in Seats.COUNT:
 		var row: HBoxContainer = HBoxContainer.new()
@@ -73,8 +85,10 @@ func _ready() -> void:
 		add_child(row)
 		_rows.append(row)
 		_amounts.append(amount)
-	add_child(_rule)
-	add_child(_plays_head)
+
+
+## The round's plays, newest last, in typewriter.
+func _add_plays() -> void:
 	_plays.bbcode_enabled = true
 	_plays.fit_content = true
 	_plays.scroll_active = false
@@ -83,14 +97,8 @@ func _ready() -> void:
 	_plays.add_theme_font_override("bold_font", ScreenKit.TYPEWRITER_BOLD)
 	_plays.add_theme_font_size_override("normal_font_size", TextSize.px(18))
 	_plays.add_theme_font_size_override("bold_font_size", TextSize.px(18))
-	_plays.add_theme_color_override("default_color", INK)
+	_plays.add_theme_color_override("default_color", ScreenKit.INK)
 	add_child(_plays)
-	_foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_foot.visible = false
-	add_child(_foot)
-	add_child(books)
-	start_round(Seats.NONE)
 
 
 ## The small ledger's figures from a copy of the run, shown only at the stage past the
@@ -163,7 +171,7 @@ func add_play(
 	var faces: Array[String] = [SUM_FACE, Keywords.mark(sum), SCORE_FACE, score]
 	var faced: String = "[font=%s]%s [/font][font=%s]%s[/font]" % faces
 	var line: String = "[font_size=%d]%s[/font_size]" % [TextSize.px(SUM_SIZE), faced]
-	_texts.append("[b]%s[/b]\n%s" % [head.replace("[", "[lb]"), line])
+	_texts.append("[b]%s[/b]\n%s" % [Keywords.escape(head), line])
 	if _texts.size() > MAX_PLAYS:
 		_texts.remove_at(0)
 	_show()
@@ -231,8 +239,7 @@ func is_counting() -> bool:
 
 func _show() -> void:
 	# A count still rolling would write over a total that has since changed.
-	if _counting != null and _counting.is_valid():
-		_counting.kill()
+	UiMotion.end(_counting)
 	_counting = null
 	for seat: int in _amounts.size():
 		_amounts[seat].text = Strings.score(_totals[seat])
@@ -245,13 +252,13 @@ func _show() -> void:
 func _as_head(label: Label, key: String) -> void:
 	label.text = tr(key).to_upper()
 	label.theme_type_variation = CommonsTheme.EYEBROW
-	label.add_theme_color_override("font_color", SOFT)
+	label.add_theme_color_override("font_color", ScreenKit.FAINT_INK)
 
 
 func _as_text(label: Label) -> void:
 	label.add_theme_font_size_override("font_size", TextSize.px(22))
 	label.add_theme_font_override("font", ScreenKit.TYPEWRITER)
-	label.add_theme_color_override("font_color", INK)
+	label.add_theme_color_override("font_color", ScreenKit.INK)
 
 
 func _as_amount(label: Label) -> void:

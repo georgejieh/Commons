@@ -66,7 +66,7 @@ func test_the_next_hand_waits_until_the_round_is_put_away() -> void:
 	# The run already holds the next hand, but the fan never showed it before the deal.
 	assert_bool(marks.get("shown_after_play", true)).is_false()
 	assert_bool(marks.has("closing")).is_true()
-	var read: float = TableMotion.PRESETS.round_close_steps * player.step
+	var read: float = UiMotion.PRESETS.round_close_steps * player.step
 	var waited: float = float(marks["dealt"]) - float(marks["closing"])
 	assert_float(waited).is_greater_equal(read)
 	assert_int(int(marks["pile_at_deal"])).is_equal(0)
@@ -89,7 +89,7 @@ func test_reduced_motion_still_reads_the_round_before_the_deal() -> void:
 	for event: RunEvent in _round_end(card):
 		player.push(event)
 	await _until(func() -> bool: return marks.has("dealt"))
-	var read: float = TableMotion.PRESETS.round_close_steps * player.step
+	var read: float = UiMotion.PRESETS.round_close_steps * player.step
 	assert_float(float(marks["dealt"]) - float(marks["closing"])).is_greater_equal(read)
 
 

@@ -1,36 +1,31 @@
 class_name ScoreSequence
 extends Node
-## A scored play acted out as a small counting-house slot machine (P5.2a, the owner's
-## playtest of 2026-11-24): each scored card ticks on the pile as its Grain is counted,
-## an abacus bead a step higher each time; the hand's Rate and the play's Zeal are stamped
-## on; then every Cadre, card mark, level or debuff that changed the score fires in the
-## order the engine applied it. What fired moves (a Cadre's card jiggles on the board and
-## its count updates, a marked card flashes on the pile, the rules slip swells), a handbell
-## sounds a step higher than the last, or a dull gong a step lower for a cut, its figure on
-## the tally bumps to the new value, and a tag beside it says what it added. Coupons a
-## Surplus card paid (ADR 0041) come last, a tag on the card with no figure of the
-## tally's. Then the total rolls up a bead at a time and is stamped home, harder and with
-## a shake of the tally for a play worth much of the Quota. The table's pace scales it, a
-## villager's goes quicker, and a click or Enter hurries what is left. Reduced motion
-## keeps every figure, tag and sound and drops the jiggle, flash, swell, bump and shake.
-## The table's events wait for it (EventPlayer.waits_on). It keeps the tally inside the
-## room the table gives it, clear of the laid cards, the hand and the seats, through all
-## its motion.
+## A scored play acted out as a small counting-house slot machine: each scored card ticks
+## on the pile as its Grain is counted, an abacus bead a step higher each time; the hand's
+## Rate and the play's Zeal are stamped on; then every Cadre, card mark, level or debuff
+## that changed the score fires in the order the engine applied it. What fired moves (a
+## Cadre's card jiggles on the board and its count updates, a marked card flashes on the
+## pile, the rules slip swells), a handbell sounds a step higher than the last, or a dull
+## gong a step lower for a cut, its figure on the tally bumps to the new value, and a tag
+## beside it says what it added. Coupons a Surplus card paid (ADR 0041) come last, a tag on
+## the card with no figure of the tally's. Then the total rolls up a bead at a time and is
+## stamped home, harder and with a shake of the tally for a play worth much of the Quota.
+## The table's pace scales it, a villager's goes quicker, and a click or Enter hurries what
+## is left. Reduced motion keeps every figure, tag and sound and drops the jiggle, flash,
+## swell, bump and shake. The table's events wait for it (EventPlayer.waits_on). It keeps
+## the tally inside the room the table gives it, clear of the laid cards, the hand and the
+## seats, through all its motion.
 
 ## The sequence is hurried: anything timed to it goes speed times as fast from now.
 signal hurried(speed: float)
-## A beat of the sequence has begun: its ScoreBeats.Kind and the step it shows, or -1.
-signal beat(kind: int, step_index: int)
+## A beat of the sequence has begun: its kind and the step it shows, or -1.
+signal beat_began(kind: ScoreBeats.Kind, step_index: int)
 signal finished
 
-const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
-const LOSS: Color = Color("3a322b")
 ## How far above the first chime the Zeal's stamp is pitched, in semitones.
 const ZEAL_LIFT: float = 5.0
 ## Room kept between the tally's motion and the laid cards, the hand and the column.
 const GAP: float = 6.0
-## The player's own seat, whose plays are never hurried for sitting out.
-const OWN_SEAT: int = 0
 ## The share of its beat the total takes to roll up.
 const ROLL_SHARE: float = 0.85
 
@@ -43,7 +38,7 @@ var controller: RunController = null
 ## The Quota's target, for how hard a total lands.
 var target: float = 0.0
 ## True while villagers' plays go by at the hurried pace, as while the player sits out.
-var hurry_villagers: bool = false
+var hurrying_villagers: bool = false
 
 var _tween: Tween = null
 var _roll: Tween = null
@@ -91,7 +86,7 @@ func play(event: RunEvent, pace: float) -> float:
 		_tween.tween_interval(_beats.seconds[index])
 	_tween.tween_callback(_done)
 	_speed = 1.0
-	if hurry_villagers and event.seat != OWN_SEAT:
+	if hurrying_villagers and event.seat != Seats.PLAYER:
 		hurry()
 	return _beats.total() / _speed
 
@@ -104,7 +99,7 @@ func is_running() -> bool:
 func hurry() -> void:
 	if not is_running() or _speed > 1.0:
 		return
-	_speed = 1.0 / maxf(PRESETS.score_hurried, 0.01)
+	_speed = 1.0 / maxf(UiMotion.PRESETS.score_hurried, 0.01)
 	for running: Tween in [_tween, _roll]:
 		if running != null and running.is_valid():
 			running.set_speed_scale(_speed)
@@ -119,8 +114,7 @@ func steps() -> Array[ScoreStep]:
 ## Takes the sequence down at once, its tally with it.
 func stop() -> void:
 	for running: Tween in [_tween, _roll]:
-		if running != null and running.is_valid():
-			running.kill()
+		UiMotion.end(running)
 	_tween = null
 	_roll = null
 
@@ -184,7 +178,9 @@ func _reserve() -> void:
 		tally.reserve(index, each)
 
 
-## A play with no recorded steps, such as one a test makes up, shown as its plain sum.
+## A play with no recorded steps shown as its plain sum. Every play the run scores records
+## its steps, a resumed run's too, since a save is replayed through the run loop; only a
+## play a test or a tool makes up has none.
 static func plain_steps(event: RunEvent) -> Array[ScoreStep]:
 	var trail: Array[ScoreStep] = []
 	trail.append(
@@ -253,7 +249,7 @@ static func _figure_text(figure: ScoreStep.Figure, value: float) -> String:
 func _beat(index: int) -> void:
 	var seconds: float = _beats.seconds[index]
 	var at: int = _beats.step_index[index]
-	beat.emit(_beats.kinds[index], at)
+	beat_began.emit(_beats.kinds[index], at)
 	match _beats.kinds[index]:
 		ScoreBeats.Kind.ENTER:
 			tally.figure(ScoreTally.GRAIN, Strings.score(0.0), false)
@@ -283,7 +279,7 @@ func _fire(step: ScoreStep, seconds: float) -> void:
 	var around: Rect2 = _point_at(step, seconds)
 	if step.figure == ScoreStep.Figure.TOTAL:
 		var product: float = step.before
-		tally.scaled(ScoreTally.scale_percent(1.0, 1.0, product, step.after))
+		tally.show_scale(ScoreTally.scale_percent(1.0, 1.0, product, step.after))
 	elif step.figure != ScoreStep.Figure.COUPONS:
 		tally.figure(step.figure, _figure_text(step.figure, step.after), true)
 	if not around.has_area():
@@ -302,9 +298,9 @@ func _fire(step: ScoreStep, seconds: float) -> void:
 ## The ink a step's tag is written in: its figure's, or dull for a cut.
 static func ink_of(step: ScoreStep) -> Color:
 	if step.is_cut():
-		return LOSS
+		return ScreenKit.LOSS
 	if step.figure == ScoreStep.Figure.TOTAL:
-		return ScoreTally.TOTAL_INK
+		return ScreenKit.SEAL
 	if step.figure == ScoreStep.Figure.COUPONS:
 		return ScreenKit.COUPON
 	return Color(Keywords.INKS[ScoreTally.WORDS[step.figure]])
@@ -333,7 +329,9 @@ func _start_roll(seconds: float) -> void:
 	tally.figure(ScoreTally.TOTAL, Strings.score(0.0), false)
 	_beads = 0
 	var each: float = 0.05
-	_bead_count = clampi(roundi(seconds / each), PRESETS.score_least_beads, PRESETS.score_beads)
+	_bead_count = clampi(
+		roundi(seconds / each), UiMotion.PRESETS.score_least_beads, UiMotion.PRESETS.score_beads
+	)
 	_roll = create_tween()
 	_roll.set_speed_scale(_speed)
 	_roll.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
@@ -351,16 +349,15 @@ func _rolling(share: float, total: float) -> void:
 ## The total lands: a stamp, heavier for a play worth much of the Quota, and the tally
 ## shakes for it; then the table sends it to the ledger.
 func _stamp() -> void:
-	if _roll != null and _roll.is_valid():
-		_roll.kill()
+	UiMotion.end(_roll)
 	_roll = null
 	var total_text: String = Strings.score(_event.amount)
 	tally.figure(ScoreTally.TOTAL, total_text, true, true)
 	var share: float = _event.amount / target if target > 0.0 else 0.0
-	var weight: float = clampf(share / maxf(PRESETS.score_heavy, 0.0001), 0.0, 1.0)
+	var weight: float = clampf(share / maxf(UiMotion.PRESETS.score_heavy, 0.0001), 0.0, 1.0)
 	var heavy: bool = weight >= 1.0
 	Audio.play(AudioEvents.SCORE_LAND_HEAVY if heavy else AudioEvents.SCORE_LAND)
-	tally.shake(PRESETS.score_shake * weight, PRESETS.score_stamp)
+	tally.shake(UiMotion.PRESETS.score_shake * weight, UiMotion.PRESETS.score_stamp)
 	tally.land(total_text)
 
 
@@ -375,7 +372,7 @@ func _show_at_once() -> void:
 		if step.figure < ScoreStep.Figure.TOTAL:
 			tally.figure(step.figure, _figure_text(step.figure, step.after), false)
 		elif step.figure == ScoreStep.Figure.TOTAL:
-			tally.scaled(ScoreTally.scale_percent(1.0, 1.0, step.before, step.after))
+			tally.show_scale(ScoreTally.scale_percent(1.0, 1.0, step.before, step.after))
 	var total_text: String = Strings.score(_event.amount)
 	tally.figure(ScoreTally.TOTAL, total_text, false)
 	tally.land(total_text)

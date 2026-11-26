@@ -1,16 +1,13 @@
 class_name TableMoments
 extends Control
 ## The table acted out, as one layer over the play area. Small beats stay where they
-## happen: a pass is tagged on the seat that passed, a card lands with weight, a score
-## is acted out on chits under the trick (ScoreSequence) and flies to the ledger. Big
-## beats take the
-## whole screen for a moment through the Callout: a call or grab for the landlord
-## seat, a bomb, the end of a round. It holds the event queue still for as long as
-## each beat needs, and shows only what the run already says; the ledger, seats and
-## meters hold the same facts at rest.
+## happen: a pass is tagged on the seat that passed, a card lands with weight, a score is
+## acted out on chits under the trick (ScoreSequence) and flies to the ledger. Big beats
+## take the whole screen for a moment through the Callout: a call or grab for the landlord
+## seat, a bomb, the end of a round. It holds the event queue still for as long as each
+## beat needs, and shows only what the run already says; the ledger, seats and meters hold
+## the same facts at rest.
 
-const GRAIN: Color = Color("8a5a12")
-const LOSS: Color = Color("3a322b")
 ## Where the audit slip sits, its middle. The tally keeps to the room ScoreSequence
 ## gives it, between the laid cards and the hand.
 const SLIP_AT: Vector2 = Vector2(790, 520)
@@ -150,15 +147,15 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 			if not quiet:
 				_on_rolled(event)
 		RunEvent.Type.AUDITED:
-			slip.audited(event.seat, event.value == 1)
+			slip.set_verdict(event.seat, event.value == 1)
 		RunEvent.Type.SHARE_PAID:
 			if not quiet:
-				slip.paid(event.seat, event.value)
-				if event.seat == 0:
+				slip.pay(event.seat, event.value)
+				if event.seat == Seats.PLAYER:
 					_gain(float(event.value), SLIP_AT)
 		RunEvent.Type.BANKED:
-			if not quiet and event.seat == 0:
-				_gain(event.amount, _ledger.amount_center(0))
+			if not quiet and event.seat == Seats.PLAYER:
+				_gain(event.amount, _ledger.amount_center(Seats.PLAYER))
 		RunEvent.Type.METER_CHANGED:
 			if hud != null and not quiet:
 				hud.nudge_meter(event.text, event.value)
@@ -193,7 +190,7 @@ func _on_bid(seat: int, claim: bool, quiet: bool) -> void:
 			_seats[seat].bump()
 	if quiet or not claim:
 		return
-	var who: String = "you" if seat == 0 else "sub"
+	var who: String = "you" if seat == Seats.PLAYER else "sub"
 	var line: String = tr("callout.%s.%s" % [key, who]).format({"name": _names.get(seat, "")})
 	_shout(tr("callout." + key), Callout.Tier.CUT_IN, ScreenKit.RED, line, seat)
 
@@ -225,9 +222,9 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 				return
 			_clear_tally()
 			var landlord_won: bool = event.seat == _landlord
-			var player_won: bool = landlord_won == (_landlord == 0)
+			var player_won: bool = landlord_won == (_landlord == Seats.PLAYER)
 			var line: String = tr("banner.landlord_wins" if landlord_won else "banner.peasants_win")
-			var cloth: Color = ScreenKit.RED if player_won else LOSS
+			var cloth: Color = ScreenKit.RED if player_won else ScreenKit.LOSS
 			var word: String = tr("callout.won" if player_won else "callout.lost")
 			_shout(word, Callout.Tier.TAKEOVER, cloth, line, Seats.NONE)
 
@@ -241,7 +238,9 @@ func _on_scored(event: RunEvent, quiet: bool) -> void:
 		_ledger.add_play(event.seat, event.grain, event.rate, event.zeal, event.amount)
 		return
 	_scoring = event.seat
-	var pace: float = _pace() * (1.0 if event.seat == 0 else TableMotion.PRESETS.score_villager)
+	var pace: float = (
+		_pace() * (1.0 if event.seat == Seats.PLAYER else UiMotion.PRESETS.score_villager)
+	)
 	sequence.target = _target
 	var seconds: float = sequence.play(event, pace)
 	var flight: float = FLIGHT if seconds > 0.0 else 0.0
@@ -255,7 +254,8 @@ func _on_scored(event: RunEvent, quiet: bool) -> void:
 func _on_landed(total_text: String) -> void:
 	if _scoring == Seats.NONE or _ledger == null:
 		return
-	fx.fly("+" + total_text, tally.total_center(), _ledger.amount_center(_scoring), GRAIN)
+	var to: Vector2 = _ledger.amount_center(_scoring)
+	fx.fly("+" + total_text, tally.total_center(), to, Color(Keywords.INKS["grain"]))
 
 
 ## Work points reach the player: the number flies to the Quota bar, which fills as it
@@ -263,7 +263,7 @@ func _on_landed(total_text: String) -> void:
 func _gain(amount: float, from: Vector2) -> void:
 	if hud == null or amount <= 0.0:
 		return
-	fx.fly("+" + Strings.score(amount), from, hud.progress_center(), GRAIN)
+	fx.fly("+" + Strings.score(amount), from, hud.progress_center(), Color(Keywords.INKS["grain"]))
 	hud.add_progress(amount, TableFx.FLY_TIME)
 
 
@@ -277,10 +277,10 @@ func _on_set_ended(met: bool, progress: float) -> void:
 	if hud != null:
 		var shown: String = hud.end_line(progress, _target)
 		line = line if shown.is_empty() else shown
-		met = hud.reads_met(met)
+		met = ShownFigures.reads_met(met)
 	var word: String = tr("callout.quota.met" if met else "callout.quota.missed")
 	Audio.play(AudioEvents.QUOTA_MET if met else AudioEvents.QUOTA_MISSED)
-	_shout(word, Callout.Tier.TAKEOVER, ScreenKit.RED if met else LOSS, line, Seats.NONE)
+	_shout(word, Callout.Tier.TAKEOVER, ScreenKit.RED if met else ScreenKit.LOSS, line, Seats.NONE)
 
 
 ## Every claim's audit roll arrives together. Once each claim on the slip has rolled, the
@@ -319,7 +319,7 @@ func _on_rolled(event: RunEvent) -> void:
 func _mark_unchecked(seats: Array[int], faces: Array[int], audit_faces: int) -> void:
 	for index: int in seats.size():
 		if faces[index] > audit_faces:
-			slip.unchecked(seats[index])
+			slip.mark_unchecked(seats[index])
 
 
 func _call_audit(seat: int) -> void:
@@ -334,8 +334,7 @@ func _end_dice() -> void:
 
 
 func _kill_dice_beat() -> void:
-	if _dice_beat != null and _dice_beat.is_valid():
-		_dice_beat.kill()
+	UiMotion.end(_dice_beat)
 	_dice_beat = null
 
 
@@ -350,7 +349,7 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 		return
 	_pile.clear()
 	# The kitty's wild cards are wild only when they go to you (ADR 0039).
-	_pile.show_play(cards, KITTY_FROM, [], null, seat == 0)
+	_pile.show_play(cards, KITTY_FROM, [], null, seat == Seats.PLAYER)
 	_kitty_label.reset_size()
 	_kitty_label.position = KITTY_LABEL_AT - _kitty_label.size / 2.0
 	_kitty_label.visible = true
@@ -358,14 +357,13 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 	var to: Vector2 = HAND_AT
 	if _seats.has(seat):
 		to = _seats[seat].global_position + _seats[seat].size / 2.0
-	if _kitty != null and _kitty.is_valid():
-		_kitty.kill()
+	UiMotion.end(_kitty)
 	_kitty = create_tween()
 	_kitty.tween_interval(KITTY_SHOW)
 	_kitty.tween_callback(_pile.sweep.bind(to))
 	_kitty.tween_callback(_kitty_label.hide)
 	# A little past the sweep, so the landlord's first play never lands under it.
-	_player.hold(KITTY_SHOW + TableMotion.PRESETS.sweep + KITTY_MARGIN)
+	_player.hold(KITTY_SHOW + UiMotion.PRESETS.sweep + KITTY_MARGIN)
 
 
 ## Shakes the table a little, for a beat played on it.
@@ -380,7 +378,7 @@ func _on_cards_landed(count: int) -> void:
 
 func _shout(word: String, tier: Callout.Tier, cloth: Color, line: String, seat: int) -> void:
 	var face: Texture2D = _faces.get(seat)
-	var seconds: float = callout.shout(word, tier, cloth, line, face, seat != 1)
+	var seconds: float = callout.shout(word, tier, cloth, line, face, seat != Seats.RIGHT)
 	# A banner sweeps in with a brush stroke, unless its event already sounds.
 	Audio.fill(AudioEvents.CALLOUT_CUT)
 	if tier == Callout.Tier.TAKEOVER:
@@ -390,7 +388,7 @@ func _shout(word: String, tier: Callout.Tier, cloth: Color, line: String, seat: 
 
 ## The table's speed against the default, so a faster table shortens every beat.
 func _pace() -> float:
-	return _player.step / TableMotion.PRESETS.event_step
+	return _player.step / UiMotion.PRESETS.event_step
 
 
 ## The tally and the sequence acting on it are taken down.

@@ -7,6 +7,10 @@ const TURN_STEP: int = 1
 const NONE: int = -1
 ## The seat of the person playing.
 const PLAYER: int = 0
+## The villager who plays after the player, seated on the player's right.
+const RIGHT: int = 1
+## The villager who plays before the player, seated on the player's left (left(PLAYER)).
+const LEFT: int = 2
 
 
 static func next(seat: int) -> int:

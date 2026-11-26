@@ -1,10 +1,10 @@
 class_name CadreBadge
 extends Control
-## What a Cadre card on the notice board says over its art (ADR 0021): a short count on
-## a worn paper ticket pinned to its foot, such as the coupons Ration Coupon has earned
-## this Quota out of the most it pays, with the ticket's band filled to match, and, on a
-## Cadre with no art yet, its name inked on the stock. Drawn, not
-## labelled, so the card stays one picture.
+## What a Cadre card on the notice board says over its art (ADR 0021): a short count on a
+## worn paper ticket pinned to its foot, such as the coupons Ration Coupon has earned this
+## Quota out of the most it pays, with the ticket's band filled to match, and, on a Cadre
+## with no art yet, its name inked on the stock. Drawn, not labelled, so the card stays one
+## picture.
 
 const TICKET: Vector2 = Vector2(72, 32)
 const COUNT_SIZE: int = 21
@@ -15,8 +15,6 @@ const LEAST_NAME: int = 14
 ## Room kept between the count and the ticket's edges, in pixels.
 const COUNT_PAD: Vector2 = Vector2(12, 2)
 const NAME_MARGIN: float = 5.0
-const INK: Color = Color("1e1a16")
-const BAND: Color = Color("3f6338")
 ## The band's fill for a count that is not a meter: no band.
 const NO_METER: float = -1.0
 
@@ -44,7 +42,7 @@ func count() -> String:
 	return _count
 
 
-## How full the ticket's band stands for a count (P5.2a): a count of so many out of so
+## How full the ticket's band stands for a count: a count of so many out of so
 ## many, such as Ration Coupon's "2/3", fills it that share, step by step, and it empties
 ## when the count starts again. Any other count, a number, a factor or a rank, has no band,
 ## so nothing on the ticket looks like a meter that is stuck. Negative for no band.
@@ -59,7 +57,7 @@ static func meter(count: String) -> float:
 
 
 ## How full the band stands now, for tests.
-func fill() -> float:
+func fill_share() -> float:
 	return meter(_count)
 
 
@@ -80,7 +78,7 @@ static func count_size(font: Font, text: String) -> int:
 
 func _draw() -> void:
 	var worn: float = BowlGrime.wear()
-	var ink: Color = BowlGrime.faded(INK, worn)
+	var ink: Color = BowlGrime.faded(ScreenKit.INK, worn)
 	var font: Font = get_theme_default_font()
 	if not _name.is_empty():
 		var wide: float = size.x - NAME_MARGIN * 2.0
@@ -93,7 +91,9 @@ func _draw() -> void:
 		return
 	var at: Vector2 = Vector2((size.x - TICKET.x) / 2.0, size.y - TICKET.y - 4.0)
 	var fill: float = meter(_count)
-	PaperTicket.draw(self, Rect2(at, TICKET), worn, _count.hash() & 0xFF, BAND, 1.0, fill)
+	PaperTicket.draw(
+		self, Rect2(at, TICKET), worn, _count.hash() & 0xFF, ScreenKit.COUPON, 1.0, fill
+	)
 	var baseline: Vector2 = at + Vector2(6, TICKET.y * 0.72)
 	var count_px: int = count_size(font, _count)
 	draw_string(font, baseline, _count, HORIZONTAL_ALIGNMENT_CENTER, TICKET.x - 6, count_px, ink)

@@ -25,8 +25,8 @@ static func every(controller: RunController, bidding: bool) -> Array[String]:
 		texts.append(TranslationServer.translate(key))
 	var score: String = Strings.score(WIDE_SCORE)
 	var scaled: String = TranslationServer.translate("hand.scaled")
-	for type: String in CheatSheet.TYPES:
-		var named: String = TranslationServer.translate("pattern." + type)
+	for type: Pattern.Type in ReadingText.hand_types():
+		var named: String = DirectiveSheet.type_name(type)
 		texts.append(named)
 		var sum: String = TranslationServer.translate("hand.sum").format(
 			{

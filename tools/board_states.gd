@@ -65,7 +65,7 @@ func _run() -> void:
 ## The slow horrors at three stages, then the turn's frame on the right seat.
 func _effect_frames(table: Node, dread: Node) -> void:
 	var speech: Object = WalkBase.member(table, "_speech")
-	speech.set("hurry", true)
+	speech.set("hurrying", true)
 	Input.warp_mouse(POINTER_AT)
 	for stage: int in EFFECT_STAGES:
 		dread.call("force", 100, 100, false, stage)

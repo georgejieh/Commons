@@ -1,19 +1,21 @@
 class_name DreadLayers
 extends Node
-## Puts the board's dread on screen (P3B.12). A BoardState eases one weight per
-## HorrorLayer; each frame this writes those weights, scaled by the horror-intensity
-## setting, into the table's shader materials and set dressing, with no allocation.
-## Brief flickers run on cooldowns and never under no-flash. The Plan's slow effects
-## (P5.2c) take their weights here too: the eyes on the card backs (BackEyes), the hand's
-## tremble (HandTremble), the roster's names (WallRoster) and the slogans TableSpeech asks
-## for. It reads cached run values only and touches nothing the player reads: cards,
-## counts, ranks and scores are drawn by other nodes it never changes.
+## Puts the board's dread on screen. A BoardState eases one weight per HorrorLayer; each
+## frame this writes those weights, scaled by the horror-intensity setting, into the
+## table's shader materials and set dressing, with no allocation. Brief flickers run on
+## cooldowns and never under no-flash. The slow effects of Famine and Denunciation take
+## their weights here too: the eyes on the card backs (BackEyes), the hand's tremble
+## (HandTremble), the roster's names (WallRoster) and the slogans TableSpeech asks for. It
+## reads cached run values only and touches nothing the player reads: cards, counts, ranks
+## and scores are drawn by other nodes it never changes.
 
 signal flickered(kind: String)
 
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
 ## Fixed, so flickers come at the same moments for the same play; never global random.
 const FLICKER_SEED: int = 9187
+## The no-flash setting, which stops every flicker and the lamp's flutter (ADR 0035).
+const NO_FLASH_SETTING: String = "no_flash"
 const NO_FLASH_BREATHE: float = 0.0
 ## The lamp shader's own flutter, which no-flash turns off.
 const DEFAULT_BREATHE: float = 0.05
@@ -30,6 +32,9 @@ var _param_material: Array[ShaderMaterial] = []
 var _param_name: Array[StringName] = []
 var _param_clean: PackedFloat32Array = []
 var _param_value: PackedFloat32Array = []
+## The value last written to each parameter, so a frame writes only what changed; NAN
+## until the first write.
+var _param_written: PackedFloat32Array = []
 ## The lowest and highest value any layer asks for, so layers that push the same way
 ## never stack past the shader's range.
 var _param_low: PackedFloat32Array = []
@@ -50,6 +55,7 @@ var _flicker_wait: PackedFloat32Array = []
 var _flicker_seat: int = 0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _breathe: float = DEFAULT_BREATHE
+var _breathe_written: float = NAN
 ## Slot name to the TextureRect it swaps, its own texture, and the texture shown now.
 var _slots: Dictionary[String, TextureRect] = {}
 var _slot_clean: Dictionary[String, Texture2D] = {}
@@ -100,16 +106,17 @@ static func table_materials(
 	}
 
 
-## New targets from the run, read at a round boundary. landlord overrides the state's
-## seat when the table knows it sooner, as when a bid has just been won.
-func refresh(state: RunView, settle_now: bool = false, landlord: Variant = null) -> void:
-	var is_landlord: bool = state.landlord_seat() == 0 if landlord == null else bool(landlord)
+## New targets from the run, read at a round boundary. landlord is the landlord's seat when
+## the table knows it sooner than the state, as when a bid has just been won, else NONE.
+func refresh(state: RunView, settle_now: bool = false, landlord: int = Seats.NONE) -> void:
+	var seat: int = state.landlord_seat() if landlord == Seats.NONE else landlord
+	var is_landlord: bool = seat == Seats.PLAYER
 	# A meter not shown as it is gives the room no dread (ADR 0022).
 	var famine: int = ShownFigures.board(state, RunCorrections.FAMINE, state.famine())
 	var denunciation: int = ShownFigures.board(
 		state, RunCorrections.DENUNCIATION, state.denunciation()
 	)
-	board.set_inputs(famine, denunciation, is_landlord, corruption())
+	board.set_inputs(famine, denunciation, is_landlord, ArtStages.stage())
 	_choose_music(is_landlord)
 	if settle_now:
 		board.settle()
@@ -124,14 +131,23 @@ func force(famine: int, denunciation: int, landlord: bool, stage: int = 0) -> vo
 	apply()
 
 
-## The hidden corruption stage (ADR 0018), from ArtStages.
-static func corruption() -> int:
-	return ArtStages.stage()
-
-
 ## Writes the current weights into every material and piece.
 func apply() -> void:
-	var intensity: float = float(Settings.value("horror_intensity"))
+	_write(DreadLayers.horror_intensity(), bool(Settings.value(NO_FLASH_SETTING)))
+
+
+## Counts down each flicker and fires those that are ready and allowed.
+func tick_flickers(delta: float) -> void:
+	_tick(delta, DreadLayers.horror_intensity(), bool(Settings.value(NO_FLASH_SETTING)))
+
+
+## The horror-intensity setting, which scales every layer.
+static func horror_intensity() -> float:
+	return float(Settings.value(ArtStages.INTENSITY_KEY))
+
+
+## Writes the weights at intensity. A shader parameter is set only when its value changed.
+func _write(intensity: float, no_flash: bool) -> void:
 	for index: int in _param_value.size():
 		_param_value[index] = _param_clean[index]
 	for index: int in _effect_param.size():
@@ -140,7 +156,9 @@ func apply() -> void:
 	for index: int in _param_value.size():
 		var value: float = clampf(_param_value[index], _param_low[index], _param_high[index])
 		_param_value[index] = value
-		_param_material[index].set_shader_parameter(_param_name[index], value)
+		if value != _param_written[index]:
+			_param_written[index] = value
+			_param_material[index].set_shader_parameter(_param_name[index], value)
 	for index: int in _piece_ids.size():
 		var weight: float = 0.0
 		for layer: int in _piece_layers[index]:
@@ -152,14 +170,15 @@ func apply() -> void:
 		for layer: int in _effect_layers[index]:
 			weight = maxf(weight, board.shown(layer, intensity))
 		_effect_weight[index] = weight
-	BackEyes.shown = effect_weight(DreadEffects.EYES)
+	BackEyes.show_weight(effect_weight(DreadEffects.EYES), get_tree() if is_inside_tree() else null)
 	_dressing.roster().show_weight(effect_weight(DreadEffects.ROSTER), config.effect_tuning)
 	_apply_swaps(intensity)
 	Audio.music.follow(board, config.layers, intensity)
 	Audio.voice.follow(board, config.layers, intensity)
 	Audio.ambience.follow(board, config.layers, intensity)
-	if _materials.has("lamp"):
-		var breathe: float = NO_FLASH_BREATHE if bool(Settings.value("no_flash")) else _breathe
+	var breathe: float = NO_FLASH_BREATHE if no_flash else _breathe
+	if _materials.has("lamp") and breathe != _breathe_written:
+		_breathe_written = breathe
 		_materials["lamp"].set_shader_parameter("breathe", breathe)
 
 
@@ -167,7 +186,8 @@ func apply() -> void:
 func clear() -> void:
 	for index: int in _param_clean.size():
 		_param_material[index].set_shader_parameter(_param_name[index], _param_clean[index])
-	BackEyes.shown = 0.0
+		_param_written[index] = _param_clean[index]
+	BackEyes.show_weight(0.0, null)
 	if _tremble != null:
 		_tremble.still()
 	Audio.music.relax()
@@ -221,16 +241,15 @@ func param_clean(key: String) -> float:
 
 func _process(delta: float) -> void:
 	board.step(delta)
-	apply()
-	tick_flickers(delta)
+	var intensity: float = DreadLayers.horror_intensity()
+	var no_flash: bool = bool(Settings.value(NO_FLASH_SETTING))
+	_write(intensity, no_flash)
+	_tick(delta, intensity, no_flash)
 	if _tremble != null:
 		_tremble.step(delta, effect_weight(DreadEffects.TREMBLE))
 
 
-## Counts down each flicker and fires those that are ready and allowed.
-func tick_flickers(delta: float) -> void:
-	var no_flash: bool = bool(Settings.value("no_flash"))
-	var intensity: float = float(Settings.value("horror_intensity"))
+func _tick(delta: float, intensity: float, no_flash: bool) -> void:
 	for index: int in config.flickers.size():
 		_flicker_wait[index] -= delta
 		if _flicker_wait[index] > 0.0:
@@ -274,6 +293,7 @@ func _bind_params() -> void:
 				_param_name.append(StringName(key.get_slice(":", 1)))
 				_param_clean.append(range_values.x)
 				_param_value.append(range_values.x)
+				_param_written.append(NAN)
 				_param_low.append(range_values.x)
 				_param_high.append(range_values.x)
 			_param_low[param] = minf(_param_low[param], minf(range_values.x, range_values.y))
@@ -317,11 +337,11 @@ func _key(index: int) -> String:
 
 
 ## Picks the music cue for the board at a round boundary: the Famine layer's target,
-## scaled by horror intensity, and the landlord seat (P3C.9).
+## scaled by horror intensity, and the landlord seat.
 func _choose_music(landlord: bool) -> void:
 	var famine: float = 0.0
 	for index: int in config.layers.size():
-		if config.layers[index].input == "famine":
+		if config.layers[index].input == RunCorrections.FAMINE:
 			famine = maxf(famine, board.targets[index])
-	famine *= float(Settings.value("horror_intensity"))
+	famine *= DreadLayers.horror_intensity()
 	Audio.music.request(MusicPlayer.SCORE.cue_for(famine, landlord))

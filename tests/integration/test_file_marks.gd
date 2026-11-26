@@ -122,10 +122,10 @@ func _visit_lines(entries: int) -> int:
 			if line.text_key.begins_with("speech.visit."):
 				visits[0] += 1
 	)
-	speech.hurry = true
+	speech.hurrying = true
 	for _said: int in SAID:
 		speech.say(1, VISIT.event)
-	speech.hurry = false
+	speech.hurrying = false
 	return visits[0]
 
 

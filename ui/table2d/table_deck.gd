@@ -13,6 +13,6 @@ static func attach(
 	table.add_child(sheet)
 	sheet.set_deferred("size", Vector2(1920, 1080))
 	sheet.setup(controller)
-	menu.deck_sheet.connect(sheet.open_deck)
+	menu.deck_chosen.connect(sheet.open_deck)
 	sheet.closed.connect(func() -> void: player.set_process(true))
 	return sheet

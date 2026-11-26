@@ -7,7 +7,7 @@ extends RefCounted
 ## tells the arrival when the rules card closes, and names what the arrival lights and
 ## where its slip stands: in the player's eye line, centred between the seats with its
 ## foot just over the trick, clear of the cards in play, the hand, the prompt, the
-## ledger and the bar (the owner's playtest of 2026-11-24).
+## ledger and the bar.
 
 ## The highest the slip's top may stand, level with the seats' tops under the bar, and
 ## its gap over the trick, or over the claim sheet while that is up.
@@ -29,7 +29,7 @@ var _pause: PauseMenu
 var _dressing: DreadDressing
 ## The step whose cards were last put up, so a player's own change is kept.
 var _picked_for: int = -1
-var _pile: TrickPile = null
+var _pile: TrickPile
 ## What the run waits on, held until the top play has landed, or NO_REPORT; and until when.
 var _report: int = NO_REPORT
 var _report_by: int = 0
@@ -44,7 +44,7 @@ func setup(
 	need_panel: NeedPanel,
 	cheat_sheet: CheatSheet,
 	pause: PauseMenu,
-	dressing: DreadDressing = null
+	dressing: DreadDressing
 ) -> void:
 	_app = app
 	_dressing = dressing
@@ -88,15 +88,13 @@ func _report_when_landed() -> void:
 	_report = NO_REPORT
 	var director: TutorialDirector = _app.arrival.director
 	# The table may have given way to another screen, which reports for itself.
-	if director != null and (_pile == null or _pile.is_visible_in_tree()):
+	if director != null and _pile.is_visible_in_tree():
 		director.ready("table", awaiting)
 
 
 ## True when the trick is empty, or every card of the play on top has landed and stood
 ## still since the frame before, so a sweep that starts this frame is seen moving.
 func _landed() -> bool:
-	if _pile == null:
-		return true
 	var views: Array[CardView] = _pile.top_views()
 	if views.is_empty():
 		return true
@@ -186,7 +184,7 @@ func tutorial_avoid() -> Array[Rect2]:
 	var avoid: Array[Rect2] = []
 	if not _cheat_sheet.visible:
 		avoid.append(_hand_view.get_global_rect())
-	if _dressing != null and _dressing.notice_rect().has_area():
+	if _dressing.notice_rect().has_area():
 		avoid.append(_dressing.notice_rect())
 	return avoid
 

@@ -1,9 +1,9 @@
 class_name IntelText
 extends RefCounted
 ## What the player's information Cadres reveal about one villager's hand, as a line for
-## that villager's seat (P4.9). The Informant shows the hand types an opponent still
-## holds; Peek shows the cards of the player closest to going out. With neither, or for
-## a seat they don't cover, the line is empty.
+## that villager's seat. The Informant shows the hand types an opponent still holds; Peek
+## shows the cards of the player closest to going out. With neither, or for a seat they
+## don't cover, the line is empty.
 
 ## Hand types in the order they are listed, strongest first.
 const ORDER: Array[int] = [
@@ -43,8 +43,7 @@ static func types_text(types: PackedInt32Array) -> String:
 	var parts: PackedStringArray = []
 	for type: int in ORDER:
 		if type < types.size() and types[type] > 0:
-			var key: String = "pattern." + String(Pattern.Type.keys()[type]).to_lower()
-			parts.append("%d %s" % [types[type], TranslationServer.translate(key)])
+			parts.append("%d %s" % [types[type], DirectiveSheet.type_name(type)])
 	return ", ".join(parts)
 
 

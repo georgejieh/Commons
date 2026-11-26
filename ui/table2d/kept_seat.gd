@@ -41,7 +41,7 @@ func _read_round(event: RoundEvent) -> void:
 		_player_acted = false
 		landlord = event.seat
 	elif event.type == RoundEvent.Type.PLAYED or event.type == RoundEvent.Type.PASSED:
-		_player_acted = _player_acted or event.seat == 0
+		_player_acted = _player_acted or event.seat == Seats.PLAYER
 
 
 ## True when the round in progress began with no bidding.
@@ -61,17 +61,17 @@ func key() -> String:
 
 ## The callout's big word.
 func word() -> String:
-	return TranslationServer.translate("seat.kept.word")
+	return tr("seat.kept.word")
 
 
 ## Who holds the seat and why, with the villagers' names by seat.
 func line(names: Dictionary[int, String]) -> String:
 	var name: String = names.get(landlord, "")
 	if _round == 0:
-		return TranslationServer.translate("seat.risen.sub").format({"name": name})
-	if landlord == 0:
-		return TranslationServer.translate("seat.kept.you")
-	return TranslationServer.translate("seat.kept.sub").format({"name": name})
+		return tr("seat.risen.sub").format({"name": name})
+	if landlord == Seats.PLAYER:
+		return tr("seat.kept.you")
+	return tr("seat.kept.sub").format({"name": name})
 
 
 ## Forgets the round last called out, as a run starts or is left.

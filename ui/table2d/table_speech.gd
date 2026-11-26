@@ -1,19 +1,20 @@
 class_name TableSpeech
 extends RefCounted
-## Turns run events into what villagers say at the table (P3B.8). Lines come from the
-## SpeechBook by event. Each seat cycles through a salt, so the same events in the same
-## order always give the same lines, with no global random. One villager talks at a
-## time: a line for another seat waits in a short queue until the one typing out ends.
-## A seat's newer line for the same event replaces its older one, and when the queue
-## overflows, idle chatter goes before announcements. Skipping shows every waiting line
-## at once, silently. In a run that began with an entry in the family's file (ADR 0022),
-## a villager's line for one moment is now and then about the work team's visit instead,
-## drawn on the table's own seeded stream; a run with no entry draws nothing.
-## On a corrupted profile under Denunciation, ordinary lines turn by degrees into the
-## speech book's slogans (P5.2c), the share from the dread's slogan weight on a fixed
-## sequence; at the last stages the other villager says the same slogan at once.
+## Turns run events into what villagers say at the table. Lines come from the SpeechBook by
+## event. Each seat cycles through a salt, so the same events in the same order always give
+## the same lines, with no global random. One villager talks at a time: a line for another
+## seat waits in a short queue until the one typing out ends. A seat's newer line for the
+## same event replaces its older one, and when the queue overflows, idle chatter goes
+## before announcements. Skipping shows every waiting line at once, silently. In a run that
+## began with an entry in the family's file (ADR 0022), a villager's line for one moment is
+## now and then about the work team's visit instead, drawn on the table's own seeded
+## stream; a run with no entry draws nothing. On a corrupted profile under Denunciation,
+## ordinary lines turn by degrees into the speech book's slogans, the share from the
+## dread's slogan weight on a fixed sequence; at the last stages the other villager says
+## the same slogan at once.
 
-## A villager said a line: the voice (P3B.13) listens here.
+## A villager said a line, for tests: the table voices the line itself, and tests count
+## what was said here.
 signal spoke(seat: int, event: String, line: SpeechLine)
 
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
@@ -28,20 +29,20 @@ const CHATTER: Array[String] = ["pass", "call", "no_call"]
 const SPREAD: float = 0.618034
 
 ## True while the table skips ahead: every line shows at once, with no voice.
-var hurry: bool = false
+var hurrying: bool = false
 ## The board's dread, whose slogan weight turns lines into slogans; none says none.
 var dread: DreadLayers = null
 
 var _seats: Dictionary[int, SeatPanel] = {}
 var _said: Dictionary[int, int] = {}
 var _landlord: int = Seats.NONE
-## Each seated family's own lines (P4.5), said alongside the shared book's.
+## Each seated family's own lines, said alongside the shared book's.
 var _books: Dictionary[int, SpeechBook] = {}
-## Each seat's voice and letter bank (P3B.13). A seat with none speaks silently.
+## Each seat's voice and letter bank. A seat with none speaks silently.
 var _voices: Dictionary[int, VoiceProfile] = {}
 var _voice_banks: Dictionary[int, String] = {}
-## Lines waiting for the table to fall quiet, oldest first: seat, event and fields.
-var _waiting: Array[Dictionary] = []
+## Lines waiting for the table to fall quiet, oldest first.
+var _waiting: Array[WaitingLine] = []
 ## The draws for the work team's lines, or null in a run with no entry in the file.
 var _visit: RandomStream = null
 
@@ -111,8 +112,8 @@ func lines_said() -> int:
 func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	if not _seats.has(seat):
 		return
-	if not hurry and _talking_besides(seat):
-		_wait({"seat": seat, "event": event, "fields": fields})
+	if not hurrying and _talking_besides(seat):
+		_wait(WaitingLine.new(seat, event, fields))
 		return
 	var said: int = _said.get(seat, 0)
 	_said[seat] = said + 1
@@ -143,9 +144,9 @@ func _speak(seat: int, event: String, line: SpeechLine, fields: Dictionary) -> v
 	if _voices.has(seat):
 		var voice: VoiceProfile = _voices[seat]
 		reveal = Audio.voice.speak(seat, text, line.mood, voice, _voice_banks[seat]).reveal
-	_seats[seat].say(text, line.mood, reveal)
+	_seats[seat].say(text, reveal)
 	spoke.emit(seat, event, line)
-	if hurry:
+	if hurrying:
 		_seats[seat].skip_speech()
 
 
@@ -189,13 +190,13 @@ func _visit_line(event: String) -> SpeechLine:
 
 ## Shows every line still typing out, then every waiting line, and stops every voice.
 func skip_all() -> void:
-	hurry = true
+	hurrying = true
 	for seat: int in _seats:
 		_seats[seat].skip_speech()
 	while not _waiting.is_empty():
-		var line: Dictionary = _waiting.pop_front()
+		var line: WaitingLine = _waiting.pop_front()
 		say(line.seat, line.event, line.fields)
-	hurry = false
+	hurrying = false
 	Audio.voice.stop_all()
 
 
@@ -204,7 +205,7 @@ func skip_all() -> void:
 func _hush(seat: int) -> void:
 	if not _seats.has(seat):
 		return
-	_waiting = _waiting.filter(func(line: Dictionary) -> bool: return line.seat != seat)
+	_waiting = _waiting.filter(func(line: WaitingLine) -> bool: return line.seat != seat)
 	if _voices.has(seat):
 		Audio.voice.stop(seat)
 	_seats[seat].say("")
@@ -216,7 +217,7 @@ func waiting_count() -> int:
 	return _waiting.size()
 
 
-func _wait(line: Dictionary) -> void:
+func _wait(line: WaitingLine) -> void:
 	for index: int in _waiting.size():
 		if _waiting[index].seat == line.seat and _waiting[index].event == line.event:
 			_waiting.remove_at(index)
@@ -243,5 +244,18 @@ func _talking_besides(seat: int) -> bool:
 func _on_finished(_seat: int) -> void:
 	if _waiting.is_empty():
 		return
-	var line: Dictionary = _waiting.pop_front()
+	var line: WaitingLine = _waiting.pop_front()
 	say(line.seat, line.event, line.fields)
+
+
+## A line a villager will say once the table falls quiet.
+class WaitingLine:
+	extends RefCounted
+	var seat: int
+	var event: String
+	var fields: Dictionary
+
+	func _init(at_seat: int, for_event: String, with_fields: Dictionary) -> void:
+		seat = at_seat
+		event = for_event
+		fields = with_fields

@@ -44,8 +44,8 @@ func setup(
 	actions: ActionBar,
 	controller: RunController
 ) -> void:
-	_left = seats[2]
-	_right = seats[1]
+	_left = seats[Seats.LEFT]
+	_right = seats[Seats.RIGHT]
 	_tray = tray
 	_dressing = dressing
 	_strip = strip
@@ -154,13 +154,13 @@ func floor_top() -> float:
 
 
 ## The slip's room as the right seat stands now.
-func strip_room() -> float:
+func _strip_room() -> float:
 	return floor_top() - GAP - _strip_top()
 
 
 func _place_strip() -> void:
 	_strip.position.y = _strip_top()
-	_strip.room = strip_room()
+	_strip.room = _strip_room()
 
 
 func _strip_top() -> float:

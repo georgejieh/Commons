@@ -9,7 +9,6 @@ extends Control
 ## long as it runs and is taken down at once by the next, so nothing outlives it. Quiet
 ## events, from a replay or a skip, leave only the end state.
 
-const COUPON: Color = Color("6f9a62")
 const SLAP_SCALE: float = 1.35
 const LIFT_TIME: float = 0.14
 const SLAM_TIME: float = 0.1
@@ -36,12 +35,9 @@ var _hand_view: HandView
 var _pool: CardPool
 var _player: EventPlayer
 var _table: TableMoments
-var _seats: Dictionary[int, SeatPanel] = {}
-var _names: Dictionary[int, String] = {}
 var _debuffs: DebuffStrip
-## Finds a card's face by ID, and puts the hand back as the run holds it.
-var _card_for: Callable
-var _show_hand: Callable
+## Finds a card's face by ID and where it moves, and puts the hand back as the run holds it.
+var _cards: TableCards
 var _leaflet: CampaignLeaflet = CampaignLeaflet.new()
 var _seal: InkSeal = InkSeal.new()
 var _note: Control = Control.new()
@@ -87,22 +83,16 @@ func setup(
 	pool: CardPool,
 	player: EventPlayer,
 	table: TableMoments,
-	seats: Dictionary[int, SeatPanel],
-	names: Dictionary[int, String],
 	debuffs: DebuffStrip,
-	card_for: Callable,
-	show_hand: Callable
+	cards: TableCards
 ) -> void:
 	_controller = controller
 	_hand_view = hand_view
 	_pool = pool
 	_player = player
 	_table = table
-	_seats = seats
-	_names = names
 	_debuffs = debuffs
-	_card_for = card_for
-	_show_hand = show_hand
+	_cards = cards
 	_seal.prepare(tr("campaign.sealed"), ScreenKit.RED, SEAL_WIDTH)
 
 
@@ -126,7 +116,7 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 			_on_used(event, quiet)
 		RunEvent.Type.CARDS_MARKED:
 			if not quiet:
-				_press_marks(_ids(event.text), CardInstance.marked_by(event.value))
+				_press_marks(event.listed(), CardInstance.marked_by(event.value))
 		RunEvent.Type.CARDS_MOVED:
 			if not quiet:
 				_move_cards(event)
@@ -201,7 +191,7 @@ func _shout_stake() -> void:
 ## then the hand shows them as its own.
 func _press_marks(card_ids: Array[int], enhancement_id: String) -> void:
 	if UiMotion.reduced():
-		_show_hand.call()
+		_cards.show_hand()
 		return
 	var tween: Tween = _start_beat()
 	var stamping: bool = enhancement_id == CardInstance.NO_ID
@@ -226,30 +216,30 @@ func _press_marks(card_ids: Array[int], enhancement_id: String) -> void:
 		)
 		used += 1
 	tween.chain().tween_interval(PRESS_TIME)
-	tween.tween_callback(_show_hand)
+	tween.tween_callback(_cards.show_hand)
 	tween.tween_callback(_put_away)
 	_player.hold(PRESS_TIME * 2.0 + used * PRESS_STAGGER)
 
 
 ## Real cards fly between the hand and a seat. A seizure takes the screen first.
 func _move_cards(event: RunEvent) -> void:
-	var card_ids: Array[int] = _ids(event.text)
+	var card_ids: Array[int] = event.listed()
 	var seizing: bool = _last_used == "seizure_notice"
 	if UiMotion.reduced():
 		if event.value == 0:
-			_show_hand.call()
+			_cards.show_hand()
 		return
 	var tween: Tween = _start_beat()
 	var wait: float = 0.0
-	if seizing and event.seat == 0:
-		var name: String = _names.get(event.value, "")
+	if seizing and event.seat == Seats.PLAYER:
+		var name: String = _table.names().get(event.value, "")
 		var sub: String = tr("callout.seizure.sub").format({"name": name})
 		wait = _table.callout.shout(
 			tr("callout.seizure"), Callout.Tier.TAKEOVER, ScreenKit.RED, sub
 		)
 		_table.bump(TableMoments.TAKEOVER_SHAKE)
 		tween.tween_interval(wait)
-	if event.seat == 0:
+	if event.seat == Seats.PLAYER:
 		_hand_view.hide_cards(card_ids)
 	for index: int in card_ids.size():
 		var view: CardView = _pool.acquire()
@@ -257,11 +247,11 @@ func _move_cards(event: RunEvent) -> void:
 			break
 		_fliers.append(view)
 		view.reparent(self, false)
-		view.bind(_card_for.call(card_ids[index]))
-		var from: Vector2 = _point(event.seat, card_ids[index]) - view.size / 2.0
-		var to: Vector2 = _point(event.value, -1) - view.size / 2.0
+		view.bind(_cards.card(card_ids[index]))
+		var from: Vector2 = _cards.point(event.seat, card_ids[index]) - view.size / 2.0
+		var to: Vector2 = _cards.point(event.value) - view.size / 2.0
 		view.position = from - global_position
-		view.scale = Vector2.ONE * (1.0 if event.seat == 0 else 0.6)
+		view.scale = Vector2.ONE * (1.0 if event.seat == Seats.PLAYER else 0.6)
 		var delay: float = wait + index * FLY_STAGGER
 		var fly: PropertyTweener = tween.parallel().tween_property(
 			view, "position", to - global_position, FLY_TIME
@@ -271,7 +261,7 @@ func _move_cards(event: RunEvent) -> void:
 		tween.parallel().tween_property(view, "scale", Vector2.ONE * shrink, FLY_TIME).set_delay(
 			delay
 		)
-	tween.chain().tween_callback(_show_hand)
+	tween.chain().tween_callback(_cards.show_hand)
 	tween.tween_callback(_put_away)
 	_player.hold(wait + FLY_TIME + card_ids.size() * FLY_STAGGER)
 
@@ -281,7 +271,7 @@ func _settle(won: bool, amount: float) -> void:
 	var word: String = tr("callout.stake.won" if won else "callout.stake.lost")
 	var sub: String = tr("callout.stake.won.sub" if won else "callout.stake.lost.sub")
 	sub = sub.format({"amount": Strings.score(amount)})
-	var cloth: Color = ScreenKit.RED if won else TableMoments.LOSS
+	var cloth: Color = ScreenKit.RED if won else ScreenKit.LOSS
 	_player.hold(_table.callout.shout(word, Callout.Tier.CUT_IN, cloth, sub))
 
 
@@ -313,10 +303,9 @@ func _fly_coupons(count: int) -> void:
 ## The Letter goes out to the next seat, or is taken back from it.
 func _set_letter(out: bool, animate: bool = false) -> void:
 	_letter_out = out
-	if _note_tween != null and _note_tween.is_valid():
-		_note_tween.kill()
+	UiMotion.end(_note_tween)
 	_note_tween = null
-	var seat: SeatPanel = _seats.get(1)
+	var seat: SeatPanel = _table.seats().get(Seats.RIGHT)
 	if seat == null:
 		_note.visible = false
 		return
@@ -349,8 +338,7 @@ func _start_beat() -> Tween:
 
 
 func _end_beat() -> void:
-	if _beat != null and _beat.is_valid():
-		_beat.kill()
+	UiMotion.end(_beat)
 	_beat = null
 	_put_away()
 
@@ -367,15 +355,6 @@ func _put_away() -> void:
 
 
 ## Where a seat's cards come from or go: a card in the hand, the hand, or the seat.
-func _point(seat: int, card_id: int) -> Vector2:
-	if seat == 0:
-		if card_id >= 0:
-			return _hand_view.card_center(card_id)
-		return _hand_view.global_position + _hand_view.size / 2.0
-	var panel: SeatPanel = _seats[seat]
-	return panel.global_position + panel.size / 2.0
-
-
 func _draw_note() -> void:
 	CampaignPaper.note(_note, Rect2(Vector2.ZERO, NOTE_SIZE), BowlGrime.wear())
 
@@ -383,12 +362,5 @@ func _draw_note() -> void:
 func _draw_ticket(ticket: Control) -> void:
 	var worn: float = BowlGrime.wear()
 	var rect: Rect2 = Rect2(Vector2.ZERO, TICKET)
-	ticket.draw_rect(rect, CampaignPaper.ink(COUPON, worn))
+	ticket.draw_rect(rect, CampaignPaper.ink(ScreenKit.COUPON_ON_DARK, worn))
 	ticket.draw_rect(rect.grow(-3.0), Color(CampaignPaper.paper(worn), 0.5), false, 1.0)
-
-
-static func _ids(text: String) -> Array[int]:
-	var ids: Array[int] = []
-	for part: String in text.split(",", false):
-		ids.append(part.to_int())
-	return ids

@@ -81,11 +81,11 @@ func test_the_tally_shows_a_whole_sum_and_says_it_landed() -> void:
 	add_child(tally)
 	var landed: Array[String] = []
 	tally.landed.connect(func(total: String) -> void: landed.append(total))
-	assert_float(tally.show_score(54.0, 7.0, 1.0, 378.0)).is_equal(0.0)
+	assert_float(_show_sum(tally, 54.0, 7.0, 1.0, 378.0)).is_equal(0.0)
 	assert_array(landed).is_equal(["378"])
 	assert_str(tally.shown()).is_equal("54 × 7 × 1 = 378")
 	Settings.set_value("reduced_motion", true)
-	tally.show_score(16.0, 3.0, 0.75, 36.0)
+	_show_sum(tally, 16.0, 3.0, 0.75, 36.0)
 	assert_str(tally.shown()).is_equal("16 × 3 × 0.75 = 36")
 	Settings.set_value("reduced_motion", false)
 
@@ -98,7 +98,7 @@ func test_the_tally_keeps_its_words_inside_its_paper() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		var tally: ScoreTally = auto_free(ScoreTally.new())
 		add_child(tally)
-		tally.show_score(999999.0, 96.0, 12.5, 999999.0)
+		_show_sum(tally, 999999.0, 96.0, 12.5, 999999.0)
 		await await_idle_frame()
 		await await_idle_frame()
 		for tile: PanelContainer in tally.find_children("*", "PanelContainer", true, false):
@@ -145,9 +145,9 @@ func test_the_audit_slip_shows_each_claim_its_verdict_and_its_pay() -> void:
 	assert_bool(slip.visible).is_true()
 	assert_str(slip.row_text(0)).contains(tr("audit.claim").format({"name": "You", "percent": 67}))
 	assert_str(slip.row_text(2)).contains(tr("audit.rolling"))
-	slip.audited(0, true)
-	slip.paid(0, 600)
-	slip.paid(2, 600)
+	slip.set_verdict(0, true)
+	slip.pay(0, 600)
+	slip.pay(2, 600)
 	assert_str(slip.row_text(0)).contains(tr("audit.caught"))
 	assert_str(slip.row_text(0)).contains(tr("audit.paid").format({"amount": Strings.score(600)}))
 	assert_str(slip.row_text(2)).contains(tr("audit.clear"))
@@ -184,7 +184,7 @@ func test_the_quota_bar_fills_as_points_arrive_and_is_sealed_when_met() -> void:
 	hud.add_progress(700.0)
 	assert_float(hud.quota.value).is_equal(1000.0)
 	assert_bool(hud.is_met()).is_true()
-	hud.nudge_meter(TableHud.FAMINE, 10.0)
+	hud.nudge_meter(RunCorrections.FAMINE, 10.0)
 	assert_float(hud.famine.value).is_equal(10.0)
 	# A new Quota empties the bar and lifts the seal.
 	hud.start_quota(2000.0)
@@ -257,7 +257,7 @@ func test_a_cut_total_still_adds_up_on_the_tally() -> void:
 	var tally: ScoreTally = auto_free(ScoreTally.new())
 	add_child(tally)
 	Settings.set_value("reduced_motion", true)
-	tally.show_score(25.0, 7.0, 1.0, 87.5)
+	_show_sum(tally, 25.0, 7.0, 1.0, 87.5)
 	assert_str(tally.shown()).contains(tr("tally.scaled").format({"percent": 50}))
 	Settings.set_value("reduced_motion", false)
 
@@ -353,3 +353,14 @@ func test_a_quiet_replay_leaves_no_bowl_on_screen() -> void:
 func _no_seats() -> Dictionary[int, SeatPanel]:
 	var seats: Dictionary[int, SeatPanel] = {}
 	return seats
+
+
+## Shows a play's whole sum on the tally at once, as the game shows a replayed play.
+func _show_sum(tally: ScoreTally, grain: float, rate: float, zeal: float, total: float) -> float:
+	var sequence: ScoreSequence = auto_free(ScoreSequence.new())
+	sequence.tally = tally
+	var scored: RunEvent = RunEvent.new(RunEvent.Type.PLAY_SCORED, 0, 0, total)
+	scored.grain = grain
+	scored.rate = rate
+	scored.zeal = zeal
+	return sequence.play(scored, 0.0)

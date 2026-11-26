@@ -6,9 +6,11 @@ extends RefCounted
 ## asks the gate first; during the arrival only the step's own action passes, and a
 ## refused press does nothing (ADR 0026).
 
-## What the prompt line says in place of the hand's reading, such as an armed Campaign's
-## ask, or "" to leave the reading.
-var prompt: Callable = Callable()
+## What the prompt line says in place of the hand's reading, or "" to leave the reading.
+## Sitting out is asked first, then an armed Campaign or the opening; the first that says
+## something is shown. Unset, each says nothing.
+var sit_out_prompt: Callable = Callable()
+var campaign_prompt: Callable = Callable()
 ## Asked with an action's name and detail before it is sent; false refuses it. Unset, all
 ## pass.
 var gate: Callable = Callable()
@@ -71,7 +73,9 @@ func refresh() -> void:
 	if was_off and not _actions.play.disabled:
 		UiMotion.pulse(_actions.play)
 	_actions.pass_turn.disabled = not (my_turn and _hand.can_pass())
-	var asked: String = prompt.call() if prompt.is_valid() else ""
+	var asked: String = sit_out_prompt.call() if sit_out_prompt.is_valid() else ""
+	if asked.is_empty() and campaign_prompt.is_valid():
+		asked = campaign_prompt.call()
 	if not asked.is_empty():
 		# The selection is the Campaign's while one is armed, so it is not played.
 		_actions.play.disabled = true

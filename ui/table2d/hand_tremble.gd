@@ -1,11 +1,11 @@
 class_name HandTremble
 extends RefCounted
-## Cards tremble in the player's hand (P5.2c, the Plan's Famine rows): at a small weight
-## one card's print shivers by a fraction of a pixel; as the weight grows more of the fan
-## joins in and each shakes further, up to DreadEffects.tremble_px. Which cards tremble is
-## fixed by their ids, so the same card is the first to go every time. Only the print
-## moves: the offset transform is visual only, so a card's rectangle, and where a click on
-## it lands, never moves. Nothing trembles under reduced motion.
+## Cards tremble in the player's hand as Famine rises: at a small weight one card's print
+## shivers by a fraction of a pixel; as the weight grows more of the fan joins in and each
+## shakes further, up to DreadEffects.tremble_px. Which cards tremble is fixed by their
+## ids, so the same card is the first to go every time. Only the print moves: the offset
+## transform is visual only, so a card's rectangle, and where a click on it lands, never
+## moves. Nothing trembles under reduced motion.
 
 ## Spreads card ids over the share of the fan that trembles; prime, so near ids part.
 const SPREAD: int = 7919

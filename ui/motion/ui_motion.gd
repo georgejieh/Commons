@@ -32,6 +32,12 @@ static func seconds(base: float) -> float:
 	return base * (PRESETS.reduced_scale if reduced() else 1.0)
 
 
+## Ends a tween where it stands, if there is one still alive.
+static func end(tween: Tween) -> void:
+	if tween != null and tween.is_valid():
+		tween.kill()
+
+
 ## Lifts a control on hover or focus and sinks it while pressed.
 static func hoverable(control: Control) -> void:
 	control.set_meta(LIFTS, true)

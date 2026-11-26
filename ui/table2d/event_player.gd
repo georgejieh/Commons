@@ -16,23 +16,20 @@ signal queued
 signal closing
 signal drained
 
-## Seconds between events, and the pause after a round ends so its banner can be read.
+## Seconds between events.
 var step: float = 0.55
-var round_end_hold: float = 1.6
 ## Seconds to wait after an event of a run type, where that differs from a step.
 var holds: Dictionary[int, float] = {}
 ## Seconds after a play before its score is counted, or negative to use a full step.
 var play_wait: float = -1.0
 ## Seconds a villager's play waits after it is announced; zero plays it at once.
 var wind: float = 0.0
-## The seat whose plays are the player's own. They answer at once, with no wind-up.
-var own_seat: int = 0
 ## True while flush() plays the queue at once: nothing should be acted out.
 var flushing: bool = false
 ## Holds the queue still during a hit-stop.
 var motion: TableMotion = null
 ## Holds the queue still while it returns true, as while a scored play is acted out
-## (P5.2a): the next seat's play waits for the sequence to finish or be hurried.
+##: the next seat's play waits for the sequence to finish or be hurried.
 var waits_on: Callable = Callable()
 
 var _queue: Array[RunEvent] = []
@@ -116,7 +113,7 @@ func _process(delta: float) -> void:
 		if holds.has(event.type):
 			_wait = maxf(_wait, holds[event.type])
 		if _ends_round(event):
-			_wait = maxf(_wait, round_end_hold)
+			_wait = maxf(_wait, UiMotion.PRESETS.round_end_hold)
 			_round_over = true
 		elif event.type == RunEvent.Type.SET_ENDED:
 			_round_over = false
@@ -144,7 +141,9 @@ func _step_for(event: RunEvent) -> float:
 func _winds(event: RunEvent) -> bool:
 	if wind <= 0.0 or event.round_event == null:
 		return false
-	return event.round_event.type == RoundEvent.Type.PLAYED and event.round_event.seat != own_seat
+	return (
+		event.round_event.type == RoundEvent.Type.PLAYED and event.round_event.seat != Seats.PLAYER
+	)
 
 
 func _ends_round(event: RunEvent) -> bool:

@@ -1,16 +1,14 @@
 class_name ScoreTally
 extends HBoxContainer
 ## How a play's score is made, shown under the trick on four small paper chits: Grain ×
-## Rate × Zeal = the total. ScoreSequence drives it a figure at a time (P5.2a): Grain
-## counts up as the cards are counted, Rate and Zeal are stamped on, each change bumps its
-## figure, then the total rolls up and lands, and landed fires so the table can send it to
-## the ledger. show_score() sets the whole sum at once. Chits are made once; the tally only
-## scales and fades its chits, and shakes as a whole, so the table can keep all its
-## motion inside the room it gives it.
+## Rate × Zeal = the total. ScoreSequence drives it a figure at a time: Grain counts up as
+## the cards are counted, Rate and Zeal are stamped on, each change bumps its figure, then
+## the total rolls up and lands, and landed fires so the table can send it to the ledger.
+## Chits are made once; the tally only scales and fades its chits, and shakes as a whole,
+## so the table can keep all its motion inside the room it gives it.
 
 signal landed(total_text: String)
 
-const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 ## A chit's least size, and its padding inside the paper's printed border.
 const TILE: Vector2 = Vector2(96, 70)
 const PADDING: int = 18
@@ -25,8 +23,6 @@ const GAP: int = 6
 const LINGER: float = 0.9
 const HELD: float = 0.5
 const FADE: float = 0.2
-const TOTAL_INK: Color = Color("9e1b16")
-const IDLE: Color = Color("8a745c")
 const WORDS: PackedStringArray = ["grain", "rate", "zeal"]
 const WHOLE: int = 100
 ## The chits by place: Grain, Rate, Zeal, then the total.
@@ -55,23 +51,8 @@ func _ready() -> void:
 		_add_tile(tr("keyword.%s.name" % WORDS[index]), ink, VALUE_SIZE)
 	_equals = _sign("=")
 	add_child(_equals)
-	_add_tile(tr("tally.total"), TOTAL_INK, TOTAL_SIZE)
+	_add_tile(tr("tally.total"), ScreenKit.SEAL, TOTAL_SIZE)
 	visible = false
-
-
-## Sets the whole sum at once and fades it after a while, as a replay or a test wants.
-## pace scales nothing here; it is kept so callers need not change. Returns 0.
-func show_score(grain: float, rate: float, zeal: float, total: float, _pace: float = 1.0) -> float:
-	begin(zeal)
-	figure(GRAIN, Strings.score(grain), false)
-	figure(RATE, Strings.factor(rate), false)
-	figure(ZEAL, Strings.factor(zeal), false)
-	scaled(ScoreTally.scale_percent(grain, rate, zeal, total))
-	var total_text: String = Strings.score(total)
-	figure(TOTAL, total_text, false)
-	landed.emit(total_text)
-	fade_after(LINGER)
-	return 0.0
 
 
 ## Shows the tally with its chits empty, about to be filled. A final Zeal of 1 changes
@@ -82,7 +63,8 @@ func begin(final_zeal: float) -> void:
 	modulate.a = 1.0
 	_equals.text = "="
 	_values[ZEAL].add_theme_color_override(
-		"font_color", IDLE if is_equal_approx(final_zeal, 1.0) else Color(Keywords.INKS["zeal"])
+		"font_color",
+		ScreenKit.QUIET if is_equal_approx(final_zeal, 1.0) else Color(Keywords.INKS["zeal"])
 	)
 	for index: int in _tiles.size():
 		_values[index].text = ""
@@ -110,14 +92,17 @@ func figure(index: int, text: String, bump: bool, big: bool = false) -> void:
 		tile.scale = Vector2.ONE
 		return
 	tile.pivot_offset = tile.size / 2.0
-	tile.scale = Vector2.ONE * (PRESETS.score_total_scale if big else PRESETS.score_chit_scale)
+	tile.scale = (
+		Vector2.ONE
+		* (UiMotion.PRESETS.score_total_scale if big else UiMotion.PRESETS.score_chit_scale)
+	)
 	var press: Tween = tile.create_tween()
 	press.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	press.tween_property(tile, "scale", Vector2.ONE, PRESETS.score_stamp)
+	press.tween_property(tile, "scale", Vector2.ONE, UiMotion.PRESETS.score_stamp)
 
 
 ## The equals sign says what share of Grain × Rate × Zeal a cut left the total.
-func scaled(percent: int) -> void:
+func show_scale(percent: int) -> void:
 	_equals.text = "=" if percent == WHOLE else tr("tally.scaled").format({"percent": percent})
 
 
@@ -130,8 +115,7 @@ func land(total_text: String) -> void:
 func shake(pixels: float, seconds: float) -> void:
 	if pixels <= 0.0 or UiMotion.reduced():
 		return
-	if _shake != null and _shake.is_valid():
-		_shake.kill()
+	UiMotion.end(_shake)
 	_rest = position
 	_shake = create_tween()
 	var hops: int = 4
@@ -144,11 +128,13 @@ func shake(pixels: float, seconds: float) -> void:
 
 ## How far any motion here takes a chit past its resting box, on each side, in pixels.
 func reach() -> Vector2:
-	var most: float = maxf(PRESETS.score_chit_scale, PRESETS.score_total_scale) - 1.0
+	var most: float = (
+		maxf(UiMotion.PRESETS.score_chit_scale, UiMotion.PRESETS.score_total_scale) - 1.0
+	)
 	var widest: float = 0.0
 	for tile: Control in _tiles:
 		widest = maxf(widest, tile.size.x)
-	return Vector2(widest * most / 2.0 + PRESETS.score_shake, size.y * most / 2.0)
+	return Vector2(widest * most / 2.0 + UiMotion.PRESETS.score_shake, size.y * most / 2.0)
 
 
 ## Fades the tally away after a while.
@@ -210,8 +196,7 @@ func shown() -> String:
 
 func _stop() -> void:
 	for running: Tween in [_tween, _shake]:
-		if running != null and running.is_valid():
-			running.kill()
+		UiMotion.end(running)
 	if _shake != null:
 		position = _rest
 	_tween = null

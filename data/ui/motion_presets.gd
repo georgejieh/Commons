@@ -22,6 +22,9 @@ extends Resource
 ## A finished round stays on the table, all of it in view, this many table steps once its
 ## last share is paid; then the last trick is swept off and the next hand is dealt.
 @export var round_close_steps: float = 1.0
+## Seconds the table holds after a round ends, so its banner can be read. The table's
+## pace does not scale it.
+@export var round_end_hold: float = 1.6
 ## While the player sits out a trick they cannot answer, the table's step, at whatever
 ## pace is chosen, is multiplied by this, so the villagers' plays go by faster.
 @export var sit_out_scale: float = 0.4

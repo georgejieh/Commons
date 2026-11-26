@@ -1,6 +1,6 @@
 class_name RoundClose
 extends Node
-## A finished round is played out and put away before the next hand is dealt (P5.2a). The
+## A finished round is played out and put away before the next hand is dealt. The
 ## run deals the next hand the moment the round is settled, so the table must not read the
 ## hand from the run while the old round's events are still being shown: the player's last
 ## play leaves the fan, and the fan stays empty until the deal plays. Before the deal, the
@@ -10,10 +10,9 @@ extends Node
 var _player: EventPlayer
 var _pile: TrickPile
 var _moments: TableMoments
-var _hand: HandModel
 var _hand_view: HandView
-## Where a seat sits on screen, its middle, for the sweep.
-var _seat_center: Callable
+## Where each seat sits on screen, for the sweep, and the hand as the run holds it.
+var _cards: TableCards
 var _winner: int = Seats.NONE
 var _beat: Tween = null
 
@@ -22,16 +21,14 @@ func setup(
 	player: EventPlayer,
 	pile: TrickPile,
 	moments: TableMoments,
-	hand: HandModel,
 	hand_view: HandView,
-	seat_center: Callable
+	cards: TableCards
 ) -> void:
 	_player = player
 	_pile = pile
 	_moments = moments
-	_hand = hand
 	_hand_view = hand_view
-	_seat_center = seat_center
+	_cards = cards
 	player.closing.connect(_on_closing)
 	player.played.connect(_on_played)
 
@@ -42,13 +39,7 @@ func own_play(event: RoundEvent) -> void:
 	if _player.deal_waiting():
 		_hand_view.hide_cards(event.card_ids)
 		return
-	_hand.refresh()
-	_hand_view.show_cards()
-
-
-## True while the finished round is still on the table, waiting to be put away.
-func is_closing() -> bool:
-	return _beat != null and _beat.is_valid() and _beat.is_running()
+	_cards.show_hand()
 
 
 func _on_played(event: RunEvent) -> void:
@@ -62,7 +53,7 @@ func _on_played(event: RunEvent) -> void:
 ## for both.
 func _on_closing() -> void:
 	_stop()
-	var presets: MotionPresets = TableMotion.PRESETS
+	var presets: MotionPresets = UiMotion.PRESETS
 	var read: float = presets.round_close_steps * _player.step
 	var sweep: float = presets.sweep if not UiMotion.reduced() else 0.0
 	_player.hold(read + sweep)
@@ -73,8 +64,8 @@ func _on_closing() -> void:
 
 func _put_away() -> void:
 	var toward: Vector2 = _pile.global_position + _pile.size / 2.0
-	if _winner != Seats.NONE and _seat_center.is_valid():
-		toward = _seat_center.call(_winner)
+	if _winner != Seats.NONE:
+		toward = _cards.point(_winner)
 	_pile.sweep(toward)
 	Audio.fill(AudioEvents.ROUND_NAMES[RoundEvent.Type.TRICK_WON])
 	_moments.slip.clear()
@@ -82,6 +73,5 @@ func _put_away() -> void:
 
 
 func _stop() -> void:
-	if _beat != null and _beat.is_valid():
-		_beat.kill()
+	UiMotion.end(_beat)
 	_beat = null
