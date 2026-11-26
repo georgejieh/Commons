@@ -65,10 +65,9 @@ func _open_table() -> TableScreen:
 
 func _wait_idle(table: TableScreen) -> void:
 	var player: EventPlayer = table.get("_player")
-	var waited: float = 0.0
-	while not player.is_idle() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self, func() -> bool: return player.is_idle(), "the table's events to play", WAIT_SECONDS
+	)
 
 
 func _press(table: TableScreen, action: String) -> void:
@@ -151,10 +150,9 @@ func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 	assert_str(strip.shown_text()).not_contains(tr("wild.strip"))
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
 	var first: int = _app.controller.table.wild_ranks()[0]
-	var waited: float = 0.0
-	while not moments.callout.is_showing() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self, func() -> bool: return moments.callout.is_showing(), "the callout", WAIT_SECONDS
+	)
 	var one: Array[int] = [first]
 	assert_str(moments.callout.shown_word()).is_equal(ReadingText.wild_line(one).to_upper())
 	await _wait_idle(table)
@@ -170,11 +168,9 @@ func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
 	var both: Array[int] = _app.controller.table.wild_ranks()
 	assert_int(both.size()).is_equal(2)
-	waited = 0.0
 	var line: String = ReadingText.wild_line(both)
-	while not moments.callout.shown_sub().contains(line) and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	var said: Callable = func() -> bool: return moments.callout.shown_sub().contains(line)
+	await TestWait.until(self, said, "the callout's line", WAIT_SECONDS)
 	assert_str(moments.callout.shown_sub()).contains(ReadingText.wild_line(both))
 	await _wait_idle(table)
 	assert_str(strip.shown_text()).contains(ReadingText.wild_line(both))
@@ -294,10 +290,12 @@ func test_a_stand_in_on_the_pile_names_the_rank_it_stands_for() -> void:
 	table.actions().play.pressed.emit()
 	_wild(table).picker.choice(0).pressed.emit()
 	var pile: TrickPile = table.get("_pile")
-	var waited: float = 0.0
-	while pile.top_ids().size() != ids.size() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self,
+		func() -> bool: return pile.top_ids().size() == ids.size(),
+		"the play to land on the pile",
+		WAIT_SECONDS
+	)
 	var cards: Array[CardInstance] = []
 	var views: Array[CardView] = pile.top_views()
 	for view: CardView in views:

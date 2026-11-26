@@ -52,10 +52,9 @@ func _to_first_lead() -> bool:
 
 func _wait_idle(table: TableScreen) -> void:
 	var player: EventPlayer = table.get("_player")
-	var waited: float = 0.0
-	while not player.is_idle() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self, func() -> bool: return player.is_idle(), "the table's events to play", WAIT_SECONDS
+	)
 
 
 ## Two cards of the rank, as a seat's play of them reads under that seat's rules.
@@ -81,10 +80,9 @@ func test_the_words_and_the_pile_say_the_wild_rank_is_the_players() -> void:
 	var moments: TableMoments = table.get("_moments")
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
 	var rank: int = _app.controller.table.wild_ranks()[0]
-	var waited: float = 0.0
-	while not moments.callout.is_showing() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self, func() -> bool: return moments.callout.is_showing(), "the callout", WAIT_SECONDS
+	)
 	assert_str(moments.callout.shown_sub()).is_equal(tr("callout.wild.sub"))
 	await _wait_idle(table)
 	assert_str(strip.shown_text()).contains(tr("wild.strip"))

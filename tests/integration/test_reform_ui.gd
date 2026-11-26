@@ -49,10 +49,12 @@ func _stall(store: StoreScreen) -> ReformStall:
 
 
 func _wait(store: StoreScreen) -> void:
-	var waited: float = 0.0
-	while store.is_issuing() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self,
+		func() -> bool: return not store.is_issuing(),
+		"the store to finish what it acts out",
+		WAIT_SECONDS
+	)
 
 
 func test_the_store_offers_a_decree_explained_by_the_slip() -> void:

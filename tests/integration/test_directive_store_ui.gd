@@ -127,11 +127,8 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 	var coupons: int = _app.controller.state_copy().coupons
 	store.call("_on_reroll")
 	assert_int(_app.controller.state_copy().coupons).is_equal(coupons)
-	var waited: float = 0.0
-	while row.is_busy() and waited < ISSUE_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
-	assert_bool(row.is_busy()).is_false()
+	var issued_out: Callable = func() -> bool: return not row.is_busy()
+	await TestWait.until(self, issued_out, "the Directive's issue", ISSUE_SECONDS)
 	assert_bool(row.seal().visible).is_false()
 	for type: int in _app.controller.items.directive_types(issued):
 		assert_int(_app.controller.figures.hand_level(type)).is_equal(2)

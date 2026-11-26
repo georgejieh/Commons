@@ -55,10 +55,12 @@ func _offer(envelope_id: String) -> void:
 
 
 func _wait(overlay: EnvelopeOverlay) -> void:
-	var waited: float = 0.0
-	while is_instance_valid(overlay) and overlay.is_busy() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self,
+		func() -> bool: return not (is_instance_valid(overlay) and overlay.is_busy()),
+		"the envelope to settle",
+		WAIT_SECONDS
+	)
 
 
 func _bought(store: StoreScreen) -> EnvelopeOverlay:

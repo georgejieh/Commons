@@ -61,7 +61,9 @@ func _last_player(view: SeatView) -> int:
 func _open_table() -> TableScreen:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	await _until(table.get("_player").is_idle)
+	await TestWait.until(
+		self, table.get("_player").is_idle, "the table's events to play", WAIT_SECONDS
+	)
 	return table
 
 
@@ -90,8 +92,13 @@ func test_sitting_out_passes_to_the_tricks_end_at_a_faster_step() -> void:
 	assert_bool(sit_out.is_active()).is_true()
 	assert_float(player.step).is_equal_approx(normal * UiMotion.PRESETS.sit_out_scale, 0.0001)
 	assert_str(table.actions().reading.text).is_equal(tr("table.sitting_out"))
-	await _until(_sat_out_to_the_end.bind(seen, sit_out))
-	await _until(player.is_idle)
+	await TestWait.until(
+		self,
+		_sat_out_to_the_end.bind(seen, sit_out),
+		"the player to sit out to the trick's end",
+		WAIT_SECONDS
+	)
+	await TestWait.until(self, player.is_idle, "the table's events to play", WAIT_SECONDS)
 	# The trick's end came while still sitting out, and every turn of the player's in that
 	# trick was a pass, through the pass command.
 	assert_bool(bool(seen["ended"])).is_true()
@@ -125,7 +132,12 @@ func test_sitting_out_holds_while_a_villager_searches() -> void:
 		player.played.connect(_count.bind(seen, sit_out, player, player.step))
 		table.actions().sit_out.pressed.emit()
 		assert_bool(sit_out.is_active()).is_true()
-		await _until(_sat_out_to_the_end.bind(seen, sit_out))
+		await TestWait.until(
+			self,
+			_sat_out_to_the_end.bind(seen, sit_out),
+			"the player to sit out to the trick's end",
+			WAIT_SECONDS
+		)
 		var label: String = "seed %d" % seed_value
 		assert_bool(bool(seen["ended"])).override_failure_message(label).is_true()
 		assert_bool(bool(seen.get("dropped", false))).override_failure_message(label).is_false()
@@ -196,10 +208,3 @@ func _count(
 		seen["passes"] = int(seen["passes"]) + 1
 	elif round_event.type == RoundEvent.Type.PLAYED:
 		seen["plays"] = int(seen["plays"]) + 1
-
-
-func _until(done: Callable) -> void:
-	var waited: float = 0.0
-	while not bool(done.call()) and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()

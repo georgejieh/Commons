@@ -66,10 +66,9 @@ func _open_table() -> TableScreen:
 
 func _wait_idle(table: TableScreen) -> void:
 	var player: EventPlayer = table.get("_player")
-	var waited: float = 0.0
-	while not player.is_idle() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self, func() -> bool: return player.is_idle(), "the table's events to play", WAIT_SECONDS
+	)
 
 
 func test_a_moved_key_acts_at_the_table_and_the_old_one_does_not() -> void:

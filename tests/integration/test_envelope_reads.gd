@@ -111,10 +111,12 @@ func test_the_column_keeps_clear_of_the_screen_edges() -> void:
 func test_a_kept_seal_lies_off_its_caption_and_take_nothing_goes() -> void:
 	for kind: String in ["parcel", "directive_envelope"]:
 		var overlay: EnvelopeOverlay = await _opened(kind)
-		var waited: float = 0.0
-		while overlay.is_busy() and waited < WAIT_SECONDS:
-			await get_tree().process_frame
-			waited += get_process_delta_time()
+		await TestWait.until(
+			self,
+			func() -> bool: return not overlay.is_busy(),
+			"the envelope to settle",
+			WAIT_SECONDS
+		)
 		var index: int = 0
 		while not overlay.papers()[index].is_takeable():
 			index += 1
@@ -134,7 +136,9 @@ func test_a_kept_seal_lies_off_its_caption_and_take_nothing_goes() -> void:
 			0.05
 		)
 		assert_bool(overlay.nothing_button().disabled).is_true()
-		waited = 0.0
-		while is_instance_valid(overlay) and waited < WAIT_SECONDS:
-			await get_tree().process_frame
-			waited += get_process_delta_time()
+		await TestWait.until(
+			self,
+			func() -> bool: return not is_instance_valid(overlay),
+			"the envelope to close",
+			WAIT_SECONDS
+		)

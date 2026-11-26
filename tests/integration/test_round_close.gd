@@ -38,7 +38,7 @@ func test_closing_comes_once_between_a_rounds_end_and_the_next_deal() -> void:
 	player.push(RunEvent.new(RunEvent.Type.SHARE_PAID, 0, 10))
 	assert_bool(player.deal_waiting()).is_true()
 	player.push(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, 1))
-	await _until(player.is_idle)
+	await TestWait.until(self, player.is_idle, "the table's events to play", WAIT_SECONDS)
 	assert_array(seen).is_equal(
 		["DEALT", "REDEALT", "DEALT", "ROUND_ENDED", "SHARE_PAID", "closing", "DEALT"]
 	)
@@ -58,7 +58,9 @@ func test_the_next_hand_waits_until_the_round_is_put_away() -> void:
 	player.played.connect(_on_played.bind(marks, hand_view, pile, card.id()))
 	for event: RunEvent in _round_end(card):
 		player.push(event)
-	await _until(func() -> bool: return marks.has("dealt"))
+	await TestWait.until(
+		self, func() -> bool: return marks.has("dealt"), "the next deal", WAIT_SECONDS
+	)
 	# The run already holds the next hand, but the fan never showed it before the deal.
 	assert_bool(marks.get("shown_after_play", true)).is_false()
 	assert_bool(marks.has("closing")).is_true()
@@ -84,7 +86,9 @@ func test_reduced_motion_still_reads_the_round_before_the_deal() -> void:
 	)
 	for event: RunEvent in _round_end(card):
 		player.push(event)
-	await _until(func() -> bool: return marks.has("dealt"))
+	await TestWait.until(
+		self, func() -> bool: return marks.has("dealt"), "the next deal", WAIT_SECONDS
+	)
 	var read: float = UiMotion.PRESETS.round_close_steps * player.step
 	assert_float(float(marks["dealt"]) - float(marks["closing"])).is_greater_equal(read)
 
@@ -123,7 +127,7 @@ func _open_table() -> TableScreen:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	var player: EventPlayer = table.get("_player")
-	await _until(player.is_idle)
+	await TestWait.until(self, player.is_idle, "the table's events to play", WAIT_SECONDS)
 	return table
 
 
@@ -133,13 +137,6 @@ func _shows(hand_view: HandView, card_id: int) -> bool:
 		if view.card_id == card_id and view.visible and view.modulate.a > 0.0:
 			return true
 	return false
-
-
-func _until(done: Callable) -> void:
-	var waited: float = 0.0
-	while not bool(done.call()) and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
 
 
 func _now() -> float:

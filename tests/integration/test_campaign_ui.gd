@@ -71,12 +71,11 @@ func _campaigns(table: TableScreen) -> TableCampaigns:
 
 func _wait_idle(table: TableScreen) -> void:
 	var player: EventPlayer = table.get("_player")
-	var waited: float = 0.0
-	while (
-		(not player.is_idle() or _campaigns(table).moments.is_playing()) and waited < WAIT_SECONDS
-	):
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	var moments: CampaignMoments = _campaigns(table).moments
+	var idle: Callable = func() -> bool: return player.is_idle() and not moments.is_playing()
+	await TestWait.until(
+		self, idle, "the table's events and Campaign moments to play", WAIT_SECONDS
+	)
 
 
 func _press(table: TableScreen, action: String) -> void:
@@ -295,10 +294,12 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 		_check_inside(store, screen_id)
 		var held: int = _app.controller.items.held_campaigns().size()
 		buy.pressed.emit()
-		var waited: float = 0.0
-		while stall.is_busy() and waited < WAIT_SECONDS:
-			await get_tree().process_frame
-			waited += get_process_delta_time()
+		await TestWait.until(
+			self,
+			func() -> bool: return not stall.is_busy(),
+			"the stall to finish what it acts out",
+			WAIT_SECONDS
+		)
 		assert_int(_app.controller.items.held_campaigns().size()).is_equal(held + 1)
 		assert_bool(stall.tray.leaflet(held).visible).is_true()
 
