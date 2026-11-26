@@ -58,8 +58,8 @@ static func directive_purchase(visit: BalanceVisit, budget: int) -> BalanceOffer
 
 
 ## The state store as collective buys there: a Directive first, then the dearest Cadre it
-## can afford, then a Reform, then an envelope, then a Campaign, with budget coupons to
-## spend.
+## can afford, then a Reform, then an envelope, then a Campaign, then a card for the deck,
+## then the desk's mark, with budget coupons to spend.
 static func store_purchase(visit: BalanceVisit, budget: int) -> BalanceOffer:
 	var directive: BalanceOffer = directive_purchase(visit, budget)
 	if directive != null:
@@ -69,6 +69,8 @@ static func store_purchase(visit: BalanceVisit, budget: int) -> BalanceOffer:
 		BalanceOffer.Kind.REFORM,
 		BalanceOffer.Kind.ENVELOPE,
 		BalanceOffer.Kind.CAMPAIGN,
+		BalanceOffer.Kind.DECK_CARD,
+		BalanceOffer.Kind.MARK,
 	]:
 		var offer: BalanceOffer = BalanceOffer.dearest(visit.store, kind, budget)
 		if offer != null:

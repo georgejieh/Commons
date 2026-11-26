@@ -7,9 +7,27 @@ extends RefCounted
 
 const EARNED: Array[String] = ["rewards", "overfulfilment", "cadres_and_campaigns"]
 const SPENT: Array[String] = [
-	"directives", "cadres", "reforms", "envelopes", "campaigns", "market", "rerolls"
+	"directives",
+	"cadres",
+	"reforms",
+	"envelopes",
+	"campaigns",
+	"deck_cards",
+	"marks",
+	"market",
+	"rerolls",
 ]
 const OTHER: String = "cadres_and_campaigns"
+## Where a purchase's coupons go by its kind, away from the black market.
+const USES: Dictionary[BalanceOffer.Kind, String] = {
+	BalanceOffer.Kind.DIRECTIVE: "directives",
+	BalanceOffer.Kind.CADRE: "cadres",
+	BalanceOffer.Kind.REFORM: "reforms",
+	BalanceOffer.Kind.ENVELOPE: "envelopes",
+	BalanceOffer.Kind.CAMPAIGN: "campaigns",
+	BalanceOffer.Kind.DECK_CARD: "deck_cards",
+	BalanceOffer.Kind.MARK: "marks",
+}
 
 var quotas: Array[BalanceQuota] = []
 var earned: Dictionary[String, int] = {}
@@ -28,20 +46,12 @@ func _init() -> void:
 		spent[use] = 0
 
 
-## Where an offer's coupons go.
+## Where an offer's coupons go. A desk's mark is "marks" at either counter, so the
+## desks' spending reads in one place; every other black market purchase is "market".
 static func category(offer: BalanceOffer) -> String:
-	if offer.market:
+	if offer.market and offer.kind != BalanceOffer.Kind.MARK:
 		return "market"
-	match offer.kind:
-		BalanceOffer.Kind.DIRECTIVE:
-			return "directives"
-		BalanceOffer.Kind.CADRE:
-			return "cadres"
-		BalanceOffer.Kind.REFORM:
-			return "reforms"
-		BalanceOffer.Kind.ENVELOPE:
-			return "envelopes"
-	return "campaigns"
+	return USES[offer.kind]
 
 
 ## Takes a Set's start and end as the run announces them; the controller still stands

@@ -19,6 +19,8 @@ A full run through the same start path the game uses, with no window and no prof
 | Need | Claims the true need | Claims the most the panel allows | Claims the true need, or 50% more while one face of the die audits |
 | State store | Each visit: first the cheapest Directive it can afford, once; then, while coupons last, the dearest Cadre, else a Reform, else an envelope, else a Campaign | Each visit: the cheapest Directive it can afford, once, and nothing else | The cheapest Directive it can afford, once, from everything it holds; then as collective, keeping back the coupons its data says (none since the third measurement) |
 | Black market | Never enters | Buys the dearest Cadre it can afford, then a Parcel, then a plot card, then plot upgrades | Buys one thing a visit, the dearest it can afford with what was kept back, while Resentment is under 40 |
+| Deck stall and the state store's desk (amendment below) | Last at the store, after a Campaign: the dearest card it affords that ranks above the deck's weakest card, then the desk's mark | Never | As collective |
+| The black market's desk (amendment below) | Never | Its stamp, after a Cadre and before a Parcel | Within its one thing a visit |
 | Rerolls | Never | Once a visit if nothing was affordable | Never |
 | Envelopes | Keeps the first item it can take | The same | The same |
 | Campaigns | Uses each as soon as its rule allows, except Anonymous Letter and Seizure Notice, which it never uses | Uses each as soon as its rule allows | As collective |
@@ -36,6 +38,17 @@ These are caricatures on purpose. Collective is the player who trusts the villag
 ## What it reports
 
 For each strategy over the same list of seeds: the share of runs that survive the eighth Year, each ending's share, deaths by meter and the Year they came in, the mean Year reached, the share of Quotas met, mean coupons at the end, mean final Famine, Denunciation and Resentment, and the count of villagers who starved. It also reports, for each strategy and each Quota of the run in order, how many runs reached it, the share that met it, and the median score against the target, because the first measurement showed the target curve itself was the question. One CSV row per run and one summary in Markdown, in `reports/`. Any illegal action, refused command or script error fails the run, not just the report.
+
+## Amendment, 2026-11-25: the deck's goods
+
+The design lead's ruling, for the goods the shops gained after this ADR: the state store's deck stall ([ADR 0042](0042-deck-exchange.md)) and a marking desk in each shop ([ADR 0041](0041-marks-on-deck-cards.md)). Until now the harness never bought them, so its numbers said nothing about them.
+
+- **What is whose.** The deck stall and the state store's desk are collective goods: they change the deck every seat is dealt from, and an enhancement scores for whoever plays the card. The black market's desk is a private good: its stamp scores for the player alone, and the game charges it a private purchase's Resentment (`private_purchase`, 3), as it does every purchase there.
+- **Who buys.** Collective buys from the deck stall and then the state store's desk, after everything else it buys there. Private buys the black market's stamp, in its market order after a Cadre. Mixed buys both under its existing limits: the state store's goods in collective's order from what it does not keep back, the stamp only as its one black market purchase of the visit and only under the Resentment limit.
+- **Which card comes in.** Only a stall card that ranks above the deck's weakest card in the plain order is offered to a strategy; of those, the dearest the budget affords, the first on the shelf on a tie. It goes in place of the deck's weakest card: the first slot of the lowest rank the deck holds, the card the Requisition envelope's keep replaces too.
+- **Which card a desk marks.** The highest-ranked deck card in the plain order that carries no mark of the desk's kind (no enhancement at the state store, no stamp at the black market), the lowest slot on a tie. The desks refuse no joker, so a joker comes first; a use never replaces an enhancement.
+- **Deterministic.** None of this draws: the same seed plays the same run.
+- **Reported.** Their coupons are spent rows of their own in the report (deck stall cards, and desk marks at either counter, which the black market row no longer counts), and the runs CSV gains `deck_spent` and `marks_spent`, the coupons a run spent on each, with a mean of each in the summary.
 
 ## How the target is read
 

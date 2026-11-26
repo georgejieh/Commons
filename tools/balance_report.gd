@@ -14,6 +14,8 @@ const FINAL_NUMBERS: Array[Array] = [
 	["starved", "Mean families starved"],
 	["cadres", "Mean Cadres held"],
 	["campaigns_used", "Mean Campaigns used"],
+	["deck_spent", "Mean coupons on deck cards"],
+	["marks_spent", "Mean coupons at the desks"],
 ]
 const DEATHS: Array[Array] = [
 	[Endings.DEATH_FAMINE, "Died of Famine"],

@@ -5,7 +5,8 @@ extends RefCounted
 
 const HEADER: String = (
 	"seed,strategy,stake,outcome,survived,year,quota,class,quotas_met,quotas_played,"
-	+ "coupons,famine,denunciation,resentment,starved,cadres,campaigns_used,seconds,failure"
+	+ "coupons,famine,denunciation,resentment,starved,cadres,campaigns_used,deck_spent,"
+	+ "marks_spent,seconds,failure"
 )
 
 var seed_value: int = 0
@@ -26,6 +27,10 @@ var resentment: int = 0
 var starved: int = 0
 var cadres: int = 0
 var campaigns_used: int = 0
+## Coupons spent over the run on the deck stall's cards, and on both desks' marks
+## (ADR 0041, ADR 0042), as the ledger counts them.
+var deck_spent: int = 0
+var marks_spent: int = 0
 var seconds: float = 0.0
 ## Why the run failed: a refused command, a refused bot action, a script error or the
 ## command limit. Empty for a run that played to its end.
@@ -64,7 +69,7 @@ var wave_buys: Dictionary[String, int] = {}
 var wave_uses: Dictionary[String, int] = {}
 
 
-## Fills the run's final numbers from its last state.
+## Fills the run's final numbers from its last state and its ledger.
 func finish(state: RunState) -> void:
 	outcome = Endings.outcome(state, RunDefaults.METERS)
 	survived = not Endings.is_death(outcome)
@@ -76,6 +81,8 @@ func finish(state: RunState) -> void:
 	denunciation = state.denunciation
 	resentment = state.resentment
 	cadres = state.inventory.cadres.size()
+	deck_spent = ledger.spent["deck_cards"]
+	marks_spent = ledger.spent["marks"]
 
 
 ## True when the run failed: a refused command, a refused bot action or a script error.
@@ -104,6 +111,8 @@ func csv(with_seconds: bool = true) -> String:
 		str(starved),
 		str(cadres),
 		str(campaigns_used),
+		str(deck_spent),
+		str(marks_spent),
 		"%.2f" % seconds if with_seconds else "",
 		failure.replace(",", ";"),
 	]

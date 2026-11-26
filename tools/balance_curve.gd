@@ -15,7 +15,9 @@ const SPENT_LABELS: Dictionary[String, String] = {
 	"reforms": "Spent: Reforms",
 	"envelopes": "Spent: envelopes",
 	"campaigns": "Spent: state store Campaigns",
-	"market": "Spent: black market goods",
+	"deck_cards": "Spent: deck stall cards",
+	"marks": "Spent: desk marks, both counters",
+	"market": "Spent: other black market goods",
 	"rerolls": "Spent: rerolls",
 }
 ## The percentiles of progress shown, as fractions.
