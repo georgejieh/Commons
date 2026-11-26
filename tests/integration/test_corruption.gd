@@ -180,17 +180,8 @@ func test_a_quotas_events_keep_their_order() -> void:
 # Purchases in a famine, through the real loop -----------------------------------------
 
 
-func _at_the_shops(seed_value: int) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = 1000
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 func test_every_market_purchase_in_high_famine_counts_and_a_reroll_does_not() -> void:
-	var loop: RunLoop = _at_the_shops(SEED)
+	var loop: RunLoop = RunScript.at_the_shops(self, SEED, 1000)
 	loop.state.famine = 80
 	assert_int(loop.player_market_reroll()).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.famine_market_buys).is_equal(0)
@@ -199,7 +190,7 @@ func test_every_market_purchase_in_high_famine_counts_and_a_reroll_does_not() ->
 	assert_int(loop.player_market_buy(0, Ranks.SEVEN)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.famine_market_buys).is_equal(2)
 	# The same purchase with Famine in its middle band counts nothing.
-	var calm: RunLoop = _at_the_shops(SEED)
+	var calm: RunLoop = RunScript.at_the_shops(self, SEED, 1000)
 	calm.state.famine = 60
 	assert_int(calm.player_market_buy(0, Ranks.SEVEN)).is_equal(RunLoop.Reason.OK)
 	assert_int(calm.player_upgrade(PlotUpgrades.CAPACITY)).is_equal(RunLoop.Reason.OK)

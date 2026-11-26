@@ -13,19 +13,6 @@ const RICH: int = 1000
 const KINDS: Array[String] = ["directive_envelope", "campaign_envelope", "deck_envelope"]
 
 
-func _at_the_shops(seed_value: int, reforms: Array[String] = []) -> RunLoop:
-	var state: RunState = RunState.new(seed_value)
-	state.reforms.assign(reforms)
-	var loop: RunLoop = RunLoop.new(state, RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	# Handed over at the Set's end, where the record's checkpoint is, so a replay has them.
-	loop.state.coupons = RICH
-	loop.record.mark(loop.state)
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 ## Puts one kind on the state store's counter, as only tests do.
 func _offer(loop: RunLoop, envelope_id: String) -> void:
 	var stock: Array[String] = [envelope_id]
@@ -54,8 +41,8 @@ func test_each_shop_offers_its_envelopes_the_same_for_the_same_seed() -> void:
 	assert_int(MARKET.envelope_offers).is_equal(1)
 	var seen: Dictionary[String, bool] = {}
 	for seed_value: int in SEEDS:
-		var first: RunLoop = _at_the_shops(seed_value)
-		var second: RunLoop = _at_the_shops(seed_value)
+		var first: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
+		var second: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		var offer: Array[String] = first.visit.shop.envelopes.stock()
 		assert_int(offer.size()).is_equal(1)
 		assert_bool(KINDS.has(offer[0])).is_true()
@@ -77,7 +64,7 @@ func test_each_shop_offers_its_envelopes_the_same_for_the_same_seed() -> void:
 ## every other draw a seed makes in the visit is as it was, rerolls included.
 func test_envelopes_leave_every_other_draw_alone() -> void:
 	for seed_value: int in 6:
-		var loop: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		var bare_state: RunState = RunState.new(seed_value)
 		var bare: RunLoop = RunLoop.new(bare_state, RunScript.bots(), SetConfig.new())
 		var none: ShopParams = STORE.duplicate()
@@ -93,7 +80,7 @@ func test_envelopes_leave_every_other_draw_alone() -> void:
 		# Opening an envelope before a reroll leaves the reroll's stock as it would be.
 		assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 		assert_int(loop.player_envelope_pick(EnvelopeCounter.NOTHING)).is_equal(RunLoop.Reason.OK)
-		var twin: RunLoop = _at_the_shops(seed_value)
+		var twin: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		assert_int(loop.player_reroll()).is_equal(RunLoop.Reason.OK)
 		assert_int(twin.player_reroll()).is_equal(RunLoop.Reason.OK)
 		_same_stock(twin, loop)
@@ -121,8 +108,8 @@ func _same_stock(expected: RunLoop, loop: RunLoop) -> void:
 
 func test_buying_opens_the_envelope_with_the_same_contents_for_a_seed() -> void:
 	for seed_value: int in 8:
-		var loop: RunLoop = _at_the_shops(seed_value)
-		var twin: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
+		var twin: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		var price: int = loop.visit.shop.envelopes.price(0)
 		assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 		assert_int(twin.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
@@ -144,7 +131,7 @@ func test_buying_opens_the_envelope_with_the_same_contents_for_a_seed() -> void:
 
 
 func test_too_few_coupons_or_nothing_to_show_refuses_the_envelope() -> void:
-	var loop: RunLoop = _at_the_shops(3)
+	var loop: RunLoop = RunScript.at_the_shops(self, 3, RICH)
 	loop.state.coupons = loop.visit.shop.envelopes.price(0) - 1
 	var commands: int = loop.record.commands.size()
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.ILLEGAL)
@@ -153,7 +140,7 @@ func test_too_few_coupons_or_nothing_to_show_refuses_the_envelope() -> void:
 	assert_int(loop.player_envelope_buy(4)).is_equal(RunLoop.Reason.ILLEGAL)
 	# With every hand type at the top level the Directive envelope has nothing to show.
 	for seed_value: int in 10:
-		var maxed: RunLoop = _at_the_shops(seed_value)
+		var maxed: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		for type: int in range(1, Pattern.Type.size()):
 			while not maxed.state.hand_levels.is_max(type as Pattern.Type):
 				maxed.state.hand_levels.raise(type as Pattern.Type)
@@ -167,7 +154,7 @@ func test_too_few_coupons_or_nothing_to_show_refuses_the_envelope() -> void:
 
 
 func test_while_open_every_other_shop_command_waits() -> void:
-	var loop: RunLoop = _at_the_shops(5)
+	var loop: RunLoop = RunScript.at_the_shops(self, 5, RICH)
 	loop.state.inventory.consumables.assign(["grain_loan"])
 	loop.state.inventory.cadres.assign(["rehabilitation"])
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
@@ -220,7 +207,7 @@ func test_while_open_every_other_shop_command_waits() -> void:
 
 
 func test_keeping_a_directive_issues_it_as_the_counter_does() -> void:
-	var loop: RunLoop = _at_the_shops(6)
+	var loop: RunLoop = RunScript.at_the_shops(self, 6, RICH)
 	_offer(loop, "directive_envelope")
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 	var items: Array[EnvelopeItem] = loop.visit.shop.envelopes.items()
@@ -245,7 +232,7 @@ func test_keeping_a_directive_issues_it_as_the_counter_does() -> void:
 ## only one family below it, the envelope shows that one alone.
 func test_a_maxed_directive_never_appears() -> void:
 	for seed_value: int in 10:
-		var loop: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		for type: int in range(Pattern.Type.TRIO, Pattern.Type.size()):
 			while not loop.state.hand_levels.is_max(type as Pattern.Type):
 				loop.state.hand_levels.raise(type as Pattern.Type)
@@ -255,7 +242,7 @@ func test_a_maxed_directive_never_appears() -> void:
 
 
 func test_keeping_a_campaign_needs_room_and_nothing_is_always_allowed() -> void:
-	var loop: RunLoop = _at_the_shops(7)
+	var loop: RunLoop = RunScript.at_the_shops(self, 7, RICH)
 	_offer(loop, "campaign_envelope")
 	loop.state.inventory.consumables.assign(["grain_loan", "appeal"])
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
@@ -275,7 +262,7 @@ func test_keeping_a_campaign_needs_room_and_nothing_is_always_allowed() -> void:
 
 func test_supply_cooperative_adds_a_choice_to_every_envelope() -> void:
 	for seed_value: int in 4:
-		var loop: RunLoop = _at_the_shops(seed_value, ["supply_cooperative"])
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH, ["supply_cooperative"])
 		assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 		assert_int(loop.visit.shop.envelopes.items().size()).is_equal(4)
 		loop.player_envelope_pick(EnvelopeCounter.NOTHING)
@@ -291,7 +278,7 @@ func test_the_parcel_mixes_its_contents_and_is_resented_when_bought() -> void:
 	for campaign: CampaignDef in RunPools.MARKET_CAMPAIGNS.campaigns:
 		pool.append(campaign.id)
 	for seed_value: int in 12:
-		var loop: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		var resentment: int = loop.state.resentment
 		var price: int = loop.visit.market.envelopes.price(0)
 		assert_int(loop.player_market_envelope(0)).is_equal(RunLoop.Reason.OK)

@@ -74,16 +74,6 @@ func _rate(state: RunState, type: int) -> int:
 	return Scorer.DEFAULT_PARAMS.rate_for(type, level)
 
 
-## A run that has finished its first Set and opened the shops, with coupons to spend.
-func _at_the_shops(seed_value: int, coupons: int = RICH) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = coupons
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 func test_the_pool_is_adr_0021s_six_directives_covering_every_type_once() -> void:
 	assert_int(POOL.directives.size()).is_equal(FAMILIES.size())
 	var covered: Dictionary[int, bool] = {}
@@ -122,7 +112,7 @@ func test_each_directive_raises_its_family_and_nothing_else() -> void:
 
 ## A raised level reaches the table: the next Set's Pairs score at level 2's Rate.
 func test_a_raised_level_scores_in_play() -> void:
-	var loop: RunLoop = _at_the_shops(31)
+	var loop: RunLoop = RunScript.at_the_shops(self, 31, RICH)
 	var counter: Array[String] = loop.visit.shop.directive_stock()
 	var slot: int = counter.find("on_hand_tools")
 	while slot < 0:
@@ -147,7 +137,7 @@ func test_a_raised_level_scores_in_play() -> void:
 
 
 func test_buying_spends_coupons_and_is_refused_without_them() -> void:
-	var loop: RunLoop = _at_the_shops(32, 0)
+	var loop: RunLoop = RunScript.at_the_shops(self, 32, 0)
 	assert_int(loop.visit.shop.directive_stock().size()).is_equal(STORE.directive_slots)
 	var before: Array[int] = loop.state.hand_levels.to_array()
 	assert_int(loop.player_directive(0)).is_equal(RunLoop.Reason.ILLEGAL)
@@ -170,8 +160,8 @@ func test_buying_spends_coupons_and_is_refused_without_them() -> void:
 func test_the_directive_stock_is_the_same_for_the_same_seed() -> void:
 	var seen: Dictionary[String, bool] = {}
 	for seed_value: int in SEEDS:
-		var first: RunLoop = _at_the_shops(seed_value)
-		var second: RunLoop = _at_the_shops(seed_value)
+		var first: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
+		var second: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		assert_array(first.visit.shop.directive_stock()).is_equal(
 			second.visit.shop.directive_stock()
 		)
@@ -230,7 +220,7 @@ func test_a_capped_family_is_not_offered() -> void:
 func test_levels_survive_a_save_a_load_and_a_replay() -> void:
 	var service: SaveService = SaveService.for_run(TestFolder.of("test_directives") + "run.json")
 	service.delete()
-	var loop: RunLoop = _at_the_shops(33)
+	var loop: RunLoop = RunScript.at_the_shops(self, 33, RICH)
 	assert_int(loop.player_directive(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_reroll()).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_directive(1)).is_equal(RunLoop.Reason.OK)

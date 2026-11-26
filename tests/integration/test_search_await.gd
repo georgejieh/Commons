@@ -87,8 +87,7 @@ func _step(loop: RunLoop, script: RunScript, answer: Callable) -> bool:
 ## Runs until the loop stands still for a villager, by the player's commands alone.
 func _to_a_villager(loop: RunLoop) -> void:
 	var script: RunScript = RunScript.new()
-	while loop.awaiting() != RunLoop.Awaiting.VILLAGER_SEARCH:
-		assert_bool(script.act(loop)).is_true()
+	script.play_to(self, loop, RunLoop.Awaiting.VILLAGER_SEARCH)
 
 
 ## The record as a load reads it back: written as JSON, migrated and validated.

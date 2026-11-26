@@ -163,8 +163,7 @@ func test_false_report_raises_progress_and_the_norm_for_later_quotas() -> void:
 	assert_float(resumed.target()).is_equal_approx(target, 0.0001)
 	# The next Quota starts under the raised norm.
 	RunScript.new().play_until_set_over(loop)
-	while loop.awaiting() != RunLoop.Awaiting.SET_OVER:
-		assert_bool(RunScript.new().act(loop)).is_true()
+	RunScript.new().play_to(self, loop, RunLoop.Awaiting.SET_OVER)
 	var steps: int = loop.state.norm_steps
 	assert_int(steps).is_greater_equal(1)
 	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)

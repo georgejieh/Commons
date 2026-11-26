@@ -36,8 +36,7 @@ func _loop() -> RunLoop:
 
 func _to_the_store() -> StoreScreen:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	var state: RunState = _loop().state
 	CardMarks.enhance(state, Deck.new().card(MODEL_CARD), CardInstance.MODEL)

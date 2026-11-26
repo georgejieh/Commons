@@ -8,15 +8,6 @@ const RICH: int = 20000
 const REROLLS: int = 100
 
 
-func _at_the_shops(seed_value: int) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = RICH
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 ## Rerolls the black market until it offers the Cadre, and returns its slot.
 func _offer(loop: RunLoop, cadre_id: String) -> int:
 	for _reroll: int in REROLLS:
@@ -36,7 +27,7 @@ func _rich_record(loop: RunLoop) -> Dictionary:
 
 
 func test_a_rank_cadre_is_refused_without_a_rank_and_saves_the_one_picked() -> void:
-	var loop: RunLoop = _at_the_shops(5101)
+	var loop: RunLoop = RunScript.at_the_shops(self, 5101, RICH)
 	var slot: int = _offer(loop, "rehabilitation")
 	assert_int(slot).is_greater_equal(0)
 	var commands: int = loop.record.commands.size()
@@ -58,7 +49,7 @@ func test_a_rank_cadre_is_refused_without_a_rank_and_saves_the_one_picked() -> v
 
 
 func test_a_market_buy_saved_before_the_picker_still_replays() -> void:
-	var loop: RunLoop = _at_the_shops(5102)
+	var loop: RunLoop = RunScript.at_the_shops(self, 5102, RICH)
 	var slot: int = -1
 	for _reroll: int in REROLLS:
 		var stock: Array[String] = loop.visit.market.stock()

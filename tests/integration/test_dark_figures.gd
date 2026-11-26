@@ -43,10 +43,7 @@ func _darken(figures: Array[String]) -> void:
 
 func _to_set_over() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	var guard: int = 0
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER and guard < 2000:
-		guard += 1
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 
 
 ## Every word a screen shows, joined.

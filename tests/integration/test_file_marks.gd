@@ -204,10 +204,7 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 func test_at_the_stage_past_the_last_both_shops_keep_the_small_ledger() -> void:
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	var guard: int = 0
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER and guard < 2000:
-		guard += 1
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	_figures()
 	ArtStages.stage_override = ArtStages.FILED_STAGE

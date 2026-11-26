@@ -14,16 +14,6 @@ const SEEDS: int = 200
 const RICH: int = 1000
 
 
-## A run that has finished its first Set and opened the shops, with coupons to spend.
-func _at_the_shops(seed_value: int, coupons: int = RICH) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = coupons
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 func test_the_store_sells_collective_cadres_and_the_market_private_ones() -> void:
 	assert_int(STORE_POOL.cadres.size()).is_greater(0)
 	assert_int(MARKET_POOL.cadres.size()).is_greater(0)
@@ -40,8 +30,8 @@ func test_the_store_sells_collective_cadres_and_the_market_private_ones() -> voi
 func test_both_counters_draw_the_same_stock_for_the_same_seed() -> void:
 	var seen: Dictionary[String, bool] = {}
 	for seed_value: int in SEEDS:
-		var first: RunLoop = _at_the_shops(seed_value)
-		var second: RunLoop = _at_the_shops(seed_value)
+		var first: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
+		var second: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		assert_array(first.visit.shop.stock()).is_equal(second.visit.shop.stock())
 		assert_array(first.visit.market.stock()).is_equal(second.visit.market.stock())
 		assert_int(first.visit.market.stock().size()).is_equal(MARKET.slots)
@@ -58,7 +48,7 @@ func test_both_counters_draw_the_same_stock_for_the_same_seed() -> void:
 func test_buying_from_the_black_market_always_raises_resentment() -> void:
 	var bought: int = 0
 	for seed_value: int in SEEDS:
-		var loop: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		for slot: int in loop.visit.market.stock().size():
 			if loop.visit.market.check_buy(slot) != RunShop.Reason.OK:
 				continue
@@ -74,7 +64,7 @@ func test_buying_from_the_black_market_always_raises_resentment() -> void:
 
 
 func test_a_refused_market_purchase_raises_nothing() -> void:
-	var loop: RunLoop = _at_the_shops(11, 0)
+	var loop: RunLoop = RunScript.at_the_shops(self, 11, 0)
 	var before: int = loop.state.resentment
 	assert_int(loop.player_market_buy(0)).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_int(loop.state.resentment).is_equal(before)
@@ -83,7 +73,7 @@ func test_a_refused_market_purchase_raises_nothing() -> void:
 
 
 func test_the_state_store_never_raises_resentment() -> void:
-	var loop: RunLoop = _at_the_shops(12)
+	var loop: RunLoop = RunScript.at_the_shops(self, 12, RICH)
 	var before: int = loop.state.resentment
 	for slot: int in loop.visit.shop.stock().size():
 		assert_int(loop.player_buy(slot)).is_equal(RunLoop.Reason.OK)
@@ -111,7 +101,7 @@ func test_the_market_charges_more_than_the_store_for_the_same_cost() -> void:
 
 
 func test_the_state_store_runs_out_of_an_item_and_the_market_does_not() -> void:
-	var loop: RunLoop = _at_the_shops(13)
+	var loop: RunLoop = RunScript.at_the_shops(self, 13, RICH)
 	var item_id: String = loop.visit.shop.stock()[0]
 	assert_int(loop.visit.shop.left(item_id)).is_equal(STORE.stock_per_item)
 	assert_int(loop.player_buy(0)).is_equal(RunLoop.Reason.OK)
@@ -138,7 +128,7 @@ func test_a_save_from_before_limited_stock_loads_with_nothing_sold() -> void:
 
 
 func test_plot_upgrades_enlarge_the_plot_up_to_their_limit_and_raise_resentment() -> void:
-	var loop: RunLoop = _at_the_shops(14)
+	var loop: RunLoop = RunScript.at_the_shops(self, 14, RICH)
 	var room: int = PlotSwap.capacity(loop.state, RunDefaults.PARAMS)
 	var coupons: int = loop.state.coupons
 	for step: int in UPGRADES.capacity_max:
@@ -156,7 +146,7 @@ func test_plot_upgrades_enlarge_the_plot_up_to_their_limit_and_raise_resentment(
 
 
 func test_market_commands_replay_from_a_save() -> void:
-	var loop: RunLoop = _at_the_shops(15)
+	var loop: RunLoop = RunScript.at_the_shops(self, 15, RICH)
 	var coupons: int = loop.state.coupons
 	assert_int(loop.player_market_reroll()).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_market_buy(0)).is_equal(RunLoop.Reason.OK)
@@ -201,8 +191,8 @@ func test_a_private_cadre_from_the_market_is_counted_at_the_sets_end() -> void:
 
 func test_the_market_sells_cards_for_the_plot_the_same_for_the_same_seed() -> void:
 	for seed_value: int in 60:
-		var first: RunLoop = _at_the_shops(seed_value)
-		var second: RunLoop = _at_the_shops(seed_value)
+		var first: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
+		var second: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		assert_int(first.visit.stall.offers.count()).is_equal(RunPools.PLOT_CARDS.offers)
 		for slot: int in first.visit.stall.offers.count():
 			assert_int(first.visit.stall.offers.rank(slot)).is_equal(
@@ -215,7 +205,7 @@ func test_the_market_sells_cards_for_the_plot_the_same_for_the_same_seed() -> vo
 
 
 func test_a_bought_plot_card_enters_the_plot_and_raises_resentment() -> void:
-	var loop: RunLoop = _at_the_shops(16)
+	var loop: RunLoop = RunScript.at_the_shops(self, 16, RICH)
 	var rank: int = loop.visit.stall.offers.rank(0)
 	var before: int = loop.state.resentment
 	var coupons: int = loop.state.coupons
@@ -243,7 +233,7 @@ func test_a_bought_plot_card_enters_the_plot_and_raises_resentment() -> void:
 
 
 func test_a_full_plot_takes_no_more_cards() -> void:
-	var loop: RunLoop = _at_the_shops(17)
+	var loop: RunLoop = RunScript.at_the_shops(self, 17, RICH)
 	var room: int = PlotSwap.capacity(loop.state, RunDefaults.PARAMS)
 	for index: int in room:
 		loop.state.inventory.plot.append(
@@ -266,7 +256,7 @@ func test_reeducation_can_exchange_for_a_private_cadre() -> void:
 
 
 func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
-	var loop: RunLoop = _at_the_shops(19)
+	var loop: RunLoop = RunScript.at_the_shops(self, 19, RICH)
 	# A counter with no more Cadres than slots would only reorder them on a reroll. The
 	# state store has more Cadres than slots since ADR 0021, and more Directives than
 	# their slots, and it redraws both.

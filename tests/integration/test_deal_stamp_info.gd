@@ -30,8 +30,7 @@ func _loop_at_play(cadres: Array[String]) -> RunLoop:
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	var script: RunScript = RunScript.new()
 	loop.start_set()
-	while loop.awaiting() != RunLoop.Awaiting.PLAYER_PLAY:
-		script.act(loop)
+	script.play_to(self, loop, RunLoop.Awaiting.PLAYER_PLAY)
 	return loop
 
 

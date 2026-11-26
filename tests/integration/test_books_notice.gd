@@ -112,10 +112,7 @@ func test_no_notice_on_a_reload_or_a_table_joining_the_run() -> void:
 func test_the_notice_on_every_kind_of_screen_and_every_time() -> void:
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	var guard: int = 0
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER and guard < 2000:
-		guard += 1
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.show_screen("set_summary", true)
 	await await_idle_frame()
 	await _shown_and_acknowledged()

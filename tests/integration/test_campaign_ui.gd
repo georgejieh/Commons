@@ -272,8 +272,7 @@ func test_campaign_paper_is_aged_and_wears_with_the_stage() -> void:
 
 func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60

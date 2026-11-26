@@ -26,8 +26,7 @@ func after_test() -> void:
 
 func test_the_black_markets_plot_cards_keep_a_cards_proportions() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
@@ -52,8 +51,7 @@ func test_the_black_markets_plot_cards_keep_a_cards_proportions() -> void:
 ## is, with the card's name over the stall's rule, and carries no tooltip of its own.
 func test_a_plot_cards_ticket_is_explained_in_the_slip() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	var market: StoreScreen = _app.show_screen("black_market", true)
 	await await_idle_frame()

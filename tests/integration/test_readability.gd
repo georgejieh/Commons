@@ -36,8 +36,7 @@ func after_test() -> void:
 
 func _to_store() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 
 

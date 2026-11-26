@@ -16,17 +16,6 @@ const OUT: int = 21
 const FULL: Array[int] = [Ranks.KING, Ranks.ACE, Ranks.TWO]
 
 
-func _at_the_shops(seed_value: int, coupons: int = RICH) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	# The Set's end is the record's checkpoint, so a replay has the coupons too.
-	loop.state.coupons = coupons
-	loop.record.checkpoint["coupons"] = coupons
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 func test_the_most_copies_of_a_rank_fits_what_a_count_key_holds() -> void:
 	var params: RunParams = RunDefaults.PARAMS
 	var plot_most: int = params.plot_capacity + RunDefaults.PLOT_UPGRADES.capacity_max
@@ -38,7 +27,7 @@ func test_the_most_copies_of_a_rank_fits_what_a_count_key_holds() -> void:
 func test_the_stall_offers_no_joker_and_draws_the_same_on_a_replay() -> void:
 	var marked: int = 0
 	for seed_value: int in SEEDS:
-		var loop: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		var offers: CardOffers = loop.visit.deck_stall.offers
 		assert_int(offers.count()).is_equal(STALL.offers)
 		for slot: int in offers.count():
@@ -60,7 +49,7 @@ func test_the_stall_offers_no_joker_and_draws_the_same_on_a_replay() -> void:
 
 
 func test_a_bought_card_takes_the_named_slot_for_the_run_and_its_marks_go() -> void:
-	var loop: RunLoop = _at_the_shops(31)
+	var loop: RunLoop = RunScript.at_the_shops(self, 31, RICH)
 	var offers: CardOffers = loop.visit.deck_stall.offers
 	var rank: int = offers.rank(0)
 	var suit: int = offers.suit(0)
@@ -100,7 +89,7 @@ func test_a_marked_offer_costs_its_mark_more() -> void:
 
 
 func test_a_refused_exchange_changes_nothing() -> void:
-	var loop: RunLoop = _at_the_shops(32)
+	var loop: RunLoop = RunScript.at_the_shops(self, 32, RICH)
 	_refused(loop, 0, Deck.SMALL_JOKER_ID, RunShop.Reason.JOKER)
 	_refused(loop, 0, Deck.BIG_JOKER_ID, RunShop.Reason.JOKER)
 	_refused(loop, 0, Deck.SIZE, RunShop.Reason.NO_SUCH_CARD)
@@ -108,7 +97,7 @@ func test_a_refused_exchange_changes_nothing() -> void:
 	_refused(loop, STALL.offers, OUT, RunShop.Reason.NO_SUCH_SLOT)
 	assert_int(loop.player_deck_card(0, OUT)).is_equal(RunLoop.Reason.OK)
 	_refused(loop, 0, OUT + 1, RunShop.Reason.SOLD_OUT)
-	var poor: RunLoop = _at_the_shops(33, 0)
+	var poor: RunLoop = RunScript.at_the_shops(self, 33, 0)
 	_refused(poor, 0, OUT, RunShop.Reason.TOO_POOR)
 
 
@@ -155,7 +144,7 @@ func test_a_rank_may_be_emptied_and_the_deck_holds_54_without_a_third_joker() ->
 
 
 func test_the_next_deal_deals_the_exchanged_deck() -> void:
-	var loop: RunLoop = _at_the_shops(34)
+	var loop: RunLoop = RunScript.at_the_shops(self, 34, RICH)
 	var mark: String = loop.visit.deck_stall.offers.enhancement(0)
 	var rank: int = loop.visit.deck_stall.offers.rank(0)
 	assert_int(loop.player_deck_card(0, THREE)).is_equal(RunLoop.Reason.OK)
@@ -170,7 +159,7 @@ func test_the_next_deal_deals_the_exchanged_deck() -> void:
 
 
 func test_a_save_before_the_exchange_loads_as_a_plain_deck() -> void:
-	var loop: RunLoop = _at_the_shops(36)
+	var loop: RunLoop = RunScript.at_the_shops(self, 36, RICH)
 	var data: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("deck")
@@ -184,7 +173,7 @@ func test_a_save_before_the_exchange_loads_as_a_plain_deck() -> void:
 
 
 func test_a_run_with_exchanges_resumes_to_the_same_deck_at_every_checkpoint() -> void:
-	var loop: RunLoop = _at_the_shops(31)
+	var loop: RunLoop = RunScript.at_the_shops(self, 31, RICH)
 	assert_int(loop.player_deck_card(0, OUT)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.player_deck_card(1, THREE)).is_equal(RunLoop.Reason.OK)
 	_same_deck(loop)

@@ -39,8 +39,7 @@ func test_cancel_goes_back_from_the_runs_records() -> void:
 func test_cancel_goes_back_from_the_black_market_and_not_from_the_store() -> void:
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	await _check_back("black_market", "store")
 	await _cancel()

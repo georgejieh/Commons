@@ -62,8 +62,7 @@ func _check_conserved(loop: RunLoop) -> void:
 
 
 func _to_play(loop: RunLoop, script: RunScript) -> void:
-	while loop.awaiting() != RunLoop.Awaiting.PLAYER_PLAY:
-		assert_bool(script.act(loop)).is_true()
+	script.play_to(self, loop, RunLoop.Awaiting.PLAYER_PLAY)
 
 
 ## With a marked plot swapping every round: before each round's first play, the 54 cards
@@ -185,8 +184,7 @@ func test_a_swap_keeps_marks_both_ways() -> void:
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	var script: RunScript = RunScript.new()
 	loop.start_set()
-	while loop.awaiting() != RunLoop.Awaiting.PLAYER_SWAP:
-		assert_bool(script.act(loop)).is_true()
+	script.play_to(self, loop, RunLoop.Awaiting.PLAYER_SWAP)
 	var given: CardInstance = loop.player_cards()[0]
 	var taken: int = plot_card.id()
 	assert_int(loop.player_swap([given.id()], [taken])).is_equal(RunLoop.Reason.OK)

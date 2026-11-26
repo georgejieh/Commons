@@ -7,19 +7,6 @@ extends GdUnitTestSuite
 const RICH: int = 1000
 
 
-func _at_the_shops(seed_value: int, reforms: Array[String] = []) -> RunLoop:
-	var state: RunState = RunState.new(seed_value)
-	state.reforms.assign(reforms)
-	var loop: RunLoop = RunLoop.new(state, RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	# Handed over at the Set's end, where the record's checkpoint is, so a replay has them.
-	loop.state.coupons = RICH
-	loop.record.mark(loop.state)
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 func _ids(items: Array[EnvelopeItem]) -> Array[String]:
 	var ids: Array[String] = []
 	for item: EnvelopeItem in items:
@@ -41,7 +28,7 @@ func _same_state(first: RunLoop, second: RunLoop) -> void:
 ## and its index.
 func _parcel_with(kind: EnvelopeDef.Content, low: bool = false) -> Array:
 	for seed_value: int in 40:
-		var loop: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		loop.player_market_envelope(0)
 		var items: Array[EnvelopeItem] = loop.visit.market.envelopes.items()
 		for index: int in items.size():
@@ -87,7 +74,7 @@ func test_a_kept_plot_card_enters_the_plot_marked_and_a_full_plot_refuses() -> v
 ## pick then replays, and the whole record replays to the same state.
 func test_a_save_mid_opening_loads_into_the_same_envelope() -> void:
 	for market: bool in [false, true]:
-		var loop: RunLoop = _at_the_shops(11)
+		var loop: RunLoop = RunScript.at_the_shops(self, 11, RICH)
 		loop.player_buy(0)
 		if market:
 			loop.player_market_envelope(0)
@@ -135,8 +122,7 @@ func test_marked_plot_cards_survive_save_load_and_a_swap() -> void:
 	assert_str(plot[1].enhancement_id()).is_equal(CardInstance.MODEL)
 	assert_int(plot[1].base_rank()).is_equal(Ranks.FIVE)
 	var script: RunScript = RunScript.new()
-	while resumed.awaiting() != RunLoop.Awaiting.PLAYER_SWAP:
-		assert_bool(script.act(resumed)).is_true()
+	script.play_to(self, resumed, RunLoop.Awaiting.PLAYER_SWAP)
 	var hand: Array[CardInstance] = resumed.player_cards()
 	var given: Array[int] = [hand[0].id()]
 	var taken: Array[int] = [plot[0].id()]

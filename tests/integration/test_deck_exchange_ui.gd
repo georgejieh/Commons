@@ -37,8 +37,7 @@ func _loop() -> RunLoop:
 
 func _to_the_store(coupons: int = 60) -> StoreScreen:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	_loop().state.coupons = coupons
 	_app.controller.reseal_book()

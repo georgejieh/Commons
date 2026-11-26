@@ -15,11 +15,7 @@ var _resentment_rises: Array[int] = []
 
 
 func _at_the_shops(seed_value: int) -> RunController:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = COUPONS
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
+	var loop: RunLoop = RunScript.at_the_shops(self, seed_value, COUPONS)
 	var controller: RunController = auto_free(RunController.new())
 	controller.live_search = false
 	controller.resume(loop)

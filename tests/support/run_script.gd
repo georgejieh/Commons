@@ -4,6 +4,8 @@ extends RefCounted
 ## need, and swaps the plot's first card for the hand's lowest when it can.
 
 const NEED: int = 12
+## The most turns play_to takes before it fails: far more than a whole Set needs.
+const MOST_TURNS: int = 5000
 
 var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
 ## Player commands in order, as text, for logs and replays.
@@ -24,6 +26,36 @@ static func next_set(loop: RunLoop) -> RunLoop.Reason:
 	if loop.awaiting() == RunLoop.Awaiting.SET_OVER and not loop.is_last_set():
 		loop.open_shop()
 	return loop.next_set()
+
+
+## A new run's first Set played through and its shops opened. The coupons are handed over
+## at the Set's end, where the record's checkpoint is, so a replay has them too.
+static func at_the_shops(
+	suite: GdUnitTestSuite, seed_value: int, coupons: int, reforms: Array[String] = []
+) -> RunLoop:
+	var state: RunState = RunState.new(seed_value)
+	state.reforms.assign(reforms)
+	var loop: RunLoop = RunLoop.new(state, bots(), SetConfig.new())
+	loop.start_set()
+	RunScript.new().play_to(suite, loop, RunLoop.Awaiting.SET_OVER)
+	loop.state.coupons = coupons
+	loop.record.mark(loop.state)
+	suite.assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
+	return loop
+
+
+## Takes the player's turns until the loop awaits moment, and says whether it got there.
+## It fails suite, naming both moments, when the loop stops waiting on the player first or
+## after MOST_TURNS turns.
+func play_to(suite: GdUnitTestSuite, loop: RunLoop, moment: RunLoop.Awaiting) -> bool:
+	for _turn: int in MOST_TURNS:
+		if loop.awaiting() == moment or not act(loop):
+			break
+	if loop.awaiting() == moment:
+		return true
+	var names: Array = RunLoop.Awaiting.keys()
+	suite.fail("The loop awaits %s, not %s" % [names[loop.awaiting()], names[moment]])
+	return false
 
 
 ## Acts until the loop waits on something other than the player.

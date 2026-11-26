@@ -21,8 +21,7 @@ func before_test() -> void:
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
