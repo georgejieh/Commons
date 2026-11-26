@@ -2,11 +2,12 @@ class_name BalancePrivate
 extends BalanceStrategy
 ## The player who takes everything (ADR 0027): calls and grabs whenever the Hard bot
 ## would call, claims the most the panel allows, issues a Directive a visit and buys
-## nothing else from the state store, buys everything it can at the black market, uses
-## every Campaign and swaps its plot in.
+## nothing else from the state store, buys everything it can at the black market (its
+## desk's stamp after a Cadre), uses every Campaign and swaps its plot in.
 
 const MARKET_ORDER: Array[BalanceOffer.Kind] = [
 	BalanceOffer.Kind.CADRE,
+	BalanceOffer.Kind.MARK,
 	BalanceOffer.Kind.PARCEL,
 	BalanceOffer.Kind.PLOT_CARD,
 	BalanceOffer.Kind.UPGRADE,

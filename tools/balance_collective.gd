@@ -1,8 +1,8 @@
 class_name BalanceCollective
 extends BalanceStrategy
 ## The player who trusts the village (ADR 0027): never takes the seat, claims the true
-## need, buys only at the state store, a Directive first, and never enters the black
-## market.
+## need, buys only at the state store, a Directive first and the deck's goods last, and
+## never enters the black market.
 
 
 func name() -> String:

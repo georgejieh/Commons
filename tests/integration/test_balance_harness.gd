@@ -46,6 +46,8 @@ func test_every_strategy_plays_its_runs_to_their_end() -> void:
 			assert_str(run.failure).override_failure_message(name + ": " + run.failure).is_empty()
 			assert_str(run.outcome).override_failure_message(name).is_not_empty()
 			assert_int(run.quotas_played).override_failure_message(name).is_greater(0)
+			var columns: int = BalanceResult.HEADER.split(",").size()
+			assert_int(run.csv().split(",").size()).override_failure_message(name).is_equal(columns)
 			print("%s: %s at Year %d, %.1f s" % [name, run.outcome, run.year, run.seconds])
 
 
@@ -126,6 +128,7 @@ func test_private_enters_the_market_and_over_claims() -> void:
 	for run: BalanceResult in _each("private"):
 		market_buys += run.market_buys
 		assert_int(run.store_buys).is_equal(0)
+		assert_int(run.deck_spent).is_equal(0)
 		assert_int(run.max_need).is_equal(RunStarter.DEMO_RUN.need_cap)
 		assert_int(run.market_resentment).is_greater(0)
 	assert_int(market_buys).is_greater(0)

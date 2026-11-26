@@ -2,7 +2,18 @@ class_name BalanceOffer
 extends RefCounted
 ## One thing a counter offers that the player can buy now, and its price.
 
-enum Kind { CADRE, REFORM, ENVELOPE, CAMPAIGN, PARCEL, PLOT_CARD, UPGRADE, DIRECTIVE }
+enum Kind {
+	CADRE,
+	REFORM,
+	ENVELOPE,
+	CAMPAIGN,
+	PARCEL,
+	PLOT_CARD,
+	UPGRADE,
+	DIRECTIVE,
+	DECK_CARD,
+	MARK,
+}
 
 var kind: Kind
 ## The slot on its shelf; for an upgrade, unused.
@@ -10,8 +21,12 @@ var slot: int
 var price: int
 ## True at the black market.
 var market: bool
-## The Cadre's or Directive's ID, or the upgrade's kind; empty otherwise.
+## The Cadre's or Directive's ID, the upgrade's kind or the enhancement a desk gives;
+## empty otherwise, and at the desk that stamps.
 var item_id: String
+## The deck card a card for the deck takes the place of, or the one a desk marks;
+## RunController.NO_CARD for every other kind.
+var card: int = RunController.NO_CARD
 
 
 func _init(
