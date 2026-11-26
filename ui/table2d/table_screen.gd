@@ -148,7 +148,7 @@ func open(app: DemoApp) -> void:
 	add_child(_player)
 	add_child(_motion)
 	_player.motion = _motion
-	_motion.setup(self, bool(Settings.value("reduced_motion")))
+	_motion.setup(self, UiMotion.reduced())
 	Settings.changed.connect(_on_setting)
 	_pile.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
@@ -237,7 +237,7 @@ func skip_events() -> void:
 ## won trick is cleared, not swept, so no tween outlives the catch-up and clears a
 ## later play.
 func _still(on: bool) -> void:
-	_motion.set_reduced(on or bool(Settings.value("reduced_motion")))
+	_motion.set_still(on or UiMotion.reduced())
 
 
 ## The buttons, for scripted UI tests.
@@ -437,9 +437,9 @@ func _seat_center(seat: int) -> Vector2:
 
 
 func _on_setting(key: String) -> void:
-	if key == "reduced_motion":
-		_motion.set_reduced(bool(Settings.value("reduced_motion")))
-	if key == "reduced_motion" or key == "table_pace":
+	if key == UiMotion.SETTING:
+		_motion.set_still(UiMotion.reduced())
+	if key == UiMotion.SETTING or key == SettingsPanel.PACE_SETTING:
 		_set_pace()
 
 
@@ -448,7 +448,7 @@ func _on_setting(key: String) -> void:
 func _set_pace() -> void:
 	_player.step = _app.motion_step() * _sit_out.pace()
 	_moments.sequence.hurry_villagers = _sit_out.is_active()
-	_player.play_wait = TableMotion.PRESETS.fly_time * _player.step / TableMotion.PRESETS.event_step
+	_player.play_wait = UiMotion.PRESETS.fly_time * _player.step / UiMotion.PRESETS.event_step
 	_player.wind = _wind()
 	_player.holds = {
 		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
@@ -458,9 +458,9 @@ func _set_pace() -> void:
 ## The beat a villager's seat is marked for before its cards leave, at the table's pace;
 ## none under reduced motion.
 func _wind() -> float:
-	if _motion.reduced:
+	if _motion.still:
 		return 0.0
-	return TableMotion.PRESETS.wind_up * _player.step / TableMotion.PRESETS.event_step
+	return UiMotion.PRESETS.wind_up * _player.step / UiMotion.PRESETS.event_step
 
 
 func _on_winding(event: RunEvent) -> void:

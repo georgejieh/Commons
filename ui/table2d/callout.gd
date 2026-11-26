@@ -236,8 +236,7 @@ func _fitted(text: String, base: int, share: float) -> int:
 
 
 func _rest() -> void:
-	if _tween != null and _tween.is_valid():
-		_tween.kill()
+	UiMotion.end(_tween)
 	_tween = null
 	wipe = 0.0
 	leave = 0.0

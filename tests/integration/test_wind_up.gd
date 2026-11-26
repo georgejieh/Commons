@@ -51,7 +51,7 @@ func test_a_wound_up_seat_swells_and_settles() -> void:
 	var seat: Control = auto_free(Control.new())
 	seat.size = Vector2(240, 300)
 	add_child(seat)
-	var presets: MotionPresets = TableMotion.PRESETS
+	var presets: MotionPresets = UiMotion.PRESETS
 	motion.wind_up(seat, presets.wind_up)
 	await await_millis(int(presets.wind_up * 1000.0))
 	assert_float(seat.scale.x).is_greater(1.0)
@@ -59,7 +59,7 @@ func test_a_wound_up_seat_swells_and_settles() -> void:
 	assert_vector(seat.pivot_offset).is_equal(seat.size / 2.0)
 	await await_millis(int(presets.fly_time * 1000.0) + 150)
 	assert_vector(seat.scale).is_equal(Vector2.ONE)
-	motion.set_reduced(true)
+	motion.set_still(true)
 	motion.wind_up(seat, presets.wind_up)
 	await await_millis(60)
 	assert_vector(seat.scale).is_equal(Vector2.ONE)

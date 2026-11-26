@@ -99,7 +99,7 @@ func test_the_words_and_the_pile_say_the_wild_rank_is_the_players() -> void:
 	assert_array(_loop().seat_table(1).rules.wild_ranks()).is_empty()
 	var pile: TrickPile = table.get("_pile")
 	var motion: TableMotion = table.get("_motion")
-	motion.set_reduced(true)
+	motion.set_still(true)
 	table.call("_show_play", _pair_event(1, rank))
 	for view: CardView in pile.top_views():
 		assert_bool(view.shows_wild()).override_failure_message("villager's card").is_false()
@@ -108,7 +108,7 @@ func test_the_words_and_the_pile_say_the_wild_rank_is_the_players() -> void:
 	for view: CardView in pile.top_views():
 		assert_bool(view.shows_wild()).override_failure_message("player's card").is_true()
 	pile.clear()
-	motion.set_reduced(false)
+	motion.set_still(false)
 
 
 ## Industrialization is the player's rule: the strip lists it under the player's Reforms.

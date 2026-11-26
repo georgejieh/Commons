@@ -78,7 +78,7 @@ func test_the_pile_lays_a_play_as_it_reads() -> void:
 	await await_idle_frame()
 	var pile: TrickPile = table.get("_pile")
 	var motion: TableMotion = table.get("_motion")
-	motion.set_reduced(true)
+	motion.set_still(true)
 	var cards: Array[CardInstance] = _cards([8, 0, 5, 9, 1, 4])
 	pile.show_play(cards, Vector2.ZERO, [], _read(cards))
 	assert_array(pile.top_ids()).is_equal([0, 1, 4, 5, 8, 9])
@@ -86,7 +86,7 @@ func test_the_pile_lays_a_play_as_it_reads() -> void:
 	for index: int in range(1, views.size()):
 		assert_float(views[index].position.x).is_greater(views[index - 1].position.x)
 	pile.clear()
-	motion.set_reduced(false)
+	motion.set_still(false)
 	Saves.run_service().delete()
 
 

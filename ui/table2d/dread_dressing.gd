@@ -113,8 +113,7 @@ func take_down_notice(down: bool) -> void:
 	if down == _notice_down:
 		return
 	_notice_down = down
-	if _notice_fade != null and _notice_fade.is_valid():
-		_notice_fade.kill()
+	UiMotion.end(_notice_fade)
 	var weight: float = 0.0 if down else 1.0
 	if down:
 		_bars.visible = false

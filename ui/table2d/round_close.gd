@@ -57,7 +57,7 @@ func _on_played(event: RunEvent) -> void:
 ## for both.
 func _on_closing() -> void:
 	_stop()
-	var presets: MotionPresets = TableMotion.PRESETS
+	var presets: MotionPresets = UiMotion.PRESETS
 	var read: float = presets.round_close_steps * _player.step
 	var sweep: float = presets.sweep if not UiMotion.reduced() else 0.0
 	_player.hold(read + sweep)
@@ -77,6 +77,5 @@ func _put_away() -> void:
 
 
 func _stop() -> void:
-	if _beat != null and _beat.is_valid():
-		_beat.kill()
+	UiMotion.end(_beat)
 	_beat = null

@@ -270,8 +270,7 @@ func set_bid(text: String) -> void:
 func flash(text: String) -> void:
 	_show_role(text.to_upper())
 	UiMotion.pulse(_role)
-	if _flash != null and _flash.is_valid():
-		_flash.kill()
+	UiMotion.end(_flash)
 	_flash = create_tween()
 	_flash.tween_interval(FLASH_HOLD)
 	_flash.tween_callback(func() -> void: _show_role(_role_text))

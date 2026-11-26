@@ -191,8 +191,7 @@ func _settle() -> void:
 
 
 func _kill() -> void:
-	if _tween != null and _tween.is_valid():
-		_tween.kill()
+	UiMotion.end(_tween)
 	_tween = null
 
 

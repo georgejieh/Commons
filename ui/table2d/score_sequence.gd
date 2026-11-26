@@ -22,7 +22,6 @@ signal hurried(speed: float)
 signal beat(kind: int, step_index: int)
 signal finished
 
-const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 ## How far above the first chime the Zeal's stamp is pitched, in semitones.
 const ZEAL_LIFT: float = 5.0
 ## Room kept between the tally's motion and the laid cards, the hand and the column.
@@ -100,7 +99,7 @@ func is_running() -> bool:
 func hurry() -> void:
 	if not is_running() or _speed > 1.0:
 		return
-	_speed = 1.0 / maxf(PRESETS.score_hurried, 0.01)
+	_speed = 1.0 / maxf(UiMotion.PRESETS.score_hurried, 0.01)
 	for running: Tween in [_tween, _roll]:
 		if running != null and running.is_valid():
 			running.set_speed_scale(_speed)
@@ -115,8 +114,7 @@ func steps() -> Array[ScoreStep]:
 ## Takes the sequence down at once, its tally with it.
 func stop() -> void:
 	for running: Tween in [_tween, _roll]:
-		if running != null and running.is_valid():
-			running.kill()
+		UiMotion.end(running)
 	_tween = null
 	_roll = null
 
@@ -331,7 +329,9 @@ func _start_roll(seconds: float) -> void:
 	tally.figure(ScoreTally.TOTAL, Strings.score(0.0), false)
 	_beads = 0
 	var each: float = 0.05
-	_bead_count = clampi(roundi(seconds / each), PRESETS.score_least_beads, PRESETS.score_beads)
+	_bead_count = clampi(
+		roundi(seconds / each), UiMotion.PRESETS.score_least_beads, UiMotion.PRESETS.score_beads
+	)
 	_roll = create_tween()
 	_roll.set_speed_scale(_speed)
 	_roll.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
@@ -349,16 +349,15 @@ func _rolling(share: float, total: float) -> void:
 ## The total lands: a stamp, heavier for a play worth much of the Quota, and the tally
 ## shakes for it; then the table sends it to the ledger.
 func _stamp() -> void:
-	if _roll != null and _roll.is_valid():
-		_roll.kill()
+	UiMotion.end(_roll)
 	_roll = null
 	var total_text: String = Strings.score(_event.amount)
 	tally.figure(ScoreTally.TOTAL, total_text, true, true)
 	var share: float = _event.amount / target if target > 0.0 else 0.0
-	var weight: float = clampf(share / maxf(PRESETS.score_heavy, 0.0001), 0.0, 1.0)
+	var weight: float = clampf(share / maxf(UiMotion.PRESETS.score_heavy, 0.0001), 0.0, 1.0)
 	var heavy: bool = weight >= 1.0
 	Audio.play(AudioEvents.SCORE_LAND_HEAVY if heavy else AudioEvents.SCORE_LAND)
-	tally.shake(PRESETS.score_shake * weight, PRESETS.score_stamp)
+	tally.shake(UiMotion.PRESETS.score_shake * weight, UiMotion.PRESETS.score_stamp)
 	tally.land(total_text)
 
 

@@ -306,8 +306,7 @@ func _fly_coupons(count: int) -> void:
 ## The Letter goes out to the next seat, or is taken back from it.
 func _set_letter(out: bool, animate: bool = false) -> void:
 	_letter_out = out
-	if _note_tween != null and _note_tween.is_valid():
-		_note_tween.kill()
+	UiMotion.end(_note_tween)
 	_note_tween = null
 	var seat: SeatPanel = _table.seats().get(1)
 	if seat == null:
@@ -342,8 +341,7 @@ func _start_beat() -> Tween:
 
 
 func _end_beat() -> void:
-	if _beat != null and _beat.is_valid():
-		_beat.kill()
+	UiMotion.end(_beat)
 	_beat = null
 	_put_away()
 

@@ -11,12 +11,16 @@ extends RefCounted
 
 
 ## The indices of cards in the order they lie, as reading reads them; with no reading,
-## low to high by printed rank.
-static func arrange(cards: Array[CardInstance], reading: Pattern = null) -> Array[int]:
-	var stands: PackedByteArray = PackedByteArray()
-	for card: CardInstance in cards:
-		stands.append(card.base_rank())
-	if reading != null:
+## low to high by printed rank. stands is what PlayPlacement.stands_for gives for the cards
+## under reading, when the caller has worked it out already.
+static func arrange(
+	cards: Array[CardInstance], reading: Pattern = null, stands: PackedByteArray = PackedByteArray()
+) -> Array[int]:
+	if reading == null:
+		stands = PackedByteArray()
+		for card: CardInstance in cards:
+			stands.append(card.base_rank())
+	elif stands.is_empty():
 		stands = PlayPlacement.stands_for(cards, reading)
 	var keys: Array[Array] = []
 	for index: int in cards.size():

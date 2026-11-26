@@ -174,8 +174,7 @@ func _move(bar: String, value: float, animate: bool, delay: float = 0.0) -> void
 		return
 	var from: float = maxf(_goals[bar], 0.0)
 	_goals[bar] = value
-	if _tweens.has(bar) and _tweens[bar] != null and _tweens[bar].is_valid():
-		_tweens[bar].kill()
+	UiMotion.end(_tweens.get(bar))
 	if not animate or UiMotion.reduced():
 		_show(value, bar)
 		return

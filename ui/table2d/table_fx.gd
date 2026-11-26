@@ -1,7 +1,7 @@
 class_name TableFx
 extends Control
 ## Numbers in flight over the table: a play's points leaving the tally for the ledger, and
-## the small tags of what each thing that fired added to a play's score, beside it . Labels
+## the small tags of what each thing that fired added to a play's score, beside it. Labels
 ## are made once and reused in turn. Nothing here takes the mouse. A flight carries nothing
 ## the table doesn't show at rest, so reduced motion drops it; a tag still shows under
 ## reduced motion, standing still, since it says what the tally's figures only show the sum
@@ -10,18 +10,18 @@ extends Control
 const FLIERS: int = 6
 const FLY_SIZE: int = 38
 const FLY_TIME: float = 0.5
-const TWEEN_META: StringName = &"fx_tween"
 const TAGS: int = 6
 const TAG_SIZE: int = 22
 ## A tag stands this far above what it labels, and never higher than the bar's foot.
 const TAG_GAP: float = 4.0
 const TAG_TOP: float = 82.0
-const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 
 var _fliers: Array[Label] = []
 var _next_flier: int = 0
 var _tags: Array[Label] = []
 var _next_tag: int = 0
+## Each label's flight or tag under way, so the label's next use replaces it.
+var _tweens: Dictionary[Label, Tween] = {}
 
 
 func _ready() -> void:
@@ -46,14 +46,16 @@ func tag(text: String, around: Rect2, color: Color) -> Label:
 		at.y = around.end.y + TAG_GAP
 	at.x = clampf(at.x, TAG_GAP, maxf(TAG_GAP, size.x - label.size.x - TAG_GAP))
 	label.position = at - global_position
-	var hold: float = PRESETS.score_label_time
+	var hold: float = UiMotion.PRESETS.score_label_time
 	var tween: Tween = label.create_tween()
-	label.set_meta(TWEEN_META, tween)
+	_tweens[label] = tween
 	if UiMotion.reduced():
 		tween.tween_interval(hold)
 	else:
 		tween.set_parallel(true)
-		tween.tween_property(label, "position:y", label.position.y - PRESETS.score_label_rise, hold)
+		tween.tween_property(
+			label, "position:y", label.position.y - UiMotion.PRESETS.score_label_rise, hold
+		)
 		tween.tween_property(label, "modulate:a", 0.0, hold * 0.4).set_delay(hold * 0.6)
 		tween.chain()
 	tween.tween_callback(label.hide)
@@ -82,7 +84,7 @@ func fly(text: String, from: Vector2, to: Vector2, color: Color) -> void:
 	label.position = from - global_position - half
 	label.scale = Vector2.ONE * 1.3
 	var tween: Tween = label.create_tween().set_parallel(true)
-	label.set_meta(TWEEN_META, tween)
+	_tweens[label] = tween
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tween.tween_property(label, "position", to - global_position - half, FLY_TIME)
 	tween.tween_property(label, "scale", Vector2.ONE * 0.7, FLY_TIME)
@@ -90,10 +92,7 @@ func fly(text: String, from: Vector2, to: Vector2, color: Color) -> void:
 
 
 func _show(label: Label, text: String, color: Color, font_size: int) -> void:
-	if label.has_meta(TWEEN_META):
-		var running: Tween = label.get_meta(TWEEN_META)
-		if running != null and running.is_valid():
-			running.kill()
+	UiMotion.end(_tweens.get(label))
 	label.text = text
 	label.add_theme_font_size_override("font_size", TextSize.px(font_size))
 	label.add_theme_color_override("font_color", color)

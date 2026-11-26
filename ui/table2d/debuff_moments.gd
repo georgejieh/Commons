@@ -271,8 +271,7 @@ func _start_beat() -> Tween:
 
 
 func _end_beat() -> void:
-	if _beat != null and _beat.is_valid():
-		_beat.kill()
+	UiMotion.end(_beat)
 	_beat = null
 	_put_away()
 

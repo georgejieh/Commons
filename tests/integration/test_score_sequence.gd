@@ -152,7 +152,7 @@ func test_sitting_out_plays_a_villagers_score_at_the_hurried_pace() -> void:
 	moments.sequence.stop()
 	moments.sequence.hurry_villagers = true
 	var hurried: float = moments.sequence.play(event, 1.0)
-	assert_float(hurried).is_equal_approx(full * TableMotion.PRESETS.score_hurried, 0.01)
+	assert_float(hurried).is_equal_approx(full * UiMotion.PRESETS.score_hurried, 0.01)
 	moments.sequence.stop()
 	# The player's own play is never hurried for it.
 	var own: RunEvent = _scored("999", ["canteen"], HOLDER)
@@ -189,7 +189,7 @@ func test_the_pace_scales_it_and_a_long_chain_speeds_up_within_its_cap() -> void
 	for _index: int in 40:
 		many.append(ten[0])
 	assert_float(ScoreBeats.lay_out(many, 1.0).total()).is_less_equal(
-		TableMotion.PRESETS.score_most + 0.001
+		UiMotion.PRESETS.score_most + 0.001
 	)
 
 

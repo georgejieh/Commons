@@ -238,7 +238,7 @@ func _on_scored(event: RunEvent, quiet: bool) -> void:
 		_ledger.add_play(event.seat, event.grain, event.rate, event.zeal, event.amount)
 		return
 	_scoring = event.seat
-	var pace: float = _pace() * (1.0 if event.seat == 0 else TableMotion.PRESETS.score_villager)
+	var pace: float = _pace() * (1.0 if event.seat == 0 else UiMotion.PRESETS.score_villager)
 	sequence.target = _target
 	var seconds: float = sequence.play(event, pace)
 	var flight: float = FLIGHT if seconds > 0.0 else 0.0
@@ -332,8 +332,7 @@ func _end_dice() -> void:
 
 
 func _kill_dice_beat() -> void:
-	if _dice_beat != null and _dice_beat.is_valid():
-		_dice_beat.kill()
+	UiMotion.end(_dice_beat)
 	_dice_beat = null
 
 
@@ -356,14 +355,13 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 	var to: Vector2 = HAND_AT
 	if _seats.has(seat):
 		to = _seats[seat].global_position + _seats[seat].size / 2.0
-	if _kitty != null and _kitty.is_valid():
-		_kitty.kill()
+	UiMotion.end(_kitty)
 	_kitty = create_tween()
 	_kitty.tween_interval(KITTY_SHOW)
 	_kitty.tween_callback(_pile.sweep.bind(to))
 	_kitty.tween_callback(_kitty_label.hide)
 	# A little past the sweep, so the landlord's first play never lands under it.
-	_player.hold(KITTY_SHOW + TableMotion.PRESETS.sweep + KITTY_MARGIN)
+	_player.hold(KITTY_SHOW + UiMotion.PRESETS.sweep + KITTY_MARGIN)
 
 
 ## Shakes the table a little, for a beat played on it.
@@ -388,7 +386,7 @@ func _shout(word: String, tier: Callout.Tier, cloth: Color, line: String, seat: 
 
 ## The table's speed against the default, so a faster table shortens every beat.
 func _pace() -> float:
-	return _player.step / TableMotion.PRESETS.event_step
+	return _player.step / UiMotion.PRESETS.event_step
 
 
 ## The tally and the sequence acting on it are taken down.

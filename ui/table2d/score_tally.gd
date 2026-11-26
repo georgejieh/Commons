@@ -9,7 +9,6 @@ extends HBoxContainer
 
 signal landed(total_text: String)
 
-const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 ## A chit's least size, and its padding inside the paper's printed border.
 const TILE: Vector2 = Vector2(96, 70)
 const PADDING: int = 18
@@ -93,10 +92,13 @@ func figure(index: int, text: String, bump: bool, big: bool = false) -> void:
 		tile.scale = Vector2.ONE
 		return
 	tile.pivot_offset = tile.size / 2.0
-	tile.scale = Vector2.ONE * (PRESETS.score_total_scale if big else PRESETS.score_chit_scale)
+	tile.scale = (
+		Vector2.ONE
+		* (UiMotion.PRESETS.score_total_scale if big else UiMotion.PRESETS.score_chit_scale)
+	)
 	var press: Tween = tile.create_tween()
 	press.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	press.tween_property(tile, "scale", Vector2.ONE, PRESETS.score_stamp)
+	press.tween_property(tile, "scale", Vector2.ONE, UiMotion.PRESETS.score_stamp)
 
 
 ## The equals sign says what share of Grain × Rate × Zeal a cut left the total.
@@ -113,8 +115,7 @@ func land(total_text: String) -> void:
 func shake(pixels: float, seconds: float) -> void:
 	if pixels <= 0.0 or UiMotion.reduced():
 		return
-	if _shake != null and _shake.is_valid():
-		_shake.kill()
+	UiMotion.end(_shake)
 	_rest = position
 	_shake = create_tween()
 	var hops: int = 4
@@ -127,11 +128,13 @@ func shake(pixels: float, seconds: float) -> void:
 
 ## How far any motion here takes a chit past its resting box, on each side, in pixels.
 func reach() -> Vector2:
-	var most: float = maxf(PRESETS.score_chit_scale, PRESETS.score_total_scale) - 1.0
+	var most: float = (
+		maxf(UiMotion.PRESETS.score_chit_scale, UiMotion.PRESETS.score_total_scale) - 1.0
+	)
 	var widest: float = 0.0
 	for tile: Control in _tiles:
 		widest = maxf(widest, tile.size.x)
-	return Vector2(widest * most / 2.0 + PRESETS.score_shake, size.y * most / 2.0)
+	return Vector2(widest * most / 2.0 + UiMotion.PRESETS.score_shake, size.y * most / 2.0)
 
 
 ## Fades the tally away after a while.
@@ -193,8 +196,7 @@ func shown() -> String:
 
 func _stop() -> void:
 	for running: Tween in [_tween, _shake]:
-		if running != null and running.is_valid():
-			running.kill()
+		UiMotion.end(running)
 	if _shake != null:
 		position = _rest
 	_tween = null

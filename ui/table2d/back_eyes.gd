@@ -30,9 +30,11 @@ const LEAST_INK: float = 0.01
 const LOOK_STEP: float = 0.02
 const INK_STEP: float = 0.01
 const SEED: int = 3307
+## Every eye on screen, so the dread can wake them when they come to show.
+const GROUP: StringName = &"back_eyes"
 
 ## The weight the dread layers show the eyes at now, 0 away from the table. One value for
-## every back on screen, as the board has one dread.
+## every back on screen, as the board has one dread. Set through show_weight.
 static var shown: float = 0.0
 
 var _look: Vector2 = Vector2.ZERO
@@ -43,9 +45,30 @@ var _lids: PackedVector2Array = PackedVector2Array()
 var _shaped_wear: float = -1.0
 
 
+## Sets the weight every eye shows. An eye with nothing to show rests, unprocessed, once
+## its ink is gone and its gaze is home; the first weight that shows wakes every eye in
+## tree, which may be null where no eye is on screen.
+static func show_weight(weight: float, tree: SceneTree) -> void:
+	var was_showing: bool = BackEyes._shows(shown)
+	shown = weight
+	if tree != null and BackEyes._shows(weight) and not was_showing:
+		tree.call_group(GROUP, "set_process", true)
+
+
+## The eye's ink at a weight: none at 0, the data's full ink at 1.
+static func ink_for(weight: float) -> float:
+	return clampf(weight, 0.0, 1.0) * CONFIG.effect_tuning.eye_ink
+
+
+## True when an eye at weight has ink to draw or a gaze to turn.
+static func _shows(weight: float) -> bool:
+	return ink_for(weight) >= LEAST_INK or CONFIG.effect_tuning.follow_share(weight) > 0.0
+
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_to_group(GROUP)
 	resized.connect(_reshape)
 
 
@@ -61,11 +84,8 @@ func _process(delta: float) -> void:
 	var moved: bool = _look.distance_to(_drawn_look) >= LOOK_STEP
 	if moved or absf(ink - _drawn_ink) >= INK_STEP:
 		queue_redraw()
-
-
-## The eye's ink at a weight: none at 0, the data's full ink at 1.
-static func ink_for(weight: float) -> float:
-	return clampf(weight, 0.0, 1.0) * CONFIG.effect_tuning.eye_ink
+	elif not BackEyes._shows(shown) and _drawn_ink < LEAST_INK and _look == Vector2.ZERO:
+		set_process(false)
 
 
 ## Where the gaze points now, each axis -1 to 1, for tests.

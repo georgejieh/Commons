@@ -229,8 +229,7 @@ func is_counting() -> bool:
 
 func _show() -> void:
 	# A count still rolling would write over a total that has since changed.
-	if _counting != null and _counting.is_valid():
-		_counting.kill()
+	UiMotion.end(_counting)
 	_counting = null
 	for seat: int in _amounts.size():
 		_amounts[seat].text = Strings.score(_totals[seat])

@@ -49,7 +49,7 @@ func is_active() -> bool:
 
 ## What the table's step is multiplied by: faster while sitting out.
 func pace() -> float:
-	return TableMotion.PRESETS.sit_out_scale if _active else 1.0
+	return UiMotion.PRESETS.sit_out_scale if _active else 1.0
 
 
 ## True when the player may sit out now: their turn to follow, nothing legal but a pass,

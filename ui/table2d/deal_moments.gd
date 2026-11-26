@@ -116,7 +116,7 @@ func _set_aside(cards: Array[CardInstance]) -> void:
 	_beat.tween_interval(ASIDE_SHOW)
 	_beat.tween_callback(_pile.sweep.bind(OFF_TABLE))
 	_beat.tween_callback(_put_away)
-	_player.hold(ASIDE_SHOW + TableMotion.PRESETS.sweep + MARGIN)
+	_player.hold(ASIDE_SHOW + UiMotion.PRESETS.sweep + MARGIN)
 
 
 func _see_kitty(cards: Array[CardInstance]) -> void:
@@ -143,8 +143,7 @@ func _show_words(word: String, note: String) -> void:
 
 
 func _put_away() -> void:
-	if _beat != null and _beat.is_valid():
-		_beat.kill()
+	UiMotion.end(_beat)
 	_beat = null
 	_word.visible = false
 	_note.visible = false

@@ -53,14 +53,14 @@ func _run_of(first: int, count: int) -> Array[CardInstance]:
 
 ## Lays plays on the trick as a long trick leaves them, the last a full 20 cards.
 func _lay(pile: TrickPile, motion: TableMotion, last_first: int) -> void:
-	motion.set_reduced(true)
+	motion.set_still(true)
 	pile.clear()
 	var from: Vector2 = pile.global_position + pile.size / 2.0
 	pile.show_play(_run_of(0, 2), from)
 	pile.show_play(_run_of(8, 5), from)
 	pile.show_play(_run_of(20, 12), from)
 	pile.show_play(_run_of(last_first, 20), from)
-	motion.set_reduced(false)
+	motion.set_still(false)
 
 
 ## A play changed by several Cadres, scored through the engine, carrying its steps.
