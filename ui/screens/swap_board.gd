@@ -364,7 +364,7 @@ func _on_motion(motion: InputEventMouseMotion) -> void:
 	_dragging = true
 	var view: CardView = _views[_press_id]
 	view.settle()
-	view.z_index = 5
+	view.z_index = ScreenKit.LAYER_SHEET
 	view.position = motion.position - _grab
 	var target: int = _card_at(motion.position, _press_id)
 	if target != PlotTrade.NONE and _plot_side[target] == _plot_side[_press_id]:

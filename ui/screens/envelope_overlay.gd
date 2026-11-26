@@ -68,7 +68,7 @@ var _exchange: EnvelopeExchange
 func _init() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	z_index = 4
+	z_index = ScreenKit.LAYER_ENVELOPE
 
 
 ## Opens shelf's envelope over the page, from where its offer stood. Without animate, or
@@ -111,7 +111,7 @@ func open(
 	_figure.wrapping = shelf.wrapping(shelf.opened_id())
 	_figure.visible = false
 	add_child(_figure)
-	_seal.z_index = 1
+	_seal.z_index = ScreenKit.LAYER_LIFTED
 	add_child(_seal)
 	_wire_focus()
 	if animate and not UiMotion.reduced():
@@ -333,7 +333,7 @@ func _act_out(index: int, issued: String = "", before: Array[int] = []) -> void:
 	# Once a paper is kept, Take Nothing is done with: it fades from under the seal.
 	_nothing.disabled = true
 	_nothing.create_tween().tween_property(_nothing, "modulate:a", 0.0, KEEP_TIME)
-	paper.z_index = 1
+	paper.z_index = ScreenKit.LAYER_LIFTED
 	var word: String = tr("directive.issued" if directive else "envelope.kept")
 	var tween: Tween = create_tween()
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

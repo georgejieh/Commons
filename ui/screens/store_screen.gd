@@ -350,7 +350,7 @@ func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
 	_seal.position = middle - global_position - _seal.size / 2.0
 	move_child(_seal, -1)
 	_seal.press()
-	panel.z_index = 1
+	panel.z_index = ScreenKit.LAYER_LIFTED
 	var to: Vector2 = panel.position + _board.slot_center(held) - middle
 	var tween: Tween = create_tween()
 	tween.tween_interval(SEAL_HOLD)

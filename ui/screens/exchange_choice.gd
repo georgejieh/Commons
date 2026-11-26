@@ -59,7 +59,7 @@ func change(card: CardInstance) -> String:
 	var marks: PackedStringArray = []
 	if CardMark.draws(card.enhancement_id()):
 		marks.append(DeckSheet.mark_name(card.enhancement_id()))
-	if card.owner_stamp() == DeckSheet.PLAYER:
+	if card.owner_stamp() == Seats.PLAYER:
 		marks.append(DeckSheet.mark_name(DeckSheet.STAMP))
 	if marks.is_empty():
 		return tr("exchange.change").format(values)

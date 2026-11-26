@@ -38,7 +38,7 @@ func setup(app: DemoApp, slip: DetailSlip, screen_busy: Callable, offered: bool)
 	strip.left.connect(_slip.hide_for)
 	_seal.prepare(tr("reform.enacted"), ScreenKit.RED, SEAL_WIDTH)
 	_seal.top_level = true
-	_seal.z_index = 2
+	_seal.z_index = ScreenKit.LAYER_OVER
 	offers.add_child(_seal)
 
 
@@ -129,7 +129,7 @@ func _buy(slot: int, offered: CounterPanel) -> void:
 	_seal.global_position = offered.global_position + offered.size / 2.0 - _seal.size / 2.0
 	_seal.press()
 	offered.pivot_offset = offered.size / 2.0
-	offered.z_index = 1
+	offered.z_index = ScreenKit.LAYER_LIFTED
 	var middle: Vector2 = offered.global_position + offered.size / 2.0
 	var to: Vector2 = offered.position + strip.next_center() - middle
 	var tween: Tween = offered.create_tween()

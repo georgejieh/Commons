@@ -28,7 +28,7 @@ func _init() -> void:
 	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top_level = true
-	z_index = 3
+	z_index = ScreenKit.LAYER_SLIP
 	visible = false
 	resized.connect(_place)
 

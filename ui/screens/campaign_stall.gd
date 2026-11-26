@@ -39,7 +39,7 @@ func setup(app: DemoApp, market: bool, screen_busy: Callable, slip: DetailSlip) 
 	tray.changed.connect(_show_prompt)
 	tray.used.connect(_on_used)
 	_flier.top_level = true
-	_flier.z_index = 2
+	_flier.z_index = ScreenKit.LAYER_OVER
 	_flier.visible = false
 	_flier.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tray.add_child(_flier)

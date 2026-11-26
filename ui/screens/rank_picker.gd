@@ -33,7 +33,7 @@ var _card_z: int = 0
 
 func _ready() -> void:
 	visible = false
-	z_index = 2
+	z_index = ScreenKit.LAYER_OVER
 	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	# One line: a wrapping prompt is measured at no width, which makes the strip tall.
 	_prompt.autowrap_mode = TextServer.AUTOWRAP_OFF

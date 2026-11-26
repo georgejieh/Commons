@@ -24,7 +24,6 @@ const RULE_SIZE: int = 20
 const LEGEND_SIZE: int = 18
 ## The stamp that marks a card as the player's, beside the enhancements in the legend.
 const STAMP: String = "stamp"
-const PLAYER: int = 0
 
 var _controller: RunController = null
 var _choice: DeckChoice = null
@@ -44,8 +43,7 @@ var _incoming: CardView = null
 
 func _ready() -> void:
 	visible = false
-	# Above an envelope open over the page (EnvelopeOverlay), whose deck card it places.
-	z_index = 5
+	z_index = ScreenKit.LAYER_SHEET
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var dim: ColorRect = ColorRect.new()
@@ -204,7 +202,7 @@ func _show_legend(plot: Array[CardInstance]) -> void:
 	var cards: Array[CardInstance] = _controller.store.deck_cards()
 	cards.append_array(plot)
 	for card: CardInstance in cards:
-		if card.owner_stamp() == PLAYER:
+		if card.owner_stamp() == Seats.PLAYER:
 			counts[STAMP] = counts.get(STAMP, 0) + 1
 		if CardMark.draws(card.enhancement_id()):
 			counts[card.enhancement_id()] = counts.get(card.enhancement_id(), 0) + 1
@@ -235,7 +233,7 @@ static func marks_text(card: CardInstance) -> String:
 	var names: PackedStringArray = []
 	if CardMark.draws(card.enhancement_id()):
 		names.append(mark_name(card.enhancement_id()))
-	if card.owner_stamp() == PLAYER:
+	if card.owner_stamp() == Seats.PLAYER:
 		names.append(mark_name(STAMP))
 	if names.is_empty():
 		return TranslationServer.translate("deck.marks.none")

@@ -45,7 +45,7 @@ func setup(controller: RunController, desk: ShopDesk, screen_busy: Callable) -> 
 	_seal.prepare(tr("directive.issued"), ScreenKit.RED, SEAL_WIDTH)
 	# Above the documents and out of the row's layout.
 	_seal.top_level = true
-	_seal.z_index = 2
+	_seal.z_index = ScreenKit.LAYER_OVER
 	add_child(_seal)
 
 

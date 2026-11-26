@@ -33,6 +33,17 @@ const HINT: Color = STYLE.hint
 const CARD_STOCK: Color = STYLE.card_stock
 const PRINT_RED: Color = STYLE.print_red
 const ENDING_INK: Color = STYLE.ending_ink
+## The layers a page draws in over its own pieces, lowest first, as z_index: a piece being
+## acted out lifts over its row; a seal, a flying paper and the rank picker's question
+## stand over every piece; the shop's slip explains any of those; an opened envelope
+## covers the page and the slip; the deck sheet stands over the envelope whose deck card
+## it places. A card dragged on the plot's swap board takes the sheet's layer, over the
+## pairs' tags (the over layer) and every other card.
+const LAYER_LIFTED: int = 1
+const LAYER_OVER: int = 2
+const LAYER_SLIP: int = 3
+const LAYER_ENVELOPE: int = 4
+const LAYER_SHEET: int = 5
 ## How far the backdrop darkens under the content, so text on art stays readable.
 const SHADE: Color = Color(0.08, 0.06, 0.04, 0.3)
 ## How wide the paper halo around text on art is, in pixels.

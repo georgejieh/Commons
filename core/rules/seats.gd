@@ -5,6 +5,8 @@ extends RefCounted
 const COUNT: int = 3
 const TURN_STEP: int = 1
 const NONE: int = -1
+## The seat of the person playing.
+const PLAYER: int = 0
 
 
 static func next(seat: int) -> int:

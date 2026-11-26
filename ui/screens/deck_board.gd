@@ -191,7 +191,7 @@ func _mark() -> void:
 		view.set_marked(lifted, false, has_focus() and index == _cursor)
 		var rest_y: float = _rest_y(card_id)
 		view.position.y = rest_y - (LIFT * _fit.scale if lifted else 0.0)
-		view.z_index = 1 if lifted else 0
+		view.z_index = ScreenKit.LAYER_LIFTED if lifted else 0
 
 
 func _rest_y(card_id: int) -> float:

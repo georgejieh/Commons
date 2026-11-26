@@ -80,7 +80,7 @@ static func tag(number: int) -> Label:
 	made.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	made.add_theme_stylebox_override("normal", ScreenKit.paper_style(4))
 	made.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	made.z_index = 2
+	made.z_index = ScreenKit.LAYER_OVER
 	return made
 
 

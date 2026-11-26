@@ -66,17 +66,17 @@ static func last_round(events: Array[RunEvent]) -> Dictionary:
 				landlord = played.seat
 				result = {}
 			elif played.type == RoundEvent.Type.ROUND_ENDED:
-				result["won"] = (played.seat == landlord) == (landlord == 0)
-		elif event.type == RunEvent.Type.ROUND_SCORED and event.seat == 0:
+				result["won"] = (played.seat == landlord) == (landlord == Seats.PLAYER)
+		elif event.type == RunEvent.Type.ROUND_SCORED and event.seat == Seats.PLAYER:
 			result["score"] = event.amount
-		elif event.type == RunEvent.Type.SHARE_PAID and event.seat == 0:
+		elif event.type == RunEvent.Type.SHARE_PAID and event.seat == Seats.PLAYER:
 			result["share"] = event.value
-		elif event.type == RunEvent.Type.STAKE_SETTLED and event.seat == 0:
+		elif event.type == RunEvent.Type.STAKE_SETTLED and event.seat == Seats.PLAYER:
 			result["stake"] = event.value == 1
 			result["banked"] = event.amount
-		elif event.type == RunEvent.Type.GRAIN_TAXED and event.seat == 0:
+		elif event.type == RunEvent.Type.GRAIN_TAXED and event.seat == Seats.PLAYER:
 			result["taxed"] = event.amount
-		elif event.type == RunEvent.Type.BANK_VOIDED and event.seat == 0:
+		elif event.type == RunEvent.Type.BANK_VOIDED and event.seat == Seats.PLAYER:
 			result["voided"] = event.amount
 		if result.has("won"):
 			finished = result
