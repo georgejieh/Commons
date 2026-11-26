@@ -7,9 +7,8 @@ extends GdUnitTestSuite
 ## a button.
 
 const SEED: int = 4301
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## A tremble of the slip's edge against its subject's, in pixels.
-const SLACK: float = 0.5
+const TREMBLE: float = 0.5
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -48,7 +47,7 @@ func _round(type: RoundEvent.Type, seat: int) -> RunEvent:
 
 func test_the_turn_mark_stands_over_the_seat_whose_turn_it_is() -> void:
 	for level: int in TextSize.count():
-		for screen: Vector2i in SIZES:
+		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
 			var turn: TurnMark = table.get("_turn")
 			var seats: Dictionary[int, SeatPanel] = table.get("_seats")
@@ -82,14 +81,14 @@ func _assert_over(turn: TurnMark, seat: SeatPanel, where: String) -> void:
 
 func test_the_brigade_notice_is_worn_paper_with_its_words_inside_the_border() -> void:
 	for level: int in TextSize.count():
-		for screen: Vector2i in SIZES:
+		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
 			var dressing: DreadDressing = table.get("_dressing")
 			var notice: PanelContainer = dressing.get("_notice")
 			var where: String = "size %d on %s" % [level, screen]
 			var paper: StyleBox = notice.get_theme_stylebox("panel")
 			assert_bool(paper is StyleBoxTexture).override_failure_message(where).is_true()
-			var inside: Rect2 = dressing.notice_rect().grow(-DreadDressing.NOTICE_PADDING + SLACK)
+			var inside: Rect2 = dressing.notice_rect().grow(-DreadDressing.NOTICE_PADDING + TREMBLE)
 			var words: Rect2 = dressing.notice_words().get_global_rect()
 			var at: String = "%s: %s in %s" % [where, words, inside]
 			assert_bool(inside.encloses(words)).override_failure_message(at).is_true()
@@ -103,7 +102,7 @@ func test_each_rule_name_is_closed_before_its_text() -> void:
 	var name: String = _app.controller.texts.modifier_name(debuff)
 	var wild: String = ReadingText.wild_line([Ranks.SEVEN] as Array[int])
 	for level: int in TextSize.count():
-		for screen: Vector2i in SIZES:
+		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
 			var strip: DebuffStrip = table.get("_debuffs")
 			strip.wild_ranks = [Ranks.SEVEN]
@@ -123,7 +122,7 @@ func test_each_rule_name_is_closed_before_its_text() -> void:
 func test_the_reading_picker_stands_beside_the_chosen_cards() -> void:
 	Settings.set_value("reduced_motion", true)
 	for level: int in TextSize.count():
-		for screen: Vector2i in SIZES:
+		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
 			var hand: HandView = table.get("_hand_view")
 			for view: CardView in hand.views().slice(4, 7):
@@ -145,10 +144,10 @@ func test_the_reading_picker_stands_beside_the_chosen_cards() -> void:
 func _assert_beside(slip: Rect2, chosen: Rect2, table: TableScreen, where: String) -> void:
 	assert_bool(slip.intersects(chosen)).override_failure_message(where).is_false()
 	var gap: float = SlipPlacer.distance(slip, chosen)
-	assert_bool(gap <= SlipPlacer.REACH + SLACK).override_failure_message(where).is_true()
+	assert_bool(gap <= SlipPlacer.REACH + TREMBLE).override_failure_message(where).is_true()
 	var column: Rect2 = table.actions().get_global_rect()
 	assert_bool(slip.intersects(column)).override_failure_message(where).is_false()
-	var screen: Rect2 = Rect2(0, ReadingPicker.TOP, 1920, 1080 - ReadingPicker.TOP).grow(SLACK)
+	var screen: Rect2 = Rect2(0, ReadingPicker.TOP, 1920, 1080 - ReadingPicker.TOP).grow(TREMBLE)
 	assert_bool(screen.encloses(slip)).override_failure_message(where).is_true()
 
 

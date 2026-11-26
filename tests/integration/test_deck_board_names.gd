@@ -4,8 +4,6 @@ extends GdUnitTestSuite
 ## and every text size, no card covers a rank's name, a joker's or the plot's.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 
 static var _save_path: String = TestFolder.of("test_deck_board_names") + "run.json"
 
@@ -35,7 +33,7 @@ func after_test() -> void:
 func test_no_card_covers_a_group_name() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for choosing: bool in [false, true]:
 				var store: StoreScreen = _app.show_screen("store", true)
@@ -70,7 +68,7 @@ func _check(board: DeckBoard, where: String) -> void:
 			)
 		)
 	for card_id: int in board.card_ids():
-		var card: Rect2 = EnvelopeOverlay.shown_rect(board.view_of(card_id)).grow(-SLACK)
+		var card: Rect2 = EnvelopeOverlay.shown_rect(board.view_of(card_id)).grow(-ClipCheck.SLACK)
 		for name: Control in names:
 			var label: Label = name as Label
 			(

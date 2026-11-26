@@ -5,8 +5,6 @@ extends GdUnitTestSuite
 ## a player must read is 16 px or more; and a locked sheet leaks nothing that names its
 ## item, in text, tooltip or accessible name.
 
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 const READABLE: int = 16
 
 static var _save_path: String = TestFolder.of("test_meta_screens") + "run.json"
@@ -182,7 +180,7 @@ func test_run_setup_fits_both_screens() -> void:
 			_veteran()
 		for level: int in TextSize.count():
 			Settings.set_value(TextSize.SETTING, level)
-			for screen_size: Vector2i in SIZES:
+			for screen_size: Vector2i in ClipCheck.SIZES:
 				get_tree().root.size = screen_size
 				var screen: RunSetupScreen = await _setup()
 				var where: String = "setup %s %s" % [profile, screen_size]
@@ -193,18 +191,18 @@ func test_run_setup_fits_both_screens() -> void:
 				# stake row stands as wide as the household row.
 				var content: Control = screen.scroll().get_child(0)
 				assert_float(content.size.y).override_failure_message(where).is_less_equal(
-					screen.scroll().size.y + SLACK
+					screen.scroll().size.y + ClipCheck.SLACK
 				)
 				var stakes: Control = screen.tickets()[0].get_parent()
 				var households: Control = screen.papers()[0].get_parent()
 				assert_float(stakes.size.x).override_failure_message(where).is_equal_approx(
-					households.size.x, SLACK
+					households.size.x, ClipCheck.SLACK
 				)
 				# Focus on the last ticket scrolls it into view.
 				screen.tickets()[-1].grab_focus()
 				await await_idle_frame()
 				await await_idle_frame()
-				var view: Rect2 = screen.scroll().get_global_rect().grow(SLACK + 8.0)
+				var view: Rect2 = screen.scroll().get_global_rect().grow(ClipCheck.SLACK + 8.0)
 				(
 					assert_bool(view.encloses(screen.tickets()[-1].get_global_rect()))
 					. override_failure_message(where)
@@ -220,7 +218,7 @@ func test_stake_tickets_read_at_16_px_on_warm_paper() -> void:
 	for profile: bool in [false, true]:
 		if profile:
 			_veteran()
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			var screen: RunSetupScreen = await _setup()
 			for ticket: StakeTicket in screen.tickets():
@@ -237,7 +235,7 @@ func test_stake_tickets_read_at_16_px_on_warm_paper() -> void:
 				assert_bool(NameFit.label_fits(words)).override_failure_message(where).is_true()
 				var shown: float = words.get_line_count() * words.get_line_height()
 				assert_float(shown).override_failure_message(where).is_less_equal(
-					words.size.y + SLACK
+					words.size.y + ClipCheck.SLACK
 				)
 
 
@@ -247,7 +245,7 @@ func test_the_collection_fits_both_screens_and_counts_whats_open() -> void:
 			_veteran()
 		for level: int in TextSize.count():
 			Settings.set_value(TextSize.SETTING, level)
-			for screen_size: Vector2i in SIZES:
+			for screen_size: Vector2i in ClipCheck.SIZES:
 				get_tree().root.size = screen_size
 				var screen: CollectionScreen = await _collection()
 				var where: String = "collection %s %s" % [profile, screen_size]
@@ -333,8 +331,8 @@ func _shows(root: Node, text: String) -> bool:
 ## Inside the scroll, nothing passes its sides; outside it, everything is on screen; and
 ## the scroll itself is on screen.
 func _check_layout(root: Control, scroll: ScrollContainer, where: String) -> void:
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
-	var lane: Rect2 = scroll.get_global_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
+	var lane: Rect2 = scroll.get_global_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(lane)).override_failure_message(where).is_true()
 	for node: Node in root.find_children("*", "Control", true, false):
 		var control: Control = node as Control

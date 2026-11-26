@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 ## width).
 
 const SEED: int = 4301
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -30,7 +29,7 @@ func test_the_black_markets_plot_cards_keep_a_cards_proportions() -> void:
 	_app.controller.finish_set()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			var market: StoreScreen = _app.show_screen("black_market", true)
 			await await_idle_frame()

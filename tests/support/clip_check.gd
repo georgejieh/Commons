@@ -6,12 +6,23 @@ extends RefCounted
 ## a scroll is taller than its box; and nothing the player reads is set under the least
 ## text size. Inside a ScrollContainer only width counts, since the text scrolls into
 ## view; the scroll itself must sit on screen. And no text lies on the printed border of
-## the paper it is on (the owner's playtest of 2026-11-20).
+## the paper it is on.
 
-## Sub-pixel rounding allowance, in canvas pixels.
-const SLACK: float = 1.5
+## The window sizes a layout test runs at: the 16:9 screen the game is laid out for and
+## the Steam Deck's 16:10.
+const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
+## Sub-pixel rounding allowance, in canvas pixels, for every layout test.
+const SLACK: float = 1.0
 ## The paper sheet's printed lines end 17 px in from its edge; words keep inside them.
 const PAPER_LINES: float = 18.0
+
+
+## Fails suite with every problem check finds under root, named with where and the text
+## size now.
+static func assert_clear(suite: GdUnitTestSuite, root: Node, where: String) -> void:
+	var problems: PackedStringArray = []
+	check(root, "%s at text size %d" % [where, TextSize.level()], problems)
+	suite.assert_array(problems).override_failure_message("\n".join(problems)).is_empty()
 
 
 ## Checks node and everything under it, adding each problem to problems.

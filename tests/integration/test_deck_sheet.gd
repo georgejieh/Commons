@@ -7,8 +7,6 @@ extends GdUnitTestSuite
 ## Cancel. At the table it opens from the menu, and nothing plays while it is open.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 const MODEL_CARD: int = 0
 const STAMPED_CARD: int = 9
 const SURPLUS_CARD: int = 53
@@ -88,14 +86,14 @@ func test_the_sheet_fits_both_screens_at_every_text_size() -> void:
 	var sheet: DeckSheet = store.get("_deck")
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			await await_idle_frame()
 			sheet.open_deck()
 			await await_idle_frame()
 			await await_idle_frame()
 			var label: String = "text %d at %s" % [level, screen_size]
-			var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+			var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 			(
 				assert_bool(screen.encloses(sheet.paper().get_global_rect()))
 				. override_failure_message(label)
@@ -108,11 +106,11 @@ func test_the_sheet_fits_both_screens_at_every_text_size() -> void:
 				(
 					assert_float(board.custom_minimum_size.y)
 					. override_failure_message(label)
-					. is_less_equal(scroll.size.y + SLACK)
+					. is_less_equal(scroll.size.y + ClipCheck.SLACK)
 				)
 			assert_float(board.card_scale()).is_greater_equal(DeckFit.LEAST_SCALE - 0.001)
 			assert_float(board.custom_minimum_size.x).override_failure_message(label).is_less_equal(
-				scroll.size.x + SLACK
+				scroll.size.x + ClipCheck.SLACK
 			)
 			sheet.close()
 

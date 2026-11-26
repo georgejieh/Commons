@@ -6,9 +6,7 @@ extends GdUnitTestSuite
 ## leaving only its end state under reduced motion.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const READABLE: int = 16
-const SLACK: float = 1.5
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -40,7 +38,7 @@ func _ladder(debuff_id: String) -> void:
 
 
 func _inside(control: Control, where: String) -> void:
-	var screen: Rect2 = Rect2(Vector2.ZERO, Vector2(1920, 1080)).grow(SLACK)
+	var screen: Rect2 = Rect2(Vector2.ZERO, Vector2(1920, 1080)).grow(ClipCheck.SLACK)
 	var rect: Rect2 = control.get_global_rect()
 	(
 		assert_bool(screen.encloses(rect))
@@ -52,7 +50,7 @@ func _inside(control: Control, where: String) -> void:
 func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 				_ladder(debuff.id)
@@ -97,7 +95,7 @@ func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 				_ladder(debuff.id)
@@ -254,7 +252,7 @@ func test_a_seized_plot_card_is_torn_unless_motion_is_reduced() -> void:
 		var seized: RunEvent = RunEvent.new(
 			RunEvent.Type.PLOT_SEIZED, 0, CardInstance.FIRST_PLOT_ID, 0.0, "11,1"
 		)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			await await_idle_frame()
 			beats.on_event(seized, false)

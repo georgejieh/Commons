@@ -3,9 +3,7 @@ extends GdUnitTestSuite
 ## screen and its sheet stands in the middle, on the arrival page and over the table
 ## mid-arrival, at 1920x1080 and 1280x800.
 
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
-const SLACK: float = 1.5
 
 static var _save_path: String = TestFolder.of("test_skip_confirm_layout") + "run.json"
 
@@ -42,7 +40,7 @@ func _launch(screen_size: Vector2i) -> void:
 
 
 func test_the_question_on_the_arrival_page_covers_the_screen() -> void:
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		await _launch(screen_size)
 		# The surname page's default with Enter, then the arrival page, as on a first launch.
 		assert_str(_app.switcher.current_id()).is_equal("surname")
@@ -55,7 +53,7 @@ func test_the_question_on_the_arrival_page_covers_the_screen() -> void:
 
 
 func test_the_question_over_the_table_covers_the_screen() -> void:
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		await _launch(screen_size)
 		_app.arrival.start()
 		await await_idle_frame()
@@ -78,7 +76,7 @@ func _assert_covers(confirm: SkipConfirm, screen_size: Vector2i, where: String) 
 	assert_bool(sheet.has_area()).override_failure_message(where + " sheet size").is_true()
 	var off: Vector2 = (sheet.get_center() - screen.get_center()).abs()
 	(
-		assert_bool(off.x <= SLACK and off.y <= SLACK)
+		assert_bool(off.x <= ClipCheck.SLACK and off.y <= ClipCheck.SLACK)
 		. override_failure_message("%s sheet at %s, off the middle by %s" % [where, sheet, off])
 		. is_true()
 	)
@@ -86,7 +84,7 @@ func _assert_covers(confirm: SkipConfirm, screen_size: Vector2i, where: String) 
 
 func _assert_rect(found: Rect2, wanted: Rect2, where: String) -> void:
 	var close: bool = (
-		found.position.distance_to(wanted.position) <= SLACK
-		and found.size.distance_to(wanted.size) <= SLACK
+		found.position.distance_to(wanted.position) <= ClipCheck.SLACK
+		and found.size.distance_to(wanted.size) <= ClipCheck.SLACK
 	)
 	assert_bool(close).override_failure_message("%s is %s" % [where, found]).is_true()

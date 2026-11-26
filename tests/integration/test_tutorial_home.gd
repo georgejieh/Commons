@@ -16,7 +16,6 @@ const SETTINGS: Array[String] = [
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800), Vector2i(2560, 1377)]
 ## The first step off the table: the Quota's report.
 const LAST_TABLE_STEP: int = 16
-const SLACK: float = 1.5
 const WAIT_MSEC: int = 60000
 
 static var _save_path: String = TestFolder.of("test_tutorial_home") + "run.json"
@@ -95,7 +94,7 @@ func _check(table: TableScreen, where: String) -> void:
 	var slip: TutorialSlip = _app.arrival.layer.slip()
 	assert_bool(slip.is_visible_in_tree()).override_failure_message(where).is_true()
 	var rect: Rect2 = slip.get_global_rect()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(rect)).override_failure_message("%s %s" % [where, rect]).is_true()
 	var rules: CheatSheet = table.get("_cheat_sheet")
 	if rules.visible:
@@ -108,18 +107,18 @@ func _check(table: TableScreen, where: String) -> void:
 		# Beside the sheet, over Wang's seat, which is what it may cover.
 		assert_float(rect.position.x).override_failure_message(at).is_greater(sheet.end.x)
 		assert_float(rect.position.y).override_failure_message(at).is_equal_approx(
-			TableTutorial.HOME_TOP, SLACK
+			TableTutorial.HOME_TOP, ClipCheck.SLACK
 		)
 		kept.erase("seat 1")
 	else:
 		assert_float(rect.get_center().x).override_failure_message(at).is_equal_approx(
-			TableScreen.PLAY_CENTER, SLACK
+			TableScreen.PLAY_CENTER, ClipCheck.SLACK
 		)
 		var pile: Control = table.get("_pile")
 		var foot: float = sheet.position.y if need.visible else pile.get_global_rect().position.y
 		# Close over the play: its foot within the gap of what it stands on.
 		assert_float(rect.end.y).override_failure_message(at).is_between(
-			foot - TableTutorial.HOME_GAP - SLACK, foot
+			foot - TableTutorial.HOME_GAP - ClipCheck.SLACK, foot
 		)
 	for piece: String in kept:
 		var over: Rect2 = kept[piece]

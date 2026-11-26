@@ -6,8 +6,6 @@ extends GdUnitTestSuite
 ## motion shows them at once; the note is only where it belongs; a death has no
 ## epilogue; and a run's real end reaches it, while the demo keeps its own closing.
 
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 const READABLE: int = 16
 ## Each outcome's Famine, Denunciation and rounds as landlord of four.
 const CASES: Dictionary[String, Array] = {
@@ -81,7 +79,7 @@ func _labels(root: Node) -> Array[Label]:
 
 
 func _check_inside(screen: EndingScreen, where: String) -> void:
-	var visible_rect: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var visible_rect: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var list: EpilogueList = screen.epilogue()
 	for node: Node in screen.find_children("*", "Control", true, false):
 		var control: Control = node as Control
@@ -104,7 +102,7 @@ func _check_figures(screen: EndingScreen, where: String) -> void:
 	var scrolled: bool = screen.story_scroll().is_ancestor_of(figures)
 	assert_bool(scrolled).override_failure_message(where).is_false()
 	assert_int(figures.get_child_count()).is_equal(3)
-	var visible_rect: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var visible_rect: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var home: Rect2 = screen.home_button().get_global_rect()
 	for tile: Node in figures.get_children():
 		var rect: Rect2 = (tile as Control).get_global_rect()
@@ -138,7 +136,7 @@ func test_every_ending_and_death_fits_both_screens_with_a_full_village() -> void
 	Settings.set_value("reduced_motion", true)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for outcome: String in CASES:
 				var screen: EndingScreen = _finish(outcome)
@@ -153,7 +151,7 @@ func test_every_ending_and_death_fits_both_screens_with_a_full_village() -> void
 				var story: VScrollBar = screen.story_scroll().get_v_scroll_bar()
 				var at: String = "%s at text size %d" % [where, level]
 				assert_float(story.max_value).override_failure_message(at).is_less_equal(
-					story.page + SLACK
+					story.page + ClipCheck.SLACK
 				)
 				_check_type(screen, view, where)
 				_clips(screen, where)
@@ -171,7 +169,10 @@ func test_every_ending_and_death_fits_both_screens_with_a_full_village() -> void
 				else:
 					for label: Label in list.line_labels():
 						var rect: Rect2 = label.get_global_rect()
-						assert_bool(list.get_global_rect().grow(SLACK).encloses(rect)).is_true()
+						(
+							assert_bool(list.get_global_rect().grow(ClipCheck.SLACK).encloses(rect))
+							. is_true()
+						)
 
 
 func test_the_note_shows_only_under_the_secret_contract_and_the_commons() -> void:
@@ -240,7 +241,7 @@ func test_a_death_has_its_record_and_the_way_home_only() -> void:
 ## sheet both ways: as much room above its title card as below its last line.
 func test_a_deaths_column_is_centred_on_the_sheet() -> void:
 	Settings.set_value("reduced_motion", true)
-	get_tree().root.size = SIZES[0]
+	get_tree().root.size = ClipCheck.SIZES[0]
 	var screen: EndingScreen = _finish("death_famine")
 	for frame: int in 4:
 		await await_idle_frame()
@@ -258,7 +259,7 @@ func test_a_deaths_column_is_centred_on_the_sheet() -> void:
 
 func test_a_long_epilogue_scrolls_by_keyboard_from_its_focus() -> void:
 	Settings.set_value("reduced_motion", true)
-	get_tree().root.size = SIZES[0]
+	get_tree().root.size = ClipCheck.SIZES[0]
 	var screen: EndingScreen = _finish("lean_years")
 	var list: EpilogueList = screen.epilogue()
 	var many: Array[String] = []
@@ -300,7 +301,7 @@ func test_the_runs_end_reaches_the_ending_and_the_demo_keeps_its_closing() -> vo
 ## frame, with the title under the frame, at both screen sizes.
 func test_every_ending_hangs_its_picture_in_the_frame_with_the_title_below() -> void:
 	Settings.set_value("reduced_motion", true)
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
 		for outcome: String in CASES:
 			var screen: EndingScreen = _finish(outcome)
@@ -319,7 +320,11 @@ func test_every_ending_hangs_its_picture_in_the_frame_with_the_title_below() -> 
 			assert_int(frames.size()).override_failure_message(where).is_equal(1)
 			var frame: Rect2 = (frames[0] as Control).get_global_rect()
 			var shown: Rect2 = art.get_global_rect()
-			assert_bool(frame.grow(SLACK).encloses(shown)).override_failure_message(where).is_true()
+			(
+				assert_bool(frame.grow(ClipCheck.SLACK).encloses(shown))
+				. override_failure_message(where)
+				. is_true()
+			)
 			var picture: Vector2 = Vector2(art.texture.get_size())
 			var box: float = shown.size.x / shown.size.y
 			# The frame fits the picture, so the picture fills it at its own shape.
@@ -330,7 +335,7 @@ func test_every_ending_hangs_its_picture_in_the_frame_with_the_title_below() -> 
 			(
 				assert_float(title.get_global_rect().position.y)
 				. override_failure_message(where)
-				. is_greater_equal(frame.end.y - SLACK)
+				. is_greater_equal(frame.end.y - ClipCheck.SLACK)
 			)
 
 

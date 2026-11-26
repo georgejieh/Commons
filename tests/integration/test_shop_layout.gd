@@ -6,8 +6,6 @@ extends GdUnitTestSuite
 ## set black market counter.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 const SIX: Array[String] = [
 	"iron_rice_bowl", "canteen", "red_banner", "peek", "stakhanovite", "red_ink"
 ]
@@ -84,7 +82,7 @@ func test_both_shops_fit_the_most_a_run_holds() -> void:
 func _check_all(where: String) -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for screen_id: String in ["store", "black_market"]:
 				var store: StoreScreen = _app.show_screen(screen_id, true)
@@ -97,7 +95,7 @@ func _check_all(where: String) -> void:
 
 
 func _check_inside(root: Node, where: String) -> void:
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	for node: Node in root.find_children("*", "Control", true, false):
 		var control: Control = node as Control
 		if not control.is_visible_in_tree() or control is TextureRect or control is ColorRect:
@@ -118,8 +116,8 @@ func _check_blocks(store: StoreScreen, where: String) -> void:
 	var names: Array[String] = blocks.keys()
 	for first: int in names.size():
 		for second: int in range(first + 1, names.size()):
-			var a: Rect2 = blocks[names[first]].get_global_rect().grow(-SLACK)
-			var b: Rect2 = blocks[names[second]].get_global_rect().grow(-SLACK)
+			var a: Rect2 = blocks[names[first]].get_global_rect().grow(-ClipCheck.SLACK)
+			var b: Rect2 = blocks[names[second]].get_global_rect().grow(-ClipCheck.SLACK)
 			(
 				assert_bool(a.intersects(b))
 				. override_failure_message(
@@ -131,7 +129,7 @@ func _check_blocks(store: StoreScreen, where: String) -> void:
 
 ## Coming back from the black market shows the store again, whole, with its way out.
 func test_returning_from_the_black_market_shows_the_store_whole() -> void:
-	get_tree().root.size = SIZES[0]
+	get_tree().root.size = ClipCheck.SIZES[0]
 	_app.show_screen("store", true)
 	await await_idle_frame()
 	var market: StoreScreen = _app.show_screen("black_market")
@@ -158,7 +156,7 @@ func test_returning_from_the_black_market_shows_the_store_whole() -> void:
 ## The rank picker opens whole on the screen over the black market's counter, so its
 ## Cancel can be reached.
 func test_the_rank_picker_opens_on_the_screen() -> void:
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
 		_loop().state.coupons = 40
 		_app.controller.reseal_book()
@@ -173,7 +171,7 @@ func test_the_rank_picker_opens_on_the_screen() -> void:
 		await await_idle_frame()
 		var picker: RankPicker = market_cadres.picker
 		assert_bool(picker.is_open()).is_true()
-		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 		assert_bool(screen.encloses(picker.get_global_rect())).is_true()
 		picker.close()
 
@@ -187,7 +185,7 @@ func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
 		_loop().state.reforms.assign(reforms)
 		for level: int in TextSize.count():
 			Settings.set_value(TextSize.SETTING, level)
-			for screen_size: Vector2i in SIZES:
+			for screen_size: Vector2i in ClipCheck.SIZES:
 				get_tree().root.size = screen_size
 				for kind: String in ["directive_envelope", "campaign_envelope", "parcel"]:
 					var screen_id: String = "black_market" if kind == "parcel" else "store"
@@ -224,7 +222,7 @@ func _check_apart(overlay: EnvelopeOverlay, where: String) -> void:
 		pieces.append(paper)
 		var item: Rect2 = EnvelopeOverlay.shown_rect(paper.item)
 		(
-			assert_bool(paper.get_global_rect().grow(SLACK).encloses(item))
+			assert_bool(paper.get_global_rect().grow(ClipCheck.SLACK).encloses(item))
 			. override_failure_message("%s: item %s outside its paper" % [where, item])
 			. is_true()
 		)
@@ -235,8 +233,8 @@ func _check_apart(overlay: EnvelopeOverlay, where: String) -> void:
 			pieces.append(blocks[name])
 	for first: int in pieces.size():
 		for second: int in range(first + 1, pieces.size()):
-			var a: Rect2 = pieces[first].get_global_rect().grow(-SLACK)
-			var b: Rect2 = pieces[second].get_global_rect().grow(-SLACK)
+			var a: Rect2 = pieces[first].get_global_rect().grow(-ClipCheck.SLACK)
+			var b: Rect2 = pieces[second].get_global_rect().grow(-ClipCheck.SLACK)
 			(
 				assert_bool(a.intersects(b))
 				. override_failure_message("%s: %s overlaps %s" % [where, a, b])
@@ -261,13 +259,13 @@ func _check_paper(paper: ChoicePaper, count: int, where: String) -> void:
 	var keep: Rect2 = paper.keep.get_global_rect()
 	assert_float(absf(keep.size.x - paper.size.x)).override_failure_message(where).is_less(2.0)
 	assert_str(paper.keep.text).override_failure_message(where).is_empty()
-	var covered: bool = keep.grow(SLACK).encloses(EnvelopeOverlay.shown_rect(paper.item))
+	var covered: bool = keep.grow(ClipCheck.SLACK).encloses(EnvelopeOverlay.shown_rect(paper.item))
 	assert_bool(covered).override_failure_message(where + " button over item").is_true()
 	if not paper.caption().is_empty():
 		var label: Label = paper.caption_label()
 		assert_int(label.get_theme_font_size("font_size")).is_greater_equal(16)
 		assert_bool(paper.caption_strip().is_visible_in_tree()).is_true()
-		var strip: Rect2 = paper.caption_strip().get_global_rect().grow(SLACK)
+		var strip: Rect2 = paper.caption_strip().get_global_rect().grow(ClipCheck.SLACK)
 		assert_bool(strip.encloses(label.get_global_rect())).is_true()
 	var node: Node = paper.item
 	while node != null and node != paper.get_parent():
@@ -356,7 +354,7 @@ func test_both_shops_fit_their_longest_cadres() -> void:
 			var screen_id: String = "black_market" if market else "store"
 			for level: int in TextSize.count():
 				Settings.set_value(TextSize.SETTING, level)
-				for screen_size: Vector2i in SIZES:
+				for screen_size: Vector2i in ClipCheck.SIZES:
 					get_tree().root.size = screen_size
 					var store: StoreScreen = _app.show_screen(screen_id, true)
 					await await_idle_frame()

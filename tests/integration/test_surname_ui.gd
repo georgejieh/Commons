@@ -8,9 +8,7 @@ extends GdUnitTestSuite
 ## says why not while a run is saved. The full names fit their pages at 1920x1080 and
 ## 1280x800 with the longest name the game can make.
 
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
-const SLACK: float = 1.5
 const LEAST_TYPE: int = 20
 const BOOK: NameBook = preload("res://data/villagers/names.tres")
 ## The widest surname the field takes: twelve of its widest letters.
@@ -261,11 +259,11 @@ func test_the_field_is_written_on_paper() -> void:
 
 
 func test_the_page_fits_both_screens() -> void:
-	for size: Vector2i in SIZES:
+	for size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = size
 		await _launch()
 		await await_idle_frame()
-		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 		var page: SurnameScreen = _page()
 		var parts: Array[Control] = [page.field(), page.confirm_button(), page.random_button()]
 		for ticket: SurnameTicket in page.tickets():
@@ -287,7 +285,7 @@ func test_the_longest_full_name_fits_run_setup_and_the_ending() -> void:
 	data.surname = WIDEST_SURNAME
 	data.generation = 11
 	Profile.write(Saves.profile_service(), data)
-	for size: Vector2i in SIZES:
+	for size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = size
 		await _launch()
 		var setup: Control = _app.show_screen("run_setup")
@@ -303,7 +301,7 @@ func test_the_longest_full_name_fits_run_setup_and_the_ending() -> void:
 ## each name stays inside its sheet and the screen.
 func test_the_dossier_holds_the_longest_full_names() -> void:
 	Profile.write(Saves.profile_service(), ProfileData.new())
-	for size: Vector2i in SIZES:
+	for size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = size
 		await _launch()
 		assert_bool(_app.new_run(97, true)).is_true()
@@ -353,13 +351,13 @@ func _check_fits(label: Label, text: String, size: Vector2i) -> void:
 		return
 	label.text = text
 	await await_idle_frame()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(label.get_global_rect())).override_failure_message(where).is_true()
 	var font: Font = label.get_theme_font("font")
 	var font_size: int = label.get_theme_font_size("font_size")
 	assert_int(font_size).override_failure_message(where).is_greater_equal(LEAST_TYPE)
 	var wide: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	assert_float(wide).override_failure_message(where).is_less_equal(label.size.x + SLACK)
+	assert_float(wide).override_failure_message(where).is_less_equal(label.size.x + ClipCheck.SLACK)
 
 
 func _type(text: String) -> void:

@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 ## and Famine figures at every text size and both screen sizes.
 
 const SEED: int = 5303
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -43,7 +42,7 @@ func test_the_reports_seals_stand_clear_of_the_figures() -> void:
 	for first: float in [0.01, 1e12]:
 		_play_first_quota(first)
 		for level: int in TextSize.count():
-			for screen_size: Vector2i in SIZES:
+			for screen_size: Vector2i in ClipCheck.SIZES:
 				Settings.set_value(TextSize.SETTING, level)
 				get_tree().root.size = screen_size
 				var report: SetSummaryScreen = _app.show_screen("set_summary", true)

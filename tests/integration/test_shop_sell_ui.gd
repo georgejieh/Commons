@@ -8,8 +8,6 @@ extends GdUnitTestSuite
 ## slip stay on the screen, and the slip keeps off the ticket.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.0
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -148,7 +146,7 @@ func test_the_keyboard_reaches_a_sale_and_the_slip_stands_beside_it() -> void:
 	_hold(2)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for screen_id: String in ["store", "black_market"]:
 				var store: StoreScreen = await _open(screen_id)
@@ -167,19 +165,19 @@ func _check_focus(store: StoreScreen, where: String) -> void:
 	var slip: DetailSlip = store.slip()
 	assert_object(slip.anchor()).override_failure_message(where).is_same(tile)
 	var ticket: Rect2 = tag.button.get_global_rect()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(ticket)).override_failure_message(where + " ticket").is_true()
 	var paper: Rect2 = slip.get_global_rect()
 	assert_bool(screen.encloses(paper)).override_failure_message(where + " slip").is_true()
 	(
-		assert_bool(paper.grow(-SLACK).intersects(ticket))
+		assert_bool(paper.grow(-ClipCheck.SLACK).intersects(ticket))
 		. override_failure_message("%s: slip %s on the ticket %s" % [where, paper, ticket])
 		. is_false()
 	)
 	(
 		assert_float(SlipPlacer.distance(paper, tile.get_global_rect()))
 		. override_failure_message(where + " slip far")
-		. is_less_equal(SlipPlacer.REACH + SLACK)
+		. is_less_equal(SlipPlacer.REACH + ClipCheck.SLACK)
 	)
 	var accept: InputEventAction = InputEventAction.new()
 	accept.action = "ui_accept"

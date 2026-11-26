@@ -6,9 +6,7 @@ extends GdUnitTestSuite
 ## its caption, with Take Nothing gone from under it.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const WAIT_SECONDS: float = 5.0
-const SLACK: float = 1.0
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -16,7 +14,7 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	get_tree().root.size = SIZES[0]
+	get_tree().root.size = ClipCheck.SIZES[0]
 	AppKit.fresh_saves(self)
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
@@ -81,7 +79,7 @@ func test_the_column_keeps_clear_of_the_screen_edges() -> void:
 	Settings.set_value("reduced_motion", true)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for full: bool in [false, true]:
 				var held: Array[String] = []
@@ -97,12 +95,12 @@ func test_the_column_keeps_clear_of_the_screen_edges() -> void:
 					(
 						assert_float(heading.position.y - screen.position.y)
 						. override_failure_message(where + " top")
-						. is_greater_equal(EnvelopeOverlay.EDGE - SLACK)
+						. is_greater_equal(EnvelopeOverlay.EDGE - ClipCheck.SLACK)
 					)
 					(
 						assert_float(screen.end.y - button.end.y)
 						. override_failure_message(where + " bottom")
-						. is_greater_equal(EnvelopeOverlay.EDGE - SLACK)
+						. is_greater_equal(EnvelopeOverlay.EDGE - ClipCheck.SLACK)
 					)
 					overlay.nothing_button().pressed.emit()
 					await await_idle_frame()
@@ -124,7 +122,7 @@ func test_a_kept_seal_lies_off_its_caption_and_take_nothing_goes() -> void:
 		paper.keep.pressed.emit()
 		await get_tree().create_timer(0.45).timeout
 		assert_bool(overlay.seal().visible).override_failure_message(kind).is_true()
-		var seal: Rect2 = overlay.seal().get_global_rect().grow(-SLACK)
+		var seal: Rect2 = overlay.seal().get_global_rect().grow(-ClipCheck.SLACK)
 		if paper.caption_strip().is_visible_in_tree():
 			var strip: Rect2 = paper.caption_strip().get_global_rect()
 			(

@@ -8,7 +8,6 @@ extends GdUnitTestSuite
 ## never covers a rank's name. At the table the Deck key opens the sheet.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const WAIT_SECONDS: float = 6.0
 ## A plain deck's slot of a 3.
 const THREE: int = 1
@@ -56,7 +55,7 @@ func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() ->
 	var stall: DeckStallView = _app.controller.store.deck_stall()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			store = _app.show_screen("store", true)
 			await await_idle_frame()
@@ -184,7 +183,7 @@ func test_the_slip_never_covers_a_ranks_name() -> void:
 	var sheet: DeckSheet = store.get("_deck")
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			await await_idle_frame()
 			sheet.open_deck()

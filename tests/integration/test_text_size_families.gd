@@ -11,7 +11,6 @@ extends GdUnitTestSuite
 ## every paper (test_readability).
 
 const SEED: int = 5101
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const LARGEST: int = 2
 ## The longest name a run can print: the longest given name in the pools and a typed
 ## surname as long as it may be, in the widest letter.
@@ -62,7 +61,7 @@ func _assert_none(problems: PackedStringArray) -> void:
 func test_every_cadre_fits_its_shop_card() -> void:
 	_to_store()
 	var problems: PackedStringArray = []
-	for screen: Vector2i in SIZES:
+	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		var counters: Dictionary[String, Array] = {
 			"store": RunPools.STORE_CADRES.cadres, "black_market": RunPools.MARKET_CADRES.cadres
@@ -121,7 +120,7 @@ func test_every_directive_fits_its_store_document() -> void:
 	for directive: DirectiveDef in RunPools.DIRECTIVES.directives:
 		ids.append(directive.id)
 	var problems: PackedStringArray = []
-	for screen: Vector2i in SIZES:
+	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		for start: int in range(0, ids.size(), 2):
 			var stock: Array[String] = ids.slice(start, start + 2)
@@ -136,7 +135,7 @@ func test_every_directive_fits_its_store_document() -> void:
 ## Every line Wang says in the arrival, on his slip.
 func test_every_tutorial_line_fits_its_slip() -> void:
 	var problems: PackedStringArray = []
-	for screen: Vector2i in SIZES:
+	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		for key: String in _keys("tutorial.step."):
 			var slip: TutorialSlip = auto_free(TutorialSlip.new())
@@ -153,7 +152,7 @@ func test_every_tutorial_line_fits_its_slip() -> void:
 ## Every one-time tip on its slip, in a full run.
 func test_every_one_time_tip_fits_its_slip() -> void:
 	var problems: PackedStringArray = []
-	for screen: Vector2i in SIZES:
+	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		Saves.profile_service().delete()
 		assert_bool(_app.new_run(SEED, true)).is_true()
@@ -185,7 +184,7 @@ func test_every_speech_line_fits_its_seat() -> void:
 		if family.speech != null:
 			lines.append_array(family.speech.lines)
 	var problems: PackedStringArray = []
-	for screen: Vector2i in SIZES:
+	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		var panel: SeatPanel = auto_free(SeatPanel.new())
 		_app.add_child(panel)
@@ -212,7 +211,7 @@ func test_every_shout_fits_the_screen() -> void:
 	var longest_word: String = _longest(words)
 	var longest_line: String = _longest(lines)
 	var problems: PackedStringArray = []
-	for screen: Vector2i in SIZES:
+	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		for tier: Callout.Tier in [Callout.Tier.CUT_IN, Callout.Tier.TAKEOVER]:
 			for word: String in words:
@@ -255,7 +254,7 @@ func _longest(texts: Array[String]) -> String:
 ## Every keyword's slip: its meaning, with the meanings of the words it names.
 func test_every_keyword_slip_fits_the_screen() -> void:
 	var problems: PackedStringArray = []
-	for screen: Vector2i in SIZES:
+	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		for id: String in Keywords.TERMS:
 			var name: String = tr("keyword.%s.name" % id)
@@ -291,7 +290,7 @@ func test_the_longest_names_fit() -> void:
 	for family: String in names.given:
 		names.given[family] = LONGEST_GIVEN
 	var problems: PackedStringArray = []
-	for screen: Vector2i in SIZES:
+	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		for screen_id: String in ["set_intro", "settings"]:
 			var shown: Node = _app.show_screen(screen_id, true)

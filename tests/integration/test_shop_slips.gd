@@ -7,8 +7,6 @@ extends GdUnitTestSuite
 ## off that thing and its own button. It may lie on other papers.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.0
 const FAR: Vector2 = Vector2(-500, -500)
 
 var _app: DemoApp
@@ -46,7 +44,7 @@ func test_every_slip_on_both_shops_stands_beside_its_piece() -> void:
 	Settings.set_value("reduced_motion", true)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for screen_id: String in ["store", "black_market"]:
 				var store: StoreScreen = _app.show_screen(screen_id, true)
@@ -113,13 +111,13 @@ func _check_slip(store: StoreScreen, paper: Control, anchor: Rect2, where: Strin
 	await await_idle_frame()
 	assert_bool(paper.visible).override_failure_message(where + " slip closed").is_true()
 	var slip: Rect2 = paper.get_global_rect()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	(
 		assert_bool(screen.encloses(slip))
 		. override_failure_message("%s: slip %s off %s" % [where, slip, screen])
 		. is_true()
 	)
-	var inner: Rect2 = slip.grow(-SLACK)
+	var inner: Rect2 = slip.grow(-ClipCheck.SLACK)
 	(
 		assert_bool(inner.intersects(anchor))
 		. override_failure_message("%s: slip %s over its piece %s" % [where, slip, anchor])
@@ -129,7 +127,7 @@ func _check_slip(store: StoreScreen, paper: Control, anchor: Rect2, where: Strin
 	(
 		assert_float(reach)
 		. override_failure_message("%s: slip %s is %.0f px from %s" % [where, slip, reach, anchor])
-		. is_less_equal(SlipPlacer.REACH + SLACK)
+		. is_less_equal(SlipPlacer.REACH + ClipCheck.SLACK)
 	)
 	# Its own button: any button that lies on the piece it explains.
 	for node: Node in store.find_children("*", "BaseButton", true, false):

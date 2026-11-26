@@ -5,10 +5,8 @@ extends GdUnitTestSuite
 ## and every text size, with its buttons on the sheet; the title's is said once, with OK
 ## focused, taken by keyboard, and a button that opens the folder.
 
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## A folder named as the game names one, under the deepest user folder a player may have.
 const KEPT: String = "user://crashes/2000-01-01T00.00.00"
-const SLACK: float = 1.5
 
 static var _save_path: String = TestFolder.of("test_session_notice") + "run.json"
 
@@ -32,18 +30,22 @@ func after_test() -> void:
 
 
 func _assert_whole(notice: SessionNotice, where: String) -> void:
-	var window: Rect2 = notice.get_viewport_rect().grow(SLACK)
+	var window: Rect2 = notice.get_viewport_rect().grow(ClipCheck.SLACK)
 	var sheet: Rect2 = notice.sheet().get_global_rect()
 	assert_bool(window.encloses(sheet)).override_failure_message(where + " sheet").is_true()
 	for button: Button in notice.buttons():
 		var rect: Rect2 = button.get_global_rect()
-		assert_bool(sheet.grow(SLACK).encloses(rect)).override_failure_message(where).is_true()
+		(
+			assert_bool(sheet.grow(ClipCheck.SLACK).encloses(rect))
+			. override_failure_message(where)
+			. is_true()
+		)
 
 
 func test_every_notice_stands_whole_at_every_size() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			var notices: Array[SessionNotice] = [
 				SessionNotice.already_open(20, func() -> void: pass, func() -> void: pass),

@@ -4,7 +4,6 @@ extends GdUnitTestSuite
 ## second and a half and every button live from the first frame. Under reduced motion it
 ## stands printed at once. The name is never clean and sits worse at each stage.
 
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## The page is whole by this, the motion rule's "about a second and a half".
 const WHOLE_BY: float = 1.6
 const SLACK_MSEC: int = 300
@@ -93,7 +92,7 @@ func test_reduced_motion_prints_the_title_at_once() -> void:
 
 func test_the_name_stands_inside_the_screen_as_wide_as_its_type() -> void:
 	Settings.set_value("reduced_motion", true)
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
 		var title: TitleScreen = _app.show_screen("title", true)
 		await await_idle_frame()
@@ -116,7 +115,7 @@ func test_the_name_stands_inside_the_screen_as_wide_as_its_type() -> void:
 ## crowd, and the name's box is close under the eyebrow.
 func test_the_column_stands_in_the_sky_above_the_crowd() -> void:
 	Settings.set_value("reduced_motion", true)
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
 		var title: TitleScreen = _app.show_screen("title", true)
 		await await_idle_frame()

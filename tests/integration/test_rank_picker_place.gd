@@ -4,8 +4,6 @@ extends GdUnitTestSuite
 ## tickets keep one padding from the border and a clear gap under the prompt.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.0
 ## Inside the paper's printed border, which ends 17 px in.
 const BORDER: float = 17.0
 
@@ -36,7 +34,7 @@ func test_the_picker_stands_beside_its_card_with_even_padding() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			for slot: int in 3:
 				get_tree().root.size = screen_size
 				loop.state.coupons = 40
@@ -62,15 +60,15 @@ func test_the_picker_stands_beside_its_card_with_even_padding() -> void:
 func _check(picker: RankPicker, card: Control, where: String) -> void:
 	assert_bool(picker.is_open()).override_failure_message(where).is_true()
 	var box: Rect2 = picker.get_global_rect()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(box)).override_failure_message("%s %s" % [where, box]).is_true()
-	var over: bool = box.grow(-SLACK).intersects(card.get_global_rect())
+	var over: bool = box.grow(-ClipCheck.SLACK).intersects(card.get_global_rect())
 	assert_bool(over).override_failure_message("%s: over its card" % where).is_false()
 	assert_int(card.z_index).override_failure_message(where).is_greater(picker.scrim().z_index)
 	var chips: Array[RankChip] = picker.chips()
 	var first: Rect2 = chips[0].get_global_rect()
 	var last: Rect2 = chips[-1].get_global_rect()
-	var inside: float = RankPicker.PADDING - BORDER - SLACK
+	var inside: float = RankPicker.PADDING - BORDER - ClipCheck.SLACK
 	(
 		assert_float(first.position.x - box.position.x - BORDER)
 		. override_failure_message(where + " left")
@@ -84,5 +82,5 @@ func _check(picker: RankPicker, card: Control, where: String) -> void:
 	var prompt: Label = picker.get("_prompt")
 	var gap: float = first.position.y - RankChip.LIFT - prompt.get_global_rect().end.y
 	assert_float(gap).override_failure_message(where + " prompt").is_greater_equal(
-		RankPicker.SPACING - SLACK
+		RankPicker.SPACING - ClipCheck.SLACK
 	)

@@ -5,8 +5,6 @@ extends GdUnitTestSuite
 ## share one top and one height, and "None yet" stands on its label's baseline.
 
 const SEED: int = 4242
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.0
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -58,7 +56,7 @@ func test_the_pieces_read_at_every_size() -> void:
 	_loop().state.inventory.consumables.assign(["mutual_aid", "overfulfillment"])
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for screen_id: String in ["store", "black_market"]:
 				var store: StoreScreen = await _open(screen_id)
@@ -75,7 +73,7 @@ func _check_tray(store: StoreScreen, where: String) -> void:
 	var first: CampaignLeaflet = tray.leaflet(0)
 	var gap: float = first.get_global_rect().position.y - head.get_global_rect().end.y
 	assert_float(gap).override_failure_message(where + " head on leaflet").is_greater_equal(
-		CampaignTray.HEAD_CLEAR - SLACK
+		CampaignTray.HEAD_CLEAR - ClipCheck.SLACK
 	)
 	assert_bool(first.says_not_now()).override_failure_message(where).is_true()
 	var status: Label = first.get("_status")
@@ -96,8 +94,8 @@ func _check_counter(store: StoreScreen, where: String) -> void:
 		(
 			assert_bool(
 				(
-					absf(rect.position.y - first.position.y) < SLACK
-					and absf(rect.size.y - first.size.y) < SLACK
+					absf(rect.position.y - first.position.y) < ClipCheck.SLACK
+					and absf(rect.size.y - first.size.y) < ClipCheck.SLACK
 				)
 			)
 			. override_failure_message("%s: %s against %s" % [where, rect, first])

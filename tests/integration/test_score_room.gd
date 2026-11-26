@@ -7,7 +7,6 @@ extends GdUnitTestSuite
 ## buried under them. Fitted to its room, its type is never smaller than at Standard.
 
 const SEED: int = 3
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## The Quota target the play is measured against: small, so the play lands at its hardest.
 const SMALL_TARGET: float = 50.0
 const MOST_FRAMES: int = 600
@@ -83,7 +82,7 @@ func _big_play() -> RunEvent:
 
 func test_the_tally_keeps_off_the_cards_the_hand_and_the_seats_through_its_motion() -> void:
 	for level: int in TextSize.count():
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			var where: String = "text size %d at %s" % [level, screen_size]
 			var table: TableScreen = await _table(level, screen_size)
 			await _check_table(table, where)

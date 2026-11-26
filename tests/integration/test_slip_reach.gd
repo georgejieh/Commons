@@ -8,8 +8,6 @@ extends GdUnitTestSuite
 ## stand within SlipPlacer.REACH of their thing.
 
 const SCREEN: Rect2 = Rect2(0, 0, 1920, 1080)
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.0
 const FAR: Vector2 = Vector2(-500, -500)
 
 var _was_size: Vector2i
@@ -43,7 +41,9 @@ func test_a_slip_over_papers_stays_on_its_piece() -> void:
 	var slip: Rect2 = Rect2(at, size)
 	assert_float(SlipPlacer.distance(slip, piece)).is_less_equal(SlipPlacer.REACH)
 	assert_bool(slip.intersects(piece)).is_false()
-	assert_float(slip.position.y).is_greater(piece.position.y - size.y - SlipPlacer.REACH - SLACK)
+	assert_float(slip.position.y).is_greater(
+		piece.position.y - size.y - SlipPlacer.REACH - ClipCheck.SLACK
+	)
 
 
 ## A button where the slip would first stand: it slides along the same side to miss it.
@@ -110,7 +110,7 @@ func test_an_engine_tooltip_moves_beside_its_card() -> void:
 	placer.settle(panel)
 	var tip: Rect2 = Rect2(Vector2(panel.position), Vector2(panel.size))
 	var thing: Rect2 = Rect2(Vector2(700, 400), Vector2(300, 400))
-	assert_bool(tip.grow(-SLACK).intersects(thing)).is_false()
+	assert_bool(tip.grow(-ClipCheck.SLACK).intersects(thing)).is_false()
 	assert_float(SlipPlacer.distance(tip, thing)).is_less_equal(SlipPlacer.REACH)
 	assert_bool(SCREEN.encloses(tip)).is_true()
 	panel.queue_free()
@@ -130,7 +130,7 @@ func test_slips_at_the_table_stand_beside_their_thing() -> void:
 	add_child(placer)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			var table: TableScreen = app.show_screen("table", true)
 			await await_idle_frame()
@@ -187,21 +187,21 @@ func _check_board_tip(table: Control, placer: TipPlacer, where: String) -> void:
 
 
 func _check(slip: Rect2, thing: Rect2, where: String) -> void:
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	(
 		assert_bool(screen.encloses(slip))
 		. override_failure_message("%s: %s off" % [where, slip])
 		. is_true()
 	)
 	(
-		assert_bool(slip.grow(-SLACK).intersects(thing))
+		assert_bool(slip.grow(-ClipCheck.SLACK).intersects(thing))
 		. override_failure_message("%s: %s over %s" % [where, slip, thing])
 		. is_false()
 	)
 	(
 		assert_float(SlipPlacer.distance(slip, thing))
 		. override_failure_message("%s: %s far from %s" % [where, slip, thing])
-		. is_less_equal(SlipPlacer.REACH + SLACK)
+		. is_less_equal(SlipPlacer.REACH + ClipCheck.SLACK)
 	)
 
 

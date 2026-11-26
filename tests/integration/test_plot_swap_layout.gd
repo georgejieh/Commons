@@ -6,9 +6,7 @@ extends GdUnitTestSuite
 ## clear the cards.
 
 const SEED: int = 4301
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const LANDLORD_HAND: int = 20
-const SLACK: float = 1.0
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -90,7 +88,7 @@ func test_a_full_hand_and_plot_fit_on_both_screens_at_every_text_size() -> void:
 	var table: TableScreen = await _to_swap()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			table = _app.show_screen("table", true)
 			await await_idle_frame()
@@ -103,7 +101,7 @@ func test_a_full_hand_and_plot_fit_on_both_screens_at_every_text_size() -> void:
 
 func _check(table: TableScreen, where: String) -> void:
 	var sheet: PlotSwapSheet = _sheet(table)
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var paper: Rect2 = sheet.paper().get_global_rect()
 	for node: Node in sheet.paper().find_children("*", "Control", true, false):
 		var control: Control = node as Control
@@ -124,7 +122,7 @@ func _check(table: TableScreen, where: String) -> void:
 			var rect: Rect2 = board.card_rect(card_id)
 			rect.position += board.global_position
 			(
-				assert_bool(paper.grow(SLACK).encloses(rect))
+				assert_bool(paper.grow(ClipCheck.SLACK).encloses(rect))
 				. override_failure_message("%s: card %d at %s" % [where, card_id, rect])
 				. is_true()
 			)
@@ -141,4 +139,4 @@ func _check(table: TableScreen, where: String) -> void:
 	var cards: Rect2 = board.get_global_rect()
 	for button: Button in [sheet.swap_button(), sheet.keep_button()]:
 		assert_bool(screen.encloses(button.get_global_rect())).is_true()
-		assert_bool(button.get_global_rect().intersects(cards.grow(-SLACK))).is_false()
+		assert_bool(button.get_global_rect().intersects(cards.grow(-ClipCheck.SLACK))).is_false()

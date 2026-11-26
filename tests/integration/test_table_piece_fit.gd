@@ -7,7 +7,6 @@ extends GdUnitTestSuite
 
 const SEED: int = 4301
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -59,7 +58,7 @@ func test_a_seat_keeps_its_width_and_its_tag_clear_of_its_name() -> void:
 			problems.append("%s: tag set at %d" % [where, tag_size])
 		if not panel.get_global_rect().encloses(tag):
 			problems.append("%s: tag %s off its seat" % [where, tag])
-		if absf(panel.size.x - TableScreen.SEAT_WIDTH) > SLACK:
+		if absf(panel.size.x - TableScreen.SEAT_WIDTH) > ClipCheck.SLACK:
 			problems.append("%s: seat %.0f wide" % [where, panel.size.x])
 			for part: String in ["_name", "_count_row", "_role", "_speech", "_info", "_row"]:
 				var piece: Control = panel.get(part)
@@ -129,9 +128,12 @@ func test_the_action_column_keeps_its_foot_and_width() -> void:
 func _check_column(actions: ActionBar, where: String, problems: PackedStringArray) -> void:
 	var column: Rect2 = actions.get_global_rect()
 	var at: Rect2 = actions.held()
-	if absf(column.end.y - at.end.y) > SLACK:
+	if absf(column.end.y - at.end.y) > ClipCheck.SLACK:
 		problems.append("%s: column foot at %.0f" % [where, column.end.y])
-	if absf(column.position.x - at.position.x) > SLACK or column.size.x > at.size.x + SLACK:
+	if (
+		absf(column.position.x - at.position.x) > ClipCheck.SLACK
+		or column.size.x > at.size.x + ClipCheck.SLACK
+	):
 		problems.append("%s: column %s wider than %s" % [where, column, at])
 		for child: Node in actions.find_children("*", "Control", true, false):
 			var part: Control = child as Control
@@ -140,7 +142,7 @@ func _check_column(actions: ActionBar, where: String, problems: PackedStringArra
 	for button: Button in actions.find_children("*", "Button", true, false):
 		if (
 			button.is_visible_in_tree()
-			and not column.grow(SLACK).encloses(button.get_global_rect())
+			and not column.grow(ClipCheck.SLACK).encloses(button.get_global_rect())
 		):
 			problems.append("%s: %s outside the column" % [where, button.text])
 	ClipCheck.check(actions, where, problems)
@@ -164,7 +166,9 @@ func test_the_rules_sheet_keeps_a_gap_at_its_scroll_bar() -> void:
 			if not bar.is_visible_in_tree():
 				continue
 			scrolled += 1
-			var edge: float = bar.get_global_rect().position.x - ProseScroll.BAR_GAP + SLACK
+			var edge: float = (
+				bar.get_global_rect().position.x - ProseScroll.BAR_GAP + ClipCheck.SLACK
+			)
 			for label: Label in scroll.find_children("*", "Label", true, false):
 				var rect: Rect2 = label.get_global_rect()
 				if label.is_visible_in_tree() and rect.end.x > edge:

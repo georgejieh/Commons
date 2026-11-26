@@ -19,7 +19,6 @@ extends GdUnitTestSuite
 
 const SEED: int = 4301
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 ## Pairs that may overlap by design, by name, and why. None: ADR 0034's rules 6 to 9 make
 ## room for everything.
 const ALLOWED: Dictionary[String, String] = {}
@@ -350,7 +349,7 @@ func _layout(table: TableScreen) -> String:
 
 
 func _check(pieces: Dictionary[String, Rect2], where: String, problems: PackedStringArray) -> void:
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var names: Array[String] = []
 	names.assign(pieces.keys())
 	for name: String in names:
@@ -361,8 +360,8 @@ func _check(pieces: Dictionary[String, Rect2], where: String, problems: PackedSt
 			var pair: String = "%s|%s" % [names[first], names[second]]
 			if ALLOWED.has(pair):
 				continue
-			var a: Rect2 = pieces[names[first]].grow(-SLACK / 2.0)
-			var b: Rect2 = pieces[names[second]].grow(-SLACK / 2.0)
+			var a: Rect2 = pieces[names[first]].grow(-ClipCheck.SLACK / 2.0)
+			var b: Rect2 = pieces[names[second]].grow(-ClipCheck.SLACK / 2.0)
 			if a.has_area() and b.has_area() and a.intersects(b):
 				problems.append(
 					(
@@ -380,7 +379,7 @@ func _check(pieces: Dictionary[String, Rect2], where: String, problems: PackedSt
 
 ## The sheets laid over the table on purpose stay whole on the screen and do not clip.
 func _check_sheets(table: TableScreen, where: String, problems: PackedStringArray) -> void:
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var need: NeedPanel = table.need_panel()
 	need.visible = true
 	need.ask(9999, TableWorstCase.longest_surname(_app.controller), 0.5)

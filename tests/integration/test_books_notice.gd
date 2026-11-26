@@ -6,8 +6,6 @@ extends GdUnitTestSuite
 ## a replay, a reload or a table that joins the run. It fits the screen at its longest.
 
 const SEED: int = 7211
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 
 var _app: DemoApp
 var _lines: PackedStringArray = []
@@ -191,15 +189,18 @@ func test_the_longest_notice_fits_the_screen() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		# The notice takes the text size as it is shown.
 		await _send(longest)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			await await_idle_frame()
 			await await_idle_frame()
-			var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+			var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 			# The notice covers the whole screen, so nothing under it takes a click, and its
 			# sheet sits in the middle.
 			var whole: Rect2 = get_tree().root.get_visible_rect()
-			assert_bool(_app.notice.get_global_rect().grow(SLACK).encloses(whole)).is_true()
+			(
+				assert_bool(_app.notice.get_global_rect().grow(ClipCheck.SLACK).encloses(whole))
+				. is_true()
+			)
 			var sheet: Rect2 = (
 				_app.notice.acknowledge_button().get_parent_control().get_global_rect()
 			)

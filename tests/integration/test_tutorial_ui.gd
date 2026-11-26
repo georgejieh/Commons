@@ -9,11 +9,9 @@ extends GdUnitTestSuite
 ## clear of the brigade notice, and the store's detail slip stays closed while the
 ## arrival runs.
 
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
 const LEAST_TYPE: int = 20
 const DARK_INK: float = 0.35
-const SLACK: float = 1.5
 ## The longest any wait may take, in milliseconds.
 const WAIT_MSEC: int = 20000
 
@@ -151,7 +149,7 @@ func test_a_refused_action_changes_nothing_and_marks_the_slip() -> void:
 ## The whole arrival with the keyboard alone at 1920x1080, then run setup and the
 ## profile's first save.
 func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
-	get_tree().root.size = SIZES[0]
+	get_tree().root.size = ClipCheck.SIZES[0]
 	await _launch()
 	var naming: SurnameScreen = _app.switcher.current()
 	var surname: String = naming.field().text
@@ -172,7 +170,7 @@ func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
 ## Replayed from the title at 1280x800 over a profile with history and a run in progress:
 ## it ends at the title, and the profile and the run save are byte for byte as they were.
 func test_a_replay_at_800_leaves_the_profile_and_run_save_alone() -> void:
-	get_tree().root.size = SIZES[1]
+	get_tree().root.size = ClipCheck.SIZES[1]
 	var data: ProfileData = ProfileData.new()
 	data.seen.append("tutorial")
 	data.finished_runs = 2
@@ -299,7 +297,7 @@ func _check_slip(where: String) -> void:
 	var ink: float = label.get_theme_color("font_color").get_luminance()
 	assert_float(ink).override_failure_message(where).is_less(DARK_INK)
 	var rect: Rect2 = slip.get_global_rect()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(rect)).override_failure_message(where).is_true()
 	var target: Rect2 = layer.glow().lit_area()
 	assert_bool(target.has_area()).override_failure_message(where + " light").is_true()
