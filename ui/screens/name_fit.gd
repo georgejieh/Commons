@@ -20,6 +20,20 @@ static func size_for(font: Font, text: String, wide: float, base: int, least: in
 	return font_size
 
 
+## The largest size from base down to least, by step, at which text keeps to one line of
+## width wide; the last size tried when none does, which a step past least may undercut.
+static func one_line_size(
+	font: Font, text: String, wide: float, base: int, least: int, step: int = 1
+) -> int:
+	var font_size: int = base
+	while (
+		font_size > least
+		and font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > wide
+	):
+		font_size -= step
+	return font_size
+
+
 ## True when every word of text, set at font_size, is no wider than wide.
 static func words_fit(font: Font, text: String, wide: float, font_size: int) -> bool:
 	for word: String in text.split(" ", false):

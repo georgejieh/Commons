@@ -123,9 +123,7 @@ func _show_next() -> void:
 	# The notice outlives screens, so it takes the text size chosen now.
 	_body.add_theme_font_size_override("font_size", TextSize.px(BODY_SIZE))
 	_filed.add_theme_font_size_override("font_size", TextSize.px(LINE_SIZE))
-	for child: Node in _lines.get_children():
-		_lines.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(_lines)
 	for line: String in _shown.lines:
 		_lines.add_child(ScreenKit.label(_kept_together(line), LINE_SIZE, ScreenKit.INK))
 	_lines.visible = not _shown.lines.is_empty()

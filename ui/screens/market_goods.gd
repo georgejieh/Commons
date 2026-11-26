@@ -38,9 +38,7 @@ func refresh() -> void:
 
 ## The private-plot upgrades on sale: one ticket each, off once bought out or too dear.
 func _show_upgrades() -> void:
-	for child: Node in upgrades.get_children():
-		upgrades.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(upgrades)
 	for kind: String in _desk.upgrade_kinds():
 		var text: String = tr("market.upgrade." + kind).format({"price": _desk.upgrade_price(kind)})
 		if _desk.upgrades_left(kind) <= 0:
@@ -55,9 +53,7 @@ func _show_upgrades() -> void:
 
 ## The cards for the private plot on offer: each as a card over its Buy button.
 func _show_stall() -> void:
-	for child: Node in sheet.get_children():
-		sheet.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(sheet)
 	_card_buttons.clear()
 	var head: Label = ScreenKit.eyebrow(
 		tr("market.plot").format({"held": _desk.plot_size(), "room": _desk.plot_capacity()})

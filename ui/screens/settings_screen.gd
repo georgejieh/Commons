@@ -84,9 +84,7 @@ func _rebuild() -> void:
 	# The page's fit is connected again with the new page.
 	for connection: Dictionary in resized.get_connections():
 		resized.disconnect(connection["callable"])
-	for child: Node in get_children():
-		remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(self)
 	_change = null
 	open(_app)
 	SettingsPanel.chosen_text_size(self).grab_focus()

@@ -317,13 +317,13 @@ func seat_portrait(seat: int, box: Vector2 = Vector2.ZERO) -> Texture2D:
 		var face: Texture2D = ArtStages.resolve(family.portrait)
 		if box == Vector2.ZERO:
 			return face
-		return ScreenKit.face_crop(face, family.portrait_face, box.x / box.y)
+		return FaceCrop.crop(face, family.portrait_face, box.x / box.y)
 	if seat >= DEMO.portraits.size() or DEMO.portraits[seat] == null:
 		return null
 	var picture: Texture2D = ArtStages.resolve(DEMO.portraits[seat])
 	if box == Vector2.ZERO or seat >= DEMO.portrait_faces.size():
 		return picture
-	return ScreenKit.face_crop(picture, DEMO.portrait_faces[seat], box.x / box.y)
+	return FaceCrop.crop(picture, DEMO.portrait_faces[seat], box.x / box.y)
 
 
 func need_cap() -> int:

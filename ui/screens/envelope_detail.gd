@@ -46,9 +46,7 @@ func _init() -> void:
 func explain(title: String, rule: String) -> void:
 	_title.text = title
 	_rule.text = Keywords.mark(rule)
-	for child: Node in _meanings.get_children():
-		_meanings.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(_meanings)
 	for id: String in Keywords.found(rule):
 		var meaning: Label = ScreenKit.label(
 			Keywords.meaning(id), MEANING_SIZE, ScreenKit.FAINT_INK

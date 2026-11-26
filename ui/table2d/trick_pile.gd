@@ -249,8 +249,7 @@ func _view_of(card_id: int) -> CardView:
 func _mark_wild(view: CardView, card: CardInstance, stands_for: int, wild: bool) -> void:
 	view.set_wild(wild and wild_ranks.has(card.base_rank()))
 	if stands_for >= 0 and stands_for != card.base_rank():
-		var rank: String = tr(CardView.RANK_KEYS[stands_for])
-		view.set_rank_note(tr("card.rank_as").format({"rank": rank}))
+		view.set_rank_as(stands_for)
 
 
 ## Dims every play already on the pile.

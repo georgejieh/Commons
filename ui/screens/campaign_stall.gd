@@ -56,9 +56,7 @@ func is_busy() -> bool:
 
 ## Rebuilds the offer and the tray from the counter.
 func show_offer() -> void:
-	for child: Node in _offers.get_children():
-		_offers.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(_offers)
 	var stock: Array[String] = _shelf.stock()
 	for slot: int in stock.size():
 		_offers.add_child(_offer(slot, stock[slot]))

@@ -10,6 +10,8 @@ extends Control
 ## not prose, so they stand at the foot of the page with the way home, always whole.
 
 const MARGIN: Vector2 = Vector2(56, 36)
+## How far the backdrop darkens under the page.
+const SHADE: Color = Color(0.05, 0.03, 0.02, 0.5)
 const FRAME_HEIGHT: float = 308.0
 ## The title card's height with a picture hung in it, which leaves the title under the
 ## frame, and the picture's margin inside its printed frame.
@@ -53,17 +55,8 @@ func open(app: DemoApp) -> void:
 	_state = app.controller.run
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(ScreenKit.cover(ScreenKit.ART.title_night))
-	var shade: ColorRect = ColorRect.new()
-	shade.color = Color(0.05, 0.03, 0.02, 0.5)
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(shade)
-	var margin: MarginContainer = MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	for side: String in ["left", "right"]:
-		margin.add_theme_constant_override("margin_" + side, int(MARGIN.x))
-	for side: String in ["top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, int(MARGIN.y))
+	add_child(ScreenKit.shade(SHADE))
+	var margin: MarginContainer = ScreenKit.margins(int(MARGIN.x), int(MARGIN.y))
 	add_child(margin)
 	var paper: EndingPaper = EndingPaper.new()
 	margin.add_child(paper)
@@ -230,14 +223,10 @@ func _fit_title(frame: Control) -> void:
 	if HanziSeal.can_draw(_view.seal):
 		room -= SEAL_WIDTH + 28.0
 	var font: Font = ScreenKit.DISPLAY_BOLD
-	var font_size: int = TextSize.px(TITLE_MAX)
-	while font_size > TextSize.least(TITLE_MIN) and _width(font, font_size) > room:
-		font_size -= 2
+	var font_size: int = NameFit.one_line_size(
+		font, _view.title, room, TextSize.px(TITLE_MAX), TextSize.least(TITLE_MIN), 2
+	)
 	_title.add_theme_font_size_override("font_size", maxi(font_size, TextSize.least(TITLE_MIN)))
-
-
-func _width(font: Font, font_size: int) -> float:
-	return font.get_string_size(_view.title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 
 
 func _class_tile() -> Control:

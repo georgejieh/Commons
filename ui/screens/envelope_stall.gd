@@ -54,9 +54,7 @@ func overlay() -> EnvelopeOverlay:
 
 ## Rebuilds the offer from the counter.
 func show_offer() -> void:
-	for child: Node in offers.get_children():
-		offers.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(offers)
 	var stock: Array[String] = _shelf.stock()
 	for slot: int in stock.size():
 		offers.add_child(_offer(slot, stock[slot]))

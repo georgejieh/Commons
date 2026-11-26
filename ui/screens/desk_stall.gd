@@ -46,7 +46,7 @@ func show_offer() -> void:
 
 
 func _mark() -> String:
-	return tr("keyword.%s.name" % _desk.offer())
+	return DeckSheet.mark_name(_desk.offer())
 
 
 func _describe() -> void:

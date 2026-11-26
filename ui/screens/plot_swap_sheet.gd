@@ -167,9 +167,7 @@ func _refresh() -> void:
 		_status.text = ""
 	_refused_now = false
 	_status.visible = not _status.text.is_empty()
-	for child: Node in _pairs.get_children():
-		_pairs.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(_pairs)
 	_undo.clear()
 	if trade.pairs() == 0:
 		_pairs.add_child(ScreenKit.label(tr("plot.how"), RULE_SIZE))

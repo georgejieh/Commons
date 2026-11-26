@@ -143,10 +143,7 @@ func player_name() -> String:
 func _page() -> VBoxContainer:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(ScreenKit.cover(ScreenKit.ART.title_night))
-	var margin: MarginContainer = MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, PAGE_MARGIN)
+	var margin: MarginContainer = ScreenKit.margins(PAGE_MARGIN, PAGE_MARGIN)
 	add_child(margin)
 	var sheet: PanelContainer = PanelContainer.new()
 	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))

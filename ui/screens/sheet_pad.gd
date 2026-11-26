@@ -18,11 +18,7 @@ const BOARD: Rect2 = Rect2(0.05, 0.1, 0.33, 0.8)
 
 ## Gives a sheet (a ScreenKit card's panel) the dialog padding on every side.
 static func apply(panel: Control) -> void:
-	var paper: StyleBoxTexture = StyleBoxTexture.new()
-	paper.texture = CommonsTheme.PANEL_PAPER
-	paper.set_texture_margin_all(CommonsTheme.SHEET_BORDER)
-	paper.set_content_margin_all(INSET)
-	panel.add_theme_stylebox_override("panel", paper)
+	panel.add_theme_stylebox_override("panel", ScreenKit.paper_style(INSET))
 
 
 ## The same for the sheet holding column, as ScreenKit.card makes it.

@@ -195,9 +195,7 @@ func _fit() -> void:
 ## One entry for each mark the deck or the plot holds now: its drawn mark, its name and
 ## how many cards carry it.
 func _show_legend(plot: Array[CardInstance]) -> void:
-	for child: Node in _legend.get_children():
-		_legend.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(_legend)
 	var counts: Dictionary[String, int] = {}
 	var cards: Array[CardInstance] = _controller.store.deck_cards()
 	cards.append_array(plot)
@@ -228,13 +226,19 @@ static func mark_name(mark: String) -> String:
 	return TranslationServer.translate("keyword.%s.name" % mark)
 
 
-## The marks a card carries, in words whose keywords the slip explains.
-static func marks_text(card: CardInstance) -> String:
+## The marks a card carries, by name: its enhancement's, then the player's stamp.
+static func marks(card: CardInstance) -> PackedStringArray:
 	var names: PackedStringArray = []
 	if CardMark.draws(card.enhancement_id()):
 		names.append(mark_name(card.enhancement_id()))
 	if card.owner_stamp() == Seats.PLAYER:
 		names.append(mark_name(STAMP))
+	return names
+
+
+## The marks a card carries, in words whose keywords the slip explains.
+static func marks_text(card: CardInstance) -> String:
+	var names: PackedStringArray = marks(card)
 	if names.is_empty():
 		return TranslationServer.translate("deck.marks.none")
 	return TranslationServer.translate("deck.marks").format({"marks": ", ".join(names)})

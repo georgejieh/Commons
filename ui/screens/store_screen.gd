@@ -283,9 +283,7 @@ func _refresh() -> void:
 	var state: RunView = controller.run
 	UiMotion.count(_coupons, _shown_coupons, state.coupons(), _coupon_text)
 	_shown_coupons = state.coupons()
-	for child: Node in _counter.get_children():
-		_counter.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(_counter)
 	var stock: Array[String] = _desk.stock()
 	for slot: int in stock.size():
 		_counter.add_child(_item(slot, stock[slot]))

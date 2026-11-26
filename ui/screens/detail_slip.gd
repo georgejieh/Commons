@@ -41,9 +41,7 @@ func show_for(anchor: Control, title: String, rule: String, above: bool = true) 
 	_anchor = anchor
 	_above = above
 	_rule = rule
-	for child: Node in get_children():
-		remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(self)
 	var content: Control = Keywords.slip(rule, title)
 	add_child(content)
 	# It only explains: a click goes through it to whatever lies under.

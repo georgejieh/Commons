@@ -56,11 +56,7 @@ func refusal(card: CardInstance) -> String:
 
 func change(card: CardInstance) -> String:
 	var values: Dictionary[String, Variant] = {"in": card_text(_card), "out": CardName.of(card)}
-	var marks: PackedStringArray = []
-	if CardMark.draws(card.enhancement_id()):
-		marks.append(DeckSheet.mark_name(card.enhancement_id()))
-	if card.owner_stamp() == Seats.PLAYER:
-		marks.append(DeckSheet.mark_name(DeckSheet.STAMP))
+	var marks: PackedStringArray = DeckSheet.marks(card)
 	if marks.is_empty():
 		return tr("exchange.change").format(values)
 	values["marks"] = marks[0]

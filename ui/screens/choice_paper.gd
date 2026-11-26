@@ -199,7 +199,10 @@ func _fit_lines(sheet: VBoxContainer, name: Label) -> void:
 	var line_px: int = TextSize.fit(LINE_SIZE, LINE_SIZE, fits)
 	fits.call(line_px)
 	var font: Font = name.get_theme_font("font")
-	var least: int = _one_line_size(font, name.text, item_size.x - DOCUMENT_INSET, NAME_SIZE)
+	var wide_name: float = item_size.x - DOCUMENT_INSET
+	var least: int = NameFit.one_line_size(
+		font, name.text, wide_name, NAME_SIZE, TextSize.least(DOCUMENT_NAME_LEAST)
+	)
 	var name_px: int = name.get_theme_font_size("font_size")
 	while name_px > least and _document_height(sheet, wide) > item_size.y:
 		name_px -= 1
@@ -239,19 +242,9 @@ static func _wrapped_height(label: Label, wide: float) -> float:
 ## between words at the least size.
 func _fit_one_line(name: Label, wide: float) -> void:
 	var font: Font = name.get_theme_font("font")
-	var font_size: int = _one_line_size(font, title, wide, TextSize.px(NAME_SIZE))
+	var least: int = TextSize.least(DOCUMENT_NAME_LEAST)
+	var font_size: int = NameFit.one_line_size(font, title, wide, TextSize.px(NAME_SIZE), least)
 	NameFit.apply(name, title, wide, font_size, TextSize.least(NameFit.LEAST))
-
-
-## The largest size from start down to DOCUMENT_NAME_LEAST at which text keeps to one line.
-static func _one_line_size(font: Font, text: String, wide: float, start: int) -> int:
-	var font_size: int = start
-	while (
-		font_size > TextSize.least(DOCUMENT_NAME_LEAST)
-		and font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > wide
-	):
-		font_size -= 1
-	return font_size
 
 
 ## A Campaign: its leaflet, as the tray holds it, as large as the place allows.

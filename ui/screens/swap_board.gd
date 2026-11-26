@@ -81,7 +81,7 @@ func show_cards(
 		view.set_wild(_wild.has(card.base_rank()))
 		var folded: int = HandModel.fold(card.base_rank(), _rank_map)
 		if folded >= 0:
-			view.set_rank_note(tr("card.rank_as").format({"rank": tr(CardView.RANK_KEYS[folded])}))
+			view.set_rank_as(folded)
 		_views[card.id()] = view
 	_cursor = 0
 	_lay_out(false)
@@ -375,11 +375,11 @@ func _on_motion(motion: InputEventMouseMotion) -> void:
 
 
 func _on_key(event: InputEvent) -> bool:
-	for action: String in KeyBindings.CURSOR_STEPS:
-		if event.is_action_pressed(action, true):
-			_step_cursor(-1 if action.ends_with("left") else 1)
-			return true
-	if event.is_action_pressed("ui_accept") or event.is_action_pressed(KeyBindings.SELECT):
+	var step: int = KeyBindings.cursor_step(event)
+	if step != 0:
+		_step_cursor(step)
+		return true
+	if KeyBindings.is_pick(event):
 		if cursor_card() != PlotTrade.NONE:
 			press(cursor_card())
 		return true

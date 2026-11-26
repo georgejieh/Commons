@@ -46,6 +46,8 @@ const LAYER_ENVELOPE: int = 4
 const LAYER_SHEET: int = 5
 ## How far the backdrop darkens under the content, so text on art stays readable.
 const SHADE: Color = Color(0.08, 0.06, 0.04, 0.3)
+## Deeper, under a verdict or a summary centred on one sheet.
+const VERDICT_SHADE: Color = Color(0.05, 0.03, 0.02, 0.55)
 ## How wide the paper halo around text on art is, in pixels.
 const HALO_SIZE: int = 10
 ## Page margins and the widest a content column grows.
@@ -56,8 +58,6 @@ const LEAST_PAGE_MARGIN: int = 24
 const LEAST_GAP_SHARE: float = 0.5
 const FULL_GAP: StringName = &"full_gap"
 const MIN_BUTTON_WIDTH: int = 260
-## Space kept around a face in a portrait box, as a share of the head's size per side.
-const FACE_MARGIN: float = 0.12
 
 
 ## A full-screen page over a backdrop, or over paper when there is none, holding a
@@ -66,16 +66,9 @@ static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(cover(backdrop if backdrop != null else ART.paper))
 	if backdrop != null:
-		root.theme = halo_theme()
-		var shade: ColorRect = ColorRect.new()
-		shade.color = SHADE
-		shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-		shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		root.add_child(shade)
-	var margin: MarginContainer = MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, PAGE_MARGIN)
+		root.theme = _halo_theme()
+		root.add_child(shade(SHADE))
+	var margin: MarginContainer = margins(PAGE_MARGIN, PAGE_MARGIN)
 	root.add_child(margin)
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", STYLE.gap + 8)
@@ -132,16 +125,20 @@ static func _set_constant(control: Control, constant: String, value: int) -> voi
 		control.add_theme_constant_override(constant, value)
 
 
+## Frees every child of node, taken out of the tree at once so what is built in its place
+## lays out without them.
+static func clear(node: Node) -> void:
+	for child: Node in node.get_children():
+		node.remove_child(child)
+		child.queue_free()
+
+
 ## A full-screen page over a backdrop with its content centered on one sheet, for
 ## verdicts and summaries.
 static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(cover(backdrop))
-	var shade: ColorRect = ColorRect.new()
-	shade.color = Color(0.05, 0.03, 0.02, 0.55)
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(shade)
+	root.add_child(shade(VERDICT_SHADE))
 	var center: CenterContainer = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(center)
@@ -158,11 +155,7 @@ static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
 static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(cover(backdrop))
-	var shade: ColorRect = ColorRect.new()
-	shade.color = SHADE
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(shade)
+	root.add_child(shade(SHADE))
 	var sheet: VBoxContainer = card(Vector2(width, 0))
 	sheet.add_theme_constant_override("separation", STYLE.gap + 8)
 	var panel: Control = card_panel(sheet)
@@ -249,7 +242,7 @@ static func row(children: Array[Control], separation: int = STYLE.gap) -> HBoxCo
 
 
 ## Gives every label a paper-colored halo, so ink text reads over busy art.
-static func halo_theme() -> Theme:
+static func _halo_theme() -> Theme:
 	var theme: Theme = Theme.new()
 	for type: String in ["Label", CommonsTheme.EYEBROW, CommonsTheme.HEADLINE]:
 		theme.set_constant("outline_size", type, HALO_SIZE)
@@ -264,6 +257,26 @@ static func ink_theme() -> Theme:
 	for type: String in ["Label", CommonsTheme.EYEBROW, CommonsTheme.HEADLINE, CommonsTheme.TITLE]:
 		theme.set_constant("outline_size", type, 0)
 	return theme
+
+
+## A dim of color over a page's backdrop, which takes no input.
+static func shade(color: Color) -> ColorRect:
+	var made: ColorRect = ColorRect.new()
+	made.color = color
+	made.set_anchors_preset(Control.PRESET_FULL_RECT)
+	made.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return made
+
+
+## A margin that fills a page: side at its left and right, top above and below.
+static func margins(side: int, top: int) -> MarginContainer:
+	var made: MarginContainer = MarginContainer.new()
+	made.set_anchors_preset(Control.PRESET_FULL_RECT)
+	for edge: String in ["left", "right"]:
+		made.add_theme_constant_override("margin_" + edge, side)
+	for edge: String in ["top", "bottom"]:
+		made.add_theme_constant_override("margin_" + edge, top)
+	return made
 
 
 ## A texture that fills its parent, cropped to keep its shape.
@@ -341,31 +354,6 @@ static func reveal(column: VBoxContainer) -> void:
 static func paper_outline(label: Label) -> void:
 	label.add_theme_color_override("font_outline_color", PAPER)
 	label.add_theme_constant_override("outline_size", 8)
-
-
-## A portrait cropped to a box of aspect (width / height), centered on the face.
-static func face_crop(picture: Texture2D, face: Rect2, aspect: float) -> Texture2D:
-	var crop: AtlasTexture = AtlasTexture.new()
-	crop.atlas = picture
-	crop.region = face_region(picture.get_size(), face, aspect)
-	return crop
-
-
-## The pixel region of an image of size that shows the whole face (fractions of the
-## image) with a margin, at the given aspect, centered on the face and kept inside the
-## image.
-static func face_region(size: Vector2, face: Rect2, aspect: float) -> Rect2:
-	var head: Rect2 = Rect2(face.position * size, face.size * size)
-	var want: Vector2 = head.size * (1.0 + 2.0 * FACE_MARGIN)
-	if want.x / want.y < aspect:
-		want.x = want.y * aspect
-	else:
-		want.y = want.x / aspect
-	var fit: float = minf(1.0, minf(size.x / want.x, size.y / want.y))
-	want *= fit
-	var corner: Vector2 = head.get_center() - want / 2.0
-	corner = corner.clamp(Vector2.ZERO, size - want)
-	return Rect2(corner, want)
 
 
 ## A Cadre's art for the current corruption stage.

@@ -199,6 +199,11 @@ func set_rank_note(text: String) -> void:
 	_rank_note.add_theme_font_size_override("font_size", _note_size(text))
 
 
+## Says the card ranks as rank, such as "as 3", in the rank note.
+func set_rank_as(rank: int) -> void:
+	set_rank_note(tr("card.rank_as").format({"rank": tr(RANK_KEYS[rank])}))
+
+
 func _note_size(text: String) -> int:
 	var font: Font = _rank_note.get_theme_font("font")
 	var wide: float = _rank_note.offset_right - _rank_note.offset_left

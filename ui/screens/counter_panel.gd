@@ -158,13 +158,10 @@ func name_label() -> Label:
 
 ## The name on one line, smaller as far as LEAST_NAME, then wrapped between words.
 func _fit_name(name_text: String) -> void:
-	var font: Font = ScreenKit.DISPLAY_BOLD
-	var font_size: int = TextSize.px(NAME_SIZE)
-	while (
-		font_size > TextSize.least(LEAST_NAME)
-		and font.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > NAME_WIDTH
-	):
-		font_size -= 1
+	var least: int = TextSize.least(LEAST_NAME)
+	var font_size: int = NameFit.one_line_size(
+		ScreenKit.DISPLAY_BOLD, name_text, NAME_WIDTH, TextSize.px(NAME_SIZE), least
+	)
 	NameFit.apply(_name, name_text, NAME_WIDTH, font_size, TextSize.least(LEAST_NAME))
 
 

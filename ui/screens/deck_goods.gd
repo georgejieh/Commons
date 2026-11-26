@@ -48,9 +48,7 @@ func card_view(slot: int) -> CardView:
 
 ## Shows the offers as the stall stands; through the arrival there is no stall.
 func refresh() -> void:
-	for child: Node in strip.get_children():
-		strip.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(strip)
 	_buttons.clear()
 	var stall: DeckStallView = _controller.store.deck_stall()
 	strip.visible = stall.is_open()
