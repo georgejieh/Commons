@@ -70,9 +70,10 @@ func _show_all_cadres(board: Node) -> void:
 
 ## Binds the whole deck to free views from the table's own pool.
 func _show_all_cards(table: Node) -> void:
-	var pool: CardPool = WalkBase.member(table, "_pool")
+	# Reached by name: a card view names the screens' kit, which needs the autoloads.
+	var pool: Object = WalkBase.member(table, "_pool")
 	for deck_id: int in Deck.SIZE:
-		var view: CardView = pool.acquire()
+		var view: Control = pool.call("acquire")
 		if view == null:
 			return
-		view.bind(Deck.new().card(deck_id))
+		view.call("bind", Deck.new().card(deck_id))

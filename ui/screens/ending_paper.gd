@@ -7,7 +7,6 @@ extends PanelContainer
 ## margins and stay faint inside, so the words over them always read. Drawn by rule from a
 ## fixed seed, so the same sheet comes out every time.
 
-const FRAME_INK: Color = Color("9a2a1a")
 const TEA: Color = Color("6b4a24")
 const DIRT: Color = Color("3a2c1e")
 const SEED: int = 7703
@@ -42,7 +41,7 @@ func _draw() -> void:
 ## The printed frame: two rules and corner marks, a little off true. The outer rule
 ## breaks in places as the sheet wears.
 func _frame(worn: float) -> void:
-	var ink: Color = Color(BowlGrime.faded(FRAME_INK, worn), 0.7 - 0.25 * worn)
+	var ink: Color = Color(BowlGrime.faded(ScreenKit.ENDING_INK, worn), 0.7 - 0.25 * worn)
 	var outer: Rect2 = Rect2(Vector2(1.5, -1.0), size).grow(-OUTER)
 	var inner: Rect2 = Rect2(Vector2.ZERO, size).grow(-INNER)
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()

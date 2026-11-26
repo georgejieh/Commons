@@ -28,7 +28,7 @@ func _init() -> void:
 	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top_level = true
-	z_index = 3
+	z_index = ScreenKit.LAYER_SLIP
 	visible = false
 	resized.connect(_place)
 
@@ -41,9 +41,7 @@ func show_for(anchor: Control, title: String, rule: String, above: bool = true) 
 	_anchor = anchor
 	_above = above
 	_rule = rule
-	for child: Node in get_children():
-		remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(self)
 	var content: Control = Keywords.slip(rule, title)
 	add_child(content)
 	# It only explains: a click goes through it to whatever lies under.
@@ -55,6 +53,14 @@ func show_for(anchor: Control, title: String, rule: String, above: bool = true) 
 	visible = true
 	reset_size()
 	_place()
+
+
+## Explains control, title over rule, while it is hovered or holds the focus.
+func follow(control: Control, title: String, rule: String) -> void:
+	control.mouse_entered.connect(show_for.bind(control, title, rule))
+	control.focus_entered.connect(show_for.bind(control, title, rule))
+	control.mouse_exited.connect(hide_for.bind(control))
+	control.focus_exited.connect(hide_for.bind(control))
 
 
 ## Hides the slip if it is explaining anchor.

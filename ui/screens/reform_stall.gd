@@ -22,23 +22,24 @@ var strip: ReformStrip = ReformStrip.new()
 var _app: DemoApp
 var _shelf: ReformShelf = null
 var _slip: DetailSlip
-var _screen_busy: Callable = Callable()
+var _screen_busy: Callable
 var _seal: InkSeal = InkSeal.new()
 var _busy: bool = false
 
 
-func setup(app: DemoApp, slip: DetailSlip, screen_busy: Callable, offered: bool) -> void:
-	_app = app
-	_slip = slip
-	_screen_busy = screen_busy
-	if offered:
-		_shelf = app.controller.store.reform_shelf()
+## The black market enacts no Reform: there the stall only shows the strip.
+func setup(shop: StallContext) -> void:
+	_app = shop.app
+	_slip = shop.slip
+	_screen_busy = shop.busy
+	if not shop.market:
+		_shelf = shop.controller.store.reform_shelf()
 	offers.add_theme_constant_override("separation", 12)
 	strip.described.connect(_describe_held)
 	strip.left.connect(_slip.hide_for)
-	_seal.prepare(TranslationServer.translate("reform.enacted"), ScreenKit.RED, SEAL_WIDTH)
+	_seal.prepare(tr("reform.enacted"), ScreenKit.RED, SEAL_WIDTH)
 	_seal.top_level = true
-	_seal.z_index = 2
+	_seal.z_index = ScreenKit.LAYER_OVER
 	offers.add_child(_seal)
 
 
@@ -79,16 +80,16 @@ func panel(slot: int) -> CounterPanel:
 func _offer(slot: int, reform_id: String) -> CounterPanel:
 	var made: CounterPanel = CounterPanel.new()
 	if reform_id.is_empty():
-		made.sold(CounterPanel.Look.DECREE, TranslationServer.translate("reform.enacted"))
+		made.sold(CounterPanel.Look.DECREE, tr("reform.enacted"))
 		return made
 	var controller: RunController = _app.controller
 	made.offer(
 		CounterPanel.Look.DECREE,
-		TranslationServer.translate("reform.eyebrow"),
+		tr("reform.eyebrow"),
 		reform_id,
 		controller.texts.reform_name(reform_id),
 		controller.texts.reform_text(reform_id),
-		TranslationServer.translate("store.buy").format({"price": _shelf.price(slot)})
+		tr("store.buy").format({"price": _shelf.price(slot)})
 	)
 	var coupons: int = controller.run.coupons()
 	BuyTicket.dress(made.buy, _shelf.can_buy(slot), _shelf.price(slot), coupons)
@@ -111,7 +112,7 @@ func _describe_held(tag: Control, reform_id: String) -> void:
 
 ## Enacts the offer and acts it out: stamped, then flown up onto the strip.
 func _buy(slot: int, offered: CounterPanel) -> void:
-	if _busy or (_screen_busy.is_valid() and _screen_busy.call()):
+	if _busy or _screen_busy.call():
 		return
 	var held: int = _app.controller.items.held_reforms().size()
 	if _app.controller.reform(slot) != RunController.OK:
@@ -129,7 +130,7 @@ func _buy(slot: int, offered: CounterPanel) -> void:
 	_seal.global_position = offered.global_position + offered.size / 2.0 - _seal.size / 2.0
 	_seal.press()
 	offered.pivot_offset = offered.size / 2.0
-	offered.z_index = 1
+	offered.z_index = ScreenKit.LAYER_LIFTED
 	var middle: Vector2 = offered.global_position + offered.size / 2.0
 	var to: Vector2 = offered.position + strip.next_center() - middle
 	var tween: Tween = offered.create_tween()

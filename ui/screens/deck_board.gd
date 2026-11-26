@@ -45,7 +45,6 @@ func prepare() -> void:
 	if _pool != null:
 		return
 	_pool = CardPool.new()
-	add_child(_pool)
 	_pool.fill(self)
 
 
@@ -61,15 +60,13 @@ func show_cards(deck: Array[CardInstance], plot: Array[CardInstance], room: Vect
 			if card.base_rank() == rank:
 				group.append(card)
 		_groups.append(group)
-		var name: String = TranslationServer.translate(CardView.RANK_KEYS[rank])
+		var name: String = tr(CardView.RANK_KEYS[rank])
 		if group.size() != plain[rank]:
-			name = TranslationServer.translate("deck.rank_count").format(
-				{"rank": name, "count": group.size()}
-			)
+			name = tr("deck.rank_count").format({"rank": name, "count": group.size()})
 		_names.append(_name(name))
 	if not plot.is_empty():
 		_groups.append(plot.duplicate())
-		_names.append(_name(TranslationServer.translate("deck.plot")))
+		_names.append(_name(tr("deck.plot")))
 	for index: int in _groups.size():
 		for card: CardInstance in _groups[index]:
 			var view: CardView = _pool.acquire()
@@ -119,6 +116,9 @@ func lay_out(room: Vector2) -> void:
 		for place: int in cards.size():
 			var card: CardInstance = cards[place]
 			var view: CardView = _views[card.id()]
+			# Scaled from its corner, so it stands in the place the fit gave it and its
+			# foot stays above the next row's names.
+			view.pivot_offset = Vector2.ZERO
 			view.scale = Vector2.ONE * _fit.scale
 			view.position = at + Vector2(place * _fit.steps[index], name_height)
 			view.z_index = 0
@@ -193,7 +193,7 @@ func _mark() -> void:
 		view.set_marked(lifted, false, has_focus() and index == _cursor)
 		var rest_y: float = _rest_y(card_id)
 		view.position.y = rest_y - (LIFT * _fit.scale if lifted else 0.0)
-		view.z_index = 1 if lifted else 0
+		view.z_index = ScreenKit.LAYER_LIFTED if lifted else 0
 
 
 func _rest_y(card_id: int) -> float:
@@ -213,16 +213,16 @@ func _on_pressed(card_id: int) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if _order.is_empty():
 		return
-	for action: String in KeyBindings.CURSOR_STEPS:
-		if event.is_action_pressed(action, true):
-			_step(-1 if action.ends_with("left") else 1)
-			accept_event()
-			return
+	var step: int = KeyBindings.cursor_step(event)
+	if step != 0:
+		_step(step)
+		accept_event()
+		return
 	for action: String in ["ui_up", "ui_down"]:
 		if event.is_action_pressed(action, true) and _step_row(-1 if action == "ui_up" else 1):
 			accept_event()
 			return
-	if event.is_action_pressed("ui_accept") or event.is_action_pressed(KeyBindings.SELECT):
+	if KeyBindings.is_pick(event):
 		press(cursor_card())
 		accept_event()
 

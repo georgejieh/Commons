@@ -9,9 +9,6 @@ extends PanelContainer
 
 signal chosen
 
-const RING: Color = Color("b98a2c")
-const PICKED: Color = Color("9e2a1d")
-const LOCKED_INK: Color = Color("4a3a26")
 const SEED: int = 8317
 const SPECKS: Vector2i = Vector2i(6, 34)
 const PADDING: int = 20
@@ -48,7 +45,7 @@ static func blank(line: String, min_size: Vector2, sheet_index: int = 0) -> Aged
 	sheet.custom_minimum_size = min_size
 	sheet.accessibility_name = line
 	if not line.is_empty():
-		var label: Label = ScreenKit.label(line, LOCKED_SIZE, LOCKED_INK)
+		var label: Label = ScreenKit.label(line, LOCKED_SIZE, ScreenKit.PAPER_EDGE)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -89,9 +86,9 @@ func _draw() -> void:
 		var tea: Color = Color(BowlGrime.TEA, 0.18 * worn)
 		draw_arc(ring, rect.size.x * 0.2, 0.0, TAU, 24, tea, 1.5 + worn, true)
 	if selected:
-		var ink: Color = BowlGrime.faded(PICKED, worn)
+		var ink: Color = BowlGrime.faded(ScreenKit.PICKED, worn)
 		draw_rect(Rect2(Vector2.ZERO, size).grow(-5.0), ink, false, 4.0)
 		draw_rect(Rect2(Vector2.ZERO, size).grow(-11.0), Color(ink, 0.6), false, 1.5)
 	if has_focus():
-		var gold: Color = Color(BowlGrime.aged(RING, worn * 0.5), 0.9)
+		var gold: Color = Color(BowlGrime.aged(ScreenKit.FOCUS_RING, worn * 0.5), 0.9)
 		draw_rect(Rect2(Vector2.ZERO, size).grow(-1.5), gold, false, 3.0)

@@ -9,8 +9,6 @@ extends PanelContainer
 ## shops beside the coupons.
 
 const LINE_SIZE: int = 16
-const INK: Color = Color("1e1a16")
-const BAND: Color = Color("5a4a36")
 const MARGIN: Vector2i = Vector2i(16, 8)
 ## Varies the slip's grime from the table's to the shops'.
 const TABLE_SALT: int = 3
@@ -111,9 +109,9 @@ func _typed(text: String, bold: bool) -> Label:
 		"font", ScreenKit.TYPEWRITER_BOLD if bold else ScreenKit.TYPEWRITER
 	)
 	line.add_theme_font_size_override("font_size", TextSize.px(LINE_SIZE))
-	line.add_theme_color_override("font_color", BowlGrime.faded(INK, BowlGrime.wear()))
+	line.add_theme_color_override("font_color", BowlGrime.faded(ScreenKit.INK, BowlGrime.wear()))
 	return line
 
 
 func _draw() -> void:
-	PaperTicket.draw(self, Rect2(Vector2.ZERO, size), BowlGrime.wear(), salt, BAND)
+	PaperTicket.draw(self, Rect2(Vector2.ZERO, size), BowlGrime.wear(), salt, ScreenKit.FAINT_INK)

@@ -19,27 +19,21 @@ var _app: DemoApp
 var _market: bool = false
 var _shelf: EnvelopeShelf
 var _slip: DetailSlip
-var _screen_busy: Callable = Callable()
+var _screen_busy: Callable
 var _host: Control
 var _deck: DeckSheet
 var _overlay: EnvelopeOverlay = null
 
 
-func setup(
-	app: DemoApp,
-	market: bool,
-	slip: DetailSlip,
-	screen_busy: Callable,
-	host: Control,
-	deck: DeckSheet
-) -> void:
-	_app = app
-	_market = market
-	_shelf = app.controller.store.envelope_shelf(market)
-	_slip = slip
-	_screen_busy = screen_busy
+## An envelope bought opens over host.
+func setup(shop: StallContext, host: Control) -> void:
+	_app = shop.app
+	_market = shop.market
+	_shelf = shop.controller.store.envelope_shelf(shop.market)
+	_slip = shop.slip
+	_screen_busy = shop.busy
 	_host = host
-	_deck = deck
+	_deck = shop.deck
 	offers.add_theme_constant_override("separation", 12)
 
 
@@ -54,9 +48,7 @@ func overlay() -> EnvelopeOverlay:
 
 ## Rebuilds the offer from the counter.
 func show_offer() -> void:
-	for child: Node in offers.get_children():
-		offers.remove_child(child)
-		child.queue_free()
+	ScreenKit.clear(offers)
 	var stock: Array[String] = _shelf.stock()
 	for slot: int in stock.size():
 		offers.add_child(_offer(slot, stock[slot]))
@@ -81,16 +73,16 @@ func _offer(slot: int, envelope_id: String) -> CounterPanel:
 	if envelope_id.is_empty():
 		if not _shelf.bought_id().is_empty():
 			made.set_wrapping(_shelf.wrapping(_shelf.bought_id()))
-		made.sold(CounterPanel.Look.ENVELOPE, TranslationServer.translate("envelope.opened"))
+		made.sold(CounterPanel.Look.ENVELOPE, tr("envelope.opened"))
 		return made
 	made.set_wrapping(_shelf.wrapping(envelope_id))
 	made.offer(
 		CounterPanel.Look.ENVELOPE,
-		TranslationServer.translate("envelope.eyebrow"),
+		tr("envelope.eyebrow"),
 		envelope_id,
 		_shelf.envelope_name(envelope_id),
 		_shelf.envelope_text(envelope_id),
-		TranslationServer.translate("store.buy").format({"price": _shelf.price(slot)})
+		tr("store.buy").format({"price": _shelf.price(slot)})
 	)
 	var coupons: int = _app.controller.run.coupons()
 	var can: bool = _shelf.can_buy(slot)
@@ -107,7 +99,7 @@ func _describe(described: CounterPanel) -> void:
 
 ## Buys the envelope and opens it over the page, from where its offer stood.
 func _buy(slot: int, offered: CounterPanel) -> void:
-	if is_busy() or (_screen_busy.is_valid() and _screen_busy.call()):
+	if is_busy() or _screen_busy.call():
 		return
 	var from: Rect2 = offered.get_global_rect()
 	if _app.controller.envelope_buy(slot, _market) != RunController.OK:
@@ -124,8 +116,7 @@ func _open(shelf: EnvelopeShelf, from: Rect2, animate: bool) -> void:
 	_overlay = EnvelopeOverlay.new()
 	_host.add_child(_overlay)
 	_overlay.closed.connect(_on_closed)
-	_overlay.use_deck_sheet(_deck)
-	_overlay.open(_app.controller, shelf, from, animate)
+	_overlay.open(_app.controller, shelf, from, animate, _deck)
 
 
 func _on_closed() -> void:

@@ -72,8 +72,8 @@ func _buy_one() -> void:
 		var button: Button = child as Button
 		if button.theme_type_variation == "CouponButton" and not button.disabled:
 			# The seal as it lands on a card, pressed by hand so it can be photographed.
-			var seal: Control = member(screen, "_seal")
-			var counter: Control = member(screen, "_counter")
+			var seal: Control = member(member(screen, "_cadres"), "seal")
+			var counter: Control = member(member(screen, "_cadres"), "row")
 			var card: Control = counter.get_child(0)
 			seal.position = card.global_position + card.size / 2.0 - seal.size / 2.0
 			seal.call("press")

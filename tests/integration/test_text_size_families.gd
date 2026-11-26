@@ -87,7 +87,8 @@ func test_every_cadre_fits_its_shop_card() -> void:
 				var store: StoreScreen = _app.show_screen(screen_id, true)
 				await await_idle_frame()
 				await await_idle_frame()
-				_clips(store.get("_counter"), "%s %s" % [screen_id, stock], problems)
+				var cadres: CadreCounter = store.get("_cadres")
+				_clips(cadres.row, "%s %s" % [screen_id, stock], problems)
 	_assert_none(problems)
 
 

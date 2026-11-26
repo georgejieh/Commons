@@ -12,9 +12,13 @@ static func rate_line(controller: RunController, type: int) -> String:
 	var level: int = controller.figures.hand_level(type)
 	var rate: int = controller.figures.hand_rate(type, level)
 	if level >= controller.figures.max_hand_level():
-		return _tr("directive.rate.top").format({"type": type_name(type), "rate": rate})
+		return TranslationServer.translate("directive.rate.top").format(
+			{"type": type_name(type), "rate": rate}
+		)
 	var next: int = controller.figures.hand_rate(type, level + 1)
-	return _tr("directive.rate").format({"type": type_name(type), "from": rate, "to": next})
+	return TranslationServer.translate("directive.rate").format(
+		{"type": type_name(type), "from": rate, "to": next}
+	)
 
 
 ## A Rate line while it ticks: the Rate alone, as the type now stands.
@@ -22,12 +26,12 @@ static func ticked(controller: RunController, value: float, type: int) -> String
 	var key: String = "directive.rate.now"
 	if controller.figures.hand_level(type) >= controller.figures.max_hand_level():
 		key = "directive.rate.top"
-	return _tr(key).format({"type": type_name(type), "rate": roundi(value)})
+	return TranslationServer.translate(key).format({"type": type_name(type), "rate": roundi(value)})
 
 
 static func type_name(type: int) -> String:
 	var key: String = String(Pattern.Type.keys()[type]).to_lower()
-	return _tr("pattern." + key)
+	return TranslationServer.translate("pattern." + key)
 
 
 ## The Rate of each type the Directive raises, as it stands now.
@@ -57,7 +61,3 @@ static func tick(
 		var shown: Callable = func(value: float) -> String: return ticked(controller, value, type)
 		tween.tween_callback(func() -> void: UiMotion.count(line, from, after, shown))
 		tween.tween_interval(stagger)
-
-
-static func _tr(key: String) -> String:
-	return TranslationServer.translate(key)

@@ -31,7 +31,7 @@ enum Awaiting {
 }
 enum Reason { OK, NOT_AWAITED, ILLEGAL }
 
-const PLAYER: int = 0
+const PLAYER: int = Seats.PLAYER
 ## What the loop waits on when a books command may come: the player is to act.
 const BOOKS_AWAITING: Array[Awaiting] = [
 	Awaiting.PLAYER_BID,

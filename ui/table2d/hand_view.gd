@@ -284,7 +284,7 @@ func _input(event: InputEvent) -> void:
 func _note_fold(view: CardView, card: CardInstance) -> void:
 	var folded: int = HandModel.fold(card.base_rank(), _rank_map)
 	if folded >= 0:
-		view.set_rank_note(tr("card.rank_as").format({"rank": tr(CardView.RANK_KEYS[folded])}))
+		view.set_rank_as(folded)
 
 
 func _disconnect(view: CardView) -> void:

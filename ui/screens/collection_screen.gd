@@ -17,18 +17,23 @@ const RULES_WIDTH: float = 280.0
 ## Rules beside no art take the card's whole width, less its padding.
 const WIDE_RULES: float = 420.0
 const LOCKED_HEIGHT: float = 150.0
-const FOCUS_RING: Color = Color("b98a2c")
 const SHEET_PADDING: int = 28
 const GAP: int = 20
 ## The room kept between the last card and the scroll's bar.
 const BAR_ROOM: int = 24
+## The open line and a sheet's rules, at Standard.
+const LINE_SIZE: int = 22
+const RULE_SIZE: int = 20
 
 var _entries: Array[Control] = []
 var _scroll: ScrollContainer = ScrollContainer.new()
 var _open_line: Label
 
+var _app: DemoApp
+
 
 func open(app: DemoApp) -> void:
+	_app = app
 	var view: CollectionView = CollectionView.of(Saves.profile_service())
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
 	var sheet: PanelContainer = PanelContainer.new()
@@ -40,7 +45,7 @@ func open(app: DemoApp) -> void:
 	column.add_theme_constant_override("separation", ScreenKit.STYLE.gap)
 	sheet.add_child(column)
 	column.add_child(ScreenKit.header(tr("coll.eyebrow"), tr("coll.title")))
-	_open_line = ScreenKit.label(view.open_line(), 22)
+	_open_line = ScreenKit.label(view.open_line(), LINE_SIZE)
 	column.add_child(_open_line)
 	var sections: VBoxContainer = VBoxContainer.new()
 	sections.add_theme_constant_override("separation", 18)
@@ -62,6 +67,12 @@ func open(app: DemoApp) -> void:
 	column.add_child(back)
 	ScreenKit.reveal(column)
 	back.grab_focus()
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
 
 
 ## The scroll takes the width of as many whole cards as fit across the sheet, and the
@@ -128,7 +139,7 @@ func _entry(sheet: UnlockSheet) -> Control:
 	var title_size: int = TextSize.px(ScreenKit.STYLE.title_size)
 	NameFit.apply(name, sheet.name, width, title_size, TextSize.least(NameFit.LEAST))
 	words.add_child(name)
-	var rules: Label = ScreenKit.label(sheet.text, 20)
+	var rules: Label = ScreenKit.label(sheet.text, RULE_SIZE)
 	rules.custom_minimum_size = Vector2(width, 0)
 	words.add_child(rules)
 	row.add_child(words)
@@ -140,7 +151,7 @@ func _entry(sheet: UnlockSheet) -> Control:
 	panel.accessibility_description = sheet.text
 	var ring: ReferenceRect = ReferenceRect.new()
 	ring.editor_only = false
-	ring.border_color = Color(BowlGrime.aged(FOCUS_RING, BowlGrime.wear() * 0.5), 0.9)
+	ring.border_color = Color(BowlGrime.aged(ScreenKit.FOCUS_RING, BowlGrime.wear() * 0.5), 0.9)
 	ring.border_width = 3.0
 	ring.visible = false
 	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE

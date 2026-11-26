@@ -1,6 +1,6 @@
 class_name StoreCard
 extends RefCounted
-## One Cadre on a shop's counter (P4.10): a card of stock showing the Cadre's art, or the
+## One Cadre on a shop's counter: a card of stock showing the Cadre's art, or the
 ## printed empty frame it will sit in while it has none, then its name and its full rules
 ## with every value filled in, then its Buy button; or a sold place. Each keyword in the
 ## rules explains itself on hover, and the screen's DetailSlip shows the rules again while
@@ -13,6 +13,8 @@ const ART_HEIGHT: float = 158.0
 const FACE_INSET: float = 48.0
 const NAME_SIZE: int = 27
 const RULE_SIZE: int = 17
+## The node name of the rules under the Cadre's name.
+const RULES: String = "Rules"
 
 
 ## The card for slot; buy is called with the card's panel when its button is pressed.
@@ -27,7 +29,9 @@ static func make(
 ) -> Control:
 	var card: VBoxContainer = ScreenKit.card(StoreScreen.CARD)
 	if cadre_id.is_empty():
-		var sold: Label = ScreenKit.styled(_tr("store.sold"), CommonsTheme.HEADLINE)
+		var sold: Label = ScreenKit.styled(
+			TranslationServer.translate("store.sold"), CommonsTheme.HEADLINE
+		)
 		sold.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		sold.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		sold.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -36,19 +40,20 @@ static func make(
 		return ScreenKit.card_panel(card)
 	card.add_theme_constant_override("separation", 6)
 	var tip: String = ScreenKit.cadre_tip(controller, cadre_id)
-	var title: String = _tr("modifier.%s.name" % cadre_id)
+	var title: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
 	var rule: String = ScreenKit.rule_text(controller, cadre_id)
 	var picture: Control = face(cadre_id, StoreScreen.CARD.x)
 	card.add_child(picture)
-	card.add_child(words(title, rule))
+	var printed: Control = words(title, rule)
+	card.add_child(printed)
 	# What the slip says: the rules, and under them that it is scarce when it is.
 	var told: String = rule
 	if desk.is_scarce(slot):
-		var stamp: ScarceStamp = ScarceStamp.new(_tr("store.scarce"), ink)
+		var stamp: ScarceStamp = ScarceStamp.new(TranslationServer.translate("store.scarce"), ink)
 		stamp.place_on(StoreScreen.CARD.x - FACE_INSET)
 		picture.add_child(stamp)
-		tip += "\n" + _tr("store.scarce.note")
-		told += "\n\n" + _tr("store.scarce.note")
+		tip += "\n" + TranslationServer.translate("store.scarce.note")
+		told += "\n\n" + TranslationServer.translate("store.scarce.note")
 	var button: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	button.size_flags_horizontal = Control.SIZE_FILL
 	var coupons: int = controller.run.coupons()
@@ -64,6 +69,8 @@ static func make(
 	card.add_child(button)
 	button.pressed.connect(buy.bind(panel))
 	UiMotion.hoverable(panel)
+	var rules: KeywordText = printed.get_node(RULES)
+	panel.resized.connect(_fit_rules.bind(panel, rules))
 	return panel
 
 
@@ -93,12 +100,24 @@ static func words(title: String, rule: String) -> Control:
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	words.add_child(name)
 	var rules: KeywordText = KeywordText.new()
-	rules.add_theme_font_size_override("normal_font_size", TextSize.px(RULE_SIZE))
+	rules.name = RULES
+	var px: int = TextSize.px(RULE_SIZE)
+	rules.add_theme_font_size_override("normal_font_size", px)
 	rules.add_theme_color_override("default_color", ScreenKit.INK)
 	rules.set_rule(rule)
 	words.add_child(rules)
 	return words
 
 
-static func _tr(key: String) -> String:
-	return TranslationServer.translate(key)
+## A card's rules are print in a box of the card's fixed height (ADR 0034, rule 5): when
+## at a larger text size they would stand the card taller than CARD, they are set smaller,
+## as far as it takes and never under their Standard size.
+static func _fit_rules(panel: Control, rules: KeywordText) -> void:
+	var tall: float = panel.get_combined_minimum_size().y
+	if tall <= StoreScreen.CARD.y:
+		return
+	var room: float = StoreScreen.CARD.y - (tall - rules.get_content_height())
+	var fits: Callable = func(px: int) -> bool:
+		rules.add_theme_font_size_override("normal_font_size", px)
+		return rules.get_content_height() <= room
+	fits.call(TextSize.fit(RULE_SIZE, RULE_SIZE, fits))

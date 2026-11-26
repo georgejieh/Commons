@@ -8,13 +8,15 @@ extends RefCounted
 const NOTE_SIZE: int = 20
 ## Clear of the paper's printed border, so no rule crosses a line of the note.
 const PADDING: int = 22
+## The warning's width at the right of the black market's heading.
+const NOTE_WIDTH: float = 640.0
 
 
-static func warning(controller: RunController, width: float) -> Control:
+static func warning(controller: RunController) -> Control:
 	var note: KeywordText = KeywordText.new()
 	note.add_theme_font_size_override("normal_font_size", TextSize.px(NOTE_SIZE))
 	note.add_theme_color_override("default_color", ScreenKit.INK)
-	note.custom_minimum_size = Vector2(width, 0)
+	note.custom_minimum_size = Vector2(NOTE_WIDTH, 0)
 	var text: String = TranslationServer.translate("market.warning")
 	note.set_rule(text.format({"rise": controller.figures.purchase_resentment()}))
 	return note
@@ -77,3 +79,38 @@ static func count_resentment(count: Label, shown: float, state: RunView) -> floa
 	if state.resentment() > shown:
 		UiMotion.pulse(count)
 	return state.resentment()
+
+
+## Your coupons over the household's true figures, at the foot of the heading.
+static func balance(coupons: Label, books: SmallLedger) -> VBoxContainer:
+	var made: VBoxContainer = VBoxContainer.new()
+	made.add_child(ScreenKit.eyebrow(TranslationServer.translate("store.balance")))
+	coupons.add_theme_color_override("font_color", ScreenKit.COUPON)
+	coupons.autowrap_mode = TextServer.AUTOWRAP_OFF
+	made.add_child(coupons)
+	made.add_child(books)
+	made.size_flags_vertical = Control.SIZE_SHRINK_END
+	return made
+
+
+## The notes at the right of the heading, over the Reforms in force on strip: the black
+## market's warning, or the state store's rationing and short supply while they hold.
+static func beside(controller: RunController, market: bool, strip: ReformStrip) -> VBoxContainer:
+	var notes: VBoxContainer = VBoxContainer.new()
+	notes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	notes.alignment = BoxContainer.ALIGNMENT_END
+	notes.add_theme_constant_override("separation", 8)
+	if market:
+		strip.add_note(warning(controller))
+	else:
+		if controller.figures.is_rationed():
+			strip.add_note(rationing(controller))
+		if controller.store.short_supply() > 0:
+			strip.add_note(short_supply(controller))
+	notes.add_child(strip)
+	return notes
+
+
+## Coupons as a shop shows them: ample at the stage past the last (ADR 0022).
+static func coupon_text(value: float) -> String:
+	return ShownFigures.coupons(roundi(value), "store.coupons")

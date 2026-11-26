@@ -25,7 +25,6 @@ const STATUS_SIZE: int = 16
 ## A paper-coloured halo round the type, so stains never cross a letter.
 const HALO: int = 4
 const LIFT: float = 14.0
-const GOLD: Color = Color("c9a227")
 const RING: float = 3.0
 
 var slot: int = -1
@@ -71,7 +70,7 @@ func _init() -> void:
 	_status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	_status.add_theme_font_size_override("font_size", TextSize.px(STATUS_SIZE))
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status.text = TranslationServer.translate("campaign.not_now")
+	_status.text = tr("campaign.not_now")
 	_status.visible = false
 	for label: Label in [_eyebrow, _name, _status]:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -80,8 +79,7 @@ func _init() -> void:
 	add_child(column)
 
 
-## Shows a Campaign: its name and kind, its rule, and why it cannot be used now when
-## reason_text is not empty.
+## Shows a Campaign: its name and kind and its rule; set_reason says why it cannot be used.
 func show_campaign(
 	at_slot: int, held_id: String, title: String, rule: String, private: bool
 ) -> void:
@@ -181,5 +179,5 @@ func _draw() -> void:
 	var worn: float = BowlGrime.wear()
 	CampaignPaper.leaflet(self, Rect2(Vector2.ZERO, size), _private, worn, slot + 1)
 	if armed or cursor:
-		var edge: Color = CampaignPaper.ink(GOLD, worn * 0.5)
+		var edge: Color = CampaignPaper.ink(ScreenKit.HINT, worn * 0.5)
 		draw_rect(Rect2(Vector2.ZERO, size).grow(RING), edge, false, RING)

@@ -81,7 +81,7 @@ func show_cards(
 		view.set_wild(_wild.has(card.base_rank()))
 		var folded: int = HandModel.fold(card.base_rank(), _rank_map)
 		if folded >= 0:
-			view.set_rank_note(tr("card.rank_as").format({"rank": tr(CardView.RANK_KEYS[folded])}))
+			view.set_rank_as(folded)
 		_views[card.id()] = view
 	_cursor = 0
 	_lay_out(false)
@@ -212,7 +212,7 @@ func _place() -> Control:
 
 
 ## The height the board needs at the text size in use.
-func needed_height() -> float:
+func _needed_height() -> float:
 	return _top() + CARD.y + CURSOR_ROOM
 
 
@@ -269,7 +269,7 @@ func _lay_out(animate: bool) -> void:
 	for card_id: int in _views:
 		if card_id != _press_id or not _dragging:
 			_move(_views[card_id], _rest(card_id), animate)
-	custom_minimum_size = Vector2(needed_width(), needed_height())
+	custom_minimum_size = Vector2(needed_width(), _needed_height())
 
 
 ## Each pair's number over its plot card in the hand, its set-aside card and the empty
@@ -364,7 +364,7 @@ func _on_motion(motion: InputEventMouseMotion) -> void:
 	_dragging = true
 	var view: CardView = _views[_press_id]
 	view.settle()
-	view.z_index = 5
+	view.z_index = ScreenKit.LAYER_SHEET
 	view.position = motion.position - _grab
 	var target: int = _card_at(motion.position, _press_id)
 	if target != PlotTrade.NONE and _plot_side[target] == _plot_side[_press_id]:
@@ -375,11 +375,11 @@ func _on_motion(motion: InputEventMouseMotion) -> void:
 
 
 func _on_key(event: InputEvent) -> bool:
-	for action: String in KeyBindings.CURSOR_STEPS:
-		if event.is_action_pressed(action, true):
-			_step_cursor(-1 if action.ends_with("left") else 1)
-			return true
-	if event.is_action_pressed("ui_accept") or event.is_action_pressed(KeyBindings.SELECT):
+	var step: int = KeyBindings.cursor_step(event)
+	if step != 0:
+		_step_cursor(step)
+		return true
+	if KeyBindings.is_pick(event):
 		if cursor_card() != PlotTrade.NONE:
 			press(cursor_card())
 		return true

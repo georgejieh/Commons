@@ -36,7 +36,7 @@ static func fit(counts: Array[int], room: Vector2, name_height: float) -> DeckFi
 
 
 ## The width of one group's slot at full size.
-static func slot_width() -> float:
+static func _slot_width() -> float:
 	return CARD.x + (GROUP_CARDS - 1) * STEP
 
 
@@ -44,17 +44,17 @@ static func _at(counts: Array[int], room: Vector2, name_height: float, across: i
 	var made: DeckFit = DeckFit.new()
 	made.columns = across
 	var rows: int = ceili(counts.size() / float(across))
-	var wide: float = (room.x - (across - 1) * GAP) / (across * slot_width())
+	var wide: float = (room.x - (across - 1) * GAP) / (across * _slot_width())
 	var tall_room: float = room.y - rows * name_height - (rows - 1) * ROW_GAP
 	var tall: float = tall_room / (rows * CARD.y)
 	made.scale = clampf(minf(wide, tall), minf(LEAST_SCALE, wide), 1.0)
-	var slot: Vector2 = Vector2(slot_width(), CARD.y) * made.scale
+	var slot: Vector2 = Vector2(_slot_width(), CARD.y) * made.scale
 	for index: int in counts.size():
 		var column: int = index % across
 		var row: int = floori(index / float(across))
 		var at: Vector2 = Vector2(column * (slot.x + GAP), row * (name_height + slot.y + ROW_GAP))
 		made.places.append(at)
-		var spread: float = slot_width() - CARD.x
+		var spread: float = _slot_width() - CARD.x
 		var step: float = STEP if counts[index] <= GROUP_CARDS else spread / (counts[index] - 1)
 		made.steps.append(step * made.scale)
 	var used: int = mini(across, counts.size())

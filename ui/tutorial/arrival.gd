@@ -46,9 +46,10 @@ func is_running() -> bool:
 	return director != null
 
 
-## True when the action may be taken now: always, but during the arrival only the step's
-## own action, which the arrival then takes as done. A refused one changes nothing.
-func allows(action: String, detail: Variant = null) -> bool:
+## Tries the action against the arrival: true when it may be taken now, always outside the
+## arrival, and during it only the step's own action, which the arrival then takes as done.
+## A refused one changes nothing.
+func attempt(action: String, detail: Variant = null) -> bool:
 	return director == null or director.attempt(action, detail)
 
 

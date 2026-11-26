@@ -15,7 +15,6 @@ const TAG_PADDING: float = 22.0
 const NAME_SIZE: int = 16
 const HEAD_SIZE: int = 16
 const GAP: int = 8
-const INK: Color = Color("1e1a16")
 ## Clear of the paper's printed border.
 const PADDING: int = 20
 
@@ -39,15 +38,15 @@ func _init() -> void:
 	column.add_child(_row)
 	# The head leads the row of slips, so the strip keeps to one line while they fit.
 	var head: Label = _head
-	head.text = TranslationServer.translate("reform.strip").to_upper()
+	head.text = tr("reform.strip").to_upper()
 	head.add_theme_font_size_override("font_size", TextSize.px(HEAD_SIZE))
 	for label: Label in [head, _none]:
 		label.custom_minimum_size = Vector2(0, TAG_HEIGHT)
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		_row.add_child(label)
-	_none.text = TranslationServer.translate("reform.strip.none")
+	_none.text = tr("reform.strip.none")
 	_none.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_none.add_theme_color_override("font_color", INK)
+	_none.add_theme_color_override("font_color", ScreenKit.INK)
 	add_child(column)
 
 
@@ -148,10 +147,10 @@ func _draw_tag(tag: Control) -> void:
 	var worn: float = BowlGrime.wear()
 	DecreePaper.tag(tag, Rect2(Vector2.ZERO, tag.size), worn, _ids[index].hash() & 0xFF)
 	var font: Font = get_theme_default_font()
-	var ink: Color = BowlGrime.faded(INK, worn)
+	var ink: Color = BowlGrime.faded(ScreenKit.INK, worn)
 	var name_px: int = TextSize.px(NAME_SIZE)
 	var baseline: Vector2 = Vector2(TAG_PADDING * 0.62, tag.size.y * 0.5 + name_px * 0.42)
 	tag.draw_string(font, baseline, _names[index], HORIZONTAL_ALIGNMENT_LEFT, -1, name_px, ink)
 	if tag.has_focus():
-		var gold: Color = CampaignPaper.ink(CampaignLeaflet.GOLD, worn * 0.5)
+		var gold: Color = CampaignPaper.ink(ScreenKit.HINT, worn * 0.5)
 		tag.draw_rect(Rect2(Vector2.ZERO, tag.size).grow(2.0), gold, false, 2.0)

@@ -8,8 +8,6 @@ extends RefCounted
 ## Warm, like the other village papers, and aged gently, so a row of tickets never reads
 ## as grey.
 const PAPER: Color = Color("ecd29a")
-const EDGE: Color = Color("4a3a26")
-const PERFORATION: Color = Color("7a6446")
 const SEED: int = 6143
 const NOTCH: float = 5.0
 const SPECKS: Vector2i = Vector2i(4, 26)
@@ -42,7 +40,9 @@ static func draw(
 		_band(canvas, rect, worn, band, alpha, minf(fill, 1.0))
 	_perforate(canvas, rect, worn, alpha)
 	_grime(canvas, rect, rng, worn, alpha)
-	canvas.draw_polyline(body + PackedVector2Array([body[0]]), Color(EDGE, alpha * 0.6), 1.2)
+	canvas.draw_polyline(
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.6), 1.2
+	)
 
 
 ## The band down the left end, inked from its foot to fill; an empty channel shows
@@ -87,7 +87,7 @@ static func _outline(rect: Rect2, rng: RandomNumberGenerator, worn: float) -> Pa
 ## A torn line of holes across the stub, where it would be cut from the sheet.
 static func _perforate(canvas: CanvasItem, rect: Rect2, worn: float, alpha: float) -> void:
 	var y: float = rect.end.y - minf(14.0, rect.size.y * 0.22)
-	var hole: Color = Color(PERFORATION, alpha * (0.35 + 0.3 * worn))
+	var hole: Color = Color(ScreenKit.WORN_PRINT, alpha * (0.35 + 0.3 * worn))
 	var x: float = rect.position.x + 10.0
 	while x < rect.end.x - 6.0:
 		canvas.draw_circle(Vector2(x, y), 0.9, hole)

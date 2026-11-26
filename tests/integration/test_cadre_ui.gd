@@ -43,7 +43,8 @@ func _market_with_rehabilitation() -> StoreScreen:
 
 
 func _buy_button(store: StoreScreen, slot: int) -> Button:
-	var counter: HBoxContainer = store.get("_counter")
+	var cadres: CadreCounter = store.get("_cadres")
+	var counter: HBoxContainer = cadres.row
 	return counter.get_child(slot).find_children("*", "Button", true, false)[0]
 
 
@@ -51,7 +52,8 @@ func test_buying_a_rank_cadre_asks_for_a_rank_then_seals_it_with_the_rank() -> v
 	var store: StoreScreen = _market_with_rehabilitation()
 	await await_idle_frame()
 	_buy_button(store, 0).pressed.emit()
-	var picker: RankPicker = store.get("_picker")
+	var cadres: CadreCounter = store.get("_cadres")
+	var picker: RankPicker = cadres.picker
 	assert_bool(picker.is_open()).is_true()
 	assert_array(_app.controller.state_copy().inventory.cadres).not_contains(["rehabilitation"])
 	var chips: Array[RankChip] = picker.chips()
@@ -71,9 +73,9 @@ func test_buying_a_rank_cadre_asks_for_a_rank_then_seals_it_with_the_rank() -> v
 	assert_int(state.cadre_memos.peek("rehabilitation").value(CadreMemo.RANK)).is_equal(Ranks.SEVEN)
 	# The normal purchase follows: sealed, then pinned.
 	assert_bool(store.is_buying()).is_true()
-	var seal: InkSeal = store.get("_seal")
+	var seal: InkSeal = cadres.seal
 	assert_bool(seal.visible).is_true()
-	await await_millis(int((StoreScreen.SEAL_HOLD + StoreScreen.PIN_TIME) * 1000.0) + 300)
+	await await_millis(int((CadreCounter.SEAL_HOLD + CadreCounter.PIN_TIME) * 1000.0) + 300)
 	var board: NoticeBoard = store.get("_board")
 	var slot: int = state.inventory.cadres.find("rehabilitation")
 	assert_str(board.count_at(slot)).is_equal("7s")
@@ -86,7 +88,8 @@ func test_cancel_closes_the_picker_with_nothing_bought() -> void:
 	await await_idle_frame()
 	var coupons: int = _app.controller.state_copy().coupons
 	_buy_button(store, 0).pressed.emit()
-	var picker: RankPicker = store.get("_picker")
+	var cadres: CadreCounter = store.get("_cadres")
+	var picker: RankPicker = cadres.picker
 	var cancel: Button = picker.get("_cancel")
 	cancel.pressed.emit()
 	assert_bool(picker.is_open()).is_false()

@@ -23,6 +23,8 @@ const HEAD_FULL: float = 36.0
 ## Between a compact tray's head and its leaflets, whatever size the head's type is.
 const HEAD_CLEAR: float = 8.0
 const BUTTON: Vector2 = Vector2(118, 44)
+## Use and Cancel's words, at Standard.
+const BUTTON_SIZE: int = 20
 
 ## Off while the table is acting events out, so nothing is armed mid-moment.
 var enabled: bool = true
@@ -58,7 +60,7 @@ func _init() -> void:
 	for button: Button in [use, cancel]:
 		button.focus_mode = Control.FOCUS_NONE
 		button.custom_minimum_size = BUTTON
-		button.add_theme_font_size_override("font_size", TextSize.px(20))
+		button.add_theme_font_size_override("font_size", TextSize.px(BUTTON_SIZE))
 
 
 func _ready() -> void:
@@ -88,15 +90,13 @@ func _grow() -> void:
 		leaflet.chosen.connect(_on_chosen)
 		add_child(leaflet)
 		_leaflets.append(leaflet)
-		custom_minimum_size = tray_size(_leaflets.size(), side_buttons, compact, vertical)
+		custom_minimum_size = _tray_size(_leaflets.size(), side_buttons, compact, vertical)
 		size = custom_minimum_size
 
 
 ## The tray's size for a number of slots: the head, a row of leaflets, the buttons. A
 ## vertical tray is its column alone; its buttons stand to its right.
-static func tray_size(
-	slots: int, beside: bool = false, small: bool = false, column: bool = false
-) -> Vector2:
+static func _tray_size(slots: int, beside: bool, small: bool, column: bool) -> Vector2:
 	var leaf: Vector2 = CampaignLeaflet.leaf_size(small)
 	var head: float = HEAD if small else HEAD_FULL
 	if column:
@@ -145,20 +145,11 @@ func refresh() -> void:
 ## tray taller with it, so the leaflet never runs out of the tray onto what is under it.
 func _stand_tall() -> void:
 	var more: float = _tallest_leaf() - _leaf().y
-	var base: Vector2 = tray_size(_leaflets.size(), side_buttons, compact, vertical)
+	var base: Vector2 = _tray_size(_leaflets.size(), side_buttons, compact, vertical)
 	var tall: float = base.y + maxf(more, 0.0) + (_head_extra() if _heading else 0.0)
 	if not is_equal_approx(custom_minimum_size.y, tall):
 		custom_minimum_size.y = tall
 		size.y = tall
-
-
-## How far down the head and the leaflets reach at rest, Use and Cancel left out.
-func resting_height() -> float:
-	var top: float = _head_height()
-	var foot: float = top + _tallest_leaf()
-	if _heading:
-		foot = maxf(foot, _head.get_combined_minimum_size().y)
-	return foot
 
 
 ## How many leaflet places the tray has.

@@ -41,7 +41,7 @@ func test_every_crop_holds_the_whole_face_near_its_center() -> void:
 		var face: Rect2 = portrait[2]
 		var head: Rect2 = Rect2(face.position * size, face.size * size)
 		for box: Vector2 in BOXES:
-			var region: Rect2 = ScreenKit.face_region(size, face, box.x / box.y)
+			var region: Rect2 = FaceCrop.region(size, face, box.x / box.y)
 			var where: String = "%s box %s" % [portrait[0], box]
 			(
 				assert_bool(Rect2(Vector2.ZERO, size).encloses(region))
@@ -57,5 +57,5 @@ func test_every_crop_holds_the_whole_face_near_its_center() -> void:
 ## A face too near an edge still yields a crop inside the image.
 func test_a_face_at_the_edge_stays_inside_the_image() -> void:
 	var size: Vector2 = Vector2(600, 800)
-	var region: Rect2 = ScreenKit.face_region(size, Rect2(0.7, 0.0, 0.3, 0.3), 0.8)
+	var region: Rect2 = FaceCrop.region(size, Rect2(0.7, 0.0, 0.3, 0.3), 0.8)
 	assert_bool(Rect2(Vector2.ZERO, size).encloses(region)).is_true()

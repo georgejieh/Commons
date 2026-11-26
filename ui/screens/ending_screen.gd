@@ -10,13 +10,15 @@ extends Control
 ## not prose, so they stand at the foot of the page with the way home, always whole.
 
 const MARGIN: Vector2 = Vector2(56, 36)
+## How far the backdrop darkens under the page.
+const SHADE: Color = Color(0.05, 0.03, 0.02, 0.5)
 const FRAME_HEIGHT: float = 308.0
 ## The title card's height with a picture hung in it, which leaves the title under the
 ## frame, and the picture's margin inside its printed frame.
 const PICTURE_HEIGHT: float = 288.0
 const PICTURE_INSET: float = 10.0
 ## Where the story is taller than its column, the title card gives up height first, down
-## to this, so the text stands whole before anything scrolls (P5.2a).
+## to this, so the text stands whole before anything scrolls.
 const FRAME_LEAST: float = 150.0
 ## The title's largest and smallest size: it shrinks to fit its card on one line.
 const TITLE_MAX: int = 84
@@ -28,7 +30,6 @@ const NAME_SIZE: int = 26
 const SEAL_WIDTH: float = 92.0
 ## The text column's width on a death's page, which has no epilogue beside it.
 const DEATH_WIDTH: float = 1180.0
-const TITLE_INK: Color = Color("9a2a1a")
 
 var _view: EndingView
 ## The run's last state, for how its figures show (ADR 0022).
@@ -54,17 +55,8 @@ func open(app: DemoApp) -> void:
 	_state = app.controller.run
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(ScreenKit.cover(ScreenKit.ART.title_night))
-	var shade: ColorRect = ColorRect.new()
-	shade.color = Color(0.05, 0.03, 0.02, 0.5)
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(shade)
-	var margin: MarginContainer = MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	for side: String in ["left", "right"]:
-		margin.add_theme_constant_override("margin_" + side, int(MARGIN.x))
-	for side: String in ["top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, int(MARGIN.y))
+	add_child(ScreenKit.shade(SHADE))
+	var margin: MarginContainer = ScreenKit.margins(int(MARGIN.x), int(MARGIN.y))
 	add_child(margin)
 	var paper: EndingPaper = EndingPaper.new()
 	margin.add_child(paper)
@@ -138,8 +130,8 @@ func _story() -> VBoxContainer:
 		for line: Label in [eyebrow, _name, text]:
 			line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var tiles: Array[Control] = [
-		ScreenKit.figure_stat(tr("end.famine"), _state, RunCorrections.FAMINE, _view.famine),
-		ScreenKit.figure_stat(
+		StatTile.figure(tr("end.famine"), _state, RunCorrections.FAMINE, _view.famine),
+		StatTile.figure(
 			tr("end.denunciation"), _state, RunCorrections.DENUNCIATION, _view.denunciation
 		),
 		_class_tile(),
@@ -165,7 +157,7 @@ func _title_card() -> Control:
 		frame.add_child(_hung(picture, printed))
 	else:
 		frame.add_child(printed)
-	_title = ScreenKit.label(_view.title, TITLE_MAX, TITLE_INK)
+	_title = ScreenKit.label(_view.title, TITLE_MAX, ScreenKit.ENDING_INK)
 	_title.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	var heading: HBoxContainer = ScreenKit.row([_title], 28)
@@ -231,14 +223,10 @@ func _fit_title(frame: Control) -> void:
 	if HanziSeal.can_draw(_view.seal):
 		room -= SEAL_WIDTH + 28.0
 	var font: Font = ScreenKit.DISPLAY_BOLD
-	var font_size: int = TextSize.px(TITLE_MAX)
-	while font_size > TextSize.least(TITLE_MIN) and _width(font, font_size) > room:
-		font_size -= 2
+	var font_size: int = NameFit.one_line_size(
+		font, _view.title, room, TextSize.px(TITLE_MAX), TextSize.least(TITLE_MIN), 2
+	)
 	_title.add_theme_font_size_override("font_size", maxi(font_size, TextSize.least(TITLE_MIN)))
-
-
-func _width(font: Font, font_size: int) -> float:
-	return font.get_string_size(_view.title, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 
 
 func _class_tile() -> Control:

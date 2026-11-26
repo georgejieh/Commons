@@ -42,7 +42,6 @@ const LINK: String = "2b4a6b"
 const SLIP_WIDTH: float = 400.0
 const SLIP_SIZE: int = 20
 const WRAP_COLUMNS: int = 52
-const SOFT: Color = Color("5a4a36")
 ## The scoring numbers the marks' meanings quote, so a meaning never disagrees with data.
 const SCORING: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 
@@ -99,14 +98,14 @@ static func glossary(ids: PackedStringArray, wrap_lines: bool = true) -> String:
 	return "\n".join(lines)
 
 
-## text broken into lines of at most columns characters, for the engine's own
+## text broken into lines of at most WRAP_COLUMNS characters, for the engine's own
 ## tooltips, which never wrap.
-static func wrapped(text: String, columns: int = WRAP_COLUMNS) -> String:
+static func wrapped(text: String) -> String:
 	var lines: PackedStringArray = []
 	for paragraph: String in text.split("\n"):
 		var line: String = ""
 		for word: String in paragraph.split(" "):
-			if not line.is_empty() and line.length() + word.length() + 1 > columns:
+			if not line.is_empty() and line.length() + word.length() + 1 > WRAP_COLUMNS:
 				lines.append(line)
 				line = word
 			else:
@@ -133,7 +132,9 @@ static func slip(text: String, title: String = "") -> Control:
 	if not words.is_empty():
 		box.add_child(HSeparator.new())
 	for id: String in words:
-		box.add_child(_slip_text(meaning(id).replace("[", "[lb]"), SLIP_SIZE - 4, SOFT))
+		box.add_child(
+			_slip_text(meaning(id).replace("[", "[lb]"), SLIP_SIZE - 4, ScreenKit.FAINT_INK)
+		)
 	return box
 
 

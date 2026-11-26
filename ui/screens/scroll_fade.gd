@@ -2,7 +2,7 @@ class_name ScrollFade
 extends Control
 ## A band of paper that fades in over a scroll's cut edge while more lies past that edge,
 ## so a sheet that scrolls shows that it does, and a row the edge cuts reads as "more",
-## not as broken (P5.2a). It lies over the scroll and takes no input, and each band goes
+## not as broken. It lies over the scroll and takes no input, and each band goes
 ## once the scroll reaches its end. It stands outside the scroll's layout (top level) and
 ## follows the scroll's place on screen each frame.
 
@@ -20,7 +20,7 @@ var _bands: Vector2i = Vector2i(-1, -1)
 
 
 ## Lays a fade over scroll, in the paper's colour.
-static func over(scroll: ScrollContainer, paper: Color = ScreenKit.STYLE.paper) -> ScrollFade:
+static func over(scroll: ScrollContainer, paper: Color = ScreenKit.PAPER) -> ScrollFade:
 	var fade: ScrollFade = ScrollFade.new()
 	fade._scroll = scroll
 	fade._paper = paper
@@ -39,7 +39,7 @@ func more_below() -> bool:
 
 
 ## True while more lies above it.
-func more_above() -> bool:
+func _more_above() -> bool:
 	return _scroll.scroll_vertical > SLACK
 
 
@@ -47,7 +47,7 @@ func _process(_delta: float) -> void:
 	if _scroll == null or not is_instance_valid(_scroll):
 		return
 	var rect: Rect2 = _scroll.get_global_rect()
-	var bands: Vector2i = Vector2i(int(more_above()), int(more_below()))
+	var bands: Vector2i = Vector2i(int(_more_above()), int(more_below()))
 	if rect == _drawn and bands == _bands:
 		return
 	_drawn = rect

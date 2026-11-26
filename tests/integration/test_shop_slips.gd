@@ -65,7 +65,8 @@ func test_every_slip_on_both_shops_stands_beside_its_piece() -> void:
 ## The shared slip for every piece that asks for it.
 func _check_details(store: StoreScreen, where: String) -> void:
 	var slip: DetailSlip = store.slip()
-	var counter: HBoxContainer = store.get("_counter")
+	var cadres: CadreCounter = store.get("_cadres")
+	var counter: HBoxContainer = cadres.row
 	var card: Control = counter.get_child(0) as Control
 	var buy: Button = card.find_children("*", "Button", true, false)[0]
 	buy.focus_entered.emit()
@@ -91,7 +92,8 @@ func _check_details(store: StoreScreen, where: String) -> void:
 
 ## The slip for a keyword in the first Cadre's rules, the pointer on its first line.
 func _check_keyword(store: StoreScreen, where: String) -> void:
-	var counter: HBoxContainer = store.get("_counter")
+	var cadres: CadreCounter = store.get("_cadres")
+	var counter: HBoxContainer = cadres.row
 	var text: KeywordText = counter.get_child(0).find_children("*", "KeywordText", true, false)[0]
 	var found: RegExMatch = RegEx.create_from_string("\\[url=([a-z_]+)\\]").search(text.text)
 	assert_object(found).override_failure_message(where + " has no keyword").is_not_null()

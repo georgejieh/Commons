@@ -10,9 +10,9 @@ extends RefCounted
 ## ticket names the item now on its paper, and a question left on a paper whose item
 ## changed is taken back.
 
-## A sale went through: the coupons and the board changed. index is where the item stood
-## among the held Cadres, or the held Campaigns with campaign set.
-signal sold(index: int, campaign: bool)
+## A sale went through: the coupons and the board changed. campaign is set for a held
+## Campaign, clear for a held Cadre.
+signal sold(campaign: bool)
 
 var _app: DemoApp
 var _market: bool = false
@@ -20,29 +20,20 @@ var _desk: ShopDesk
 var _board: NoticeBoard
 var _tray: CampaignTray
 var _slip: DetailSlip
-var _busy: Callable = Callable()
+var _busy: Callable
 var _tags: Dictionary[Control, SellTag] = {}
-## Where the sale being made stood, until its event arrives.
-var _selling: int = -1
 
 
-func setup(
-	app: DemoApp,
-	market: bool,
-	desk: ShopDesk,
-	board: NoticeBoard,
-	tray: CampaignTray,
-	slip: DetailSlip,
-	busy: Callable
-) -> void:
-	_app = app
-	_market = market
-	_desk = desk
+## Offers what board and tray hold.
+func setup(shop: StallContext, board: NoticeBoard, tray: CampaignTray) -> void:
+	_app = shop.app
+	_market = shop.market
+	_desk = shop.desk
 	_board = board
 	_tray = tray
-	_slip = slip
-	_busy = busy
-	app.controller.event_emitted.connect(_on_event)
+	_slip = shop.slip
+	_busy = shop.busy
+	shop.controller.event_emitted.connect(_on_event)
 	tray.refreshed.connect(refresh)
 
 
@@ -100,14 +91,13 @@ func _index(paper: Control, campaign: bool) -> int:
 
 func _sell(paper: Control, campaign: bool) -> void:
 	# The arrival teaches buying; it refuses a sale as it refuses any step it is not on.
-	if (_busy.is_valid() and bool(_busy.call())) or not _app.arrival.allows("sell"):
+	if bool(_busy.call()) or not _app.arrival.attempt("sell"):
 		return
-	_selling = _index(paper, campaign)
+	var index: int = _index(paper, campaign)
 	if campaign:
-		_app.controller.sell_campaign(_selling, _market)
+		_app.controller.sell_campaign(index, _market)
 	else:
-		_app.controller.sell_cadre(_selling, _market)
-	_selling = -1
+		_app.controller.sell_cadre(index, _market)
 
 
 ## The rules of a focused paper's item in the shop's slip, for keyboard and gamepad.
@@ -137,4 +127,4 @@ func _on_event(event: RunEvent) -> void:
 		return
 	Audio.play(AudioEvents.STORE_BUY)
 	_slip.hide_slip()
-	sold.emit(_selling, kind == RunEvent.Type.CAMPAIGN_SOLD)
+	sold.emit(kind == RunEvent.Type.CAMPAIGN_SOLD)

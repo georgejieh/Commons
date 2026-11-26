@@ -23,7 +23,7 @@ const LINE_SIZE: int = 22
 ## as the room left under the rules.
 const PAPERS_SHARE: float = 6.0
 ## The gap between the page's rows at each text size: closer at the larger sizes, so the
-## stake row stands whole on the page at every size (P5.2a).
+## stake row stands whole on the page at every size.
 const ROW_GAPS: Array[int] = [20, 14, 10]
 ## The least width the rules beside the stake heading take, so they wrap as lines and
 ## not as a column of words.
@@ -57,6 +57,27 @@ func open(app: DemoApp) -> void:
 	_rules = ScreenKit.label("", RULES_SIZE)
 	_scroll = ScrollContainer.new()
 	var page: VBoxContainer = _page()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll.follow_focus = true
+	_scroll.add_child(_choices())
+	ScrollFade.over(_scroll)
+	page.add_child(_scroll)
+	_reserve_rules()
+	_start = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
+	_start.pressed.connect(_begin)
+	_back = ScreenKit.button(tr("setup.back"), CommonsTheme.GHOST)
+	_back.pressed.connect(app.back)
+	page.add_child(ScreenKit.row([_start, _back]))
+	_wire_focus()
+	_show_choice()
+	ScreenKit.reveal(page)
+	_start.grab_focus()
+
+
+## The full run's choices in a column: the heading, what was inherited, the households,
+## and the stakes with the rules the picked one plays under.
+func _choices() -> VBoxContainer:
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", ROW_GAPS[TextSize.level()])
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -83,22 +104,13 @@ func open(app: DemoApp) -> void:
 	foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(foot)
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_scroll.follow_focus = true
-	_scroll.add_child(column)
-	ScrollFade.over(_scroll)
-	page.add_child(_scroll)
-	_reserve_rules()
-	_start = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
-	_start.pressed.connect(_begin)
-	_back = ScreenKit.button(tr("setup.back"), CommonsTheme.GHOST)
-	_back.pressed.connect(app.back)
-	page.add_child(ScreenKit.row([_start, _back]))
-	_wire_focus()
-	_show_choice()
-	ScreenKit.reveal(page)
-	_start.grab_focus()
+	return column
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
 
 
 ## The household papers and stake tickets in order, and the chosen ones, for tests and
@@ -143,10 +155,7 @@ func player_name() -> String:
 func _page() -> VBoxContainer:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(ScreenKit.cover(ScreenKit.ART.title_night))
-	var margin: MarginContainer = MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, PAGE_MARGIN)
+	var margin: MarginContainer = ScreenKit.margins(PAGE_MARGIN, PAGE_MARGIN)
 	add_child(margin)
 	var sheet: PanelContainer = PanelContainer.new()
 	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
@@ -264,7 +273,7 @@ func _open_demo(app: DemoApp) -> void:
 	base.toggle_mode = true
 	base.button_pressed = true
 	sheet.add_child(base)
-	sheet.add_child(ScreenKit.label(tr("setup.stake_base_text"), 22))
+	sheet.add_child(ScreenKit.label(tr("setup.stake_base_text"), LINE_SIZE))
 	sheet.add_child(ScreenKit.styled(tr("setup.locked"), CommonsTheme.CAPTION))
 	_start = ScreenKit.button(tr("setup.start"), CommonsTheme.PRIMARY)
 	_start.pressed.connect(

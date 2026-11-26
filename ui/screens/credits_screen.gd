@@ -28,9 +28,6 @@ var _fresh: bool = true
 
 func open(app: DemoApp) -> void:
 	_app = app
-	for child: Node in get_children():
-		remove_child(child)
-		child.queue_free()
 	_fresh = true
 	var column: VBoxContainer = ScreenKit.page(self)
 	column.add_child(ScreenKit.header(tr("credits.eyebrow"), tr("credits.title")))
@@ -54,8 +51,7 @@ func open(app: DemoApp) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _back != null and is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
-		get_viewport().set_input_as_handled()
+	if ScreenKit.take_cancel(self, event):
 		_app.back()
 
 

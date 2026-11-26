@@ -209,4 +209,4 @@ func _focus_target() -> void:
 
 
 func _on_begin() -> void:
-	_app.arrival.allows("begin")
+	_app.arrival.attempt("begin")

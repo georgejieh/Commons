@@ -1,6 +1,6 @@
 class_name CardView
 extends Control
-## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
+## One card composed from layers: frame, rank glyph from the font, suit icon,
 ## a picture, enhancement overlay, seal, and the marks that outlast a round, both on the
 ## left edge a fan leaves showing: an enhancement's mark under the suit pip (CardMark: a
 ## Model card's rosette, a Sheaf, a Pennant or a Surplus coupon), a red chop at the foot
@@ -18,9 +18,6 @@ signal pressed(card_id: int)
 signal hovered(card_id: int)
 
 const RED_SUITS: Array[int] = [1, 3]
-const INK: Color = Color("1e1a16")
-const RED: Color = Color("b02a17")
-const HINT: Color = Color("c9a227")
 ## The edge of a selection that makes a legal play: ready to throw.
 const ARMED: Color = Color("f2c94c")
 const CURSOR: Color = Color("f4ecd8")
@@ -39,11 +36,9 @@ const ART_BOX: Vector4 = Vector4(5, 5, 115, 163)
 ## card and for a joker's word, the stock's color, and how far in the fade stays solid.
 const FADE_SIZE: Vector2 = Vector2(92, 136)
 const JOKER_FADE_SIZE: Vector2 = Vector2(120, 78)
-const STOCK: Color = Color("f6e6c4")
 const FADE_SOLID: float = 0.45
 ## A paper edge around a picture card's rank, so it reads over any art.
 const RANK_OUTLINE: int = 6
-const NOTE_COLOR: Color = Color("9e1b16")
 ## Where the marks sit: both down the left edge, the strip a fanned hand leaves showing,
 ## the enhancement's mark under the suit pip and the chop at the foot, inside the
 ## selection edge.
@@ -81,6 +76,13 @@ const RANK_KEYS: PackedStringArray = [
 
 ## Tests may swap the parts; null means the shipped art.
 static var art_override: CardArt = null
+## What every view draws the same, made once and shared: the card stock for the frame art
+## it was made from, the rank note's tag, and the picture card's corner fade. Nothing
+## changes them once made; each view keeps its own tilt material.
+static var _stock: StyleBoxTexture = null
+static var _stock_of: Texture2D = null
+static var _note_tag: StyleBoxFlat = null
+static var _fade: GradientTexture2D = null
 
 var card_id: int = -1
 
@@ -105,9 +107,7 @@ var _tweens: Array[Tween] = []
 
 
 func _ready() -> void:
-	var stock: StyleBoxTexture = StyleBoxTexture.new()
-	stock.texture = Lighting.lit(ArtStages.resolve(parts().frame))
-	_frame.add_theme_stylebox_override("panel", stock)
+	_frame.add_theme_stylebox_override("panel", _card_stock())
 	_frame.light_mask = Lighting.MASK
 	var tilt: ShaderMaterial = ShaderMaterial.new()
 	tilt.shader = TILT_SHADER
@@ -120,12 +120,9 @@ func _ready() -> void:
 	_cursor_mark.offset_bottom = CURSOR_BAR * 2.0
 	add_child(_cursor_mark)
 	add_child(_tick)
-	var tag: StyleBoxFlat = StyleBoxFlat.new()
-	tag.bg_color = NOTE_COLOR
-	tag.set_corner_radius_all(4)
-	_rank_note.add_theme_stylebox_override("normal", tag)
+	_rank_note.add_theme_stylebox_override("normal", _rank_note_tag())
 	_index.texture = _corner_fade()
-	_rank.add_theme_color_override("font_outline_color", STOCK)
+	_rank.add_theme_color_override("font_outline_color", ScreenKit.CARD_STOCK)
 	for mark: CardMark in [_chop, _badge]:
 		_frame.add_child(mark)
 	_frame.add_child(_ribbon)
@@ -180,7 +177,7 @@ func bind(card: CardInstance) -> void:
 	_picture.modulate.a = art.pip_alpha if pip else 1.0
 	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
-	_rank.add_theme_color_override("font_color", RED if red else INK)
+	_rank.add_theme_color_override("font_color", ScreenKit.RED if red else ScreenKit.INK)
 	var enhancement: String = card.enhancement_id()
 	var drawn: bool = CardMark.draws(enhancement)
 	_enhancement.visible = enhancement != CardInstance.NO_ID and not drawn
@@ -202,6 +199,11 @@ func set_rank_note(text: String) -> void:
 	_rank_note.visible = not text.is_empty()
 	_place_marks()
 	_rank_note.add_theme_font_size_override("font_size", _note_size(text))
+
+
+## Says the card ranks as rank, such as "as 3", in the rank note.
+func set_rank_as(rank: int) -> void:
+	set_rank_note(tr("card.rank_as").format({"rank": tr(RANK_KEYS[rank])}))
 
 
 func _note_size(text: String) -> int:
@@ -279,12 +281,34 @@ func _lay_out_face(pip: bool, joker: bool) -> void:
 	_index.size = JOKER_FADE_SIZE if joker else FADE_SIZE
 
 
+## The frame's card stock for the art in use at this stage, lit; made again only when
+## that art is another.
+static func _card_stock() -> StyleBoxTexture:
+	var frame: Texture2D = ArtStages.resolve(parts().frame)
+	if _stock == null or _stock_of != frame:
+		_stock = StyleBoxTexture.new()
+		_stock.texture = Lighting.lit(frame)
+		_stock_of = frame
+	return _stock
+
+
+## The rank note's red tag.
+static func _rank_note_tag() -> StyleBoxFlat:
+	if _note_tag == null:
+		_note_tag = StyleBoxFlat.new()
+		_note_tag.bg_color = ScreenKit.SEAL
+		_note_tag.set_corner_radius_all(4)
+	return _note_tag
+
+
 ## Card stock that is solid in the top left corner and fades out toward the art.
 static func _corner_fade() -> GradientTexture2D:
+	if _fade != null:
+		return _fade
 	var fade: Gradient = Gradient.new()
-	fade.set_color(0, STOCK)
-	fade.set_color(1, Color(STOCK, 0.0))
-	fade.add_point(FADE_SOLID, Color(STOCK, 0.92))
+	fade.set_color(0, ScreenKit.CARD_STOCK)
+	fade.set_color(1, Color(ScreenKit.CARD_STOCK, 0.0))
+	fade.add_point(FADE_SOLID, Color(ScreenKit.CARD_STOCK, 0.92))
 	var corner: GradientTexture2D = GradientTexture2D.new()
 	corner.gradient = fade
 	corner.fill = GradientTexture2D.FILL_RADIAL
@@ -292,6 +316,7 @@ static func _corner_fade() -> GradientTexture2D:
 	corner.fill_to = Vector2(1.0, 1.0)
 	corner.width = 64
 	corner.height = 64
+	_fade = corner
 	return corner
 
 
@@ -302,7 +327,7 @@ static func _corner_fade() -> GradientTexture2D:
 ## own paper-white bar under the card, so it shows on a selected card too.
 func set_marked(selected: bool, hinted: bool, cursor: bool = false, armed: bool = false) -> void:
 	_highlight.visible = selected or hinted
-	_highlight.modulate = (ARMED if armed else RED) if selected else HINT
+	_highlight.modulate = (ARMED if armed else ScreenKit.RED) if selected else ScreenKit.HINT
 	_cursor_mark.visible = cursor
 	_tick.show_on(hinted, card_id)
 

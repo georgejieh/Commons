@@ -11,7 +11,7 @@ extends VBoxContainer
 ## The Hint's row is left out while the player keeps the Hint off (HintSetting).
 
 ## Back was pressed, or Escape outside the asking.
-signal leave
+signal left
 
 ## Each gamepad button the actions use, by the end of its string key.
 const PAD_NAMES: Dictionary[JoyButton, String] = {
@@ -249,7 +249,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _leave() -> void:
 	cancel_capture()
-	leave.emit()
+	left.emit()
 
 
 func _on_visibility() -> void:

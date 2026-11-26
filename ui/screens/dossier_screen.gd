@@ -1,6 +1,6 @@
 class_name DossierScreen
 extends Control
-## What you have seen each villager at the table do this run (P3B.8): bids and calls,
+## What you have seen each villager at the table do this run: bids and calls,
 ## bombs, passes, plays over a teammate, first-out finishes and rounds as landlord, and,
 ## once seen, claims a trait shift made larger (ADR 0043). It reads the run's observations
 ## and never names a personality.
@@ -14,11 +14,16 @@ const LINES: Dictionary[String, Observations.Kind] = {
 	"dossier.landlord": Observations.Kind.LANDLORD_ROUNDS,
 }
 const PORTRAIT_SIZE: Vector2 = Vector2(150, 188)
+## A villager's lines, at Standard.
+const LINE_SIZE: int = 22
 
 var _entries: Dictionary[int, PackedStringArray] = {}
 
+var _app: DemoApp
+
 
 func open(app: DemoApp) -> void:
+	_app = app
 	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	column.add_child(ScreenKit.header(tr("dossier.eyebrow"), tr("dossier.title")))
@@ -33,6 +38,12 @@ func open(app: DemoApp) -> void:
 	column.add_child(back)
 	ScreenKit.reveal(column)
 	back.grab_focus()
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
 
 
 ## The lines shown for a seat, for tests.
@@ -59,7 +70,7 @@ func _villager(app: DemoApp, state: RunView, seat: int) -> Control:
 		lines.append(shifted)
 	_entries[seat] = lines
 	for text: String in lines:
-		sheet.add_child(ScreenKit.label(text, 22))
+		sheet.add_child(ScreenKit.label(text, LINE_SIZE))
 	return ScreenKit.card_panel(sheet)
 
 

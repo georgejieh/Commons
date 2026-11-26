@@ -40,7 +40,8 @@ func _open(screen_id: String) -> StoreScreen:
 
 
 func _cadre_buy(store: StoreScreen, slot: int) -> Button:
-	var counter: HBoxContainer = store.get("_counter")
+	var cadres: CadreCounter = store.get("_cadres")
+	var counter: HBoxContainer = cadres.row
 	return counter.get_child(slot).find_children("*", "Button", true, false)[0]
 
 

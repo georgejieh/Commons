@@ -142,11 +142,11 @@ func setup(at: int, place: Vector2, strips: bool = true) -> void:
 
 ## The Keep tag that hangs on a pointed item's top edge: it says what a click does.
 func _make_tag() -> void:
-	_tag.text = TranslationServer.translate("envelope.keep").to_upper()
+	_tag.text = tr("envelope.keep").to_upper()
 	_tag.theme_type_variation = CommonsTheme.EYEBROW
 	_tag.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
 	var ground: StyleBoxFlat = StyleBoxFlat.new()
-	ground.bg_color = ScreenKit.STYLE.vermilion
+	ground.bg_color = ScreenKit.RED
 	ground.set_corner_radius_all(ScreenKit.STYLE.radius)
 	ground.content_margin_left = TAG_MARGIN
 	ground.content_margin_right = TAG_MARGIN
@@ -199,7 +199,10 @@ func _fit_lines(sheet: VBoxContainer, name: Label) -> void:
 	var line_px: int = TextSize.fit(LINE_SIZE, LINE_SIZE, fits)
 	fits.call(line_px)
 	var font: Font = name.get_theme_font("font")
-	var least: int = _one_line_size(font, name.text, item_size.x - DOCUMENT_INSET, NAME_SIZE)
+	var wide_name: float = item_size.x - DOCUMENT_INSET
+	var least: int = NameFit.one_line_size(
+		font, name.text, wide_name, NAME_SIZE, TextSize.least(DOCUMENT_NAME_LEAST)
+	)
 	var name_px: int = name.get_theme_font_size("font_size")
 	while name_px > least and _document_height(sheet, wide) > item_size.y:
 		name_px -= 1
@@ -215,14 +218,14 @@ func _document_height(sheet: VBoxContainer, wide: float) -> float:
 		var piece: Control = child as Control
 		var label: Label = piece as Label
 		if label != null and label.autowrap_mode != TextServer.AUTOWRAP_OFF:
-			tall += wrapped_height(label, wide) + gap
+			tall += _wrapped_height(label, wide) + gap
 		else:
 			tall += piece.get_combined_minimum_size().y + gap
 	return tall - gap
 
 
 ## How tall a label wrapping between words stands at width wide, from its font.
-static func wrapped_height(label: Label, wide: float) -> float:
+static func _wrapped_height(label: Label, wide: float) -> float:
 	var font: Font = label.get_theme_font("font")
 	var font_size: int = label.get_theme_font_size("font_size")
 	var spacing: float = float(label.get_theme_constant("line_spacing"))
@@ -239,19 +242,9 @@ static func wrapped_height(label: Label, wide: float) -> float:
 ## between words at the least size.
 func _fit_one_line(name: Label, wide: float) -> void:
 	var font: Font = name.get_theme_font("font")
-	var font_size: int = _one_line_size(font, title, wide, TextSize.px(NAME_SIZE))
+	var least: int = TextSize.least(DOCUMENT_NAME_LEAST)
+	var font_size: int = NameFit.one_line_size(font, title, wide, TextSize.px(NAME_SIZE), least)
 	NameFit.apply(name, title, wide, font_size, TextSize.least(NameFit.LEAST))
-
-
-## The largest size from start down to DOCUMENT_NAME_LEAST at which text keeps to one line.
-static func _one_line_size(font: Font, text: String, wide: float, start: int) -> int:
-	var font_size: int = start
-	while (
-		font_size > TextSize.least(DOCUMENT_NAME_LEAST)
-		and font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > wide
-	):
-		font_size -= 1
-	return font_size
 
 
 ## A Campaign: its leaflet, as the tray holds it, as large as the place allows.

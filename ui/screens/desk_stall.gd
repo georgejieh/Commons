@@ -12,24 +12,22 @@ var _desk: DeskView
 var _market: bool = false
 var _sheet: DeckSheet
 var _slip: DetailSlip
-var _screen_busy: Callable = Callable()
+var _screen_busy: Callable
 
 
-func setup(
-	desk: DeskView, market: bool, sheet: DeckSheet, slip: DetailSlip, busy: Callable
-) -> void:
-	_desk = desk
-	_market = market
-	_sheet = sheet
-	_slip = slip
-	_screen_busy = busy
+func setup(shop: StallContext) -> void:
+	_desk = shop.controller.store.mark_desk(shop.market)
+	_market = shop.market
+	_sheet = shop.deck
+	_slip = shop.slip
+	_screen_busy = shop.busy
 	BuyTicket.readable(ticket)
 	ticket.custom_minimum_size = Vector2.ZERO
 	ticket.pressed.connect(_choose)
-	ticket.mouse_entered.connect(_describe)
-	ticket.focus_entered.connect(_describe)
-	ticket.mouse_exited.connect(_slip.hide_for.bind(ticket))
-	ticket.focus_exited.connect(_slip.hide_for.bind(ticket))
+	var stamps: bool = _desk.stamps()
+	var title: String = tr("desk.stamp") if stamps else _mark()
+	var rule: String = tr("desk.rule.stamp" if stamps else "desk.rule.mark")
+	_slip.follow(ticket, title, rule.format({"mark": _mark()}))
 
 
 ## Shows the ticket as the desk stands: offered, done this visit, or gone.
@@ -41,25 +39,16 @@ func show_offer() -> void:
 	var key: String = "desk.ticket.stamp" if _desk.stamps() else "desk.ticket"
 	if _desk.used():
 		key = "desk.used.stamp" if _desk.stamps() else "desk.used"
-	ticket.text = TranslationServer.translate(key).format(values)
+	ticket.text = tr(key).format(values)
 	ticket.disabled = not _desk.affordable()
 
 
 func _mark() -> String:
-	return TranslationServer.translate("keyword.%s.name" % _desk.offer())
-
-
-func _describe() -> void:
-	var stamps: bool = _desk.stamps()
-	var title: String = TranslationServer.translate("desk.stamp") if stamps else _mark()
-	var rule: String = TranslationServer.translate(
-		"desk.rule.stamp" if stamps else "desk.rule.mark"
-	)
-	_slip.show_for(ticket, title, rule.format({"mark": _mark()}))
+	return DeckSheet.mark_name(_desk.offer())
 
 
 func _choose() -> void:
-	if _screen_busy.is_valid() and _screen_busy.call():
+	if _screen_busy.call():
 		return
 	_slip.hide_slip()
 	_sheet.open_choice(DeskChoice.new(_desk, _market))

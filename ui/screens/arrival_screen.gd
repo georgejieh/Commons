@@ -4,6 +4,9 @@ extends Control
 ## line from the brigade office, then Sit in, which starts the arrival, or Skip, which
 ## asks once and goes to the title. Sit in has the focus.
 
+## The arrival's words, at Standard.
+const TEXT_SIZE: int = 28
+
 var _sit_in: Button
 var _skip: Button
 var _confirm: SkipConfirm = SkipConfirm.new()
@@ -12,7 +15,7 @@ var _confirm: SkipConfirm = SkipConfirm.new()
 func open(app: DemoApp) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
 	sheet.add_child(ScreenKit.header("", tr("tutorial.arrival.title")))
-	var line: Label = ScreenKit.label(tr("tutorial.arrival.text"), 28)
+	var line: Label = ScreenKit.label(tr("tutorial.arrival.text"), TEXT_SIZE)
 	line.custom_minimum_size = Vector2(900, 0)
 	sheet.add_child(line)
 	_sit_in = ScreenKit.button(tr("tutorial.arrival.sit_in"), CommonsTheme.PRIMARY)

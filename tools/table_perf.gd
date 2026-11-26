@@ -78,19 +78,21 @@ func _run() -> void:
 
 ## Binds every deck card to a free pooled view on top of the table and sways them all.
 func _run_stress(table: Node) -> void:
-	var pool: CardPool = WalkBase.member(table, "_pool")
+	# The pool and its views are reached by name: a card view names the screens' kit, which
+	# needs the autoloads a --script tool compiles without.
+	var pool: Object = WalkBase.member(table, "_pool")
 	var parent: Control = Control.new()
 	table.add_child(parent)
-	var views: Array[CardView] = []
+	var views: Array[Control] = []
 	for deck_id: int in Deck.SIZE:
-		var view: CardView = pool.acquire()
+		var view: Control = pool.call("acquire")
 		if view == null:
 			push_error("the pool ran out at card %d" % deck_id)
 			return
 		view.reparent(parent, false)
-		view.bind(Deck.new().card(deck_id))
+		view.call("bind", Deck.new().card(deck_id))
 		views.append(view)
-	print("visible_cards=%d pool_size=%d" % [views.size(), pool.size()])
+	print("visible_cards=%d pool_size=%d" % [views.size(), int(pool.call("size"))])
 	var started: int = Time.get_ticks_msec()
 	var last: int = Time.get_ticks_usec()
 	while Time.get_ticks_msec() - started < int(_seconds * 1000.0):

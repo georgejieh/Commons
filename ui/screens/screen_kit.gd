@@ -11,13 +11,43 @@ const DISPLAY_BOLD: FontVariation = preload("res://ui/theme/oswald_bold.tres")
 ## A typewriter face for the ledger's tallies.
 const TYPEWRITER: FontFile = preload("res://art/fonts/CourierPrime-Regular.ttf")
 const TYPEWRITER_BOLD: FontFile = preload("res://art/fonts/CourierPrime-Bold.ttf")
-const PAPER: Color = Color("efe3c8")
-const INK: Color = Color("1e1a16")
-const RED: Color = Color("b02a17")
-const GOLD: Color = Color("e0b84a")
-const COUPON: Color = Color("3f6338")
+## The inks every screen shares, each defined once in the style data. A file reads these
+## names; it does not keep a colour of its own for one.
+const PAPER: Color = STYLE.paper
+const INK: Color = STYLE.ink
+const RED: Color = STYLE.vermilion
+const GOLD: Color = STYLE.gold
+const COUPON: Color = STYLE.coupon
+const COUPON_ON_DARK: Color = STYLE.coupon_on_dark
+const SEAL: Color = STYLE.seal
+const LOSS: Color = STYLE.loss
+const QUIET: Color = STYLE.quiet
+const TICKET_INK: Color = STYLE.ticket_ink
+const PICKED: Color = STYLE.picked
+const FOCUS_RING: Color = STYLE.focus_ring
+const WORN_PRINT: Color = STYLE.worn_print
+const PAPER_EDGE: Color = STYLE.paper_edge
+const FAINT_INK: Color = STYLE.faint_ink
+const FOLD: Color = STYLE.fold
+const HINT: Color = STYLE.hint
+const CARD_STOCK: Color = STYLE.card_stock
+const PRINT_RED: Color = STYLE.print_red
+const ENDING_INK: Color = STYLE.ending_ink
+## The layers a page draws in over its own pieces, lowest first, as z_index: a piece being
+## acted out lifts over its row; a seal, a flying paper and the rank picker's question
+## stand over every piece; the shop's slip explains any of those; an opened envelope
+## covers the page and the slip; the deck sheet stands over the envelope whose deck card
+## it places. A card dragged on the plot's swap board takes the sheet's layer, over the
+## pairs' tags (the over layer) and every other card.
+const LAYER_LIFTED: int = 1
+const LAYER_OVER: int = 2
+const LAYER_SLIP: int = 3
+const LAYER_ENVELOPE: int = 4
+const LAYER_SHEET: int = 5
 ## How far the backdrop darkens under the content, so text on art stays readable.
 const SHADE: Color = Color(0.08, 0.06, 0.04, 0.3)
+## Deeper, under a verdict or a summary centred on one sheet.
+const VERDICT_SHADE: Color = Color(0.05, 0.03, 0.02, 0.55)
 ## How wide the paper halo around text on art is, in pixels.
 const HALO_SIZE: int = 10
 ## Page margins and the widest a content column grows.
@@ -27,33 +57,31 @@ const PAGE_MARGIN: int = 88
 const LEAST_PAGE_MARGIN: int = 24
 const LEAST_GAP_SHARE: float = 0.5
 const FULL_GAP: StringName = &"full_gap"
+## Where a page keeps the fit it connected to its root's resized, for clear_page.
+const PAGE_FIT: StringName = &"page_fit"
 const MIN_BUTTON_WIDTH: int = 260
-## Space kept around a face in a portrait box, as a share of the head's size per side.
-const FACE_MARGIN: float = 0.12
 
 
 ## A full-screen page over a backdrop, or over paper when there is none, holding a
-## column.
-static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
+## column. A backdrop is tinted by tint and darkened under the column by dim.
+static func page(
+	root: Control, backdrop: Texture2D = null, dim: Color = SHADE, tint: Color = Color.WHITE
+) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.add_child(cover(backdrop if backdrop != null else ART.paper))
+	var art: TextureRect = cover(backdrop if backdrop != null else ART.paper)
+	art.modulate = tint
+	root.add_child(art)
 	if backdrop != null:
-		root.theme = halo_theme()
-		var shade: ColorRect = ColorRect.new()
-		shade.color = SHADE
-		shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-		shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		root.add_child(shade)
-	var margin: MarginContainer = MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	for side: String in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, PAGE_MARGIN)
+		root.theme = _halo_theme()
+		root.add_child(shade(dim))
+	var margin: MarginContainer = margins(PAGE_MARGIN, PAGE_MARGIN)
 	root.add_child(margin)
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", STYLE.gap + 8)
 	margin.add_child(column)
-	var make_room: Callable = give_way.bind(root, margin, column)
+	var make_room: Callable = _give_way.bind(root, margin, column)
 	root.resized.connect(make_room)
+	root.set_meta(PAGE_FIT, make_room)
 	column.minimum_size_changed.connect(make_room)
 	return column
 
@@ -61,7 +89,7 @@ static func page(root: Control, backdrop: Texture2D = null) -> VBoxContainer:
 ## Shrinks a page's margin, then the gaps between its rows, as far as it must for what
 ## is on it to fit the screen, and no further than LEAST_PAGE_MARGIN and LEAST_GAP_SHARE.
 ## A page that fits keeps its full margin and gaps.
-static func give_way(root: Control, margin: MarginContainer, column: VBoxContainer) -> void:
+static func _give_way(root: Control, margin: MarginContainer, column: VBoxContainer) -> void:
 	if root.size.x <= 0.0 or root.size.y <= 0.0:
 		return
 	if not column.has_meta(FULL_GAP):
@@ -104,16 +132,31 @@ static func _set_constant(control: Control, constant: String, value: int) -> voi
 		control.add_theme_constant_override(constant, value)
 
 
+## Frees every child of node, taken out of the tree at once so what is built in its place
+## lays out without them.
+static func clear(node: Node) -> void:
+	for child: Node in node.get_children():
+		node.remove_child(child)
+		child.queue_free()
+
+
+## Takes a page built on root down, with the fit it connected to root, so the page can
+## be built on root again.
+static func clear_page(root: Control) -> void:
+	if root.has_meta(PAGE_FIT):
+		var fit: Callable = root.get_meta(PAGE_FIT)
+		if root.resized.is_connected(fit):
+			root.resized.disconnect(fit)
+		root.remove_meta(PAGE_FIT)
+	clear(root)
+
+
 ## A full-screen page over a backdrop with its content centered on one sheet, for
 ## verdicts and summaries.
 static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(cover(backdrop))
-	var shade: ColorRect = ColorRect.new()
-	shade.color = Color(0.05, 0.03, 0.02, 0.55)
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(shade)
+	root.add_child(shade(VERDICT_SHADE))
 	var center: CenterContainer = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(center)
@@ -130,11 +173,7 @@ static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
 static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(cover(backdrop))
-	var shade: ColorRect = ColorRect.new()
-	shade.color = SHADE
-	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(shade)
+	root.add_child(shade(SHADE))
 	var sheet: VBoxContainer = card(Vector2(width, 0))
 	sheet.add_theme_constant_override("separation", STYLE.gap + 8)
 	var panel: Control = card_panel(sheet)
@@ -144,21 +183,31 @@ static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBox
 	panel.offset_top = PAGE_MARGIN / 2.0
 	panel.offset_bottom = -PAGE_MARGIN / 2.0
 	panel.offset_right = PAGE_MARGIN + width
-	var fit: Callable = fit_side_sheet.bind(root, panel)
+	var fit: Callable = _fit_side_sheet.bind(root, panel)
 	panel.minimum_size_changed.connect(fit)
 	panel.resized.connect(fit)
 	root.resized.connect(fit)
+	root.set_meta(PAGE_FIT, fit)
 	return sheet
 
 
 ## Draws a side sheet smaller, from its top left corner, when what is on it is taller
 ## than the page between its margins.
-static func fit_side_sheet(root: Control, panel: Control) -> void:
+static func _fit_side_sheet(root: Control, panel: Control) -> void:
 	var room: float = root.size.y - PAGE_MARGIN
 	var tall: float = panel.get_combined_minimum_size().y
 	var fit: float = 1.0 if tall <= room or room <= 0.0 else room / tall
 	panel.pivot_offset = Vector2.ZERO
 	panel.scale = Vector2(fit, fit)
+
+
+## Takes a Cancel press (Escape, or B on a pad) on a page that is showing: true when the
+## event was one, and it is then handled. Every page with a Back button goes back on it.
+static func take_cancel(page: Control, event: InputEvent) -> bool:
+	if not page.is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
+		return false
+	page.get_viewport().set_input_as_handled()
+	return true
 
 
 ## A small tracked label over a big headline, the way a poster leads.
@@ -221,7 +270,7 @@ static func row(children: Array[Control], separation: int = STYLE.gap) -> HBoxCo
 
 
 ## Gives every label a paper-colored halo, so ink text reads over busy art.
-static func halo_theme() -> Theme:
+static func _halo_theme() -> Theme:
 	var theme: Theme = Theme.new()
 	for type: String in ["Label", CommonsTheme.EYEBROW, CommonsTheme.HEADLINE]:
 		theme.set_constant("outline_size", type, HALO_SIZE)
@@ -236,6 +285,26 @@ static func ink_theme() -> Theme:
 	for type: String in ["Label", CommonsTheme.EYEBROW, CommonsTheme.HEADLINE, CommonsTheme.TITLE]:
 		theme.set_constant("outline_size", type, 0)
 	return theme
+
+
+## A dim of color over a page's backdrop, which takes no input.
+static func shade(color: Color) -> ColorRect:
+	var made: ColorRect = ColorRect.new()
+	made.color = color
+	made.set_anchors_preset(Control.PRESET_FULL_RECT)
+	made.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return made
+
+
+## A margin that fills a page: side at its left and right, top above and below.
+static func margins(side: int, top: int) -> MarginContainer:
+	var made: MarginContainer = MarginContainer.new()
+	made.set_anchors_preset(Control.PRESET_FULL_RECT)
+	for edge: String in ["left", "right"]:
+		made.add_theme_constant_override("margin_" + edge, side)
+	for edge: String in ["top", "bottom"]:
+		made.add_theme_constant_override("margin_" + edge, top)
+	return made
 
 
 ## A texture that fills its parent, cropped to keep its shape.
@@ -274,30 +343,6 @@ static func card_panel(column: VBoxContainer) -> Control:
 	return column.get_parent() as Control
 
 
-## A stat tile: a tracked caption over a big number that rolls up from from_value.
-static func stat(caption: String, value: float, from_value: float = 0.0) -> Control:
-	var tile: VBoxContainer = card(Vector2(240, 0))
-	tile.add_child(eyebrow(caption))
-	var number: Label = styled("", CommonsTheme.TITLE)
-	tile.add_child(number)
-	UiMotion.count(
-		number, from_value, value, func(shown: float) -> String: return Strings.score(shown)
-	)
-	return card_panel(tile)
-
-
-## A stat tile for one of the run's figures (ShownFigures names them), as ShownFigures
-## shows it: the rolling number, or its words ("None reported", ample, fulfilled).
-static func figure_stat(caption: String, state: RunView, figure: String, value: float) -> Control:
-	var words: String = ShownFigures.tile_text(state, figure)
-	if words.is_empty():
-		return stat(caption, value)
-	var tile: VBoxContainer = card(Vector2(240, 0))
-	tile.add_child(eyebrow(caption))
-	tile.add_child(styled(words, CommonsTheme.TITLE))
-	return card_panel(tile)
-
-
 ## Brings a page's pieces in one after another.
 static func reveal(column: VBoxContainer) -> void:
 	var pieces: Array[Control] = []
@@ -309,35 +354,10 @@ static func reveal(column: VBoxContainer) -> void:
 
 
 ## A paper-colored edge around text that sits straight on the table, so it stays
-## readable however dark the room behind it gets (P3B.12).
+## readable however dark the room behind it gets.
 static func paper_outline(label: Label) -> void:
-	label.add_theme_color_override("font_outline_color", STYLE.paper)
+	label.add_theme_color_override("font_outline_color", PAPER)
 	label.add_theme_constant_override("outline_size", 8)
-
-
-## A portrait cropped to a box of aspect (width / height), centered on the face.
-static func face_crop(picture: Texture2D, face: Rect2, aspect: float) -> Texture2D:
-	var crop: AtlasTexture = AtlasTexture.new()
-	crop.atlas = picture
-	crop.region = face_region(picture.get_size(), face, aspect)
-	return crop
-
-
-## The pixel region of an image of size that shows the whole face (fractions of the
-## image) with a margin, at the given aspect, centered on the face and kept inside the
-## image.
-static func face_region(size: Vector2, face: Rect2, aspect: float) -> Rect2:
-	var head: Rect2 = Rect2(face.position * size, face.size * size)
-	var want: Vector2 = head.size * (1.0 + 2.0 * FACE_MARGIN)
-	if want.x / want.y < aspect:
-		want.x = want.y * aspect
-	else:
-		want.y = want.x / aspect
-	var fit: float = minf(1.0, minf(size.x / want.x, size.y / want.y))
-	want *= fit
-	var corner: Vector2 = head.get_center() - want / 2.0
-	corner = corner.clamp(Vector2.ZERO, size - want)
-	return Rect2(corner, want)
 
 
 ## A Cadre's art for the current corruption stage.

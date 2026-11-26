@@ -17,8 +17,10 @@ const SPACING: int = 16
 ## Between the card asked about and the strip, and the strip and the screen's edge.
 const GAP: float = 14.0
 const MARGIN: float = 16.0
+## The question, at Standard.
+const PROMPT_SIZE: int = 24
 
-var _prompt: Label = ScreenKit.label("", 24)
+var _prompt: Label = ScreenKit.label("", PROMPT_SIZE)
 var _chips: Array[RankChip] = []
 var _cancel: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _then: Callable = Callable()
@@ -33,7 +35,7 @@ var _card_z: int = 0
 
 func _ready() -> void:
 	visible = false
-	z_index = 2
+	z_index = ScreenKit.LAYER_OVER
 	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	# One line: a wrapping prompt is measured at no width, which makes the strip tall.
 	_prompt.autowrap_mode = TextServer.AUTOWRAP_OFF

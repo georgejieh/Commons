@@ -10,11 +10,8 @@ extends Control
 ## The ribbon's box in card pixels, and where it hangs: under the suit pip, above the chop.
 const SIZE: Vector2 = Vector2(13, 36)
 const AT: Vector2 = Vector2(1, 90)
-const RED: Color = Color("b8231a")
 const FOLD: Color = Color("6e120d")
 const GOLD: Color = Color("d9a93c")
-const EDGE: Color = Color("1e1a16")
-const STOCK: Color = Color("f6e6c4")
 ## How deep the swallowtail cuts, and the room under the tails the frayed threads hang
 ## in, so no thread reaches the chop below, in pixels.
 const NOTCH: float = 6.0
@@ -48,10 +45,12 @@ func show_on(on: bool, card_salt: int = 0) -> void:
 
 func _draw() -> void:
 	var worn: float = BowlGrime.wear()
-	var red: Color = BowlGrime.faded(RED, worn).lerp(BowlGrime.DRIED, 0.45 * (worn - 0.3))
+	var red: Color = BowlGrime.faded(ScreenKit.PRINT_RED, worn).lerp(
+		BowlGrime.DRIED, 0.45 * (worn - 0.3)
+	)
 	var outline: PackedVector2Array = _outline()
 	var edged: PackedVector2Array = _outline(1.2)
-	draw_colored_polygon(edged, Color(EDGE, 0.85))
+	draw_colored_polygon(edged, Color(ScreenKit.INK, 0.85))
 	draw_colored_polygon(outline, red)
 	# The fold where the ribbon is tucked under the card's edge.
 	draw_colored_polygon(
@@ -104,5 +103,5 @@ func _draw_grime(worn: float, red: Color) -> void:
 		# The card shows through the hole, ringed with the torn silk's dark edge.
 		var hole: Vector2 = Vector2(rng.randf_range(4.0, size.x - 4.0), rng.randf_range(14.0, 26.0))
 		var radius: float = 1.2 + 8.0 * (worn - TORN_FROM)
-		draw_circle(hole, radius + 0.8, Color(EDGE, 0.8))
-		draw_circle(hole, radius, BowlGrime.aged(STOCK, worn))
+		draw_circle(hole, radius + 0.8, Color(ScreenKit.INK, 0.8))
+		draw_circle(hole, radius, BowlGrime.aged(ScreenKit.CARD_STOCK, worn))

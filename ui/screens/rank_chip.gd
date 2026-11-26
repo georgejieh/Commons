@@ -5,13 +5,10 @@ extends Button
 ## of its row and ring it in red, so keyboard and gamepad see where they are.
 
 const SIZE: Vector2 = Vector2(62, 86)
-const INK: Color = Color("120d09")
 const RED_INK: Color = Color("8c1a10")
-const RING: Color = Color("b02a17")
 ## How far a focused or hovered ticket rises, and its ring's width.
 const LIFT: float = 9.0
 const RING_WIDTH: float = 3.5
-const BAND: Color = Color("9e2a1d")
 const FONT_SIZE: int = 34
 
 var rank: int = Ranks.INVALID
@@ -40,13 +37,13 @@ func label() -> String:
 func _draw() -> void:
 	var lifted: bool = has_focus() or is_hovered()
 	var rect: Rect2 = Rect2(Vector2(0, -LIFT if lifted else 0.0), size)
-	PaperTicket.draw(self, rect, BowlGrime.wear(), rank, BAND)
+	PaperTicket.draw(self, rect, BowlGrime.wear(), rank, ScreenKit.PICKED)
 	var font: Font = get_theme_default_font()
-	var ink: Color = RED_INK if rank == Ranks.TWO else INK
+	var ink: Color = RED_INK if rank == Ranks.TWO else ScreenKit.TICKET_INK
 	var faded: Color = BowlGrime.faded(ink, BowlGrime.wear())
 	var width: float = rect.size.x
 	var baseline: Vector2 = rect.position + Vector2(0, rect.size.y * 0.58)
 	draw_string(font, baseline, _label, HORIZONTAL_ALIGNMENT_CENTER, width, FONT_SIZE, faded)
 	if lifted:
 		var ring: Rect2 = rect.grow(2.5)
-		draw_rect(ring, BowlGrime.faded(RING, BowlGrime.wear()), false, RING_WIDTH)
+		draw_rect(ring, BowlGrime.faded(ScreenKit.RED, BowlGrime.wear()), false, RING_WIDTH)

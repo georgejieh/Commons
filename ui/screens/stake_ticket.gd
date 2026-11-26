@@ -8,11 +8,6 @@ extends Button
 ## its words sit at 16 px or more on one or two lines, never broken inside a word.
 
 const SIZE: Vector2 = Vector2(212, 92)
-const INK: Color = Color("120d09")
-const PICKED: Color = Color("9e2a1d")
-const RING: Color = Color("b98a2c")
-const BAND: Color = Color("9e2a1d")
-const LOCKED_BAND: Color = Color("7a6446")
 const LIFT: float = 6.0
 const NAME_SIZE: int = 22
 const LINE_SIZE: int = 18
@@ -40,7 +35,7 @@ func _init(stake_number: int, unlocked: bool, words: String) -> void:
 	accessibility_name = words
 	for style: String in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
 		add_theme_stylebox_override(style, StyleBoxEmpty.new())
-	var ink: Color = BowlGrime.faded(INK, BowlGrime.wear())
+	var ink: Color = BowlGrime.faded(ScreenKit.TICKET_INK, BowlGrime.wear())
 	_words = ScreenKit.label("", NAME_SIZE if unlocked else LINE_SIZE, ink)
 	var wide: float = SIZE.x - WORDS_LEFT - WORDS_RIGHT
 	var base: int = TextSize.px(NAME_SIZE if unlocked else LINE_SIZE)
@@ -73,8 +68,12 @@ func _draw() -> void:
 	var worn: float = BowlGrime.wear()
 	var lifted: bool = has_focus() or is_hovered()
 	var rect: Rect2 = Rect2(Vector2(0, -LIFT if lifted else 0.0), size)
-	PaperTicket.draw(self, rect, worn, 40 + stake, BAND if open else LOCKED_BAND)
+	PaperTicket.draw(
+		self, rect, worn, 40 + stake, ScreenKit.PICKED if open else ScreenKit.WORN_PRINT
+	)
 	if picked:
-		draw_rect(rect.grow(-4.0), BowlGrime.faded(PICKED, worn), false, 3.5)
+		draw_rect(rect.grow(-4.0), BowlGrime.faded(ScreenKit.PICKED, worn), false, 3.5)
 	if lifted:
-		draw_rect(rect.grow(2.5), Color(BowlGrime.aged(RING, worn * 0.5), 0.9), false, 3.0)
+		draw_rect(
+			rect.grow(2.5), Color(BowlGrime.aged(ScreenKit.FOCUS_RING, worn * 0.5), 0.9), false, 3.0
+		)

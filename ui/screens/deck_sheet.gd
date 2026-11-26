@@ -24,7 +24,6 @@ const RULE_SIZE: int = 20
 const LEGEND_SIZE: int = 18
 ## The stamp that marks a card as the player's, beside the enhancements in the legend.
 const STAMP: String = "stamp"
-const PLAYER: int = 0
 
 var _controller: RunController = null
 var _choice: DeckChoice = null
@@ -44,15 +43,10 @@ var _incoming: CardView = null
 
 func _ready() -> void:
 	visible = false
-	# Above an envelope open over the page (EnvelopeOverlay), whose deck card it places.
-	z_index = 5
+	z_index = ScreenKit.LAYER_SHEET
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var dim: ColorRect = ColorRect.new()
-	dim.color = DIM
-	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(dim)
+	add_child(Scrim.new(DIM))
 	_paper.add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	_paper.theme = ScreenKit.ink_theme()
 	add_child(_paper)
@@ -168,9 +162,11 @@ func _open(choosing: bool) -> void:
 	_incoming.visible = coming != null
 	if coming != null:
 		_incoming.bind(coming)
+	var deck: Array[CardInstance] = _controller.store.deck_cards()
 	var plot: Array[CardInstance] = _controller.run.plot()
-	_board.show_cards(_controller.store.deck_cards(), plot, _room())
-	_show_legend(plot)
+	_board.show_cards(deck, plot, _room())
+	deck.append_array(plot)
+	_show_legend(deck)
 	_show_choice()
 	_link_focus()
 	_board.grab_focus()
@@ -196,15 +192,11 @@ func _fit() -> void:
 
 ## One entry for each mark the deck or the plot holds now: its drawn mark, its name and
 ## how many cards carry it.
-func _show_legend(plot: Array[CardInstance]) -> void:
-	for child: Node in _legend.get_children():
-		_legend.remove_child(child)
-		child.queue_free()
+func _show_legend(cards: Array[CardInstance]) -> void:
+	ScreenKit.clear(_legend)
 	var counts: Dictionary[String, int] = {}
-	var cards: Array[CardInstance] = _controller.store.deck_cards()
-	cards.append_array(plot)
 	for card: CardInstance in cards:
-		if card.owner_stamp() == PLAYER:
+		if card.owner_stamp() == Seats.PLAYER:
 			counts[STAMP] = counts.get(STAMP, 0) + 1
 		if CardMark.draws(card.enhancement_id()):
 			counts[card.enhancement_id()] = counts.get(card.enhancement_id(), 0) + 1
@@ -230,13 +222,19 @@ static func mark_name(mark: String) -> String:
 	return TranslationServer.translate("keyword.%s.name" % mark)
 
 
-## The marks a card carries, in words whose keywords the slip explains.
-static func marks_text(card: CardInstance) -> String:
+## The marks a card carries, by name: its enhancement's, then the player's stamp.
+static func marks(card: CardInstance) -> PackedStringArray:
 	var names: PackedStringArray = []
 	if CardMark.draws(card.enhancement_id()):
 		names.append(mark_name(card.enhancement_id()))
-	if card.owner_stamp() == PLAYER:
+	if card.owner_stamp() == Seats.PLAYER:
 		names.append(mark_name(STAMP))
+	return names
+
+
+## The marks a card carries, in words whose keywords the slip explains.
+static func marks_text(card: CardInstance) -> String:
+	var names: PackedStringArray = marks(card)
 	if names.is_empty():
 		return TranslationServer.translate("deck.marks.none")
 	return TranslationServer.translate("deck.marks").format({"marks": ", ".join(names)})
@@ -321,7 +319,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		close()
 		get_viewport().set_input_as_handled()
-	elif event is InputEventKey or event is InputEventJoypadButton:
-		get_viewport().set_input_as_handled()
-	elif event is InputEventJoypadMotion:
+	elif (
+		event is InputEventKey or event is InputEventJoypadButton or event is InputEventJoypadMotion
+	):
 		get_viewport().set_input_as_handled()

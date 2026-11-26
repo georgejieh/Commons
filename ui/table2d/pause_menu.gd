@@ -65,7 +65,7 @@ func _build_pages() -> void:
 	_settings = _settings_page()
 	_confirm = _confirm_page()
 	_controls = ControlsPage.new(true)
-	_controls.leave.connect(_back_to_settings.bind(SettingsPanel.CONTROLS_BUTTON))
+	_controls.left.connect(_back_to_settings.bind(SettingsPanel.CONTROLS_BUTTON))
 	_window = _window_page()
 	_stack.add_child(_main)
 	_stack.add_child(_settings)

@@ -56,6 +56,20 @@ var _keys: Dictionary[String, Key] = {}
 
 
 ## Each action's key as the project's input settings give it.
+## Which way an event steps a board's cursor along its cards: -1 left, 1 right, or 0 for
+## an event that is no step.
+static func cursor_step(event: InputEvent) -> int:
+	for action: String in CURSOR_STEPS:
+		if event.is_action_pressed(action, true):
+			return -1 if action.ends_with("left") else 1
+	return 0
+
+
+## True for a press that picks what a board's cursor is on: accept, or the select key.
+static func is_pick(event: InputEvent) -> bool:
+	return event.is_action_pressed("ui_accept") or event.is_action_pressed(SELECT)
+
+
 static func defaults() -> Dictionary[String, Key]:
 	var keys: Dictionary[String, Key] = {}
 	for action: String in ACTIONS:

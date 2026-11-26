@@ -50,3 +50,22 @@ func test_the_black_markets_plot_cards_keep_a_cards_proportions() -> void:
 					. override_failure_message("level %d %s: %s" % [level, screen_size, shown])
 					. is_equal_approx(SwapFit.CARD.x / SwapFit.CARD.y, 0.01)
 				)
+
+
+## A plot card's Buy ticket is explained in the page's slip, as every piece on the counter
+## is, with the card's name over the stall's rule, and carries no tooltip of its own.
+func test_a_plot_cards_ticket_is_explained_in_the_slip() -> void:
+	var driver: ControllerScript = ControllerScript.new()
+	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
+		driver.act(_app.controller)
+	_app.controller.finish_set()
+	var market: StoreScreen = _app.show_screen("black_market", true)
+	await await_idle_frame()
+	var goods: MarketGoods = market.get("_goods")
+	var buy: Button = goods.card_button(0)
+	assert_str(buy.tooltip_text).is_empty()
+	buy.focus_entered.emit()
+	assert_object(market.slip().anchor()).is_same(buy)
+	assert_str(market.slip().shown_rule()).is_equal(tr("market.plot.tip"))
+	buy.focus_exited.emit()
+	assert_str(market.slip().shown_rule()).is_empty()

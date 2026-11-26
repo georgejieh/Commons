@@ -5,7 +5,6 @@ extends Control
 ## is drawn only from a face that holds every character, so it never shows the boxes of
 ## missing glyphs: without such a face, can_draw() is false and the screen leaves it out.
 
-const INK: Color = Color("b02a17")
 const INK_ALPHA: float = 0.88
 const TILT: float = 0.05
 const BORDER: float = 0.06
@@ -19,14 +18,14 @@ var _font: Font = null
 ## A seal width wide, tall enough for the characters one above another.
 func _init(text: String = "", width: float = 0.0) -> void:
 	_text = text
-	_font = face_for(text)
+	_font = _face_for(text)
 	custom_minimum_size = Vector2(width, width * maxi(text.length(), 1) * 0.86)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 ## The face that holds every character of text: the art library's Chinese face, or the
 ## display face. Null when neither does.
-static func face_for(text: String) -> Font:
+static func _face_for(text: String) -> Font:
 	for face: Font in [ScreenKit.ART.hanzi_font, ScreenKit.DISPLAY_BOLD]:
 		if face != null and _holds(face, text):
 			return face
@@ -34,7 +33,7 @@ static func face_for(text: String) -> Font:
 
 
 static func can_draw(text: String) -> bool:
-	return not text.is_empty() and face_for(text) != null
+	return not text.is_empty() and _face_for(text) != null
 
 
 static func _holds(face: Font, text: String) -> bool:
@@ -48,7 +47,7 @@ func _draw() -> void:
 	if _font == null or _text.is_empty():
 		return
 	var worn: float = BowlGrime.wear()
-	var ink: Color = Color(BowlGrime.faded(INK, worn), INK_ALPHA - 0.2 * worn)
+	var ink: Color = Color(BowlGrime.faded(ScreenKit.RED, worn), INK_ALPHA - 0.2 * worn)
 	draw_set_transform(size / 2.0, TILT)
 	var half: Vector2 = size / 2.0
 	var line: float = size.x * BORDER

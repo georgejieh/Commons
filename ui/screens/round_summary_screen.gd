@@ -1,10 +1,16 @@
 class_name RoundSummaryScreen
 extends Control
-## The last finished round (P3B.9): which side won, your score, your Commons share and
+## The last finished round: which side won, your score, your Commons share and
 ## where the Quota stands. Opened from the table's menu; Back returns to the table.
+
+## The stake's and the bank's lines, at Standard.
+const LINE_SIZE: int = 24
+
+var _app: DemoApp
 
 
 func open(app: DemoApp) -> void:
+	_app = app
 	var controller: RunController = app.controller
 	var state: RunView = controller.run
 	var sheet: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
@@ -15,24 +21,28 @@ func open(app: DemoApp) -> void:
 	var eyebrow: String = tr("round.eyebrow").format({"round": maxi(1, state.round_index())})
 	sheet.add_child(ScreenKit.header(eyebrow, tr(title_key)))
 	var tiles: Array[Control] = [
-		ScreenKit.stat(tr("round.score"), float(last.get("score", 0.0))),
-		ScreenKit.stat(tr("round.share"), float(last.get("share", 0))),
-		ScreenKit.figure_stat(
-			tr("round.progress"), state, RunCorrections.PROGRESS, state.set_progress()
-		),
+		StatTile.rolling(tr("round.score"), float(last.get("score", 0.0))),
+		StatTile.rolling(tr("round.share"), float(last.get("share", 0))),
+		StatTile.figure(tr("round.progress"), state, RunCorrections.PROGRESS, state.set_progress()),
 	]
 	sheet.add_child(ScreenKit.row(tiles, 20))
 	# Overfulfillment's stake is part of the result: the bank multiplied, or voided.
 	if last.has("stake"):
-		sheet.add_child(ScreenKit.label(stake_line(last), 24, ScreenKit.RED))
+		sheet.add_child(ScreenKit.label(stake_line(last), LINE_SIZE, ScreenKit.RED))
 	# What debuffs took from the bank is part of the result too (ADR 0023).
 	for line: String in debuff_lines(last):
-		sheet.add_child(ScreenKit.label(line, 24, ScreenKit.RED))
+		sheet.add_child(ScreenKit.label(line, LINE_SIZE, ScreenKit.RED))
 	var back: Button = ScreenKit.button(tr("round.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(app.back)
 	sheet.add_child(back)
 	ScreenKit.reveal(sheet)
 	back.grab_focus()
+
+
+## Cancel (Escape, or B on a pad) goes back, as Back does.
+func _unhandled_input(event: InputEvent) -> void:
+	if ScreenKit.take_cancel(self, event):
+		_app.back()
 
 
 ## What Overfulfillment did to the round's bank, for a result that carries a stake.
@@ -66,17 +76,17 @@ static func last_round(events: Array[RunEvent]) -> Dictionary:
 				landlord = played.seat
 				result = {}
 			elif played.type == RoundEvent.Type.ROUND_ENDED:
-				result["won"] = (played.seat == landlord) == (landlord == 0)
-		elif event.type == RunEvent.Type.ROUND_SCORED and event.seat == 0:
+				result["won"] = (played.seat == landlord) == (landlord == Seats.PLAYER)
+		elif event.type == RunEvent.Type.ROUND_SCORED and event.seat == Seats.PLAYER:
 			result["score"] = event.amount
-		elif event.type == RunEvent.Type.SHARE_PAID and event.seat == 0:
+		elif event.type == RunEvent.Type.SHARE_PAID and event.seat == Seats.PLAYER:
 			result["share"] = event.value
-		elif event.type == RunEvent.Type.STAKE_SETTLED and event.seat == 0:
+		elif event.type == RunEvent.Type.STAKE_SETTLED and event.seat == Seats.PLAYER:
 			result["stake"] = event.value == 1
 			result["banked"] = event.amount
-		elif event.type == RunEvent.Type.GRAIN_TAXED and event.seat == 0:
+		elif event.type == RunEvent.Type.GRAIN_TAXED and event.seat == Seats.PLAYER:
 			result["taxed"] = event.amount
-		elif event.type == RunEvent.Type.BANK_VOIDED and event.seat == 0:
+		elif event.type == RunEvent.Type.BANK_VOIDED and event.seat == Seats.PLAYER:
 			result["voided"] = event.amount
 		if result.has("won"):
 			finished = result

@@ -30,11 +30,11 @@ static func card_text(card: CardInstance) -> String:
 
 
 func eyebrow() -> String:
-	return _tr("exchange.eyebrow")
+	return tr("exchange.eyebrow")
 
 
 func title() -> String:
-	return _tr("exchange.title")
+	return tr("exchange.title")
 
 
 func incoming() -> CardInstance:
@@ -42,7 +42,7 @@ func incoming() -> CardInstance:
 
 
 func how() -> String:
-	return _tr("exchange.how").format({"card": card_text(_card)})
+	return tr("exchange.how").format({"card": card_text(_card)})
 
 
 func confirm_text() -> String:
@@ -51,27 +51,19 @@ func confirm_text() -> String:
 
 func refusal(card: CardInstance) -> String:
 	var key: String = str(_refuse.call(card.id()))
-	return "" if key.is_empty() else _tr(key)
+	return "" if key.is_empty() else tr(key)
 
 
 func change(card: CardInstance) -> String:
 	var values: Dictionary[String, Variant] = {"in": card_text(_card), "out": CardName.of(card)}
-	var marks: PackedStringArray = []
-	if CardMark.draws(card.enhancement_id()):
-		marks.append(DeckSheet.mark_name(card.enhancement_id()))
-	if card.owner_stamp() == DeckSheet.PLAYER:
-		marks.append(DeckSheet.mark_name(DeckSheet.STAMP))
+	var marks: PackedStringArray = DeckSheet.marks(card)
 	if marks.is_empty():
-		return _tr("exchange.change").format(values)
+		return tr("exchange.change").format(values)
 	values["marks"] = marks[0]
 	if marks.size() > 1:
-		values["marks"] = _tr("exchange.marks.both").format({"first": marks[0], "second": marks[1]})
-	return _tr("exchange.change.marked").format(values)
+		values["marks"] = tr("exchange.marks.both").format({"first": marks[0], "second": marks[1]})
+	return tr("exchange.change.marked").format(values)
 
 
 func commit(_controller: RunController, card_id: int) -> bool:
 	return int(_act.call(card_id)) == RunController.OK
-
-
-static func _tr(key: String) -> String:
-	return TranslationServer.translate(key)
