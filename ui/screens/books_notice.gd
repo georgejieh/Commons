@@ -108,7 +108,7 @@ func _on_event(event: RunEvent) -> void:
 	if event.type != RunEvent.Type.BOOKS_CORRECTED:
 		return
 	var dark: Array[String] = []
-	if _controller != null and _controller.has_run():
+	if _controller.has_run():
 		dark = _controller.run.dark_figures()
 	_queue.append(BooksNoticeText.of(event.correction, dark))
 	if not visible:

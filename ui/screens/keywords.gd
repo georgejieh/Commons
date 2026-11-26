@@ -98,14 +98,14 @@ static func glossary(ids: PackedStringArray, wrap_lines: bool = true) -> String:
 	return "\n".join(lines)
 
 
-## text broken into lines of at most columns characters, for the engine's own
+## text broken into lines of at most WRAP_COLUMNS characters, for the engine's own
 ## tooltips, which never wrap.
-static func wrapped(text: String, columns: int = WRAP_COLUMNS) -> String:
+static func wrapped(text: String) -> String:
 	var lines: PackedStringArray = []
 	for paragraph: String in text.split("\n"):
 		var line: String = ""
 		for word: String in paragraph.split(" "):
-			if not line.is_empty() and line.length() + word.length() + 1 > columns:
+			if not line.is_empty() and line.length() + word.length() + 1 > WRAP_COLUMNS:
 				lines.append(line)
 				line = word
 			else:

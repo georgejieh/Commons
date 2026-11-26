@@ -79,8 +79,7 @@ func _init() -> void:
 	add_child(column)
 
 
-## Shows a Campaign: its name and kind, its rule, and why it cannot be used now when
-## reason_text is not empty.
+## Shows a Campaign: its name and kind and its rule; set_reason says why it cannot be used.
 func show_campaign(
 	at_slot: int, held_id: String, title: String, rule: String, private: bool
 ) -> void:

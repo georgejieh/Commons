@@ -13,7 +13,7 @@ func open(app: DemoApp) -> void:
 	# As wide as its sheet, so the scroll's bar stands beside the keys, not at the far
 	# side of the page.
 	_page.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_page.leave.connect(func() -> void: app.back())
+	_page.left.connect(func() -> void: app.back())
 	column.add_child(_page)
 	ScreenKit.reveal(column)
 	_page.focus_first()
