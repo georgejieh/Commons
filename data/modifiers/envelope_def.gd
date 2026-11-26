@@ -33,15 +33,21 @@ enum Wrapping {
 	PARCEL,
 }
 
+## The ID the registries, the saves and the pools name it by.
 @export var id: String
+## What it costs at the counter, in coupons.
 @export var cost: int
 ## Finished runs needed before it is offered; RunUnlocks reads it (ADR 0025).
 @export var unlock_tier: int = 0
 ## Items it shows to choose from, before a Reform adds more.
 @export var choices: int = 3
-## What its places can hold, and the weight of each, in the same order.
+## What its places can hold.
 @export var contents: Array[Content] = []
+## The weight of each of those contents, in the same order.
 @export var weights: Array[int] = []
+## How it looks on the counter and when it is opened.
 @export var wrapping: Wrapping = Wrapping.STRING_TIE
+## The string key of its name.
 @export var name_key: String
+## The string key of its rules text.
 @export var text_key: String
