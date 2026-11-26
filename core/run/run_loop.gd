@@ -127,10 +127,12 @@ static func all_cadres() -> Array[ModifierDef]:
 	return RunPools.STORE_CADRES.cadres + RunPools.MARKET_CADRES.cadres
 
 
+## What the loop waits on now.
 func awaiting() -> Awaiting:
 	return _awaiting
 
 
+## The current Set's log so far.
 func events() -> Array[RunEvent]:
 	return set_log.events()
 
@@ -293,6 +295,7 @@ func bid_holder() -> int:
 	return Seats.NONE if _bidding == null else _bidding.landlord()
 
 
+## Calls or grabs the landlord seat with claim true, or passes on it.
 func player_bid(claim: bool) -> Reason:
 	if _awaiting != Awaiting.PLAYER_BID:
 		return Reason.NOT_AWAITED
@@ -473,6 +476,7 @@ func player_books(figures: Dictionary) -> Reason:
 	return Reason.OK
 
 
+## Declares the player's need from the Commons at the round's split.
 func player_need(need: int) -> Reason:
 	if _awaiting != Awaiting.PLAYER_NEED:
 		return Reason.NOT_AWAITED
@@ -619,6 +623,7 @@ func is_last_set() -> bool:
 	return state.set_type == RunState.SetType.BOSS and state.year == _sets.years()
 
 
+## The Sets this run plays, its stake's numbers in them.
 func sets() -> SetConfig:
 	return _sets
 
