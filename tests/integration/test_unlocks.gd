@@ -69,11 +69,11 @@ func _assert_open(ids: Array[String], tiers: Dictionary[String, int], finished: 
 ## Everything both counters show in one visit, rerolls included.
 func _visit(loop: RunLoop, tiers: Dictionary[String, int], finished: int) -> void:
 	loop.state.coupons = RICH
-	for counter: RunShop in [loop.shop, loop.market]:
+	for counter: RunShop in [loop.visit.shop, loop.visit.market]:
 		counter.open()
-	loop.shop.stock_directives()
+	loop.visit.shop.stock_directives()
 	for draws: int in REROLLS + 1:
-		for counter: RunShop in [loop.shop, loop.market]:
+		for counter: RunShop in [loop.visit.shop, loop.visit.market]:
 			counter.campaigns.draw()
 			counter.reforms.draw()
 			counter.envelopes.draw()
@@ -83,13 +83,13 @@ func _visit(loop: RunLoop, tiers: Dictionary[String, int], finished: int) -> voi
 			_assert_open(counter.reforms.stock(), tiers, finished)
 			_assert_open(counter.envelopes.stock(), tiers, finished)
 		if draws < REROLLS:
-			loop.shop.reroll()
-			loop.market.reroll()
+			loop.visit.shop.reroll()
+			loop.visit.market.reroll()
 
 
 ## Each envelope a counter sells, bought and opened: every item it shows is open.
 func _envelopes(loop: RunLoop, tiers: Dictionary[String, int], finished: int) -> void:
-	for counter: RunShop in [loop.shop, loop.market]:
+	for counter: RunShop in [loop.visit.shop, loop.visit.market]:
 		if counter.envelopes.stock().is_empty():
 			continue
 		assert_int(counter.envelopes.buy(0)).is_equal(RunShop.Reason.OK)
@@ -108,8 +108,8 @@ func test_every_offer_path_draws_only_open_items() -> void:
 			_visit(loop, tiers, finished)
 			_envelopes(loop, tiers, finished)
 			# Campaigns and Reforms count too, for the tiers whose Cadres are few.
-			var shown: Array[String] = loop.shop.stock() + loop.market.stock()
-			shown.append_array(loop.shop.campaigns.stock() + loop.shop.reforms.stock())
+			var shown: Array[String] = loop.visit.shop.stock() + loop.visit.market.stock()
+			shown.append_array(loop.visit.shop.campaigns.stock() + loop.visit.shop.reforms.stock())
 			for item_id: String in shown:
 				if not item_id.is_empty():
 					reached[tiers[item_id]] = true
@@ -220,7 +220,7 @@ func test_a_save_keeps_the_pools_it_started_with() -> void:
 	Profile.write(_profile, data)
 	var resumed: RunController = auto_free(RunController.new())
 	assert_bool(resumed.continue_saved(_saves, _profile)).is_true()
-	var loop: RunLoop = resumed.get("_loop")
+	var loop: RunLoop = resumed.run_loop()
 	assert_int(loop.state.identity.finished_runs).is_equal(1)
 	var open: int = (
 		RunPools
@@ -373,7 +373,7 @@ func test_an_all_open_request_opens_everything_without_a_profile() -> void:
 	assert_int(envelopes).is_equal(
 		RunPools.STORE.envelopes.size() + RunPools.MARKET.envelopes.size()
 	)
-	assert_int(state.roster.size()).is_equal(RunLoop.DEFAULT_VILLAGE.families.size())
+	assert_int(state.roster.size()).is_equal(RunDefaults.VILLAGE.families.size())
 	assert_int(state.identity.generation).is_equal(0)
 	# The same request without the option is held to a new profile's limits.
 	var limited: RunRequest = RunRequest.new(RunRequest.FULL, 6800, 1)

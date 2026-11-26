@@ -24,9 +24,7 @@ func before_test() -> void:
 
 
 func _apply(source_id: String) -> void:
-	RunMeters.apply(
-		_state, source_id, TABLE, ModifierStack.new(), RunLoop.DEFAULT_PARAMS, 0, _events
-	)
+	RunMeters.apply(_state, source_id, TABLE, ModifierStack.new(), RunDefaults.PARAMS, 0, _events)
 
 
 func _setbacks(name: String) -> Array[RunEvent]:
@@ -79,7 +77,7 @@ func test_denunciation_debuff_raises_denunciation_by_a_band() -> void:
 func test_meters_clamp_to_their_range() -> void:
 	for index: int in 10:
 		_apply(RunMeters.DEBUFF_FAMINE)
-	assert_int(_state.famine).is_equal(RunLoop.DEFAULT_PARAMS.meter_max)
+	assert_int(_state.famine).is_equal(RunDefaults.PARAMS.meter_max)
 
 
 func test_rationing_starts_once_per_crossing_and_lifts_below_the_margin() -> void:
@@ -133,7 +131,7 @@ func test_the_meter_change_hook_edits_the_delta() -> void:
 	definition.kind = ModifierDef.Kind.CADRE
 	definition.hooks.assign([Hooks.METER_CHANGE])
 	stack.add_entry(ActiveModifier.new(definition, Halve.new()))
-	RunMeters.apply(_state, RunMeters.CAUGHT_LIE, TABLE, stack, RunLoop.DEFAULT_PARAMS, 0, _events)
+	RunMeters.apply(_state, RunMeters.CAUGHT_LIE, TABLE, stack, RunDefaults.PARAMS, 0, _events)
 	@warning_ignore("integer_division")
 	var halved: int = TABLE.source(RunMeters.CAUGHT_LIE).amount / 2
 	assert_int(_state.denunciation).is_equal(halved)
@@ -168,14 +166,14 @@ func _apply_lowering(meter: String, amount: int) -> void:
 	row.amount = amount
 	table.sources.assign([row])
 	var stack: ModifierStack = ModifierStack.new()
-	RunMeters.apply(_state, "relief", table, stack, RunLoop.DEFAULT_PARAMS, 0, _events)
+	RunMeters.apply(_state, "relief", table, stack, RunDefaults.PARAMS, 0, _events)
 
 
 func test_a_pool_below_the_declared_needs_is_a_commons_shortfall() -> void:
 	_state.landlord_seat = 1
 	_state.commons_pool = 10
 	var configs: Array[BotConfig] = RunScript.bots()
-	var params: RunParams = RunLoop.DEFAULT_PARAMS
+	var params: RunParams = RunDefaults.PARAMS
 	assert_bool(RoundBanking.split(_state, 0, 50, configs, params, _events)).is_true()
 	_state.commons_pool = 100000
 	assert_bool(RoundBanking.split(_state, 0, 50, configs, params, _events)).is_false()

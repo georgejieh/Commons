@@ -20,11 +20,11 @@ func _at_the_shops(seed_value: int) -> RunLoop:
 ## Rerolls the black market until it offers the Cadre, and returns its slot.
 func _offer(loop: RunLoop, cadre_id: String) -> int:
 	for _reroll: int in REROLLS:
-		var slot: int = loop.market.stock().find(cadre_id)
+		var slot: int = loop.visit.market.stock().find(cadre_id)
 		if slot >= 0:
 			return slot
 		assert_int(loop.player_market_reroll()).is_equal(RunLoop.Reason.OK)
-	return loop.market.stock().find(cadre_id)
+	return loop.visit.market.stock().find(cadre_id)
 
 
 ## The record from a shop visit, its checkpoint given the coupons the test handed out.
@@ -61,7 +61,7 @@ func test_a_market_buy_saved_before_the_picker_still_replays() -> void:
 	var loop: RunLoop = _at_the_shops(5102)
 	var slot: int = -1
 	for _reroll: int in REROLLS:
-		var stock: Array[String] = loop.market.stock()
+		var stock: Array[String] = loop.visit.market.stock()
 		for index: int in stock.size():
 			if stock[index] != RunShop.SOLD and not _needs_rank(stock[index]):
 				slot = index
@@ -72,7 +72,7 @@ func test_a_market_buy_saved_before_the_picker_still_replays() -> void:
 	assert_int(loop.player_market_buy(slot)).is_equal(RunLoop.Reason.OK)
 	assert_bool(loop.record.commands[-1].has("rank")).is_false()
 	var record: Dictionary = _rich_record(loop)
-	assert_bool(RunRecord.is_valid(record)).is_true()
+	assert_bool(RunRecordCheck.is_valid(record)).is_true()
 	var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
 	assert_array(resumed.state.inventory.cadres).is_equal(loop.state.inventory.cadres)
 

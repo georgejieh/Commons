@@ -46,8 +46,8 @@ func test_a_pattern_that_does_not_beat_cannot_play() -> void:
 func test_a_legal_selection_plays_and_scores_its_preview() -> void:
 	_to_player_play(false)
 	_hand.refresh()
-	var move: Pattern = _controller.legal_moves()[0]
-	for card_id: int in _controller.card_ids_for(move):
+	var move: Pattern = _controller.table.legal_moves()[0]
+	for card_id: int in _controller.table.card_ids_for(move):
 		_hand.toggle(card_id)
 	assert_bool(_hand.can_play()).is_true()
 	assert_str(_hand.label_key()).starts_with(HandModel.KEY_PATTERN_PREFIX)
@@ -66,8 +66,8 @@ func test_a_legal_selection_plays_and_scores_its_preview() -> void:
 func test_selection_drops_cards_no_longer_held() -> void:
 	_to_player_play(false)
 	_hand.refresh()
-	var move: Pattern = _controller.legal_moves()[0]
-	var ids: Array[int] = _controller.card_ids_for(move)
+	var move: Pattern = _controller.table.legal_moves()[0]
+	var ids: Array[int] = _controller.table.card_ids_for(move)
 	for card_id: int in ids:
 		_hand.toggle(card_id)
 	_controller.play(ids)
@@ -81,7 +81,7 @@ func _to_player_play(following: bool) -> void:
 	var script: ControllerScript = ControllerScript.new()
 	for _turn: int in 400:
 		if _controller.awaiting() == RunLoop.Awaiting.PLAYER_PLAY:
-			var view: SeatView = _controller.seat_view()
+			var view: SeatView = _controller.table.seat_view()
 			if (view.public.current_play != null) == following:
 				return
 		if not script.act(_controller):
@@ -94,9 +94,9 @@ func _to_unbeatable_single() -> int:
 	var script: ControllerScript = ControllerScript.new()
 	for _turn: int in 2000:
 		_to_player_play(true)
-		var current: Pattern = _controller.seat_view().public.current_play
+		var current: Pattern = _controller.table.seat_view().public.current_play
 		if current.type == Pattern.Type.SINGLE:
-			for card: CardInstance in _controller.player_cards():
+			for card: CardInstance in _controller.table.player_cards():
 				if card.base_rank() < current.main_rank:
 					_hand.refresh()
 					return card.id()
@@ -118,7 +118,7 @@ func _two_ranks_apart() -> Array[int]:
 func test_a_stale_selection_waits() -> void:
 	_to_player_play(false)
 	_hand.refresh()
-	var ids: Array[int] = _controller.card_ids_for(_controller.legal_moves()[0])
+	var ids: Array[int] = _controller.table.card_ids_for(_controller.table.legal_moves()[0])
 	for card_id: int in ids:
 		_hand.toggle(card_id)
 	_controller.play(ids)

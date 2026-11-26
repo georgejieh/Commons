@@ -112,12 +112,12 @@ func refresh() -> void:
 
 ## Calling is free and opens the seat; a grab takes it from whoever called.
 func _show_bid() -> void:
-	var holder: int = _controller.bid_holder()
+	var holder: int = _controller.table.bid_holder()
 	var grabbing: bool = holder != Seats.NONE
 	_actions.call.text = tr("action.grab" if grabbing else "action.call")
 	if grabbing:
 		var who: String = _names.get(holder, "")
-		var cost: int = _controller.grab_cost()
+		var cost: int = _controller.figures.grab_cost()
 		_actions.reading.text = tr("table.grab_prompt").format({"name": who, "cost": cost})
 	else:
 		_actions.reading.text = tr("table.bid_prompt")
@@ -133,7 +133,7 @@ func _on_play() -> void:
 		return
 	var reading: Pattern = _hand.hint_reading()
 	if reading == null and picker != null:
-		var readings: Array[Pattern] = _controller.readings_for(ids)
+		var readings: Array[Pattern] = _controller.table.readings_for(ids)
 		if readings.size() > 1:
 			_picking = ids
 			picker.open(readings, _hand_view.selection_rect())
@@ -166,7 +166,7 @@ func _set_picker(value: ReadingPicker) -> void:
 func _on_pass() -> void:
 	if not _allowed("pass"):
 		return
-	var refusal: String = _controller.pass_refusal()
+	var refusal: String = _controller.table.pass_refusal()
 	if not refusal.is_empty():
 		_actions.reading.text = tr(refusal)
 		_actions.reading.tooltip_text = tr(refusal)

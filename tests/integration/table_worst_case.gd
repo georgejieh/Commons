@@ -28,7 +28,7 @@ const STRIP_WIDTH: float = 428.0
 ## and two wild ranks (set by fill); and either way the worst boss (BossWorstCase).
 ## Cadres are never on the strip (ADR 0039).
 static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> TableScreen:
-	var loop: RunLoop = app.controller.get("_loop")
+	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
 	if not state.reforms.has(TRAY_REFORM):
 		state.reforms.append(TRAY_REFORM)
@@ -273,8 +273,8 @@ static func speech_lines() -> Array[String]:
 	lines.append_array(TableSpeech.BOOK.lines)
 	lines.append_array(TableSpeech.VISIT.lines)
 	var families: Array[FamilyDef] = []
-	families.append_array(RunLoop.DEFAULT_VILLAGE.families)
-	families.append_array(RunLoop.DEFAULT_VILLAGE.youth_templates)
+	families.append_array(RunDefaults.VILLAGE.families)
+	families.append_array(RunDefaults.VILLAGE.youth_templates)
 	for family: FamilyDef in families:
 		if family.speech != null:
 			lines.append_array(family.speech.lines)
@@ -287,7 +287,7 @@ static func speech_lines() -> Array[String]:
 ## The three debuffs that stand tallest on the strip, each measured on a strip of the
 ## table's width at the text size now.
 static func tallest_debuffs(app: DemoApp, suite: GdUnitTestSuite) -> Array[String]:
-	var loop: RunLoop = app.controller.get("_loop")
+	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
 	var strip: DebuffStrip = DebuffStrip.new()
 	app.add_child(strip)
@@ -311,7 +311,8 @@ static func longest_named_debuffs(controller: RunController) -> Array[String]:
 	var ids: Array[String] = []
 	for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 		ids.append(debuff.id)
-	var named: Callable = func(id: String) -> int: return controller.modifier_name(id).length()
+	var named: Callable = func(id: String) -> int:
+		return controller.texts.modifier_name(id).length()
 	ids.sort_custom(func(a: String, b: String) -> bool: return named.call(a) > named.call(b))
 	return ids.slice(0, 3)
 
@@ -322,9 +323,10 @@ static func longest_named_cadres(controller: RunController) -> Array[String]:
 	for cadre: ModifierDef in RunLoop.all_cadres():
 		if not ids.has(cadre.id):
 			ids.append(cadre.id)
-	var named: Callable = func(id: String) -> int: return controller.modifier_name(id).length()
+	var named: Callable = func(id: String) -> int:
+		return controller.texts.modifier_name(id).length()
 	ids.sort_custom(func(a: String, b: String) -> bool: return named.call(a) > named.call(b))
-	return ids.slice(0, controller.cadre_slots())
+	return ids.slice(0, controller.figures.cadre_slots())
 
 
 ## The two wild ranks whose line on the strip is longest.
@@ -357,7 +359,8 @@ static func longest_campaigns(app: DemoApp) -> Array[String]:
 	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
 		for campaign: CampaignDef in pool.campaigns:
 			ids.append(campaign.id)
-	var named: Callable = func(id: String) -> int: return app.controller.campaign_name(id).length()
+	var named: Callable = func(id: String) -> int:
+		return app.controller.texts.campaign_name(id).length()
 	ids.sort_custom(
 		func(a: String, b: String) -> bool: return int(named.call(a)) > int(named.call(b))
 	)

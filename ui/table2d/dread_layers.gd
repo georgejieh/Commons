@@ -102,12 +102,12 @@ static func table_materials(
 
 ## New targets from the run, read at a round boundary. landlord overrides the state's
 ## seat when the table knows it sooner, as when a bid has just been won.
-func refresh(state: RunState, settle_now: bool = false, landlord: Variant = null) -> void:
-	var is_landlord: bool = state.landlord_seat == 0 if landlord == null else bool(landlord)
+func refresh(state: RunView, settle_now: bool = false, landlord: Variant = null) -> void:
+	var is_landlord: bool = state.landlord_seat() == 0 if landlord == null else bool(landlord)
 	# A meter not shown as it is gives the room no dread (ADR 0022).
-	var famine: int = ShownFigures.board(state, RunCorrections.FAMINE, state.famine)
+	var famine: int = ShownFigures.board(state, RunCorrections.FAMINE, state.famine())
 	var denunciation: int = ShownFigures.board(
-		state, RunCorrections.DENUNCIATION, state.denunciation
+		state, RunCorrections.DENUNCIATION, state.denunciation()
 	)
 	board.set_inputs(famine, denunciation, is_landlord, corruption())
 	_choose_music(is_landlord)

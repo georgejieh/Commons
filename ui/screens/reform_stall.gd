@@ -32,7 +32,7 @@ func setup(app: DemoApp, slip: DetailSlip, screen_busy: Callable, offered: bool)
 	_slip = slip
 	_screen_busy = screen_busy
 	if offered:
-		_shelf = app.controller.reform_shelf()
+		_shelf = app.controller.store.reform_shelf()
 	offers.add_theme_constant_override("separation", 12)
 	strip.described.connect(_describe_held)
 	strip.left.connect(_slip.hide_for)
@@ -86,11 +86,11 @@ func _offer(slot: int, reform_id: String) -> CounterPanel:
 		CounterPanel.Look.DECREE,
 		TranslationServer.translate("reform.eyebrow"),
 		reform_id,
-		controller.reform_name(reform_id),
-		controller.reform_text(reform_id),
+		controller.texts.reform_name(reform_id),
+		controller.texts.reform_text(reform_id),
 		TranslationServer.translate("store.buy").format({"price": _shelf.price(slot)})
 	)
-	var coupons: int = controller.state_copy().coupons
+	var coupons: int = controller.run.coupons()
 	BuyTicket.dress(made.buy, _shelf.can_buy(slot), _shelf.price(slot), coupons)
 	made.buy.pressed.connect(_buy.bind(slot, made))
 	made.described.connect(_describe)
@@ -104,14 +104,16 @@ func _describe(described: CounterPanel) -> void:
 
 func _describe_held(tag: Control, reform_id: String) -> void:
 	var controller: RunController = _app.controller
-	_slip.show_for(tag, controller.reform_name(reform_id), controller.reform_text(reform_id), false)
+	_slip.show_for(
+		tag, controller.texts.reform_name(reform_id), controller.texts.reform_text(reform_id), false
+	)
 
 
 ## Enacts the offer and acts it out: stamped, then flown up onto the strip.
 func _buy(slot: int, offered: CounterPanel) -> void:
 	if _busy or (_screen_busy.is_valid() and _screen_busy.call()):
 		return
-	var held: int = _app.controller.held_reforms().size()
+	var held: int = _app.controller.items.held_reforms().size()
 	if _app.controller.reform(slot) != RunController.OK:
 		show_offer()
 		return

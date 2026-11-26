@@ -119,8 +119,8 @@ func play(seed_value: int) -> BalanceResult:
 
 
 func _finish() -> void:
-	# The controller keeps the loop's bot count to itself; the tests read it the same way.
-	var loop: RunLoop = WalkBase.member(_controller, "_loop")
+	# The loop's count of refused bot actions, reached as the tests reach it.
+	var loop: RunLoop = _controller.run_loop()
 	var refused: int = loop.refused_bot_actions
 	if refused > 0:
 		_fail("%d bot actions refused" % refused)
@@ -177,7 +177,7 @@ func _year() -> int:
 func _remember_hand() -> void:
 	if not _fresh_deal:
 		return
-	var cards: Array[CardInstance] = _controller.player_cards()
+	var cards: Array[CardInstance] = _controller.table.player_cards()
 	if cards.is_empty():
 		return
 	_last_hand = BalanceCards.counts(cards)
@@ -186,13 +186,13 @@ func _remember_hand() -> void:
 
 func _bid() -> void:
 	var bidding: Bidding = _bidding()
-	var is_grab: bool = _controller.bid_holder() != Seats.NONE
+	var is_grab: bool = _controller.table.bid_holder() != Seats.NONE
 	var is_last: bool = bidding != null and bidding.is_last_to_act()
 	var bot_calls: bool = Bot.decide_bid(
-		BalanceCards.counts(_controller.player_cards()),
+		BalanceCards.counts(_controller.table.player_cards()),
 		false,
 		is_last,
-		_controller.player_table(),
+		_controller.table.player_table(),
 		_hard,
 		BotBudget.unlimited()
 	)
@@ -221,10 +221,10 @@ func _swap() -> void:
 	if _strategy.swaps():
 		var plot: Array[CardInstance] = _controller.state_copy().inventory.plot
 		var chosen: Array[Array] = BalanceStrategy.best_swap(
-			_controller.player_cards(),
+			_controller.table.player_cards(),
 			plot,
-			_controller.swap_limit(),
-			_controller.player_table().rank_map
+			_controller.table.swap_limit(),
+			_controller.table.player_table().rank_map
 		)
 		hand_ids.assign(chosen[0])
 		plot_ids.assign(chosen[1])
@@ -233,24 +233,26 @@ func _swap() -> void:
 
 
 func _play() -> void:
-	var legal: Array[Pattern] = _controller.legal_moves()
+	var table: RunTableView = _controller.table
+	var legal: Array[Pattern] = table.legal_moves()
 	var play: BotPlay = Bot.decide_play(
-		_controller.seat_view(), legal, _controller.player_table(), _hard, BotBudget.unlimited()
+		table.seat_view(), legal, table.player_table(), _hard, BotBudget.unlimited()
 	)
-	if play.is_pass() and not _controller.pass_refusal().is_empty():
+	if play.is_pass() and not table.pass_refusal().is_empty():
 		# Night Shift refuses the pass: the first legal play goes instead (ADR 0023).
-		_send("play", _controller.play(_controller.card_ids_for(legal[0])))
+		_send("play", _controller.play(table.card_ids_for(legal[0])))
 	elif play.is_pass():
 		_send("pass", _controller.pass_turn())
 	else:
 		# Under a wild rank the play is sent as the reading the bot chose (ADR 0029).
-		var reading: Pattern = null if _controller.wild_ranks().is_empty() else play.pattern
-		_send("play", _controller.play(_controller.card_ids_for(play.pattern), reading))
+		var reading: Pattern = null if table.wild_ranks().is_empty() else play.pattern
+		_send("play", _controller.play(table.card_ids_for(play.pattern), reading))
 
 
 func _need() -> void:
-	var faces: int = roundi(_controller.audit_chance() * RunPools.AUDIT.die_sides)
-	var claim: int = _strategy.need(_controller.base_need(), RunStarter.DEMO_RUN.need_cap, faces)
+	var faces: int = roundi(_controller.figures.audit_chance() * RunPools.AUDIT.die_sides)
+	var fair: int = _controller.figures.base_need()
+	var claim: int = _strategy.need(fair, RunStarter.DEMO_RUN.need_cap, faces)
 	result.max_need = maxi(result.max_need, claim)
 	_send("declare_need", _controller.declare_need(claim))
 
@@ -258,16 +260,16 @@ func _need() -> void:
 ## Uses the first held Campaign the strategy uses and the run allows now. Returns true
 ## when it sent one.
 func _use_campaign() -> bool:
-	var held: Array[String] = _controller.held_campaigns()
+	var held: Array[String] = _controller.items.held_campaigns()
 	for slot: int in held.size():
 		if not _strategy.uses_campaign(held[slot]):
 			continue
 		if not BalanceWave.helps(held[slot], _controller.state_copy(), _params):
 			continue
-		if _controller.campaign_reason(slot, [], false) != RunController.CAMPAIGN_OK:
+		if _controller.items.campaign_reason(slot, [], false) != RunController.CAMPAIGN_OK:
 			continue
 		var cards: Array[int] = _campaign_cards(slot, held[slot])
-		if _controller.campaign_reason(slot, cards, true) != RunController.CAMPAIGN_OK:
+		if _controller.items.campaign_reason(slot, cards, true) != RunController.CAMPAIGN_OK:
 			continue
 		_send("campaign", _controller.campaign(slot, cards))
 		return true
@@ -278,17 +280,19 @@ func _use_campaign() -> bool:
 ## them away and the highest otherwise, each one the run accepts.
 func _campaign_cards(slot: int, campaign_id: String) -> Array[int]:
 	var chosen: Array[int] = []
-	var most: int = _controller.campaign_cards(campaign_id).y
+	var most: int = _controller.items.campaign_cards(campaign_id).y
 	if most == 0:
 		return chosen
 	var giving: bool = _params.giving_campaigns.has(campaign_id)
-	var rank_map: PackedByteArray = _controller.player_table().rank_map
-	for card: CardInstance in BalanceCards.sorted(_controller.player_cards(), rank_map, giving):
+	var rank_map: PackedByteArray = _controller.table.player_table().rank_map
+	for card: CardInstance in BalanceCards.sorted(
+		_controller.table.player_cards(), rank_map, giving
+	):
 		if chosen.size() >= most:
 			break
 		var tried: Array[int] = chosen.duplicate()
 		tried.append(card.id())
-		var reason: int = _controller.campaign_reason(slot, tried, true)
+		var reason: int = _controller.items.campaign_reason(slot, tried, true)
 		if reason == RunController.CAMPAIGN_OK or reason == CampaignEffect.Reason.CARD_COUNT:
 			chosen = tried
 	return chosen
@@ -307,7 +311,7 @@ func _shop() -> void:
 ## Takes one step at the shops and names what for, as BalanceLedger does, or returns ""
 ## when the strategy is done there.
 func _shop_step(state: RunState) -> String:
-	var opened: EnvelopeShelf = _controller.opened_envelope()
+	var opened: EnvelopeShelf = _controller.store.opened_envelope()
 	if opened != null:
 		_send("envelope_pick", BalanceShop.keep_from(_controller, opened))
 		return "envelopes"
@@ -321,7 +325,7 @@ func _shop_step(state: RunState) -> String:
 	if offer != null:
 		_bought(offer, state)
 		var rank: int = BalanceCards.most_held(_rank_counts(state))
-		if not offer.market or not _controller.needs_rank(offer.item_id):
+		if not offer.market or not _controller.items.needs_rank(offer.item_id):
 			rank = Ranks.INVALID
 		_send("buy", BalanceShop.buy(_controller, offer, rank))
 		return BalanceLedger.category(offer)
@@ -336,9 +340,9 @@ func _shop_step(state: RunState) -> String:
 func _bought(offer: BalanceOffer, state: RunState) -> void:
 	var item_id: String = offer.item_id
 	if offer.kind == BalanceOffer.Kind.REFORM:
-		item_id = _controller.reform_shelf().stock()[offer.slot]
+		item_id = _controller.store.reform_shelf().stock()[offer.slot]
 	elif offer.kind == BalanceOffer.Kind.CAMPAIGN:
-		item_id = _controller.campaign_shelf(offer.market).stock()[offer.slot]
+		item_id = _controller.store.campaign_shelf(offer.market).stock()[offer.slot]
 	if WILD_ITEMS.has(item_id):
 		result.wild_buys[item_id] = result.wild_buys.get(item_id, 0) + 1
 	if BalanceWave.ITEMS.has(item_id):

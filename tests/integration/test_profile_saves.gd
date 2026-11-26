@@ -125,7 +125,7 @@ func _full_state(phase: RunFlow.State, set_index: int = 0) -> RunState:
 	state.identity.id = RunIdentity.make_id(SEED, 5)
 	state.identity.kind = RunIdentity.Kind.FULL
 	state.identity.generation = 1
-	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	Roster.start(state, RunDefaults.VILLAGE, [])
 	state.roster[2].status = RosterEntry.Status.DEAD
 	state.phase = phase
 	state.set_index = set_index
@@ -199,7 +199,7 @@ func test_a_finished_run_is_recorded_once() -> void:
 	assert_int(entry.generation).is_equal(1)
 	assert_int(entry.year).is_equal(8)
 	assert_str(entry.class_id).is_equal(HistoryEntry.PEASANT)
-	assert_array(entry.dead).is_equal([RunLoop.DEFAULT_VILLAGE.families[2].name_key])
+	assert_array(entry.dead).is_equal([RunDefaults.VILLAGE.families[2].name_key])
 
 
 ## The profile's file is damaged and its backup is older. A backup that already holds the
@@ -264,7 +264,7 @@ func test_a_schema_10_save_resumes_as_a_demo_run() -> void:
 	assert_int(RunStarter.saved_kind(loaded.data)).is_equal(RunRequest.DEMO)
 	var controller: RunController = auto_free(RunController.new())
 	assert_bool(controller.continue_saved(_saves)).is_true()
-	assert_bool(controller.has_village()).is_false()
+	assert_bool(controller.seats.has_village()).is_false()
 	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(11)
 
 
@@ -272,7 +272,7 @@ func test_a_run_save_with_a_broken_identity_falls_back() -> void:
 	var record: RunRecord = RunRecord.new()
 	record.mark(RunState.new(SEED))
 	var data: Dictionary = record.to_dict()
-	assert_bool(RunRecord.is_valid(data)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_true()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint["identity"] = {"id": 4, "kind": 9}
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()

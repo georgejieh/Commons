@@ -89,7 +89,7 @@ func test_only_a_whole_surname_no_village_family_holds_is_taken() -> void:
 	assert_str(Surnames.refusal("Abcdefghijklm")).is_equal(tr("surname.length"))
 	assert_str(Surnames.refusal("Zhang")).is_empty()
 	assert_str(Surnames.refusal("Abcdefghijkl")).is_empty()
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		var surname: String = tr(family.name_key)
 		var line: String = tr("surname.refused").format({"name": surname})
 		assert_str(Surnames.refusal(surname)).is_equal(line)
@@ -308,14 +308,14 @@ func test_the_dossier_holds_the_longest_full_names() -> void:
 		get_tree().root.size = size
 		await _launch()
 		assert_bool(_app.new_run(97, true)).is_true()
-		var loop: RunLoop = _app.controller.get("_loop")
+		var loop: RunLoop = _app.controller.run_loop()
 		var given: Array[String] = [_longest_given(), BOOK.pools[2].names[30]]
 		for seat: int in [1, 2]:
 			loop.state.names.given[loop.state.table[seat]] = given[seat - 1]
 		var dossier: DossierScreen = _app.show_screen("dossier")
 		await await_idle_frame()
 		for seat: int in [1, 2]:
-			var full: String = _app.controller.seated_full_name(seat)
+			var full: String = _app.controller.seats.seated_full_name(seat)
 			assert_str(full).starts_with(given[seat - 1] + " ")
 			await _check_fits(_label_with(dossier, full), full, size)
 
@@ -325,7 +325,7 @@ func _ending_named(given: String, surname: String) -> EndingScreen:
 	state.phase = RunFlow.State.RUN_END
 	state.year = 8
 	state.year_rounds = 4
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		state.roster.append(RosterEntry.new(family.id))
 	state.names.active = true
 	state.names.player_surname = surname

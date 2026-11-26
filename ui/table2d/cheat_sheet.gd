@@ -140,21 +140,29 @@ func refresh() -> void:
 	for index: int in TYPES.size():
 		_rates[index].text = _rate_text(index + 1)
 	var active: PackedStringArray = []
-	for modifier_id: String in _controller.active_modifier_ids():
+	for modifier_id: String in _controller.items.active_modifier_ids():
 		active.append(
 			(
 				"%s: %s"
-				% [_controller.modifier_name(modifier_id), _controller.modifier_text(modifier_id)]
+				% [
+					_controller.texts.modifier_name(modifier_id),
+					_controller.texts.modifier_text(modifier_id)
+				]
 			)
 		)
 	# A boss twist holds for the whole Set (ADR 0043).
-	var boss: String = _controller.boss()
+	var boss: String = _controller.items.boss()
 	if not boss.is_empty():
-		active.append("%s: %s" % [_controller.modifier_name(boss), _controller.modifier_text(boss)])
+		active.append(
+			(
+				"%s: %s"
+				% [_controller.texts.modifier_name(boss), _controller.texts.modifier_text(boss)]
+			)
+		)
 	# A Reform's rule for the player's seat, such as Industrialization, is in play too.
-	for reform_id: String in _controller.table_rule_reforms():
-		var rule: String = _controller.reform_text(reform_id)
-		active.append("%s: %s" % [_controller.reform_name(reform_id), rule])
+	for reform_id: String in _controller.items.table_rule_reforms():
+		var rule: String = _controller.texts.reform_text(reform_id)
+		active.append("%s: %s" % [_controller.texts.reform_name(reform_id), rule])
 	if active.is_empty():
 		active.append(tr("cheat.none"))
 	_active.text = "\n".join(active)
@@ -166,7 +174,7 @@ func refresh() -> void:
 ## cards may stand in for and that a villager's are plain (ADR 0039), the bomb order, by
 ## size first under bigger bombs, and where Grain comes from.
 func _show_wild() -> void:
-	var ranks: Array[int] = _controller.wild_ranks()
+	var ranks: Array[int] = _controller.table.wild_ranks()
 	_wild_head.visible = not ranks.is_empty()
 	_wild.visible = _wild_head.visible
 	var spacing: int = WILD_SPACING if _wild.visible else SPACING
@@ -175,7 +183,9 @@ func _show_wild() -> void:
 	if ranks.is_empty():
 		_wild.text = ""
 		return
-	var order: String = "cheat.wild.order.big" if _controller.big_bombs() else "cheat.wild.order"
+	var order: String = (
+		"cheat.wild.order.big" if _controller.table.big_bombs() else "cheat.wild.order"
+	)
 	var lines: PackedStringArray = [
 		"%s. %s" % [ReadingText.wild_line(ranks), tr("cheat.wild.stand_in")],
 		"%s %s" % [tr(order), tr("cheat.wild.grain")],
@@ -203,8 +213,8 @@ func wild_text() -> String:
 ## A hand type's Rate at the run's level for it, with the level once it is above the
 ## first. type is a Pattern.Type value.
 func _rate_text(type: int) -> String:
-	var level: int = _controller.hand_level(type)
-	var rate: int = _controller.hand_rate(type, level)
+	var level: int = _controller.figures.hand_level(type)
+	var rate: int = _controller.figures.hand_rate(type, level)
 	if level > 1:
 		return tr("cheat.rate.level").format({"rate": rate, "level": level})
 	return tr("cheat.rate").format({"rate": rate})
@@ -229,7 +239,7 @@ func active_text() -> String:
 
 
 func _rank_order() -> PackedStringArray:
-	var rank_map: PackedByteArray = _controller.player_table().rank_map
+	var rank_map: PackedByteArray = _controller.table.player_table().rank_map
 	var ranks: Array[int] = []
 	for rank: int in Ranks.COUNT:
 		ranks.append(rank)

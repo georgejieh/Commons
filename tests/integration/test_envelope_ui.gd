@@ -39,7 +39,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 func _open(screen_id: String = "store") -> StoreScreen:
@@ -56,7 +56,7 @@ func _stall(store: StoreScreen) -> EnvelopeStall:
 ## Puts one kind on the state store's counter, as only tests do.
 func _offer(envelope_id: String) -> void:
 	var stock: Array[String] = [envelope_id]
-	_loop().shop.envelopes.set("_stock", stock)
+	_loop().visit.shop.envelopes.set("_stock", stock)
 
 
 func _wait(overlay: EnvelopeOverlay) -> void:
@@ -104,7 +104,7 @@ func _cancel() -> void:
 func test_each_shop_offers_an_envelope_explained_by_the_slip() -> void:
 	for screen_id: String in ["store", "black_market"]:
 		var store: StoreScreen = await _open(screen_id)
-		var shelf: EnvelopeShelf = _app.controller.envelope_shelf(screen_id == "black_market")
+		var shelf: EnvelopeShelf = _app.controller.store.envelope_shelf(screen_id == "black_market")
 		var offered: String = shelf.stock()[0]
 		var panel: CounterPanel = _stall(store).panel(0)
 		assert_int(panel.look()).is_equal(CounterPanel.Look.ENVELOPE)
@@ -118,7 +118,7 @@ func test_each_shop_offers_an_envelope_explained_by_the_slip() -> void:
 		assert_str(slip.shown_rule()).contains("3")
 		assert_str(slip.shown_rule()).not_contains("{")
 		assert_bool(slip.get_global_rect().intersects(panel.get_global_rect())).is_false()
-	assert_int(_app.controller.envelope_shelf(true).wrapping("parcel")).is_equal(
+	assert_int(_app.controller.store.envelope_shelf(true).wrapping("parcel")).is_equal(
 		EnvelopeShelf.PARCEL
 	)
 
@@ -172,10 +172,10 @@ func test_focus_moves_along_the_row_and_one_cancel_never_throws_it_away() -> voi
 	await _cancel()
 	assert_bool(overlay.nothing_button().has_focus()).is_true()
 	assert_bool(overlay.asks_to_confirm()).is_true()
-	assert_object(_app.controller.opened_envelope()).is_not_null()
+	assert_object(_app.controller.store.opened_envelope()).is_not_null()
 	assert_bool(_app.menu_is_open()).is_false()
 	await _cancel()
-	assert_object(_app.controller.opened_envelope()).is_null()
+	assert_object(_app.controller.store.opened_envelope()).is_null()
 	assert_dict(_loop().record.commands[-1]).is_equal({"type": "envelope_pick", "index": -1})
 	assert_bool(_stall(store).is_busy()).is_false()
 
@@ -206,10 +206,10 @@ func test_a_choice_that_cannot_be_kept_says_why_at_full_strength() -> void:
 		assert_object(reason.get_theme_color("font_color")).is_equal(ChoicePaper.REFUSED_INK)
 	assert_bool(overlay.nothing_button().has_focus()).is_true()
 	overlay.papers()[0].keep.pressed.emit()
-	assert_object(_app.controller.opened_envelope()).is_not_null()
+	assert_object(_app.controller.store.opened_envelope()).is_not_null()
 	overlay.nothing_button().pressed.emit()
-	assert_object(_app.controller.opened_envelope()).is_null()
-	assert_int(_app.controller.held_campaigns().size()).is_equal(2)
+	assert_object(_app.controller.store.opened_envelope()).is_null()
+	assert_int(_app.controller.items.held_campaigns().size()).is_equal(2)
 
 
 func test_keeping_a_directive_issues_it_under_its_seal() -> void:
@@ -218,12 +218,14 @@ func test_keeping_a_directive_issues_it_under_its_seal() -> void:
 	var overlay: EnvelopeOverlay = _bought(store)
 	await _wait(overlay)
 	var paper: ChoicePaper = overlay.papers()[0]
-	var directive_id: String = _app.controller.opened_envelope().item_id(0)
-	var type: int = _app.controller.directive_types(directive_id)[0]
-	var level: int = _app.controller.hand_level(type)
-	assert_int(paper.lines.size()).is_equal(_app.controller.directive_types(directive_id).size())
+	var directive_id: String = _app.controller.store.opened_envelope().item_id(0)
+	var type: int = _app.controller.items.directive_types(directive_id)[0]
+	var level: int = _app.controller.figures.hand_level(type)
+	assert_int(paper.lines.size()).is_equal(
+		_app.controller.items.directive_types(directive_id).size()
+	)
 	paper.keep.pressed.emit()
-	assert_int(_app.controller.hand_level(type)).is_equal(level + 1)
+	assert_int(_app.controller.figures.hand_level(type)).is_equal(level + 1)
 	assert_bool(overlay.is_busy()).is_true()
 	await get_tree().create_timer(0.4).timeout
 	assert_str(overlay.seal().word()).is_equal(tr("directive.issued").to_upper())
@@ -239,7 +241,7 @@ func test_a_kept_campaign_reaches_the_tray_and_nothing_is_left_behind() -> void:
 	var store: StoreScreen = await _open()
 	var overlay: EnvelopeOverlay = _bought(store)
 	await _wait(overlay)
-	var kept: String = _app.controller.opened_envelope().item_id(1)
+	var kept: String = _app.controller.store.opened_envelope().item_id(1)
 	overlay.papers()[1].keep.pressed.emit()
 	await get_tree().create_timer(0.3).timeout
 	var word: String = overlay.seal().word()
@@ -248,7 +250,7 @@ func test_a_kept_campaign_reaches_the_tray_and_nothing_is_left_behind() -> void:
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_bool(is_instance_valid(overlay)).is_false()
-	assert_array(_app.controller.held_campaigns()).is_equal([kept])
+	assert_array(_app.controller.items.held_campaigns()).is_equal([kept])
 	var stall: CampaignStall = store.get("_campaign_stall")
 	var tray: CampaignTray = stall.tray
 	assert_int(tray.campaign_count()).is_greater_equal(1)
@@ -267,7 +269,7 @@ func test_reduced_motion_opens_and_keeps_at_once() -> void:
 			index = paper.index
 			break
 	overlay.papers()[index].keep.pressed.emit()
-	assert_object(_app.controller.opened_envelope()).is_null()
+	assert_object(_app.controller.store.opened_envelope()).is_null()
 	assert_bool(_stall(store).is_busy()).is_false()
 	await _check_nothing_left(store)
 
@@ -281,7 +283,7 @@ func test_parcel_cards_show_their_marks() -> void:
 		var overlay: EnvelopeOverlay = _bought(store)
 		if overlay == null:
 			break
-		var shelf: EnvelopeShelf = _app.controller.opened_envelope()
+		var shelf: EnvelopeShelf = _app.controller.store.opened_envelope()
 		for paper: ChoicePaper in overlay.papers():
 			var kind: int = shelf.kind(paper.index)
 			if kind == EnvelopeShelf.KIND_STAMPED or kind == EnvelopeShelf.KIND_MODEL:
@@ -369,7 +371,7 @@ func test_a_paper_is_kept_by_clicking_it_and_only_the_pointed_one_is_lit() -> vo
 	assert_bool(papers[0].is_pointed() or papers[0].shows_keep_tag()).is_false()
 	assert_str(overlay.shown_title()).is_equal(papers[2].title)
 	papers[2].keep.pressed.emit()
-	assert_object(_app.controller.opened_envelope()).is_null()
+	assert_object(_app.controller.store.opened_envelope()).is_null()
 	assert_dict(_loop().record.commands[-1]).is_equal({"type": "envelope_pick", "index": 2})
 	_offer("campaign_envelope")
 	_loop().state.coupons = 60

@@ -43,13 +43,13 @@ func test_new_run_starts_the_full_run_and_the_demo_under_its_flag() -> void:
 	_app.demo = false
 	_app.show_screen("run_setup", true)
 	_press(tr("setup.start"))
-	assert_bool(_app.controller.has_village()).is_true()
+	assert_bool(_app.controller.seats.has_village()).is_true()
 	assert_bool(_app.controller.state_copy().identity.is_full()).is_true()
 	assert_int(_app.controller.state_copy().coupons).is_equal(4)
 	_app.demo = true
 	_app.show_screen("run_setup", true)
 	_press(tr("setup.start"))
-	assert_bool(_app.controller.has_village()).is_false()
+	assert_bool(_app.controller.seats.has_village()).is_false()
 	assert_bool(_app.controller.state_copy().identity.is_full()).is_false()
 
 
@@ -58,7 +58,7 @@ func test_continue_shows_only_for_a_run_that_loads() -> void:
 	_app.new_run(SEED, true)
 	assert_bool(_title_has_continue()).is_true()
 	_press(tr("title.continue"))
-	assert_bool(_app.controller.has_village()).is_true()
+	assert_bool(_app.controller.seats.has_village()).is_true()
 	assert_str(_app.switcher.current_id()).is_equal(_app.table_id())
 	# A save and backup that are both damaged offer nothing to continue.
 	for path: String in [SAVE_PATH, SAVE_PATH + SaveService.BACKUP_SUFFIX]:
@@ -71,7 +71,7 @@ func test_continue_picks_up_a_demo_save_as_the_demo() -> void:
 	assert_bool(_title_has_continue()).is_true()
 	_press(tr("title.continue"))
 	assert_bool(_app.controller.has_run()).is_true()
-	assert_bool(_app.controller.has_village()).is_false()
+	assert_bool(_app.controller.seats.has_village()).is_false()
 
 
 func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
@@ -133,7 +133,7 @@ func test_the_endings_way_home_clears_the_run_save() -> void:
 	state.year = 8
 	state.year_rounds = 4
 	state.identity.kind = RunIdentity.Kind.FULL
-	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	Roster.start(state, RunDefaults.VILLAGE, [])
 	var record: RunRecord = RunRecord.new()
 	record.mark(state)
 	Saves.run_service().save(record.to_dict())
@@ -153,8 +153,8 @@ func test_the_endings_way_home_clears_the_run_save() -> void:
 ## one line, and the dossier shows its seat no more.
 func test_the_summary_names_the_family_that_starved() -> void:
 	_app.new_run(SEED, true)
-	var loop: RunLoop = _app.controller.get("_loop")
-	loop.state.famine = RunLoop.DEFAULT_METERS.famine.high
+	var loop: RunLoop = _app.controller.run_loop()
+	loop.state.famine = RunDefaults.METERS.famine.high
 	_app.controller.reseal_book()
 	# A Quota met at its first round, so no missed Quota moves Famine before its end.
 	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
@@ -173,10 +173,10 @@ func test_the_summary_names_the_family_that_starved() -> void:
 			seat = event.seat
 	assert_str(dead).is_not_empty()
 	var summary: SetSummaryScreen = _app.show_screen("set_summary", true)
-	var name: String = tr(_app.controller.family_name_key(dead))
+	var name: String = tr(_app.controller.seats.family_name_key(dead))
 	var line: String = "The %s household did not come to the Commons." % name
 	assert_array(summary.fate_lines()).contains_exactly([line])
-	assert_bool(_app.controller.seat_gone(seat)).is_true()
+	assert_bool(_app.controller.seats.seat_gone(seat)).is_true()
 	var dossier: DossierScreen = _app.show_screen("dossier", true)
 	assert_int(dossier.entries(seat).size()).is_equal(0)
 	assert_int(dossier.entries(3 - seat).size()).is_greater(0)
@@ -187,7 +187,7 @@ func test_the_summary_names_the_family_that_starved() -> void:
 ## seat after all.
 func _seatless_summary(seatless: int) -> SetSummaryScreen:
 	_app.new_run(SEED, true)
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.seatless_sets = seatless
 	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
 	params.targets = params.targets.duplicate()
@@ -208,7 +208,7 @@ func _seatless_summary(seatless: int) -> SetSummaryScreen:
 
 ## ADR 0031: the last free Quota warns that the next one without the seat costs.
 func test_the_summary_warns_on_the_last_free_quota() -> void:
-	var grace: int = RunLoop.DEFAULT_PARAMS.seat_grace_sets
+	var grace: int = RunDefaults.PARAMS.seat_grace_sets
 	var summary: SetSummaryScreen = _seatless_summary(grace - 1)
 	assert_object(summary).is_not_null()
 	if summary == null:
@@ -222,12 +222,12 @@ func test_the_summary_warns_on_the_last_free_quota() -> void:
 
 ## ADR 0031: a Quota past the grace says how many in a row, and the Famine they added.
 func test_the_summary_names_the_famine_the_unheld_seat_cost() -> void:
-	var grace: int = RunLoop.DEFAULT_PARAMS.seat_grace_sets
+	var grace: int = RunDefaults.PARAMS.seat_grace_sets
 	var summary: SetSummaryScreen = _seatless_summary(grace + 1)
 	assert_object(summary).is_not_null()
 	if summary == null:
 		return
-	var rise: int = 2 * RunLoop.DEFAULT_METERS.source(RunMeters.STOOD_BY).amount
+	var rise: int = 2 * RunDefaults.METERS.source(RunMeters.STOOD_BY).amount
 	var line: String = (
 		"Famine rose by %d for %d Quotas in a row without the landlord's seat." % [rise, grace + 2]
 	)

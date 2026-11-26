@@ -32,16 +32,16 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## The most plot cards and swaps a run can hold, from the data and its upgrades.
 func _most_plot() -> int:
-	return RunLoop.DEFAULT_PARAMS.plot_capacity + RunLoop.DEFAULT_PLOT_UPGRADES.capacity_max
+	return RunDefaults.PARAMS.plot_capacity + RunDefaults.PLOT_UPGRADES.capacity_max
 
 
 func _most_swaps() -> int:
-	return RunLoop.DEFAULT_PARAMS.swaps_per_round + RunLoop.DEFAULT_PLOT_UPGRADES.swap_max
+	return RunDefaults.PARAMS.swaps_per_round + RunDefaults.PLOT_UPGRADES.swap_max
 
 
 func _to_swap() -> TableScreen:
@@ -55,7 +55,7 @@ func _to_swap() -> TableScreen:
 				CardInstance.Origin.PLOT
 			)
 		)
-	state.swap_bonus = RunLoop.DEFAULT_PLOT_UPGRADES.swap_max
+	state.swap_bonus = RunDefaults.PLOT_UPGRADES.swap_max
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	for _turn: int in 60:

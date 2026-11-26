@@ -19,6 +19,10 @@ enum Mode {
 	UNWRITTEN,
 }
 
+## The fields of one written decision: the villager's seat and the card IDs it played,
+## none for a pass.
+const DECISION_FIELDS: Array[String] = ["seat", "cards"]
+
 ## Takes a SeatView, the legal moves, a BotTable and a BotConfig, as Bot.decide_play does
 ## but for the budget, and returns a BotPlay. Unset, a searching seat searches with no
 ## limit.
@@ -66,7 +70,7 @@ static func is_valid(decisions: Variant, written: Variant) -> bool:
 
 static func _is_decision(entry: Dictionary) -> bool:
 	var reading: bool = entry.has(ReadingCodec.KEY)
-	if entry.size() != RunRecord.DECISION_FIELDS.size() + (1 if reading else 0):
+	if entry.size() != DECISION_FIELDS.size() + (1 if reading else 0):
 		return false
 	if reading and not ReadingCodec.is_valid(entry[ReadingCodec.KEY]):
 		return false

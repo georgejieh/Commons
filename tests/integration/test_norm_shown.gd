@@ -51,15 +51,15 @@ func _play_first_quota(first: float) -> void:
 
 func test_beating_a_quota_raises_the_next_target_three_percent_a_step() -> void:
 	_play_first_quota(0.01)
-	var steps: int = _app.controller.over_steps()
+	var steps: int = _app.controller.figures.over_steps()
 	var per_step: int = SetConfig.DEFAULT_PARAMS.norm_percent_per_step
 	assert_int(per_step).is_equal(3)
 	assert_int(steps).is_equal(SetConfig.DEFAULT_PARAMS.over_max_steps)
-	assert_int(_app.controller.norm_added_percent()).is_equal(steps * per_step)
+	assert_int(_app.controller.figures.norm_added_percent()).is_equal(steps * per_step)
 	_app.controller.finish_set()
 	_app.controller.leave_store()
 	var raised: float = LATER_TARGET * (100 + steps * per_step) / 100.0
-	assert_float(_app.controller.target()).is_equal_approx(raised, 0.001)
+	assert_float(_app.controller.figures.target()).is_equal_approx(raised, 0.001)
 	# The Quota's start, which the table's bar shows, carries the raised target.
 	var started: float = -1.0
 	for event: RunEvent in _app.controller.set_events():
@@ -73,15 +73,15 @@ func test_the_report_says_how_far_the_quota_was_beaten_and_what_the_norm_did() -
 	var report: SetSummaryScreen = _app.show_screen("set_summary", true)
 	await await_idle_frame()
 	var state: RunState = _app.controller.state_copy()
-	var target: float = _app.controller.target()
+	var target: float = _app.controller.figures.target()
 	var over: int = floori((state.set_progress - target) * 100.0 / target)
 	var expected: String = (
 		tr("summary.norm_raised")
 		. format(
 			{
 				"over": over,
-				"added": _app.controller.norm_added_percent(),
-				"total": _app.controller.norm_percent(),
+				"added": _app.controller.figures.norm_added_percent(),
+				"total": _app.controller.figures.norm_percent(),
 			}
 		)
 	)
@@ -94,7 +94,7 @@ func test_a_quota_beaten_by_less_than_a_quarter_says_the_norm_stayed() -> void:
 	var loop: RunLoop = FileWatchKit.loop_of(_app.controller)
 	loop.state.norm_steps -= loop.state.over_steps
 	loop.state.over_steps = 0
-	var target: float = _app.controller.target()
+	var target: float = _app.controller.figures.target()
 	loop.state.set_progress = target * 1.105
 	var report: SetSummaryScreen = _app.show_screen("set_summary", true)
 	await await_idle_frame()
@@ -108,7 +108,7 @@ func test_the_next_quota_says_how_far_the_norm_raised_its_target() -> void:
 	var intro: Control = _app.show_screen("set_intro", true)
 	await await_idle_frame()
 	var line: String = tr("intro.norm").format(
-		{"percent": _app.controller.norm_percent(), "step": 3}
+		{"percent": _app.controller.figures.norm_percent(), "step": 3}
 	)
 	assert_bool(_has_label(intro, line)).is_true()
 

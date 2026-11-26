@@ -62,7 +62,7 @@ func rules() -> void:
 		loop.state.round_index = ladder.size() - 1
 		var table: Node = app.call("show_screen", "table", true)
 		await _frames(30)
-		var held: Array = _controller().call("player_cards")
+		var held: Array = view(_controller(), "table").call("player_cards")
 		var play: Array[CardInstance] = []
 		for card: CardInstance in held.slice(0, 3):
 			play.append(card)
@@ -168,7 +168,7 @@ func _beat_counted(before: Array[int]) -> bool:
 func _night_shift_frame(controller: Object, driver: Object) -> void:
 	for _turn: int in 400:
 		await _until(_idle)
-		if not str(controller.call("pass_refusal")).is_empty():
+		if not str(view(controller, "table").call("pass_refusal")).is_empty():
 			var actions: Object = _part("actions")
 			if actions != null:
 				await _press(actions.get("pass_turn"))

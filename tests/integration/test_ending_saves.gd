@@ -78,7 +78,7 @@ func test_a_schema_9_save_starts_its_counts_at_nothing() -> void:
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("year_rounds")
 	checkpoint.erase("year_landlord_rounds")
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	var file: FileAccess = FileAccess.open(PATH, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": 9, "data": data}))
 	file.close()
@@ -97,7 +97,7 @@ func test_counters_out_of_order_are_a_damaged_save() -> void:
 		var data: Dictionary = record.to_dict()
 		data["checkpoint"]["year_rounds"] = counts[0]
 		data["checkpoint"]["year_landlord_rounds"] = counts[1]
-		assert_bool(RunRecord.is_valid(data)).override_failure_message(str(counts)).is_false()
+		assert_bool(RunRecordCheck.is_valid(data)).override_failure_message(str(counts)).is_false()
 
 
 ## A finished run at the run's end, saved and loaded back through the controller.
@@ -109,7 +109,7 @@ func _finished(famine: int, denunciation: int, landlord_rounds: int) -> RunState
 	state.denunciation = denunciation
 	state.year_rounds = 4
 	state.year_landlord_rounds = landlord_rounds
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		state.roster.append(RosterEntry.new(family.id))
 	state.roster[2].status = RosterEntry.Status.DEAD
 	return state
@@ -133,12 +133,12 @@ func test_a_save_at_the_runs_end_reloads_to_the_same_ending() -> void:
 		var controller: RunController = auto_free(RunController.new())
 		assert_bool(controller.resume_saved(_service, RunScript.bots(), SetConfig.new())).is_true()
 		assert_int(controller.awaiting()).is_equal(RunController.AWAIT_RUN_OVER)
-		var view: EndingView = controller.ending()
+		var view: EndingView = controller.seats.ending()
 		var fresh: EndingView = EndingView.of(state, RunPeople.player_surname(state))
 		assert_str(view.id).override_failure_message(expected).is_equal(expected)
 		assert_array(view.lines).is_equal(fresh.lines)
 		assert_str(view.text).is_equal(fresh.text)
-		assert_bool(controller.has_village()).is_true()
+		assert_bool(controller.seats.has_village()).is_true()
 
 
 ## A run that really dies, by a missed Quota whose Famine reaches death, saves at the
@@ -159,7 +159,7 @@ func test_a_run_that_dies_in_play_reloads_to_its_death() -> void:
 		RunState.new(SEED),
 		RunScript.bots(),
 		_hard_sets(),
-		RunLoop.DEFAULT_PARAMS,
+		RunDefaults.PARAMS,
 		RunPools.DEBUFFS.debuffs,
 		table
 	)

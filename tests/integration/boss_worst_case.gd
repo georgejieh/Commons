@@ -11,7 +11,7 @@ const MOST_ASIDE: int = 3
 
 
 static func worst(app: DemoApp, suite: GdUnitTestSuite, named: bool) -> String:
-	var loop: RunLoop = app.controller.get("_loop")
+	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
 	var ids: Array[String] = []
 	for boss: ModifierDef in RunPools.BOSSES.all():
@@ -19,7 +19,7 @@ static func worst(app: DemoApp, suite: GdUnitTestSuite, named: bool) -> String:
 	var chosen: String = ""
 	if named:
 		var length: Callable = func(id: String) -> int:
-			return app.controller.modifier_name(id).length()
+			return app.controller.texts.modifier_name(id).length()
 		ids.sort_custom(func(a: String, b: String) -> bool: return length.call(a) > length.call(b))
 		chosen = ids[0]
 	else:
@@ -67,4 +67,4 @@ static func _set_aside(app: DemoApp, handicap: bool) -> void:
 
 
 static func _loop(app: DemoApp) -> RunLoop:
-	return app.controller.get("_loop")
+	return app.controller.run_loop()

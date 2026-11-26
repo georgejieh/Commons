@@ -27,7 +27,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 func _table() -> TableScreen:
@@ -44,7 +44,7 @@ func test_set_aside_cards_lie_on_the_pile_and_the_slip_names_them() -> void:
 		var pile: TrickPile = table.get("_pile")
 		var strip: DebuffStrip = table.get("_debuffs")
 		_loop().state.boss_id = "the_handicap"
-		var card: CardInstance = _app.controller.deck_card(ASIDE)
+		var card: CardInstance = _app.controller.table.deck_card(ASIDE)
 		var deal: DealResult = _loop().get("_deal")
 		deal.set_aside.append(card)
 		pile.clear()

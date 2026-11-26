@@ -183,7 +183,7 @@ func _file(loop: RunLoop, detector: String, found: Dictionary, detail: String) -
 	entry.year = state.year
 	entry.quota = ProfileCommits.quota_number(state)
 	var kept: Dictionary = RunCorrections.clamped(
-		found, RunLoop.DEFAULT_PARAMS, RunLoop.DEFAULT_RESENTMENT, RunBooks.DEFAULT_PARAMS
+		found, RunDefaults.PARAMS, RunDefaults.RESENTMENT, RunBooks.DEFAULT_PARAMS
 	)
 	for figure: String in kept:
 		var value: Variant = kept[figure]

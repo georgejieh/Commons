@@ -58,7 +58,7 @@ func _bring_youth(state: RunState, times: int) -> void:
 	for _time: int in times:
 		for entry: RosterEntry in state.roster:
 			entry.status = RosterEntry.Status.DEAD
-		Roster.prepare_set(state, RunLoop.DEFAULT_VILLAGE, events)
+		Roster.prepare_set(state, RunDefaults.VILLAGE, events)
 
 
 ## Each person's surname as it reads, by the ID their given name is kept under.
@@ -66,7 +66,7 @@ func _surname_of(state: RunState, family_id: String) -> String:
 	if family_id == RunNames.PLAYER:
 		return state.names.player_surname
 	var entry: RosterEntry = Roster.entry(state, family_id)
-	return tr(Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry))
+	return tr(Roster.name_key(RunDefaults.VILLAGE, entry))
 
 
 func test_ten_thousand_runs_hold_no_name_twice_and_no_blocked_name() -> void:
@@ -132,7 +132,7 @@ func test_naming_moves_no_other_draw() -> void:
 
 
 func test_a_youth_never_shares_the_players_surname() -> void:
-	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
+	for key: String in RunDefaults.VILLAGE.youth_surnames:
 		var surname: String = tr(key)
 		for seed_value: int in 20:
 			var state: RunState = RunStarter.state(_full(seed_value, 2, surname))
@@ -152,13 +152,13 @@ func test_names_survive_a_save_a_load_and_a_replay() -> void:
 		script.act(controller)
 	var names: Dictionary = controller.state_copy().names.to_dict()
 	assert_bool(names["active"]).is_true()
-	assert_str(controller.player_name()).contains(" ")
+	assert_str(controller.seats.player_name()).contains(" ")
 	var again: RunController = auto_free(RunController.new())
 	again.live_search = false
 	assert_bool(again.continue_saved(_saves, _profile)).is_true()
 	assert_dict(again.state_copy().names.to_dict()).is_equal(names)
-	assert_str(again.player_name()).is_equal(controller.player_name())
-	assert_str(again.seated_full_name(1)).is_equal(controller.seated_full_name(1))
+	assert_str(again.seats.player_name()).is_equal(controller.seats.player_name())
+	assert_str(again.seats.seated_full_name(1)).is_equal(controller.seats.seated_full_name(1))
 
 
 func test_youth_named_mid_run_survive_a_round_trip() -> void:
@@ -189,10 +189,10 @@ func _old_record(seed_value: int, generation: int) -> Dictionary:
 func test_the_migration_names_an_old_save_the_same_way_twice() -> void:
 	var old: Dictionary = _old_record(606, 3)
 	var texts: Dictionary[String, String] = Surnames.texts()
-	var first: Dictionary = RunRecord.migrate_from_14(old.duplicate(true), texts)
-	var second: Dictionary = RunRecord.migrate_from_14(old.duplicate(true), texts)
+	var first: Dictionary = RunRecordMigrations.migrate_from_14(old.duplicate(true), texts)
+	var second: Dictionary = RunRecordMigrations.migrate_from_14(old.duplicate(true), texts)
 	assert_dict(first).is_equal(second)
-	assert_bool(RunRecord.is_valid(first)).is_true()
+	assert_bool(RunRecordCheck.is_valid(first)).is_true()
 	var names: RunNames = RunNames.from_dict(first["checkpoint"]["names"])
 	assert_bool(names.active).is_true()
 	assert_str(names.player_surname).is_equal(BOOK.fallback_surname)
@@ -219,9 +219,9 @@ func test_a_damaged_names_field_fails_validation() -> void:
 	record.mark(RunStarter.state(_full(5, 1, "")))
 	var data: Dictionary = JSON.parse_string(JSON.stringify(record.to_dict()))
 	data["checkpoint"]["names"]["given"] = {"player": 3}
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	data["checkpoint"]["names"] = []
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 
 
 func test_the_surname_stays_across_runs_while_the_given_name_changes() -> void:
@@ -265,11 +265,11 @@ func test_introductions_print_full_names_and_the_table_surnames() -> void:
 	controller.live_search = false
 	controller.start(RunRequest.new(RunRequest.FULL, 2468, START_TIME))
 	for seat: int in [1, 2]:
-		var surname: String = tr(controller.seated_name_key(seat))
-		var full: String = controller.seated_full_name(seat)
+		var surname: String = tr(controller.seats.seated_name_key(seat))
+		var full: String = controller.seats.seated_full_name(seat)
 		assert_str(full).ends_with(" " + surname)
 		assert_int(full.split(" ").size()).is_equal(2)
 	var demo: RunController = auto_free(RunController.new())
 	demo.start(RunRequest.new(RunRequest.DEMO, 2468, START_TIME))
-	assert_str(demo.seated_full_name(1)).is_equal(tr(RunStarter.DEMO_RUN.name_keys[1]))
-	assert_str(demo.player_name()).is_equal(BOOK.fallback_surname)
+	assert_str(demo.seats.seated_full_name(1)).is_equal(tr(RunStarter.DEMO_RUN.name_keys[1]))
+	assert_str(demo.seats.player_name()).is_equal(BOOK.fallback_surname)

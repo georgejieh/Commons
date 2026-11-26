@@ -28,8 +28,8 @@ func _at_the_shops(seed_value: int, coupons: int = RICH) -> RunLoop:
 
 
 func test_the_most_copies_of_a_rank_fits_what_a_count_key_holds() -> void:
-	var params: RunParams = RunLoop.DEFAULT_PARAMS
-	var plot_most: int = params.plot_capacity + RunLoop.DEFAULT_PLOT_UPGRADES.capacity_max
+	var params: RunParams = RunDefaults.PARAMS
+	var plot_most: int = params.plot_capacity + RunDefaults.PLOT_UPGRADES.capacity_max
 	assert_int(params.deck_rank_most).is_equal(8)
 	assert_int(params.deck_rank_most + plot_most).is_less_equal(CountKey.MAX_COUNT)
 	assert_int(params.deck_rank_most).is_greater_equal(4)
@@ -39,7 +39,7 @@ func test_the_stall_offers_no_joker_and_draws_the_same_on_a_replay() -> void:
 	var marked: int = 0
 	for seed_value: int in SEEDS:
 		var loop: RunLoop = _at_the_shops(seed_value)
-		var offers: CardOffers = loop.deck_stall.offers
+		var offers: CardOffers = loop.visit.deck_stall.offers
 		assert_int(offers.count()).is_equal(STALL.offers)
 		for slot: int in offers.count():
 			assert_int(offers.rank(slot)).is_less(Ranks.SMALL_JOKER)
@@ -51,15 +51,17 @@ func test_the_stall_offers_no_joker_and_draws_the_same_on_a_replay() -> void:
 			loop.record.to_dict(), RunScript.bots(), SetConfig.new()
 		)
 		for slot: int in offers.count():
-			assert_int(again.deck_stall.offers.rank(slot)).is_equal(offers.rank(slot))
-			assert_int(again.deck_stall.offers.suit(slot)).is_equal(offers.suit(slot))
-			assert_str(again.deck_stall.offers.enhancement(slot)).is_equal(offers.enhancement(slot))
+			assert_int(again.visit.deck_stall.offers.rank(slot)).is_equal(offers.rank(slot))
+			assert_int(again.visit.deck_stall.offers.suit(slot)).is_equal(offers.suit(slot))
+			assert_str(again.visit.deck_stall.offers.enhancement(slot)).is_equal(
+				offers.enhancement(slot)
+			)
 	assert_int(marked).is_less(SEEDS.size() * STALL.offers)
 
 
 func test_a_bought_card_takes_the_named_slot_for_the_run_and_its_marks_go() -> void:
 	var loop: RunLoop = _at_the_shops(31)
-	var offers: CardOffers = loop.deck_stall.offers
+	var offers: CardOffers = loop.visit.deck_stall.offers
 	var rank: int = offers.rank(0)
 	var suit: int = offers.suit(0)
 	var mark: String = offers.enhancement(0)
@@ -84,7 +86,7 @@ func test_a_bought_card_takes_the_named_slot_for_the_run_and_its_marks_go() -> v
 func test_a_marked_offer_costs_its_mark_more() -> void:
 	for seed_value: int in range(1, 200):
 		var state: RunState = RunState.new(seed_value)
-		var stall: DeckStall = DeckStall.new(state, STALL, RunLoop.DEFAULT_PARAMS)
+		var stall: DeckStall = DeckStall.new(state, STALL, RunDefaults.PARAMS)
 		stall.open(false)
 		for slot: int in stall.offers.count():
 			var rank: int = stall.offers.rank(slot)
@@ -120,7 +122,7 @@ func test_nothing_is_exchanged_away_from_the_shops() -> void:
 
 
 func test_a_rank_at_the_most_is_never_offered_nor_raised_past_it() -> void:
-	var run: RunParams = RunLoop.DEFAULT_PARAMS
+	var run: RunParams = RunDefaults.PARAMS
 	for seed_value: int in range(1, 60):
 		var state: RunState = RunState.new(seed_value)
 		_fill_to_most(state, run.deck_rank_most)
@@ -154,8 +156,8 @@ func test_a_rank_may_be_emptied_and_the_deck_holds_54_without_a_third_joker() ->
 
 func test_the_next_deal_deals_the_exchanged_deck() -> void:
 	var loop: RunLoop = _at_the_shops(34)
-	var mark: String = loop.deck_stall.offers.enhancement(0)
-	var rank: int = loop.deck_stall.offers.rank(0)
+	var mark: String = loop.visit.deck_stall.offers.enhancement(0)
+	var rank: int = loop.visit.deck_stall.offers.rank(0)
 	assert_int(loop.player_deck_card(0, THREE)).is_equal(RunLoop.Reason.OK)
 	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var held: Array[CardInstance] = _dealt(loop)
@@ -172,9 +174,9 @@ func test_a_save_before_the_exchange_loads_as_a_plain_deck() -> void:
 	var data: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("deck")
-	assert_bool(RunRecord.is_valid(data)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_18(data)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_18(data)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	var resumed: RunLoop = RunRecord.resume(migrated, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_array(resumed.state.deck.changed_slots()).is_empty()
@@ -199,7 +201,7 @@ func test_a_run_with_exchanges_resumes_to_the_same_deck_at_every_checkpoint() ->
 ## Resumes the loop's record and finds the same deck and the same marks.
 func _same_deck(loop: RunLoop) -> void:
 	var record: Dictionary = JSON.parse_string(JSON.stringify(loop.record.to_dict()))
-	assert_bool(RunRecord.is_valid(record)).is_true()
+	assert_bool(RunRecordCheck.is_valid(record)).is_true()
 	var resumed: RunLoop = RunRecord.resume(record, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_dict(resumed.state.deck.to_dict()).is_equal(loop.state.deck.to_dict())
@@ -234,7 +236,7 @@ func _fill_to_most(state: RunState, most: int) -> void:
 
 ## A refused purchase gives its reason and leaves the state and the record as they were.
 func _refused(loop: RunLoop, slot: int, out: int, why: RunShop.Reason) -> void:
-	assert_int(loop.deck_stall.check_exchange(slot, out)).is_equal(why)
+	assert_int(loop.visit.deck_stall.check_exchange(slot, out)).is_equal(why)
 	var before: Dictionary = loop.state.to_dict()
 	var commands: int = loop.record.commands.size()
 	assert_int(loop.player_deck_card(slot, out)).is_equal(RunLoop.Reason.ILLEGAL)

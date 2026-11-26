@@ -191,7 +191,7 @@ func test_names_leave_the_roster_with_the_stage_under_famine() -> void:
 	var roster: WallRoster = dressing.roster()
 	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
 	var names: PackedStringArray = [_seat_name(seats[1]), _seat_name(seats[2])]
-	assert_int(roster.name_count()).is_equal(RunLoop.DEFAULT_VILLAGE.families.size())
+	assert_int(roster.name_count()).is_equal(RunDefaults.VILLAGE.families.size())
 	_force(table, DreadEffects.ROSTER, 0)
 	assert_int(roster.names_left()).is_equal(roster.name_count())
 	_force(table, DreadEffects.ROSTER, 3)

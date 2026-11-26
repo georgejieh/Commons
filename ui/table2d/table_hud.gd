@@ -38,7 +38,7 @@ var _target: float = 1.0
 var _bars: Dictionary[String, ProgressBar] = {}
 var _none: Dictionary[String, Label] = {}
 ## The run as the last show_state() read it, or null before it.
-var _state: RunState = null
+var _state: RunView = null
 ## Where each bar is heading: the Quota's progress and both meters.
 var _goals: Dictionary[String, float] = {QUOTA: 0.0, FAMINE: 0.0, DENUNCIATION: 0.0}
 var _tweens: Dictionary[String, Tween] = {}
@@ -80,19 +80,19 @@ func _ready() -> void:
 
 ## Where the run stands and the coupons held. The bars move through sync() and the
 ## events that change them, so they fill when the points arrive, not before.
-func show_state(state: RunState, rounds: int) -> void:
+func show_state(state: RunView, rounds: int) -> void:
 	status.text = (
 		tr("table.status")
 		. format(
 			{
-				"year": state.year,
-				"set": tr("set.type.%d" % state.set_type),
-				"round": mini(state.round_index + 1, rounds),
+				"year": state.year(),
+				"set": tr("set.type.%d" % state.set_type()),
+				"round": mini(state.round_index() + 1, rounds),
 				"rounds": rounds,
 			}
 		)
 	)
-	coupons.text = ShownFigures.coupons(state.coupons, "table.coupons")
+	coupons.text = ShownFigures.coupons(state.coupons(), "table.coupons")
 	_fit_status()
 	_state = state
 	quota.show_as(QuotaBar.mode_for(state))
@@ -134,13 +134,13 @@ func reads_met(met: bool) -> bool:
 
 
 ## Puts every bar where the run says it is, at once, unless it is already heading there.
-func sync(state: RunState, target: float) -> void:
+func sync(state: RunView, target: float) -> void:
 	if not is_equal_approx(_target, maxf(target, 1.0)):
 		_target = maxf(target, 1.0)
 		quota.set_target(_target)
-	_move(QUOTA, state.set_progress, false)
-	_move(FAMINE, state.famine, false)
-	_move(DENUNCIATION, state.denunciation, false)
+	_move(QUOTA, state.set_progress(), false)
+	_move(FAMINE, state.famine(), false)
+	_move(DENUNCIATION, state.denunciation(), false)
 
 
 ## A new Quota: the bar empties and takes its target.

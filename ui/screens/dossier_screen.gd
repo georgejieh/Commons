@@ -19,13 +19,13 @@ var _entries: Dictionary[int, PackedStringArray] = {}
 
 
 func open(app: DemoApp) -> void:
-	var state: RunState = app.controller.state_copy()
+	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	column.add_child(ScreenKit.header(tr("dossier.eyebrow"), tr("dossier.title")))
 	var cards: Array[Control] = []
 	for seat: int in range(1, Seats.COUNT):
 		# A family gone from the village is not shown again this run (ADR 0025).
-		if not app.controller.seat_gone(seat):
+		if not app.controller.seats.seat_gone(seat):
 			cards.append(_villager(app, state, seat))
 	column.add_child(ScreenKit.row(cards, 28))
 	var back: Button = ScreenKit.button(tr("dossier.back"), CommonsTheme.PRIMARY)
@@ -40,7 +40,7 @@ func entries(seat: int) -> PackedStringArray:
 	return _entries.get(seat, PackedStringArray())
 
 
-func _villager(app: DemoApp, state: RunState, seat: int) -> Control:
+func _villager(app: DemoApp, state: RunView, seat: int) -> Control:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(420, 0))
 	var portrait: TextureRect = TextureRect.new()
 	portrait.texture = app.seat_portrait(seat, PORTRAIT_SIZE)
@@ -49,10 +49,12 @@ func _villager(app: DemoApp, state: RunState, seat: int) -> Control:
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	portrait.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	sheet.add_child(portrait)
-	sheet.add_child(ScreenKit.styled(app.controller.seated_full_name(seat), CommonsTheme.TITLE))
-	var lines: PackedStringArray = _lines(state.observations, state.table[seat])
+	sheet.add_child(
+		ScreenKit.styled(app.controller.seats.seated_full_name(seat), CommonsTheme.TITLE)
+	)
+	var lines: PackedStringArray = _lines(state.observations(), state.table()[seat])
 	# A trait that changes with a meter is told only once it was seen at work (ADR 0043).
-	var shifted: String = app.controller.shift_line(seat)
+	var shifted: String = app.controller.seats.shift_line(seat)
 	if not shifted.is_empty():
 		lines.append(shifted)
 	_entries[seat] = lines

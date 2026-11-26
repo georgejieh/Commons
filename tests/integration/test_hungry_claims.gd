@@ -21,7 +21,7 @@ func after_test() -> void:
 ## A run whose only families are Qin and Wang, so both are seated, at the Famine given.
 func _loop(seed_value: int, famine: int) -> RunLoop:
 	var state: RunState = RunState.new(seed_value)
-	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	Roster.start(state, RunDefaults.VILLAGE, [])
 	state.roster = state.roster.filter(
 		func(found: RosterEntry) -> bool: return found.family_id in ["qin", "wang"]
 	)
@@ -44,7 +44,7 @@ func _play(loop: RunLoop) -> int:
 	var above: int = 0
 	for event: RunEvent in loop.events():
 		var claim: bool = event.type == RunEvent.Type.NEED_DECLARED and event.seat == qin
-		if claim and event.value > RunLoop.DEFAULT_PARAMS.base_need:
+		if claim and event.value > RunDefaults.PARAMS.base_need:
 			above += 1
 	return above
 
@@ -52,7 +52,7 @@ func _play(loop: RunLoop) -> int:
 func test_above_the_band_every_larger_claim_of_qins_is_counted() -> void:
 	var counted: int = 0
 	for offset: int in 3:
-		var loop: RunLoop = _loop(SEED + offset, RunLoop.DEFAULT_METERS.famine.high + 1)
+		var loop: RunLoop = _loop(SEED + offset, RunDefaults.METERS.famine.high + 1)
 		var above: int = _play(loop)
 		var seen: int = loop.state.observations.count("qin", Observations.Kind.SHIFTED_CLAIMS)
 		assert_int(seen).is_equal(above)
@@ -62,7 +62,7 @@ func test_above_the_band_every_larger_claim_of_qins_is_counted() -> void:
 
 func test_below_the_band_no_claim_is_counted() -> void:
 	for offset: int in 3:
-		var loop: RunLoop = _loop(SEED + offset, RunLoop.DEFAULT_METERS.famine.high - 10)
+		var loop: RunLoop = _loop(SEED + offset, RunDefaults.METERS.famine.high - 10)
 		_play(loop)
 		var seen: int = loop.state.observations.count("qin", Observations.Kind.SHIFTED_CLAIMS)
 		assert_int(seen).is_zero()
@@ -79,8 +79,8 @@ func test_a_save_from_before_the_count_loads_with_none() -> void:
 	for family: String in rows:
 		var row: Array = rows[family]
 		row.resize(Observations.Kind.size() - 1)
-	var migrated: Dictionary = RunRecord.migrate_from_19(data)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_19(data)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	for family: String in rows:
 		var row: Array = rows[family]
 		assert_int(row.size()).is_equal(Observations.Kind.size())
@@ -98,10 +98,10 @@ func test_the_dossier_tells_the_shift_once_it_was_seen() -> void:
 	_app = auto_free(scene.instantiate())
 	add_child(_app)
 	_app.new_run(SEED, true)
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.table[1] = "qin"
 	loop.state.observations.add("qin", Observations.Kind.PASSES)
-	var at: int = RunLoop.DEFAULT_METERS.famine.high
+	var at: int = RunDefaults.METERS.famine.high
 	var line: String = tr("dossier.shift.famine").format({"count": 2, "at": at})
 	var dossier: DossierScreen = _app.show_screen("dossier", true)
 	assert_array(Array(dossier.entries(1))).not_contains([line])

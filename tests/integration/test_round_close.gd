@@ -56,7 +56,7 @@ func test_the_next_hand_waits_until_the_round_is_put_away() -> void:
 	var player: EventPlayer = table.get("_player")
 	var pile: TrickPile = table.get("_pile")
 	var hand_view: HandView = table.get("_hand_view")
-	var card: CardInstance = _app.controller.player_cards()[0]
+	var card: CardInstance = _app.controller.table.player_cards()[0]
 	var marks: Dictionary = {}
 	player.closing.connect(func() -> void: marks["closing"] = _now())
 	player.played.connect(_on_played.bind(marks, hand_view, pile, card.id()))
@@ -78,7 +78,7 @@ func test_reduced_motion_still_reads_the_round_before_the_deal() -> void:
 	Settings.set_value("reduced_motion", true)
 	var table: TableScreen = await _open_table()
 	var player: EventPlayer = table.get("_player")
-	var card: CardInstance = _app.controller.player_cards()[0]
+	var card: CardInstance = _app.controller.table.player_cards()[0]
 	var marks: Dictionary = {}
 	player.closing.connect(func() -> void: marks["closing"] = _now())
 	player.played.connect(

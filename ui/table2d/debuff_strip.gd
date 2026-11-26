@@ -61,12 +61,12 @@ func _init() -> void:
 func show_debuffs(controller: RunController) -> void:
 	_yours.clear()
 	_reforms = _reform_rules(controller)
-	for modifier_id: String in controller.active_debuff_ids():
+	for modifier_id: String in controller.items.active_debuff_ids():
 		_yours.append(_rule(controller, modifier_id))
 	_boss.clear()
-	if not controller.boss().is_empty():
-		var twist: Dictionary = _rule(controller, controller.boss())
-		var aside: String = controller.set_aside_names()
+	if not controller.items.boss().is_empty():
+		var twist: Dictionary = _rule(controller, controller.items.boss())
+		var aside: String = controller.table.set_aside_names()
 		if not aside.is_empty():
 			var line: String = tr("table.set_aside").format({"cards": aside})
 			twist["rule"] = "%s %s" % [twist["rule"], _escape(line)]
@@ -196,18 +196,18 @@ func _wild_row() -> PackedStringArray:
 ## Industrialization.
 func _reform_rules(controller: RunController) -> Array[Dictionary]:
 	var rules: Array[Dictionary] = []
-	for reform_id: String in controller.table_rule_reforms():
-		var name: String = _escape(controller.reform_name(reform_id))
-		var text: String = Keywords.mark(controller.reform_text(reform_id))
+	for reform_id: String in controller.items.table_rule_reforms():
+		var name: String = _escape(controller.texts.reform_name(reform_id))
+		var text: String = Keywords.mark(controller.texts.reform_text(reform_id))
 		rules.append({"name": name, "rule": text, "lifted": false})
 	return rules
 
 
 func _rule(controller: RunController, modifier_id: String) -> Dictionary:
 	return {
-		"name": _escape(controller.modifier_name(modifier_id)),
-		"rule": Keywords.mark(controller.modifier_text(modifier_id)),
-		"lifted": modifier_id == controller.lifted_debuff(),
+		"name": _escape(controller.texts.modifier_name(modifier_id)),
+		"rule": Keywords.mark(controller.texts.modifier_text(modifier_id)),
+		"lifted": modifier_id == controller.items.lifted_debuff(),
 	}
 
 

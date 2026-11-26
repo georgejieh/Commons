@@ -76,7 +76,7 @@ func test_the_table_plays_a_set_to_its_summary() -> void:
 	# The report fills its Quota bar to what was scored and seals it met or short.
 	var report: SetSummaryScreen = _app.switcher.current()
 	var state: RunState = _app.controller.state_copy()
-	var target: float = _app.controller.target()
+	var target: float = _app.controller.figures.target()
 	await await_millis(int((SetSummaryScreen.START + SetSummaryScreen.FILL) * 1000.0) + 400)
 	assert_float(report.bar().value).is_equal_approx(minf(state.set_progress, target), 0.5)
 	var met: bool = state.set_progress >= target
@@ -228,7 +228,7 @@ func test_the_ledger_counts_each_play_once() -> void:
 
 
 func test_a_stocked_plot_opens_the_swap_sheet_over_the_table() -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.inventory.plot.append(
 		CardInstance.new(CardInstance.FIRST_PLOT_ID, 12, 0, CardInstance.Origin.PLOT)
 	)
@@ -271,7 +271,7 @@ func test_an_overfulfilled_quota_is_sealed_twice_and_counts_the_bonus() -> void:
 		while driver.act(_app.controller):
 			pass
 		assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_SET_OVER)
-		var steps: int = _app.controller.over_steps()
+		var steps: int = _app.controller.figures.over_steps()
 		assert_int(steps).is_equal(SetConfig.DEFAULT_PARAMS.over_max_steps)
 		var report: SetSummaryScreen = _app.show_screen("set_summary", true)
 		await await_idle_frame()
@@ -284,8 +284,8 @@ func test_an_overfulfilled_quota_is_sealed_twice_and_counts_the_bonus() -> void:
 		var after: Array[Control] = report.get("_after")
 		assert_int(after.size()).is_equal(3)
 		var bonus: int = steps * SetConfig.DEFAULT_PARAMS.over_bonus_coupons
-		assert_int(_app.controller.over_bonus()).is_equal(bonus)
-		var paid: int = _app.controller.quota_reward() + bonus
+		assert_int(_app.controller.figures.over_bonus()).is_equal(bonus)
+		var paid: int = _app.controller.figures.quota_reward() + bonus
 		var line: Label = after[1]
 		assert_str(line.text).is_equal(Strings.count("summary.paid", paid))
 		var norm: Label = after[2]
@@ -305,7 +305,7 @@ func test_the_next_quota_shows_the_raised_norm() -> void:
 		pass
 	_app.controller.finish_set()
 	_app.controller.leave_store()
-	var percent: int = _app.controller.norm_percent()
+	var percent: int = _app.controller.figures.norm_percent()
 	assert_int(percent).is_greater(0)
 	_app.show_screen("set_intro", true)
 	await await_idle_frame()

@@ -100,9 +100,9 @@ func _take_turn(method: Method, driver: ControllerScript) -> void:
 	for card_id: int in ids:
 		await _pick(method, card_id)
 	assert_array(_app.hand.selected_ids()).contains_exactly_in_any_order(ids)
-	var before: int = _app.controller.player_cards().size()
+	var before: int = _app.controller.table.player_cards().size()
 	await _press_action(method, "play", _table.actions().play)
-	assert_int(_app.controller.player_cards().size()).is_equal(before - ids.size())
+	assert_int(_app.controller.table.player_cards().size()).is_equal(before - ids.size())
 	_plays += 1
 
 

@@ -45,7 +45,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 func _to_store() -> void:
@@ -78,7 +78,9 @@ func test_every_cadre_fits_its_shop_card() -> void:
 				ids.append(cadre.id)
 			for start: int in range(0, ids.size(), 3):
 				var stock: Array[String] = ids.slice(start, start + 3)
-				var shop: RunShop = _loop().market if screen_id == "black_market" else _loop().shop
+				var shop: RunShop = (
+					_loop().visit.market if screen_id == "black_market" else _loop().visit.shop
+				)
 				# The run's pool holds only what it has open: every Cadre of the counter here.
 				shop.set("_pool", counters[screen_id])
 				shop.set("_stock", stock)
@@ -127,7 +129,7 @@ func test_every_directive_fits_its_store_document() -> void:
 		get_tree().root.size = screen
 		for start: int in range(0, ids.size(), 2):
 			var stock: Array[String] = ids.slice(start, start + 2)
-			_loop().shop.set("_directive_stock", stock)
+			_loop().visit.shop.set("_directive_stock", stock)
 			var store: StoreScreen = _app.show_screen("store", true)
 			await await_idle_frame()
 			await await_idle_frame()
@@ -181,8 +183,8 @@ func test_every_speech_line_fits_its_seat() -> void:
 	lines.append_array(TableSpeech.BOOK.lines)
 	lines.append_array(TableSpeech.VISIT.lines)
 	var families: Array[FamilyDef] = []
-	families.append_array(RunLoop.DEFAULT_VILLAGE.families)
-	families.append_array(RunLoop.DEFAULT_VILLAGE.youth_templates)
+	families.append_array(RunDefaults.VILLAGE.families)
+	families.append_array(RunDefaults.VILLAGE.youth_templates)
 	for family: FamilyDef in families:
 		if family.speech != null:
 			lines.append_array(family.speech.lines)
@@ -346,10 +348,10 @@ func _keys(prefix: String) -> Array[String]:
 ## The village's longest surname, as a seat is named by it.
 func _longest_surname() -> String:
 	var longest: String = ""
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		var name: String = tr(family.name_key)
 		longest = name if name.length() > longest.length() else longest
-	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
+	for key: String in RunDefaults.VILLAGE.youth_surnames:
 		var name: String = tr(key)
 		longest = name if name.length() > longest.length() else longest
 	return longest

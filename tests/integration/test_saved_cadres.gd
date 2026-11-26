@@ -32,7 +32,7 @@ func test_a_schema_6_save_gains_empty_cadre_state_and_the_state_is_saved() -> vo
 	var data: Dictionary = _record(9)
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("cadre_memos")
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	var file: FileAccess = FileAccess.open(_service.path(), FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": 6, "data": data}))
 	file.close()
@@ -72,8 +72,8 @@ func test_damaged_cadre_state_fails_validation() -> void:
 		var data: Dictionary = _record(2)
 		var checkpoint: Dictionary = data["checkpoint"]
 		checkpoint.merge(change, true)
-		assert_bool(RunRecord.is_valid(data)).override_failure_message(str(change)).is_false()
+		assert_bool(RunRecordCheck.is_valid(data)).override_failure_message(str(change)).is_false()
 	var fine: Dictionary = _record(2)
 	var fine_checkpoint: Dictionary = fine["checkpoint"]
 	fine_checkpoint["cadre_memos"] = {"seed_grain": {"met": 2.0}}
-	assert_bool(RunRecord.is_valid(fine)).is_true()
+	assert_bool(RunRecordCheck.is_valid(fine)).is_true()

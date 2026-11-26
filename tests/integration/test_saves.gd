@@ -133,7 +133,7 @@ func test_a_save_that_parses_but_lost_its_shape_falls_back() -> void:
 	assert_int(_turn(loaded.data)).is_equal(1)
 	var broken: Dictionary = _record(3)
 	broken["commands"] = [{"type": "play"}]
-	assert_bool(RunRecord.is_valid(broken)).is_false()
+	assert_bool(RunRecordCheck.is_valid(broken)).is_false()
 
 
 ## A schema 1 run save, from before the dossier, loads with nothing observed.
@@ -155,9 +155,9 @@ func test_damaged_observations_fail_validation() -> void:
 	var data: Dictionary = _record(5)
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint["observations"] = []
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	checkpoint["observations"] = {"wang": null}
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 
 
 func test_a_save_left_mid_rename_loads_the_backup() -> void:
@@ -304,7 +304,7 @@ func _string_keys() -> Dictionary[String, bool]:
 ## A field holding the wrong kind of value would crash the load, so it counts as damage
 ## and the backup is used instead.
 func test_a_save_with_a_field_of_the_wrong_kind_is_damaged() -> void:
-	assert_bool(RunRecord.is_valid(_record(2))).is_true()
+	assert_bool(RunRecordCheck.is_valid(_record(2))).is_true()
 	var wrong: Dictionary[String, Variant] = {
 		"memory": [], "styles": {}, "store_sold": [], "norm_steps": "x", "over_steps": []
 	}
@@ -312,7 +312,7 @@ func test_a_save_with_a_field_of_the_wrong_kind_is_damaged() -> void:
 		var data: Dictionary = _record(2)
 		var checkpoint: Dictionary = data["checkpoint"]
 		checkpoint[field] = wrong[field]
-		assert_bool(RunRecord.is_valid(data)).override_failure_message(field).is_false()
+		assert_bool(RunRecordCheck.is_valid(data)).override_failure_message(field).is_false()
 
 
 ## A schema 4 run save, from before overfulfilment, loads with no norm raised, and a
@@ -322,7 +322,7 @@ func test_a_schema_4_run_save_gains_the_norm_and_the_norm_is_saved() -> void:
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("norm_steps")
 	checkpoint.erase("over_steps")
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	var file: FileAccess = FileAccess.open(_service.path(), FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": 4, "data": data}))
 	file.close()

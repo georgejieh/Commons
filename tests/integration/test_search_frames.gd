@@ -159,7 +159,7 @@ static func _figures(controller: RunController) -> Array[float]:
 
 
 static func _loop_of(controller: RunController) -> RunLoop:
-	return controller.get("_loop")
+	return controller.run_loop()
 
 
 func _out_of_time(began: int) -> bool:
@@ -235,9 +235,9 @@ func test_frames_go_on_while_two_experts_think() -> void:
 		loop.record.to_dict(),
 		_configs(SLOW_SAMPLES),
 		SetConfig.new(),
-		RunLoop.DEFAULT_PARAMS,
+		RunDefaults.PARAMS,
 		RunPools.DEBUFFS.debuffs,
-		RunLoop.DEFAULT_METERS,
+		RunDefaults.METERS,
 		Callable(),
 		true
 	)

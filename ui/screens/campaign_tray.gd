@@ -82,7 +82,7 @@ func setup(controller: RunController) -> void:
 ## A place for every Campaign the player can hold. Leaflets are only ever added: the
 ## limit rises with a Reform and never falls.
 func _grow() -> void:
-	while _leaflets.size() < _controller.campaign_slots():
+	while _leaflets.size() < _controller.figures.campaign_slots():
 		var leaflet: CampaignLeaflet = CampaignLeaflet.new()
 		leaflet.set_compact(compact)
 		leaflet.chosen.connect(_on_chosen)
@@ -111,7 +111,7 @@ static func tray_size(
 ## drops an armed one the run no longer holds.
 func refresh() -> void:
 	_grow()
-	var held: Array[String] = _controller.held_campaigns()
+	var held: Array[String] = _controller.items.held_campaigns()
 	for slot: int in _leaflets.size():
 		var leaflet: CampaignLeaflet = _leaflets[slot]
 		leaflet.position = _place(slot)
@@ -123,14 +123,14 @@ func refresh() -> void:
 		leaflet.show_campaign(
 			slot,
 			held_id,
-			_controller.campaign_name(held_id),
-			_controller.campaign_text(held_id),
-			_controller.is_private_campaign(held_id)
+			_controller.texts.campaign_name(held_id),
+			_controller.texts.campaign_text(held_id),
+			_controller.items.is_private_campaign(held_id)
 		)
-		var refusal: int = _controller.campaign_reason(slot)
+		var refusal: int = _controller.items.campaign_reason(slot)
 		var why: String = ""
 		if refusal != RunController.CAMPAIGN_OK:
-			why = tr(RunController.campaign_reason_key(refusal))
+			why = tr(RunTexts.campaign_reason_key(refusal))
 		leaflet.set_reason(refusal, why)
 	if _armed >= held.size() or (_armed >= 0 and _leaflets[_armed].reason != 0):
 		_armed = -1
@@ -190,7 +190,7 @@ func prompt() -> String:
 		return ""
 	if not _refusal.is_empty():
 		return _refusal
-	return _controller.campaign_prompt(_held_id(_armed))
+	return _controller.texts.campaign_prompt(_held_id(_armed))
 
 
 ## Arms a usable leaflet. Arming the armed one again disarms it.
@@ -219,11 +219,11 @@ func use_armed() -> void:
 	var slot: int = _armed
 	var held_id: String = _held_id(slot)
 	var ids: Array[int] = []
-	if _controller.campaign_cards(held_id).y > 0 and selection.is_valid():
+	if _controller.items.campaign_cards(held_id).y > 0 and selection.is_valid():
 		ids.assign(selection.call())
-	var refusal: int = _controller.campaign_reason(slot, ids, true)
+	var refusal: int = _controller.items.campaign_reason(slot, ids, true)
 	if refusal != RunController.CAMPAIGN_OK:
-		_refusal = tr(RunController.campaign_reason_key(refusal))
+		_refusal = tr(RunTexts.campaign_reason_key(refusal))
 		changed.emit()
 		return
 	_armed = -1
@@ -260,7 +260,7 @@ func handle(event: InputEvent) -> bool:
 
 ## The cursor visits each held leaflet in turn, then leaves the tray.
 func _step_cursor() -> void:
-	var held: int = _controller.held_campaigns().size()
+	var held: int = _controller.items.held_campaigns().size()
 	_cursor = _cursor + 1 if _cursor + 1 < held else -1
 	_show_marks()
 
@@ -271,7 +271,7 @@ func _on_chosen(slot: int) -> void:
 
 
 func _held_id(slot: int) -> String:
-	return _controller.held_campaigns()[slot]
+	return _controller.items.held_campaigns()[slot]
 
 
 func _place(slot: int) -> Vector2:
@@ -366,6 +366,6 @@ func _draw() -> void:
 	if not show_empty:
 		return
 	var worn: float = BowlGrime.wear()
-	var held: int = 0 if _controller == null else _controller.held_campaigns().size()
+	var held: int = 0 if _controller == null else _controller.items.held_campaigns().size()
 	for slot: int in range(held, _leaflets.size()):
 		CampaignPaper.empty_place(self, Rect2(_place(slot), _leaf()), worn, slot)

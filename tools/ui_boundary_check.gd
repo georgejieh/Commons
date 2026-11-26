@@ -1,12 +1,18 @@
 class_name UiBoundaryCheck
 extends RefCounted
 ## Scans UI scripts for anything that could change run state without a command:
-## the core loop and round types, and the mutators on them. The UI reaches a run only
-## through RunController, which hands out copies.
+## the core loop and round types, and the mutators on them, and the controller's way in
+## for tests and tools. The UI reaches a run only through RunController's commands and
+## the views it builds, which hand out copies.
 
 const FORBIDDEN_WORDS: PackedStringArray = [
 	"RunLoop",
 	"RunRecord",
+	"RunRecordMigrations",
+	"RunShopVisit",
+	"RoundSettlement",
+	"QuotaClose",
+	"RunSeating",
 	"RoundState",
 	"RoundAction",
 	"ModifierStack",
@@ -82,6 +88,8 @@ const FORBIDDEN_WORDS: PackedStringArray = [
 	"set_enhancement",
 	"set_seal",
 	"set_owner_stamp",
+	"run_loop",
+	"state_copy",
 ]
 const EXTENSIONS: PackedStringArray = ["gd", "tscn"]
 

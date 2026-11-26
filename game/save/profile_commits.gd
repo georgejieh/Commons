@@ -28,7 +28,7 @@ static func start_run(profile: SaveService, state: RunState) -> Dictionary:
 	state.identity.generation = data.generation
 	# Every entry in the family's file raises the run's targets (ADR 0022).
 	state.identity.file_entries = data.file.size()
-	data.drift = VillageDrift.next(data.drift, data.generation, RunLoop.DEFAULT_VILLAGE)
+	data.drift = VillageDrift.next(data.drift, data.generation, RunDefaults.VILLAGE)
 	state.drift = VillageDrift.from_dict(data.drift.to_dict())
 	var taken: Dictionary = RunLineage.make(data.lineage_kind, data.lineage_values.duplicate(true))
 	data.lineage_kind = RunLineage.NONE
@@ -70,7 +70,7 @@ static func _take_quota(data: ProfileData, state: RunState) -> bool:
 
 
 static func _record(data: ProfileData, state: RunState) -> void:
-	var outcome: String = Endings.outcome(state, RunLoop.DEFAULT_METERS)
+	var outcome: String = Endings.outcome(state, RunDefaults.METERS)
 	data.finished_runs += 1
 	if outcome == Endings.THE_COMMONS:
 		data.corruption = 0.0
@@ -82,7 +82,7 @@ static func _record(data: ProfileData, state: RunState) -> void:
 		# A win at the highest stake unlocked opens the next, up to the last.
 		if state.identity.stake == data.stake:
 			data.stake = mini(data.stake + 1, RunStakes.last())
-	var left: Dictionary = RunLineage.left_by(state, RunLoop.DEFAULT_METERS, RunLoop.DEFAULT_MEMORY)
+	var left: Dictionary = RunLineage.left_by(state, RunDefaults.METERS, RunDefaults.MEMORY)
 	data.lineage_kind = left["kind"]
 	data.lineage_values = left["values"]
 	var entry: HistoryEntry = HistoryEntry.new()
@@ -95,5 +95,5 @@ static func _record(data: ProfileData, state: RunState) -> void:
 	entry.stake = state.identity.stake
 	for found: RosterEntry in state.roster:
 		if found.status == RosterEntry.Status.DEAD:
-			entry.dead.append(Roster.name_key(RunLoop.DEFAULT_VILLAGE, found))
+			entry.dead.append(Roster.name_key(RunDefaults.VILLAGE, found))
 	data.add_history(entry)

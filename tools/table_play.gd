@@ -50,7 +50,7 @@ func play_set(tree: SceneTree, seconds: float, on_frame: Callable, act: bool) ->
 		last = now
 		if on_frame.is_valid():
 			on_frame.call()
-		var in_round: bool = controller.call("seat_view") != null
+		var in_round: bool = WalkBase.view(controller, "table").call("seat_view") != null
 		if in_round:
 			node_counts.append(int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
 		if not is_instance_valid(table) or table.get_parent() == null:

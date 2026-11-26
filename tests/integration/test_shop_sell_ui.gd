@@ -28,7 +28,7 @@ func before_test() -> void:
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
 	_app.controller.reseal_book()
 	Settings.set_value("reduced_motion", true)
@@ -42,13 +42,13 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## Holds count Cadres the counters do not offer, and one Campaign.
 func _hold(count: int) -> void:
 	var state: RunState = _loop().state
-	var offered: Array[String] = _loop().shop.stock() + _loop().market.stock()
+	var offered: Array[String] = _loop().visit.shop.stock() + _loop().visit.market.stock()
 	for definition: ModifierDef in RunLoop.all_cadres():
 		if state.inventory.cadres.size() >= count:
 			break
@@ -80,7 +80,7 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 		_hold(2)
 		var store: StoreScreen = await _open(screen_id)
 		var sale: SellDesk = store.get("_sale")
-		var desk: ShopDesk = _app.controller.desk(screen_id == "black_market")
+		var desk: ShopDesk = _app.controller.store.desk(screen_id == "black_market")
 		var tile: Control = _tiles(store)[0]
 		var tag: SellTag = sale.tag_on(tile)
 		assert_object(tag).override_failure_message(screen_id).is_not_null()
@@ -136,15 +136,15 @@ func test_a_held_campaign_sells_from_the_tray() -> void:
 	var leaflet: CampaignLeaflet = stall.tray.leaflet(0)
 	var tag: SellTag = _sale(store).tag_on(leaflet)
 	assert_object(tag).is_not_null()
-	var held: int = _app.controller.held_campaigns().size()
+	var held: int = _app.controller.items.held_campaigns().size()
 	var coupons: int = _app.controller.state_copy().coupons
-	var paid: int = _app.controller.desk(false).sale(0, true)
+	var paid: int = _app.controller.store.desk(false).sale(0, true)
 	leaflet.mouse_entered.emit()
 	tag.press()
-	assert_int(_app.controller.held_campaigns().size()).is_equal(held)
+	assert_int(_app.controller.items.held_campaigns().size()).is_equal(held)
 	tag.press()
 	await await_idle_frame()
-	assert_int(_app.controller.held_campaigns().size()).is_equal(held - 1)
+	assert_int(_app.controller.items.held_campaigns().size()).is_equal(held - 1)
 	assert_int(_app.controller.state_copy().coupons).is_equal(coupons + paid)
 
 

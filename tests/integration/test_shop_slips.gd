@@ -28,12 +28,12 @@ func before_test() -> void:
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
 	loop.state.reforms.assign(["unplanned_economy"])
 	_app.controller.reseal_book()
-	loop.shop.set("_stock", ["canteen", "red_banner", "iron_rice_bowl"] as Array[String])
-	loop.market.set("_stock", ["loudspeaker", "steel_target", "last_sheaf"] as Array[String])
+	loop.visit.shop.set("_stock", ["canteen", "red_banner", "iron_rice_bowl"] as Array[String])
+	loop.visit.market.set("_stock", ["loudspeaker", "steel_target", "last_sheaf"] as Array[String])
 
 
 func after_test() -> void:

@@ -32,7 +32,7 @@ func test_the_share_counts_what_reached_the_player() -> void:
 	state.landlord_seat = 1
 	state.commons_pool = 300
 	var events: Array[RunEvent] = []
-	RoundBanking.split(state, 0, 20, RunScript.bots(), RunLoop.DEFAULT_PARAMS, events)
+	RoundBanking.split(state, 0, 20, RunScript.bots(), RunDefaults.PARAMS, events)
 	assert_int(state.commons_paid).is_equal(300)
 	assert_float(FreeRiding.share(state)).is_equal_approx(
 		float(state.commons_received) / 300.0, 1e-9

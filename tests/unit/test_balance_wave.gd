@@ -18,7 +18,7 @@ func test_the_meter_campaigns_wait_until_they_help() -> void:
 	state.resentment = 6
 	assert_bool(BalanceWave.helps("relief_grain", state, _params())).is_true()
 	assert_bool(BalanceWave.helps("self_criticism", state, _params())).is_true()
-	state.denunciation = RunLoop.DEFAULT_METERS.denunciation.death - 2
+	state.denunciation = RunDefaults.METERS.denunciation.death - 2
 	assert_bool(BalanceWave.helps("self_criticism", state, _params())).is_false()
 	assert_bool(BalanceWave.helps("grain_loan", state, _params())).is_true()
 

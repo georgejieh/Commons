@@ -85,7 +85,7 @@ func hint_cards_frame(table: Node, where: String) -> void:
 
 ## The fan must show exactly the cards the player holds, each once.
 func check_fan(table: Node, where: String) -> void:
-	var held: Array = _controller().call("player_cards")
+	var held: Array = view(_controller(), "table").call("player_cards")
 	var views: Array = member(member(table, "_hand_view"), "_views")
 	var shown: Dictionary[int, bool] = {}
 	for view: Control in views:
@@ -225,7 +225,7 @@ func _moment_frames(table: Node) -> void:
 		await _snap("moment_quota_%d" % frame)
 	await tree.create_timer(2.0).timeout
 	var controller: Object = _controller()
-	hud.call("sync", controller.call("state_copy"), controller.call("target"))
+	hud.call("sync", view(controller, "run"), view(controller, "figures").call("target"))
 	var tally: Object = moments.get("tally")
 	tally.call("show_score", 54.0, 7.0, 1.5, 567.0, 1.0)
 	for frame: int in 4:

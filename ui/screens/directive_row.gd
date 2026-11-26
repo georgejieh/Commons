@@ -82,19 +82,19 @@ func _document(slot: int, directive_id: String) -> Control:
 	heading.add_theme_constant_override("separation", 0)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(ScreenKit.eyebrow(tr("directive.eyebrow")))
-	var name: Label = ScreenKit.label(_controller.directive_name(directive_id), NAME_SIZE)
+	var name: Label = ScreenKit.label(_controller.texts.directive_name(directive_id), NAME_SIZE)
 	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	name.autowrap_mode = TextServer.AUTOWRAP_OFF
 	heading.add_child(name)
 	var buy: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	buy.custom_minimum_size = Vector2.ZERO
 	buy.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var coupons: int = _controller.state_copy().coupons
+	var coupons: int = _controller.run.coupons()
 	BuyTicket.dress(buy, _desk.can_buy_directive(slot), _desk.directive_price(slot), coupons)
 	sheet.add_child(ScreenKit.row([heading, buy], 12))
 	sheet.add_child(HSeparator.new())
 	var lines: Array[Label] = []
-	for type: int in _controller.directive_types(directive_id):
+	for type: int in _controller.items.directive_types(directive_id):
 		var line: Label = ScreenKit.label(DirectiveSheet.rate_line(_controller, type), LINE_SIZE)
 		line.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 		line.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -104,8 +104,8 @@ func _document(slot: int, directive_id: String) -> Control:
 	var tip: String = (
 		"%s\n%s"
 		% [
-			_controller.directive_name(directive_id),
-			Keywords.wrapped(_controller.directive_text(directive_id)),
+			_controller.texts.directive_name(directive_id),
+			Keywords.wrapped(_controller.texts.directive_text(directive_id)),
 		]
 	)
 	panel.tooltip_text = tip

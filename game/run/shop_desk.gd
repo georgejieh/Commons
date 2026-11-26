@@ -132,7 +132,7 @@ func plot_size() -> int:
 
 ## How many cards the private plot can hold.
 func plot_capacity() -> int:
-	return PlotSwap.capacity(_state, RunLoop.DEFAULT_PARAMS)
+	return PlotSwap.capacity(_state, RunDefaults.PARAMS)
 
 
 ## The upgrades sold here, by kind.

@@ -69,7 +69,7 @@ func _init(
 	directives: Array[DirectiveDef] = [],
 	offered: Array[CampaignDef] = [],
 	reformed: Array[ReformDef] = [],
-	run: RunParams = RunLoop.DEFAULT_PARAMS
+	run: RunParams = RunDefaults.PARAMS
 ) -> void:
 	_state = state
 	_params = params

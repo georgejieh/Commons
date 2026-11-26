@@ -213,7 +213,7 @@ func test_every_campaign_refusal_has_a_reason_string() -> void:
 	for reason: int in CampaignEffect.Reason.values():
 		if reason == CampaignEffect.Reason.OK:
 			continue
-		var key: String = RunController.campaign_reason_key(reason)
+		var key: String = RunTexts.campaign_reason_key(reason)
 		assert_bool(keys.has(key)).override_failure_message(key).is_true()
 
 

@@ -133,7 +133,6 @@ func open() -> void:
 	var controller: RunController = _app.controller
 	if visible or controller.awaiting() != RunController.AWAIT_SWAP:
 		return
-	var state: RunState = controller.state_copy()
 	var reader: KeptSeat = KeptSeat.of(controller.set_events())
 	var names: Dictionary[int, String] = {0: tr("ledger.you")}
 	for seat: int in [1, 2]:
@@ -145,12 +144,12 @@ func open() -> void:
 	# Over everything at the table; the table's menu still comes to the front when opened.
 	move_to_front()
 	_board.show_cards(
-		controller.player_cards(),
-		state.inventory.plot,
-		controller.swap_limit(),
+		controller.table.player_cards(),
+		controller.run.plot(),
+		controller.table.swap_limit(),
 		_pool,
 		_app.hand,
-		state.wild_ranks
+		controller.table.wild_ranks()
 	)
 	_refresh()
 	_board.grab_focus()

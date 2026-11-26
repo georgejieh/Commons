@@ -17,6 +17,10 @@ const SAVE_MAX_BYTES: int = 64 * 1024
 const SAVE_TIME_MAX_MS: float = 50.0
 const MEMORY_MAX_BYTES: int = 512 * 1024 * 1024
 const STARTUP_MAX_MS: float = 5000.0
+## What one table event may cost the screens in reads of the run, judged on the p99: far
+## above the view's few microseconds, and far below the 1.9 ms two whole copies of a late
+## run's state cost, so the copies cannot come back unseen.
+const EVENT_READS_MAX_USEC: float = 200.0
 
 const DEFAULT_SEED: int = 0
 ## Random hands timed for classification and for move generation.
@@ -56,6 +60,11 @@ static func save_time_budget() -> String:
 ## Resume is reported, not judged: the save time's budget is for the file alone.
 static func resume_budget() -> String:
 	return "none (the %.0f ms is for the file)" % SAVE_TIME_MAX_MS
+
+
+## The budget column of the table-event reads row.
+static func event_reads_budget() -> String:
+	return "p99 under %.0f us" % EVENT_READS_MAX_USEC
 
 
 ## The budget column of the startup row.

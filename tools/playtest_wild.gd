@@ -54,14 +54,14 @@ func table(driver: Object) -> void:
 func store() -> void:
 	var controller: Object = _controller()
 	var loop: RunLoop = _loop()
-	var campaigns: Array[String] = loop.shop.campaigns.stock()
-	var reforms: Array[String] = loop.shop.reforms.stock()
+	var campaigns: Array[String] = loop.visit.shop.campaigns.stock()
+	var reforms: Array[String] = loop.visit.shop.reforms.stock()
 	# The demo's counters are drawn from the tiers below the wild ranks', so for these
 	# frames they look items up in the whole pools; both are put back after.
-	var campaign_pool: Array[CampaignDef] = member(loop.shop.campaigns, "_pool")
-	var reform_pool: Array[ReformDef] = member(loop.shop.reforms, "_pool")
-	assign(loop.shop.campaigns, "_pool", RunPools.STORE_CAMPAIGNS.campaigns.duplicate())
-	assign(loop.shop.reforms, "_pool", RunPools.REFORMS.reforms.duplicate())
+	var campaign_pool: Array[CampaignDef] = member(loop.visit.shop.campaigns, "_pool")
+	var reform_pool: Array[ReformDef] = member(loop.visit.shop.reforms, "_pool")
+	assign(loop.visit.shop.campaigns, "_pool", RunPools.STORE_CAMPAIGNS.campaigns.duplicate())
+	assign(loop.visit.shop.reforms, "_pool", RunPools.REFORMS.reforms.duplicate())
 	var screen: Node = _current()
 	for item_id: String in ITEMS:
 		var campaign_stock: Array[String] = campaigns.duplicate()
@@ -74,15 +74,15 @@ func store() -> void:
 			if reform_stock.is_empty():
 				reform_stock.append(item_id)
 			reform_stock[0] = item_id
-		assign(loop.shop.campaigns, "_stock", campaign_stock)
-		assign(loop.shop.reforms, "_stock", reform_stock)
+		assign(loop.visit.shop.campaigns, "_stock", campaign_stock)
+		assign(loop.visit.shop.reforms, "_stock", reform_stock)
 		invoke(screen, "_refresh")
 		await _frames(10)
 		await _shot("store_wild_%s" % item_id)
-	assign(loop.shop.campaigns, "_stock", campaigns)
-	assign(loop.shop.reforms, "_stock", reforms)
-	assign(loop.shop.campaigns, "_pool", campaign_pool)
-	assign(loop.shop.reforms, "_pool", reform_pool)
+	assign(loop.visit.shop.campaigns, "_stock", campaigns)
+	assign(loop.visit.shop.reforms, "_stock", reforms)
+	assign(loop.visit.shop.campaigns, "_pool", campaign_pool)
+	assign(loop.visit.shop.reforms, "_pool", reform_pool)
 	invoke(screen, "_refresh")
 	await _frames(10)
 
@@ -93,7 +93,7 @@ func store() -> void:
 func scarce(market: bool) -> void:
 	var controller: Object = _controller()
 	var loop: RunLoop = _loop()
-	var shop: RunShop = loop.market if market else loop.shop
+	var shop: RunShop = loop.visit.market if market else loop.visit.shop
 	var stock: Array[String] = shop.stock()
 	var pool: Array[ModifierDef] = member(shop, "_pool")
 	var whole: CadrePool = load(POOLS[int(market)])
@@ -152,7 +152,7 @@ func _to_the_opening(controller: Object, driver: Object) -> bool:
 	for _step: int in STEPS:
 		await _until(_idle)
 		var none: Array[int] = []
-		if int(controller.call("campaign_reason", 0, none, false)) == 0:
+		if int(view(controller, "items").call("campaign_reason", 0, none, false)) == 0:
 			return true
 		if not bool(driver.call("act", controller)):
 			await _frames(5)
@@ -225,7 +225,7 @@ func _rules_frame() -> void:
 ## The picker over the table on cards that read three ways or more, built from the
 ## player's rules now; it is photographed and closed, and nothing is played.
 func _picker_frame(controller: Object) -> void:
-	var table: Object = controller.call("player_table")
+	var table: Object = view(controller, "table").call("player_table")
 	var readings: Array[Pattern] = _three_readings(table.get("rules"), table.get("rank_map"))
 	if readings.size() < 3:
 		_fail("NO CARDS READ THREE WAYS")
@@ -244,8 +244,8 @@ func _picker_frame(controller: Object) -> void:
 ## A soft bomb on the pile: three of a rank and a wild card standing in, with the wild
 ## card's ribbon and the rank it stands for beside its own.
 func _pile_frame(controller: Object) -> void:
-	var wild: Array[int] = controller.call("wild_ranks")
-	var table: Object = controller.call("player_table")
+	var wild: Array[int] = view(controller, "table").call("wild_ranks")
+	var table: Object = view(controller, "table").call("player_table")
 	var rank: int = _plain_rank(wild)
 	var counts: PackedByteArray = PackedByteArray()
 	counts.resize(Ranks.COUNT)

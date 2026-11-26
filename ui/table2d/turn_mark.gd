@@ -65,7 +65,7 @@ func drained() -> void:
 	if _controller.awaiting() != RunController.AWAIT_VILLAGER:
 		mark(Seats.NONE)
 		return
-	var view: SeatView = _controller.seat_view()
+	var view: SeatView = _controller.table.seat_view()
 	mark(view.public.seat_to_act if view != null else Seats.NONE)
 
 

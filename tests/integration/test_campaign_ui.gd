@@ -37,12 +37,12 @@ func after_test() -> void:
 
 ## Tests hand the player Campaigns directly; a run only gets them from a shop.
 func _hold(held: Array[String]) -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.inventory.consumables.assign(held)
 
 
 func _record_size() -> int:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	return loop.record.commands.size()
 
 
@@ -98,7 +98,9 @@ func test_the_tray_shows_held_leaflets_clear_of_the_table() -> void:
 	assert_bool(tray.leaflet(0).visible).is_true()
 	assert_str(tray.leaflet(0).shown_name()).is_equal(tr("campaign.model_harvest.name"))
 	assert_bool(tray.leaflet(1).is_private()).is_true()
-	assert_str(tray.leaflet(0).tip_rule()).is_equal(_app.controller.campaign_text("model_harvest"))
+	assert_str(tray.leaflet(0).tip_rule()).is_equal(
+		_app.controller.texts.campaign_text("model_harvest")
+	)
 	CampaignTrayLayout.check_clear(self, table, Vector2(SCREEN))
 
 
@@ -123,7 +125,7 @@ func test_arming_then_cancelling_leaves_no_state_behind() -> void:
 		assert_bool(button.get_global_rect().intersects(pile.get_global_rect())).is_false()
 		assert_bool(button.get_global_rect().intersects(hand_view.get_global_rect())).is_false()
 	assert_str(table.actions().reading.text).is_equal(
-		_app.controller.campaign_prompt("model_harvest")
+		_app.controller.texts.campaign_prompt("model_harvest")
 	)
 	assert_bool(table.actions().play.disabled).is_true()
 	hand.toggle(hand.cards()[1].id())
@@ -157,7 +159,7 @@ func test_a_leaflet_that_cannot_be_used_says_so_at_full_strength() -> void:
 	for reason: int in CampaignEffect.Reason.values():
 		if reason == CampaignEffect.Reason.OK:
 			continue
-		var why: String = tr(RunController.campaign_reason_key(reason))
+		var why: String = tr(RunTexts.campaign_reason_key(reason))
 		sample.set_reason(reason, why)
 		assert_float(sample.modulate.a).is_equal(1.0)
 		assert_bool(sample.says_not_now()).is_true()
@@ -277,7 +279,7 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
 		driver.act(_app.controller)
 	_app.controller.finish_set()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
 	_app.controller.reseal_book()
 	for screen_id: String in ["store", "black_market"]:
@@ -296,13 +298,13 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 					buy = button
 		assert_object(buy).is_not_null()
 		_check_inside(store, screen_id)
-		var held: int = _app.controller.held_campaigns().size()
+		var held: int = _app.controller.items.held_campaigns().size()
 		buy.pressed.emit()
 		var waited: float = 0.0
 		while stall.is_busy() and waited < WAIT_SECONDS:
 			await get_tree().process_frame
 			waited += get_process_delta_time()
-		assert_int(_app.controller.held_campaigns().size()).is_equal(held + 1)
+		assert_int(_app.controller.items.held_campaigns().size()).is_equal(held + 1)
 		assert_bool(stall.tray.leaflet(held).visible).is_true()
 
 

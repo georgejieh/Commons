@@ -38,7 +38,7 @@ func after_test() -> void:
 func test_the_picker_stands_beside_its_card_with_even_padding() -> void:
 	# Measured at rest: the strip's entrance scales it in.
 	Settings.set_value("reduced_motion", true)
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in SIZES:
@@ -48,7 +48,7 @@ func test_the_picker_stands_beside_its_card_with_even_padding() -> void:
 				_app.controller.reseal_book()
 				var offered: Array[String] = ["steel_target", "last_sheaf", "loudspeaker"]
 				offered[slot] = "rehabilitation"
-				loop.market.set("_stock", offered)
+				loop.visit.market.set("_stock", offered)
 				var market: StoreScreen = _app.show_screen("black_market", true)
 				await await_idle_frame()
 				var counter: HBoxContainer = market.get("_counter")

@@ -12,9 +12,7 @@ static func seat_full_name(state: RunState, seat: int) -> String:
 	if entry == null:
 		var keys: Array[String] = RunStarter.DEMO_RUN.name_keys
 		return TranslationServer.translate(keys[seat]) if seat >= 0 and seat < keys.size() else ""
-	var surname: String = TranslationServer.translate(
-		Roster.name_key(RunLoop.DEFAULT_VILLAGE, entry)
-	)
+	var surname: String = TranslationServer.translate(Roster.name_key(RunDefaults.VILLAGE, entry))
 	return Surnames.full_name(state.names.given_name(entry.family_id), surname)
 
 
@@ -34,7 +32,7 @@ static func seat_voice(state: RunState, seat: int) -> VoiceProfile:
 	var entry: RosterEntry = _seated(state, seat)
 	if entry == null:
 		return null
-	var family: FamilyDef = Roster.definition(RunLoop.DEFAULT_VILLAGE, entry)
+	var family: FamilyDef = Roster.definition(RunDefaults.VILLAGE, entry)
 	if family == null or family.voice == null:
 		return null
 	var voice: VoiceProfile = family.voice.duplicate() as VoiceProfile
@@ -46,9 +44,9 @@ static func seat_voice(state: RunState, seat: int) -> VoiceProfile:
 ## Every surname a villager's seat can show: each family's and each sent-down youth's.
 static func every_surname() -> Array[String]:
 	var names: Array[String] = []
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		names.append(TranslationServer.translate(family.name_key))
-	for key: String in RunLoop.DEFAULT_VILLAGE.youth_surnames:
+	for key: String in RunDefaults.VILLAGE.youth_surnames:
 		names.append(TranslationServer.translate(key))
 	return names
 

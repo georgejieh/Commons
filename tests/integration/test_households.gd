@@ -108,7 +108,7 @@ func test_the_opening_fires_no_setback_and_saves_what_it_set() -> void:
 	assert_bool(controller.start(request, null, _profile)).is_true()
 	for event: RunEvent in controller.set_events():
 		assert_int(event.type).is_not_equal(RunEvent.Type.SETBACK)
-	var loop: RunLoop = controller.get("_loop")
+	var loop: RunLoop = controller.run_loop()
 	var checkpoint: RunState = RunState.from_dict(loop.record.to_dict()["checkpoint"])
 	assert_array(checkpoint.inventory.cadres).contains_exactly(["landlords_ledger"])
 	assert_int(checkpoint.denunciation).is_equal(10)
@@ -197,9 +197,9 @@ func test_a_households_famine_adds_to_the_stakes() -> void:
 	var sum: StakeDef = StakeDef.new()
 	sum.famine = 5
 	RunOpening.household(
-		state, RunStarter.HOUSEHOLDS.household("mutual_aid_team"), null, RunLoop.DEFAULT_PARAMS
+		state, RunStarter.HOUSEHOLDS.household("mutual_aid_team"), null, RunDefaults.PARAMS
 	)
-	RunOpening.stake(state, sum, RunLoop.DEFAULT_PARAMS)
+	RunOpening.stake(state, sum, RunDefaults.PARAMS)
 	assert_int(state.famine).is_equal(15)
 
 

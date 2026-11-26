@@ -141,11 +141,11 @@ func _file_page(entries: PackedStringArray) -> AgedSheet:
 static func history_lines(app: DemoApp) -> PackedStringArray:
 	if not app.controller.has_run():
 		return PackedStringArray()
-	var state: RunState = app.controller.state_copy()
+	var table: Array[String] = app.controller.run.table()
 	var name_of: Callable = func(family: String) -> String:
-		var seat: int = state.table.find(family)
+		var seat: int = table.find(family)
 		if seat > 0:
 			return app.seat_name(seat)
-		var key: String = app.controller.family_name_key(family)
+		var key: String = app.controller.seats.family_name_key(family)
 		return TranslationServer.translate(key) if not key.is_empty() else family
-	return HistoryView.run_lines(state, name_of)
+	return app.controller.seats.history_lines(name_of)

@@ -18,13 +18,13 @@ func before_test() -> void:
 
 func _lower(source_id: String, amount: int) -> void:
 	RunMeters.lower(
-		_state, source_id, amount, TABLE, ModifierStack.new(), RunLoop.DEFAULT_PARAMS, 0, _events
+		_state, source_id, amount, TABLE, ModifierStack.new(), RunDefaults.PARAMS, 0, _events
 	)
 
 
 func _raise(source_id: String, amount: int) -> void:
 	RunMeters.apply_amount(
-		_state, source_id, amount, TABLE, ModifierStack.new(), RunLoop.DEFAULT_PARAMS, 0, _events
+		_state, source_id, amount, TABLE, ModifierStack.new(), RunDefaults.PARAMS, 0, _events
 	)
 
 

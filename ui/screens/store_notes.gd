@@ -16,14 +16,14 @@ static func warning(controller: RunController, width: float) -> Control:
 	note.add_theme_color_override("default_color", ScreenKit.INK)
 	note.custom_minimum_size = Vector2(width, 0)
 	var text: String = TranslationServer.translate("market.warning")
-	note.set_rule(text.format({"rise": controller.purchase_resentment()}))
+	note.set_rule(text.format({"rise": controller.figures.purchase_resentment()}))
 	return note
 
 
 static func rationing(controller: RunController) -> Control:
-	var slots: int = controller.store_stock().size()
+	var slots: int = controller.store.store_stock().size()
 	var text: String = Strings.count("store.rationed", slots).format(
-		{"below": controller.rationing_lifts_below()}
+		{"below": controller.figures.rationing_lifts_below()}
 	)
 	var note: Label = ScreenKit.label(text, NOTE_SIZE)
 	note.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -33,7 +33,7 @@ static func rationing(controller: RunController) -> Control:
 
 ## The state store's note of the Cadres Short Supply keeps off its counter (ADR 0023).
 static func short_supply(controller: RunController) -> Control:
-	var text: String = Strings.count("store.short_supply", controller.short_supply())
+	var text: String = Strings.count("store.short_supply", controller.store.short_supply())
 	var note: Label = ScreenKit.label(text, NOTE_SIZE)
 	note.autowrap_mode = TextServer.AUTOWRAP_OFF
 	note.add_theme_color_override("font_color", ScreenKit.RED)
@@ -69,11 +69,11 @@ static func whole(value: float) -> String:
 ## Rolls the black market's Resentment count from shown to the run's, pulsing as it
 ## rises, or writes "None reported" while it is not shown as it is, with no pulse (ADR
 ## 0022). Returns the value the count now shows.
-static func count_resentment(count: Label, shown: float, state: RunState) -> float:
+static func count_resentment(count: Label, shown: float, state: RunView) -> float:
 	if not ShownFigures.is_true(state, RunCorrections.RESENTMENT):
 		count.text = ShownFigures.none_reported()
 		return shown
-	UiMotion.count(count, shown, state.resentment, whole)
-	if state.resentment > shown:
+	UiMotion.count(count, shown, state.resentment(), whole)
+	if state.resentment() > shown:
 		UiMotion.pulse(count)
-	return state.resentment
+	return state.resentment()

@@ -38,18 +38,18 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## Opens kind from the state store, or the parcel from the black market, and returns it.
 func _opened(kind: String) -> EnvelopeOverlay:
 	_loop().state.coupons = 60
 	_app.controller.reseal_book()
-	_loop().shop.envelopes.clear()
-	_loop().market.envelopes.clear()
-	var counter: EnvelopeCounter = _loop().shop.envelopes
+	_loop().visit.shop.envelopes.clear()
+	_loop().visit.market.envelopes.clear()
+	var counter: EnvelopeCounter = _loop().visit.shop.envelopes
 	if kind == "parcel":
-		counter = _loop().market.envelopes
+		counter = _loop().visit.market.envelopes
 	counter.set("_stock", [kind] as Array[String])
 	var store: StoreScreen = _app.show_screen("black_market" if kind == "parcel" else "store", true)
 	await await_idle_frame()

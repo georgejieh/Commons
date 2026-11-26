@@ -44,7 +44,7 @@ func _init(controller: RunController) -> void:
 
 ## Reads the player's cards again, keeping the selection of cards still held.
 func refresh() -> void:
-	_cards = _controller.player_cards()
+	_cards = _controller.table.player_cards()
 	var held: Dictionary[int, bool] = {}
 	for card: CardInstance in _cards:
 		if _selected.has(card.id()):
@@ -96,7 +96,7 @@ func can_play() -> bool:
 
 
 func can_pass() -> bool:
-	var view: SeatView = _controller.seat_view()
+	var view: SeatView = _controller.table.seat_view()
 	return (
 		_controller.awaiting() == RunLoop.Awaiting.PLAYER_PLAY
 		and view != null
@@ -125,7 +125,7 @@ func preview() -> PlayPreview:
 ## Where each rank counts now, after any Cadre or debuff has re-ranked it, indexed by rank.
 ## Read it once for a sort, not once per card.
 func rank_map() -> PackedByteArray:
-	return _controller.player_table().rank_map
+	return _controller.table.player_table().rank_map
 
 
 ## Selects the hint's play and keeps the reading it meant. Returns its cards, or none
@@ -135,7 +135,7 @@ func take_hint() -> Array[int]:
 	_hint = play
 	_hint_ids.clear()
 	if play != null:
-		_hint_ids = _controller.card_ids_for(play)
+		_hint_ids = _controller.table.card_ids_for(play)
 		_hint_ids.sort()
 		_hint_turn = _plays_so_far()
 	select_only(_hint_ids)
@@ -173,7 +173,7 @@ func grouped_cards() -> Array[CardInstance]:
 	for card: CardInstance in left:
 		counts[card.base_rank()] += 1
 	var ordered: Array[CardInstance] = []
-	for group: Pattern in Bot.suggest_groups(counts, _controller.player_table(), _hinter):
+	for group: Pattern in Bot.suggest_groups(counts, _controller.table.player_table(), _hinter):
 		var needed: PackedByteArray = group.spent_counts()
 		for card: CardInstance in left.duplicate():
 			if needed[card.base_rank()] > 0:
@@ -187,19 +187,19 @@ func grouped_cards() -> Array[CardInstance]:
 ## The play a Medium bot would make now, or null for a pass or when it isn't the player's
 ## turn.
 func _suggested_play() -> Pattern:
-	var view: SeatView = _controller.seat_view()
-	var legal: Array[Pattern] = _controller.legal_moves()
+	var view: SeatView = _controller.table.seat_view()
+	var legal: Array[Pattern] = _controller.table.legal_moves()
 	if view == null or legal.is_empty():
 		return null
 	var play: BotPlay = Bot.decide_play(
-		view, legal, _controller.player_table(), _hinter, BotBudget.unlimited()
+		view, legal, _controller.table.player_table(), _hinter, BotBudget.unlimited()
 	)
 	return null if play.is_pass() else play.pattern
 
 
 ## Plays and passes made so far this round, which tells one turn from the next.
 func _plays_so_far() -> int:
-	var view: SeatView = _controller.seat_view()
+	var view: SeatView = _controller.table.seat_view()
 	return -1 if view == null else view.public.history.size()
 
 
@@ -230,6 +230,6 @@ func _holds(card_id: int) -> bool:
 
 func _update() -> void:
 	_preview = null
-	if not _selected.is_empty() and _controller.seat_view() != null:
-		_preview = _controller.preview_play(selected_ids(), hint_reading())
+	if not _selected.is_empty() and _controller.table.seat_view() != null:
+		_preview = _controller.table.preview_play(selected_ids(), hint_reading())
 	changed.emit()

@@ -30,7 +30,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## Puts the figures where no other number is and darkens those named, behind the
@@ -83,7 +83,7 @@ func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 	assert_bool(hud.famine.visible).is_false()
 	assert_bool(hud.denunciation.visible).is_true()
 	assert_bool(hud.shows_meter("famine")).is_false()
-	var target: String = Strings.score(_app.controller.target())
+	var target: String = Strings.score(_app.controller.figures.target())
 	assert_str(hud.quota.text()).contains(ShownFigures.none_reported()).not_contains(target)
 	assert_str(_shown(hud)).contains(ShownFigures.none_reported())
 	# A change to a dark meter moves nothing that can be seen: no tween, so no pulse.
@@ -112,10 +112,10 @@ func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
 	var dread: DreadLayers = table.get("_dread")
 	var copy: RunState = _app.controller.state_copy()
 	copy.famine = 90
-	dread.refresh(copy, true)
+	dread.refresh(RunView.new(copy), true)
 	assert_float(dread.board.targets[FAMINE_LAYER]).is_greater(0.2)
 	copy.books.dark.assign(["famine"])
-	dread.refresh(copy, true)
+	dread.refresh(RunView.new(copy), true)
 	assert_float(dread.board.targets[FAMINE_LAYER]).is_less(0.1)
 
 
@@ -127,7 +127,7 @@ func test_the_quota_report_shows_none_reported_and_no_rise() -> void:
 	var words: String = _shown(summary)
 	assert_str(words).contains(ShownFigures.none_reported())
 	_never_shows(summary, [FAMINE])
-	var target: String = Strings.score(_app.controller.target())
+	var target: String = Strings.score(_app.controller.figures.target())
 	assert_str(summary.bar().text()).not_contains(target)
 	assert_str(summary.over_seal_word()).is_empty()
 
@@ -139,7 +139,7 @@ func test_the_set_intro_hides_a_dark_norms_target() -> void:
 	var rounds: int = _app.max_rounds()
 	var hidden: String = tr("intro.target.unreported").format({"rounds": rounds})
 	var shown: String = tr("intro.target").format(
-		{"target": Strings.score(_app.controller.target()), "rounds": rounds}
+		{"target": Strings.score(_app.controller.figures.target()), "rounds": rounds}
 	)
 	assert_str(_shown(intro)).contains(hidden).not_contains(shown)
 
@@ -162,9 +162,9 @@ func test_the_year_and_round_pages_and_the_ending_show_none_reported() -> void:
 		await await_idle_frame()
 		_never_shows(page, [FAMINE, DENUNCIATION])
 	# A dark Famine at its death still ends the run as Famine does.
-	_loop().state.famine = RunLoop.DEFAULT_METERS.famine.death
+	_loop().state.famine = RunDefaults.METERS.famine.death
 	_app.controller.reseal_book()
-	assert_str(_app.controller.ending().id).is_equal(Endings.DEATH_FAMINE)
+	assert_str(_app.controller.seats.ending().id).is_equal(Endings.DEATH_FAMINE)
 	var ending: Node = _app.show_screen("ending", true)
 	await await_idle_frame()
 	var words: String = _shown(ending)
@@ -180,7 +180,7 @@ func test_the_setback_still_comes_for_a_dark_meter() -> void:
 	loop.start_set()
 	state.famine = 30
 	loop.player_books({"famine": 0})
-	assert_bool(ShownFigures.is_true(loop.state, "famine")).is_false()
-	loop.player_books({"famine": RunLoop.DEFAULT_METERS.famine.mid})
+	assert_bool(ShownFigures.is_true(RunView.new(loop.state), "famine")).is_false()
+	loop.player_books({"famine": RunDefaults.METERS.famine.mid})
 	assert_bool(loop.state.rationed).is_true()
-	assert_bool(ShownFigures.is_true(loop.state, "famine")).is_false()
+	assert_bool(ShownFigures.is_true(RunView.new(loop.state), "famine")).is_false()

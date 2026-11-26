@@ -119,7 +119,7 @@ func test_the_ending_names_the_dead() -> void:
 	var state: RunState = _state(["li", "chen"], [0, 1], METERS.famine.high)
 	VillageFates.starve(state, METERS.famine, VILLAGE.starvations_per_year, SetLog.new())
 	var lines: Array[EpilogueLine] = Endings.epilogue(
-		state, Endings.LEAN_YEARS, VILLAGE, RunLoop.DEFAULT_MEMORY
+		state, Endings.LEAN_YEARS, VILLAGE, RunDefaults.MEMORY
 	)
 	var named: Array[String] = []
 	for line: EpilogueLine in lines:
@@ -152,7 +152,7 @@ func test_the_years_count_survives_save_and_load() -> void:
 	var record: RunRecord = RunRecord.new()
 	record.mark(state)
 	var data: Dictionary = record.to_dict()
-	assert_bool(RunRecord.is_valid(data)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_true()
 	var loaded: RunState = RunState.from_dict(JSON.parse_string(JSON.stringify(state.to_dict())))
 	assert_int(loaded.year_starved).is_equal(1)
 	loaded.table = ["player", "gao", "chen"]
@@ -160,13 +160,13 @@ func test_the_years_count_survives_save_and_load() -> void:
 	assert_str(VillageFates.starve(loaded, METERS.famine, per_year, SetLog.new())).is_empty()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint["year_starved"] = -1
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	checkpoint.erase("year_starved")
 	checkpoint.erase("identity")
-	var migrated: Dictionary = RunRecord.migrate_from_10(data)
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_10(data)
 	var migrated_checkpoint: Dictionary = migrated["checkpoint"]
 	assert_int(int(migrated_checkpoint["year_starved"])).is_equal(0)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 
 
 func test_a_met_quota_deposes_the_risen_boss_until_the_next_year() -> void:

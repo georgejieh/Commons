@@ -112,13 +112,13 @@ func test_a_record_with_a_malformed_books_command_is_damaged() -> void:
 	var loop: RunLoop = _loop(10)
 	loop.player_books({"coupons": 12})
 	var data: Dictionary = _json(loop)
-	assert_bool(RunRecord.is_valid(data)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_true()
 	var commands: Array = data["commands"]
 	var last: Dictionary = commands[-1]
 	last["figures"] = {"coupons": "twelve"}
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 	last.erase("figures")
-	assert_bool(RunRecord.is_valid(data)).is_false()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
 
 
 func test_a_schema_16_record_migrates_with_empty_books() -> void:
@@ -127,9 +127,9 @@ func test_a_schema_16_record_migrates_with_empty_books() -> void:
 	var identity: Dictionary = checkpoint["identity"]
 	checkpoint.erase("books")
 	identity.erase("file_entries")
-	assert_bool(RunRecord.is_valid(data)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_16(data)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_16(data)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	var state: RunState = RunState.from_dict(migrated["checkpoint"])
 	assert_array(state.books.dark).is_empty()
 	assert_int(state.books.norm_percent).is_equal(0)

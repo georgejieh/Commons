@@ -38,9 +38,9 @@ static func drawn() -> Array[Resource]:
 	found.append_array(RunPools.DEBUFFS.debuffs)
 	found.append_array(RunPools.BOSSES.all())
 	found.append(RunPools.BOSSES)
-	found.append_array(_village(RunLoop.DEFAULT_VILLAGE))
+	found.append_array(_village(RunDefaults.VILLAGE))
 	found.append_array([RunPools.STORE, RunPools.MARKET, RunPools.LADDER, RunPools.PLOT_CARDS])
-	found.append_array([RunPools.DECK_CARDS, RunLoop.DEFAULT_PLOT_UPGRADES, RunLoop.DEFAULT_PARAMS])
+	found.append_array([RunPools.DECK_CARDS, RunDefaults.PLOT_UPGRADES, RunDefaults.PARAMS])
 	found.append_array(RunPools.STORE.envelopes + RunPools.MARKET.envelopes)
 	return found
 

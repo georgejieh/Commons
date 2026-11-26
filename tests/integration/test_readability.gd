@@ -54,13 +54,13 @@ func _open(screen_id: String) -> StoreScreen:
 
 func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 	_to_store()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	var offered: Array[String] = ["rehabilitation", "hidden_reserves", "last_sheaf"]
-	loop.market.set("_stock", offered)
+	loop.visit.market.set("_stock", offered)
 	for screen_id: String in ["store", "black_market"]:
 		var store: StoreScreen = await _open(screen_id)
 		var counter: HBoxContainer = store.get("_counter")
-		var stock: Array[String] = _app.controller.desk(screen_id == "black_market").stock()
+		var stock: Array[String] = _app.controller.store.desk(screen_id == "black_market").stock()
 		for slot: int in stock.size():
 			var card: Control = counter.get_child(slot)
 			var rules: Array[Node] = card.find_children("*", "KeywordText", true, false)
@@ -124,7 +124,7 @@ func test_campaign_leaflets_keep_their_names_readable_and_strong() -> void:
 func test_the_reforms_strip_and_board_names_fit_without_clipping() -> void:
 	assert_int(ReformStrip.NAME_SIZE).is_greater_equal(READABLE)
 	_to_store()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.reforms.assign(["supply_cooperative", "work_point_reform", "couriers_bag"])
 	var store: StoreScreen = await _open("store")
 	var stall: ReformStall = store.get("_reform_stall")
@@ -341,7 +341,7 @@ func test_whole_multiples_print_without_a_decimal() -> void:
 	assert_str(ModifierDef.multiple(2.0)).is_equal("2")
 	assert_str(ModifierDef.multiple(1.5)).is_equal("1.5")
 	var card: CardInstance = Deck.new().card(20)
-	var caption: String = _app.controller.envelope_card_text(
+	var caption: String = _app.controller.texts.envelope_card_text(
 		EnvelopeShelf.KIND_MODEL, "caption", card
 	)
 	assert_str(caption).contains("2 times")

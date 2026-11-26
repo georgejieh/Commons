@@ -107,7 +107,7 @@ func _set_aside(cards: Array[CardInstance]) -> void:
 	var names: PackedStringArray = []
 	for card: CardInstance in cards:
 		names.append(CardName.of(card))
-	var boss: String = _controller.modifier_name(_controller.boss())
+	var boss: String = _controller.texts.modifier_name(_controller.items.boss())
 	_show_words(
 		tr("table.set_aside_word"),
 		tr("beat.set_aside").format({"name": boss, "cards": ", ".join(names)}),
@@ -157,5 +157,5 @@ func _cards(text: String) -> Array[CardInstance]:
 	for part: String in text.split(",", false):
 		var card_id: int = part.to_int()
 		if card_id < Deck.SIZE:
-			cards.append(_controller.deck_card(card_id))
+			cards.append(_controller.table.deck_card(card_id))
 	return cards

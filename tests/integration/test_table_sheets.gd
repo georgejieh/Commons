@@ -133,7 +133,7 @@ func test_a_board_of_empty_slots_is_not_shown() -> void:
 	await await_idle_frame()
 	assert_bool(_app.controller.state_copy().inventory.cadres.is_empty()).is_true()
 	assert_bool(board.visible).is_false()
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.inventory.cadres.append("canteen")
 	table.call("_on_drained")
 	await await_idle_frame()

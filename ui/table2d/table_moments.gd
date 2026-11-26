@@ -345,7 +345,7 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 	var cards: Array[CardInstance] = []
 	for card_id: int in card_ids:
 		if card_id < Deck.SIZE:
-			cards.append(controller.deck_card(card_id))
+			cards.append(controller.table.deck_card(card_id))
 	if cards.is_empty() or _player.step <= 0.0:
 		return
 	_pile.clear()

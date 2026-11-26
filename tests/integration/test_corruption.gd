@@ -340,7 +340,7 @@ func test_the_commons_resets_and_nothing_of_the_run_comes_back() -> void:
 	state.famine = 10
 	state.denunciation = 10
 	state.year_rounds = 4
-	assert_str(Endings.outcome(state, RunLoop.DEFAULT_METERS)).is_equal(Endings.THE_COMMONS)
+	assert_str(Endings.outcome(state, RunDefaults.METERS)).is_equal(Endings.THE_COMMONS)
 	assert_bool(ProfileCommits.commit(_profile, state, true)).is_true()
 	assert_float(_corruption()).is_equal(0.0)
 	state.set_index = 6
@@ -366,10 +366,12 @@ func test_a_schema_11_save_migrates() -> void:
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("quota_corruption")
 	checkpoint.erase("famine_market_buys")
-	assert_bool(RunRecord.is_valid(data)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_12(RunRecord.migrate_from_11(data))
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_12(
+		RunRecordMigrations.migrate_from_11(data)
+	)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	var broken: Dictionary = migrated.duplicate(true)
 	broken["checkpoint"]["quota_corruption"] = [3]
-	assert_bool(RunRecord.is_valid(broken)).is_false()
+	assert_bool(RunRecordCheck.is_valid(broken)).is_false()
 	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(12)

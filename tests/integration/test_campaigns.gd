@@ -295,14 +295,14 @@ func test_a_grain_loan_that_starves_the_village_ends_the_run() -> void:
 	var loop: RunLoop = _find(["grain_loan"], _my_turn)
 	RunScript.new().play_until_set_over(loop)
 	loop.open_shop()
-	loop.state.famine = RunLoop.DEFAULT_METERS.famine.death - 1
+	loop.state.famine = RunDefaults.METERS.famine.death - 1
 	var none: Array[int] = []
 	assert_int(loop.player_campaign(0, none)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)
 	assert_int(_events_of(loop, RunEvent.Type.RUN_DIED).size()).is_equal(1)
 	# At the table the run dies at the round's end, the next state that may end it.
 	var table: RunLoop = _find(["grain_loan"], _my_turn)
-	table.state.famine = RunLoop.DEFAULT_METERS.famine.death - 1
+	table.state.famine = RunDefaults.METERS.famine.death - 1
 	assert_int(table.player_campaign(0, none)).is_equal(RunLoop.Reason.OK)
 	assert_int(table.awaiting()).is_equal(RunLoop.Awaiting.PLAYER_PLAY)
 	RunScript.new().play_until_set_over(table)

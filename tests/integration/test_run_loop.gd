@@ -96,7 +96,7 @@ func test_a_missed_target_plays_every_round_and_raises_famine() -> void:
 	assert_int(_count(loop, RunEvent.Type.DEBUFF_ADDED)).is_equal(ladder_debuffs)
 	assert_int(state.coupons).is_equal(0)
 	var rises: PackedInt32Array = DebuffScript.rises(loop, RunMeters.FAMINE)
-	assert_int(rises[-1]).is_equal(RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount)
+	assert_int(rises[-1]).is_equal(RunDefaults.METERS.source(RunMeters.MISSED_TARGET).amount)
 	assert_int(state.famine).is_equal(DebuffScript.sum(rises))
 
 
@@ -235,9 +235,9 @@ func _ids(cards: Array[CardInstance]) -> Array[int]:
 ## The meter table with the missed target moved to another meter and size, so a missed
 ## Set drives that meter through the loop's real path.
 func _meters_with_miss(meter: String, amount: int) -> MeterTable:
-	var table: MeterTable = RunLoop.DEFAULT_METERS.duplicate()
+	var table: MeterTable = RunDefaults.METERS.duplicate()
 	var sources: Array[MeterSource] = []
-	for row: MeterSource in RunLoop.DEFAULT_METERS.sources:
+	for row: MeterSource in RunDefaults.METERS.sources:
 		if row.id != RunMeters.MISSED_TARGET:
 			sources.append(row)
 	var miss: MeterSource = MeterSource.new()
@@ -251,12 +251,7 @@ func _meters_with_miss(meter: String, amount: int) -> MeterTable:
 
 func _missed_set(meters: MeterTable, state: RunState) -> RunLoop:
 	var loop: RunLoop = RunLoop.new(
-		state,
-		RunScript.bots(),
-		_hard_sets(),
-		RunLoop.DEFAULT_PARAMS,
-		RunPools.DEBUFFS.debuffs,
-		meters
+		state, RunScript.bots(), _hard_sets(), RunDefaults.PARAMS, RunPools.DEBUFFS.debuffs, meters
 	)
 	loop.start_set()
 	RunScript.new().play_until_set_over(loop)
@@ -303,12 +298,7 @@ func test_mid_denunciation_sends_you_to_reeducation_in_place_of_the_store() -> v
 	var commands: Array = saved["commands"]
 	commands.append({"type": "shop"})
 	var resumed: RunLoop = RunRecord.resume(
-		saved,
-		RunScript.bots(),
-		_hard_sets(),
-		RunLoop.DEFAULT_PARAMS,
-		RunPools.DEBUFFS.debuffs,
-		meters
+		saved, RunScript.bots(), _hard_sets(), RunDefaults.PARAMS, RunPools.DEBUFFS.debuffs, meters
 	)
 	assert_int(resumed.awaiting()).is_equal(RunLoop.Awaiting.REEDUCATION)
 	assert_array(resumed.state.inventory.cadres).is_equal(state.inventory.cadres)
@@ -319,12 +309,12 @@ func test_mid_denunciation_sends_you_to_reeducation_in_place_of_the_store() -> v
 
 func test_rationing_cuts_a_store_slot_until_famine_falls() -> void:
 	var state: RunState = RunState.new(MISSED_SEED)
-	state.famine = RunLoop.DEFAULT_METERS.famine.mid - 1
+	state.famine = RunDefaults.METERS.famine.mid - 1
 	var loop: RunLoop = _missed_set(_meters_with_miss(RunMeters.FAMINE, 1), state)
 	assert_bool(state.rationed).is_true()
 	loop.open_shop()
-	var cut: int = RunLoop.DEFAULT_METERS.rationing_shop_cut
-	assert_int(loop.shop.stock().size()).is_equal(RunPools.STORE.slots - cut)
+	var cut: int = RunDefaults.METERS.rationing_shop_cut
+	assert_int(loop.visit.shop.stock().size()).is_equal(RunPools.STORE.slots - cut)
 
 
 ## Every bot always lies, and the player always declares above true need, so each audit
@@ -349,7 +339,7 @@ func test_caught_lies_raise_the_liars_denunciation() -> void:
 			var family_id: String = state.table[event.seat]
 			villagers_caught[family_id] = villagers_caught.get(family_id, 0) + 1
 	assert_int(player_caught + villagers_caught.size()).is_greater(0)
-	var per_lie: int = RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
+	var per_lie: int = RunDefaults.METERS.source(RunMeters.CAUGHT_LIE).amount
 	assert_int(state.denunciation).is_equal(player_caught * per_lie)
 	for family_id: String in villagers_caught:
 		assert_int(state.villager_denunciation[family_id]).is_equal(
@@ -361,7 +351,7 @@ func test_caught_lies_raise_the_liars_denunciation() -> void:
 ## a family whose own Denunciation reached mid leaves for reeducation at the Set's end.
 func test_a_roster_run_seats_families_and_reeducates_the_denounced() -> void:
 	var state: RunState = RunState.new(SEEDS[1])
-	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	Roster.start(state, RunDefaults.VILLAGE, [])
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	loop.start_set()
 	var seated: Array[String] = state.table.slice(1)
@@ -369,7 +359,7 @@ func test_a_roster_run_seats_families_and_reeducates_the_denounced() -> void:
 	for family_id: String in seated:
 		assert_int(Roster.entry(state, family_id).status).is_equal(RosterEntry.Status.ACTIVE)
 		assert_int(Roster.entry(state, family_id).sets_seated).is_equal(1)
-	state.villager_denunciation[seated[0]] = RunLoop.DEFAULT_METERS.denunciation.mid
+	state.villager_denunciation[seated[0]] = RunDefaults.METERS.denunciation.mid
 	RunScript.new().play_until_set_over(loop)
 	assert_int(Roster.entry(state, seated[0]).status).is_equal(RosterEntry.Status.REEDUCATION)
 	assert_int(state.villager_denunciation[seated[0]]).is_equal(0)

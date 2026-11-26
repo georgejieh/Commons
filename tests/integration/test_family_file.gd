@@ -52,7 +52,7 @@ func test_the_file_outlives_the_collective_ending_and_every_new_run() -> void:
 	state.famine = 10
 	state.denunciation = 10
 	state.year_rounds = 4
-	assert_str(Endings.outcome(state, RunLoop.DEFAULT_METERS)).is_equal(Endings.THE_COMMONS)
+	assert_str(Endings.outcome(state, RunDefaults.METERS)).is_equal(Endings.THE_COMMONS)
 	ProfileCommits.commit(_kit.profile, state, true)
 	assert_float(_corruption()).is_equal(0.0)
 	assert_int(_kit.entries().size()).is_equal(1)
@@ -66,7 +66,7 @@ func test_the_file_outlives_the_collective_ending_and_every_new_run() -> void:
 
 
 func test_each_entry_raises_the_next_runs_targets_up_to_double() -> void:
-	var plain: float = _started(FileWatchKit.full()).target()
+	var plain: float = _started(FileWatchKit.full()).figures.target()
 	for count: int in [1, 3, 12]:
 		_kit.reset()
 		for index: int in count:
@@ -75,8 +75,10 @@ func test_each_entry_raises_the_next_runs_targets_up_to_double() -> void:
 		var percent: int = mini(count * BOOKS.entry_percent, BOOKS.entry_cap_percent)
 		var raise: float = 1.0 + percent / 100.0
 		assert_int(controller.state_copy().identity.file_entries).is_equal(count)
-		assert_float(controller.target()).override_failure_message(str(count)).is_equal_approx(
-			plain * raise, 0.001
+		(
+			assert_float(controller.figures.target())
+			. override_failure_message(str(count))
+			. is_equal_approx(plain * raise, 0.001)
 		)
 	# The demo is outside the file.
 	_kit.saves.delete()

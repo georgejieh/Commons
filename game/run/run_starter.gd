@@ -39,10 +39,10 @@ static func state(request: RunRequest, profile: SaveService = null) -> RunState:
 	opening.coupons = starting_coupons(request.kind)
 	var lineage: Dictionary = RunLineage.make(request.lineage_kind, request.lineage_values)
 	if profile != null:
-		opening.memory = data.memory.carried(RunLoop.DEFAULT_MEMORY)
+		opening.memory = data.memory.carried(RunDefaults.MEMORY)
 		lineage = ProfileCommits.start_run(profile, opening)
 	if request.kind == RunRequest.FULL:
-		Roster.start(opening, RunLoop.DEFAULT_VILLAGE, unlocked_families(data))
+		Roster.start(opening, RunDefaults.VILLAGE, unlocked_families(data))
 	var generation: int = request.generation if profile == null else opening.identity.generation
 	_name(opening, request.kind, Surnames.or_fallback(surname), generation)
 	_open(opening, request, lineage)
@@ -57,7 +57,7 @@ static func _name(
 	if kind != RunRequest.FULL:
 		opening.names.player_surname = surname
 		return
-	RunNames.start(opening, RunLoop.DEFAULT_VILLAGE, surname, generation, Surnames.texts())
+	RunNames.start(opening, RunDefaults.VILLAGE, surname, generation, Surnames.texts())
 
 
 ## True when the profile allows what the request asks: no household or one whose tier is
@@ -84,7 +84,7 @@ static func everything_open() -> ProfileData:
 ## The lineage first, so the heirloom goes into the plot before the household's cards,
 ## then the household, then the stake's starting meters (ADR 0025).
 static func _open(opening: RunState, request: RunRequest, lineage: Dictionary) -> void:
-	var run: RunParams = RunLoop.DEFAULT_PARAMS
+	var run: RunParams = RunDefaults.PARAMS
 	RunLineage.apply(opening, str(lineage["kind"]), lineage["values"], run)
 	var chosen: HouseholdDef = HOUSEHOLDS.household(request.household)
 	if chosen != null:
@@ -100,7 +100,7 @@ static func _open(opening: RunState, request: RunRequest, lineage: Dictionary) -
 static func unlocked_families(data: ProfileData) -> Array[String]:
 	var unlocked: Array[String] = []
 	var landlord: bool = data.landlord_endings > 0
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		match family.unlock:
 			FamilyDef.Unlock.RUNS:
 				if data.finished_runs >= family.unlock_runs:

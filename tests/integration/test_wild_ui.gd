@@ -36,7 +36,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## A new run with the player holding these Campaigns, played to the player's first turn as
@@ -47,7 +47,7 @@ func _to_first_lead(seed_value: int, held: Array[String]) -> bool:
 	var driver: ControllerScript = ControllerScript.new()
 	for _step: int in 900:
 		var awaiting: int = _app.controller.awaiting()
-		var view: SeatView = _app.controller.seat_view()
+		var view: SeatView = _app.controller.table.seat_view()
 		if awaiting == RunController.AWAIT_PLAY and view.public.history.is_empty():
 			return true
 		if awaiting == RunController.AWAIT_SET_OVER:
@@ -87,7 +87,7 @@ func _wild(table: TableScreen) -> TableWild:
 
 
 func _rank_of(card_id: int) -> int:
-	for card: CardInstance in _app.controller.player_cards():
+	for card: CardInstance in _app.controller.table.player_cards():
 		if card.id() == card_id:
 			return card.base_rank()
 	return Ranks.INVALID
@@ -96,7 +96,7 @@ func _rank_of(card_id: int) -> int:
 ## Cards the player could play more than one way now: three of a rank and one other card,
 ## the first such set found, or none.
 func _choice_ids() -> Array[int]:
-	var cards: Array[CardInstance] = _app.controller.player_cards()
+	var cards: Array[CardInstance] = _app.controller.table.player_cards()
 	var by_rank: Dictionary[int, Array] = {}
 	for card: CardInstance in cards:
 		if card.base_rank() <= Ranks.TWO:
@@ -112,7 +112,7 @@ func _choice_ids() -> Array[int]:
 			var ids: Array[int] = []
 			ids.assign(by_rank[rank].slice(0, 3))
 			ids.append(other.id())
-			if _app.controller.readings_for(ids).size() > 1:
+			if _app.controller.table.readings_for(ids).size() > 1:
 				return ids
 	return []
 
@@ -154,7 +154,7 @@ func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 		assert_bool(view.shows_wild()).is_false()
 	assert_str(strip.shown_text()).not_contains(tr("wild.strip"))
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
-	var first: int = _app.controller.wild_ranks()[0]
+	var first: int = _app.controller.table.wild_ranks()[0]
 	var waited: float = 0.0
 	while not moments.callout.is_showing() and waited < WAIT_SECONDS:
 		await get_tree().process_frame
@@ -172,7 +172,7 @@ func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 	assert_int(marked).is_equal(_count_of(first))
 	# A second rank reads as two, on the strip and under the call-out.
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
-	var both: Array[int] = _app.controller.wild_ranks()
+	var both: Array[int] = _app.controller.table.wild_ranks()
 	assert_int(both.size()).is_equal(2)
 	waited = 0.0
 	var line: String = ReadingText.wild_line(both)
@@ -189,7 +189,7 @@ func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 
 func _count_of(rank: int) -> int:
 	var count: int = 0
-	for card: CardInstance in _app.controller.player_cards():
+	for card: CardInstance in _app.controller.table.player_cards():
 		count += 1 if card.base_rank() == rank else 0
 	return count
 
@@ -234,7 +234,7 @@ func test_the_picker_opens_only_with_a_choice_plays_by_keys_and_cancels_cleanly(
 	var table: TableScreen = found[0]
 	var ids: Array[int] = found[1]
 	var picker: ReadingPicker = _wild(table).picker
-	var readings: Array[Pattern] = _app.controller.readings_for(ids)
+	var readings: Array[Pattern] = _app.controller.table.readings_for(ids)
 	_select(ids)
 	table.actions().play.pressed.emit()
 	assert_bool(picker.visible).is_true()
@@ -275,7 +275,7 @@ func test_one_reading_plays_straight_away() -> void:
 	var table: TableScreen = await _open_table()
 	var ids: Array[int] = ControllerScript.new().choose_play(_app.controller)
 	assert_bool(ids.is_empty()).is_false()
-	assert_int(_app.controller.readings_for(ids).size()).is_equal(1)
+	assert_int(_app.controller.table.readings_for(ids).size()).is_equal(1)
 	var commands: int = _loop().record.commands.size()
 	_select(ids)
 	table.actions().play.pressed.emit()
@@ -288,11 +288,11 @@ func test_a_stand_in_on_the_pile_names_the_rank_it_stands_for() -> void:
 	assert_bool(found.is_empty()).is_false()
 	var table: TableScreen = found[0]
 	var ids: Array[int] = found[1]
-	var readings: Array[Pattern] = _app.controller.readings_for(ids)
+	var readings: Array[Pattern] = _app.controller.table.readings_for(ids)
 	# The strongest reading is the bomb, in which wild cards stand in.
 	var strongest: Pattern = readings[0]
 	var held: Dictionary[int, CardInstance] = {}
-	for card: CardInstance in _app.controller.player_cards():
+	for card: CardInstance in _app.controller.table.player_cards():
 		held[card.id()] = card
 	_select(ids)
 	table.actions().play.pressed.emit()
@@ -307,7 +307,7 @@ func test_a_stand_in_on_the_pile_names_the_rank_it_stands_for() -> void:
 	for view: CardView in views:
 		cards.append(held[view.card_id])
 	var stands: PackedByteArray = PlayPlacement.stands_for(cards, strongest)
-	var wild: Array[int] = _app.controller.wild_ranks()
+	var wild: Array[int] = _app.controller.table.wild_ranks()
 	var noted: int = 0
 	for index: int in views.size():
 		var own: int = cards[index].base_rank()
@@ -335,12 +335,12 @@ func test_the_hint_plays_the_reading_it_meant() -> void:
 		assert_bool(_app.hand.hint_reading().same_reading(offered)).is_true()
 		assert_int(hinted.size()).is_equal(offered.card_count)
 	# A hint that meant the weaker reading of cards that read two ways plays that one.
-	var readings: Array[Pattern] = _app.controller.readings_for(ids)
+	var readings: Array[Pattern] = _app.controller.table.readings_for(ids)
 	var sorted: Array[int] = ids.duplicate()
 	sorted.sort()
 	_app.hand.set("_hint", readings[-1])
 	_app.hand.set("_hint_ids", sorted)
-	_app.hand.set("_hint_turn", _app.controller.seat_view().public.history.size())
+	_app.hand.set("_hint_turn", _app.controller.table.seat_view().public.history.size())
 	_app.hand.select_only(ids)
 	assert_bool(_app.hand.hint_reading().same_reading(readings[-1])).is_true()
 	table.actions().play.pressed.emit()
@@ -361,7 +361,7 @@ func test_the_rules_sheet_explains_wild_ranks_only_while_one_is_wild() -> void:
 	sheet.toggle(_app.controller)
 	await await_idle_frame()
 	var text: String = sheet.wild_text()
-	assert_str(text).contains(ReadingText.wild_line(_app.controller.wild_ranks()))
+	assert_str(text).contains(ReadingText.wild_line(_app.controller.table.wild_ranks()))
 	for key: String in ["cheat.wild.stand_in", "cheat.wild.order", "cheat.wild.grain"]:
 		assert_str(text).contains(tr(key))
 	assert_str(text).not_contains(tr("cheat.wild.order.big"))
@@ -390,6 +390,6 @@ func test_the_rules_sheet_explains_wild_ranks_only_while_one_is_wild() -> void:
 	for _step: int in 400:
 		if _loop().state.round_index > round_index or not driver.act(_app.controller):
 			break
-	assert_array(_app.controller.wild_ranks()).is_empty()
+	assert_array(_app.controller.table.wild_ranks()).is_empty()
 	sheet.toggle(_app.controller)
 	assert_str(sheet.wild_text()).is_empty()

@@ -122,13 +122,13 @@ func test_the_stamp_reads_the_village_and_every_boss() -> void:
 	for boss: ModifierDef in RunPools.BOSSES.all():
 		assert_bool(drawn.has(boss)).override_failure_message(boss.id).is_true()
 	assert_bool(drawn.has(RunPools.BOSSES)).is_true()
-	assert_bool(drawn.has(RunLoop.DEFAULT_VILLAGE)).is_true()
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	assert_bool(drawn.has(RunDefaults.VILLAGE)).is_true()
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		assert_bool(drawn.has(family)).override_failure_message(family.id).is_true()
 		assert_bool(drawn.has(family.personality)).override_failure_message(family.id).is_true()
 		for shift: TraitShift in family.shifts:
 			assert_bool(drawn.has(shift)).override_failure_message(family.id).is_true()
-	var family: FamilyDef = RunLoop.DEFAULT_VILLAGE.families[0]
+	var family: FamilyDef = RunDefaults.VILLAGE.families[0]
 	var one: Array[Resource] = [family.personality]
 	var bolder: Personality = family.personality.duplicate()
 	var high: bool = bolder.bomb_aggression == Personality.Level.HIGH

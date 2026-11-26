@@ -124,7 +124,7 @@ func test_buying_it_at_the_black_market_is_resented() -> void:
 	loop.record.mark(loop.state)
 	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
 	var stock: Array[String] = [CLERK.id]
-	loop.market.set("_stock", stock)
+	loop.visit.market.set("_stock", stock)
 	var resentment: int = loop.state.resentment
 	assert_int(loop.player_market_buy(0)).is_equal(RunLoop.Reason.OK)
 	assert_bool(loop.state.inventory.cadres.has(CLERK.id)).is_true()

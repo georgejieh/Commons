@@ -29,10 +29,10 @@ func after_test() -> void:
 
 func test_the_open_sheet_matches_the_run_at_every_event() -> void:
 	# Put in force from round 2 by hand, in a Quota no one meets, so every round plays.
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", RANK_DEBUFF, "", ""])
 	loop.set("_sets", DebuffScript.hard_sets())
-	assert_array(_app.controller.ladder()).contains([RANK_DEBUFF])
+	assert_array(_app.controller.items.ladder()).contains([RANK_DEBUFF])
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	_sheet = table.get("_cheat_sheet")
@@ -55,14 +55,14 @@ func test_the_open_sheet_matches_the_run_at_every_event() -> void:
 
 
 func _check(_event: RunEvent) -> void:
-	if not _sheet.visible or _app.controller.seat_view() == null:
+	if not _sheet.visible or _app.controller.table.seat_view() == null:
 		return
 	var expected: String = _expected_order()
 	if _sheet.rank_order_text() != expected:
 		_mismatches.append("%s != %s" % [_sheet.rank_order_text(), expected])
 	_orders_seen[expected] = true
 	var active: String = _sheet.active_text()
-	for modifier_id: String in _app.controller.active_modifier_ids():
+	for modifier_id: String in _app.controller.items.active_modifier_ids():
 		if not active.contains(tr("modifier.%s.name" % modifier_id)):
 			_mismatches.append("missing %s" % modifier_id)
 		if modifier_id == RANK_DEBUFF:
@@ -71,7 +71,7 @@ func _check(_event: RunEvent) -> void:
 
 ## The rank order from the controller's own map, built apart from the sheet.
 func _expected_order() -> String:
-	var rank_map: PackedByteArray = _app.controller.player_table().rank_map
+	var rank_map: PackedByteArray = _app.controller.table.player_table().rank_map
 	var ranks: Array[int] = []
 	for rank: int in Ranks.COUNT:
 		ranks.append(rank)

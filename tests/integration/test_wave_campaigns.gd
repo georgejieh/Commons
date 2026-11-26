@@ -82,7 +82,7 @@ func test_self_criticism_in_a_shop_stops_resentment_at_zero() -> void:
 func test_a_self_criticism_that_denounces_the_player_to_death_ends_the_run() -> void:
 	var loop: RunLoop = _find(["self_criticism"], _my_turn)
 	_to_shop(loop)
-	loop.state.denunciation = RunLoop.DEFAULT_METERS.denunciation.death - 1
+	loop.state.denunciation = RunDefaults.METERS.denunciation.death - 1
 	var none: Array[int] = []
 	assert_int(loop.player_campaign(0, none)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)
@@ -188,12 +188,12 @@ func test_a_schema_17_save_migrates_to_no_reported_steps() -> void:
 	var data: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("reported_steps")
-	assert_bool(RunRecord.is_valid(data)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_17(data)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(data)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_17(data)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	assert_int(int(migrated["checkpoint"]["reported_steps"])).is_equal(0)
 	migrated["checkpoint"]["reported_steps"] = -1
-	assert_bool(RunRecord.is_valid(migrated)).is_false()
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_false()
 	migrated["checkpoint"]["reported_steps"] = 1
 	migrated["checkpoint"]["norm_steps"] = 0
-	assert_bool(RunRecord.is_valid(migrated)).is_false()
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_false()

@@ -80,8 +80,8 @@ func full_run(file: FileWalk, wild_ranks: Wild) -> void:
 	var promised: String = _current().call("player_name")
 	await _click_button_with_text(tr("setup.start"))
 	await _frames(20)
-	_expect(bool(controller.call("has_village")), "FULL RUN NOT STARTED")
-	var named: String = controller.call("player_name")
+	_expect(bool(view(controller, "seats").call("has_village")), "FULL RUN NOT STARTED")
+	var named: String = view(controller, "seats").call("player_name")
 	_expect(named == promised, "RUN NAME %s IS NOT SETUP'S %s" % [named, promised])
 	await _shot("full_run_set_intro")
 	await _dossier_names()
@@ -94,7 +94,7 @@ func full_run(file: FileWalk, wild_ranks: Wild) -> void:
 	_expect(_button_in(_current(), tr("title.continue")) != null, "NO CONTINUE")
 	await _click_button_with_text(tr("title.continue"))
 	await _frames(40)
-	_expect(bool(controller.call("has_village")), "RESUME WRONG KIND")
+	_expect(bool(view(controller, "seats").call("has_village")), "RESUME WRONG KIND")
 	_expect(_screen_id() == "table", "RESUME WRONG SCREEN")
 	await _abandon_frames(_current(), saves)
 	_put_back_files(kept)
@@ -111,7 +111,7 @@ func _dossier_names() -> void:
 	await _shot("dossier_names")
 	var page: Node = _current()
 	for seat: int in [1, 2]:
-		var full: String = _controller().call("seated_full_name", seat)
+		var full: String = view(_controller(), "seats").call("seated_full_name", seat)
 		var whole: bool = full.split(" ").size() == 2 and _shows_text(page, full)
 		_expect(whole, "DOSSIER SEAT %d NAMED %s" % [seat, full])
 	app.call("back")
@@ -213,7 +213,7 @@ func _history_frames(profile: SaveService) -> void:
 		entry.class_id = values[2]
 		entry.year = 3 if Endings.is_death(entry.outcome) else 8
 		for family: int in values[3]:
-			entry.dead.append(RunLoop.DEFAULT_VILLAGE.families[family].name_key)
+			entry.dead.append(RunDefaults.VILLAGE.families[family].name_key)
 		data.add_history(entry)
 	data.finished_runs = runs.size()
 	Profile.write(profile, data)
@@ -322,7 +322,7 @@ func _finished_run(values: Array) -> RunState:
 	state.resentment = values[2]
 	state.year_rounds = 4
 	state.year_landlord_rounds = values[3]
-	for family: FamilyDef in RunLoop.DEFAULT_VILLAGE.families:
+	for family: FamilyDef in RunDefaults.VILLAGE.families:
 		state.roster.append(RosterEntry.new(family.id))
 	state.roster[1].status = RosterEntry.Status.REEDUCATION
 	state.roster[4].status = RosterEntry.Status.DEPOSED

@@ -50,7 +50,7 @@ func setup(
 	_table = table
 	tray.show_empty = false
 	tray.setup(controller)
-	tray.visible = not controller.held_campaigns().is_empty()
+	tray.visible = not controller.items.held_campaigns().is_empty()
 	tray.selection = hand.selected_ids
 	tray.changed.connect(_on_tray_changed.bind(commands))
 	commands.prompt = _prompt
@@ -86,7 +86,7 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 func refresh() -> void:
 	tray.enabled = _player.is_idle()
 	tray.refresh()
-	tray.visible = not _controller.held_campaigns().is_empty()
+	tray.visible = not _controller.items.held_campaigns().is_empty()
 	_actions.show_opening(_controller.awaiting() == RunController.AWAIT_OPENING)
 
 
@@ -125,7 +125,7 @@ func _show_hand() -> void:
 
 ## A card's face: in the hand as shown, in the hand as the run holds it, or from the deck.
 func _card_for(card_id: int) -> CardInstance:
-	for card: CardInstance in _hand.cards() + _controller.player_cards():
+	for card: CardInstance in _hand.cards() + _controller.table.player_cards():
 		if card.id() == card_id:
 			return card
-	return _controller.deck_card(card_id) if card_id < Deck.SIZE else null
+	return _controller.table.deck_card(card_id) if card_id < Deck.SIZE else null

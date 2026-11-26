@@ -64,7 +64,7 @@ func test_collective_never_calls_and_never_buys_privately() -> void:
 		assert_int(run.market_buys).is_equal(0)
 		assert_int(run.market_resentment).is_equal(0)
 		assert_int(run.swapped_cards).is_equal(0)
-		assert_int(run.max_need).is_less_equal(RunLoop.DEFAULT_PARAMS.base_need)
+		assert_int(run.max_need).is_less_equal(RunDefaults.PARAMS.base_need)
 
 
 func test_every_strategy_issues_directives() -> void:

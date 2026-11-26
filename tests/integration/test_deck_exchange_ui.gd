@@ -36,7 +36,7 @@ func after_test() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 func _to_the_store(coupons: int = 60) -> StoreScreen:
@@ -58,7 +58,7 @@ func _goods(store: StoreScreen) -> DeckGoods:
 
 func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() -> void:
 	var store: StoreScreen = await _to_the_store()
-	var stall: DeckStallView = _app.controller.deck_stall()
+	var stall: DeckStallView = _app.controller.store.deck_stall()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in SIZES:
@@ -84,7 +84,7 @@ func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() ->
 
 func test_a_ticket_says_why_it_cannot_be_bought() -> void:
 	var poor: StoreScreen = await _to_the_store(0)
-	var stall: DeckStallView = _app.controller.deck_stall()
+	var stall: DeckStallView = _app.controller.store.deck_stall()
 	var buy: Button = _goods(poor).card_button(0)
 	assert_bool(buy.disabled).is_true()
 	assert_str(buy.text).is_equal(tr("store.buy.poor").format({"price": stall.price(0)}))
@@ -107,7 +107,7 @@ func test_a_ticket_says_why_it_cannot_be_bought() -> void:
 
 func test_a_ticket_opens_the_sheet_and_back_changes_nothing() -> void:
 	var store: StoreScreen = await _to_the_store()
-	var stall: DeckStallView = _app.controller.deck_stall()
+	var stall: DeckStallView = _app.controller.store.deck_stall()
 	var coming: CardInstance = stall.card(0)
 	var before: Dictionary = _app.controller.state_copy().to_dict()
 	_goods(store).card_button(0).pressed.emit()
@@ -133,7 +133,7 @@ func test_a_ticket_opens_the_sheet_and_back_changes_nothing() -> void:
 
 func test_confirming_puts_the_card_in_the_deck_for_its_price() -> void:
 	var store: StoreScreen = await _to_the_store()
-	var stall: DeckStallView = _app.controller.deck_stall()
+	var stall: DeckStallView = _app.controller.store.deck_stall()
 	var coming: CardInstance = stall.card(0)
 	var coupons: int = _app.controller.state_copy().coupons
 	var price: int = stall.price(0)
@@ -222,7 +222,7 @@ func test_the_slip_never_covers_a_ranks_name() -> void:
 func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 	var store: StoreScreen = await _to_the_store()
 	var stock: Array[String] = ["deck_envelope"]
-	_loop().shop.envelopes.set("_stock", stock)
+	_loop().visit.shop.envelopes.set("_stock", stock)
 	store.call("_refresh")
 	await await_idle_frame()
 	var stall: EnvelopeStall = store.get("_envelope_stall")
@@ -230,7 +230,7 @@ func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 	stall.panel(0).buy.pressed.emit()
 	var overlay: EnvelopeOverlay = stall.overlay()
 	await await_idle_frame()
-	var shelf: EnvelopeShelf = _app.controller.opened_envelope()
+	var shelf: EnvelopeShelf = _app.controller.store.opened_envelope()
 	assert_bool(shelf.is_deck_card(0)).is_true()
 	var coming: CardInstance = shelf.card(0)
 	overlay.papers()[0].keep.pressed.emit()
@@ -241,7 +241,7 @@ func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 	# Back: the envelope stays open at its choice, and the deck as it was.
 	sheet.back_button().pressed.emit()
 	await await_idle_frame()
-	assert_object(_app.controller.opened_envelope()).is_not_null()
+	assert_object(_app.controller.store.opened_envelope()).is_not_null()
 	assert_array(_app.controller.state_copy().deck.changed_slots()).is_empty()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(overlay.papers()[0].keep)
 	overlay.papers()[0].keep.pressed.emit()
@@ -250,7 +250,7 @@ func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 	sheet.confirm_button().pressed.emit()
 	await await_idle_frame()
 	await await_idle_frame()
-	assert_object(_app.controller.opened_envelope()).is_null()
+	assert_object(_app.controller.store.opened_envelope()).is_null()
 	var state: RunState = _app.controller.state_copy()
 	assert_int(state.deck.rank_of(THREE)).is_equal(coming.base_rank())
 	assert_str(state.card_marks.enhancements.get(THREE, CardInstance.NO_ID)).is_equal(

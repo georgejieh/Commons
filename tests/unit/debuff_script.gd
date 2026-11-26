@@ -59,7 +59,7 @@ static func drawn(
 		if setup.is_valid():
 			setup.call(state)
 		var loop: RunLoop = RunLoop.new(
-			state, RunScript.bots(), hard_sets(), RunLoop.DEFAULT_PARAMS, pool([debuff_id])
+			state, RunScript.bots(), hard_sets(), RunDefaults.PARAMS, pool([debuff_id])
 		)
 		loop.start_set()
 		var at: int = state.debuff_ladder.find(debuff_id)

@@ -99,8 +99,8 @@ func test_each_number_reaches_the_run() -> void:
 		assert_int(budget).is_equal(LADDER.severity_budgets[type] + 1)
 	# The store shows one Cadre fewer.
 	top.state.coupons = 100
-	top.shop.open()
-	assert_int(top.shop.stock().size()).is_equal(RunPools.STORE.slots - 1)
+	top.visit.shop.open()
+	assert_int(top.visit.shop.stock().size()).is_equal(RunPools.STORE.slots - 1)
 	# The loop's first target is the raised one.
 	assert_float(top.target()).is_equal_approx(sets.target(1, RunState.SetType.SMALL) * 1.1, 0.001)
 
@@ -175,7 +175,7 @@ func test_a_stake_five_run_changes_no_shared_resource() -> void:
 	request.stake = 5
 	var controller: RunController = auto_free(RunController.new())
 	assert_bool(controller.start(request, _saves, _profile)).is_true()
-	var loop: RunLoop = controller.get("_loop")
+	var loop: RunLoop = controller.run_loop()
 	assert_int(loop.pools.store.slots).is_equal(slots - 1)
 	assert_int(loop.pools.store.envelopes.size()).is_equal(envelopes)
 	assert_int(RunPools.STORE.slots).is_equal(slots)

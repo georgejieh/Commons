@@ -62,31 +62,34 @@ func _init(
 	_sealed_from = sealed_from
 
 
-## A run save, checked as a RunRecord. The private ledger beside it goes with it.
+## A run save, migrated by RunRecordMigrations and checked by RunRecordCheck. The private
+## ledger beside it goes with it.
 static func for_run(path: String = RUN_PATH) -> SaveService:
 	var migrations: Dictionary[int, Callable] = {
-		1: RunRecord.migrate_from_1,
-		2: RunRecord.migrate_from_2,
-		3: RunRecord.migrate_from_3,
-		4: RunRecord.migrate_from_4,
-		5: RunRecord.migrate_from_5,
-		6: RunRecord.migrate_from_6,
-		7: RunRecord.migrate_from_7,
-		8: RunRecord.migrate_from_8,
-		9: RunRecord.migrate_from_9,
-		10: RunRecord.migrate_from_10,
-		11: RunRecord.migrate_from_11,
-		12: RunRecord.migrate_from_12,
-		13: RunRecord.migrate_from_13,
+		1: RunRecordMigrations.migrate_from_1,
+		2: RunRecordMigrations.migrate_from_2,
+		3: RunRecordMigrations.migrate_from_3,
+		4: RunRecordMigrations.migrate_from_4,
+		5: RunRecordMigrations.migrate_from_5,
+		6: RunRecordMigrations.migrate_from_6,
+		7: RunRecordMigrations.migrate_from_7,
+		8: RunRecordMigrations.migrate_from_8,
+		9: RunRecordMigrations.migrate_from_9,
+		10: RunRecordMigrations.migrate_from_10,
+		11: RunRecordMigrations.migrate_from_11,
+		12: RunRecordMigrations.migrate_from_12,
+		13: RunRecordMigrations.migrate_from_13,
 		# Names a saved run by its surnames as they read in the string table.
-		14: RunRecord.migrate_from_14.bind(Surnames.texts()),
-		15: RunRecord.migrate_from_15,
-		16: RunRecord.migrate_from_16,
-		17: RunRecord.migrate_from_17,
-		18: RunRecord.migrate_from_18,
-		19: RunRecord.migrate_from_19,
+		14: RunRecordMigrations.migrate_from_14.bind(Surnames.texts()),
+		15: RunRecordMigrations.migrate_from_15,
+		16: RunRecordMigrations.migrate_from_16,
+		17: RunRecordMigrations.migrate_from_17,
+		18: RunRecordMigrations.migrate_from_18,
+		19: RunRecordMigrations.migrate_from_19,
 	}
-	var service: SaveService = SaveService.new(path, migrations, SCHEMA_VERSION, RunRecord.is_valid)
+	var service: SaveService = SaveService.new(
+		path, migrations, SCHEMA_VERSION, RunRecordCheck.is_valid
+	)
 	service.companions.append(BaitLedger.path_for(path))
 	return service
 

@@ -43,7 +43,7 @@ func _parcel_with(kind: EnvelopeDef.Content, low: bool = false) -> Array:
 	for seed_value: int in 40:
 		var loop: RunLoop = _at_the_shops(seed_value)
 		loop.player_market_envelope(0)
-		var items: Array[EnvelopeItem] = loop.market.envelopes.items()
+		var items: Array[EnvelopeItem] = loop.visit.market.envelopes.items()
 		for index: int in items.size():
 			if items[index].content == kind and (not low or items[index].rank < Ranks.TWO):
 				return [loop, index]
@@ -58,12 +58,12 @@ func test_a_kept_plot_card_enters_the_plot_marked_and_a_full_plot_refuses() -> v
 		assert_array(found).is_not_empty()
 		var loop: RunLoop = found[0]
 		var index: int = found[1]
-		var item: EnvelopeItem = loop.market.envelopes.items()[index]
-		var room: int = PlotSwap.capacity(loop.state, RunLoop.DEFAULT_PARAMS)
+		var item: EnvelopeItem = loop.visit.market.envelopes.items()[index]
+		var room: int = PlotSwap.capacity(loop.state, RunDefaults.PARAMS)
 		var plot: Array[CardInstance] = loop.state.inventory.plot
 		while plot.size() < room:
 			plot.append(CardInstance.new(loop.state.take_plot_id(), 0, 0, CardInstance.Origin.PLOT))
-		assert_int(loop.market.envelopes.check_pick(index)).is_equal(RunShop.Reason.PLOT_FULL)
+		assert_int(loop.visit.market.envelopes.check_pick(index)).is_equal(RunShop.Reason.PLOT_FULL)
 		assert_int(loop.player_envelope_pick(index)).is_equal(RunLoop.Reason.ILLEGAL)
 		plot.pop_back()
 		assert_int(loop.player_envelope_pick(index)).is_equal(RunLoop.Reason.OK)
@@ -93,20 +93,20 @@ func test_a_save_mid_opening_loads_into_the_same_envelope() -> void:
 			loop.player_market_envelope(0)
 		else:
 			loop.player_envelope_buy(0)
-		var counter: EnvelopeCounter = loop.open_envelope()
+		var counter: EnvelopeCounter = loop.visit.open_envelope()
 		var saved: Dictionary = _saved(loop)
-		assert_bool(RunRecord.is_valid(saved)).is_true()
+		assert_bool(RunRecordCheck.is_valid(saved)).is_true()
 		var resumed: RunLoop = RunRecord.resume(saved, RunScript.bots(), SetConfig.new())
 		assert_object(resumed).is_not_null()
-		assert_object(resumed.open_envelope()).is_not_null()
-		assert_str(resumed.open_envelope().opened_id()).is_equal(counter.opened_id())
-		assert_array(_ids(resumed.open_envelope().items())).is_equal(_ids(counter.items()))
+		assert_object(resumed.visit.open_envelope()).is_not_null()
+		assert_str(resumed.visit.open_envelope().opened_id()).is_equal(counter.opened_id())
+		assert_array(_ids(resumed.visit.open_envelope().items())).is_equal(_ids(counter.items()))
 		_same_state(loop, resumed)
 		assert_int(resumed.player_reroll()).is_equal(RunLoop.Reason.NOT_AWAITED)
-		var pick: int = 0 if loop.open_envelope().check_pick(0) == RunShop.Reason.OK else -1
+		var pick: int = 0 if loop.visit.open_envelope().check_pick(0) == RunShop.Reason.OK else -1
 		# A card for the deck is kept in place of a deck card (ADR 0042).
 		var out: int = Deck.NO_SLOT
-		if pick == 0 and loop.open_envelope().items()[0].is_deck_card():
+		if pick == 0 and loop.visit.open_envelope().items()[0].is_deck_card():
 			out = 1
 		assert_int(loop.player_envelope_pick(pick, out)).is_equal(RunLoop.Reason.OK)
 		assert_int(resumed.player_envelope_pick(pick, out)).is_equal(RunLoop.Reason.OK)
@@ -115,7 +115,7 @@ func test_a_save_mid_opening_loads_into_the_same_envelope() -> void:
 		var replayed: RunLoop = RunRecord.resume(_saved(loop), RunScript.bots(), SetConfig.new())
 		assert_object(replayed).is_not_null()
 		_same_state(loop, replayed)
-		assert_array(replayed.shop.stock()).is_equal(loop.shop.stock())
+		assert_array(replayed.visit.shop.stock()).is_equal(loop.visit.shop.stock())
 
 
 ## A stamped and a Model plot card from Parcels stay marked through a save and a load, in
@@ -126,7 +126,7 @@ func test_marked_plot_cards_survive_save_load_and_a_swap() -> void:
 	assert_int(loop.player_envelope_pick(stamped[1])).is_equal(RunLoop.Reason.OK)
 	# The second mark through the same path a Parcel's Model card takes.
 	var item: EnvelopeItem = EnvelopeItem.new(EnvelopeDef.Content.MODEL_CARD, "", Ranks.FIVE, 2)
-	EnvelopeContents.take(item, loop.state, RunLoop.DEFAULT_PARAMS, RunLoop.PLAYER, [])
+	EnvelopeContents.take(item, loop.state, RunDefaults.PARAMS, RunLoop.PLAYER, [])
 	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var resumed: RunLoop = RunRecord.resume(_saved(loop), RunScript.bots(), SetConfig.new())
 	var plot: Array[CardInstance] = resumed.state.inventory.plot

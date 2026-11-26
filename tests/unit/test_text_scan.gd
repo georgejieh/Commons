@@ -132,7 +132,7 @@ func test_the_text_scan_catches_each_kind_of_hard_coded_text() -> void:
 				'rich.append_text("[b]%s[/b]" % name)',
 				'node.name = "Rank"',
 				'var words: Dictionary = {"two words": 1}',
-				'title = controller.envelope_card_text(kind, "name", card)',
+				'title = controller.texts.envelope_card_text(kind, "name", card)',
 				'label.text = "settings.text_size"',
 				'# A comment with "Several words" in it',
 			]

@@ -67,7 +67,7 @@ func show_as(mode: Shown) -> void:
 
 
 ## The bar's way of showing its figures for a run state, by ShownFigures.
-static func mode_for(state: RunState) -> Shown:
+static func mode_for(state: RunView) -> Shown:
 	if ShownFigures.all_success():
 		return Shown.FULFILLED
 	return Shown.AS_IS if ShownFigures.shows_target(state) else Shown.NO_TARGET

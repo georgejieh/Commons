@@ -194,6 +194,7 @@ This is not a minimum-spec machine (ADR 0036). Intel Core i7-6700K, 8 logical pr
 | Save time | under 50 ms | median 8.1 ms, worst 13.3 ms | Pass | 40 repetitions |
 | Load time, the file | under 50 ms | median 4.5 ms, worst 6.0 ms | Pass | 40 repetitions |
 | Resume time | none | median 101 ms, worst 133 ms | Reported | 40 repetitions |
+| Run reads per table event | p99 under 200 us | median 7 us, p99 23 us | Pass | 2,000 events |
 | Static memory, run loaded | none of its own | 100 MB | Reported | once |
 | Resident memory, headless | under 512 MB | 194 MB | Pass, as a floor | once |
 | Startup to title | under 5 s | not measured | Not measured | needs a window |
@@ -204,6 +205,7 @@ This is not a minimum-spec machine (ADR 0036). Intel Core i7-6700K, 8 logical pr
 Notes on what the figures cover:
 
 - **Resume time** is what the Continue button costs: the file is loaded, then the run's record is replayed to where it was. It grows with the run; this run ended after 8 Sets of a possible 24. The budget's "load" is read here as the file, so this row has no verdict.
+- **Run reads per table event** is what an event that redraws the table's status, its small ledger and the room's dread costs the screens in reads of the run, on the largest save of the played run resumed. They read it through the controller's `RunView`; when each took a whole copy of the state (`state_copy()`, two an event) the same row measured a median of 889 us and a p99 of 1.9 ms on this machine (2026-11-25), so the threshold sits far between the two.
 - **Resident memory, headless** is the process's working set with no window and no textures on a GPU, so it is a floor. The figure that answers the budget is the windowed one.
 - **Expert** is a short sample. The long measurements are in the section above.
 - **Legal moves** is judged on the median, as the budget says. The p99 of 1.25 ms is over 1 ms.

@@ -33,7 +33,7 @@ func _launch() -> void:
 
 
 func _loop() -> RunLoop:
-	return _app.controller.get("_loop")
+	return _app.controller.run_loop()
 
 
 ## The tooltip slip a screen shows, or null.

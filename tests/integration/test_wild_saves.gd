@@ -108,9 +108,9 @@ func test_a_save_from_before_wild_ranks_migrates_and_replays_exactly() -> void:
 	var old: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = old["checkpoint"]
 	checkpoint.erase("wild_ranks")
-	assert_bool(RunRecord.is_valid(old)).is_false()
-	var migrated: Dictionary = RunRecord.migrate_from_15(old)
-	assert_bool(RunRecord.is_valid(migrated)).is_true()
+	assert_bool(RunRecordCheck.is_valid(old)).is_false()
+	var migrated: Dictionary = RunRecordMigrations.migrate_from_15(old)
+	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	var resumed: RunLoop = RunRecord.resume(migrated, RunScript.bots())
 	assert_array(Array(_log_lines(resumed))).is_equal(Array(_log_lines(loop)))
 	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(16)

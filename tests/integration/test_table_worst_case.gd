@@ -185,7 +185,7 @@ func _steps(table: TableScreen) -> String:
 ## it stood at 9cc9ecf: the tray under the seat with its heading, the notice up, the
 ## trick, the column and the hand in their places, and no slip.
 func test_a_table_with_no_rule_stands_as_before_at_standard() -> void:
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.inventory.consumables.assign(["mutual_aid"])
 	for screen: Vector2i in SCREENS_AT:
 		get_tree().root.size = screen
@@ -217,16 +217,16 @@ func test_the_rules_sheet_has_every_rule_in_force_in_full() -> void:
 	sheet.toggle(_app.controller)
 	await await_idle_frame()
 	var shown: String = sheet.active_text()
-	var ids: Array[String] = _app.controller.active_modifier_ids()
+	var ids: Array[String] = _app.controller.items.active_modifier_ids()
 	assert_int(ids.size()).is_greater(3)
 	for modifier_id: String in ids:
-		assert_str(shown).contains(_app.controller.modifier_name(modifier_id))
-		assert_str(shown).contains(_app.controller.modifier_text(modifier_id))
-	var reforms: Array[String] = _app.controller.table_rule_reforms()
+		assert_str(shown).contains(_app.controller.texts.modifier_name(modifier_id))
+		assert_str(shown).contains(_app.controller.texts.modifier_text(modifier_id))
+	var reforms: Array[String] = _app.controller.items.table_rule_reforms()
 	assert_int(reforms.size()).is_greater(0)
 	for reform_id: String in reforms:
-		assert_str(shown).contains(_app.controller.reform_name(reform_id))
-		assert_str(shown).contains(_app.controller.reform_text(reform_id))
+		assert_str(shown).contains(_app.controller.texts.reform_name(reform_id))
+		assert_str(shown).contains(_app.controller.texts.reform_text(reform_id))
 
 
 ## The worst case is the worst: each piece's string is the longest of its family.
@@ -247,9 +247,9 @@ func test_the_strings_are_the_longest_of_their_families() -> void:
 	var prompt: Label = table.actions().reading
 	assert_int(prompt.get_line_count()).is_greater_equal(2)
 	var strip: DebuffStrip = table.get("_debuffs")
-	for debuff_id: String in _app.controller.active_debuff_ids():
-		assert_str(strip.shown_text()).contains(_app.controller.modifier_name(debuff_id))
-	assert_int(_app.controller.active_debuff_ids().size()).is_equal(3)
+	for debuff_id: String in _app.controller.items.active_debuff_ids():
+		assert_str(strip.shown_text()).contains(_app.controller.texts.modifier_name(debuff_id))
+	assert_int(_app.controller.items.active_debuff_ids().size()).is_equal(3)
 	assert_float(strip.size.x).is_equal(TableWorstCase.STRIP_WIDTH)
 	var campaigns: TableCampaigns = table.get("_campaigns")
 	assert_int(campaigns.tray.campaign_count()).is_equal(TableWorstCase.TRAY_SIZE)

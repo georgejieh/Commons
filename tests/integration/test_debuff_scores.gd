@@ -42,12 +42,12 @@ func test_short_supply_cuts_a_cadre_from_the_next_store_and_stacks_with_rationin
 		DebuffScript.play(loop)
 		loop.state.rationed = rationed
 		assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-		var ration: int = RunLoop.DEFAULT_METERS.rationing_shop_cut if rationed else 0
-		assert_int(loop.shop.short_cut).is_equal(1)
-		assert_int(loop.shop.slot_count()).is_equal(STORE.slots - 1 - ration)
-		assert_int(loop.shop.stock().size()).is_equal(STORE.slots - 1 - ration)
+		var ration: int = RunDefaults.METERS.rationing_shop_cut if rationed else 0
+		assert_int(loop.visit.shop.short_cut).is_equal(1)
+		assert_int(loop.visit.shop.slot_count()).is_equal(STORE.slots - 1 - ration)
+		assert_int(loop.visit.shop.stock().size()).is_equal(STORE.slots - 1 - ration)
 		# The black market's counter is not the state store.
-		assert_int(loop.market.short_cut).is_equal(0)
+		assert_int(loop.visit.market.short_cut).is_equal(0)
 
 
 ## A Short Supply drawn for a round the Quota never reached never came into force.
@@ -88,8 +88,12 @@ func test_the_slogan_halves_its_hand_types_rate_rounded_up_for_you_alone() -> vo
 	# Its name and rules say which hand type it named.
 	var controller: RunController = auto_free(RunController.new())
 	controller.resume(loop)
-	assert_str(controller.modifier_name("slogan_of_the_week")).is_equal("Slogan of the Week: Pairs")
-	assert_str(controller.modifier_text("slogan_of_the_week")).contains("Your Pairs score at 50%")
+	assert_str(controller.texts.modifier_name("slogan_of_the_week")).is_equal(
+		"Slogan of the Week: Pairs"
+	)
+	assert_str(controller.texts.modifier_text("slogan_of_the_week")).contains(
+		"Your Pairs score at 50%"
+	)
 
 
 ## The Rate is halved first; a cap such as Iron Rice Bowl's applies after.
@@ -247,11 +251,11 @@ func _check_loss_meter(debuff_id: String, meter: String, seed_value: int) -> voi
 func _loss_meter_set(debuff_id: String, meter: String, seed_value: int) -> int:
 	var loop: RunLoop = DebuffScript.loop_with(seed_value, debuff_id)
 	DebuffScript.play(loop)
-	var band: int = RunLoop.DEFAULT_METERS.famine.low
+	var band: int = RunDefaults.METERS.famine.low
 	var row: String = RunMeters.DEBUFF_FAMINE
 	if meter == RunMeters.DENUNCIATION:
 		row = RunMeters.DEBUFF_DENUNCIATION
-	assert_int(RunLoop.DEFAULT_METERS.source(row).amount).is_equal(band)
+	assert_int(RunDefaults.METERS.source(row).amount).is_equal(band)
 	var results: Array[Dictionary] = _results(loop)
 	var rises: Dictionary[int, Array] = DebuffScript.per_round(loop, RunEvent.Type.METER_CHANGED)
 	var lost: int = 0

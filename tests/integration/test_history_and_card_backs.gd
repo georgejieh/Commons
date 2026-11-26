@@ -51,7 +51,7 @@ func _entry(generation: int, outcome: String, landlord: bool, dead: Array[String
 func _keys(count: int) -> Array[String]:
 	var keys: Array[String] = []
 	for index: int in count:
-		keys.append(RunLoop.DEFAULT_VILLAGE.families[index].name_key)
+		keys.append(RunDefaults.VILLAGE.families[index].name_key)
 	return keys
 
 
@@ -194,7 +194,7 @@ func test_the_page_is_one_ink_sheet_at_both_sizes() -> void:
 		entries.append(_entry(index + 1, Endings.ENDINGS[index % 7], index % 2 == 0, _keys(2)))
 	_write_history(entries)
 	_app.new_run(SEED)
-	var loop: RunLoop = _app.controller.get("_loop")
+	var loop: RunLoop = _app.controller.run_loop()
 	var family: String = loop.state.table[1]
 	loop.state.summaries.assign([_summary(0, {family: [2, 0, 1, 0]}), _summary(1, {})])
 	for screen_size: Vector2i in SIZES:
