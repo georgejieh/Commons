@@ -68,7 +68,7 @@ func show_debuffs(controller: RunController) -> void:
 		var aside: String = controller.table.set_aside_names()
 		if not aside.is_empty():
 			var line: String = tr("table.set_aside").format({"cards": aside})
-			twist["rule"] = "%s %s" % [twist["rule"], _escape(line)]
+			twist["rule"] = "%s %s" % [twist["rule"], Keywords.escape(line)]
 		_boss.append(twist)
 	refit()
 	shown.emit()
@@ -143,7 +143,7 @@ func _full() -> String:
 			var row: String = _row(rule["name"], rule["rule"])
 			# Appeal lifts this round's debuff: it stays listed, struck through (ADR 0021).
 			if bool(rule["lifted"]):
-				row = "[s]%s[/s]  %s" % [row, _escape(tr("table.debuff_lifted"))]
+				row = "[s]%s[/s]  %s" % [row, Keywords.escape(tr("table.debuff_lifted"))]
 			rows.append(row)
 	return "\n".join(rows)
 
@@ -165,7 +165,7 @@ func _by_name() -> String:
 			names.append("[s]%s[/s]" % name if bool(rule["lifted"]) else name)
 		rows.append("%s  %s" % [_head(group[0]), SEPARATOR.join(names)])
 	var one: bool = _named_count() == 1
-	rows.append(_escape(tr("table.rules_named.one" if one else "table.rules_named")))
+	rows.append(Keywords.escape(tr("table.rules_named.one" if one else "table.rules_named")))
 	return "\n".join(rows)
 
 
@@ -174,9 +174,9 @@ func _counted() -> String:
 	var rows: PackedStringArray = _wild_row()
 	var count: int = _named_count()
 	if count == 1:
-		rows.append(_escape(tr("table.rules_counted.one")))
+		rows.append(Keywords.escape(tr("table.rules_counted.one")))
 	else:
-		rows.append(_escape(tr("table.rules_counted").format({"count": count})))
+		rows.append(Keywords.escape(tr("table.rules_counted").format({"count": count})))
 	return "\n".join(rows)
 
 
@@ -185,8 +185,8 @@ func _counted() -> String:
 func _wild_row() -> PackedStringArray:
 	var rows: PackedStringArray = []
 	if not wild_ranks.is_empty():
-		var named: String = _escape(ReadingText.wild_line(wild_ranks))
-		var whose: String = _escape(tr("wild.strip"))
+		var named: String = Keywords.escape(ReadingText.wild_line(wild_ranks))
+		var whose: String = Keywords.escape(tr("wild.strip"))
 		rows.append(_row(named, whose))
 	return rows
 
@@ -196,7 +196,7 @@ func _wild_row() -> PackedStringArray:
 func _reform_rules(controller: RunController) -> Array[Dictionary]:
 	var rules: Array[Dictionary] = []
 	for reform_id: String in controller.items.table_rule_reforms():
-		var name: String = _escape(controller.texts.reform_name(reform_id))
+		var name: String = Keywords.escape(controller.texts.reform_name(reform_id))
 		var text: String = Keywords.mark(controller.texts.reform_text(reform_id))
 		rules.append({"name": name, "rule": text, "lifted": false})
 	return rules
@@ -204,7 +204,7 @@ func _reform_rules(controller: RunController) -> Array[Dictionary]:
 
 func _rule(controller: RunController, modifier_id: String) -> Dictionary:
 	return {
-		"name": _escape(controller.texts.modifier_name(modifier_id)),
+		"name": Keywords.escape(controller.texts.modifier_name(modifier_id)),
 		"rule": Keywords.mark(controller.texts.modifier_text(modifier_id)),
 		"lifted": modifier_id == controller.items.lifted_debuff(),
 	}
@@ -256,7 +256,3 @@ func type_size() -> int:
 ## The plain text shown, for tests.
 func shown_text() -> String:
 	return _lines.get_parsed_text() if visible else ""
-
-
-static func _escape(text: String) -> String:
-	return text.replace("[", "[lb]")

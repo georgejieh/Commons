@@ -30,8 +30,7 @@ static func ticked(controller: RunController, value: float, type: int) -> String
 
 
 static func type_name(type: int) -> String:
-	var key: String = String(Pattern.Type.keys()[type]).to_lower()
-	return TranslationServer.translate("pattern." + key)
+	return TranslationServer.translate("pattern." + ReadingText.type_key(type as Pattern.Type))
 
 
 ## The Rate of each type the Directive raises, as it stands now.

@@ -18,8 +18,8 @@ extends Node
 
 ## The sequence is hurried: anything timed to it goes speed times as fast from now.
 signal hurried(speed: float)
-## A beat of the sequence has begun: its ScoreBeats.Kind and the step it shows, or -1.
-signal beat(kind: int, step_index: int)
+## A beat of the sequence has begun: its kind and the step it shows, or -1.
+signal beat_began(kind: ScoreBeats.Kind, step_index: int)
 signal finished
 
 ## How far above the first chime the Zeal's stamp is pitched, in semitones.
@@ -38,7 +38,7 @@ var controller: RunController = null
 ## The Quota's target, for how hard a total lands.
 var target: float = 0.0
 ## True while villagers' plays go by at the hurried pace, as while the player sits out.
-var hurry_villagers: bool = false
+var hurrying_villagers: bool = false
 
 var _tween: Tween = null
 var _roll: Tween = null
@@ -86,7 +86,7 @@ func play(event: RunEvent, pace: float) -> float:
 		_tween.tween_interval(_beats.seconds[index])
 	_tween.tween_callback(_done)
 	_speed = 1.0
-	if hurry_villagers and event.seat != Seats.PLAYER:
+	if hurrying_villagers and event.seat != Seats.PLAYER:
 		hurry()
 	return _beats.total() / _speed
 
@@ -249,7 +249,7 @@ static func _figure_text(figure: ScoreStep.Figure, value: float) -> String:
 func _beat(index: int) -> void:
 	var seconds: float = _beats.seconds[index]
 	var at: int = _beats.step_index[index]
-	beat.emit(_beats.kinds[index], at)
+	beat_began.emit(_beats.kinds[index], at)
 	match _beats.kinds[index]:
 		ScoreBeats.Kind.ENTER:
 			tally.figure(ScoreTally.GRAIN, Strings.score(0.0), false)
@@ -279,7 +279,7 @@ func _fire(step: ScoreStep, seconds: float) -> void:
 	var around: Rect2 = _point_at(step, seconds)
 	if step.figure == ScoreStep.Figure.TOTAL:
 		var product: float = step.before
-		tally.scaled(ScoreTally.scale_percent(1.0, 1.0, product, step.after))
+		tally.show_scale(ScoreTally.scale_percent(1.0, 1.0, product, step.after))
 	elif step.figure != ScoreStep.Figure.COUPONS:
 		tally.figure(step.figure, _figure_text(step.figure, step.after), true)
 	if not around.has_area():
@@ -372,7 +372,7 @@ func _show_at_once() -> void:
 		if step.figure < ScoreStep.Figure.TOTAL:
 			tally.figure(step.figure, _figure_text(step.figure, step.after), false)
 		elif step.figure == ScoreStep.Figure.TOTAL:
-			tally.scaled(ScoreTally.scale_percent(1.0, 1.0, step.before, step.after))
+			tally.show_scale(ScoreTally.scale_percent(1.0, 1.0, step.before, step.after))
 	var total_text: String = Strings.score(_event.amount)
 	tally.figure(ScoreTally.TOTAL, total_text, false)
 	tally.land(total_text)

@@ -67,7 +67,7 @@ func test_each_change_fires_in_order_with_its_tag_and_sound() -> void:
 	var event: RunEvent = _scored("555", ["red_banner", "canteen", "ration_cut"])
 	var kinds: Array[int] = []
 	var tags: Array[String] = []
-	moments.sequence.beat.connect(
+	moments.sequence.beat_began.connect(
 		func(kind: int, _at: int) -> void:
 			kinds.append(kind)
 			for label: Label in moments.fx.shown_tags():
@@ -150,7 +150,7 @@ func test_sitting_out_plays_a_villagers_score_at_the_hurried_pace() -> void:
 	event.seat = 1
 	var full: float = moments.sequence.play(event, 1.0)
 	moments.sequence.stop()
-	moments.sequence.hurry_villagers = true
+	moments.sequence.hurrying_villagers = true
 	var hurried: float = moments.sequence.play(event, 1.0)
 	assert_float(hurried).is_equal_approx(full * UiMotion.PRESETS.score_hurried, 0.01)
 	moments.sequence.stop()
@@ -202,7 +202,7 @@ func test_reduced_motion_keeps_every_tag_figure_and_sound_and_moves_nothing() ->
 	var tags: Array[String] = []
 	var moved: Array[bool] = [false]
 	var rest: Vector2 = Vector2.ZERO
-	moments.sequence.beat.connect(
+	moments.sequence.beat_began.connect(
 		func(_kind: int, _at: int) -> void:
 			for label: Label in moments.fx.shown_tags():
 				if not tags.has(label.text):

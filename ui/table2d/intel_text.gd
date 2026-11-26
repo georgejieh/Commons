@@ -43,8 +43,7 @@ static func types_text(types: PackedInt32Array) -> String:
 	var parts: PackedStringArray = []
 	for type: int in ORDER:
 		if type < types.size() and types[type] > 0:
-			var key: String = "pattern." + String(Pattern.Type.keys()[type]).to_lower()
-			parts.append("%d %s" % [types[type], TranslationServer.translate(key)])
+			parts.append("%d %s" % [types[type], DirectiveSheet.type_name(type)])
 	return ", ".join(parts)
 
 

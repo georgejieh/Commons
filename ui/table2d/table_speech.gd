@@ -29,7 +29,7 @@ const CHATTER: Array[String] = ["pass", "call", "no_call"]
 const SPREAD: float = 0.618034
 
 ## True while the table skips ahead: every line shows at once, with no voice.
-var hurry: bool = false
+var hurrying: bool = false
 ## The board's dread, whose slogan weight turns lines into slogans; none says none.
 var dread: DreadLayers = null
 
@@ -112,7 +112,7 @@ func lines_said() -> int:
 func say(seat: int, event: String, fields: Dictionary = {}) -> void:
 	if not _seats.has(seat):
 		return
-	if not hurry and _talking_besides(seat):
+	if not hurrying and _talking_besides(seat):
 		_wait({"seat": seat, "event": event, "fields": fields})
 		return
 	var said: int = _said.get(seat, 0)
@@ -146,7 +146,7 @@ func _speak(seat: int, event: String, line: SpeechLine, fields: Dictionary) -> v
 		reveal = Audio.voice.speak(seat, text, line.mood, voice, _voice_banks[seat]).reveal
 	_seats[seat].say(text, reveal)
 	spoke.emit(seat, event, line)
-	if hurry:
+	if hurrying:
 		_seats[seat].skip_speech()
 
 
@@ -190,13 +190,13 @@ func _visit_line(event: String) -> SpeechLine:
 
 ## Shows every line still typing out, then every waiting line, and stops every voice.
 func skip_all() -> void:
-	hurry = true
+	hurrying = true
 	for seat: int in _seats:
 		_seats[seat].skip_speech()
 	while not _waiting.is_empty():
 		var line: Dictionary = _waiting.pop_front()
 		say(line.seat, line.event, line.fields)
-	hurry = false
+	hurrying = false
 	Audio.voice.stop_all()
 
 

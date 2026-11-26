@@ -83,9 +83,9 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 			_put_away()
 		RunEvent.Type.CARDS_SET_ASIDE:
 			if not quiet and not UiMotion.reduced() and _player.step > 0.0:
-				_set_aside(_cards(event.text))
+				_set_aside(_cards(event))
 		RunEvent.Type.KITTY_SEEN:
-			_see_kitty(_cards(event.text))
+			_see_kitty(_cards(event))
 
 
 ## The note's words while it shows, for tests.
@@ -151,10 +151,9 @@ func _put_away() -> void:
 
 
 ## The deck cards an event names by ID, as the deal made them.
-func _cards(text: String) -> Array[CardInstance]:
+func _cards(event: RunEvent) -> Array[CardInstance]:
 	var cards: Array[CardInstance] = []
-	for part: String in text.split(",", false):
-		var card_id: int = part.to_int()
+	for card_id: int in event.listed():
 		if card_id < Deck.SIZE:
 			cards.append(_controller.table.deck_card(card_id))
 	return cards

@@ -44,8 +44,8 @@ func setup(
 	actions: ActionBar,
 	controller: RunController
 ) -> void:
-	_left = seats[2]
-	_right = seats[1]
+	_left = seats[Seats.LEFT]
+	_right = seats[Seats.RIGHT]
 	_tray = tray
 	_dressing = dressing
 	_strip = strip

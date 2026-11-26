@@ -33,7 +33,7 @@ var note: PanelContainer = PanelContainer.new()
 var beats_played: int = 0
 
 var _controller: RunController
-var _hand: HandModel
+var _cards: TableCards
 var _hand_view: HandView
 var _pool: CardPool
 var _player: EventPlayer
@@ -79,7 +79,7 @@ func place(screen: Control, hand_view: Control) -> void:
 
 func setup(
 	controller: RunController,
-	hand: HandModel,
+	cards: TableCards,
 	hand_view: HandView,
 	pool: CardPool,
 	player: EventPlayer,
@@ -87,7 +87,7 @@ func setup(
 	board: NoticeBoard
 ) -> void:
 	_controller = controller
-	_hand = hand
+	_cards = cards
 	_hand_view = hand_view
 	_pool = pool
 	_player = player
@@ -111,7 +111,7 @@ func on_event(event: RunEvent, quiet: bool) -> void:
 			glass.set_shown(false, false)
 		RunEvent.Type.CARDS_PASSED:
 			if quiet or UiMotion.reduced():
-				_show_hand()
+				_cards.show_hand()
 			else:
 				_pass_cards(event)
 		RunEvent.Type.CADRE_CONFISCATED:
@@ -147,34 +147,32 @@ func refresh() -> void:
 ## the player face up, any passing between the villagers face down.
 func _pass_cards(event: RunEvent) -> void:
 	var tween: Tween = _start_beat()
-	var card_ids: Array[int] = []
-	for part: String in event.text.split(",", false):
-		card_ids.append(part.to_int())
+	var card_ids: Array[int] = event.listed()
 	var from: int = event.seat
 	var to: int = event.value
-	var faces: bool = from == 0 or to == 0
-	if from == 0:
+	var faces: bool = from == Seats.PLAYER or to == Seats.PLAYER
+	if from == Seats.PLAYER:
 		_hand_view.hide_cards(card_ids)
 	for index: int in card_ids.size():
 		var flier: Control = _flier(card_ids[index], faces, index)
 		if flier == null:
 			continue
-		var start: Vector2 = _point(from, card_ids[index]) - flier.size / 2.0
-		var end: Vector2 = _point(to, -1) - flier.size / 2.0
+		var start: Vector2 = _cards.point(from, card_ids[index]) - flier.size / 2.0
+		var end: Vector2 = _cards.point(to) - flier.size / 2.0
 		flier.position = start - global_position
-		flier.scale = Vector2.ONE * (1.0 if from == 0 or not faces else BOT_SCALE)
+		flier.scale = Vector2.ONE * (1.0 if from == Seats.PLAYER or not faces else BOT_SCALE)
 		flier.visible = true
 		var delay: float = index * FLY_STAGGER
 		var fly: PropertyTweener = tween.parallel().tween_property(
 			flier, "position", end - global_position, FLY_TIME
 		)
 		fly.set_delay(delay).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-		var landing: float = 1.0 if to == 0 or not faces else BOT_SCALE
+		var landing: float = 1.0 if to == Seats.PLAYER or not faces else BOT_SCALE
 		tween.parallel().tween_property(flier, "scale", Vector2.ONE * landing, FLY_TIME).set_delay(
 			delay
 		)
 	_say(event, card_ids)
-	tween.chain().tween_callback(_show_hand)
+	tween.chain().tween_callback(_cards.show_hand)
 	tween.tween_callback(_put_away)
 	_player.hold(FLY_TIME + card_ids.size() * FLY_STAGGER)
 
@@ -184,15 +182,15 @@ func _say(event: RunEvent, card_ids: Array[int]) -> void:
 	var names: Dictionary[int, String] = _table.names()
 	var text: String = tr("beat.redistribution").format({"count": card_ids.size()})
 	if _controller.items.active_debuff_ids().has("levy") and not card_ids.is_empty():
-		var card: CardInstance = _card(card_ids[0])
+		var card: CardInstance = _cards.card(card_ids[0])
 		var shown: String = CardName.of(card) if card != null else ""
-		var from_you: bool = event.seat == 0
+		var from_you: bool = event.seat == Seats.PLAYER
 		var key: String = "beat.levy.given" if from_you else "beat.levy.taken"
 		var other: String = names.get(event.value if from_you else event.seat, "")
 		text = tr(key).format({"card": shown, "name": other})
 	_note_text.text = text
 	note.reset_size()
-	var middle: Vector2 = (_point(event.seat, -1) + _point(event.value, -1)) / 2.0
+	var middle: Vector2 = (_cards.point(event.seat) + _cards.point(event.value)) / 2.0
 	var at: Vector2 = middle - Vector2(note.size.x / 2.0, NOTE_LIFT) - global_position
 	var room: Vector2 = get_viewport_rect().size - note.size
 	note.position = at.clamp(Vector2.ZERO, room.max(Vector2.ZERO))
@@ -209,7 +207,7 @@ func note_text() -> String:
 func _flier(card_id: int, face_up: bool, index: int) -> Control:
 	if not face_up:
 		return _backs[index % _backs.size()]
-	var card: CardInstance = _card(card_id)
+	var card: CardInstance = _cards.card(card_id)
 	var view: CardView = _pool.acquire() if card != null else null
 	if view == null:
 		return _backs[index % _backs.size()]
@@ -239,28 +237,6 @@ func _seize(event: RunEvent) -> void:
 	middle.x = maxf(middle.x, wide / 2.0)
 	beats_played += 1
 	_player.hold(maxf(shout, torn.tear(card, middle)))
-
-
-func _card(card_id: int) -> CardInstance:
-	for card: CardInstance in _hand.cards() + _controller.table.player_cards():
-		if card.id() == card_id:
-			return card
-	return _controller.table.deck_card(card_id) if card_id < Deck.SIZE else null
-
-
-## Where a seat's cards leave from or land: a card in the hand, the hand, or the seat.
-func _point(seat: int, card_id: int) -> Vector2:
-	if seat == 0:
-		if card_id >= 0:
-			return _hand_view.card_center(card_id)
-		return _hand_view.global_position + _hand_view.size / 2.0
-	var panel: SeatPanel = _table.seats()[seat]
-	return panel.global_position + panel.size / 2.0
-
-
-func _show_hand() -> void:
-	_hand.refresh()
-	_hand_view.show_cards()
 
 
 func _start_beat() -> Tween:

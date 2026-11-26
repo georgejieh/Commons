@@ -57,7 +57,7 @@ static func meter(count: String) -> float:
 
 
 ## How full the band stands now, for tests.
-func fill() -> float:
+func fill_share() -> float:
 	return meter(_count)
 
 

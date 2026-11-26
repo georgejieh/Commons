@@ -93,7 +93,7 @@ func claim_count() -> int:
 
 
 ## A seat's die missed the audit faces: its row says so quietly, before it is paid.
-func unchecked(seat: int) -> void:
+func mark_unchecked(seat: int) -> void:
 	var row: int = _seats.find(seat)
 	if row < 0 or _verdicts.has(seat):
 		return
@@ -103,12 +103,12 @@ func unchecked(seat: int) -> void:
 
 
 ## A seat's claim was checked: lied is whether it was above the fair share.
-func audited(seat: int, lied: bool) -> void:
+func set_verdict(seat: int, lied: bool) -> void:
 	_verdicts[seat] = "audit.caught" if lied else "audit.honest"
 
 
 ## A seat was paid: its seal lands on the verdict, and the payment is written in.
-func paid(seat: int, amount: int) -> void:
+func pay(seat: int, amount: int) -> void:
 	var row: int = _seats.find(seat)
 	if row < 0:
 		return

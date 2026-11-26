@@ -29,10 +29,10 @@ func test_the_badge_draws_each_step() -> void:
 	for earned: int in CAP + 1:
 		badge.show_count("%d/%d" % [earned, CAP])
 		await await_idle_frame()
-		assert_float(badge.fill()).is_equal_approx(float(earned) / CAP, 0.0001)
+		assert_float(badge.fill_share()).is_equal_approx(float(earned) / CAP, 0.0001)
 	badge.show_count("+2")
 	await await_idle_frame()
-	assert_float(badge.fill()).is_less(0.0)
+	assert_float(badge.fill_share()).is_less(0.0)
 
 
 ## Over a real Quota the count Ration Coupon shows rises a step at a time as passes pay,

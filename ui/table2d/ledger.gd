@@ -161,7 +161,7 @@ func add_play(
 	var faces: Array[String] = [SUM_FACE, Keywords.mark(sum), SCORE_FACE, score]
 	var faced: String = "[font=%s]%s [/font][font=%s]%s[/font]" % faces
 	var line: String = "[font_size=%d]%s[/font_size]" % [TextSize.px(SUM_SIZE), faced]
-	_texts.append("[b]%s[/b]\n%s" % [head.replace("[", "[lb]"), line])
+	_texts.append("[b]%s[/b]\n%s" % [Keywords.escape(head), line])
 	if _texts.size() > MAX_PLAYS:
 		_texts.remove_at(0)
 	_show()

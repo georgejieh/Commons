@@ -19,8 +19,6 @@ const STATUS_SIZE: int = 26
 ## Seconds a bar takes to reach a new value.
 const FILL_TIME: float = 0.6
 const QUOTA: String = "quota"
-const FAMINE: String = "famine"
-const DENUNCIATION: String = "denunciation"
 
 var status: Label = Label.new()
 var coupons: Label = Label.new()
@@ -36,7 +34,9 @@ var _none: Dictionary[String, Label] = {}
 ## The run as the last show_state() read it, or null before it.
 var _state: RunView = null
 ## Where each bar is heading: the Quota's progress and both meters.
-var _goals: Dictionary[String, float] = {QUOTA: 0.0, FAMINE: 0.0, DENUNCIATION: 0.0}
+var _goals: Dictionary[String, float] = {
+	QUOTA: 0.0, RunCorrections.FAMINE: 0.0, RunCorrections.DENUNCIATION: 0.0
+}
 var _tweens: Dictionary[String, Tween] = {}
 
 
@@ -58,8 +58,12 @@ func _ready() -> void:
 	status.resized.connect(_fit_status)
 	row.add_child(status)
 	row.add_child(_quota_box())
-	row.add_child(_meter(FAMINE, famine, ScreenKit.GRAIN_BAR, ScreenKit.ART.icon_famine))
-	row.add_child(_meter(DENUNCIATION, denunciation, ZEAL, ScreenKit.ART.icon_denunciation))
+	row.add_child(
+		_meter(RunCorrections.FAMINE, famine, ScreenKit.GRAIN_BAR, ScreenKit.ART.icon_famine)
+	)
+	row.add_child(
+		_meter(RunCorrections.DENUNCIATION, denunciation, ZEAL, ScreenKit.ART.icon_denunciation)
+	)
 	row.add_child(_icon(ScreenKit.ART.icon_coupon))
 	coupons.add_theme_color_override("font_color", ScreenKit.COUPON_ON_DARK)
 	coupons.add_theme_font_size_override("font_size", TextSize.px(26))
@@ -130,8 +134,8 @@ func sync(state: RunView, target: float) -> void:
 		_target = maxf(target, 1.0)
 		quota.set_target(_target)
 	_move(QUOTA, state.set_progress(), false)
-	_move(FAMINE, state.famine(), false)
-	_move(DENUNCIATION, state.denunciation(), false)
+	_move(RunCorrections.FAMINE, state.famine(), false)
+	_move(RunCorrections.DENUNCIATION, state.denunciation(), false)
 
 
 ## A new Quota: the bar empties and takes its target.
@@ -187,9 +191,9 @@ func _move(bar: String, value: float, animate: bool, delay: float = 0.0) -> void
 
 
 func _show(value: float, bar: String) -> void:
-	if bar == FAMINE:
+	if bar == RunCorrections.FAMINE:
 		famine.value = value
-	elif bar == DENUNCIATION:
+	elif bar == RunCorrections.DENUNCIATION:
 		denunciation.value = value
 	else:
 		quota.show_value(value)
@@ -197,9 +201,9 @@ func _show(value: float, bar: String) -> void:
 
 func _swell(bar: String) -> void:
 	var moved: Control = quota
-	if bar == FAMINE:
+	if bar == RunCorrections.FAMINE:
 		moved = famine
-	elif bar == DENUNCIATION:
+	elif bar == RunCorrections.DENUNCIATION:
 		moved = denunciation
 	UiMotion.pulse(moved.get_parent() as Control)
 

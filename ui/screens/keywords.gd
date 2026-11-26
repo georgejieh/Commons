@@ -48,12 +48,17 @@ const SCORING: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 static var _patterns: Dictionary[String, RegEx] = {}
 
 
+## text with its brackets escaped, so BBCode shows it as written.
+static func escape(text: String) -> String:
+	return text.replace("[", "[lb]")
+
+
 ## text as BBCode with every keyword underlined, colored and made a link named by its
 ## ID, which KeywordText explains on hover. A keyword matches in any case and in the
 ## plural, and prints as it was written. Keywords in skip print as plain words, so a
 ## keyword's own meaning never links to itself.
 static func mark(text: String, skip: PackedStringArray = []) -> String:
-	var marked: String = text.replace("[", "[lb]")
+	var marked: String = Keywords.escape(text)
 	# Two passes, so a keyword's ID inside a link already made is never marked.
 	for index: int in TERMS.size():
 		if not skip.has(TERMS[index]):
@@ -132,9 +137,7 @@ static func slip(text: String, title: String = "") -> Control:
 	if not words.is_empty():
 		box.add_child(HSeparator.new())
 	for id: String in words:
-		box.add_child(
-			_slip_text(meaning(id).replace("[", "[lb]"), SLIP_SIZE - 4, ScreenKit.FAINT_INK)
-		)
+		box.add_child(_slip_text(Keywords.escape(meaning(id)), SLIP_SIZE - 4, ScreenKit.FAINT_INK))
 	return box
 
 

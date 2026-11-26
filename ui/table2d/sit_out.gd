@@ -1,5 +1,5 @@
 class_name SitOut
-extends Node
+extends RefCounted
 ## Sitting out a trick. When it is the player's turn to follow and the legal-move generator
 ## gives them nothing but a pass, a Sit out button stands beside Pass. Pressed, it passes
 ## for them for the rest of the trick while the villagers play at a faster step. On each of
@@ -31,11 +31,7 @@ func setup(
 	_actions = actions
 	_player = player
 	_blocked = blocked
-	var before: Callable = commands.prompt
-	commands.prompt = func() -> String:
-		if _active:
-			return tr("table.sitting_out")
-		return before.call() if before.is_valid() else ""
+	commands.sit_out_prompt = _prompt
 	actions.sit_out.pressed.connect(_on_pressed)
 	player.queued.connect(_offer)
 	player.drained.connect(_on_drained)
@@ -121,3 +117,8 @@ func _my_turn() -> bool:
 func _following() -> bool:
 	var view: SeatView = _controller.table.seat_view()
 	return view != null and view.public.current_play != null
+
+
+## The prompt line's text while the player sits out.
+func _prompt() -> String:
+	return tr("table.sitting_out") if _active else ""

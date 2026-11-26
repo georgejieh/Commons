@@ -35,7 +35,7 @@ func _init() -> void:
 	var column: VBoxContainer = VBoxContainer.new()
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(column)
-	column.add_child(ScreenKit.eyebrow(TranslationServer.translate("dread.roster")))
+	column.add_child(ScreenKit.eyebrow(tr("dread.roster")))
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = COLUMNS
 	grid.add_theme_constant_override("h_separation", COLUMN_GAP)
@@ -45,7 +45,7 @@ func _init() -> void:
 	_order.resize(families.size())
 	_ink.resize(families.size())
 	for index: int in families.size():
-		grid.add_child(_name_label(TranslationServer.translate(families[index].name_key)))
+		grid.add_child(_name_label(tr(families[index].name_key)))
 		_order[posmod(index * VANISH_STEP, families.size())] = index
 		_ink[index] = 1.0
 

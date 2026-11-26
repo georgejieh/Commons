@@ -106,7 +106,7 @@ func test_a_marked_play_acts_out_each_mark() -> void:
 	event.zeal = score.zeal
 	event.steps = steps
 	var tags: Array[String] = []
-	moments.sequence.beat.connect(
+	moments.sequence.beat_began.connect(
 		func(_kind: int, _at: int) -> void:
 			for label: Label in moments.fx.shown_tags():
 				if not tags.has(label.text):

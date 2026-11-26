@@ -7,23 +7,6 @@ extends Control
 ## rule shows the frame it changes. A sheet with more rules than the screen has room for
 ## scrolls between its heading and Close, never cut off and never drawn smaller (ADR 0034).
 
-const TYPES: Array[String] = [
-	"single",
-	"pair",
-	"trio",
-	"trio_single",
-	"trio_pair",
-	"straight",
-	"pair_chain",
-	"airplane",
-	"airplane_singles",
-	"airplane_pairs",
-	"four_two_singles",
-	"four_two_pairs",
-	"bomb",
-	"rocket",
-]
-
 ## The keywords the sheet spells out; the rest explain themselves on hover.
 const WORDS: PackedStringArray = ["grain", "rate", "zeal", "commons", "kitty", "kicker"]
 ## How dark the table goes behind the open card.
@@ -38,8 +21,8 @@ const MARGIN: float = 12.0
 
 var _controller: RunController
 var _types: GridContainer = GridContainer.new()
-## Each hand type's Rate, in TYPES order.
-var _rates: Array[Label] = []
+## Each hand type's Rate, by Pattern.Type.
+var _rates: Dictionary[int, Label] = {}
 var _active: Label = Label.new()
 var _order: Label = Label.new()
 ## Shown only while a rank is wild (ADR 0029): its heading and its rules.
@@ -123,21 +106,22 @@ func refresh() -> void:
 	if not visible or _controller == null:
 		return
 	if _types.get_child_count() == 0:
-		for type: String in TYPES:
-			var name: Label = ScreenKit.label(tr("pattern." + type), 22)
+		for type: Pattern.Type in ReadingText.hand_types():
+			var key: String = ReadingText.type_key(type)
+			var name: Label = ScreenKit.label(tr("pattern." + key), 22)
 			name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 			name.autowrap_mode = TextServer.AUTOWRAP_OFF
 			_types.add_child(name)
-			var example: Label = ScreenKit.label(tr("cheat.example." + type), 20)
+			var example: Label = ScreenKit.label(tr("cheat.example." + key), 20)
 			example.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 			example.autowrap_mode = TextServer.AUTOWRAP_OFF
 			_types.add_child(example)
 			var rate: Label = ScreenKit.label("", 20, Color(Keywords.INKS["rate"]))
 			rate.autowrap_mode = TextServer.AUTOWRAP_OFF
 			_types.add_child(rate)
-			_rates.append(rate)
-	for index: int in TYPES.size():
-		_rates[index].text = _rate_text(index + 1)
+			_rates[type] = rate
+	for type: int in _rates:
+		_rates[type].text = _rate_text(type)
 	var active: PackedStringArray = []
 	for modifier_id: String in _controller.items.active_modifier_ids():
 		active.append(
@@ -221,7 +205,7 @@ func _rate_text(type: int) -> String:
 
 ## The Rate shown for a hand type, a Pattern.Type value, for tests.
 func rate_text(type: int) -> String:
-	return _rates[type - 1].text
+	return _rates[type].text
 
 
 ## The Close button, which the arrival points at (ADR 0026).

@@ -210,7 +210,7 @@ func test_speech_turns_to_slogans_by_degrees_then_unison() -> void:
 	var table: TableScreen = await _table()
 	var speech: TableSpeech = table.get("_speech")
 	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
-	speech.hurry = true
+	speech.hurrying = true
 	var said: Array[SpeechLine] = []
 	speech.spoke.connect(
 		func(_seat: int, _event: String, line: SpeechLine) -> void: said.append(line)

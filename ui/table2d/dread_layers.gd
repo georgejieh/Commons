@@ -340,7 +340,7 @@ func _key(index: int) -> String:
 func _choose_music(landlord: bool) -> void:
 	var famine: float = 0.0
 	for index: int in config.layers.size():
-		if config.layers[index].input == "famine":
+		if config.layers[index].input == RunCorrections.FAMINE:
 			famine = maxf(famine, board.targets[index])
 	famine *= DreadLayers.horror_intensity()
 	Audio.music.request(MusicPlayer.SCORE.cue_for(famine, landlord))

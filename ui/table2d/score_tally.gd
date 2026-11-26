@@ -102,7 +102,7 @@ func figure(index: int, text: String, bump: bool, big: bool = false) -> void:
 
 
 ## The equals sign says what share of Grain × Rate × Zeal a cut left the total.
-func scaled(percent: int) -> void:
+func show_scale(percent: int) -> void:
 	_equals.text = "=" if percent == WHOLE else tr("tally.scaled").format({"percent": percent})
 
 

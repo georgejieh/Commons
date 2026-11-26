@@ -75,6 +75,7 @@ var _sit_out: SitOut = SitOut.new()
 var _swap_sheet: PlotSwapSheet = PlotSwapSheet.new()
 var _kept: KeptSeatCall = KeptSeatCall.new()
 var _turn: TurnMark = TurnMark.new()
+var _cards: TableCards
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
 
@@ -123,7 +124,6 @@ func _ready() -> void:
 	_need_panel.head = _hud.size.y + SHEET_GAP
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
 	_pause.at_table = true
-	add_child(_kept)
 	add_child(_swap_sheet)
 	for sheet: Control in [_cheat_sheet, _pause]:
 		add_child(sheet)
@@ -153,6 +153,7 @@ func open(app: DemoApp) -> void:
 	_pile.setup(_pool, _pool_parent, _motion)
 	_hand_view.motion = _motion
 	_build_seats()
+	_cards = TableCards.new(_controller, _hand, _hand_view, _seats)
 	add_child(_turn)
 	_turn.setup(_seats, _player, _controller)
 	# The moments layer lies over everything, seats included, so a takeover dims it all.
@@ -175,7 +176,9 @@ func open(app: DemoApp) -> void:
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)
 	var names: Dictionary[int, String] = {
-		0: tr("ledger.you"), 1: app.seat_name(1), 2: app.seat_name(2)
+		Seats.PLAYER: tr("ledger.you"),
+		Seats.RIGHT: app.seat_name(Seats.RIGHT),
+		Seats.LEFT: app.seat_name(Seats.LEFT),
 	}
 	_ledger.setup(names)
 	_commands.set_names(names)
@@ -190,14 +193,13 @@ func open(app: DemoApp) -> void:
 	_moments.controller = _controller
 	_moments.sequence.attach(_board, _debuffs, _controller)
 	add_child(_close)
-	_close.setup(_player, _pile, _moments, _hand, _hand_view, _seat_center)
+	_close.setup(_player, _pile, _moments, _hand_view, _cards)
 	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
-	_campaigns.attach(_pool, _debuffs)
+	_campaigns.attach(_pool, _debuffs, _cards)
 	_columns.setup(_seats, _campaigns.tray, _dressing, _debuffs, _actions, _controller)
-	add_child(_sit_out)
 	_sit_out.setup(_controller, _actions, _commands, _player, app.arrival.is_running)
 	_sit_out.pace_changed.connect(_set_pace)
-	_debuff_beats.setup(_controller, _hand, _hand_view, _pool, _player, _moments, _board)
+	_debuff_beats.setup(_controller, _cards, _hand_view, _pool, _player, _moments, _board)
 	_deal_beats.place(self, _moments)
 	_deal_beats.setup(_controller, _pile, _hand_view, _player)
 	_set_pace()
@@ -226,7 +228,7 @@ func open(app: DemoApp) -> void:
 
 ## Plays every queued event at once, skipping the pacing.
 func skip_events() -> void:
-	_speech.hurry = true
+	_speech.hurrying = true
 	_still(true)
 	_player.flush()
 	_still(false)
@@ -302,11 +304,13 @@ func _exit_tree() -> void:
 ## Seat 1 acts after you, so it sits on your right; seat 2 on your left. Both sit
 ## along the top edge of the play area, the same distance from its middle.
 func _build_seats() -> void:
-	for seat: int in [1, 2]:
+	for seat: int in [Seats.RIGHT, Seats.LEFT]:
 		var panel: SeatPanel = SeatPanel.new()
 		panel.setup(seat, _app.seat_name(seat), _app.seat_portrait(seat, SeatPanel.PICTURE_BOX))
 		var x: float = (
-			PLAY_CENTER + SEAT_OFFSET if seat == 1 else PLAY_CENTER - SEAT_OFFSET - SEAT_WIDTH
+			PLAY_CENTER + SEAT_OFFSET
+			if seat == Seats.RIGHT
+			else PLAY_CENTER - SEAT_OFFSET - SEAT_WIDTH
 		)
 		_place(panel, Vector2(x, 112), Vector2(SEAT_WIDTH, 0))
 		_seats[seat] = panel
@@ -335,7 +339,7 @@ func _on_event(event: RunEvent) -> void:
 			_dread.refresh(_controller.run)
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
-			_dread.refresh(_controller.run, false, event.seat == 0)
+			_dread.refresh(_controller.run, false, event.seat == Seats.PLAYER)
 		RunEvent.Type.CADRE_FIRED:
 			if not (_replaying or _player.flushing):
 				_board.fired(_controller, event.text, event.value)
@@ -354,7 +358,7 @@ func _on_round_event(event: RoundEvent) -> void:
 		RoundEvent.Type.PLAYED:
 			_show_play(event)
 			_count_cards(event.seat, -event.cards.size())
-			if event.seat == 0:
+			if event.seat == Seats.PLAYER:
 				_close.own_play(event)
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
 				_motion.impact()
@@ -365,7 +369,7 @@ func _on_round_event(event: RoundEvent) -> void:
 			if _replaying or _player.flushing:
 				_pile.clear()
 			else:
-				_pile.sweep(_seat_center(event.seat))
+				_pile.sweep(_cards.point(event.seat))
 
 
 ## A fresh deal wipes the last round off the table: lanes, ledger, speech, the
@@ -405,7 +409,9 @@ func _on_drained() -> void:
 	_clear_for_sheet()
 	if awaiting == RunController.AWAIT_NEED:
 		_need_panel.ask(
-			state.commons_pool(), _app.seat_name(3 - _landlord), _controller.figures.audit_chance()
+			state.commons_pool(),
+			_app.seat_name(Seats.teammate(Seats.PLAYER, _landlord)),
+			_controller.figures.audit_chance()
 		)
 	_hand.refresh()
 	_hand_view.show_cards()
@@ -425,15 +431,12 @@ func _on_drained() -> void:
 ## your cards of a wild rank land wild: the ranks are yours alone (ADR 0039).
 func _show_play(event: RoundEvent) -> void:
 	var origins: Array[Vector2] = []
-	if event.seat == 0:
+	if event.seat == Seats.PLAYER:
 		for card: CardInstance in event.cards:
 			origins.append(_hand_view.card_center(card.id()))
-	_pile.show_play(event.cards, _seat_center(event.seat), origins, event.pattern, event.seat == 0)
-
-
-func _seat_center(seat: int) -> Vector2:
-	var at: Control = _hand_view if seat == 0 else _seats[seat]
-	return at.global_position + at.size / 2.0
+	_pile.show_play(
+		event.cards, _cards.point(event.seat), origins, event.pattern, event.seat == Seats.PLAYER
+	)
 
 
 func _on_setting(key: String) -> void:
@@ -447,7 +450,7 @@ func _on_setting(key: String) -> void:
 ## settings: it takes hold at once, mid-round.
 func _set_pace() -> void:
 	_player.step = _app.motion_step() * _sit_out.pace()
-	_moments.sequence.hurry_villagers = _sit_out.is_active()
+	_moments.sequence.hurrying_villagers = _sit_out.is_active()
 	_player.play_wait = UiMotion.PRESETS.fly_time * _player.step / UiMotion.PRESETS.event_step
 	_player.wind = _wind()
 	_player.holds = {
@@ -473,13 +476,13 @@ func _on_winding(event: RunEvent) -> void:
 ## are taken and played, without waiting for the queue to drain.
 func _show_roles(landlord: int) -> void:
 	for seat: int in _seats:
-		_seats[seat].set_role(landlord == seat, landlord != seat and landlord != 0)
+		_seats[seat].set_role(landlord == seat, Seats.teammate(Seats.PLAYER, landlord) == seat)
 	_show_you(landlord)
 
 
 ## The line over your hand says your role, from the moment the round starts.
 func _show_you(landlord: int) -> void:
-	var role: String = "landlord" if landlord == 0 else "peasant"
+	var role: String = "landlord" if landlord == Seats.PLAYER else "peasant"
 	_you.text = tr("table.you." + ("bidding" if landlord == Seats.NONE else role))
 	_clear_for_sheet()
 
@@ -513,7 +516,7 @@ func _refresh_seats() -> void:
 			panel.set_count(view.public.remaining[seat])
 			_counts[seat] = view.public.remaining[seat]
 			landlord = view.public.landlord
-		var teammate: bool = landlord != Seats.NONE and landlord != seat and landlord != 0
+		var teammate: bool = Seats.teammate(Seats.PLAYER, landlord) == seat
 		panel.set_role(landlord == seat, teammate)
 		panel.set_intel(IntelText.for_seat(view.info if view != null else null, seat))
 		var bid: String = _moments.bid_key(seat)

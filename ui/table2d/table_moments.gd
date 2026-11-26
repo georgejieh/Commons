@@ -147,15 +147,15 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 			if not quiet:
 				_on_rolled(event)
 		RunEvent.Type.AUDITED:
-			slip.audited(event.seat, event.value == 1)
+			slip.set_verdict(event.seat, event.value == 1)
 		RunEvent.Type.SHARE_PAID:
 			if not quiet:
-				slip.paid(event.seat, event.value)
-				if event.seat == 0:
+				slip.pay(event.seat, event.value)
+				if event.seat == Seats.PLAYER:
 					_gain(float(event.value), SLIP_AT)
 		RunEvent.Type.BANKED:
-			if not quiet and event.seat == 0:
-				_gain(event.amount, _ledger.amount_center(0))
+			if not quiet and event.seat == Seats.PLAYER:
+				_gain(event.amount, _ledger.amount_center(Seats.PLAYER))
 		RunEvent.Type.METER_CHANGED:
 			if hud != null and not quiet:
 				hud.nudge_meter(event.text, event.value)
@@ -190,7 +190,7 @@ func _on_bid(seat: int, claim: bool, quiet: bool) -> void:
 			_seats[seat].bump()
 	if quiet or not claim:
 		return
-	var who: String = "you" if seat == 0 else "sub"
+	var who: String = "you" if seat == Seats.PLAYER else "sub"
 	var line: String = tr("callout.%s.%s" % [key, who]).format({"name": _names.get(seat, "")})
 	_shout(tr("callout." + key), Callout.Tier.CUT_IN, ScreenKit.RED, line, seat)
 
@@ -222,7 +222,7 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 				return
 			_clear_tally()
 			var landlord_won: bool = event.seat == _landlord
-			var player_won: bool = landlord_won == (_landlord == 0)
+			var player_won: bool = landlord_won == (_landlord == Seats.PLAYER)
 			var line: String = tr("banner.landlord_wins" if landlord_won else "banner.peasants_win")
 			var cloth: Color = ScreenKit.RED if player_won else ScreenKit.LOSS
 			var word: String = tr("callout.won" if player_won else "callout.lost")
@@ -238,7 +238,9 @@ func _on_scored(event: RunEvent, quiet: bool) -> void:
 		_ledger.add_play(event.seat, event.grain, event.rate, event.zeal, event.amount)
 		return
 	_scoring = event.seat
-	var pace: float = _pace() * (1.0 if event.seat == 0 else UiMotion.PRESETS.score_villager)
+	var pace: float = (
+		_pace() * (1.0 if event.seat == Seats.PLAYER else UiMotion.PRESETS.score_villager)
+	)
 	sequence.target = _target
 	var seconds: float = sequence.play(event, pace)
 	var flight: float = FLIGHT if seconds > 0.0 else 0.0
@@ -317,7 +319,7 @@ func _on_rolled(event: RunEvent) -> void:
 func _mark_unchecked(seats: Array[int], faces: Array[int], audit_faces: int) -> void:
 	for index: int in seats.size():
 		if faces[index] > audit_faces:
-			slip.unchecked(seats[index])
+			slip.mark_unchecked(seats[index])
 
 
 func _call_audit(seat: int) -> void:
@@ -347,7 +349,7 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 		return
 	_pile.clear()
 	# The kitty's wild cards are wild only when they go to you (ADR 0039).
-	_pile.show_play(cards, KITTY_FROM, [], null, seat == 0)
+	_pile.show_play(cards, KITTY_FROM, [], null, seat == Seats.PLAYER)
 	_kitty_label.reset_size()
 	_kitty_label.position = KITTY_LABEL_AT - _kitty_label.size / 2.0
 	_kitty_label.visible = true
@@ -376,7 +378,7 @@ func _on_cards_landed(count: int) -> void:
 
 func _shout(word: String, tier: Callout.Tier, cloth: Color, line: String, seat: int) -> void:
 	var face: Texture2D = _faces.get(seat)
-	var seconds: float = callout.shout(word, tier, cloth, line, face, seat != 1)
+	var seconds: float = callout.shout(word, tier, cloth, line, face, seat != Seats.RIGHT)
 	# A banner sweeps in with a brush stroke, unless its event already sounds.
 	Audio.fill(AudioEvents.CALLOUT_CUT)
 	if tier == Callout.Tier.TAKEOVER:

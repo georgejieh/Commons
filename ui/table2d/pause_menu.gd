@@ -9,13 +9,18 @@ extends Control
 ## page (WindowSheet), whose Back and Escape come back to the settings.
 
 signal resumed
-signal to_title
-signal quit_game
-signal dossier
-signal last_round
-signal abandon
+## The player chose to go back to the title.
+signal title_chosen
+## The player chose to quit the game.
+signal quit_chosen
+## The player chose to read the dossier.
+signal dossier_chosen
+## The player chose to see the last round's summary.
+signal last_round_chosen
+## The player confirmed abandoning the run.
+signal abandoned
 ## At the table, the player asked for the deck sheet (ADR 0041).
-signal deck_sheet
+signal deck_chosen
 
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.78)
 
@@ -92,11 +97,11 @@ func _rebuild_on_settings() -> void:
 ## Sends the menu's ways out to the app's screens.
 func wire(app: DemoApp) -> void:
 	_app = app
-	to_title.connect(func() -> void: app.show_screen("title", true))
-	quit_game.connect(func() -> void: app.get_tree().quit())
-	dossier.connect(func() -> void: app.show_screen("dossier"))
-	last_round.connect(func() -> void: app.show_screen("round_summary"))
-	abandon.connect(app.leave_run)
+	title_chosen.connect(func() -> void: app.show_screen("title", true))
+	quit_chosen.connect(func() -> void: app.get_tree().quit())
+	dossier_chosen.connect(func() -> void: app.show_screen("dossier"))
+	last_round_chosen.connect(func() -> void: app.show_screen("round_summary"))
+	abandoned.connect(app.leave_run)
 
 
 func open() -> void:
@@ -124,15 +129,17 @@ func _menu() -> VBoxContainer:
 	_resume = _wide(tr("pause.resume"), CommonsTheme.PRIMARY, close)
 	sheet.add_child(_resume)
 	if at_table:
-		sheet.add_child(_wide(tr("deck.open"), CommonsTheme.SECONDARY, _leave.bind(deck_sheet)))
-	sheet.add_child(_wide(tr("dossier.open"), CommonsTheme.SECONDARY, _leave.bind(dossier)))
-	sheet.add_child(_wide(tr("pause.last_round"), CommonsTheme.SECONDARY, _leave.bind(last_round)))
+		sheet.add_child(_wide(tr("deck.open"), CommonsTheme.SECONDARY, _leave.bind(deck_chosen)))
+	sheet.add_child(_wide(tr("dossier.open"), CommonsTheme.SECONDARY, _leave.bind(dossier_chosen)))
+	sheet.add_child(
+		_wide(tr("pause.last_round"), CommonsTheme.SECONDARY, _leave.bind(last_round_chosen))
+	)
 	var settings: Callable = func() -> void: _show_page(_settings)
 	sheet.add_child(_wide(tr("pause.settings"), CommonsTheme.SECONDARY, settings))
-	sheet.add_child(_wide(tr("pause.to_title"), CommonsTheme.GHOST, _leave.bind(to_title)))
+	sheet.add_child(_wide(tr("pause.to_title"), CommonsTheme.GHOST, _leave.bind(title_chosen)))
 	var ask: Callable = func() -> void: _show_page(_confirm)
 	sheet.add_child(_wide(tr("menu.abandon"), CommonsTheme.GHOST, ask))
-	sheet.add_child(_wide(tr("pause.quit"), CommonsTheme.GHOST, _leave.bind(quit_game)))
+	sheet.add_child(_wide(tr("pause.quit"), CommonsTheme.GHOST, _leave.bind(quit_chosen)))
 	sheet.add_child(ScreenKit.styled(tr("pause.saved"), CommonsTheme.CAPTION))
 	var wrapper: VBoxContainer = VBoxContainer.new()
 	wrapper.add_child(ScreenKit.card_panel(sheet))
@@ -168,7 +175,7 @@ func _confirm_page() -> VBoxContainer:
 	sheet.add_child(ScreenKit.label(tr("menu.abandon.confirm"), 24, ScreenKit.INK))
 	_keep = _wide(tr("menu.abandon.no"), CommonsTheme.PRIMARY, close)
 	sheet.add_child(_keep)
-	_abandon = _wide(tr("menu.abandon.yes"), CommonsTheme.GHOST, _leave.bind(abandon))
+	_abandon = _wide(tr("menu.abandon.yes"), CommonsTheme.GHOST, _leave.bind(abandoned))
 	sheet.add_child(_abandon)
 	var wrapper: VBoxContainer = VBoxContainer.new()
 	wrapper.add_child(ScreenKit.card_panel(sheet))

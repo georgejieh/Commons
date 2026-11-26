@@ -146,6 +146,14 @@ func _init(
 	text = event_text
 
 
+## The whole numbers text lists, comma-separated, as an event names card IDs or ranks.
+func listed() -> Array[int]:
+	var found: Array[int] = []
+	for part: String in text.split(",", false):
+		found.append(part.to_int())
+	return found
+
+
 static func wrap(event: RoundEvent) -> RunEvent:
 	var wrapped: RunEvent = RunEvent.new(Type.ROUND, event.seat)
 	wrapped.round_event = event
