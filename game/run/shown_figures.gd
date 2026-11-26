@@ -26,22 +26,22 @@ static func all_success() -> bool:
 
 ## True when the screens show figure as it truly is. Only then may a change to it be
 ## signalled: a pulse, a sound, a band, the board's dread.
-static func is_true(state: RunState, figure: String) -> bool:
+static func is_true(state: RunView, figure: String) -> bool:
 	return not all_success() and not is_dark(state, figure)
 
 
 ## True when figure went dark in this run, whatever the stage.
-static func is_dark(state: RunState, figure: String) -> bool:
-	return state.books.is_dark(figure)
+static func is_dark(state: RunView, figure: String) -> bool:
+	return state.is_dark(figure)
 
 
 ## What the board's dread reads for a meter: its value while it is shown, else none.
-static func board(state: RunState, figure: String, value: int) -> int:
+static func board(state: RunView, figure: String, value: int) -> int:
 	return value if is_true(state, figure) else 0
 
 
 ## A meter's or the norm's value as text: the number, or "None reported".
-static func meter(state: RunState, figure: String, value: int) -> String:
+static func meter(state: RunView, figure: String, value: int) -> String:
 	return str(value) if is_true(state, figure) else none_reported()
 
 
@@ -52,13 +52,13 @@ static func coupons(amount: int, key: String) -> String:
 
 
 ## True when the Quota's target is shown.
-static func shows_target(state: RunState) -> bool:
+static func shows_target(state: RunView) -> bool:
 	return is_true(state, RunCorrections.NORM)
 
 
 ## The Quota's progress against its target as the bar writes it: both, the progress
 ## alone beside "None reported" under a dark norm, or fulfilled at the last stage.
-static func quota(state: RunState, progress: float, target: float) -> String:
+static func quota(state: RunView, progress: float, target: float) -> String:
 	if all_success():
 		return TranslationServer.translate(FULFILLED)
 	if not shows_target(state):
@@ -74,7 +74,7 @@ static func reads_met(met: bool) -> bool:
 
 
 ## A figure's text for a stat tile, or "" when its number is shown as it is.
-static func tile_text(state: RunState, figure: String) -> String:
+static func tile_text(state: RunView, figure: String) -> String:
 	if is_true(state, figure):
 		return ""
 	match figure:
@@ -87,13 +87,13 @@ static func tile_text(state: RunState, figure: String) -> String:
 
 ## A meter's value as the small ledger writes it at the stage past the last: as the
 ## stages before it show it, the number or, for a dark one, "None reported".
-static func ledger_meter(state: RunState, figure: String, value: int) -> String:
+static func ledger_meter(state: RunView, figure: String, value: int) -> String:
 	return none_reported() if is_dark(state, figure) else str(value)
 
 
 ## The Quota as the small ledger writes it: progress and target, or the progress alone
 ## under a dark norm.
-static func ledger_quota(state: RunState, progress: float, target: float) -> String:
+static func ledger_quota(state: RunView, progress: float, target: float) -> String:
 	if is_dark(state, RunCorrections.NORM):
 		return TranslationServer.translate(QUOTA_DARK).format({"progress": Strings.score(progress)})
 	return TranslationServer.translate(QUOTA).format(

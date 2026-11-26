@@ -168,9 +168,9 @@ func _open(choosing: bool) -> void:
 	_incoming.visible = coming != null
 	if coming != null:
 		_incoming.bind(coming)
-	var state: RunState = _controller.state_copy()
-	_board.show_cards(_controller.store.deck_cards(), state.inventory.plot, _room())
-	_show_legend(state)
+	var plot: Array[CardInstance] = _controller.run.plot()
+	_board.show_cards(_controller.store.deck_cards(), plot, _room())
+	_show_legend(plot)
 	_show_choice()
 	_link_focus()
 	_board.grab_focus()
@@ -196,13 +196,13 @@ func _fit() -> void:
 
 ## One entry for each mark the deck or the plot holds now: its drawn mark, its name and
 ## how many cards carry it.
-func _show_legend(state: RunState) -> void:
+func _show_legend(plot: Array[CardInstance]) -> void:
 	for child: Node in _legend.get_children():
 		_legend.remove_child(child)
 		child.queue_free()
 	var counts: Dictionary[String, int] = {}
 	var cards: Array[CardInstance] = _controller.store.deck_cards()
-	cards.append_array(state.inventory.plot)
+	cards.append_array(plot)
 	for card: CardInstance in cards:
 		if card.owner_stamp() == PLAYER:
 			counts[STAMP] = counts.get(STAMP, 0) + 1

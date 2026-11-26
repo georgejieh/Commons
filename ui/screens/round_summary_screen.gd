@@ -6,19 +6,19 @@ extends Control
 
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
-	var state: RunState = controller.state_copy()
+	var state: RunView = controller.run
 	var sheet: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	var last: Dictionary = last_round(controller.set_events())
 	var title_key: String = "round.none"
 	if not last.is_empty():
 		title_key = "round.won" if bool(last["won"]) else "round.lost"
-	var eyebrow: String = tr("round.eyebrow").format({"round": maxi(1, state.round_index)})
+	var eyebrow: String = tr("round.eyebrow").format({"round": maxi(1, state.round_index())})
 	sheet.add_child(ScreenKit.header(eyebrow, tr(title_key)))
 	var tiles: Array[Control] = [
 		ScreenKit.stat(tr("round.score"), float(last.get("score", 0.0))),
 		ScreenKit.stat(tr("round.share"), float(last.get("share", 0))),
 		ScreenKit.figure_stat(
-			tr("round.progress"), state, RunCorrections.PROGRESS, state.set_progress
+			tr("round.progress"), state, RunCorrections.PROGRESS, state.set_progress()
 		),
 	]
 	sheet.add_child(ScreenKit.row(tiles, 20))

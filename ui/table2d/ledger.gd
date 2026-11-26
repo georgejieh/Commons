@@ -95,7 +95,7 @@ func _ready() -> void:
 
 ## The small ledger's figures from a copy of the run, shown only at the stage past the
 ## last.
-func show_books(state: RunState, target: float) -> void:
+func show_books(state: RunView, target: float) -> void:
 	books.show_table(state, target)
 	_foot.visible = books.visible
 

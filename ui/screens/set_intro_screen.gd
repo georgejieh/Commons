@@ -12,13 +12,13 @@ const STEP_SIZE: Vector2 = Vector2(370, 170)
 
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
-	var state: RunState = controller.state_copy()
+	var state: RunView = controller.run
 	var art: Texture2D = ScreenKit.ART.notice_wall
 	var column: VBoxContainer = SheetPad.column(ScreenKit.side_sheet(self, art, SHEET_WIDTH))
 	var where: String = tr("intro.where").format(
-		{"year": state.year, "set": state.set_index + 1, "sets": app.sets_per_year()}
+		{"year": state.year(), "set": state.set_index() + 1, "sets": app.sets_per_year()}
 	)
-	column.add_child(ScreenKit.header(where, tr("set.type.%d" % state.set_type)))
+	column.add_child(ScreenKit.header(where, tr("set.type.%d" % state.set_type())))
 	var target: String = tr("intro.target").format(
 		{"target": Strings.score(controller.figures.target()), "rounds": app.max_rounds()}
 	)

@@ -125,8 +125,8 @@ func open(app: DemoApp) -> void:
 	_deck.closed.connect(_on_deck_closed)
 	_deck.chosen.connect(_on_chosen)
 	_desk_stall.setup(app.controller.store.mark_desk(market), market, _deck, _slip, is_issuing)
-	_shown_coupons = app.controller.state_copy().coupons
-	_shown_resentment = app.controller.state_copy().resentment
+	_shown_coupons = app.controller.run.coupons()
+	_shown_resentment = app.controller.run.resentment()
 	_refresh()
 	ScreenKit.reveal(column)
 	ScarceStamp.press_under(_counter, UiMotion.PRESETS.scarce_wait)
@@ -281,9 +281,9 @@ func _sheet(content: Control) -> PanelContainer:
 
 func _refresh() -> void:
 	var controller: RunController = _app.controller
-	var state: RunState = controller.state_copy()
-	UiMotion.count(_coupons, _shown_coupons, state.coupons, _coupon_text)
-	_shown_coupons = state.coupons
+	var state: RunView = controller.run
+	UiMotion.count(_coupons, _shown_coupons, state.coupons(), _coupon_text)
+	_shown_coupons = state.coupons()
 	for child: Node in _counter.get_children():
 		_counter.remove_child(child)
 		child.queue_free()
@@ -329,13 +329,13 @@ func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
 		var then: Callable = func(picked: int) -> void: _buy(slot, panel, picked)
 		_picker.ask(tr("store.pick_rank").format({"name": name}), panel, then)
 		return
-	var held: int = controller.state_copy().inventory.cadres.size()
+	var held: int = controller.run.held_cadres().size()
 	if market:
 		controller.market_buy(slot, rank)
 	else:
 		controller.buy(slot)
-	var state: RunState = controller.state_copy()
-	if state.inventory.cadres.size() == held:
+	var state: RunView = controller.run
+	if state.held_cadres().size() == held:
 		_refresh()
 		return
 	Audio.play(AudioEvents.STORE_BUY)
@@ -344,8 +344,8 @@ func _buy(slot: int, panel: Control, rank: int = Ranks.INVALID) -> void:
 		_refresh()
 		return
 	_busy = true
-	UiMotion.count(_coupons, _shown_coupons, state.coupons, _coupon_text)
-	_shown_coupons = state.coupons
+	UiMotion.count(_coupons, _shown_coupons, state.coupons(), _coupon_text)
+	_shown_coupons = state.coupons()
 	UiMotion.pulse(_coupons)
 	var middle: Vector2 = panel.global_position + panel.size / 2.0
 	_seal.position = middle - global_position - _seal.size / 2.0
@@ -384,12 +384,12 @@ func is_issuing() -> bool:
 
 ## Coupons were paid elsewhere on the page: they roll down while the purchase plays.
 func _on_spent() -> void:
-	var coupons: int = _app.controller.state_copy().coupons
+	var coupons: int = _app.controller.run.coupons()
 	UiMotion.count(_coupons, _shown_coupons, coupons, _coupon_text)
 	_shown_coupons = coupons
 	UiMotion.pulse(_coupons)
 	_reroll.disabled = not _desk.can_reroll()
-	_books.show_shop(_app.controller.state_copy())
+	_books.show_shop(_app.controller.run)
 
 
 ## Something held was sold back: the coupons count up, and the freed place swells.
@@ -397,7 +397,7 @@ func _on_sold(_index: int, campaign: bool) -> void:
 	_on_spent()
 	_refresh()
 	if not campaign:
-		_board.pulse_slot(_app.controller.state_copy().inventory.cadres.size())
+		_board.pulse_slot(_app.controller.run.held_cadres().size())
 	if get_viewport().gui_get_focus_owner() == null:
 		(_blocks["buttons"].get_child(0) as Button).grab_focus()
 

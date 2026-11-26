@@ -19,7 +19,7 @@ var _entries: Dictionary[int, PackedStringArray] = {}
 
 
 func open(app: DemoApp) -> void:
-	var state: RunState = app.controller.state_copy()
+	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	column.add_child(ScreenKit.header(tr("dossier.eyebrow"), tr("dossier.title")))
 	var cards: Array[Control] = []
@@ -40,7 +40,7 @@ func entries(seat: int) -> PackedStringArray:
 	return _entries.get(seat, PackedStringArray())
 
 
-func _villager(app: DemoApp, state: RunState, seat: int) -> Control:
+func _villager(app: DemoApp, state: RunView, seat: int) -> Control:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(420, 0))
 	var portrait: TextureRect = TextureRect.new()
 	portrait.texture = app.seat_portrait(seat, PORTRAIT_SIZE)
@@ -52,7 +52,7 @@ func _villager(app: DemoApp, state: RunState, seat: int) -> Control:
 	sheet.add_child(
 		ScreenKit.styled(app.controller.seats.seated_full_name(seat), CommonsTheme.TITLE)
 	)
-	var lines: PackedStringArray = _lines(state.observations, state.table[seat])
+	var lines: PackedStringArray = _lines(state.observations(), state.table()[seat])
 	# A trait that changes with a meter is told only once it was seen at work (ADR 0043).
 	var shifted: String = app.controller.seats.shift_line(seat)
 	if not shifted.is_empty():

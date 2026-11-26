@@ -15,7 +15,7 @@ static func play(event: RunEvent, landlord: int, controller: RunController) -> v
 		if AudioEvents.played_by_player(event):
 			Audio.ambience.hush()
 		return
-	var state: RunState = controller.state_copy()
+	var state: RunView = controller.run
 	if not ShownFigures.is_true(state, event.text):
 		return
 	Audio.play(AudioEvents.name_for(event, landlord))
@@ -25,6 +25,6 @@ static func play(event: RunEvent, landlord: int, controller: RunController) -> v
 
 ## A meter's events arrive in the same batch as the change, so the run's value is the
 ## value after it.
-static func _rose(event: RunEvent, state: RunState) -> bool:
-	var after: int = state.famine if event.text == FAMINE else state.denunciation
+static func _rose(event: RunEvent, state: RunView) -> bool:
+	var after: int = state.famine() if event.text == FAMINE else state.denunciation()
 	return AudioEvents.meter_rose(after - event.value, after, SfxPlayer.BANK.meter_marks)

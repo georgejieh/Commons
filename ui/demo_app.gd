@@ -229,7 +229,7 @@ func new_run(seed_value: int, full: bool = false, household: String = "", stake:
 func continue_run() -> bool:
 	if not controller.continue_saved(Saves.run_service(), Saves.profile_service()):
 		return false
-	GameLog.run_resumed(controller.state_copy().run_seed)
+	GameLog.run_resumed(controller.run.run_seed())
 	return true
 
 
@@ -242,7 +242,7 @@ func leave_run() -> void:
 	if not arrival.is_running():
 		if controller.has_run():
 			var over: bool = controller.awaiting() == RunController.AWAIT_RUN_OVER
-			GameLog.run_ended(controller.state_copy().run_seed, "finished" if over else "abandoned")
+			GameLog.run_ended(controller.run.run_seed(), "finished" if over else "abandoned")
 		# The run is let go before its save is cleared, so a villager still thinking
 		# cannot hand in a play afterwards and write the save back.
 		controller.drop()

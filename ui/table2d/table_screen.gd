@@ -228,7 +228,7 @@ func open(app: DemoApp) -> void:
 	_still(false)
 	_replaying = false
 	_kept.after_replay(_controller.awaiting() == RunController.AWAIT_SWAP)
-	_hud.sync(_controller.state_copy(), _controller.figures.target())
+	_hud.sync(_controller.run, _controller.figures.target())
 
 
 ## Plays every queued event at once, skipping the pacing.
@@ -297,7 +297,7 @@ func _setup_dread(app: DemoApp) -> void:
 	var slots: Dictionary[String, TextureRect] = {"table_surface": _surface}
 	_dread.setup(materials, _dressing, panels, slots, _hand_view)
 	_speech.dread = _dread
-	_dread.refresh(_controller.state_copy(), true)
+	_dread.refresh(_controller.run, true)
 
 
 func _exit_tree() -> void:
@@ -334,15 +334,15 @@ func _on_event(event: RunEvent) -> void:
 			_on_round_event(event.round_event)
 		RunEvent.Type.ROUND_SCORED:
 			_ledger.set_final(event.seat, event.amount)
-			_dread.refresh(_controller.state_copy())
+			_dread.refresh(_controller.run)
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			_new_deal()
-			_dread.refresh(_controller.state_copy())
+			_dread.refresh(_controller.run)
 		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED:
-			_dread.refresh(_controller.state_copy())
+			_dread.refresh(_controller.run)
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
-			_dread.refresh(_controller.state_copy(), false, event.seat == 0)
+			_dread.refresh(_controller.run, false, event.seat == 0)
 		RunEvent.Type.CADRE_FIRED:
 			if not (_replaying or _player.flushing):
 				_board.fired(_controller, event.text, event.value)
@@ -397,19 +397,21 @@ func _new_deal() -> void:
 func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
-	var state: RunState = _controller.state_copy()
+	var state: RunView = _controller.run
 	_hud.sync(state, _controller.figures.target())
-	_dressing.post_notice(DreadDressing.notice_key(state.year, state.set_index + state.round_index))
+	_dressing.post_notice(
+		DreadDressing.notice_key(state.year(), state.set_index() + state.round_index())
+	)
 	_board.show_cadres(_controller)
 	# A row of empty slots says nothing: the board stands once a Cadre is held.
-	_board.visible = not (_app.arrival.is_running() or state.inventory.cadres.is_empty())
+	_board.visible = not (_app.arrival.is_running() or state.held_cadres().is_empty())
 	_debuffs.show_debuffs(_controller)
 	var awaiting: int = _controller.awaiting()
 	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
 	_need_panel.visible = awaiting == RunController.AWAIT_NEED
 	_clear_for_sheet()
 	if awaiting == RunController.AWAIT_NEED:
-		var pool: int = _controller.state_copy().commons_pool
+		var pool: int = _controller.run.commons_pool()
 		_need_panel.ask(pool, _app.seat_name(3 - _landlord), _controller.figures.audit_chance())
 	_hand.refresh()
 	_hand_view.show_cards()
@@ -510,7 +512,7 @@ func _count_cards(seat: int, change: int) -> void:
 
 func _refresh_seats() -> void:
 	var view: SeatView = _controller.table.seat_view()
-	var landlord: int = _controller.state_copy().landlord_seat
+	var landlord: int = _controller.run.landlord_seat()
 	for seat: int in _seats:
 		var panel: SeatPanel = _seats[seat]
 		if view != null:
@@ -527,7 +529,7 @@ func _refresh_seats() -> void:
 
 
 func _refresh_status() -> void:
-	var state: RunState = _controller.state_copy()
+	var state: RunView = _controller.run
 	_hud.show_state(state, _app.max_rounds())
 	_ledger.show_books(state, _controller.figures.target())
 

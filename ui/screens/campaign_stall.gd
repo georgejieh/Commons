@@ -90,7 +90,7 @@ func _offer(slot: int, campaign_id: String) -> CounterPanel:
 		controller.texts.campaign_text(campaign_id),
 		tr("store.buy").format({"price": _shelf.price(slot)})
 	)
-	var coupons: int = controller.state_copy().coupons
+	var coupons: int = controller.run.coupons()
 	var why: BuyTicket.Why = BuyTicket.Why.FULL
 	if _shelf.is_sold_back(slot):
 		why = BuyTicket.Why.SOLD_BACK

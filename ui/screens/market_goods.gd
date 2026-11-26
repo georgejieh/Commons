@@ -111,7 +111,7 @@ func card_button(slot: int) -> Button:
 
 
 func _coupons() -> int:
-	return _controller.state_copy().coupons
+	return _controller.run.coupons()
 
 
 static func _tr(key: String) -> String:

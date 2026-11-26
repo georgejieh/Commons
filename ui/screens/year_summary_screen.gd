@@ -4,22 +4,24 @@ extends Control
 
 
 func open(app: DemoApp) -> void:
-	var state: RunState = app.controller.state_copy()
+	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.column(
 		ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
 	)
 	var heading: Control = ScreenKit.header(
-		tr("year.eyebrow"), tr("year.title").format({"year": state.year})
+		tr("year.eyebrow"), tr("year.title").format({"year": state.year()})
 	)
 	column.add_child(heading)
 	var tiles: Array[Control] = [
 		ScreenKit.figure_stat(
-			tr("year.coupons_label"), state, RunCorrections.COUPONS, state.coupons
+			tr("year.coupons_label"), state, RunCorrections.COUPONS, state.coupons()
 		),
-		ScreenKit.stat(tr("year.cadres_label"), state.inventory.cadres.size()),
-		ScreenKit.figure_stat(tr("year.famine_label"), state, RunCorrections.FAMINE, state.famine),
+		ScreenKit.stat(tr("year.cadres_label"), state.held_cadres().size()),
 		ScreenKit.figure_stat(
-			tr("year.denunciation_label"), state, RunCorrections.DENUNCIATION, state.denunciation
+			tr("year.famine_label"), state, RunCorrections.FAMINE, state.famine()
+		),
+		ScreenKit.figure_stat(
+			tr("year.denunciation_label"), state, RunCorrections.DENUNCIATION, state.denunciation()
 		),
 	]
 	column.add_child(ScreenKit.row(tiles, 20))

@@ -146,7 +146,7 @@ func count_at(index: int) -> String:
 ## Shows the Cadres the run holds, each with its name and rules as its tooltip.
 func show_cadres(controller: RunController) -> void:
 	_grow(controller.figures.cadre_slots())
-	var cadre_ids: Array[String] = controller.state_copy().inventory.cadres
+	var cadre_ids: Array[String] = controller.run.held_cadres()
 	var confiscated: Array[String] = controller.items.confiscated_cadres()
 	_ids = cadre_ids
 	for index: int in _cards.size():

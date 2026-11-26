@@ -46,18 +46,18 @@ var _fate_texts: PackedStringArray = []
 var _seat_texts: PackedStringArray = []
 var _next: Button
 ## The run as the page opened on it, for how its figures show.
-var _state: RunState = null
+var _state: RunView = null
 var _norm_text: String = ""
 
 
 func open(app: DemoApp) -> void:
 	var controller: RunController = app.controller
-	var state: RunState = controller.state_copy()
-	_met = state.set_progress >= controller.figures.target()
+	var state: RunView = controller.run
+	_met = state.set_progress() >= controller.figures.target()
 	_state = state
 	var sheet: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
 	var verdict: Control = ScreenKit.header(
-		tr("set.type.%d" % state.set_type),
+		tr("set.type.%d" % state.set_type()),
 		tr("summary.met" if ShownFigures.reads_met(_met) else "summary.missed")
 	)
 	sheet.add_child(verdict)
@@ -78,10 +78,13 @@ func open(app: DemoApp) -> void:
 	var cost: int = _famine_rise(controller)
 	var tiles: Array[Control] = [
 		_figure(
-			tr("summary.coupons_label"), RunCorrections.COUPONS, state.coupons - paid, state.coupons
+			tr("summary.coupons_label"),
+			RunCorrections.COUPONS,
+			state.coupons() - paid,
+			state.coupons()
 		),
 		_figure(
-			tr("summary.famine_label"), RunCorrections.FAMINE, state.famine - cost, state.famine
+			tr("summary.famine_label"), RunCorrections.FAMINE, state.famine() - cost, state.famine()
 		),
 	]
 	# The tiles share the sheet's width, so no half of the row stands empty.
@@ -89,7 +92,7 @@ func open(app: DemoApp) -> void:
 		tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var row: Control = ScreenKit.row(tiles, 20)
 	sheet.add_child(row)
-	var line: Label = _consequence(controller, state.famine)
+	var line: Label = _consequence(controller, state.famine())
 	sheet.add_child(line)
 	_after = [row, line]
 	if _kept > 0 and not _met:
@@ -101,7 +104,7 @@ func open(app: DemoApp) -> void:
 	if norm != null:
 		sheet.add_child(norm)
 		_after.append(norm)
-	for seat_line: Label in _seat_lines(controller, state.seatless_sets):
+	for seat_line: Label in _seat_lines(controller, state.seatless_sets()):
 		sheet.add_child(seat_line)
 		_after.append(seat_line)
 	for fate: Label in _fates(controller):
@@ -125,11 +128,11 @@ func open(app: DemoApp) -> void:
 	_next.grab_focus()
 	_bar.filled.connect(_on_filled)
 	if UiMotion.reduced():
-		_bar.fill_to(state.set_progress, 0.0)
+		_bar.fill_to(state.set_progress(), 0.0)
 		return
 	for piece: Control in _after + _quiet:
 		piece.modulate.a = 0.0
-	_bar.fill_to(state.set_progress, FILL, START)
+	_bar.fill_to(state.set_progress(), FILL, START)
 
 
 ## The seals overhang the bar above and below; the bar stands in a band as tall as the
@@ -146,13 +149,13 @@ func _seal_room(bar: QuotaBar) -> MarginContainer:
 ## How far the Quota was beaten, and what that did to the norm (P5.2a): a step or more
 ## raises it, and the line says by how much and to what; beaten by less, it says the norm
 ## stayed. Nothing while the norm is dark or the Quota was missed or only just met.
-func _norm_line(controller: RunController, state: RunState) -> Label:
+func _norm_line(controller: RunController, state: RunView) -> Label:
 	if not _met or not ShownFigures.is_true(state, RunCorrections.NORM):
 		return null
 	var target: float = controller.figures.target()
 	if not target > 0.0:
 		return null
-	var over: int = floori((state.set_progress - target) * 100.0 / target)
+	var over: int = floori((state.set_progress() - target) * 100.0 / target)
 	if over <= 0:
 		return null
 	var values: Dictionary = {

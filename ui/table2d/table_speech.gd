@@ -171,11 +171,11 @@ func _slogan_weight() -> float:
 static func visit_stream(controller: RunController) -> RandomStream:
 	if controller == null or not controller.has_run():
 		return null
-	var state: RunState = controller.state_copy()
-	if state.identity.file_entries <= 0:
+	var state: RunView = controller.run
+	if state.file_entries() <= 0:
 		return null
-	var name: String = VISIT.stream % [state.year, state.set_index]
-	return RandomStream.new(RandomStreams.derive_seed(state.run_seed, name))
+	var name: String = VISIT.stream % [state.year(), state.set_index()]
+	return RandomStream.new(RandomStreams.derive_seed(state.run_seed(), name))
 
 
 ## One of the work team's lines in place of event's, at the data's chance, or null.

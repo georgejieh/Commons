@@ -56,7 +56,7 @@ func refresh() -> void:
 	strip.visible = stall.is_open()
 	if not stall.is_open():
 		return
-	var coupons: int = _controller.state_copy().coupons
+	var coupons: int = _controller.run.coupons()
 	for slot: int in stall.count():
 		_offer(stall, slot, coupons)
 

@@ -94,6 +94,12 @@ func shift_line(seat: int) -> String:
 	return tr(shift.seen_key).format({"count": count, "at": at})
 
 
+## The run's history, family by family, as the village's history page lists it, with
+## name_of giving a family's name (HistoryView.run_lines).
+func history_lines(name_of: Callable) -> PackedStringArray:
+	return HistoryView.run_lines(_loop.state, name_of)
+
+
 ## How the run ended, for the ending screen (ADR 0024), worked out from its state alone.
 func ending() -> EndingView:
 	return EndingView.of(_loop.state, RunPeople.player_surname(_loop.state))

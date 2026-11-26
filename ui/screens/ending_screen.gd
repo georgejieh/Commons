@@ -32,7 +32,7 @@ const TITLE_INK: Color = Color("9a2a1a")
 
 var _view: EndingView
 ## The run's last state, for how its figures show (ADR 0022).
-var _state: RunState = null
+var _state: RunView = null
 ## The line under the eyebrow naming the player (ADR 0028).
 var _name: Label
 var _title: Label
@@ -51,7 +51,7 @@ var _figures: HBoxContainer
 
 func open(app: DemoApp) -> void:
 	_view = app.controller.seats.ending()
-	_state = app.controller.state_copy()
+	_state = app.controller.run
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(ScreenKit.cover(ScreenKit.ART.title_night))
 	var shade: ColorRect = ColorRect.new()

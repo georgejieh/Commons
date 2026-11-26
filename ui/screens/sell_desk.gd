@@ -49,7 +49,7 @@ func setup(
 ## Offers every held item for sale at this counter's price now.
 func refresh() -> void:
 	var controller: RunController = _app.controller
-	var cadres: Array[String] = controller.state_copy().inventory.cadres
+	var cadres: Array[String] = controller.run.held_cadres()
 	var index: int = 0
 	for node: Node in _board.get_children():
 		if not node is TipHost:
@@ -125,7 +125,7 @@ func _explain(focused: bool, paper: Control, campaign: bool) -> void:
 				paper, controller.texts.campaign_name(id), controller.texts.campaign_text(id)
 			)
 		return
-	var cadres: Array[String] = controller.state_copy().inventory.cadres
+	var cadres: Array[String] = controller.run.held_cadres()
 	if index >= 0 and index < cadres.size():
 		var title: String = tr("modifier.%s.name" % cadres[index])
 		_slip.show_for(paper, title, ScreenKit.rule_text(controller, cadres[index]))

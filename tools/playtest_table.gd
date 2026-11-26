@@ -225,7 +225,7 @@ func _moment_frames(table: Node) -> void:
 		await _snap("moment_quota_%d" % frame)
 	await tree.create_timer(2.0).timeout
 	var controller: Object = _controller()
-	hud.call("sync", controller.call("state_copy"), view(controller, "figures").call("target"))
+	hud.call("sync", view(controller, "run"), view(controller, "figures").call("target"))
 	var tally: Object = moments.get("tally")
 	tally.call("show_score", 54.0, 7.0, 1.5, 567.0, 1.0)
 	for frame: int in 4:

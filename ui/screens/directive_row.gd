@@ -89,7 +89,7 @@ func _document(slot: int, directive_id: String) -> Control:
 	var buy: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	buy.custom_minimum_size = Vector2.ZERO
 	buy.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var coupons: int = _controller.state_copy().coupons
+	var coupons: int = _controller.run.coupons()
 	BuyTicket.dress(buy, _desk.can_buy_directive(slot), _desk.directive_price(slot), coupons)
 	sheet.add_child(ScreenKit.row([heading, buy], 12))
 	sheet.add_child(HSeparator.new())

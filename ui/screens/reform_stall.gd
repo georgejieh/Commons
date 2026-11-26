@@ -90,7 +90,7 @@ func _offer(slot: int, reform_id: String) -> CounterPanel:
 		controller.texts.reform_text(reform_id),
 		TranslationServer.translate("store.buy").format({"price": _shelf.price(slot)})
 	)
-	var coupons: int = controller.state_copy().coupons
+	var coupons: int = controller.run.coupons()
 	BuyTicket.dress(made.buy, _shelf.can_buy(slot), _shelf.price(slot), coupons)
 	made.buy.pressed.connect(_buy.bind(slot, made))
 	made.described.connect(_describe)

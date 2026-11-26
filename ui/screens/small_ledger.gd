@@ -48,28 +48,28 @@ func _init(pairs_per_row: int = 1) -> void:
 
 
 ## The table's figures: the Quota, both meters and the coupons.
-func show_table(state: RunState, target: float) -> void:
+func show_table(state: RunView, target: float) -> void:
 	salt = TABLE_SALT
 	if not _shows():
 		return
-	var quota: String = ShownFigures.ledger_quota(state, state.set_progress, target)
+	var quota: String = ShownFigures.ledger_quota(state, state.set_progress(), target)
 	_write(0, tr("keyword.quota.name"), quota)
-	_write(1, tr("meter.famine"), _meter(state, RunCorrections.FAMINE, state.famine))
-	var denunciation: String = _meter(state, RunCorrections.DENUNCIATION, state.denunciation)
+	_write(1, tr("meter.famine"), _meter(state, RunCorrections.FAMINE, state.famine()))
+	var denunciation: String = _meter(state, RunCorrections.DENUNCIATION, state.denunciation())
 	_write(2, tr("meter.denunciation"), denunciation)
-	_write(3, tr("summary.coupons_label"), str(state.coupons))
+	_write(3, tr("summary.coupons_label"), str(state.coupons()))
 
 
 ## A shop's figures: the coupons and the three meters.
-func show_shop(state: RunState) -> void:
+func show_shop(state: RunView) -> void:
 	salt = SHOP_SALT
 	if not _shows():
 		return
-	_write(0, tr("summary.coupons_label"), str(state.coupons))
-	var resentment: String = _meter(state, RunCorrections.RESENTMENT, state.resentment)
+	_write(0, tr("summary.coupons_label"), str(state.coupons()))
+	var resentment: String = _meter(state, RunCorrections.RESENTMENT, state.resentment())
 	_write(1, tr("keyword.resentment.name"), resentment)
-	_write(2, tr("meter.famine"), _meter(state, RunCorrections.FAMINE, state.famine))
-	var denunciation: String = _meter(state, RunCorrections.DENUNCIATION, state.denunciation)
+	_write(2, tr("meter.famine"), _meter(state, RunCorrections.FAMINE, state.famine()))
+	var denunciation: String = _meter(state, RunCorrections.DENUNCIATION, state.denunciation())
 	_write(3, tr("meter.denunciation"), denunciation)
 
 
@@ -99,7 +99,7 @@ func _write(line: int, name: String, value: String) -> void:
 	(_grid.get_child(line * 2 + 1) as Label).text = value
 
 
-func _meter(state: RunState, figure: String, value: int) -> String:
+func _meter(state: RunView, figure: String, value: int) -> String:
 	return ShownFigures.ledger_meter(state, figure, value)
 
 

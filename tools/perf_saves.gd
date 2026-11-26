@@ -173,12 +173,22 @@ func _time_event_reads(service: SaveService) -> PackedFloat64Array:
 	return usec
 
 
-## The run as the table reads it for one such event: the status and ledger take one copy
-## of the whole state, the dread another, and both read the target.
+## The run as the table reads it for one such event, through the controller's run view:
+## the status's place, coupons and meters shown or not (TableHud.show_state), the small
+## ledger's figures (SmallLedger.show_table), the room's dread (DreadLayers.refresh), and
+## the target.
 static func _event_reads(controller: RunController) -> void:
-	for _reader: int in 2:
-		var state: RunState = controller.state_copy()
-		state.books.is_dark(RunCorrections.FAMINE)
+	var run: RunView = controller.run
+	run.year()
+	run.set_type()
+	run.round_index()
+	run.coupons()
+	for figure: String in [RunCorrections.NORM, RunCorrections.FAMINE, RunCorrections.DENUNCIATION]:
+		run.is_dark(figure)
+	run.set_progress()
+	run.famine()
+	run.denunciation()
+	run.landlord_seat()
 	controller.figures.target()
 
 
@@ -262,17 +272,17 @@ func _resume_row(msec: PackedFloat64Array) -> PerfRow:
 func _reads_row(usec: PackedFloat64Array) -> PerfRow:
 	if usec.is_empty():
 		return PerfRow.unmeasured(
-			"Run reads per table event", "none", "the largest save did not resume"
+			"Run reads per table event",
+			PerfLimits.event_reads_budget(),
+			"the largest save did not resume"
 		)
 	var sorted: PackedFloat64Array = ToolStats.sorted_of(usec)
-	return PerfRow.new(
+	var p99: float = ToolStats.nearest_rank(sorted, 99)
+	return PerfRow.judged(
 		"Run reads per table event",
-		"none",
-		(
-			"median %.1f us, p99 %.1f us"
-			% [ToolStats.nearest_rank(sorted, 50), ToolStats.nearest_rank(sorted, 99)]
-		),
-		PerfRow.Verdict.INFO,
+		PerfLimits.event_reads_budget(),
+		"median %.1f us, p99 %.1f us" % [ToolStats.nearest_rank(sorted, 50), p99],
+		p99 < PerfLimits.EVENT_READS_MAX_USEC,
 		"%d events on the largest save, resumed" % sorted.size(),
 		"what the table's status, small ledger and dread read of the run for one event"
 	)

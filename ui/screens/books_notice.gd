@@ -109,7 +109,7 @@ func _on_event(event: RunEvent) -> void:
 		return
 	var dark: Array[String] = []
 	if _controller != null and _controller.has_run():
-		dark = _controller.state_copy().books.dark
+		dark = _controller.run.dark_figures()
 	_queue.append(BooksNoticeText.of(event.correction, dark))
 	if not visible:
 		_show_next()

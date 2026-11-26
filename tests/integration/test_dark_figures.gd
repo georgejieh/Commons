@@ -112,10 +112,10 @@ func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
 	var dread: DreadLayers = table.get("_dread")
 	var copy: RunState = _app.controller.state_copy()
 	copy.famine = 90
-	dread.refresh(copy, true)
+	dread.refresh(RunView.new(copy), true)
 	assert_float(dread.board.targets[FAMINE_LAYER]).is_greater(0.2)
 	copy.books.dark.assign(["famine"])
-	dread.refresh(copy, true)
+	dread.refresh(RunView.new(copy), true)
 	assert_float(dread.board.targets[FAMINE_LAYER]).is_less(0.1)
 
 
@@ -180,7 +180,7 @@ func test_the_setback_still_comes_for_a_dark_meter() -> void:
 	loop.start_set()
 	state.famine = 30
 	loop.player_books({"famine": 0})
-	assert_bool(ShownFigures.is_true(loop.state, "famine")).is_false()
+	assert_bool(ShownFigures.is_true(RunView.new(loop.state), "famine")).is_false()
 	loop.player_books({"famine": RunDefaults.METERS.famine.mid})
 	assert_bool(loop.state.rationed).is_true()
-	assert_bool(ShownFigures.is_true(loop.state, "famine")).is_false()
+	assert_bool(ShownFigures.is_true(RunView.new(loop.state), "famine")).is_false()

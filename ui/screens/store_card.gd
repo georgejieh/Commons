@@ -51,7 +51,7 @@ static func make(
 		told += "\n\n" + _tr("store.scarce.note")
 	var button: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	button.size_flags_horizontal = Control.SIZE_FILL
-	var coupons: int = controller.state_copy().coupons
+	var coupons: int = controller.run.coupons()
 	var why: BuyTicket.Why = BuyTicket.Why.FULL
 	if desk.sold_back.has(desk.stock()[slot]):
 		why = BuyTicket.Why.SOLD_BACK

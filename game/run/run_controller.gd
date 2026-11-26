@@ -5,7 +5,7 @@ class_name RunController
 extends Node
 ## The one way the UI touches a run. It owns the run loop and its state, takes the UI's
 ## commands, and re-emits the loop's domain events as signals. What a screen reads of the
-## run it reads through the views built over each run: texts, figures, table, items,
+## run it reads through the views built over each run: run, texts, figures, table, items,
 ## store and seats, which hand out copies, so a screen can read the run but never change
 ## it. With a save service it saves after every state boundary and every command, so
 ## quitting at any moment loses nothing.
@@ -50,7 +50,9 @@ var search_weights: BotWeights = null
 ## mismatch logs, through it.
 var file_watch: FileWatch = FileWatch.new()
 
-## What the run's items and rules say (null with no run, as every view is).
+## The run's state as a screen reads it (null with no run, as every view is).
+var run: RunView
+## What the run's items and rules say.
 var texts: RunTexts
 ## The run's numbers as its rules set them.
 var figures: RunFigures
@@ -361,6 +363,7 @@ func set_events() -> Array[RunEvent]:
 func drop() -> void:
 	_searches.let_go()
 	_loop = null
+	run = null
 	texts = null
 	figures = null
 	table = null
@@ -383,7 +386,9 @@ func reseal_book() -> void:
 		file_watch.sealed(_loop)
 
 
-## A copy of the run state, for display.
+## A whole copy of the run state, for tests and development tools that change or keep
+## one. The UI may not call it: a screen reads the run through run and the other views,
+## and the UI boundary check holds it to that.
 func state_copy() -> RunState:
 	return RunState.from_dict(_loop.state.to_dict())
 
@@ -406,6 +411,7 @@ func _attach(loop: RunLoop, saves: SaveService) -> void:
 	# set_events(), so the listener starts after them.
 	_loop.set_log.flush()
 	_saves = saves
+	run = RunView.new(loop.state)
 	texts = RunTexts.new(loop)
 	figures = RunFigures.new(loop)
 	table = RunTableView.new(loop)

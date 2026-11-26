@@ -69,11 +69,11 @@ static func whole(value: float) -> String:
 ## Rolls the black market's Resentment count from shown to the run's, pulsing as it
 ## rises, or writes "None reported" while it is not shown as it is, with no pulse (ADR
 ## 0022). Returns the value the count now shows.
-static func count_resentment(count: Label, shown: float, state: RunState) -> float:
+static func count_resentment(count: Label, shown: float, state: RunView) -> float:
 	if not ShownFigures.is_true(state, RunCorrections.RESENTMENT):
 		count.text = ShownFigures.none_reported()
 		return shown
-	UiMotion.count(count, shown, state.resentment, whole)
-	if state.resentment > shown:
+	UiMotion.count(count, shown, state.resentment(), whole)
+	if state.resentment() > shown:
 		UiMotion.pulse(count)
-	return state.resentment
+	return state.resentment()

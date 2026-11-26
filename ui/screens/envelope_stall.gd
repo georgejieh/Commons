@@ -92,7 +92,7 @@ func _offer(slot: int, envelope_id: String) -> CounterPanel:
 		_shelf.envelope_text(envelope_id),
 		TranslationServer.translate("store.buy").format({"price": _shelf.price(slot)})
 	)
-	var coupons: int = _app.controller.state_copy().coupons
+	var coupons: int = _app.controller.run.coupons()
 	var can: bool = _shelf.can_buy(slot)
 	BuyTicket.dress(made.buy, can, _shelf.price(slot), coupons, BuyTicket.Why.EMPTY)
 	made.buy.pressed.connect(_buy.bind(slot, made))
