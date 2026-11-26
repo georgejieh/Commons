@@ -205,7 +205,7 @@ func _rows() -> GridContainer:
 		var pad: Label = ScreenKit.label(ControlsPage.pad_name(action), PAD_SIZE)
 		pad.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		grid.add_child(pad)
-		if action == HintSetting.ACTION:
+		if action == KeyBindings.HINT:
 			_hint_row.assign([name, key, pad])
 	_show_keys()
 	return grid

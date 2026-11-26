@@ -54,7 +54,7 @@ func test_the_defaults_are_the_project_keys() -> void:
 	}
 	for action: String in expected:
 		assert_int(bindings.key(action)).override_failure_message(action).is_equal(expected[action])
-	assert_bool(bindings.is_default()).is_true()
+	assert_bool(_is_default(bindings)).is_true()
 	for action: String in KeyBindings.ACTIONS:
 		var keys: Array[InputEventKey] = _key_events(action)
 		assert_int(keys.size()).is_equal(1)
@@ -73,7 +73,7 @@ func test_a_change_moves_the_key_and_keeps_the_gamepad_button() -> void:
 	assert_int(_pad_events("commons_hint")).is_equal(pads)
 	assert_bool(_key_press(KEY_J).is_action_pressed("commons_hint")).is_true()
 	assert_bool(_key_press(KEY_H).is_action_pressed("commons_hint")).is_false()
-	assert_bool(bindings.is_default()).is_false()
+	assert_bool(_is_default(bindings)).is_false()
 
 
 func test_a_key_in_use_swaps() -> void:
@@ -98,7 +98,7 @@ func test_escape_and_bare_modifiers_are_refused() -> void:
 			. is_false()
 		)
 	assert_bool(bindings.bind("commons_play", (KEY_J | KEY_MASK_SHIFT) as Key)).is_false()
-	assert_bool(bindings.is_default()).is_true()
+	assert_bool(_is_default(bindings)).is_true()
 	# Keys the menus also use are allowed, as the defaults use them.
 	for key: Key in [KEY_ENTER, KEY_DOWN, KEY_TAB, KEY_F5]:
 		assert_bool(KeyBindings.allowed(key)).override_failure_message(str(key)).is_true()
@@ -109,7 +109,7 @@ func test_restoring_the_defaults() -> void:
 	bindings.bind("commons_play", KEY_P)
 	bindings.bind("commons_cursor_left", KEY_A)
 	bindings.restore_defaults()
-	assert_bool(bindings.is_default()).is_true()
+	assert_bool(_is_default(bindings)).is_true()
 	assert_int(_key_events("commons_play")[0].physical_keycode).is_equal(KEY_ENTER)
 	assert_int(_key_events("commons_cursor_left")[0].physical_keycode).is_equal(KEY_LEFT)
 
@@ -117,7 +117,7 @@ func test_restoring_the_defaults() -> void:
 func test_the_settings_file_round_trip() -> void:
 	var store: SettingsStore = auto_free(SettingsStore.new())
 	store.load_from(PATH)
-	assert_bool(store.bindings.is_default()).is_true()
+	assert_bool(_is_default(store.bindings)).is_true()
 	store.bindings.bind("commons_rules", KEY_F1)
 	store.bindings.bind("commons_hint", KEY_S)
 	assert_int(store.save()).is_equal(OK)
@@ -166,19 +166,19 @@ func test_a_clash_in_the_file_sends_every_key_home() -> void:
 	file.set_value(KeyBindings.SECTION, "commons_hint", int(KEY_P))
 	var bindings: KeyBindings = KeyBindings.new()
 	bindings.read(file)
-	assert_bool(bindings.is_default()).is_true()
+	assert_bool(_is_default(bindings)).is_true()
 	# A bad value that falls back onto a key another action took is a clash too.
 	var fallen: ConfigFile = ConfigFile.new()
 	fallen.set_value(KeyBindings.SECTION, "commons_play", int(KEY_H))
 	fallen.set_value(KeyBindings.SECTION, "commons_hint", "nonsense")
 	bindings.read(fallen)
-	assert_bool(bindings.is_default()).is_true()
+	assert_bool(_is_default(bindings)).is_true()
 
 
 func test_a_missing_file_loads_the_defaults() -> void:
 	var store: SettingsStore = auto_free(SettingsStore.new())
 	store.load_from("user://no_such_settings_file.cfg")
-	assert_bool(store.bindings.is_default()).is_true()
+	assert_bool(_is_default(store.bindings)).is_true()
 
 
 ## Every commons_ action in the project has a key, a row on the page, a name and a pad
@@ -202,7 +202,37 @@ func test_every_action_has_a_binding_a_row_and_a_string() -> void:
 		assert_str(ControlsPage.pad_name(action)).override_failure_message(action).is_not_empty()
 
 
+## No script of the game or the screens names an action by its string: each uses the
+## constant on KeyBindings.
+func test_no_script_names_an_action_by_its_string() -> void:
+	var named: Array[String] = []
+	for folder: String in ["res://ui", "res://game"]:
+		for path: String in _scripts_under(folder):
+			var source: String = FileAccess.get_file_as_string(path)
+			if not path.ends_with("key_bindings.gd") and source.contains('"' + ACTION_PREFIX):
+				named.append(path)
+	assert_array(named).is_empty()
+
+
 func test_a_key_label_names_the_key() -> void:
 	assert_str(KeyBindings.label(KEY_H)).is_equal("H")
 	assert_str(KeyBindings.label(KEY_ENTER)).is_equal("Enter")
 	assert_str(KeyBindings.label(KEY_SPACE)).is_equal("Space")
+
+
+## True when every action has the key the project's input settings give it.
+func _is_default(bindings: KeyBindings) -> bool:
+	for action: String in KeyBindings.ACTIONS:
+		if bindings.key(action) != KeyBindings.default_key(action):
+			return false
+	return true
+
+
+func _scripts_under(folder: String) -> Array[String]:
+	var found: Array[String] = []
+	for file: String in DirAccess.get_files_at(folder):
+		if file.ends_with(".gd"):
+			found.append(folder.path_join(file))
+	for sub: String in DirAccess.get_directories_at(folder):
+		found.append_array(_scripts_under(folder.path_join(sub)))
+	return found

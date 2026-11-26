@@ -375,11 +375,11 @@ func _on_motion(motion: InputEventMouseMotion) -> void:
 
 
 func _on_key(event: InputEvent) -> bool:
-	for action: String in ["ui_left", "commons_cursor_left", "ui_right", "commons_cursor_right"]:
+	for action: String in KeyBindings.CURSOR_STEPS:
 		if event.is_action_pressed(action, true):
 			_step_cursor(-1 if action.ends_with("left") else 1)
 			return true
-	if event.is_action_pressed("ui_accept") or event.is_action_pressed("commons_select"):
+	if event.is_action_pressed("ui_accept") or event.is_action_pressed(KeyBindings.SELECT):
 		if cursor_card() != PlotTrade.NONE:
 			press(cursor_card())
 		return true

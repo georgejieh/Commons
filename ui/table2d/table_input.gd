@@ -51,7 +51,7 @@ func handle(event: InputEvent) -> bool:
 		return true
 	if _pause.visible or _cheat_sheet.visible:
 		return false
-	if event.is_action_pressed("commons_deck"):
+	if event.is_action_pressed(KeyBindings.DECK):
 		_open_deck.call()
 		return true
 	return _hand_cursor(event) or _shortcut(event)
@@ -64,13 +64,13 @@ func handle_tray(event: InputEvent) -> bool:
 
 func _shortcut(event: InputEvent) -> bool:
 	var shortcuts: Dictionary[String, Button] = {
-		"commons_play": _play_button(),
-		"commons_pass":
+		KeyBindings.PLAY: _play_button(),
+		KeyBindings.PASS:
 		_actions.decline if _actions.decline.is_visible_in_tree() else _actions.pass_turn,
-		"commons_sit_out": _actions.sit_out,
-		"commons_hint": _actions.hint,
-		"commons_sort": _actions.sort,
-		"commons_rules": _actions.rules,
+		KeyBindings.SIT_OUT: _actions.sit_out,
+		KeyBindings.HINT: _actions.hint,
+		KeyBindings.SORT: _actions.sort,
+		KeyBindings.RULES: _actions.rules,
 	}
 	for action: String in shortcuts:
 		var button: Button = shortcuts[action]
@@ -93,11 +93,11 @@ func _hand_cursor(event: InputEvent) -> bool:
 	var choosing: Array[int] = [RunController.AWAIT_PLAY, RunController.AWAIT_OPENING]
 	if not choosing.has(_controller.awaiting()):
 		return false
-	if event.is_action_pressed("commons_cursor_left", true):
+	if event.is_action_pressed(KeyBindings.CURSOR_LEFT, true):
 		_hand_view.move_cursor(-1)
-	elif event.is_action_pressed("commons_cursor_right", true):
+	elif event.is_action_pressed(KeyBindings.CURSOR_RIGHT, true):
 		_hand_view.move_cursor(1)
-	elif event.is_action_pressed("commons_select"):
+	elif event.is_action_pressed(KeyBindings.SELECT):
 		_hand_view.toggle_cursor()
 	else:
 		return false

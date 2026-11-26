@@ -213,7 +213,7 @@ func _on_pressed(card_id: int) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if _order.is_empty():
 		return
-	for action: String in ["ui_left", "commons_cursor_left", "ui_right", "commons_cursor_right"]:
+	for action: String in KeyBindings.CURSOR_STEPS:
 		if event.is_action_pressed(action, true):
 			_step(-1 if action.ends_with("left") else 1)
 			accept_event()
@@ -222,7 +222,7 @@ func _gui_input(event: InputEvent) -> void:
 		if event.is_action_pressed(action, true) and _step_row(-1 if action == "ui_up" else 1):
 			accept_event()
 			return
-	if event.is_action_pressed("ui_accept") or event.is_action_pressed("commons_select"):
+	if event.is_action_pressed("ui_accept") or event.is_action_pressed(KeyBindings.SELECT):
 		press(cursor_card())
 		accept_event()
 

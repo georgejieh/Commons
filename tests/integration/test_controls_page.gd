@@ -171,7 +171,8 @@ func test_a_clash_swaps_and_restore_puts_every_key_back() -> void:
 	assert_str(page.ticket("commons_sort").text).is_equal("H")
 	page.restore_button().grab_focus()
 	await _tap(KEY_ENTER)
-	assert_bool(Settings.bindings.is_default()).is_true()
+	for action: String in KeyBindings.ACTIONS:
+		assert_int(Settings.bindings.key(action)).is_equal(KeyBindings.default_key(action))
 	assert_str(page.ticket("commons_hint").text).is_equal("H")
 	assert_object(_focus()).is_same(page.restore_button())
 
