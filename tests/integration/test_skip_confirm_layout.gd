@@ -46,7 +46,7 @@ func test_the_question_on_the_arrival_page_covers_the_screen() -> void:
 		await _launch(screen_size)
 		# The surname page's default with Enter, then the arrival page, as on a first launch.
 		assert_str(_app.switcher.current_id()).is_equal("surname")
-		await _key(KEY_ENTER)
+		await TestInput.tap_key(self, KEY_ENTER)
 		await await_idle_frame()
 		var page: ArrivalScreen = _app.switcher.current()
 		page.skip_button().pressed.emit()
@@ -90,14 +90,3 @@ func _assert_rect(found: Rect2, wanted: Rect2, where: String) -> void:
 		and found.size.distance_to(wanted.size) <= SLACK
 	)
 	assert_bool(close).override_failure_message("%s is %s" % [where, found]).is_true()
-
-
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.physical_keycode = code
-		key.keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()

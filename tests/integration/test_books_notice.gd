@@ -51,27 +51,6 @@ func _raised() -> BooksCorrection:
 	return correction
 
 
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.keycode = code
-		key.physical_keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-
-
-func _pad_accept() -> void:
-	for down: bool in [true, false]:
-		var pad: InputEventJoypadButton = InputEventJoypadButton.new()
-		pad.button_index = JOY_BUTTON_A
-		pad.pressed = down
-		Input.parse_input_event(pad)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-
-
 func _start_full_run() -> void:
 	_app.controller.file_watch.release = true
 	assert_bool(_app.new_run(SEED, true)).is_true()
@@ -96,12 +75,12 @@ func test_a_live_correction_brings_the_notice_over_the_table_and_holds_it() -> v
 	var events: EventPlayer = table.get("_player")
 	assert_bool(events.is_processing()).is_false()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(notice.acknowledge_button())
-	await _key(KEY_ESCAPE)
+	await TestInput.tap_key(self, KEY_ESCAPE)
 	assert_bool(notice.is_showing()).is_true()
 	assert_bool(_app.menu_is_open()).is_false()
 	var pause: PauseMenu = table.get("_pause")
 	assert_bool(pause.visible).is_false()
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_bool(notice.is_showing()).is_false()
 	assert_bool(events.is_processing()).is_true()
 	assert_array(Array(_lines)).is_empty()
@@ -115,7 +94,7 @@ func test_no_notice_on_a_reload_or_a_table_joining_the_run() -> void:
 	ControllerScript.new().act(_app.controller)
 	await await_idle_frame()
 	assert_bool(_app.notice.is_showing()).is_true()
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	_app.resume_to_screen()
 	await await_idle_frame()
 	assert_bool(_app.notice.is_showing()).is_false()
@@ -148,11 +127,11 @@ func test_the_notice_on_every_kind_of_screen_and_every_time() -> void:
 	await _send(_raised())
 	await _send(BooksCorrection.new())
 	assert_int(_app.notice.waiting()).is_equal(1)
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_bool(_app.notice.is_showing()).is_true()
 	var seal: String = TranslationServer.translate("notice.seal.title")
 	assert_array(Array(_app.notice.shown_lines())).contains([seal])
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_bool(_app.notice.is_showing()).is_false()
 
 
@@ -161,7 +140,7 @@ func _shown_and_acknowledged() -> void:
 	assert_bool(_app.notice.is_showing()).is_true()
 	await await_idle_frame()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(_app.notice.acknowledge_button())
-	await _pad_accept()
+	await TestInput.tap_pad(self, JOY_BUTTON_A)
 	assert_bool(_app.notice.is_showing()).is_false()
 
 
@@ -238,7 +217,7 @@ func test_the_longest_notice_fits_the_screen() -> void:
 				var where: String = "%s %s at %s" % [screen_size, control.get_path(), rect]
 				assert_bool(screen.encloses(rect)).override_failure_message(where).is_true()
 			_clips(_app.notice, str(screen_size))
-		await _key(KEY_ENTER)
+		await TestInput.tap_key(self, KEY_ENTER)
 
 
 ## Nothing under root clips, as ClipCheck says (ADR 0034).

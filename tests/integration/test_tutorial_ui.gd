@@ -54,7 +54,7 @@ func _launch() -> DemoApp:
 ## Takes the surname page's default with one press of Enter, for the Arrival page.
 func _past_surname() -> void:
 	assert_str(_app.switcher.current_id()).is_equal("surname")
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	await await_idle_frame()
 
 
@@ -126,7 +126,7 @@ func test_quitting_part_way_writes_nothing_and_offers_it_again() -> void:
 	await _launch()
 	_app.arrival.start()
 	await _until_prompt()
-	await _key(KEY_SPACE)
+	await TestInput.tap_key(self, KEY_SPACE)
 	_app.free()
 	_app = null
 	assert_bool(ProfileSeen.exists(Saves.profile_service())).is_false()
@@ -142,7 +142,7 @@ func test_a_refused_action_changes_nothing_and_marks_the_slip() -> void:
 	var director: TutorialDirector = _app.arrival.director
 	assert_int(director.index()).is_equal(0)
 	# Calling is not what the first step asks for: Enter presses Call, which is refused.
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_int(director.index()).is_equal(0)
 	assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_BID)
 	assert_bool(_app.arrival.layer.slip().shows_cross()).is_true()
@@ -157,7 +157,7 @@ func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
 	var surname: String = naming.field().text
 	await _past_surname()
 	(_app.switcher.current() as ArrivalScreen).sit_in_button().grab_focus()
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	await _walk("1080")
 	assert_str(_app.switcher.current_id()).is_equal("run_setup")
 	var data: ProfileData = Profile.read(Saves.profile_service())
@@ -234,22 +234,22 @@ func _walk(where: String) -> void:
 func _answer(step: TutorialStep) -> void:
 	match step.action:
 		TutorialStep.Action.BID_PASS, TutorialStep.Action.PASS:
-			await _key(KEY_SPACE)
+			await TestInput.tap_key(self, KEY_SPACE)
 		TutorialStep.Action.BID_CALL, TutorialStep.Action.PLAY, TutorialStep.Action.NEED:
-			await _key(KEY_ENTER)
+			await TestInput.tap_key(self, KEY_ENTER)
 		TutorialStep.Action.BUTTON:
 			if step.button == "rules":
-				await _key(KEY_R)
+				await TestInput.tap_key(self, KEY_R)
 				await _until_line(step.then_key)
 				await _check_slip("rules open")
-				await _key(KEY_ESCAPE)
+				await TestInput.tap_key(self, KEY_ESCAPE)
 			elif not step.via.is_empty():
-				await _key(KEY_ENTER)
+				await TestInput.tap_key(self, KEY_ENTER)
 				await _until_prompt()
 				await _check_slip("black market")
-				await _key(KEY_ENTER)
+				await TestInput.tap_key(self, KEY_ENTER)
 			else:
-				await _key(KEY_ENTER)
+				await TestInput.tap_key(self, KEY_ENTER)
 
 
 ## Waits until the step is done: the director moved past it, or the arrival ended.
@@ -333,18 +333,6 @@ func _check_slip(where: String) -> void:
 	if store != null:
 		# Wang's slip is the only explanation on screen while the arrival runs.
 		assert_bool(store.slip().visible).override_failure_message(where + " detail").is_false()
-
-
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.physical_keycode = code
-		key.keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-	await await_idle_frame()
 
 
 ## The table names the brigade notice among what the slip must keep clear of.

@@ -154,22 +154,10 @@ func _kept(table: TableScreen) -> Dictionary[String, Rect2]:
 func _answer(step: TutorialStep) -> void:
 	match step.action:
 		TutorialStep.Action.BID_PASS, TutorialStep.Action.PASS:
-			await _key(KEY_SPACE)
+			await TestInput.tap_key(self, KEY_SPACE)
 		TutorialStep.Action.BID_CALL, TutorialStep.Action.PLAY, TutorialStep.Action.NEED:
-			await _key(KEY_ENTER)
+			await TestInput.tap_key(self, KEY_ENTER)
 		TutorialStep.Action.BUTTON:
-			await _key(KEY_R)
+			await TestInput.tap_key(self, KEY_R)
 			await await_idle_frame()
-			await _key(KEY_ESCAPE)
-
-
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.physical_keycode = code
-		key.keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-	await await_idle_frame()
+			await TestInput.tap_key(self, KEY_ESCAPE)

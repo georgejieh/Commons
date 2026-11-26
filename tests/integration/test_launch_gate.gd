@@ -77,27 +77,6 @@ func _gate() -> LaunchGate:
 	return auto_free(gate)
 
 
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.keycode = code
-		key.physical_keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-
-
-func _pad_accept() -> void:
-	for down: bool in [true, false]:
-		var pad: InputEventJoypadButton = InputEventJoypadButton.new()
-		pad.button_index = JOY_BUTTON_A
-		pad.pressed = down
-		Input.parse_input_event(pad)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-
-
 func test_no_file_opens_at_once_and_the_gate_keeps_the_file_until_it_goes() -> void:
 	var gate: LaunchGate = _gate()
 	assert_array(_opened).is_equal([""])
@@ -167,9 +146,9 @@ func test_a_live_file_shows_the_notice_and_opens_nothing_until_the_player_choose
 	assert_str(buttons[0].text).is_equal(tr("session.open.quit"))
 	assert_str(buttons[1].text).is_equal(tr("session.open.anyway"))
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(buttons[0])
-	await _key(KEY_RIGHT)
+	await TestInput.tap_key(self, KEY_RIGHT)
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(buttons[1])
-	await _pad_accept()
+	await TestInput.tap_pad(self, JOY_BUTTON_A)
 	assert_array(_opened).is_equal([""])
 	assert_object(gate.notice()).is_null()
 	assert_bool(_file.is_mine()).is_true()
@@ -225,7 +204,7 @@ func test_quit_from_the_notice_leaves_nothing_of_the_app() -> void:
 	gate.opened.connect(func(kept: String) -> void: _opened.append(kept))
 	add_child(gate)
 	await await_idle_frame()
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_array(quit).is_equal([true])
 	assert_array(_opened).is_empty()
 	# What quitting the tree does to them.

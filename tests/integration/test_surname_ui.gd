@@ -105,7 +105,7 @@ func test_one_press_finishes_the_step_well_inside_thirty_seconds() -> void:
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(page.field())
 	var default: String = page.field().text
 	assert_array(Surnames.offered()).contains([default])
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_str(_app.switcher.current_id()).is_equal("arrival")
 	assert_str(_app.arrival.surname).is_equal(default)
 	assert_float((Time.get_ticks_msec() - began) / 1000.0).is_less(STEP_SECONDS)
@@ -117,7 +117,7 @@ func test_typing_keeps_only_what_the_field_accepts() -> void:
 	await _launch()
 	var page: SurnameScreen = _page()
 	page.field().select_all()
-	await _key(KEY_BACKSPACE)
+	await TestInput.tap_key(self, KEY_BACKSPACE)
 	await _type("yu 7an-")
 	assert_str(page.field().text).is_equal("Yuan")
 	await _type("abcdefghijk")
@@ -256,7 +256,7 @@ func test_the_field_is_written_on_paper() -> void:
 	assert_bool(holds).override_failure_message(rects).is_true()
 	var ink: Color = field.get_theme_color("font_color")
 	assert_float(ink.get_luminance()).is_less(0.2)
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_str(_app.switcher.current_id()).is_equal("arrival")
 
 
@@ -360,18 +360,6 @@ func _check_fits(label: Label, text: String, size: Vector2i) -> void:
 	assert_int(font_size).override_failure_message(where).is_greater_equal(LEAST_TYPE)
 	var wide: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 	assert_float(wide).override_failure_message(where).is_less_equal(label.size.x + SLACK)
-
-
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.physical_keycode = code
-		key.keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-	await await_idle_frame()
 
 
 func _type(text: String) -> void:

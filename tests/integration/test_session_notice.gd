@@ -31,17 +31,6 @@ func after_test() -> void:
 	Saves.profile_service().delete()
 
 
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.keycode = code
-		key.physical_keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-
-
 func _assert_whole(notice: SessionNotice, where: String) -> void:
 	var window: Rect2 = notice.get_viewport_rect().grow(SLACK)
 	var sheet: Rect2 = notice.sheet().get_global_rect()
@@ -89,7 +78,7 @@ func test_the_title_says_once_where_the_last_session_was_kept() -> void:
 	for label: Node in notice.find_children("*", "Label", true, false):
 		texts.append((label as Label).text)
 	assert_array(texts).contains([shown])
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	await await_idle_frame()
 	assert_bool(is_instance_valid(notice)).is_false()
 	var new_run: Button = null

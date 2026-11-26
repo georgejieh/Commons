@@ -40,18 +40,6 @@ func _table_at_play() -> TableScreen:
 	return table
 
 
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.physical_keycode = code
-		key.keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-	await await_idle_frame()
-
-
 func test_the_hint_is_on_by_default_and_on_the_sheet() -> void:
 	assert_bool(SettingsStore.DEFAULTS.show_hint).is_true()
 	assert_bool(SettingsStore.KEYS.has(HintSetting.SETTING)).is_true()
@@ -71,7 +59,7 @@ func test_the_hint_is_on_by_default_and_on_the_sheet() -> void:
 func test_with_the_hint_on_its_key_lights_a_play() -> void:
 	var table: TableScreen = await _table_at_play()
 	assert_bool(table.actions().hint.is_visible_in_tree()).is_true()
-	await _key(Settings.bindings.key(KeyBindings.HINT))
+	await TestInput.tap_key(self, Settings.bindings.key(KeyBindings.HINT))
 	var hinted: bool = not _app.hand.selected_ids().is_empty()
 	var passing: bool = table.actions().reading.text == tr("hand.hint.pass")
 	assert_bool(hinted or passing).is_true()
@@ -84,7 +72,7 @@ func test_with_the_hint_off_neither_button_nor_key_does_anything() -> void:
 	var hint: Button = table.actions().hint
 	assert_bool(hint.is_visible_in_tree()).is_false()
 	var reading: String = table.actions().reading.text
-	await _key(Settings.bindings.key(KeyBindings.HINT))
+	await TestInput.tap_key(self, Settings.bindings.key(KeyBindings.HINT))
 	hint.pressed.emit()
 	await await_idle_frame()
 	assert_array(_app.hand.selected_ids()).is_empty()
