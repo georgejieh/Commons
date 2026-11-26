@@ -2,7 +2,7 @@ class_name ScrollFade
 extends Control
 ## A band of paper that fades in over a scroll's cut edge while more lies past that edge,
 ## so a sheet that scrolls shows that it does, and a row the edge cuts reads as "more",
-## not as broken (P5.2a). It lies over the scroll and takes no input, and each band goes
+## not as broken. It lies over the scroll and takes no input, and each band goes
 ## once the scroll reaches its end. It stands outside the scroll's layout (top level) and
 ## follows the scroll's place on screen each frame.
 

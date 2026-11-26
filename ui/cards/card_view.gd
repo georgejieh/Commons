@@ -1,6 +1,6 @@
 class_name CardView
 extends Control
-## One card composed from layers (P3C.5): frame, rank glyph from the font, suit icon,
+## One card composed from layers: frame, rank glyph from the font, suit icon,
 ## a picture, enhancement overlay, seal, and the marks that outlast a round, both on the
 ## left edge a fan leaves showing: an enhancement's mark under the suit pip (CardMark: a
 ## Model card's rosette, a Sheaf, a Pennant or a Surplus coupon), a red chop at the foot

@@ -1,6 +1,6 @@
 class_name VillageHistoryScreen
 extends Control
-## Village history (P3B.9, ADR 0025): what each Quota of the run in progress left
+## Village history (ADR 0025): what each Quota of the run in progress left
 ## behind, one plain line per family it touched, then the family's past generations from
 ## the profile, newest first, one line each on a sheet of aged paper. The whole page sits
 ## on one paper sheet across the page, as the collection does, in dark ink with no halo

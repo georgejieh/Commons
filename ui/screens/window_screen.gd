@@ -10,9 +10,6 @@ var _back: Button = null
 
 func open(app: DemoApp) -> void:
 	_app = app
-	for child: Node in get_children():
-		remove_child(child)
-		child.queue_free()
 	var column: VBoxContainer = ScreenKit.page(self)
 	column.add_child(ScreenKit.header(tr("settings.eyebrow"), tr("settings.window")))
 	var sheet: Control = WindowSheet.build()
@@ -27,7 +24,7 @@ func open(app: DemoApp) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _back != null and is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
+	if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_leave()
 

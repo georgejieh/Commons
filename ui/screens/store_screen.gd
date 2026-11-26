@@ -2,7 +2,7 @@
 # Over 400 lines: the arrival's gate on each way to buy or leave (ADR 0026).
 class_name StoreScreen
 extends Control
-## A shop between Sets (P4.10): Cadres on the counter, bought with coupons, a reroll,
+## A shop between Sets: Cadres on the counter, bought with coupons, a reroll,
 ## and what you already hold, pinned on a board. The same screen is the state store and,
 ## with market set, the black market behind it: the room goes dark, prices are higher,
 ## the plot can be enlarged, and every purchase adds Resentment, which the screen
@@ -393,7 +393,7 @@ func _on_spent() -> void:
 
 
 ## Something held was sold back: the coupons count up, and the freed place swells.
-func _on_sold(_index: int, campaign: bool) -> void:
+func _on_sold(campaign: bool) -> void:
 	_on_spent()
 	_refresh()
 	if not campaign:

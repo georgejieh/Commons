@@ -1,6 +1,6 @@
 class_name StoreCard
 extends RefCounted
-## One Cadre on a shop's counter (P4.10): a card of stock showing the Cadre's art, or the
+## One Cadre on a shop's counter: a card of stock showing the Cadre's art, or the
 ## printed empty frame it will sit in while it has none, then its name and its full rules
 ## with every value filled in, then its Buy button; or a sold place. Each keyword in the
 ## rules explains itself on hover, and the screen's DetailSlip shows the rules again while

@@ -23,25 +23,15 @@ const GAP: int = 20
 const ROW_GAP: int = 10
 ## Inside the heading paper's printed border, which ends 17 px in.
 const HEADING_PADDING: int = 22
-## The envelope's size once it reaches the middle.
-const FIGURE: Vector2 = Vector2(540, 340)
-## Seconds: the envelope's arrival, its opening beat, each paper's slide and the gap
-## between papers, the kept paper's lift, the seal's hold, the others' fall and the close.
-const ARRIVE_TIME: float = 0.3
-const OPEN_TIME: float = 0.5
-const FAN_TIME: float = 0.32
-const FAN_STAGGER: float = 0.07
+## Seconds: the kept paper's lift, the seal's hold, the gap between one Rate's tick and
+## the next, and the overlay's fade as it closes.
 const KEEP_TIME: float = 0.2
 const SEAL_HOLD: float = 0.9
-const FALL_TIME: float = 0.38
-const CLOSE_TIME: float = 0.22
 const TICK_STAGGER: float = 0.12
-## A paper leaves the envelope at this scale and settles at full size.
-const FAN_FROM: float = 0.35
+const CLOSE_TIME: float = 0.22
+## How far the kept paper rises and how much it grows.
 const KEEP_RISE: float = 26.0
 const KEEP_SCALE: float = 1.06
-const FALL: float = 340.0
-const FALL_TURN: float = 0.3
 ## The seal's width as a share of the kept item's, and how much of it overhangs the
 ## item's right edge; it sits on the item's foot, above the caption under it.
 const SEAL_SHARE: float = 0.62
@@ -62,17 +52,17 @@ var _detail: EnvelopeDetail = EnvelopeDetail.new()
 var _nothing: Button = ScreenKit.button("", CommonsTheme.GHOST)
 ## True once a cancel has asked for a second, which Take Nothing's words say.
 var _confirming: bool = false
-var _pointed_title: String = String()
+var _pointed_title: String = ""
 ## The instruction under the envelope's name, and the one reason none of its papers can
 ## be kept when they all share it, said there once.
 var _ask: Label = ScreenKit.label("", ASK_SIZE)
-var _refused: String = String()
+var _refused: String = ""
 var _seal: InkSeal = InkSeal.new()
 var _opening: EnvelopeOpening = EnvelopeOpening.new()
 var _busy: bool = true
 var _blocks: Dictionary[String, Control] = {}
-## Keeps a card for the deck, or null where the page has no deck sheet.
-var _exchange: EnvelopeExchange = null
+## Keeps a card for the deck through the page's deck sheet.
+var _exchange: EnvelopeExchange
 
 
 func _init() -> void:
@@ -82,10 +72,15 @@ func _init() -> void:
 
 
 ## Opens shelf's envelope over the page, from where its offer stood. Without animate, or
-## under reduced motion, the papers are laid out at once, as after a load.
-func open(controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate: bool) -> void:
+## under reduced motion, the papers are laid out at once, as after a load. A card for the
+## deck is kept through sheet, which stands over the envelope.
+func open(
+	controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate: bool, sheet: DeckSheet
+) -> void:
 	_controller = controller
 	_shelf = shelf
+	var refocus: Callable = func(index: int) -> void: _papers[index].keep.grab_focus()
+	_exchange = EnvelopeExchange.new(sheet, _act_out, refocus)
 	add_child(_dim)
 	var center: CenterContainer = CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -120,16 +115,9 @@ func open(controller: RunController, shelf: EnvelopeShelf, from: Rect2, animate:
 	add_child(_seal)
 	_wire_focus()
 	if animate and not UiMotion.reduced():
-		_busy = true
 		_opening.play(self, _dim, _figure, _column, _papers, from, _settle)
 	else:
 		_settle()
-
-
-## Keeps cards for the deck through sheet, which stands over the envelope.
-func use_deck_sheet(sheet: DeckSheet) -> void:
-	var refocus: Callable = func(index: int) -> void: _papers[index].keep.grab_focus()
-	_exchange = EnvelopeExchange.new(sheet, _act_out, refocus)
 
 
 ## The papers in order, for tests and playtests.
@@ -294,7 +282,7 @@ func _input(event: InputEvent) -> void:
 			_opening.stop()
 			_settle()
 		return
-	if not event.is_action_pressed("ui_cancel") or (_exchange != null and _exchange.is_open()):
+	if not event.is_action_pressed("ui_cancel") or _exchange.is_open():
 		return
 	get_viewport().set_input_as_handled()
 	if _busy:
@@ -314,9 +302,9 @@ func _ask_confirm(on: bool) -> void:
 ## Keeps the paper: the pick is sent now, or once the deck sheet has named the card a deck
 ## card replaces, then acted out.
 func _keep(index: int) -> void:
-	if _busy or not _papers[index].is_takeable() or (_exchange != null and _exchange.is_open()):
+	if _busy or not _papers[index].is_takeable() or _exchange.is_open():
 		return
-	if _exchange != null and _shelf.is_deck_card(index):
+	if _shelf.is_deck_card(index):
 		_exchange.ask(_controller, _shelf, index)
 		return
 	var directive: bool = _shelf.kind(index) == EnvelopeShelf.KIND_DIRECTIVE
@@ -389,7 +377,7 @@ func _take_nothing() -> void:
 	_busy = true
 	EnvelopeOpening.fall(_papers)
 	var tween: Tween = create_tween()
-	tween.tween_interval(FALL_TIME + FAN_STAGGER * _papers.size())
+	tween.tween_interval(EnvelopeOpening.FALL_TIME + EnvelopeOpening.FAN_STAGGER * _papers.size())
 	tween.tween_property(self, "modulate:a", 0.0, CLOSE_TIME)
 	tween.tween_callback(_finish)
 

@@ -1,6 +1,6 @@
 class_name ReeducationScreen
 extends Control
-## Reeducation (P4.1): served in place of the store after mid Denunciation. The plot is
+## Reeducation: served in place of the store after mid Denunciation. The plot is
 ## already emptied and a Cadre exchanged by the time this opens; it only reports that.
 
 

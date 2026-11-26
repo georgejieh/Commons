@@ -1,7 +1,7 @@
 class_name CardPool
 extends Node
 ## Every card view the table uses, made once when the table loads and reused after, so
-## no card is instanced during a round (P3B.3).
+## no card is instanced during a round.
 
 ## A full hand, plus a large play in every seat's lane, still fits.
 const SIZE: int = 80
@@ -32,11 +32,6 @@ func release(view: CardView) -> void:
 	view.bind(null)
 	if not _free.has(view):
 		_free.append(view)
-
-
-func release_all() -> void:
-	for view: CardView in _all:
-		release(view)
 
 
 func free_count() -> int:

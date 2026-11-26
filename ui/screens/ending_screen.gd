@@ -16,7 +16,7 @@ const FRAME_HEIGHT: float = 308.0
 const PICTURE_HEIGHT: float = 288.0
 const PICTURE_INSET: float = 10.0
 ## Where the story is taller than its column, the title card gives up height first, down
-## to this, so the text stands whole before anything scrolls (P5.2a).
+## to this, so the text stands whole before anything scrolls.
 const FRAME_LEAST: float = 150.0
 ## The title's largest and smallest size: it shrinks to fit its card on one line.
 const TITLE_MAX: int = 84

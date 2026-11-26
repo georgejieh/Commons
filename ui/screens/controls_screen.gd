@@ -7,9 +7,6 @@ var _page: ControlsPage = null
 
 
 func open(app: DemoApp) -> void:
-	for child: Node in get_children():
-		remove_child(child)
-		child.queue_free()
 	var column: VBoxContainer = ScreenKit.page(self)
 	column.add_child(ScreenKit.header(tr("controls.eyebrow"), tr("controls.title")))
 	_page = ControlsPage.new()

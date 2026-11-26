@@ -1,6 +1,6 @@
 class_name RoundSummaryScreen
 extends Control
-## The last finished round (P3B.9): which side won, your score, your Commons share and
+## The last finished round: which side won, your score, your Commons share and
 ## where the Quota stands. Opened from the table's menu; Back returns to the table.
 
 

@@ -152,15 +152,6 @@ func _stand_tall() -> void:
 		size.y = tall
 
 
-## How far down the head and the leaflets reach at rest, Use and Cancel left out.
-func resting_height() -> float:
-	var top: float = _head_height()
-	var foot: float = top + _tallest_leaf()
-	if _heading:
-		foot = maxf(foot, _head.get_combined_minimum_size().y)
-	return foot
-
-
 ## How many leaflet places the tray has.
 func campaign_count() -> int:
 	return _leaflets.size()

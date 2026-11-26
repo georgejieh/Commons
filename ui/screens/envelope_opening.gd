@@ -4,8 +4,23 @@ extends RefCounted
 ## one beat, and its papers slide out into their row. An envelope is opened many times a
 ## run and the papers are what the player came for, so a click or an accept ends the act
 ## at once; EnvelopeOverlay then lays everything out at rest. The papers not kept fall
-## away at the end (fall()). Its times are the overlay's.
+## away at the end (fall()).
 
+## The envelope's size once it reaches the middle.
+const FIGURE: Vector2 = Vector2(540, 340)
+## Seconds: the envelope's arrival, its opening beat, each paper's slide, the gap between
+## one paper and the next, the envelope's fade once its papers are out, and a paper's fall.
+const ARRIVE_TIME: float = 0.3
+const OPEN_TIME: float = 0.5
+const FAN_TIME: float = 0.32
+const FAN_STAGGER: float = 0.07
+const FIGURE_FADE: float = 0.22
+const FALL_TIME: float = 0.38
+## A paper leaves the envelope at this scale and settles at full size.
+const FAN_FROM: float = 0.35
+## How far a paper not kept falls, and how far it turns as it goes, in radians.
+const FALL: float = 340.0
+const FALL_TURN: float = 0.3
 ## The envelope stands this far above the middle, over the row its papers will take.
 const RAISED: Vector2 = Vector2(0, -40)
 ## Each paper leaves the envelope turned this much more than the one before, in radians.
@@ -31,10 +46,10 @@ static func fall(falling: Array[ChoicePaper]) -> void:
 		paper.keep.disabled = true
 		var tween: Tween = paper.create_tween().set_parallel(true)
 		tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		var delay: float = index * EnvelopeOverlay.FAN_STAGGER
-		var turn: float = EnvelopeOverlay.FALL_TURN * (1.0 if index % 2 == 0 else -1.0)
-		var time: float = EnvelopeOverlay.FALL_TIME
-		tween.tween_property(paper, "position:y", EnvelopeOverlay.FALL, time).set_delay(delay)
+		var delay: float = index * FAN_STAGGER
+		var turn: float = FALL_TURN * (1.0 if index % 2 == 0 else -1.0)
+		var time: float = FALL_TIME
+		tween.tween_property(paper, "position:y", FALL, time).set_delay(delay)
 		tween.tween_property(paper, "rotation", turn, time).set_delay(delay)
 		tween.tween_property(paper, "modulate:a", 0.0, time).set_delay(delay)
 
@@ -56,22 +71,18 @@ func play(
 	figure.size = from.size
 	# The overlay covers the page, which may not have been laid out yet: aim by the screen.
 	var middle: Vector2 = overlay.get_viewport_rect().size / 2.0 - overlay.global_position
-	var target: Vector2 = middle - EnvelopeOverlay.FIGURE / 2.0 + RAISED
-	var fan: float = EnvelopeOverlay.FAN_TIME + EnvelopeOverlay.FAN_STAGGER * papers.size()
+	var target: Vector2 = middle - FIGURE / 2.0 + RAISED
+	var fan: float = FAN_TIME + FAN_STAGGER * papers.size()
 	var tween: Tween = overlay.create_tween()
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(dim, "modulate:a", 1.0, EnvelopeOverlay.ARRIVE_TIME)
-	tween.parallel().tween_property(figure, "position", target, EnvelopeOverlay.ARRIVE_TIME)
-	tween.parallel().tween_property(
-		figure, "size", EnvelopeOverlay.FIGURE, EnvelopeOverlay.ARRIVE_TIME
-	)
-	var open: PropertyTweener = tween.tween_property(
-		figure, "opened", 1.0, EnvelopeOverlay.OPEN_TIME
-	)
+	tween.tween_property(dim, "modulate:a", 1.0, ARRIVE_TIME)
+	tween.parallel().tween_property(figure, "position", target, ARRIVE_TIME)
+	tween.parallel().tween_property(figure, "size", FIGURE, ARRIVE_TIME)
+	var open: PropertyTweener = tween.tween_property(figure, "opened", 1.0, OPEN_TIME)
 	open.set_trans(Tween.TRANS_SINE)
 	tween.tween_callback(_fan.bind(figure, column, papers))
 	tween.tween_interval(fan)
-	tween.tween_property(figure, "modulate:a", 0.0, EnvelopeOverlay.CLOSE_TIME)
+	tween.tween_property(figure, "modulate:a", 0.0, FIGURE_FADE)
 	tween.tween_callback(_end.bind(done))
 	_tweens.append(tween)
 
@@ -93,18 +104,18 @@ func _fan(figure: EnvelopeFigure, column: Control, papers: Array[ChoicePaper]) -
 	Audio.fill(AudioEvents.MOTION_ENTER)
 	var mouth: Vector2 = figure.global_position + figure.size / 2.0
 	var heading: Tween = column.create_tween()
-	heading.tween_property(column, "modulate:a", 1.0, EnvelopeOverlay.FAN_TIME)
+	heading.tween_property(column, "modulate:a", 1.0, FAN_TIME)
 	_tweens.append(heading)
 	for index: int in papers.size():
 		var paper: ChoicePaper = papers[index]
 		var place: Control = paper.get_parent() as Control
 		paper.position = mouth - place.global_position - paper.size / 2.0
-		paper.scale = Vector2.ONE * EnvelopeOverlay.FAN_FROM
+		paper.scale = Vector2.ONE * FAN_FROM
 		paper.rotation = (index - (papers.size() - 1) / 2.0) * FAN_TURN
 		var tween: Tween = paper.create_tween().set_parallel(true)
 		tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		var delay: float = index * EnvelopeOverlay.FAN_STAGGER
-		var seconds: float = EnvelopeOverlay.FAN_TIME
+		var delay: float = index * FAN_STAGGER
+		var seconds: float = FAN_TIME
 		tween.tween_property(paper, "position", Vector2.ZERO, seconds).set_delay(delay)
 		tween.tween_property(paper, "scale", Vector2.ONE, seconds).set_delay(delay)
 		tween.tween_property(paper, "rotation", 0.0, seconds).set_delay(delay)

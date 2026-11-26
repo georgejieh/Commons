@@ -1,6 +1,6 @@
 class_name ContentNoteScreen
 extends Control
-## The content note shown once, before the title, on first launch (P3B.12): the themes
+## The content note shown once, before the title, on first launch: the themes
 ## the game shows and how to turn the horror down. Continue records that it was seen,
 ## then leads to the Arrival page on a first launch, or the title (ADR 0026).
 

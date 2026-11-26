@@ -1,21 +1,6 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://ui/cards/card_view.gd" id="1_card"]
-
-[sub_resource type="StyleBoxFlat" id="paper"]
-bg_color = Color(0.984, 0.965, 0.918, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.118, 0.102, 0.086, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_color = Color(0.36, 0.3, 0.2, 0.6)
-shadow_size = 3
-shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="edge"]
 draw_center = false
@@ -49,14 +34,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("paper")
 
 [node name="Picture" type="TextureRect" parent="Frame"]
 layout_mode = 0
-offset_left = 46.0
-offset_top = 56.0
-offset_right = 112.0
-offset_bottom = 160.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
@@ -79,7 +59,6 @@ offset_top = 6.0
 offset_right = 108.0
 offset_bottom = 58.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 40
 
 [node name="Suit" type="TextureRect" parent="Frame"]
 layout_mode = 0

@@ -1,6 +1,6 @@
 class_name SheetPad
 extends RefCounted
-## One padding inside a dialog's sheet (P5.2a): what stands on a verdict, summary, notice
+## One padding inside a dialog's sheet: what stands on a verdict, summary, notice
 ## or menu sheet keeps the same clear room inside the sheet's printed inner rule as the
 ## page sheets keep, so no headline, line or tile touches the rule. The sheet keeps its
 ## card stock and border; only the room inside grows.

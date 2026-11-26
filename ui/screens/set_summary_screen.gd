@@ -136,7 +136,7 @@ func open(app: DemoApp) -> void:
 
 
 ## The seals overhang the bar above and below; the bar stands in a band as tall as the
-## wider seal, so the figures under it never cover a seal (P5.2a).
+## wider seal, so the figures under it never cover a seal.
 func _seal_room(bar: QuotaBar) -> MarginContainer:
 	var room: MarginContainer = MarginContainer.new()
 	var overhang: int = ceili((maxf(OVER_WIDTH, SEAL_WIDTH) - BAR.y) / 2.0)
@@ -146,7 +146,7 @@ func _seal_room(bar: QuotaBar) -> MarginContainer:
 	return room
 
 
-## How far the Quota was beaten, and what that did to the norm (P5.2a): a step or more
+## How far the Quota was beaten, and what that did to the norm: a step or more
 ## raises it, and the line says by how much and to what; beaten by less, it says the norm
 ## stayed. Nothing while the norm is dark or the Quota was missed or only just met.
 func _norm_line(controller: RunController, state: RunView) -> Label:

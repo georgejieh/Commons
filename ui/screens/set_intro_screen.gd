@@ -94,7 +94,7 @@ static func reforms_line(controller: RunController) -> Label:
 	return line
 
 
-## The boss's name and rule, so the twist is never hidden (P4.7).
+## The boss's name and rule, so the twist is never hidden.
 func _boss_line(controller: RunController) -> Label:
 	var name_text: String = tr("modifier.%s.name" % controller.items.boss())
 	var line: Label = ScreenKit.label(

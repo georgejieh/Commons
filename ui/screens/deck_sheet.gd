@@ -321,7 +321,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		close()
 		get_viewport().set_input_as_handled()
-	elif event is InputEventKey or event is InputEventJoypadButton:
-		get_viewport().set_input_as_handled()
-	elif event is InputEventJoypadMotion:
+	elif (
+		event is InputEventKey or event is InputEventJoypadButton or event is InputEventJoypadMotion
+	):
 		get_viewport().set_input_as_handled()

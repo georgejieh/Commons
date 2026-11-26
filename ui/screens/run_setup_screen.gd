@@ -23,7 +23,7 @@ const LINE_SIZE: int = 22
 ## as the room left under the rules.
 const PAPERS_SHARE: float = 6.0
 ## The gap between the page's rows at each text size: closer at the larger sizes, so the
-## stake row stands whole on the page at every size (P5.2a).
+## stake row stands whole on the page at every size.
 const ROW_GAPS: Array[int] = [20, 14, 10]
 ## The least width the rules beside the stake heading take, so they wrap as lines and
 ## not as a column of words.

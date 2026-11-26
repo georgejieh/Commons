@@ -1,6 +1,6 @@
 class_name DossierScreen
 extends Control
-## What you have seen each villager at the table do this run (P3B.8): bids and calls,
+## What you have seen each villager at the table do this run: bids and calls,
 ## bombs, passes, plays over a teammate, first-out finishes and rounds as landlord, and,
 ## once seen, claims a trait shift made larger (ADR 0043). It reads the run's observations
 ## and never names a personality.

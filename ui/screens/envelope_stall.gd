@@ -124,8 +124,7 @@ func _open(shelf: EnvelopeShelf, from: Rect2, animate: bool) -> void:
 	_overlay = EnvelopeOverlay.new()
 	_host.add_child(_overlay)
 	_overlay.closed.connect(_on_closed)
-	_overlay.use_deck_sheet(_deck)
-	_overlay.open(_app.controller, shelf, from, animate)
+	_overlay.open(_app.controller, shelf, from, animate, _deck)
 
 
 func _on_closed() -> void:

@@ -1,6 +1,6 @@
 class_name MarketGoods
 extends RefCounted
-## What only the black market sells besides Cadres and Campaigns (P4.8, P4.10): cards for
+## What only the black market sells besides Cadres and Campaigns: cards for
 ## the private plot, on a paper sheet beside the Cadres with how full the plot is, and
 ## the plot upgrades as tickets in the button row. Every purchase is private, so it goes
 ## through the screen's buy, with the action's name and slot for the arrival's gate, which

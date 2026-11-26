@@ -55,8 +55,7 @@ func open(app: DemoApp) -> void:
 			Settings.save()
 			app.back()
 	)
-	# The pages' tickets stand here with Back, where they are always whole: at the sheet's
-	# foot they were cut in half by the fold.
+	# The pages' tickets stand here with Back, where they are always whole.
 	var row: Array[Control] = [back]
 	row.append_array(SettingsPanel.pages(_open.bind("controls"), _open.bind("window")))
 	column.add_child(ScreenKit.row(row))
