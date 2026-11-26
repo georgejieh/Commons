@@ -344,3 +344,46 @@ func _clips(root: Node, where: String) -> void:
 	var problems: PackedStringArray = []
 	ClipCheck.check(root, "%s at text size %d" % [where, TextSize.level()], problems)
 	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()
+
+
+## Each shop at its worst (ADR 0034): every other shelf at its fullest, and the counter
+## holding the three Cadres of that shop's own pool with the longest rules, then the three
+## with the longest names, found from the data. At both screens and every text size the
+## page fits, no two blocks overlap and no text is clipped.
+func test_both_shops_fit_their_longest_cadres() -> void:
+	_fill()
+	for market: bool in [false, true]:
+		var pool: CadrePool = RunPools.MARKET_CADRES if market else RunPools.STORE_CADRES
+		for measure: Callable in [_rule_length, _name_length]:
+			var counter: Array[String] = _longest(pool, measure)
+			var shop: RunShop = _loop().visit.market if market else _loop().visit.shop
+			shop.set("_stock", counter)
+			var screen_id: String = "black_market" if market else "store"
+			for level: int in TextSize.count():
+				Settings.set_value(TextSize.SETTING, level)
+				for screen_size: Vector2i in SIZES:
+					get_tree().root.size = screen_size
+					var store: StoreScreen = _app.show_screen(screen_id, true)
+					await await_idle_frame()
+					await await_idle_frame()
+					var label: String = "%s %s %s" % [screen_id, counter, screen_size]
+					_check_inside(store, label)
+					_check_blocks(store, label)
+					_clips(store, label)
+
+
+## The three Cadres of pool that measure longest.
+func _longest(pool: CadrePool, measure: Callable) -> Array[String]:
+	var ids: Array[String] = []
+	for cadre: ModifierDef in pool.cadres:
+		ids.append(cadre.id)
+	ids.sort_custom(func(a: String, b: String) -> bool: return measure.call(a) > measure.call(b))
+	return ids.slice(0, 3)
+
+
+func _rule_length(cadre_id: String) -> int:
+	return ScreenKit.rule_text(_app.controller, cadre_id).length()
+
+
+func _name_length(cadre_id: String) -> int:
+	return _app.controller.texts.modifier_name(cadre_id).length()
