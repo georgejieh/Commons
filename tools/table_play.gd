@@ -39,7 +39,7 @@ func warm_up(tree: SceneTree) -> void:
 ## is called after each frame is timed. With act false the table is left to itself.
 func play_set(tree: SceneTree, seconds: float, on_frame: Callable, act: bool) -> void:
 	var controller: Node = app.get("controller")
-	var script: GDScript = load("res://tests/unit/controller_script.gd")
+	var script: GDScript = load("res://tests/support/controller_script.gd")
 	var driver: Object = script.new()
 	var started: int = Time.get_ticks_msec()
 	var last: int = Time.get_ticks_usec()

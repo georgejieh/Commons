@@ -73,7 +73,7 @@ func run(folder: String, rounds: int) -> void:
 	app = (load("res://ui/main.tscn") as PackedScene).instantiate()
 	app.set("demo", true)
 	tree.root.add_child(app)
-	var script: GDScript = load("res://tests/unit/controller_script.gd")
+	var script: GDScript = load("res://tests/support/controller_script.gd")
 	_driver = script.new()
 	await _frames(20)
 	await _first_launch()
