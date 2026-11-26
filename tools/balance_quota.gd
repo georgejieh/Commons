@@ -35,7 +35,7 @@ var resentment: int = 0
 ## The row for the Quota state has just ended, against the target it was played for.
 static func of(state: RunState, quota_target: float) -> BalanceQuota:
 	var row: BalanceQuota = BalanceQuota.new()
-	row.index = (state.year - 1) * SetConfig.SETS_PER_YEAR + state.set_index + 1
+	row.index = state.set_number() + 1
 	row.year = state.year
 	row.kind = KINDS[state.set_type]
 	row.target = quota_target

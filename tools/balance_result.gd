@@ -69,7 +69,7 @@ func finish(state: RunState) -> void:
 	outcome = Endings.outcome(state, RunDefaults.METERS)
 	survived = not Endings.is_death(outcome)
 	year = state.year
-	quota = (state.year - 1) * SetConfig.SETS_PER_YEAR + state.set_index + 1
+	quota = state.set_number() + 1
 	landlord_class = YearClass.is_landlord(state)
 	coupons = state.coupons
 	famine = state.famine
