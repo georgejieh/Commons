@@ -1,6 +1,7 @@
 class_name PerfSaves
 extends RefCounted
-## The save rows of the budget, and the memory of a loaded run. It plays a real full run
+## The save rows of the budget, the reads one table event makes of a late run, and the
+## memory of a loaded run. It plays a real full run
 ## through RunController for a few Sets, as a player would (the first Cadre it can afford
 ## at each store), with the run's autosaves going to the tool's folder in the sandbox,
 ## then measures the largest save the run wrote, and the time to write and to read it
@@ -11,6 +12,8 @@ extends RefCounted
 ## A run that is still going after this many player turns is cut off.
 const MAX_TURNS: int = 200000
 const MSEC: float = 1000.0
+## Table events whose reads are timed, on the largest save resumed.
+const EVENTS_TIMED: int = 2000
 
 var _sets_wanted: int
 var _reps: int
@@ -51,11 +54,13 @@ func rows() -> Array[PerfRow]:
 	var saves: PackedFloat64Array = _time_saves(service, loaded)
 	var reads: PackedFloat64Array = _time_reads(service)
 	var resumes: PackedFloat64Array = _time_resumes(service)
+	var event_reads: PackedFloat64Array = _time_event_reads(service)
 	_clear()
 	rows_made.append(_size_row())
 	rows_made.append(_time_row("Save time", saves, "write, read back and check, rename"))
 	rows_made.append(_time_row("Load time", reads, "read, parse, migrate and check the file"))
 	rows_made.append(_resume_row(resumes))
+	rows_made.append(_reads_row(event_reads))
 	rows_made.append_array(_memory_rows())
 	return rows_made
 
@@ -152,6 +157,31 @@ func _time_resumes(service: SaveService) -> PackedFloat64Array:
 	return msec
 
 
+## What one table event costs the screens in reads of the run, on the largest save
+## resumed: the reads an event that redraws the table's status, its small ledger and the
+## room's dread makes of the run (TableScreen's _refresh_status and DreadLayers.refresh).
+func _time_event_reads(service: SaveService) -> PackedFloat64Array:
+	var usec: PackedFloat64Array = PackedFloat64Array()
+	var controller: RunController = RunController.new()
+	controller.live_search = false
+	if controller.continue_saved(service):
+		for _event: int in EVENTS_TIMED:
+			var started: int = Time.get_ticks_usec()
+			_event_reads(controller)
+			usec.append(Time.get_ticks_usec() - started)
+	controller.free()
+	return usec
+
+
+## The run as the table reads it for one such event: the status and ledger take one copy
+## of the whole state, the dread another, and both read the target.
+static func _event_reads(controller: RunController) -> void:
+	for _reader: int in 2:
+		var state: RunState = controller.state_copy()
+		state.books.is_dark(RunCorrections.FAMINE)
+	controller.figures.target()
+
+
 func _size_row() -> PerfRow:
 	var kib: float = _largest_bytes / 1024.0
 	return PerfRow.judged(
@@ -226,6 +256,25 @@ func _resume_row(msec: PackedFloat64Array) -> PerfRow:
 		PerfRow.Verdict.INFO,
 		"%d repetitions of the largest save" % sorted.size(),
 		"Continue: the load, then the run replayed to where it was; grows with the run"
+	)
+
+
+func _reads_row(usec: PackedFloat64Array) -> PerfRow:
+	if usec.is_empty():
+		return PerfRow.unmeasured(
+			"Run reads per table event", "none", "the largest save did not resume"
+		)
+	var sorted: PackedFloat64Array = ToolStats.sorted_of(usec)
+	return PerfRow.new(
+		"Run reads per table event",
+		"none",
+		(
+			"median %.1f us, p99 %.1f us"
+			% [ToolStats.nearest_rank(sorted, 50), ToolStats.nearest_rank(sorted, 99)]
+		),
+		PerfRow.Verdict.INFO,
+		"%d events on the largest save, resumed" % sorted.size(),
+		"what the table's status, small ledger and dread read of the run for one event"
 	)
 
 
