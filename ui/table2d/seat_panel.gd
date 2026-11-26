@@ -66,6 +66,19 @@ func _init() -> void:
 	_stack.add_child(_row)
 	_info.add_theme_constant_override("separation", 2)
 	_info.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_build_portrait()
+	_build_lines()
+	_row.add_child(_portrait)
+	_build_count()
+	for child: Control in [_name, _count_row, _role]:
+		_info.add_child(child)
+	_row.add_child(_info)
+	_stack.add_child(_intel)
+	_stack.add_child(_speech)
+
+
+## The portrait on its mount, with the landlord's tag across its top.
+func _build_portrait() -> void:
 	_banner.text = tr("table.landlord").to_upper()
 	_banner.theme_type_variation = CommonsTheme.EYEBROW
 	_banner.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
@@ -88,6 +101,10 @@ func _init() -> void:
 	)
 	_portrait.add_child(_picture)
 	_portrait.add_child(_banner)
+
+
+## The name, the role and the speech line beside the portrait.
+func _build_lines() -> void:
 	_name.theme_type_variation = CommonsTheme.TITLE
 	_name.add_theme_font_size_override("font_size", TextSize.px(36))
 	_count.add_theme_font_size_override("font_size", TextSize.px(COUNT_SIZE))
@@ -103,7 +120,10 @@ func _init() -> void:
 	_speech.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	_speech.mouse_filter = Control.MOUSE_FILTER_STOP
 	_speech.gui_input.connect(_on_speech_input)
-	_row.add_child(_portrait)
+
+
+## The card back and count of the cards left, and the intel line under the row.
+func _build_count() -> void:
 	_back.texture = CardBacks.picture(CardBacks.current())
 	_back.custom_minimum_size = Vector2(30, 42)
 	_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -115,11 +135,6 @@ func _init() -> void:
 	_intel.add_theme_color_override("font_color", ScreenKit.SEAL)
 	_intel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_intel.visible = false
-	for child: Control in [_name, _count_row, _role]:
-		_info.add_child(child)
-	_row.add_child(_info)
-	_stack.add_child(_intel)
-	_stack.add_child(_speech)
 
 
 ## Entering the tree turns processing back on, and a panel that has said nothing is

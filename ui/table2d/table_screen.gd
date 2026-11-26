@@ -1,5 +1,7 @@
 # gdlint: disable=max-file-lines
-# Just over 400 lines: only the table's wiring; what it wires lives in classes beside it.
+# Over 400 lines: the one node that makes every piece of the table, wires each to the run
+# and the others, and hands each event to the pieces that show it; each piece's own work
+# lives in its class beside this one.
 class_name TableScreen
 extends Control
 ## The 2D table (ADR 0017), seen as a play area rather than a whole table: a wooden rail
@@ -82,6 +84,13 @@ var _counts: Dictionary[int, int] = {}
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	_lay_room()
+	_lay_papers()
+	_lay_over()
+
+
+## The rail, the table's surface and the room's dark, and the dread drawn over them.
+func _lay_room() -> void:
 	var rail: ColorRect = ColorRect.new()
 	rail.color = RAIL_EDGE
 	rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -95,6 +104,11 @@ func _ready() -> void:
 	_atmosphere.name = "Atmosphere"
 	add_child(_dressing)
 	add_child(_dread)
+
+
+## The bar, the ledger, the board, the hand, the line over it, the buttons, the rules slip
+## and the claim sheet, each where the table keeps it.
+func _lay_papers() -> void:
 	# The ledger sits inside its paper, so its margins come from the sheet.
 	var ledger_paper: PanelContainer = PanelContainer.new()
 	ledger_paper.theme_type_variation = CommonsTheme.SHEET
@@ -122,6 +136,11 @@ func _ready() -> void:
 	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
 	_need_panel.foot = HAND_AT.position.y - SHEET_GAP
 	_need_panel.head = _hud.size.y + SHEET_GAP
+
+
+## What lies over the play: the moments, the sheets and the menu, the trick and the pieces
+## placed around it.
+func _lay_over() -> void:
 	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
 	_pause.at_table = true
 	add_child(_swap_sheet)
@@ -144,6 +163,14 @@ func open(app: DemoApp) -> void:
 	_app = app
 	_controller = app.controller
 	_hand = app.hand
+	_wire_play(app)
+	_wire_moments(app)
+	_wire_menus(app)
+	_replay_set()
+
+
+## The event queue, the motion, the seats, the hand and the commands, wired to the run.
+func _wire_play(app: DemoApp) -> void:
 	_pool.fill(_pool_parent)
 	add_child(_player)
 	add_child(_motion)
@@ -175,6 +202,10 @@ func open(app: DemoApp) -> void:
 	_player.winding.connect(_on_winding)
 	_player.drained.connect(_on_drained)
 	_controller.event_emitted.connect(_player.push)
+
+
+## The ledger, the moments and the pieces that act the run's events out.
+func _wire_moments(app: DemoApp) -> void:
 	var names: Dictionary[int, String] = {
 		Seats.PLAYER: tr("ledger.you"),
 		Seats.RIGHT: app.seat_name(Seats.RIGHT),
@@ -202,6 +233,10 @@ func open(app: DemoApp) -> void:
 	_debuff_beats.setup(_controller, _cards, _hand_view, _pool, _player, _moments, _board)
 	_deal_beats.place(self, _moments)
 	_deal_beats.setup(_controller, _pile, _hand_view, _player)
+
+
+## The pace, the menu, the deck sheet, the keys and the dread.
+func _wire_menus(app: DemoApp) -> void:
 	_set_pace()
 	_hud.menu.pressed.connect(_open_pause)
 	_deck = TableDeck.attach(self, _pause, _controller, _player)
@@ -214,7 +249,10 @@ func open(app: DemoApp) -> void:
 	_input.tray = _campaigns.tray
 	_wild.setup(_hand_view, _pile, _debuffs, _moments, _player, _commands, _input)
 	_setup_dread(app)
-	# Joining mid-Set replays what already happened silently, without banners.
+
+
+## Joining mid-Set replays what already happened silently, without banners.
+func _replay_set() -> void:
 	_replaying = true
 	_still(true)
 	for event: RunEvent in _controller.set_events():

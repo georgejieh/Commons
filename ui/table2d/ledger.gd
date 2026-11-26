@@ -58,6 +58,20 @@ func _ready() -> void:
 	_commons_head.add_child(commons)
 	_commons_head.add_child(_pool)
 	add_child(_commons_head)
+	_add_rows()
+	add_child(_rule)
+	add_child(_plays_head)
+	_add_plays()
+	_foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_foot.visible = false
+	add_child(_foot)
+	add_child(books)
+	start_round(Seats.NONE)
+
+
+## One row per seat: who, and the seat's total for the round.
+func _add_rows() -> void:
 	_totals.resize(Seats.COUNT)
 	for seat: int in Seats.COUNT:
 		var row: HBoxContainer = HBoxContainer.new()
@@ -71,8 +85,10 @@ func _ready() -> void:
 		add_child(row)
 		_rows.append(row)
 		_amounts.append(amount)
-	add_child(_rule)
-	add_child(_plays_head)
+
+
+## The round's plays, newest last, in typewriter.
+func _add_plays() -> void:
 	_plays.bbcode_enabled = true
 	_plays.fit_content = true
 	_plays.scroll_active = false
@@ -83,12 +99,6 @@ func _ready() -> void:
 	_plays.add_theme_font_size_override("bold_font_size", TextSize.px(18))
 	_plays.add_theme_color_override("default_color", ScreenKit.INK)
 	add_child(_plays)
-	_foot.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_foot.visible = false
-	add_child(_foot)
-	add_child(books)
-	start_round(Seats.NONE)
 
 
 ## The small ledger's figures from a copy of the run, shown only at the stage past the
