@@ -6,14 +6,15 @@ extends GdUnitTestSuite
 ## and the ticket says the desk is done until the next visit.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_desk_ui/run.json"
 const CARD: int = 20
+
+static var _save_path: String = TestFolder.of("test_desk_ui") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

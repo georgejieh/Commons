@@ -4,8 +4,9 @@ extends GdUnitTestSuite
 ## announcement, and the dossier shows what was seen.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_villager_speech/run.json"
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
+
+static var _save_path: String = TestFolder.of("test_villager_speech") + "run.json"
 
 var _app: DemoApp
 var _announced: Dictionary[int, int] = {}
@@ -14,7 +15,7 @@ var _said_any: int = 0
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

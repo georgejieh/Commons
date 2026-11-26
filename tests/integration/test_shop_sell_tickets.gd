@@ -5,14 +5,15 @@ extends GdUnitTestSuite
 ## changed is taken back, so the second press never sells something else.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_shop_sell_tickets/run.json"
 const LOAN: String = "grain_loan"
+
+static var _save_path: String = TestFolder.of("test_shop_sell_tickets") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

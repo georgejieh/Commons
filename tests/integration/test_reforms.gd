@@ -269,7 +269,7 @@ func test_a_schema_7_save_migrates_and_bad_shapes_fail() -> void:
 	checkpoint.erase("reforms")
 	checkpoint.erase("deck_order")
 	assert_bool(RunRecordCheck.is_valid(data)).is_false()
-	var dir: String = "user://test_reforms/"
+	var dir: String = TestFolder.of("test_reforms")
 	DirAccess.make_dir_recursive_absolute(dir)
 	var service: SaveService = SaveService.for_run(dir + "run.json")
 	service.delete()

@@ -3,11 +3,12 @@ extends GdUnitTestSuite
 ## save that fails and for a load that fails or falls back to its backup, and none of
 ## them holding the family's name, a path outside the game's folder or anything typed.
 
-const FOLDER: String = "user://test_game_log"
-const SAVE_PATH: String = FOLDER + "/run.json"
 const SEED: int = 4417
 ## A family name as a player might type one.
 const FAMILY: String = "Zhaoqiandu"
+
+static var _folder: String = TestFolder.of("test_game_log")
+static var _save_path: String = _folder + "run.json"
 
 
 class Lines:
@@ -24,8 +25,8 @@ var _app: DemoApp
 
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(FOLDER)
-	Saves.use_run_path(SAVE_PATH)
+	DirAccess.make_dir_recursive_absolute(_folder)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 	_lines = Lines.new()
@@ -39,10 +40,10 @@ func after_test() -> void:
 	OS.remove_logger(_lines)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
-	for name: String in DirAccess.get_directories_at(FOLDER):
-		DirAccess.remove_absolute(FOLDER.path_join(name))
-	for name: String in DirAccess.get_files_at(FOLDER):
-		DirAccess.remove_absolute(FOLDER.path_join(name))
+	for name: String in DirAccess.get_directories_at(_folder):
+		DirAccess.remove_absolute(_folder.path_join(name))
+	for name: String in DirAccess.get_files_at(_folder):
+		DirAccess.remove_absolute(_folder.path_join(name))
 
 
 func _said(part: String) -> bool:
@@ -72,12 +73,12 @@ func test_a_run_logs_its_start_resume_and_end_with_its_seed() -> void:
 
 
 func test_a_save_that_fails_and_loads_that_fall_back_or_fail_are_logged() -> void:
-	var service: SaveService = SaveService.new(FOLDER.path_join("blocked.json"))
+	var service: SaveService = SaveService.new(_folder.path_join("blocked.json"))
 	# A folder where the temporary file would go: the write cannot open it.
 	DirAccess.make_dir_recursive_absolute(service.path() + SaveService.TEMP_SUFFIX)
 	assert_int(service.save({"a": 1})).is_not_equal(OK)
 	assert_bool(_said("save of blocked.json failed: ")).is_true()
-	var fallback: SaveService = SaveService.new(FOLDER.path_join("fallback.json"))
+	var fallback: SaveService = SaveService.new(_folder.path_join("fallback.json"))
 	fallback.save({"a": 1})
 	fallback.save({"a": 2})
 	var damaged: FileAccess = FileAccess.open(fallback.path(), FileAccess.WRITE)
@@ -103,10 +104,10 @@ func test_no_line_holds_anything_personal() -> void:
 	assert_bool(_app.new_run(SEED)).is_true()
 	_app.continue_run()
 	_app.leave_run()
-	var service: SaveService = SaveService.new(FOLDER.path_join("blocked.json"))
+	var service: SaveService = SaveService.new(_folder.path_join("blocked.json"))
 	DirAccess.make_dir_recursive_absolute(service.path() + SaveService.TEMP_SUFFIX)
 	service.save({})
-	GameLog.crash_kept("user://crashes/2026-11-24T21.07.45")
+	GameLog.crash_kept("user://crashes/2000-01-01T00.00.00")
 	assert_int(_lines.said.size()).is_greater_equal(5)
 	var user_folder: String = OS.get_user_data_dir()
 	var account: String = OS.get_environment("USERNAME" if OS.has_feature("windows") else "USER")

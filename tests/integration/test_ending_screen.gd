@@ -6,7 +6,6 @@ extends GdUnitTestSuite
 ## motion shows them at once; the note is only where it belongs; a death has no
 ## epilogue; and a run's real end reaches it, while the demo keeps its own closing.
 
-const SAVE_PATH: String = "user://test_ending_screen/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.5
 const READABLE: int = 16
@@ -23,6 +22,8 @@ const CASES: Dictionary[String, Array] = {
 	"death_denunciation": [40, 100, 1],
 }
 
+static var _save_path: String = TestFolder.of("test_ending_screen") + "run.json"
+
 var _app: DemoApp
 var _was_size: Vector2i
 var _was_reduced: bool
@@ -31,7 +32,7 @@ var _was_reduced: bool
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	_was_reduced = bool(Settings.value("reduced_motion"))
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

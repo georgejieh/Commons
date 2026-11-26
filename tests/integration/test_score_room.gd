@@ -7,11 +7,12 @@ extends GdUnitTestSuite
 ## buried under them. Fitted to its room, its type is never smaller than at Standard.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_score_room/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## The Quota target the play is measured against: small, so the play lands at its hardest.
 const SMALL_TARGET: float = 50.0
 const MOST_FRAMES: int = 600
+
+static var _save_path: String = TestFolder.of("test_score_room") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -19,7 +20,7 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 
 

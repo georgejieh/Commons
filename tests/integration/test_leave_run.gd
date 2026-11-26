@@ -4,13 +4,14 @@ extends GdUnitTestSuite
 ## save stays cleared. The cloud walk caught the save written back after Abandon.
 
 const SEED: int = 11
-const SAVE_PATH: String = "user://test_leave_run/run.json"
+
+static var _save_path: String = TestFolder.of("test_leave_run") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

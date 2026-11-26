@@ -4,10 +4,11 @@ extends GdUnitTestSuite
 ## only when the player says so, else put back, on the sheet too, and saved. A test, like
 ## any run under a script, never touches the window.
 
-const SAVE_PATH: String = "user://test_display_window/run.json"
 const KEYS: Array[String] = [DisplayWindow.MODE, DisplayWindow.SIZE, DisplayWindow.VSYNC]
 const BORDERLESS: int = 1
 const EXCLUSIVE: int = 2
+
+static var _save_path: String = TestFolder.of("test_display_window") + "run.json"
 
 ## Each call the display made to the window, as [mode, size, vsync].
 var _calls: Array[Array] = []
@@ -42,7 +43,7 @@ func _timer(display: DisplayWindow) -> Timer:
 
 
 func _app() -> DemoApp:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	var app: DemoApp = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
 	add_child(app)
 	return app

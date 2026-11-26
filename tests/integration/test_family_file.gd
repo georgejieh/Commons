@@ -4,10 +4,11 @@ extends GdUnitTestSuite
 ## later full run's targets ten percent an entry up to double, and is strictly checked.
 ## A profile from before the file migrates with an empty one.
 
-const DIR: String = "user://test_family_file/"
 const BOOKS: BooksParams = preload("res://data/run/books.tres")
 
-var _kit: FileWatchKit = FileWatchKit.new(DIR)
+static var _dir: String = TestFolder.of("test_family_file")
+
+var _kit: FileWatchKit = FileWatchKit.new(_dir)
 
 
 func before_test() -> void:

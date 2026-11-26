@@ -4,16 +4,17 @@ extends GdUnitTestSuite
 ## already open, with the beat before a villager's play scaled to match.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_table_pace/run.json"
 const SLOW: int = 0
 const STANDARD: int = 1
 const FAST: int = 2
+
+static var _save_path: String = TestFolder.of("test_table_pace") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Settings.set_value("table_pace", STANDARD)
 	var scene: PackedScene = load("res://ui/main.tscn")

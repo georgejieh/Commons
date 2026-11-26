@@ -3,12 +3,13 @@ extends GdUnitTestSuite
 ## content, or one whose commands no longer apply, resumes at its checkpoint (ADR 0033).
 
 const SEED: int = 3701
-const PATH: String = "user://test_content_stamp/run.json"
 const OTHER: String = "0.0.0:another build"
+
+static var _path: String = TestFolder.of("test_content_stamp") + "run.json"
 
 
 func _service() -> SaveService:
-	var service: SaveService = SaveService.for_run(PATH)
+	var service: SaveService = SaveService.for_run(_path)
 	service.delete()
 	return service
 

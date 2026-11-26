@@ -5,18 +5,19 @@ extends GdUnitTestSuite
 ## setback, or the death, still comes.
 
 const SEED: int = 7213
-const SAVE_PATH: String = "user://test_dark_figures/run.json"
 ## Values no other number on these screens shares.
 const FAMINE: int = 83
 const DENUNCIATION: int = 79
 const RESENTMENT: int = 71
 const FAMINE_LAYER: int = 0
 
+static var _save_path: String = TestFolder.of("test_dark_figures") + "run.json"
+
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

@@ -6,7 +6,6 @@ extends GdUnitTestSuite
 ## the focus is never lost; and no set of bindings can lock the page in or out.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_controls_page/run.json"
 ## Bindings on the keys the menus use, as hostile as the rules allow.
 const HOSTILE: Dictionary[String, Key] = {
 	"commons_play": KEY_ENTER,
@@ -20,11 +19,13 @@ const HOSTILE: Dictionary[String, Key] = {
 	"commons_campaign": KEY_BACKSPACE,
 }
 
+static var _save_path: String = TestFolder.of("test_controls_page") + "run.json"
+
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

@@ -18,7 +18,6 @@ extends GdUnitTestSuite
 ## rest in their own suites.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_table_worst_case/run.json"
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.5
 ## Pairs that may overlap by design, by name, and why. None: ADR 0034's rules 6 to 9 make
@@ -64,7 +63,7 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(TestFolder.of("test_table_worst_case") + "run.json")
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

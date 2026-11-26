@@ -4,7 +4,6 @@ extends GdUnitTestSuite
 ## Set to its summary through the same buttons a player presses.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_demo_ui/run.json"
 const SCREENS: Array[String] = [
 	"title",
 	"set_intro",
@@ -24,11 +23,13 @@ const SCREENS: Array[String] = [
 	"village_history",
 ]
 
+static var _save_path: String = TestFolder.of("test_demo_ui") + "run.json"
+
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

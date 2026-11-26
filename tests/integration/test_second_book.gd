@@ -7,9 +7,9 @@ extends GdUnitTestSuite
 ## migrated and played on, a full Year continued at every stopping point, and whole
 ## seeded runs.
 
-const DIR: String = "user://test_second_book/"
+static var _dir: String = TestFolder.of("test_second_book")
 
-var _kit: FileWatchKit = FileWatchKit.new(DIR)
+var _kit: FileWatchKit = FileWatchKit.new(_dir)
 
 
 func before_test() -> void:

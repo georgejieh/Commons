@@ -3,14 +3,15 @@ extends GdUnitTestSuite
 ## subject comes up in a full run, and never in the demo or the arrival. Dismissing one
 ## writes it to the profile's seen list, so it stays dismissed across runs and restarts.
 
-const SAVE_PATH: String = "user://test_one_time_tips/run.json"
 const SEED: int = 4242
+
+static var _save_path: String = TestFolder.of("test_one_time_tips") + "run.json"
 
 var _app: DemoApp = null
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 	ProfileSeen.mark(Saves.profile_service(), ProfileSeen.TUTORIAL)

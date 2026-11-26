@@ -5,9 +5,10 @@ extends GdUnitTestSuite
 ## wild card with the rank it stands for.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_play_order/run.json"
 ## Any mark that makes a card not plain.
 const ENHANCEMENT: String = "gilded"
+
+static var _save_path: String = TestFolder.of("test_play_order") + "run.json"
 
 
 ## The cause: a villager takes plain cards before marked ones, and a plot card's number
@@ -68,7 +69,7 @@ func test_a_changed_rank_order_keeps_the_run_in_sequence() -> void:
 
 ## The trick itself lays the cards in that order, wherever they fly from.
 func test_the_pile_lays_a_play_as_it_reads() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	var app: DemoApp = auto_free(scene.instantiate())

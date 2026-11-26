@@ -4,13 +4,14 @@ extends GdUnitTestSuite
 ## Cadres of both shops first, that scroll with focus.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_cadre_ui/run.json"
+
+static var _save_path: String = TestFolder.of("test_cadre_ui") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

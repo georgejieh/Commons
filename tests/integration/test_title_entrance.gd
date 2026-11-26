@@ -4,11 +4,12 @@ extends GdUnitTestSuite
 ## second and a half and every button live from the first frame. Under reduced motion it
 ## stands printed at once. The name is never clean and sits worse at each stage.
 
-const SAVE_PATH: String = "user://test_title_entrance/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## The page is whole by this, the motion rule's "about a second and a half".
 const WHOLE_BY: float = 1.6
 const SLACK_MSEC: int = 300
+
+static var _save_path: String = TestFolder.of("test_title_entrance") + "run.json"
 
 var _app: DemoApp
 var _was_motion: bool
@@ -19,7 +20,7 @@ func before_test() -> void:
 	_was_size = get_tree().root.size
 	_was_motion = bool(Settings.value("reduced_motion"))
 	Settings.set_value("reduced_motion", false)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")

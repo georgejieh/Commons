@@ -7,12 +7,13 @@ extends GdUnitTestSuite
 ## rank note and the selection edge.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_directive_store_ui/run.json"
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 ## Seconds an issue may take to act out before the test gives up on it.
 const ISSUE_SECONDS: float = 4.0
 ## How far inside the card's edge a mark stays, past the selection edge's width.
 const EDGE_INSET: float = 6.0
+
+static var _save_path: String = TestFolder.of("test_directive_store_ui") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -22,7 +23,7 @@ func before_test() -> void:
 	# The layout is measured at the size the store is drawn for.
 	_was_size = get_tree().root.size
 	get_tree().root.size = Vector2i(1920, 1080)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

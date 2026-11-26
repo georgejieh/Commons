@@ -5,13 +5,14 @@ extends GdUnitTestSuite
 ## it, and Zhao's answers to the player's tricks in the opening Set are counted.
 
 const SEEDS: Array[int] = [4601, 4602, 4603, 4604, 4605, 4606, 4607, 4608, 4609, 4610]
-const PATH: String = "user://test_memory_runs_profile.json"
 const ZHAO: String = "zhao"
 const BOMBS_LAST_RUN: int = 12
 
+static var _path: String = TestFolder.of("test_memory_across_runs") + "memory_runs_profile.json"
+
 
 func after_test() -> void:
-	for path: String in [PATH, PATH + SaveService.BACKUP_SUFFIX]:
+	for path: String in [_path, _path + SaveService.BACKUP_SUFFIX]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -55,7 +56,7 @@ func test_a_bombed_family_opens_the_next_run_more_hostile() -> void:
 	var summary: SetSummary = SetSummary.new(0)
 	summary.add(ZHAO, SetSummary.Kind.BOMBED, BOMBS_LAST_RUN)
 	last_run.record(summary)
-	var profile: SaveService = Profile.service(PATH)
+	var profile: SaveService = Profile.service(_path)
 	var kept: ProfileData = ProfileData.new()
 	kept.memory = last_run
 	Profile.write(profile, kept)

@@ -3,15 +3,16 @@ extends GdUnitTestSuite
 ## them at their starting values, both survive a save and a load, and a damaged shape
 ## counts as damage, as in test_saves.gd.
 
-const DIR: String = "user://test_saved_growth/"
 const SEED: int = 3601
+
+static var _dir: String = TestFolder.of("test_saved_growth")
 
 var _service: SaveService
 
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
-	_service = SaveService.for_run(DIR + "run.json")
+	DirAccess.make_dir_recursive_absolute(_dir)
+	_service = SaveService.for_run(_dir + "run.json")
 	_service.delete()
 
 

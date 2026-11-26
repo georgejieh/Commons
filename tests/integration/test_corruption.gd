@@ -4,20 +4,21 @@ extends GdUnitTestSuite
 ## formula and clamping, once-only commits through the four crash orderings, a demo run
 ## adding nothing, and The Commons resetting it.
 
-const DIR: String = "user://test_corruption/"
-const RUN_PATH: String = DIR + "run.json"
-const PROFILE_PATH: String = DIR + "profile.json"
 const SEED: int = 9301
 const PLAYER: int = 0
 const TRUE_NEED: int = 10
+
+static var _dir: String = TestFolder.of("test_corruption")
+static var _run_path: String = _dir + "run.json"
+static var _profile_path: String = _dir + "profile.json"
 
 var _saves: SaveService
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_saves = SaveService.for_run(RUN_PATH)
-	_profile = Profile.service(PROFILE_PATH)
+	_saves = SaveService.for_run(_run_path)
+	_profile = Profile.service(_profile_path)
 	_saves.delete()
 	_profile.delete()
 
@@ -313,7 +314,7 @@ func test_a_backup_restore_adds_once() -> void:
 	var state: RunState = _quota_state(0, [CorruptionEvents.HOSTILE_CAMPAIGN])
 	Profile.write(_profile, ProfileData.new())
 	Profile.write(_profile, ProfileData.new())
-	var broken: FileAccess = FileAccess.open(PROFILE_PATH, FileAccess.WRITE)
+	var broken: FileAccess = FileAccess.open(_profile_path, FileAccess.WRITE)
 	broken.store_string("{broken")
 	broken.close()
 	assert_bool(ProfileCommits.commit(_profile, state, false)).is_true()

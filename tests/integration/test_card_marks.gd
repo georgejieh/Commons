@@ -100,7 +100,7 @@ func test_marks_survive_every_deal_of_a_whole_set() -> void:
 
 
 func test_marks_survive_a_save_a_load_and_a_replay() -> void:
-	var service: SaveService = SaveService.for_run("user://test_card_marks/run.json")
+	var service: SaveService = SaveService.for_run(TestFolder.of("test_card_marks") + "run.json")
 	service.delete()
 	var loop: RunLoop = RunLoop.new(_marked_state(), RunScript.bots())
 	var script: RunScript = RunScript.new()

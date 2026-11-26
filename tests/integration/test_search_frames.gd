@@ -4,7 +4,6 @@ extends GdUnitTestSuite
 ## sealed into the second book, a save taken while one thinks loads and searches again,
 ## and a run abandoned or replaced mid-search leaves nothing behind.
 
-const DIR: String = "user://test_search_frames/"
 const SEED: int = 5021
 ## Rounds played by frames in the frame test.
 const ROUNDS: int = 3
@@ -21,8 +20,10 @@ const TIME_LIMIT_MSEC: int = 180_000
 ## Enough finished runs for both Expert families to have joined the village.
 const FINISHED_RUNS: int = 5
 
-var _saves: SaveService = SaveService.for_run(DIR + "run.json")
-var _kit: FileWatchKit = FileWatchKit.new(DIR + "book_")
+static var _dir: String = TestFolder.of("test_search_frames")
+
+var _saves: SaveService = SaveService.for_run(_dir + "run.json")
+var _kit: FileWatchKit = FileWatchKit.new(_dir + "book_")
 ## What the frame probe and the signal handlers saw.
 var _watched: RunController = null
 var _last_frame: int = 0
@@ -43,7 +44,7 @@ var _changed_by_play: int = 0
 
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
+	DirAccess.make_dir_recursive_absolute(_dir)
 	_saves.delete()
 	_kit.reset()
 	_watched = null

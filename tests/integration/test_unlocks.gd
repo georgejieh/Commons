@@ -10,17 +10,18 @@ extends GdUnitTestSuite
 const SEEDS: int = 60
 const REROLLS: int = 4
 const RICH: int = 10000
-const DIR: String = "user://test_unlocks/"
-const RUN_PATH: String = DIR + "run.json"
-const PROFILE_PATH: String = DIR + "profile.json"
+
+static var _dir: String = TestFolder.of("test_unlocks")
+static var _run_path: String = _dir + "run.json"
+static var _profile_path: String = _dir + "profile.json"
 
 var _saves: SaveService
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_saves = SaveService.for_run(RUN_PATH)
-	_profile = Profile.service(PROFILE_PATH)
+	_saves = SaveService.for_run(_run_path)
+	_profile = Profile.service(_profile_path)
 	_saves.delete()
 	_profile.delete()
 
@@ -381,7 +382,7 @@ func test_an_all_open_request_opens_everything_without_a_profile() -> void:
 	assert_object(RunStarter.state(limited)).is_null()
 	# With a profile the option is refused, and the profile is never written.
 	assert_object(RunStarter.state(request, _profile)).is_null()
-	assert_bool(FileAccess.file_exists(PROFILE_PATH)).is_false()
+	assert_bool(FileAccess.file_exists(_profile_path)).is_false()
 
 
 func _entry(class_id: String, outcome: String) -> HistoryEntry:

@@ -9,7 +9,6 @@ extends GdUnitTestSuite
 ## clear of the brigade notice, and the store's detail slip stays closed while the
 ## arrival runs.
 
-const SAVE_PATH: String = "user://test_tutorial_ui/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
 const LEAST_TYPE: int = 20
@@ -17,6 +16,8 @@ const DARK_INK: float = 0.35
 const SLACK: float = 1.5
 ## The longest any wait may take, in milliseconds.
 const WAIT_MSEC: int = 20000
+
+static var _save_path: String = TestFolder.of("test_tutorial_ui") + "run.json"
 
 var _app: DemoApp = null
 var _was_size: Vector2i
@@ -29,7 +30,7 @@ func before_test() -> void:
 		_saved[key] = Settings.value(key)
 	Settings.set_value("content_note_seen", true)
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 

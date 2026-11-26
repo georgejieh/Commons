@@ -8,9 +8,10 @@ extends GdUnitTestSuite
 ## slip stay on the screen, and the slip keeps off the ticket.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_shop_sell_ui/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.0
+
+static var _save_path: String = TestFolder.of("test_shop_sell_ui") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -18,7 +19,7 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

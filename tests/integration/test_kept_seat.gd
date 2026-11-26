@@ -64,7 +64,7 @@ func test_the_table_calls_a_kept_seat_once() -> void:
 ## What was called is forgotten when a run starts or is left, so a new run in the same
 ## session, even one on the same seed, calls its own first kept seat.
 func test_a_new_run_forgets_what_the_last_one_called() -> void:
-	Saves.use_run_path("user://test_kept_seat/run.json")
+	Saves.use_run_path(TestFolder.of("test_kept_seat") + "run.json")
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	var app: DemoApp = auto_free(scene.instantiate())

@@ -5,13 +5,14 @@ extends GdUnitTestSuite
 ## villagers' answer has been played out and the cards on top of the trick have landed.
 ## The answer ends where the table waits on the player again, or where a new deal begins.
 
-const SAVE_PATH: String = "user://test_tutorial_timing/run.json"
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion", "table_pace"]
 ## The fast pace, so the walk takes less time; every wait still follows it.
 const FAST: int = 2
 ## The first step off the table: the Quota's report.
 const LAST_TABLE_STEP: int = 16
 const WAIT_MSEC: int = 240000
+
+static var _save_path: String = TestFolder.of("test_tutorial_timing") + "run.json"
 
 var _app: DemoApp = null
 var _saved: Dictionary[String, Variant] = {}
@@ -26,7 +27,7 @@ func before_test() -> void:
 	Settings.set_value("content_note_seen", true)
 	Settings.set_value("reduced_motion", false)
 	Settings.set_value("table_pace", FAST)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 

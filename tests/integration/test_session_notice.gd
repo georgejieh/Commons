@@ -5,11 +5,12 @@ extends GdUnitTestSuite
 ## and every text size, with its buttons on the sheet; the title's is said once, with OK
 ## focused, taken by keyboard, and a button that opens the folder.
 
-const SAVE_PATH: String = "user://test_session_notice/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## A folder named as the game names one, under the deepest user folder a player may have.
-const KEPT: String = "user://crashes/2026-11-24T21.07.45"
+const KEPT: String = "user://crashes/2000-01-01T00.00.00"
 const SLACK: float = 1.5
+
+static var _save_path: String = TestFolder.of("test_session_notice") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -17,7 +18,7 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 	_app = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())

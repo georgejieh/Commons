@@ -6,10 +6,11 @@ extends GdUnitTestSuite
 ## Reform's rule that changes play is listed as the player's, never as the whole table's.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_wild_whose/run.json"
 const WAIT_SECONDS: float = 12.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
 const WORKER: Array[String] = ["model_worker"]
+
+static var _save_path: String = TestFolder.of("test_wild_whose") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -18,7 +19,7 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = SCREEN
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

@@ -6,9 +6,10 @@ extends GdUnitTestSuite
 ## a replay, a reload or a table that joins the run. It fits the screen at its longest.
 
 const SEED: int = 7211
-const SAVE_PATH: String = "user://test_books_notice/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.5
+
+static var _save_path: String = TestFolder.of("test_books_notice") + "run.json"
 
 var _app: DemoApp
 var _lines: PackedStringArray = []
@@ -17,7 +18,7 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 	_lines.clear()

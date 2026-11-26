@@ -5,15 +5,16 @@ extends GdUnitTestSuite
 ## end was still being shown.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_round_close/run.json"
 ## Seconds the walk through a round's end may take at most.
 const WAIT_SECONDS: float = 12.0
+
+static var _save_path: String = TestFolder.of("test_round_close") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Settings.set_value("reduced_motion", false)
 	var scene: PackedScene = load("res://ui/main.tscn")

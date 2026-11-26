@@ -5,10 +5,11 @@ extends GdUnitTestSuite
 ## same ending.
 
 const SEED: int = 3505
-const PATH: String = "user://test_ending_saves/run.json"
 const METERS: MeterTable = preload("res://data/run/meters.tres")
 
-var _service: SaveService = SaveService.for_run(PATH)
+static var _path: String = TestFolder.of("test_ending_saves") + "run.json"
+
+var _service: SaveService = SaveService.for_run(_path)
 
 
 func after_test() -> void:
@@ -79,7 +80,7 @@ func test_a_schema_9_save_starts_its_counts_at_nothing() -> void:
 	checkpoint.erase("year_rounds")
 	checkpoint.erase("year_landlord_rounds")
 	assert_bool(RunRecordCheck.is_valid(data)).is_false()
-	var file: FileAccess = FileAccess.open(PATH, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(_path, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": 9, "data": data}))
 	file.close()
 	var loaded: SaveLoad = _service.load_save()

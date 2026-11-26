@@ -8,7 +8,6 @@ extends GdUnitTestSuite
 ## says why not while a run is saved. The full names fit their pages at 1920x1080 and
 ## 1280x800 with the longest name the game can make.
 
-const SAVE_PATH: String = "user://test_surname_ui/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
 const SLACK: float = 1.5
@@ -17,6 +16,8 @@ const BOOK: NameBook = preload("res://data/villagers/names.tres")
 ## The widest surname the field takes: twelve of its widest letters.
 const WIDEST_SURNAME: String = "Wmwmwmwmwmwm"
 const STEP_SECONDS: float = 30.0
+
+static var _save_path: String = TestFolder.of("test_surname_ui") + "run.json"
 
 var _app: DemoApp = null
 var _was_size: Vector2i
@@ -29,7 +30,7 @@ func before_test() -> void:
 		_saved[key] = Settings.value(key)
 	Settings.set_value("content_note_seen", true)
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 

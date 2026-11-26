@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 ## says what the word means.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_scarce_stamp/run.json"
 const POOL: CadrePool = preload("res://data/run/cadre_pool.tres")
 const MARKET_POOL: CadrePool = preload("res://data/run/market_pool.tres")
 const PARAMS: ShopParams = preload("res://data/run/default_shop.tres")
@@ -13,11 +12,13 @@ const MARKET_PARAMS: ShopParams = preload("res://data/run/black_market.tres")
 const RARE: String = "seed_grain"
 const COMMON: String = "canteen"
 
+static var _save_path: String = TestFolder.of("test_scarce_stamp") + "run.json"
+
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

@@ -8,7 +8,6 @@ extends GdUnitTestSuite
 ## the screen.
 
 const SEED: int = 7217
-const SAVE_PATH: String = "user://test_file_marks/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.5
 const FAMINE: int = 83
@@ -16,13 +15,15 @@ const VISIT: WorkTeamTalk = preload("res://data/ui/work_team_talk.tres")
 ## Lines a seat is asked for in the villagers' test: enough that a 4% chance shows.
 const SAID: int = 600
 
+static var _save_path: String = TestFolder.of("test_file_marks") + "run.json"
+
 var _app: DemoApp
 var _was_size: Vector2i
 
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")

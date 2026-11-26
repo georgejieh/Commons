@@ -6,7 +6,6 @@ extends GdUnitTestSuite
 enum Method { MOUSE, KEYBOARD, GAMEPAD }
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_input_methods/run.json"
 const MAX_STEPS: int = 400
 ## Inside a card's uncovered left strip, clear of the next card in the fan.
 const GRIP: Vector2 = Vector2(14, 60)
@@ -27,13 +26,15 @@ const PAD: Dictionary[String, JoyButton] = {
 	"accept": JOY_BUTTON_A,
 }
 
+static var _save_path: String = TestFolder.of("test_input_methods") + "run.json"
+
 var _app: DemoApp
 var _table: TableScreen
 var _plays: int = 0
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

@@ -5,17 +5,18 @@ extends GdUnitTestSuite
 ## step shortened meanwhile, and it never reaches into the next trick. It is never offered
 ## while any play is legal, a bomb or rocket included, nor during the arrival.
 
-const SAVE_PATH: String = "user://test_sit_out/run.json"
 const SEEDS: Array[int] = [3, 5, 7, 11, 13, 17, 19, 23]
 const WAIT_SECONDS: float = 40.0
 ## Seeds tried for a sit-out the table waits through on a searching villager.
 const SEARCH_SEEDS: Array[int] = [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
 
+static var _save_path: String = TestFolder.of("test_sit_out") + "run.json"
+
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Settings.set_value("reduced_motion", true)
 	var scene: PackedScene = load("res://ui/main.tscn")

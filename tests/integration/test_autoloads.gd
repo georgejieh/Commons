@@ -75,7 +75,7 @@ func test_no_autoload_holds_an_object_field() -> void:
 
 
 func test_settings_default_then_round_trip_through_the_file() -> void:
-	var path: String = "user://test_settings.cfg"
+	var path: String = TestFolder.of("test_autoloads") + "settings.cfg"
 	DirAccess.remove_absolute(path)
 	var settings: SettingsStore = auto_free(SettingsStore.new())
 	settings.load_from(path)
@@ -93,7 +93,7 @@ func test_settings_default_then_round_trip_through_the_file() -> void:
 ## Settings are written whole and renamed into place: a write that cannot be finished
 ## leaves the last file as it was.
 func test_a_settings_write_that_cannot_finish_leaves_the_last_file() -> void:
-	var folder: String = "user://test_settings_write/"
+	var folder: String = TestFolder.of("test_settings_write")
 	var path: String = folder + "settings.cfg"
 	DirAccess.make_dir_recursive_absolute(folder)
 	var settings: SettingsStore = auto_free(SettingsStore.new())

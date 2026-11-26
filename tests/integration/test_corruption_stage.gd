@@ -4,14 +4,15 @@ extends GdUnitTestSuite
 ## debug flags only in a debug build, and the horror-intensity cap. Nothing in ui/ or the
 ## string table reads or shows the value.
 
-const PROFILE_PATH: String = "user://test_corruption_stage/profile.json"
 const SEED: int = 9311
+
+static var _profile_path: String = TestFolder.of("test_corruption_stage") + "profile.json"
 
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_profile = Profile.service(PROFILE_PATH)
+	_profile = Profile.service(_profile_path)
 	_profile.delete()
 	ArtStages.stage_override = -1
 	ArtStages.intensity_override = -1.0

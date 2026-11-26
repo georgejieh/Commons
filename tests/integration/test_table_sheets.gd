@@ -7,15 +7,16 @@ extends GdUnitTestSuite
 ## a board of empty Cadre slots is not shown; and the arrival's Quota is a figure.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_table_sheets/run.json"
 const TUTORIAL: TutorialScript = preload("res://data/run/tutorial/arrival.tres")
 const LEAST_TYPE: int = 16
+
+static var _save_path: String = TestFolder.of("test_table_sheets") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

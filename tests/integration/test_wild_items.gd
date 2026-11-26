@@ -9,16 +9,17 @@ extends GdUnitTestSuite
 
 const SEED: int = 7301
 const SEEDS: int = 60
-const DIR: String = "user://test_wild_items/"
 ## Model Worker's two draws on SEED's first opening, and Mass Line's first three rounds.
 const GOLDEN_WORKER: Array[int] = [Ranks.JACK, Ranks.NINE]
 const GOLDEN_MASS_LINE: Array[int] = [Ranks.JACK, Ranks.KING, Ranks.TEN]
+
+static var _dir: String = TestFolder.of("test_wild_items")
 
 var _service: SaveService
 
 
 func before_test() -> void:
-	_service = SaveService.for_run(DIR + "run.json")
+	_service = SaveService.for_run(_dir + "run.json")
 	_service.delete()
 
 

@@ -4,8 +4,9 @@ extends GdUnitTestSuite
 
 ## A seed whose first Set reaches Criticism Meeting in round 3, so the order changes.
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_cheat_sheet/run.json"
 const RANK_DEBUFF: String = "criticism_meeting"
+
+static var _save_path: String = TestFolder.of("test_cheat_sheet") + "run.json"
 
 var _app: DemoApp
 var _sheet: CheatSheet
@@ -15,7 +16,7 @@ var _saw_debuff_listed: bool = false
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

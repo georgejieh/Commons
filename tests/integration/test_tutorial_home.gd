@@ -9,7 +9,6 @@ extends GdUnitTestSuite
 ## larger window, at every text size; the larger window plays with the Hint turned off,
 ## which the arrival never asks for.
 
-const SAVE_PATH: String = "user://test_tutorial_home/run.json"
 const SETTINGS: Array[String] = [
 	"content_note_seen", "reduced_motion", TextSize.SETTING, HintSetting.SETTING
 ]
@@ -19,6 +18,8 @@ const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800), Vecto
 const LAST_TABLE_STEP: int = 16
 const SLACK: float = 1.5
 const WAIT_MSEC: int = 60000
+
+static var _save_path: String = TestFolder.of("test_tutorial_home") + "run.json"
 
 var _app: DemoApp = null
 var _saved: Dictionary[String, Variant] = {}
@@ -31,7 +32,7 @@ func before_test() -> void:
 		_saved[key] = Settings.value(key)
 	Settings.set_value("content_note_seen", true)
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 

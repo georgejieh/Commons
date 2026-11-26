@@ -6,9 +6,9 @@ extends GdUnitTestSuite
 ## nothing. A hand-edited run save or profile still loads and is filed once; a
 ## development build only logs a broken seal.
 
-const DIR: String = "user://test_bait_and_seal/"
+static var _dir: String = TestFolder.of("test_bait_and_seal")
 
-var _kit: FileWatchKit = FileWatchKit.new(DIR)
+var _kit: FileWatchKit = FileWatchKit.new(_dir)
 
 
 func before_test() -> void:

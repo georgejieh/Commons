@@ -4,13 +4,14 @@ extends GdUnitTestSuite
 ## migrates and replays exactly.
 
 const SEED: int = 2941
-const DIR: String = "user://test_wild_saves/"
+
+static var _dir: String = TestFolder.of("test_wild_saves")
 
 var _service: SaveService
 
 
 func before_test() -> void:
-	_service = SaveService.for_run(DIR + "run.json")
+	_service = SaveService.for_run(_dir + "run.json")
 	_service.delete()
 
 

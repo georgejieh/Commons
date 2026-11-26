@@ -45,7 +45,7 @@ func test_a_run_with_corrections_replays_to_the_same_state() -> void:
 
 
 func test_dark_flags_survive_a_save_and_a_reload() -> void:
-	var service: SaveService = SaveService.for_run("user://test_run_books/run.json")
+	var service: SaveService = SaveService.for_run(TestFolder.of("test_run_books") + "run.json")
 	service.delete()
 	var loop: RunLoop = _at_set_over()
 	var famine: int = loop.state.famine + 20

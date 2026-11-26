@@ -6,17 +6,18 @@ extends GdUnitTestSuite
 ## and the arrival drift nothing, youth never drift, and a schema 2 profile migrates
 ## with none.
 
-const DIR: String = "user://test_village_drift/"
-const PROFILE_PATH: String = DIR + "profile.json"
 const START_TIME: int = 1_763_200_000
 const VILLAGE: VillageBook = preload("res://data/villagers/village.tres")
 const GENERATIONS: int = 60
+
+static var _dir: String = TestFolder.of("test_village_drift")
+static var _profile_path: String = _dir + "profile.json"
 
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_profile = Profile.service(PROFILE_PATH)
+	_profile = Profile.service(_profile_path)
 	_profile.delete()
 
 
@@ -167,7 +168,7 @@ func test_a_schema_2_profile_migrates_with_no_drift() -> void:
 	old.erase("drift")
 	old["generation"] = 4
 	old["surname"] = "Yuan"
-	SaveService.new(PROFILE_PATH, {}, 2).save(old)
+	SaveService.new(_profile_path, {}, 2).save(old)
 	var data: ProfileData = Profile.read(_profile)
 	assert_int(data.generation).is_equal(4)
 	assert_str(data.surname).is_equal("Yuan")

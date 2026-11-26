@@ -7,16 +7,17 @@ extends GdUnitTestSuite
 ## A seed whose first Set reaches Criticism Meeting (2s rank as 3s) in round 3.
 const SEED: int = 3
 const RANK_DEBUFF: String = "criticism_meeting"
-const SAVE_PATH: String = "user://test_table_readability/run.json"
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 ## How much of each card in a play must show: enough for its rank and suit.
 const SHOWN_WIDTH: float = 40.0
+
+static var _save_path: String = TestFolder.of("test_table_readability") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

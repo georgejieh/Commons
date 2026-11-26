@@ -5,14 +5,15 @@ extends GdUnitTestSuite
 ## at an open table, the button is back at once.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_hint_setting/run.json"
 const WAIT_FRAMES: int = 600
+
+static var _save_path: String = TestFolder.of("test_hint_setting") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Settings.set_value(HintSetting.SETTING, true)
 	var scene: PackedScene = load("res://ui/main.tscn")

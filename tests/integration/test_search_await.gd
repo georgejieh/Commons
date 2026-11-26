@@ -6,7 +6,6 @@ extends GdUnitTestSuite
 ## Set UPDATE_GOLDEN=1 to rewrite the golden file after an intended change.
 
 const GOLDEN_PATH: String = "res://tests/golden/searched_turns.golden"
-const DIR: String = "user://test_search_await/"
 const SEED: int = 5011
 ## Player turns played for the golden log.
 const TURNS: int = 14
@@ -16,13 +15,15 @@ const STEPS: int = 70
 const SAVE_EVERY: int = 4
 const ILLEGAL_ACTION: String = "Assertion failed: A bot chose an illegal action"
 
+static var _dir: String = TestFolder.of("test_search_await")
+
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
+	DirAccess.make_dir_recursive_absolute(_dir)
 
 
 func after_test() -> void:
-	SaveService.for_run(DIR + "run.json").delete()
+	SaveService.for_run(_dir + "run.json").delete()
 
 
 ## Seats 1 and 2 are Expert, sampling the fewest deals a search may decide on.
@@ -92,10 +93,10 @@ func _to_a_villager(loop: RunLoop) -> void:
 
 ## The record as a load reads it back: written as JSON, migrated and validated.
 func _through_disk(data: Dictionary) -> Dictionary:
-	var file: FileAccess = FileAccess.open(DIR + "run.json", FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(_dir + "run.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": SaveService.SCHEMA_VERSION, "data": data}))
 	file.close()
-	var loaded: SaveLoad = SaveService.for_run(DIR + "run.json").load_save()
+	var loaded: SaveLoad = SaveService.for_run(_dir + "run.json").load_save()
 	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
 	return loaded.data
 

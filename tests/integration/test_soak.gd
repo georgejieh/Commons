@@ -6,8 +6,9 @@ extends GdUnitTestSuite
 ## the suite stays quick.
 
 const SEED: int = 16
-const FOLDER: String = "user://test_soak"
 const SOAK: String = "res://tools/soak.gd"
+
+static var _folder: String = TestFolder.of("test_soak")
 
 
 ## A run whose save and its backup are spoiled just before each is loaded back.
@@ -39,18 +40,18 @@ func _strategy() -> BalanceStrategy:
 
 
 func test_a_run_saved_and_resumed_at_every_set_end_plays_the_same_with_no_fault() -> void:
-	var soaked: SoakDriver = SoakDriver.new(_strategy(), 0, _log, FOLDER)
+	var soaked: SoakDriver = SoakDriver.new(_strategy(), 0, _log, _folder)
 	var result: BalanceResult = soaked.play(SEED)
 	assert_str(result.failure).is_empty()
 	assert_int(soaked.faults.total()).is_equal(0)
 	assert_int(result.quotas_played).is_greater(1)
 	var plain: BalanceResult = BalanceDriver.new(_strategy()).play(SEED)
 	assert_str(result.csv(false)).is_equal(plain.csv(false))
-	assert_bool(FileAccess.file_exists(FOLDER.path_join("run.json"))).is_false()
+	assert_bool(FileAccess.file_exists(_folder.path_join("run.json"))).is_false()
 
 
 func test_a_damaged_save_fails_the_run_and_is_counted() -> void:
-	var spoilt: SpoiltSoak = SpoiltSoak.new(_strategy(), 0, _log, FOLDER)
+	var spoilt: SpoiltSoak = SpoiltSoak.new(_strategy(), 0, _log, _folder)
 	var result: BalanceResult = spoilt.play(SEED)
 	assert_bool(result.failed()).is_true()
 	assert_int(spoilt.faults.load_failures).is_equal(1)

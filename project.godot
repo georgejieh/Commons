@@ -47,6 +47,12 @@ enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
 
 locale/translations=PackedStringArray("res://data/strings/strings.en.translation")
 
+[gdunit4]
+
+hooks/session_hooks=Dictionary[String, bool]({
+"res://tests/support/test_folder_hook.gd": true
+})
+
 [gui]
 
 theme/custom="res://ui/theme/commons_theme.tres"

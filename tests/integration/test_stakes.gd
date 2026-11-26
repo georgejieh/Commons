@@ -4,19 +4,20 @@ extends GdUnitTestSuite
 ## the shared Resources never changed, and a win at the highest stake unlocked opening the
 ## next, once.
 
-const DIR: String = "user://test_stakes/"
-const RUN_PATH: String = DIR + "run.json"
-const PROFILE_PATH: String = DIR + "profile.json"
 const START_TIME: int = 1_763_400_000
 const LADDER: LadderParams = preload("res://data/run/default_ladder.tres")
+
+static var _dir: String = TestFolder.of("test_stakes")
+static var _run_path: String = _dir + "run.json"
+static var _profile_path: String = _dir + "profile.json"
 
 var _saves: SaveService
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_saves = SaveService.for_run(RUN_PATH)
-	_profile = Profile.service(PROFILE_PATH)
+	_saves = SaveService.for_run(_run_path)
+	_profile = Profile.service(_profile_path)
 	_saves.delete()
 	_profile.delete()
 

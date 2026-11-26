@@ -2,14 +2,15 @@ extends GdUnitTestSuite
 ## The landlord seat is easy to take and resented when taken from a neighbour: calling
 ## an open seat adds no Resentment, and grabbing a held one adds the data amount.
 
-const SAVE_PATH: String = "user://test_bid_resentment/run.json"
 const SEEDS: int = 60
+
+static var _save_path: String = TestFolder.of("test_bid_resentment") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

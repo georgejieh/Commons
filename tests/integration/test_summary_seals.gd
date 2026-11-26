@@ -5,8 +5,9 @@ extends GdUnitTestSuite
 ## and Famine figures at every text size and both screen sizes.
 
 const SEED: int = 5303
-const SAVE_PATH: String = "user://test_summary_seals/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
+
+static var _save_path: String = TestFolder.of("test_summary_seals") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -15,7 +16,7 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

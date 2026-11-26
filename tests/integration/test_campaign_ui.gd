@@ -9,9 +9,10 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 ## How many seeds the opening test may try before it fails.
 const OPENING_SEEDS: int = 8
-const SAVE_PATH: String = "user://test_campaign_ui/run.json"
 const WAIT_SECONDS: float = 6.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
+
+static var _save_path: String = TestFolder.of("test_campaign_ui") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -20,7 +21,7 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = SCREEN
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

@@ -10,10 +10,11 @@ extends GdUnitTestSuite
 
 const SEED: int = 4242
 const SEEDS: int = 12
-const SAVE_PATH: String = "user://test_wild_ui/run.json"
 const WAIT_SECONDS: float = 12.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
 const WORKERS: Array[String] = ["model_worker", "model_worker"]
+
+static var _save_path: String = TestFolder.of("test_wild_ui") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -22,7 +23,7 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = SCREEN
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

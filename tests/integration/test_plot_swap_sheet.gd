@@ -7,14 +7,15 @@ extends GdUnitTestSuite
 ## the keys move a cursor and press, and with reduced motion the cards stand at once.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_plot_swap_sheet/run.json"
 const PLOT_CARDS: int = 3
+
+static var _save_path: String = TestFolder.of("test_plot_swap_sheet") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

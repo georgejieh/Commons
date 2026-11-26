@@ -3,16 +3,17 @@ extends GdUnitTestSuite
 ## release select or clear them, and the Play button and reading follow the selection.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_hand_drag/run.json"
 ## Inside a card's uncovered left strip, clear of the next card in the fan.
 const GRIP: Vector2 = Vector2(14, 60)
+
+static var _save_path: String = TestFolder.of("test_hand_drag") + "run.json"
 
 var _app: DemoApp
 var _table: TableScreen
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())

@@ -228,7 +228,7 @@ func test_a_capped_family_is_not_offered() -> void:
 
 
 func test_levels_survive_a_save_a_load_and_a_replay() -> void:
-	var service: SaveService = SaveService.for_run("user://test_directives/run.json")
+	var service: SaveService = SaveService.for_run(TestFolder.of("test_directives") + "run.json")
 	service.delete()
 	var loop: RunLoop = _at_the_shops(33)
 	assert_int(loop.player_directive(0)).is_equal(RunLoop.Reason.OK)

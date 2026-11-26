@@ -6,13 +6,14 @@ extends GdUnitTestSuite
 ## whichever back is chosen. The history page is one ink sheet across the page, and the
 ## run in progress reads as a record, one line per family a Quota touched.
 
-const SAVE_PATH: String = "user://test_history_and_card_backs/run.json"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SLACK: float = 1.5
 const READABLE: int = 18
 const SEED: int = 9321
 ## The darkest a page's ink may be read as light: its luminance stays under this.
 const DARK_INK: float = 0.35
+
+static var _save_path: String = TestFolder.of("test_history_and_card_backs") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -22,7 +23,7 @@ var _was_back: String
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	_was_back = str(Settings.value(CardBacks.SETTING))
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")

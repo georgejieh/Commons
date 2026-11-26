@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 ## the lowest horror intensity, and moves nothing the player clicks or reads.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_dread_effects/run.json"
 const LAST_STAGE: int = BoardState.CORRUPTION_STAGES - 1
 ## Famine and Denunciation forced for each effect: its own meter high, the other low.
 const DRIVERS: Dictionary[String, Vector2i] = {
@@ -20,6 +19,8 @@ const SETTINGS: Array[String] = [
 ## Seconds a frame lasts when a test steps the effects by hand.
 const FRAME: float = 0.05
 
+static var _save_path: String = TestFolder.of("test_dread_effects") + "run.json"
+
 var _app: DemoApp
 var _saved: Dictionary[String, Variant] = {}
 
@@ -31,7 +32,7 @@ func before_test() -> void:
 	Settings.set_value("no_flash", false)
 	Settings.set_value("reduced_motion", false)
 	Settings.set_value("content_note_seen", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	var scene: PackedScene = load("res://ui/main.tscn")
 	_app = auto_free(scene.instantiate())
