@@ -69,6 +69,9 @@ var notice: BooksNotice = null
 ## The folder the last session's files were copied to when it did not close (ADR 0037),
 ## until the title has told the player; empty otherwise.
 var kept_crash: String = ""
+## True when the run last left had ended but its record could not be written to the
+## profile, so its save was kept, until the title has told the player.
+var kept_run: bool = false
 ## The menu over every screen but the table's.
 var menu: PauseMenu = null
 var _wipe: ColorRect = null
@@ -240,20 +243,26 @@ func continue_run() -> bool:
 	return true
 
 
-## Leaves the run for good, for the title: abandoned from the menu, or finished on its
-## ending. Its save is cleared and nothing more is recorded (ADR 0025); the memory of
-## the Quotas it finished, and a finished run's record, are already in the profile.
+## Leaves the run for the title: abandoned from the menu, or finished on its ending. An
+## abandoned run's save is cleared and nothing more of it is recorded (ADR 0025). A
+## finished run's save is cleared once the profile holds its record; while the profile
+## cannot be written the save is kept, so Continue opens the ending again and leaving it
+## tries again, and the title says so.
 func leave_run() -> void:
 	KeptSeat.forget()
 	# The arrival is never saved: leaving it must not touch a real run's save.
 	if not arrival.is_running():
+		var keep: bool = false
 		if controller.has_run():
 			var over: bool = controller.awaiting() == RunController.AWAIT_RUN_OVER
 			GameLog.run_ended(controller.run.run_seed(), "finished" if over else "abandoned")
+			keep = over and not controller.is_profile_whole()
 		# The run is let go before its save is cleared, so a villager still thinking
 		# cannot hand in a play afterwards and write the save back.
 		controller.drop()
-		Saves.run_service().delete()
+		kept_run = keep
+		if not keep:
+			Saves.run_service().delete()
 	show_screen(ScreenId.TITLE, true)
 
 

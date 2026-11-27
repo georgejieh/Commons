@@ -85,6 +85,8 @@ var _searches: VillagerSearches = VillagerSearches.new()
 var _saves: SaveService = null
 ## The profile save, which the village's memory outlives runs in.
 var _profile: SaveService = null
+## True while the profile lacks something the run has reached, since its write failed.
+var _profile_owed: bool = false
 
 
 ## Starts a new run from seed, with one bot config per seat. It begins as a demo run
@@ -125,6 +127,7 @@ func _begin(
 	profile: SaveService
 ) -> void:
 	_profile = profile
+	_profile_owed = false
 	file_watch.attach(saves, profile)
 	_attach(RunLoop.new(state, configs, sets), saves)
 	_loop.start_set()
@@ -146,6 +149,7 @@ func resume(loop: RunLoop, saves: SaveService = null, profile: SaveService = nul
 ## the profile is offered it again; it takes nothing twice.
 func _take_over(loop: RunLoop, saves: SaveService, profile: SaveService, loaded: SaveLoad) -> void:
 	_profile = profile
+	_profile_owed = false
 	file_watch.attach(saves, profile)
 	_attach(loop, saves)
 	if file_watch.resumed(_loop, loaded):
@@ -211,6 +215,15 @@ func _resumed(data: Dictionary, configs: Array[BotConfig], sets: SetConfig) -> R
 ## True while the controller holds a run.
 func has_run() -> bool:
 	return _loop != null
+
+
+## True when the profile holds everything the run has reached. After a write of it that
+## failed, the write is tried again first while the run stands at a Set's end or its own,
+## where what the profile takes is whole; elsewhere the next Set's end carries it.
+func is_profile_whole() -> bool:
+	if _profile_owed and _loop != null:
+		_remember(_loop.flow.state())
+	return not _profile_owed
 
 
 ## Calls or grabs the landlord seat with claim true, or passes on it.
@@ -381,6 +394,7 @@ func drop() -> void:
 	items = null
 	store = null
 	seats = null
+	_profile_owed = false
 	file_watch.dropped()
 
 
@@ -555,9 +569,11 @@ func _save() -> void:
 
 ## Writes the village's memory to the profile once a Set's summary is folded in, so it
 ## survives the run whether it ends or is abandoned, and at the run's end its record.
-## ProfileCommits takes each only once.
+## ProfileCommits takes each only once. A write that fails leaves the profile owed what
+## the run has reached, until a later one takes it.
 func _remember(at: RunFlow.State) -> void:
 	if _profile == null:
 		return
 	if at == RunFlow.State.SET_END or at == RunFlow.State.RUN_END:
-		ProfileCommits.commit(_profile, _loop.state, at == RunFlow.State.RUN_END)
+		var finished: bool = at == RunFlow.State.RUN_END
+		_profile_owed = ProfileCommits.commit(_profile, _loop.state, finished) != Error.OK

@@ -152,3 +152,16 @@ A card back is a cosmetic choice in Settings, and nothing about it changes play.
 - The app, the demo, the tutorial (P4.15) and the balance harness (P4.16) all start runs through one place, which takes the set, the household, the stake, the lineage and whether the profile is written.
 - Starvation makes high Famine cost a neighbour as well as a meter. P4.16 has to check it does not turn a hard run into a lost one by emptying the table.
 - Until the two card backs have art, "unlocking new card designs" is a mechanism without content. The checklist carries the art.
+
+## Amendment, 2026-11-27: a profile that cannot be written
+
+A write of the profile can fail, on a full disk or with the file held open by another program. Before this amendment the controller ignored the failure, and the ending's "Return to title" cleared the run save, so a finished run whose record was never written was lost: its history entry, the finished run and win it counts, the stake it opens, the lineage it leaves and The Commons's reset.
+
+- `ProfileCommits.commit` returns the write's `Error`, and `OK` when the profile already holds everything the run has reached. After a failure the controller owes the profile, and tries again at the next Set's end and on resume, as it always offered the current boundary, and when `RunController.is_profile_whole` is asked while the run stands at a Set's end or its own end.
+- Leaving a finished run asks first. While the profile cannot be written the run save is kept, the run is let go, and the title says so. Continue opens the ending again, and leaving it tries again. A run abandoned before its end is cleared as before.
+
+What a failed write costs:
+
+- **The finished run's record:** nothing, since its save stays until a write takes it.
+- **A Quota's memory:** nothing while the run goes on. `RunState.memory` holds the whole run's counts, and the next Quota the profile takes replaces the profile's memory with all of them. A run abandoned while the profile is owed loses the memory of the Quotas it never took, since nothing else holds it.
+- **That Quota's corruption events:** dropped. A commit adds only the events of the Quota it takes (`RunState.quota_corruption`, cleared at each Set's start). The run's state is rebuilt from its command record, so it cannot remember which Quotas the profile missed; carrying their events would need a second record of what the profile took, kept in the run save.

@@ -38,15 +38,15 @@ static func start_run(profile: SaveService, state: RunState) -> Lineage:
 
 
 ## Takes what the run has reached: the Quota just ended, and at the run's end its record.
-## Returns true when it wrote the profile; false when there was nothing to take, or the
-## write failed, which marks nothing as taken.
-static func commit(profile: SaveService, state: RunState, finished: bool) -> bool:
+## Returns OK when the profile holds it all, written now or taken before; otherwise the
+## write's error, and nothing is marked as taken, so a later call takes it.
+static func commit(profile: SaveService, state: RunState, finished: bool) -> Error:
 	var data: ProfileData = Profile.read(profile)
 	var changed: bool = _take_quota(data, state)
 	if finished and state.identity.is_full() and not data.has_run(state.identity.id):
 		_record(data, state)
 		changed = true
-	return changed and Profile.write(profile, data) == OK
+	return Profile.write(profile, data) if changed else OK
 
 
 ## The run's Set count, from 0: the Quota now ending or just ended.

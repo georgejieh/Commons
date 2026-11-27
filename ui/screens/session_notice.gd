@@ -2,7 +2,8 @@ class_name SessionNotice
 extends Control
 ## A notice about the game's own session (ADR 0037), over everything: that another copy
 ## is already open, that the last session did not close and where its files were copied,
-## or whether to keep a new window mode (DisplayWindow). A sheet of paper on a dim, with
+## that a finished run could not be recorded and its save was kept, or whether to keep a
+## new window mode (DisplayWindow). A sheet of paper on a dim, with
 ## its buttons in a row; the first has the focus and the focus stays among them by
 ## keyboard and gamepad, and the dim stops the mouse short of anything under it.
 
@@ -67,6 +68,22 @@ static func kept(folder: String) -> SessionNotice:
 		TranslationServer.translate("session.kept.body"),
 		[ok, open_button],
 		shown
+	)
+	ok.pressed.connect(notice.close)
+	return notice
+
+
+## The notice on the title after a finished run whose record the profile could not take:
+## OK, which closes it. The run's save was kept, so Continue opens its ending again.
+static func run_kept() -> SessionNotice:
+	var ok: Button = ScreenKit.button(
+		TranslationServer.translate("session.run_kept.ok"), CommonsTheme.PRIMARY
+	)
+	var notice: SessionNotice = SessionNotice.new(
+		TranslationServer.translate("session.run_kept.eyebrow"),
+		TranslationServer.translate("session.run_kept.title"),
+		TranslationServer.translate("session.run_kept.body"),
+		[ok]
 	)
 	ok.pressed.connect(notice.close)
 	return notice

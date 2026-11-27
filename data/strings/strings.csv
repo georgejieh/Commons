@@ -1186,6 +1186,10 @@ session.kept.title,The game did not close properly
 session.kept.body,"Your save was kept and loads as before. A copy of it, with the game's log from that session, is in this folder:"
 session.kept.ok,OK
 session.kept.open,Open the folder
+session.run_kept.eyebrow,History
+session.run_kept.title,This run could not be recorded
+session.run_kept.body,"The game could not write your family's history to disk, so this run's save was kept. Continue opens its ending again, and leaving it tries once more."
+session.run_kept.ok,OK
 settings.window_mode,Mode
 settings.window_mode.windowed,Windowed
 settings.window_mode.borderless,Borderless full screen
