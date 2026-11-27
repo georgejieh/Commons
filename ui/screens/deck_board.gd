@@ -9,16 +9,22 @@ extends Control
 ## under it is named in the shared slip beside it. When picking, a press picks the card
 ## under the cursor and lifts it; a plot card cannot be picked.
 
+## Sent with the id of the card the cursor moved onto, so the sheet names it in the slip.
 signal cursor_moved(card_id: int)
+## Sent with the id of the card a press picked, which the board has lifted.
 signal picked_card(card_id: int)
 
+## The card id when no card is picked or under the cursor.
 const NONE: int = -1
+## How far a picked card lifts at full scale, in pixels. Each group keeps that much room
+## between its name and its cards, so a lifted card never covers the name.
 const LIFT: float = 22.0
 ## The rank names above the groups, and the plot's.
 const NAME_SIZE: int = 18
 
 ## True while a press picks a card, as the desks ask; false on the read-only sheet.
 var picking: bool = false
+## The id of the card the player picked, or NONE; the board lifts it.
 var picked: int = NONE
 
 ## The groups' names, one over each row.
@@ -108,7 +114,7 @@ func lay_out(room: Vector2) -> void:
 	var counts: Array[int] = []
 	for group: Array in _groups:
 		counts.append(group.size())
-	_fit = DeckFit.fit(counts, room, name_height)
+	_fit = DeckFit.fit(counts, room, name_height + LIFT)
 	for index: int in _groups.size():
 		var at: Vector2 = _fit.places[index]
 		names[index].position = at
@@ -121,10 +127,10 @@ func lay_out(room: Vector2) -> void:
 			# foot stays above the next row's names.
 			view.pivot_offset = Vector2.ZERO
 			view.scale = Vector2.ONE * _fit.scale
-			view.position = at + Vector2(place * _fit.steps[index], name_height)
+			view.position = Vector2(at.x + place * _fit.steps[index], _rest_y(card.id()))
 			view.z_index = 0
 			move_child(view, -1)
-	custom_minimum_size = _fit.size + Vector2(0.0, LIFT)
+	custom_minimum_size = _fit.size
 	_mark()
 
 
@@ -133,18 +139,22 @@ func card_scale() -> float:
 	return _fit.scale if _fit != null else 1.0
 
 
+## The face drawn for a card id, or null for one not on the board.
 func view_of(card_id: int) -> CardView:
 	return _views.get(card_id)
 
 
+## The card behind an id, or null for one not on the board.
 func card_of(card_id: int) -> CardInstance:
 	return _cards.get(card_id)
 
 
+## The ids of the cards in cursor order: the groups' cards in rank order, then the plot's.
 func card_ids() -> Array[int]:
 	return _order.duplicate()
 
 
+## The id of the card under the cursor, or NONE when there is none.
 func cursor_card() -> int:
 	return _order[_cursor] if _cursor < _order.size() else NONE
 
@@ -199,7 +209,7 @@ func _mark() -> void:
 
 func _rest_y(card_id: int) -> float:
 	var name_height: float = names[0].get_combined_minimum_size().y + 4.0
-	return _fit.places[_group_of[card_id]].y + name_height
+	return _fit.places[_group_of[card_id]].y + name_height + LIFT * _fit.scale
 
 
 func _on_hovered(card_id: int) -> void:

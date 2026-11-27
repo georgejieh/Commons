@@ -9,6 +9,8 @@ extends RefCounted
 
 ## Spreads card ids over the share of the fan that trembles; prime, so near ids part.
 const SPREAD: int = 7919
+## How many places the card ids are spread over: a card's place in line is a whole number of these
+## out of this many.
 const SPREAD_SPAN: int = 101
 ## The second axis shakes at this many times the first's speed, so the path never closes.
 const CROSS_RATE: float = 1.37

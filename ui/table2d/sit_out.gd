@@ -20,6 +20,8 @@ var _blocked: Callable = Callable()
 var _active: bool = false
 
 
+## Wires sitting out to the run, the action bar, the commands' prompt, the event queue and the
+## callable that says the arrival is playing, and offers it at once.
 func setup(
 	controller: RunController,
 	actions: ActionBar,
@@ -39,6 +41,8 @@ func setup(
 	_offer()
 
 
+## True from the Sit out press until the trick ends or a play becomes legal; the table's pace and
+## the score sequence read it.
 func is_active() -> bool:
 	return _active
 

@@ -40,7 +40,7 @@ func _to_the_store(coupons: int = 60) -> StoreScreen:
 	_app.controller.finish_set()
 	_loop().state.coupons = coupons
 	_app.controller.reseal_book()
-	var store: StoreScreen = _app.show_screen(App.STORE, true)
+	var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return store
@@ -57,7 +57,7 @@ func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() ->
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			store = _app.show_screen(App.STORE, true)
+			store = _app.show_screen(ScreenId.STORE, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			for slot: int in stall.count():
@@ -72,7 +72,7 @@ func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() ->
 				var price: int = stall.price(slot)
 				assert_str(buy.text).is_equal(tr("store.buy").format({"price": price}))
 				assert_str(view.shown_enhancement()).is_equal(stall.card(slot).enhancement_id())
-	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
+	var market: StoreScreen = _app.show_screen(ScreenId.BLACK_MARKET, true)
 	assert_object(market.deck_goods).is_null()
 
 
@@ -92,7 +92,7 @@ func test_a_ticket_says_why_it_cannot_be_bought() -> void:
 			state.deck.replace(slot, rank, 0)
 	state.coupons = 60
 	_app.controller.reseal_book()
-	var store: StoreScreen = _app.show_screen(App.STORE, true)
+	var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 	await await_idle_frame()
 	buy = _goods(store).card_button(0)
 	assert_bool(buy.disabled).is_true()
@@ -260,7 +260,7 @@ func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 
 
 func test_the_deck_key_opens_the_sheet_at_the_table() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var press: InputEventAction = InputEventAction.new()
 	press.action = "commons_deck"

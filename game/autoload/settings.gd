@@ -3,8 +3,10 @@ extends Node
 ## The Settings autoload: the player's settings, loaded from and saved to one file in the
 ## user data folder. It holds preferences only, never run state.
 
+## Emitted with the key after set_value changes a setting, so a screen showing it can follow.
 signal changed(key: String)
 
+## Where the player's settings are kept in the user data folder.
 const PATH: String = "user://settings.cfg"
 ## A debug build reads this environment variable for another file. The sandbox already
 ## keeps every test and tool off the player's file (SavePaths); this keeps two test runs
@@ -14,8 +16,11 @@ const PATH: String = "user://settings.cfg"
 const PATH_OVERRIDE: String = "COMMONS_SETTINGS"
 ## The autoload's node name under the root.
 const AUTOLOAD: String = "Settings"
+## The section of the settings file the settings are written under.
 const SECTION: String = "settings"
+## The defaults a setting takes when the file has none for it.
 const DEFAULTS: SettingsParams = preload("res://data/settings/default_settings.tres")
+## Every setting there is; value and set_value refuse any other key.
 const KEYS: Array[String] = [
 	"music_volume",
 	"effects_volume",
@@ -76,11 +81,13 @@ func load_from(path: String) -> void:
 	bindings.read(file if loaded else ConfigFile.new())
 
 
+## The current value of the setting key, which must be one of KEYS.
 func value(key: String) -> Variant:
 	assert(KEYS.has(key), "Unknown setting")
 	return _values[key]
 
 
+## Sets a setting in memory and emits changed; save writes it to the file.
 func set_value(key: String, new_value: Variant) -> void:
 	assert(KEYS.has(key), "Unknown setting")
 	_values[key] = new_value

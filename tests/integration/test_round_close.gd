@@ -123,7 +123,7 @@ func _round_end(card: CardInstance) -> Array[RunEvent]:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var player: EventPlayer = table.player
 	await TestWait.until(self, player.is_idle, "the table's events to play", WAIT_SECONDS)

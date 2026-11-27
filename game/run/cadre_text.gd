@@ -28,5 +28,6 @@ static func words(values: Dictionary[String, Variant]) -> Dictionary[String, Var
 	return written
 
 
+## True when a value's name says it is a rank: "rank", a name starting with it or ending "_rank".
 static func is_rank(key: String) -> bool:
 	return key.begins_with("rank") or key.ends_with("_rank")

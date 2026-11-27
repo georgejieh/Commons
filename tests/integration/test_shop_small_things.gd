@@ -41,12 +41,12 @@ func _open(screen_id: String) -> StoreScreen:
 
 func test_an_empty_board_says_what_goes_there() -> void:
 	_loop().state.inventory.cadres.clear()
-	var store: StoreScreen = await _open("store")
+	var store: StoreScreen = await _open(ScreenId.STORE)
 	var board: NoticeBoard = store.board
 	assert_bool(board.shows_empty_line()).is_true()
 	assert_str(board.empty_line).is_equal(tr("store.shelf.empty"))
 	_loop().state.inventory.cadres.assign(["canteen"])
-	store = await _open("store")
+	store = await _open(ScreenId.STORE)
 	board = store.board
 	assert_bool(board.shows_empty_line()).is_false()
 
@@ -58,7 +58,7 @@ func test_the_pieces_read_at_every_size() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			for screen_id: String in ["store", "black_market"]:
+			for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 				var store: StoreScreen = await _open(screen_id)
 				var where: String = "%s %s text %d" % [screen_id, screen_size, level]
 				_check_tray(store, where)

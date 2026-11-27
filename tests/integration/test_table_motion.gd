@@ -35,18 +35,18 @@ func test_no_tween_outlives_the_table() -> void:
 	var tweens: Callable = func() -> int: return get_tree().get_processed_tweens().size()
 	await TestWait.still(self, tweens, "the motion before the table to end")
 	var was: int = tweens.call()
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	_start_every_motion(table)
 	assert_int(get_tree().get_processed_tweens().size()).is_greater(was)
-	_app.show_screen(App.SETTINGS, true)
+	_app.show_screen(ScreenId.SETTINGS, true)
 	# Within the settle, as a tween left without its node runs SLOW seconds on.
 	var ended: Callable = func() -> bool: return int(tweens.call()) <= was
 	await TestWait.until(self, ended, "the table's tweens to end with it", SETTLE)
 
 
 func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var pool: CardPool = table.pool
 	var pile: TrickPile = table.pile
@@ -60,7 +60,7 @@ func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
 
 
 func test_a_ledger_score_counts_up_to_its_value() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var ledger: Ledger = table.ledger
 	ledger.start_round(1)
@@ -79,7 +79,7 @@ func test_a_ledger_score_counts_up_to_its_value() -> void:
 
 func test_reduced_motion_turns_off_shake_and_hit_stop() -> void:
 	Settings.set_value("reduced_motion", true)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var motion: TableMotion = table.motion
 	motion.impact()
@@ -88,7 +88,7 @@ func test_reduced_motion_turns_off_shake_and_hit_stop() -> void:
 
 
 func test_turning_reduced_motion_on_stops_a_shake_under_way() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var motion: TableMotion = table.motion
 	motion.impact()
@@ -101,7 +101,7 @@ func test_turning_reduced_motion_on_stops_a_shake_under_way() -> void:
 
 func test_reduced_motion_clears_a_sweep_at_once() -> void:
 	Settings.set_value("reduced_motion", true)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var pile: TrickPile = table.pile
 	pile.show_play(_cards(2), Vector2.ZERO)

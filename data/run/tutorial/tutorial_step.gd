@@ -3,6 +3,8 @@ extends Resource
 ## One step of the arrival (ADR 0026): the one action the player must take, what it
 ## points at, the line that asks for it and the line that follows it.
 
+## What the step asks of the player: a bid or a pass in the bidding, a play, a pass, a need,
+## or a press of a named button.
 enum Action { BID_CALL, BID_PASS, PLAY, PASS, NEED, BUTTON }
 
 ## The step's number as its string keys hold it: "01" to "20".

@@ -4,13 +4,15 @@ extends RefCounted
 ## the pause menu: the window's mode, its size and vertical sync (DisplayWindow). A size
 ## can be picked only for a window, and only those the screen has room for are offered.
 
-## The window modes by the end of their string keys, in DisplayWindow.MODES's order, and
-## the names of the mode and size boxes, for the focus and for tests.
+## The window modes by the end of their string keys, in DisplayWindow.MODES's order.
 const MODES: Array[String] = ["windowed", "borderless", "exclusive"]
+## The name of the box for each window mode, filled with its index, for the focus and for tests.
 const MODE_BOX: String = "WindowMode%d"
+## The name of the box for each window size, filled with its index, for the focus and for tests.
 const SIZE_BOX: String = "WindowSize%d"
 
 
+## The Window page's sheet, with its mode, size and vertical sync rows.
 static func build() -> Control:
 	assert(MODES.size() == DisplayWindow.MODES.size(), "A window mode has no name")
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(SettingsPanel.WIDTH, 0))

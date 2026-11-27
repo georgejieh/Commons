@@ -6,32 +6,43 @@ extends TipHost
 ## its foot, and its slip says why. Armed, it lifts and its edge turns gold; under the
 ## keyboard or gamepad cursor it carries the focus ring.
 
+## Sent with the leaflet's place when it is clicked or accepted, so the tray can arm it.
 signal chosen(slot: int)
 
+## A full-size leaflet's size, in pixels.
 const SIZE: Vector2 = Vector2(118, 150)
 ## A shop's shelf has less height: its leaflets are this much smaller.
 const COMPACT: float = 0.8
+## The size of the name at full size and Standard text, before it shrinks to fit.
 const NAME_SIZE: int = 19
 ## The smallest a name is ever set, compact or not, so it reads on a 1080 screen.
 const LEAST_NAME: int = 16
 ## A compact leaflet's name may shrink this far to fit its longest word.
 const LEAST_COMPACT_NAME: int = 13
-## The name's side margins, full and compact.
+## The name's side margin at full size, in pixels.
 const SIDE: float = 6.0
+## The name's side margin on a compact leaflet, in pixels.
 const SIDE_COMPACT: float = 4.0
+## The size of the kind's words on the printed band, at Standard text.
 const KIND_SIZE: int = 12
 ## The red line at a leaflet's foot, no smaller than the game's least readable size.
 const STATUS_SIZE: int = 16
 ## A paper-coloured halo round the type, so stains never cross a letter.
 const HALO: int = 4
+## How far an armed leaflet lifts, in pixels; the tray keeps this much room clear above it.
 const LIFT: float = 14.0
+## The width of the ring round an armed or cursored leaflet, which reaches this far outside it.
 const RING: float = 3.0
 
+## The tray place it holds, from 0, or -1 before it is dressed.
 var slot: int = -1
+## The id of the Campaign it shows, empty while the place is bare.
 var campaign_id: String = ""
 ## Why it cannot be used now, as a refusal reason, or 0 when it can.
 var reason: int = 0
+## True while it is the leaflet armed for Use; its edge turns gold.
 var armed: bool = false
+## True while the keyboard or gamepad cursor is on it; it carries the focus ring.
 var cursor: bool = false
 
 ## Why the leaflet cannot be used now, or nothing.
@@ -142,15 +153,18 @@ func name_label() -> Label:
 	return _name
 
 
+## The size of a leaflet, the compact one being the full size scaled by COMPACT and rounded.
 static func leaf_size(compact: bool) -> Vector2:
 	return (SIZE * COMPACT).round() if compact else SIZE
 
 
+## Marks it armed or not and redraws its edge; the tray calls it.
 func set_armed(on: bool) -> void:
 	armed = on
 	queue_redraw()
 
 
+## Marks the cursor on it or not and redraws its ring; the tray and the keyboard drive it.
 func set_cursor(on: bool) -> void:
 	cursor = on
 	queue_redraw()
@@ -161,10 +175,12 @@ func says_not_now() -> bool:
 	return status.visible
 
 
+## True for a private Campaign, whose band is drawn black, for tests.
 func is_private() -> bool:
 	return _private
 
 
+## The name its label shows, for tests.
 func shown_name() -> String:
 	return _name.text
 

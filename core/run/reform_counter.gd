@@ -4,6 +4,7 @@ extends RefCounted
 ## after every other draw on the shop stream, never one the player holds, redrawn by the
 ## counter's reroll and bought at the counter's price. A bought Reform lasts the run.
 
+## The stock marker for a slot whose Reform is already bought.
 const SOLD: String = ""
 
 var _state: RunState
@@ -23,6 +24,7 @@ func stock() -> Array[String]:
 	return _stock.duplicate()
 
 
+## What the Reform in the slot costs, with the run's price raises.
 func price(slot: int) -> int:
 	return RunShop.price_of(_state, _params, _reform(_stock[slot]).cost)
 
@@ -32,6 +34,7 @@ func reroll_changes() -> bool:
 	return _params.reform_offers > 0 and _open().size() > _params.reform_offers
 
 
+## Why the slot cannot be bought, or OK: no slot, sold out or already held, or too poor.
 func check(slot: int) -> RunShop.Reason:
 	if slot < 0 or slot >= _stock.size():
 		return RunShop.Reason.NO_SUCH_SLOT
@@ -53,6 +56,7 @@ func buy(slot: int) -> RunShop.Reason:
 	return RunShop.Reason.OK
 
 
+## Empties the counter's stock, as when the visit ends.
 func clear() -> void:
 	_stock.clear()
 

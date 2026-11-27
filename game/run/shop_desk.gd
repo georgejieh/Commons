@@ -33,10 +33,12 @@ func stock() -> Array[String]:
 	return _shop.stock()
 
 
+## The price in coupons of the item in slot.
 func price(slot: int) -> int:
 	return _shop.price(slot)
 
 
+## True when the item in slot can be bought now.
 func can_buy(slot: int) -> bool:
 	return _shop.check_buy(slot) == RunShop.Reason.OK
 
@@ -75,6 +77,7 @@ func _held_campaign(index: int) -> CampaignDef:
 	return RunDefinitions.campaigns.get(held[index])
 
 
+## What a reroll of the counter costs now in coupons.
 func reroll_price() -> int:
 	return _shop.reroll_price()
 
@@ -92,10 +95,12 @@ func directive_stock() -> Array[String]:
 	return _shop.directive_stock()
 
 
+## The price in coupons of the Directive in slot.
 func directive_price(slot: int) -> int:
 	return _shop.directive_price(slot)
 
 
+## True when the Directive in slot can be bought now.
 func can_buy_directive(slot: int) -> bool:
 	return _shop.check_directive(slot) == RunShop.Reason.OK
 
@@ -140,10 +145,12 @@ func upgrade_kinds() -> PackedStringArray:
 	return PlotUpgrades.KINDS if _upgrades != null else PackedStringArray()
 
 
+## The price in coupons of the plot upgrade of this kind.
 func upgrade_price(kind: String) -> int:
 	return PlotUpgrades.price(kind, _upgrades, _state)
 
 
+## True when this counter sells the upgrade and the household can buy it now.
 func can_upgrade(kind: String) -> bool:
 	return _upgrades != null and PlotUpgrades.can_buy(_state, kind, _upgrades)
 

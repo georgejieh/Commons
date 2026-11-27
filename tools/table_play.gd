@@ -25,7 +25,7 @@ func open(tree: SceneTree, start: Callable, options: ToolOptions) -> Node:
 	app = scene.instantiate()
 	tree.root.add_child(app)
 	start.call(app)
-	table = app.call("show_screen", "table", true)
+	table = app.call("show_screen", ScreenId.TABLE, true)
 	return table
 
 

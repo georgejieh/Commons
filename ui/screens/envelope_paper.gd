@@ -9,20 +9,34 @@ extends RefCounted
 ## the one beat of opening: the string unwinds or the seal breaks, or the twine is cut,
 ## and the flap lifts or the paper tears across the top.
 
+## The yellow manila of the state store's Directive envelope.
 const MANILA: Color = Color("d4b373")
+## The darker brown paper of the Campaign envelope.
 const KRAFT: Color = Color("9a6f42")
+## The old newspaper the black market's Parcel is wrapped in.
 const NEWSPRINT: Color = Color("d6cfb8")
+## The manila label tucked under the Parcel's string.
 const TAG: Color = Color("e2cd9c")
+## The string wound round the Directive envelope's two buttons.
 const STRING: Color = Color("efe4c8")
+## The card buttons the Directive envelope's string winds round.
 const BUTTON: Color = Color("7d5f3c")
+## The twine that ties the Parcel.
 const TWINE: Color = Color("9c7a44")
+## The red wax of the Campaign envelope's seal.
 const WAX: Color = Color("9a1d12")
+## The dark inside of the envelope, seen as its mouth opens.
 const INSIDE: Color = Color("4a3622")
+## The faded print on the Parcel's newspaper.
 const PRINT: Color = Color("4b463c")
+## The ink of the seams, outlines and shadows.
 const EDGE: Color = Color("3e3020")
+## The seed each sheet's wear is drawn from, with its index added, so an envelope looks the same
+## each time.
 const SEED: int = 6143
 ## The flap's depth as a share of the height, kept within a few pixels on a small sheet.
 const FLAP: float = 0.17
+## The least depth of the flap, in pixels, so a small sheet still shows one.
 const FLAP_LEAST: float = 14.0
 ## Below this size a sheet has not been laid out yet, and nothing is drawn.
 const SMALLEST: float = 12.0

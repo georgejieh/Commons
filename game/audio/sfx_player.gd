@@ -5,6 +5,7 @@ extends Node
 ## ringing. Takes play round-robin, pitch nudged from the cosmetic random stream. Events
 ## with no sound in the bank stay silent.
 
+## The bank of sound effects, each with its takes, volume, pitch spread and voices.
 const BANK: SfxBank = preload("res://data/audio/sfx_bank.tres")
 
 ## The cosmetic stream is outside any run, so sound never moves a run's random state.

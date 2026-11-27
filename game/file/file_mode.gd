@@ -6,5 +6,6 @@ extends RefCounted
 ## for a controller it builds.
 
 
+## True in a build made with a release export template, where the detectors act.
 static func release_build() -> bool:
 	return OS.has_feature("template") and not OS.is_debug_build()

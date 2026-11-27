@@ -20,7 +20,7 @@ func after_test() -> void:
 
 
 func _table() -> TableScreen:
-	_app.show_screen(App.TABLE, true)
+	_app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	return _app.switcher.current()
 

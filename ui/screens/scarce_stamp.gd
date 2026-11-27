@@ -8,21 +8,29 @@ extends Control
 ## the village it is patchy and a little doubled where it slipped, and each stage thins
 ## and breaks the ink further (art/STYLE.md).
 
+## The size, in pixels, of the ruled box, before its slant.
 const BOX: Vector2 = Vector2(150, 48)
 ## Room round the box for its slant, so its corners stay inside the control.
 const ROOM: Vector2 = Vector2(8, 14)
+## The slant the box is pressed at, in radians.
 const TILT: float = 0.1
-## The stamp overhangs the picture's right edge by this much and stands this far down.
+## How far, in pixels, the stamp overhangs the picture's right edge.
 const OVERHANG: float = 10.0
+## Where the stamp stands from the picture's top, in pixels; below zero is above the top.
 const DROP: float = -4.0
+## The width, in pixels, of the box's outer rule.
 const BORDER: float = 3.0
 ## The word is art, like a seal's: it keeps its size at every text size.
 const WORD_SIZE: int = 27
+## The share of the box's width the word may fill; a longer word is shrunk to it.
 const WORD_FIT: float = 0.84
 ## The ground under the ink, so the word reads over a picture.
 const GROUND: float = 0.84
+## The seed of the stamp's patchy ink, so it breaks the same way every time.
 const SEED: int = 6143
+## How many specks of ground show through the ink, from unworn (x) to worn through (y).
 const THIN: Vector2i = Vector2i(14, 70)
+## How many breaks the border gets, from unworn (x) to worn through (y).
 const BREAKS: Vector2i = Vector2i(1, 5)
 
 var _word: String = ""
@@ -44,6 +52,7 @@ func place_on(wide: float) -> void:
 	position = Vector2(wide - size.x + ROOM.x + OVERHANG, DROP)
 
 
+## The word the stamp prints, in capitals; for tests.
 func word() -> String:
 	return _word
 

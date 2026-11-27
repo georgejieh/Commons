@@ -6,6 +6,8 @@ extends RefCounted
 ## deck sheet to choose the card; once a card is marked it says so until the next visit,
 ## and while the coupons are short it is off. Through the arrival there is none.
 
+## The desk's ticket on the counter, naming the mark and its price; pressing it opens the deck
+## sheet.
 var ticket: Button = ScreenKit.button("", CommonsTheme.COUPON)
 
 var _desk: DeskView
@@ -15,6 +17,7 @@ var _slip: DetailSlip
 var _screen_busy: Callable
 
 
+## Wires the ticket to the shop's desk, deck sheet and slip, and sets the slip to follow it.
 func setup(shop: StallContext) -> void:
 	_desk = shop.controller.store.mark_desk(shop.market)
 	_market = shop.market

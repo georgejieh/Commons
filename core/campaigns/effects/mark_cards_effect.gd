@@ -13,6 +13,7 @@ func _init(enhancement_id: String) -> void:
 	enhancement = enhancement_id
 
 
+## Refuses when a chosen card already carries the mark.
 func check(context: CampaignContext) -> Reason:
 	for card: CardInstance in context.hand():
 		if not context.card_ids.has(card.id()):
@@ -27,5 +28,6 @@ func check(context: CampaignContext) -> Reason:
 	return Reason.OK
 
 
+## Marks every chosen card for the rest of the run.
 func apply(context: CampaignContext) -> void:
 	context.mark_chosen(enhancement)

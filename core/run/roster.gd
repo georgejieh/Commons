@@ -5,6 +5,7 @@ extends RefCounted
 ## opponents are available, and two available families are seated. All draws are on
 ## the events stream, but an arriving youth's given name, which is on the names stream.
 
+## The start of a sent-down youth's family ID, followed by a running number.
 const YOUTH_PREFIX: String = "youth_"
 
 
@@ -37,12 +38,14 @@ static func prepare_set(state: RunState, book: VillageBook, stream: RandomStream
 	state.table = table
 
 
+## The roster entries that are active, so can be seated.
 static func available(state: RunState) -> Array[RosterEntry]:
 	return state.roster.filter(
 		func(found: RosterEntry) -> bool: return found.status == RosterEntry.Status.ACTIVE
 	)
 
 
+## The roster entry for the family ID, or null when the roster has none.
 static func entry(state: RunState, family_id: String) -> RosterEntry:
 	for found: RosterEntry in state.roster:
 		if found.family_id == family_id:

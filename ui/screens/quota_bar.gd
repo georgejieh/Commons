@@ -7,8 +7,10 @@ extends ProgressBar
 ## dark norm (no fill and no seal, so nothing gives the target away), or as fulfilled at
 ## the stage past the last.
 
+## Emitted when fill_to has shown its value, at once under reduced motion; the report waits on it.
 signal filled
 
+## How the bar shows its figures: as they are, without the target, or as fulfilled.
 enum Shown { AS_IS, NO_TARGET, FULFILLED }
 
 ## The seal pressed on the bar once the Quota is met.
@@ -49,6 +51,7 @@ func setup(bar_size: Vector2, seal_width: float, font_size: int) -> void:
 	show_value(_shown)
 
 
+## Sets the Quota the bar fills toward, at least 1, and draws the count and seal again.
 func set_target(target: float) -> void:
 	_target = maxf(target, 1.0)
 	show_value(_shown)
@@ -120,6 +123,7 @@ func seal_short() -> void:
 	seal.press()
 
 
+## True once the value shown has reached the target.
 func is_met() -> bool:
 	return _shown >= _target
 

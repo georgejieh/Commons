@@ -39,7 +39,9 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 ## True in every record written since searching villagers' plays were (ADR 0030).
 const WRITTEN_KEY: String = "decisions_written"
 
+## The saved state where the loop last stood still, at a Set's start or end.
 var checkpoint: Dictionary = {}
+## The player's commands since the checkpoint, in order, each a map of its fields.
 var commands: Array[Dictionary] = []
 ## Every play a searching villager made since the checkpoint, in order.
 var decisions: Array[Dictionary] = []
@@ -156,12 +158,14 @@ static func _ids(values: Array) -> Array[int]:
 	return ids
 
 
+## Takes a new checkpoint from state and forgets the commands and plays made before it.
 func mark(state: RunState) -> void:
 	checkpoint = state.to_dict()
 	commands.clear()
 	decisions.clear()
 
 
+## Records one command the player gave since the checkpoint.
 func add(command: Dictionary) -> void:
 	commands.append(command)
 
@@ -175,6 +179,7 @@ func decide(seat: int, card_ids: Array[int], reading: Pattern = null) -> void:
 	decisions.append(entry)
 
 
+## The record as a map for the run save, marked as holding written decisions.
 func to_dict() -> Dictionary:
 	return {
 		"checkpoint": checkpoint.duplicate(true),

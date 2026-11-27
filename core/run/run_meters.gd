@@ -5,22 +5,32 @@ extends RefCounted
 ## the meter stays up; reeducation (Denunciation) is owed once and served after the Set.
 ## Each setback fires once per upward crossing of mid, then re-arms below the margin.
 
+## The Famine meter's name, as the table, the events and the state use it.
 const FAMINE: String = "famine"
+## The Denunciation meter's name, as the table, the events and the state use it.
 const DENUNCIATION: String = "denunciation"
+## The source for Famine when a Quota's target is missed.
 const MISSED_TARGET: String = "missed_target"
+## The source for Famine when a round's share to the commons falls short.
 const COMMONS_SHORTFALL: String = "commons_shortfall"
+## The source for Denunciation when the player buys at the black market.
 const PRIVATE_PURCHASE: String = "private_purchase"
+## The source for Denunciation when an audit catches the player's declared need false.
 const CAUGHT_LIE: String = "caught_lie"
 ## A Set in a run of Sets the player never held the landlord's seat in (ADR 0031). Its
 ## amount is for each step of the run past the grace.
 const STOOD_BY: String = "stood_by"
 ## Famine a held Cadre takes off; its amount is the Cadre's (Public Granary, ADR 0032).
 const CADRE_FAMINE: String = "cadre_famine"
+## The source for Famine that a debuff raises when a round is lost.
 const DEBUFF_FAMINE: String = "debuff_famine"
+## The source for Denunciation that a debuff raises when a round is lost.
 const DEBUFF_DENUNCIATION: String = "debuff_denunciation"
 ## Its amount comes from the Resentment curve, not the row.
 const RESENTMENT: String = "resentment"
+## The setback Famine causes in its mid band; it holds while the meter stays up.
 const RATIONING: String = "rationing"
+## The setback Denunciation causes in its mid band, owed once and served after the Set.
 const REEDUCATION: String = "reeducation"
 
 
@@ -98,6 +108,7 @@ static func report(
 	_update_setbacks(state, meter, table.bands(meter), player, events)
 
 
+## The state's value of the meter, FAMINE or DENUNCIATION.
 static func value(state: RunState, meter: String) -> int:
 	return state.famine if meter == FAMINE else state.denunciation
 

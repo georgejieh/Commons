@@ -8,36 +8,46 @@ extends Control
 ## in code. Each piece fades with its weight; none covers anything the player reads, and
 ## the rules slip may stand in front of the right chair (ADR 0034, rule 6).
 
+## The lamp shader the spotlight on the player's seat is drawn with.
 const LAMP_SHADER: Shader = preload("res://shaders/lamp_light.gdshader")
+## The dark wood the chairs and the bars of the dressing are drawn in.
 const WOOD: Color = Color("2a1a10")
 ## Where the brigade notice sits at Standard, in the table's 1920x1080 frame, on wall
 ## space clear of the seats, play lanes, hand, buttons and ledger: worn paper like every
 ## sheet, its words inside the paper's printed border, its right edge clear of the trick's
 ## room.
 const NOTICE_AT: Rect2 = Rect2(118, 606, 312, 140)
+## The brigade notice's paper padding, in pixels.
 const NOTICE_PADDING: int = 22
 ## The household notice, wide and low, between the Cadre board's foot (y 268) and the
 ## trick's box (y 380), 6 px clear of each, so it never covers either; its words on one
 ## line.
 const POSTER_AT: Rect2 = Rect2(492, 274, 596, 100)
+## The household notice's type at Standard.
 const POSTER_SIZE: int = 24
+## Where the empty chairs stand at the room's edge, in the table's 1920x1080 frame.
 const CHAIR_SPOTS: Array[Vector2] = [Vector2(36, 560), Vector2(1440, 590)]
 ## Between the trick's foot and the hand, right of the status line.
 const EXTRA_CHAIR_SPOT: Vector2 = Vector2(1030, 690)
 ## The roster's left edge: the right seat's, under it.
 const ROSTER_X: float = 1120.0
+## How many redaction bars lie over the brigade notice, one a line.
 const REDACTION_LINES: int = 3
 ## The brigade notice changes with every deal: this many notices for each stretch of a
-## run, and the last Year of the early and of the middle stretch.
+## run.
 const NOTICES: int = 4
+## The last Year of the early stretch of a run, whose notices are plain and welcome.
 const EARLY_UNTIL: int = 2
+## The last Year of the middle stretch of a run, whose notices are a notch wrong.
 const MID_UNTIL: int = 5
-## A redaction bar's height as a share of a line of the notice's text, how far it starts
-## left of the words, and how much further in, and shorter, each line down starts.
+## A redaction bar's height as a share of a line of the notice's text.
 const BAR_SHARE: float = 22.0 / 28.0
+## How far a redaction bar starts left of the words, in pixels.
 const BAR_INSET: float = 4.0
+## How much further in, and how much shorter, each line down's bar starts, in pixels.
 const BAR_STEP: Vector2 = Vector2(9, 30)
 
+## The material of the spotlight on the player's seat, which the dread layers drive.
 var spotlight_material: ShaderMaterial = ShaderMaterial.new()
 
 ## The brigade notice on the wall.
@@ -133,6 +143,7 @@ func take_down_notice(down: bool) -> void:
 		_notice_fade.tween_callback(notice_paper.hide)
 
 
+## True while the notice is taken down for the Campaign tray, for tests.
 func is_notice_down() -> bool:
 	return _notice_down
 
@@ -146,6 +157,7 @@ func hang_roster(top: float, foot: float) -> void:
 	_roster.visible = foot - extent.y >= top
 
 
+## The brigade's roster under the right seat, whose names fade as the roster effect grows.
 func roster() -> WallRoster:
 	return _roster
 
@@ -184,6 +196,7 @@ func _end_flash(piece: String) -> void:
 	control.visible = control.visible and control.modulate.a < 1.0 and control.modulate.a > 0.01
 
 
+## True while a piece of the dressing is visible, for tests.
 func is_shown(piece: String) -> bool:
 	return pieces.has(piece) and pieces[piece].visible
 

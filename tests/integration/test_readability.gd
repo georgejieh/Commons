@@ -52,11 +52,13 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	var offered: Array[String] = ["rehabilitation", "hidden_reserves", "last_sheaf"]
 	loop.visit.market.stock_with(offered, loop.visit.market.directive_stock())
-	for screen_id: String in ["store", "black_market"]:
+	for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 		var store: StoreScreen = await _open(screen_id)
 		var cadres: CadreCounter = store.cadres
 		var counter: HBoxContainer = cadres.row
-		var stock: Array[String] = _app.controller.store.desk(screen_id == "black_market").stock()
+		var stock: Array[String] = (
+			_app.controller.store.desk(screen_id == ScreenId.BLACK_MARKET).stock()
+		)
 		for slot: int in stock.size():
 			var card: Control = counter.get_child(slot)
 			var rules: Array[Node] = card.find_children("*", "KeywordText", true, false)
@@ -84,7 +86,7 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 ## line never crosses the words on them.
 func test_shop_paper_is_never_shorter_than_its_border() -> void:
 	_to_store()
-	for screen_id: String in ["store", "black_market"]:
+	for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 		var store: StoreScreen = await _open(screen_id)
 		for node: Node in store.find_children("*", "PanelContainer", true, false):
 			var panel: PanelContainer = node
@@ -122,7 +124,7 @@ func test_the_reforms_strip_and_board_names_fit_without_clipping() -> void:
 	_to_store()
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.reforms.assign(["supply_cooperative", "work_point_reform", "couriers_bag"])
-	var store: StoreScreen = await _open("store")
+	var store: StoreScreen = await _open(ScreenId.STORE)
 	var stall: ReformStall = store.reform_stall
 	var strip: ReformStrip = stall.strip
 	var notes: Control = store.blocks()["notes"]
@@ -164,7 +166,7 @@ func test_card_marks_sit_in_the_strip_a_fan_leaves_showing() -> void:
 
 func test_the_rank_picker_stands_over_a_scrim() -> void:
 	_to_store()
-	var store: StoreScreen = await _open("black_market")
+	var store: StoreScreen = await _open(ScreenId.BLACK_MARKET)
 	var cadres: CadreCounter = store.cadres
 	var picker: RankPicker = cadres.picker
 	picker.ask("Pick", store, func(_rank: int) -> void: pass)
@@ -188,7 +190,7 @@ func _open_everything() -> void:
 
 func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 	_open_everything()
-	var collection: CollectionScreen = _app.show_screen(App.COLLECTION)
+	var collection: CollectionScreen = _app.show_screen(ScreenId.COLLECTION)
 	await await_idle_frame()
 	await await_idle_frame()
 	var scroll: ScrollContainer = collection.scroll()
@@ -208,7 +210,7 @@ func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 
 
 func test_the_village_history_sits_on_one_sheet_with_a_red_heading() -> void:
-	var history: VillageHistoryScreen = _app.show_screen(App.VILLAGE_HISTORY)
+	var history: VillageHistoryScreen = _app.show_screen(ScreenId.VILLAGE_HISTORY)
 	await await_idle_frame()
 	await await_idle_frame()
 	var sheet: PanelContainer = history.sheet()
@@ -284,11 +286,11 @@ func _check_cadres() -> void:
 			. is_true()
 		)
 	_open_everything()
-	var collection: CollectionScreen = _app.show_screen(App.COLLECTION)
+	var collection: CollectionScreen = _app.show_screen(ScreenId.COLLECTION)
 	await await_idle_frame()
 	await await_idle_frame()
 	for cadre: ModifierDef in RunLoop.all_cadres():
-		_assert_fits(_named(collection, tr(cadre.name_key)), "collection")
+		_assert_fits(_named(collection, tr(cadre.name_key)), "the collection")
 	_clips(collection, "collection with everything open")
 
 

@@ -6,6 +6,7 @@ extends RefCounted
 ## returns. Only families with shifts are touched, so every other config, a mirrored one
 ## included, is left as it was.
 
+## The honesty trait, whose shifted seats apply() reports.
 const HONESTY: String = "honesty"
 
 

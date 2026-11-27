@@ -4,10 +4,13 @@ extends RefCounted
 ## rules text, and a short count for its card on the notice board. Both are empty for a
 ## Cadre that keeps no state or is not held.
 
+## The Cadre's state in a sentence for its rules text, or empty when it keeps no state.
 var line: String = ""
+## The short count on the Cadre's card, or empty when it keeps no state.
 var count: String = ""
 
 
+## The standing of a held Cadre, read from the state its effect keeps in the memo.
 static func of(definition: ModifierDef, memo: CadreMemo) -> CadreStanding:
 	var standing: CadreStanding = CadreStanding.new()
 	var effect: ModifierEffect = EffectRegistry.create(definition, RunLoop.PLAYER, memo)

@@ -6,6 +6,7 @@ extends Node
 ## the score's fade_seconds. A bed at zero is paused, so it costs nothing in the mix. It
 ## is silent until the table first follows the board, so the title has none.
 
+## The ambience score: the beds to loop, their gains, and the fade, duck and hush timings.
 const SCORE: AmbienceScore = preload("res://data/audio/ambience_score.tres")
 
 var _players: Array[AudioStreamPlayer] = []

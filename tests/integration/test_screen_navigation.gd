@@ -17,39 +17,41 @@ func after_test() -> void:
 
 
 func test_the_title_reaches_setup_collection_and_history() -> void:
-	_app.show_screen(App.TITLE, true)
+	_app.show_screen(ScreenId.TITLE, true)
 	await await_idle_frame()
 	for pair: Array in [
-		["title.collection", "collection"],
-		["title.history", "village_history"],
-		["title.new_run", "run_setup"],
+		["title.collection", ScreenId.COLLECTION],
+		["title.history", ScreenId.VILLAGE_HISTORY],
+		["title.new_run", ScreenId.RUN_SETUP],
 	]:
 		_press(pair[0])
 		await await_idle_frame()
 		assert_str(_app.switcher.current_id()).is_equal(pair[1])
 		_app.back()
 		await await_idle_frame()
-		assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
+		assert_str(_app.switcher.current_id()).is_equal(ScreenId.TITLE)
 
 
 func test_run_setup_starts_a_run_at_the_set_intro() -> void:
-	_app.show_screen(App.TITLE, true)
+	_app.show_screen(ScreenId.TITLE, true)
 	await await_idle_frame()
 	_press("title.new_run")
 	await await_idle_frame()
 	_press("setup.start")
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.SET_INTRO)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SET_INTRO)
 	assert_bool(_app.controller.has_run()).is_true()
 
 
 func test_the_table_menu_reaches_the_dossier_and_last_round_and_back() -> void:
 	_app.new_run(SEED)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	var was: Dictionary = _app.controller.state_copy().to_dict()
-	for pair: Array in [["dossier.open", "dossier"], ["pause.last_round", "round_summary"]]:
+	for pair: Array in [
+		["dossier.open", ScreenId.DOSSIER], ["pause.last_round", ScreenId.ROUND_SUMMARY]
+	]:
 		table = _app.switcher.current()
 		table.hud.menu.pressed.emit()
 		_press(pair[0])
@@ -57,44 +59,44 @@ func test_the_table_menu_reaches_the_dossier_and_last_round_and_back() -> void:
 		assert_str(_app.switcher.current_id()).is_equal(pair[1])
 		_app.back()
 		await await_idle_frame()
-		assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
+		assert_str(_app.switcher.current_id()).is_equal(ScreenId.TABLE)
 		assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 func test_the_store_reaches_the_black_market_and_back() -> void:
 	_app.new_run(SEED)
-	_app.show_screen(App.SET_INTRO, true)
-	_app.show_screen(App.STORE)
+	_app.show_screen(ScreenId.SET_INTRO, true)
+	_app.show_screen(ScreenId.STORE)
 	await await_idle_frame()
 	var was: Dictionary = _app.controller.state_copy().to_dict()
 	_press("market.open")
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.BLACK_MARKET)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.BLACK_MARKET)
 	_press("market.back")
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.STORE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.STORE)
 	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 ## The reeducation screen opens over the table and goes back to it.
 func test_reeducation_opens_over_the_table_and_goes_back() -> void:
 	_app.new_run(SEED)
-	_app.show_screen(App.TABLE, true)
+	_app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var was: Dictionary = _app.controller.state_copy().to_dict()
-	for screen_id: String in ["reeducation"]:
+	for screen_id: String in [ScreenId.REEDUCATION]:
 		_app.show_screen(screen_id)
 		await await_idle_frame()
 		assert_str(_app.switcher.current_id()).is_equal(screen_id)
 		_press_first()
 		await await_idle_frame()
-		assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
+		assert_str(_app.switcher.current_id()).is_equal(ScreenId.TABLE)
 	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
-	_app.show_screen(App.ENDING, true)
+	_app.show_screen(ScreenId.ENDING, true)
 	await await_idle_frame()
 	_press("end.to_title")
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.TITLE)
 
 
 func test_a_finished_round_shows_in_the_last_round_summary() -> void:
@@ -156,4 +158,4 @@ func test_last_round_reports_exact_values_and_keeps_them() -> void:
 ## sheet over itself (ADR 0038): there is no swap screen to land on.
 func test_a_waiting_swap_continues_at_the_table() -> void:
 	_app.new_run(SEED)
-	assert_str(_app.screen_for(RunController.AWAIT_SWAP)).is_equal(App.TABLE)
+	assert_str(_app.screen_for(RunController.AWAIT_SWAP)).is_equal(ScreenId.TABLE)

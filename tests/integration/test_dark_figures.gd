@@ -12,15 +12,19 @@ const RESENTMENT: int = 71
 const FAMINE_LAYER: int = 0
 
 var _app: App
+var _was_size: Vector2i
 
 
 func before_test() -> void:
+	_was_size = get_tree().root.size
 	AppKit.fresh_saves(self)
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
+	get_tree().root.size = _was_size
 	Saves.run_service().delete()
 	ArtStages.stage_override = -1
 
@@ -70,7 +74,7 @@ func _never_shows(screen: Node, values: Array[int]) -> void:
 
 func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 	_darken(["famine", "norm"])
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var hud: TableHud = table.hud
 	assert_bool(hud.famine.visible).is_false()
@@ -79,6 +83,34 @@ func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 	var target: String = Strings.score(_app.controller.figures.target())
 	assert_str(hud.quota.text()).contains(ShownFigures.none_reported()).not_contains(target)
 	assert_str(_shown(hud)).contains(ShownFigures.none_reported())
+
+
+## With both meters and the norm dark, and at the stage past the last, where every figure
+## reads as a success in words, the words keep each figure's width, so the status line
+## stands whole at every text size on both screens.
+func test_the_status_line_stays_whole_while_figures_read_as_words() -> void:
+	_darken([RunCorrections.FAMINE, RunCorrections.DENUNCIATION, RunCorrections.NORM])
+	for filed: bool in [false, true]:
+		ArtStages.stage_override = ArtStages.FILED_STAGE if filed else -1
+		for level: int in TextSize.count():
+			Settings.set_value(TextSize.SETTING, level)
+			for screen_size: Vector2i in ClipCheck.SIZES:
+				get_tree().root.size = screen_size
+				var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
+				await await_idle_frame()
+				await await_idle_frame()
+				var status: Label = table.hud.status
+				var widths: PackedStringArray = []
+				for piece: Node in status.get_parent().get_children():
+					widths.append("%s %d" % [piece.get_class(), (piece as Control).size.x])
+				var where: String = (
+					"filed %s, text %d at %s: %s" % [filed, level, screen_size, ", ".join(widths)]
+				)
+				(
+					assert_float(ClipCheck.text_overflow(status))
+					. override_failure_message(where)
+					. is_less_equal(ClipCheck.SLACK)
+				)
 
 
 func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
@@ -96,7 +128,7 @@ func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
 	var sounds: int = SfxPlayer.BANK.sound(AudioEvents.METER_ROSE).streams.size()
 	if sounds > 1:
 		assert_int(Audio.effects.next_take(AudioEvents.METER_ROSE)).is_not_equal(was)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var dread: DreadLayers = table.dread
 	var copy: RunState = _app.controller.state_copy()
@@ -111,7 +143,7 @@ func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
 func test_the_quota_report_shows_none_reported_and_no_rise() -> void:
 	_to_set_over()
 	_darken(["famine", "norm"])
-	var summary: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
+	var summary: SetSummaryScreen = _app.show_screen(ScreenId.SET_SUMMARY, true)
 	await await_idle_frame()
 	var words: String = _shown(summary)
 	assert_str(words).contains(ShownFigures.none_reported())
@@ -123,7 +155,7 @@ func test_the_quota_report_shows_none_reported_and_no_rise() -> void:
 
 func test_the_set_intro_hides_a_dark_norms_target() -> void:
 	_darken(["norm"])
-	var intro: Node = _app.show_screen(App.SET_INTRO, true)
+	var intro: Node = _app.show_screen(ScreenId.SET_INTRO, true)
 	await await_idle_frame()
 	var rounds: int = _app.max_rounds()
 	var hidden: String = tr("intro.target.unreported").format({"rounds": rounds})
@@ -137,7 +169,7 @@ func test_the_black_market_shows_a_dark_resentment_as_none_reported() -> void:
 	_to_set_over()
 	_app.controller.finish_set()
 	_darken(["resentment"])
-	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
+	var market: StoreScreen = _app.show_screen(ScreenId.BLACK_MARKET, true)
 	await await_idle_frame()
 	var count: Label = market.resentment
 	assert_str(count.text).is_equal(ShownFigures.none_reported())
@@ -146,7 +178,7 @@ func test_the_black_market_shows_a_dark_resentment_as_none_reported() -> void:
 
 func test_the_year_and_round_pages_and_the_ending_show_none_reported() -> void:
 	_darken(["famine", "denunciation"])
-	for screen_id: String in ["year_summary", "round_summary"]:
+	for screen_id: String in [ScreenId.YEAR_SUMMARY, ScreenId.ROUND_SUMMARY]:
 		var page: Node = _app.show_screen(screen_id, true)
 		await await_idle_frame()
 		_never_shows(page, [FAMINE, DENUNCIATION])
@@ -154,7 +186,7 @@ func test_the_year_and_round_pages_and_the_ending_show_none_reported() -> void:
 	_loop().state.famine = RunDefaults.METERS.famine.death
 	_app.controller.reseal_book()
 	assert_str(_app.controller.seats.ending().id).is_equal(Endings.DEATH_FAMINE)
-	var ending: Node = _app.show_screen(App.ENDING, true)
+	var ending: Node = _app.show_screen(ScreenId.ENDING, true)
 	await await_idle_frame()
 	var words: String = _shown(ending)
 	assert_str(words).contains(ShownFigures.none_reported())

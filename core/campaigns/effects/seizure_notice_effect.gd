@@ -6,13 +6,16 @@ extends CampaignEffect
 ## the other side; ties go to the next seat in turn order. A seat with a single card is
 ## never traded with, so neither hand hands over its last card.
 
+## Parameter key: the Resentment the notice costs.
 const RESENTMENT: String = "resentment"
 
 
+## Needs the Resentment it costs.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray([RESENTMENT])
 
 
+## Refuses when the player's hand or the target's holds a single card.
 func check(context: CampaignContext) -> Reason:
 	var sizes: PackedInt32Array = context.round_state.remaining()
 	if sizes[context.player] < 2 or sizes[target(context)] < 2:
@@ -20,6 +23,7 @@ func check(context: CampaignContext) -> Reason:
 	return Reason.OK
 
 
+## Trades the target's highest card for the player's lowest and adds the Resentment.
 func apply(context: CampaignContext) -> void:
 	var seat: int = target(context)
 	var taken: int = _extreme(context, seat, true)

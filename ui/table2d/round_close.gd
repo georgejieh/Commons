@@ -17,6 +17,8 @@ var _winner: int = Seats.NONE
 var _beat: Tween = null
 
 
+## Wires the sweep to the event queue, the trick pile, the table's moments, the hand and the card
+## lookup, and listens to the queue.
 func setup(
 	player: EventPlayer,
 	pile: TrickPile,

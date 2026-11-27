@@ -14,10 +14,12 @@ var _round_start: int = 0
 var _flushed: int = 0
 
 
+## The Set's events so far, in order; the live list, which banking and meters append to directly.
 func events() -> Array[RunEvent]:
 	return _events
 
 
+## Appends one event and hands it to on_add.
 func add(event: RunEvent) -> void:
 	_events.append(event)
 	flush()
@@ -40,10 +42,12 @@ func start_set(state: RunState, set_number: int) -> void:
 	state.summaries.append(SetSummary.new(set_number))
 
 
+## Marks where a round's events begin, for end_round to fold.
 func start_round() -> void:
 	_round_start = _events.size()
 
 
+## Folds the round's events into the Set's summary and the run's observations.
 func end_round(state: RunState, player: int) -> void:
 	var round_events: Array[RunEvent] = _events.slice(_round_start)
 	SummaryFold.fold_round(state.summaries[-1], round_events, player, state.table)

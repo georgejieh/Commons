@@ -7,10 +7,13 @@ extends PanelContainer
 ## comes from it, and it gives way to the rules slip when the column needs the room
 ## (TableColumns).
 
+## A surname's type at Standard.
 const NAME_SIZE: int = 16
 ## Inside the paper's printed border.
 const PADDING: int = 22
+## How many columns the surnames stand in.
 const COLUMNS: int = 2
+## The gap between the columns, in pixels.
 const COLUMN_GAP: int = 28
 ## Names leave in steps of this many down the list, so the gaps do not run down one
 ## column; it shares no factor with the number of families.
@@ -72,6 +75,7 @@ func names_left() -> int:
 	return left
 
 
+## How many surnames the roster holds, for tests.
 func name_count() -> int:
 	return _names.size()
 

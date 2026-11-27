@@ -10,17 +10,25 @@ extends Control
 ## happen to it, and confirms or backs out. A hover or the cursor names a card's marks in
 ## the slip beside it. While open it keeps the focus and every key; Cancel closes it.
 
+## Sent each time the sheet closes, whichever way it was closed.
 signal closed
 ## The choice was made on the card: the page shows what it did.
 signal chosen(card_id: int)
 
+## The scene the card coming into the deck is shown with, the same face the table draws.
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 
+## The veil over the page behind the sheet.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.6)
+## The gap between the sheet's paper and the screen's edge, in pixels.
 const MARGIN: float = 24.0
+## The padding inside the sheet's paper, in pixels.
 const PADDING: int = 28
+## The gap between the parts of the sheet's column, in pixels.
 const SPACING: int = 10
+## The size of the status line, at Standard text.
 const RULE_SIZE: int = 20
+## The size of the legend's entries, at Standard text.
 const LEGEND_SIZE: int = 18
 ## The stamp that marks a card as the player's, beside the enhancements in the legend.
 const STAMP: String = "stamp"
@@ -90,36 +98,43 @@ func _ready() -> void:
 	resized.connect(_fit)
 
 
+## Gives the sheet the run controller it reads the deck from, and prepares the card board.
 func setup(controller: RunController) -> void:
 	_controller = controller
 	_board.prepare()
 
 
+## True while the sheet is showing; it keeps the focus and every key until it closes.
 func is_open() -> bool:
 	return visible
 
 
-## The parts, for tests and the playtest.
+## The card board, for tests and the playtest.
 func board() -> DeckBoard:
 	return _board
 
 
+## The ticket that confirms the choice, for tests and the playtest.
 func confirm_button() -> Button:
 	return _confirm
 
 
+## The Back button, for tests and the playtest.
 func back_button() -> Button:
 	return _back
 
 
+## The sheet's paper, for tests and the playtest.
 func paper() -> Control:
 	return _paper
 
 
+## The slip beside the sheet that names the card under the cursor, for tests and the playtest.
 func slip() -> DetailSlip:
 	return _slip
 
 
+## The line beside the buttons, saying what picking the card does or why it cannot, for tests.
 func status_text() -> String:
 	return _status.text
 
@@ -146,6 +161,7 @@ func open_choice(choice: DeckChoice) -> void:
 	_open(true)
 
 
+## Closes the sheet, puts the slip away, clears the board and sends closed.
 func close() -> void:
 	if not visible:
 		return
@@ -194,7 +210,7 @@ func _fit() -> void:
 
 
 ## One entry for each mark the deck or the plot holds now: its drawn mark, its name and
-## how many cards carry it.
+## how many cards carry it, explained in the sheet's slip while hovered.
 func _show_legend(cards: Array[CardInstance]) -> void:
 	ScreenKit.clear(legend)
 	var counts: Dictionary[String, int] = {}
@@ -217,10 +233,11 @@ func _legend_entry(mark: String, count: int) -> Control:
 	drawn.visible = true
 	var words: String = tr("deck.legend.entry").format({"mark": mark_name(mark), "count": count})
 	var entry: HBoxContainer = ScreenKit.row([drawn, ScreenKit.label(words, LEGEND_SIZE)], 6)
-	entry.tooltip_text = Keywords.wrapped(Keywords.meaning(mark))
+	_slip.follow(entry, "", Keywords.meaning(mark))
 	return entry
 
 
+## The name of a mark by its id, as the legend and the slips say it.
 static func mark_name(mark: String) -> String:
 	return TranslationServer.translate("keyword.%s.name" % mark)
 

@@ -30,7 +30,7 @@ func test_the_black_markets_plot_cards_keep_a_cards_proportions() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
+			var market: StoreScreen = _app.show_screen(ScreenId.BLACK_MARKET, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			var goods: MarketGoods = market.goods
@@ -51,7 +51,7 @@ func test_a_plot_cards_ticket_is_explained_in_the_slip() -> void:
 	var driver: ControllerScript = ControllerScript.new()
 	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
-	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
+	var market: StoreScreen = _app.show_screen(ScreenId.BLACK_MARKET, true)
 	await await_idle_frame()
 	var goods: MarketGoods = market.goods
 	var buy: Button = goods.card_button(0)

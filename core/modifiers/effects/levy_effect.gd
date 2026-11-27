@@ -4,13 +4,16 @@ extends ModifierEffect
 ## the seat on their left, which hands back as many of its lowest (ADR 0023). Highest
 ## and lowest are by each seat's own rank order (CardPick).
 
+## Parameter key: how many cards each side hands over.
 const CARDS: String = "cards"
 
 
+## Needs the number of cards.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray([CARDS])
 
 
+## Trades the holder's highest cards for the lowest of the seat on its left.
 func round_start(context: RoundContext) -> void:
 	if context.round_state == null:
 		return

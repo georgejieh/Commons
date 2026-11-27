@@ -27,21 +27,26 @@ static func runs_left(unlock_tier: int, finished_runs: int) -> int:
 	return maxi(unlock_tier - finished_runs, 0)
 
 
+## The pool's Cadres whose unlock tier is at or below open.
 static func cadres(pool: Array[ModifierDef], open: int) -> Array[ModifierDef]:
 	return pool.filter(func(item: ModifierDef) -> bool: return item.unlock_tier <= open)
 
 
+## The pool's Campaigns whose unlock tier is at or below open.
 static func campaigns(pool: Array[CampaignDef], open: int) -> Array[CampaignDef]:
 	return pool.filter(func(item: CampaignDef) -> bool: return item.unlock_tier <= open)
 
 
+## The pool's Directives whose unlock tier is at or below open.
 static func directives(pool: Array[DirectiveDef], open: int) -> Array[DirectiveDef]:
 	return pool.filter(func(item: DirectiveDef) -> bool: return item.unlock_tier <= open)
 
 
+## The pool's Reforms whose unlock tier is at or below open.
 static func reforms(pool: Array[ReformDef], open: int) -> Array[ReformDef]:
 	return pool.filter(func(item: ReformDef) -> bool: return item.unlock_tier <= open)
 
 
+## The pool's envelope kinds whose unlock tier is at or below open.
 static func envelopes(pool: Array[EnvelopeDef], open: int) -> Array[EnvelopeDef]:
 	return pool.filter(func(item: EnvelopeDef) -> bool: return item.unlock_tier <= open)

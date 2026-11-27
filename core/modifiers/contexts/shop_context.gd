@@ -2,6 +2,7 @@ class_name ShopContext
 extends RefCounted
 ## Passed to the shop open hook.
 
+## The player's seat, who is visiting the shop.
 var seat: int
 ## Cadres the state store shows fewer this visit, to edit (Short Supply, ADR 0023).
 var cadre_cut: int = 0

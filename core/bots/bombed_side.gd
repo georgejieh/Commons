@@ -4,7 +4,10 @@ extends RefCounted
 ## opponent's as they stand once a bomb is down in the trick (ADR 0039), one table for
 ## each way of playing.
 
+## The table the seat's own bomb is judged under once it is down in the trick.
 var own: BotTable
+## The tables the opponents play under once a bomb is down, one for each distinct way of
+## playing, so opponents who play alike share one.
 var rivals: Array[BotTable] = []
 
 

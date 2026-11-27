@@ -38,7 +38,7 @@ func test_the_same_salt_picks_the_same_line() -> void:
 
 
 func test_each_announcement_is_spoken_once_and_the_dossier_fills() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var speech: TableSpeech = table.speech
 	speech.spoke.connect(_on_spoke)
@@ -50,7 +50,7 @@ func test_each_announcement_is_spoken_once_and_the_dossier_fills() -> void:
 		assert_int(_spoken.get(seat, 0)).is_equal(_announced.get(seat, 0))
 		total += _announced.get(seat, 0)
 	assert_int(total).is_greater(0)
-	var dossier: DossierScreen = _app.show_screen(App.DOSSIER)
+	var dossier: DossierScreen = _app.show_screen(ScreenId.DOSSIER)
 	await await_idle_frame()
 	var state: RunState = _app.controller.state_copy()
 	for seat: int in range(1, Seats.COUNT):
@@ -61,7 +61,7 @@ func test_each_announcement_is_spoken_once_and_the_dossier_fills() -> void:
 		assert_array(Array(dossier.entries(seat))).contains([calls])
 	_app.back()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_not_equal("dossier")
+	assert_str(_app.switcher.current_id()).is_not_equal(ScreenId.DOSSIER)
 
 
 func _on_event(event: RunEvent) -> void:
@@ -79,10 +79,10 @@ func _on_spoke(seat: int, event: String, _line: SpeechLine) -> void:
 func _play_set(table: TableScreen) -> void:
 	var driver: ControllerScript = ControllerScript.new()
 	for _turn: int in 600:
-		if _app.switcher.current_id() != "table":
+		if _app.switcher.current_id() != ScreenId.TABLE:
 			return
 		table.skip_events()
-		if _app.switcher.current_id() != "table":
+		if _app.switcher.current_id() != ScreenId.TABLE:
 			return
 		match _app.controller.awaiting():
 			RunController.AWAIT_BID:
@@ -102,7 +102,7 @@ func _play_set(table: TableScreen) -> void:
 
 ## Coming back to the table mid-Set replays its events silently: nothing is said twice.
 func test_reopening_the_table_says_nothing_again() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var speech: TableSpeech = table.speech
 	speech.spoke.connect(_on_spoke_any)
@@ -116,9 +116,9 @@ func test_reopening_the_table_says_nothing_again() -> void:
 	table.skip_events()
 	await await_idle_frame()
 	assert_int(_said_any).is_greater(0)
-	assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.TABLE)
 	# The new table replays the Set inside show_screen, so count what its speech said.
-	var reopened: TableScreen = _app.show_screen(App.TABLE, true)
+	var reopened: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	reopened.skip_events()
 	await await_idle_frame()
 	var echo: TableSpeech = reopened.speech

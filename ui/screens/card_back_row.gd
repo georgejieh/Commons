@@ -5,8 +5,11 @@ extends VBoxContainer
 ## ringed in red. A design not yet open is a blank sheet saying only when it opens. Mouse,
 ## keyboard and gamepad pick a swatch; the choice applies at once and the screen saves it.
 
+## The size of a design's sheet, in pixels.
 const SWATCH: Vector2 = Vector2(176, 214)
+## The size a card back is drawn at on its sheet, in pixels.
 const BACK_SIZE: Vector2 = Vector2(88, 124)
+## The size of a design's name, at Standard text.
 const NAME_SIZE: int = 20
 
 var _swatches: Array[AgedSheet] = []

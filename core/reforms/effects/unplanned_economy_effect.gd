@@ -4,5 +4,6 @@ extends ReformEffect
 ## not shuffled, between the rounds of a Quota (DeckOrder).
 
 
+## True: the deck is gathered and cut, not shuffled, between a Quota's rounds.
 func gathers_deck() -> bool:
 	return true

@@ -6,15 +6,25 @@ extends RefCounted
 ## endings from its class and the meter in its high band, or The Commons in place of The
 ## Secret Contract when it also ended collective. Nothing here changes the state it reads.
 
+## The peasant ending when neither meter ended in its high band.
 const SECRET_CONTRACT: String = "secret_contract"
+## The ending that takes The Secret Contract's place when the run also ended collective.
 const THE_COMMONS: String = "the_commons"
+## The peasant ending when Famine ended in its high band.
 const LEAN_YEARS: String = "lean_years"
+## The peasant ending when Denunciation ended in its high band.
 const LABELED: String = "labeled"
+## The landlord ending when neither meter ended in its high band.
 const BENEVOLENT_LANDLORD: String = "benevolent_landlord"
+## The landlord ending when Famine ended in its high band.
 const FULL_GRANARY: String = "full_granary"
+## The landlord ending when Denunciation ended in its high band.
 const STRUGGLED: String = "struggled"
+## The death of a run whose Famine reached its death threshold.
 const DEATH_FAMINE: String = "death_famine"
+## The death of a run whose Denunciation reached its death threshold.
 const DEATH_DENUNCIATION: String = "death_denunciation"
+## Every ending of a run that survived its last Year, in the order of its string keys.
 const ENDINGS: Array[String] = [
 	SECRET_CONTRACT,
 	THE_COMMONS,
@@ -24,29 +34,41 @@ const ENDINGS: Array[String] = [
 	FULL_GRANARY,
 	STRUGGLED,
 ]
+## Both deaths, which get a record and no epilogue.
 const DEATHS: Array[String] = [DEATH_FAMINE, DEATH_DENUNCIATION]
-## Each class's ending by the meter in its high band, or by none ("").
+## A peasant run's ending by the meter in its high band, or by none ("").
 const PEASANT: Dictionary[String, String] = {
 	"": SECRET_CONTRACT,
 	RunMeters.FAMINE: LEAN_YEARS,
 	RunMeters.DENUNCIATION: LABELED,
 }
+## A landlord run's ending by the meter in its high band, or by none ("").
 const LANDLORD: Dictionary[String, String] = {
 	"": BENEVOLENT_LANDLORD,
 	RunMeters.FAMINE: FULL_GRANARY,
 	RunMeters.DENUNCIATION: STRUGGLED,
 }
-## Endings whose epilogue names the dead, and those that close on the historical note.
+## Endings whose epilogue adds a line naming the dead.
 const ROLL_CALL: Array[String] = [LEAN_YEARS, FULL_GRANARY]
+## Endings that close on the historical note.
 const NOTED: Array[String] = [SECRET_CONTRACT, THE_COMMONS]
+## A family's disposition when feeding it outweighed the harm done to it.
 const WARM: String = "warm"
+## A family's disposition when it is neither warm nor bitter.
 const WARY: String = "wary"
+## A family's disposition when its pull is at or above the data's bitter_pull.
 const BITTER: String = "bitter"
+## Every disposition, in the order an ending's epilogue lines are keyed by.
 const DISPOSITIONS: Array[String] = [WARM, WARY, BITTER]
+## The string key of the epilogue line for families away in reeducation.
 const REEDUCATION_KEY: String = "epilogue.state.reeducation"
+## The string key of the epilogue line for deposed families.
 const DEPOSED_KEY: String = "epilogue.state.deposed"
+## The string key of the epilogue line that names the dead.
 const MISSING_KEY: String = "epilogue.missing"
+## The string key of the historical note that closes The Secret Contract and The Commons.
 const NOTE_KEY: String = "ending.note.xiaogang"
+## The thresholds used when a caller gives none.
 const DEFAULT_PARAMS: EndingParams = preload("res://data/run/endings.tres")
 
 
@@ -65,6 +87,7 @@ static func outcome(
 	return PEASANT[high]
 
 
+## True when outcome_id is a death, which has a record and no epilogue.
 static func is_death(outcome_id: String) -> bool:
 	return DEATHS.has(outcome_id)
 
@@ -149,14 +172,17 @@ static func disposition(
 	return WARY
 
 
+## The string key of the ending's or death's title.
 static func title_key(outcome_id: String) -> String:
 	return _prefix(outcome_id) + ".title"
 
 
+## The string key of the ending's or death's text.
 static func text_key(outcome_id: String) -> String:
 	return _prefix(outcome_id) + ".text"
 
 
+## The string key of an ending's epilogue line for a family's disposition.
 static func line_key(ending_id: String, feeling: String) -> String:
 	return "epilogue.%s.%s" % [ending_id, feeling]
 

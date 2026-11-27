@@ -3,12 +3,15 @@ extends RefCounted
 ## What the player's chosen cards would do if played now: how the table reads them, and
 ## the score they would earn.
 
+## How the table reads the chosen cards, with the reason they cannot be played if so.
 var reading: PlayReading
 ## 0 unless the cards form a pattern.
 var score: float = 0.0
-## The Grain, Rate and Zeal behind score.
+## The Grain behind score.
 var grain: float = 0.0
+## The Rate behind score.
 var rate: float = 0.0
+## The Zeal behind score.
 var zeal: float = 0.0
 
 
@@ -26,5 +29,6 @@ func _init(
 	zeal = play_zeal
 
 
+## True when the chosen cards are a legal play now.
 func can_play() -> bool:
 	return reading.reason == RoundState.Reason.OK

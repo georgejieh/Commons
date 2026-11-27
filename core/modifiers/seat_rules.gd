@@ -53,6 +53,7 @@ static func uniform(rules: RuleSet, rank_map: PackedByteArray) -> SeatRules:
 	return table
 
 
+## The RuleSet the seat plays under, from the cache.
 func rules_for(seat: int) -> RuleSet:
 	return _rules[seat]
 
@@ -72,6 +73,7 @@ func map_in(seat: int, bombed: bool) -> PackedByteArray:
 	return _maps[_side(bombed) + seat]
 
 
+## The seat's standings on one side of a bomb in the trick, as map_in gives its order.
 func standing_in(seat: int, bombed: bool) -> PackedByteArray:
 	return _standings[_side(bombed) + seat]
 
@@ -81,6 +83,7 @@ func trick_bombed() -> bool:
 	return _trick_bombed
 
 
+## Starts a round under this landlord: clears the trick's bomb and the stamped ranks, and rebuilds.
 func start_round(landlord: int) -> void:
 	_landlord = landlord
 	_trick_bombed = false
@@ -89,6 +92,7 @@ func start_round(landlord: int) -> void:
 	refresh()
 
 
+## Records whether the trick has a bomb in it, as plays are made, and rebuilds when that changes.
 func set_trick_bombed(bombed: bool) -> void:
 	if bombed != _trick_bombed:
 		_trick_bombed = bombed

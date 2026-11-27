@@ -5,6 +5,8 @@ extends RefCounted
 ## the deck is dealt. Each effect answers its own question from its parameters, leaves
 ## every other at nothing, and changes nothing itself.
 
+## The definition's parameters, copied in by the registry. Read only keys that required_parameters()
+## names.
 var parameters: Dictionary[String, int] = {}
 
 

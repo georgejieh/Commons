@@ -6,7 +6,9 @@ extends RefCounted
 ## the player's own name in it, drawn from the seed the run will start with (ADR 0028).
 ## Only the first locked stake says how it opens, since its line names the stake below.
 
+## One sheet for each household, open or locked by finished runs.
 var households: Array[UnlockSheet] = []
+## One sheet for each stake, open up to the profile's highest.
 var stakes: Array[UnlockSheet] = []
 ## What was inherited, in one line, or empty for nothing.
 var inherited: String = ""
@@ -18,10 +20,12 @@ var top_stake: int = 0
 var player_name: String = ""
 
 
+## Setup as the profile leaves it, with the player's name drawn from seed_value.
 static func of(profile: SaveService, seed_value: int = 0) -> SetupView:
 	return from_data(Profile.read(profile), seed_value)
 
 
+## Setup from profile data already read, as of does.
 static func from_data(data: ProfileData, seed_value: int = 0) -> SetupView:
 	var view: SetupView = SetupView.new()
 	view.generation = data.generation + 1

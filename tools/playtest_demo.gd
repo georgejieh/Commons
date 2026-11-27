@@ -77,14 +77,14 @@ func run(folder: String, rounds: int) -> void:
 	_driver = script.new()
 	await _frames(20)
 	await _first_launch()
-	await _shot("title")
+	await _shot(ScreenId.TITLE)
 	await _collection_frames()
 	await _click_button_with_text(tr("title.new_run"))
 	await _frames(30)
-	await _shot("run_setup")
+	await _shot(ScreenId.RUN_SETUP)
 	await _click_button_with_text(tr("setup.start"))
 	await _frames(30)
-	await _shot("set_intro")
+	await _shot(ScreenId.SET_INTRO)
 	await _slogan_frame()
 	await _click_button_with_text(tr("intro.begin"))
 	var guard: int = 0
@@ -106,14 +106,14 @@ func run(folder: String, rounds: int) -> void:
 ## The pages a first launch puts before the title: the content note, the family's name,
 ## whose default is taken (ADR 0028), and the arrival, which the demo skips (ADR 0026).
 func _first_launch() -> void:
-	if _screen_id() == "content_note":
-		await _shot("content_note")
+	if _screen_id() == ScreenId.CONTENT_NOTE:
+		await _shot(ScreenId.CONTENT_NOTE)
 		await _click_button_with_text(tr("note.continue"))
 		await _frames(20)
-	if _screen_id() == "surname":
+	if _screen_id() == ScreenId.SURNAME:
 		await _press(_current().call("confirm_button"))
 		await _frames(20)
-	if _screen_id() == "arrival":
+	if _screen_id() == ScreenId.ARRIVAL:
 		await _click_button_with_text(tr("tutorial.skip"))
 		var confirm: Object = _current().call("confirm")
 		await _press(confirm.call("skip_button"))
@@ -122,23 +122,23 @@ func _first_launch() -> void:
 
 func _step() -> void:
 	match _screen_id():
-		"table":
+		ScreenId.TABLE:
 			await _table_step()
-		"set_summary":
-			await _shot("set_summary")
+		ScreenId.SET_SUMMARY:
+			await _shot(ScreenId.SET_SUMMARY)
 			await _click_first_button()
-		"store":
+		ScreenId.STORE:
 			await _store.visit(_marks, _file, _wild, _market)
 			if _store.exchanged and not _deck_table_shown:
 				_deck_table_due = true
-		"set_intro":
-			await _shot("set_intro")
+		ScreenId.SET_INTRO:
+			await _shot(ScreenId.SET_INTRO)
 			await _click_button_with_text(tr("intro.begin"))
-		"year_summary":
-			await _shot("year_summary")
+		ScreenId.YEAR_SUMMARY:
+			await _shot(ScreenId.YEAR_SUMMARY)
 			await _click_first_button()
-		"demo_complete":
-			await _shot("demo_complete")
+		ScreenId.DEMO_COMPLETE:
+			await _shot(ScreenId.DEMO_COMPLETE)
 			_rounds_seen = _rounds_wanted + 1
 
 
@@ -249,7 +249,7 @@ func _play_turn(table: Node) -> void:
 ## the walk fails at once and never runs out its time.
 func _stuck() -> bool:
 	var screen_id: String = _screen_id()
-	if screen_id != _stood_on or screen_id == "table":
+	if screen_id != _stood_on or screen_id == ScreenId.TABLE:
 		_stood_on = screen_id
 		_stood_steps = 0
 		return false
@@ -282,7 +282,7 @@ func _grant_opening() -> void:
 func _collection_frames() -> void:
 	await _click_button_with_text(tr("title.collection"))
 	await _frames(30)
-	await _shot("collection")
+	await _shot(ScreenId.COLLECTION)
 	var entries: Array = _current().call("entries")
 	if not entries.is_empty():
 		var last: Control = entries[-1]
@@ -317,9 +317,9 @@ func _slogan_frame() -> void:
 	var slogan: int = loop.state.slogan_type
 	loop.state.debuff_ladder[1] = "slogan_of_the_week"
 	loop.state.slogan_type = Pattern.Type.PAIR
-	app.call("show_screen", "set_intro", true)
+	app.call("show_screen", ScreenId.SET_INTRO, true)
 	await _shot("set_intro_slogan")
 	loop.state.debuff_ladder = ladder
 	loop.state.slogan_type = slogan
-	app.call("show_screen", "set_intro", true)
+	app.call("show_screen", ScreenId.SET_INTRO, true)
 	await _frames(20)

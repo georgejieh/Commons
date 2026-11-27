@@ -10,6 +10,7 @@ const CARDS: String = "cards"
 const YEARS_PER_CARD: String = "years_per_card"
 
 
+## Needs the cards set aside in Year 1 and the Years it takes to add one.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray([CARDS, YEARS_PER_CARD])
 

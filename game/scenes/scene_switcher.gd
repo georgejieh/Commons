@@ -16,10 +16,12 @@ func setup(host: Node, screens: Dictionary[String, PackedScene]) -> void:
 	_screens = screens
 
 
+## The ID of the screen on top of the stack, or empty with none.
 func current_id() -> String:
 	return "" if _stack.is_empty() else _stack[-1]
 
 
+## The screen node shown now, or null with none.
 func current() -> Node:
 	return _current
 

@@ -5,6 +5,7 @@ extends RefCounted
 ## finishes and rounds as landlord. families maps seats to family IDs.
 
 
+## Adds one round's events to observations, for every seat but the player's.
 static func fold_round(
 	observations: Observations, events: Array[RunEvent], player: int, families: Array[String]
 ) -> void:

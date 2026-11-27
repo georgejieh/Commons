@@ -8,6 +8,7 @@ extends RefCounted
 ## commands and shift no later draw on the shop stream. While it is open the player keeps
 ## one item or none, and nothing else in the shops can be done.
 
+## The stock marker for a slot whose envelope is already bought.
 const SOLD: String = ""
 ## The pick that keeps nothing.
 const NOTHING: int = -1
@@ -53,6 +54,7 @@ func stock() -> Array[String]:
 	return _stock.duplicate()
 
 
+## What the envelope in the slot costs, with the run's price raises.
 func price(slot: int) -> int:
 	return RunShop.price_of(_state, _params, definition(_stock[slot]).cost)
 
@@ -67,6 +69,7 @@ func reroll_changes() -> bool:
 	return _bought.is_empty() and _params.envelope_offers > 0 and _open_kinds().size() > 1
 
 
+## Why the slot cannot be bought, or OK: no slot, sold out or empty, or too poor.
 func check(slot: int) -> RunShop.Reason:
 	if slot < 0 or slot >= _stock.size():
 		return RunShop.Reason.NO_SUCH_SLOT
@@ -98,6 +101,7 @@ func bought_id() -> String:
 	return _bought
 
 
+## True while an envelope is open, so the player owes a pick.
 func is_open() -> bool:
 	return _opened != null
 
@@ -172,6 +176,7 @@ func draw() -> void:
 		open.remove_at(index)
 
 
+## The envelope kind with this ID, or null when the counter sells none.
 func definition(envelope_id: String) -> EnvelopeDef:
 	for envelope: EnvelopeDef in _params.envelopes:
 		if envelope.id == envelope_id:

@@ -4,18 +4,23 @@ extends RefCounted
 ## counts by rank. Enhancement, seal and stamp change only through CardModifiers, which
 ## is the only caller the layer check allows for their setters.
 
+## Where a card came from: DECK for one of the deck's slots, PLOT for a card the run added.
 enum Origin { DECK, PLOT }
 
+## The first ID given to a plot card. A deck card's ID is its slot, below this.
 const FIRST_PLOT_ID: int = 1000
+## The enhancement or seal ID of a card that carries none.
 const NO_ID: String = ""
+## The owner stamp of a card no seat has stamped.
 const NO_OWNER: int = -1
-## The enhancements a deck or plot card may carry, one at a time (ADR 0021, ADR 0041).
-## Model scores its printed Grain at a percent for whoever scores it; a Sheaf adds a flat
-## Grain; Pennant gives the play that scores it Zeal; Surplus pays the household a coupon
-## when the player scores it.
+## The first of the enhancements a deck or plot card may carry, one at a time (ADR 0021,
+## ADR 0041). Model scores its printed Grain at a percent for whoever scores it.
 const MODEL: String = "model"
+## An enhancement: a Sheaf adds a flat Grain.
 const SHEAF: String = "sheaf"
+## An enhancement: a Pennant gives the play that scores it Zeal.
 const PENNANT: String = "pennant"
+## An enhancement: Surplus pays the household a coupon when the player scores the card.
 const SURPLUS: String = "surplus"
 ## Every enhancement, in the order the game lists them.
 const ENHANCEMENTS: Array[String] = [MODEL, SHEAF, PENNANT, SURPLUS]
@@ -36,6 +41,7 @@ func _init(card_id: int, rank: int, card_suit: int, card_origin: Origin) -> void
 	_origin = card_origin
 
 
+## A card read back from what to_dict wrote; every key must be present.
 static func from_dict(data: Dictionary) -> CardInstance:
 	var origin_value: Origin = int(data["origin"]) as Origin
 	var card: CardInstance = CardInstance.new(
@@ -69,46 +75,57 @@ static func marked_by(value: int) -> String:
 	return ENHANCEMENTS[value - 1]
 
 
+## The card's ID: its slot in the deck, or from FIRST_PLOT_ID up for a plot card.
 func id() -> int:
 	return _id
 
 
+## The rank printed on the card, a Ranks index, fixed for the card's life.
 func base_rank() -> int:
 	return _base_rank
 
 
+## The card's suit, or Deck.NO_SUIT for a joker. It matters only to scoring.
 func suit() -> int:
 	return _suit
 
 
+## Whether the card is one of the deck's slots or a plot card added during the run.
 func origin() -> Origin:
 	return _origin
 
 
+## The enhancement the card carries, or NO_ID for none.
 func enhancement_id() -> String:
 	return _enhancement_id
 
 
+## The seal the card carries, or NO_ID for none.
 func seal_id() -> String:
 	return _seal_id
 
 
+## The seat that has stamped the card, or NO_OWNER for none.
 func owner_stamp() -> int:
 	return _owner_stamp
 
 
+## Gives the card an enhancement, or NO_ID to clear it. Only CardModifiers calls it.
 func set_enhancement(new_id: String) -> void:
 	_enhancement_id = new_id
 
 
+## Gives the card a seal, or NO_ID to clear it. Only CardModifiers calls it.
 func set_seal(new_id: String) -> void:
 	_seal_id = new_id
 
 
+## Stamps the card for a seat, or NO_OWNER to clear it. Only CardModifiers calls it.
 func set_owner_stamp(player: int) -> void:
 	_owner_stamp = player
 
 
+## The card as plain data for a save, every field of it; from_dict reads it back.
 func to_dict() -> Dictionary:
 	return {
 		"id": _id,

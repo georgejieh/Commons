@@ -3,6 +3,7 @@ extends RefCounted
 ## One round of play. apply() is the only way to change it: it validates an action and
 ## either applies it, emitting events, or returns a reason code and changes nothing.
 
+## Why apply refused an action, or OK when it took it.
 enum Reason {
 	OK,
 	ROUND_OVER,
@@ -17,6 +18,7 @@ enum Reason {
 	MUST_PLAY,
 }
 
+## The passes in a row after a play that end the trick, so its seat leads again.
 const PASSES_TO_RESET: int = 2
 
 var _hands: Array[Hand] = []
@@ -68,6 +70,8 @@ func _init(deal: DealResult, landlord_seat: int, table: SeatRules) -> void:
 	_events.append(RoundEvent.new(RoundEvent.Type.KITTY_TAKEN, landlord_seat, kitty_ids))
 
 
+## Validates the action, then applies it and emits events, or returns why it was refused
+## with nothing changed.
 func apply(action: RoundAction) -> Reason:
 	if is_over():
 		return Reason.ROUND_OVER
@@ -160,26 +164,32 @@ func _take(seat: int, card_ids: Array[int]) -> Array[CardInstance]:
 	return taken
 
 
+## True once a seat has gone out.
 func is_over() -> bool:
 	return _winner != Seats.NONE
 
 
+## The seat that went out, or Seats.NONE while the round is on.
 func winner() -> int:
 	return _winner
 
 
+## The round's landlord seat.
 func landlord() -> int:
 	return _landlord
 
 
+## True once the landlord has gone out; false while the round is on.
 func landlord_won() -> bool:
 	return _winner == _landlord
 
 
+## The seat that must act, or Seats.NONE once the round is over.
 func seat_to_act() -> int:
 	return Seats.NONE if is_over() else _turn
 
 
+## A copy of the play to beat, or null when the seat to act leads.
 func current_play() -> Pattern:
 	return null if _current == null else _current.copy()
 
@@ -189,6 +199,7 @@ func trick_owner() -> int:
 	return _trick_leader if _current != null else Seats.NONE
 
 
+## A copy of every event so far, in order, for presentation to read.
 func events() -> Array[RoundEvent]:
 	return _events.duplicate()
 
@@ -217,6 +228,7 @@ func remaining() -> PackedInt32Array:
 	return sizes
 
 
+## What any seat may know of the round, as independent copies.
 func public_view() -> PublicView:
 	return PublicView.new(
 		_landlord, seat_to_act(), remaining(), _history, _kitty, _current, _announced
@@ -246,11 +258,12 @@ func read_play(seat: int, card_ids: Array[int], wanted: Pattern = null) -> PlayR
 	if is_over():
 		return PlayReading.new(Reason.ROUND_OVER)
 	_sync_rules()
-	return _read_play(seat, card_ids, wanted)
+	return PlayReading.of(_hands[seat], seat, card_ids, wanted, _current, _table, _turn)
 
 
-## The private forms of pass_reason, legal_moves and read_play read the rules as they
-## stand: apply() brings them up to date once for the action, each public query itself.
+## The private forms of pass_reason and legal_moves, like PlayReading.of, read the rules
+## as they stand: apply() brings them up to date once for the action, each public query
+## itself.
 func _pass_reason() -> Reason:
 	if _current == null:
 		return Reason.CANNOT_PASS_ON_LEAD
@@ -265,41 +278,6 @@ func _legal_moves() -> Array[Pattern]:
 	var rules: RuleSet = _table.rules_for(_turn)
 	var standing: PackedByteArray = _table.standing_for(_turn)
 	return MoveGenerator.generate(hand.counts(), hand.rank_mask(), _current, rules, standing)
-
-
-func _read_play(seat: int, card_ids: Array[int], wanted: Pattern) -> PlayReading:
-	var reading: PlayReading = PlayReading.new(Reason.OK)
-	var seen: Dictionary[int, bool] = {}
-	for card_id: int in card_ids:
-		var card: CardInstance = _hands[seat].find(card_id)
-		if seen.has(card_id) or card == null:
-			reading.reason = Reason.REPEATED_CARD if seen.has(card_id) else Reason.UNKNOWN_CARD
-			return reading
-		seen[card_id] = true
-		reading.cards.append(card)
-	var rules: RuleSet = _table.rules_for(seat)
-	var counts: PackedByteArray = CardSelection.printed_counts(reading.cards)
-	# Keys read standings, so plays of seats with different orders compare (ADR 0039).
-	var standing: PackedByteArray = _table.standing_for(seat)
-	var options: Array[Pattern] = Readings.of(counts, rules, standing)
-	if options.is_empty():
-		reading.invalid_reason = Classifier.classify(counts, rules, standing).reason
-		reading.reason = Reason.ILLEGAL_PLAY
-		return reading
-	for option: Pattern in options:
-		if _current == null or PlayComparator.beats(option, _current, rules):
-			reading.readings.append(option)
-	reading.pattern = options[0] if reading.readings.is_empty() else reading.readings[0]
-	if wanted != null:
-		reading.pattern = Readings.checked(wanted, counts, rules, standing)
-		if reading.pattern == null:
-			reading.reason = Reason.ILLEGAL_PLAY
-			return reading
-	if seat != _turn:
-		reading.reason = Reason.OUT_OF_TURN
-	elif _current != null and not PlayComparator.beats(reading.pattern, _current, rules):
-		reading.reason = Reason.DOES_NOT_BEAT
-	return reading
 
 
 func _apply_pass() -> Reason:
@@ -321,7 +299,9 @@ func _apply_pass() -> Reason:
 
 
 func _apply_play(action: RoundAction) -> Reason:
-	var reading: PlayReading = _read_play(_turn, action.card_ids, action.reading)
+	var reading: PlayReading = PlayReading.of(
+		_hands[_turn], _turn, action.card_ids, action.reading, _current, _table, _turn
+	)
 	if reading.reason == Reason.OK:
 		_commit_play(reading.cards, action.card_ids, reading.pattern)
 	return reading.reason

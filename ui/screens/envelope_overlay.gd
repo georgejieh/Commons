@@ -19,22 +19,28 @@ extends Control
 ## The envelope is answered and the overlay is gone.
 signal closed
 
+## The gap between papers in the row, in pixels.
 const GAP: int = 20
+## The gap between the parts of the column, in pixels.
 const ROW_GAP: int = 10
 ## Inside the heading paper's printed border, which ends 17 px in.
 const HEADING_PADDING: int = 22
-## Seconds: the kept paper's lift, the seal's hold, the gap between one Rate's tick and
-## the next, and the overlay's fade as it closes.
+## Seconds the kept paper takes to lift.
 const KEEP_TIME: float = 0.2
+## Seconds the seal holds on a kept paper before the others fall.
 const SEAL_HOLD: float = 0.9
+## Seconds between one Rate's tick and the next, for an issued Directive.
 const TICK_STAGGER: float = 0.12
+## Seconds the overlay takes to fade as it closes.
 const CLOSE_TIME: float = 0.22
-## How far the kept paper rises and how much it grows.
+## How far the kept paper rises, in pixels.
 const KEEP_RISE: float = 26.0
+## The scale a kept paper grows to as it lifts.
 const KEEP_SCALE: float = 1.06
-## The seal's width as a share of the kept item's, and how much of it overhangs the
-## item's right edge; it sits on the item's foot, above the caption under it.
+## The seal's width as a share of the kept item's; it sits on the item's foot, above the
+## caption under it.
 const SEAL_SHARE: float = 0.62
+## How much of the seal's width overhangs the kept item's right edge, as a share.
 const SEAL_OVERHANG: float = 0.5
 ## The instruction under the envelope's name.
 const ASK_SIZE: int = 18
@@ -126,6 +132,7 @@ func papers() -> Array[ChoicePaper]:
 	return _papers.duplicate()
 
 
+## The Take Nothing button, for tests and the playtest.
 func nothing_button() -> Button:
 	return _nothing
 
@@ -145,10 +152,12 @@ func asks_to_confirm() -> bool:
 	return _confirming
 
 
+## The seal pressed on the kept paper, for tests.
 func seal() -> InkSeal:
 	return _seal
 
 
+## The envelope's drawing, for tests.
 func figure() -> EnvelopeFigure:
 	return _figure
 

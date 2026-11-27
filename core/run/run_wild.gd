@@ -8,6 +8,7 @@ extends RefCounted
 ## so the ranks are wild for the player's seat alone; a villager's card of one is a plain
 ## card (ADR 0039).
 
+## The most ranks wild at once, the limit a saved list of wild ranks is checked against.
 const MAX_RANKS: int = ReadingCodec.MAX_WILD_RANKS
 
 

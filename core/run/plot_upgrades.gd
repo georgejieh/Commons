@@ -4,8 +4,11 @@ extends RefCounted
 ## one more swap each round. Each is bought with coupons up to a limit, and raises the
 ## bonus the plot already reads from the run state.
 
+## The upgrade kind that gives the plot room for one more card.
 const CAPACITY: String = "capacity"
+## The upgrade kind that gives one more swap each round.
 const SWAPS: String = "swaps"
+## Every upgrade kind the black market sells.
 const KINDS: PackedStringArray = [CAPACITY, SWAPS]
 
 
@@ -19,10 +22,12 @@ static func bought(state: RunState, kind: String) -> int:
 	return state.plot_capacity_bonus if kind == CAPACITY else state.swap_bonus
 
 
+## The most steps of this upgrade a run may buy.
 static func limit(kind: String, params: PlotUpgradeParams) -> int:
 	return params.capacity_max if kind == CAPACITY else params.swap_max
 
 
+## True when the kind is known, below its limit and affordable.
 static func can_buy(state: RunState, kind: String, params: PlotUpgradeParams) -> bool:
 	if not KINDS.has(kind):
 		return false

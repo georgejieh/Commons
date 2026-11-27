@@ -3,6 +3,7 @@ extends ModifierEffect
 ## Rank order is reversed for the holder's plays only.
 
 
+## Reverses the holder's rank order.
 func build_rank_map(context: RankMapContext) -> void:
 	if context.seat == holder_seat:
 		ReversedRanks.reverse(context.rank_map, context.step)

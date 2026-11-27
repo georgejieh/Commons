@@ -11,6 +11,7 @@ var letter_armed: bool = false
 var forced_seat: int = Seats.NONE
 ## Overfulfillment: the bank is multiplied by win_times on a win and voided on a loss.
 var staked: bool = false
+## The factor a win multiplies the staked bank by; 1 until Overfulfillment sets it.
 var win_times: int = 1
 ## This round's debuff from the ladder, as the stack holds it, or null on a clean round.
 var round_debuff: ActiveModifier = null

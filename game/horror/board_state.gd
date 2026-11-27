@@ -11,6 +11,7 @@ extends RefCounted
 const INPUTS: Array[String] = ["famine", "denunciation", "struggle", "landlord", "corruption"]
 ## ADR 0018: ten stages of hidden corruption, 0 to 9.
 const CORRUPTION_STAGES: int = 10
+## The top of a meter, which a meter value is divided by to make a 0 to 1 input.
 const METER_MAX: float = 100.0
 ## The Plan's seven board states, as Famine, Denunciation and landlord (1) or not (0).
 const BOARD_STATES: Dictionary[String, Vector3] = {
@@ -25,7 +26,9 @@ const BOARD_STATES: Dictionary[String, Vector3] = {
 
 ## The corruption stage the targets were set for, 0 to 9.
 var stage: int = 0
+## Each layer's weight now, 0 to 1, in the order of the config's layers.
 var weights: PackedFloat32Array = []
+## The weight each layer is easing toward, in the same order; set_inputs sets them.
 var targets: PackedFloat32Array = []
 
 var _config: HorrorConfig
@@ -65,6 +68,7 @@ func shown(index: int, intensity: float) -> float:
 	return weights[index] * clampf(intensity, 0.0, 1.0)
 
 
+## The 0 to 1 value of a named input, one of INPUTS, for the meters, the class and the stage.
 static func input_value(
 	input: String, famine: int, denunciation: int, landlord: bool, corruption_stage: int
 ) -> float:

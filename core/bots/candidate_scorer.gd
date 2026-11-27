@@ -53,10 +53,13 @@ func _score_play(move: Pattern) -> float:
 	return _hand_value(left, 0)
 
 
+## The value of passing: the hand as it stands, at the cost of one more round.
 func score_pass() -> float:
 	return _hand_value(_counts, 1)
 
 
+## The hand's best split into plays, from the decomposer the scores use, so it shares its
+## memo.
 func decompose_own_hand() -> Decomposition:
 	return _decomposer.decompose(_counts)
 

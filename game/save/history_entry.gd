@@ -5,21 +5,30 @@ extends RefCounted
 ## played with, and the surname keys of the families that died in it. Names are keys, so
 ## a sent-down youth is still named after their run is gone.
 
+## The class of a run that ended as a landlord.
 const LANDLORD: String = "landlord"
+## The class of a run that ended as a peasant.
 const PEASANT: String = "peasant"
 
+## The ID of the finished run.
 var run_id: String = ""
+## The generation the finished run was.
 var generation: int = 0
 ## An ending's ID, or a death's.
 var outcome: String = ""
 ## LANDLORD or PEASANT.
 var class_id: String = PEASANT
+## The Year the run ended in, from 1.
 var year: int = 1
+## The ID of the household the run was played with, or empty.
 var household: String = ""
+## The stake the run was played at, from 0.
 var stake: int = 0
+## The surname keys of the families that died in the run.
 var dead: Array[String] = []
 
 
+## The entry a saved dictionary holds.
 static func from_dict(data: Dictionary) -> HistoryEntry:
 	var entry: HistoryEntry = HistoryEntry.new()
 	entry.run_id = str(data["run_id"])
@@ -33,6 +42,7 @@ static func from_dict(data: Dictionary) -> HistoryEntry:
 	return entry
 
 
+## The entry as it is saved in the profile.
 func to_dict() -> Dictionary:
 	return {
 		"run_id": run_id,

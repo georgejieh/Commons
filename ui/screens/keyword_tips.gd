@@ -7,17 +7,21 @@ extends CanvasLayer
 ## slip and read the words there. The engine's own tooltips close the moment the pointer
 ## leaves the word, which made a keyword inside a tooltip unreachable.
 
-## Seconds the pointer rests on a word before its slip opens, and a slip outlives it.
+## Seconds the pointer rests on a word before its slip opens.
 const DELAY: float = 0.18
+## Seconds a slip outlives the pointer leaving its word and its paper.
 const GRACE: float = 0.35
+## Seconds a slip takes to fade in.
 const FADE: float = 0.1
-## From the pointer to the slip's corner, the least room at the screen's edge, and how
-## far past its paper a slip still counts as under the pointer.
+## From the pointer to the slip's corner, in pixels.
 const GAP: Vector2 = Vector2(16, 22)
+## The least room kept between a slip and the screen's edge, in pixels.
 const EDGE: float = 12.0
+## How far past its paper a slip still counts as under the pointer, in pixels.
 const REACH: float = 10.0
 ## Around the pointer, the word a slip never covers.
 const POINTER: float = 8.0
+## The canvas layer the slips are drawn on, over every screen.
 const LAYER: int = 90
 
 static var _made: KeywordTips = null

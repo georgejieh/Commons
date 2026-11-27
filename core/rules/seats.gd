@@ -2,8 +2,11 @@ class_name Seats
 extends RefCounted
 ## The one definition of seating order.
 
+## The number of seats at the table.
 const COUNT: int = 3
+## How far the turn moves from one seat to the next, so turn order runs up from the player.
 const TURN_STEP: int = 1
+## Stands for no seat, as before bidding settles a landlord or with no teammate.
 const NONE: int = -1
 ## The seat of the person playing.
 const PLAYER: int = 0
@@ -13,6 +16,7 @@ const RIGHT: int = 1
 const LEFT: int = 2
 
 
+## The seat whose turn follows this one.
 static func next(seat: int) -> int:
 	return (seat + TURN_STEP) % COUNT
 

@@ -15,6 +15,7 @@ func source() -> String:
 	return _source
 
 
+## Marks the meter row for a rise when the holder's side lost the round.
 func round_end(context: RoundContext) -> void:
 	if context.side_lost(holder_seat):
 		context.meter_sources.append(_source)

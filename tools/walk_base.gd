@@ -13,6 +13,9 @@ extends RefCounted
 
 ## Seconds a frame waits for count-ups and entrances, which run on the clock, to settle.
 const SETTLE_SECONDS: float = 1.8
+## Seconds the audit waits between noting where everything stands and reading it, so a
+## piece still moving is seen to move and left until it rests.
+const LOOK_SECONDS: float = 0.1
 ## Seconds between pictures of a moment in motion.
 const SNAP_SECONDS: float = 0.22
 ## The longest a wait on something the table does may take, in real seconds: generous,
@@ -77,11 +80,14 @@ static func assign(object: Object, name: String, value: Variant) -> void:
 
 
 ## Reads the screen at rest for layout faults (tools/layout_audit.gd) and prints each new
-## one as a LAYOUT line under the frame's name. A finding is to be read, not a failure.
+## one as a LAYOUT line under the frame's name; what moved within LOOK_SECONDS is not at
+## rest and is left out. A finding is to be read, not a failure.
 static func audit_layout(name: String) -> void:
 	if _audit == null:
 		var script: GDScript = load("res://tools/layout_audit.gd")
 		_audit = script.new()
+	_audit.call("look", tree.root)
+	await tree.create_timer(LOOK_SECONDS).timeout
 	var found: PackedStringArray = _audit.call("check", tree.root)
 	for line: String in found:
 		print("LAYOUT %s %s" % [name, line])
@@ -322,7 +328,7 @@ func _snap(name: String) -> void:
 ## A picture once the screen has settled, read for layout faults first.
 func _shot(name: String) -> void:
 	await tree.create_timer(SETTLE_SECONDS).timeout
-	audit_layout(name)
+	await audit_layout(name)
 	await _picture(name)
 
 

@@ -16,6 +16,7 @@ var _built: int = 0
 var _plays: int = 0
 
 
+## Gives it the table, the app and the menu, and takes the text size the table is built at.
 func setup(table: TableScreen, app: App, menu: PauseMenu) -> void:
 	_table = table
 	_app = app

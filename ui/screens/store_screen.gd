@@ -16,6 +16,7 @@ extends Control
 const NAME_SIZE: int = 32
 ## The black market is the store after dark, sealed in black ink.
 const NIGHT: Color = Color(0.36, 0.34, 0.46)
+## The dark laid over the black market's backdrop.
 const NIGHT_SHADE: Color = Color(0.03, 0.02, 0.09, 0.62)
 ## A card on the counter, the same in both shops.
 const CARD: Vector2 = Vector2(360, 470)
@@ -23,7 +24,9 @@ const CARD: Vector2 = Vector2(360, 470)
 const ROW_GAP: int = 14
 ## Between the heading's pieces, close enough to leave the notes and all six Reforms room.
 const HEADER_GAP: int = 40
+## The gap, in pixels, between the cards and the side beside them in the main row.
 const MAIN_GAP: int = 24
+## The gap, in pixels, between the pieces of the bottom row: your board and the counter.
 const SHELF_GAP: int = 20
 ## The most room the Cadre board takes; its cards shrink to fit six.
 const BOARD_BOX: Vector2 = Vector2(612, 122)
@@ -85,6 +88,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_back()
 
 
+## Builds the page for app's run; call once when the screen is served.
 func open(app: App) -> void:
 	_app = app
 	slip.quiet = app.arrival.is_running
@@ -133,6 +137,12 @@ func tutorial_target(key: String) -> Control:
 		"plot_card":
 			return null if goods == null else goods.card_button(0)
 	return null
+
+
+## What the arrival's slip keeps clear of here: the row of buttons, so a slip by the
+## plot's card never stands over the way on or the Deck button.
+func tutorial_avoid() -> Array[Rect2]:
+	return [_blocks["buttons"].get_global_rect()]
 
 
 ## True while any purchase, issue or enactment is being acted out, or a rank is asked.
@@ -186,8 +196,7 @@ func _set_up_stalls() -> void:
 
 
 func _header_row(app: App) -> Control:
-	var place: String = "market" if market else "store"
-	var heading: Control = ScreenKit.header(tr(place + ".eyebrow"), tr(place + ".title"))
+	var heading: Control = StoreNotes.heading(market)
 	var top: Array[Control] = [heading, StoreNotes.balance(coupons, books)]
 	if market:
 		resentment = ScreenKit.styled("", CommonsTheme.TITLE)
@@ -261,13 +270,15 @@ func _bottom_row() -> Control:
 	held.add_theme_constant_override("separation", 4)
 	held.add_child(ScreenKit.eyebrow(tr("store.shelf")))
 	held.add_child(board)
-	var own: PanelContainer = _sheet(ScreenKit.row([held, campaign_stall.tray], SHELF_GAP))
+	var own: PanelContainer = StoreNotes.sheet(
+		ScreenKit.row([held, campaign_stall.tray], SHELF_GAP), SHEET_PADDING
+	)
 	var offers: Array[Control] = _offers()
 	var on_counter: VBoxContainer = VBoxContainer.new()
 	on_counter.add_theme_constant_override("separation", 4)
 	on_counter.add_child(ScreenKit.eyebrow(tr("store.counter")))
 	on_counter.add_child(ScreenKit.row(offers, 12))
-	var shelf: PanelContainer = _sheet(on_counter)
+	var shelf: PanelContainer = StoreNotes.sheet(on_counter, SHEET_PADDING)
 	# The counter keeps to the right edge, whatever room the board leaves it.
 	shelf.size_flags_horizontal = Control.SIZE_EXPAND | Control.SIZE_SHRINK_END
 	_blocks["board"] = own
@@ -278,14 +289,6 @@ func _bottom_row() -> Control:
 ## The offers "On the counter": the Campaign's, the Reform's and the envelope's.
 func _offers() -> Array[Control]:
 	return [campaign_stall.offers, reform_stall.offers, envelope_stall.offers]
-
-
-func _sheet(content: Control) -> PanelContainer:
-	var sheet: PanelContainer = PanelContainer.new()
-	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
-	sheet.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	sheet.add_child(content)
-	return sheet
 
 
 ## A Cadre's purchase is over: the page shows the run, and the card's place on the board
@@ -385,7 +388,7 @@ func _back() -> void:
 
 func _to_market() -> void:
 	if not is_issuing() and _app.arrival.attempt("door"):
-		_app.show_screen(App.BLACK_MARKET)
+		_app.show_screen(ScreenId.BLACK_MARKET)
 
 
 ## Leaves the store for the next Quota, once nothing is being acted out or chosen.
@@ -393,4 +396,4 @@ func _leave() -> void:
 	if is_issuing() or not _app.arrival.attempt("leave"):
 		return
 	_app.controller.leave_store()
-	_app.show_screen(App.SET_INTRO, true)
+	_app.show_screen(ScreenId.SET_INTRO, true)

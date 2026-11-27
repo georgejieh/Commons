@@ -6,6 +6,7 @@ extends ModifierEffect
 ## gets nothing and the opponents never do.
 
 
+## Adds the teammate's last Grain to a peasant's Pair, when the teammate has played this round.
 func play_scored(context: PlayContext) -> void:
 	if context.pattern.type != Pattern.Type.PAIR:
 		return

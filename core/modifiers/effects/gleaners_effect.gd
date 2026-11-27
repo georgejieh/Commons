@@ -4,13 +4,16 @@ extends ModifierEffect
 ## for each card left in the landlord's hand, before it is split (ADR 0032). It stacks
 ## with any other multiplier. Held by the landlord it pays nothing (ADR 0039).
 
+## Parameter key: the percent the Commons grows by for each card the landlord holds.
 const PERCENT: String = "percent"
 
 
+## Needs the percent.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray([PERCENT])
 
 
+## Grows the Commons when the peasants win with the holder among them, and shows it fired.
 func round_end(context: RoundContext) -> void:
 	var peasants_won: bool = context.winner != Seats.NONE and context.winner != context.landlord
 	if not SeatScope.is_peasant(holder_seat, context.landlord):

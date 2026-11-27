@@ -59,13 +59,13 @@ func _file(count: int, corruption: float = 0.0) -> Array[FileEntry]:
 
 
 func test_the_stamp_shows_only_with_an_entry_clear_of_the_buttons() -> void:
-	var title: TitleScreen = _app.show_screen(App.TITLE, true)
+	var title: TitleScreen = _app.show_screen(ScreenId.TITLE, true)
 	await await_idle_frame()
 	assert_object(title.stamp()).is_null()
 	_file(2)
 	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
-		title = _app.show_screen(App.TITLE, true)
+		title = _app.show_screen(ScreenId.TITLE, true)
 		await await_idle_frame()
 		await await_idle_frame()
 		var stamp: FileStamp = title.stamp()
@@ -86,11 +86,11 @@ func test_the_stamp_shows_only_with_an_entry_clear_of_the_buttons() -> void:
 
 
 func test_the_history_lists_the_file_oldest_first_and_only_with_an_entry() -> void:
-	var page: VillageHistoryScreen = _app.show_screen(App.VILLAGE_HISTORY, true)
+	var page: VillageHistoryScreen = _app.show_screen(ScreenId.VILLAGE_HISTORY, true)
 	await await_idle_frame()
 	assert_array(Array(page.file_lines())).is_empty()
 	var entries: Array[FileEntry] = _file(2)
-	page = _app.show_screen(App.VILLAGE_HISTORY, true)
+	page = _app.show_screen(ScreenId.VILLAGE_HISTORY, true)
 	await await_idle_frame()
 	var lines: PackedStringArray = page.file_lines()
 	assert_int(lines.size()).is_equal(3)
@@ -106,7 +106,7 @@ func _visit_lines(entries: int) -> int:
 	_app.new_run(SEED)
 	_loop().state.identity.file_entries = entries
 	_app.controller.reseal_book()
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var speech: TableSpeech = table.speech
 	var visits: Array[int] = [0]
@@ -171,7 +171,7 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	_app.new_run(SEED)
 	_figures()
 	ArtStages.stage_override = ArtStages.FILED_STAGE
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var hud: TableHud = table.hud
@@ -191,7 +191,7 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	assert_bool(paper.get_global_rect().grow(ClipCheck.SLACK).encloses(books)).is_true()
 	# The same run at stage 9 shows its figures as they are, and no slip.
 	ArtStages.stage_override = ArtStages.LAST_STAGE
-	table = _app.show_screen(App.TABLE, true)
+	table = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	ledger = table.ledger
 	assert_bool(ledger.books.visible).is_false()
@@ -208,7 +208,7 @@ func test_at_the_stage_past_the_last_both_shops_keep_the_small_ledger() -> void:
 	ArtStages.stage_override = ArtStages.FILED_STAGE
 	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
-		for screen_id: String in ["store", "black_market"]:
+		for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 			var shop: StoreScreen = _app.show_screen(screen_id, true)
 			await await_idle_frame()
 			await await_idle_frame()

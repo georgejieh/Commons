@@ -4,6 +4,7 @@ extends RefCounted
 ## and an envelope's choices (ADR 0021): each hand type it raises with its Rate now and
 ## after, its Rate alone while it ticks, or its Rate at the top level.
 
+## The string key of the eyebrow over a Directive's document.
 const EYEBROW: String = "directive.eyebrow"
 
 
@@ -29,6 +30,7 @@ static func ticked(controller: RunController, value: float, type: int) -> String
 	return TranslationServer.translate(key).format({"type": type_name(type), "rate": roundi(value)})
 
 
+## The player-facing name of a hand type, as the Rate lines and the intel say it.
 static func type_name(type: int) -> String:
 	return TranslationServer.translate("pattern." + ReadingText.type_key(type as Pattern.Type))
 

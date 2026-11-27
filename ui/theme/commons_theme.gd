@@ -5,30 +5,44 @@ extends RefCounted
 ## a kind with theme_type_variation; nothing styles itself by hand. Its font sizes come
 ## from TextSize, so the app builds it again when the text size changes.
 
+## The UI style tokens: the inks, papers and sizes the theme is built from.
 const STYLE: UiStyle = preload("res://data/ui/ui_style.tres")
+## The body font, and the face of captions and the tracked eyebrows.
 const MEDIUM: FontVariation = preload("res://ui/theme/oswald_medium.tres")
+## The heavy face of headlines, titles and button labels.
 const BOLD: FontVariation = preload("res://ui/theme/oswald_bold.tres")
+## The card stock a sheet is made of, and every ticket is cut from.
 const PANEL_PAPER: Texture2D = preload("res://art/ui/panel_paper.png")
-## The button kinds, by theme type variation.
+## The type variation of the main button, a red ticket.
 const PRIMARY: String = "PrimaryButton"
+## The type variation of the plain button, a kraft ticket; also what Button is.
 const SECONDARY: String = "Button"
+## The type variation of a button in the coupon's green ticket.
 const COUPON: String = "CouponButton"
+## The type variation of a ticket left undyed, with ink text.
 const GHOST: String = "GhostButton"
+## The type variation of a Label for a screen's big heading, in vermilion.
 const HEADLINE: String = "Headline"
+## The type variation of a Label for a sheet's title, in ink.
 const TITLE: String = "Title"
+## The type variation of the small tracked line above a heading.
 const EYEBROW: String = "Eyebrow"
+## The type variation of a Label for small print under something.
 const CAPTION: String = "Caption"
+## The type variation of a PanelContainer that is a paper sheet.
 const SHEET: String = "Sheet"
 ## The card stock's border, in texture pixels, that a sheet never stretches.
 const SHEET_BORDER: float = 26.0
-## How much a hovered ticket's ink lightens, and a pressed one's darkens.
+## How much a hovered ticket's ink lightens.
 const HOVER_LIGHTEN: float = 0.12
+## How much a pressed ticket's ink darkens.
 const PRESS_DARKEN: float = 0.15
 ## A ticket is the sheet's card stock at this scale, so its ruled border stays clear of
 ## a small button's label.
 const TICKET_SCALE: float = 0.4
-## Pixel sizes of the drawn slider knob and check box.
+## The pixel size of the drawn slider knob.
 const KNOB: int = 26
+## The pixel size of the drawn check box.
 const BOX: int = 26
 ## How far a disabled ticket fades.
 const DISABLED_ALPHA: float = 0.45
@@ -36,6 +50,7 @@ const DISABLED_ALPHA: float = 0.45
 static var _stock: ImageTexture = null
 
 
+## The theme for the text size chosen now; build it again when the text size changes.
 static func build() -> Theme:
 	var theme: Theme = Theme.new()
 	theme.default_font = MEDIUM

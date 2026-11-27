@@ -13,17 +13,22 @@ signal paid
 ## swells, when slot is one.
 signal settled(slot: int)
 
+## The width the seal is printed at, in pixels.
 const SEAL_WIDTH: float = 250.0
 ## Seconds the seal sits on a bought card, and the card takes to reach the board.
 const SEAL_HOLD: float = 0.42
+## Seconds a bought card takes to shrink to its place on the board.
 const PIN_TIME: float = 0.3
+## The scale a bought card shrinks to on its way to the board.
 const PIN_SCALE: float = 0.3
+## Pixels between the cards on the counter.
 const GAP: int = 28
 
-## The cards, the seal pressed on a bought one and the question of a rank, for the page to
-## place: the seal and the question stand over it.
+## The counter's cards, for the page to place.
 var row: HBoxContainer = HBoxContainer.new()
+## The seal pressed on a bought card; it stands over the page.
 var seal: InkSeal = InkSeal.new()
+## The question of a rank that a black market Cadre asks over the counter; it stands over the page.
 var picker: RankPicker = RankPicker.new()
 
 var _shop: StallContext

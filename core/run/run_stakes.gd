@@ -4,7 +4,9 @@ extends RefCounted
 ## handed to the run as its own copy, never by changing a shared Resource. A stake keeps
 ## every rule of the stakes below it, so its numbers are the sum of its own and theirs.
 
+## The stakes in order, each holding the numbers it changes by itself.
 const STAKES: StakeList = preload("res://data/run/stakes/stakes.tres")
+## The divisor that turns a whole-number percent into a fraction.
 const PERCENT: int = 100
 
 

@@ -5,24 +5,28 @@ extends RefCounted
 ## true value and the value reported, and what followed. A correction with no figures is
 ## an offence with nothing to correct, such as a save whose seal failed.
 
-## The figures that differed, in RunCorrections.FIGURES order, with the true and the
-## reported value of each at the same index.
+## The figures that differed, in RunCorrections.FIGURES order.
 var figures: Array[String] = []
+## The true value of each figure, at the same index as figures.
 var true_values: Array[float] = []
+## The value reported for each figure, at the same index as figures.
 var reported: Array[float] = []
-## How far this correction raised every later target and both shops' prices, in percent
-## points of the run's raise, and the figures it put out of sight.
+## How far this correction raised every later target, in percent points of the run's raise.
 var norm_added: int = 0
+## How far this correction raised both shops' prices, in percent points of the run's raise.
 var price_added: int = 0
+## The figures this correction put out of sight.
 var dark: Array[String] = []
 
 
+## Records one figure that differed, with its true value and the value reported.
 func add(figure: String, true_value: float, reported_value: float) -> void:
 	figures.append(figure)
 	true_values.append(true_value)
 	reported.append(reported_value)
 
 
+## True when no figure differed, so the correction is an offence with nothing to correct.
 func is_empty() -> bool:
 	return figures.is_empty()
 

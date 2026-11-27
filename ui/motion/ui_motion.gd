@@ -7,6 +7,7 @@ extends RefCounted
 ## Each kind of motion has its own sound, filled in through Audio.fill only where
 ## the moment's event has none, and played under reduced motion too.
 
+## The motion presets: how long each kind of motion takes, and the reduced-motion scale.
 const PRESETS: MotionPresets = preload("res://data/ui/motion_presets.tres")
 ## The reduced-motion setting (ADR 0035).
 const SETTING: String = "reduced_motion"
@@ -21,13 +22,16 @@ const LIFTS: StringName = &"ui_motion_lifts"
 const CENTRED: StringName = &"ui_motion_centred"
 ## Where a rolling label keeps the width it had before the first roll reserved room.
 const WIDTH_META: StringName = &"ui_motion_width"
+## The digits a rolling label measures, so it keeps the room of its widest figure.
 const DIGITS: String = "0123456789"
 
 
+## True when the reduced-motion setting is on.
 static func reduced() -> bool:
 	return bool(Settings.value(SETTING))
 
 
+## A motion's base duration in seconds, shortened when motion is reduced.
 static func seconds(base: float) -> float:
 	return base * (PRESETS.reduced_scale if reduced() else 1.0)
 

@@ -4,11 +4,17 @@ extends Control
 ## at a slant. It marks what is settled: a purchase approved, a Quota met. press() lands
 ## it like a stamp; the ink is a little thin, so what is under it shows through.
 
+## How opaque the ink is; it is a little thin, so what is under the seal shows through.
 const INK_ALPHA: float = 0.86
+## The slant the seal is pressed at, in radians.
 const TILT: float = -0.2
+## The outer ring's width, as a share of the seal's radius.
 const RING: float = 0.07
+## The inner ring's radius, as a share of the seal's.
 const INNER: float = 0.8
+## Half the height of the band the word sits on, as a share of the seal's radius.
 const BAND: float = 0.36
+## The most of the seal's width the word may take; a longer word shrinks to fit.
 const WORD_FIT: float = 0.82
 
 var _word: String = ""
@@ -38,6 +44,7 @@ func press() -> void:
 	UiMotion.stamp(self)
 
 
+## The seal's word in capitals, for tests.
 func word() -> String:
 	return _word
 

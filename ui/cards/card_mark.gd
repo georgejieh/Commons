@@ -12,6 +12,7 @@ extends Control
 ## the rosette and the wheat are tarnished, the pennant frays and the coupon is foxed, a
 ## little at stage 0 and more with every stage.
 
+## Which mark is drawn: a stamp's chop, or the mark of one enhancement.
 enum Kind { STAMP, MODEL, SHEAF, PENNANT, SURPLUS }
 
 ## Each mark's box, in card pixels.
@@ -19,14 +20,17 @@ const SIZE: Vector2 = Vector2(30, 32)
 ## The ink and gold only fade a little with the stage (BowlGrime.faded), so a mark reads at
 ## hand size at every stage.
 const GOLD_DARK: Color = Color("8a5a12")
+## How far the chop leans, in radians.
 const CHOP_TILT: float = -0.12
 ## The coupon leans the other way from the chop, so the two never read as one.
 const COUPON_TILT: float = 0.2
+## Petals round the rosette.
 const PETALS: int = 8
 ## Grains on the ear, alternating sides up the stalk.
 const KERNELS: int = 6
 ## Teeth along each torn end of the coupon.
 const PERFORATIONS: int = 4
+## Seeds the marks' random wear, so a mark draws the same each time.
 const SEED: int = 3307
 ## Spots where the chop's ink did not take, at stage 0 and at the last stage; the coupon's
 ## foxing takes the same count.
@@ -39,6 +43,7 @@ const KINDS: Dictionary[String, Kind] = {
 	CardInstance.SURPLUS: Kind.SURPLUS,
 }
 
+## Which mark this draws.
 var kind: Kind = Kind.STAMP
 
 

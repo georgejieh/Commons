@@ -12,7 +12,14 @@ extends SceneTree
 
 const SEED: int = 4242
 const SCREENS: Array[String] = [
-	"title", "set_intro", "table", "store", "set_summary", "settings", "controls", "demo_complete"
+	ScreenId.TITLE,
+	ScreenId.SET_INTRO,
+	ScreenId.TABLE,
+	ScreenId.STORE,
+	ScreenId.SET_SUMMARY,
+	ScreenId.SETTINGS,
+	ScreenId.CONTROLS,
+	ScreenId.DEMO_COMPLETE
 ]
 const SETTLE_FRAMES: int = 110
 const NOTICE: String = "res://ui/screens/session_notice.gd"
@@ -54,11 +61,11 @@ func _run() -> void:
 	var app: Node = scene.instantiate()
 	root.add_child(app)
 	await _settle()
-	await _shot("title")
+	await _shot(ScreenId.TITLE)
 	await _notices(app)
 	app.call("new_run", SEED)
 	for screen_id: String in SCREENS.slice(1):
-		if screen_id == "store":
+		if screen_id == ScreenId.STORE:
 			_finish_set(app)
 		app.call("show_screen", screen_id, true)
 		await _settle()
@@ -78,7 +85,7 @@ func _notices(app: Node) -> void:
 	await _shot("notice_already_open")
 	open.free()
 	app.set("kept_crash", KEPT)
-	app.call("show_screen", "title", true)
+	app.call("show_screen", ScreenId.TITLE, true)
 	await _settle()
 	await _shot("notice_kept")
 

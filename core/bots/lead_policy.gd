@@ -3,11 +3,15 @@ extends RefCounted
 ## Chooses a lead, by the first rule that applies. Danger rules narrow the moves that the
 ## later rules may pick from.
 
+## An opponent on one card, who goes out over any single not high enough.
 const ONE_CARD: int = 1
+## A hand of two cards, as an opponent or a teammate close to going out holds.
 const TWO_CARDS: int = 2
+## The rank below which a card counts as low, and a lead gives up first.
 const LOW_LIMIT_RANK: int = Ranks.TEN
 
 
+## The lead, by the first rule that applies.
 static func choose(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 	var whole: Pattern = position.going_out(legal)
 	if whole != null:

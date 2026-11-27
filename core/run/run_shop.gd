@@ -9,6 +9,7 @@ extends RefCounted
 ## bought with coupons at the counter's price. Stock is never saved: a save in the shop
 ## replays the visit from the Set's end, which draws the same stock.
 
+## Why a purchase, sale or pick is refused; OK means it goes through.
 enum Reason {
 	OK,
 	NO_SUCH_SLOT,
@@ -36,14 +37,19 @@ enum Reason {
 	JOKER,
 }
 
+## The stock marker for a slot already bought.
 const SOLD: String = ""
+## The divisor that turns a whole-number percent into a fraction.
 const PERCENT: int = 100
 
-## The counter's Campaigns, drawn after everything else on the shop stream but its
-## Reforms and envelopes, which are drawn last.
+## The counter's Campaigns, drawn after everything else on the shop stream but its Reforms
+## and envelopes.
 var campaigns: CampaignCounter
+## The counter's Reforms, drawn after its Campaigns.
 var reforms: ReformCounter
+## The counter's envelopes, drawn last of all on the shop stream.
 var envelopes: EnvelopeCounter
+## The counter's mark desk, which marks one deck card of the player's choice.
 var desk: MarkDesk
 ## Cadre slots lost this visit to a debuff of the Quota just finished (Short Supply,
 ## ADR 0023). Set before the visit opens; it stacks with rationing.
@@ -166,6 +172,7 @@ func has_room() -> bool:
 	return _state.inventory.cadres.size() < RunReforms.cadre_slots(_state)
 
 
+## Why the Cadre in the slot cannot be bought now, or OK.
 func check_buy(slot: int) -> Reason:
 	if slot < 0 or slot >= _stock.size():
 		return Reason.NO_SUCH_SLOT
@@ -180,6 +187,7 @@ func check_buy(slot: int) -> Reason:
 	return Reason.OK
 
 
+## Buys the Cadre in the slot onto the player's board, or says why it cannot.
 func buy(slot: int) -> Reason:
 	var reason: Reason = check_buy(slot)
 	if reason != Reason.OK:
@@ -240,6 +248,7 @@ func sell(index: int, definition: ModifierDef, bound: Array[String]) -> Reason:
 	return Reason.OK
 
 
+## Redraws every stock the counter holds for the reroll price, or refuses as too poor.
 func reroll() -> Reason:
 	if _state.coupons < reroll_price():
 		return Reason.TOO_POOR
@@ -258,10 +267,12 @@ func directive_stock() -> Array[String]:
 	return _directive_stock.duplicate()
 
 
+## What the Directive in the slot costs at this counter, under the books' raise.
 func directive_price(slot: int) -> int:
 	return price_of(_state, _params, _directive(_directive_stock[slot]).cost)
 
 
+## Why the Directive in the slot cannot be issued, or OK: no slot, sold, maxed or too poor.
 func check_directive(slot: int) -> Reason:
 	if slot < 0 or slot >= _directive_stock.size():
 		return Reason.NO_SUCH_SLOT

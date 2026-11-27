@@ -40,7 +40,7 @@ func _to_swap() -> TableScreen:
 		if index == 1:
 			CardMarks.stamp(state, card, RunLoop.PLAYER)
 		state.inventory.plot.append(card)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var sheet: PlotSwapSheet = table.swap_sheet
 	for _turn: int in 60:

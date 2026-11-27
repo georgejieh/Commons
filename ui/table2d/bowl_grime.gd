@@ -5,19 +5,31 @@ extends RefCounted
 ## cracks, chips and dirt until the bowl is filthy and the red 1 looks back (ADR 0018).
 ## It is drawn by rule from fixed seeds, so the same bowl comes out every time.
 
-## Wear at stage 0, and the stage from which the 1 becomes an eye.
+## Wear at corruption stage 0, before any stage has added to it.
 const BASE_WEAR: float = 0.3
+## The corruption stage from which the red 1 becomes an eye.
 const EYE_STAGE: int = 7
+## The yellowed bone tone clean colours are pulled toward as they age.
 const BONE: Color = Color("dcc79a")
+## The clay showing where a chip has bitten through the glaze.
 const CLAY: Color = Color("7d6248")
+## The dark brown of crazing lines, dirt and scratches.
 const CRACK: Color = Color("3a2c1e")
+## The tea brown of stains in the well and grime along a die's edges.
 const TEA: Color = Color("5a3d1e")
+## The dried-blood red of the ring in the worst stages and of the eye's iris.
 const DRIED: Color = Color("47120f")
+## The seed the bowl and its dice are worn from, so the same wear is drawn every time.
 const SEED: int = 5417
+## How many craze lines the bowl has, at no wear (x) and at the most (y).
 const CRACKS: Vector2i = Vector2i(9, 34)
+## How many specks of dirt the bowl has, at no wear (x) and at the most (y).
 const SPECKS: Vector2i = Vector2i(40, 170)
+## How many chips are out of the bowl's rim, at no wear (x) and at the most (y).
 const CHIPS: Vector2i = Vector2i(2, 7)
+## How many tea blotches stain the bowl, at no wear (x) and at the most (y).
 const BLOTCHES: Vector2i = Vector2i(4, 11)
+## How many scratches mark each die's face, at no wear (x) and at the most (y).
 const SCRATCHES: Vector2i = Vector2i(2, 7)
 
 

@@ -2,6 +2,7 @@ class_name MeterContext
 extends RefCounted
 ## Passed to the meter change hook.
 
+## The meter that is changing, by its ID.
 var meter: String
 ## The change, to edit.
 var delta: int

@@ -3,6 +3,7 @@ extends RefCounted
 ## Plays bots against each other on the real round rules. An illegal action is counted
 ## and replaced, so one bad decision can't end a long run. Pass a clock to time decisions.
 
+## The most actions a round may take before the loop gives up; no legal round reaches it.
 const MAX_ACTIONS: int = 1000
 
 

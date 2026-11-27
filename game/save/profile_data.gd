@@ -4,7 +4,9 @@ extends RefCounted
 ## ProfileCommits decides what a run may change in it. A new profile is every field at
 ## its empty value.
 
+## The most finished runs the history keeps; the oldest drop off.
 const HISTORY_CAP: int = 50
+## The top of the hidden corruption, which is kept clamped to 0 and this.
 const CORRUPTION_MAX: float = 100.0
 ## A key written since schema 2 began: a profile from before it reads it from its history.
 const LANDLORD_ENDINGS_KEY: String = "landlord_endings"
@@ -29,8 +31,9 @@ const KEYS: Array[String] = [
 var memory: VillageMemory = VillageMemory.new()
 ## Runs the family has started; a new run is the next generation.
 var generation: int = 0
-## Full runs that reached an ending or a death, and those that survived the last Year.
+## Full runs that reached an ending or a death.
 var finished_runs: int = 0
+## Full runs that survived the last Year.
 var wins: int = 0
 ## Full runs that ended in a landlord's ending, not a death. Kept as a count, so an unlock
 ## that depends on one outlives the history's cap.
@@ -39,6 +42,7 @@ var landlord_endings: int = 0
 var history: Array[HistoryEntry] = []
 ## What the last finished run left the next one: a kind and its values, empty for none.
 var lineage_kind: String = ""
+## The values of that lineage, as its kind defines them.
 var lineage_values: Dictionary = {}
 ## The highest stake unlocked.
 var stake: int = 0
@@ -46,12 +50,14 @@ var stake: int = 0
 var corruption: float = 0.0:
 	set(value):
 		corruption = clampf(value, 0.0, CORRUPTION_MAX)
-## One-time tooltips already shown (ADR 0026), and the family's surname (ADR 0028).
+## One-time tooltips already shown, and the arrival once it is done or skipped (ADR 0026).
 var seen: Array[String] = []
+## The family's surname (ADR 0028), or empty before the player has set one.
 var surname: String = ""
-## The run whose Quotas the profile last took, and the last Quota it took from it, so a
-## Quota is never taken twice (ADR 0025).
+## The run whose Quotas the profile last took; with committed_quota, it means a Quota is
+## never taken twice (ADR 0025).
 var committed_run: String = ""
+## The last Quota the profile took from committed_run, or -1 for none.
 var committed_quota: int = -1
 ## How far each family has drifted over the generations (ADR 0028), written with the
 ## generation each full run starts.
@@ -61,6 +67,7 @@ var drift: VillageDrift = VillageDrift.new()
 var file: Array[FileEntry] = []
 
 
+## The profile a saved dictionary holds.
 static func from_dict(data: Dictionary) -> ProfileData:
 	var profile: ProfileData = ProfileData.new()
 	profile.memory = VillageMemory.from_dict(data["memory"])
@@ -89,6 +96,7 @@ static func from_dict(data: Dictionary) -> ProfileData:
 	return profile
 
 
+## The profile as it is saved.
 func to_dict() -> Dictionary:
 	var entries: Array[Dictionary] = []
 	for entry: HistoryEntry in history:

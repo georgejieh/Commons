@@ -6,8 +6,11 @@ extends Control
 ## dread layers drive its materials: the pool shrinks as Famine rises, and more
 ## eyes show as Denunciation rises, though some are always there.
 
+## The shader of the lamp's pool of light over the room.
 const LAMP_SHADER: Shader = preload("res://shaders/lamp_light.gdshader")
+## The shader of the eyes that watch from beyond the lamp.
 const WATCHERS_SHADER: Shader = preload("res://shaders/watchers.gdshader")
+## The lamp's 2D light, which lights the table's and the cards' normal maps.
 const LIGHT: TableLight = preload("res://data/ui/table_light.tres")
 
 var _lamp: ColorRect = ColorRect.new()
@@ -38,10 +41,12 @@ func light() -> PointLight2D:
 	return _light
 
 
+## The lamp's material, which the dread layers drive.
 func lamp_material() -> ShaderMaterial:
 	return _lamp_material
 
 
+## The watching eyes' material, which the dread layers drive.
 func eyes_material() -> ShaderMaterial:
 	return _eyes_material
 

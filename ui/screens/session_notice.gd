@@ -8,7 +8,9 @@ extends Control
 
 ## Above every screen and the arrival's layer, as the books notice is.
 const DRAW_ORDER: int = BooksNotice.DRAW_ORDER
+## The font size of the notice's body, at Standard.
 const BODY_SIZE: int = 24
+## The font size of the smaller line under the body, at Standard.
 const LINE_SIZE: int = 22
 
 var _eyebrow: String
@@ -130,6 +132,7 @@ func close() -> void:
 	queue_free()
 
 
+## The notice's buttons in their row, the first with the focus; for tests.
 func buttons() -> Array[Button]:
 	return _buttons
 

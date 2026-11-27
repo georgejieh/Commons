@@ -14,26 +14,32 @@ func _init(desk: MarkDesk, state: RunState) -> void:
 	_state = state
 
 
+## True when the desk marks a card this visit.
 func is_open() -> bool:
 	return _desk.is_open
 
 
+## True once the desk has marked a card this visit.
 func used() -> bool:
 	return _desk.used()
 
 
+## The enhancement on offer, or CardInstance.NO_ID at a desk that stamps.
 func offer() -> String:
 	return _desk.offer
 
 
+## True at the desk that stamps cards rather than enhancing them.
 func stamps() -> bool:
 	return _desk.stamps()
 
 
+## What the desk charges now in coupons, under any raise the books made.
 func price() -> int:
 	return _desk.price()
 
 
+## The household's coupons now, to set against the price.
 func coupons() -> int:
 	return _state.coupons
 

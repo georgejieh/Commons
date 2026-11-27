@@ -8,14 +8,19 @@ extends Control
 ## that holds its event queue here waits until it is acknowledged. A second correction
 ## waits its turn behind the first. It shows every time, the first and every one after.
 
+## Sent when the player acknowledges a notice, before the next one in line shows.
 signal acknowledged
 
+## The veil over the screen behind the notice, dark enough that nothing under it reads.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.82)
 ## As wide as the other dialog sheets, so its longest notice stands whole at the largest
 ## text size inside the dialog padding.
 const WIDTH: float = 1040.0
+## The size of the notice's words, at Standard text.
 const BODY_SIZE: int = 24
+## The size of the filed line under the words, at Standard text.
 const LINE_SIZE: int = 22
+## A non-breaking space, put into a line's last gap so its last word is not left alone on a row.
 const NO_BREAK: String = " "
 ## Over the pause menu, which draws over the arrival's layer.
 const DRAW_ORDER: int = TutorialLayer.DRAW_ORDER + 2
@@ -86,6 +91,7 @@ func hold(node: Node) -> void:
 		node.set_process(false)
 
 
+## True while a notice is on the screen, so the table holds its events until it clears.
 func is_showing() -> bool:
 	return visible
 
@@ -95,6 +101,7 @@ func shown_lines() -> PackedStringArray:
 	return PackedStringArray() if _shown == null else _shown.all_lines()
 
 
+## The button that acknowledges the notice, for tests.
 func acknowledge_button() -> Button:
 	return _ok
 

@@ -4,9 +4,11 @@ extends ModifierEffect
 ## leaves them out of the stack, so their run state is kept as it was. With no Cadres it
 ## does nothing (ADR 0023).
 
+## Parameter key: how many held Cadres are left out each round.
 const CADRES: String = "cadres"
 
 
+## Needs the number of Cadres it leaves out.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray([CADRES])
 

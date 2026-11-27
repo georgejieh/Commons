@@ -24,6 +24,8 @@ const ORDER: Array[int] = [
 ]
 
 
+## The lines an information Cadre shows about a seat: the hand types it holds and, for the villager
+## closest to going out, its card counts. Empty when info is null or says nothing of the seat.
 static func for_seat(info: InfoView, seat: int) -> String:
 	if info == null:
 		return ""

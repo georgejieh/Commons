@@ -11,6 +11,7 @@ enum Kind { BIDS, CALLS, BOMBS, PASSES, BEAT_TEAMMATE, WENT_OUT, LANDLORD_ROUNDS
 var counts: Dictionary[String, PackedInt64Array] = {}
 
 
+## Rebuilds the counts from the run save; a short saved row reads as zeros after its end.
 static func from_dict(data: Dictionary) -> Observations:
 	var observations: Observations = Observations.new()
 	for family_id: String in data:
@@ -23,6 +24,7 @@ static func from_dict(data: Dictionary) -> Observations:
 	return observations
 
 
+## Adds amount to a family's count of kind, making its row the first time.
 func add(family_id: String, kind: Kind, amount: int = 1) -> void:
 	if not counts.has(family_id):
 		var row: PackedInt64Array = []
@@ -31,16 +33,19 @@ func add(family_id: String, kind: Kind, amount: int = 1) -> void:
 	counts[family_id][kind] += amount
 
 
+## A family's count of kind; 0 for a family never seen.
 func count(family_id: String, kind: Kind) -> int:
 	if not counts.has(family_id):
 		return 0
 	return counts[family_id][kind]
 
 
+## True when the family has been seen at all.
 func has_family(family_id: String) -> bool:
 	return counts.has(family_id)
 
 
+## The counts as arrays in Kind order, for the run save.
 func to_dict() -> Dictionary:
 	var saved: Dictionary[String, Array] = {}
 	for family_id: String in counts:

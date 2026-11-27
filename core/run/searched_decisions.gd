@@ -10,6 +10,7 @@ extends RefCounted
 ## searches from outside (ADR 0030), the loop stands still for each live one instead of
 ## asking the searcher.
 
+## How a searching seat's play is decided: live, from written decisions, or from an older record.
 enum Mode {
 	## Decides by the searcher, or with no limit when there is none.
 	LIVE,

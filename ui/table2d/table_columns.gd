@@ -36,6 +36,8 @@ var _again: bool = false
 var _fitting: bool = false
 
 
+## Gives the columns the seats, the Campaign tray, the dressing, the rules slip and the action bar
+## they lay out, and lays the right column out whenever the slip is read or the tray changes.
 func setup(
 	seats: Dictionary[int, SeatPanel],
 	tray: CampaignTray,

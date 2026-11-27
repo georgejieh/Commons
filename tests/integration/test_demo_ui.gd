@@ -5,22 +5,22 @@ extends GdUnitTestSuite
 
 const SEED: int = 4301
 const SCREENS: Array[String] = [
-	"title",
-	"set_intro",
-	"table",
-	"set_summary",
-	"store",
-	"year_summary",
-	"settings",
-	"demo_complete",
-	"dossier",
-	"run_setup",
-	"round_summary",
-	"black_market",
-	"reeducation",
-	"ending",
-	"collection",
-	"village_history",
+	ScreenId.TITLE,
+	ScreenId.SET_INTRO,
+	ScreenId.TABLE,
+	ScreenId.SET_SUMMARY,
+	ScreenId.STORE,
+	ScreenId.YEAR_SUMMARY,
+	ScreenId.SETTINGS,
+	ScreenId.DEMO_COMPLETE,
+	ScreenId.DOSSIER,
+	ScreenId.RUN_SETUP,
+	ScreenId.ROUND_SUMMARY,
+	ScreenId.BLACK_MARKET,
+	ScreenId.REEDUCATION,
+	ScreenId.ENDING,
+	ScreenId.COLLECTION,
+	ScreenId.VILLAGE_HISTORY,
 ]
 
 var _app: App
@@ -47,30 +47,30 @@ func test_every_demo_screen_opens() -> void:
 
 
 func test_back_navigation_keeps_the_run() -> void:
-	_app.show_screen(App.TABLE, true)
+	_app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var was: Dictionary = _app.controller.state_copy().to_dict()
-	_app.show_screen(App.SETTINGS)
+	_app.show_screen(ScreenId.SETTINGS)
 	await await_idle_frame()
 	_app.back()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.TABLE)
 	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 func test_the_table_plays_a_set_to_its_summary() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var driver: ControllerScript = ControllerScript.new()
 	for _turn: int in 600:
-		if _app.switcher.current_id() == App.SET_SUMMARY:
+		if _app.switcher.current_id() == ScreenId.SET_SUMMARY:
 			break
 		table.skip_events()
-		if _app.switcher.current_id() != "table":
+		if _app.switcher.current_id() != ScreenId.TABLE:
 			break
 		_press(table, driver)
 		await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.SET_SUMMARY)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SET_SUMMARY)
 	# The report fills its Quota bar to what was scored and seals it met or short.
 	var report: SetSummaryScreen = _app.switcher.current()
 	var state: RunState = _app.controller.state_copy()
@@ -109,7 +109,7 @@ func _press(table: TableScreen, driver: ControllerScript) -> void:
 
 ## After a command the buttons stay off until the bots' plays have been shown.
 func test_buttons_lock_while_events_play() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var driver: ControllerScript = ControllerScript.new()
 	for _turn: int in 200:
@@ -134,7 +134,7 @@ func test_buttons_lock_while_events_play() -> void:
 
 ## A shortcut presses the same button a click does: Pass on the bid turns the call down.
 func test_a_shortcut_presses_its_button() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	if _app.controller.awaiting() != RunController.AWAIT_BID:
@@ -158,7 +158,7 @@ func test_the_post_process_follows_its_setting() -> void:
 
 ## Sort cycles rank, suit and groups, and the button names the current one.
 func test_sort_cycles_and_names_its_mode() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	var seen: Array[String] = []
@@ -172,7 +172,7 @@ func test_sort_cycles_and_names_its_mode() -> void:
 
 ## The rules card and the menu sit above the table and block clicks to it.
 func test_overlays_open_above_the_table() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	table.actions.rules.pressed.emit()
 	var sheet: Control = table.cheat_sheet
@@ -201,7 +201,7 @@ func test_rejoining_the_table_raises_no_old_banner() -> void:
 		if not driver.act(_app.controller):
 			break
 	assert_int(ended[0]).override_failure_message("no round ended").is_greater_equal(1)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	var moments: TableMoments = table.moments
 	# Timed: that no banner is raised is seen only by giving one the time to come.
 	await await_millis(400)
@@ -209,7 +209,7 @@ func test_rejoining_the_table_raises_no_old_banner() -> void:
 
 
 func test_the_ledger_counts_each_play_once() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	var scored: Dictionary[int, float] = {}
 	var plays: Array[int] = [0]
 	_app.controller.event_emitted.connect(
@@ -234,7 +234,7 @@ func test_a_stocked_plot_opens_the_swap_sheet_over_the_table() -> void:
 	loop.state.inventory.plot.append(
 		CardInstance.new(CardInstance.FIRST_PLOT_ID, 12, 0, CardInstance.Origin.PLOT)
 	)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var sheet: PlotSwapSheet = table.swap_sheet
 	for _turn: int in 40:
@@ -245,7 +245,7 @@ func test_a_stocked_plot_opens_the_swap_sheet_over_the_table() -> void:
 			table.actions.decline.pressed.emit()
 		await await_idle_frame()
 	assert_bool(sheet.is_open()).is_true()
-	assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.TABLE)
 	# Keeping the hand closes the sheet, with the round ready to play at the same table.
 	sheet.keep_button().pressed.emit()
 	await await_idle_frame()
@@ -275,7 +275,7 @@ func test_an_overfulfilled_quota_is_sealed_twice_and_counts_the_bonus() -> void:
 		assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_SET_OVER)
 		var steps: int = _app.controller.figures.over_steps()
 		assert_int(steps).is_equal(SetConfig.DEFAULT_PARAMS.over_max_steps)
-		var report: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
+		var report: SetSummaryScreen = _app.show_screen(ScreenId.SET_SUMMARY, true)
 		await await_idle_frame()
 		if not reduced:
 			assert_str(report.over_seal_word()).is_empty()
@@ -313,7 +313,7 @@ func test_the_next_quota_shows_the_raised_norm() -> void:
 	_app.controller.leave_store()
 	var percent: int = _app.controller.figures.norm_percent()
 	assert_int(percent).is_greater(0)
-	_app.show_screen(App.SET_INTRO, true)
+	_app.show_screen(ScreenId.SET_INTRO, true)
 	await await_idle_frame()
 	var step: int = SetConfig.DEFAULT_PARAMS.norm_percent_per_step
 	var note: String = tr("intro.norm").format({"percent": percent, "step": step})

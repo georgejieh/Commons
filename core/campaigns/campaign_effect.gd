@@ -26,6 +26,8 @@ enum Reason {
 	WILD_FULL,
 }
 
+## The definition's parameters, copied in by the registry. Read only keys named by
+## required_parameters().
 var parameters: Dictionary[String, int] = {}
 
 
@@ -34,9 +36,12 @@ func required_parameters() -> PackedStringArray:
 	return PackedStringArray()
 
 
+## Whether the Campaign can be used in this context, as a Reason. Changes nothing; the base accepts
+## anything.
 func check(_context: CampaignContext) -> Reason:
 	return Reason.OK
 
 
+## Does what the Campaign does. Called only after check() said OK; the base does nothing.
 func apply(_context: CampaignContext) -> void:
 	pass

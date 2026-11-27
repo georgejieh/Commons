@@ -67,7 +67,7 @@ func _finish(outcome: String) -> EndingScreen:
 	record.mark(state)
 	Saves.run_service().save(record.to_dict())
 	_app.resume_to_screen()
-	assert_str(_app.switcher.current_id()).is_equal(App.ENDING)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.ENDING)
 	return _app.switcher.current()
 
 
@@ -286,15 +286,15 @@ func test_the_page_leaves_nothing_behind_when_it_goes_home() -> void:
 	screen.home_button().pressed.emit()
 	await await_idle_frame()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.TITLE)
 	assert_bool(is_instance_valid(screen)).is_false()
 
 
 func test_the_runs_end_reaches_the_ending_and_the_demo_keeps_its_closing() -> void:
 	_app.new_run(4242)
-	assert_str(_app.screen_for(RunController.AWAIT_RUN_OVER)).is_equal("year_summary")
+	assert_str(_app.screen_for(RunController.AWAIT_RUN_OVER)).is_equal(ScreenId.YEAR_SUMMARY)
 	_finish("benevolent_landlord")
-	assert_str(_app.screen_for(RunController.AWAIT_RUN_OVER)).is_equal("ending")
+	assert_str(_app.screen_for(RunController.AWAIT_RUN_OVER)).is_equal(ScreenId.ENDING)
 
 
 ## Every ending and death shows its picture whole, at its own shape, inside the printed

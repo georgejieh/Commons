@@ -11,16 +11,23 @@ signal spent
 ## Emitted once an issued document has been filed away, so the screen can refresh.
 signal settled
 
+## The width of a Directive's document, in pixels.
 const WIDTH: float = 540.0
+## The size of a Directive's name, at Standard text.
 const NAME_SIZE: int = 26
+## The size of a Rate line, at Standard text.
 const LINE_SIZE: int = 18
+## The width the "Issued" seal is printed at, in pixels.
 const SEAL_WIDTH: float = 170.0
 ## Room the seal keeps from the name and the first Rate line.
 const SEAL_CLEARANCE: float = 4.0
-## Seconds the seal sits before the Rates tick, and the document takes to leave.
+## Seconds the seal sits before the Rates tick.
 const SEAL_HOLD: float = 0.42
+## Seconds the issued document takes to leave.
 const LEAVE_TIME: float = 0.32
+## How far the document rises as it leaves, in pixels.
 const LEAVE_RISE: float = 36.0
+## The scale the document shrinks to as it leaves.
 const LEAVE_SCALE: float = 0.85
 ## Seconds between one Rate line starting to tick and the next.
 const TICK_STAGGER: float = 0.12
@@ -40,6 +47,7 @@ func _init() -> void:
 	add_theme_constant_override("separation", 16)
 
 
+## Takes the shop whose Directives to show and builds the "Issued" seal that stands over the row.
 func setup(shop: StallContext) -> void:
 	_controller = shop.controller
 	_desk = shop.desk
@@ -52,6 +60,7 @@ func setup(shop: StallContext) -> void:
 	add_child(_seal)
 
 
+## True while an issue is acted out, so no second one starts.
 func is_busy() -> bool:
 	return _busy
 

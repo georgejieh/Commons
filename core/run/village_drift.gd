@@ -9,9 +9,13 @@ extends RefCounted
 ## seeded by the generation alone, so the same profile always gives the same village.
 ## The shared definitions are never changed: personality() hands out a copy.
 
+## The personality traits that can drift, named as Personality holds them.
 const TRAITS: Array[String] = ["bomb_aggression", "cooperation", "honesty", "ambition", "grudge"]
+## The name the generation's drift stream is seeded with.
 const STREAM: String = "drift"
+## The key of a family's trait offsets in the saved drift.
 const LEVELS_KEY: String = "levels"
+## The key of a family's pitch shift in the saved drift.
 const PITCH_KEY: String = "pitch"
 
 ## Offsets in steps by family ID, then by trait; a trait not held has not moved.
@@ -52,6 +56,7 @@ func pitch_factor(family_id: String) -> float:
 	return 1.0 + pitch.get(family_id, 0.0)
 
 
+## True when no family has drifted, as in the first generation.
 func is_empty() -> bool:
 	return levels.is_empty() and pitch.is_empty()
 
@@ -76,6 +81,7 @@ func _move(family: FamilyDef, stream: RandomStream, village: VillageBook) -> voi
 	pitch[family.id] = clampf(shift, -village.pitch_limit, village.pitch_limit)
 
 
+## Rebuilds the drift from the profile's saved map.
 static func from_dict(data: Dictionary) -> VillageDrift:
 	var drift: VillageDrift = VillageDrift.new()
 	for family_id: String in data:

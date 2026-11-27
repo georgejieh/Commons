@@ -16,9 +16,13 @@ extends PanelContainer
 ## The rules in force were read again, so the table can lay out the slip's column.
 signal shown
 
+## How the slip is laid out: in full, by name, by name with the type fitted down, or counted. Each
+## form is a step down from the one before.
 enum Form { FULL, NAMED, FITTED, COUNTED }
 
+## The rules' type at Standard.
 const FONT_SIZE: int = 20
+## The group heads' type at Standard.
 const HEAD_SIZE: int = 16
 ## Room inside the paper's printed border.
 const PADDING: int = 22
@@ -61,6 +65,7 @@ func _init() -> void:
 	visible = false
 
 
+## Reads the rules in force from the run again, lays the slip out and emits shown.
 func show_debuffs(controller: RunController) -> void:
 	_yours.rules.clear()
 	_reforms.rules = _reform_rules(controller)
@@ -111,6 +116,7 @@ func fits() -> bool:
 	return not visible or _measure() <= room + 0.5
 
 
+## The form the slip is laid out in now, for tests.
 func form() -> Form:
 	return _form
 
@@ -257,8 +263,11 @@ func shown_text() -> String:
 ## One rule on the slip: its name and text as BBCode, and whether Appeal lifted it.
 class Rule:
 	extends RefCounted
+	## The rule's name.
 	var name: String
+	## The rule's text, as BBCode.
 	var text: String
+	## True when Appeal lifted the rule.
 	var lifted: bool
 
 	func _init(rule_name: String, rule_text: String, is_lifted: bool) -> void:
@@ -270,7 +279,9 @@ class Rule:
 ## A group of rules under its head's string key.
 class RuleGroup:
 	extends RefCounted
+	## The string key of the group's head.
 	var head: String
+	## The rules of the group, in the order the slip lists them.
 	var rules: Array[Rule] = []
 
 	func _init(head_key: String) -> void:

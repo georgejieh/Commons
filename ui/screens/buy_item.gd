@@ -6,10 +6,12 @@ extends RefCounted
 ## cards for the deck stand small beside theirs, in a row of buttons. Each stall keeps one
 ## per offer and reaches the face and the ticket through it.
 
+## The scene each offer's card face is made from, the same face the table draws.
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 
-## The card's face, and its Buy ticket, disabled and saying "Sold" until it is dressed.
+## The card's face, which shows the card once the item is dressed.
 var view: CardView = CARD_SCENE.instantiate()
+## The Buy ticket, disabled and saying "Sold" until the item is dressed.
 var buy: Button = ScreenKit.button("", CommonsTheme.COUPON)
 
 

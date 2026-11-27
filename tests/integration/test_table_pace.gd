@@ -60,7 +60,7 @@ func test_the_settings_sheet_offers_the_three_paces() -> void:
 
 
 func test_a_change_takes_hold_at_an_open_table() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var player: EventPlayer = table.player
 	var presets: MotionPresets = UiMotion.PRESETS

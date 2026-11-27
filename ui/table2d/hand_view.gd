@@ -5,12 +5,17 @@ extends Control
 ## clears them all the way the first card went. Keyboard and gamepad move a cursor
 ## along the fan and toggle the card under it. Selection lives in the HandModel.
 
+## How the hand is ordered: by rank, by suit, or in groups of the same rank.
 enum Sort { RANK, SUIT, GROUPS }
 
-## Most space between card centers, and how far the arc and lift bend, in pixels.
+## Most space between card centers, in pixels.
 const MAX_SPACING: float = 64.0
+## How far the fan's arc drops at its ends: pixels down per square of the card's place from
+## the middle.
 const ARC_DROP: float = 0.6
+## How far each place from the middle tilts a card, in radians.
 const TILT_PER_CARD: float = 0.025
+## How far a selected card rises above the fan, in pixels.
 const LIFT: float = 32.0
 ## A selection that can be played rises this much more, ready to throw.
 const ARMED_LIFT: float = 12.0
@@ -25,6 +30,7 @@ const SORT_KEYS: Dictionary[Sort, String] = {
 
 ## Tweens the lift of a selected or hovered card, when set.
 var motion: TableMotion = null
+## How the hand is sorted now; set through set_sort, and kept when the table is rebuilt.
 var sort_mode: Sort = Sort.RANK
 ## The round's wild ranks as the table's events have named them (ADR 0029): their cards
 ## carry the ribbon.
@@ -42,6 +48,7 @@ var _cursor: int = -1
 var _rank_map: PackedByteArray = PackedByteArray()
 
 
+## Shows the model's hand with views from the pool, and redraws whenever the model changes.
 func setup(model: HandModel, pool: CardPool) -> void:
 	_model = model
 	_pool = pool
@@ -174,6 +181,7 @@ func show_hint(ids: Array[int]) -> void:
 	_mark()
 
 
+## Sorts the hand by mode and lays it out again.
 func set_sort(mode: Sort) -> void:
 	sort_mode = mode
 	show_cards()

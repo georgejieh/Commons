@@ -13,6 +13,8 @@ var _names: Dictionary[int, String] = {}
 var _faces: Dictionary[int, Texture2D] = {}
 
 
+## Wires the call-out to the event queue, the banner, and the seats' names and faces, and listens
+## to the queue.
 func setup(
 	player: EventPlayer,
 	callout: Callout,

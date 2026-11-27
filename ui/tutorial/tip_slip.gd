@@ -6,10 +6,14 @@ extends Control
 ## due together show one after another. It stands in the middle of the screen, or of
 ## its right half where the screen's own sheet fills the left.
 
+## Emitted with the tip's id when the player takes Got it, which the profile remembers.
 signal dismissed(tip_id: String)
 
+## The scrim laid over the screen behind the slip.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.45)
+## The slip's width in pixels.
 const WIDTH: float = 620.0
+## The type size of the tip's line, at Standard.
 const TEXT_SIZE: int = 24
 
 var _app: App
@@ -77,6 +81,7 @@ func shown() -> String:
 	return _shown
 
 
+## The Got it button, for tests.
 func got_it_button() -> Button:
 	return _got_it
 

@@ -4,7 +4,9 @@ extends RefCounted
 ## and each one-time tooltip, written through the profile's own read and write. Marking
 ## the arrival on a first launch is what writes the profile's first save.
 
+## The seen-list entry for the arrival, written when it is finished or skipped.
 const TUTORIAL: String = "tutorial"
+## The one-time tooltips, by seen-list entry.
 const TIPS: Array[String] = ["tip.plot", "tip.debuffs", "tip.memory"]
 
 
@@ -13,6 +15,7 @@ static func exists(profile: SaveService) -> bool:
 	return FileAccess.file_exists(profile.path()) or FileAccess.file_exists(profile.backup_path())
 
 
+## True when the profile's seen list holds id.
 static func has(profile: SaveService, id: String) -> bool:
 	return Profile.read(profile).seen.has(id)
 

@@ -12,12 +12,16 @@ signal confirmed
 ## The paper took the focus or lost it, for the screen's slip.
 signal focus_changed(focused: bool)
 
+## The font size of the ticket's words, at Standard.
 const FONT: int = 16
+## The ticket's height, in pixels.
 const HEIGHT: float = 34.0
+## The ticket's width, in pixels.
 const WIDTH: float = 84.0
 ## Up from the paper's foot, inside its border.
 const LIFT: float = 2.0
 
+## The ticket itself, a button that sells on its second press; tests read its words.
 var button: Button = ScreenKit.button("", CommonsTheme.GHOST)
 
 var _host: Control

@@ -8,15 +8,21 @@ extends RefCounted
 ## affects legality. The jokers stay in their own slots, since no exchange takes one out.
 ## Marks are not part of a slot: CardMarks keeps them by slot ID.
 
+## The number of slots, so every deck card's ID is below it.
 const SIZE: int = 54
+## The number of suits a card of a plain rank can have.
 const SUITS: int = 4
+## The slot of the small joker, which no exchange takes out.
 const SMALL_JOKER_ID: int = 52
+## The slot of the big joker, which no exchange takes out.
 const BIG_JOKER_ID: int = 53
+## The suit of a joker, which has none.
 const NO_SUIT: int = -1
 ## A slot named by nothing, as an envelope pick that takes no deck card out.
 const NO_SLOT: int = -1
-## The key in a saved slot's pair of its rank and its suit.
+## Where a saved slot's pair keeps its rank.
 const RANK_AT: int = 0
+## Where a saved slot's pair keeps its suit.
 const SUIT_AT: int = 1
 
 var _ranks: PackedByteArray = PackedByteArray()
@@ -80,6 +86,7 @@ func to_dict() -> Dictionary:
 	return changed
 
 
+## A deck of its own with the same card in every slot, so changing one leaves the other.
 func copy() -> Deck:
 	var deck: Deck = Deck.new()
 	deck._ranks = _ranks.duplicate()
@@ -87,10 +94,12 @@ func copy() -> Deck:
 	return deck
 
 
+## The rank of the card in the slot, a Ranks index.
 func rank_of(slot: int) -> int:
 	return _ranks[slot]
 
 
+## The suit of the card in the slot, or NO_SUIT for a joker.
 func suit_of(slot: int) -> int:
 	return _suits[slot]
 

@@ -148,7 +148,7 @@ func test_no_flash_stops_every_flicker() -> void:
 
 
 func test_the_content_note_names_what_the_game_holds() -> void:
-	var note: ContentNoteScreen = _app.show_screen(App.CONTENT_NOTE, true)
+	var note: ContentNoteScreen = _app.show_screen(ScreenId.CONTENT_NOTE, true)
 	await await_idle_frame()
 	var text: String = note.text().to_lower()
 	for theme: String in ["famine", "persecution", "surveillance", "horror intensity"]:
@@ -156,7 +156,7 @@ func test_the_content_note_names_what_the_game_holds() -> void:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	await await_idle_frame()

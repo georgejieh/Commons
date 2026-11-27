@@ -48,7 +48,7 @@ func test_every_slip_on_both_shops_stands_beside_its_piece() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			for screen_id: String in ["store", "black_market"]:
+			for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 				var store: StoreScreen = _app.show_screen(screen_id, true)
 				await await_idle_frame()
 				await await_idle_frame()

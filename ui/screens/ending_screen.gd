@@ -9,24 +9,31 @@ extends Control
 ## The story scrolls when a larger text size makes it too tall (ADR 0034); the figures are
 ## not prose, so they stand at the foot of the page with the way home, always whole.
 
+## The page's margin on each side and above and below, in pixels.
 const MARGIN: Vector2 = Vector2(56, 36)
 ## How far the backdrop darkens under the page.
 const SHADE: Color = Color(0.05, 0.03, 0.02, 0.5)
+## The title card's height when there is room and no picture hangs in it.
 const FRAME_HEIGHT: float = 308.0
 ## The title card's height with a picture hung in it, which leaves the title under the
-## frame, and the picture's margin inside its printed frame.
+## frame.
 const PICTURE_HEIGHT: float = 288.0
+## The picture's margin inside its printed frame, in pixels.
 const PICTURE_INSET: float = 10.0
 ## Where the story is taller than its column, the title card gives up height first, down
 ## to this, so the text stands whole before anything scrolls.
 const FRAME_LEAST: float = 150.0
-## The title's largest and smallest size: it shrinks to fit its card on one line.
+## The title's largest size, at Standard text; it shrinks to fit its card on one line.
 const TITLE_MAX: int = 84
+## The title's smallest size, at Standard text, once it has shrunk to fit its card.
 const TITLE_MIN: int = 48
+## The size of the ending's text, at Standard text.
 const TEXT_SIZE: int = 22
 ## The historical note: small print, but never under the readable floor as drawn.
 const NOTE_SIZE: int = 18
+## The size of the line naming the player, at Standard text.
 const NAME_SIZE: int = 26
+## The width of the red Chinese-character seal in the heading, in pixels.
 const SEAL_WIDTH: float = 92.0
 ## The text column's width on a death's page, which has no epilogue beside it.
 const DEATH_WIDTH: float = 1180.0
@@ -51,6 +58,7 @@ var _home: Button
 var _figures: HBoxContainer
 
 
+## Builds the page for app from the run's ending: its title card, text, epilogue and figures.
 func open(app: App) -> void:
 	_view = app.controller.seats.ending()
 	_state = app.controller.run
@@ -293,6 +301,7 @@ func skip() -> void:
 		_list.show_all()
 
 
+## True while epilogue lines are still arriving, so an accept press shows the rest.
 func is_revealing() -> bool:
 	return _list != null and _list.is_revealing()
 
@@ -329,9 +338,11 @@ func name_label() -> Label:
 	return _name
 
 
+## The way home, for tests and the playtest.
 func home_button() -> Button:
 	return _home
 
 
+## The Show all button, or null on a page with no epilogue, for tests.
 func show_all_button() -> Button:
 	return _show_all

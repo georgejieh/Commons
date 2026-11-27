@@ -74,6 +74,7 @@ static func raise(state: RunState, meter: String, amount: int, run: RunParams) -
 		state.denunciation_armed = armed
 
 
+## Raises Resentment by amount as the run opens, when no round log exists to record it in.
 static func resent(state: RunState, amount: int) -> void:
 	var unseen: Array[RunEvent] = []
 	Resentment.add(state, amount, OPENING, RunDefaults.RESENTMENT, unseen)

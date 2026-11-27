@@ -10,9 +10,12 @@ extends RefCounted
 ## Emitted when coupons changed, so the screen can count them.
 signal spent
 
+## Seconds a bought leaflet takes to fly from the counter into the tray.
 const FLY_TIME: float = 0.34
+## The scale the flying leaflet has reached when it lands in the tray.
 const FLY_SCALE: float = 0.9
 
+## The player's tray of held Campaigns, which the screen places on the board beside the Cadres.
 var tray: CampaignTray = CampaignTray.new()
 ## The offers, one CounterPanel each, for the counter row.
 var offers: HBoxContainer = HBoxContainer.new()
@@ -26,6 +29,7 @@ var _flier: CampaignLeaflet = CampaignLeaflet.new()
 var _busy: bool = false
 
 
+## Builds the stall for shop: the shelf's offers and a compact tray, wired to the shop's controller.
 func setup(shop: StallContext) -> void:
 	_app = shop.app
 	_market = shop.market
@@ -45,6 +49,7 @@ func setup(shop: StallContext) -> void:
 	tray.add_child(_flier)
 
 
+## True while a bought leaflet is flying to the tray, so nothing else is bought or used.
 func is_busy() -> bool:
 	return _busy
 
@@ -150,7 +155,7 @@ func _on_used(_slot: int, _campaign_id: String) -> void:
 	spent.emit()
 	show_offer()
 	if _app.controller.awaiting() == RunController.AWAIT_RUN_OVER:
-		_app.show_screen(App.SET_SUMMARY, true)
+		_app.show_screen(ScreenId.SET_SUMMARY, true)
 
 
 ## While a leaflet is armed, the slip says what Use will do, over the tray.

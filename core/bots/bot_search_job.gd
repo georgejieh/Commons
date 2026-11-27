@@ -35,6 +35,8 @@ func is_ready() -> bool:
 	return not _hands.is_empty()
 
 
+## How many deals of the unseen cards the search plays out; 0 when there is nothing to
+## search.
 func sample_count() -> int:
 	return _hands.size()
 
@@ -74,6 +76,7 @@ func best() -> BotPlay:
 	return BotPlay.new(_candidates[top], BotRationale.Code.SEARCHED)
 
 
+## How many samples ran to the end. One the budget cut short does not count.
 func finished_samples() -> int:
 	var finished: int = 0
 	for row: PackedInt32Array in _results:

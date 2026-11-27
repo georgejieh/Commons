@@ -7,11 +7,18 @@ extends RefCounted
 ## faded in the corner. Every stage adds more by BowlGrime.wear(). Each sheet draws from
 ## its own fixed seed, so the same decree always looks the same.
 
+## The decree's paper before it is aged.
 const PAPER: Color = Color("e6d5ab")
+## The red of the head band, which is printed a little off register.
 const BAND: Color = Color("a8281a")
+## The ink of the two thin rules.
 const RULE: Color = Color("5a3a26")
+## The colour of the pin the decree hangs by.
 const PIN: Color = Color("2b2119")
+## The seed each sheet's wear is drawn from, with its index added, so a decree looks the same each
+## time.
 const SEED: int = 8231
+## The fewest foxing specks a sheet carries, at corruption stage 0, and the most, at the worst.
 const SPECKS: Vector2i = Vector2i(8, 46)
 ## How far the band's red slips off its line, in pixels, at stage 0 and at the last.
 const REGISTER: Vector2 = Vector2(1.0, 3.0)
@@ -19,6 +26,7 @@ const REGISTER: Vector2 = Vector2(1.0, 3.0)
 const SMALLEST: float = 12.0
 
 
+## The paper's colour after handling: never white, darker as the stage deepens.
 static func paper(worn: float) -> Color:
 	return BowlGrime.aged(PAPER, worn)
 

@@ -1,7 +1,8 @@
 extends GdUnitTestSuite
 ## The deck sheet's group names stand clear of every card (ADR 0041): read-only and
 ## choosing for an exchange, with the card coming in beside the heading, at both screens
-## and every text size, no card covers a rank's name, a joker's or the plot's.
+## and every text size, no card covers a rank's name, a joker's or the plot's, nor does a
+## picked card where it lifts.
 
 const SEED: int = 4242
 
@@ -36,7 +37,7 @@ func test_no_card_covers_a_group_name() -> void:
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for choosing: bool in [false, true]:
-				var store: StoreScreen = _app.show_screen(App.STORE, true)
+				var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 				await await_idle_frame()
 				var sheet: DeckSheet = store.deck
 				if choosing:
@@ -50,6 +51,12 @@ func test_no_card_covers_a_group_name() -> void:
 				await await_idle_frame()
 				var where: String = "text %d %s choosing %s" % [level, screen_size, choosing]
 				_check(sheet.board(), where)
+				if choosing:
+					var board: DeckBoard = sheet.board()
+					board.press(board.card_ids()[0])
+					await await_idle_frame()
+					assert_int(board.picked).is_equal(board.card_ids()[0])
+					_check(board, where + " with a card picked")
 				sheet.close()
 
 

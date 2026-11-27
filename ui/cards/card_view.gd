@@ -14,48 +14,61 @@ extends Control
 ## come from CardArt, so no face is baked. bind() is the only way to show a card; views
 ## come from CardPool and are reused, never instanced during a round.
 
+## Emitted with the card's id when the card is clicked.
 signal pressed(card_id: int)
+## Emitted with the card's id when the pointer enters the card.
 signal hovered(card_id: int)
 
+## The suits printed in red, as suit indexes.
 const RED_SUITS: Array[int] = [1, 3]
 ## The edge of a selection that makes a legal play: ready to throw.
 const ARMED: Color = Color("f2c94c")
+## The color of the keyboard cursor's bar under the card.
 const CURSOR: Color = Color("f4ecd8")
 ## Height of the cursor's bar under the card.
 const CURSOR_BAR: float = 8.0
-## Joker words are longer than a rank glyph, so they print smaller.
+## The type size of a rank glyph.
 const GLYPH_SIZE: int = 40
+## The smaller type size of a joker's word, which is longer than a rank glyph.
 const JOKER_SIZE: int = 24
+## The shader that tilts the card toward the pointer.
 const TILT_SHADER: Shader = preload("res://shaders/card_tilt.gdshader")
+## The card art every face is composed from, unless a view is given its own.
 const ART: CardArt = preload("res://data/ui/card_art.tres")
-## Where a number card's faint suit sits, and the inset of a picture card's art, as
-## left, top, right and bottom offsets.
+## Where a number card's faint suit sits, as left, top, right and bottom offsets.
 const PIP_BOX: Vector4 = Vector4(46, 56, 112, 160)
+## The inset of a picture card's art, as left, top, right and bottom offsets.
 const ART_BOX: Vector4 = Vector4(5, 5, 115, 163)
 ## The corner of a picture card where the art fades to card stock: its size for a court
-## card and for a joker's word, the stock's color, and how far in the fade stays solid.
+## card.
 const FADE_SIZE: Vector2 = Vector2(92, 136)
+## The size of that corner for a joker's word.
 const JOKER_FADE_SIZE: Vector2 = Vector2(120, 78)
+## How far in from the edge of the corner the fade stays solid, as a share of it.
 const FADE_SOLID: float = 0.45
 ## A paper edge around a picture card's rank, so it reads over any art.
 const RANK_OUTLINE: int = 6
-## Where the marks sit: both down the left edge, the strip a fanned hand leaves showing,
-## the enhancement's mark under the suit pip and the chop at the foot, inside the
-## selection edge.
+## Where a stamp's chop sits: at the foot of the left edge, the strip a fanned hand
+## leaves showing, inside the selection edge.
 const CHOP_AT: Vector2 = Vector2(9, 128)
+## Where an enhancement's mark sits: down the same edge, under the suit pip.
 const ENHANCEMENT_AT: Vector2 = Vector2(13, 92)
 ## Under a rank note the enhancement's mark moves down beside the chop, clear of the note.
 const ENHANCEMENT_BY_NOTE: Vector2 = Vector2(40, 128)
-## A wild card's ribbon hangs down the very edge (ADR 0029); the enhancement's mark and the
-## rank note move right of it, the note narrowed so it still shows where the next card
-## lies.
+## Where an enhancement's mark sits on a wild card: right of the ribbon that hangs down
+## the very edge (ADR 0029).
 const ENHANCEMENT_BY_RIBBON: Vector2 = Vector2(16, 92)
+## The rank note's left and right offsets on an ordinary card.
 const NOTE_SPAN: Vector2 = Vector2(8, 72)
+## The same offsets on a wild card: right of its ribbon, and narrowed so the note still
+## shows where the next card lies.
 const NOTE_SPAN_BY_RIBBON: Vector2 = Vector2(15, 61)
-## The rank note's type and the height of its tag on the card: the card is art of a fixed
-## size, so the note grows with the text size only as far as its tag holds it.
+## The rank note's type size.
 const NOTE_SIZE: int = 18
+## The height of the note's tag on the card: the card is art of a fixed size, so the note
+## grows with the text size only as far as its tag holds it.
 const NOTE_TALL: float = 26.0
+## The string keys of the ranks' names, indexed by rank.
 const RANK_KEYS: PackedStringArray = [
 	"card.rank.3",
 	"card.rank.4",
@@ -84,6 +97,7 @@ static var _stock_of: Texture2D = null
 static var _note_tag: StyleBoxFlat = null
 static var _fade: GradientTexture2D = null
 
+## The id of the card shown, or -1 while the view is unbound.
 var card_id: int = -1
 
 ## The hint's tick in the card's corner.
@@ -223,6 +237,7 @@ func _note_size(text: String) -> int:
 	return TextSize.fit(NOTE_SIZE, NOTE_SIZE, fits)
 
 
+## The text of the rank note, or "" when none shows; for tests.
 func rank_note() -> String:
 	return _rank_note.text if _rank_note.visible else ""
 
@@ -235,6 +250,7 @@ func set_wild(on: bool) -> void:
 	_place_marks()
 
 
+## True while the wild card's ribbon hangs on the card; for tests.
 func shows_wild() -> bool:
 	return _ribbon.visible
 
@@ -255,12 +271,12 @@ func _place_marks() -> void:
 		badge.position = ENHANCEMENT_BY_RIBBON if _ribbon.visible else ENHANCEMENT_AT
 
 
-## The marks shown, for tests and playtests: a stamp's chop, and the enhancement whose
-## mark the card shows, or "" for none.
+## True while the card shows a stamp's chop; for tests and playtests.
 func shows_stamp() -> bool:
 	return chop.visible
 
 
+## The enhancement whose mark the card shows, or CardInstance.NO_ID for none; for tests.
 func shown_enhancement() -> String:
 	if not badge.visible:
 		return CardInstance.NO_ID
@@ -339,6 +355,7 @@ func set_marked(selected: bool, hinted: bool, cursor: bool = false, armed: bool 
 	tick.show_on(hinted, card_id)
 
 
+## True while the hint's tick shows on the card; for tests.
 func shows_hint_tick() -> bool:
 	return tick.visible
 
@@ -348,6 +365,7 @@ func hint_tick_rect() -> Rect2:
 	return Rect2(tick.position, tick.size)
 
 
+## True while the keyboard cursor's bar shows under the card; for tests.
 func has_cursor() -> bool:
 	return _cursor_mark.visible
 

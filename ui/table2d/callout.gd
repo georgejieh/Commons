@@ -8,34 +8,53 @@ extends Control
 ## clicked while events play, so it never covers a choice. Reduced motion shows the
 ## same banner without the whip, slam or turning rays.
 
+## How loud a shout is: a cut-in for a villager's call, a takeover for a bomb or a round's end. The
+## tier indexes the per-tier constants below.
 enum Tier { CUT_IN, TAKEOVER }
 
+## How many rays the poster's sun has; every other one is drawn.
 const RAYS: int = 28
+## The tilt of the band, the word and the face, in radians.
 const BAND_TILT: float = -0.06
+## The band's height in pixels, per tier.
 const BAND_HEIGHT: Array[float] = [236.0, 330.0]
+## The word's type at Standard, per tier.
 const WORD_SIZE: Array[int] = [112, 156]
+## The line under the word's type at Standard, per tier.
 const SUB_SIZE: Array[int] = [30, 36]
+## How dark the room goes behind the banner at its strongest, per tier, from 0 to 1.
 const DIM: Array[float] = [0.28, 0.62]
+## Seconds the banner is held on screen between its whip in and its whip out, per tier.
 const HOLD: Array[float] = [0.8, 1.2]
+## Seconds the cloth takes to cross the screen.
 const WHIP_IN: float = 0.14
+## Seconds the word takes to slam down onto the cloth.
 const SLAM: float = 0.2
+## Seconds the cloth takes to leave the screen.
 const WHIP_OUT: float = 0.16
+## The scale the word starts at before it slams down to full size.
 const SLAM_FROM: float = 2.6
+## The rays' opacity at full glow, from 0 to 1.
 const RAY_ALPHA: float = 0.3
+## How fast the rays turn, in radians a second.
 const RAY_SPEED: float = 0.45
+## The thickness of the trim along the band's edges, in pixels.
 const EDGE: float = 6.0
+## The side of the villager's face on the cloth, in pixels.
 const FACE_SIZE: float = 190.0
-## How far from the middle a face sits, and how far the word moves over to make room.
+## How far from the middle a face sits, in pixels.
 const FACE_OFFSET: float = 520.0
+## How far the word moves over to make room for a face, in pixels.
 const WORD_SHIFT: float = 90.0
 ## The cloth is art of a fixed size: the word grows with the text size only while it
 ## fills no more than this share of the band's height and of the screen's width.
 const WORD_ROOM: Vector2 = Vector2(0.9, 0.8)
 
-## How far the cloth has crossed, how far it has left, and how strong the dim and rays
-## are, each from 0 to 1. Tweened; the banner is drawn from them.
+## How far the cloth has crossed, from 0 to 1. Tweened; the banner is drawn from it.
 var wipe: float = 0.0
+## How far the cloth has left, from 0 to 1. Tweened; the banner is drawn from it.
 var leave: float = 0.0
+## How strong the dim and the rays are, from 0 to 1. Tweened; the banner is drawn from it.
 var glow: float = 0.0
 
 var _tier: Tier = Tier.CUT_IN
@@ -136,6 +155,7 @@ func dismiss() -> void:
 	_rest()
 
 
+## True while a banner is up, for tests.
 func is_showing() -> bool:
 	return visible
 
@@ -145,6 +165,7 @@ func shown_word() -> String:
 	return _word.text if visible else ""
 
 
+## The line under the word now on the banner, or "" when it is down. For tests.
 func shown_sub() -> String:
 	return _sub.text if visible else ""
 

@@ -56,7 +56,7 @@ func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 			get_tree().root.size = screen_size
 			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 				_ladder(debuff.id)
-				var intro: Control = _app.show_screen(App.SET_INTRO, true)
+				var intro: Control = _app.show_screen(ScreenId.SET_INTRO, true)
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "%s %s" % [debuff.id, screen_size]
@@ -102,7 +102,7 @@ func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 				_ladder(debuff.id)
 				_loop().state.round_index = 1
-				var table: TableScreen = _app.show_screen(App.TABLE, true)
+				var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 				await await_idle_frame()
 				var strip: DebuffStrip = table.debuffs
 				strip.show_debuffs(_app.controller)
@@ -131,10 +131,10 @@ func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 ## Plays the player's seat through the table until check returns true, at most turns times.
 func _play_until(check: Callable, turns: int = 600) -> bool:
 	var driver: ControllerScript = ControllerScript.new()
-	_app.show_screen(App.TABLE, true)
+	_app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	for _turn: int in turns:
-		if _app.switcher.current_id() != "table":
+		if _app.switcher.current_id() != ScreenId.TABLE:
 			return false
 		var table: TableScreen = _app.switcher.current()
 		table.skip_events()
@@ -152,7 +152,7 @@ func _play_until(check: Callable, turns: int = 600) -> bool:
 func test_levy_and_redistribution_slide_cards_left_or_leave_the_end_state() -> void:
 	for reduced: bool in [false, true]:
 		Settings.set_value("reduced_motion", reduced)
-		_app.show_screen(App.TABLE, true)
+		_app.show_screen(ScreenId.TABLE, true)
 		await await_idle_frame()
 		var table: TableScreen = _app.switcher.current()
 		var beats: DebuffMoments = table.debuff_beats
@@ -232,7 +232,7 @@ func test_glass_walls_lay_glass_over_the_hand_while_in_force() -> void:
 
 ## The line over the hand names the player's role once the round has started.
 func test_the_role_line_names_the_players_role_in_the_round() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var driver: ControllerScript = ControllerScript.new()
 	assert_bool(driver.play_to(self, _app.controller, RunController.AWAIT_PLAY)).is_true()
@@ -246,7 +246,7 @@ func test_the_role_line_names_the_players_role_in_the_round() -> void:
 func test_a_seized_plot_card_is_torn_unless_motion_is_reduced() -> void:
 	for reduced: bool in [false, true]:
 		Settings.set_value("reduced_motion", reduced)
-		_app.show_screen(App.TABLE, true)
+		_app.show_screen(ScreenId.TABLE, true)
 		await await_idle_frame()
 		var table: TableScreen = _app.switcher.current()
 		var beats: DebuffMoments = table.debuff_beats

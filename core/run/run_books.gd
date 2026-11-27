@@ -6,7 +6,9 @@ extends RefCounted
 ## kept here as a percent of each target, apart from the overfulfilment steps, and so is
 ## a raised price. Both compound: each correction multiplies what the last left.
 
+## The divisor that turns a whole-number percent into a fraction.
 const PERCENT: int = 100
+## The file's and the corrections' rates and caps, used when a caller gives none.
 const DEFAULT_PARAMS: BooksParams = preload("res://data/run/books.tres")
 ## The figures that can go dark: a lowered meter, or a lowered norm.
 const DARKENS: Array[String] = [
@@ -19,10 +21,9 @@ const DARKENS: Array[String] = [
 ## Figures shown from now on as "None reported", in the order they went dark. The true
 ## figure goes on counting where the player cannot see it.
 var dark: Array[String] = []
-## How far corrections have raised every later Quota's target, in percent, and the part
-## of it in force for the Quota in play: corrections made during a Quota raise only the
-## Quotas after it.
+## How far corrections have raised every later Quota's target, in percent.
 var norm_percent: int = 0
+## The part of norm_percent in force for the Quota in play, as start_quota sets it.
 var norm_in_force: int = 0
 ## How far corrections have raised both shops' prices, in percent, from the moment each
 ## was made.
@@ -42,6 +43,7 @@ static func from_dict(data: Dictionary) -> RunBooks:
 	return books
 
 
+## The books as a map for the run save; from_dict reads it back.
 func to_dict() -> Dictionary:
 	return {
 		"dark": dark.duplicate(),
@@ -52,6 +54,7 @@ func to_dict() -> Dictionary:
 	}
 
 
+## True when the figure is shown as None reported.
 func is_dark(figure: String) -> bool:
 	return dark.has(figure)
 

@@ -6,9 +6,13 @@ extends Control
 ## corruption stage 0 (BowlGrime.wear()). Settings draws its swatches with it too. Its
 ## eye (BackEyes) is printed over the lattice only while the table's dread shows one.
 
+## The back's default size in pixels.
 const SIZE: Vector2 = Vector2(68, 96)
+## The width of the printed border, in pixels.
 const BORDER: float = 6.0
+## The gap between the lattice's lines, in pixels.
 const LATTICE: float = 12.0
+## The lattice lines' opacity, from 0 to 1.
 const LATTICE_ALPHA: float = 0.35
 
 ## The design whose inks it is drawn in; the first design when none is set.

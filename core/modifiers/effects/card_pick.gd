@@ -4,6 +4,8 @@ extends RefCounted
 ## higher ID first among the highest, the lower among the lowest.
 
 
+## The IDs of the count highest or lowest of the cards by the rank map, the ones that come first by
+## the tie rule; fewer when there are fewer cards.
 static func extremes(
 	cards: Array[CardInstance], rank_map: PackedByteArray, highest: bool, count: int
 ) -> Array[int]:

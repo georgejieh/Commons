@@ -8,8 +8,11 @@ extends RefCounted
 ## WildSupply offers, so readings that differ only in such a kicker are not repeated.
 ## Lean generation, for bots, leaves out every play WildSupply.is_lean() refuses unbuilt.
 
+## The kickers a four of a kind carries: two singles or two pairs.
 const FOUR_TWO_KICKERS: int = 2
+## The chain length that asks for chains of every length.
 const ANY_LENGTH: int = 0
+## The floor under which no rank is skipped, so every play is built.
 const NO_FLOOR: int = -1
 
 var _counts: PackedByteArray

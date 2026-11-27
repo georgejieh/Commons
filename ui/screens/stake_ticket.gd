@@ -7,12 +7,17 @@ extends Button
 ## tickets' (PaperTicket's warm paper, ink faded by the stage), and it is wide enough that
 ## its words sit at 16 px or more on one or two lines, never broken inside a word.
 
+## The ticket's size in pixels.
 const SIZE: Vector2 = Vector2(212, 92)
+## How far, in pixels, the ticket and its words rise while it is hovered or focused.
 const LIFT: float = 6.0
+## The font size of an open stake's name, at Standard.
 const NAME_SIZE: int = 22
+## The font size of a locked stake's words, at Standard.
 const LINE_SIZE: int = 18
-## The words' room: the ticket less its band at the left and a margin at the right.
+## The band at the ticket's left, in pixels, which the words keep clear of.
 const WORDS_LEFT: float = 14.0
+## The margin at the ticket's right, in pixels, which the words keep clear of.
 const WORDS_RIGHT: float = 8.0
 
 ## The stake this ticket stands for.

@@ -6,12 +6,15 @@ extends RefCounted
 ## played, the hint's pass, Night Shift's refusal and an armed Campaign's ask or refusal;
 ## in the bidding, the call and the grab.
 
-## Numbers as wide as a prompt or a bid can print.
+## A score as wide as a prompt can print.
 const WIDE_SCORE: float = 999999.0
+## A bid's cost as wide as a prompt can print.
 const WIDE_COST: int = 99
+## A percentage as wide as a prompt can print.
 const WIDE_PERCENT: int = 150
 
 
+## Every prompt the line can say, playing or bidding, for sizing the column to the tallest.
 static func every(controller: RunController, bidding: bool) -> Array[String]:
 	if bidding:
 		var grab: String = TranslationServer.translate("table.grab_prompt")

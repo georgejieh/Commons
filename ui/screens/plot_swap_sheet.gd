@@ -12,11 +12,17 @@ extends Control
 
 ## The dim over the table, as light as the one-time tips', so the seats still show.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.5)
+## The gap, in pixels, between the paper and the screen's left, right and bottom edges.
 const MARGIN: float = 24.0
+## The paper's inner padding, in pixels.
 const PADDING: int = 28
+## The gap, in pixels, between the rows of the sheet.
 const SPACING: int = 12
+## The font size of the rule, the traded pairs and the status line.
 const RULE_SIZE: int = 20
+## The font size of the swaps-left count in the head.
 const COUNT_SIZE: int = 40
+## The font size of the line about the seat that kept a card.
 const SEAT_SIZE: int = 22
 
 ## The swaps left, in the sheet's head.
@@ -99,28 +105,33 @@ func _footer() -> Control:
 	return ScreenKit.row([notes, buttons])
 
 
+## Hands the sheet the app and the table's card pool; call once, before it opens.
 func setup(app: App, pool: CardPool) -> void:
 	_app = app
 	_pool = pool
 
 
+## True while the sheet is showing, and nothing at the table plays under it.
 func is_open() -> bool:
 	return visible
 
 
-## The card board, and the buttons, for tests and the playtest.
+## The card board, for tests and the playtest.
 func board() -> SwapBoard:
 	return _board
 
 
+## The Swap button, which sends the traded pairs; for tests and the playtest.
 func swap_button() -> Button:
 	return _swap
 
 
+## The Keep hand button, which answers the swap with no pairs; for tests and the playtest.
 func keep_button() -> Button:
 	return _keep
 
 
+## A copy of the Undo buttons, one per traded pair in order; for tests and the playtest.
 func undo_buttons() -> Array[Button]:
 	return _undo.duplicate()
 

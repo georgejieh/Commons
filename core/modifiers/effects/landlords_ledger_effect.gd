@@ -7,14 +7,17 @@ extends ModifierEffect
 var _deal: DealResult = null
 
 
+## Remembers the round's deal, to read its kitty when a card scores.
 func on_deal(context: DealContext) -> void:
 	_deal = context.deal
 
 
+## Takes the deal when the Cadre is handed back into the round after the deal.
 func handed_back(deal: DealResult) -> void:
 	_deal = deal
 
 
+## Doubles the Grain of a kitty card the landlord holder plays.
 func card_scored(context: CardContext) -> void:
 	if context.is_landlord and _in_kitty(context.card.id()):
 		context.grain *= 2.0

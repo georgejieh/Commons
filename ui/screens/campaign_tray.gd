@@ -15,13 +15,16 @@ signal used(slot: int, campaign_id: String)
 ## The leaflets were laid out again from what is held, which may have changed.
 signal refreshed
 
+## Pixels between leaflets, and between the leaflets and the side buttons.
 const GAP: float = 14.0
-## Room for the head over a compact row, and over full-size leaflets, whose armed one
-## lifts by CampaignLeaflet.LIFT and must stay clear of the head.
+## Room for the head over a compact row of leaflets.
 const HEAD: float = 26.0
+## Room for the head over full-size leaflets, whose armed one lifts by CampaignLeaflet.LIFT and must
+## stay clear of it.
 const HEAD_FULL: float = 36.0
 ## Between a compact tray's head and its leaflets, whatever size the head's type is.
 const HEAD_CLEAR: float = 8.0
+## The size of the Use and Cancel buttons, in pixels.
 const BUTTON: Vector2 = Vector2(118, 44)
 ## Use and Cancel's words, at Standard.
 const BUTTON_SIZE: int = 20
@@ -42,7 +45,9 @@ var vertical: bool = false
 ## left. The table shows only what is held. Set before setup().
 var show_empty: bool = true
 
+## The Use button, shown while a Campaign is armed.
 var use: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
+## The Cancel button, shown while a Campaign is armed; it puts the leaflet down.
 var cancel: Button = ScreenKit.button("", CommonsTheme.SECONDARY)
 
 ## The tray's heading, which it drops when the column is short (ADR 0034).
@@ -77,6 +82,8 @@ func _ready() -> void:
 	cancel.pressed.connect(disarm)
 
 
+## Gives the tray the run controller it reads held Campaigns from and uses them through, and fills
+## its places.
 func setup(controller: RunController) -> void:
 	_controller = controller
 	refresh()
@@ -158,14 +165,17 @@ func campaign_count() -> int:
 	return _leaflets.size()
 
 
+## The place of the armed leaflet, or -1 when none is.
 func armed_slot() -> int:
 	return _armed
 
 
+## The place the keyboard or gamepad cursor is on, or -1 when it is on none, for tests.
 func cursor_slot() -> int:
 	return _cursor
 
 
+## The leaflet in a place, which the stall flies a bought one into and the sell desk tags.
 func leaflet(slot: int) -> CampaignLeaflet:
 	return _leaflets[slot]
 
@@ -196,6 +206,7 @@ func arm(slot: int) -> void:
 	_show_marks()
 
 
+## Puts the armed leaflet down and clears any refusal; it does nothing when none is armed.
 func disarm() -> void:
 	if _armed < 0 and _refusal.is_empty():
 		return
@@ -296,6 +307,7 @@ func show_heading(on: bool) -> void:
 	refresh()
 
 
+## True while the tray shows its heading, for tests.
 func has_heading() -> bool:
 	return _heading
 

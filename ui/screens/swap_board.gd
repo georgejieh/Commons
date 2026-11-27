@@ -9,18 +9,25 @@ extends Control
 ## one onto the other does the same, and a click on a traded card takes the pair back.
 ## Keyboard and gamepad move a cursor along every card and press the one under it.
 
+## The trade changed, by a pick, a pair or an undo; the sheet draws its count and pairs again.
 signal changed
+## A pick was refused for want of a swap; the sheet says why and pulses its count.
 signal refused
 
+## The three places a card stands in: the hand, the cards that sit the round out, and the plot.
 enum Place { HAND, OUT, PLOT }
 
+## The size of a card on the board, as the table draws one.
 const CARD: Vector2 = SwapFit.CARD
 ## How far a picked card rises.
 const LIFT: float = 28.0
-## Room under a card for the cursor's bar, and how far a press must move to be a drag.
+## Room under a card, in pixels, for the cursor's bar.
 const CURSOR_ROOM: float = 18.0
+## How far, in pixels, a press must move to be a drag, not a click.
 const DRAG_START: float = 8.0
+## Seconds a card takes to glide to its place when the board is laid out again.
 const MOVE_TIME: float = 0.16
+## The pairs and the pick the board shows, new with each show_cards; the sheet reads it.
 var trade: PlotTrade
 var _pool: CardPool
 var _rank_map: PackedByteArray = PackedByteArray()
@@ -66,8 +73,8 @@ func show_cards(
 	_rank_map = hand_model.rank_map()
 	_wild = wild.duplicate()
 	trade = PlotTrade.new(limit)
-	_hand = _sorted(hand)
-	_plot = _sorted(plot)
+	_hand = SwapFit.sorted(hand, _rank_map)
+	_plot = SwapFit.sorted(plot, _rank_map)
 	_build_places(limit)
 	for card: CardInstance in _hand + _plot:
 		_source[card.id()] = PlotTrade.Source.PLOT if _plot.has(card) else PlotTrade.Source.HAND
@@ -130,10 +137,13 @@ func undo(index: int) -> void:
 	_after(PlotTrade.Reason.OK)
 
 
+## The card view standing for card_id, or null when the board shows no such card; for
+## tests and the walks.
 func view_of(card_id: int) -> CardView:
 	return _views.get(card_id)
 
 
+## The card with that id, from the hand or the plot, or null when the board has none.
 func card_of(card_id: int) -> CardInstance:
 	for card: CardInstance in _hand + _plot:
 		if card.id() == card_id:
@@ -160,6 +170,7 @@ func tags() -> Array[Label]:
 	return _tags.duplicate()
 
 
+## The id of the card under the cursor, or PlotTrade.NONE when the board has none.
 func cursor_card() -> int:
 	return _order[_cursor] if _cursor < _order.size() else PlotTrade.NONE
 
@@ -169,23 +180,6 @@ func _after(reason: PlotTrade.Reason) -> void:
 		refused.emit()
 	_lay_out(true)
 	changed.emit()
-
-
-func _sorted(cards: Array[CardInstance]) -> Array[CardInstance]:
-	var sorted: Array[CardInstance] = cards.duplicate()
-	sorted.sort_custom(_before)
-	return sorted
-
-
-## Lowest first, by where each card ranks now, as the table's hand sorts by rank.
-func _before(a: CardInstance, b: CardInstance) -> bool:
-	var a_value: int = _rank_map[a.base_rank()]
-	var b_value: int = _rank_map[b.base_rank()]
-	if a_value != b_value:
-		return a_value < b_value
-	if a.base_rank() != b.base_rank():
-		return a.base_rank() < b.base_rank()
-	return a.id() < b.id()
 
 
 func _build_places(limit: int) -> void:
@@ -233,7 +227,7 @@ func _counts() -> Array[int]:
 
 
 func _places() -> Array[Array]:
-	return SwapFit.places(_hand, _plot, trade, _sorted)
+	return SwapFit.places(_hand, _plot, trade, _rank_map)
 
 
 func _lay_out(animate: bool) -> void:

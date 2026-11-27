@@ -33,7 +33,7 @@ var _words_rested: int = 0
 ## The whole visit, from the state store to leaving it: marks, file, wild_ranks and market
 ## are the walks of those frames.
 func visit(marks: Marks, file: FileWalk, wild_ranks: Wild, market: Market) -> void:
-	await _shot("store")
+	await _shot(ScreenId.STORE)
 	if not _marks_shot:
 		_marks_shot = true
 		await marks.store()
@@ -52,13 +52,13 @@ func visit(marks: Marks, file: FileWalk, wild_ranks: Wild, market: Market) -> vo
 	await _keyword_frames()
 	await _envelope_frames()
 	await _click_button_with_text(tr("market.open"))
-	await _shot("black_market")
+	await _shot(ScreenId.BLACK_MARKET)
 	if not _scarce_shot:
 		_scarce_shot = true
 		await wild_ranks.scarce(true)
 	await market.parcel()
 	# The Parcel's sandbox resumes the saved run, which lands in the state store.
-	if _screen_id() != "black_market":
+	if _screen_id() != ScreenId.BLACK_MARKET:
 		await _click_button_with_text(tr("market.open"))
 	await market.counter()
 	await _click_button_with_text(tr("market.back"))

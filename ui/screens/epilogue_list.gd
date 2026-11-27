@@ -5,10 +5,14 @@ extends ScrollContainer
 ## scrolls: by wheel, and by up and down on a keyboard or gamepad while it has focus,
 ## handing focus on once it reaches the end.
 
+## Sent once every line has been shown, so the page can hand the focus on.
 signal revealed
 
+## The size of an epilogue line, at Standard text.
 const LINE_SIZE: int = 22
+## The gap between lines, in pixels.
 const LINE_GAP: int = 14
+## Seconds a line takes to fade in.
 const FADE: float = 0.2
 ## How far one up or down press scrolls.
 const STEP: int = 90
@@ -30,6 +34,7 @@ func _init() -> void:
 	get_v_scroll_bar().changed.connect(_update_focus)
 
 
+## Fills the list with a label for each line, hidden until it is revealed.
 func set_lines(lines: Array[String]) -> void:
 	for line: String in lines:
 		var label: Label = ScreenKit.label(line, LINE_SIZE, ScreenKit.INK)
@@ -39,6 +44,7 @@ func set_lines(lines: Array[String]) -> void:
 		_lines.append(label)
 
 
+## The line labels in order, for tests and the playtest.
 func line_labels() -> Array[Label]:
 	return _lines.duplicate()
 
@@ -55,6 +61,7 @@ func reveal(beat: float) -> void:
 	_tween.tween_callback(_finish)
 
 
+## True until every line has been shown.
 func is_revealing() -> bool:
 	return not _done
 
@@ -97,6 +104,7 @@ func _update_focus() -> void:
 	focus_mode = Control.FOCUS_ALL if bar.max_value > bar.page + 1.0 else Control.FOCUS_NONE
 
 
+## True while the lines outgrow the page, so the list takes the focus for up and down.
 func can_scroll() -> bool:
 	return focus_mode == Control.FOCUS_ALL
 

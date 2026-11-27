@@ -6,6 +6,7 @@ extends RefCounted
 ## denounced; a Letter wasted on nobody denounces nobody.
 
 
+## Adds one round's events to the Set's summary: what the player did to each villager.
 static func fold_round(
 	summary: SetSummary, events: Array[RunEvent], player: int, families: Array[String]
 ) -> void:

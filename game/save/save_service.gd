@@ -18,19 +18,29 @@ extends RefCounted
 ## it is moved aside beside it, under NEWER_SUFFIX, and a write whose move fails is
 ## refused.
 
+## The run save's current schema version.
 const SCHEMA_VERSION: int = 20
 ## The first run save schema that carries a seal.
 const SEALED_FROM: int = 17
+## Where the run save is kept.
 const RUN_PATH: String = "user://run.json"
+## Where the profile save is kept.
 const PROFILE_PATH: String = "user://profile.json"
+## The suffix of the backup that holds the save a write replaced.
 const BACKUP_SUFFIX: String = ".bak"
+## The suffix of the temporary file a save is written to before it is renamed into place.
 const TEMP_SUFFIX: String = ".tmp"
+## The string key of the notice that a save was restored from its backup.
 const RESTORED_KEY: String = "save.restored_from_backup"
+## The string key of the notice that neither a save nor its backup could be read.
 const UNREADABLE_KEY: String = "save.unreadable"
+## The string key of the notice that a save is from a newer version.
 const NEWER_KEY: String = "save.newer_version"
 ## What a save from a newer version is renamed to, beside it: one a path, the latest.
 const NEWER_SUFFIX: String = ".newer_version"
+## The key a save holds its seal under, beside schema_version.
 const SEAL_KEY: String = "seal"
+## The key a save holds its extras under.
 const EXTRA_KEY: String = "extra"
 
 ## Files that belong to this save and go with it when it is deleted.
@@ -94,10 +104,12 @@ static func for_run(file_path: String = RUN_PATH) -> SaveService:
 	return service
 
 
+## The path of the save file.
 func path() -> String:
 	return _path
 
 
+## The path of the backup beside the save.
 func backup_path() -> String:
 	return _path + BACKUP_SUFFIX
 

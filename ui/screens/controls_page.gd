@@ -31,11 +31,15 @@ const PAD_NAMES: Dictionary[JoyButton, String] = {
 }
 ## The name of each key's ticket, for the focus and for tests.
 const TICKET: String = "Key_%s"
+## The size of an action's name, at Standard text.
 const NAME_SIZE: int = 24
+## The size of an action's gamepad button name, at Standard text.
 const PAD_SIZE: int = 22
 ## The most the rows stand before they scroll inside the sheet, so Back stays on screen
-## at the largest text size (ADR 0034): in the pause menu, and under a page's header.
+## at the largest text size (ADR 0034), in the pause menu.
 const ROWS_CAP: float = 600.0
+## The most the rows stand before they scroll when the page has a header of its own, which leaves
+## less height.
 const ROWS_CAP_UNDER_HEADER: float = 540.0
 
 var _tickets: Dictionary[String, Button] = {}
@@ -140,14 +144,17 @@ func focus_first() -> void:
 	_tickets[KeyBindings.ACTIONS[0]].grab_focus()
 
 
+## The ticket that shows an action's key and asks for a new one when pressed, for tests.
 func ticket(action: String) -> Button:
 	return _tickets[action]
 
 
+## The ticket that restores the default keys, for tests.
 func restore_button() -> Button:
 	return _restore
 
 
+## The Back button, for tests and the walks.
 func back_button() -> Button:
 	return _back
 
@@ -164,11 +171,13 @@ func capture(action: String) -> void:
 	_tickets[action].text = tr("controls.press")
 
 
+## Stops asking for a key and shows the keys as bound, so no key is taken.
 func cancel_capture() -> void:
 	_capturing = ""
 	_show_keys()
 
 
+## Stops any asking, restores every key to its default, saves and shows the keys.
 func restore_defaults() -> void:
 	cancel_capture()
 	Settings.bindings.restore_defaults()

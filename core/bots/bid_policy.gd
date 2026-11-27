@@ -3,6 +3,8 @@ extends RefCounted
 ## Decides whether to claim the seat, from hand points against a threshold.
 
 
+## A hand's worth in bid points: its jokers, 2s, aces, bombs, rocket and wild cards by the
+## weights, and a bonus for a hand that empties in few plays. Counts are per rank.
 static func hand_points(counts: PackedByteArray, table: BotTable, weights: BotWeights) -> float:
 	var points: float = 0.0
 	points += counts[Ranks.BIG_JOKER] * weights.big_joker_points
@@ -20,6 +22,8 @@ static func hand_points(counts: PackedByteArray, table: BotTable, weights: BotWe
 	return points + _shape_bonus(counts, table, weights)
 
 
+## The points a hand must reach to bid: the grab bar or the call bar, and for the last
+## bidder that bar scaled by last_bidder_factor.
 static func threshold(is_grab: bool, is_last: bool, weights: BotWeights) -> float:
 	var bar: float = weights.grab_threshold if is_grab else weights.call_threshold
 	return bar * weights.last_bidder_factor if is_last else bar

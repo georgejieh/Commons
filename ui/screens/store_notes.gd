@@ -5,6 +5,7 @@ extends RefCounted
 ## coupons, and the state store's note of why its counter is short while rationing holds.
 ## Anything else a shop says on its own goes on a slip of paper through on_paper().
 
+## The font size of the notes a shop prints, at Standard.
 const NOTE_SIZE: int = 20
 ## Clear of the paper's printed border, so no rule crosses a line of the note.
 const PADDING: int = 22
@@ -12,6 +13,7 @@ const PADDING: int = 22
 const NOTE_WIDTH: float = 640.0
 
 
+## The black market's note of what each purchase there costs beyond coupons, in Resentment.
 static func warning(controller: RunController) -> Control:
 	var note: KeywordText = KeywordText.new()
 	note.add_theme_font_size_override("normal_font_size", TextSize.px(NOTE_SIZE))
@@ -22,6 +24,7 @@ static func warning(controller: RunController) -> Control:
 	return note
 
 
+## The state store's note, in red on one line, of why its counter is short while rationing holds.
 static func rationing(controller: RunController) -> Control:
 	var slots: int = controller.store.store_stock().size()
 	var text: String = Strings.count("store.rationed", slots).format(
@@ -81,6 +84,15 @@ static func count_resentment(count: Label, shown: float, state: RunView) -> floa
 	return state.resentment()
 
 
+## The page's eyebrow and title, the black market's or the state store's.
+static func heading(market: bool) -> Control:
+	var eyebrow: String = "market.eyebrow" if market else "store.eyebrow"
+	var title: String = "market.title" if market else "store.title"
+	return ScreenKit.header(
+		TranslationServer.translate(eyebrow), TranslationServer.translate(title)
+	)
+
+
 ## Your coupons over the household's true figures, at the foot of the heading.
 static func balance(coupons: Label, books: SmallLedger) -> VBoxContainer:
 	var made: VBoxContainer = VBoxContainer.new()
@@ -114,3 +126,12 @@ static func beside(controller: RunController, market: bool, strip: ReformStrip) 
 ## Coupons as a shop shows them: ample at the stage past the last (ADR 0022).
 static func coupon_text(value: float) -> String:
 	return ShownFigures.coupons(roundi(value), "store.coupons")
+
+
+## A sheet of paper holding content near its top, padded inside its printed border.
+static func sheet(content: Control, padding: int) -> PanelContainer:
+	var made: PanelContainer = PanelContainer.new()
+	made.add_theme_stylebox_override("panel", ScreenKit.paper_style(padding))
+	made.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	made.add_child(content)
+	return made

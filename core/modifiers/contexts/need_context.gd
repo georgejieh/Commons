@@ -7,14 +7,19 @@ extends RefCounted
 ## What the player declared when they declared as a peasant, else NOT_DECLARED.
 const NOT_DECLARED: int = -1
 
+## The run's player seat.
 var player: int
+## The round's landlord seat.
 var landlord: int
+## What the player declared, or NOT_DECLARED.
 var declared: int
+## The need the round's cards truly had, for the declaration to be held against.
 var true_need: int
 ## Every seat the audit caught in a lie this split, the player's own included.
 var caught: Array[int] = []
-## Resentment the player loses and coupons the player earns, to edit.
+## Resentment the player loses, to edit.
 var resentment_fall: int = 0
+## Coupons the player earns, to edit.
 var coupons: int = 0
 
 

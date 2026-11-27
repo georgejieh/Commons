@@ -10,10 +10,12 @@ signal skipped
 ## The line typing out finished or was skipped.
 signal finished
 
-## The type and the lines of room it keeps: at least 54 px, times the text size's factor,
-## and never less than two lines of the type really stand.
+## The line's type at Standard.
 const SIZE: int = 20
+## How many lines the room holds; a line that would need more is set smaller.
 const LINES: int = 2
+## The room it keeps: at least 54 px high, times the text size's factor, and never less
+## than two lines of the type really stand.
 const ROOM: Vector2 = Vector2(200, 54)
 
 ## When each character of the current line shows, and how long it has been typing.
@@ -73,6 +75,7 @@ func skip() -> bool:
 	return true
 
 
+## True while a line is still typing out.
 func is_typing() -> bool:
 	return is_processing()
 

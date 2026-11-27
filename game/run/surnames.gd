@@ -6,7 +6,9 @@ extends RefCounted
 
 ## The most letters a surname may have.
 const LONGEST: int = 12
+## The string key of the refusal for a surname a village family already bears.
 const REFUSED_KEY: String = "surname.refused"
+## The string key of the refusal for a surname that is empty, too long or not plain letters.
 const LENGTH_KEY: String = "surname.length"
 
 
@@ -72,6 +74,7 @@ static func of_profile(profile: SaveService) -> String:
 	return or_fallback(Profile.read(profile).surname)
 
 
+## The surname, or the book's fallback when it is empty.
 static func or_fallback(surname: String) -> String:
 	return RunNames.BOOK.fallback_surname if surname.is_empty() else surname
 

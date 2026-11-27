@@ -8,6 +8,7 @@ extends Control
 const LINE_SIZE: int = 26
 
 
+## Builds the note for app, and its Continue records that the note was seen before it leads on.
 func open(app: App) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
 	sheet.add_child(ScreenKit.header(tr("note.eyebrow"), tr("note.title")))

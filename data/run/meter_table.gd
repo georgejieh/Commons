@@ -12,6 +12,7 @@ extends Resource
 @export var rationing_shop_cut: int = 1
 
 
+## The way a meter moves with this ID, or null.
 func source(id: String) -> MeterSource:
 	for row: MeterSource in sources:
 		if row.id == id:
@@ -19,5 +20,6 @@ func source(id: String) -> MeterSource:
 	return null
 
 
+## The bands of the named meter: the Famine meter's, else the Denunciation meter's.
 func bands(meter: String) -> MeterBands:
 	return famine if meter == RunMeters.FAMINE else denunciation

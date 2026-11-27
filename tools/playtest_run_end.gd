@@ -51,7 +51,7 @@ func endings() -> void:
 	ArtStages.stage_override = was
 	await _press(worn.call("home_button"))
 	await _frames(20)
-	if _screen_id() != "title":
+	if _screen_id() != ScreenId.TITLE:
 		_misclick("the ending did not go home")
 	await _restore(snapshot)
 
@@ -74,7 +74,7 @@ func full_run(file: FileWalk, wild_ranks: Wild) -> void:
 	await _corruption_frames(profile)
 	await file.meta(profile)
 	Profile.write(profile, ProfileData.new())
-	app.call("show_screen", "title", true)
+	app.call("show_screen", ScreenId.TITLE, true)
 	await _frames(20)
 	await _click_button_with_text(tr("title.new_run"))
 	var promised: String = _current().call("player_name")
@@ -95,7 +95,7 @@ func full_run(file: FileWalk, wild_ranks: Wild) -> void:
 	await _click_button_with_text(tr("title.continue"))
 	await _frames(40)
 	_expect(bool(view(controller, "seats").call("has_village")), "RESUME WRONG KIND")
-	_expect(_screen_id() == "table", "RESUME WRONG SCREEN")
+	_expect(_screen_id() == ScreenId.TABLE, "RESUME WRONG SCREEN")
 	await _abandon_frames(_current(), saves)
 	_put_back_files(kept)
 	saves.call("save", snapshot, ContentStamp.extras())
@@ -106,7 +106,7 @@ func full_run(file: FileWalk, wild_ranks: Wild) -> void:
 
 ## The dossier names each seated villager in full, given name first (ADR 0028).
 func _dossier_names() -> void:
-	app.call("show_screen", "dossier")
+	app.call("show_screen", ScreenId.DOSSIER)
 	await _frames(20)
 	await _shot("dossier_names")
 	var page: Node = _current()
@@ -133,7 +133,7 @@ func _shows_text(node: Node, text: String) -> bool:
 ## tier 0's, then every item open. A click on The Old Family picks it.
 func _meta_frames(profile: SaveService, wild_ranks: Wild) -> void:
 	Profile.write(profile, ProfileData.new())
-	app.call("show_screen", "title", true)
+	app.call("show_screen", ScreenId.TITLE, true)
 	await _frames(20)
 	await _click_button_with_text(tr("title.collection"))
 	await _shot("collection_locked")
@@ -217,7 +217,7 @@ func _history_frames(profile: SaveService) -> void:
 		data.add_history(entry)
 	data.finished_runs = runs.size()
 	Profile.write(profile, data)
-	app.call("show_screen", "title", true)
+	app.call("show_screen", ScreenId.TITLE, true)
 	await _frames(20)
 	await _click_button_with_text(tr("title.history"))
 	var records: Array = _current().call("records")
@@ -231,7 +231,7 @@ func _card_back_frames(profile: SaveService) -> void:
 	var data: ProfileData = ProfileData.new()
 	data.finished_runs = 2
 	Profile.write(profile, data)
-	app.call("show_screen", "title", true)
+	app.call("show_screen", ScreenId.TITLE, true)
 	await _frames(20)
 	await _click_button_with_text(tr("title.settings"))
 	var row: Object = _current().call("card_backs")
@@ -250,10 +250,10 @@ func _corruption_frames(profile: SaveService) -> void:
 		data.corruption = value
 		Profile.write(profile, data)
 		saves.call("delete")
-		app.call("show_screen", "title", true)
+		app.call("show_screen", ScreenId.TITLE, true)
 		await _frames(10)
 		_expect(bool(app.call("new_run", SEED + value)), "NO RUN AT CORRUPTION %d" % value)
-		app.call("show_screen", "table", true)
+		app.call("show_screen", ScreenId.TABLE, true)
 		await _frames(30)
 		var stage: int = ArtStages.stage()
 		var wanted: int = ArtStages.stage_of(value)
@@ -293,7 +293,7 @@ func _abandon_frames(table: Node, saves: Object) -> void:
 	_expect(bool(pause.call("is_confirming")) and keep.has_focus(), "ABANDON FOCUS WRONG")
 	await _press(pause.call("abandon_button"))
 	await _frames(30)
-	if _screen_id() != "title":
+	if _screen_id() != ScreenId.TITLE:
 		_misclick("Abandon did not go home")
 	_expect(not FileAccess.file_exists(str(saves.call("path"))), "ABANDON KEPT THE SAVE")
 
@@ -305,7 +305,7 @@ func _open_ending(outcome: String, saves: Object) -> Node:
 	saves.call("save", record.to_dict(), ContentStamp.extras())
 	app.call("resume_to_screen")
 	await _frames(20)
-	if _screen_id() != "ending":
+	if _screen_id() != ScreenId.ENDING:
 		_fail("NO ENDING SCREEN FOR %s" % outcome)
 	return _current()
 

@@ -8,10 +8,14 @@ extends RefCounted
 ## Only the copy that began the file removes it, so a second copy that quits leaves the
 ## first one's file alone. Times are seconds of the system clock, passed in by the caller.
 
+## What look finds: no file, a file left unwritten too long, or one still being written.
 enum Found { NONE, STALE, LIVE }
 
+## Where the sign is kept.
 const PATH: String = "user://session.json"
+## The key of the time the copy started.
 const STARTED_KEY: String = "started"
+## The key of the time the copy last wrote the file.
 const BEAT_KEY: String = "beat"
 
 var _path: String
@@ -25,6 +29,7 @@ func _init(params: SessionParams, file_path: String = PATH) -> void:
 	_path = file_path
 
 
+## The path of the file, for tests.
 func path() -> String:
 	return _path
 
@@ -70,5 +75,6 @@ func end() -> void:
 	_mine = false
 
 
+## True while this copy began the file and has not ended it, for tests.
 func is_mine() -> bool:
 	return _mine

@@ -3,8 +3,11 @@ extends RefCounted
 ## Counts the plays for what is left outside chains, in closed form: bombs + rocket +
 ## trios + max(0, singles + pairs - trios), with trios and airplanes absorbing kickers.
 
+## What the airplanes carry as wings: nothing, singles, pairs, or pairs in the slots of
+## single wings.
 enum Wing { NONE, SINGLES, PAIRS, PAIRS_IN_SINGLE_SLOTS }
 
+## The rank below which a single left over counts as a low single.
 const LOW_LIMIT_RANK: int = Ranks.TEN
 
 ## The score of the last read, lower is better.
@@ -29,6 +32,8 @@ func _init(rules: RuleSet, rank_map: PackedByteArray) -> void:
 	_rank_map = rank_map
 
 
+## Reads the counts left outside chains, with the airplanes already taken, sets score and
+## returns this leaf.
 func read(counts: PackedByteArray, planes: PackedInt32Array) -> DecompositionLeaf:
 	_sort_ranks(counts)
 	_planes = planes

@@ -7,7 +7,9 @@ extends RefCounted
 ## game's own folder: a file is named by its name alone. Every line starts with PREFIX,
 ## so a tool can pick them out.
 
+## What every line the game adds to the log starts with.
 const PREFIX: String = "Commons: "
+## The project setting that holds the game's version.
 const VERSION_SETTING: String = "application/config/version"
 ## How the start line begins, which marks a log as the game's own and not a tool's.
 const STARTED: String = PREFIX + "version "
@@ -41,6 +43,7 @@ static func run_started(kind: String, seed_value: int) -> void:
 	)
 
 
+## A run resumed from its save, with the seed it was started from.
 static func run_resumed(seed_value: int) -> void:
 	_line("run resumed, seed %d, save schema %d" % [seed_value, SaveService.SCHEMA_VERSION])
 
@@ -50,18 +53,22 @@ static func run_ended(seed_value: int, how: String) -> void:
 	_line("run %s, seed %d" % [how, seed_value])
 
 
+## A write of the file failed, with the engine's error.
 static func save_failed(file_path: String, error: Error) -> void:
 	_line("save of %s failed: %s" % [file_path.get_file(), error_string(error)])
 
 
+## A read of the file used its backup, the save itself being unreadable.
 static func load_fell_back(file_path: String) -> void:
 	_line("load of %s %s" % [file_path.get_file(), FELL_BACK])
 
 
+## Neither the file nor its backup could be read.
 static func load_failed(file_path: String) -> void:
 	_line("load of %s failed: neither it nor its backup reads" % file_path.get_file())
 
 
+## The file is a save from a newer version, which is kept as it is.
 static func load_found_newer(file_path: String) -> void:
 	_line("load of %s found a save from a newer version, which is kept" % file_path.get_file())
 

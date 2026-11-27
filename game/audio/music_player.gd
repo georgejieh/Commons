@@ -7,6 +7,7 @@ extends Node
 ## playing, measured from the cue's first downbeat. Cues with no audio are silent, so
 ## the game runs the same before the music exists.
 
+## The music score: the cues, their stems and bar timings, and the stem fade.
 const SCORE: MusicScore = preload("res://data/audio/music_score.tres")
 
 ## Plays the cue's stems as one synchronized stream on the Music bus.

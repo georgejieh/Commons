@@ -19,6 +19,8 @@ var _open_pause: Callable
 var _open_deck: Callable
 
 
+## Gives the input the menu, the rules card, the action bar, the hand and the run it acts on, and
+## the callables that open the menu and the deck sheet.
 func setup(
 	pause: PauseMenu,
 	cheat_sheet: CheatSheet,

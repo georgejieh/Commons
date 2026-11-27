@@ -31,13 +31,13 @@ func run(folder: String) -> void:
 	app.set("demo", true)
 	tree.root.add_child(app)
 	await _frames(20)
-	if _screen_id() == "content_note":
+	if _screen_id() == ScreenId.CONTENT_NOTE:
 		await _shot("tutorial_content_note")
 		await _press(_buttons(_current())[0])
 		await _frames(20)
-	_expect(_screen_id() == "surname", "NO SURNAME PAGE WITH NO PROFILE")
+	_expect(_screen_id() == ScreenId.SURNAME, "NO SURNAME PAGE WITH NO PROFILE")
 	await _surname_page()
-	_clicked(_screen_id() == "arrival", "no Arrival page after the surname page")
+	_clicked(_screen_id() == ScreenId.ARRIVAL, "no Arrival page after the surname page")
 	await _shot("tutorial_arrival")
 	await _press(_current().call("sit_in_button"))
 	await _frames(20)
@@ -56,7 +56,7 @@ func run(folder: String) -> void:
 		if not await _until(func() -> bool: return _moved_past(step), STEP_SECONDS):
 			_misclick("step %s did not advance" % step.get("id"))
 			break
-	if await _until(func() -> bool: return _screen_id() == "run_setup", STEP_SECONDS):
+	if await _until(func() -> bool: return _screen_id() == ScreenId.RUN_SETUP, STEP_SECONDS):
 		await _shot("tutorial_run_setup")
 	else:
 		_misclick("the arrival did not end at run setup")
@@ -75,7 +75,7 @@ func _surname_page() -> void:
 	field.text = tr("villager.wang")
 	await _press(page.call("confirm_button"))
 	await _frames(4)
-	var refused: bool = not str(page.call("note")).is_empty() and _screen_id() == "surname"
+	var refused: bool = not str(page.call("note")).is_empty() and _screen_id() == ScreenId.SURNAME
 	_clicked(refused, "a village surname was taken")
 	await _shot("surname_refused")
 	var tickets: Array = page.call("tickets")
@@ -107,7 +107,7 @@ func _try_refused() -> void:
 func _take(step: Resource) -> void:
 	var action: int = int(step.get("action"))
 	var actions: Object = null
-	if _screen_id() == "table":
+	if _screen_id() == ScreenId.TABLE:
 		actions = _current().get("actions")
 	match action:
 		TutorialStep.Action.BID_CALL:

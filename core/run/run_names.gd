@@ -9,6 +9,7 @@ extends RefCounted
 ## surname key's text; the run keeps the youth surnames' for later arrivals. A run that
 ## names nobody, the demo or the arrival, keeps only the player's surname.
 
+## The given-name pools by era, and the blocked names and pairs.
 const BOOK: NameBook = preload("res://data/villagers/names.tres")
 ## The player's entry among the given names.
 const PLAYER: String = "player"
@@ -136,6 +137,7 @@ func given_name(family_id: String) -> String:
 	return given.get(family_id, "")
 
 
+## The player's given name, or empty when the run has not named them.
 func player_given_name() -> String:
 	return given_name(PLAYER)
 
@@ -157,6 +159,7 @@ func _draw(stream: RandomStream, surname: String, book: NameBook) -> String:
 	return ""
 
 
+## Rebuilds the names from the run save.
 static func from_dict(data: Dictionary) -> RunNames:
 	var names: RunNames = RunNames.new()
 	names.active = bool(data["active"])
@@ -169,6 +172,7 @@ static func from_dict(data: Dictionary) -> RunNames:
 	return names
 
 
+## The names as a map for the run save.
 func to_dict() -> Dictionary:
 	return {
 		"active": active,

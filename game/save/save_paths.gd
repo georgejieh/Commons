@@ -6,6 +6,7 @@ extends RefCounted
 ## read or write the player's run save, backup, ledger, profile or settings. A path a tool
 ## or test names for itself is used as it is.
 
+## The folder a script's tree keeps its default files under, so the player's are never touched.
 const SANDBOX: String = "user://tools"
 
 

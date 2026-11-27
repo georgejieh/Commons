@@ -9,6 +9,7 @@ const LINE_SIZE: int = 24
 var _app: App
 
 
+## Builds the report of the last finished round; call once when the screen is opened.
 func open(app: App) -> void:
 	_app = app
 	var controller: RunController = app.controller

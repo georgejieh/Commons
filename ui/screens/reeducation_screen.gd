@@ -7,6 +7,7 @@ extends Control
 const BODY_SIZE: int = 26
 
 
+## Builds the report with a Continue button that leaves for the run; call once when it is served.
 func open(app: App) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.watchers)
 	var heading: Control = ScreenKit.header(tr("reed.eyebrow"), tr("reed.title"))
@@ -27,4 +28,6 @@ func _leave(app: App) -> void:
 		return
 	app.controller.leave_reeducation()
 	var over: bool = app.controller.awaiting() == RunController.AWAIT_RUN_OVER
-	app.show_screen(app.screen_for(RunController.AWAIT_RUN_OVER) if over else App.SET_INTRO, true)
+	app.show_screen(
+		app.screen_for(RunController.AWAIT_RUN_OVER) if over else ScreenId.SET_INTRO, true
+	)

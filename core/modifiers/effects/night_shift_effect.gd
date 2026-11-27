@@ -4,6 +4,7 @@ extends ModifierEffect
 ## beats the table. With nothing that does, they pass and the rule is spent (ADR 0023).
 
 
+## Makes the holder's first chance to pass each round a must-answer when anything beats the table.
 func build_ruleset(context: RulesetContext) -> void:
 	if context.seat == holder_seat:
 		context.params.must_answer_once = true

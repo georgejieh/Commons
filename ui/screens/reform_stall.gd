@@ -9,14 +9,18 @@ extends RefCounted
 ## Coupons changed, so the screen can count them.
 signal spent
 
+## The width, in pixels, of the Enacted seal pressed on a decree.
 const SEAL_WIDTH: float = 112.0
-## Seconds the seal sits on the decree, and the decree takes to reach the strip.
+## Seconds the seal sits on the decree before it flies.
 const SEAL_HOLD: float = 0.42
+## Seconds the decree takes to fly up and shrink onto the strip.
 const PIN_TIME: float = 0.34
+## The scale a decree shrinks to as it lands on the strip.
 const PIN_SCALE: float = 0.2
 
 ## The offers, one CounterPanel each, for the counter row.
 var offers: HBoxContainer = HBoxContainer.new()
+## The strip of Reforms in force, which the screen places in its notes column.
 var strip: ReformStrip = ReformStrip.new()
 
 var _app: App
@@ -43,6 +47,7 @@ func setup(shop: StallContext) -> void:
 	offers.add_child(_seal)
 
 
+## True while a bought decree is stamped and flown to the strip; no other purchase is taken.
 func is_busy() -> bool:
 	return _busy
 

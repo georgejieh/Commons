@@ -12,6 +12,7 @@ extends RefCounted
 ## sits at the table (RunSeating) are parts of their own: the loop owns every gate and
 ## every move, and calls them.
 
+## What the loop waits on; the PLAYER ones need a command from the player.
 enum Awaiting {
 	NOTHING,
 	PLAYER_BID,
@@ -29,8 +30,11 @@ enum Awaiting {
 	## search needs from search_request() and hand the play in with villager_play().
 	VILLAGER_SEARCH,
 }
+## Why a command is refused: NOT_AWAITED when the loop waits on something else, ILLEGAL when the
+## rules forbid it.
 enum Reason { OK, NOT_AWAITED, ILLEGAL }
 
+## The player's seat.
 const PLAYER: int = Seats.PLAYER
 ## What the loop waits on when a books command may come: the player is to act.
 const BOOKS_AWAITING: Array[Awaiting] = [
@@ -44,13 +48,17 @@ const BOOKS_AWAITING: Array[Awaiting] = [
 	Awaiting.PLAYER_OPENING,
 ]
 
+## The run's state, which the loop moves and the views read.
 var state: RunState
+## The run's state machine, whose moves the loop makes.
 var flow: RunFlow
+## The checkpoint and the commands given since, which a resume replays.
 var record: RunRecord = RunRecord.new()
 ## How searching villagers decide, and their plays written to the record (ADR 0030).
 var decisions: SearchedDecisions = SearchedDecisions.new(record)
 ## Called with the loop after every state move, for autosaves.
 var on_boundary: Callable = Callable()
+## The current Set's events, which events() reads.
 var set_log: SetLog = SetLog.new()
 ## The shops between Sets, and what each purchase there does. Read its counters freely;
 ## buy, sell and reroll through the commands.

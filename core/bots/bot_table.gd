@@ -7,8 +7,11 @@ extends RefCounted
 ## that seat plays them (ADR 0039). A table built from one seat's rules alone plays every
 ## seat so. Nothing changes a table once built, so search threads may share one.
 
+## The deciding seat's rules.
 var rules: RuleSet
+## The deciding seat's order: the place of each printed rank, from low to high.
 var rank_map: PackedByteArray
+## The deciding seat's standings, which the key of a play is read in.
 var standing: PackedByteArray
 ## The seat these are, or Seats.NONE when every seat plays the same.
 var seat: int = Seats.NONE

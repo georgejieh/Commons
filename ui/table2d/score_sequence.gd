@@ -20,6 +20,7 @@ extends Node
 signal hurried(speed: float)
 ## A beat of the sequence has begun: its kind and the step it shows, or -1.
 signal beat_began(kind: ScoreBeats.Kind, step_index: int)
+## Emitted when the play has been acted out to its stamped total.
 signal finished
 
 ## How far above the first chime the Zeal's stamp is pitched, in semitones.
@@ -29,11 +30,17 @@ const GAP: float = 6.0
 ## The share of its beat the total takes to roll up.
 const ROLL_SHARE: float = 0.85
 
+## The tally the figures are shown on; set by the table's moments.
 var tally: ScoreTally
+## The flying figures and tags the steps send out; set by the table's moments.
 var fx: TableFx
+## The trick pile the cards tick on and the marked cards flash on; set by the table's moments.
 var pile: TrickPile
+## The Cadre board whose cards jiggle when they change the score; set by attach().
 var board: NoticeBoard = null
+## The rules slip that swells when a rule changes the score; set by attach().
 var strip: DebuffStrip = null
+## The run whose Cadre counts the board shows; set by attach().
 var controller: RunController = null
 ## The Quota's target, for how hard a total lands.
 var target: float = 0.0
@@ -91,6 +98,7 @@ func play(event: RunEvent, pace: float) -> float:
 	return _beats.total() / _speed
 
 
+## True while a play is being acted out; the table's events wait for it.
 func is_running() -> bool:
 	return _tween != null and _tween.is_valid() and _tween.is_running()
 

@@ -14,30 +14,36 @@ func _init(desk: DeskView, market: bool) -> void:
 	_market = market
 
 
+## The line over the heading, naming the black market's desk or the state store's.
 func eyebrow() -> String:
 	return tr("deck.desk.market" if _market else "deck.desk.store")
 
 
+## The heading: the mark the desk gives this visit, or the stamp where the desk stamps.
 func title() -> String:
 	if _desk.stamps():
 		return tr("deck.desk.stamp_title")
 	return tr("deck.desk.title").format({"mark": DeckSheet.mark_name(_desk.offer())})
 
 
+## The line before a card is picked, saying what the desk does to it.
 func how() -> String:
 	return tr("deck.desk.how")
 
 
+## The confirm ticket's words, with the desk's price.
 func confirm_text() -> String:
 	var key: String = "deck.desk.stamp" if _desk.stamps() else "deck.desk.mark"
 	return tr(key).format({"price": _desk.price()})
 
 
+## Why the desk refuses the card, in words, or "" when it takes it.
 func refusal(card: CardInstance) -> String:
 	var key: String = _desk.refusal(card.id())
 	return "" if key.is_empty() else tr(key).format(_values(card))
 
 
+## What marking the card does to it: stamps it, replaces its mark, or adds the mark.
 func change(card: CardInstance) -> String:
 	if _desk.stamps():
 		return tr("deck.change.stamp").format(_values(card))
@@ -46,6 +52,7 @@ func change(card: CardInstance) -> String:
 	return tr("deck.change.mark").format(_values(card))
 
 
+## Has the desk mark the card through the run controller; false when the run refused.
 func commit(controller: RunController, card_id: int) -> bool:
 	return controller.mark_card(card_id, _market) == RunController.OK
 

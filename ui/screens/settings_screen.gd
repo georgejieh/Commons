@@ -8,8 +8,9 @@ extends Control
 ## key bindings (ADR 0035) and Window the window's mode and size (WindowSheet), each as a
 ## screen of its own. Replay the arrival is on the title.
 
-## The family name, and why it cannot change now, at Standard.
+## The font size of the family name, at Standard.
 const NAME_SIZE: int = 30
+## The font size of the note saying why the family name cannot change now, at Standard.
 const NOTE_SIZE: int = 20
 
 ## The family name, beside its Change button.
@@ -21,6 +22,7 @@ var _sheets: HBoxContainer
 var _scroll: ScrollContainer
 
 
+## Builds the page; it is built again, with the new size, when the text size changes.
 func open(app: App) -> void:
 	if _app == null:
 		Settings.changed.connect(_on_setting)
@@ -58,7 +60,9 @@ func open(app: App) -> void:
 	back.pressed.connect(_leave)
 	# The pages' tickets stand here with Back, where they are always whole.
 	var row: Array[Control] = [back]
-	row.append_array(SettingsPanel.pages(_open.bind(App.CONTROLS), _open.bind(App.WINDOW)))
+	row.append_array(
+		SettingsPanel.pages(_open.bind(ScreenId.CONTROLS), _open.bind(ScreenId.WINDOW))
+	)
 	column.add_child(ScreenKit.row(row))
 	ScreenKit.reveal(column)
 	back.grab_focus()
@@ -114,11 +118,12 @@ func card_backs() -> CardBackRow:
 	return _card_backs
 
 
-## The family name's Change button, or null while a run stops it, and the line shown.
+## The family name's Change button, or null while a run stops it.
 func change_button() -> Button:
 	return _change
 
 
+## The family name as the line beside the button shows it; for tests.
 func name_line() -> String:
 	return family_line.text
 
@@ -140,7 +145,7 @@ func _family_name(app: App) -> VBoxContainer:
 	_change.pressed.connect(
 		func() -> void:
 			Settings.save()
-			app.show_screen(App.SURNAME)
+			app.show_screen(ScreenId.SURNAME)
 	)
 	block.add_child(ScreenKit.row([family_line, _change]))
 	return block

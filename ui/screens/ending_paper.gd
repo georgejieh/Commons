@@ -7,20 +7,28 @@ extends PanelContainer
 ## margins and stay faint inside, so the words over them always read. Drawn by rule from a
 ## fixed seed, so the same sheet comes out every time.
 
+## The brown of the tea rings and blotches.
 const TEA: Color = Color("6b4a24")
+## The seed the stains and the frame's breaks are drawn from, so the same sheet comes out every
+## time.
 const SEED: int = 7703
-## The printed frame's insets from the paper's edge, and its corner marks.
+## How far the outer rule is printed in from the paper's edge, in pixels.
 const OUTER: float = 18.0
+## How far the inner rule is printed in from the paper's edge, in pixels.
 const INNER: float = 26.0
+## The length of each arm of a corner mark, in pixels.
 const CORNER: float = 22.0
-## The outer rule is printed in this many pieces a side, and at full wear this share of
-## them is gone.
+## The outer rule is printed in this many pieces a side.
 const SEGMENTS: int = 24
+## The share of the outer rule's pieces that is gone at full wear.
 const BREAK: float = 0.3
 ## How far from the edge the heavy stains stay, as a share of the short side.
 const EDGE_BAND: float = 0.1
+## The fewest tea rings a sheet carries, at corruption stage 0, and the most, at the worst.
 const RINGS: Vector2i = Vector2i(2, 6)
+## The fewest tea blotches a sheet carries, at corruption stage 0, and the most, at the worst.
 const BLOTCHES: Vector2i = Vector2i(6, 22)
+## The fewest foxing specks a sheet carries, at corruption stage 0, and the most, at the worst.
 const SPECKS: Vector2i = Vector2i(40, 220)
 
 

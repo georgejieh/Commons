@@ -2,9 +2,13 @@ class_name SelfPlayResult
 extends RefCounted
 ## How one bot-only round went.
 
+## The seat that went out, or Seats.NONE if the round did not finish.
 var winner: int = Seats.NONE
+## The round's landlord seat.
 var landlord: int = Seats.NONE
+## How many bot decisions the round took.
 var decisions: int = 0
+## How many actions were rejected and replaced, over all seats.
 var illegal_actions: int = 0
 ## Rejected actions per seat.
 var illegal_by_seat: PackedInt32Array = PackedInt32Array([0, 0, 0])
@@ -22,5 +26,6 @@ var bombs: PackedInt32Array = PackedInt32Array([0, 0, 0])
 var answers: PackedInt32Array = PackedInt32Array([0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 
+## True when the landlord went out first.
 func landlord_won() -> bool:
 	return winner == landlord

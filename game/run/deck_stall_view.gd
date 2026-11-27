@@ -15,10 +15,12 @@ func _init(stall: DeckStall) -> void:
 	_stall = stall
 
 
+## True when the stall sells this visit.
 func is_open() -> bool:
 	return _stall.is_open
 
 
+## How many offers the stall has, sold ones included.
 func count() -> int:
 	return _stall.offers.count()
 
@@ -41,10 +43,12 @@ func card(slot: int) -> CardInstance:
 	return shown
 
 
+## The price in coupons of the offer in slot.
 func price(slot: int) -> int:
 	return _stall.offers.price(slot)
 
 
+## Why the offer in slot cannot be bought now, or NONE when it can.
 func why(slot: int) -> Why:
 	match _stall.check(slot):
 		RunShop.Reason.OK:

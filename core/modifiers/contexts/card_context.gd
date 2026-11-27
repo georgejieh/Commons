@@ -2,11 +2,14 @@ class_name CardContext
 extends RefCounted
 ## Passed to the card scored hook.
 
+## The seat whose card is being scored.
 var seat: int
+## True when that seat is the round's landlord.
 var is_landlord: bool
 ## The round's landlord, or Seats.NONE outside a round, so the stack can tell the seat's
 ## side (ADR 0039).
 var landlord: int = Seats.NONE
+## The card being scored.
 var card: CardInstance
 ## This card's Grain, to edit.
 var grain: float

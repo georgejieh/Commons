@@ -18,6 +18,7 @@ var _origin: Vector2 = Vector2.ZERO
 var _stopped_until: int = 0
 
 
+## Sets the node that shakes, and whether the table holds still.
 func setup(shaken: Control, hold_still: bool) -> void:
 	target = shaken
 	_origin = shaken.position
@@ -99,10 +100,12 @@ func drop(card: Control, rest_scale: float, order: int) -> void:
 	tween.tween_property(card, "modulate:a", 1.0, presets.fly_time * 0.5).set_delay(delay)
 
 
+## True during a hit-stop, when the event queue waits.
 func is_stopped() -> bool:
 	return Time.get_ticks_msec() < _stopped_until
 
 
+## How much shake is left, from 0 to 1, for tests.
 func trauma() -> float:
 	return _trauma
 

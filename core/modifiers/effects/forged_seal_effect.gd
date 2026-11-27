@@ -4,5 +4,6 @@ extends ModifierEffect
 ## the play, so a preview says the same.
 
 
+## Waives the Resentment the holder's stamped cards add as they score.
 func play_scored(context: PlayContext) -> void:
 	context.stamps_resented = false

@@ -10,21 +10,31 @@ extends Node
 ## it. With a save service it saves after every state boundary and every command, so
 ## quitting at any moment loses nothing.
 
+## Emitted for each domain event the loop makes, in order; views render it.
 signal event_emitted(event: RunEvent)
 ## The loop now waits on this value, one of the AWAIT constants.
 signal awaiting_changed(awaiting: int)
 ## A command the loop refused, with its reason.
 signal command_refused(command: String, reason: int)
 
-## What the run waits on, for views that may not name the loop.
+## The run waits on the player's bid. This and the AWAIT_ constants below are what the run
+## waits on, for views that may not name the loop.
 const AWAIT_BID: int = RunLoop.Awaiting.PLAYER_BID
+## The run waits on the player to swap plot cards or go on.
 const AWAIT_SWAP: int = RunLoop.Awaiting.PLAYER_SWAP
+## The run waits on the player to play or pass.
 const AWAIT_PLAY: int = RunLoop.Awaiting.PLAYER_PLAY
+## The run waits on the player to declare their need from the Commons.
 const AWAIT_NEED: int = RunLoop.Awaiting.PLAYER_NEED
+## The Set is over; the run waits on the player to leave it for the store or the next Set.
 const AWAIT_SET_OVER: int = RunLoop.Awaiting.SET_OVER
+## The run waits on the player in the shops after a Set.
 const AWAIT_STORE: int = RunLoop.Awaiting.SHOP
+## The run has ended and waits only for its ending to be shown.
 const AWAIT_RUN_OVER: int = RunLoop.Awaiting.RUN_OVER
+## The run waits on the player in the re-education that follows a Set when it is owed.
 const AWAIT_REEDUCATION: int = RunLoop.Awaiting.REEDUCATION
+## A peasant player may use a Campaign before the first play, then play on.
 const AWAIT_OPENING: int = RunLoop.Awaiting.PLAYER_OPENING
 ## A villager's play is being searched (ADR 0030): nothing to do but wait for it.
 const AWAIT_VILLAGER: int = RunLoop.Awaiting.VILLAGER_SEARCH
@@ -34,6 +44,7 @@ const CAMPAIGN_OK: int = CampaignEffect.Reason.OK
 const TAKE_NOTHING: int = EnvelopeCounter.NOTHING
 ## An envelope pick that names no deck card to take out.
 const NO_CARD: int = Deck.NO_SLOT
+## The reason a command carries when the loop accepted it.
 const OK: int = RunLoop.Reason.OK
 
 ## True while the run's searching villagers decide under the ExpertRunner's deadline, as

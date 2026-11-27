@@ -55,6 +55,7 @@ func _update_focus() -> void:
 	_gutter.add_theme_constant_override("margin_right", BAR_GAP if scrolls else 0)
 
 
+## True while there is something to scroll to, which is also while it takes focus; for tests.
 func can_scroll() -> bool:
 	return focus_mode == Control.FOCUS_ALL
 

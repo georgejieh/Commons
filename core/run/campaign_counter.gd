@@ -6,6 +6,7 @@ extends RefCounted
 ## may be sold back for part of its price here (ADR 0040): it is not offered again that
 ## visit, and a copy of it already on the counter cannot be bought until the next.
 
+## The stock marker for a slot whose Campaign is already bought.
 const SOLD: String = ""
 
 ## Campaigns sold back this visit: not offered again until the next.
@@ -28,6 +29,7 @@ func stock() -> Array[String]:
 	return _stock.duplicate()
 
 
+## What the Campaign in the slot costs, with the run's price raises.
 func price(slot: int) -> int:
 	return RunShop.price_of(_state, _params, _campaign(_stock[slot]).cost)
 
@@ -42,6 +44,7 @@ func reroll_changes() -> bool:
 	return has_room() and _pool.size() > _params.campaign_offers
 
 
+## Why the slot cannot be bought, or OK: no slot, sold out, sold back, no room or too poor.
 func check(slot: int) -> RunShop.Reason:
 	if slot < 0 or slot >= _stock.size():
 		return RunShop.Reason.NO_SUCH_SLOT
@@ -85,10 +88,12 @@ func sell(index: int, definition: CampaignDef) -> RunShop.Reason:
 	return RunShop.Reason.OK
 
 
+## What the player is paid for selling the held Campaign here.
 func sale_price(definition: CampaignDef) -> int:
 	return RunShop.sale_of(_state, _params, definition.cost)
 
 
+## Empties the counter's stock, as when the visit ends.
 func clear() -> void:
 	_stock.clear()
 

@@ -6,7 +6,9 @@ extends RefCounted
 ## from px() to least(), so it is never smaller than at Standard. Art that holds a
 ## letter (rank glyphs, seals, stamps) keeps its size and does not come here.
 
+## The settings' defaults, which hold the text scales and the floors.
 const PARAMS: SettingsParams = SettingsStore.DEFAULTS
+## The setting that holds the chosen text size.
 const SETTING: String = "text_size"
 
 
@@ -39,6 +41,7 @@ static func level() -> int:
 	return clampi(int(SettingsStore.value_or(SETTING, 0)), 0, count() - 1)
 
 
+## How many text sizes there are.
 static func count() -> int:
 	return PARAMS.text_scales.size()
 

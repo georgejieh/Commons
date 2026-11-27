@@ -70,6 +70,7 @@ static func is_pick(event: InputEvent) -> bool:
 	return event.is_action_pressed("ui_accept") or event.is_action_pressed(SELECT)
 
 
+## Every action's default key, as the project's input settings give it.
 static func defaults() -> Dictionary[String, Key]:
 	var keys: Dictionary[String, Key] = {}
 	for action: String in ACTIONS:
@@ -142,6 +143,7 @@ func bind(action: String, keycode: Key) -> bool:
 	return true
 
 
+## Puts every action back on its default key and applies them.
 func restore_defaults() -> void:
 	_keys = defaults()
 	apply()
@@ -164,6 +166,7 @@ func read(file: ConfigFile) -> void:
 	_keys = read_keys if seen.size() == ACTIONS.size() else defaults()
 
 
+## Writes every action's key into the file under the bindings' section.
 func write(file: ConfigFile) -> void:
 	for action: String in ACTIONS:
 		file.set_value(SECTION, action, int(_keys[action]))

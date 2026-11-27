@@ -19,6 +19,7 @@ extends Resource
 @export var downbeat: float = 0.0
 
 
+## True when the cue has stems to play; a cue with none is silent.
 func has_audio() -> bool:
 	return not stems.is_empty()
 

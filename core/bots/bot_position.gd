@@ -2,16 +2,25 @@ class_name BotPosition
 extends RefCounted
 ## What one decision knows about the table, worked out once from the seat's own view.
 
+## A card count above any real hand, standing for a seat there is none of, so a fewest-cards
+## minimum starts from it.
 const NO_CARDS: int = 99
 
+## The seat's own view of the round that this position was read from.
 var view: SeatView
+## The rules and orders this seat plays under.
 var table: BotTable
+## The bot's tier and traits.
 var config: BotConfig
+## Scores this decision's candidates; they share one memo of hands.
 var scorer: CandidateScorer
+## The deciding seat.
 var seat: int
+## The other peasant's seat, or Seats.NONE for the landlord, who has no teammate.
 var teammate: int = Seats.NONE
 ## Fewest cards any opponent holds.
 var opponent_cards: int = NO_CARDS
+## Cards the teammate holds, or NO_CARDS when there is no teammate.
 var teammate_cards: int = NO_CARDS
 ## The cards this seat has not seen (UnseenCards). Counted only for a tier that reads the
 ## table, since no other tier looks at them; empty otherwise.
@@ -22,7 +31,9 @@ var unseen: PackedByteArray = PackedByteArray()
 var threats: PackedByteArray = PackedByteArray()
 ## How many of the threats are wild cards (ADR 0029).
 var wild_threats: int = 0
+## The plays the seat's own hand splits into; the flags of controls line up with it.
 var groups: Array[Pattern]
+## Which of groups nothing unseen can beat, and how many plays the hand still needs.
 var controls: Controls
 ## The opponents' tables where they play under other rules or another order than this
 ## seat (ADR 0039), one for each way of playing; empty when they all play as it does.
@@ -65,14 +76,17 @@ func _init(
 	controls = Controls.new(groups, threats, largest, table, counts_cards, rivals, bombed)
 
 
+## Cards the seat still holds; a move of that many cards goes out.
 func hand_size() -> int:
 	return view.public.remaining[seat]
 
 
+## True when this seat is the landlord, who plays alone against the other two.
 func is_landlord() -> bool:
 	return seat == view.public.landlord
 
 
+## True for a seat that is neither this one nor its teammate.
 func is_opponent(other: int) -> bool:
 	return other != seat and other != teammate
 
@@ -108,6 +122,7 @@ func plays_a_role() -> bool:
 	return config.reads_the_table() and not is_landlord()
 
 
+## True when at most one group of the hand can still be beaten, so leading the rest wins.
 func forced_win() -> bool:
 	return controls.effective_hands <= 1
 
@@ -134,6 +149,7 @@ func roll() -> float:
 	return roll_for(view, config, 0)
 
 
+## The rank's place in this seat's own order, which a turned order changes.
 func rank_of(rank: int) -> int:
 	return table.rank_map[rank]
 

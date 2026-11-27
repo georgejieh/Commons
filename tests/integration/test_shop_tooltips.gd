@@ -3,9 +3,13 @@ extends GdUnitTestSuite
 ## shows the engine's plain tooltip; a Cadre held on the board or a Campaign in hand keeps
 ## its TipHost, whose tooltip is drawn as the same slip. Resting the pointer on a Cadre's
 ## Buy button, a Directive's document or its button, an upgrade ticket or the Deck button
-## opens the slip over its own paper, in the words its tooltip had.
+## opens the slip over its own paper, in the words its tooltip had. The deck sheet's
+## legend, opened over either shop or the table, explains each mark in the sheet's slip.
 
 const SEED: int = 4242
+const MODEL_CARD: int = 0
+const STAMPED_CARD: int = 9
+const SURPLUS_CARD: int = 53
 
 var _app: App
 
@@ -28,7 +32,7 @@ func after_test() -> void:
 
 
 func test_no_control_on_either_shop_page_shows_a_plain_tooltip() -> void:
-	for screen_id: String in ["store", "black_market"]:
+	for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 		var store: StoreScreen = _app.show_screen(screen_id, true)
 		await await_idle_frame()
 		var plain: PackedStringArray = []
@@ -40,7 +44,7 @@ func test_no_control_on_either_shop_page_shows_a_plain_tooltip() -> void:
 
 
 func test_the_state_stores_buttons_and_documents_open_the_slip() -> void:
-	var store: StoreScreen = _app.show_screen(App.STORE, true)
+	var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
 	# The first place was bought before the test, and a sold place has no button.
@@ -60,7 +64,7 @@ func test_the_state_stores_buttons_and_documents_open_the_slip() -> void:
 
 
 func test_the_black_markets_upgrade_tickets_open_the_slip() -> void:
-	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
+	var market: StoreScreen = _app.show_screen(ScreenId.BLACK_MARKET, true)
 	await await_idle_frame()
 	var goods: MarketGoods = market.goods
 	var kinds: PackedStringArray = _app.controller.store.desk(true).upgrade_kinds()
@@ -71,6 +75,54 @@ func test_the_black_markets_upgrade_tickets_open_the_slip() -> void:
 		assert_object(market.slip.anchor()).is_same(ticket)
 		var tip: String = tr("market.upgrade.%s.tip" % kinds[index])
 		assert_str(market.slip.shown_rule()).is_equal(tip)
+
+
+func test_the_deck_sheets_legend_opens_its_slip_over_both_shops() -> void:
+	_mark_the_deck()
+	for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
+		var store: StoreScreen = _app.show_screen(screen_id, true)
+		await await_idle_frame()
+		store.deck.open_deck()
+		await await_idle_frame()
+		await _check_legend(store.deck)
+		store.deck.close()
+
+
+func test_the_deck_sheets_legend_opens_its_slip_over_the_table() -> void:
+	_mark_the_deck()
+	assert_int(_app.controller.leave_store()).is_equal(RunController.OK)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
+	await await_idle_frame()
+	table.deck.open_deck()
+	await await_idle_frame()
+	await _check_legend(table.deck)
+
+
+## The stamp, Model and Surplus are in the deck, so the legend has an entry for each.
+func _mark_the_deck() -> void:
+	var state: RunState = _app.controller.run_loop().state
+	CardMarks.enhance(state, Deck.new().card(MODEL_CARD), CardInstance.MODEL)
+	CardMarks.enhance(state, Deck.new().card(SURPLUS_CARD), CardInstance.SURPLUS)
+	CardMarks.stamp(state, Deck.new().card(STAMPED_CARD), RunLoop.PLAYER)
+	_app.controller.reseal_book()
+
+
+## Each legend entry, pointed at, opens the sheet's slip over itself with its mark's
+## meaning, and nothing in the open sheet shows a plain tooltip.
+func _check_legend(sheet: DeckSheet) -> void:
+	var meanings: Array[String] = []
+	for mark: String in [DeckSheet.STAMP] + CardInstance.ENHANCEMENTS:
+		meanings.append(Keywords.meaning(mark))
+	var shown: Array[String] = []
+	for entry: Node in sheet.legend.get_children():
+		await _point_at(entry as Control)
+		assert_object(sheet.slip().anchor()).is_same(entry)
+		assert_array(meanings).contains([sheet.slip().shown_rule()])
+		shown.append(sheet.slip().shown_rule())
+	for mark: String in [DeckSheet.STAMP, CardInstance.MODEL, CardInstance.SURPLUS]:
+		assert_array(shown).contains([Keywords.meaning(mark)])
+	for node: Node in sheet.find_children("*", "Control", true, false):
+		assert_str((node as Control).tooltip_text).override_failure_message(str(node)).is_empty()
 
 
 ## Moves the pointer onto control's middle, as the player's mouse does.

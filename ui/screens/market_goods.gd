@@ -12,14 +12,16 @@ signal spent
 ## Between a plot card and its ticket.
 const ITEM_GAP: int = 8
 
-## The plot cards' sheet, for the main row, and the upgrade tickets, for the button row.
+## The plot cards' sheet, for the main row.
 var sheet: VBoxContainer = ScreenKit.card(Vector2.ZERO)
+## The upgrade tickets, for the button row.
 var upgrades: HBoxContainer = HBoxContainer.new()
 
 var _shop: StallContext
 var _items: Array[BuyItem] = []
 
 
+## Gives the page its shared stall context; call once, before the first refresh.
 func setup(shop: StallContext) -> void:
 	_shop = shop
 	sheet.add_theme_constant_override("separation", 10)
@@ -31,6 +33,7 @@ func panel() -> Control:
 	return ScreenKit.card_panel(sheet)
 
 
+## Draws the upgrade tickets and the plot cards again from the desk, after anything changed.
 func refresh() -> void:
 	_show_upgrades()
 	_show_stall()

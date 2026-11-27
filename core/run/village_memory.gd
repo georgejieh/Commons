@@ -8,6 +8,7 @@ extends RefCounted
 var counts: Dictionary[String, PackedFloat64Array] = {}
 
 
+## Rebuilds the memory from the profile's saved map, each float read from its exact text.
 static func from_dict(data: Dictionary) -> VillageMemory:
 	var memory: VillageMemory = VillageMemory.new()
 	for family_id: String in data:
@@ -18,6 +19,7 @@ static func from_dict(data: Dictionary) -> VillageMemory:
 	return memory
 
 
+## The memory as a map, each count as exact text, for the profile.
 func to_dict() -> Dictionary:
 	var saved: Dictionary[String, Array] = {}
 	for family_id: String in counts:
@@ -39,6 +41,7 @@ func record(summary: SetSummary) -> void:
 			counts[family_id][kind] += summary.counts[family_id][kind]
 
 
+## What a family remembers of kind; 0 for a family with no history.
 func count(family_id: String, kind: SetSummary.Kind) -> float:
 	if not counts.has(family_id):
 		return 0.0

@@ -8,7 +8,9 @@ extends RefCounted
 ## The Cadre that pays coupons as a Quota closes, before the Quota pays.
 const BOOKKEEPER: String = "the_bookkeeper"
 
+## The coupons The Bookkeeper paid as the Quota closed.
 var bookkeeper_paid: int = 0
+## How far Famine rose as the Quota closed, counting a rise cut off at the top.
 var famine_rise: int = 0
 
 

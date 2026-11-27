@@ -9,15 +9,17 @@ extends Control
 ## A play's last card has landed; count is how many cards it had.
 signal landed(count: int)
 
+## The scale a play's cards land at.
 const PLAY_SCALE: float = 0.8
 ## A card view's size at full scale.
 const CARD: Vector2 = Vector2(120, 168)
 ## Space between the left edges of one play's cards: the rank and suit always show.
 const CARD_SPACING: float = 50.0
-## The farthest a play lands from the pile's middle, and the most it and each of its
-## cards turn, in pixels and radians.
+## The farthest a play lands from the pile's middle, in pixels.
 const SCATTER: Vector2 = Vector2(40, 16)
+## The most a play turns, in radians.
 const PLAY_TILT: float = 0.07
+## The most each card of a play turns on its own, in radians.
 const CARD_TILT: float = 0.02
 ## How far a card turned by the most a play and its card turn reaches past its own box,
 ## so a long play, scattered and turned, still lies inside the pile's area.
@@ -29,8 +31,9 @@ const LAUNCH_SCALE: float = 0.45
 ## How much of the way to the winner a swept card travels before it fades out.
 const SWEEP_REACH: float = 0.55
 ## A thrown card starts turned by up to this much, in radians, and straightens as it
-## lands; a counted card hops this far.
+## lands.
 const THROW_SPIN: float = 0.7
+## How far a counted card hops, in pixels.
 const HOP: float = 14.0
 ## How bright a card flashes when its mark or a hook on it changes the score.
 const FLASH: Color = Color(1.45, 1.35, 1.15)
@@ -48,6 +51,8 @@ var _views: Array[CardView] = []
 var _starts: Array[int] = []
 
 
+## Gives the pile the card pool and the node pooled cards return to, and the motion that holds
+## still on a replay.
 func setup(pool: CardPool, pool_parent: Control, motion: TableMotion) -> void:
 	_pool = pool
 	_pool_parent = pool_parent
@@ -136,6 +141,7 @@ func sweep(toward: Vector2) -> void:
 	last.chain().tween_callback(clear)
 
 
+## Returns every card to the pool at once and forgets the plays.
 func clear() -> void:
 	for view: CardView in _views:
 		view.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -145,10 +151,12 @@ func clear() -> void:
 	_starts.clear()
 
 
+## How many cards lie on the pile, for tests.
 func card_count() -> int:
 	return _views.size()
 
 
+## How many plays lie on the pile, for tests and the walks.
 func play_count() -> int:
 	return _starts.size()
 

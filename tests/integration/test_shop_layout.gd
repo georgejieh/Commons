@@ -69,7 +69,7 @@ func test_both_shops_fit_a_fresh_run() -> void:
 func test_both_shops_fit_the_most_a_run_holds() -> void:
 	_fill()
 	await _check_all("full")
-	var store: StoreScreen = _app.show_screen(App.STORE, true)
+	var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 	await await_idle_frame()
 	var board: NoticeBoard = store.board
 	assert_int(board.slot_count()).is_equal(6)
@@ -84,7 +84,7 @@ func _check_all(where: String) -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			for screen_id: String in ["store", "black_market"]:
+			for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 				var store: StoreScreen = _app.show_screen(screen_id, true)
 				await await_idle_frame()
 				await await_idle_frame()
@@ -130,9 +130,9 @@ func _check_blocks(store: StoreScreen, where: String) -> void:
 ## Coming back from the black market shows the store again, whole, with its way out.
 func test_returning_from_the_black_market_shows_the_store_whole() -> void:
 	get_tree().root.size = ClipCheck.SIZES[0]
-	_app.show_screen(App.STORE, true)
+	_app.show_screen(ScreenId.STORE, true)
 	await await_idle_frame()
-	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET)
+	var market: StoreScreen = _app.show_screen(ScreenId.BLACK_MARKET)
 	await await_idle_frame()
 	var back: Button = null
 	for node: Node in market.find_children("*", "Button", true, false):
@@ -162,7 +162,7 @@ func test_the_rank_picker_opens_on_the_screen() -> void:
 		_app.controller.reseal_book()
 		var offered: Array[String] = ["rehabilitation", "steel_target", "last_sheaf"]
 		_loop().visit.market.stock_with(offered, _loop().visit.market.directive_stock())
-		var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
+		var market: StoreScreen = _app.show_screen(ScreenId.BLACK_MARKET, true)
 		await await_idle_frame()
 		var market_cadres: CadreCounter = market.cadres
 		var counter: HBoxContainer = market_cadres.row
@@ -188,7 +188,9 @@ func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
 			for screen_size: Vector2i in ClipCheck.SIZES:
 				get_tree().root.size = screen_size
 				for kind: String in ["directive_envelope", "campaign_envelope", "parcel"]:
-					var screen_id: String = "black_market" if kind == "parcel" else "store"
+					var screen_id: String = (
+						ScreenId.BLACK_MARKET if kind == "parcel" else ScreenId.STORE
+					)
 					_loop().state.coupons = 60
 					_app.controller.reseal_book()
 					_loop().visit.shop.envelopes.clear()
@@ -351,7 +353,7 @@ func test_both_shops_fit_their_longest_cadres() -> void:
 			var counter: Array[String] = _longest(pool, measure)
 			var shop: RunShop = _loop().visit.market if market else _loop().visit.shop
 			shop.stock_with(counter, shop.directive_stock())
-			var screen_id: String = "black_market" if market else "store"
+			var screen_id: String = ScreenId.BLACK_MARKET if market else ScreenId.STORE
 			for level: int in TextSize.count():
 				Settings.set_value(TextSize.SETTING, level)
 				for screen_size: Vector2i in ClipCheck.SIZES:

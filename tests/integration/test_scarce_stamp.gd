@@ -38,7 +38,7 @@ func _store() -> StoreScreen:
 	# A store of the whole pool, built as the run builds one, so both Cadres are open.
 	loop.visit.shop = RunShop.new(loop.state, loop.pools.store, pool)
 	loop.visit.shop.stock_with(stock, [])
-	var store: StoreScreen = _app.show_screen(App.STORE, true)
+	var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 	await await_idle_frame()
 	return store
 

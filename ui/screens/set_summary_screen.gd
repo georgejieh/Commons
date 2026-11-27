@@ -19,19 +19,24 @@ extends Control
 const BAR: Vector2 = Vector2(900, 54)
 ## The bar's count, at Standard.
 const BAR_TEXT_SIZE: int = 30
+## The width, in pixels, of the met seal.
 const SEAL_WIDTH: float = 150.0
-## The overfulfilled seal is wider for its longer word, and sits left of the met seal,
-## clear of it by this much (each seal's band reaches a little past its ring when tilted).
+## The overfulfilled seal is wider for its longer word.
 const OVER_WIDTH: float = 176.0
+## How far, in pixels, the overfulfilled seal sits clear left of the met seal, whose band reaches
+## past its ring when tilted.
 const OVER_GAP: float = 30.0
 ## A deeper gold than the bar's, so the second seal reads on paper.
 const OVER_INK: Color = Color("a8791a")
-## Seconds before the bar starts, the bar takes to fill, and between the lines after.
+## Seconds before the bar starts to fill.
 const START: float = 0.2
+## Seconds the bar takes to fill.
 const FILL: float = 0.7
+## Seconds between the lines that follow the bar, and each one's fade in.
 const BEAT: float = 0.18
-## A family's fate, and the report's other lines, at Standard.
+## The font size of a family's fate, at Standard.
 const FATE_SIZE: int = 22
+## The font size of the report's other lines, at Standard.
 const LINE_SIZE: int = 26
 
 ## What is counted in once the bar is sealed: tiles, then the line saying what it means.
@@ -54,6 +59,7 @@ var _closing: QuotaClosing
 var _norm_text: String = ""
 
 
+## Builds the report and starts the bar filling; call once when the screen is opened.
 func open(app: App) -> void:
 	var controller: RunController = app.controller
 	var state: RunView = controller.run
@@ -254,6 +260,16 @@ func fate_lines() -> PackedStringArray:
 ## What the arrival points at here: the way on.
 func tutorial_target(key: String) -> Control:
 	return _next if key == "continue" else null
+
+
+## What the arrival's slip keeps clear of here: every result counted in, so the slip by
+## the way on never stands over a line the Quota's report gives.
+func tutorial_avoid() -> Array[Rect2]:
+	var avoid: Array[Rect2] = []
+	for piece: Control in after + _quiet:
+		if piece.is_visible_in_tree():
+			avoid.append(piece.get_global_rect())
+	return avoid
 
 
 ## The overfulfilled seal, for tests.

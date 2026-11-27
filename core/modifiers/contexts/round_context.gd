@@ -5,37 +5,41 @@ extends RefCounted
 ## swap_cap while no hook caps the round's plot swaps.
 const NO_CAP: int = -1
 
+## The round's landlord seat.
 var landlord: int
 ## Seats.NONE at round start.
 var winner: int
+## How the round ended; unread at round start.
 var finish: RoundEvent.Finish
 ## At round end: multiplies the peasants' totals before they fill the Commons, to edit.
 var commons_scale: float = 1.0
 
-## At round start, after the kitty and before the plot swap: the round, its rules and
-## the deal stream, so a debuff can move cards between hands (ADR 0023). Null when the
-## hook runs outside a round.
+## At round start, after the kitty and before the plot swap: the round, so a debuff can
+## move cards between hands (ADR 0023). Null when the hook runs outside a round.
 var round_state: RoundState = null
+## The round's seat rules, at round start; null outside a round.
 var table: SeatRules = null
+## The deal stream, for a debuff that draws as it moves cards; null outside a round.
 var stream: RandomStream = null
 ## The debuff that came into force this round, or null, so an effect that acts once when
 ## it arrives can tell.
 var arrived: ModifierEffect = null
-## At round start, to edit: the most private-plot swaps this round, or NO_CAP, and how
-## many plot cards are destroyed now.
+## At round start, to edit: the most private-plot swaps this round, or NO_CAP.
 var swap_cap: int = NO_CAP
+## At round start, to edit: how many plot cards are destroyed now.
 var seize_plot: int = 0
 ## Every move trade() made, in order, for the run to log.
 var moves: Array[CardPass] = []
 
-## At round end, to edit: the holder banks nothing this round, a share of what it banks
-## is taken in percent, and the meter table rows to raise.
+## At round end, to edit: the holder banks nothing this round.
 var bank_voided: bool = false
+## At round end, to edit: the share of what the holder banks that is taken, in percent.
 var tax_percent: int = 0
+## At round end, to edit: the meter table rows to raise.
 var meter_sources: Array[String] = []
-## At round end: the cards the landlord still holds (ADR 0032), and the Famine the round
-## takes off the player's meter, to edit.
+## At round end: the cards the landlord still holds (ADR 0032).
 var landlord_cards: int = 0
+## At round end, to edit: the Famine the round takes off the player's meter.
 var famine_fall: int = 0
 
 

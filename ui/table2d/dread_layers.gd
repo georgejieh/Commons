@@ -9,19 +9,23 @@ extends Node
 ## reads cached run values only and touches nothing the player reads: cards, counts, ranks
 ## and scores are drawn by other nodes it never changes.
 
+## Emitted when a flicker fires, with its kind.
 signal flickered(kind: FlickerDef.Kind)
 
+## The horror data the layers and the flickers come from, unless a test sets another.
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
 ## Fixed, so flickers come at the same moments for the same play; never global random.
 const FLICKER_SEED: int = 9187
 ## The no-flash setting, which stops every flicker and the lamp's flutter (ADR 0035).
 const NO_FLASH_SETTING: String = "no_flash"
+## The lamp's flutter while no-flash is on: none.
 const NO_FLASH_BREATHE: float = 0.0
 ## The lamp shader's own flutter, which no-flash turns off.
 const DEFAULT_BREATHE: float = 0.05
 
 ## The layers in use; tests may set another before setup().
 var config: HorrorConfig = CONFIG
+## The board's dread, eased one weight per layer; made by setup().
 var board: BoardState
 
 ## The tremble of the player's hand.
@@ -64,6 +68,8 @@ var _slots: Dictionary[String, TextureRect] = {}
 var _slot_clean: Dictionary[String, Texture2D] = {}
 
 
+## Binds the layers to the table's shader materials, the set dressing, the seats, the art slots and
+## the hand, and starts driving them.
 func setup(
 	slot_materials: Dictionary[String, ShaderMaterial],
 	dressing: DreadDressing,
@@ -235,6 +241,8 @@ func param_value(key: String) -> float:
 	return NAN
 
 
+## The value a "target:parameter" holds with no dread shown, the first of its range, or
+## NAN for a key no layer has; for tests.
 func param_clean(key: String) -> float:
 	for index: int in _param_name.size():
 		if _key(index) == key:

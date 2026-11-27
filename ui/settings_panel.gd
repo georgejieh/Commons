@@ -7,7 +7,9 @@ extends RefCounted
 ## (WindowSheet), which has a page of its own because this sheet has no room for it at
 ## the largest text size.
 
+## The volume settings, shown as sliders under Audio.
 const VOLUMES: Array[String] = ["music_volume", "effects_volume", "voice_volume"]
+## The on and off settings, shown as toggles.
 const TOGGLES: Array[String] = ["reduced_motion", "post_process", "no_flash", "show_hint"]
 ## Sliders from 0 to 1 under Display.
 const DISPLAY_SLIDERS: Array[String] = ["horror_intensity"]
@@ -15,11 +17,13 @@ const DISPLAY_SLIDERS: Array[String] = ["horror_intensity"]
 const TEXT_SIZES: Array[String] = ["standard", "large", "largest"]
 ## The name of the box for each text size, for the focus and for tests.
 const TEXT_SIZE_BOX: String = "TextSize%d"
-## The table's paces under Display, by the end of their string keys, slowest first, and
-## the name of the box for each.
+## The table's paces under Display, by the end of their string keys, slowest first.
 const PACES: Array[String] = ["slow", "standard", "fast"]
+## The setting that holds the table's pace.
 const PACE_SETTING: String = "table_pace"
+## The name of the box for each pace, filled with its index, for the focus and for tests.
 const PACE_BOX: String = "TablePace%d"
+## The type size of a setting's name, at Standard.
 const NAME_SIZE: int = 26
 ## The least room a setting's name takes; it grows to the widest name, kept on one line,
 ## so every slider starts at one edge.
@@ -29,10 +33,11 @@ const NAME_WIDTH: float = 200.0
 const ROW_GAPS: Array[int] = [18, 14, 6]
 ## The toggles flow two to a line where they fit.
 const TOGGLE_GAP: int = 28
-## The names of the tickets that open the Controls and Window pages, for the focus and
-## for tests.
+## The name of the ticket that opens the Controls page, for the focus and for tests.
 const CONTROLS_BUTTON: String = "OpenControls"
+## The name of the ticket that opens the Window page, for the focus and for tests.
 const WINDOW_BUTTON: String = "OpenWindow"
+## The sheet's width in pixels.
 const WIDTH: float = 760.0
 
 
@@ -161,7 +166,7 @@ static func chosen_text_size(root: Node) -> CheckBox:
 ## swap or a resume). Neither is the arrival's scripted evening; its pieces take the size
 ## at the next screen.
 static func rebuild_screen(app: App) -> void:
-	if app.arrival.is_running() or app.switcher.current_id() == App.TABLE:
+	if app.arrival.is_running() or app.switcher.current_id() == ScreenId.TABLE:
 		return
 	app.reopen()
 

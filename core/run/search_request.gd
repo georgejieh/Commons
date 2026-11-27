@@ -5,10 +5,15 @@ extends RefCounted
 ## Nothing here is the live round's, so a search may read it on another thread while the
 ## table is drawn, and nothing the search does reaches the run.
 
+## The seat whose play is being decided.
 var seat: int
+## A copy of the seat's own view of the round.
 var view: SeatView
+## Copies of the moves the seat may legally make.
 var legal: Array[Pattern] = []
+## A copy of the rules the seat's bot reads.
 var table: BotTable
+## A copy of the seat's bot config.
 var config: BotConfig
 
 

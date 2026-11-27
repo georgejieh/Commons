@@ -38,6 +38,7 @@ static func next_up(rank_map: PackedByteArray, rank: int) -> int:
 	return found
 
 
+## True for the small and the big joker.
 static func is_joker(rank: int) -> bool:
 	return rank == Ranks.SMALL_JOKER or rank == Ranks.BIG_JOKER
 

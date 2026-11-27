@@ -6,7 +6,9 @@ extends RefCounted
 ## so an Ace reads as "Aces". Readings that would read the same are told apart by their
 ## kickers.
 
+## The string-table prefix of a rank's plural name.
 const PLURAL_PREFIX: String = "rank.plural."
+## The string-table prefix of a rank's printed glyph.
 const LABEL_PREFIX: String = "rank."
 
 

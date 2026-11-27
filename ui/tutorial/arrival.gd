@@ -10,7 +10,12 @@ extends RefCounted
 
 ## The screens the arrival plays on, and those its menu opens over the table.
 const SCREENS: Array[String] = [
-	App.TABLE, App.SET_SUMMARY, App.STORE, App.BLACK_MARKET, App.DOSSIER, App.ROUND_SUMMARY
+	ScreenId.TABLE,
+	ScreenId.SET_SUMMARY,
+	ScreenId.STORE,
+	ScreenId.BLACK_MARKET,
+	ScreenId.DOSSIER,
+	ScreenId.ROUND_SUMMARY
 ]
 
 ## The surname chosen on the first launch's surname page (ADR 0028), held until the
@@ -38,10 +43,11 @@ func _init(app: App, first: bool) -> void:
 ## profile: the arrival's end or skip writes the surname with the profile's first save.
 func next_screen() -> String:
 	if not first_launch:
-		return App.TITLE
-	return App.SURNAME if surname.is_empty() else App.ARRIVAL
+		return ScreenId.TITLE
+	return ScreenId.SURNAME if surname.is_empty() else ScreenId.ARRIVAL
 
 
+## True while an arrival is under way, with its director walking the steps.
 func is_running() -> bool:
 	return director != null
 
@@ -61,14 +67,14 @@ func start(replay: bool = false) -> void:
 	director = TutorialDirector.new()
 	director.finished.connect(_on_finished)
 	layer.attach(_app, director)
-	_app.show_screen(App.TABLE, true)
+	_app.show_screen(ScreenId.TABLE, true)
 
 
 ## Skips it, from its page or its corner button once asked; then the title.
 func skip() -> void:
 	end()
 	_remember()
-	_app.show_screen(App.TITLE, true)
+	_app.show_screen(ScreenId.TITLE, true)
 
 
 ## The app showed a screen: the arrival follows it, or ends on one it does not play on.
@@ -108,7 +114,7 @@ func _on_finished() -> void:
 	var replay: bool = _replay
 	end()
 	_remember()
-	_app.show_screen(App.TITLE if replay else App.RUN_SETUP, true)
+	_app.show_screen(ScreenId.TITLE if replay else ScreenId.RUN_SETUP, true)
 
 
 ## Writes the profile's first save, with the arrival seen and the surname chosen, on a

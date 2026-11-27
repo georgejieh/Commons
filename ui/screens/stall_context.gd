@@ -5,13 +5,17 @@ extends RefCounted
 ## whether anything is being acted out. A stall reports a purchase made on the page by its
 ## spent signal; one made through the deck sheet is reported by the sheet's chosen.
 
+## The app whose run the stalls act on.
 var app: App
+## The run's controller, which every purchase goes through.
 var controller: RunController
 ## True for the black market, false for the state store.
 var market: bool
+## The shop's desk, from which the stalls read what is on sale and its price.
 var desk: ShopDesk
 ## Explains whatever on the page is hovered or holds the focus.
 var slip: DetailSlip
+## The page's deck sheet, where a purchase that picks one of the deck's cards is made.
 var deck: DeckSheet
 ## Returns true while the page acts out a purchase or a question stands over it, when no
 ## stall takes another.

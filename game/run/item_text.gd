@@ -4,6 +4,7 @@ extends RefCounted
 ## that show items outside a run's counters: the collection, and the controller's reads.
 
 
+## A Cadre's rules, with a note when it counts for the teammate.
 static func cadre(definition: ModifierDef) -> String:
 	var text: String = CadreText.rules(definition)
 	if definition.counts_for_teammate:
@@ -11,10 +12,12 @@ static func cadre(definition: ModifierDef) -> String:
 	return text
 
 
+## A Campaign's rules, with its numbers filled in.
 static func campaign(definition: CampaignDef) -> String:
 	return TranslationServer.translate(definition.text_key).format(definition.text_values())
 
 
+## A Directive's rules.
 static func directive(definition: DirectiveDef) -> String:
 	return TranslationServer.translate(definition.text_key)
 

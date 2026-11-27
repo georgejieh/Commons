@@ -20,6 +20,7 @@ extends Resource
 @export var loyal_cooperation: float = 0.3
 
 
+## What a Set summary of this kind adds to a family's grudge.
 func weight(kind: SetSummary.Kind) -> float:
 	match kind:
 		SetSummary.Kind.FED:

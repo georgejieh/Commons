@@ -4,11 +4,13 @@ extends RefCounted
 ## new card by its rank and suit: a plot card carrying the mark its kind names, or a card
 ## for the communal deck with its enhancement or none (ADR 0042).
 
+## What the item is: a Directive, a Campaign or one of the kinds of card.
 var content: EnvelopeDef.Content
 ## The Directive's or Campaign's ID; empty for a card.
 var item_id: String = ""
-## A card's rank and suit; Ranks.INVALID and Deck.NO_SUIT for anything else.
+## A card's rank; Ranks.INVALID for anything else.
 var rank: int = Ranks.INVALID
+## A card's suit; Deck.NO_SUIT for anything else.
 var suit: int = Deck.NO_SUIT
 ## A deck card's enhancement, or CardInstance.NO_ID.
 var enhancement: String = CardInstance.NO_ID
@@ -51,5 +53,6 @@ func same_as(other: EnvelopeItem) -> bool:
 	)
 
 
+## A new item equal to this one, so a view cannot change what the envelope shows.
 func copy() -> EnvelopeItem:
 	return EnvelopeItem.new(content, item_id, rank, suit, enhancement)

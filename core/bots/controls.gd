@@ -10,6 +10,7 @@ extends RefCounted
 
 ## One flag per group of the decomposition.
 var flags: Array[bool] = []
+## The plays the hand still needs once its controls are counted out: groups less controls.
 var effective_hands: int = 0
 
 

@@ -5,7 +5,9 @@ extends RefCounted
 ## finished runs. A design waiting for its art is never open. A choice no longer open falls
 ## back to the first design. Nothing here touches a run.
 
+## Every card back design there is.
 const POOL: CardBackPool = preload("res://data/ui/card_backs/card_backs.tres")
+## The setting that holds the chosen design's ID.
 const SETTING: String = "card_back"
 
 

@@ -17,12 +17,15 @@ extends RefCounted
 ## what was said here.
 signal spoke(seat: int, event: String, line: SpeechLine)
 
+## The shared speech book: the lines every villager can say for each event, and the slogans.
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
+## The work team's talk: the lines, the event, the chance and the stream name for its visits.
 const VISIT: WorkTeamTalk = preload("res://data/ui/work_team_talk.tres")
 ## Spreads the seats' salts so two villagers rarely say the same line together.
 const SEAT_SALT: int = 7
-## The most lines that wait at once, and the events that are only chatter.
+## The most lines that wait at once.
 const QUEUE_MAX: int = 3
+## The events that are only chatter, the first dropped when more lines wait than fit.
 const CHATTER: Array[String] = ["pass", "call", "no_call"]
 ## Steps each seat's count of lines along an even spread from 0 to 1, so the share of
 ## slogans comes out the same over any run of lines; the golden ratio's fraction.
@@ -47,6 +50,8 @@ var _waiting: Array[WaitingLine] = []
 var _visit: RandomStream = null
 
 
+## Gives the table's speech the seats it speaks at and, when the app is given, the villagers' own
+## books and voices.
 func setup(seats: Dictionary[int, SeatPanel], app: App = null) -> void:
 	_seats = seats
 	_waiting.clear()
@@ -213,6 +218,7 @@ func _hush(seat: int) -> void:
 		_on_finished(seat)
 
 
+## How many lines wait for the table to fall quiet, for tests.
 func waiting_count() -> int:
 	return _waiting.size()
 
@@ -251,8 +257,11 @@ func _on_finished(_seat: int) -> void:
 ## A line a villager will say once the table falls quiet.
 class WaitingLine:
 	extends RefCounted
+	## The seat that will say the line.
 	var seat: int
+	## The event the line answers.
 	var event: String
+	## The fields filled into the line's text.
 	var fields: Dictionary
 
 	func _init(at_seat: int, for_event: String, with_fields: Dictionary) -> void:

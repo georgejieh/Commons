@@ -12,14 +12,17 @@ extends HBoxContainer
 
 ## How faint an empty Cadre slot is.
 const EMPTY_ALPHA: float = 0.22
+## A Cadre card's size at full size, in pixels.
 const TILE_SIZE: Vector2 = Vector2(108, 140)
+## The gap between cards, in pixels.
 const GAP: int = 14
-## How far a Cadre's card swings on its pin, in radians, and swells, when it changes a
-## play's score.
+## How far a Cadre's card swings on its pin, in radians, when it changes a play's score.
 const JIGGLE: float = 0.1
+## How far a Cadre's card swells when it changes a play's score, as a scale.
 const JIGGLE_SCALE: float = 1.08
-## The empty line's type size, and its paper halo.
+## The empty line's type size.
 const EMPTY_SIZE: int = 18
+## The width of the paper halo round the empty line, in pixels.
 const EMPTY_HALO: int = 5
 
 ## Printed across the slots while no Cadre is held; empty for none, as at the table.

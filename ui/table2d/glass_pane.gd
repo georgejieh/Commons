@@ -6,27 +6,45 @@ extends Control
 ## is faint, so it never hides a rank or suit; it is already grimy at corruption stage 0,
 ## and smears, clouds and cracks further with BowlGrime.wear(). Clicks pass through it.
 
+## The pane's pale green glass.
 const GLASS: Color = Color("a9bfc2")
+## The warm white of the diagonal sheen and the frame's highlight.
 const SHEEN: Color = Color("fbf8ee")
+## The weathered wood of the frame.
 const FRAME: Color = Color("4a3a2a")
+## The glass's opacity at no wear, from 0 to 1; it grows a little with wear.
 const FILL_ALPHA: float = 0.12
+## The diagonal sheen's opacity at no wear, from 0 to 1; it fades with wear.
 const SHEEN_ALPHA: float = 0.2
+## The corner smears' opacity, from 0 to 1.
 const SMEAR_ALPHA: float = 0.3
+## The cracks' opacity, from 0 to 1.
 const CRACK_ALPHA: float = 0.4
+## The gap between one sheen streak and the next across the pane, in pixels.
 const SHEEN_GAP: float = 210.0
+## The width of a sheen streak's wide band, in pixels.
 const SHEEN_WIDE: float = 34.0
+## The width of a sheen streak's thin band, in pixels.
 const SHEEN_THIN: float = 9.0
+## The frame's width, in pixels.
 const FRAME_WIDTH: float = 8.0
+## The width of the highlight along the frame's inner edge, in pixels.
 const HIGHLIGHT_WIDTH: float = 2.0
 ## Smears keep to the frame's corners, this far in at most, clear of the cards' indexes.
 const SMEAR_REACH: float = 52.0
+## The seed the smears and cracks are drawn from, so the same glass comes out every time.
 const SEED: int = 2309
+## How many smears stain the frame's corners, at no wear (x) and at the most (y).
 const SMEARS: Vector2i = Vector2i(3, 8)
+## How many cracks run through the glass, at no wear (x) and at the most (y).
 const CRACKS: Vector2i = Vector2i(2, 9)
+## Seconds the glass takes to fade in as the round's beat.
 const FADE_TIME: float = 0.35
+## The slip's type at Standard.
 const SLIP_SIZE: int = 18
 ## Room inside the slip's printed border, so its line clears it.
 const SLIP_PADDING: int = 22
+## How far the slip stands above the pane, in pixels.
 const SLIP_GAP: float = 6.0
 
 ## The slip gives way (ADR 0034): it stands only where its left edge is right of this x,
@@ -34,6 +52,8 @@ const SLIP_GAP: float = 6.0
 ## while a sheet lies over its place. The pane and the rules slip under the right seat
 ## still say Glass Walls.
 var clear_of: float = 0.0
+## True while a sheet lies over the slip's place, which puts the slip away; set by the
+## debuff moments.
 var covered: bool = false
 
 var _slip: PanelContainer = PanelContainer.new()
@@ -87,6 +107,7 @@ func slip() -> PanelContainer:
 	return _slip
 
 
+## The slip's line, for tests.
 func words() -> Label:
 	return _words
 
