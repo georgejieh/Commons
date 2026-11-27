@@ -18,7 +18,10 @@ extends RefCounted
 ## village's drift for that generation into both (ADR 0028), and the entries the family's
 ## file holds into the identity (ADR 0022). Returns the lineage the run inherits, taken
 ## out of the profile in the same write; a run that is not full inherits nothing and
-## drifts nothing.
+## drifts nothing. When the write fails the run still starts, with the generation and
+## drift worked out here, but inherits nothing, and the lineage stays for the next run
+## that can take it. The profile's generation does not move for such a run, so the next
+## run that starts on a good write is given the same generation.
 static func start_run(profile: SaveService, state: RunState) -> Lineage:
 	var data: ProfileData = Profile.read(profile)
 	state.identity.finished_runs = data.finished_runs
@@ -33,7 +36,10 @@ static func start_run(profile: SaveService, state: RunState) -> Lineage:
 	var taken: Lineage = Lineage.new(data.lineage_kind, data.lineage_values.duplicate(true))
 	data.lineage_kind = RunLineage.NONE
 	data.lineage_values = {}
-	Profile.write(profile, data)
+	# The save service has logged a failed write; a lineage the profile still holds is
+	# not handed out, or the next run would take it a second time.
+	if Profile.write(profile, data) != OK:
+		return Lineage.new()
 	return taken
 
 

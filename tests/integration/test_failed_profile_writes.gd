@@ -102,6 +102,30 @@ func test_a_quota_that_could_not_be_written_is_not_reported_as_taken() -> void:
 	assert_str(Profile.read(_profile).committed_run).is_equal(state.identity.id)
 
 
+## A full run started while the profile cannot be written still starts, with no heirloom:
+## the profile keeps it for the next run that can take it, and that run takes it once. The
+## profile's generation did not move for the first, so the heir is given the same one.
+func test_a_run_started_on_a_failed_write_inherits_nothing() -> void:
+	var data: ProfileData = ProfileData.new()
+	data.lineage_kind = RunLineage.HEIRLOOM
+	data.lineage_values = {RunLineage.RANK: Ranks.KING, RunLineage.SUIT: 1}
+	assert_int(Profile.write(_profile, data)).is_equal(OK)
+	_block(_path)
+	var blocked: RunState = RunStarter.state(RunRequest.new(RunRequest.FULL, SEED, 1), _profile)
+	assert_object(blocked).is_not_null()
+	assert_array(blocked.inventory.plot).is_empty()
+	assert_int(blocked.identity.generation).is_equal(1)
+	assert_str(Profile.read(_profile).lineage_kind).is_equal(RunLineage.HEIRLOOM)
+	assert_int(Profile.read(_profile).generation).is_equal(0)
+	_unblock(_path)
+	var heir: RunState = RunStarter.state(RunRequest.new(RunRequest.FULL, SEED, 2), _profile)
+	assert_int(heir.inventory.plot.size()).is_equal(1)
+	assert_int(heir.inventory.plot[0].base_rank()).is_equal(Ranks.KING)
+	assert_int(heir.identity.generation).is_equal(1)
+	var next: RunState = RunStarter.state(RunRequest.new(RunRequest.FULL, SEED, 3), _profile)
+	assert_array(next.inventory.plot).is_empty()
+
+
 ## A Set's end the profile could not take: the controller says the profile is not whole,
 ## and once the profile can be written, asking again takes that Quota.
 func test_a_set_end_the_profile_missed_is_taken_when_asked() -> void:
