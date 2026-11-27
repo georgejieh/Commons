@@ -20,6 +20,10 @@ const GAP: int = 14
 const JIGGLE: float = 0.1
 ## How far a Cadre's card swells when it changes a play's score, as a scale.
 const JIGGLE_SCALE: float = 1.08
+## Where a Cadre's card keeps the tween that swings it on its pin.
+const SWING_META: StringName = &"notice_board_swing"
+## Where a Cadre's card keeps the tween that swells it as it swings.
+const SWELL_META: StringName = &"notice_board_swell"
 ## The empty line's type size.
 const EMPTY_SIZE: int = 18
 ## The width of the paper halo round the empty line, in pixels.
@@ -121,12 +125,12 @@ func jiggle(controller: RunController, cadre_id: String, seconds: float) -> Rect
 		_badges[index].show_count(count)
 	if not UiMotion.reduced() and seconds > 0.0:
 		card.pivot_offset = card.size / 2.0
-		var wobble: Tween = card.create_tween()
+		var wobble: Tween = UiMotion.hold(card, SWING_META, card.create_tween())
 		wobble.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		var swings: Array[float] = [JIGGLE, -JIGGLE * 0.7, JIGGLE * 0.4, 0.0]
 		for angle: float in swings:
 			wobble.tween_property(card, "rotation", angle, seconds / swings.size())
-		var swell: Tween = card.create_tween()
+		var swell: Tween = UiMotion.hold(card, SWELL_META, card.create_tween())
 		swell.tween_property(card, "scale", Vector2.ONE * JIGGLE_SCALE, seconds * 0.3)
 		swell.tween_property(card, "scale", Vector2.ONE, seconds * 0.7)
 	return card.get_global_rect()

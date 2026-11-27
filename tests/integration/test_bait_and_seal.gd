@@ -49,6 +49,21 @@ func test_the_ledger_is_written_with_every_save_and_removed_with_it() -> void:
 	assert_bool(FileAccess.file_exists(_kit.ledger_path())).is_false()
 
 
+## A ledger that cannot be written says so, and keeps the number it held; written again
+## once it can be, it holds the new one.
+func test_a_ledger_that_cannot_be_written_says_so() -> void:
+	var ledger: BaitLedger = BaitLedger.new(_dir + "blocked.json")
+	var path: String = BaitLedger.path_for(_dir + "blocked.json")
+	# A folder where the temporary file would go: no write can open it.
+	DirAccess.make_dir_recursive_absolute(path + BaitLedger.TEMP_SUFFIX)
+	assert_int(ledger.write(5, BaitLedger.NONE)).is_not_equal(OK)
+	assert_bool(FileAccess.file_exists(path)).is_false()
+	DirAccess.remove_absolute(path + BaitLedger.TEMP_SUFFIX)
+	assert_int(ledger.write(6, BaitLedger.NONE)).is_equal(OK)
+	assert_str(FileAccess.get_file_as_string(path).strip_edges()).is_equal("6")
+	DirAccess.remove_absolute(path)
+
+
 func test_a_changed_ledger_is_taken() -> void:
 	var controller: RunController = _started(true)
 	assert_bool(_kit.one_command(controller)).is_true()

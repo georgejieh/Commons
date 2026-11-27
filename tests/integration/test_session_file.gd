@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
 ## ADR 0037's session file: written when a copy opens, written again at each beat,
 ## removed when it closes and only by the copy that wrote it; a file left unwritten past
-## the stale beats, or one cut off, is a copy that stopped.
+## the stale beats, or one cut off, is a copy that stopped; a beat is written whole.
 
 const PARAMS: SessionParams = preload("res://data/session/session_params.tres")
 
@@ -19,6 +19,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	DirAccess.remove_absolute(_file.path() + SaveService.TEMP_SUFFIX)
 	if FileAccess.file_exists(_file.path()):
 		DirAccess.remove_absolute(_file.path())
 
@@ -66,3 +67,20 @@ func test_only_the_copy_that_began_the_file_removes_it() -> void:
 	assert_bool(FileAccess.file_exists(_file.path())).is_true()
 	first.end()
 	assert_bool(FileAccess.file_exists(_file.path())).is_false()
+
+
+## A beat is written whole to a temporary file and renamed into place, so one that cannot
+## be written leaves the last whole beat, never a cut-off file that reads as a crash.
+func test_a_beat_that_cannot_be_written_leaves_the_last_one_whole() -> void:
+	var now: float = 3_000_000.0
+	assert_int(_file.begin(now)).is_equal(OK)
+	# A folder where the temporary file would go: no write can open it.
+	var temp: String = _file.path() + SaveService.TEMP_SUFFIX
+	DirAccess.make_dir_recursive_absolute(temp)
+	assert_int(_file.beat(now + PARAMS.beat_seconds)).is_not_equal(OK)
+	DirAccess.remove_absolute(temp)
+	assert_float(_beat_on_disk()).is_equal(now)
+	var later: float = now + 2.0 * PARAMS.beat_seconds
+	assert_int(_file.beat(later)).is_equal(OK)
+	assert_float(_beat_on_disk()).is_equal(later)
+	assert_bool(FileAccess.file_exists(temp)).is_false()

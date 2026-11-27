@@ -22,6 +22,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
 	Saves.run_service().delete()
 
 
@@ -86,6 +87,23 @@ func test_the_notice_board_cards_carry_the_tooltip() -> void:
 	assert_str(cards[0].tip_rule()).is_equal(ScreenKit.rule_text(_app.controller, first))
 	assert_str(cards[1].tooltip_text).is_empty()
 	assert_int(_labels(board).size()).is_equal(0)
+
+
+## A Cadre that changes two plays' scores in quick succession swings and swells once on
+## its pin: the second jiggle ends the first's swing and swell.
+func test_a_second_jiggle_ends_the_first() -> void:
+	Settings.set_value("reduced_motion", false)
+	var stock: Array[String] = _app.controller.store.store_stock()
+	var slot: int = range(stock.size()).filter(_app.controller.store.can_buy).front()
+	_app.controller.buy(slot)
+	var board: NoticeBoard = auto_free(NoticeBoard.new())
+	add_child(board)
+	board.setup(3)
+	board.show_cadres(_app.controller)
+	var earlier: Array[Tween] = get_tree().get_processed_tweens()
+	for _play: int in 2:
+		board.jiggle(_app.controller, stock[slot], 0.6)
+	assert_int(TweenWatch.running_since(get_tree(), earlier).size()).is_equal(2)
 
 
 func _labels(node: Node) -> Array[Node]:

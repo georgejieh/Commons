@@ -58,14 +58,19 @@ func begin(now: float) -> Error:
 	return beat(now)
 
 
-## Writes the file again with now as its latest beat.
+## Writes the file again with now as its latest beat, whole to a temporary file renamed
+## into place as the saves are, so a crash mid-write leaves the last beat, not a cut-off
+## file that the next launch would take for a copy that stopped.
 func beat(now: float) -> Error:
-	var file: FileAccess = FileAccess.open(_path, FileAccess.WRITE)
+	var temp: String = _path + SaveService.TEMP_SUFFIX
+	var file: FileAccess = FileAccess.open(temp, FileAccess.WRITE)
 	if file == null:
 		return FileAccess.get_open_error()
 	var stored: bool = file.store_string(JSON.stringify({STARTED_KEY: _started, BEAT_KEY: now}))
 	file.close()
-	return OK if stored else ERR_FILE_CANT_WRITE
+	if not stored:
+		return ERR_FILE_CANT_WRITE
+	return DirAccess.rename_absolute(temp, _path)
 
 
 ## This copy closes: its file goes. A copy that never began leaves the file as it is.
