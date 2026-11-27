@@ -185,6 +185,7 @@ func _seatless_summary(seatless: int) -> SetSummaryScreen:
 	loop.state.seatless_sets = seatless
 	# The Quota met already, so it closes at its first round.
 	loop.state.set_progress = loop.target()
+	_app.controller.reseal_book()
 	var script: ControllerScript = ControllerScript.new()
 	while true:
 		if _app.controller.awaiting() == RunController.AWAIT_BID:
