@@ -223,7 +223,7 @@ func _walk(where: String) -> void:
 		if director == null:
 			break
 		var step: TutorialStep = director.step()
-		await _check_slip("%s step %s" % [where, step.id])
+		_check_slip("%s step %s" % [where, step.id])
 		await _answer(step)
 		await _until_moved(step)
 	assert_bool(_app.arrival.is_running()).override_failure_message(where).is_false()
@@ -239,12 +239,12 @@ func _answer(step: TutorialStep) -> void:
 			if step.button == "rules":
 				await TestInput.tap_key(self, KEY_R)
 				await _until_line(step.then_key)
-				await _check_slip("rules open")
+				_check_slip("rules open")
 				await TestInput.tap_key(self, KEY_ESCAPE)
 			elif not step.via.is_empty():
 				await TestInput.tap_key(self, KEY_ENTER)
 				await _until_prompt()
-				await _check_slip("black market")
+				_check_slip("black market")
 				await TestInput.tap_key(self, KEY_ENTER)
 			else:
 				await TestInput.tap_key(self, KEY_ENTER)

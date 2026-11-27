@@ -21,6 +21,7 @@ const ERRORS: Array[String] = [
 	"assert_always_false",
 	"unassigned_variable",
 	"enum_variable_without_default",
+	"redundant_await",
 ]
 
 

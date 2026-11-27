@@ -214,6 +214,9 @@ func test_a_play_it_was_not_offered_is_refused_as_a_bots() -> void:
 	var offered: bool = request.legal.any(func(move: Pattern) -> bool: return move.equals(lone))
 	assert_bool(offered).is_false()
 	var bad: BotPlay = BotPlay.new(lone, BotRationale.Code.SEARCHED)
+	# gdUnit declares is_runtime_error abstract, so the engine cannot see that the
+	# implementation awaits the call it checks.
+	@warning_ignore("redundant_await")
 	await assert_error(func() -> void: loop.villager_play(bad)).is_runtime_error(ILLEGAL_ACTION)
 	assert_int(loop.refused_bot_actions).is_equal(1)
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.VILLAGER_SEARCH)

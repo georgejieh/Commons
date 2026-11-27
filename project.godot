@@ -44,6 +44,7 @@ gdscript/warnings/assert_always_true=2
 gdscript/warnings/assert_always_false=2
 gdscript/warnings/unassigned_variable=2
 gdscript/warnings/enum_variable_without_default=2
+gdscript/warnings/redundant_await=2
 
 [display]
 
