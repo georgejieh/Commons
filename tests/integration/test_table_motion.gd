@@ -30,18 +30,18 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
+## Tweens are told apart by identity: those running before the table was shown may run
+## on, and every one made since must end within the settle once the table is gone.
 func test_no_tween_outlives_the_table() -> void:
 	_slow_presets()
-	var tweens: Callable = func() -> int: return get_tree().get_processed_tweens().size()
-	await TestWait.still(self, tweens, "the motion before the table to end")
-	var was: int = tweens.call()
+	var earlier: Array[Tween] = get_tree().get_processed_tweens()
 	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	_start_every_motion(table)
-	assert_int(get_tree().get_processed_tweens().size()).is_greater(was)
+	assert_array(_running_since(earlier)).is_not_empty()
 	_app.show_screen(ScreenId.SETTINGS, true)
 	# Within the settle, as a tween left without its node runs SLOW seconds on.
-	var ended: Callable = func() -> bool: return int(tweens.call()) <= was
+	var ended: Callable = func() -> bool: return _running_since(earlier).is_empty()
 	await TestWait.until(self, ended, "the table's tweens to end with it", SETTLE)
 
 
@@ -121,6 +121,15 @@ func _start_every_motion(table: TableScreen) -> void:
 	ledger.add_play(1, 60.0, 5.0, 1.0, 300.0)
 	var motion: TableMotion = table.motion
 	motion.impact()
+
+
+## The tweens still running that were not among earlier.
+func _running_since(earlier: Array[Tween]) -> Array[Tween]:
+	var running: Array[Tween] = []
+	for tween: Tween in get_tree().get_processed_tweens():
+		if tween.is_valid() and tween.is_running() and not earlier.has(tween):
+			running.append(tween)
+	return running
 
 
 func _slow_presets() -> void:
