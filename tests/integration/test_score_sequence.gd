@@ -137,11 +137,12 @@ func test_the_table_waits_for_the_sequence_and_a_click_hurries_it() -> void:
 	var planned: float = ScoreBeats.lay_out(event.steps, 1.0).total()
 	await await_millis(200)
 	assert_int(next[0]).is_equal(0)
-	# A click on the table hurries the rest.
+	# A click on the table, clear of the trick and the ledger, hurries the rest.
 	var click: InputEventMouseButton = InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
-	moments.sequence._unhandled_input(click)
+	click.position = Vector2(1800, 1000)
+	TestInput.push(self, click)
 	await _wait_done(moments.sequence)
 	var took: float = (Time.get_ticks_msec() - start) / 1000.0
 	assert_float(took).is_less(planned)

@@ -141,7 +141,7 @@ func test_a_shortcut_presses_its_button() -> void:
 	var shortcut: InputEventAction = InputEventAction.new()
 	shortcut.action = "commons_pass"
 	shortcut.pressed = true
-	table._unhandled_input(shortcut)
+	TestInput.push(self, shortcut)
 	assert_int(_app.controller.awaiting()).is_not_equal(RunController.AWAIT_BID)
 
 
