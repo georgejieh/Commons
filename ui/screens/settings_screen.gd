@@ -38,22 +38,22 @@ func open(app: DemoApp) -> void:
 	backs.add_child(room)
 	backs.add_child(_family_name(app))
 	var panel: Control = SettingsPanel.build(false)
-	var sheets: HBoxContainer = ScreenKit.row([panel, ScreenKit.card_panel(backs)])
-	sheets.alignment = BoxContainer.ALIGNMENT_BEGIN
-	_sheets = sheets
+	var sheet_row: HBoxContainer = ScreenKit.row([panel, ScreenKit.card_panel(backs)])
+	sheet_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_sheets = sheet_row
 	# The sheets are laid out to stand whole on the page at every text size; should they
 	# ever stand taller, they scroll, follow the focus and fade at the cut, so Back and
 	# the header stay on screen and the cut reads as more (ADR 0034).
-	var scroll: ScrollContainer = ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.follow_focus = true
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var scroller: ScrollContainer = ScrollContainer.new()
+	scroller.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroller.follow_focus = true
+	scroller.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# As wide as the sheets, so its bar stands against them, not at the page's edge.
-	scroll.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	scroll.add_child(sheets)
-	ScrollFade.over(scroll)
-	_scroll = scroll
-	column.add_child(scroll)
+	scroller.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	scroller.add_child(sheet_row)
+	ScrollFade.over(scroller)
+	_scroll = scroller
+	column.add_child(scroller)
 	var back: Button = ScreenKit.button(tr("settings.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(_leave)
 	# The pages' tickets stand here with Back, where they are always whole.

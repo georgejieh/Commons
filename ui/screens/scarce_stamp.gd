@@ -31,8 +31,8 @@ var _font: Font = ScreenKit.DISPLAY_BOLD
 var _pressing: Tween = null
 
 
-func _init(word: String = "", ink: Color = ScreenKit.RED) -> void:
-	_word = word.to_upper()
+func _init(text: String = "", ink: Color = ScreenKit.RED) -> void:
+	_word = text.to_upper()
 	_ink = ink
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	custom_minimum_size = BOX + ROOM * 2.0

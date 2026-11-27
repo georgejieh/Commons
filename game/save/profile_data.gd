@@ -206,8 +206,8 @@ static func _strings_valid(value: Variant) -> bool:
 static func _memory_valid(value: Variant) -> bool:
 	if not value is Dictionary:
 		return false
-	var memory: Dictionary = value
-	for row: Variant in memory.values():
+	var remembered: Dictionary = value
+	for row: Variant in remembered.values():
 		if not row is Array:
 			return false
 		var counts: Array = row

@@ -94,7 +94,7 @@ var _request_legal: Array[Pattern] = []
 func _init(
 	run_state: RunState,
 	configs: Array[BotConfig],
-	sets: SetConfig = SetConfig.new(),
+	set_config: SetConfig = SetConfig.new(),
 	params: RunParams = RunDefaults.PARAMS,
 	pool: Array[ModifierDef] = RunPools.DEBUFFS.debuffs,
 	meters: MeterTable = RunDefaults.METERS
@@ -103,7 +103,7 @@ func _init(
 	flow = RunFlow.new(run_state.phase)
 	_configs = configs
 	pools = RunPools.new(run_state.identity)
-	_sets = sets.under_stake(pools.stake)
+	_sets = set_config.under_stake(pools.stake)
 	_params = params
 	_meters = meters
 	_pool = pool
@@ -939,8 +939,8 @@ func audit_chance() -> float:
 	return NeedAudit.chance(state, pools.audit, _stack)
 
 
-func _split_commons(player_need: int) -> void:
-	_settlement.split(player_need)
+func _split_commons(need: int) -> void:
+	_settlement.split(need)
 	if _end_if_dead():
 		return
 	_end_round()

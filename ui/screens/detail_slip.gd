@@ -33,12 +33,12 @@ func _init() -> void:
 	resized.connect(_place)
 
 
-## Explains anchor: title over rule, above it or below it.
-func show_for(anchor: Control, title: String, rule: String, above: bool = true) -> void:
+## Explains piece: title over rule, above it or below it.
+func show_for(piece: Control, title: String, rule: String, above: bool = true) -> void:
 	if quiet.is_valid() and bool(quiet.call()):
 		hide_slip()
 		return
-	_anchor = anchor
+	_anchor = piece
 	_above = above
 	_rule = rule
 	ScreenKit.clear(self)
@@ -47,9 +47,9 @@ func show_for(anchor: Control, title: String, rule: String, above: bool = true) 
 	# It only explains: a click goes through it to whatever lies under.
 	for node: Node in [content] + content.find_children("*", "Control", true, false):
 		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if not anchor.has_meta(WATCHED):
-		anchor.set_meta(WATCHED, true)
-		anchor.tree_exiting.connect(hide_for.bind(anchor))
+	if not piece.has_meta(WATCHED):
+		piece.set_meta(WATCHED, true)
+		piece.tree_exiting.connect(hide_for.bind(piece))
 	visible = true
 	reset_size()
 	_place()
@@ -63,9 +63,9 @@ func follow(control: Control, title: String, rule: String) -> void:
 	control.focus_exited.connect(hide_for.bind(control))
 
 
-## Hides the slip if it is explaining anchor.
-func hide_for(anchor: Control) -> void:
-	if _anchor == anchor:
+## Hides the slip if it is explaining piece.
+func hide_for(piece: Control) -> void:
+	if _anchor == piece:
 		hide_slip()
 
 

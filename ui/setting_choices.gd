@@ -31,13 +31,13 @@ func _init(
 	add_child(flow)
 	var group: ButtonGroup = ButtonGroup.new()
 	for value: int in choices:
-		var box: CheckBox = CheckBox.new()
-		box.name = box_name % value
-		box.button_group = group
-		box.text = choices[value]
-		box.toggled.connect(_on_toggled.bind(value))
-		flow.add_child(box)
-		_boxes[value] = box
+		var choice: CheckBox = CheckBox.new()
+		choice.name = box_name % value
+		choice.button_group = group
+		choice.text = choices[value]
+		choice.toggled.connect(_on_toggled.bind(value))
+		flow.add_child(choice)
+		_boxes[value] = choice
 	_show()
 
 

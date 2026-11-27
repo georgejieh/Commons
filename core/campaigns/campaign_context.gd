@@ -96,8 +96,8 @@ func _enhance(card: CardInstance, enhancement_id: String) -> void:
 	CardMarks.enhance(state, card, enhancement_id)
 
 
-static func _joined(card_ids: Array[int]) -> String:
+static func _joined(ids: Array[int]) -> String:
 	var parts: PackedStringArray = []
-	for card_id: int in card_ids:
+	for card_id: int in ids:
 		parts.append(str(card_id))
 	return ",".join(parts)

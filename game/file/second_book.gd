@@ -22,7 +22,7 @@ var _checkpoint: Dictionary = {}
 func _init() -> void:
 	var random: RandomNumberGenerator = RandomNumberGenerator.new()
 	random.randomize()
-	for _figure: String in FIGURES:
+	for _figure_key: String in FIGURES:
 		_keys.append((random.randi() << 32) ^ random.randi())
 	_masked.resize(FIGURES.size())
 

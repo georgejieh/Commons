@@ -121,29 +121,29 @@ func _heading(text: String) -> Label:
 
 ## One generation's line on its own aged sheet, which takes focus so the page scrolls.
 func _record(text: String) -> AgedSheet:
-	var sheet: AgedSheet = AgedSheet.new(0.0, _records.size())
-	sheet.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sheet.accessibility_name = text
+	var record: AgedSheet = AgedSheet.new(0.0, _records.size())
+	record.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	record.accessibility_name = text
 	var line: Label = ScreenKit.label(text, RECORD_SIZE, RECORD_INK)
 	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sheet.column().add_child(line)
-	_records.append(sheet)
-	return sheet
+	record.column().add_child(line)
+	_records.append(record)
+	return record
 
 
 ## The family's file on one aged sheet, which takes focus so the page scrolls to it: a
 ## line an entry, then that the file is kept.
 func _file_page(entries: PackedStringArray) -> AgedSheet:
-	var sheet: AgedSheet = AgedSheet.new(0.0, FILE_SHEET)
-	sheet.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var page: AgedSheet = AgedSheet.new(0.0, FILE_SHEET)
+	page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	entries.append(tr("hist.file.kept"))
-	sheet.accessibility_name = " ".join(entries)
+	page.accessibility_name = " ".join(entries)
 	for text: String in entries:
 		var line: Label = ScreenKit.label(text, RECORD_SIZE, RECORD_INK)
 		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		sheet.column().add_child(line)
+		page.column().add_child(line)
 		_file_lines.append(line)
-	return sheet
+	return page
 
 
 ## The run's Quotas as a record, one line per family each Quota touched.

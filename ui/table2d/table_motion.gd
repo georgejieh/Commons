@@ -62,9 +62,9 @@ func impact() -> void:
 
 
 ## A smaller knock than a bomb's: shake only, sized by the caller.
-func bump(trauma: float) -> void:
+func bump(knock: float) -> void:
 	if not still:
-		_trauma = minf(1.0, _trauma + trauma)
+		_trauma = minf(1.0, _trauma + knock)
 
 
 ## A villager's seat swells as they are about to play and settles as the cards fly, so

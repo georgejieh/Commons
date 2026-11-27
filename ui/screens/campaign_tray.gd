@@ -86,11 +86,11 @@ func setup(controller: RunController) -> void:
 ## limit rises with a Reform and never falls.
 func _grow() -> void:
 	while _leaflets.size() < _controller.figures.campaign_slots():
-		var leaflet: CampaignLeaflet = CampaignLeaflet.new()
-		leaflet.set_compact(compact)
-		leaflet.chosen.connect(_on_chosen)
-		add_child(leaflet)
-		_leaflets.append(leaflet)
+		var made: CampaignLeaflet = CampaignLeaflet.new()
+		made.set_compact(compact)
+		made.chosen.connect(_on_chosen)
+		add_child(made)
+		_leaflets.append(made)
 		custom_minimum_size = _tray_size(_leaflets.size(), side_buttons, compact, vertical)
 		size = custom_minimum_size
 
@@ -114,14 +114,14 @@ func refresh() -> void:
 	_grow()
 	var held: Array[String] = _controller.items.held_campaigns()
 	for slot: int in _leaflets.size():
-		var leaflet: CampaignLeaflet = _leaflets[slot]
-		leaflet.position = _place(slot)
-		leaflet.size = _leaf()
-		leaflet.visible = slot < held.size()
-		if not leaflet.visible:
+		var paper: CampaignLeaflet = _leaflets[slot]
+		paper.position = _place(slot)
+		paper.size = _leaf()
+		paper.visible = slot < held.size()
+		if not paper.visible:
 			continue
 		var held_id: String = held[slot]
-		leaflet.show_campaign(
+		paper.show_campaign(
 			slot,
 			held_id,
 			_controller.texts.campaign_name(held_id),
@@ -132,7 +132,7 @@ func refresh() -> void:
 		var why: String = ""
 		if refusal != RunController.CAMPAIGN_OK:
 			why = tr(RunTexts.campaign_reason_key(refusal))
-		leaflet.set_reason(refusal, why)
+		paper.set_reason(refusal, why)
 	if _armed >= held.size() or (_armed >= 0 and _leaflets[_armed].reason != 0):
 		_armed = -1
 	_cursor = mini(_cursor, held.size() - 1)
@@ -317,8 +317,8 @@ func standing_height(heading: bool) -> float:
 
 func _tallest_leaf() -> float:
 	var tall: float = _leaf().y
-	for leaflet: CampaignLeaflet in _leaflets:
-		tall = maxf(tall, leaflet.get_combined_minimum_size().y)
+	for paper: CampaignLeaflet in _leaflets:
+		tall = maxf(tall, paper.get_combined_minimum_size().y)
 	return tall
 
 

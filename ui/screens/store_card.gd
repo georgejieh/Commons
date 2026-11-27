@@ -90,23 +90,23 @@ static func face(cadre_id: String, wide: float) -> Control:
 
 ## The name in dark type, then the rules with their keywords marked.
 static func words(title: String, rule: String) -> Control:
-	var words: VBoxContainer = VBoxContainer.new()
-	words.add_theme_constant_override("separation", 2)
-	words.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var column: VBoxContainer = VBoxContainer.new()
+	column.add_theme_constant_override("separation", 2)
+	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var name: Label = ScreenKit.label(title, NAME_SIZE)
 	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	var wide: float = StoreScreen.CARD.x - FACE_INSET
 	NameFit.apply(name, title, wide, TextSize.px(NAME_SIZE), TextSize.least(NameFit.LEAST))
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	words.add_child(name)
+	column.add_child(name)
 	var rules: KeywordText = KeywordText.new()
 	rules.name = RULES
 	var px: int = TextSize.px(RULE_SIZE)
 	rules.add_theme_font_size_override("normal_font_size", px)
 	rules.add_theme_color_override("default_color", ScreenKit.INK)
 	rules.set_rule(rule)
-	words.add_child(rules)
-	return words
+	column.add_child(rules)
+	return column
 
 
 ## A card's rules are print in a box of the card's fixed height (ADR 0034, rule 5): when

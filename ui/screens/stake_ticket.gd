@@ -28,19 +28,19 @@ var picked: bool = false:
 var words_label: Label
 
 
-func _init(stake_number: int, unlocked: bool, words: String) -> void:
+func _init(stake_number: int, unlocked: bool, label_text: String) -> void:
 	stake = stake_number
 	open = unlocked
 	custom_minimum_size = SIZE
 	focus_mode = Control.FOCUS_ALL
-	accessibility_name = words
+	accessibility_name = label_text
 	for style: String in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
 		add_theme_stylebox_override(style, StyleBoxEmpty.new())
 	var ink: Color = BowlGrime.faded(ScreenKit.TICKET_INK, BowlGrime.wear())
 	words_label = ScreenKit.label("", NAME_SIZE if unlocked else LINE_SIZE, ink)
 	var wide: float = SIZE.x - WORDS_LEFT - WORDS_RIGHT
 	var base: int = TextSize.px(NAME_SIZE if unlocked else LINE_SIZE)
-	NameFit.apply(words_label, words, wide, base, TextSize.least(NameFit.LEAST))
+	NameFit.apply(words_label, label_text, wide, base, TextSize.least(NameFit.LEAST))
 	words_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	words_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	words_label.mouse_filter = Control.MOUSE_FILTER_IGNORE

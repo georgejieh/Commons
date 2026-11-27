@@ -31,10 +31,10 @@ func draw(stream: RandomStream, open: Array[int]) -> void:
 		return
 	for offer: int in _params.offers:
 		_ranks.append(open[stream.next_int(0, open.size() - 1)])
-		var suit: int = stream.next_int(0, Deck.SUITS - 1)
+		var drawn_suit: int = stream.next_int(0, Deck.SUITS - 1)
 		if not _params.suits.is_empty():
-			suit = _params.suits[offer % _params.suits.size()]
-		_suits.append(suit)
+			drawn_suit = _params.suits[offer % _params.suits.size()]
+		_suits.append(drawn_suit)
 		var mark: String = CardInstance.NO_ID
 		if _params.marked_percent > 0 and stream.next_int(0, PERCENT - 1) < _params.marked_percent:
 			var kinds: Array[String] = CardInstance.ENHANCEMENTS

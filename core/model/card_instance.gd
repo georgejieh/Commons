@@ -58,8 +58,8 @@ func snapshot() -> CardInstance:
 
 ## The number an event gives a mark: 0 for the player's stamp, else the enhancement's
 ## place in ENHANCEMENTS after one, so Model is 1.
-static func mark_value(enhancement_id: String) -> int:
-	return ENHANCEMENTS.find(enhancement_id) + 1
+static func mark_value(enhancement: String) -> int:
+	return ENHANCEMENTS.find(enhancement) + 1
 
 
 ## The enhancement a mark's number names, or NO_ID for the player's stamp.

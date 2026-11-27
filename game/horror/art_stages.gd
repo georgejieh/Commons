@@ -95,8 +95,8 @@ static func latch_value(corruption: float, filed: bool = false) -> void:
 
 
 ## The highest stage the art may show at a horror intensity from 0 to 1.
-static func cap_for(intensity: float) -> int:
-	return clampi(roundi(LAST_STAGE * clampf(intensity, 0.0, 1.0)), 0, LAST_STAGE)
+static func cap_for(level: float) -> int:
+	return clampi(roundi(LAST_STAGE * clampf(level, 0.0, 1.0)), 0, LAST_STAGE)
 
 
 ## The stage the art shows: the stage, capped by the horror-intensity setting.

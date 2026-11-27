@@ -223,8 +223,10 @@ func _rules_frame() -> void:
 ## The picker over the table on cards that read three ways or more, built from the
 ## player's rules now; it is photographed and closed, and nothing is played.
 func _picker_frame(controller: Object) -> void:
-	var table: Object = view(controller, "table").call("player_table")
-	var readings: Array[Pattern] = _three_readings(table.get("rules"), table.get("rank_map"))
+	var seat_table: Object = view(controller, "table").call("player_table")
+	var readings: Array[Pattern] = _three_readings(
+		seat_table.get("rules"), seat_table.get("rank_map")
+	)
 	if readings.size() < 3:
 		_fail("NO CARDS READ THREE WAYS")
 		return
@@ -243,13 +245,15 @@ func _picker_frame(controller: Object) -> void:
 ## card's ribbon and the rank it stands for beside its own.
 func _pile_frame(controller: Object) -> void:
 	var wild: Array[int] = view(controller, "table").call("wild_ranks")
-	var table: Object = view(controller, "table").call("player_table")
+	var seat_table: Object = view(controller, "table").call("player_table")
 	var rank: int = _plain_rank(wild)
 	var counts: PackedByteArray = PackedByteArray()
 	counts.resize(Ranks.COUNT)
 	counts[rank] = 3
 	counts[wild[0]] = 1
-	var reading: Pattern = Readings.of(counts, table.get("rules"), table.get("rank_map"))[0]
+	var reading: Pattern = (
+		Readings.of(counts, seat_table.get("rules"), seat_table.get("rank_map"))[0]
+	)
 	var cards: Array[CardInstance] = []
 	for suit: int in 3:
 		cards.append(Deck.new().card(rank * Deck.SUITS + suit))

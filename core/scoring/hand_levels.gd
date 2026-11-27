@@ -8,18 +8,18 @@ var _levels: PackedByteArray = PackedByteArray()
 var _max_level: int
 
 
-func _init(max_level: int) -> void:
-	_max_level = max_level
+func _init(highest: int) -> void:
+	_max_level = highest
 	_levels.resize(Pattern.Type.size())
 	_levels.fill(FIRST_LEVEL)
 
 
 ## Levels as saved: one number per Pattern.Type, PASS included. A value out of range is
 ## brought back inside it, and a missing one starts at the first level.
-static func from_array(values: Array, max_level: int) -> HandLevels:
-	var levels: HandLevels = HandLevels.new(max_level)
+static func from_array(values: Array, highest: int) -> HandLevels:
+	var levels: HandLevels = HandLevels.new(highest)
 	for type: int in mini(values.size(), Pattern.Type.size()):
-		levels._levels[type] = clampi(int(values[type]), FIRST_LEVEL, max_level)
+		levels._levels[type] = clampi(int(values[type]), FIRST_LEVEL, highest)
 	return levels
 
 

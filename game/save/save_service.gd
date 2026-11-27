@@ -49,13 +49,13 @@ var _tampered: String = ""
 
 
 func _init(
-	path: String = RUN_PATH,
+	file_path: String = RUN_PATH,
 	migrations: Dictionary[int, Callable] = {},
 	version: int = SCHEMA_VERSION,
 	validator: Callable = Callable(),
 	sealed_from: int = SEALED_FROM
 ) -> void:
-	_path = path
+	_path = file_path
 	_migrations = migrations
 	_version = version
 	_validator = validator
@@ -64,7 +64,7 @@ func _init(
 
 ## A run save, migrated by RunRecordMigrations and checked by RunRecordCheck. The private
 ## ledger beside it goes with it.
-static func for_run(path: String = RUN_PATH) -> SaveService:
+static func for_run(file_path: String = RUN_PATH) -> SaveService:
 	var migrations: Dictionary[int, Callable] = {
 		1: RunRecordMigrations.migrate_from_1,
 		2: RunRecordMigrations.migrate_from_2,
@@ -88,9 +88,9 @@ static func for_run(path: String = RUN_PATH) -> SaveService:
 		19: RunRecordMigrations.migrate_from_19,
 	}
 	var service: SaveService = SaveService.new(
-		path, migrations, SCHEMA_VERSION, RunRecordCheck.is_valid
+		file_path, migrations, SCHEMA_VERSION, RunRecordCheck.is_valid
 	)
-	service.companions.append(BaitLedger.path_for(path))
+	service.companions.append(BaitLedger.path_for(file_path))
 	return service
 
 
@@ -176,8 +176,8 @@ func kept_extras() -> Dictionary:
 	var parsed: Variant = _parse(_path)
 	if parsed == null:
 		return {}
-	var save: Dictionary = parsed
-	var extras: Variant = save.get(EXTRA_KEY, {})
+	var whole: Dictionary = parsed
+	var extras: Variant = whole.get(EXTRA_KEY, {})
 	return extras if extras is Dictionary else {}
 
 
@@ -226,31 +226,31 @@ func _store(file_path: String, text: String) -> Error:
 	return OK if stored else ERR_FILE_CANT_WRITE
 
 
-## What a load found: the data, the extras beside it, and whether the seal of the file
-## it came from, save, failed.
+## What a load found: the data, the extras beside it, and whether the seal of whole, the
+## file it came from, failed.
 func _loaded(
-	status: SaveLoad.Status, data: Variant, save: Dictionary, key: String = ""
+	status: SaveLoad.Status, data: Variant, whole: Dictionary, key: String = ""
 ) -> SaveLoad:
 	var result: SaveLoad = SaveLoad.new(status, data, key)
-	var extras: Variant = save.get(EXTRA_KEY, {})
+	var extras: Variant = whole.get(EXTRA_KEY, {})
 	result.extras = extras if extras is Dictionary else {}
-	var version: int = int(save["schema_version"])
-	if version >= _sealed_from and not _seal_holds(save):
+	var version: int = int(whole["schema_version"])
+	if version >= _sealed_from and not _seal_holds(whole):
 		result.tampered = true
-		result.seal = _seal_of(save)
+		result.seal = _seal_of(whole)
 		_tampered = result.seal
 	return result
 
 
 ## True when a parsed save's seal is the one its values make.
-func _seal_holds(save: Dictionary) -> bool:
-	var seal: Variant = save.get(SEAL_KEY)
-	return SaveSeal.is_shaped(seal) and seal == _seal_of(save)
+func _seal_holds(whole: Dictionary) -> bool:
+	var seal: Variant = whole.get(SEAL_KEY)
+	return SaveSeal.is_shaped(seal) and seal == _seal_of(whole)
 
 
-func _seal_of(save: Dictionary) -> String:
-	var extras: Variant = save.get(EXTRA_KEY, {})
-	return SaveSeal.of(int(save["schema_version"]), save["data"], extras)
+func _seal_of(whole: Dictionary) -> String:
+	var extras: Variant = whole.get(EXTRA_KEY, {})
+	return SaveSeal.of(int(whole["schema_version"]), whole["data"], extras)
 
 
 ## The file as JSON when it parses to a save's shape, or null.
@@ -260,17 +260,17 @@ func _parse(file_path: String) -> Variant:
 	var json: JSON = JSON.new()
 	if json.parse(FileAccess.get_file_as_string(file_path)) != OK or not json.data is Dictionary:
 		return null
-	var save: Dictionary = json.data
-	if not save.get("schema_version") is float or not save.get("data") is Dictionary:
+	var whole: Dictionary = json.data
+	if not whole.get("schema_version") is float or not whole.get("data") is Dictionary:
 		return null
-	return save
+	return whole
 
 
 ## True for a parsed save that a newer build wrote.
-func _is_newer(save: Variant) -> bool:
-	if save == null:
+func _is_newer(whole: Variant) -> bool:
+	if whole == null:
 		return false
-	var parsed: Dictionary = save
+	var parsed: Dictionary = whole
 	return int(parsed["schema_version"]) > _version
 
 
@@ -292,10 +292,10 @@ func _set_aside(file_path: String) -> Error:
 ## The migrated data of a parsed save, or null when there is none or it is damaged or
 ## too new. An older save is migrated on a copy, so the parsed values its seal was made
 ## over stay as they were read.
-func _data_of(save: Variant) -> Variant:
-	if save == null:
+func _data_of(whole: Variant) -> Variant:
+	if whole == null:
 		return null
-	var parsed: Dictionary = save
+	var parsed: Dictionary = whole
 	var version: int = int(parsed["schema_version"])
 	var data: Dictionary = parsed["data"]
 	if version < _version:

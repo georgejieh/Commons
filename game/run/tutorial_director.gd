@@ -65,8 +65,8 @@ func follow_seconds() -> float:
 
 
 ## The screen now shown and what the run waits on, once that screen has settled.
-func ready(screen: String, awaiting: int) -> void:
-	_screen = screen
+func ready(shown: String, awaiting: int) -> void:
+	_screen = shown
 	_awaiting = awaiting
 	if awaiting != NOTHING:
 		_unseen = false
@@ -161,12 +161,12 @@ static func matches(current: TutorialStep, action: String, detail: Variant) -> b
 	return action == current.button and slot_fits
 
 
-static func _same_cards(detail: Variant, cards: PackedInt32Array) -> bool:
+static func _same_cards(detail: Variant, expected: PackedInt32Array) -> bool:
 	if not detail is Array:
 		return false
 	var sent: Array = detail
 	var given: Array = sent.duplicate()
-	var wanted: Array = Array(cards)
+	var wanted: Array = Array(expected)
 	given.sort()
 	wanted.sort()
 	return given == wanted

@@ -27,8 +27,8 @@ func _ready() -> void:
 
 
 ## The count on the ticket, or none when empty.
-func show_count(count: String) -> void:
-	_count = count
+func show_count(text: String) -> void:
+	_count = text
 	queue_redraw()
 
 
@@ -46,8 +46,8 @@ func count() -> String:
 ## many, such as Ration Coupon's "2/3", fills it that share, step by step, and it empties
 ## when the count starts again. Any other count, a number, a factor or a rank, has no band,
 ## so nothing on the ticket looks like a meter that is stuck. Negative for no band.
-static func meter(count: String) -> float:
-	var parts: PackedStringArray = count.split("/")
+static func meter(text: String) -> float:
+	var parts: PackedStringArray = text.split("/")
 	if parts.size() != 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
 		return NO_METER
 	var whole: int = parts[1].to_int()

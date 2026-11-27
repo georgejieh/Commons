@@ -23,12 +23,12 @@ var _cancel: Callable = Callable()
 
 ## line is a smaller line under the body, such as a folder's path, or empty.
 func _init(
-	eyebrow: String, title: String, body: String, buttons: Array[Button], line: String = ""
+	eyebrow: String, title: String, body: String, choices: Array[Button], line: String = ""
 ) -> void:
 	_eyebrow = eyebrow
 	_title = title
 	_body = body
-	_buttons = buttons
+	_buttons = choices
 	_line = line
 
 
@@ -74,10 +74,10 @@ static func kept(folder: String) -> SessionNotice:
 ## Escape and the pad's back button also choose. The old display comes back by itself
 ## after seconds.
 static func display_check(seconds: int, keep: Callable, restore: Callable) -> SessionNotice:
-	var kept: Button = ScreenKit.button(
+	var keep_button: Button = ScreenKit.button(
 		TranslationServer.translate("display.check.keep"), CommonsTheme.PRIMARY
 	)
-	kept.pressed.connect(keep)
+	keep_button.pressed.connect(keep)
 	var back: Button = ScreenKit.button(TranslationServer.translate("display.check.back"))
 	back.pressed.connect(restore)
 	var body: String = TranslationServer.translate("display.check.body")
@@ -85,7 +85,7 @@ static func display_check(seconds: int, keep: Callable, restore: Callable) -> Se
 		TranslationServer.translate("display.check.eyebrow"),
 		TranslationServer.translate("display.check.title"),
 		body.format({"seconds": seconds}),
-		[kept, back]
+		[keep_button, back]
 	)
 	notice._cancel = restore
 	return notice
@@ -104,21 +104,21 @@ func _ready() -> void:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(center)
-	var sheet: VBoxContainer = ScreenKit.card(Vector2(BooksNotice.WIDTH, 0))
-	sheet.add_theme_constant_override("separation", 14)
-	sheet.add_child(ScreenKit.eyebrow(_eyebrow.to_upper()))
-	sheet.add_child(ScreenKit.styled(_title, CommonsTheme.HEADLINE))
-	sheet.add_child(ScreenKit.label(_body, BODY_SIZE, ScreenKit.INK))
+	var paper: VBoxContainer = ScreenKit.card(Vector2(BooksNotice.WIDTH, 0))
+	paper.add_theme_constant_override("separation", 14)
+	paper.add_child(ScreenKit.eyebrow(_eyebrow.to_upper()))
+	paper.add_child(ScreenKit.styled(_title, CommonsTheme.HEADLINE))
+	paper.add_child(ScreenKit.label(_body, BODY_SIZE, ScreenKit.INK))
 	if not _line.is_empty():
 		var line: Label = ScreenKit.label(_line, LINE_SIZE, ScreenKit.INK)
 		# A path has no spaces to break at.
 		line.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-		sheet.add_child(line)
+		paper.add_child(line)
 	var controls: Array[Control] = []
 	controls.assign(_buttons)
-	sheet.add_child(ScreenKit.row(controls))
-	SheetPad.column(sheet)
-	_panel = ScreenKit.card_panel(sheet)
+	paper.add_child(ScreenKit.row(controls))
+	SheetPad.column(paper)
+	_panel = ScreenKit.card_panel(paper)
 	center.add_child(_panel)
 	get_viewport().gui_focus_changed.connect(_on_focus_changed)
 	_buttons[0].grab_focus.call_deferred()

@@ -121,8 +121,8 @@ func shake(pixels: float, seconds: float) -> void:
 	var hops: int = 4
 	for hop: int in hops:
 		var side: float = -1.0 if hop % 2 == 0 else 1.0
-		var reach: float = pixels * (1.0 - float(hop) / hops)
-		_shake.tween_property(self, "position", _rest + Vector2(side * reach, 0.0), seconds / hops)
+		var swing: float = pixels * (1.0 - float(hop) / hops)
+		_shake.tween_property(self, "position", _rest + Vector2(side * swing, 0.0), seconds / hops)
 	_shake.tween_property(self, "position", _rest, seconds / hops)
 
 

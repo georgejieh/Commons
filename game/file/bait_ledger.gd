@@ -124,10 +124,10 @@ func write(coupons: int, before: int) -> void:
 
 
 ## The whole numbers a save kept for the ledger.
-static func _numbers(extras: Dictionary) -> Array[int]:
+static func _numbers(saved: Dictionary) -> Array[int]:
 	var found: Array[int] = []
 	for key: String in [NUMBER_KEY, BEFORE_KEY]:
-		var number: Variant = extras.get(key)
+		var number: Variant = saved.get(key)
 		if ProfileData.is_count(number):
 			found.append(int(number))
 	return found

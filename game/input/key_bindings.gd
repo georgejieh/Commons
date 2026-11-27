@@ -82,17 +82,17 @@ static func default_key(action: String) -> Key:
 	var setting: Dictionary = ProjectSettings.get_setting("input/" + action, {})
 	var events: Array = setting.get("events", [])
 	for event: InputEvent in events:
-		var key: InputEventKey = event as InputEventKey
-		if key != null:
-			return key_of(key)
+		var key_event: InputEventKey = event as InputEventKey
+		if key_event != null:
+			return key_of(key_event)
 	return KEY_NONE
 
 
 ## True for a key an action may have: a real key, bare, not Escape nor a modifier.
-static func allowed(key: int) -> bool:
-	if key <= 0 or key & KEY_MODIFIER_MASK != 0 or REFUSED.has(key):
+static func allowed(keycode: int) -> bool:
+	if keycode <= 0 or keycode & KEY_MODIFIER_MASK != 0 or REFUSED.has(keycode):
 		return false
-	return OS.find_keycode_from_string(OS.get_keycode_string(key)) == key
+	return OS.find_keycode_from_string(OS.get_keycode_string(keycode)) == keycode
 
 
 ## The key an event names: its physical key, or its key where it has none.
@@ -100,14 +100,14 @@ static func key_of(event: InputEventKey) -> Key:
 	return event.physical_keycode if event.physical_keycode != KEY_NONE else event.keycode
 
 
-## The name printed on a key in the player's layout. A display server that cannot say,
+## The name printed on keycode in the player's layout. A display server that cannot say,
 ## as a headless one cannot, gives the key's own name.
-static func label(key: Key) -> String:
+static func label(keycode: Key) -> String:
 	var printed: Key = KEY_NONE
 	if DisplayServer.get_name() != "headless":
-		printed = DisplayServer.keyboard_get_label_from_physical(key)
+		printed = DisplayServer.keyboard_get_label_from_physical(keycode)
 	var text: String = OS.get_keycode_string(printed) if printed != KEY_NONE else ""
-	return text if not text.is_empty() else OS.get_keycode_string(key)
+	return text if not text.is_empty() else OS.get_keycode_string(keycode)
 
 
 func _init() -> void:
@@ -120,24 +120,24 @@ func key(action: String) -> Key:
 	return _keys[action]
 
 
-## The action bound to key, or "" when none is.
-func action_on(key: Key) -> String:
+## The action bound to keycode, or "" when none is.
+func action_on(keycode: Key) -> String:
 	for action: String in ACTIONS:
-		if _keys[action] == key:
+		if _keys[action] == keycode:
 			return action
 	return ""
 
 
-## Binds key to action and applies it. An action that had the key takes the one action
+## Binds keycode to action and applies it. An action that had the key takes the one action
 ## had. False, and nothing changes, for a key no action may have.
-func bind(action: String, key: Key) -> bool:
+func bind(action: String, keycode: Key) -> bool:
 	assert(_keys.has(action), "Unknown action")
-	if not allowed(key):
+	if not allowed(keycode):
 		return false
-	var other: String = action_on(key)
+	var other: String = action_on(keycode)
 	if not other.is_empty():
 		_keys[other] = _keys[action]
-	_keys[action] = key
+	_keys[action] = keycode
 	apply()
 	return true
 

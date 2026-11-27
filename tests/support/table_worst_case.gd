@@ -157,8 +157,8 @@ static func pieces(table: TableScreen) -> Dictionary[String, Rect2]:
 
 ## A piece of dressing as drawn: its own box, or its parts' for a group; nothing hidden.
 static func _piece_rect(dressing: DreadDressing, piece: String) -> Rect2:
-	var pieces: Dictionary[String, Control] = dressing.pieces
-	var control: Control = pieces[piece]
+	var dressed: Dictionary[String, Control] = dressing.pieces
+	var control: Control = dressed[piece]
 	if not control.is_visible_in_tree():
 		return Rect2()
 	if control.size != Vector2.ZERO:

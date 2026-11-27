@@ -25,11 +25,11 @@ static func from_dict(data: Dictionary) -> CadreMemo:
 	return memo
 
 
-## True when data is a map of names to numbers.
-static func is_valid(value: Variant) -> bool:
-	if not value is Dictionary:
+## True when read is a map of names to numbers.
+static func is_valid(read: Variant) -> bool:
+	if not read is Dictionary:
 		return false
-	var data: Dictionary = value
+	var data: Dictionary = read
 	for key: Variant in data:
 		if not key is String or not (data[key] is int or data[key] is float):
 			return false

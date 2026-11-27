@@ -59,10 +59,10 @@ func set_width(wide: float) -> void:
 
 
 ## Shows the line, sized to it, at the text size chosen now: the slip outlives screens.
-func say(line: String) -> void:
-	_text.text = line
+func say(spoken: String) -> void:
+	_text.text = spoken
 	_text.add_theme_font_size_override("font_size", TextSize.px(TEXT_SIZE))
-	visible = not line.is_empty()
+	visible = not spoken.is_empty()
 	reset_size()
 
 

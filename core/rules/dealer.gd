@@ -46,20 +46,20 @@ static func arrange(
 
 ## Biases a finished deal in place, as arrange() would have. The deal hook
 ## uses this, so Planned Allocation runs with every other deal effect.
-static func rebias(deal: DealResult, bias: DealBias, stream: RandomStream) -> void:
+static func rebias(dealt: DealResult, bias: DealBias, stream: RandomStream) -> void:
 	if bias == null or bias.multiplier <= 1.0:
 		return
 	var order: Array[CardInstance] = []
-	for hand: Hand in deal.hands:
+	for hand: Hand in dealt.hands:
 		order.append_array(hand.cards())
-	order.append_array(deal.kitty)
+	order.append_array(dealt.kitty)
 	_apply_bias(order, bias, stream)
-	for seat: int in deal.hands.size():
+	for seat: int in dealt.hands.size():
 		var hand: Hand = Hand.new()
 		for offset: int in HAND_SIZE:
 			hand.add(order[seat * HAND_SIZE + offset])
-		deal.hands[seat] = hand
-	deal.kitty = order.slice(deal.hands.size() * HAND_SIZE)
+		dealt.hands[seat] = hand
+	dealt.kitty = order.slice(dealt.hands.size() * HAND_SIZE)
 
 
 static func _fisher_yates(order: Array[CardInstance], stream: RandomStream) -> void:

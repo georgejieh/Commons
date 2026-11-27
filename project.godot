@@ -55,6 +55,7 @@ gdscript/warnings/confusable_local_declaration=2
 gdscript/warnings/confusable_local_usage=2
 gdscript/warnings/confusable_capture_reassignment=2
 gdscript/warnings/shadowed_global_identifier=2
+gdscript/warnings/shadowed_variable=2
 
 [display]
 

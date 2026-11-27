@@ -28,8 +28,8 @@ func _init(usage: String, args: PackedStringArray = OS.get_cmdline_user_args()) 
 
 
 ## A path as a tool reads it: relative under the project folder, absolute as given.
-static func resolve(path: String) -> String:
-	return path if path.is_absolute_path() else "res://" + path
+static func resolve(given: String) -> String:
+	return given if given.is_absolute_path() else "res://" + given
 
 
 ## True when --name was given, with or without a value.

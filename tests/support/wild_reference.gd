@@ -15,15 +15,15 @@ static func rules(wild: Array[int], big_bombs: bool, rocket_on_top: bool = true)
 
 ## Every legal reading of exactly these printed cards, by identity, each spending them.
 static func readings(
-	printed: PackedByteArray, rules: RuleSet, map: PackedByteArray
+	printed: PackedByteArray, rule_set: RuleSet, map: PackedByteArray
 ) -> Dictionary[int, Pattern]:
 	var reading: PackedByteArray = printed.duplicate()
 	var wilds: int = 0
-	for rank: int in rules.wild_ranks():
+	for rank: int in rule_set.wild_ranks():
 		wilds += reading[rank]
 		reading[rank] = 0
 	var found: Dictionary[int, Pattern] = {}
-	_spread(0, wilds, reading, printed, rules, map, found)
+	_spread(0, wilds, reading, printed, rule_set, map, found)
 	return found
 
 
@@ -57,7 +57,7 @@ static func shape_of(pattern: Pattern) -> String:
 
 ## True when a generated move matches a reading as the comparator sees it, or beats it as
 ## a bomb of the same rank and size.
-static func covered(reading: Pattern, moves: Array[Pattern], rules: RuleSet) -> bool:
+static func covered(reading: Pattern, moves: Array[Pattern], rule_set: RuleSet) -> bool:
 	for move: Pattern in moves:
 		if shape_of(move) == shape_of(reading):
 			return true
@@ -67,14 +67,14 @@ static func covered(reading: Pattern, moves: Array[Pattern], rules: RuleSet) -> 
 			and move.main_rank == reading.main_rank
 			and move.card_count == reading.card_count
 		)
-		if same_bomb and PlayComparator.beats(move, reading, rules):
+		if same_bomb and PlayComparator.beats(move, reading, rule_set):
 			return true
 	return false
 
 
-static func wild_cards(counts: PackedByteArray, rules: RuleSet) -> int:
+static func wild_cards(counts: PackedByteArray, rule_set: RuleSet) -> int:
 	var total: int = 0
-	for rank: int in rules.wild_ranks():
+	for rank: int in rule_set.wild_ranks():
 		total += counts[rank]
 	return total
 
@@ -84,28 +84,28 @@ static func _spread(
 	left: int,
 	reading: PackedByteArray,
 	printed: PackedByteArray,
-	rules: RuleSet,
+	rule_set: RuleSet,
 	map: PackedByteArray,
 	found: Dictionary[int, Pattern]
 ) -> void:
 	if rank > Ranks.TWO:
 		if left == 0:
-			_read(reading, printed, rules, map, found)
+			_read(reading, printed, rule_set, map, found)
 		return
 	for extra: int in left + 1:
 		reading[rank] += extra
-		_spread(rank + 1, left - extra, reading, printed, rules, map, found)
+		_spread(rank + 1, left - extra, reading, printed, rule_set, map, found)
 		reading[rank] -= extra
 
 
 static func _read(
 	reading: PackedByteArray,
 	printed: PackedByteArray,
-	rules: RuleSet,
+	rule_set: RuleSet,
 	map: PackedByteArray,
 	found: Dictionary[int, Pattern]
 ) -> void:
-	var classified: Classification = Classifier.classify(reading, rules, map)
+	var classified: Classification = Classifier.classify(reading, rule_set, map)
 	if not classified.is_valid():
 		return
 	var own: int = 0

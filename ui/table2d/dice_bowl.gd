@@ -100,10 +100,10 @@ static func lift_seconds() -> float:
 ## Drops the bowl in and throws one die per seat, each to settle on its face. names are
 ## the seats' names for the tags. Returns the seconds until the dice have settled and
 ## the audited ones have hopped.
-func roll(seats: Array[int], faces: Array[int], audit_faces: int, names: Array[String]) -> float:
+func roll(seats: Array[int], rolled: Array[int], audit_faces: int, names: Array[String]) -> float:
 	dismiss()
 	_seats = seats.duplicate()
-	_faces = faces.duplicate()
+	_faces = rolled.duplicate()
 	_names = names.duplicate()
 	_audit_faces = audit_faces
 	visible = true

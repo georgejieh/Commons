@@ -26,10 +26,10 @@ static func of(definition: ModifierDef, memo: CadreMemo) -> CadreStanding:
 ## its plural.
 static func _count(raw: Dictionary[String, Variant], words: Dictionary[String, Variant]) -> String:
 	if raw.has("count"):
-		var count: Variant = raw["count"]
-		if count is String:
-			return count
-		var text: String = String.num(count) if count is float else str(count)
+		var given: Variant = raw["count"]
+		if given is String:
+			return given
+		var text: String = String.num(given) if given is float else str(given)
 		return "+" + text
 	if raw.has("rank"):
 		return TranslationServer.translate("cadre.rank_badge").format({"rank": words["rank"]})

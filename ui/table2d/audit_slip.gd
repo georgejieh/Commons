@@ -30,14 +30,14 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 10)
 	box.add_child(ScreenKit.styled(tr("audit.title"), CommonsTheme.TITLE))
 	for _index: int in ROWS:
-		var claim: Label = ScreenKit.label("", 24)
-		claim.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var claim_line: Label = ScreenKit.label("", 24)
+		claim_line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var paid: Label = ScreenKit.label("", 26, ScreenKit.COUPON)
 		# A wrapping label in a row shrinks to one letter a line.
-		claim.autowrap_mode = TextServer.AUTOWRAP_OFF
+		claim_line.autowrap_mode = TextServer.AUTOWRAP_OFF
 		paid.autowrap_mode = TextServer.AUTOWRAP_OFF
 		var top: HBoxContainer = HBoxContainer.new()
-		top.add_child(claim)
+		top.add_child(claim_line)
 		top.add_child(paid)
 		var seal: Panel = Panel.new()
 		seal.custom_minimum_size = Vector2(SEAL, SEAL)
@@ -51,7 +51,7 @@ func _ready() -> void:
 		bottom.add_child(result)
 		box.add_child(top)
 		box.add_child(bottom)
-		_claims.append(claim)
+		_claims.append(claim_line)
 		_paid.append(paid)
 		_seals.append(seal)
 		_results.append(result)

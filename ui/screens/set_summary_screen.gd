@@ -158,12 +158,12 @@ func _way_on(app: DemoApp) -> Button:
 
 ## The seals overhang the bar above and below; the bar stands in a band as tall as the
 ## wider seal, so the figures under it never cover a seal.
-func _seal_room(bar: QuotaBar) -> MarginContainer:
+func _seal_room(quota_bar: QuotaBar) -> MarginContainer:
 	var room: MarginContainer = MarginContainer.new()
 	var overhang: int = ceili((maxf(OVER_WIDTH, SEAL_WIDTH) - BAR.y) / 2.0)
 	room.add_theme_constant_override("margin_bottom", overhang)
 	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	room.add_child(bar)
+	room.add_child(quota_bar)
 	return room
 
 

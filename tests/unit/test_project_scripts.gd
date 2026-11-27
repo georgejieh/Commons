@@ -32,6 +32,7 @@ const ERRORS: Array[String] = [
 	"confusable_local_usage",
 	"confusable_capture_reassignment",
 	"shadowed_global_identifier",
+	"shadowed_variable",
 ]
 
 

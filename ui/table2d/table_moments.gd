@@ -94,18 +94,18 @@ func setup(
 	pile: TrickPile,
 	motion: TableMotion,
 	player: EventPlayer,
-	seats: Dictionary[int, SeatPanel],
-	names: Dictionary[int, String],
+	seat_panels: Dictionary[int, SeatPanel],
+	seat_names: Dictionary[int, String],
 	faces: Dictionary[int, Texture2D]
 ) -> void:
 	_ledger = ledger
 	_pile = pile
 	_motion = motion
 	_player = player
-	_seats = seats
-	_names = names
+	_seats = seat_panels
+	_names = seat_names
 	_faces = faces
-	slip.setup(names)
+	slip.setup(seat_names)
 	pile.landed.connect(_on_cards_landed)
 	sequence.pile = pile
 	sequence.hurried.connect(ledger.hurry)
@@ -291,21 +291,21 @@ func _on_rolled(event: RunEvent) -> void:
 	_rolls.append(event)
 	if _rolls.size() < slip.claim_count():
 		return
-	var seats: Array[int] = []
+	var rolled_seats: Array[int] = []
 	var faces: Array[int] = []
-	var names: Array[String] = []
+	var rolled_names: Array[String] = []
 	for roll: RunEvent in _rolls:
-		seats.append(roll.seat)
+		rolled_seats.append(roll.seat)
 		faces.append(roll.value)
-		names.append(_names.get(roll.seat, ""))
+		rolled_names.append(_names.get(roll.seat, ""))
 	var audit_faces: int = roundi(_rolls[0].amount)
 	_rolls.clear()
 	_kill_dice_beat()
-	var seconds: float = dice.roll(seats, faces, audit_faces, names)
+	var seconds: float = dice.roll(rolled_seats, faces, audit_faces, rolled_names)
 	Audio.play(AudioEvents.DICE_ROLL)
 	_dice_beat = create_tween()
 	_dice_beat.tween_interval(seconds)
-	_dice_beat.tween_callback(_mark_unchecked.bind(seats, faces, audit_faces))
+	_dice_beat.tween_callback(_mark_unchecked.bind(rolled_seats, faces, audit_faces))
 	var cut_in: float = Callout.seconds_for(Callout.Tier.CUT_IN)
 	for seat: int in dice.audited_seats():
 		_dice_beat.tween_callback(_call_audit.bind(seat))
@@ -316,10 +316,10 @@ func _on_rolled(event: RunEvent) -> void:
 	_player.hold(seconds + DiceBowl.lift_seconds())
 
 
-func _mark_unchecked(seats: Array[int], faces: Array[int], audit_faces: int) -> void:
-	for index: int in seats.size():
+func _mark_unchecked(rolled_seats: Array[int], faces: Array[int], audit_faces: int) -> void:
+	for index: int in rolled_seats.size():
 		if faces[index] > audit_faces:
-			slip.mark_unchecked(seats[index])
+			slip.mark_unchecked(rolled_seats[index])
 
 
 func _call_audit(seat: int) -> void:

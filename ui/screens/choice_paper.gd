@@ -85,21 +85,21 @@ static func item_for(count: int) -> Vector2:
 ## True when a paper in shelf's open envelope has a caption to print under it: what a
 ## card's mark does, or why an item cannot be kept. Then every paper keeps room for one.
 static func needs_strips(shelf: EnvelopeShelf) -> bool:
-	for index: int in shelf.count():
-		var kind: int = shelf.kind(index)
+	for place: int in shelf.count():
+		var kind: int = shelf.kind(place)
 		var plain: bool = (
 			kind == EnvelopeShelf.KIND_DIRECTIVE or kind == EnvelopeShelf.KIND_CAMPAIGN
 		)
-		if not plain or not shelf.refusal_key(index).is_empty():
+		if not plain or not shelf.refusal_key(place).is_empty():
 			return true
 	return false
 
 
 ## The whole paper's size for an item's place: room to lift, the item and, with strips,
 ## its caption strip.
-static func size_for(item: Vector2, strips: bool = true) -> Vector2:
+static func size_for(place: Vector2, strips: bool = true) -> Vector2:
 	var under: float = GAP + CAPTION_HEIGHT if strips else 0.0
-	return Vector2(item.x, LIFT_ROOM + item.y + under)
+	return Vector2(place.x, LIFT_ROOM + place.y + under)
 
 
 ## Lays the paper out for its place in the row; strips keeps room under the item for a
