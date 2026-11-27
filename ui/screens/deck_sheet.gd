@@ -25,14 +25,17 @@ const LEGEND_SIZE: int = 18
 ## The stamp that marks a card as the player's, beside the enhancements in the legend.
 const STAMP: String = "stamp"
 
+## The key to the marks on the cards.
+var legend: HBoxContainer = HBoxContainer.new()
+## The scroll the deck's cards stand in.
+var scroll: ScrollContainer = ScrollContainer.new()
+## The sheet's heading.
+var title_label: Label = ScreenKit.styled("", CommonsTheme.TITLE)
 var _controller: RunController = null
 var _choice: DeckChoice = null
 var _board: DeckBoard = DeckBoard.new()
-var _scroll: ScrollContainer = ScrollContainer.new()
 var _paper: PanelContainer = PanelContainer.new()
 var _eyebrow: Label = ScreenKit.eyebrow("")
-var _title: Label = ScreenKit.styled("", CommonsTheme.TITLE)
-var _legend: HBoxContainer = HBoxContainer.new()
 var _status: Label = ScreenKit.label("", RULE_SIZE)
 var _confirm: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 var _back: Button = ScreenKit.button("", CommonsTheme.SECONDARY)
@@ -61,19 +64,19 @@ func _ready() -> void:
 	var titles: VBoxContainer = VBoxContainer.new()
 	titles.add_theme_constant_override("separation", 0)
 	titles.add_child(_eyebrow)
-	titles.add_child(_title)
+	titles.add_child(title_label)
 	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_legend.add_theme_constant_override("separation", 18)
-	_legend.size_flags_vertical = Control.SIZE_SHRINK_END
+	legend.add_theme_constant_override("separation", 18)
+	legend.size_flags_vertical = Control.SIZE_SHRINK_END
 	_incoming = CARD_SCENE.instantiate()
 	_incoming.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_incoming.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	column.add_child(ScreenKit.row([_incoming, titles, _legend]))
-	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.add_child(_board)
-	column.add_child(_scroll)
-	ScrollFade.over(_scroll)
+	column.add_child(ScreenKit.row([_incoming, titles, legend]))
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.add_child(_board)
+	column.add_child(scroll)
+	ScrollFade.over(scroll)
 	_status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var buttons: HBoxContainer = ScreenKit.row([_confirm, _back])
 	column.add_child(ScreenKit.row([_status, buttons]))
@@ -130,7 +133,7 @@ func incoming_view() -> CardView:
 func open_deck() -> void:
 	_choice = null
 	_eyebrow.text = tr("deck.eyebrow")
-	_title.text = tr("deck.title")
+	title_label.text = tr("deck.title")
 	_open(false)
 
 
@@ -139,7 +142,7 @@ func open_deck() -> void:
 func open_choice(choice: DeckChoice) -> void:
 	_choice = choice
 	_eyebrow.text = choice.eyebrow()
-	_title.text = choice.title()
+	title_label.text = choice.title()
 	_open(true)
 
 
@@ -177,7 +180,7 @@ func _open(choosing: bool) -> void:
 func _room() -> Vector2:
 	var inside: Vector2 = get_viewport_rect().size - Vector2.ONE * (MARGIN + PADDING) * 2.0
 	var header: float = (
-		_title.get_combined_minimum_size().y + _eyebrow.get_combined_minimum_size().y
+		title_label.get_combined_minimum_size().y + _eyebrow.get_combined_minimum_size().y
 	)
 	if _incoming.visible:
 		header = maxf(header, _incoming.get_combined_minimum_size().y)
@@ -193,7 +196,7 @@ func _fit() -> void:
 ## One entry for each mark the deck or the plot holds now: its drawn mark, its name and
 ## how many cards carry it.
 func _show_legend(cards: Array[CardInstance]) -> void:
-	ScreenKit.clear(_legend)
+	ScreenKit.clear(legend)
 	var counts: Dictionary[String, int] = {}
 	for card: CardInstance in cards:
 		if card.owner_stamp() == Seats.PLAYER:
@@ -201,11 +204,11 @@ func _show_legend(cards: Array[CardInstance]) -> void:
 		if CardMark.draws(card.enhancement_id()):
 			counts[card.enhancement_id()] = counts.get(card.enhancement_id(), 0) + 1
 	if counts.is_empty():
-		_legend.add_child(ScreenKit.label(tr("deck.legend.none"), LEGEND_SIZE))
+		legend.add_child(ScreenKit.label(tr("deck.legend.none"), LEGEND_SIZE))
 		return
 	for mark: String in [STAMP] + CardInstance.ENHANCEMENTS:
 		if counts.has(mark):
-			_legend.add_child(_legend_entry(mark, counts[mark]))
+			legend.add_child(_legend_entry(mark, counts[mark]))
 
 
 func _legend_entry(mark: String, count: int) -> Control:

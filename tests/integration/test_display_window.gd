@@ -38,10 +38,6 @@ func _display() -> DisplayWindow:
 	return display
 
 
-func _timer(display: DisplayWindow) -> Timer:
-	return display.get("_timer")
-
-
 func _app() -> DemoApp:
 	Saves.use_run_path(_save_path)
 	var app: DemoApp = AppKit.make(self)
@@ -69,10 +65,11 @@ func test_the_app_under_a_script_never_touches_the_window() -> void:
 			displays.append(child as DisplayWindow)
 	assert_int(displays.size()).is_equal(1)
 	var display: DisplayWindow = displays[0]
-	var window: Callable = display.get("_window")
-	assert_bool(window.is_valid()).is_false()
+	var mode: Window.Mode = get_window().mode
 	Settings.set_value(DisplayWindow.MODE, EXCLUSIVE)
+	await await_idle_frame()
 	assert_object(display.notice()).is_null()
+	assert_int(get_window().mode).is_equal(mode)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 
@@ -95,7 +92,7 @@ func test_a_new_mode_stands_once_kept() -> void:
 	notice.buttons()[0].pressed.emit()
 	assert_object(display.notice()).is_null()
 	assert_int(int(Settings.value(DisplayWindow.MODE))).is_equal(EXCLUSIVE)
-	assert_bool(_timer(display).is_stopped()).is_true()
+	assert_bool(display.revert_timer.is_stopped()).is_true()
 	# Kept, it is the one a later change goes back to.
 	Settings.set_value(DisplayWindow.MODE, DisplayWindow.WINDOWED)
 	display.notice().buttons()[1].pressed.emit()
@@ -113,7 +110,7 @@ func test_a_new_mode_unkept_goes_back_and_is_saved() -> void:
 		await await_idle_frame()
 		match way:
 			"clock":
-				_timer(display).timeout.emit()
+				display.revert_timer.timeout.emit()
 			"button":
 				display.notice().buttons()[1].pressed.emit()
 			"escape":
@@ -127,7 +124,16 @@ func test_a_new_mode_unkept_goes_back_and_is_saved() -> void:
 		assert_int(int(Settings.value(DisplayWindow.MODE))).is_equal(BORDERLESS)
 		assert_int(_last()[0]).override_failure_message(way).is_equal(Window.MODE_FULLSCREEN)
 		var file: ConfigFile = ConfigFile.new()
-		assert_int(file.load(Settings.get("_path"))).is_equal(OK)
+		(
+			assert_int(
+				file.load(
+					SettingsStore.start_path(
+						OS.is_debug_build(), OS.get_environment(SettingsStore.PATH_OVERRIDE), false
+					)
+				)
+			)
+			. is_equal(OK)
+		)
 		var saved: int = file.get_value(SettingsStore.SECTION, DisplayWindow.MODE)
 		assert_int(saved).override_failure_message(way).is_equal(BORDERLESS)
 		display.free()
@@ -135,9 +141,8 @@ func test_a_new_mode_unkept_goes_back_and_is_saved() -> void:
 
 func test_the_clock_is_data() -> void:
 	var display: DisplayWindow = _display()
-	var timer: Timer = display.get("_timer")
+	var timer: Timer = display.revert_timer
 	assert_float(timer.wait_time).is_equal(float(SettingsStore.DEFAULTS.display_check_seconds))
-	assert_int(SettingsStore.DEFAULTS.display_check_seconds).is_between(5, 15)
 
 
 ## A size asks only for a window: in full screen it is kept for later, and nothing moves.

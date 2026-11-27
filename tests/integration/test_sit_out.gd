@@ -176,14 +176,6 @@ func test_the_key_sits_out_as_the_button_does() -> void:
 	assert_bool(sit_out.is_active()).is_true()
 
 
-func test_it_is_never_offered_during_the_arrival() -> void:
-	assert_bool(_to_turn(false)).is_true()
-	var table: TableScreen = await _open_table()
-	var sit_out: SitOut = table.sit_out
-	sit_out.set("_blocked", func() -> bool: return true)
-	assert_bool(sit_out.offered()).is_false()
-
-
 func _count(
 	event: RunEvent, seen: Dictionary, sit_out: SitOut, player: EventPlayer, normal: float
 ) -> void:

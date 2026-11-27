@@ -168,7 +168,7 @@ func test_the_rules_sheet_keeps_a_gap_at_its_scroll_bar() -> void:
 			sheet.toggle(_app.controller)
 			await await_idle_frame()
 			await await_idle_frame()
-			var scroll: ProseScroll = sheet.get("_scroll")
+			var scroll: ProseScroll = sheet.scroll
 			var bar: VScrollBar = scroll.get_v_scroll_bar()
 			if not bar.is_visible_in_tree():
 				continue

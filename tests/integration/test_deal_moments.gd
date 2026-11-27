@@ -52,7 +52,7 @@ func test_set_aside_cards_lie_on_the_pile_and_the_slip_names_them() -> void:
 		assert_str(beats.note_text()).is_equal("" if reduced else said)
 		assert_int(pile.card_count()).is_equal(0 if reduced else 1)
 		strip.show_debuffs(_app.controller)
-		var lines: KeywordText = strip.get("_lines")
+		var lines: KeywordText = strip.lines
 		var slip: String = lines.get_parsed_text()
 		assert_str(slip).contains(tr("table.boss").to_upper())
 		assert_str(slip).contains(tr("modifier.the_handicap.name"))

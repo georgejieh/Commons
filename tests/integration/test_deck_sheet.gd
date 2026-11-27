@@ -72,7 +72,7 @@ func test_the_sheet_shows_every_deck_card_with_its_marks() -> void:
 		assert_int(rank).is_greater_equal(last)
 		last = rank
 	# The legend names at least the stamp, Model and Surplus.
-	var legend: HBoxContainer = sheet.get("_legend")
+	var legend: HBoxContainer = sheet.legend
 	assert_int(legend.get_child_count()).is_greater_equal(3)
 	# A hover names the card's marks in the slip beside it.
 	board.point_at(MODEL_CARD)
@@ -99,7 +99,7 @@ func test_the_sheet_fits_both_screens_at_every_text_size() -> void:
 				. override_failure_message(label)
 				. is_true()
 			)
-			var scroll: ScrollContainer = sheet.get("_scroll")
+			var scroll: ScrollContainer = sheet.scroll
 			var board: DeckBoard = sheet.board()
 			if level == 0:
 				# At Standard the cards fit without scrolling.

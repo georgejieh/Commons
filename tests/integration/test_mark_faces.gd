@@ -26,7 +26,7 @@ func test_each_enhancement_draws_its_own_mark_and_a_card_shows_one() -> void:
 	for enhancement: String in CardInstance.ENHANCEMENTS:
 		view.bind(_card(20, enhancement))
 		assert_str(view.shown_enhancement()).is_equal(enhancement)
-		var badge: CardMark = view.get("_badge")
+		var badge: CardMark = view.badge
 		assert_bool(kinds.has(badge.kind)).is_false()
 		kinds.append(badge.kind)
 		assert_vector(badge.position).is_equal(CardView.ENHANCEMENT_AT)

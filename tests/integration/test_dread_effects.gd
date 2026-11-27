@@ -99,7 +99,7 @@ func test_the_lowest_intensity_shows_none_of_them() -> void:
 	var dressing: DreadDressing = table.dressing
 	var roster: WallRoster = dressing.roster()
 	assert_int(roster.names_left()).is_equal(roster.name_count())
-	var tremble: HandTremble = dread.get("_tremble")
+	var tremble: HandTremble = dread.tremble
 	tremble.step(FRAME, dread.effect_weight(DreadEffects.TREMBLE))
 	var hand: HandView = table.hand_view
 	for view: CardView in hand.views():
@@ -147,7 +147,7 @@ func test_the_hand_trembles_without_moving_a_card() -> void:
 	var table: TableScreen = await _table()
 	var hand: HandView = table.hand_view
 	var dread: DreadLayers = table.dread
-	var tremble: HandTremble = dread.get("_tremble")
+	var tremble: HandTremble = dread.tremble
 	# The fan at rest, its deal over.
 	await await_millis(1500)
 	var rects: Dictionary[int, Rect2] = {}

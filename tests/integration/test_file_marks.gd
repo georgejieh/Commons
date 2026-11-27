@@ -185,7 +185,7 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	assert_str(slip).contains("Famine %d" % FAMINE).contains("Coupons 37")
 	assert_int(int(hud.get_combined_minimum_size().x)).is_less_equal(1920)
 	var books: Rect2 = ledger.books.get_global_rect()
-	var plays: Control = ledger.get("_plays")
+	var plays: Control = ledger.plays
 	assert_bool(books.intersects(plays.get_global_rect())).is_false()
 	var paper: Control = ledger.get_parent()
 	assert_bool(paper.get_global_rect().grow(ClipCheck.SLACK).encloses(books)).is_true()

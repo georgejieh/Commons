@@ -62,8 +62,8 @@ func test_a_reason_every_paper_shares_is_said_once() -> void:
 	for paper: ChoicePaper in overlay.papers():
 		assert_bool(paper.is_takeable()).is_false()
 		assert_str(paper.caption()).is_equal(tr("envelope.refused.short"))
-	var detail: EnvelopeDetail = overlay.get("_detail")
-	var rule: RichTextLabel = detail.get("_rule")
+	var detail: EnvelopeDetail = overlay.detail
+	var rule: RichTextLabel = detail.rule_text
 	assert_str(rule.get_parsed_text()).not_contains(why)
 	overlay.nothing_button().pressed.emit()
 

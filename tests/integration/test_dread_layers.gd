@@ -96,7 +96,7 @@ func test_intensity_zero_is_the_clean_board() -> void:
 	dread.force(90, 90, true)
 	Settings.set_value("horror_intensity", 0.0)
 	dread.apply()
-	var materials: Dictionary[String, ShaderMaterial] = dread.get("_materials")
+	var materials: Dictionary[String, ShaderMaterial] = dread.materials
 	for layer: HorrorLayer in CONFIG.layers:
 		for key: String in layer.shader_params:
 			assert_bool(is_nan(dread.param_value(key))).override_failure_message(key).is_false()
@@ -171,7 +171,7 @@ func _table_dread() -> DreadLayers:
 ## Every label text and card on the table outside the dread dressing, in tree order.
 func _readings(node: Node, dread: DreadLayers) -> PackedStringArray:
 	var found: PackedStringArray = []
-	var dressing: Node = dread.get("_dressing")
+	var dressing: Node = dread.room_dressing
 	if node == dressing:
 		return found
 	var label: Label = node as Label

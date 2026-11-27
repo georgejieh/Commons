@@ -31,13 +31,14 @@ const SEAL_WIDTH: float = 92.0
 ## The text column's width on a death's page, which has no epilogue beside it.
 const DEATH_WIDTH: float = 1180.0
 
+## The ending's heading.
+var heading_row: HBoxContainer
 var _view: EndingView
 ## The run's last state, for how its figures show (ADR 0022).
 var _state: RunView = null
 ## The line under the eyebrow naming the player (ADR 0028).
 var _name: Label
 var _title: Label
-var _heading: HBoxContainer
 ## The title card's frame, the height it stands at when there is room, and the story.
 var _frame: Control
 var _frame_full: float = 0.0
@@ -75,7 +76,7 @@ func open(app: DemoApp) -> void:
 	page.add_child(_buttons(app))
 	ScreenKit.reveal(page)
 	# The title lands like a verdict, in ink.
-	UiMotion.stamp(_heading)
+	UiMotion.stamp(heading_row)
 	_start()
 
 
@@ -161,7 +162,7 @@ func _title_card() -> Control:
 	_title.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	var heading: HBoxContainer = ScreenKit.row([_title], 28)
-	_heading = heading
+	heading_row = heading
 	heading.alignment = BoxContainer.ALIGNMENT_CENTER
 	if HanziSeal.can_draw(_view.seal):
 		heading.add_child(HanziSeal.new(_view.seal, SEAL_WIDTH))

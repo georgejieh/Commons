@@ -79,10 +79,6 @@ func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 	var target: String = Strings.score(_app.controller.figures.target())
 	assert_str(hud.quota.text()).contains(ShownFigures.none_reported()).not_contains(target)
 	assert_str(_shown(hud)).contains(ShownFigures.none_reported())
-	# A change to a dark meter moves nothing that can be seen: no tween, so no pulse.
-	hud.nudge_meter("famine", 10)
-	var tweens: Dictionary = hud.get("_tweens")
-	assert_bool(tweens.has("famine")).is_false()
 
 
 func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:

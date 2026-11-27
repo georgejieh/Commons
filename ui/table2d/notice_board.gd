@@ -25,8 +25,9 @@ const EMPTY_HALO: int = 5
 ## Printed across the slots while no Cadre is held; empty for none, as at the table.
 var empty_line: String = ""
 
+## The papers pinned on the board, one for each held Cadre, in slot order.
+var cards: Array[TipHost] = []
 var _pictures: Array[TextureRect] = []
-var _cards: Array[TipHost] = []
 var _badges: Array[CadreBadge] = []
 var _marks: Array[ConfiscatedMark] = []
 var _ids: Array[String] = []
@@ -53,7 +54,7 @@ func tile_size(slots: int) -> Vector2:
 
 ## Adds slots up to the count, and sizes every card for it.
 func _grow(slots: int) -> void:
-	while _cards.size() < slots:
+	while cards.size() < slots:
 		var card: TipHost = TipHost.new()
 		card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		card.add_theme_stylebox_override("panel", ScreenKit.paper_style(6))
@@ -68,28 +69,28 @@ func _grow(slots: int) -> void:
 		card.add_child(mark)
 		_marks.append(mark)
 		add_child(card)
-		_cards.append(card)
+		cards.append(card)
 		_pictures.append(picture)
 		_badges.append(badge)
-	for card: TipHost in _cards:
-		card.custom_minimum_size = tile_size(_cards.size())
+	for card: TipHost in cards:
+		card.custom_minimum_size = tile_size(cards.size())
 
 
 ## How many slots the board has.
 func slot_count() -> int:
-	return _cards.size()
+	return cards.size()
 
 
 ## Where a slot's card sits on screen, its middle.
 func slot_center(index: int) -> Vector2:
-	var card: TipHost = _cards[clampi(index, 0, _cards.size() - 1)]
+	var card: TipHost = cards[clampi(index, 0, cards.size() - 1)]
 	return card.global_position + card.size / 2.0
 
 
 ## Swells a slot's card, as when a Cadre is pinned to it.
 func pulse_slot(index: int) -> void:
-	if index >= 0 and index < _cards.size():
-		UiMotion.pulse(_cards[index])
+	if index >= 0 and index < cards.size():
+		UiMotion.pulse(cards[index])
 
 
 ## A held Cadre fired: its card swells, and its count shows what it is now, or what it
@@ -110,7 +111,7 @@ func jiggle(controller: RunController, cadre_id: String, seconds: float) -> Rect
 	var index: int = _ids.find(cadre_id)
 	if index < 0 or not is_visible_in_tree():
 		return Rect2()
-	var card: TipHost = _cards[index]
+	var card: TipHost = cards[index]
 	var count: String = controller.items.cadre_standing(cadre_id).count
 	if not count.is_empty():
 		_badges[index].show_count(count)
@@ -149,10 +150,10 @@ func show_cadres(controller: RunController) -> void:
 	var cadre_ids: Array[String] = controller.run.held_cadres()
 	var confiscated: Array[String] = controller.items.confiscated_cadres()
 	_ids = cadre_ids
-	for index: int in _cards.size():
+	for index: int in cards.size():
 		var held: bool = index < cadre_ids.size()
 		# An empty slot is a faint pin mark on the board, so it doesn't pull the eye.
-		_cards[index].modulate.a = 1.0 if held else EMPTY_ALPHA
+		cards[index].modulate.a = 1.0 if held else EMPTY_ALPHA
 		var struck: bool = held and confiscated.has(cadre_ids[index])
 		if struck and not _marks[index].visible:
 			_marks[index].strike(false)
@@ -162,9 +163,9 @@ func show_cadres(controller: RunController) -> void:
 			var rule: String = ScreenKit.rule_text(controller, cadre_ids[index])
 			if struck:
 				rule = tr("table.confiscated_tip") + " " + rule
-			_cards[index].set_tip(name, rule)
+			cards[index].set_tip(name, rule)
 		else:
-			_cards[index].set_tip("", "")
+			cards[index].set_tip("", "")
 		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null
 		var bare: bool = held and not ScreenKit.ART.has_cadre(cadre_ids[index])
 		_badges[index].show_name(tr("modifier.%s.name" % cadre_ids[index]) if bare else "")

@@ -24,8 +24,12 @@ const DEFAULT_BREATHE: float = 0.05
 var config: HorrorConfig = CONFIG
 var board: BoardState
 
-var _materials: Dictionary[String, ShaderMaterial] = {}
-var _dressing: DreadDressing
+## The tremble of the player's hand.
+var tremble: HandTremble = null
+## The shader materials the layers drive, by slot.
+var materials: Dictionary[String, ShaderMaterial] = {}
+## The set dressing drawn over the room.
+var room_dressing: DreadDressing
 var _seats: Array[SeatPanel] = []
 ## One entry per distinct material parameter.
 var _param_material: Array[ShaderMaterial] = []
@@ -50,7 +54,6 @@ var _piece_layers: Array[PackedInt32Array] = []
 ## Per slow effect, in DreadEffects.NAMES order, its weight this frame and its layers.
 var _effect_weight: PackedFloat32Array = []
 var _effect_layers: Array[PackedInt32Array] = []
-var _tremble: HandTremble = null
 var _flicker_wait: PackedFloat32Array = []
 var _flicker_seat: int = 0
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -62,21 +65,21 @@ var _slot_clean: Dictionary[String, Texture2D] = {}
 
 
 func setup(
-	materials: Dictionary[String, ShaderMaterial],
+	slot_materials: Dictionary[String, ShaderMaterial],
 	dressing: DreadDressing,
 	seats: Array[SeatPanel],
 	slots: Dictionary[String, TextureRect] = {},
 	hand: HandView = null
 ) -> void:
 	board = BoardState.new(config)
-	_tremble = null if hand == null else HandTremble.new(hand, config.effect_tuning)
-	_materials = materials
+	tremble = null if hand == null else HandTremble.new(hand, config.effect_tuning)
+	materials = slot_materials
 	_slots = slots
 	for slot: String in slots:
 		_slot_clean[slot] = ArtStages.base_of(Lighting.diffuse(slots[slot].texture))
 		slots[slot].light_mask = Lighting.MASK
 		slots[slot].texture = Lighting.lit(Lighting.diffuse(slots[slot].texture))
-	_dressing = dressing
+	room_dressing = dressing
 	_seats = seats
 	_rng.seed = FLICKER_SEED
 	_bind_params()
@@ -164,22 +167,22 @@ func _write(intensity: float, no_flash: bool) -> void:
 		for layer: int in _piece_layers[index]:
 			weight = maxf(weight, board.shown(layer, intensity))
 		_piece_weight[index] = weight
-		_dressing.show_piece(_piece_ids[index], weight)
+		room_dressing.show_piece(_piece_ids[index], weight)
 	for index: int in _effect_layers.size():
 		var weight: float = 0.0
 		for layer: int in _effect_layers[index]:
 			weight = maxf(weight, board.shown(layer, intensity))
 		_effect_weight[index] = weight
 	BackEyes.show_weight(effect_weight(DreadEffects.EYES), get_tree() if is_inside_tree() else null)
-	_dressing.roster().show_weight(effect_weight(DreadEffects.ROSTER), config.effect_tuning)
+	room_dressing.roster().show_weight(effect_weight(DreadEffects.ROSTER), config.effect_tuning)
 	_apply_swaps(intensity)
 	Audio.music.follow(board, config.layers, intensity)
 	Audio.voice.follow(board, config.layers, intensity)
 	Audio.ambience.follow(board, config.layers, intensity)
 	var breathe: float = NO_FLASH_BREATHE if no_flash else _breathe
-	if _materials.has("lamp") and breathe != _breathe_written:
+	if materials.has("lamp") and breathe != _breathe_written:
 		_breathe_written = breathe
-		_materials["lamp"].set_shader_parameter("breathe", breathe)
+		materials["lamp"].set_shader_parameter("breathe", breathe)
 
 
 ## Puts every parameter back to its clean value, as when leaving the table.
@@ -188,8 +191,8 @@ func clear() -> void:
 		_param_material[index].set_shader_parameter(_param_name[index], _param_clean[index])
 		_param_written[index] = _param_clean[index]
 	BackEyes.show_weight(0.0, null)
-	if _tremble != null:
-		_tremble.still()
+	if tremble != null:
+		tremble.still()
 	Audio.music.relax()
 	Audio.voice.reset()
 	Audio.ambience.silence()
@@ -245,8 +248,8 @@ func _process(delta: float) -> void:
 	var no_flash: bool = bool(Settings.value(NO_FLASH_SETTING))
 	_write(intensity, no_flash)
 	_tick(delta, intensity, no_flash)
-	if _tremble != null:
-		_tremble.step(delta, effect_weight(DreadEffects.TREMBLE))
+	if tremble != null:
+		tremble.step(delta, effect_weight(DreadEffects.TREMBLE))
 
 
 func _tick(delta: float, intensity: float, no_flash: bool) -> void:
@@ -268,7 +271,7 @@ func _fire(flicker: FlickerDef) -> void:
 				_flicker_seat = (_flicker_seat + 1) % _seats.size()
 				_seats[_flicker_seat].blink(flicker.duration)
 		"extra_chair":
-			_dressing.flash_piece("extra_chair", flicker.duration)
+			room_dressing.flash_piece("extra_chair", flicker.duration)
 	flickered.emit(flicker.kind)
 
 
@@ -282,14 +285,14 @@ func _bind_params() -> void:
 		var layer: HorrorLayer = config.layers[layer_index]
 		for key: String in layer.shader_params:
 			var target: String = key.get_slice(":", 0)
-			if not _materials.has(target):
+			if not materials.has(target):
 				continue
 			var range_values: Vector2 = layer.shader_params[key]
 			var param: int = keys.find(key)
 			if param < 0:
 				param = keys.size()
 				keys.append(key)
-				_param_material.append(_materials[target])
+				_param_material.append(materials[target])
 				_param_name.append(StringName(key.get_slice(":", 1)))
 				_param_clean.append(range_values.x)
 				_param_value.append(range_values.x)
@@ -330,8 +333,8 @@ func _bind_effects() -> void:
 
 
 func _key(index: int) -> String:
-	for target: String in _materials:
-		if _materials[target] == _param_material[index]:
+	for target: String in materials:
+		if materials[target] == _param_material[index]:
 			return "%s:%s" % [target, _param_name[index]]
 	return ""
 

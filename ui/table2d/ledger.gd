@@ -19,6 +19,8 @@ const ROW_WIDTH: float = 270.0
 ## The household's small ledger, at the panel's foot at the stage past the last.
 var books: SmallLedger = SmallLedger.new()
 
+## The round's plays, a line each.
+var plays: KeywordText = KeywordText.new()
 var _pending_type: String = ""
 var _names: Dictionary[int, String] = {}
 var _totals: PackedFloat64Array = PackedFloat64Array()
@@ -30,7 +32,6 @@ var _commons_head: HBoxContainer = HBoxContainer.new()
 var _pool: Label = Label.new()
 var _rule: HSeparator = HSeparator.new()
 var _plays_head: Label = Label.new()
-var _plays: KeywordText = KeywordText.new()
 var _texts: PackedStringArray = []
 var _counting: Tween = null
 ## The room that keeps the household's small ledger at the panel's foot.
@@ -89,16 +90,16 @@ func _add_rows() -> void:
 
 ## The round's plays, newest last, in typewriter.
 func _add_plays() -> void:
-	_plays.bbcode_enabled = true
-	_plays.fit_content = true
-	_plays.scroll_active = false
-	_plays.custom_minimum_size = Vector2(ROW_WIDTH, 0)
-	_plays.add_theme_font_override("normal_font", ScreenKit.TYPEWRITER)
-	_plays.add_theme_font_override("bold_font", ScreenKit.TYPEWRITER_BOLD)
-	_plays.add_theme_font_size_override("normal_font_size", TextSize.px(18))
-	_plays.add_theme_font_size_override("bold_font_size", TextSize.px(18))
-	_plays.add_theme_color_override("default_color", ScreenKit.INK)
-	add_child(_plays)
+	plays.bbcode_enabled = true
+	plays.fit_content = true
+	plays.scroll_active = false
+	plays.custom_minimum_size = Vector2(ROW_WIDTH, 0)
+	plays.add_theme_font_override("normal_font", ScreenKit.TYPEWRITER)
+	plays.add_theme_font_override("bold_font", ScreenKit.TYPEWRITER_BOLD)
+	plays.add_theme_font_size_override("normal_font_size", TextSize.px(18))
+	plays.add_theme_font_size_override("bold_font_size", TextSize.px(18))
+	plays.add_theme_color_override("default_color", ScreenKit.INK)
+	add_child(plays)
 
 
 ## The small ledger's figures from a copy of the run, shown only at the stage past the
@@ -246,7 +247,7 @@ func _show() -> void:
 	_pool.text = Strings.score(pool())
 	_plays_head.visible = not _texts.is_empty()
 	_rule.visible = not _texts.is_empty()
-	_plays.text = "\n".join(_texts)
+	plays.text = "\n".join(_texts)
 
 
 func _as_head(label: Label, key: String) -> void:

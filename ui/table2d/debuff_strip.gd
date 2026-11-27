@@ -36,7 +36,8 @@ var room: float = INF
 ## Whether the slip may count its rules when naming them does not fit.
 var allow_count: bool = true
 
-var _lines: KeywordText = KeywordText.new()
+## The rules in force, as the slip prints them.
+var lines: KeywordText = KeywordText.new()
 var _form: Form = Form.FULL
 ## The rules in force by group, as the slip lists them: the debuffs, the boss, the table's
 ## rules.
@@ -49,14 +50,14 @@ var _groups: Array[RuleGroup] = [_yours, _boss, _reforms]
 func _init() -> void:
 	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_lines.bbcode_enabled = true
-	_lines.fit_content = true
-	_lines.scroll_active = false
-	_lines.mouse_filter = Control.MOUSE_FILTER_PASS
+	lines.bbcode_enabled = true
+	lines.fit_content = true
+	lines.scroll_active = false
+	lines.mouse_filter = Control.MOUSE_FILTER_PASS
 	_set_type(TextSize.px(FONT_SIZE))
-	_lines.add_theme_font_override("bold_font", ScreenKit.DISPLAY_BOLD)
-	_lines.add_theme_color_override("default_color", ScreenKit.INK)
-	add_child(_lines)
+	lines.add_theme_font_override("bold_font", ScreenKit.DISPLAY_BOLD)
+	lines.add_theme_color_override("default_color", ScreenKit.INK)
+	add_child(lines)
 	visible = false
 
 
@@ -81,25 +82,25 @@ func show_debuffs(controller: RunController) -> void:
 func refit() -> void:
 	_form = Form.FULL
 	_set_type(TextSize.px(FONT_SIZE))
-	_lines.text = _full()
-	visible = not _lines.text.is_empty()
+	lines.text = _full()
+	visible = not lines.text.is_empty()
 	if not visible:
 		size = Vector2(size.x, 0.0)
 		return
 	if _measure() > room and _named_count() > 0:
-		_lines.text = _by_name()
+		lines.text = _by_name()
 		_form = Form.NAMED
 		if _measure() > room:
 			_form = Form.FITTED
 			_fit_type()
 		if _measure() > room and allow_count:
 			_set_type(TextSize.px(FONT_SIZE))
-			_lines.text = _counted()
+			lines.text = _counted()
 			_form = Form.COUNTED
 			_fit_type()
 	# The lines' cached minimum can still be the full form's; thrown out by hand, and the
 	# paper sorted again, so the lines' box never stands taller than the slip.
-	_lines.update_minimum_size()
+	lines.update_minimum_size()
 	update_minimum_size()
 	size = Vector2(size.x, _measure() if visible else 0.0)
 	queue_sort()
@@ -220,15 +221,15 @@ func _row(name: String, text: String) -> String:
 
 func _set_type(font_size: int) -> void:
 	var type_px: int = maxi(font_size, TextSize.least(FONT_SIZE))
-	_lines.add_theme_font_size_override("normal_font_size", type_px)
-	_lines.add_theme_font_size_override("bold_font_size", type_px)
+	lines.add_theme_font_size_override("normal_font_size", type_px)
+	lines.add_theme_font_size_override("bold_font_size", type_px)
 
 
 ## How tall the slip stands with its text at its width, paper included.
 func _measure() -> float:
 	var edges: Vector2 = get_theme_stylebox("panel").get_minimum_size()
-	_lines.size = Vector2(maxf(size.x - edges.x, 1.0), _lines.size.y)
-	return _lines.get_content_height() + edges.y
+	lines.size = Vector2(maxf(size.x - edges.x, 1.0), lines.size.y)
+	return lines.get_content_height() + edges.y
 
 
 ## Strikes the lifted debuff off the strip now, pressed like ink when animate is set.
@@ -245,12 +246,12 @@ func standing() -> float:
 
 ## The type the rules are set in now.
 func type_size() -> int:
-	return _lines.get_theme_font_size("normal_font_size")
+	return lines.get_theme_font_size("normal_font_size")
 
 
 ## The plain text shown, for tests.
 func shown_text() -> String:
-	return _lines.get_parsed_text() if visible else ""
+	return lines.get_parsed_text() if visible else ""
 
 
 ## One rule on the slip: its name and text as BBCode, and whether Appeal lifted it.

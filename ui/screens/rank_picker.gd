@@ -20,9 +20,11 @@ const MARGIN: float = 16.0
 ## The question, at Standard.
 const PROMPT_SIZE: int = 24
 
-var _prompt: Label = ScreenKit.label("", PROMPT_SIZE)
+## Puts the question away without choosing.
+var cancel_button: Button = ScreenKit.button("", CommonsTheme.GHOST)
+## The question the picker asks.
+var prompt_label: Label = ScreenKit.label("", PROMPT_SIZE)
 var _chips: Array[RankChip] = []
-var _cancel: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _then: Callable = Callable()
 ## Made the first time the strip opens, and kept on the page from then on.
 var _scrim: Scrim = null
@@ -38,10 +40,10 @@ func _ready() -> void:
 	z_index = ScreenKit.LAYER_OVER
 	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
 	# One line: a wrapping prompt is measured at no width, which makes the strip tall.
-	_prompt.autowrap_mode = TextServer.AUTOWRAP_OFF
+	prompt_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", SPACING)
-	column.add_child(_prompt)
+	column.add_child(prompt_label)
 	var strip: HBoxContainer = HBoxContainer.new()
 	strip.add_theme_constant_override("separation", 6)
 	for rank: int in range(FIRST, LAST + 1):
@@ -54,17 +56,17 @@ func _ready() -> void:
 	room.add_theme_constant_override("margin_top", ceili(RankChip.LIFT))
 	room.add_child(strip)
 	column.add_child(room)
-	_cancel.text = tr("store.pick_cancel")
-	_cancel.pressed.connect(close)
-	_cancel.size_flags_horizontal = Control.SIZE_SHRINK_END
-	column.add_child(_cancel)
+	cancel_button.text = tr("store.pick_cancel")
+	cancel_button.pressed.connect(close)
+	cancel_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	column.add_child(cancel_button)
 	add_child(column)
 	_trap_focus()
 
 
 ## Opens beside the card it asks about, asking for the rank then waits on.
 func ask(prompt: String, about: Control, then: Callable) -> void:
-	_prompt.text = prompt
+	prompt_label.text = prompt
 	_then = then
 	_was_focused = get_viewport().gui_get_focus_owner()
 	visible = true
@@ -163,10 +165,10 @@ func _lift(card: Control) -> void:
 func _trap_focus() -> void:
 	for chip: RankChip in _chips:
 		chip.focus_neighbor_top = chip.get_path_to(chip)
-		chip.focus_neighbor_bottom = chip.get_path_to(_cancel)
+		chip.focus_neighbor_bottom = chip.get_path_to(cancel_button)
 	_chips[0].focus_neighbor_left = _chips[0].get_path_to(_chips[0])
 	_chips[-1].focus_neighbor_right = _chips[-1].get_path_to(_chips[-1])
-	_cancel.focus_neighbor_top = _cancel.get_path_to(_chips[0])
-	_cancel.focus_neighbor_bottom = _cancel.get_path_to(_cancel)
-	_cancel.focus_neighbor_left = _cancel.get_path_to(_chips[-1])
-	_cancel.focus_neighbor_right = _cancel.get_path_to(_cancel)
+	cancel_button.focus_neighbor_top = cancel_button.get_path_to(_chips[0])
+	cancel_button.focus_neighbor_bottom = cancel_button.get_path_to(cancel_button)
+	cancel_button.focus_neighbor_left = cancel_button.get_path_to(_chips[-1])
+	cancel_button.focus_neighbor_right = cancel_button.get_path_to(cancel_button)

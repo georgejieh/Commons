@@ -201,8 +201,8 @@ func test_the_ribbon_keeps_clear_of_the_index_and_every_mark_in_the_narrowest_fa
 		var ribbon: Rect2 = view.ribbon_rect()
 		var parts: Array[Control] = [
 			view.get_node("Frame/Suit"),
-			view.get("_chop"),
-			view.get("_badge"),
+			view.chop,
+			view.badge,
 		]
 		if not note.is_empty():
 			parts.append(view.get_node("Frame/RankNote"))
@@ -367,7 +367,7 @@ func test_the_rules_sheet_explains_wild_ranks_only_while_one_is_wild() -> void:
 	sheet.toggle(_app.controller)
 	await await_idle_frame()
 	assert_str(sheet.wild_text()).contains(tr("cheat.wild.order.big"))
-	var active: Label = sheet.get("_active")
+	var active: Label = sheet.active_rules
 	assert_str(active.text).contains(tr("reform.industrialization.name"))
 	var screen: Rect2 = Rect2(Vector2.ZERO, Vector2(SCREEN))
 	var inside: bool = screen.encloses(sheet.sheet_rect())

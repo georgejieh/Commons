@@ -178,7 +178,7 @@ func test_the_set_summarys_seals_stay_on_the_paper() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
 		var screen: SetSummaryScreen = await _show("set_summary")
-		var met: InkSeal = screen.bar().get("_seal")
+		var met: InkSeal = screen.bar().seal
 		var over: InkSeal = screen.over_seal()
 		var paper: Rect2 = _drawn(_sheet_of(screen)).grow(-SheetPad.RULE)
 		var over_rect: Rect2 = over.get_global_rect().grow(over.size.x * 0.05)

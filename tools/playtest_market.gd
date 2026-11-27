@@ -103,7 +103,7 @@ func _picker_frames(picker: Object) -> void:
 		var seven: Control = chips[Ranks.SEVEN]
 		seven.grab_focus()
 		await _snap("black_market_rank_focus")
-	await _press(member(picker, "_cancel"))
+	await _press(member(picker, "cancel_button"))
 
 
 ## Cadres that show counts on the notice board, each with a count to show.

@@ -34,12 +34,12 @@ const BEAT: float = 0.18
 const FATE_SIZE: int = 22
 const LINE_SIZE: int = 26
 
+## What is counted in once the bar is sealed: tiles, then the line saying what it means.
+var after: Array[Control] = []
 var _bar: QuotaBar = QuotaBar.new()
 var _met: bool = false
 var _over: InkSeal = InkSeal.new()
 var _steps: int = 0
-## What is counted in once the bar is sealed: tiles, then the line saying what it means.
-var _after: Array[Control] = []
 ## Coupons The Bookkeeper paid at this Quota's end.
 var _kept: int = 0
 ## The families the Quota's end took, faded in last with no pulse: a quiet beat.
@@ -69,7 +69,7 @@ func open(app: DemoApp) -> void:
 	sheet.add_child(_seal_room(_quota_bar(controller, state)))
 	for piece: Control in _results(controller, state):
 		sheet.add_child(piece)
-		_after.append(piece)
+		after.append(piece)
 	for fate: Label in _fates(controller):
 		sheet.add_child(fate)
 		_quiet.append(fate)
@@ -81,7 +81,7 @@ func open(app: DemoApp) -> void:
 	if UiMotion.reduced():
 		_bar.fill_to(state.set_progress(), 0.0)
 		return
-	for piece: Control in _after + _quiet:
+	for piece: Control in after + _quiet:
 		piece.modulate.a = 0.0
 	_bar.fill_to(state.set_progress(), FILL, START)
 
@@ -284,7 +284,7 @@ func _on_filled() -> void:
 	if _steps > 0:
 		tween.tween_interval(BEAT)
 		tween.tween_callback(_over.press)
-	for piece: Control in _after:
+	for piece: Control in after:
 		tween.tween_interval(BEAT)
 		tween.tween_property(piece, "modulate:a", 1.0, BEAT)
 		tween.parallel().tween_callback(UiMotion.pulse.bind(piece))

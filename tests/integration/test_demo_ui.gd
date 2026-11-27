@@ -83,7 +83,7 @@ func test_the_table_plays_a_set_to_its_summary() -> void:
 	assert_str(report.bar().seal_word()).is_equal(word)
 	# Then what it paid or cost is counted in.
 	await await_millis(int(SetSummaryScreen.BEAT * 4000.0) + 300)
-	var after: Array[Control] = report.get("_after")
+	var after: Array[Control] = report.after
 	for piece: Control in after:
 		assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
 
@@ -279,7 +279,7 @@ func test_an_overfulfilled_quota_is_sealed_twice_and_counts_the_bonus() -> void:
 		assert_str(report.bar().seal_word()).is_equal(tr("table.quota_met").to_upper())
 		assert_str(report.over_seal_word()).is_equal(tr("summary.over").to_upper())
 		await await_millis(int(SetSummaryScreen.BEAT * 6000.0) + 600)
-		var after: Array[Control] = report.get("_after")
+		var after: Array[Control] = report.after
 		assert_int(after.size()).is_equal(3)
 		var bonus: int = steps * SetConfig.DEFAULT_PARAMS.over_bonus_coupons
 		assert_int(_app.controller.figures.over_bonus()).is_equal(bonus)

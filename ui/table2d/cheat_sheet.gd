@@ -19,11 +19,14 @@ const WILD_SPACING: int = 8
 ## The least room kept clear above and below the sheet, in pixels.
 const MARGIN: float = 12.0
 
+## The rules in force this round, under the hand types.
+var active_rules: Label = Label.new()
+## The scroll the rules stand in.
+var scroll: ProseScroll
 var _controller: RunController
 var _types: GridContainer = GridContainer.new()
 ## Each hand type's Rate, by Pattern.Type.
 var _rates: Dictionary[int, Label] = {}
-var _active: Label = Label.new()
 var _order: Label = Label.new()
 ## Shown only while a rank is wild (ADR 0029): its heading and its rules.
 var _wild_head: Label
@@ -32,7 +35,6 @@ var _wild: Label = Label.new()
 var _body: VBoxContainer = VBoxContainer.new()
 var _close: Button
 var _panel: Control
-var _scroll: ProseScroll
 
 
 func _ready() -> void:
@@ -51,18 +53,18 @@ func _ready() -> void:
 	sheet.add_theme_constant_override("separation", SPACING)
 	sheet.add_child(ScreenKit.header(tr("cheat.eyebrow"), tr("cheat.title"), ScreenKit.INK))
 	_body.add_theme_constant_override("separation", SPACING)
-	_scroll = ProseScroll.new(_body)
-	sheet.add_child(_scroll)
+	scroll = ProseScroll.new(_body)
+	sheet.add_child(scroll)
 	_types.columns = 6
 	_types.add_theme_constant_override("h_separation", 28)
 	_types.add_theme_constant_override("v_separation", 6)
 	_body.add_child(_types)
 	_body.add_child(ScreenKit.eyebrow(tr("cheat.active")))
-	for label: Label in [_active, _order]:
+	for label: Label in [active_rules, _order]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.custom_minimum_size = Vector2(840, 0)
 		label.add_theme_font_size_override("font_size", TextSize.px(22))
-	_body.add_child(_active)
+	_body.add_child(active_rules)
 	_body.add_child(_order)
 	_wild_head = ScreenKit.eyebrow(tr("cheat.wild"))
 	_wild.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -149,7 +151,7 @@ func refresh() -> void:
 		active.append("%s: %s" % [_controller.texts.reform_name(reform_id), rule])
 	if active.is_empty():
 		active.append(tr("cheat.none"))
-	_active.text = "\n".join(active)
+	active_rules.text = "\n".join(active)
 	_order.text = tr("cheat.order").format({"order": " < ".join(_rank_order())})
 	_show_wild()
 
@@ -179,8 +181,8 @@ func _show_wild() -> void:
 ## Lets the rules stand as tall as the screen leaves room for between the heading and
 ## Close, and scroll past that.
 func _fit() -> void:
-	var others: float = _panel.get_combined_minimum_size().y - _scroll.custom_minimum_size.y
-	_scroll.fit_to(maxf(size.y - 2.0 * MARGIN - others, 0.0))
+	var others: float = _panel.get_combined_minimum_size().y - scroll.custom_minimum_size.y
+	scroll.fit_to(maxf(size.y - 2.0 * MARGIN - others, 0.0))
 
 
 ## The sheet's box on screen as drawn, for tests.
@@ -218,7 +220,7 @@ func rank_order_text() -> String:
 
 
 func active_text() -> String:
-	return _active.text
+	return active_rules.text
 
 
 func _rank_order() -> PackedStringArray:

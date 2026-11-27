@@ -83,7 +83,7 @@ func test_the_notice_board_cards_carry_the_tooltip() -> void:
 	add_child(board)
 	board.setup(3)
 	board.show_cadres(_app.controller)
-	var cards: Array[TipHost] = board.get("_cards")
+	var cards: Array[TipHost] = board.cards
 	assert_str(cards[0].tooltip_text).contains(tr("modifier.%s.name" % first))
 	assert_str(cards[0].tip_rule()).is_equal(ScreenKit.rule_text(_app.controller, first))
 	assert_str(cards[1].tooltip_text).is_empty()
@@ -115,7 +115,7 @@ func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
 	assert_bool(store.cadres.is_buying()).is_false()
 	assert_bool(seal.visible).is_false()
 	var board: NoticeBoard = store.board
-	var cards: Array[TipHost] = board.get("_cards")
+	var cards: Array[TipHost] = board.cards
 	assert_str(cards[held].tip_rule()).is_equal(ScreenKit.rule_text(_app.controller, bought))
 
 

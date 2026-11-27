@@ -121,13 +121,13 @@ func test_a_click_on_each_side_trades_and_undo_takes_it_back() -> void:
 	assert_array(board.place_ids(SwapBoard.Place.OUT)).is_equal([given])
 	assert_array(board.place_ids(SwapBoard.Place.PLOT)).not_contains([taken])
 	assert_int(board.tags().filter(func(tag: Label) -> bool: return tag.visible).size()).is_equal(3)
-	var count: Label = sheet.get("_count")
+	var count: Label = sheet.count
 	assert_str(count.text).is_equal(tr("plot.left.count").format({"left": 0, "limit": 1}))
 	assert_bool(sheet.swap_button().disabled).is_false()
 	# No swap is left, so a fresh pick is refused, and the sheet says why.
 	var other: int = board.place_ids(SwapBoard.Place.HAND)[1]
 	assert_int(board.press(other)).is_equal(PlotTrade.Reason.NO_SWAPS_LEFT)
-	var status: Label = sheet.get("_status")
+	var status: Label = sheet.status
 	assert_str(status.text).is_equal(tr("plot.none_left"))
 	assert_int(sheet.undo_buttons().size()).is_equal(1)
 	sheet.undo_buttons()[0].pressed.emit()

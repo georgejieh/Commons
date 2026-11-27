@@ -79,7 +79,7 @@ func _check(picker: RankPicker, card: Control, where: String) -> void:
 		. override_failure_message(where + " right")
 		. is_greater_equal(inside)
 	)
-	var prompt: Label = picker.get("_prompt")
+	var prompt: Label = picker.prompt_label
 	var gap: float = first.position.y - RankChip.LIFT - prompt.get_global_rect().end.y
 	assert_float(gap).override_failure_message(where + " prompt").is_greater_equal(
 		RankPicker.SPACING - ClipCheck.SLACK

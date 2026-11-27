@@ -14,8 +14,9 @@ const MEANING_SIZE: int = 16
 ## Inside the paper's printed border, which ends 17 px in.
 const PADDING: int = 22
 
+## The rules of what is explained.
+var rule_text: RichTextLabel = RichTextLabel.new()
 var _title: Label = ScreenKit.label("", TITLE_SIZE)
-var _rule: RichTextLabel = RichTextLabel.new()
 var _meanings: VBoxContainer = VBoxContainer.new()
 
 
@@ -27,13 +28,13 @@ func _init() -> void:
 	left.add_theme_constant_override("separation", 4)
 	_title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	left.add_child(_title)
-	_rule.bbcode_enabled = true
-	_rule.fit_content = true
-	_rule.scroll_active = false
-	_rule.custom_minimum_size = Vector2(RULE_WIDTH, 0)
-	_rule.add_theme_font_size_override("normal_font_size", TextSize.px(RULE_SIZE))
-	_rule.add_theme_color_override("default_color", ScreenKit.INK)
-	left.add_child(_rule)
+	rule_text.bbcode_enabled = true
+	rule_text.fit_content = true
+	rule_text.scroll_active = false
+	rule_text.custom_minimum_size = Vector2(RULE_WIDTH, 0)
+	rule_text.add_theme_font_size_override("normal_font_size", TextSize.px(RULE_SIZE))
+	rule_text.add_theme_color_override("default_color", ScreenKit.INK)
+	left.add_child(rule_text)
 	_meanings.custom_minimum_size = Vector2(MEANING_WIDTH, 0)
 	_meanings.add_theme_constant_override("separation", 2)
 	add_child(ScreenKit.row([left, _meanings], 24))
@@ -45,7 +46,7 @@ func _init() -> void:
 ## Explains an item: its name over its rules, and what each keyword in them means.
 func explain(title: String, rule: String) -> void:
 	_title.text = title
-	_rule.text = Keywords.mark(rule)
+	rule_text.text = Keywords.mark(rule)
 	ScreenKit.clear(_meanings)
 	for id: String in Keywords.found(rule):
 		var meaning: Label = ScreenKit.label(

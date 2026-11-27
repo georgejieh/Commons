@@ -171,7 +171,7 @@ func test_enlarged_committee_gives_both_boards_six_slots() -> void:
 	var notice: NoticeBoard = table.board
 	assert_int(notice.slot_count()).is_equal(6)
 	var area: Rect2 = notice.get_global_rect()
-	var cards: Array[TipHost] = notice.get("_cards")
+	var cards: Array[TipHost] = notice.cards
 	var seats: Dictionary[int, SeatPanel] = table.seats
 	for card: TipHost in cards:
 		assert_bool(area.encloses(card.get_global_rect())).is_true()

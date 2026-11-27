@@ -26,12 +26,12 @@ func test_all_54_faces_bind_from_parts() -> void:
 		var card: CardInstance = Deck.new().card(deck_id)
 		var view: CardView = _views[deck_id]
 		view.bind(card)
-		var picture: TextureRect = view.get("_picture")
+		var picture: TextureRect = view.picture
 		var expected: Texture2D = _expected_picture(art, card)
 		assert_object(picture.texture).is_same(ArtStages.resolve(expected))
-		var rank: Label = view.get("_rank")
+		var rank: Label = view.rank_label
 		assert_str(rank.text).is_not_empty()
-		var suit: TextureRect = view.get("_suit")
+		var suit: TextureRect = view.suit
 		var joker: bool = card.base_rank() >= Ranks.SMALL_JOKER
 		assert_bool(suit.visible).is_equal(not joker)
 
@@ -47,7 +47,7 @@ func test_changing_the_frame_restyles_every_card() -> void:
 		view.bind(Deck.new().card(deck_id))
 		fresh.append(view)
 	for view: CardView in fresh:
-		var frame: Panel = view.get("_frame")
+		var frame: Panel = view.frame_panel
 		var stock: StyleBoxTexture = frame.get_theme_stylebox("panel") as StyleBoxTexture
 		assert_object(stock.texture).is_same(swapped.frame)
 
@@ -61,14 +61,14 @@ func test_changing_a_suit_icon_restyles_that_suit_only() -> void:
 	for deck_id: int in DECK_SIZE:
 		var card: CardInstance = Deck.new().card(deck_id)
 		_views[deck_id].bind(card)
-		var suit: TextureRect = _views[deck_id].get("_suit")
+		var suit: TextureRect = _views[deck_id].suit
 		if card.base_rank() < Ranks.SMALL_JOKER:
 			assert_bool(suit.texture == hearts).is_equal(card.suit() == 1)
 
 
 func test_the_card_stock_is_lit_through_its_normal_map() -> void:
 	_views[0].bind(Deck.new().card(0))
-	var frame: Panel = _views[0].get("_frame")
+	var frame: Panel = _views[0].frame_panel
 	var stock: StyleBoxTexture = frame.get_theme_stylebox("panel") as StyleBoxTexture
 	var canvas: CanvasTexture = stock.texture as CanvasTexture
 	assert_object(canvas).is_not_null()

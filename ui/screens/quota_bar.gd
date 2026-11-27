@@ -11,9 +11,10 @@ signal filled
 
 enum Shown { AS_IS, NO_TARGET, FULFILLED }
 
+## The seal pressed on the bar once the Quota is met.
+var seal: InkSeal = InkSeal.new()
 var _text: Label = Label.new()
 var _fill: StyleBoxFlat = StyleBoxFlat.new()
-var _seal: InkSeal = InkSeal.new()
 var _target: float = 1.0
 var _shown: float = 0.0
 var _tween: Tween = null
@@ -36,15 +37,15 @@ func _init() -> void:
 	_text.add_theme_color_override("font_outline_color", ScreenKit.INK)
 	_text.add_theme_constant_override("outline_size", 6)
 	add_child(_text)
-	add_child(_seal)
+	add_child(seal)
 
 
 ## Sizes the bar, its count and its seal, which overhangs the bar's right end.
 func setup(bar_size: Vector2, seal_width: float, font_size: int) -> void:
 	custom_minimum_size = bar_size
 	_text.add_theme_font_size_override("font_size", TextSize.px(font_size))
-	_seal.prepare(tr("table.quota_met"), ScreenKit.RED, seal_width)
-	_seal.position = Vector2(bar_size.x - seal_width * 0.6, (bar_size.y - seal_width) / 2.0)
+	seal.prepare(tr("table.quota_met"), ScreenKit.RED, seal_width)
+	seal.position = Vector2(bar_size.x - seal_width * 0.6, (bar_size.y - seal_width) / 2.0)
 	show_value(_shown)
 
 
@@ -80,18 +81,18 @@ func show_value(shown: float) -> void:
 	if _mode == Shown.NO_TARGET:
 		value = 0.0
 		_text.text = tr(ShownFigures.QUOTA_DARK).format({"progress": Strings.score(shown)})
-		_seal.visible = false
+		seal.visible = false
 		return
 	if _mode == Shown.FULFILLED:
 		met = true
 		value = _target
 		_fill.bg_color = ScreenKit.GLOW
 		_text.text = tr(ShownFigures.FULFILLED)
-	if met and not _seal.visible:
-		_seal.prepare(tr("table.quota_met"), ScreenKit.RED, _seal.size.x)
-		_seal.press()
+	if met and not seal.visible:
+		seal.prepare(tr("table.quota_met"), ScreenKit.RED, seal.size.x)
+		seal.press()
 	elif not met:
-		_seal.visible = false
+		seal.visible = false
 
 
 ## Fills from what is shown to a value over seconds, after a delay, then says filled.
@@ -115,8 +116,8 @@ func fill_to(to: float, seconds: float, delay: float = 0.0) -> void:
 func seal_short() -> void:
 	if _mode == Shown.FULFILLED:
 		return
-	_seal.prepare(tr("summary.short"), ScreenKit.INK, _seal.size.x)
-	_seal.press()
+	seal.prepare(tr("summary.short"), ScreenKit.INK, seal.size.x)
+	seal.press()
 
 
 func is_met() -> bool:
@@ -130,4 +131,4 @@ func text() -> String:
 
 ## The word on the seal, or "" while there is none. For tests.
 func seal_word() -> String:
-	return _seal.word() if _seal.visible else ""
+	return seal.word() if seal.visible else ""
