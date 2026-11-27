@@ -5,56 +5,56 @@ const DATA: String = "res://data/"
 const QUERIES: int = 1000
 
 
-## Writes its label to a shared log from every hook. Held by seat 0, the seat every
+## Writes its label to a shared list of calls from every hook. Held by seat 0, the seat every
 ## hook below is run for.
 class Recorder:
 	extends ModifierEffect
 	var label: String
-	var log: Array[String]
+	var calls: Array[String]
 
 	func _init(name: String, shared: Array[String]) -> void:
 		label = name
-		log = shared
+		calls = shared
 		holder_seat = 0
 
 	func build_ruleset(_context: RulesetContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func build_rank_map(_context: RankMapContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func on_deal(_context: DealContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func round_start(_context: RoundContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func play_scored(_context: PlayContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func card_scored(_context: CardContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func round_end(_context: RoundContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func set_end(_context: SetContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func shop_open(_context: ShopContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func meter_change(_context: MeterContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func audit(_context: AuditContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func turn_taken(_context: TurnContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 	func need_settled(_context: NeedContext) -> void:
-		log.append(label)
+		calls.append(label)
 
 
 ## A rules effect of the kind later items will add.
@@ -118,7 +118,7 @@ func _run_every_hook(stack: ModifierStack) -> void:
 
 func test_every_hook_runs_cadres_then_debuffs_then_the_boss() -> void:
 	var stack: ModifierStack = ModifierStack.new()
-	var log: Array[String] = []
+	var calls: Array[String] = []
 	var rows: Array[Array] = [
 		["boss", ModifierDef.Kind.BOSS_TWIST],
 		["debuff one", ModifierDef.Kind.DEBUFF],
@@ -127,57 +127,57 @@ func test_every_hook_runs_cadres_then_debuffs_then_the_boss() -> void:
 		["cadre right", ModifierDef.Kind.CADRE],
 	]
 	for row: Array in rows:
-		stack.add_entry(ActiveModifier.new(_def(row[1], _all_hooks()), Recorder.new(row[0], log)))
+		stack.add_entry(ActiveModifier.new(_def(row[1], _all_hooks()), Recorder.new(row[0], calls)))
 	_run_every_hook(stack)
 	var expected: Array[String] = []
 	for _hook: String in Hooks.ALL:
 		expected.append_array(["cadre left", "cadre right", "debuff one", "debuff two", "boss"])
-	assert_array(log).is_equal(expected)
+	assert_array(calls).is_equal(expected)
 
 
 func test_disabled_modifiers_do_not_run() -> void:
 	var stack: ModifierStack = ModifierStack.new()
-	var log: Array[String] = []
+	var calls: Array[String] = []
 	var entry: ActiveModifier = ActiveModifier.new(
-		_def(ModifierDef.Kind.CADRE, _all_hooks()), Recorder.new("x", log)
+		_def(ModifierDef.Kind.CADRE, _all_hooks()), Recorder.new("x", calls)
 	)
 	stack.add_entry(entry)
 	stack.set_enabled(entry, false)
 	_run_every_hook(stack)
-	assert_int(log.size()).is_equal(0)
+	assert_int(calls.size()).is_equal(0)
 	stack.set_enabled(entry, true)
 	_run_every_hook(stack)
-	assert_int(log.size()).is_equal(Hooks.ALL.size())
+	assert_int(calls.size()).is_equal(Hooks.ALL.size())
 
 
 func test_a_modifier_runs_only_on_the_hooks_it_lists() -> void:
 	var stack: ModifierStack = ModifierStack.new()
-	var log: Array[String] = []
+	var calls: Array[String] = []
 	var listed: Array[String] = [Hooks.SET_END]
 	stack.add_entry(
-		ActiveModifier.new(_def(ModifierDef.Kind.CADRE, listed), Recorder.new("x", log))
+		ActiveModifier.new(_def(ModifierDef.Kind.CADRE, listed), Recorder.new("x", calls))
 	)
 	_run_every_hook(stack)
-	assert_int(log.size()).is_equal(1)
+	assert_int(calls.size()).is_equal(1)
 
 
 ## A debuff's hook builds every seat and leaves the seat to the effect; a Cadre's builds
 ## its holder's seat alone (ADR 0039).
 func test_a_rebuild_visits_each_modifier_once_per_seat_it_reaches() -> void:
 	var stack: ModifierStack = ModifierStack.new()
-	var log: Array[String] = []
+	var calls: Array[String] = []
 	var listed: Array[String] = [Hooks.BUILD_RANK_MAP]
 	for index: int in 4:
-		var effect: Recorder = Recorder.new(str(index), log)
+		var effect: Recorder = Recorder.new(str(index), calls)
 		stack.add_entry(ActiveModifier.new(_def(ModifierDef.Kind.DEBUFF, listed), effect))
-	var cadre: Recorder = Recorder.new("cadre", log)
+	var cadre: Recorder = Recorder.new("cadre", calls)
 	cadre.holder_seat = 1
 	stack.add_entry(ActiveModifier.new(_def(ModifierDef.Kind.CADRE, listed), cadre))
 	var table: SeatRules = SeatRules.new(stack)
-	log.clear()
+	calls.clear()
 	table.start_round(0)
-	assert_int(log.size()).is_equal((4 * Seats.COUNT + 1) * SeatRules.MAPS_PER_SEAT)
-	assert_int(log.count("cadre")).is_equal(SeatRules.MAPS_PER_SEAT)
+	assert_int(calls.size()).is_equal((4 * Seats.COUNT + 1) * SeatRules.MAPS_PER_SEAT)
+	assert_int(calls.count("cadre")).is_equal(SeatRules.MAPS_PER_SEAT)
 
 
 func test_ruleset_hooks_can_not_touch_other_seats_or_the_defaults() -> void:

@@ -202,7 +202,7 @@ Death is checked after each meter move, at a state that may go to `RUN_END`: Set
 
 Resentment acts in two ways:
 
-- **Denunciation.** At each Set's end, Denunciation rises by `denunciation.sample(resentment / max)`, through the meter table's `resentment` row. That curve is the only mapping from Resentment to Denunciation.
+- **Denunciation.** At each Set's end, Denunciation rises by `denunciation.sample(resentment / cap)`, through the meter table's `resentment` row. That curve is the only mapping from Resentment to Denunciation.
 - **Grudge.** At each round's start, every bot's `memory[player]` is set to `grudge(resentment)`. A bot's spite (grudge × memory) is added to every answer it scores. It also divides its cooperation, so a resented player's teammate covers for them less often.
 
 **Declared need.**

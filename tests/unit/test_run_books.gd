@@ -169,7 +169,7 @@ func test_figures_past_their_fields_are_clamped() -> void:
 	assert_int(loop.state.coupons).is_equal(BOOKS.coupons_max)
 	assert_int(loop.state.famine).is_equal(RunDefaults.PARAMS.meter_max)
 	assert_int(loop.state.denunciation).is_equal(0)
-	assert_int(loop.state.resentment).is_equal(RunDefaults.RESENTMENT.max)
+	assert_int(loop.state.resentment).is_equal(RunDefaults.RESENTMENT.cap)
 	assert_int(loop.state.norm_steps).is_equal(BOOKS.norm_steps_max)
 	assert_float(loop.state.set_progress).is_equal(Scorer.MAX_SCORE)
 	var saved: Dictionary = loop.record.commands[-1]["figures"]

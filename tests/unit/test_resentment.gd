@@ -44,17 +44,17 @@ func test_only_the_players_own_stamps_count() -> void:
 
 
 func test_resentment_clamps_to_its_range() -> void:
-	Resentment.add(_state, PARAMS.max * 3, Resentment.PRIVATE_PURCHASE, PARAMS, _events)
-	assert_int(_state.resentment).is_equal(PARAMS.max)
-	Resentment.add(_state, -PARAMS.max * 3, Resentment.PRIVATE_PURCHASE, PARAMS, _events)
+	Resentment.add(_state, PARAMS.cap * 3, Resentment.PRIVATE_PURCHASE, PARAMS, _events)
+	assert_int(_state.resentment).is_equal(PARAMS.cap)
+	Resentment.add(_state, -PARAMS.cap * 3, Resentment.PRIVATE_PURCHASE, PARAMS, _events)
 	assert_int(_state.resentment).is_equal(0)
 
 
 func test_denunciation_follows_the_single_curve() -> void:
 	var last: int = 0
-	for resentment: int in range(0, PARAMS.max + 1):
+	for resentment: int in range(0, PARAMS.cap + 1):
 		var owed: int = Resentment.denunciation(resentment, PARAMS)
-		var sampled: float = PARAMS.denunciation.sample(float(resentment) / PARAMS.max)
+		var sampled: float = PARAMS.denunciation.sample(float(resentment) / PARAMS.cap)
 		assert_int(owed).is_equal(roundi(sampled))
 		assert_int(owed).is_greater_equal(last)
 		last = owed
@@ -64,7 +64,7 @@ func test_denunciation_follows_the_single_curve() -> void:
 
 func test_grudge_rises_with_resentment() -> void:
 	assert_float(Resentment.grudge(0, PARAMS)).is_equal(0.0)
-	assert_float(Resentment.grudge(PARAMS.max, PARAMS)).is_equal(PARAMS.grudge_at_max)
+	assert_float(Resentment.grudge(PARAMS.cap, PARAMS)).is_equal(PARAMS.grudge_at_max)
 
 
 func test_a_stamped_kicker_breeds_no_resentment() -> void:

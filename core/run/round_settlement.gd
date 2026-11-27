@@ -40,14 +40,14 @@ func _init(
 	_debuffs = debuffs
 
 
-## Banks the round just over: the hooks at its end, its scores totalled and paid, the
+## Banks played, the round just over: the hooks at its end, its scores totalled and paid, the
 ## Commons it pays into, and the meters its debuffs move.
-func bank(round: RoundState, scoring: RoundScoring) -> void:
-	var finish: RoundEvent.Finish = round.events()[-1].value as RoundEvent.Finish
-	var winner: int = round.winner()
+func bank(played: RoundState, scoring: RoundScoring) -> void:
+	var finish: RoundEvent.Finish = played.events()[-1].value as RoundEvent.Finish
+	var winner: int = played.winner()
 	var landlord: int = _state.landlord_seat
 	var ending: RoundContext = RoundContext.new(landlord, winner, finish)
-	ending.landlord_cards = round.remaining()[landlord]
+	ending.landlord_cards = played.remaining()[landlord]
 	_stack.run_round_end(ending)
 	_debuffs.ended(ending)
 	# Before the round is scored, so the Quota's summary reads it as the round's (ADR 0032).
