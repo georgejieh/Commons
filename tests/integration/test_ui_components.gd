@@ -48,9 +48,7 @@ func test_an_entrance_settles_at_full_size_and_opacity() -> void:
 	var pieces: Array[Control] = [piece]
 	UiMotion.enter(pieces)
 	assert_float(piece.modulate.a).is_less(1.0)
-	await await_millis(int((UiMotion.PRESETS.enter_time + 0.2) * 1000.0))
-	assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
-	assert_vector(piece.scale).is_equal_approx(Vector2.ONE, Vector2(0.01, 0.01))
+	await TestWait.until(self, _entered.bind([piece] as Array[Control]), "the entrance to settle")
 	Settings.set_value("reduced_motion", was)
 
 
@@ -73,8 +71,7 @@ func test_a_count_lands_on_its_value() -> void:
 	var label: Label = auto_free(Label.new())
 	add_child(label)
 	UiMotion.count(label, 0.0, 42.0, func(value: float) -> String: return str(roundi(value)))
-	await await_millis(int((UiMotion.PRESETS.count_time + 0.2) * 1000.0))
-	assert_str(label.text).is_equal("42")
+	await TestWait.until(self, func() -> bool: return label.text == "42", "the count to land on 42")
 	Settings.set_value("reduced_motion", was)
 
 
@@ -90,13 +87,12 @@ func test_a_long_page_is_in_by_enter_within() -> void:
 		pieces.append(piece)
 	UiMotion.enter(pieces)
 	var presets: MotionPresets = UiMotion.PRESETS
+	# Timed: the page half an entrance in is the moment looked at.
 	await await_millis(int(presets.enter_time * 500.0))
 	assert_float(pieces[0].modulate.a).is_greater(0.0)
 	assert_float(pieces[29].modulate.a).is_equal(0.0)
-	await await_millis(int((presets.enter_within - presets.enter_time * 0.5 + 0.25) * 1000.0))
-	for piece: Control in pieces:
-		assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
-		assert_vector(piece.scale).is_equal_approx(Vector2.ONE, Vector2(0.01, 0.01))
+	var within: float = presets.enter_within - presets.enter_time * 0.5 + 0.25
+	await TestWait.until(self, _entered.bind(pieces), "the whole page to enter", within)
 	Settings.set_value("reduced_motion", was)
 
 
@@ -151,13 +147,14 @@ func test_a_rolling_number_keeps_one_width() -> void:
 		await await_idle_frame()
 		assert_float(number.size.x).is_equal(room)
 		assert_float(beside.position.x).is_equal(at)
-	await await_millis(int(UiMotion.PRESETS.count_time * 1000.0) + 200)
-	assert_str(number.text).is_equal("808")
+	await TestWait.until(self, func() -> bool: return number.text == "808", "the roll to land")
 	assert_float(beside.position.x).is_equal(at)
 	# A roll down to a shorter number gives the room back when it lands.
 	UiMotion.count(number, 808.0, 7.0, shown)
-	await await_millis(int(UiMotion.PRESETS.count_time * 1000.0) + 200)
-	assert_float(number.custom_minimum_size.x).is_equal(UiMotion.widest(number, "7"))
+	var gave_back: Callable = func() -> bool:
+		return number.custom_minimum_size.x == UiMotion.widest(number, "7")
+	await TestWait.until(self, gave_back, "the room to come back as the roll lands")
+	assert_str(number.text).is_equal("7")
 	Settings.set_value("reduced_motion", true)
 	var still: Label = ScreenKit.styled("", CommonsTheme.TITLE)
 	row.add_child(still)
@@ -187,9 +184,16 @@ func test_an_entrance_only_fades_a_lifted_button_and_a_quiet_piece() -> void:
 	assert_float(button.modulate.a).is_equal(0.0)
 	assert_vector(quiet.scale).is_equal(Vector2.ONE)
 	assert_float(button.scale.x).is_greater_equal(1.0)
-	await await_millis(int((UiMotion.PRESETS.enter_time + 0.2) * 1000.0))
 	var lifted: Vector2 = Vector2.ONE * UiMotion.PRESETS.hover_scale
-	assert_vector(button.scale).is_equal_approx(lifted, Vector2(0.01, 0.01))
-	assert_float(button.modulate.a).is_equal_approx(1.0, 0.01)
-	assert_float(quiet.modulate.a).is_equal_approx(1.0, 0.01)
+	var entered: Callable = func() -> bool:
+		var opaque: bool = button.modulate.a >= 0.99 and quiet.modulate.a >= 0.99
+		return opaque and button.scale.is_equal_approx(lifted)
+	await TestWait.until(self, entered, "both to enter, the focused button lifted")
 	Settings.set_value("reduced_motion", was)
+
+
+## True once every piece stands at full opacity and its own size.
+func _entered(pieces: Array[Control]) -> bool:
+	var settled: Callable = func(piece: Control) -> bool:
+		return piece.modulate.a >= 0.99 and piece.scale.distance_to(Vector2.ONE) <= 0.01
+	return pieces.all(settled)

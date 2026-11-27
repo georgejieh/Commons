@@ -34,7 +34,7 @@ func test_the_need_panel_stays_on_screen_and_centered() -> void:
 	panel.center = Vector2(790, 520)
 	panel.setup(10, 40, 5)
 	panel.ask(1900, "Zhao", 0.15)
-	await await_millis(200)
+	await TestWait.still(self, panel.get_global_rect, "the need panel to settle")
 	assert_float(panel.position.y + panel.size.y).is_less(760.0)
 	assert_float(panel.position.x + panel.size.x / 2.0).is_equal_approx(790.0, 1.0)
 	var declare: Button = panel.declare_button()
@@ -77,8 +77,8 @@ func test_a_pass_is_tagged_on_its_seat_and_the_role_comes_back() -> void:
 	var role: Label = zhao.role
 	zhao.flash(tr("stamp.pass"))
 	assert_str(role.text).is_equal(tr("stamp.pass").to_upper())
-	await await_millis(int(SeatPanel.FLASH_HOLD * 1000.0) + 200)
-	assert_str(role.text).is_equal(tr("table.role.teammate").to_upper())
+	var back: Callable = func() -> bool: return role.text == tr("table.role.teammate").to_upper()
+	await TestWait.until(self, back, "the role to come back")
 
 
 func test_the_tally_shows_a_whole_sum_and_says_it_landed() -> void:
@@ -133,11 +133,10 @@ func test_a_callout_comes_down_by_itself() -> void:
 	var callout: Callout = auto_free(Callout.new())
 	add_child(callout)
 	callout.size = Vector2(1920, 1080)
-	var seconds: float = callout.shout("Bomb!", Callout.Tier.TAKEOVER, ScreenKit.RED, "Zhao")
+	callout.shout("Bomb!", Callout.Tier.TAKEOVER, ScreenKit.RED, "Zhao")
 	assert_bool(callout.is_showing()).is_true()
 	assert_str(callout.shown_word()).is_equal("BOMB!")
-	await await_millis(int(seconds * 1000.0) + 300)
-	assert_bool(callout.is_showing()).is_false()
+	await TestWait.until(self, func() -> bool: return not callout.is_showing(), "the callout to go")
 
 
 func test_the_audit_slip_shows_each_claim_its_verdict_and_its_pay() -> void:
@@ -205,10 +204,11 @@ func test_a_moment_that_holds_the_queue_finishes_before_the_table_moves_on() -> 
 	player.drained.connect(func() -> void: drains[0] += 1)
 	player.played.connect(func(_event: RunEvent) -> void: player.hold(0.4))
 	player.push(RunEvent.new(RunEvent.Type.SET_ENDED, Seats.NONE, 1, 10.0))
+	# Timed: that the table does not move on is seen inside the moment's hold.
 	await await_millis(150)
 	assert_int(drains[0]).is_equal(0)
 	assert_bool(player.is_idle()).is_false()
-	await await_millis(500)
+	await TestWait.until(self, func() -> bool: return drains[0] > 0, "the queue to drain")
 	assert_int(drains[0]).is_equal(1)
 	assert_bool(player.is_idle()).is_true()
 
@@ -280,6 +280,11 @@ func _split(
 		moments.on_event(roll, quiet)
 
 
+func _lifted(moments: TableMoments) -> void:
+	var gone: Callable = func() -> bool: return not moments.dice.is_showing()
+	await TestWait.until(self, gone, "the bowl to lift away")
+
+
 func _settle_ms() -> int:
 	return int((DiceBowl.DROP + DiceBowl.ROLL) * 1000.0) + 150
 
@@ -296,11 +301,11 @@ func test_the_dice_are_thrown_together_and_settle_on_the_rolled_faces() -> void:
 	moments.on_event(RunEvent.new(RunEvent.Type.AUDIT_ROLLED, 2, 5, 1.0))
 	assert_bool(moments.dice.is_showing()).is_true()
 	assert_bool(moments.dice.is_rolling()).is_true()
-	await await_millis(_settle_ms())
-	assert_bool(moments.dice.is_rolling()).is_false()
+	var rested: Callable = func() -> bool: return not moments.dice.is_rolling()
+	await TestWait.until(self, rested, "the dice to rest")
 	assert_array(moments.dice.faces()).is_equal([3, 5])
 	assert_array(moments.dice.audited_seats()).is_empty()
-	await await_millis(int((DiceBowl.REST + DiceBowl.LIFT) * 1000.0) + 300)
+	await _lifted(moments)
 	# Neither die was audited: both rows say so, and the bowl has lifted away.
 	for seat: int in seats:
 		assert_str(moments.slip.row_text(seat)).contains(tr("audit.clear"))
@@ -315,16 +320,15 @@ func test_an_audit_calls_out_the_seat_whose_die_landed_on_it() -> void:
 	var faces: Array[int] = [4, 1]
 	_split(moments, seats, faces)
 	assert_array(moments.dice.audited_seats()).is_equal([2])
-	await await_millis(_settle_ms() + int(DiceBowl.REST * 1000.0) + 100)
+	var called: Callable = func() -> bool: return moments.callout.is_showing()
+	await TestWait.until(self, called, "the audit to be called out")
 	assert_array(moments.dice.faces()).is_equal(faces)
 	assert_str(moments.callout.shown_word()).is_equal(tr("callout.audit").to_upper())
 	assert_str(moments.callout.shown_sub()).is_equal("Zhao")
 	# The die that missed is marked not audited; the audited one waits for its verdict.
 	assert_str(moments.slip.row_text(0)).contains(tr("audit.clear"))
 	assert_str(moments.slip.row_text(2)).contains(tr("audit.rolling"))
-	var cut_in: float = Callout.seconds_for(Callout.Tier.CUT_IN)
-	await await_millis(int((cut_in + DiceBowl.LIFT) * 1000.0) + 300)
-	assert_bool(moments.dice.is_showing()).is_false()
+	await _lifted(moments)
 
 
 func test_reduced_motion_shows_the_settled_dice_at_once() -> void:
@@ -350,6 +354,7 @@ func test_a_quiet_replay_leaves_no_bowl_on_screen() -> void:
 	assert_bool(moments.dice.is_showing()).is_true()
 	moments.on_event(RunEvent.new(RunEvent.Type.SHARE_PAID, 0, 600), true)
 	assert_bool(moments.dice.is_showing()).is_false()
+	# Timed: that the skipped bowl stays down is seen over the throw it would have made.
 	await await_millis(_settle_ms() + int(DiceBowl.REST * 1000.0) + 100)
 	assert_bool(moments.dice.is_showing()).is_false()
 	assert_bool(moments.callout.is_showing()).is_false()

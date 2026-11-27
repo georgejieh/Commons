@@ -103,13 +103,14 @@ func test_a_tag_stamped_and_lost_at_once_stays_off() -> void:
 	panel.set_role(false, false)
 	panel.set_role(true, false)
 	panel.set_role(false, false)
+	# Timed: that the tag stays off is seen over the time its stamp would have taken.
 	await get_tree().create_timer(UiMotion.PRESETS.stamp_time + 0.2).timeout
 	var banner: Label = panel.banner
 	assert_float(banner.modulate.a).is_equal(0.0)
 	panel.set_role(true, false)
-	await get_tree().create_timer(UiMotion.PRESETS.stamp_time + 0.2).timeout
-	assert_float(banner.modulate.a).is_equal(1.0)
-	assert_vector(banner.scale).is_equal(Vector2.ONE)
+	var stamped: Callable = func() -> bool:
+		return banner.modulate.a == 1.0 and banner.scale == Vector2.ONE
+	await TestWait.until(self, stamped, "the tag to be stamped")
 
 
 func test_the_action_column_keeps_its_foot_and_width() -> void:
@@ -124,7 +125,8 @@ func test_the_action_column_keeps_its_foot_and_width() -> void:
 			for bidding: bool in [false, true]:
 				actions.show_bidding(bidding)
 				var prompts: Array[String] = PromptLines.every(_app.controller, bidding)
-				actions.reading.text = TableWorstCase.tallest(actions.reading, prompts)
+				actions.say("")
+				actions.say(TableWorstCase.tallest(actions.reading, prompts))
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "size %d on %s, bidding %s" % [level, screen, bidding]

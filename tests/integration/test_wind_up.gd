@@ -15,25 +15,26 @@ func test_a_villagers_play_is_wound_up_and_the_players_own_is_not() -> void:
 	player.winding.connect(func(event: RunEvent) -> void: seen.append("wind %d" % event.seat))
 	player.played.connect(func(event: RunEvent) -> void: seen.append("play %d" % event.seat))
 	player.push(RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PLAYED, 0)))
-	await await_millis(60)
+	await _heard(seen, 1)
 	assert_array(seen).is_equal(["play 0"])
 	seen.clear()
-	await await_millis(100)
+	await TestWait.until(self, player.is_idle, "the player's own play to end")
 	player.push(RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PLAYED, 2)))
+	# Timed: inside the wind-up, the seat is marked and the play has not come.
 	await await_millis(120)
 	assert_array(seen).is_equal(["wind 2"])
 	assert_bool(player.is_idle()).is_false()
-	await await_millis(350)
+	await _heard(seen, 2)
 	assert_array(seen).is_equal(["wind 2", "play 2"])
 	# A pass is tagged on its seat and needs no wind-up; nor does anything with wind off.
 	seen.clear()
 	player.push(RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PASSED, 1)))
-	await await_millis(150)
+	await _heard(seen, 1)
 	assert_array(seen).is_equal(["play 1"])
 	seen.clear()
 	player.wind = 0.0
 	player.push(RunEvent.wrap(RoundEvent.new(RoundEvent.Type.PLAYED, 1)))
-	await await_millis(150)
+	await _heard(seen, 1)
 	assert_array(seen).is_equal(["play 1"])
 	# Skipping plays everything at once, with nothing announced.
 	seen.clear()
@@ -53,13 +54,19 @@ func test_a_wound_up_seat_swells_and_settles() -> void:
 	add_child(seat)
 	var presets: MotionPresets = UiMotion.PRESETS
 	motion.wind_up(seat, presets.wind_up)
+	# Timed: the seat at the wind-up's end is the moment looked at.
 	await await_millis(int(presets.wind_up * 1000.0))
 	assert_float(seat.scale.x).is_greater(1.0)
 	assert_float(seat.scale.x).is_less_equal(presets.wind_scale + 0.001)
 	assert_vector(seat.pivot_offset).is_equal(seat.size / 2.0)
-	await await_millis(int(presets.fly_time * 1000.0) + 150)
-	assert_vector(seat.scale).is_equal(Vector2.ONE)
+	await TestWait.until(self, func() -> bool: return seat.scale == Vector2.ONE, "the seat to rest")
 	motion.set_still(true)
 	motion.wind_up(seat, presets.wind_up)
+	# Timed: that a still table leaves the seat alone is seen over a few frames of play.
 	await await_millis(60)
 	assert_vector(seat.scale).is_equal(Vector2.ONE)
+
+
+## Waits until the player has announced or played count events.
+func _heard(seen: Array[String], count: int) -> void:
+	await TestWait.until(self, func() -> bool: return seen.size() >= count, "%d events" % count)

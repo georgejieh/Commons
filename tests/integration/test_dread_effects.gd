@@ -150,10 +150,16 @@ func test_the_hand_trembles_without_moving_a_card() -> void:
 	var hand: HandView = table.hand_view
 	var dread: DreadLayers = table.dread
 	var tremble: HandTremble = dread.tremble
-	# The fan at rest, its deal over.
-	await await_millis(1500)
+	# The fan at rest, its deal over: every card shown and none moving.
+	var fan: Callable = func() -> Array:
+		var seen: Array = []
+		for view: CardView in hand.views():
+			seen.append([view.get_global_rect(), view.modulate.a])
+		return seen
+	await TestWait.still(self, fan, "the dealt fan to come to rest")
 	var rects: Dictionary[int, Rect2] = {}
 	for view: CardView in hand.views():
+		assert_float(view.modulate.a).is_equal(1.0)
 		rects[view.card_id] = view.get_global_rect()
 	assert_int(rects.size()).is_greater(10)
 	_force(table, DreadEffects.TREMBLE, 0)

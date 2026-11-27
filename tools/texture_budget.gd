@@ -62,7 +62,7 @@ func _show_all_cadres(board: Node) -> void:
 	var market: CadrePool = load("res://data/run/market_pool.tres")
 	var cadres: Array[ModifierDef] = store.cadres + market.cadres
 	var pictures: Array[TextureRect] = []
-	pictures.assign(board.get("_pictures"))
+	pictures.assign(WalkBase.member(board, "pictures"))
 	var kit: GDScript = load("res://ui/screens/screen_kit.gd")
 	for index: int in mini(pictures.size(), cadres.size()):
 		pictures[index].texture = kit.call("cadre_art", cadres[index].id)

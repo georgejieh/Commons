@@ -41,7 +41,7 @@ func test_the_bowl_draws_at_the_first_and_last_stage() -> void:
 		var seats: Array[int] = [0, 1]
 		var faces: Array[int] = [1, 4]
 		var names: Array[String] = ["You", "Zhao"]
-		var seconds: float = bowl.roll(seats, faces, 1, names)
-		await await_millis(int(seconds * 1000.0) + 150)
+		bowl.roll(seats, faces, 1, names)
+		await TestWait.until(self, func() -> bool: return not bowl.is_rolling(), "the dice to rest")
 		assert_bool(bowl.is_showing()).is_true()
 		assert_array(bowl.faces()).is_equal(faces)

@@ -74,7 +74,7 @@ func test_a_held_down_stem_stays_down_across_a_cue_change() -> void:
 	board.set_inputs(0, 100, false, 0)
 	board.settle()
 	_music.follow(board, CONFIG.layers, 1.0)
-	_music._process(SCORE.fade_seconds + 0.1)
+	_finish_fades()
 	assert_float(_music.stem_gain("melody")).is_equal(0.0)
 	_music.request("tone_famine")
 	_music.check_bar(0.0)
@@ -93,13 +93,13 @@ func test_famine_fades_its_stems_by_volume_and_they_return() -> void:
 	board.set_inputs(100, 0, false, 0)
 	board.settle()
 	_music.follow(board, CONFIG.layers, 1.0)
-	_music._process(SCORE.fade_seconds + 0.1)
+	_finish_fades()
 	assert_float(_music.stem_gain("percussion")).is_equal(0.0)
 	assert_float(_music.stem_gain("harmony")).is_equal(1.0)
 	board.set_inputs(0, 0, false, 0)
 	board.settle()
 	_music.follow(board, CONFIG.layers, 1.0)
-	_music._process(SCORE.fade_seconds + 0.1)
+	_finish_fades()
 	assert_float(_music.stem_gain("percussion")).is_equal(1.0)
 
 
@@ -114,12 +114,18 @@ func test_stems_share_one_synchronized_stream_and_fade_by_volume() -> void:
 	board.set_inputs(100, 0, false, 0)
 	board.settle()
 	_music.follow(board, CONFIG.layers, 1.0)
-	_music._process(SCORE.fade_seconds + 0.1)
+	_finish_fades()
 	# Faded, not removed: the stem keeps its place in the stream at silent volume.
 	assert_int(mix.stream_count).is_equal(2)
 	assert_float(mix.get_sync_stream_volume(1)).is_equal(AudioMixer.SILENT_DB)
 	assert_float(mix.get_sync_stream_volume(0)).is_equal_approx(0.0, 0.001)
 	_remove(cue)
+
+
+## Runs the stems' fades to their end.
+func _finish_fades() -> void:
+	# Stepped: one step as long as a whole fade, so the test waits on no frame of play.
+	_music._process(SCORE.fade_seconds + 0.1)
 
 
 func _tone(hertz: float) -> AudioStreamWAV:

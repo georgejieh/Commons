@@ -79,6 +79,16 @@ These settle them:
 
 A rule's full text is one key away at every moment, and the slip always shows that rules are in force. What is lost at the worst is reading a rule's text, or its name, without opening the sheet.
 
+## Amendment, 2026-11-26: when the counted slip does not fit
+
+Rule 9's last step can fail, and nothing gave way after it. At Largest, with every rule named and intel on both seats, the counted slip stood 134 px tall in 90 px of room and ran 36 px into the prompt. The room ended at the action column's top with its tallest prompt at the chosen size, and that prompt, a play's sum with every factor, stood 193 px tall at Largest against 114 px at Standard. The table test that puts the longest of everything on the table did not see it: the prompt it put up was written over by the bid's prompt before it was measured. Now the test shows the tallest prompt last, and asks of every case that the slip fits its room.
+
+10. **The prompt's box is its Standard box.** The prompt over the action buttons has a box as tall as the tallest prompt it can show, playing or bidding, stands at its Standard type at the column's width. A prompt that would stand taller than that at a larger size fits its type down into the box, never below Standard; the rest keep the size chosen. The action column then never stands taller than it does at Standard, and the right column gains the difference: 67 px at Large and 79 px at Largest. In the worst case the counted slip has 169 px for its 134 px, 35 px to spare, and every case on the table fits by rule 9 or before.
+
+The prompts that fit down are the long ones. Every play's sum with all its factors, Night Shift's refusal, the longest Campaign's ask and the grab's prompt with the longest name wrap to a line more at Large and at Largest, and fit down to Standard; at Largest one more Campaign's ask fits down to 28 px. Every other prompt keeps the size chosen.
+
+Putting the right seat's intel away to make room was rejected: it is information the player paid for, and nothing temporary ends it, as using or cancelling a Campaign ends the left seat's.
+
 ## Alternatives rejected
 
 - **A strip that always shows every rule in full.** No place on the table holds three debuffs, the table's rules and the wild ranks at once, at any size.

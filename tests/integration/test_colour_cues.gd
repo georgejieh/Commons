@@ -137,7 +137,7 @@ func test_a_refusal_under_reduced_motion_shows_a_cross_for_its_moment() -> void:
 	assert_bool(slip.shows_cross()).is_true()
 	var inside: Rect2 = Rect2(Vector2.ZERO, slip.size)
 	assert_bool(inside.encloses(slip.cross_rect())).is_true()
-	await get_tree().create_timer(TutorialSlip.ALARM_SECONDS + 0.3).timeout
+	await TestWait.until(self, func() -> bool: return not slip.shows_cross(), "the cross to go")
 	assert_bool(slip.shows_cross()).is_false()
 
 

@@ -86,9 +86,13 @@ func test_an_expired_budget_falls_back_to_the_hard_decision() -> void:
 	var view: SeatView = round_state.view_for(1)
 	var legal: Array[Pattern] = round_state.legal_moves()
 	var job: BotSearchJob = Bot.search_job(view, legal, table, _config(BotConfig.Tier.EXPERT))
-	var clock: Callable = func() -> int: return Time.get_ticks_usec() * 1000
+	# A clock that moves on a microsecond each time it is read: the budget is spent by the
+	# time the search first looks at it.
+	var now: Array[int] = [0]
+	var clock: Callable = func() -> int:
+		now[0] += 1
+		return now[0]
 	var budget: BotBudget = BotBudget.new(1, clock)
-	OS.delay_msec(1)
 	assert_object(ExpertSearch.run(job, budget)).is_same(job.fallback)
 
 

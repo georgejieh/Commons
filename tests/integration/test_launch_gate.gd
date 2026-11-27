@@ -139,6 +139,7 @@ func test_a_live_file_shows_the_notice_and_opens_nothing_until_the_player_choose
 	assert_object(notice).is_not_null()
 	assert_array(_opened).is_empty()
 	assert_bool(_file.is_mine()).is_false()
+	# Timed: that nothing opens is seen only by giving the launch the time to go on.
 	await await_millis(200)
 	assert_array(_opened).is_empty()
 	assert_str(FileAccess.get_file_as_string(_file.path())).is_equal(before)
@@ -162,9 +163,9 @@ func test_the_notice_closes_itself_when_the_file_goes_stale() -> void:
 	var gate: LaunchGate = _gate()
 	await await_idle_frame()
 	assert_object(gate.notice()).is_not_null()
-	var wait_msec: int = int((_params.stale_after() + 3.0 * _params.beat_seconds) * 1000.0)
-	await await_millis(wait_msec)
-	assert_object(gate.notice()).is_null()
+	var within: float = _params.stale_after() + 3.0 * _params.beat_seconds
+	var gone: Callable = func() -> bool: return gate.notice() == null
+	await TestWait.until(self, gone, "the notice to close itself", within)
 	assert_int(_opened.size()).is_equal(1)
 	assert_array(Array(DirAccess.get_files_at(_opened[0]))).contains(["run.json"])
 	assert_bool(_file.is_mine()).is_true()

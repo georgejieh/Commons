@@ -102,6 +102,7 @@ func test_a_motion_sound_never_lands_on_an_events_own() -> void:
 	Audio.last_filled = ""
 	Audio.play("card_played")
 	Audio.fill(AudioEvents.MOTION_STAMP)
+	# Timed: the guard counts real time, so its quiet is seen inside that time.
 	await await_millis(30)
 	assert_str(Audio.last_filled).is_empty()
 	# The guard counts real time, and a sound from elsewhere starts it again, so the fill is

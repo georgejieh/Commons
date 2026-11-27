@@ -1,6 +1,6 @@
 class_name TableColumns
 extends RefCounted
-## The table's two side columns under the seats (ADR 0034, rules 6 to 9). Each gives way
+## The table's two side columns under the seats (ADR 0034, rules 6 to 10). Each gives way
 ## in a fixed order until what it holds fits; nothing in either is ever laid over
 ## another piece.
 ##
@@ -8,10 +8,11 @@ extends RefCounted
 ## Campaign tray, then the notice. The tray drops its heading; then the notice is taken
 ## down; then the seat's intel line fits its type down, never under Standard.
 ##
-## Right, between the right seat's top and the action column at its tallest: the seat,
-## then the rules slip, then the wall roster at the column's foot. The roster is taken
-## down first; then the slip names its rules, then fits their type down; then the seat's
-## intel line fits its type down; only then is the slip counted.
+## Right, between the right seat's top and the action column at its tallest, which is its
+## height at Standard since the prompt's box is (rule 10): the seat, then the rules slip,
+## then the wall roster at the column's foot. The roster is taken down first; then the
+## slip names its rules, then fits their type down; then the seat's intel line fits its
+## type down; only then is the slip counted.
 
 ## Between a seat's foot and what stands under it, and above the action column.
 const GAP: float = 8.0
@@ -27,7 +28,6 @@ var _tray: CampaignTray
 var _dressing: DreadDressing
 var _strip: DebuffStrip
 var _actions: ActionBar
-var _controller: RunController
 ## The action column's top at its tallest, measured once the table is laid out.
 var _floor: float = -1.0
 ## True while a second layout is waiting for the frame's end.
@@ -41,8 +41,7 @@ func setup(
 	tray: CampaignTray,
 	dressing: DreadDressing,
 	strip: DebuffStrip,
-	actions: ActionBar,
-	controller: RunController
+	actions: ActionBar
 ) -> void:
 	_left = seats[Seats.LEFT]
 	_right = seats[Seats.RIGHT]
@@ -50,7 +49,6 @@ func setup(
 	_dressing = dressing
 	_strip = strip
 	_actions = actions
-	_controller = controller
 	strip.shown.connect(fit_right)
 	tray.changed.connect(fit_left)
 
@@ -142,13 +140,13 @@ func fit_right() -> void:
 	_fitting = false
 
 
-## The action column's top with its tallest prompt, playing or bidding.
+## The action column's top with the prompt's box over its tallest row, playing or
+## bidding: never higher than at Standard (ADR 0034, rule 10).
 func floor_top() -> float:
 	if _floor < 0.0:
 		var tall: float = 0.0
 		for bidding: bool in [false, true]:
-			var prompts: Array[String] = PromptLines.every(_controller, bidding)
-			tall = maxf(tall, _actions.tallest(prompts, bidding))
+			tall = maxf(tall, _actions.tallest(bidding))
 		_floor = _actions.held().end.y - tall
 	return _floor
 

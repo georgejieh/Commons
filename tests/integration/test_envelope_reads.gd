@@ -120,8 +120,8 @@ func test_a_kept_seal_lies_off_its_caption_and_take_nothing_goes() -> void:
 			index += 1
 		var paper: ChoicePaper = overlay.papers()[index]
 		paper.keep.pressed.emit()
-		await get_tree().create_timer(0.45).timeout
-		assert_bool(overlay.seal().visible).override_failure_message(kind).is_true()
+		var sealed: Callable = func() -> bool: return overlay.seal().visible
+		await TestWait.until(self, sealed, "the seal on the %s" % kind, WAIT_SECONDS)
 		var seal: Rect2 = overlay.seal().get_global_rect().grow(-ClipCheck.SLACK)
 		if paper.caption_strip().is_visible_in_tree():
 			var strip: Rect2 = paper.caption_strip().get_global_rect()

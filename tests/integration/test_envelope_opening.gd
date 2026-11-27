@@ -48,8 +48,7 @@ func _bought(store: StoreScreen) -> EnvelopeOverlay:
 func test_a_click_ends_the_opening_and_chooses_nothing() -> void:
 	var store: StoreScreen = await _open()
 	var overlay: EnvelopeOverlay = _bought(store)
-	await get_tree().create_timer(EnvelopeOpening.ARRIVE_TIME * 0.5).timeout
-	assert_bool(overlay.is_busy()).is_true()
+	await TestWait.until(self, overlay.is_busy, "the opening to begin")
 	var commands: int = _loop().record.commands.size()
 	var paper: ChoicePaper = overlay.papers()[0]
 	var click: InputEventMouseButton = InputEventMouseButton.new()
@@ -65,6 +64,7 @@ func test_a_click_ends_the_opening_and_chooses_nothing() -> void:
 		assert_vector(laid.scale).is_equal(Vector2.ONE)
 		assert_float(laid.rotation).is_equal(0.0)
 	# Nothing of the act runs on after it: the papers stay where they were laid.
+	# Timed: that nothing moves is seen only over the time the act would have run.
 	await get_tree().create_timer(EnvelopeOpening.OPEN_TIME + EnvelopeOpening.FAN_TIME).timeout
 	assert_bool(is_instance_valid(overlay)).is_true()
 	assert_vector(paper.position).is_equal(Vector2.ZERO)

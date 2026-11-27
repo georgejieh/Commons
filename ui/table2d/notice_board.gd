@@ -27,7 +27,8 @@ var empty_line: String = ""
 
 ## The papers pinned on the board, one for each held Cadre, in slot order.
 var cards: Array[TipHost] = []
-var _pictures: Array[TextureRect] = []
+## Each slot's Cadre art, in slot order, for tests and tools.
+var pictures: Array[TextureRect] = []
 var _badges: Array[CadreBadge] = []
 var _marks: Array[ConfiscatedMark] = []
 var _ids: Array[String] = []
@@ -70,7 +71,7 @@ func _grow(slots: int) -> void:
 		_marks.append(mark)
 		add_child(card)
 		cards.append(card)
-		_pictures.append(picture)
+		pictures.append(picture)
 		_badges.append(badge)
 	for card: TipHost in cards:
 		card.custom_minimum_size = tile_size(cards.size())
@@ -166,7 +167,7 @@ func show_cadres(controller: RunController) -> void:
 			cards[index].set_tip(name, rule)
 		else:
 			cards[index].set_tip("", "")
-		_pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null
+		pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null
 		var bare: bool = held and not ScreenKit.ART.has_cadre(cadre_ids[index])
 		_badges[index].show_name(tr("modifier.%s.name" % cadre_ids[index]) if bare else "")
 		_badges[index].show_count(

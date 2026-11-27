@@ -182,10 +182,12 @@ func test_the_table_moves_the_beds_and_leaving_it_silences_them() -> void:
 	var seats: Array[SeatPanel] = []
 	dread.setup(materials, dressing, seats)
 	dread.force(90, 90, false)
+	# Stepped: one step as long as a whole fade, so the test waits on no frame of play.
 	Audio.ambience._process(SCORE.fade_seconds + 0.1)
 	assert_float(Audio.ambience.bed_level("crowd")).is_equal(1.0)
 	assert_float(Audio.ambience.bed_level("room")).is_equal(1.0)
 	dread.clear()
+	# Stepped: one step as long as a whole fade, so the test waits on no frame of play.
 	Audio.ambience._process(SCORE.fade_seconds + 0.1)
 	assert_float(Audio.ambience.bed_level("crowd")).is_equal(0.0)
 	assert_float(Audio.ambience.bed_level("room")).is_equal(0.0)
@@ -226,6 +228,7 @@ func _settle_on(state: String, intensity: float) -> void:
 func _step(seconds: float) -> void:
 	var left: float = seconds
 	while left > 0.0:
+		# Stepped: the fade is stepped a frame's length at a time, with no frame waited for.
 		_ambience._process(minf(FRAME, left))
 		left -= FRAME
 

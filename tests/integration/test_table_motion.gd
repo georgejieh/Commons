@@ -6,8 +6,8 @@ extends GdUnitTestSuite
 const SEED: int = 4301
 ## Long enough that any tween left without its node would still be running.
 const SLOW: float = 5.0
-## Longer than any entrance on the screen shown after the table.
-const SETTLE_MS: int = 1200
+## Longer than any entrance on the screen shown after the table, in seconds.
+const SETTLE: float = 1.2
 
 var _app: DemoApp
 var _was_reduced: bool
@@ -32,15 +32,17 @@ func after_test() -> void:
 
 func test_no_tween_outlives_the_table() -> void:
 	_slow_presets()
-	await await_millis(SETTLE_MS)
-	var before: int = get_tree().get_processed_tweens().size()
+	var tweens: Callable = func() -> int: return get_tree().get_processed_tweens().size()
+	await TestWait.still(self, tweens, "the motion before the table to end")
+	var before: int = tweens.call()
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	_start_every_motion(table)
 	assert_int(get_tree().get_processed_tweens().size()).is_greater(before)
 	_app.show_screen("settings", true)
-	await await_millis(SETTLE_MS)
-	assert_int(get_tree().get_processed_tweens().size()).is_less_equal(before)
+	# Within the settle, as a tween left without its node runs SLOW seconds on.
+	var ended: Callable = func() -> bool: return int(tweens.call()) <= before
+	await TestWait.until(self, ended, "the table's tweens to end with it", SETTLE)
 
 
 func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
@@ -53,8 +55,7 @@ func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
 	assert_int(pool.free_count()).is_equal(free_before - 3)
 	pile.sweep(Vector2.ZERO)
 	assert_int(pile.card_count()).is_equal(3)
-	await await_millis(int((UiMotion.PRESETS.sweep + 0.3) * 1000.0))
-	assert_int(pile.card_count()).is_equal(0)
+	await TestWait.until(self, func() -> bool: return pile.card_count() == 0, "the sweep")
 	assert_int(pool.free_count()).is_equal(free_before)
 
 
@@ -68,8 +69,7 @@ func test_a_ledger_score_counts_up_to_its_value() -> void:
 	ledger.add_play(2, 20.0, 2.0, 1.0, 40.0)
 	ledger.add_play(0, 30.0, 2.0, 1.0, 60.0)
 	assert_bool(ledger.is_counting()).is_true()
-	await await_millis(int((UiMotion.PRESETS.count_time + 0.3) * 1000.0))
-	assert_bool(ledger.is_counting()).is_false()
+	await TestWait.until(self, func() -> bool: return not ledger.is_counting(), "the count")
 	assert_float(ledger.total_of(1)).is_equal(480.0)
 	# The Commons pool is what the two peasants scored between them.
 	assert_float(ledger.pool()).is_equal(100.0)

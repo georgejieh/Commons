@@ -5,10 +5,15 @@ extends VBoxContainer
 ## (SitOut), and the Hint, Sort and Rules toggles. Bidding swaps in Call and Pass,
 ## and the opening before the first play, where a Campaign may be used, swaps in Play on.
 ## The column is held at its foot and its width (ADR 0034): a taller prompt grows it up
-## into the empty table, and the toggles' type fits the width, never under Standard.
+## into the empty table, and the toggles' type fits the width, never under Standard. The
+## prompt has a box as tall as the tallest prompt stands at its Standard type (rule 10):
+## a prompt that would stand taller at a larger text size fits its type down into the
+## box, never under Standard, so the column never stands taller than it does at Standard.
 
 ## The toggles' type at Standard.
 const TOGGLE_SIZE: int = 18
+## The prompt's type at Standard.
+const PROMPT_SIZE: int = 24
 
 var reading: Label = Label.new()
 var play: Button = Button.new()
@@ -27,6 +32,9 @@ var _bid_row: HBoxContainer = HBoxContainer.new()
 var _toggles: HBoxContainer = HBoxContainer.new()
 ## Where the column stands: its left edge, width and foot.
 var _held: Rect2 = Rect2()
+## The prompt's box: how tall the tallest prompt stands at its Standard type. Every prompt
+## fits until size_prompt() measures it.
+var _prompt_room: float = INF
 
 
 func _ready() -> void:
@@ -35,7 +43,7 @@ func _ready() -> void:
 	# lines grows up from them, and nothing under the pointer moves.
 	alignment = BoxContainer.ALIGNMENT_END
 	reading.theme_type_variation = CommonsTheme.TITLE
-	reading.add_theme_font_size_override("font_size", TextSize.px(24))
+	reading.add_theme_font_size_override("font_size", TextSize.px(PROMPT_SIZE))
 	ScreenKit.paper_outline(reading)
 	reading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(reading)
@@ -90,22 +98,65 @@ func hold(box: Rect2) -> void:
 	position = Vector2(_held.position.x, _held.end.y - size.y)
 
 
-## How tall the column stands with the tallest of prompts over the play set, or over
-## Call and Pass when bidding: measured on the prompt line at the column's width.
-func tallest(prompts: Array[String], bidding: bool) -> float:
-	var shown: String = reading.text
-	var tall: float = 0.0
+## Measures the prompt's box from every prompt the line can show, playing and bidding, at
+## the prompt's Standard type and the column's width. Call after hold().
+func size_prompt(prompts: Array[String]) -> void:
+	var room: float = 0.0
 	for prompt: String in prompts:
-		reading.text = prompt
-		tall = maxf(tall, reading.get_minimum_size().y)
-	reading.text = shown
+		room = maxf(room, _prompt_height(prompt, TextSize.least(PROMPT_SIZE)))
+	_prompt_room = room
+	_fit_prompt()
+
+
+## Shows text on the prompt line, with tip as its tooltip: at the chosen text size, or
+## where that would stand taller than the prompt's box, fitted down into it, never under
+## Standard.
+func say(text: String, tip: String = "") -> void:
+	reading.text = text
+	reading.tooltip_text = tip
+	_fit_prompt()
+
+
+## How tall the column stands with the prompt's box over the play set, or over Call and
+## Pass when bidding.
+func tallest(bidding: bool) -> float:
 	var row: Control = _bid_row if bidding else _turn_row
-	return tall + get_theme_constant("separation") + row.get_combined_minimum_size().y
+	return _prompt_room + get_theme_constant("separation") + row.get_combined_minimum_size().y
+
+
+## The prompt line's type now, for tests.
+func prompt_size() -> int:
+	return reading.get_theme_font_size("font_size")
+
+
+## The prompt's box, for tests.
+func prompt_room() -> float:
+	return _prompt_room
 
 
 ## Where the column was stood: its left edge, width and foot, for the table and tests.
 func held() -> Rect2:
 	return _held
+
+
+func _fit_prompt() -> void:
+	var text: String = reading.text
+	var fits: Callable = func(font_size: int) -> bool:
+		return _prompt_height(text, font_size) <= _prompt_room
+	var font_size: int = TextSize.fit(PROMPT_SIZE, PROMPT_SIZE, fits)
+	reading.add_theme_font_size_override("font_size", font_size)
+
+
+## How tall the prompt line stands holding text at font_size, at the column's width. The
+## box and the fit both measure here, so they cannot disagree. It leaves the line's type
+## at font_size: _fit_prompt sets the type after every measurement.
+func _prompt_height(text: String, font_size: int) -> float:
+	var shown: String = reading.text
+	reading.text = text
+	reading.add_theme_font_size_override("font_size", font_size)
+	var tall: float = reading.get_minimum_size().y
+	reading.text = shown
+	return tall
 
 
 ## The toggles' row as wide as it stands at font_size, with the longest sort it can show.
@@ -143,10 +194,13 @@ func show_opening(on: bool) -> void:
 	_turn_row.visible = not on and not _bid_row.visible
 
 
-## The Hint shows only while the player keeps it on.
+## The Hint shows only while the player keeps it on; the prompt takes a new text size
+## at once.
 func _on_setting(key: String) -> void:
 	if key == HintSetting.SETTING:
 		hint.visible = HintSetting.shown()
+	if key == TextSize.SETTING:
+		_fit_prompt()
 
 
 func _button(button: Button, key: String, kind: String) -> void:

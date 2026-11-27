@@ -6,7 +6,8 @@ extends GdUnitTestSuite
 
 ## The page is whole by this, the motion rule's "about a second and a half".
 const WHOLE_BY: float = 1.6
-const SLACK_MSEC: int = 300
+## What a headless frame may run late by, in seconds.
+const SLACK: float = 0.3
 
 var _app: DemoApp
 var _was_motion: bool
@@ -65,16 +66,19 @@ func test_the_title_arrives_in_order_and_is_whole_in_time() -> void:
 	assert_float(title.arrives_in()).is_less_equal(WHOLE_BY)
 	# Part way: the eyebrow and the first letter are coming, the last letter is not down
 	# and the minor row has not started.
+	# Timed: the page part way through is the moment looked at.
 	await await_millis(int((presets.title_start + presets.title_stagger + 0.25) * 1000.0))
 	assert_float(eyebrow.modulate.a).is_greater(0.0)
 	assert_float(word.landed(0)).is_greater(0.0)
 	assert_float(word.landed(last)).is_less(1.0)
 	assert_float(minor.modulate.a).is_equal(0.0)
-	await await_millis(int(maxf(title.arrives_in(), presets.settle_time) * 1000.0) + SLACK_MSEC)
-	assert_bool(word.is_printed()).is_true()
-	for piece: Control in [eyebrow, start, minor]:
-		assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
-	assert_vector(title.poster().scale).is_equal_approx(Vector2.ONE, Vector2(0.001, 0.001))
+	var whole: Callable = func() -> bool:
+		var shown: bool = [eyebrow, start, minor].all(
+			func(piece: Control) -> bool: return piece.modulate.a >= 0.99
+		)
+		return word.is_printed() and shown and title.poster().scale.is_equal_approx(Vector2.ONE)
+	var within: float = maxf(title.arrives_in(), presets.settle_time) + SLACK
+	await TestWait.until(self, whole, "the whole page to arrive", within)
 	# The entrance left the focused button its lift.
 	var lifted: Vector2 = Vector2.ONE * presets.hover_scale
 	assert_vector(start.scale).is_equal_approx(lifted, Vector2(0.01, 0.01))

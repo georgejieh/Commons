@@ -71,7 +71,7 @@ func test_buying_a_rank_cadre_asks_for_a_rank_then_seals_it_with_the_rank() -> v
 	assert_bool(store.cadres.is_buying()).is_true()
 	var seal: InkSeal = cadres.seal
 	assert_bool(seal.visible).is_true()
-	await await_millis(int((CadreCounter.SEAL_HOLD + CadreCounter.PIN_TIME) * 1000.0) + 300)
+	await TestWait.until(self, func() -> bool: return not cadres.is_buying(), "the seal and pin")
 	var board: NoticeBoard = store.board
 	var slot: int = state.inventory.cadres.find("rehabilitation")
 	assert_str(board.count_at(slot)).is_equal("7s")

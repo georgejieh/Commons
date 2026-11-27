@@ -25,7 +25,7 @@ func test_a_play_with_many_readings_keeps_every_choice_on_screen() -> void:
 	assert_int(readings.size()).is_greater(12)
 	var picker: ReadingPicker = _picker()
 	picker.open(readings, CHOSEN)
-	await await_millis(600)
+	await TestWait.still(self, picker.slip_rect, "the slip to open")
 	var room: Rect2 = Rect2(
 		0, ReadingPicker.TOP - 1.0, SCREEN.size.x, CHOSEN.position.y - ReadingPicker.TOP + 1.0
 	)
@@ -47,7 +47,7 @@ func test_a_short_slip_is_drawn_full_size() -> void:
 	readings.resize(2)
 	var picker: ReadingPicker = _picker()
 	picker.open(readings, CHOSEN)
-	await await_millis(600)
+	await TestWait.still(self, picker.slip_rect, "the slip to open")
 	assert_float(picker.slip_rect().size.x).is_equal_approx(ReadingPicker.WIDTH, 0.5)
 	# Above the cards, its foot a gap over them.
 	var foot: float = CHOSEN.position.y - ReadingPicker.GAP

@@ -13,16 +13,16 @@ const TRAY_REFORM: String = "couriers_bag"
 const TRAY_SIZE: int = 3
 ## The most cards a hand or one play holds: the landlord's hand after the kitty.
 const MOST_CARDS: int = 20
-## Card ids for the staged hand and play, clear of each other.
-const HAND_IDS: int = 0
+## Card ids for the staged play, clear of the deck's, which the hand holds.
 const PLAY_IDS: int = 100
 ## The rules slip's width on the table: from the right seat's left edge to the action
 ## column's right edge.
 const STRIP_WIDTH: float = 428.0
 
 
-## Opens the table at a text size with the run's state set for the worst case: a full
-## Campaign tray of the longest names, and either the three debuffs that make the strip
+## Opens the table at a text size with the run's state set for the worst case: the player
+## leading as landlord with the twenty cards the bid gave, a full Campaign tray of the
+## longest names, and either the three debuffs that make the strip
 ## tallest in full, or, with named, the most the strip can ever name: the three debuffs
 ## with the longest names, every Reform held, a full board of the longest-named Cadres,
 ## and two wild ranks (set by fill); and either way the worst boss (BossWorstCase).
@@ -30,6 +30,8 @@ const STRIP_WIDTH: float = 428.0
 static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> TableScreen:
 	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
+	if state.landlord_seat != Seats.PLAYER:
+		ControllerScript.new().take_landlord(suite, app.controller)
 	if not state.reforms.has(TRAY_REFORM):
 		state.reforms.append(TRAY_REFORM)
 	state.inventory.consumables.assign(longest_campaigns(app))
@@ -57,7 +59,7 @@ static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> T
 ## Fills every text piece with its longest string. bidding shows Call and Pass in place of
 ## the play set; redacted lays the bars over the brigade notice; wild names two wild
 ## ranks on the slip; intel puts the tallest intel lines on both seats; armed arms the
-## tray's first Campaign, so Use and Cancel show.
+## tray's first Campaign that can be used now, so Use and Cancel show.
 static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 	table.motion.set_still(true)
 	var seats: Dictionary[int, SeatPanel] = table.seats
@@ -80,7 +82,6 @@ static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 	var actions: ActionBar = table.actions
 	var bidding: bool = options.get("bidding", false)
 	actions.show_bidding(bidding)
-	actions.reading.text = tallest(actions.reading, PromptLines.every(app.controller, bidding))
 	var dressing: DreadDressing = table.dressing
 	dressing.show_piece("redaction", 1.0 if options.get("redacted", false) else 0.0)
 	# The first notice, which none stands taller than (test_brigade_notice).
@@ -89,7 +90,7 @@ static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 	for piece: String in DRESSING:
 		dressing.show_piece(piece, 1.0)
 	var hand: HandView = table.hand_view
-	app.hand.set("_cards", cards(HAND_IDS))
+	app.hand.refresh()
 	hand.show_cards()
 	var pile: TrickPile = table.pile
 	pile.clear()
@@ -100,14 +101,26 @@ static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 	tray.visible = true
 	tray.disarm()
 	if options.get("armed", false):
-		# Armed whatever the moment allows, so Use and Cancel show for the layout.
-		tray.set("_armed", 0)
-		tray.call("_show_marks")
+		arm(tray)
 	var strip: DebuffStrip = table.debuffs
 	strip.wild_ranks = longest_wild_ranks() if options.get("wild", false) else ([] as Array[int])
 	strip.show_debuffs(app.controller)
 	var columns: TableColumns = table.columns
 	columns.fit()
+	# Last, as the hand and the tray set the prompt line whenever they change. The tallest
+	# is found at the chosen size, then shown as the table shows it, fitted to its box.
+	actions.say("")
+	actions.say(tallest(actions.reading, PromptLines.every(app.controller, bidding)))
+
+
+## Arms the tray's first Campaign that can be used now, as a click on it does, and returns
+## its slot, or -1 when none can be.
+static func arm(tray: CampaignTray) -> int:
+	for slot: int in tray.campaign_count():
+		if tray.leaflet(slot).visible and tray.leaflet(slot).reason == RunController.CAMPAIGN_OK:
+			tray.arm(slot)
+			return tray.armed_slot()
+	return -1
 
 
 ## Each piece of the table that must stay clear of the others, by name, as drawn.
@@ -353,7 +366,8 @@ static func longest_slogan_type() -> int:
 	return best
 
 
-## The held Campaigns with the longest names, as many as a full tray holds.
+## The held Campaigns with the longest names, as many as a full tray holds. Each of them
+## can be used on the landlord's lead, so the armed tray is one the player can have.
 static func longest_campaigns(app: DemoApp) -> Array[String]:
 	var ids: Array[String] = []
 	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:

@@ -111,7 +111,7 @@ func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
 	var seal: InkSeal = cadres.seal
 	assert_bool(seal.visible).is_true()
 	assert_str(seal.word()).is_equal(tr("store.approved").to_upper())
-	await await_millis(int((CadreCounter.SEAL_HOLD + CadreCounter.PIN_TIME) * 1000.0) + 300)
+	await TestWait.until(self, func() -> bool: return not cadres.is_buying(), "the seal and pin")
 	assert_bool(store.cadres.is_buying()).is_false()
 	assert_bool(seal.visible).is_false()
 	var board: NoticeBoard = store.board
@@ -139,7 +139,9 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	assert_int(state.resentment).is_equal(before + _app.controller.figures.purchase_resentment())
 	var seal: InkSeal = market_cadres.seal
 	assert_str(seal.word()).is_equal(tr("market.paid").to_upper())
-	await await_millis(int((CadreCounter.SEAL_HOLD + CadreCounter.PIN_TIME) * 1000.0) + 300)
+	await TestWait.until(
+		self, func() -> bool: return not market_cadres.is_buying(), "the seal and pin"
+	)
 	# The plot upgrades are on the counter too, and each is a private purchase.
 	var market_goods: MarketGoods = market.goods
 	var tickets: HBoxContainer = market_goods.upgrades
@@ -170,7 +172,7 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 	reroll.pressed.emit()
 	assert_array(_app.controller.store.store_stock()).is_equal(stock)
 	assert_int(_app.controller.state_copy().coupons).is_equal(coupons)
-	await await_millis(int((CadreCounter.SEAL_HOLD + CadreCounter.PIN_TIME) * 1000.0) + 300)
+	await TestWait.until(self, func() -> bool: return not cadres.is_buying(), "the seal and pin")
 	assert_bool(store.cadres.is_buying()).is_false()
 
 
