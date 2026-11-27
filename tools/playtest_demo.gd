@@ -152,10 +152,10 @@ func _table_step() -> void:
 			await _bid(table)
 		AWAIT_NEED:
 			var need_panel: Node = table.get("need_panel")
-			await _press(member(need_panel, "_more"))
+			await _press(member(need_panel, "more"))
 			await _frames(6)
 			await _shot("round%d_need" % _rounds_seen)
-			await _press(member(need_panel, "_declare"))
+			await _press(need_panel.call("declare_button"))
 			await _table.dice_frames(table, _rounds_seen)
 			await _shot("round%d_audit" % _rounds_seen)
 		AWAIT_SWAP:

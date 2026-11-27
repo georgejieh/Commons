@@ -122,7 +122,7 @@ func _pick(method: Method, card_id: int) -> void:
 func _declare(method: Method) -> void:
 	if method == Method.MOUSE:
 		var panel: NeedPanel = _table.need_panel
-		await _click(_center(panel.get("_declare")))
+		await _click(_center(panel.declare_button()))
 	else:
 		await _send(method, "accept")
 
