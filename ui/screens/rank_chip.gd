@@ -20,7 +20,6 @@ func _init(chip_rank: int, chip_label: String) -> void:
 	_label = chip_label
 	custom_minimum_size = SIZE
 	focus_mode = Control.FOCUS_ALL
-	tooltip_text = chip_label
 	for style: String in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
 		add_theme_stylebox_override(style, StyleBoxEmpty.new())
 	focus_entered.connect(queue_redraw)
@@ -29,7 +28,7 @@ func _init(chip_rank: int, chip_label: String) -> void:
 	mouse_exited.connect(queue_redraw)
 
 
-## The rank as the chip prints it, for tests.
+## The rank as the chip prints it, which the slip names.
 func label() -> String:
 	return _label
 

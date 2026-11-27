@@ -25,7 +25,7 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
-func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void:
+func test_store_cards_print_name_and_rules_and_buy_shows_no_plain_tooltip() -> void:
 	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
@@ -35,11 +35,9 @@ func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void
 	assert_int(counter.get_child_count()).is_equal(stock.size())
 	for slot: int in stock.size():
 		var panel: Control = counter.get_child(slot) as Control
-		var tip: String = ScreenKit.cadre_tip(_app.controller, stock[slot])
 		var buy: Button = panel.find_children("*", "Button", true, false)[0]
-		assert_str(buy.tooltip_text).is_equal(tip)
+		assert_str(buy.tooltip_text).is_empty()
 		var title: String = tr("modifier.%s.name" % stock[slot])
-		assert_str(tip).contains(title)
 		# The name is printed once, and the full rules under it.
 		var names: Array[Node] = _labels(panel).filter(
 			func(label: Node) -> bool: return (label as Label).text == title

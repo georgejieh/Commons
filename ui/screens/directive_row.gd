@@ -32,6 +32,8 @@ var _busy: bool = false
 ## The screen's own purchase in progress, which holds this row too.
 var _screen_busy: Callable
 var _seal: InkSeal = InkSeal.new()
+## The shop's shared slip, which explains each document and its Buy button.
+var _slip: DetailSlip = null
 
 
 func _init() -> void:
@@ -42,6 +44,7 @@ func setup(shop: StallContext) -> void:
 	_controller = shop.controller
 	_desk = shop.desk
 	_screen_busy = shop.busy
+	_slip = shop.slip
 	_seal.prepare(tr("directive.issued"), ScreenKit.RED, SEAL_WIDTH)
 	# Above the documents and out of the row's layout.
 	_seal.top_level = true
@@ -101,16 +104,10 @@ func _document(slot: int, directive_id: String) -> Control:
 		sheet.add_child(line)
 		lines.append(line)
 	var panel: Control = ScreenKit.card_panel(sheet)
-	var tip: String = (
-		"%s\n%s"
-		% [
-			_controller.texts.directive_name(directive_id),
-			Keywords.wrapped(_controller.texts.directive_text(directive_id)),
-		]
-	)
-	panel.tooltip_text = tip
-	buy.tooltip_text = tip
-	buy.set_meta(TipPlacer.SUBJECT, panel)
+	var named: String = _controller.texts.directive_name(directive_id)
+	var rule: String = _controller.texts.directive_text(directive_id)
+	_slip.follow(panel, named, rule)
+	_slip.follow(buy, named, rule, panel)
 	buy.pressed.connect(_issue.bind(slot, directive_id, panel, lines, buy, title))
 	return panel
 

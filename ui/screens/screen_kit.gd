@@ -384,9 +384,3 @@ static func rule_text(controller: RunController, modifier_id: String) -> String:
 	if not standing.is_empty():
 		rule += " " + standing
 	return rule
-
-
-## A Cadre's name over its rules, wrapped for a plain tooltip.
-static func cadre_tip(controller: RunController, cadre_id: String) -> String:
-	var name: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
-	return "%s\n%s" % [name, Keywords.wrapped(rule_text(controller, cadre_id))]

@@ -98,8 +98,11 @@ func test_a_scarce_cadre_is_stamped_and_a_routine_one_is_not() -> void:
 	assert_float(shown.end.y).is_less_equal(picture.end.y)
 	# The word is explained where the rules are, and only on the scarce card.
 	var note: String = tr("store.scarce.note")
-	assert_str(_buy_button(cards[0]).tooltip_text).contains(note)
-	assert_str(_buy_button(cards[1]).tooltip_text).not_contains(note)
+	_buy_button(cards[0]).grab_focus()
+	assert_str(store.slip.shown_rule()).contains(note)
+	_buy_button(cards[1]).grab_focus()
+	assert_str(store.slip.shown_rule()).not_contains(note)
+	_buy_button(cards[1]).release_focus()
 	# A page refreshed, as after a purchase, shows it at rest: it is pressed once.
 	store.refresh()
 	await await_idle_frame()

@@ -6,9 +6,6 @@ extends Node
 ## this moves it once the engine has shown it, before it is drawn. One watches the whole
 ## tree from the app.
 
-## A control may name another as the thing its tooltip explains, as a Buy button names
-## its card: the tooltip then keeps off all of that one.
-const SUBJECT: StringName = &"tip_subject"
 ## How the engine marks its tooltip's panel.
 const VARIATION: StringName = &"TooltipPanel"
 const GAP: float = 10.0
@@ -41,15 +38,11 @@ static func _is_tooltip(panel: Window) -> bool:
 	)
 
 
-## What a tooltip on control keeps off: the control, or the one it names, and every
-## button inside that, which may stand past its edge.
+## What a tooltip on control keeps off: the control and every button inside it, which may
+## stand past its edge.
 static func subject(control: Control) -> Rect2:
-	var named: Object = control.get_meta(SUBJECT) if control.has_meta(SUBJECT) else null
-	var thing: Control = control
-	if is_instance_valid(named) and named is Control and (named as Control).is_inside_tree():
-		thing = named as Control
-	var rect: Rect2 = SlipPlacer.on_screen(thing)
-	for node: Node in thing.find_children("*", "BaseButton", true, false):
+	var rect: Rect2 = SlipPlacer.on_screen(control)
+	for node: Node in control.find_children("*", "BaseButton", true, false):
 		var button: Control = node as Control
 		if button.is_visible_in_tree():
 			rect = rect.merge(SlipPlacer.on_screen(button))

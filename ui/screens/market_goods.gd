@@ -57,7 +57,7 @@ func _show_upgrades() -> void:
 		var ticket: Button = ScreenKit.button(text, CommonsTheme.COUPON)
 		ticket.disabled = not desk.can_upgrade(kind)
 		BuyTicket.readable(ticket)
-		ticket.tooltip_text = Keywords.wrapped(tr("market.upgrade.%s.tip" % kind))
+		_shop.slip.follow(ticket, "", tr("market.upgrade.%s.tip" % kind))
 		ticket.pressed.connect(_buy.bind(_shop.controller.upgrade.bind(kind), "upgrade"))
 		upgrades.add_child(ticket)
 

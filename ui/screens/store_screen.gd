@@ -99,6 +99,7 @@ func open(app: App) -> void:
 	column.add_child(_button_row())
 	column.add_child(_bottom_row())
 	add_child(cadres.seal)
+	cadres.picker.slip = slip
 	add_child(cadres.picker)
 	add_child(slip)
 	add_child(deck)
@@ -231,7 +232,7 @@ func _button_row() -> Control:
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
 	)
 	var deck_button: Button = ScreenKit.button(tr("deck.open"), CommonsTheme.GHOST)
-	deck_button.tooltip_text = tr("deck.open_tip")
+	slip.follow(deck_button, "", tr("deck.open_tip"))
 	# The Deck button and the desk's ticket are as wide as their words, so the black
 	# market's row keeps its upgrades.
 	deck_button.custom_minimum_size = Vector2.ZERO

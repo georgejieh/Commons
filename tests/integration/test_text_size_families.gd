@@ -92,14 +92,13 @@ func test_every_cadre_fits_its_shop_card() -> void:
 	_assert_none(problems)
 
 
-## Every Cadre's name on a full board's badge, and its tooltip no wider than the screen.
-func test_every_cadre_fits_the_board_and_its_tip() -> void:
+## Every Cadre's name, and the widest counts, fit a full board's badge.
+func test_every_cadre_fits_the_board() -> void:
 	var board: NoticeBoard = auto_free(NoticeBoard.new())
 	_app.add_child(board)
 	board.setup(6, StoreScreen.BOARD_BOX)
 	var tile: float = board.tile_size(6).x - CadreBadge.NAME_MARGIN * 2.0
 	var font: Font = board.get_theme_default_font()
-	var tip_size: int = TextSize.px(CommonsTheme.STYLE.body_size)
 	for cadre: ModifierDef in RunLoop.all_cadres():
 		var title: String = tr(cadre.name_key)
 		var fitted: int = CadreBadge.name_size(font, title, tile)
@@ -109,10 +108,6 @@ func test_every_cadre_fits_the_board_and_its_tip() -> void:
 			. override_failure_message(title)
 			. is_true()
 		)
-		var tip: String = ScreenKit.cadre_tip(_app.controller, cadre.id)
-		for line: String in tip.split("\n"):
-			var wide: float = font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, tip_size).x
-			assert_float(wide).override_failure_message(line).is_less(1280.0)
 	for count: String in ["+999", "99s", "x9.9"]:
 		var count_px: int = CadreBadge.count_size(font, count)
 		var wide: float = font.get_string_size(count, HORIZONTAL_ALIGNMENT_LEFT, -1, count_px).x
