@@ -210,7 +210,7 @@ func _fit() -> void:
 
 
 ## One entry for each mark the deck or the plot holds now: its drawn mark, its name and
-## how many cards carry it.
+## how many cards carry it, explained in the sheet's slip while hovered.
 func _show_legend(cards: Array[CardInstance]) -> void:
 	ScreenKit.clear(legend)
 	var counts: Dictionary[String, int] = {}
@@ -233,7 +233,7 @@ func _legend_entry(mark: String, count: int) -> Control:
 	drawn.visible = true
 	var words: String = tr("deck.legend.entry").format({"mark": mark_name(mark), "count": count})
 	var entry: HBoxContainer = ScreenKit.row([drawn, ScreenKit.label(words, LEGEND_SIZE)], 6)
-	entry.tooltip_text = Keywords.wrapped(Keywords.meaning(mark))
+	_slip.follow(entry, "", Keywords.meaning(mark))
 	return entry
 
 
