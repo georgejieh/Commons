@@ -148,15 +148,14 @@ func _fit_prompt() -> void:
 
 
 ## How tall the prompt line stands holding text at font_size, at the column's width. The
-## box and the fit both measure here, so they cannot disagree.
+## box and the fit both measure here, so they cannot disagree. It leaves the line's type
+## at font_size: _fit_prompt sets the type after every measurement.
 func _prompt_height(text: String, font_size: int) -> float:
 	var shown: String = reading.text
-	var was: int = reading.get_theme_font_size("font_size")
 	reading.text = text
 	reading.add_theme_font_size_override("font_size", font_size)
 	var tall: float = reading.get_minimum_size().y
 	reading.text = shown
-	reading.add_theme_font_size_override("font_size", was)
 	return tall
 
 
