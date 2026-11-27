@@ -50,6 +50,9 @@ class Recorder:
 	func meter_change(_context: MeterContext) -> void:
 		log.append(label)
 
+	func audit(_context: AuditContext) -> void:
+		log.append(label)
+
 
 ## A rules effect of the kind later items will add.
 class WildForHolder:
@@ -128,7 +131,7 @@ func test_the_validator_catches_each_kind_of_bad_definition() -> void:
 
 
 func test_the_hook_list_is_complete_and_each_hook_is_a_method() -> void:
-	assert_int(Hooks.ALL.size()).is_equal(11)
+	assert_int(Hooks.ALL.size()).is_equal(12)
 	var effect: ModifierEffect = ModifierEffect.new()
 	for hook: String in Hooks.ALL:
 		assert_bool(effect.has_method(hook)).is_true()
@@ -155,6 +158,7 @@ func _run_every_hook(stack: ModifierStack) -> void:
 	stack.run_set_end(SetContext.new(0, true))
 	stack.run_shop_open(ShopContext.new(0))
 	stack.run_meter_change(MeterContext.new("famine", 1))
+	stack.run_audit(AuditContext.new(0.0))
 
 
 func test_every_hook_runs_cadres_then_debuffs_then_the_boss() -> void:

@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="FamilyDef" format=3]
+
+[ext_resource type="Script" path="res://data/villagers/family_def.gd" id="1"]
+[ext_resource type="Script" path="res://data/bots/personality.gd" id="2"]
+[ext_resource type="Script" path="res://data/ui/speech_book.gd" id="3"]
+[ext_resource type="Script" path="res://data/ui/speech_line.gd" id="4"]
+[ext_resource type="Resource" path="res://data/ui/voices/zhao.tres" id="5"]
+[ext_resource type="Texture2D" path="res://art/portraits/portrait_zhao_face.png" id="6"]
+
+[sub_resource type="Resource" id="personality"]
+script = ExtResource("2")
+tier = 2
+bomb_aggression = 2
+cooperation = 1
+honesty = 2
+ambition = 2
+grudge = 2
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("4")
+event = "call"
+text_key = "speech.zhao.call.1"
+mood = "eager"
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("4")
+event = "bomb"
+text_key = "speech.zhao.bomb.1"
+mood = "eager"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("4")
+event = "cards_left"
+text_key = "speech.zhao.cards_left.1"
+mood = "eager"
+
+[sub_resource type="Resource" id="speech"]
+script = ExtResource("3")
+lines = Array[ExtResource("4")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2")])
+
+[resource]
+script = ExtResource("1")
+id = "zhao"
+name_key = "villager.zhao"
+hanzi = "赵"
+personality = SubResource("personality")
+voice = ExtResource("5")
+portrait = ExtResource("6")
+portrait_face = Rect2(0.21, 0.18, 0.57, 0.43)
+speech = SubResource("speech")
+unlock = 0
+unlock_runs = 0
+rising = false
+mirrors_player = false

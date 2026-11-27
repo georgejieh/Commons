@@ -22,6 +22,8 @@ const TYPES: Array[String] = [
 ]
 
 ## How dark the table goes behind the open card.
+## The keywords the sheet spells out; the rest explain themselves on hover.
+const WORDS: PackedStringArray = ["grain", "rate", "zeal", "commons", "kitty", "kicker"]
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.72)
 
 var _controller: RunController
@@ -56,6 +58,10 @@ func _ready() -> void:
 		label.add_theme_font_size_override("font_size", 22)
 	sheet.add_child(_active)
 	sheet.add_child(_order)
+	sheet.add_child(ScreenKit.eyebrow(tr("cheat.keywords")))
+	var words: Label = ScreenKit.label(Keywords.glossary(WORDS, false), 18)
+	words.custom_minimum_size = Vector2(840, 0)
+	sheet.add_child(words)
 	var close: Button = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
 	close.pressed.connect(func() -> void: visible = false)
 	sheet.add_child(close)

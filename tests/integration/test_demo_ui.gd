@@ -74,6 +74,21 @@ func test_the_table_plays_a_set_to_its_summary() -> void:
 		_press(table, driver)
 		await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("set_summary")
+	# The report fills its Quota bar to what was scored and seals it met or short.
+	var report: SetSummaryScreen = _app.switcher.current()
+	var state: RunState = _app.controller.state_copy()
+	var target: float = _app.controller.target()
+	await await_millis(int((SetSummaryScreen.START + SetSummaryScreen.FILL) * 1000.0) + 400)
+	assert_float(report.bar().value).is_equal_approx(minf(state.set_progress, target), 0.5)
+	var met: bool = state.set_progress >= target
+	assert_bool(report.bar().is_met()).is_equal(met)
+	var word: String = tr("table.quota_met" if met else "summary.short").to_upper()
+	assert_str(report.bar().seal_word()).is_equal(word)
+	# Then what it paid or cost is counted in.
+	await await_millis(int(SetSummaryScreen.BEAT * 4000.0) + 300)
+	var after: Array[Control] = report.get("_after")
+	for piece: Control in after:
+		assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
 
 
 ## Takes the player's turn through the table's own buttons and hand model.
@@ -215,6 +230,54 @@ func test_rejoining_the_table_raises_no_old_banner() -> void:
 		if not driver.act(_app.controller):
 			return
 	var table: TableScreen = _app.show_screen("table", true)
-	var banner: Control = table.get("_banner")
+	var moments: TableMoments = table.get("_moments")
 	await await_millis(400)
-	assert_float(banner.modulate.a).is_equal(0.0)
+	assert_bool(moments.callout.is_showing()).is_false()
+
+
+func test_the_ledger_counts_each_play_once() -> void:
+	var table: TableScreen = _app.show_screen("table", true)
+	var scored: Dictionary[int, float] = {}
+	var plays: Array[int] = [0]
+	_app.controller.event_emitted.connect(
+		func(event: RunEvent) -> void:
+			if event.type == RunEvent.Type.PLAY_SCORED:
+				scored[event.seat] = scored.get(event.seat, 0.0) + event.amount
+				plays[0] += 1
+	)
+	var driver: ControllerScript = ControllerScript.new()
+	while plays[0] < 3:
+		if not driver.act(_app.controller):
+			break
+	table.skip_events()
+	assert_int(plays[0]).is_greater_equal(3)
+	var ledger: Ledger = table.get("_ledger")
+	for seat: int in scored:
+		assert_float(ledger.total_of(seat)).is_equal_approx(scored[seat], 0.001)
+
+
+func test_a_stocked_plot_opens_the_swap_screen_from_the_table() -> void:
+	var loop: RunLoop = _app.controller.get("_loop")
+	loop.state.inventory.plot.append(
+		CardInstance.new(CardInstance.FIRST_PLOT_ID, 12, 0, CardInstance.Origin.PLOT)
+	)
+	var table: TableScreen = _app.show_screen("table", true)
+	await await_idle_frame()
+	for _turn: int in 40:
+		if _app.switcher.current_id() != "table":
+			break
+		table.skip_events()
+		if _app.controller.awaiting() == RunController.AWAIT_BID:
+			table.actions().decline.pressed.emit()
+		await await_idle_frame()
+	assert_str(_app.switcher.current_id()).is_equal("plot_swap")
+	# Keeping the hand goes back to the table, with the round ready to play.
+	var swap_screen: Control = _app.switcher.current()
+	for child: Node in swap_screen.find_children("*", "Button", true, false):
+		var button: Button = child as Button
+		if button.text == tr("plot.keep"):
+			button.pressed.emit()
+			break
+	await await_idle_frame()
+	assert_str(_app.switcher.current_id()).is_equal("table")
+	assert_int(_app.controller.awaiting()).is_not_equal(RunController.AWAIT_SWAP)

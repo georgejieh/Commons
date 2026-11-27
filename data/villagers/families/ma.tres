@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="FamilyDef" format=3]
+
+[ext_resource type="Script" path="res://data/villagers/family_def.gd" id="1"]
+[ext_resource type="Script" path="res://data/bots/personality.gd" id="2"]
+[ext_resource type="Script" path="res://data/ui/speech_book.gd" id="3"]
+[ext_resource type="Script" path="res://data/ui/speech_line.gd" id="4"]
+[ext_resource type="Script" path="res://data/ui/voice_profile.gd" id="5"]
+[ext_resource type="Texture2D" path="res://art/portraits/portrait_ma_face.png" id="6"]
+
+[sub_resource type="Resource" id="personality"]
+script = ExtResource("2")
+tier = 3
+bomb_aggression = 1
+cooperation = 1
+honesty = 2
+ambition = 1
+grudge = 0
+
+[sub_resource type="Resource" id="voice"]
+script = ExtResource("5")
+pitch = 108.0
+tone = 0.93
+pace = 4.0
+roughness = 0.28
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("4")
+event = "pass"
+text_key = "speech.ma.pass.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("4")
+event = "won"
+text_key = "speech.ma.won.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("4")
+event = "bomb"
+text_key = "speech.ma.bomb.1"
+mood = "calm"
+
+[sub_resource type="Resource" id="speech"]
+script = ExtResource("3")
+lines = Array[ExtResource("4")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2")])
+
+[resource]
+script = ExtResource("1")
+id = "ma"
+name_key = "villager.ma"
+hanzi = "马"
+personality = SubResource("personality")
+voice = SubResource("voice")
+portrait = ExtResource("6")
+portrait_face = Rect2(0.26, 0.1, 0.47, 0.43)
+speech = SubResource("speech")
+unlock = 1
+unlock_runs = 3
+rising = false
+mirrors_player = false

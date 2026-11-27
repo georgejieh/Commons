@@ -135,6 +135,7 @@ func apply() -> void:
 		_dressing.show_piece(_piece_ids[index], weight)
 	_apply_swaps(intensity)
 	Audio.music.follow(board, config.layers, intensity)
+	Audio.voice.follow(board, config.layers.size(), intensity)
 	if _materials.has("lamp"):
 		var breathe: float = NO_FLASH_BREATHE if bool(Settings.value("no_flash")) else _breathe
 		_materials["lamp"].set_shader_parameter("breathe", breathe)
@@ -145,6 +146,7 @@ func clear() -> void:
 	for index: int in _param_clean.size():
 		_param_material[index].set_shader_parameter(_param_name[index], _param_clean[index])
 	Audio.music.relax()
+	Audio.voice.reset()
 	Audio.music.request(MusicPlayer.SCORE.village)
 
 

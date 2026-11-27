@@ -9,6 +9,10 @@ var _stack: ModifierStack
 var _landlord: int = Seats.NONE
 var _scores: PackedFloat64Array = PackedFloat64Array()
 var _plays: PackedInt32Array = PackedInt32Array()
+## The Grain, Rate and Zeal of the play scored or previewed last.
+var _last_grain: float = 0.0
+var _last_rate: float = 0.0
+var _last_zeal: float = 0.0
 
 
 func _init(levels: HandLevels, stack: ModifierStack) -> void:
@@ -32,6 +36,18 @@ func score(event: RoundEvent) -> float:
 	return total
 
 
+func last_grain() -> float:
+	return _last_grain
+
+
+func last_rate() -> float:
+	return _last_rate
+
+
+func last_zeal() -> float:
+	return _last_zeal
+
+
 func scores() -> PackedFloat64Array:
 	return _scores
 
@@ -42,11 +58,12 @@ func preview(round_state: RoundState, seat: int, card_ids: Array[int]) -> PlayPr
 	if reading.pattern == null:
 		return PlayPreview.new(reading, 0.0)
 	var score: float = _score_cards(reading.cards, reading.pattern, seat)
+	var preview: PlayPreview = PlayPreview.new(reading, score, _last_grain, _last_rate, _last_zeal)
 	var copies: Array[CardInstance] = []
 	for card: CardInstance in reading.cards:
 		copies.append(card.snapshot())
 	reading.cards = copies
-	return PlayPreview.new(reading, score)
+	return preview
 
 
 func _score_cards(cards: Array[CardInstance], pattern: Pattern, seat: int) -> float:
@@ -60,4 +77,7 @@ func _score_cards(cards: Array[CardInstance], pattern: Pattern, seat: int) -> fl
 		Scorer.DEFAULT_PARAMS,
 		_plays[seat]
 	)
+	_last_grain = breakdown.grain
+	_last_rate = breakdown.rate
+	_last_zeal = breakdown.zeal
 	return breakdown.total

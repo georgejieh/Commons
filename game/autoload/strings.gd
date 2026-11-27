@@ -25,7 +25,16 @@ func has(key: String) -> bool:
 
 ## A score in short-scale form, with suffixes from the table.
 func score(value: float) -> String:
+	return ScoreFormat.short(value, _suffixes())
+
+
+## A Rate or Zeal: one decimal when it is not whole.
+func factor(value: float) -> String:
+	return ScoreFormat.factor(value, _suffixes())
+
+
+func _suffixes() -> PackedStringArray:
 	var suffixes: PackedStringArray = []
 	for key: String in ScoreFormat.SUFFIX_KEYS:
 		suffixes.append(tr(key))
-	return ScoreFormat.short(value, suffixes)
+	return suffixes

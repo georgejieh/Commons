@@ -38,7 +38,7 @@ Build the score from a few masters:
 1. **Village master:** the warm ensemble loop. Its stems cover the clean board and both decay paths.
 2. **Landlord master:** the same key and melody idea, reharmonized.
 3. **Decay cues:** slower and sparser versions for Famine, which stems cannot produce.
-4. **One-offs:** title, tutorial, each shop, boss Sets, quiet ending cues.
+4. **One-offs:** title, tutorial, each shop, boss Sets, quiet ending cues. Ending music is picked by corruption stage (ADR 0018, amendment of 2026-11-12): the late stages use the existing song "Mandate In Ashes", so only the early-stage ending cues need generating.
 
 Test one master before writing the rest, and listen to every planned reduced mix and the fades between them. If stems fail, fall back to separate tracks. Prompted BPM and key are only requests, so measure the audio, mark downbeats and phrase lengths, then use `AudioStreamInteractive` for transitions on a beat or bar.
 

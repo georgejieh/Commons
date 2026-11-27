@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "red_ink"
+kind = 0
+tag = 1
+lever = 2
+tier = 0
+hooks = Array[String](["card_scored"])
+parameters = Dictionary[String, int]({"grain": 10, "for_anyone": 0})
+rarity = 1
+cost = 5
+name_key = "modifier.red_ink.name"
+text_key = "modifier.red_ink.text"

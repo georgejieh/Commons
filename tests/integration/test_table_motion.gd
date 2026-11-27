@@ -51,14 +51,14 @@ func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	var pool: CardPool = table.get("_pool")
-	var lane: PlayLane = _lane(table)
+	var pile: TrickPile = table.get("_pile")
 	var free_before: int = pool.free_count()
-	lane.show_play(_cards(3))
+	pile.show_play(_cards(3), Vector2.ZERO)
 	assert_int(pool.free_count()).is_equal(free_before - 3)
-	lane.sweep(Vector2.ZERO)
-	assert_int(lane.card_count()).is_equal(3)
+	pile.sweep(Vector2.ZERO)
+	assert_int(pile.card_count()).is_equal(3)
 	await await_millis(int((TableMotion.PRESETS.sweep + 0.3) * 1000.0))
-	assert_int(lane.card_count()).is_equal(0)
+	assert_int(pile.card_count()).is_equal(0)
 	assert_int(pool.free_count()).is_equal(free_before)
 
 
@@ -66,13 +66,19 @@ func test_a_ledger_score_counts_up_to_its_value() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	var ledger: Ledger = table.get("_ledger")
-	ledger.add_row("Wang", 480.0)
+	ledger.start_round(1)
+	ledger.set_pending("Pair")
+	ledger.add_play(1, 96.0, 5.0, 1.0, 480.0)
+	ledger.add_play(2, 20.0, 2.0, 1.0, 40.0)
+	ledger.add_play(0, 30.0, 2.0, 1.0, 60.0)
 	assert_bool(ledger.is_counting()).is_true()
 	await await_millis(int((UiMotion.PRESETS.count_time + 0.3) * 1000.0))
 	assert_bool(ledger.is_counting()).is_false()
-	var newest: String = ledger.row_texts()[-1]
-	assert_str(newest).contains(Strings.score(480.0))
-	assert_bool(_shown_texts(ledger).has(newest)).is_true()
+	assert_float(ledger.total_of(1)).is_equal(480.0)
+	# The Commons pool is what the two peasants scored between them.
+	assert_float(ledger.pool()).is_equal(100.0)
+	assert_str(ledger.row_texts()[0]).contains(Strings.score(480.0))
+	assert_bool(_shown_texts(ledger).has(Strings.score(480.0))).is_true()
 
 
 func test_reduced_motion_turns_off_shake_and_hit_stop() -> void:
@@ -101,10 +107,10 @@ func test_reduced_motion_clears_a_sweep_at_once() -> void:
 	Settings.set_value("reduced_motion", true)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var lane: PlayLane = _lane(table)
-	lane.show_play(_cards(2))
-	lane.sweep(Vector2.ZERO)
-	assert_int(lane.card_count()).is_equal(0)
+	var pile: TrickPile = table.get("_pile")
+	pile.show_play(_cards(2), Vector2.ZERO)
+	pile.sweep(Vector2.ZERO)
+	assert_int(pile.card_count()).is_equal(0)
 
 
 ## A deal, a play dropped and swept, a ledger count and a bomb's shake, all at once.
@@ -112,11 +118,11 @@ func _start_every_motion(table: TableScreen) -> void:
 	var hand_view: HandView = table.get("_hand_view")
 	hand_view.show_cards()
 	hand_view.deal_in()
-	var lane: PlayLane = _lane(table)
-	lane.show_play(_cards(4))
-	lane.sweep(Vector2.ZERO)
+	var pile: TrickPile = table.get("_pile")
+	pile.show_play(_cards(4), Vector2.ZERO)
+	pile.sweep(Vector2.ZERO)
 	var ledger: Ledger = table.get("_ledger")
-	ledger.add_row("Wang", 300.0)
+	ledger.add_play(1, 60.0, 5.0, 1.0, 300.0)
 	var motion: TableMotion = table.get("_motion")
 	motion.impact()
 
@@ -125,11 +131,6 @@ func _slow_presets() -> void:
 	for key: String in ["fly_time", "sweep", "count_time", "stamp_time"]:
 		_saved_presets[key] = float(TableMotion.PRESETS.get(key))
 		TableMotion.PRESETS.set(key, SLOW)
-
-
-func _lane(table: TableScreen) -> PlayLane:
-	var plays: Dictionary[int, PlayLane] = table.get("_plays")
-	return plays[1]
 
 
 func _cards(count: int) -> Array[CardInstance]:
@@ -141,8 +142,6 @@ func _cards(count: int) -> Array[CardInstance]:
 
 func _shown_texts(ledger: Ledger) -> PackedStringArray:
 	var texts: PackedStringArray = []
-	for child: Node in ledger.get_children():
-		var label: Label = child as Label
-		if label != null:
-			texts.append(label.text)
+	for child: Node in ledger.find_children("*", "Label", true, false):
+		texts.append((child as Label).text)
 	return texts

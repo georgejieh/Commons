@@ -16,4 +16,5 @@ enum Code {
 	BLOCK_LANDLORD,
 	GREEDY,
 	SEARCHED,
+	SLACKED,
 }

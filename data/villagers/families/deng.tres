@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="FamilyDef" format=3]
+
+[ext_resource type="Script" path="res://data/villagers/family_def.gd" id="1"]
+[ext_resource type="Script" path="res://data/bots/personality.gd" id="2"]
+[ext_resource type="Script" path="res://data/ui/speech_book.gd" id="3"]
+[ext_resource type="Script" path="res://data/ui/speech_line.gd" id="4"]
+[ext_resource type="Script" path="res://data/ui/voice_profile.gd" id="5"]
+[ext_resource type="Texture2D" path="res://art/portraits/portrait_deng_face.png" id="6"]
+
+[sub_resource type="Resource" id="personality"]
+script = ExtResource("2")
+tier = 2
+bomb_aggression = 1
+cooperation = 0
+honesty = 1
+ambition = 1
+grudge = 2
+
+[sub_resource type="Resource" id="voice"]
+script = ExtResource("5")
+pitch = 200.0
+tone = 1.06
+pace = 5.2
+roughness = 0.10
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("4")
+event = "call"
+text_key = "speech.deng.call.1"
+mood = "eager"
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("4")
+event = "bomb"
+text_key = "speech.deng.bomb.1"
+mood = "sly"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("4")
+event = "won"
+text_key = "speech.deng.won.1"
+mood = "eager"
+
+[sub_resource type="Resource" id="speech"]
+script = ExtResource("3")
+lines = Array[ExtResource("4")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2")])
+
+[resource]
+script = ExtResource("1")
+id = "deng"
+name_key = "villager.deng"
+hanzi = "邓"
+personality = SubResource("personality")
+voice = SubResource("voice")
+portrait = ExtResource("6")
+portrait_face = Rect2(0.26, 0.1, 0.45, 0.41)
+speech = SubResource("speech")
+unlock = 2
+unlock_runs = 0
+rising = false
+mirrors_player = true

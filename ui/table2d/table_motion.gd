@@ -55,6 +55,12 @@ func impact() -> void:
 	_stopped_until = Time.get_ticks_msec() + int(PRESETS.hit_stop * 1000.0)
 
 
+## A smaller knock than a bomb's: shake only, sized by the caller.
+func bump(trauma: float) -> void:
+	if not reduced:
+		_trauma = minf(1.0, _trauma + trauma)
+
+
 ## Drops a card onto the table: from a little larger and clear to its place, a beat
 ## after the card before it.
 func drop(card: Control, rest_scale: float, order: int) -> void:

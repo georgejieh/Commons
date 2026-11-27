@@ -104,6 +104,11 @@ func run_meter_change(context: MeterContext) -> void:
 		entry.effect.meter_change(context)
 
 
+func run_audit(context: AuditContext) -> void:
+	for entry: ActiveModifier in _by_hook[Hooks.AUDIT]:
+		entry.effect.audit(context)
+
+
 func _changed() -> void:
 	revision += 1
 	_ordered.clear()

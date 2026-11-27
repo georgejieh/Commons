@@ -1,17 +1,17 @@
 class_name IronRiceBowlEffect
 extends ModifierEffect
-## The holder's plays gain flat Grain, and their Zeal can't rise above a cap.
+## The holder's plays gain flat Grain, and their Rate can't rise above a cap.
 
 const GRAIN: String = "grain"
-const ZEAL_CAP: String = "zeal_cap"
+const RATE_CAP: String = "rate_cap"
 
 
 func required_parameters() -> PackedStringArray:
-	return PackedStringArray([GRAIN, ZEAL_CAP])
+	return PackedStringArray([GRAIN, RATE_CAP])
 
 
 func play_scored(context: PlayContext) -> void:
 	if context.seat != holder_seat:
 		return
 	context.add_grain += parameters[GRAIN]
-	context.zeal_cap = minf(context.zeal_cap, parameters[ZEAL_CAP])
+	context.rate_cap = minf(context.rate_cap, parameters[RATE_CAP])

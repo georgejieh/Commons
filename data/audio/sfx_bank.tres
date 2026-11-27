@@ -1,0 +1,105 @@
+[gd_resource type="Resource" script_class="SfxBank" format=3]
+
+[ext_resource type="Script" path="res://data/audio/sfx_bank.gd" id="1"]
+[ext_resource type="Script" path="res://data/audio/sfx_sound.gd" id="2"]
+[ext_resource type="AudioStream" path="res://audio/sfx/deal.wav" id="deal"]
+[ext_resource type="AudioStream" path="res://audio/sfx/card_play_01.wav" id="card_play_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/card_play_02.wav" id="card_play_02"]
+[ext_resource type="AudioStream" path="res://audio/sfx/card_play_03.wav" id="card_play_03"]
+[ext_resource type="AudioStream" path="res://audio/sfx/card_play_04.wav" id="card_play_04"]
+[ext_resource type="AudioStream" path="res://audio/sfx/pass_01.wav" id="pass_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/pass_02.wav" id="pass_02"]
+[ext_resource type="AudioStream" path="res://audio/sfx/pass_03.wav" id="pass_03"]
+[ext_resource type="AudioStream" path="res://audio/sfx/bomb.wav" id="bomb"]
+[ext_resource type="AudioStream" path="res://audio/sfx/rocket.wav" id="rocket"]
+[ext_resource type="AudioStream" path="res://audio/sfx/trick_won_01.wav" id="trick_won_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/trick_won_02.wav" id="trick_won_02"]
+[ext_resource type="AudioStream" path="res://audio/sfx/trick_won_03.wav" id="trick_won_03"]
+[ext_resource type="AudioStream" path="res://audio/sfx/round_won.wav" id="round_won"]
+[ext_resource type="AudioStream" path="res://audio/sfx/round_lost.wav" id="round_lost"]
+[ext_resource type="AudioStream" path="res://audio/sfx/click_01.wav" id="click_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/click_02.wav" id="click_02"]
+[ext_resource type="AudioStream" path="res://audio/sfx/click_03.wav" id="click_03"]
+[ext_resource type="AudioStream" path="res://audio/sfx/store_buy_01.wav" id="store_buy_01"]
+[ext_resource type="AudioStream" path="res://audio/sfx/store_buy_02.wav" id="store_buy_02"]
+[ext_resource type="AudioStream" path="res://audio/sfx/meter_rose.wav" id="meter_rose"]
+
+[sub_resource type="Resource" id="dealt"]
+script = ExtResource("2")
+id = "dealt"
+streams = Array[AudioStream]([ExtResource("deal")])
+voices = 1
+
+[sub_resource type="Resource" id="redealt"]
+script = ExtResource("2")
+id = "redealt"
+streams = Array[AudioStream]([ExtResource("deal")])
+voices = 1
+
+[sub_resource type="Resource" id="card_played"]
+script = ExtResource("2")
+id = "card_played"
+streams = Array[AudioStream]([ExtResource("card_play_01"), ExtResource("card_play_02"), ExtResource("card_play_03"), ExtResource("card_play_04")])
+pitch_semitones = 0.6
+voices = 2
+
+[sub_resource type="Resource" id="passed"]
+script = ExtResource("2")
+id = "passed"
+streams = Array[AudioStream]([ExtResource("pass_01"), ExtResource("pass_02"), ExtResource("pass_03")])
+pitch_semitones = 0.6
+voices = 1
+
+[sub_resource type="Resource" id="bomb_played"]
+script = ExtResource("2")
+id = "bomb_played"
+streams = Array[AudioStream]([ExtResource("bomb")])
+voices = 1
+
+[sub_resource type="Resource" id="rocket_played"]
+script = ExtResource("2")
+id = "rocket_played"
+streams = Array[AudioStream]([ExtResource("rocket")])
+voices = 1
+
+[sub_resource type="Resource" id="trick_won"]
+script = ExtResource("2")
+id = "trick_won"
+streams = Array[AudioStream]([ExtResource("trick_won_01"), ExtResource("trick_won_02"), ExtResource("trick_won_03")])
+pitch_semitones = 0.5
+voices = 1
+
+[sub_resource type="Resource" id="round_won"]
+script = ExtResource("2")
+id = "round_won"
+streams = Array[AudioStream]([ExtResource("round_won")])
+voices = 1
+
+[sub_resource type="Resource" id="round_lost"]
+script = ExtResource("2")
+id = "round_lost"
+streams = Array[AudioStream]([ExtResource("round_lost")])
+voices = 1
+
+[sub_resource type="Resource" id="button_click"]
+script = ExtResource("2")
+id = "button_click"
+streams = Array[AudioStream]([ExtResource("click_01"), ExtResource("click_02"), ExtResource("click_03")])
+pitch_semitones = 0.4
+voices = 2
+
+[sub_resource type="Resource" id="store_buy"]
+script = ExtResource("2")
+id = "store_buy"
+streams = Array[AudioStream]([ExtResource("store_buy_01"), ExtResource("store_buy_02")])
+voices = 1
+
+[sub_resource type="Resource" id="meter_rose"]
+script = ExtResource("2")
+id = "meter_rose"
+streams = Array[AudioStream]([ExtResource("meter_rose")])
+voices = 1
+
+[resource]
+script = ExtResource("1")
+sounds = Array[ExtResource("2")]([SubResource("dealt"), SubResource("redealt"), SubResource("card_played"), SubResource("passed"), SubResource("bomb_played"), SubResource("rocket_played"), SubResource("trick_won"), SubResource("round_won"), SubResource("round_lost"), SubResource("button_click"), SubResource("store_buy"), SubResource("meter_rose")])

@@ -1,0 +1,8 @@
+{"name": "meter_rose", "description": "Meter crossing: a low, soft drone that swells and fades under the table. Synthesized and abstract; no voice, no stomach, no sting.",
+ "layers": [
+  {"wave": "sine", "freq": [[0, 58], [1.6, 55]], "detune_cents": 9, "env": {"attack": 0.5, "hold": 0.4, "release": 0.9, "curve": 1.5}, "drive": 0.4},
+  {"wave": "triangle", "freq": [[0, 87], [1.6, 82.5]], "env": {"attack": 0.6, "hold": 0.3, "release": 0.9, "curve": 1.5}, "filters": [{"type": "lowpass", "cutoff": 300}], "gain_db": -9},
+  {"wave": "noise", "env": {"attack": 0.6, "hold": 0.3, "release": 0.8, "curve": 1.5}, "filters": [{"type": "bandpass", "cutoff": 180, "q": 1.0}], "gain_db": -22}
+ ],
+ "master": {"lufs": -26, "peak_db": -6, "highpass": 35},
+ "expect": {"duration": [1.5, 2.0]}}

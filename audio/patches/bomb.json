@@ -1,0 +1,8 @@
+{"name": "bomb", "description": "Bomb: a hard slap of four cards on wood with a low thud under it. Real card shove and wood impact (Kenney) plus a short synthesized thump for weight. No explosion.",
+ "layers": [
+  {"wave": "sample", "file": "../sources/raw/wav_casino-audio/card-shove-1.wav", "start": 0.10, "length": 0.40, "env": {"attack": 0.001, "hold": 0.2, "release": 0.19, "curve": 2}},
+  {"wave": "sample", "file": "../sources/raw/wav_impact-sounds/impactWood_heavy_000.wav", "start": 0.0, "length": 0.30, "gain_db": -2},
+  {"wave": "sine", "freq": [[0, 120], [0.14, 48]], "env": {"attack": 0.001, "hold": 0.015, "release": 0.18, "curve": 2.2}, "drive": 1.2, "gain_db": -5}
+ ],
+ "master": {"lufs": -15, "peak_db": -1, "highpass": 35},
+ "expect": {"duration": [0.25, 0.5]}}

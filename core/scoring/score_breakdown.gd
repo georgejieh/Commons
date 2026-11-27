@@ -3,13 +3,14 @@ extends RefCounted
 ## One play's score and the ordered steps the UI shows. Steps share one flat array of
 ## kind and value pairs, sized once, so a play costs a single array allocation.
 
-enum Step { BASE_GRAIN, CARD_GRAIN, ADD_GRAIN, BASE_ZEAL, ADD_ZEAL, MUL_ZEAL, BOMB_ZEAL, ZEAL_CAP }
+enum Step { CARD_GRAIN, ADD_GRAIN, RATE, RATE_CAP, ADD_ZEAL, MUL_ZEAL }
 
 const VALUES_PER_STEP: int = 2
 ## Every step but the card steps happens at most once.
-const FIXED_STEPS: int = 7
+const FIXED_STEPS: int = 5
 
 var grain: float = 0.0
+var rate: float = 0.0
 var zeal: float = 0.0
 var total: float = 0.0
 var steps: PackedFloat64Array = PackedFloat64Array()

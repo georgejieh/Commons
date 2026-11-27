@@ -1,0 +1,9 @@
+{"name": "rocket", "description": "Rocket: the bomb's slap twice in quick succession, both jokers down, with a deeper and longer thud. Still cards and wood, no explosion.",
+ "layers": [
+  {"wave": "sample", "file": "../sources/raw/wav_casino-audio/card-shove-3.wav", "start": 0.115, "length": 0.30, "env": {"attack": 0.001, "hold": 0.12, "release": 0.17, "curve": 2}, "gain_db": -3},
+  {"wave": "sample", "file": "../sources/raw/wav_casino-audio/card-shove-1.wav", "start": 0.10, "length": 0.45, "at": [0.09], "env": {"attack": 0.001, "hold": 0.22, "release": 0.22, "curve": 2}},
+  {"wave": "sample", "file": "../sources/raw/wav_impact-sounds/impactWood_heavy_002.wav", "start": 0.0, "length": 0.30, "at": [0.09], "gain_db": -1},
+  {"wave": "sine", "freq": [[0, 110], [0.22, 40]], "at": [0.09], "env": {"attack": 0.001, "hold": 0.03, "release": 0.32, "curve": 2}, "drive": 1.4, "gain_db": -4}
+ ],
+ "master": {"lufs": -14, "peak_db": -1, "highpass": 32},
+ "expect": {"duration": [0.4, 0.7]}}

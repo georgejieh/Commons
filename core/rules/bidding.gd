@@ -1,8 +1,9 @@
 class_name Bidding
 extends RefCounted
 ## Call and grab. Seats take turns calling until one calls. Each other seat that has not
-## passed then gets one chance to grab, and each grab multiplies the stake. The last
-## seat to claim is the landlord. If everyone passes, the hand is redealt.
+## passed then gets one chance to grab, and each grab multiplies the stake. If the seat
+## was grabbed, the caller gets the last word: one chance to grab it back. The last seat
+## to claim is the landlord. If everyone passes, the hand is redealt.
 
 enum Phase { CALLING, GRABBING, DONE }
 enum Reason { OK, OUT_OF_TURN, FINISHED }
@@ -16,6 +17,9 @@ var _landlord: int = Seats.NONE
 var _stake: int
 var _pending: Array[int] = []
 var _decided: int = 0
+var _caller: int = Seats.NONE
+## True once the caller has had, or is having, the chance to grab the seat back.
+var _caller_asked: bool = false
 
 
 func _init(first_seat: int, params: BidParams = DEFAULT_PARAMS) -> void:
@@ -46,11 +50,12 @@ func needs_redeal() -> bool:
 	return _phase == Phase.DONE and _landlord == Seats.NONE
 
 
-## True when no seat decides after this one, unless a call opens the grabbing.
+## True when no seat decides after this one, unless a call opens the grabbing or a grab
+## gives the caller the last word.
 func is_last_to_act() -> bool:
 	if _phase == Phase.CALLING:
 		return _decided == Seats.COUNT - 1
-	return _pending.is_empty()
+	return _pending.is_empty() and (_caller_asked or _landlord == _caller)
 
 
 ## claim means call while calling and grab while grabbing. False is a pass.
@@ -70,6 +75,7 @@ func _act_calling(claim: bool) -> void:
 	_decided += 1
 	if claim:
 		_landlord = _seat
+		_caller = _seat
 		var seat: int = Seats.next(_seat)
 		for _left: int in Seats.COUNT - _decided:
 			_pending.append(seat)
@@ -90,7 +96,10 @@ func _act_grabbing(claim: bool) -> void:
 
 
 func _advance_grabs() -> void:
-	if _pending.is_empty():
-		_phase = Phase.DONE
-	else:
+	if not _pending.is_empty():
 		_seat = _pending.pop_front()
+	elif _landlord != _caller and not _caller_asked:
+		_caller_asked = true
+		_seat = _caller
+	else:
+		_phase = Phase.DONE

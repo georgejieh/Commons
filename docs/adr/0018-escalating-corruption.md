@@ -36,7 +36,21 @@ After the demo, the owner set a longer arc, with Cookie Clicker as the reference
    - The horror-intensity setting caps how far corruption is shown.
    - ADR 0015's never-used list still applies.
 
+## Amendment, 2026-11-12: ending music follows the corruption stage
+
+The project owner chose where the game's one vocal song goes. "Mandate In Ashes", an existing song by the owner's band Submontane, plays over the ending screens of a deeply corrupted profile. It is not an unlockable and has no menu of its own.
+
+1. **Ending music is a stage asset.** The music over the ending, epilogue and credits screens has variants by corruption stage, like the assets in point 4. Early stages get a quiet cue that keeps the propaganda surface. The late stages get "Mandate In Ashes". The draft threshold is stage 8 and up, and it is tunable data.
+2. **The epilogues carry the credits.** The ending sequence runs the ending card, then the per-villager epilogue lines, then the credits: the owner, the AI tools, fonts, sound sources and licences. That gives a long song enough screen time.
+3. **The horror-intensity cap applies.** The setting in point 9 caps the stage used to pick the track, the same as for the art.
+4. **Nothing announces it.** No jukebox, unlock message or menu entry appears. A hidden menu was rejected because an entry that appears at a threshold reads out the hidden value, which point 7 forbids, and because it would look like a reward for causing harm.
+5. **No extra hint in the game.** The song is used as released. The game adds no notes, subtitles or annotations that explain its references, and its use must stay inside ADR 0015's never-used list on screen.
+
 ## Open questions, to settle when the full game exists
+
+- The stage at which the ending music switches, and whether the middle stages get their own cue.
+- What plays over the collective ending, which resets corruption to 0.
+- Whether the song plays whole, or is edited to fit the ending sequence.
 
 - The final event list and the weight of each event.
 - The growth rate, tuned so a typical player reaches the late stages after a planned number of runs.

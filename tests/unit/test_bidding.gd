@@ -1,5 +1,6 @@
 extends GdUnitTestSuite
-## Every path through call and grab, plus seat persistence and deposal.
+## Every path through call and grab, the caller's last word, plus seat persistence and
+## deposal.
 
 
 func _play(first_seat: int, actions: Array[bool]) -> Bidding:
@@ -25,19 +26,42 @@ func test_a_call_nobody_grabs_keeps_the_base_stake() -> void:
 
 
 func test_one_grab_doubles_and_takes_the_seat() -> void:
-	var bidding: Bidding = _play(0, [true, true, false])
+	var bidding: Bidding = _play(0, [true, true, false, false])
 	assert_int(bidding.landlord()).is_equal(1)
 	assert_int(bidding.stake()).is_equal(2)
+	assert_int(bidding.phase()).is_equal(Bidding.Phase.DONE)
 
 
 func test_two_grabs_double_twice_and_the_last_wins() -> void:
-	var bidding: Bidding = _play(0, [true, true, true])
+	var bidding: Bidding = _play(0, [true, true, true, false])
 	assert_int(bidding.landlord()).is_equal(2)
 	assert_int(bidding.stake()).is_equal(4)
 
 
+func test_a_grabbed_caller_gets_the_last_word() -> void:
+	var bidding: Bidding = Bidding.new(0)
+	bidding.act(0, true)
+	bidding.act(1, true)
+	assert_bool(bidding.is_last_to_act()).is_false()
+	bidding.act(2, false)
+	assert_int(bidding.phase()).is_equal(Bidding.Phase.GRABBING)
+	assert_int(bidding.seat_to_act()).is_equal(0)
+	assert_bool(bidding.is_last_to_act()).is_true()
+	bidding.act(0, true)
+	assert_int(bidding.phase()).is_equal(Bidding.Phase.DONE)
+	assert_int(bidding.landlord()).is_equal(0)
+	assert_int(bidding.stake()).is_equal(4)
+
+
+func test_a_caller_nobody_grabbed_from_is_not_asked_again() -> void:
+	var bidding: Bidding = _play(0, [true, false, false])
+	assert_int(bidding.phase()).is_equal(Bidding.Phase.DONE)
+	assert_int(bidding.landlord()).is_equal(0)
+	assert_int(bidding.stake()).is_equal(1)
+
+
 func test_a_later_grab_alone_takes_the_seat() -> void:
-	var bidding: Bidding = _play(0, [true, false, true])
+	var bidding: Bidding = _play(0, [true, false, true, false])
 	assert_int(bidding.landlord()).is_equal(2)
 	assert_int(bidding.stake()).is_equal(2)
 
@@ -61,7 +85,7 @@ func test_a_call_from_the_last_seat_ends_bidding_at_once() -> void:
 
 
 func test_the_middle_seat_call_leaves_one_grab() -> void:
-	var bidding: Bidding = _play(0, [false, true, true])
+	var bidding: Bidding = _play(0, [false, true, true, false])
 	assert_int(bidding.landlord()).is_equal(2)
 	assert_int(bidding.stake()).is_equal(2)
 

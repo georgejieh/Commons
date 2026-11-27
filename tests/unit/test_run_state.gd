@@ -90,7 +90,25 @@ func _random_state(rng: RandomNumberGenerator) -> RunState:
 	for _i: int in rng.randi_range(0, 12):
 		var kind: int = rng.randi_range(0, Observations.KIND_COUNT - 1)
 		state.observations.add("family_%d" % rng.randi_range(0, 15), kind, rng.randi_range(1, 9))
+	_fill_phase_4(rng, state)
 	return state
+
+
+## The fields Phase 4 added: bosses used, Resentment, plot upgrades and the store's stock.
+func _fill_phase_4(rng: RandomNumberGenerator, state: RunState) -> void:
+	for i: int in rng.randi_range(0, 3):
+		state.risen.append("family_%d" % i)
+	for i: int in rng.randi_range(0, 2):
+		state.risen_used.append("family_%d" % i)
+	for i: int in rng.randi_range(0, 2):
+		state.officials_used.append("official_%d" % i)
+	state.boss_id = "boss_%d" % rng.randi_range(0, 3)
+	state.boss_family = "family_%d" % rng.randi_range(0, 15)
+	state.resentment = rng.randi_range(0, 100)
+	state.plot_capacity_bonus = rng.randi_range(0, 2)
+	state.swap_bonus = rng.randi_range(0, 1)
+	for i: int in rng.randi_range(0, 3):
+		state.store_sold["cadre_%d" % i] = rng.randi_range(1, 2)
 
 
 func _fill_inventory(rng: RandomNumberGenerator, inventory: RunInventory) -> void:

@@ -41,6 +41,14 @@ static func from_dict(data: Dictionary) -> CardInstance:
 	return card
 
 
+## A plot copy under a new ID: same rank, suit and marks (ADR 0014).
+func reissued(plot_id: int) -> CardInstance:
+	var data: Dictionary = to_dict()
+	data["id"] = plot_id
+	data["origin"] = Origin.PLOT
+	return CardInstance.from_dict(data)
+
+
 ## Returns an independent copy, for views of a hand.
 func snapshot() -> CardInstance:
 	return CardInstance.from_dict(to_dict())

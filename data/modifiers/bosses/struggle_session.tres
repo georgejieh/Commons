@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "struggle_session"
+kind = 5
+tag = 0
+lever = 4
+tier = 0
+hooks = Array[String](["on_deal"])
+parameters = Dictionary[String, int]({})
+rarity = 0
+cost = 0
+name_key = "modifier.struggle_session.name"
+text_key = "modifier.struggle_session.text"

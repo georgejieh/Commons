@@ -14,6 +14,10 @@ const COMMAND_FIELDS: Dictionary[String, Array] = {
 	"shop": [],
 	"buy": ["slot"],
 	"reroll": [],
+	"market_buy": ["slot"],
+	"market_reroll": [],
+	"upgrade": ["kind"],
+	"plot_card": ["slot"],
 }
 
 var checkpoint: Dictionary = {}
@@ -29,6 +33,53 @@ static func migrate_from_1(data: Dictionary) -> Dictionary:
 	return data
 
 
+## Version 2 saves predate the meter setbacks (P4.1): armed, with none in force, and
+## Resentment (P4.2) at zero, villagers' Denunciation (P4.3) empty, and no
+## Commons paid yet (P4.4), no memory carried in (P4.6), and no
+## bosses or styles yet (P4.7), and the plot counter at its start (P4.8).
+static func migrate_from_2(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge(_phase_4_defaults())
+	return data
+
+
+## Version 3 saves predate the state store's limited stock (P4.10): nothing sold yet.
+## Schema 3 was written all through Phase 4 while its fields were still being added, so
+## a save from the middle of it may lack some: every Phase 4 field missing gets the
+## value a run starts with.
+static func migrate_from_3(data: Dictionary) -> Dictionary:
+	if data.get("checkpoint") is Dictionary:
+		var checkpoint: Dictionary = data["checkpoint"]
+		checkpoint.merge(_phase_4_defaults())
+	return data
+
+
+## Every field Phase 4 added to a run, at the value a run starts with.
+static func _phase_4_defaults() -> Dictionary:
+	return {
+		"famine_armed": true,
+		"denunciation_armed": true,
+		"rationed": false,
+		"reeducation_due": false,
+		"resentment": 0,
+		"villager_denunciation": {},
+		"commons_received": "0",
+		"commons_paid": "0",
+		"memory": {},
+		"risen": [],
+		"risen_used": [],
+		"officials_used": [],
+		"boss_id": "",
+		"next_plot_id": CardInstance.FIRST_PLOT_ID,
+		"plot_capacity_bonus": 0,
+		"swap_bonus": 0,
+		"boss_family": "",
+		"styles": [],
+		"store_sold": {},
+	}
+
+
 ## True when data has a checkpoint with every RunState field and well-formed commands,
 ## so a save that parses but lost its shape falls back to the backup.
 static func is_valid(data: Dictionary) -> bool:
@@ -39,6 +90,8 @@ static func is_valid(data: Dictionary) -> bool:
 		if not checkpoint.has(key):
 			return false
 	if not _observations_valid(checkpoint["observations"]):
+		return false
+	if not _shapes_valid(checkpoint):
 		return false
 	var phase: Variant = checkpoint["phase"]
 	if not (phase is int or phase is float) or phase < 0 or phase >= RunFlow.State.size():
@@ -62,10 +115,11 @@ static func resume(
 	configs: Array[BotConfig],
 	sets: SetConfig = SetConfig.new(),
 	params: RunParams = RunLoop.DEFAULT_PARAMS,
-	pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs
+	pool: Array[ModifierDef] = RunLoop.DEFAULT_POOL.debuffs,
+	meters: MeterTable = RunLoop.DEFAULT_METERS
 ) -> RunLoop:
 	var loop: RunLoop = RunLoop.new(
-		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool
+		RunState.from_dict(data["checkpoint"]), configs, sets, params, pool, meters
 	)
 	# The resumed loop's own record starts from the same checkpoint, so its next save
 	# keeps it even when no new Set starts first, as in the store.
@@ -93,7 +147,28 @@ static func _replay(loop: RunLoop, command: Dictionary) -> RunLoop.Reason:
 			return loop.player_buy(int(command["slot"]))
 		"reroll":
 			return loop.player_reroll()
+		"market_buy":
+			return loop.player_market_buy(int(command["slot"]))
+		"market_reroll":
+			return loop.player_market_reroll()
+		"upgrade":
+			return loop.player_upgrade(str(command["kind"]))
+		"plot_card":
+			return loop.player_plot_card(int(command["slot"]))
 	return RunLoop.Reason.ILLEGAL
+
+
+## Every saved field holds the kind of value a fresh run's does: a dictionary where one
+## belongs, an array where one belongs. A save that fails here is damaged, and the save
+## service falls back to its backup instead of loading it.
+static func _shapes_valid(checkpoint: Dictionary) -> bool:
+	var fresh: Dictionary = RunState.new(0).to_dict()
+	for key: String in fresh:
+		if fresh[key] is Dictionary and not checkpoint[key] is Dictionary:
+			return false
+		if fresh[key] is Array and not checkpoint[key] is Array:
+			return false
+	return true
 
 
 ## JSON reads every number as a float.

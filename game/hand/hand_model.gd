@@ -9,6 +9,7 @@ signal changed
 const KEY_SELECT: String = "hand.reason.select"
 const KEY_WAIT: String = "hand.reason.wait"
 const KEY_DOES_NOT_BEAT: String = "hand.reason.does_not_beat"
+const KEY_DOES_NOT_BEAT_FOLDED: String = "hand.reason.does_not_beat_folded"
 const KEY_INVALID_PREFIX: String = "hand.reason."
 const KEY_PATTERN_PREFIX: String = "pattern."
 
@@ -97,9 +98,35 @@ func label_key() -> String:
 	return KEY_PATTERN_PREFIX + type_name.to_lower()
 
 
+## How the selection reads and scores now, or null with nothing chosen.
+func preview() -> PlayPreview:
+	return _preview
+
+
 ## What the selection would score if played now, or 0 when it forms no pattern.
 func projected_score() -> float:
 	return 0.0 if _preview == null else _preview.score
+
+
+## The rank this card counts as when a debuff folds its rank into another, such as a
+## 2 that ranks as a 3, or -1 when it ranks as itself. A reordering alone, with no two
+## ranks equal, folds nothing.
+func folded_rank(card: CardInstance) -> int:
+	return HandModel.fold(card.base_rank(), _controller.player_table().rank_map)
+
+
+## Where the card ranks now, after any Cadre or debuff has re-ranked it.
+func rank_value(card: CardInstance) -> int:
+	return _controller.player_table().rank_map[card.base_rank()]
+
+
+static func fold(rank: int, rank_map: PackedByteArray) -> int:
+	if rank >= rank_map.size() or rank_map[rank] == rank:
+		return -1
+	for other: int in rank_map.size():
+		if other != rank and rank_map[other] == rank_map[rank]:
+			return other
+	return -1
 
 
 ## Cards whose rank appears in any legal move. Moves are over ranks, not instances.
@@ -171,12 +198,20 @@ func grouped_cards() -> Array[CardInstance]:
 ## just played, wait rather than name a key the table lacks.
 func _refusal_key(reading: PlayReading) -> String:
 	if reading.pattern != null:
-		var beaten: bool = reading.reason == RoundState.Reason.DOES_NOT_BEAT
-		return KEY_DOES_NOT_BEAT if beaten else KEY_WAIT
+		if reading.reason != RoundState.Reason.DOES_NOT_BEAT:
+			return KEY_WAIT
+		return KEY_DOES_NOT_BEAT_FOLDED if _any_folded() else KEY_DOES_NOT_BEAT
 	if reading.invalid_reason == Classification.Reason.OK:
 		return KEY_WAIT
 	var reason: String = Classification.Reason.keys()[reading.invalid_reason]
 	return KEY_INVALID_PREFIX + reason.to_lower()
+
+
+func _any_folded() -> bool:
+	for card: CardInstance in _cards:
+		if _selected.has(card.id()) and folded_rank(card) >= 0:
+			return true
+	return false
 
 
 func _holds(card_id: int) -> bool:

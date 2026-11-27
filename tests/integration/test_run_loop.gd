@@ -94,7 +94,7 @@ func test_a_missed_target_plays_every_round_and_raises_famine() -> void:
 	var ladder_debuffs: int = max_rounds - state.debuff_ladder.count(RunState.NO_DEBUFF)
 	assert_int(_count(loop, RunEvent.Type.DEBUFF_ADDED)).is_equal(ladder_debuffs)
 	assert_int(state.coupons).is_equal(0)
-	assert_int(state.famine).is_equal(RunLoop.DEFAULT_PARAMS.famine_on_missed_target)
+	assert_int(state.famine).is_equal(RunLoop.DEFAULT_METERS.source(RunMeters.MISSED_TARGET).amount)
 
 
 func test_every_round_accounts_for_all_cards() -> void:
@@ -134,13 +134,19 @@ func test_plot_swaps_conserve_cards() -> void:
 	var plot_ids: Array[int] = [state.inventory.plot[0].id()]
 	assert_int(loop.player_swap(hand_ids, [] as Array[int])).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_int(loop.player_swap(hand_ids, plot_ids)).is_equal(RunLoop.Reason.OK)
+	var given: CardInstance = null
+	for card: CardInstance in loop.round_state().view_for(RunLoop.PLAYER).own_cards:
+		given = card if card.id() == plot_ids[0] else given
 	var after: Array[int] = _ids(loop.player_cards()) + _ids(state.inventory.plot)
-	var kitty: int = 3 if state.landlord_seat == RunLoop.PLAYER else 0
-	assert_int(after.size()).is_equal(before.size() + kitty)
+	# The kitty is already in the landlord's hand at the swap, so the count is unchanged.
+	assert_int(after.size()).is_equal(before.size())
 	for card_id: int in before:
-		assert_bool(after.has(card_id)).is_true()
-	assert_bool(_ids(loop.player_cards()).has(plot_ids[0])).is_true()
-	assert_bool(_ids(state.inventory.plot).has(hand_ids[0])).is_true()
+		if card_id != hand_ids[0]:
+			assert_bool(after.has(card_id)).is_true()
+	assert_object(given).is_not_null()
+	# The deck card went into the plot under a new plot ID (ADR 0014).
+	assert_bool(_ids(state.inventory.plot).has(hand_ids[0])).is_false()
+	assert_int(state.inventory.plot[0].origin()).is_equal(CardInstance.Origin.PLOT)
 
 
 func test_commands_out_of_turn_are_refused() -> void:
@@ -221,3 +227,171 @@ func _ids(cards: Array[CardInstance]) -> Array[int]:
 	for card: CardInstance in cards:
 		ids.append(card.id())
 	return ids
+
+
+## The meter table with the missed target moved to another meter and size, so a missed
+## Set drives that meter through the loop's real path.
+func _meters_with_miss(meter: String, amount: int) -> MeterTable:
+	var table: MeterTable = RunLoop.DEFAULT_METERS.duplicate()
+	var sources: Array[MeterSource] = []
+	for row: MeterSource in RunLoop.DEFAULT_METERS.sources:
+		if row.id != RunMeters.MISSED_TARGET:
+			sources.append(row)
+	var miss: MeterSource = MeterSource.new()
+	miss.id = RunMeters.MISSED_TARGET
+	miss.meter = meter
+	miss.amount = amount
+	sources.append(miss)
+	table.sources = sources
+	return table
+
+
+func _missed_set(meters: MeterTable, state: RunState) -> RunLoop:
+	var loop: RunLoop = RunLoop.new(
+		state,
+		RunScript.bots(),
+		_hard_sets(),
+		RunLoop.DEFAULT_PARAMS,
+		RunLoop.DEFAULT_POOL.debuffs,
+		meters
+	)
+	loop.start_set()
+	RunScript.new().play_until_set_over(loop)
+	return loop
+
+
+func test_famine_at_death_ends_the_run() -> void:
+	var state: RunState = RunState.new(MISSED_SEED)
+	var loop: RunLoop = _missed_set(_meters_with_miss(RunMeters.FAMINE, 100), state)
+	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)
+	assert_int(loop.flow.state()).is_equal(RunFlow.State.RUN_END)
+	assert_str(loop.events()[-1].text).is_equal(RunMeters.FAMINE)
+	assert_int(loop.next_set()).is_equal(RunLoop.Reason.NOT_AWAITED)
+
+
+func test_denunciation_at_death_ends_the_run() -> void:
+	var state: RunState = RunState.new(MISSED_SEED)
+	var loop: RunLoop = _missed_set(_meters_with_miss(RunMeters.DENUNCIATION, 100), state)
+	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.RUN_OVER)
+	assert_int(loop.events()[-1].type).is_equal(RunEvent.Type.RUN_DIED)
+	assert_str(loop.events()[-1].text).is_equal(RunMeters.DENUNCIATION)
+
+
+func test_mid_denunciation_sends_you_to_reeducation_in_place_of_the_store() -> void:
+	var state: RunState = RunState.new(MISSED_SEED)
+	state.inventory.cadres.assign([RunLoop.DEFAULT_CADRES.cadres[0].id])
+	var meters: MeterTable = _meters_with_miss(RunMeters.DENUNCIATION, 50)
+	var loop: RunLoop = _missed_set(meters, state)
+	assert_bool(state.reeducation_due).is_true()
+	# Filled after play, so the script needn't swap; the Set-end checkpoint keeps it.
+	state.inventory.plot.append(
+		CardInstance.new(CardInstance.FIRST_PLOT_ID, 12, 0, CardInstance.Origin.PLOT)
+	)
+	loop.record.mark(state)
+	var saved: Dictionary = loop.record.to_dict()
+	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
+	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.REEDUCATION)
+	assert_int(loop.flow.state()).is_equal(RunFlow.State.REEDUCATION)
+	assert_bool(state.inventory.plot.is_empty()).is_true()
+	assert_int(state.inventory.cadres.size()).is_equal(1)
+	assert_str(state.inventory.cadres[0]).is_not_equal(RunLoop.DEFAULT_CADRES.cadres[0].id)
+	assert_bool(state.reeducation_due).is_false()
+	# A save taken in reeducation replays to the same place and the same exchange.
+	var commands: Array = saved["commands"]
+	commands.append({"type": "shop"})
+	var resumed: RunLoop = RunRecord.resume(
+		saved,
+		RunScript.bots(),
+		_hard_sets(),
+		RunLoop.DEFAULT_PARAMS,
+		RunLoop.DEFAULT_POOL.debuffs,
+		meters
+	)
+	assert_int(resumed.awaiting()).is_equal(RunLoop.Awaiting.REEDUCATION)
+	assert_array(resumed.state.inventory.cadres).is_equal(state.inventory.cadres)
+	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
+	assert_int(loop.flow.state()).is_not_equal(RunFlow.State.REEDUCATION)
+	assert_int(state.set_index).is_equal(1)
+
+
+func test_rationing_cuts_a_store_slot_until_famine_falls() -> void:
+	var state: RunState = RunState.new(MISSED_SEED)
+	state.famine = RunLoop.DEFAULT_METERS.famine.mid - 1
+	var loop: RunLoop = _missed_set(_meters_with_miss(RunMeters.FAMINE, 1), state)
+	assert_bool(state.rationed).is_true()
+	loop.open_shop()
+	var cut: int = RunLoop.DEFAULT_METERS.rationing_shop_cut
+	assert_int(loop.shop.stock().size()).is_equal(RunLoop.DEFAULT_SHOP.slots - cut)
+
+
+## Every bot always lies, and the player always declares above true need, so each audit
+## that lands catches someone; an informer at the table makes audits likelier.
+func test_caught_lies_raise_the_liars_denunciation() -> void:
+	var state: RunState = RunState.new(SEEDS[0])
+	state.table.assign(["player", RunLoop.DEFAULT_AUDIT.informer_families[0], "li"])
+	var configs: Array[BotConfig] = RunScript.bots()
+	for config: BotConfig in configs:
+		config.honesty = 0.0
+	var loop: RunLoop = RunLoop.new(state, configs)
+	loop.start_set()
+	RunScript.new().play_until_set_over(loop)
+	var player_caught: int = 0
+	var villagers_caught: Dictionary[String, int] = {}
+	for event: RunEvent in loop.events():
+		if event.type != RunEvent.Type.AUDITED or event.value != 1:
+			continue
+		if event.seat == 0:
+			player_caught += 1
+		else:
+			var family_id: String = state.table[event.seat]
+			villagers_caught[family_id] = villagers_caught.get(family_id, 0) + 1
+	assert_int(player_caught + villagers_caught.size()).is_greater(0)
+	var per_lie: int = RunLoop.DEFAULT_METERS.source(RunMeters.CAUGHT_LIE).amount
+	assert_int(state.denunciation).is_equal(player_caught * per_lie)
+	for family_id: String in villagers_caught:
+		assert_int(state.villager_denunciation[family_id]).is_equal(
+			villagers_caught[family_id] * per_lie
+		)
+
+
+## A run with a roster seats two of its families each Set and plays them by personality;
+## a family whose own Denunciation reached mid leaves for reeducation at the Set's end.
+func test_a_roster_run_seats_families_and_reeducates_the_denounced() -> void:
+	var state: RunState = RunState.new(SEEDS[1])
+	Roster.start(state, RunLoop.DEFAULT_VILLAGE, [])
+	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
+	loop.start_set()
+	var seated: Array[String] = state.table.slice(1)
+	assert_str(seated[0]).is_not_equal(seated[1])
+	for family_id: String in seated:
+		assert_int(Roster.entry(state, family_id).status).is_equal(RosterEntry.Status.ACTIVE)
+		assert_int(Roster.entry(state, family_id).sets_seated).is_equal(1)
+	state.villager_denunciation[seated[0]] = RunLoop.DEFAULT_METERS.denunciation.mid
+	RunScript.new().play_until_set_over(loop)
+	assert_int(Roster.entry(state, seated[0]).status).is_equal(RosterEntry.Status.REEDUCATION)
+	assert_int(state.villager_denunciation[seated[0]]).is_equal(0)
+	loop.next_set()
+	assert_bool(state.table.has(seated[0])).is_false()
+
+
+## An even Year's boss Set with a risen villager seats them as landlord from the start.
+func test_a_risen_villager_runs_an_even_years_boss_set_as_landlord() -> void:
+	var state: RunState = RunState.new(SEEDS[2])
+	state.year = 2
+	state.set_index = 2
+	state.set_type = RunState.SetType.BOSS
+	state.risen.assign(["zhao"])
+	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
+	loop.start_set()
+	assert_str(state.boss_id).is_equal(RunLoop.DEFAULT_BOSSES.risen.id)
+	assert_str(state.table[1]).is_equal("zhao")
+	var chosen: bool = false
+	# The first round has no bidding: it starts with the risen villager already landlord.
+	for event: RunEvent in loop.events():
+		var kept: bool = event.type == RunEvent.Type.SEAT_KEPT
+		if kept or event.type == RunEvent.Type.SEAT_LOST:
+			assert_int(event.seat).is_equal(1)
+			break
+		assert_int(event.type).is_not_equal(RunEvent.Type.BID)
+		chosen = chosen or event.type == RunEvent.Type.BOSS_CHOSEN
+	assert_bool(chosen).is_true()

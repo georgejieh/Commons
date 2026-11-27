@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BossPool" format=3]
+
+[ext_resource type="Script" path="res://data/run/boss_pool.gd" id="1"]
+[ext_resource type="Resource" path="res://data/modifiers/bosses/struggle_session.tres" id="2"]
+[ext_resource type="Resource" path="res://data/modifiers/bosses/requisition.tres" id="3"]
+[ext_resource type="Resource" path="res://data/modifiers/bosses/great_leap.tres" id="4"]
+[ext_resource type="Resource" path="res://data/modifiers/bosses/the_purge.tres" id="5"]
+[ext_resource type="Resource" path="res://data/modifiers/bosses/risen_villager.tres" id="6"]
+[ext_resource type="Resource" path="res://data/modifiers/bosses/new_landlord.tres" id="7"]
+
+[resource]
+script = ExtResource("1")
+officials = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5")])
+risen = ExtResource("6")
+new_landlord = ExtResource("7")
+style_sets = 3
+style_bias = 2.0
+ambition_span = 4.0

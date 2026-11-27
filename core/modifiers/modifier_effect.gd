@@ -59,3 +59,7 @@ func shop_open(_context: ShopContext) -> void:
 
 func meter_change(_context: MeterContext) -> void:
 	pass
+
+
+func audit(_context: AuditContext) -> void:
+	pass

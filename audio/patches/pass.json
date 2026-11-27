@@ -1,0 +1,6 @@
+{"name": "pass", "description": "Pass: a light knuckle knock on the wooden table, the way players pass at a real table (Kenney Impact Sounds). Frequent, so quiet and short.",
+ "layers": [{"wave": "sample", "file": ["../sources/raw/wav_impact-sounds/impactWood_light_000.wav", "../sources/raw/wav_impact-sounds/impactWood_light_002.wav", "../sources/raw/wav_impact-sounds/impactWood_light_004.wav"],
+   "start": 0.0, "length": 0.18, "env": {"attack": 0.0005, "hold": 0.06, "release": 0.12, "curve": 2.5}, "filters": [{"type": "lowpass", "cutoff": 7000}]}],
+ "master": {"lufs": -27, "peak_db": -3, "highpass": 180},
+ "vary": {"pitch": 0.7, "gain_db": 1},
+ "expect": {"duration": [0.08, 0.2]}}

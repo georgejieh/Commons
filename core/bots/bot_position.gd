@@ -3,6 +3,8 @@ extends RefCounted
 ## What one decision knows about the table, worked out once from the seat's own view.
 
 const NO_CARDS: int = 99
+## Keeps the effort roll apart from the cooperation roll.
+const SLACK_SALT: int = 0x5A1AC
 
 var view: SeatView
 var table: BotTable
@@ -98,8 +100,18 @@ func read_groups(other: Array[Pattern]) -> Controls:
 
 ## A repeatable roll for this decision, from 0 to 1.
 func roll() -> float:
+	return _roll(0)
+
+
+## True when this decision is one the bot doesn't try on, from its own salted roll so it
+## never moves with the cooperation roll.
+func slacks() -> bool:
+	return config.effort < 1.0 and _roll(SLACK_SALT) >= config.effort
+
+
+func _roll(salt: int) -> float:
 	var state: int = CountKey.encode(view.own_counts) ^ (view.public.history.size() << 8)
-	return RandomStream.new(config.search_seed ^ state).next_float()
+	return RandomStream.new(config.search_seed ^ state ^ salt).next_float()
 
 
 func rank_of(rank: int) -> int:

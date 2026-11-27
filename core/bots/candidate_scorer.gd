@@ -4,13 +4,21 @@ extends RefCounted
 ## round still needed (sm9sun's baseline). Passing keeps the hand and costs one more round.
 ## One instance serves one decision, so every candidate shares the search's memo.
 
+## Bonus per Pattern.Type added to every play's score (P4.7). Empty for none.
+var _bias: PackedFloat32Array = PackedFloat32Array()
 var _counts: PackedByteArray
 var _weights: BotWeights
 var _rank_map: PackedByteArray
 var _decomposer: HandDecomposer
 
 
-func _init(counts: PackedByteArray, table: BotTable, weights: BotWeights) -> void:
+func _init(
+	counts: PackedByteArray,
+	table: BotTable,
+	weights: BotWeights,
+	bias: PackedFloat32Array = PackedFloat32Array()
+) -> void:
+	_bias = bias
 	_counts = counts
 	_weights = weights
 	_rank_map = table.rank_map
@@ -18,6 +26,11 @@ func _init(counts: PackedByteArray, table: BotTable, weights: BotWeights) -> voi
 
 
 func score_play(move: Pattern) -> float:
+	var bonus: float = 0.0 if _bias.is_empty() else _bias[move.type]
+	return _score_play(move) + bonus
+
+
+func _score_play(move: Pattern) -> float:
 	var left: PackedByteArray = _counts.duplicate()
 	var used: PackedByteArray = move.counts()
 	var cards_left: int = 0
