@@ -85,7 +85,7 @@ func hint_cards_frame(table: Node, where: String) -> void:
 
 ## The fan must show exactly the cards the player holds, each once.
 func check_fan(table: Node, where: String) -> void:
-	var held: Array = view(_controller(), "table").call("player_cards")
+	var held: Array = view(_controller(), ScreenId.TABLE).call("player_cards")
 	var views: Array = member(member(table, "hand_view"), "_views")
 	var shown: Dictionary[int, bool] = {}
 	for card_view: Control in views:

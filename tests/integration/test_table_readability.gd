@@ -26,7 +26,7 @@ func after_test() -> void:
 
 
 func test_the_newest_play_lies_on_top_upright_with_every_rank_showing() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var pile: TrickPile = table.pile
 	pile.show_play(_cards([0, 1]), Vector2.ZERO)
@@ -57,7 +57,7 @@ func test_the_newest_play_lies_on_top_upright_with_every_rank_showing() -> void:
 
 
 func test_every_card_of_a_fresh_deal_shows_its_face() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var hand_view: HandView = table.hand_view
 	hand_view.show_cards()
@@ -79,7 +79,7 @@ func test_every_card_of_a_fresh_deal_shows_its_face() -> void:
 
 
 func test_the_same_play_lands_the_same_way() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var pile: TrickPile = table.pile
 	Settings.set_value("reduced_motion", true)
@@ -211,13 +211,13 @@ func test_a_rank_debuff_shows_on_the_table_and_on_the_cards_it_changes() -> void
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", RANK_DEBUFF, "", ""])
 	assert_array(_app.controller.items.ladder()).contains([RANK_DEBUFF])
-	_app.show_screen(App.TABLE, true)
+	_app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var driver: ControllerScript = ControllerScript.new()
 	var saw_note: bool = false
 	var saw_strip: bool = false
 	for _turn: int in 800:
-		if _app.switcher.current_id() != "table" or (saw_note and saw_strip):
+		if _app.switcher.current_id() != ScreenId.TABLE or (saw_note and saw_strip):
 			break
 		# The table is built afresh for each round, so look it up every turn.
 		var table: TableScreen = _app.switcher.current()

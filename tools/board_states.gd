@@ -41,7 +41,7 @@ func _run() -> void:
 	var app: Node = scene.instantiate()
 	root.add_child(app)
 	app.call("new_run", SEED)
-	var table: Node = app.call("show_screen", "table", true)
+	var table: Node = app.call("show_screen", ScreenId.TABLE, true)
 	await _settle()
 	var dread: Node = WalkBase.member(table, "dread")
 	var states: Dictionary = load("res://game/horror/board_state.gd").get("BOARD_STATES")

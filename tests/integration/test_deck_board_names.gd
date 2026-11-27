@@ -36,7 +36,7 @@ func test_no_card_covers_a_group_name() -> void:
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for choosing: bool in [false, true]:
-				var store: StoreScreen = _app.show_screen(App.STORE, true)
+				var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 				await await_idle_frame()
 				var sheet: DeckSheet = store.deck
 				if choosing:

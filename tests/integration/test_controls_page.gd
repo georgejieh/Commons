@@ -70,12 +70,12 @@ func _assert_focus_in(page: Control) -> void:
 
 ## The title's settings, then its Controls ticket pressed with Enter.
 func _open_from_title() -> ControlsPage:
-	_app.show_screen(App.TITLE, true)
-	var settings: SettingsScreen = _app.show_screen(App.SETTINGS)
+	_app.show_screen(ScreenId.TITLE, true)
+	var settings: SettingsScreen = _app.show_screen(ScreenId.SETTINGS)
 	await await_idle_frame()
 	SettingsPanel.controls_button(settings).grab_focus()
 	await _tap(KEY_ENTER)
-	assert_str(_app.switcher.current_id()).is_equal(App.CONTROLS)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.CONTROLS)
 	var screen: ControlsScreen = _app.switcher.current()
 	return screen.page()
 
@@ -130,12 +130,12 @@ func test_escape_cancels_the_asking_then_backs_out() -> void:
 	assert_str(page.capturing()).is_equal("commons_sort")
 	await _tap(KEY_ESCAPE)
 	assert_str(page.capturing()).is_empty()
-	assert_str(_app.switcher.current_id()).is_equal(App.CONTROLS)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.CONTROLS)
 	assert_int(Settings.bindings.key("commons_sort")).is_equal(KEY_S)
 	assert_str(ticket.text).is_equal("S")
 	assert_object(_focus()).is_same(ticket)
 	await _tap(KEY_ESCAPE)
-	assert_str(_app.switcher.current_id()).is_equal(App.SETTINGS)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SETTINGS)
 
 
 func test_the_gamepad_cancels_and_a_bare_modifier_is_refused() -> void:
@@ -153,9 +153,9 @@ func test_the_gamepad_cancels_and_a_bare_modifier_is_refused() -> void:
 	await _tap(KEY_ENTER)
 	await _pad(JOY_BUTTON_B)
 	assert_str(page.capturing()).is_empty()
-	assert_str(_app.switcher.current_id()).is_equal(App.CONTROLS)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.CONTROLS)
 	await _pad(JOY_BUTTON_B)
-	assert_str(_app.switcher.current_id()).is_equal(App.SETTINGS)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SETTINGS)
 
 
 func test_a_clash_swaps_and_restore_puts_every_key_back() -> void:
@@ -206,11 +206,11 @@ func test_no_binding_set_locks_the_page() -> void:
 		if HOSTILE[action] != KEY_ENTER:
 			await _tap(HOSTILE[action])
 		_assert_focus_in(page)
-		assert_str(_app.switcher.current_id()).is_equal(App.CONTROLS)
+		assert_str(_app.switcher.current_id()).is_equal(ScreenId.CONTROLS)
 	await _tap(KEY_ESCAPE)
-	assert_str(_app.switcher.current_id()).is_equal(App.SETTINGS)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SETTINGS)
 	_app.new_run(SEED)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	await _tap(KEY_ESCAPE)

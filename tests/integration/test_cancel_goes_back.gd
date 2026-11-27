@@ -5,8 +5,10 @@ extends GdUnitTestSuite
 ## Leave ends the visit, so Cancel there leaves the page where it is.
 
 const SEED: int = 4242
-const TITLE_PAGES: Array[String] = ["settings", "collection", "village_history", "run_setup"]
-const RUN_PAGES: Array[String] = ["dossier", "round_summary"]
+const TITLE_PAGES: Array[String] = [
+	ScreenId.SETTINGS, ScreenId.COLLECTION, ScreenId.VILLAGE_HISTORY, ScreenId.RUN_SETUP
+]
+const RUN_PAGES: Array[String] = [ScreenId.DOSSIER, ScreenId.ROUND_SUMMARY]
 
 static var _save_path: String = TestFolder.of("test_cancel_goes_back") + "run.json"
 
@@ -27,13 +29,13 @@ func after_test() -> void:
 
 func test_cancel_goes_back_from_the_titles_pages() -> void:
 	for page: String in TITLE_PAGES:
-		await _check_back(page, "title")
+		await _check_back(page, ScreenId.TITLE)
 
 
 func test_cancel_goes_back_from_the_runs_records() -> void:
 	_app.new_run(SEED)
 	for page: String in RUN_PAGES:
-		await _check_back(page, "title")
+		await _check_back(page, ScreenId.TITLE)
 
 
 func test_cancel_goes_back_from_the_black_market_and_not_from_the_store() -> void:
@@ -41,9 +43,9 @@ func test_cancel_goes_back_from_the_black_market_and_not_from_the_store() -> voi
 	var driver: ControllerScript = ControllerScript.new()
 	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
-	await _check_back("black_market", "store")
+	await _check_back(ScreenId.BLACK_MARKET, ScreenId.STORE)
 	await _cancel()
-	assert_str(_app.switcher.current_id()).is_equal(App.STORE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.STORE)
 
 
 ## Opens page over from, presses Cancel, and checks that it went back.

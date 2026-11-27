@@ -69,11 +69,11 @@ func _tiles(store: StoreScreen) -> Array[Control]:
 
 
 func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
-	for screen_id: String in ["store", "black_market"]:
+	for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 		_hold(2)
 		var store: StoreScreen = await _open(screen_id)
 		var sale: SellDesk = store.sale
-		var desk: ShopDesk = _app.controller.store.desk(screen_id == "black_market")
+		var desk: ShopDesk = _app.controller.store.desk(screen_id == ScreenId.BLACK_MARKET)
 		var tile: Control = _tiles(store)[0]
 		var tag: SellTag = sale.tag_on(tile)
 		assert_object(tag).override_failure_message(screen_id).is_not_null()
@@ -107,7 +107,7 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 
 func test_selling_clears_no_room_on_the_counter_in_the_same_visit() -> void:
 	_hold(RunReforms.cadre_slots(_loop().state))
-	var store: StoreScreen = await _open("store")
+	var store: StoreScreen = await _open(ScreenId.STORE)
 	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
@@ -125,7 +125,7 @@ func test_selling_clears_no_room_on_the_counter_in_the_same_visit() -> void:
 
 func test_a_held_campaign_sells_from_the_tray() -> void:
 	_hold(1)
-	var store: StoreScreen = await _open("store")
+	var store: StoreScreen = await _open(ScreenId.STORE)
 	var stall: CampaignStall = store.campaign_stall
 	var leaflet: CampaignLeaflet = stall.tray.leaflet(0)
 	var tag: SellTag = _sale(store).tag_on(leaflet)
@@ -148,7 +148,7 @@ func test_the_keyboard_reaches_a_sale_and_the_slip_stands_beside_it() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			for screen_id: String in ["store", "black_market"]:
+			for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 				var store: StoreScreen = await _open(screen_id)
 				var where: String = "%s %s text %d" % [screen_id, screen_size, level]
 				await _check_focus(store, where)

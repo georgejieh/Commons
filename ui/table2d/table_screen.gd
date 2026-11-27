@@ -472,7 +472,7 @@ func _on_drained() -> void:
 	tutorial.settled(awaiting)
 	_resize.drained(awaiting)
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
-		_app.show_screen(App.SET_SUMMARY, true)
+		_app.show_screen(ScreenId.SET_SUMMARY, true)
 	elif awaiting == RunController.AWAIT_SWAP:
 		# The plot swap is a sheet over the table, opened once the queue is empty (ADR 0038).
 		swap_sheet.open()

@@ -77,7 +77,7 @@ func table_deck() -> void:
 
 
 func _desk(screen: Node, sheet: Object) -> void:
-	var desk: Object = view(_controller(), "store").call("mark_desk", false)
+	var desk: Object = view(_controller(), ScreenId.STORE).call("mark_desk", false)
 	await _afford(screen, int(desk.call("price")))
 	var stall: Object = member(screen, "desk_stall")
 	var ticket: Button = stall.get("ticket")

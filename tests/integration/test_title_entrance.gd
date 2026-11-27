@@ -50,7 +50,7 @@ func _eyebrow(title: TitleScreen) -> Label:
 
 func test_the_title_arrives_in_order_and_is_whole_in_time() -> void:
 	var presets: MotionPresets = UiMotion.PRESETS
-	var title: TitleScreen = _app.show_screen(App.TITLE, true)
+	var title: TitleScreen = _app.show_screen(ScreenId.TITLE, true)
 	var word: TitleWord = title.word()
 	var eyebrow: Label = _eyebrow(title)
 	var start: Button = _button(title, "title.new_run")
@@ -86,7 +86,7 @@ func test_the_title_arrives_in_order_and_is_whole_in_time() -> void:
 
 func test_reduced_motion_prints_the_title_at_once() -> void:
 	Settings.set_value("reduced_motion", true)
-	var title: TitleScreen = _app.show_screen(App.TITLE, true)
+	var title: TitleScreen = _app.show_screen(ScreenId.TITLE, true)
 	assert_bool(title.word().is_printed()).is_true()
 	assert_float(title.arrives_in()).is_equal(0.0)
 	assert_float(_eyebrow(title).modulate.a).is_equal(1.0)
@@ -98,7 +98,7 @@ func test_the_name_stands_inside_the_screen_as_wide_as_its_type() -> void:
 	Settings.set_value("reduced_motion", true)
 	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
-		var title: TitleScreen = _app.show_screen(App.TITLE, true)
+		var title: TitleScreen = _app.show_screen(ScreenId.TITLE, true)
 		await await_idle_frame()
 		await await_idle_frame()
 		var word: TitleWord = title.word()
@@ -121,7 +121,7 @@ func test_the_column_stands_in_the_sky_above_the_crowd() -> void:
 	Settings.set_value("reduced_motion", true)
 	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
-		var title: TitleScreen = _app.show_screen(App.TITLE, true)
+		var title: TitleScreen = _app.show_screen(ScreenId.TITLE, true)
 		await await_idle_frame()
 		await await_idle_frame()
 		var page: Rect2 = title.get_global_rect()

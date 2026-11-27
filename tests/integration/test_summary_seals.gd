@@ -44,7 +44,7 @@ func test_the_reports_seals_stand_clear_of_the_figures() -> void:
 			for screen_size: Vector2i in ClipCheck.SIZES:
 				Settings.set_value(TextSize.SETTING, level)
 				get_tree().root.size = screen_size
-				var report: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
+				var report: SetSummaryScreen = _app.show_screen(ScreenId.SET_SUMMARY, true)
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "target %s, size %d at %s" % [first, level, screen_size]

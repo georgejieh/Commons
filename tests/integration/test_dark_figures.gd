@@ -70,7 +70,7 @@ func _never_shows(screen: Node, values: Array[int]) -> void:
 
 func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 	_darken(["famine", "norm"])
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var hud: TableHud = table.hud
 	assert_bool(hud.famine.visible).is_false()
@@ -96,7 +96,7 @@ func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
 	var sounds: int = SfxPlayer.BANK.sound(AudioEvents.METER_ROSE).streams.size()
 	if sounds > 1:
 		assert_int(Audio.effects.next_take(AudioEvents.METER_ROSE)).is_not_equal(was)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var dread: DreadLayers = table.dread
 	var copy: RunState = _app.controller.state_copy()
@@ -111,7 +111,7 @@ func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
 func test_the_quota_report_shows_none_reported_and_no_rise() -> void:
 	_to_set_over()
 	_darken(["famine", "norm"])
-	var summary: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
+	var summary: SetSummaryScreen = _app.show_screen(ScreenId.SET_SUMMARY, true)
 	await await_idle_frame()
 	var words: String = _shown(summary)
 	assert_str(words).contains(ShownFigures.none_reported())
@@ -123,7 +123,7 @@ func test_the_quota_report_shows_none_reported_and_no_rise() -> void:
 
 func test_the_set_intro_hides_a_dark_norms_target() -> void:
 	_darken(["norm"])
-	var intro: Node = _app.show_screen(App.SET_INTRO, true)
+	var intro: Node = _app.show_screen(ScreenId.SET_INTRO, true)
 	await await_idle_frame()
 	var rounds: int = _app.max_rounds()
 	var hidden: String = tr("intro.target.unreported").format({"rounds": rounds})
@@ -137,7 +137,7 @@ func test_the_black_market_shows_a_dark_resentment_as_none_reported() -> void:
 	_to_set_over()
 	_app.controller.finish_set()
 	_darken(["resentment"])
-	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
+	var market: StoreScreen = _app.show_screen(ScreenId.BLACK_MARKET, true)
 	await await_idle_frame()
 	var count: Label = market.resentment
 	assert_str(count.text).is_equal(ShownFigures.none_reported())
@@ -146,7 +146,7 @@ func test_the_black_market_shows_a_dark_resentment_as_none_reported() -> void:
 
 func test_the_year_and_round_pages_and_the_ending_show_none_reported() -> void:
 	_darken(["famine", "denunciation"])
-	for screen_id: String in ["year_summary", "round_summary"]:
+	for screen_id: String in [ScreenId.YEAR_SUMMARY, ScreenId.ROUND_SUMMARY]:
 		var page: Node = _app.show_screen(screen_id, true)
 		await await_idle_frame()
 		_never_shows(page, [FAMINE, DENUNCIATION])
@@ -154,7 +154,7 @@ func test_the_year_and_round_pages_and_the_ending_show_none_reported() -> void:
 	_loop().state.famine = RunDefaults.METERS.famine.death
 	_app.controller.reseal_book()
 	assert_str(_app.controller.seats.ending().id).is_equal(Endings.DEATH_FAMINE)
-	var ending: Node = _app.show_screen(App.ENDING, true)
+	var ending: Node = _app.show_screen(ScreenId.ENDING, true)
 	await await_idle_frame()
 	var words: String = _shown(ending)
 	assert_str(words).contains(ShownFigures.none_reported())

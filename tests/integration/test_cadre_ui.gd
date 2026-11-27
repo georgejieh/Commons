@@ -35,7 +35,7 @@ func _market_with_rehabilitation() -> StoreScreen:
 	_app.controller.reseal_book()
 	var stock: Array[String] = ["rehabilitation", "show_trial", "last_sheaf"]
 	loop.visit.market.stock_with(stock, loop.visit.market.directive_stock())
-	return _app.show_screen(App.BLACK_MARKET)
+	return _app.show_screen(ScreenId.BLACK_MARKET)
 
 
 func _buy_button(store: StoreScreen, slot: int) -> Button:
@@ -121,7 +121,7 @@ func test_the_quota_report_counts_the_bookkeepers_coupons_in_the_paid_line() -> 
 	loop.set_log.add(RunEvent.new(RunEvent.Type.CADRE_FIRED, 0, 2, 0.0, "the_bookkeeper"))
 	loop.state.coupons += 2
 	_app.controller.reseal_book()
-	var report: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
+	var report: SetSummaryScreen = _app.show_screen(ScreenId.SET_SUMMARY, true)
 	await await_idle_frame()
 	var now: Array[Control] = report.after
 	var met: bool = _app.controller.run.set_progress() >= _app.controller.figures.target()
@@ -140,7 +140,7 @@ func test_the_quota_report_counts_the_bookkeepers_coupons_in_the_paid_line() -> 
 
 
 func test_the_collections_sections_scroll_with_focus() -> void:
-	var collection: CollectionScreen = _app.show_screen(App.COLLECTION)
+	var collection: CollectionScreen = _app.show_screen(ScreenId.COLLECTION)
 	await await_idle_frame()
 	var flows: Array[Node] = collection.find_children("*", "HFlowContainer", true, false)
 	assert_int(flows.size()).is_equal(CollectionView.SECTION_KEYS.size())

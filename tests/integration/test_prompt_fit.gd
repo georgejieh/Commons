@@ -27,7 +27,7 @@ func test_every_prompt_stands_in_its_box_at_the_chosen_size_or_fitted_down() -> 
 	var problems: PackedStringArray = []
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		var table: TableScreen = _app.show_screen(App.TABLE, true)
+		var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 		await await_idle_frame()
 		var actions: ActionBar = table.actions
 		var chosen: int = TextSize.px(ActionBar.PROMPT_SIZE)
@@ -49,7 +49,7 @@ func test_the_box_is_the_tallest_prompt_at_standard() -> void:
 	var rooms: Array[float] = []
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		var table: TableScreen = _app.show_screen(App.TABLE, true)
+		var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 		await await_idle_frame()
 		rooms.append(table.actions.prompt_room())
 	assert_float(rooms[0]).is_greater(0.0)

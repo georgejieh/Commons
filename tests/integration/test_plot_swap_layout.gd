@@ -50,7 +50,7 @@ func _to_swap() -> TableScreen:
 			)
 		)
 	state.swap_bonus = RunDefaults.PLOT_UPGRADES.swap_max
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	for _turn: int in 60:
 		if _sheet(table).is_open():
@@ -90,7 +90,7 @@ func test_a_full_hand_and_plot_fit_on_both_screens_at_every_text_size() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			table = _app.show_screen(App.TABLE, true)
+			table = _app.show_screen(ScreenId.TABLE, true)
 			await await_idle_frame()
 			assert_bool(_sheet(table).is_open()).is_true()
 			_fill(table)

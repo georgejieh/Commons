@@ -33,7 +33,7 @@ func after_test() -> void:
 func _table(level: int, screen: Vector2i) -> TableScreen:
 	Settings.set_value(TextSize.SETTING, level)
 	get_tree().root.size = screen
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	await await_idle_frame()

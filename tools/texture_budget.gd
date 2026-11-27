@@ -41,7 +41,7 @@ func _run() -> void:
 	var peak: float = 0.0
 	for stage: int in STAGES:
 		ArtStages.stage_override = stage
-		var table: Node = app.call("show_screen", "table", true)
+		var table: Node = app.call("show_screen", ScreenId.TABLE, true)
 		_show_all_cadres(WalkBase.member(table, "board"))
 		_show_all_cards(table)
 		for _frame: int in SETTLE_FRAMES:

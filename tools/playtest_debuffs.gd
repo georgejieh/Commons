@@ -60,9 +60,9 @@ func rules() -> void:
 		ladder.assign(cases[frame])
 		loop.state.debuff_ladder.assign(ladder)
 		loop.state.round_index = ladder.size() - 1
-		var table: Node = app.call("show_screen", "table", true)
+		var table: Node = app.call("show_screen", ScreenId.TABLE, true)
 		await _frames(30)
-		var held: Array = view(_controller(), "table").call("player_cards")
+		var held: Array = view(_controller(), ScreenId.TABLE).call("player_cards")
 		var play: Array[CardInstance] = []
 		for card: CardInstance in held.slice(0, 3):
 			play.append(card)

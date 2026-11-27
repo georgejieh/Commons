@@ -22,7 +22,7 @@ func open(app: App) -> void:
 	]
 	column.add_child(ScreenKit.row(tiles, 20))
 	var next: Button = ScreenKit.button(tr("year.next"), CommonsTheme.PRIMARY)
-	next.pressed.connect(func() -> void: app.show_screen(App.DEMO_COMPLETE, true))
+	next.pressed.connect(func() -> void: app.show_screen(ScreenId.DEMO_COMPLETE, true))
 	column.add_child(next)
 	ScreenKit.reveal(column)
 	UiMotion.stamp(heading)

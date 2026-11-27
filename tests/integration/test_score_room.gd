@@ -34,7 +34,7 @@ func _table(level: int, screen_size: Vector2i) -> TableScreen:
 	get_tree().root.size = screen_size
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return table

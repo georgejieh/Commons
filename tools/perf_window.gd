@@ -7,7 +7,6 @@ extends RefCounted
 ## run it plays is a demo started with no save and no profile.
 
 const APP_SCENE: String = "res://ui/main.tscn"
-const TITLE: String = "title"
 const WINDOWLESS: String = "headless"
 const NO_WINDOW: String = "needs a window and a GPU: run without --headless, with --windowed-rows"
 
@@ -72,8 +71,8 @@ func _startup() -> PerfRow:
 	_tree.root.add_child(app)
 	var switcher: Object = app.get("switcher")
 	var opened: String = String(switcher.call("current_id"))
-	if opened != TITLE:
-		app.call("show_screen", TITLE, true)
+	if opened != ScreenId.TITLE:
+		app.call("show_screen", ScreenId.TITLE, true)
 	await RenderingServer.frame_post_draw
 	var msec: int = Time.get_ticks_msec()
 	var shown: String = String(switcher.call("current_id"))
@@ -84,9 +83,9 @@ func _startup() -> PerfRow:
 		+ " load of the main scene; the time before the engine's clock starts, the engine's own"
 		+ " main-scene load and a title screen still fading in are not in it"
 	)
-	if opened != TITLE:
+	if opened != ScreenId.TITLE:
 		note += "; the app opened on %s, so the title was shown by the tool" % opened
-	if shown != TITLE:
+	if shown != ScreenId.TITLE:
 		return PerfRow.unmeasured(
 			"Startup to title", PerfLimits.startup_budget(), "the title was not shown"
 		)

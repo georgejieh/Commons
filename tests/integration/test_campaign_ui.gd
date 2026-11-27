@@ -59,7 +59,7 @@ func _drive_to(moment: int) -> bool:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return table
@@ -277,7 +277,7 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
 	_app.controller.reseal_book()
-	for screen_id: String in ["store", "black_market"]:
+	for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 		var store: StoreScreen = _app.show_screen(screen_id, true)
 		await await_idle_frame()
 		await await_idle_frame()

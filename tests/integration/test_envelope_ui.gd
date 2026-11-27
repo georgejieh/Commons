@@ -37,7 +37,7 @@ func _loop() -> RunLoop:
 	return _app.controller.run_loop()
 
 
-func _open(screen_id: String = "store") -> StoreScreen:
+func _open(screen_id: String = ScreenId.STORE) -> StoreScreen:
 	var store: StoreScreen = _app.show_screen(screen_id, true)
 	await await_idle_frame()
 	await await_idle_frame()
@@ -103,9 +103,11 @@ func _cancel() -> void:
 
 
 func test_each_shop_offers_an_envelope_explained_by_the_slip() -> void:
-	for screen_id: String in ["store", "black_market"]:
+	for screen_id: String in [ScreenId.STORE, ScreenId.BLACK_MARKET]:
 		var store: StoreScreen = await _open(screen_id)
-		var shelf: EnvelopeShelf = _app.controller.store.envelope_shelf(screen_id == "black_market")
+		var shelf: EnvelopeShelf = _app.controller.store.envelope_shelf(
+			screen_id == ScreenId.BLACK_MARKET
+		)
 		var offered: String = shelf.stock()[0]
 		var panel: CounterPanel = _stall(store).panel(0)
 		assert_int(panel.look()).is_equal(CounterPanel.Look.ENVELOPE)
@@ -145,7 +147,7 @@ func test_buying_opens_it_and_holds_every_other_purchase() -> void:
 	assert_int(_app.controller.state_copy().inventory.cadres.size()).is_equal(cadres)
 	assert_int(_loop().record.commands.size()).is_equal(commands + 1)
 	var switcher: SceneSwitcher = _app.get("switcher")
-	assert_str(switcher.current_id()).is_equal(App.STORE)
+	assert_str(switcher.current_id()).is_equal(ScreenId.STORE)
 	await _wait(overlay)
 	assert_bool(overlay.is_busy()).is_false()
 	assert_bool(overlay.figure().visible).is_false()
@@ -260,7 +262,7 @@ func test_a_kept_campaign_reaches_the_tray_and_nothing_is_left_behind() -> void:
 
 func test_reduced_motion_opens_and_keeps_at_once() -> void:
 	Settings.set_value("reduced_motion", true)
-	var store: StoreScreen = await _open("black_market")
+	var store: StoreScreen = await _open(ScreenId.BLACK_MARKET)
 	var overlay: EnvelopeOverlay = _bought(store)
 	assert_bool(overlay.is_busy()).is_false()
 	assert_bool(overlay.figure().visible).is_false()
@@ -280,7 +282,7 @@ func test_parcel_cards_show_their_marks() -> void:
 	Settings.set_value("reduced_motion", true)
 	var seen: int = 0
 	for attempt: int in 12:
-		var store: StoreScreen = await _open("black_market")
+		var store: StoreScreen = await _open(ScreenId.BLACK_MARKET)
 		var overlay: EnvelopeOverlay = _bought(store)
 		if overlay == null:
 			break

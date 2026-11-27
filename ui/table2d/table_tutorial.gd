@@ -89,7 +89,7 @@ func _report_when_landed() -> void:
 	var director: TutorialDirector = _app.arrival.director
 	# The table may have given way to another screen, which reports for itself.
 	if director != null and _pile.is_visible_in_tree():
-		director.ready(App.TABLE, awaiting)
+		director.ready(ScreenId.TABLE, awaiting)
 
 
 ## True when the trick is empty, or every card of the play on top has landed and stood

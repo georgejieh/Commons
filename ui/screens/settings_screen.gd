@@ -58,7 +58,9 @@ func open(app: App) -> void:
 	back.pressed.connect(_leave)
 	# The pages' tickets stand here with Back, where they are always whole.
 	var row: Array[Control] = [back]
-	row.append_array(SettingsPanel.pages(_open.bind(App.CONTROLS), _open.bind(App.WINDOW)))
+	row.append_array(
+		SettingsPanel.pages(_open.bind(ScreenId.CONTROLS), _open.bind(ScreenId.WINDOW))
+	)
 	column.add_child(ScreenKit.row(row))
 	ScreenKit.reveal(column)
 	back.grab_focus()
@@ -140,7 +142,7 @@ func _family_name(app: App) -> VBoxContainer:
 	_change.pressed.connect(
 		func() -> void:
 			Settings.save()
-			app.show_screen(App.SURNAME)
+			app.show_screen(ScreenId.SURNAME)
 	)
 	block.add_child(ScreenKit.row([family_line, _change]))
 	return block

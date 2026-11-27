@@ -26,7 +26,7 @@ func table() -> void:
 	var loop: RunLoop = _loop()
 	var snapshot: Dictionary = loop.record.to_dict()
 	var was: int = ArtStages.stage_override
-	app.call("show_screen", "table", true)
+	app.call("show_screen", ScreenId.TABLE, true)
 	await _frames(20)
 	await _until(_idle)
 	await _notice("file_notice_coupons", _raised_coupons())
@@ -34,7 +34,7 @@ func table() -> void:
 	await _notice("file_notice_seal", BooksCorrection.new())
 	loop.state.books.dark.assign([RunCorrections.FAMINE, RunCorrections.NORM])
 	controller.call("reseal_book")
-	app.call("show_screen", "table", true)
+	app.call("show_screen", ScreenId.TABLE, true)
 	await _frames(20)
 	await _until(_idle)
 	var hud: Object = _part("hud")
@@ -44,7 +44,7 @@ func table() -> void:
 	await _shot("file_table_dark")
 	loop.state.books.dark.clear()
 	ArtStages.stage_override = ArtStages.FILED_STAGE
-	app.call("show_screen", "table", true)
+	app.call("show_screen", ScreenId.TABLE, true)
 	await _frames(20)
 	await _until(_idle)
 	var ledger: Object = _part("ledger")
@@ -67,7 +67,7 @@ func store() -> void:
 	books.price_percent = PRICE_PERCENT
 	books.dark.assign([RunCorrections.RESENTMENT])
 	controller.call("reseal_book")
-	app.call("show_screen", "black_market")
+	app.call("show_screen", ScreenId.BLACK_MARKET)
 	await _frames(30)
 	var market: Node = _current()
 	var count: Label = member(market, "resentment")
@@ -89,7 +89,7 @@ func store() -> void:
 	await _shot("file_store_stage_10")
 	ArtStages.stage_override = was
 	controller.call("reseal_book")
-	app.call("show_screen", "store", true)
+	app.call("show_screen", ScreenId.STORE, true)
 	await _frames(30)
 
 
@@ -103,12 +103,12 @@ func meta(profile: SaveService) -> void:
 	var was: int = ArtStages.stage_override
 	for stage: int in STAMP_STAGES:
 		ArtStages.stage_override = stage
-		app.call("show_screen", "title", true)
+		app.call("show_screen", ScreenId.TITLE, true)
 		await _frames(20)
 		_check_stamp(_current())
 		await _shot("file_title_stage_%d" % stage)
 	ArtStages.stage_override = was
-	app.call("show_screen", "village_history")
+	app.call("show_screen", ScreenId.VILLAGE_HISTORY)
 	await _frames(30)
 	var page: Node = _current()
 	var lines: PackedStringArray = page.call("file_lines")

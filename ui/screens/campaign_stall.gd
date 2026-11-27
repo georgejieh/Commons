@@ -150,7 +150,7 @@ func _on_used(_slot: int, _campaign_id: String) -> void:
 	spent.emit()
 	show_offer()
 	if _app.controller.awaiting() == RunController.AWAIT_RUN_OVER:
-		_app.show_screen(App.SET_SUMMARY, true)
+		_app.show_screen(ScreenId.SET_SUMMARY, true)
 
 
 ## While a leaflet is armed, the slip says what Use will do, over the tray.

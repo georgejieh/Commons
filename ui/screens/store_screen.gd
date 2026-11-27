@@ -186,8 +186,10 @@ func _set_up_stalls() -> void:
 
 
 func _header_row(app: App) -> Control:
-	var place: String = "market" if market else "store"
-	var heading: Control = ScreenKit.header(tr(place + ".eyebrow"), tr(place + ".title"))
+	var heading: Control = ScreenKit.header(
+		tr("market.eyebrow" if market else "store.eyebrow"),
+		tr("market.title" if market else "store.title")
+	)
 	var top: Array[Control] = [heading, StoreNotes.balance(coupons, books)]
 	if market:
 		resentment = ScreenKit.styled("", CommonsTheme.TITLE)
@@ -385,7 +387,7 @@ func _back() -> void:
 
 func _to_market() -> void:
 	if not is_issuing() and _app.arrival.attempt("door"):
-		_app.show_screen(App.BLACK_MARKET)
+		_app.show_screen(ScreenId.BLACK_MARKET)
 
 
 ## Leaves the store for the next Quota, once nothing is being acted out or chosen.
@@ -393,4 +395,4 @@ func _leave() -> void:
 	if is_issuing() or not _app.arrival.attempt("leave"):
 		return
 	_app.controller.leave_store()
-	_app.show_screen(App.SET_INTRO, true)
+	_app.show_screen(ScreenId.SET_INTRO, true)

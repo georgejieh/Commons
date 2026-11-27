@@ -53,7 +53,7 @@ func _at(pair: Array) -> String:
 func test_the_settings_sheets_stand_whole_at_every_size() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
-		var screen: SettingsScreen = await _show("settings")
+		var screen: SettingsScreen = await _show(ScreenId.SETTINGS)
 		var view: Rect2 = screen.scroll().get_global_rect().grow(ClipCheck.SLACK)
 		for sheet: Control in screen.sheets():
 			var rect: Rect2 = sheet.get_global_rect()
@@ -76,7 +76,7 @@ func test_the_tables_text_size_line_stands_under_its_boxes() -> void:
 	_app.new_run(SEED)
 	for pair: Array in _each():
 		var where: String = _at(pair)
-		var table: TableScreen = await _show("table")
+		var table: TableScreen = await _show(ScreenId.TABLE)
 		table.hud.menu.pressed.emit()
 		var pause: PauseMenu = table.pause
 		TestInput.press(self, pause.main, tr("pause.settings"))
@@ -103,7 +103,7 @@ func test_the_tables_text_size_line_stands_under_its_boxes() -> void:
 func test_the_controls_rows_stop_at_a_whole_row() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
-		var screen: ControlsScreen = await _show("controls")
+		var screen: ControlsScreen = await _show(ScreenId.CONTROLS)
 		var page: ControlsPage = screen.page()
 		var rows: ProseScroll = page.rows_scroll()
 		var view: Rect2 = rows.get_global_rect().grow(ClipCheck.SLACK)
@@ -129,7 +129,7 @@ func test_no_title_button_lies_on_a_face() -> void:
 	ProfileSeen.mark(Saves.profile_service(), ProfileSeen.TUTORIAL)
 	for pair: Array in _each():
 		var where: String = _at(pair)
-		var title: TitleScreen = await _show("title")
+		var title: TitleScreen = await _show(ScreenId.TITLE)
 		var poster: TextureRect = title.poster() as TextureRect
 		var faces: Array[Rect2] = []
 		for face: Rect2 in TitleScreen.FACES:
@@ -161,7 +161,7 @@ func test_the_notice_wall_dialogs_cover_the_board() -> void:
 	_app.new_run(SEED)
 	for pair: Array in _each():
 		var where: String = _at(pair)
-		for screen_id: String in ["set_summary", "dossier", "round_summary"]:
+		for screen_id: String in [ScreenId.SET_SUMMARY, ScreenId.DOSSIER, ScreenId.ROUND_SUMMARY]:
 			var screen: Control = await _show(screen_id)
 			var art: TextureRect = screen.get_child(0) as TextureRect
 			var board: Rect2 = _on_cover(art, SheetPad.BOARD)
@@ -177,7 +177,7 @@ func test_the_set_summarys_seals_stay_on_the_paper() -> void:
 	_app.new_run(SEED)
 	for pair: Array in _each():
 		var where: String = _at(pair)
-		var screen: SetSummaryScreen = await _show("set_summary")
+		var screen: SetSummaryScreen = await _show(ScreenId.SET_SUMMARY)
 		var met: InkSeal = screen.bar().seal
 		var over: InkSeal = screen.over_seal()
 		var paper: Rect2 = _drawn(_sheet_of(screen)).grow(-SheetPad.RULE)
@@ -198,7 +198,7 @@ func test_the_dialogs_keep_their_padding() -> void:
 	_app.new_run(SEED)
 	for pair: Array in _each():
 		var where: String = _at(pair)
-		var table: TableScreen = await _show("table")
+		var table: TableScreen = await _show(ScreenId.TABLE)
 		table.hud.menu.pressed.emit()
 		var pause: PauseMenu = table.pause
 		await await_idle_frame()
@@ -209,7 +209,7 @@ func test_the_dialogs_keep_their_padding() -> void:
 		_check_padding(confirm, where + " question")
 		assert_object(_labelled(confirm, tr("menu.abandon"))).is_not_null()
 		pause.visible = false
-		var year: Control = await _show("year_summary")
+		var year: Control = await _show(ScreenId.YEAR_SUMMARY)
 		_check_padding(_sheet_of(year), where + " year")
 
 
@@ -274,7 +274,7 @@ func _labelled_button(root: Node, text: String) -> Button:
 func test_the_collections_bar_stands_beside_its_cards() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
-		var screen: CollectionScreen = await _show("collection")
+		var screen: CollectionScreen = await _show(ScreenId.COLLECTION)
 		var scroll: ScrollContainer = screen.scroll()
 		var right: float = 0.0
 		for entry: Control in screen.entries():

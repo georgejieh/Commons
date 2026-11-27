@@ -42,7 +42,7 @@ func table(driver: Object) -> void:
 	params.targets.fill(1e9)
 	assign(loop, "_sets", SetConfig.new(params))
 	invoke(loop, "rebuild_modifiers")
-	app.call("show_screen", "table", true)
+	app.call("show_screen", ScreenId.TABLE, true)
 	await _frames(20)
 	if await _to_the_opening(controller, driver):
 		await _use_and_photograph(controller)

@@ -64,7 +64,8 @@ func test_every_cadre_fits_its_shop_card() -> void:
 	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		var counters: Dictionary[String, Array] = {
-			"store": RunPools.STORE_CADRES.cadres, "black_market": RunPools.MARKET_CADRES.cadres
+			ScreenId.STORE: RunPools.STORE_CADRES.cadres,
+			ScreenId.BLACK_MARKET: RunPools.MARKET_CADRES.cadres
 		}
 		for screen_id: String in counters:
 			var ids: Array[String] = []
@@ -74,7 +75,7 @@ func test_every_cadre_fits_its_shop_card() -> void:
 				var stock: Array[String] = ids.slice(start, start + 3)
 				# A counter of the whole pool, built as the run builds one, so every Cadre is
 				# open here, whatever the run has unlocked.
-				var market: bool = screen_id == "black_market"
+				var market: bool = screen_id == ScreenId.BLACK_MARKET
 				var pool: Array[ModifierDef] = []
 				pool.assign(counters[screen_id])
 				var params: ShopParams = _loop().pools.market if market else _loop().pools.store
@@ -126,7 +127,7 @@ func test_every_directive_fits_its_store_document() -> void:
 		for start: int in range(0, ids.size(), 2):
 			var stock: Array[String] = ids.slice(start, start + 2)
 			_loop().visit.shop.stock_with(_loop().visit.shop.stock(), stock)
-			var store: StoreScreen = _app.show_screen(App.STORE, true)
+			var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			_clips(store.directives, "directives %s" % [stock], problems)
@@ -157,7 +158,7 @@ func test_every_one_time_tip_fits_its_slip() -> void:
 		get_tree().root.size = screen
 		Saves.profile_service().delete()
 		assert_bool(_app.new_run(SEED, true)).is_true()
-		var host: Control = _app.show_screen(App.TITLE, true)
+		var host: Control = _app.show_screen(ScreenId.TITLE, true)
 		var slip: TipSlip = TipSlip.offer(host, _app, ProfileSeen.TIPS)
 		assert_object(slip).is_not_null()
 		await await_idle_frame()
@@ -293,7 +294,7 @@ func test_the_longest_names_fit() -> void:
 	var problems: PackedStringArray = []
 	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
-		for screen_id: String in ["set_intro", "settings"]:
+		for screen_id: String in [ScreenId.SET_INTRO, ScreenId.SETTINGS]:
 			var shown: Node = _app.show_screen(screen_id, true)
 			await await_idle_frame()
 			await await_idle_frame()

@@ -66,7 +66,7 @@ func test_the_table_menus_do_not_clip_at_any_text_size() -> void:
 		for screen: Vector2i in SCREENS_AT:
 			Settings.set_value(TextSize.SETTING, level)
 			get_tree().root.size = screen
-			var table: TableScreen = _app.show_screen(App.TABLE, true)
+			var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 			await await_idle_frame()
 			table.hud.menu.pressed.emit()
 			await await_idle_frame()
@@ -135,7 +135,7 @@ func test_the_check_catches_each_kind_of_clipping() -> void:
 ## the next deal it is built again at the new size, the sort kept, the old table gone
 ## and no search waiting.
 func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var view: RunTableView = _app.controller.table
 	# A play made this round, so the next deal is a new one.
@@ -260,8 +260,8 @@ func test_display_type_holds_its_size() -> void:
 ## Away from the table the screen under the menu is built again when it closes, with the
 ## way back kept.
 func test_a_new_text_size_rebuilds_a_run_screen_when_the_menu_closes() -> void:
-	_app.show_screen(App.TITLE, true)
-	var intro: Node = _app.show_screen(App.SET_INTRO)
+	_app.show_screen(ScreenId.TITLE, true)
+	var intro: Node = _app.show_screen(ScreenId.SET_INTRO)
 	await await_idle_frame()
 	var menu: PauseMenu = _app.menu
 	menu.open()
@@ -275,9 +275,9 @@ func test_a_new_text_size_rebuilds_a_run_screen_when_the_menu_closes() -> void:
 	await await_idle_frame()
 	var rebuilt: Node = _app.switcher.current()
 	assert_bool(rebuilt != intro).is_true()
-	assert_str(_app.switcher.current_id()).is_equal(App.SET_INTRO)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SET_INTRO)
 	assert_bool(_app.back()).is_true()
-	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.TITLE)
 
 
 ## The round as the run and the table hold it: what the run waits on, its events, the

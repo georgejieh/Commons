@@ -32,7 +32,7 @@ func _loop() -> RunLoop:
 
 
 func _open() -> StoreScreen:
-	var store: StoreScreen = _app.show_screen(App.STORE, true)
+	var store: StoreScreen = _app.show_screen(ScreenId.STORE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return store

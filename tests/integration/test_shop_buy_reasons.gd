@@ -50,7 +50,7 @@ func _assert_readable(button: Button, where: String) -> void:
 func test_short_of_coupons_every_buy_says_what_it_needs() -> void:
 	_loop().state.coupons = 0
 	_app.controller.reseal_book()
-	var store: StoreScreen = await _open("store")
+	var store: StoreScreen = await _open(ScreenId.STORE)
 	var desk: ShopDesk = _app.controller.store.desk(false)
 	var buy: Button = _cadre_buy(store, 0)
 	_assert_readable(buy, "cadre")
@@ -79,7 +79,7 @@ func test_with_a_full_board_a_cadre_says_there_is_no_room() -> void:
 	_loop().state.coupons = 40
 	_loop().state.inventory.cadres.assign(FIVE)
 	_app.controller.reseal_book()
-	var market: StoreScreen = await _open("black_market")
+	var market: StoreScreen = await _open(ScreenId.BLACK_MARKET)
 	var desk: ShopDesk = _app.controller.store.desk(true)
 	for slot: int in desk.stock().size():
 		if desk.stock()[slot].is_empty():
@@ -92,7 +92,7 @@ func test_with_a_full_board_a_cadre_says_there_is_no_room() -> void:
 func test_plot_cards_say_buy_and_their_price() -> void:
 	_loop().state.coupons = 40
 	_app.controller.reseal_book()
-	var market: StoreScreen = await _open("black_market")
+	var market: StoreScreen = await _open(ScreenId.BLACK_MARKET)
 	var goods: MarketGoods = market.goods
 	var desk: ShopDesk = _app.controller.store.desk(true)
 	var button: Button = goods.card_button(0)
@@ -110,7 +110,7 @@ func test_a_campaign_sold_back_says_it_returns_next_visit() -> void:
 	_app.controller.reseal_book()
 	var index: int = _loop().state.inventory.consumables.size() - 1
 	assert_int(_app.controller.sell_campaign(index)).is_equal(RunLoop.Reason.OK)
-	var store: StoreScreen = await _open("store")
+	var store: StoreScreen = await _open(ScreenId.STORE)
 	var stall: Object = store.campaign_stall
 	var panel: CounterPanel = stall.call("panel", 0)
 	_assert_readable(panel.buy, "sold back campaign")
@@ -126,7 +126,7 @@ func test_a_cadre_sold_back_says_it_returns_next_visit() -> void:
 	_app.controller.reseal_book()
 	var index: int = _loop().state.inventory.cadres.size() - 1
 	assert_int(_app.controller.sell_cadre(index)).is_equal(RunLoop.Reason.OK)
-	var store: StoreScreen = await _open("store")
+	var store: StoreScreen = await _open(ScreenId.STORE)
 	var buy: Button = _cadre_buy(store, 0)
 	_assert_readable(buy, "sold back cadre")
 	assert_str(buy.text).is_equal(tr("store.buy.sold_back"))

@@ -37,7 +37,7 @@ func _loop() -> RunLoop:
 	return _app.controller.run_loop()
 
 
-func _open(screen_id: String = "store") -> StoreScreen:
+func _open(screen_id: String = ScreenId.STORE) -> StoreScreen:
 	var store: StoreScreen = _app.show_screen(screen_id, true)
 	await await_idle_frame()
 	await await_idle_frame()
@@ -147,7 +147,7 @@ func test_without_coupons_the_offer_cannot_be_bought() -> void:
 
 func test_the_black_market_shows_the_strip_and_no_offer() -> void:
 	_loop().state.reforms.assign(["grain_reserve", "couriers_bag"])
-	var market: StoreScreen = await _open("black_market")
+	var market: StoreScreen = await _open(ScreenId.BLACK_MARKET)
 	var stall: ReformStall = _stall(market)
 	assert_object(stall.panel(0)).is_null()
 	assert_int(stall.strip.held_count()).is_equal(2)
@@ -165,7 +165,7 @@ func test_enlarged_committee_gives_both_boards_six_slots() -> void:
 	_app.controller.leave_store()
 	var driver: ControllerScript = ControllerScript.new()
 	driver.play_to(self, _app.controller, RunController.AWAIT_PLAY)
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var notice: NoticeBoard = table.board
@@ -190,7 +190,7 @@ func test_couriers_bag_gives_the_shop_tray_three_places() -> void:
 func test_the_set_intro_names_the_reforms_in_force() -> void:
 	_loop().state.reforms.assign(["work_point_reform", "unplanned_economy"])
 	_app.controller.leave_store()
-	var intro: Control = _app.show_screen(App.SET_INTRO, true)
+	var intro: Control = _app.show_screen(ScreenId.SET_INTRO, true)
 	await await_idle_frame()
 	var line: String = tr("reform.held_line").format(
 		{
@@ -212,7 +212,7 @@ func test_a_set_intro_too_tall_for_the_page_keeps_begin_on_screen() -> void:
 		held.append(reform.id)
 	_loop().state.reforms.assign(held)
 	_app.controller.leave_store()
-	var intro: Control = _app.show_screen(App.SET_INTRO, true)
+	var intro: Control = _app.show_screen(ScreenId.SET_INTRO, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var begin: Button = null

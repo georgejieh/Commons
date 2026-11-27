@@ -101,10 +101,10 @@ func _rebuild_on_settings() -> void:
 ## Sends the menu's ways out to the app's screens.
 func wire(app: App) -> void:
 	_app = app
-	title_chosen.connect(func() -> void: app.show_screen(App.TITLE, true))
+	title_chosen.connect(func() -> void: app.show_screen(ScreenId.TITLE, true))
 	quit_chosen.connect(func() -> void: app.get_tree().quit())
-	dossier_chosen.connect(func() -> void: app.show_screen(App.DOSSIER))
-	last_round_chosen.connect(func() -> void: app.show_screen(App.ROUND_SUMMARY))
+	dossier_chosen.connect(func() -> void: app.show_screen(ScreenId.DOSSIER))
+	last_round_chosen.connect(func() -> void: app.show_screen(ScreenId.ROUND_SUMMARY))
 	abandoned.connect(app.leave_run)
 
 

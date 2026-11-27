@@ -22,7 +22,7 @@ func table() -> void:
 		return
 	var snapshot: Dictionary = loop.record.to_dict()
 	var was_boss: String = loop.state.boss_id
-	app.call("show_screen", "table", true)
+	app.call("show_screen", ScreenId.TABLE, true)
 	await _frames(20)
 	await _until(_idle)
 	loop.state.boss_id = "the_handicap"

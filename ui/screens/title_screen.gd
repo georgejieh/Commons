@@ -57,7 +57,7 @@ func open(app: App) -> void:
 	spacer.custom_minimum_size = Vector2(0, 24)
 	column.add_child(spacer)
 	var new_run: Button = ScreenKit.button(tr("title.new_run"), CommonsTheme.PRIMARY)
-	new_run.pressed.connect(func() -> void: app.show_screen(App.RUN_SETUP))
+	new_run.pressed.connect(func() -> void: app.show_screen(ScreenId.RUN_SETUP))
 	var starts: HBoxContainer = ScreenKit.row([new_run])
 	if app.has_saved_run():
 		var resume: Button = ScreenKit.button(tr("title.continue"))
@@ -75,15 +75,15 @@ func open(app: App) -> void:
 ## been played, the settings, the credits and Quit.
 func _minors(app: App) -> HBoxContainer:
 	var settings: Button = ScreenKit.button(tr("title.settings"), CommonsTheme.GHOST)
-	settings.pressed.connect(func() -> void: app.show_screen(App.SETTINGS))
+	settings.pressed.connect(func() -> void: app.show_screen(ScreenId.SETTINGS))
 	var credits: Button = ScreenKit.button(tr("title.credits"), CommonsTheme.GHOST)
-	credits.pressed.connect(func() -> void: app.show_screen(App.CREDITS))
+	credits.pressed.connect(func() -> void: app.show_screen(ScreenId.CREDITS))
 	var quit: Button = ScreenKit.button(tr("title.quit"), CommonsTheme.GHOST)
 	quit.pressed.connect(func() -> void: get_tree().quit())
 	var collection: Button = ScreenKit.button(tr("title.collection"), CommonsTheme.GHOST)
-	collection.pressed.connect(func() -> void: app.show_screen(App.COLLECTION))
+	collection.pressed.connect(func() -> void: app.show_screen(ScreenId.COLLECTION))
 	var history: Button = ScreenKit.button(tr("title.history"), CommonsTheme.GHOST)
-	history.pressed.connect(func() -> void: app.show_screen(App.VILLAGE_HISTORY))
+	history.pressed.connect(func() -> void: app.show_screen(ScreenId.VILLAGE_HISTORY))
 	var minors: Array[Control] = [collection, history]
 	if ProfileSeen.has(Saves.profile_service(), ProfileSeen.TUTORIAL):
 		minors.append(_replay_button(app))

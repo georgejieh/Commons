@@ -10,7 +10,7 @@ static var _save_path: String = TestFolder.of("test_tutorial_run") + "run.json"
 var _controller: RunController
 var _director: TutorialDirector
 ## The screen the test stands on, as the app would show it.
-var _screen: String = "table"
+var _screen: String = ScreenId.TABLE
 
 
 func before_test() -> void:
@@ -21,7 +21,7 @@ func before_test() -> void:
 	add_child(_controller)
 	assert_bool(_controller.start(RunStarter.tutorial())).is_true()
 	_director = TutorialDirector.new()
-	_screen = "table"
+	_screen = ScreenId.TABLE
 
 
 func after_test() -> void:
@@ -37,12 +37,12 @@ func _loop() -> RunLoop:
 func _report() -> void:
 	match _controller.awaiting():
 		RunController.AWAIT_SET_OVER:
-			_screen = "set_summary"
+			_screen = ScreenId.SET_SUMMARY
 		RunController.AWAIT_STORE:
-			if _screen != "black_market":
-				_screen = "store"
+			if _screen != ScreenId.BLACK_MARKET:
+				_screen = ScreenId.STORE
 		_:
-			_screen = "table"
+			_screen = ScreenId.TABLE
 	_director.ready(_screen, _controller.awaiting())
 
 
@@ -133,7 +133,7 @@ func _play_through() -> Array[RunEvent]:
 		assert_int(_controller.awaiting()).is_equal(was)
 		if not step.via.is_empty():
 			assert_bool(_director.attempt(step.via)).is_true()
-			_screen = "black_market"
+			_screen = ScreenId.BLACK_MARKET
 			_report()
 		assert_bool(_director.attempt(_action_name(step), _detail(step))).is_true()
 		_act(step)

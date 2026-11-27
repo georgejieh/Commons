@@ -15,56 +15,40 @@ const DEMO_FLAG: String = "--demo"
 const CONTENT_NOTE_SEEN: String = "content_note_seen"
 ## The demo seats' voices, by villager name.
 const DEMO_VOICE: String = "res://data/ui/voices/%s.tres"
-## The screens, by the id show_screen and the switcher know each by.
-const TITLE: String = "title"
-const SET_INTRO: String = "set_intro"
-const TABLE: String = "table"
-const SET_SUMMARY: String = "set_summary"
-const STORE: String = "store"
-const YEAR_SUMMARY: String = "year_summary"
-const SETTINGS: String = "settings"
-const CONTROLS: String = "controls"
-const WINDOW: String = "window"
-const CREDITS: String = "credits"
-const DEMO_COMPLETE: String = "demo_complete"
-const DOSSIER: String = "dossier"
-const CONTENT_NOTE: String = "content_note"
-const RUN_SETUP: String = "run_setup"
-const ROUND_SUMMARY: String = "round_summary"
-const BLACK_MARKET: String = "black_market"
-const REEDUCATION: String = "reeducation"
-const ENDING: String = "ending"
-const COLLECTION: String = "collection"
-const VILLAGE_HISTORY: String = "village_history"
-const ARRIVAL: String = "arrival"
-const SURNAME: String = "surname"
+## Each screen's scene, by the id show_screen and the switcher know it by.
 const SCREENS: Dictionary[String, String] = {
-	TITLE: "res://ui/screens/title_screen.tscn",
-	SET_INTRO: "res://ui/screens/set_intro_screen.tscn",
-	TABLE: "res://ui/table2d/table_screen.tscn",
-	SET_SUMMARY: "res://ui/screens/set_summary_screen.tscn",
-	STORE: "res://ui/screens/store_screen.tscn",
-	YEAR_SUMMARY: "res://ui/screens/year_summary_screen.tscn",
-	SETTINGS: "res://ui/screens/settings_screen.tscn",
-	CONTROLS: "res://ui/screens/controls_screen.tscn",
-	WINDOW: "res://ui/screens/window_screen.tscn",
-	CREDITS: "res://ui/screens/credits_screen.tscn",
-	DEMO_COMPLETE: "res://ui/screens/demo_complete_screen.tscn",
-	DOSSIER: "res://ui/screens/dossier_screen.tscn",
-	CONTENT_NOTE: "res://ui/screens/content_note_screen.tscn",
-	RUN_SETUP: "res://ui/screens/run_setup_screen.tscn",
-	ROUND_SUMMARY: "res://ui/screens/round_summary_screen.tscn",
-	BLACK_MARKET: "res://ui/screens/black_market_screen.tscn",
-	REEDUCATION: "res://ui/screens/reeducation_screen.tscn",
-	ENDING: "res://ui/screens/ending_screen.tscn",
-	COLLECTION: "res://ui/screens/collection_screen.tscn",
-	VILLAGE_HISTORY: "res://ui/screens/village_history_screen.tscn",
-	ARRIVAL: "res://ui/screens/arrival_screen.tscn",
-	SURNAME: "res://ui/screens/surname_screen.tscn",
+	ScreenId.TITLE: "res://ui/screens/title_screen.tscn",
+	ScreenId.SET_INTRO: "res://ui/screens/set_intro_screen.tscn",
+	ScreenId.TABLE: "res://ui/table2d/table_screen.tscn",
+	ScreenId.SET_SUMMARY: "res://ui/screens/set_summary_screen.tscn",
+	ScreenId.STORE: "res://ui/screens/store_screen.tscn",
+	ScreenId.YEAR_SUMMARY: "res://ui/screens/year_summary_screen.tscn",
+	ScreenId.SETTINGS: "res://ui/screens/settings_screen.tscn",
+	ScreenId.CONTROLS: "res://ui/screens/controls_screen.tscn",
+	ScreenId.WINDOW: "res://ui/screens/window_screen.tscn",
+	ScreenId.CREDITS: "res://ui/screens/credits_screen.tscn",
+	ScreenId.DEMO_COMPLETE: "res://ui/screens/demo_complete_screen.tscn",
+	ScreenId.DOSSIER: "res://ui/screens/dossier_screen.tscn",
+	ScreenId.CONTENT_NOTE: "res://ui/screens/content_note_screen.tscn",
+	ScreenId.RUN_SETUP: "res://ui/screens/run_setup_screen.tscn",
+	ScreenId.ROUND_SUMMARY: "res://ui/screens/round_summary_screen.tscn",
+	ScreenId.BLACK_MARKET: "res://ui/screens/black_market_screen.tscn",
+	ScreenId.REEDUCATION: "res://ui/screens/reeducation_screen.tscn",
+	ScreenId.ENDING: "res://ui/screens/ending_screen.tscn",
+	ScreenId.COLLECTION: "res://ui/screens/collection_screen.tscn",
+	ScreenId.VILLAGE_HISTORY: "res://ui/screens/village_history_screen.tscn",
+	ScreenId.ARRIVAL: "res://ui/screens/arrival_screen.tscn",
+	ScreenId.SURNAME: "res://ui/screens/surname_screen.tscn",
 }
 
 ## Screens of a run, off the table, where Escape opens the menu. The table has its own.
-const MENU_SCREENS: Array[String] = [SET_INTRO, SET_SUMMARY, STORE, BLACK_MARKET, YEAR_SUMMARY]
+const MENU_SCREENS: Array[String] = [
+	ScreenId.SET_INTRO,
+	ScreenId.SET_SUMMARY,
+	ScreenId.STORE,
+	ScreenId.BLACK_MARKET,
+	ScreenId.YEAR_SUMMARY
+]
 
 ## True when New Run starts the demo. Tools set it before the app enters the tree.
 var demo: bool = OS.get_cmdline_user_args().has(DEMO_FLAG)
@@ -168,7 +152,7 @@ func menu_is_open() -> bool:
 ## arrival leads.
 func _opening_screen() -> String:
 	if not bool(Settings.value(CONTENT_NOTE_SEEN)):
-		return CONTENT_NOTE
+		return ScreenId.CONTENT_NOTE
 	return arrival.next_screen()
 
 
@@ -264,7 +248,7 @@ func leave_run() -> void:
 		# cannot hand in a play afterwards and write the save back.
 		controller.drop()
 		Saves.run_service().delete()
-	show_screen(TITLE, true)
+	show_screen(ScreenId.TITLE, true)
 
 
 ## Continues the saved run on the screen it stopped at.
@@ -278,15 +262,15 @@ func resume_to_screen() -> void:
 func screen_for(awaiting: int) -> String:
 	match awaiting:
 		RunController.AWAIT_SET_OVER:
-			return SET_SUMMARY
+			return ScreenId.SET_SUMMARY
 		RunController.AWAIT_STORE:
-			return STORE
+			return ScreenId.STORE
 		RunController.AWAIT_REEDUCATION:
-			return REEDUCATION
+			return ScreenId.REEDUCATION
 		RunController.AWAIT_RUN_OVER:
 			# A full run ends on its ending; the demo keeps its Year summary and closing page.
-			return ENDING if controller.seats.has_village() else YEAR_SUMMARY
-	return TABLE
+			return ScreenId.ENDING if controller.seats.has_village() else ScreenId.YEAR_SUMMARY
+	return ScreenId.TABLE
 
 
 ## True when a run save, or its backup, holds a run Continue can pick up.

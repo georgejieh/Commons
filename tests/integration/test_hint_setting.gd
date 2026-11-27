@@ -23,7 +23,7 @@ func after_test() -> void:
 
 ## The table, played on until the run waits on the player's play.
 func _table_at_play() -> TableScreen:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	var player: EventPlayer = table.player
 	for _frame: int in WAIT_FRAMES:
@@ -83,7 +83,7 @@ func test_with_the_hint_off_neither_button_nor_key_does_anything() -> void:
 
 func test_the_controls_page_leaves_the_hint_out_while_it_is_off() -> void:
 	Settings.set_value(HintSetting.SETTING, false)
-	var screen: ControlsScreen = _app.show_screen(App.CONTROLS, true)
+	var screen: ControlsScreen = _app.show_screen(ScreenId.CONTROLS, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var page: ControlsPage = screen.page()

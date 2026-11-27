@@ -41,7 +41,7 @@ func _open(screen_id: String) -> Control:
 
 
 func test_the_collections_text_is_ink_with_no_halo() -> void:
-	var screen: CollectionScreen = await _open("collection")
+	var screen: CollectionScreen = await _open(ScreenId.COLLECTION)
 	var labels: Array[Node] = screen.find_children("*", "Label", true, false)
 	assert_int(labels.size()).is_greater(10)
 	for node: Node in labels:
@@ -56,7 +56,7 @@ func test_the_settings_sheets_stand_as_tall_as_each_other() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			var screen: SettingsScreen = await _open("settings")
+			var screen: SettingsScreen = await _open(ScreenId.SETTINGS)
 			# A new text size builds the page again a frame later.
 			await await_idle_frame()
 			screen = _app.switcher.current()
@@ -72,7 +72,7 @@ func test_the_settings_sheets_stand_as_tall_as_each_other() -> void:
 
 func test_run_setups_papers_stand_into_the_spare_room() -> void:
 	get_tree().root.size = ClipCheck.SIZES[0]
-	var screen: RunSetupScreen = await _open("run_setup")
+	var screen: RunSetupScreen = await _open(ScreenId.RUN_SETUP)
 	var content: Control = screen.scroll().get_child(0)
 	var foot: Control = content.get_child(content.get_child_count() - 1)
 	var tall: float = screen.scroll().size.y
@@ -87,7 +87,7 @@ func test_run_setups_papers_stand_into_the_spare_room() -> void:
 func test_picking_a_stake_moves_nothing_on_run_setup() -> void:
 	_veteran()
 	get_tree().root.size = ClipCheck.SIZES[0]
-	var screen: RunSetupScreen = await _open("run_setup")
+	var screen: RunSetupScreen = await _open(ScreenId.RUN_SETUP)
 	var tickets: Array[StakeTicket] = screen.tickets()
 	var placed: Array[Rect2] = []
 	for piece: Control in screen.papers() + tickets:

@@ -59,7 +59,7 @@ func _to_first_lead(seed_value: int, held: Array[String]) -> bool:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen(App.TABLE, true)
+	var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return table

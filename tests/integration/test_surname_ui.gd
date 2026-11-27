@@ -98,13 +98,13 @@ func test_only_a_whole_surname_no_village_family_holds_is_taken() -> void:
 func test_one_press_finishes_the_step_well_inside_thirty_seconds() -> void:
 	var began: int = Time.get_ticks_msec()
 	await _launch()
-	assert_str(_app.switcher.current_id()).is_equal(App.SURNAME)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SURNAME)
 	var page: SurnameScreen = _page()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(page.field())
 	var default: String = page.field().text
 	assert_array(Surnames.offered()).contains([default])
 	await TestInput.tap_key(self, KEY_ENTER)
-	assert_str(_app.switcher.current_id()).is_equal(App.ARRIVAL)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.ARRIVAL)
 	assert_str(_app.arrival.surname).is_equal(default)
 	assert_float((Time.get_ticks_msec() - began) / 1000.0).is_less(STEP_SECONDS)
 	# Held, not written: the profile's first save comes with the arrival's end or skip.
@@ -128,7 +128,7 @@ func test_a_village_surname_is_refused_and_the_page_stays() -> void:
 	page.field().text = "Li"
 	page.confirm_button().pressed.emit()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.SURNAME)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SURNAME)
 	assert_str(page.note()).is_equal("The Li family already lives here.")
 	page.field().text = ""
 	page.confirm()
@@ -151,7 +151,7 @@ func test_a_gamepad_finishes_with_a_ticket_and_confirm() -> void:
 		await _pad(JOY_BUTTON_DPAD_DOWN)
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(page.confirm_button())
 	await _pad(JOY_BUTTON_A)
-	assert_str(_app.switcher.current_id()).is_equal(App.ARRIVAL)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.ARRIVAL)
 	assert_str(_app.arrival.surname).is_equal(chosen)
 
 
@@ -166,7 +166,7 @@ func test_random_picks_one_of_the_offered() -> void:
 func test_never_shown_with_a_profile() -> void:
 	Profile.write(Saves.profile_service(), ProfileData.new())
 	await _launch()
-	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.TITLE)
 
 
 func test_the_first_profile_write_holds_the_surname() -> void:
@@ -191,7 +191,7 @@ func test_settings_changes_the_surname_between_runs() -> void:
 	data.surname = "Huang"
 	Profile.write(Saves.profile_service(), data)
 	await _launch()
-	var settings: SettingsScreen = _app.show_screen(App.SETTINGS)
+	var settings: SettingsScreen = _app.show_screen(ScreenId.SETTINGS)
 	assert_str(settings.name_line()).is_equal("Huang")
 	# The name stands on one line with Change beside it, no taller than a button.
 	await await_idle_frame()
@@ -213,11 +213,11 @@ func test_settings_changes_the_surname_between_runs() -> void:
 	assert_str(page.field().text).is_equal("Huang")
 	page.field().text = "Zhao"
 	page.confirm()
-	assert_str(_app.switcher.current_id()).is_equal(App.SURNAME)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SURNAME)
 	page.field().text = "Ding"
 	page.confirm()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal(App.SETTINGS)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.SETTINGS)
 	assert_str(Profile.read(Saves.profile_service()).surname).is_equal("Ding")
 	assert_str((_app.switcher.current() as SettingsScreen).name_line()).is_equal("Ding")
 
@@ -229,7 +229,7 @@ func test_settings_will_not_change_it_while_a_run_is_saved() -> void:
 	Profile.write(Saves.profile_service(), data)
 	await _launch()
 	assert_bool(_app.new_run(4242, true)).is_true()
-	var settings: SettingsScreen = _app.show_screen(App.SETTINGS)
+	var settings: SettingsScreen = _app.show_screen(ScreenId.SETTINGS)
 	assert_object(settings.change_button()).is_null()
 	var shown: Array[String] = []
 	for found: Node in settings.find_children("*", "Label", true, false):
@@ -255,7 +255,7 @@ func test_the_field_is_written_on_paper() -> void:
 	var ink: Color = field.get_theme_color("font_color")
 	assert_float(ink.get_luminance()).is_less(0.2)
 	await TestInput.tap_key(self, KEY_ENTER)
-	assert_str(_app.switcher.current_id()).is_equal(App.ARRIVAL)
+	assert_str(_app.switcher.current_id()).is_equal(ScreenId.ARRIVAL)
 
 
 func test_the_page_fits_both_screens() -> void:
@@ -288,7 +288,7 @@ func test_the_longest_full_name_fits_run_setup_and_the_ending() -> void:
 	for size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = size
 		await _launch()
-		var setup: Control = _app.show_screen(App.RUN_SETUP)
+		var setup: Control = _app.show_screen(ScreenId.RUN_SETUP)
 		await await_idle_frame()
 		var line: String = tr("setup.named").format({"name": longest, "number": 12})
 		await _check_fits(_label_with(setup, setup.call("player_name")), line, size)
@@ -309,7 +309,7 @@ func test_the_dossier_holds_the_longest_full_names() -> void:
 		var given: Array[String] = [_longest_given(), BOOK.pools[2].names[30]]
 		for seat: int in [1, 2]:
 			loop.state.names.given[loop.state.table[seat]] = given[seat - 1]
-		var dossier: DossierScreen = _app.show_screen(App.DOSSIER)
+		var dossier: DossierScreen = _app.show_screen(ScreenId.DOSSIER)
 		await await_idle_frame()
 		for seat: int in [1, 2]:
 			var full: String = _app.controller.seats.seated_full_name(seat)
