@@ -71,7 +71,6 @@ card.rank.a,A
 card.rank.2,2
 card.rank.small_joker,Small
 card.rank.big_joker,Big
-card.stamp.yours,Yours
 modifier.iron_rice_bowl.name,Iron Rice Bowl
 modifier.iron_rice_bowl.text,"Your plays gain {grain} Grain. Your Rate can't go above ×{rate_cap}."
 modifier.stakhanovite.name,Stakhanovite
@@ -148,8 +147,6 @@ intro.begin,Begin
 intro.boss,{name}: {rule}
 summary.met,Quota met
 summary.missed,Quota missed
-summary.progress,{progress} of {target}
-summary.coupons,Coupons: {count}
 summary.famine,Famine: {value}
 summary.to_store,To the Store
 summary.to_year,End the Year
@@ -170,9 +167,6 @@ store.sell.bound,Held back
 store.rationed,Rationing: {count} Cadres on the counter until Famine falls below {below}.
 store.rationed.one,Rationing: 1 Cadre on the counter until Famine falls below {below}.
 year.title,Year {year} done
-year.coupons,Coupons left: {count}
-year.famine,Famine: {value}
-year.cadres,Cadres held: {count}
 year.next,Continue
 demo.done,End of the demo
 demo.done_text,The full game runs eight Years.
@@ -666,13 +660,11 @@ campaign.reason.hand_too_small,Both hands in the trade must hold 2 or more cards
 campaign.tray,Campaigns
 campaign.use,Use
 campaign.cancel,Cancel
-campaign.empty,Empty
 campaign.eyebrow.collective,Campaign
 campaign.eyebrow.private,Private
 campaign.sealed,Launched
 campaign.opening,"You may use a Campaign before the first play, or play on."
 campaign.forced,Must pass
-campaign.held,You hold {held} of {room} Campaigns.
 campaign.full,You hold as many Campaigns as you can.
 action.play_on,Play on
 callout.seizure,Seized!
@@ -1260,7 +1252,6 @@ desk.used,Desk: marked
 desk.used.stamp,Desk: stamped
 controls.action.commons_deck,Deck
 controls.pad.l3,L3
-store.deck,For the communal deck
 store.deck.tip,"This card goes into the communal deck for the rest of the run. You pick a deck card to take out, and it leaves with its marks. The deck holds at most {most} cards of a rank, and the jokers never leave it."
 store.buy.at_most,Rank full
 exchange.eyebrow,For the communal deck

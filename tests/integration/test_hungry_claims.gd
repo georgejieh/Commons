@@ -98,9 +98,9 @@ func test_the_dossier_tells_the_shift_once_it_was_seen() -> void:
 	loop.state.observations.add("qin", Observations.Kind.PASSES)
 	var at: int = RunDefaults.METERS.famine.high
 	var line: String = tr("dossier.shift.famine").format({"count": 2, "at": at})
-	var dossier: DossierScreen = _app.show_screen("dossier", true)
+	var dossier: DossierScreen = _app.show_screen(App.DOSSIER, true)
 	assert_array(Array(dossier.entries(1))).not_contains([line])
 	loop.state.observations.add("qin", Observations.Kind.SHIFTED_CLAIMS, 2)
-	dossier = _app.show_screen("dossier", true)
+	dossier = _app.show_screen(App.DOSSIER, true)
 	assert_array(Array(dossier.entries(1))).contains([line])
 	assert_str(line).is_equal("Claimed more than a fair half with Famine at 75 or more: 2")

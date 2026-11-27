@@ -57,7 +57,7 @@ func _write_history(entries: Array[HistoryEntry]) -> void:
 
 
 func _history() -> VillageHistoryScreen:
-	var screen: VillageHistoryScreen = _app.show_screen("village_history", true)
+	var screen: VillageHistoryScreen = _app.show_screen(App.VILLAGE_HISTORY, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return screen
@@ -247,7 +247,7 @@ func _check_ink(screen: VillageHistoryScreen, where: String) -> void:
 
 
 func _settings() -> SettingsScreen:
-	var screen: SettingsScreen = _app.show_screen("settings", true)
+	var screen: SettingsScreen = _app.show_screen(App.SETTINGS, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return screen
@@ -318,7 +318,7 @@ func test_a_choice_falls_back_to_the_first() -> void:
 ## picture.
 func test_the_table_draws_the_chosen_design() -> void:
 	_app.new_run(SEED)
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var beats: DebuffMoments = table.debuff_beats
 	for back: Node in beats.find_children("*", "CardBack", true, false):
@@ -337,7 +337,7 @@ func test_play_is_the_same_with_either_back() -> void:
 		Saves.run_service().delete()
 		Saves.profile_service().delete()
 		_app.new_run(SEED)
-		_app.show_screen("table", true)
+		_app.show_screen(App.TABLE, true)
 		await await_idle_frame()
 		var script: ControllerScript = ControllerScript.new()
 		for _turn: int in 40:

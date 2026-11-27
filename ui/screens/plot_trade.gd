@@ -6,11 +6,10 @@ extends RefCounted
 ## swap when the player confirms.
 
 enum Reason { OK, NO_SWAPS_LEFT }
+## The two sides a card is picked from.
+enum Source { HAND, PLOT }
 
 const NONE: int = -1
-## The two sides a card is picked from.
-const HAND: int = 0
-const PLOT: int = 1
 
 ## The most pairs the round allows.
 var limit: int = 0
@@ -19,7 +18,7 @@ var hand_ids: Array[int] = []
 var plot_ids: Array[int] = []
 ## The card picked to start a pair, and its side, or NONE.
 var picked: int = NONE
-var picked_side: int = HAND
+var picked_side: Source = Source.HAND
 
 
 func _init(swap_limit: int) -> void:
@@ -47,7 +46,7 @@ func is_traded(card_id: int) -> bool:
 ## A press on a card, by click or key: undoes the pair it is in; otherwise picks it, or
 ## takes the pick back, or moves it, or makes a pair with the card picked on the other
 ## side. A new pick when no swap is left is refused and changes nothing.
-func press(side: int, card_id: int) -> Reason:
+func press(side: Source, card_id: int) -> Reason:
 	if is_traded(card_id):
 		undo(pair_of(card_id))
 		return Reason.OK
@@ -55,8 +54,8 @@ func press(side: int, card_id: int) -> Reason:
 		picked = NONE
 		return Reason.OK
 	if picked != NONE and picked_side != side:
-		var hand_id: int = card_id if side == HAND else picked
-		var plot_id: int = picked if side == HAND else card_id
+		var hand_id: int = card_id if side == Source.HAND else picked
+		var plot_id: int = picked if side == Source.HAND else card_id
 		return pair(hand_id, plot_id)
 	if left() <= 0:
 		return Reason.NO_SWAPS_LEFT

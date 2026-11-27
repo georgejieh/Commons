@@ -59,7 +59,7 @@ func _drive_to(moment: int) -> bool:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return table
@@ -354,10 +354,11 @@ func test_the_opening_offers_play_on_and_plays_on() -> void:
 
 
 func test_the_round_result_states_a_stake() -> void:
-	var won: Dictionary = {"stake": true, "banked": 3000.0}
+	var won: RoundResult = RoundResult.new()
+	won.read(RunEvent.new(RunEvent.Type.STAKE_SETTLED, Seats.PLAYER, 1, 3000.0))
 	assert_str(RoundSummaryScreen.stake_line(won)).is_equal(
 		tr("round.stake.won").format({"amount": Strings.score(3000.0)})
 	)
-	assert_str(RoundSummaryScreen.stake_line({"stake": false, "banked": 0.0})).is_equal(
-		tr("round.stake.lost")
-	)
+	var lost: RoundResult = RoundResult.new()
+	lost.read(RunEvent.new(RunEvent.Type.STAKE_SETTLED, Seats.PLAYER, 0, 0.0))
+	assert_str(RoundSummaryScreen.stake_line(lost)).is_equal(tr("round.stake.lost"))

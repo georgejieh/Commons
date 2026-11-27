@@ -29,7 +29,7 @@ func test_leaving_a_run_lets_it_go_and_the_save_stays_cleared() -> void:
 	for _frame: int in 30:
 		await await_idle_frame()
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_false()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 
 
 func test_a_new_run_starts_clean_after_one_was_left() -> void:

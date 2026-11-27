@@ -38,7 +38,7 @@ func _store() -> StoreScreen:
 	# A store of the whole pool, built as the run builds one, so both Cadres are open.
 	loop.visit.shop = RunShop.new(loop.state, loop.pools.store, pool)
 	loop.visit.shop.stock_with(stock, [])
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	return store
 
@@ -68,10 +68,10 @@ func test_only_the_top_rarity_is_rare() -> void:
 	assert_bool(shop.is_rare(2)).is_false()
 	assert_bool(shop.is_rare(9)).is_false()
 	# The rare tier is the last weight on both counters, and no Cadre is rarer.
-	assert_int(PARAMS.rarity_weights.size()).is_equal(ModifierDef.RARE + 1)
-	assert_int(MARKET_PARAMS.rarity_weights.size()).is_equal(ModifierDef.RARE + 1)
+	assert_int(PARAMS.rarity_weights.size()).is_equal(ModifierDef.Rarity.size())
+	assert_int(MARKET_PARAMS.rarity_weights.size()).is_equal(ModifierDef.Rarity.size())
 	for definition: ModifierDef in POOL.cadres + MARKET_POOL.cadres:
-		assert_int(definition.rarity).is_between(0, ModifierDef.RARE)
+		assert_int(definition.rarity).is_between(0, ModifierDef.Rarity.RARE)
 
 
 func test_a_scarce_cadre_is_stamped_and_a_routine_one_is_not() -> void:

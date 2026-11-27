@@ -127,7 +127,7 @@ func price(slot: int) -> int:
 func is_rare(slot: int) -> bool:
 	if slot < 0 or slot >= _stock.size() or _stock[slot] == SOLD:
 		return false
-	return _definition(_stock[slot]).rarity >= ModifierDef.RARE
+	return _definition(_stock[slot]).rarity == ModifierDef.Rarity.RARE
 
 
 ## How many more of an item this counter will sell this run, or -1 when unlimited.

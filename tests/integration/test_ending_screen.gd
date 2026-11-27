@@ -67,7 +67,7 @@ func _finish(outcome: String) -> EndingScreen:
 	record.mark(state)
 	Saves.run_service().save(record.to_dict())
 	_app.resume_to_screen()
-	assert_str(_app.switcher.current_id()).is_equal("ending")
+	assert_str(_app.switcher.current_id()).is_equal(App.ENDING)
 	return _app.switcher.current()
 
 
@@ -286,7 +286,7 @@ func test_the_page_leaves_nothing_behind_when_it_goes_home() -> void:
 	screen.home_button().pressed.emit()
 	await await_idle_frame()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 	assert_bool(is_instance_valid(screen)).is_false()
 
 

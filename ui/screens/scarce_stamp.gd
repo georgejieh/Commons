@@ -1,6 +1,6 @@
 class_name ScarceStamp
 extends Control
-## The office's mark on a Cadre that seldom reaches a counter (ModifierDef.RARE): the word
+## The office's mark on a Cadre that seldom reaches a counter (ModifierDef.Rarity.RARE): the word
 ## in a ruled box of stamp ink, pressed at a slant on the top right corner of the card's
 ## picture. A routine card has none, so a scarce one cannot be taken for one. At rest it
 ## is simply there, and it says the same thing in grayscale and with motion off; when a

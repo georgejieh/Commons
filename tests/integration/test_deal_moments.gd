@@ -19,12 +19,8 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
-func _loop() -> RunLoop:
-	return _app.controller.run_loop()
-
-
 func _table() -> TableScreen:
-	_app.show_screen("table", true)
+	_app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	return _app.switcher.current()
 

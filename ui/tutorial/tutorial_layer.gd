@@ -70,7 +70,7 @@ func detach() -> void:
 ## The app showed a screen. Every screen but the table reports where the run stands at
 ## once; the table reports when its events have played out.
 func on_screen(screen_id: String) -> void:
-	if _director != null and screen_id != "table" and _app.controller.has_run():
+	if _director != null and screen_id != App.TABLE and _app.controller.has_run():
 		_director.ready(screen_id, _app.controller.awaiting())
 
 

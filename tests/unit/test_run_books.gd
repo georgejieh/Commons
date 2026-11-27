@@ -32,10 +32,6 @@ func _corrections(loop: RunLoop) -> Array[RunEvent]:
 	return found
 
 
-func _json(loop: RunLoop) -> Dictionary:
-	return JSON.parse_string(JSON.stringify(loop.record.to_dict(), "", true, true))
-
-
 func test_a_raised_coupon_count_becomes_the_plan() -> void:
 	var loop: RunLoop = _loop(10)
 	assert_int(loop.player_books({"coupons": 25})).is_equal(RunLoop.Reason.OK)

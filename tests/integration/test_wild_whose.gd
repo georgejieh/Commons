@@ -73,7 +73,7 @@ func _pair_event(seat: int, rank: int) -> RoundEvent:
 
 func test_the_words_and_the_pile_say_the_wild_rank_is_the_players() -> void:
 	assert_bool(_to_first_lead()).is_true()
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var strip: DebuffStrip = table.debuffs
@@ -110,7 +110,7 @@ func test_the_words_and_the_pile_say_the_wild_rank_is_the_players() -> void:
 ## Industrialization is the player's rule: the strip lists it under the player's Reforms.
 func test_a_reforms_rule_is_listed_as_the_players() -> void:
 	assert_bool(_to_first_lead()).is_true()
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	_loop().state.reforms.assign(["industrialization"])
 	_loop().rebuild_modifiers()

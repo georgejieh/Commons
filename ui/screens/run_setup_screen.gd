@@ -262,7 +262,7 @@ func _show_choice() -> void:
 
 func _begin() -> void:
 	if _app.new_run(_seed, true, _household, _stake):
-		_app.show_screen("set_intro", true)
+		_app.show_screen(App.SET_INTRO, true)
 
 
 ## The demo's page: one ticket for the base stake, and Start begins the demo.
@@ -279,7 +279,7 @@ func _open_demo(app: App) -> void:
 	_start.pressed.connect(
 		func() -> void:
 			app.new_run(int(Time.get_unix_time_from_system()))
-			app.show_screen("set_intro", true)
+			app.show_screen(App.SET_INTRO, true)
 	)
 	_back = ScreenKit.button(tr("setup.back"), CommonsTheme.GHOST)
 	_back.pressed.connect(app.back)

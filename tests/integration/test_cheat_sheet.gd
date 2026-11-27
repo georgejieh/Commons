@@ -29,7 +29,7 @@ func test_the_open_sheet_matches_the_run_at_every_event() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", RANK_DEBUFF, "", ""])
 	assert_array(_app.controller.items.ladder()).contains([RANK_DEBUFF])
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	_sheet = table.cheat_sheet
 	_sheet.toggle(_app.controller)

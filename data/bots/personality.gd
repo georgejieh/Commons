@@ -5,8 +5,8 @@ extends Resource
 
 enum Level { LOW, MID, HIGH }
 
-## A BotConfig.Tier.
-@export var tier: int
+## How strongly the villager plays.
+@export var tier: BotConfig.Tier
 ## How readily the villager bombs: a level of PersonalityTable.bomb_aggression.
 @export var bomb_aggression: Level
 ## How readily the villager helps a teammate: a level of PersonalityTable.cooperation.

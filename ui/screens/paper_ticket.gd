@@ -24,40 +24,32 @@ static func paper(worn: float) -> Color:
 ## the band is inked, from its foot: all of it at 1, a meter's share below that over a
 ## faint empty channel, and no band at all when negative.
 static func draw(
-	canvas: CanvasItem,
-	rect: Rect2,
-	worn: float,
-	which: int,
-	band: Color,
-	alpha: float = 1.0,
-	fill: float = 1.0
+	canvas: CanvasItem, rect: Rect2, worn: float, which: int, band: Color, fill: float = 1.0
 ) -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = SEED + 97 * which
 	var body: PackedVector2Array = _outline(rect, rng, worn)
-	canvas.draw_colored_polygon(body, Color(paper(worn), alpha))
+	canvas.draw_colored_polygon(body, Color(paper(worn), 1.0))
 	if fill >= 0.0:
-		_band(canvas, rect, worn, band, alpha, minf(fill, 1.0))
-	_perforate(canvas, rect, worn, alpha)
-	_grime(canvas, rect, rng, worn, alpha)
+		_band(canvas, rect, worn, band, minf(fill, 1.0))
+	_perforate(canvas, rect, worn)
+	_grime(canvas, rect, rng, worn)
 	canvas.draw_polyline(
-		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.6), 1.2
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, 0.6), 1.2
 	)
 
 
 ## The band down the left end, inked from its foot to fill; an empty channel shows
 ## faintly above it, so a part-filled band reads as a meter.
-static func _band(
-	canvas: CanvasItem, rect: Rect2, worn: float, band: Color, alpha: float, fill: float
-) -> void:
+static func _band(canvas: CanvasItem, rect: Rect2, worn: float, band: Color, fill: float) -> void:
 	var strip: Rect2 = Rect2(rect.position + Vector2(3, 4), Vector2(5, rect.size.y - 8))
 	var ink: Color = BowlGrime.aged(band, worn * 0.8)
 	if fill < 1.0:
-		canvas.draw_rect(strip, Color(ink, alpha * CHANNEL_ALPHA))
-		canvas.draw_rect(strip, Color(ink, alpha * 0.85), false, 1.0)
+		canvas.draw_rect(strip, Color(ink, CHANNEL_ALPHA))
+		canvas.draw_rect(strip, Color(ink, 0.85), false, 1.0)
 	var inked: float = strip.size.y * fill
 	var full: Rect2 = Rect2(strip.position + Vector2(0, strip.size.y - inked), Vector2(5, inked))
-	canvas.draw_rect(full, Color(ink, alpha * 0.85))
+	canvas.draw_rect(full, Color(ink, 0.85))
 
 
 ## Corners out of true, a notch out of each end, and the top right thumbed round.
@@ -85,9 +77,9 @@ static func _outline(rect: Rect2, rng: RandomNumberGenerator, worn: float) -> Pa
 
 
 ## A torn line of holes across the stub, where it would be cut from the sheet.
-static func _perforate(canvas: CanvasItem, rect: Rect2, worn: float, alpha: float) -> void:
+static func _perforate(canvas: CanvasItem, rect: Rect2, worn: float) -> void:
 	var y: float = rect.end.y - minf(14.0, rect.size.y * 0.22)
-	var hole: Color = Color(ScreenKit.WORN_PRINT, alpha * (0.35 + 0.3 * worn))
+	var hole: Color = Color(ScreenKit.WORN_PRINT, 0.35 + 0.3 * worn)
 	var x: float = rect.position.x + 10.0
 	while x < rect.end.x - 6.0:
 		canvas.draw_circle(Vector2(x, y), 0.9, hole)
@@ -96,15 +88,15 @@ static func _perforate(canvas: CanvasItem, rect: Rect2, worn: float, alpha: floa
 
 ## Foxing specks, a thumbprint smudge and, deeper in, a tea ring.
 static func _grime(
-	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float, alpha: float
+	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float
 ) -> void:
-	var speck: Color = Color(BowlGrime.TEA, alpha * (0.25 + 0.35 * worn))
+	var speck: Color = Color(BowlGrime.TEA, 0.25 + 0.35 * worn)
 	for _spot: int in roundi(lerpf(SPECKS.x, SPECKS.y, worn)):
 		var at: Vector2 = rect.position + Vector2(rng.randf(), rng.randf()) * rect.size
 		canvas.draw_circle(at, rng.randf_range(0.5, 1.4), speck)
 	var thumb: Vector2 = rect.position + Vector2(rng.randf_range(0.3, 0.8), 0.75) * rect.size
-	canvas.draw_circle(thumb, rect.size.x * 0.16, Color(BowlGrime.TEA, alpha * (0.05 + 0.1 * worn)))
+	canvas.draw_circle(thumb, rect.size.x * 0.16, Color(BowlGrime.TEA, 0.05 + 0.1 * worn))
 	if worn > 0.5:
 		var ring: Vector2 = rect.position + Vector2(rng.randf(), rng.randf()) * rect.size
-		var tea: Color = Color(BowlGrime.TEA, alpha * 0.2 * worn)
+		var tea: Color = Color(BowlGrime.TEA, 0.2 * worn)
 		canvas.draw_arc(ring, rect.size.x * 0.3, 0.0, TAU, 20, tea, 1.5 + worn, true)

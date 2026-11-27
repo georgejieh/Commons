@@ -44,7 +44,7 @@ func after_test() -> void:
 
 
 func _table() -> TableScreen:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	await await_idle_frame()

@@ -69,7 +69,7 @@ func test_the_pile_lays_a_play_as_it_reads() -> void:
 	AppKit.fresh_saves(self)
 	var app: App = AppKit.make(self)
 	app.new_run(SEED)
-	var table: TableScreen = app.show_screen("table", true)
+	var table: TableScreen = app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var pile: TrickPile = table.pile
 	var motion: TableMotion = table.motion

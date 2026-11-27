@@ -92,6 +92,6 @@ func _place() -> void:
 		return
 	var screen: Rect2 = get_viewport_rect().grow(-MARGIN)
 	var around: Rect2 = SlipPlacer.on_screen(_anchor)
-	var side: int = SlipPlacer.ABOVE if _above else SlipPlacer.BELOW
+	var side: SlipPlacer.Beside = SlipPlacer.Beside.ABOVE if _above else SlipPlacer.Beside.BELOW
 	var root: Node = within if within != null else get_tree().root
 	global_position = SlipPlacer.place(size, around, GAP, screen, root, self, side)

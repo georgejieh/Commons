@@ -184,7 +184,7 @@ func test_grain_tax_takes_a_fifth_of_what_you_bank_rounded_against_you() -> void
 	assert_int(taxed).is_greater(0)
 	assert_float(loop.state.set_progress).is_equal_approx(progress, 0.001)
 	# The round's result says what the tax took, on its own line.
-	var last: Dictionary = RoundSummaryScreen.last_round(loop.events())
+	var last: RoundResult = RoundResult.last(loop.events())
 	if float(results[-1]["taxed"]) > 0.0:
 		assert_array(RoundSummaryScreen.debuff_lines(last)).has_size(1)
 

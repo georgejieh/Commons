@@ -36,7 +36,7 @@ func after_test() -> void:
 
 
 func _open_store() -> StoreScreen:
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	return store
 
@@ -99,7 +99,7 @@ func test_the_store_shows_each_directive_with_its_rate_lines() -> void:
 			)
 			assert_array(Array(texts)).contains([line])
 	# The black market issues none.
-	var market: StoreScreen = _app.show_screen("black_market")
+	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET)
 	await await_idle_frame()
 	assert_object(_row(market)).is_null()
 

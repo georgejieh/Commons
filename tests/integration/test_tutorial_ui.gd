@@ -51,7 +51,7 @@ func _launch() -> App:
 
 ## Takes the surname page's default with one press of Enter, for the Arrival page.
 func _past_surname() -> void:
-	assert_str(_app.switcher.current_id()).is_equal("surname")
+	assert_str(_app.switcher.current_id()).is_equal(App.SURNAME)
 	await TestInput.tap_key(self, KEY_ENTER)
 	await await_idle_frame()
 
@@ -64,25 +64,25 @@ func _profile_bytes() -> String:
 func test_no_profile_offers_the_arrival_and_a_profile_the_title() -> void:
 	await _launch()
 	await _past_surname()
-	assert_str(_app.switcher.current_id()).is_equal("arrival")
+	assert_str(_app.switcher.current_id()).is_equal(App.ARRIVAL)
 	var page: ArrivalScreen = _app.switcher.current()
 	assert_str(page.text()).starts_with("The cart leaves you at the brigade office.")
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(page.sit_in_button())
 	ProfileSeen.mark(Saves.profile_service(), ProfileSeen.TUTORIAL)
 	await _launch()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 
 
 func test_the_content_note_leads_to_the_arrival_on_a_first_launch() -> void:
 	Settings.set_value("content_note_seen", false)
 	await _launch()
-	assert_str(_app.switcher.current_id()).is_equal("content_note")
+	assert_str(_app.switcher.current_id()).is_equal(App.CONTENT_NOTE)
 	for node: Node in _app.switcher.current().find_children("*", "Button", true, false):
 		(node as Button).pressed.emit()
 		break
 	await await_idle_frame()
 	await _past_surname()
-	assert_str(_app.switcher.current_id()).is_equal("arrival")
+	assert_str(_app.switcher.current_id()).is_equal(App.ARRIVAL)
 	assert_bool(ProfileSeen.exists(Saves.profile_service())).is_false()
 	# The note's Continue saved the settings this test changed: put the saved file back.
 	for key: String in _saved:
@@ -98,11 +98,11 @@ func test_skip_asks_once_then_writes_the_profile_and_goes_to_the_title() -> void
 	assert_bool(page.confirm().is_asking()).is_true()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(page.confirm().stay_button())
 	page.confirm().stay_button().pressed.emit()
-	assert_str(_app.switcher.current_id()).is_equal("arrival")
+	assert_str(_app.switcher.current_id()).is_equal(App.ARRIVAL)
 	page.skip_button().pressed.emit()
 	page.confirm().skip_button().pressed.emit()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 	assert_array(Profile.read(Saves.profile_service()).seen).is_equal(["tutorial"])
 
 
@@ -115,7 +115,7 @@ func test_the_corner_skip_mid_arrival_writes_the_profile() -> void:
 	layer.skip_button().pressed.emit()
 	layer.confirm().skip_button().pressed.emit()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 	assert_bool(_app.arrival.is_running()).is_false()
 	assert_array(Profile.read(Saves.profile_service()).seen).is_equal(["tutorial"])
 
@@ -130,7 +130,7 @@ func test_quitting_part_way_writes_nothing_and_offers_it_again() -> void:
 	assert_bool(ProfileSeen.exists(Saves.profile_service())).is_false()
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_false()
 	await _launch()
-	assert_str(_app.switcher.current_id()).is_equal("surname")
+	assert_str(_app.switcher.current_id()).is_equal(App.SURNAME)
 
 
 func test_a_refused_action_changes_nothing_and_marks_the_slip() -> void:
@@ -157,7 +157,7 @@ func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
 	(_app.switcher.current() as ArrivalScreen).sit_in_button().grab_focus()
 	await TestInput.tap_key(self, KEY_ENTER)
 	await _walk("1080")
-	assert_str(_app.switcher.current_id()).is_equal("run_setup")
+	assert_str(_app.switcher.current_id()).is_equal(App.RUN_SETUP)
 	var data: ProfileData = Profile.read(Saves.profile_service())
 	assert_array(data.seen).is_equal(["tutorial"])
 	var fresh: Dictionary = ProfileData.new().to_dict()
@@ -183,14 +183,14 @@ func test_a_replay_at_800_leaves_the_profile_and_run_save_alone() -> void:
 	var run_save: String = FileAccess.get_file_as_string(Saves.run_service().path())
 	var profile: String = _profile_bytes()
 	assert_str(run_save).is_not_empty()
-	var title: TitleScreen = _app.show_screen("title", true)
+	var title: TitleScreen = _app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	assert_object(title.replay_button()).is_not_null()
 	title.replay_button().pressed.emit()
 	await await_idle_frame()
 	assert_bool(_app.arrival.is_running()).is_true()
 	await _walk("800")
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 	assert_str(FileAccess.get_file_as_string(Saves.run_service().path())).is_equal(run_save)
 	assert_str(_profile_bytes()).is_equal(profile)
 
@@ -199,15 +199,15 @@ func test_a_replay_at_800_leaves_the_profile_and_run_save_alone() -> void:
 ## and Settings no longer does.
 func test_only_a_profile_past_the_arrival_is_offered_it_again() -> void:
 	await _launch()
-	var title: TitleScreen = _app.show_screen("title", true)
+	var title: TitleScreen = _app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	assert_object(title.replay_button()).is_null()
 	ProfileSeen.mark(Saves.profile_service(), ProfileSeen.TUTORIAL)
-	title = _app.show_screen("title", true)
+	title = _app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	assert_object(title.replay_button()).is_not_null()
 	assert_bool(title.replay_button().is_visible_in_tree()).is_true()
-	var settings: Control = _app.show_screen("settings")
+	var settings: Control = _app.show_screen(App.SETTINGS)
 	await await_idle_frame()
 	for node: Node in settings.find_children("*", "Button", true, false):
 		assert_str((node as Button).text).is_not_equal(tr("title.replay_arrival"))

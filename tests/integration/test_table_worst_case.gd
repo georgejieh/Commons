@@ -190,7 +190,7 @@ func test_a_table_with_no_rule_stands_as_before_at_standard() -> void:
 	loop.state.inventory.consumables.assign(["mutual_aid"])
 	for screen: Vector2i in SCREENS_AT:
 		get_tree().root.size = screen
-		var table: TableScreen = _app.show_screen("table", true)
+		var table: TableScreen = _app.show_screen(App.TABLE, true)
 		await await_idle_frame()
 		await await_idle_frame()
 		var campaigns: TableCampaigns = table.campaigns
@@ -262,7 +262,7 @@ func test_the_strings_are_the_longest_of_their_families() -> void:
 ## The slip stands in front of the room's dressing, the right chair included, and the
 ## moments layer, where the dice bowl lands, lies over the slip.
 func test_the_slip_draws_over_the_dressing_and_under_the_moments() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var dressing: Control = table.dressing
 	var strip: Control = table.debuffs

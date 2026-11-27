@@ -126,7 +126,7 @@ func test_every_directive_fits_its_store_document() -> void:
 		for start: int in range(0, ids.size(), 2):
 			var stock: Array[String] = ids.slice(start, start + 2)
 			_loop().visit.shop.stock_with(_loop().visit.shop.stock(), stock)
-			var store: StoreScreen = _app.show_screen("store", true)
+			var store: StoreScreen = _app.show_screen(App.STORE, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			_clips(store.directives, "directives %s" % [stock], problems)
@@ -157,7 +157,7 @@ func test_every_one_time_tip_fits_its_slip() -> void:
 		get_tree().root.size = screen
 		Saves.profile_service().delete()
 		assert_bool(_app.new_run(SEED, true)).is_true()
-		var host: Control = _app.show_screen("title", true)
+		var host: Control = _app.show_screen(App.TITLE, true)
 		var slip: TipSlip = TipSlip.offer(host, _app, ProfileSeen.TIPS)
 		assert_object(slip).is_not_null()
 		await await_idle_frame()

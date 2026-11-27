@@ -31,8 +31,8 @@ var rule: String = ""
 
 var _look: Look = Look.LEAFLET
 var _private: bool = false
-## An envelope's wrapping, one of EnvelopePaper's.
-var _wrapping: int = EnvelopePaper.STRING_TIE
+## An envelope's wrapping.
+var _wrapping: EnvelopeDef.Wrapping = EnvelopeDef.Wrapping.STRING_TIE
 var _which: int = 0
 var _kind: Label = Label.new()
 var _name: Label = Label.new()
@@ -127,13 +127,13 @@ func sold(appearance: Look, word: String) -> void:
 	queue_redraw()
 
 
-## How an envelope is wrapped, one of EnvelopePaper's wrappings.
-func set_wrapping(chosen: int) -> void:
+## How an envelope is wrapped.
+func set_wrapping(chosen: EnvelopeDef.Wrapping) -> void:
 	_wrapping = chosen
 	queue_redraw()
 
 
-func wrapping() -> int:
+func wrapping() -> EnvelopeDef.Wrapping:
 	return _wrapping
 
 

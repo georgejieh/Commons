@@ -28,17 +28,17 @@ static func ink(clean: Color, worn: float) -> Color:
 ## A leaflet sheet filling rect: aged paper with a coloured head band, a fold across the
 ## middle, foxing, a tea stain and a dog-eared corner.
 static func leaflet(
-	canvas: CanvasItem, rect: Rect2, private: bool, worn: float, which: int, alpha: float = 1.0
+	canvas: CanvasItem, rect: Rect2, private: bool, worn: float, which: int
 ) -> void:
 	var rng: RandomNumberGenerator = _rng(which)
 	var body: PackedVector2Array = _worn_outline(rect, rng, worn)
-	canvas.draw_colored_polygon(body, Color(paper(worn), alpha))
+	canvas.draw_colored_polygon(body, Color(paper(worn), 1.0))
 	var band_color: Color = PRIVATE_BAND if private else ScreenKit.PICKED
 	var band: Rect2 = Rect2(rect.position + Vector2(4, 4), Vector2(rect.size.x - 8, 9))
-	canvas.draw_rect(band, Color(ink(band_color, worn), alpha * 0.9))
-	_wear(canvas, rect, rng, worn, alpha)
+	canvas.draw_rect(band, Color(ink(band_color, worn), 0.9))
+	_wear(canvas, rect, rng, worn)
 	canvas.draw_polyline(
-		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.55), 1.5
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, 0.55), 1.5
 	)
 
 
@@ -55,22 +55,22 @@ static func empty_place(canvas: CanvasItem, rect: Rect2, worn: float, which: int
 
 
 ## A folded note: a small sheet folded in half, the crease and its shadow showing.
-static func note(canvas: CanvasItem, rect: Rect2, worn: float, alpha: float = 1.0) -> void:
+static func note(canvas: CanvasItem, rect: Rect2, worn: float) -> void:
 	var rng: RandomNumberGenerator = _rng(91)
 	var body: PackedVector2Array = _worn_outline(rect, rng, worn)
-	canvas.draw_colored_polygon(body, Color(paper(worn), alpha))
+	canvas.draw_colored_polygon(body, Color(paper(worn), 1.0))
 	var crease: float = rect.position.y + rect.size.y * 0.45
 	var shadow: Rect2 = Rect2(rect.position.x, crease, rect.size.x, rect.size.y * 0.55)
-	canvas.draw_rect(shadow, Color(SHADE, alpha * 0.45))
+	canvas.draw_rect(shadow, Color(SHADE, 0.45))
 	canvas.draw_line(
 		Vector2(rect.position.x, crease),
 		Vector2(rect.end.x, crease),
-		Color(ScreenKit.FOLD, alpha),
+		Color(ScreenKit.FOLD, 1.0),
 		1.5
 	)
-	_wear(canvas, rect, rng, worn, alpha)
+	_wear(canvas, rect, rng, worn)
 	canvas.draw_polyline(
-		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.6), 1.5
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, 0.6), 1.5
 	)
 
 
@@ -92,17 +92,15 @@ static func _worn_outline(
 
 
 ## A fold line, foxing specks and a tea ring.
-static func _wear(
-	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float, alpha: float
-) -> void:
+static func _wear(canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float) -> void:
 	var fold_y: float = rect.position.y + rect.size.y * rng.randf_range(0.48, 0.58)
-	var fold: Color = Color(ScreenKit.FOLD, alpha * (0.25 + 0.3 * worn))
+	var fold: Color = Color(ScreenKit.FOLD, 0.25 + 0.3 * worn)
 	canvas.draw_line(Vector2(rect.position.x + 2, fold_y), Vector2(rect.end.x - 2, fold_y), fold)
-	var speck: Color = Color(BowlGrime.TEA, alpha * (0.25 + 0.35 * worn))
+	var speck: Color = Color(BowlGrime.TEA, 0.25 + 0.35 * worn)
 	for _spot: int in roundi(lerpf(FOXING.x, FOXING.y, worn)):
 		var at: Vector2 = rect.position + Vector2(rng.randf(), rng.randf()) * rect.size
 		canvas.draw_circle(at, rng.randf_range(0.6, 1.8), speck)
-	var tea: Color = Color(BowlGrime.TEA, alpha * (0.08 + 0.16 * worn))
+	var tea: Color = Color(BowlGrime.TEA, 0.08 + 0.16 * worn)
 	for _stain: int in roundi(lerpf(STAINS.x, STAINS.y, worn)):
 		var middle: Vector2 = rect.position + Vector2(rng.randf(), rng.randf()) * rect.size
 		var radius: float = minf(rect.size.x, rect.size.y) * rng.randf_range(0.12, 0.26)

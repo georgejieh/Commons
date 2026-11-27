@@ -26,7 +26,7 @@ func after_test() -> void:
 
 
 func test_store_cards_print_name_and_rules_and_buy_shows_no_plain_tooltip() -> void:
-	var store: StoreScreen = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen(App.STORE)
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
@@ -53,7 +53,7 @@ func test_store_cards_print_name_and_rules_and_buy_shows_no_plain_tooltip() -> v
 
 
 func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
-	var store: StoreScreen = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen(App.STORE)
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
@@ -93,7 +93,7 @@ func _labels(node: Node) -> Array[Node]:
 
 
 func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
-	var store: StoreScreen = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen(App.STORE)
 	await await_idle_frame()
 	var stock: Array[String] = _app.controller.store.store_stock()
 	var slot: int = range(stock.size()).filter(_app.controller.store.can_buy).front()
@@ -122,7 +122,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 100
 	_app.controller.reseal_book()
-	var market: StoreScreen = _app.show_screen("black_market")
+	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET)
 	await await_idle_frame()
 	assert_bool(market.market).is_true()
 	var stock: Array[String] = _app.controller.store.desk(true).stock()
@@ -155,7 +155,7 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 100
 	_app.controller.reseal_book()
-	var store: StoreScreen = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen(App.STORE)
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
@@ -173,7 +173,7 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 
 
 func test_the_collection_lists_the_cadres_of_both_shops() -> void:
-	var collection: Control = _app.show_screen("collection")
+	var collection: Control = _app.show_screen(App.COLLECTION)
 	await await_idle_frame()
 	var flows: Array[Node] = collection.find_children("*", "HFlowContainer", true, false)
 	var cadres: int = flows[0].get_child_count() + flows[1].get_child_count()

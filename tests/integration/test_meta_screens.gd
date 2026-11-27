@@ -36,14 +36,14 @@ func _veteran() -> void:
 
 
 func _setup() -> RunSetupScreen:
-	var screen: RunSetupScreen = _app.show_screen("run_setup", true)
+	var screen: RunSetupScreen = _app.show_screen(App.RUN_SETUP, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return screen
 
 
 func _collection() -> CollectionScreen:
-	var screen: CollectionScreen = _app.show_screen("collection", true)
+	var screen: CollectionScreen = _app.show_screen(App.COLLECTION, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return screen
@@ -127,7 +127,7 @@ func test_picking_and_starting_take_the_choice_and_it_is_not_remembered() -> voi
 	assert_str(state.identity.household).is_equal("old_family")
 	assert_int(state.identity.stake).is_equal(1)
 	assert_array(state.inventory.cadres).contains(["landlords_ledger"])
-	assert_str(_app.switcher.current_id()).is_equal("set_intro")
+	assert_str(_app.switcher.current_id()).is_equal(App.SET_INTRO)
 	var again: RunSetupScreen = await _setup()
 	assert_str(again.household()).is_equal("poor_peasants")
 	assert_int(again.stake()).is_equal(2)

@@ -385,7 +385,7 @@ func _back() -> void:
 
 func _to_market() -> void:
 	if not is_issuing() and _app.arrival.attempt("door"):
-		_app.show_screen("black_market")
+		_app.show_screen(App.BLACK_MARKET)
 
 
 ## Leaves the store for the next Quota, once nothing is being acted out or chosen.
@@ -393,4 +393,4 @@ func _leave() -> void:
 	if is_issuing() or not _app.arrival.attempt("leave"):
 		return
 	_app.controller.leave_store()
-	_app.show_screen("set_intro", true)
+	_app.show_screen(App.SET_INTRO, true)

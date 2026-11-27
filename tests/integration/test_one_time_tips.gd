@@ -51,7 +51,7 @@ func _full_quota_page(memory: bool) -> Node:
 		state.debuff_ladder[1] = RunPools.DEBUFFS.debuffs[0].id
 	if memory:
 		state.memory.counts[state.table[1]] = PackedFloat64Array([1.0, 0.0, 0.0, 0.0])
-	return _app.show_screen("set_intro", true)
+	return _app.show_screen(App.SET_INTRO, true)
 
 
 func _dismiss_all(slip: TipSlip) -> Array[String]:
@@ -90,7 +90,7 @@ func test_debuffs_and_memory_show_once_across_two_full_runs_and_a_restart() -> v
 
 func test_the_plot_tip_shows_once_per_profile() -> void:
 	assert_bool(_app.new_run(SEED, true)).is_true()
-	var host: Control = _app.show_screen("title", true)
+	var host: Control = _app.show_screen(App.TITLE, true)
 	var tips: Array[String] = ["tip.plot"]
 	var slip: TipSlip = TipSlip.offer(host, _app, tips)
 	assert_object(slip).is_not_null()
@@ -105,7 +105,7 @@ func test_never_in_the_demo_or_the_arrival() -> void:
 	_app.new_run(SEED)
 	var tips: Array[String] = ["tip.plot", "tip.debuffs", "tip.memory"]
 	assert_object(TipSlip.offer(_app.switcher.current(), _app, tips)).is_null()
-	var intro: Node = _app.show_screen("set_intro", true)
+	var intro: Node = _app.show_screen(App.SET_INTRO, true)
 	assert_object(await _tip(intro)).is_null()
 	_app.arrival.start(true)
 	await await_idle_frame()

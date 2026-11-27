@@ -5,8 +5,7 @@ extends Resource
 ## is drawn by weight from what it holds. The code that draws and applies each kind of
 ## content is EnvelopeContents, chosen by kind, and every number it uses is here.
 
-## What a place in an envelope can hold. Data does not name core types, so these stand
-## for the kinds EnvelopeContents draws.
+## What a place in an envelope can hold: the kinds EnvelopeContents draws.
 enum Content {
 	## A Directive the selling counter offers, never one whose family is at the top level.
 	DIRECTIVE,

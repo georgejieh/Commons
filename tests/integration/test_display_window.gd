@@ -216,11 +216,11 @@ func test_the_window_page_stands_whole_at_every_size() -> void:
 			Settings.set_value(TextSize.SETTING, level)
 			get_tree().root.size = screen_size
 			var where: String = "text size %d at %s" % [level, screen_size]
-			var screen: WindowScreen = app.show_screen("window", true)
+			var screen: WindowScreen = app.show_screen(App.WINDOW, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			_assert_whole(screen, where + " screen")
-			var table: TableScreen = app.show_screen("table", true)
+			var table: TableScreen = app.show_screen(App.TABLE, true)
 			await await_idle_frame()
 			table.hud.menu.pressed.emit()
 			var pause: PauseMenu = table.pause

@@ -37,7 +37,7 @@ func open(app: App) -> void:
 	column.add_child(caption)
 	var steps: Array[Control] = _ladder(column, controller)
 	var begin: Button = ScreenKit.button(tr("intro.begin"), CommonsTheme.PRIMARY)
-	begin.pressed.connect(func() -> void: app.show_screen(app.table_id(), true))
+	begin.pressed.connect(func() -> void: app.show_screen(App.TABLE, true))
 	column.add_child(begin)
 	ScreenKit.reveal(column)
 	UiMotion.enter(steps)

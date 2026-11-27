@@ -11,10 +11,7 @@ extends RefCounted
 ## stays where the eye already is rather than jumping to a far edge.
 
 ## The sides a slip may stand on, in the order tried when the first one asked for fails.
-const ABOVE: int = 0
-const BELOW: int = 1
-const RIGHT: int = 2
-const LEFT: int = 3
+enum Beside { ABOVE, BELOW, RIGHT, LEFT }
 
 ## The farthest a slip ever stands from the thing it explains.
 const REACH: float = 24.0
@@ -41,7 +38,13 @@ const KEEP_CLEAR: StringName = &"slip_keep_clear"
 ## where that works. Buttons visible under root, but for own and what it holds, are kept
 ## off when a spot as close allows.
 static func place(
-	size: Vector2, keep: Rect2, gap: float, screen: Rect2, root: Node, own: Node, first: int = ABOVE
+	size: Vector2,
+	keep: Rect2,
+	gap: float,
+	screen: Rect2,
+	root: Node,
+	own: Node,
+	first: Beside = Beside.ABOVE
 ) -> Vector2:
 	var buttons: Array[Rect2] = []
 	var kept: Array[Rect2] = []
@@ -51,7 +54,7 @@ static func place(
 	var best: Vector2 = inside(keep.position, size, screen)
 	var best_score: float = INF
 	var rank: int = 0
-	for side: int in _order(first):
+	for side: Beside in _order(first):
 		for spot: Vector2 in _along(side, size, keep, gap):
 			var at: Vector2 = inside(spot, size, screen)
 			var rect: Rect2 = Rect2(at, size)
@@ -137,31 +140,31 @@ static func _cost(
 	return score + SIDE_STEP * rank + pushed
 
 
-static func _order(first: int) -> Array[int]:
-	var order: Array[int] = [first]
-	for side: int in [ABOVE, BELOW, RIGHT, LEFT]:
+static func _order(first: Beside) -> Array[Beside]:
+	var order: Array[Beside] = [first]
+	for side: Beside in [Beside.ABOVE, Beside.BELOW, Beside.RIGHT, Beside.LEFT]:
 		if not order.has(side):
 			order.append(side)
 	return order
 
 
 ## Where a slip on side stands before it slides: level with the thing's left or top.
-static func _aligned(side: int, size: Vector2, keep: Rect2, gap: float) -> Vector2:
+static func _aligned(side: Beside, size: Vector2, keep: Rect2, gap: float) -> Vector2:
 	match side:
-		ABOVE:
+		Beside.ABOVE:
 			return Vector2(keep.position.x, keep.position.y - gap - size.y)
-		BELOW:
+		Beside.BELOW:
 			return Vector2(keep.position.x, keep.end.y + gap)
-		RIGHT:
+		Beside.RIGHT:
 			return Vector2(keep.end.x + gap, keep.position.y)
 	return Vector2(keep.position.x - gap - size.x, keep.position.y)
 
 
 ## The spots along side: level first, then slid either way in STEPs while at least
 ## OVERLAP of the slip, or all of the thing, stays level with it.
-static func _along(side: int, size: Vector2, keep: Rect2, gap: float) -> Array[Vector2]:
+static func _along(side: Beside, size: Vector2, keep: Rect2, gap: float) -> Array[Vector2]:
 	var start: Vector2 = _aligned(side, size, keep, gap)
-	var across: bool = side == ABOVE or side == BELOW
+	var across: bool = side == Beside.ABOVE or side == Beside.BELOW
 	var axis: Vector2 = Vector2.RIGHT if across else Vector2.DOWN
 	var low: float = keep.position.x if across else keep.position.y
 	var length: float = size.x if across else size.y

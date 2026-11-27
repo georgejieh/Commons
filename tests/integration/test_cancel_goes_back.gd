@@ -43,7 +43,7 @@ func test_cancel_goes_back_from_the_black_market_and_not_from_the_store() -> voi
 	_app.controller.finish_set()
 	await _check_back("black_market", "store")
 	await _cancel()
-	assert_str(_app.switcher.current_id()).is_equal("store")
+	assert_str(_app.switcher.current_id()).is_equal(App.STORE)
 
 
 ## Opens page over from, presses Cancel, and checks that it went back.

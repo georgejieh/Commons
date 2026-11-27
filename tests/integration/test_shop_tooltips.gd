@@ -40,7 +40,7 @@ func test_no_control_on_either_shop_page_shows_a_plain_tooltip() -> void:
 
 
 func test_the_state_stores_buttons_and_documents_open_the_slip() -> void:
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
 	# The first place was bought before the test, and a sold place has no button.
@@ -60,7 +60,7 @@ func test_the_state_stores_buttons_and_documents_open_the_slip() -> void:
 
 
 func test_the_black_markets_upgrade_tickets_open_the_slip() -> void:
-	var market: StoreScreen = _app.show_screen("black_market", true)
+	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
 	await await_idle_frame()
 	var goods: MarketGoods = market.goods
 	var kinds: PackedStringArray = _app.controller.store.desk(true).upgrade_kinds()

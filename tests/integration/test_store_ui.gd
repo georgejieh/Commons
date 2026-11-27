@@ -29,7 +29,7 @@ func _to_store(resume_first: bool) -> void:
 
 
 func _buy_through_the_screen() -> String:
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	var bought: String = ""
 	for slot: int in _app.controller.store.store_stock().size():

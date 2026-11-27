@@ -41,7 +41,7 @@ func _to_the_store() -> StoreScreen:
 	CardMarks.enhance(state, Deck.new().card(SURPLUS_CARD), CardInstance.SURPLUS)
 	CardMarks.stamp(state, Deck.new().card(STAMPED_CARD), RunLoop.PLAYER)
 	_app.controller.reseal_book()
-	return _app.show_screen("store", true)
+	return _app.show_screen(App.STORE, true)
 
 
 func _deck_button(root: Node) -> Button:
@@ -143,7 +143,7 @@ func _tap(action: String) -> void:
 
 
 func test_the_table_opens_it_from_its_menu_and_waits() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var menu: PauseMenu = table.pause
 	table.hud.menu.pressed.emit()

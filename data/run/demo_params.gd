@@ -4,8 +4,10 @@ extends Resource
 
 ## The demo's Years, targets and rewards.
 @export var sets: SetParams
-## BotConfig.Tier per seat; the player's entry is unused.
-@export var tiers: Array[int] = [1, 1, 2]
+## How strongly each seat plays; the player's entry is unused.
+@export var tiers: Array[BotConfig.Tier] = [
+	BotConfig.Tier.MEDIUM, BotConfig.Tier.MEDIUM, BotConfig.Tier.HARD
+]
 ## Display name keys per seat.
 @export var name_keys: Array[String] = ["seat.you", "villager.wang", "villager.zhao"]
 ## Portrait per seat; the player's entry is unused.

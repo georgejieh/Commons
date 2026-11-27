@@ -59,7 +59,7 @@ func _last_player(view: SeatView) -> int:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await TestWait.until(self, table.player.is_idle, "the table's events to play", WAIT_SECONDS)
 	return table

@@ -49,7 +49,7 @@ func _feed(state: RunState, family_id: String, fed: int, bombed: int = 0) -> voi
 	state.memory.record(summary)
 
 
-func _left(state: RunState) -> Dictionary:
+func _left(state: RunState) -> Lineage:
 	return RunLineage.left_by(state, METERS, MEMORY)
 
 
@@ -82,22 +82,22 @@ func test_every_row_of_the_table() -> void:
 		_feed(state, "wang", 3)
 		_feed(state, "li", 2)
 		assert_str(Endings.outcome(state, METERS)).is_equal(outcome)
-		var left: Dictionary = _left(state)
-		assert_str(left["kind"]).override_failure_message(outcome).is_equal(kinds[outcome])
-		var families: Array[String] = RunLineage.families(left["values"])
+		var left: Lineage = _left(state)
+		assert_str(left.kind).override_failure_message(outcome).is_equal(kinds[outcome])
+		var families: Array[String] = RunLineage.families(left.values)
 		match kinds[outcome]:
 			RunLineage.HEIRLOOM:
-				var rank: int = left["values"][RunLineage.RANK]
+				var rank: int = left.values[RunLineage.RANK]
 				assert_int(rank).is_between(Ranks.JACK, Ranks.ACE)
-				assert_int(left["values"][RunLineage.SUIT]).is_between(0, Deck.SUITS - 1)
-				assert_dict(left["values"]).is_equal(_left(state)["values"])
+				assert_int(left.values[RunLineage.SUIT]).is_between(0, Deck.SUITS - 1)
+				assert_dict(left.values).is_equal(_left(state).values)
 			RunLineage.LOYAL:
 				var expected: Array[String] = ["wang"]
 				if outcome == Endings.THE_COMMONS:
 					expected = ["wang", "li"]
 				assert_array(families).override_failure_message(outcome).is_equal(expected)
 			_:
-				assert_dict(left["values"]).is_empty()
+				assert_dict(left.values).is_empty()
 
 
 func test_the_heirloom_varies_by_run_and_its_suits_are_even() -> void:
@@ -106,7 +106,7 @@ func test_the_heirloom_varies_by_run_and_its_suits_are_even() -> void:
 	for seed_value: int in 60:
 		var state: RunState = _ended(30, 30, 40, 3)
 		state.run_seed = 9400 + seed_value
-		var values: Dictionary = _left(state)["values"]
+		var values: Dictionary = _left(state).values
 		ranks[int(values[RunLineage.RANK])] = true
 		suits[int(values[RunLineage.SUIT])] = true
 	assert_int(ranks.size()).is_equal(Ranks.ACE - Ranks.JACK + 1)
@@ -131,14 +131,14 @@ func test_the_loyal_family_rule() -> void:
 	var cold: RunState = _ended(30, 20, 40, 0)
 	_feed(cold, "zhao", 1, 1)
 	assert_float(cold.memory.grudge("zhao", MEMORY)).is_greater_equal(0.0)
-	assert_str(_left(cold)["kind"]).is_equal(RunLineage.NONE)
+	assert_str(_left(cold).kind).is_equal(RunLineage.NONE)
 	# The Commons takes the two lowest that qualify, or the one there is.
 	var commons: RunState = _ended(10, 10, 0, 0)
 	_feed(commons, "sun", 1)
-	assert_array(RunLineage.families(_left(commons)["values"])).is_equal(["sun"])
+	assert_array(RunLineage.families(_left(commons).values)).is_equal(["sun"])
 	_feed(commons, "chen", 5)
 	_feed(commons, "gao", 3)
-	assert_array(RunLineage.families(_left(commons)["values"])).is_equal(["chen", "gao"])
+	assert_array(RunLineage.families(_left(commons).values)).is_equal(["chen", "gao"])
 
 
 func test_a_sent_down_youth_is_never_loyal() -> void:

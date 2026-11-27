@@ -26,16 +26,6 @@ func _ids(items: Array[EnvelopeItem]) -> Array[String]:
 	return ids
 
 
-func _saved(loop: RunLoop) -> Dictionary:
-	return JSON.parse_string(JSON.stringify(loop.record.to_dict()))
-
-
-func _same_state(first: RunLoop, second: RunLoop) -> void:
-	assert_str(JSON.stringify(second.state.to_dict())).is_equal(
-		JSON.stringify(first.state.to_dict())
-	)
-
-
 func test_each_shop_offers_its_envelopes_the_same_for_the_same_seed() -> void:
 	assert_int(STORE.envelope_offers).is_equal(1)
 	assert_int(MARKET.envelope_offers).is_equal(1)

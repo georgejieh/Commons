@@ -9,7 +9,7 @@ extends Node
 ## reads cached run values only and touches nothing the player reads: cards, counts, ranks
 ## and scores are drawn by other nodes it never changes.
 
-signal flickered(kind: String)
+signal flickered(kind: FlickerDef.Kind)
 
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
 ## Fixed, so flickers come at the same moments for the same play; never global random.
@@ -266,11 +266,11 @@ func _tick(delta: float, intensity: float, no_flash: bool) -> void:
 
 func _fire(flicker: FlickerDef) -> void:
 	match flicker.kind:
-		"portrait_blink":
+		FlickerDef.Kind.PORTRAIT_BLINK:
 			if not _seats.is_empty():
 				_flicker_seat = (_flicker_seat + 1) % _seats.size()
 				_seats[_flicker_seat].blink(flicker.duration)
-		"extra_chair":
+		FlickerDef.Kind.EXTRA_CHAIR:
 			room_dressing.flash_piece("extra_chair", flicker.duration)
 	flickered.emit(flicker.kind)
 

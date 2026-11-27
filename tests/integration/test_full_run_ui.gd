@@ -32,19 +32,19 @@ func _button(node: Node, text: String) -> Button:
 
 
 func _title_has_continue() -> bool:
-	_app.show_screen("title", true)
+	_app.show_screen(App.TITLE, true)
 	return _button(_app.switcher.current(), tr("title.continue")) != null
 
 
 func test_new_run_starts_the_full_run_and_the_demo_under_its_flag() -> void:
 	_app.demo = false
-	_app.show_screen("run_setup", true)
+	_app.show_screen(App.RUN_SETUP, true)
 	_press(tr("setup.start"))
 	assert_bool(_app.controller.seats.has_village()).is_true()
 	assert_bool(_app.controller.state_copy().identity.is_full()).is_true()
 	assert_int(_app.controller.state_copy().coupons).is_equal(4)
 	_app.demo = true
-	_app.show_screen("run_setup", true)
+	_app.show_screen(App.RUN_SETUP, true)
 	_press(tr("setup.start"))
 	assert_bool(_app.controller.seats.has_village()).is_false()
 	assert_bool(_app.controller.state_copy().identity.is_full()).is_false()
@@ -56,7 +56,7 @@ func test_continue_shows_only_for_a_run_that_loads() -> void:
 	assert_bool(_title_has_continue()).is_true()
 	_press(tr("title.continue"))
 	assert_bool(_app.controller.seats.has_village()).is_true()
-	assert_str(_app.switcher.current_id()).is_equal(_app.table_id())
+	assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
 	# A save and backup that are both damaged offer nothing to continue.
 	for path: String in [_save_path, _save_path + SaveService.BACKUP_SUFFIX]:
 		FileAccess.open(path, FileAccess.WRITE).store_string("{broken")
@@ -73,7 +73,7 @@ func test_continue_picks_up_a_demo_save_as_the_demo() -> void:
 
 func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
 	_app.new_run(SEED, true)
-	_app.show_screen("set_intro", true)
+	_app.show_screen(App.SET_INTRO, true)
 	await await_idle_frame()
 	var menu: PauseMenu = _app.menu
 	menu.open()
@@ -101,7 +101,7 @@ func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
 	var was: ProfileData = Profile.read(Saves.profile_service())
 	menu.abandon_button().pressed.emit()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 	assert_bool(FileAccess.file_exists(_save_path)).is_false()
 	var now: ProfileData = Profile.read(Saves.profile_service())
 	assert_array(now.history).is_empty()
@@ -111,7 +111,7 @@ func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
 
 func test_the_table_menu_abandons_too() -> void:
 	_app.new_run(SEED, true)
-	var table: TableScreen = _app.show_screen(_app.table_id(), true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	table.hud.menu.pressed.emit()
 	var pause: PauseMenu = table.pause
@@ -120,7 +120,7 @@ func test_the_table_menu_abandons_too() -> void:
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(pause.keep_button())
 	pause.abandon_button().pressed.emit()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 	assert_bool(FileAccess.file_exists(_save_path)).is_false()
 
 
@@ -135,13 +135,13 @@ func test_the_endings_way_home_clears_the_run_save() -> void:
 	record.mark(state)
 	Saves.run_service().save(record.to_dict())
 	_app.resume_to_screen()
-	assert_str(_app.switcher.current_id()).is_equal("ending")
+	assert_str(_app.switcher.current_id()).is_equal(App.ENDING)
 	assert_int(Profile.read(Saves.profile_service()).history.size()).is_equal(1)
 	var screen: EndingScreen = _app.switcher.current()
 	await await_idle_frame()
 	screen.home_button().pressed.emit()
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 	assert_bool(FileAccess.file_exists(_save_path)).is_false()
 	assert_int(Profile.read(Saves.profile_service()).history.size()).is_equal(1)
 
@@ -166,12 +166,12 @@ func test_the_summary_names_the_family_that_starved() -> void:
 			dead = event.text
 			seat = event.seat
 	assert_str(dead).is_not_empty()
-	var summary: SetSummaryScreen = _app.show_screen("set_summary", true)
+	var summary: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
 	var family: String = tr(_app.controller.seats.family_name_key(dead))
 	var line: String = "The %s household did not come to the Commons." % family
 	assert_array(summary.fate_lines()).contains_exactly([line])
 	assert_bool(_app.controller.seats.seat_gone(seat)).is_true()
-	var dossier: DossierScreen = _app.show_screen("dossier", true)
+	var dossier: DossierScreen = _app.show_screen(App.DOSSIER, true)
 	assert_int(dossier.entries(seat).size()).is_equal(0)
 	assert_int(dossier.entries(3 - seat).size()).is_greater(0)
 
@@ -196,7 +196,7 @@ func _seatless_summary(seatless: int) -> SetSummaryScreen:
 	assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_SET_OVER)
 	if YearClass.held_seat(_app.controller.set_events(), RunLoop.PLAYER):
 		return null
-	return _app.show_screen("set_summary", true)
+	return _app.show_screen(App.SET_SUMMARY, true)
 
 
 ## ADR 0031: the last free Quota warns that the next one without the seat costs.

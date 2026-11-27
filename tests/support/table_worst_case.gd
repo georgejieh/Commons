@@ -50,7 +50,7 @@ static func open(app: App, suite: GdUnitTestSuite, named: bool = false) -> Table
 	await BossWorstCase.worst(app, suite, named)
 	state.debuff_ladder.assign(["", debuffs[0], debuffs[1], debuffs[2]])
 	state.round_index = 3
-	var table: TableScreen = app.show_screen("table", true)
+	var table: TableScreen = app.show_screen(App.TABLE, true)
 	await suite.await_idle_frame()
 	await suite.await_idle_frame()
 	return table

@@ -120,7 +120,7 @@ func test_each_shop_offers_an_envelope_explained_by_the_slip() -> void:
 		assert_str(slip.shown_rule()).not_contains("{")
 		assert_bool(slip.get_global_rect().intersects(panel.get_global_rect())).is_false()
 	assert_int(_app.controller.store.envelope_shelf(true).wrapping("parcel")).is_equal(
-		EnvelopeShelf.PARCEL
+		EnvelopeDef.Wrapping.PARCEL
 	)
 
 
@@ -145,7 +145,7 @@ func test_buying_opens_it_and_holds_every_other_purchase() -> void:
 	assert_int(_app.controller.state_copy().inventory.cadres.size()).is_equal(cadres)
 	assert_int(_loop().record.commands.size()).is_equal(commands + 1)
 	var switcher: SceneSwitcher = _app.get("switcher")
-	assert_str(switcher.current_id()).is_equal("store")
+	assert_str(switcher.current_id()).is_equal(App.STORE)
 	await _wait(overlay)
 	assert_bool(overlay.is_busy()).is_false()
 	assert_bool(overlay.figure().visible).is_false()
@@ -334,7 +334,9 @@ func test_a_load_mid_opening_shows_the_envelope_open() -> void:
 ## Nothing drawn is clean: envelope paper is aged at stage 0 and more so at the last.
 func test_envelope_paper_is_aged_and_wears_with_the_stage() -> void:
 	ArtStages.stage_override = 0
-	for wrapping: int in [EnvelopeShelf.STRING_TIE, EnvelopeShelf.WAX_SEAL, EnvelopeShelf.PARCEL]:
+	for wrapping: EnvelopeDef.Wrapping in [
+		EnvelopeDef.Wrapping.STRING_TIE, EnvelopeDef.Wrapping.WAX_SEAL, EnvelopeDef.Wrapping.PARCEL
+	]:
 		var fresh: Color = EnvelopePaper.paper(wrapping, BowlGrime.wear())
 		assert_bool(fresh.is_equal_approx(Color.WHITE)).is_false()
 		ArtStages.stage_override = BoardState.CORRUPTION_STAGES - 1
@@ -342,8 +344,8 @@ func test_envelope_paper_is_aged_and_wears_with_the_stage() -> void:
 		assert_float(worn.get_luminance()).is_less(fresh.get_luminance())
 		ArtStages.stage_override = 0
 	# The two state store envelopes tell apart at a glance: different paper and closure.
-	var tie: Color = EnvelopePaper.paper(EnvelopeShelf.STRING_TIE, 0.3)
-	var seal: Color = EnvelopePaper.paper(EnvelopeShelf.WAX_SEAL, 0.3)
+	var tie: Color = EnvelopePaper.paper(EnvelopeDef.Wrapping.STRING_TIE, 0.3)
+	var seal: Color = EnvelopePaper.paper(EnvelopeDef.Wrapping.WAX_SEAL, 0.3)
 	assert_float(absf(tie.get_luminance() - seal.get_luminance())).is_greater(0.1)
 
 

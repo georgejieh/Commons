@@ -5,6 +5,8 @@ extends Resource
 enum Kind { CADRE, REFORM, DEBUFF, BOSS_TWIST }
 enum Tag { COLLECTIVE, PRIVATE }
 enum Lever { RULE, RANK, SCORING, ECONOMY, HAND, METERS, INFO }
+## How often a Cadre reaches a counter, which indexes ShopParams.rarity_weights.
+enum Rarity { COMMON, UNCOMMON, RARE }
 
 ## Debuffs have four severity tiers. Other kinds leave tier at 0.
 const MAX_TIER: int = 4
@@ -13,8 +15,6 @@ const ZEAL_PERCENT_PREFIX: String = "zeal_percent"
 ## Parameters named with this prefix hold a multiplier in hundredths, so 150 shows as 1.5.
 const TIMES_PERCENT_PREFIX: String = "times_percent"
 const PERCENT: float = 100.0
-## The top rarity. Rarities index ShopParams.rarity_weights: common, uncommon, rare.
-const RARE: int = 2
 
 ## The ID the registries, the saves and the pools name it by.
 @export var id: String
@@ -30,8 +30,8 @@ const RARE: int = 2
 @export var hooks: Array[String]
 ## The numbers its effect script reads, by name.
 @export var parameters: Dictionary[String, int]
-## How rare it is: an index into ShopParams.rarity_weights.
-@export var rarity: int
+## How rare it is, which indexes ShopParams.rarity_weights.
+@export var rarity: Rarity
 ## What it costs at the counter, in coupons.
 @export var cost: int
 ## Finished runs needed before it is offered (ADR 0021); RunUnlocks reads it (ADR 0025).

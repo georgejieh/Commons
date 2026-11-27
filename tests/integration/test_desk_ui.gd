@@ -32,7 +32,7 @@ func _loop() -> RunLoop:
 
 
 func test_the_store_desk_marks_the_chosen_card() -> void:
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	var offer: String = _loop().visit.shop.desk.offer
 	var other: String = CardInstance.SURPLUS if offer == CardInstance.MODEL else CardInstance.MODEL
@@ -66,7 +66,7 @@ func test_the_store_desk_marks_the_chosen_card() -> void:
 
 
 func test_a_card_the_desk_refuses_says_why_and_cannot_be_confirmed() -> void:
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	CardMarks.enhance(_loop().state, Deck.new().card(CARD), _loop().visit.shop.desk.offer)
 	var stall: DeskStall = store.desk_stall
@@ -83,7 +83,7 @@ func test_a_card_the_desk_refuses_says_why_and_cannot_be_confirmed() -> void:
 
 
 func test_the_black_market_desk_stamps_the_card() -> void:
-	var market: StoreScreen = _app.show_screen("black_market", true)
+	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
 	await await_idle_frame()
 	var stall: DeskStall = market.desk_stall
 	assert_str(stall.ticket.text).is_equal(tr("desk.ticket.stamp").format({"price": 3}))

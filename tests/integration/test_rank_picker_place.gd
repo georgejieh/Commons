@@ -42,7 +42,7 @@ func test_the_picker_stands_beside_its_card_with_even_padding() -> void:
 				var offered: Array[String] = ["steel_target", "last_sheaf", "loudspeaker"]
 				offered[slot] = "rehabilitation"
 				loop.visit.market.stock_with(offered, loop.visit.market.directive_stock())
-				var market: StoreScreen = _app.show_screen("black_market", true)
+				var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
 				await await_idle_frame()
 				var market_cadres: CadreCounter = market.cadres
 				var counter: HBoxContainer = market_cadres.row

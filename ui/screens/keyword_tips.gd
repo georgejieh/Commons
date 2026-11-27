@@ -136,7 +136,7 @@ func _open(text: KeywordText, keyword_id: String, mouse: Vector2) -> void:
 func _place(slip: KeywordSlip) -> void:
 	var screen: Rect2 = get_viewport().get_visible_rect().grow(-EDGE)
 	var word: Rect2 = Rect2(slip.asked_at, Vector2.ZERO).grow(POINTER)
-	var below: int = SlipPlacer.BELOW
+	var below: SlipPlacer.Beside = SlipPlacer.Beside.BELOW
 	var root: Node = get_tree().root
 	slip.position = SlipPlacer.place(slip.size, word, GAP.x, screen, root, slip, below)
 	slip.placed = true

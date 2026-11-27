@@ -14,7 +14,7 @@ func before_test() -> void:
 	AppKit.fresh_saves(self)
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
-	_table = _app.show_screen("table", true)
+	_table = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await _reach_play_turn()
 

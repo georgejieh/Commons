@@ -65,7 +65,7 @@ func test_beating_a_quota_raises_the_next_target_three_percent_a_step() -> void:
 
 func test_the_report_says_how_far_the_quota_was_beaten_and_what_the_norm_did() -> void:
 	_play_first_quota(0.01)
-	var report: SetSummaryScreen = _app.show_screen("set_summary", true)
+	var report: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
 	await await_idle_frame()
 	var state: RunState = _app.controller.state_copy()
 	var target: float = _app.controller.figures.target()
@@ -91,7 +91,7 @@ func test_a_quota_beaten_by_less_than_a_quarter_says_the_norm_stayed() -> void:
 	loop.state.over_steps = 0
 	var target: float = _app.controller.figures.target()
 	loop.state.set_progress = target * 1.105
-	var report: SetSummaryScreen = _app.show_screen("set_summary", true)
+	var report: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
 	await await_idle_frame()
 	assert_str(report.norm_text()).is_equal(tr("summary.norm_kept").format({"over": 10}))
 
@@ -100,7 +100,7 @@ func test_the_next_quota_says_how_far_the_norm_raised_its_target() -> void:
 	_play_first_quota(0.01)
 	_app.controller.finish_set()
 	_app.controller.leave_store()
-	var intro: Control = _app.show_screen("set_intro", true)
+	var intro: Control = _app.show_screen(App.SET_INTRO, true)
 	await await_idle_frame()
 	var line: String = tr("intro.norm").format(
 		{"percent": _app.controller.figures.norm_percent(), "step": 3}

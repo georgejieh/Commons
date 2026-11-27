@@ -131,7 +131,7 @@ func test_slips_at_the_table_stand_beside_their_thing() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			var table: TableScreen = app.show_screen("table", true)
+			var table: TableScreen = app.show_screen(App.TABLE, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			var where: String = "table %s text %d" % [screen_size, level]

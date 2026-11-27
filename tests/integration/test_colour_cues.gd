@@ -50,7 +50,7 @@ func test_the_few_cards_words_fit_every_seat() -> void:
 		for screen: Vector2i in SCREENS_AT:
 			Settings.set_value(TextSize.SETTING, level)
 			get_tree().root.size = screen
-			var table: TableScreen = app.show_screen("table", true)
+			var table: TableScreen = app.show_screen(App.TABLE, true)
 			await await_idle_frame()
 			table.skip_events()
 			var seats: Dictionary[int, SeatPanel] = table.seats

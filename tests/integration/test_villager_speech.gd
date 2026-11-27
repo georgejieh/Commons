@@ -38,7 +38,7 @@ func test_the_same_salt_picks_the_same_line() -> void:
 
 
 func test_each_announcement_is_spoken_once_and_the_dossier_fills() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var speech: TableSpeech = table.speech
 	speech.spoke.connect(_on_spoke)
@@ -50,7 +50,7 @@ func test_each_announcement_is_spoken_once_and_the_dossier_fills() -> void:
 		assert_int(_spoken.get(seat, 0)).is_equal(_announced.get(seat, 0))
 		total += _announced.get(seat, 0)
 	assert_int(total).is_greater(0)
-	var dossier: DossierScreen = _app.show_screen("dossier")
+	var dossier: DossierScreen = _app.show_screen(App.DOSSIER)
 	await await_idle_frame()
 	var state: RunState = _app.controller.state_copy()
 	for seat: int in range(1, Seats.COUNT):
@@ -102,7 +102,7 @@ func _play_set(table: TableScreen) -> void:
 
 ## Coming back to the table mid-Set replays its events silently: nothing is said twice.
 func test_reopening_the_table_says_nothing_again() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var speech: TableSpeech = table.speech
 	speech.spoke.connect(_on_spoke_any)
@@ -116,9 +116,9 @@ func test_reopening_the_table_says_nothing_again() -> void:
 	table.skip_events()
 	await await_idle_frame()
 	assert_int(_said_any).is_greater(0)
-	assert_str(_app.switcher.current_id()).is_equal("table")
+	assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
 	# The new table replays the Set inside show_screen, so count what its speech said.
-	var reopened: TableScreen = _app.show_screen("table", true)
+	var reopened: TableScreen = _app.show_screen(App.TABLE, true)
 	reopened.skip_events()
 	await await_idle_frame()
 	var echo: TableSpeech = reopened.speech

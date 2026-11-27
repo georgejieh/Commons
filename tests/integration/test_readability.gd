@@ -188,7 +188,7 @@ func _open_everything() -> void:
 
 func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 	_open_everything()
-	var collection: CollectionScreen = _app.show_screen("collection")
+	var collection: CollectionScreen = _app.show_screen(App.COLLECTION)
 	await await_idle_frame()
 	await await_idle_frame()
 	var scroll: ScrollContainer = collection.scroll()
@@ -208,7 +208,7 @@ func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 
 
 func test_the_village_history_sits_on_one_sheet_with_a_red_heading() -> void:
-	var history: VillageHistoryScreen = _app.show_screen("village_history")
+	var history: VillageHistoryScreen = _app.show_screen(App.VILLAGE_HISTORY)
 	await await_idle_frame()
 	await await_idle_frame()
 	var sheet: PanelContainer = history.sheet()
@@ -284,7 +284,7 @@ func _check_cadres() -> void:
 			. is_true()
 		)
 	_open_everything()
-	var collection: CollectionScreen = _app.show_screen("collection")
+	var collection: CollectionScreen = _app.show_screen(App.COLLECTION)
 	await await_idle_frame()
 	await await_idle_frame()
 	for cadre: ModifierDef in RunLoop.all_cadres():

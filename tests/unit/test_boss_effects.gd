@@ -49,7 +49,7 @@ func test_struggle_session_swaps_the_highest_card_into_the_kitty() -> void:
 	var lowest: int = 99
 	for card: CardInstance in deal.kitty:
 		lowest = mini(lowest, card.base_rank())
-	_stack(STRUGGLE).run_on_deal(DealContext.new(Seats.NONE, deal))
+	_stack(STRUGGLE).run_on_deal(DealContext.new(Seats.NONE, deal, RandomStream.new(7)))
 	var after_high: int = 0
 	var total: int = deal.kitty.size()
 	for hand: Hand in deal.hands:
@@ -81,12 +81,12 @@ func test_landlords_ledger_doubles_the_kitty_as_a_later_deal_hook_left_it() -> v
 	var deal: DealResult = Dealer.deal(cards, RandomStream.new(7))
 	var ledger: LandlordsLedgerEffect = LandlordsLedgerEffect.new()
 	ledger.holder_seat = 0
-	ledger.on_deal(DealContext.new(Seats.NONE, deal))
+	ledger.on_deal(DealContext.new(Seats.NONE, deal, RandomStream.new(7)))
 	# Struggle Session runs after the Cadre and trades a card into the kitty.
 	var was: Array[int] = []
 	for card: CardInstance in deal.kitty:
 		was.append(card.id())
-	_stack(STRUGGLE).run_on_deal(DealContext.new(Seats.NONE, deal))
+	_stack(STRUGGLE).run_on_deal(DealContext.new(Seats.NONE, deal, RandomStream.new(7)))
 	var entered: CardInstance = null
 	for card: CardInstance in deal.kitty:
 		if not was.has(card.id()):

@@ -24,51 +24,47 @@ static func paper(worn: float) -> Color:
 
 
 ## A decree poster filling rect: band, rules, pin, folds, grime and the faded stamp.
-static func poster(
-	canvas: CanvasItem, rect: Rect2, worn: float, which: int, alpha: float = 1.0
-) -> void:
+static func poster(canvas: CanvasItem, rect: Rect2, worn: float, which: int) -> void:
 	if rect.size.x < SMALLEST or rect.size.y < SMALLEST:
 		return
 	var rng: RandomNumberGenerator = _rng(which)
 	var body: PackedVector2Array = _outline(rect, rng, worn)
-	canvas.draw_colored_polygon(body, Color(paper(worn), alpha))
+	canvas.draw_colored_polygon(body, Color(paper(worn), 1.0))
 	var slip: float = lerpf(REGISTER.x, REGISTER.y, worn)
 	var band: Rect2 = Rect2(
 		rect.position + Vector2(6 + slip, 6),
 		Vector2(rect.size.x - 12, minf(8.0, rect.size.y * 0.08))
 	)
-	canvas.draw_rect(band, Color(BowlGrime.aged(BAND, worn * 0.8), alpha * 0.92))
-	var rule: Color = Color(BowlGrime.aged(RULE, worn * 0.5), alpha * 0.55)
+	canvas.draw_rect(band, Color(BowlGrime.aged(BAND, worn * 0.8), 0.92))
+	var rule: Color = Color(BowlGrime.aged(RULE, worn * 0.5), 0.55)
 	for line: int in 2:
 		var y: float = band.end.y + 3.0 + line * 3.0
 		canvas.draw_line(Vector2(rect.position.x + 8, y), Vector2(rect.end.x - 8, y), rule, 1.0)
-	_stamp(canvas, rect, rng, worn, alpha)
-	_grime(canvas, rect, rng, worn, alpha)
-	_pin(canvas, Vector2(rect.get_center().x, rect.position.y + 4.0), worn, alpha)
+	_stamp(canvas, rect, rng, worn)
+	_grime(canvas, rect, rng, worn)
+	_pin(canvas, Vector2(rect.get_center().x, rect.position.y + 4.0), worn)
 	canvas.draw_polyline(
-		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.6), 1.4
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, 0.6), 1.4
 	)
 
 
 ## A small pinned slip for the strip of Reforms in force: the same paper and band in
 ## little, its pin at the left end.
-static func tag(
-	canvas: CanvasItem, rect: Rect2, worn: float, which: int, alpha: float = 1.0
-) -> void:
+static func tag(canvas: CanvasItem, rect: Rect2, worn: float, which: int) -> void:
 	if rect.size.x < SMALLEST or rect.size.y < SMALLEST:
 		return
 	var rng: RandomNumberGenerator = _rng(which + 70)
 	var body: PackedVector2Array = _outline(rect, rng, worn * 0.6, false)
-	canvas.draw_colored_polygon(body, Color(paper(worn), alpha))
+	canvas.draw_colored_polygon(body, Color(paper(worn), 1.0))
 	var band: Rect2 = Rect2(rect.position + Vector2(3, 3), Vector2(rect.size.x - 6, 4))
-	canvas.draw_rect(band, Color(BowlGrime.aged(BAND, worn * 0.8), alpha * 0.9))
-	var speck: Color = Color(BowlGrime.TEA, alpha * (0.25 + 0.35 * worn))
+	canvas.draw_rect(band, Color(BowlGrime.aged(BAND, worn * 0.8), 0.9))
+	var speck: Color = Color(BowlGrime.TEA, 0.25 + 0.35 * worn)
 	for _spot: int in roundi(lerpf(3, 14, worn)):
 		var at: Vector2 = rect.position + Vector2(rng.randf(), rng.randf()) * rect.size
 		canvas.draw_circle(at, rng.randf_range(0.5, 1.3), speck)
-	_pin(canvas, Vector2(rect.position.x + 7.0, rect.get_center().y + 2.0), worn, alpha)
+	_pin(canvas, Vector2(rect.position.x + 7.0, rect.get_center().y + 2.0), worn)
 	canvas.draw_polyline(
-		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, alpha * 0.55), 1.1
+		body + PackedVector2Array([body[0]]), Color(ScreenKit.PAPER_EDGE, 0.55), 1.1
 	)
 
 
@@ -99,12 +95,12 @@ static func _outline(
 
 ## An office stamp of no real office: two rings and ticks, faded red, low in a corner.
 static func _stamp(
-	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float, alpha: float
+	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float
 ) -> void:
 	var radius: float = minf(rect.size.x, rect.size.y) * 0.13
 	var at: Vector2 = rect.end - Vector2(radius + 10.0, radius + 10.0)
 	at += Vector2(rng.randf_range(-3, 3), rng.randf_range(-3, 3))
-	var ink: Color = Color(BowlGrime.aged(BAND, worn), alpha * (0.32 - 0.1 * worn))
+	var ink: Color = Color(BowlGrime.aged(BAND, worn), 0.32 - 0.1 * worn)
 	canvas.draw_arc(at, radius, 0.0, TAU, 28, ink, 2.0, true)
 	canvas.draw_arc(at, radius * 0.62, 0.4, TAU - 0.6, 20, ink, 1.2, true)
 	for tick: int in 7:
@@ -115,34 +111,32 @@ static func _stamp(
 
 ## Folds across and down, foxing specks, a thumbed smudge and a tea ring.
 static func _grime(
-	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float, alpha: float
+	canvas: CanvasItem, rect: Rect2, rng: RandomNumberGenerator, worn: float
 ) -> void:
-	var fold: Color = Color(ScreenKit.FOLD, alpha * (0.22 + 0.3 * worn))
+	var fold: Color = Color(ScreenKit.FOLD, 0.22 + 0.3 * worn)
 	var across: float = rect.position.y + rect.size.y * rng.randf_range(0.46, 0.56)
 	canvas.draw_line(Vector2(rect.position.x + 2, across), Vector2(rect.end.x - 2, across), fold)
 	var down: float = rect.position.x + rect.size.x * rng.randf_range(0.45, 0.55)
 	canvas.draw_line(Vector2(down, rect.position.y + 3), Vector2(down, rect.end.y - 3), fold)
-	var speck: Color = Color(BowlGrime.TEA, alpha * (0.25 + 0.35 * worn))
+	var speck: Color = Color(BowlGrime.TEA, 0.25 + 0.35 * worn)
 	for _spot: int in roundi(lerpf(SPECKS.x, SPECKS.y, worn)):
 		var at: Vector2 = rect.position + Vector2(rng.randf(), rng.randf()) * rect.size
 		canvas.draw_circle(at, rng.randf_range(0.6, 1.7), speck)
 	var thumb: Vector2 = rect.position + Vector2(rng.randf_range(0.15, 0.4), 0.82) * rect.size
-	var smudge: Color = Color(BowlGrime.TEA, alpha * (0.05 + 0.1 * worn))
+	var smudge: Color = Color(BowlGrime.TEA, 0.05 + 0.1 * worn)
 	canvas.draw_circle(thumb, rect.size.x * 0.1, smudge)
 	var ring: Vector2 = rect.position + Vector2(rng.randf(), rng.randf_range(0.3, 0.9)) * rect.size
-	var tea: Color = Color(BowlGrime.TEA, alpha * (0.07 + 0.17 * worn))
+	var tea: Color = Color(BowlGrime.TEA, 0.07 + 0.17 * worn)
 	canvas.draw_arc(
 		ring, rect.size.x * rng.randf_range(0.12, 0.2), 0.0, TAU, 28, tea, 2.0 + 2.0 * worn, true
 	)
 
 
 ## A drawing pin's dark head and the small tear it made.
-static func _pin(canvas: CanvasItem, at: Vector2, worn: float, alpha: float) -> void:
-	canvas.draw_circle(at + Vector2(0.8, 1.2), 3.4, Color(PIN, alpha * 0.25))
-	canvas.draw_circle(at, 3.0, Color(BowlGrime.aged(PIN, worn * 0.3), alpha))
-	canvas.draw_line(
-		at, at + Vector2(1.5, 4.0 + 3.0 * worn), Color(ScreenKit.PAPER_EDGE, alpha * 0.5), 1.0
-	)
+static func _pin(canvas: CanvasItem, at: Vector2, worn: float) -> void:
+	canvas.draw_circle(at + Vector2(0.8, 1.2), 3.4, Color(PIN, 0.25))
+	canvas.draw_circle(at, 3.0, Color(BowlGrime.aged(PIN, worn * 0.3), 1.0))
+	canvas.draw_line(at, at + Vector2(1.5, 4.0 + 3.0 * worn), Color(ScreenKit.PAPER_EDGE, 0.5), 1.0)
 
 
 static func _rng(which: int) -> RandomNumberGenerator:

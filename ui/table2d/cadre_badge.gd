@@ -91,9 +91,7 @@ func _draw() -> void:
 		return
 	var at: Vector2 = Vector2((size.x - TICKET.x) / 2.0, size.y - TICKET.y - 4.0)
 	var fill: float = meter(_count)
-	PaperTicket.draw(
-		self, Rect2(at, TICKET), worn, _count.hash() & 0xFF, ScreenKit.COUPON, 1.0, fill
-	)
+	PaperTicket.draw(self, Rect2(at, TICKET), worn, _count.hash() & 0xFF, ScreenKit.COUPON, fill)
 	var baseline: Vector2 = at + Vector2(6, TICKET.y * 0.72)
 	var count_px: int = count_size(font, _count)
 	draw_string(font, baseline, _count, HORIZONTAL_ALIGNMENT_CENTER, TICKET.x - 6, count_px, ink)
