@@ -48,6 +48,7 @@ gdscript/warnings/redundant_await=2
 gdscript/warnings/integer_division=2
 gdscript/warnings/narrowing_conversion=2
 gdscript/warnings/static_called_on_instance=2
+gdscript/warnings/incompatible_ternary=2
 
 [display]
 

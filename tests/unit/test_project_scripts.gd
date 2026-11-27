@@ -25,6 +25,7 @@ const ERRORS: Array[String] = [
 	"integer_division",
 	"narrowing_conversion",
 	"static_called_on_instance",
+	"incompatible_ternary",
 ]
 
 

@@ -11,7 +11,9 @@ static func seat_full_name(state: RunState, seat: int) -> String:
 	var entry: RosterEntry = _seated(state, seat)
 	if entry == null:
 		var keys: Array[String] = RunStarter.DEMO_RUN.name_keys
-		return TranslationServer.translate(keys[seat]) if seat >= 0 and seat < keys.size() else ""
+		if seat < 0 or seat >= keys.size():
+			return ""
+		return TranslationServer.translate(keys[seat])
 	var surname: String = TranslationServer.translate(Roster.name_key(RunDefaults.VILLAGE, entry))
 	return Surnames.full_name(state.names.given_name(entry.family_id), surname)
 

@@ -156,5 +156,7 @@ static func history_lines(app: DemoApp) -> PackedStringArray:
 		if seat > 0:
 			return app.seat_name(seat)
 		var key: String = app.controller.seats.family_name_key(family)
-		return TranslationServer.translate(key) if not key.is_empty() else family
+		if key.is_empty():
+			return family
+		return TranslationServer.translate(key)
 	return app.controller.seats.history_lines(name_of)

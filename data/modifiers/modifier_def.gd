@@ -68,7 +68,10 @@ static func text_numbers(
 		var in_hundredths: bool = false
 		for prefix: String in hundredths_prefixes:
 			in_hundredths = in_hundredths or key.begins_with(prefix)
-		values[key] = multiple(numbers[key] / PERCENT) if in_hundredths else numbers[key]
+		if in_hundredths:
+			values[key] = multiple(numbers[key] / PERCENT)
+		else:
+			values[key] = numbers[key]
 	return values
 
 

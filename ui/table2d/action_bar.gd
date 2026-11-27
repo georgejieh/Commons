@@ -120,7 +120,9 @@ func say(text: String, tip: String = "") -> void:
 ## How tall the column stands with the prompt's box over the play set, or over Call and
 ## Pass when bidding.
 func tallest(bidding: bool) -> float:
-	var row: Control = _bid_row if bidding else _turn_row
+	var row: Control = _turn_row
+	if bidding:
+		row = _bid_row
 	return _prompt_room + get_theme_constant("separation") + row.get_combined_minimum_size().y
 
 

@@ -151,7 +151,10 @@ func _set_ab(on: bool) -> void:
 	if _light != null:
 		_light.enabled = on
 		return
-	var value: Variant = on if _ab_key == "post_process" else (1.0 if on else 0.0)
+	# The post-process is a switch; every other setting compared is a level.
+	var value: Variant = on
+	if _ab_key != "post_process":
+		value = 1.0 if on else 0.0
 	root.get_node("Settings").call("set_value", _ab_key, value)
 
 
