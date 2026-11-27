@@ -49,6 +49,29 @@ func play_to(suite: GdUnitTestSuite, controller: RunController, moment: int) -> 
 	return false
 
 
+## Takes the player's turns to the bid, then claims the landlord's seat each time it is
+## offered and declines the plot swap, so the player leads the round holding the kitty.
+## Says whether the player leads as landlord; when not, it fails suite, naming where the
+## run stands and who holds the seat.
+func take_landlord(suite: GdUnitTestSuite, controller: RunController) -> bool:
+	if not play_to(suite, controller, RunController.AWAIT_BID):
+		return false
+	var answered: int = RunController.OK
+	while answered == RunController.OK:
+		match controller.awaiting():
+			RunController.AWAIT_BID:
+				answered = controller.bid(true)
+			RunController.AWAIT_SWAP:
+				answered = controller.swap([], [])
+			_:
+				break
+	var landlord: int = controller.run_loop().state.landlord_seat
+	if controller.awaiting() == RunController.AWAIT_PLAY and landlord == Seats.PLAYER:
+		return true
+	suite.fail("The run awaits %d with seat %d as landlord" % [controller.awaiting(), landlord])
+	return false
+
+
 ## Plays Sets until the run is over, buying the first Cadre it can afford at each store,
 ## and going back from reeducation when it is owed.
 func play_run(controller: RunController) -> void:

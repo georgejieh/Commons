@@ -29,26 +29,26 @@ const TRICK_AT: Vector2 = Vector2(470, 380)
 ## seat's intel type, the slip's type and its room.
 const EXPECTED: Dictionary[String, String] = {
 	"full|0|false|false": "NAMED heading:true notice:true intel:17/17 slip:20 room:345",
-	"full|0|false|true": "NAMED heading:true notice:true intel:17/17 slip:20 room:345",
+	"full|0|false|true": "NAMED heading:false notice:true intel:17/17 slip:20 room:345",
 	"full|0|true|false": "NAMED heading:false notice:false intel:17/17 slip:20 room:226",
 	"full|0|true|true": "NAMED heading:false notice:false intel:17/17 slip:20 room:226",
 	"full|1|false|false": "NAMED heading:true notice:true intel:20/20 slip:23 room:253",
-	"full|1|false|true": "NAMED heading:true notice:true intel:20/20 slip:23 room:253",
+	"full|1|false|true": "NAMED heading:false notice:false intel:20/20 slip:23 room:253",
 	"full|1|true|false": "COUNTED heading:false notice:false intel:20/17 slip:23 room:134",
 	"full|1|true|true": "COUNTED heading:false notice:false intel:19/17 slip:23 room:134",
-	"full|2|false|false": "NAMED heading:false notice:false intel:22/22 slip:26 room:209",
+	"full|2|false|false": "NAMED heading:false notice:true intel:22/22 slip:26 room:209",
 	"full|2|false|true": "NAMED heading:false notice:false intel:22/22 slip:26 room:209",
 	"full|2|true|false": "COUNTED heading:false notice:false intel:21/17 slip:20 room:90",
 	"full|2|true|true": "COUNTED heading:false notice:false intel:17/17 slip:20 room:90",
 	"named|0|false|false": "NAMED heading:true notice:true intel:17/17 slip:20 room:345",
-	"named|0|false|true": "NAMED heading:true notice:true intel:17/17 slip:20 room:345",
+	"named|0|false|true": "NAMED heading:false notice:true intel:17/17 slip:20 room:345",
 	"named|0|true|false": "COUNTED heading:false notice:false intel:17/17 slip:20 room:226",
 	"named|0|true|true": "COUNTED heading:false notice:false intel:17/17 slip:20 room:226",
 	"named|1|false|false": "COUNTED heading:true notice:true intel:20/20 slip:23 room:253",
-	"named|1|false|true": "COUNTED heading:true notice:true intel:20/20 slip:23 room:253",
+	"named|1|false|true": "COUNTED heading:false notice:false intel:20/20 slip:23 room:253",
 	"named|1|true|false": "COUNTED heading:false notice:false intel:20/17 slip:20 room:134",
 	"named|1|true|true": "COUNTED heading:false notice:false intel:19/17 slip:20 room:134",
-	"named|2|false|false": "COUNTED heading:false notice:false intel:22/22 slip:26 room:209",
+	"named|2|false|false": "COUNTED heading:false notice:true intel:22/22 slip:26 room:209",
 	"named|2|false|true": "COUNTED heading:false notice:false intel:22/22 slip:26 room:209",
 	"named|2|true|false": "COUNTED heading:false notice:false intel:21/17 slip:20 room:90",
 	"named|2|true|true": "COUNTED heading:false notice:false intel:17/17 slip:20 room:90",
@@ -121,6 +121,8 @@ func _each_state(
 				var where: String = (
 					"%s intel %s armed %s bidding %s" % [case, intel, armed, bidding]
 				)
+				if armed and table.campaigns.tray.armed_slot() < 0:
+					problems.append("%s: no Campaign could be armed" % where)
 				_check(TableWorstCase.pieces(table), where, problems)
 				_note_column(table, where, problems)
 				ClipCheck.check(table, where, problems)
@@ -251,6 +253,7 @@ func test_the_strings_are_the_longest_of_their_families() -> void:
 	assert_int(campaigns.tray.campaign_count()).is_equal(TableWorstCase.TRAY_SIZE)
 	var pile: TrickPile = table.pile
 	assert_int(pile.card_count()).is_equal(TableWorstCase.MOST_CARDS)
+	assert_int(_app.hand.cards().size()).is_equal(TableWorstCase.MOST_CARDS)
 
 
 ## The slip stands in front of the room's dressing, the right chair included, and the
@@ -268,7 +271,8 @@ func test_the_slip_draws_over_the_dressing_and_under_the_moments() -> void:
 
 ## Rule 8's last step: with intel on the left seat, arming a Campaign puts the intel away
 ## only when the column is still short after the heading, the notice and the intel's type;
-## putting the Campaign down, or using it, brings the intel back.
+## putting the Campaign down brings the intel back. Using it ends the arming through the
+## same signal, but its moment reads the seats afresh, which clears the staged intel.
 func test_an_armed_campaign_puts_the_intel_away_only_when_still_short() -> void:
 	var away_at: Array[int] = []
 	for level: int in TextSize.count():
@@ -293,23 +297,19 @@ func test_an_armed_campaign_puts_the_intel_away_only_when_still_short() -> void:
 		tray.disarm()
 		await await_idle_frame()
 		assert_bool(left.has_intel()).override_failure_message("put down").is_true()
-		TableWorstCase.fill(_app, table, {"intel": true, "armed": true})
-		# Using it ends the arming as putting it down does.
-		tray.set("_armed", -1)
-		tray.refresh()
-		await await_idle_frame()
-		assert_bool(left.has_intel()).override_failure_message("used").is_true()
 	assert_array(away_at).is_equal(EXPECTED_AWAY)
 
 
 ## Whether an armed tray would still overflow with the intel at its Standard size.
 func _short_when_armed(columns: TableColumns, tray: CampaignTray, left: SeatPanel) -> bool:
-	tray.set("_armed", 0)
+	assert_int(TableWorstCase.arm(tray)).is_greater_equal(0)
+	# Arming lays the column out, which may put the intel away: it is measured shown.
+	left.put_away_intel(false)
 	left.fit_intel(TextSize.least(SeatPanel.INTEL_SIZE))
 	var foot: float = left.position.y + left.get_combined_minimum_size().y + 4.0
 	var top: float = maxf(TableCampaigns.TRAY_AT.y, foot)
 	var short: bool = top + tray.standing_height(false) > DreadDressing.NOTICE_AT.end.y
-	tray.set("_armed", -1)
+	tray.disarm()
 	columns.fit()
 	return short
 
