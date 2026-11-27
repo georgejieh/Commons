@@ -23,6 +23,8 @@ const ERRORS: Array[String] = [
 	"enum_variable_without_default",
 	"redundant_await",
 	"integer_division",
+	"narrowing_conversion",
+	"static_called_on_instance",
 ]
 
 

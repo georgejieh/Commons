@@ -34,14 +34,14 @@ static func check_clear(suite: GdUnitTestSuite, table: TableScreen, screen: Vect
 		if shown == null or not shown.is_visible_in_tree():
 			continue
 		var area: Rect2 = shown.get_global_rect()
-		suite.assert_bool(Rect2(Vector2.ZERO, screen).encloses(area)).is_true()
+		GdUnitTestSuite.assert_bool(Rect2(Vector2.ZERO, screen).encloses(area)).is_true()
 		var near: Vector2 = bowl.clamp(area.position, area.end)
 		suite.assert_float(near.distance_to(bowl)).is_greater(DiceBowl.RADIUS)
 		for control: Control in keep_clear:
 			if not control.is_visible_in_tree():
 				continue
 			(
-				suite
+				GdUnitTestSuite
 				. assert_bool(area.intersects(control.get_global_rect()))
 				. override_failure_message(
 					(
