@@ -195,7 +195,7 @@ func test_the_lines_arrive_one_by_one_and_an_accept_press_shows_the_rest() -> vo
 	assert_bool(screen.is_revealing()).is_true()
 	assert_int(list.shown_count()).is_less(list.line_labels().size())
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(screen.show_all_button())
-	await get_tree().create_timer(UiMotion.PRESETS.epilogue_beat * 2.5).timeout
+	await TestWait.until(self, func() -> bool: return list.shown_count() > 0, "the first line")
 	assert_int(list.shown_count()).is_between(1, list.line_labels().size() - 1)
 	var accept: InputEventAction = InputEventAction.new()
 	accept.action = "ui_accept"

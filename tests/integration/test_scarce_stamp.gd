@@ -84,8 +84,9 @@ func test_a_scarce_cadre_is_stamped_and_a_routine_one_is_not() -> void:
 	assert_str(stamp.word()).is_equal(tr("store.scarce").to_upper())
 	# The cards are still arriving: the stamp has not landed.
 	assert_float(stamp.modulate.a).is_equal(0.0)
-	var presets: MotionPresets = UiMotion.PRESETS
-	await await_millis(int((presets.scarce_wait + presets.stamp_time) * 1000.0) + 250)
+	var landed: Callable = func() -> bool:
+		return stamp.modulate.a == 1.0 and stamp.scale == Vector2.ONE and stamp.rotation == 0.0
+	await TestWait.until(self, landed, "the stamp to land")
 	assert_float(stamp.modulate.a).is_equal(1.0)
 	assert_vector(stamp.scale).is_equal(Vector2.ONE)
 	assert_float(stamp.rotation).is_equal(0.0)

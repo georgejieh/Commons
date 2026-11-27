@@ -54,6 +54,10 @@ func _offer(envelope_id: String) -> void:
 	_loop().visit.shop.envelopes.stock_with(stock)
 
 
+func _sealed(overlay: EnvelopeOverlay) -> void:
+	await TestWait.until(self, func() -> bool: return overlay.seal().visible, "the seal")
+
+
 func _wait(overlay: EnvelopeOverlay) -> void:
 	await TestWait.until(
 		self,
@@ -225,9 +229,8 @@ func test_keeping_a_directive_issues_it_under_its_seal() -> void:
 	paper.keep.pressed.emit()
 	assert_int(_app.controller.figures.hand_level(type)).is_equal(level + 1)
 	assert_bool(overlay.is_busy()).is_true()
-	await get_tree().create_timer(0.4).timeout
+	await _sealed(overlay)
 	assert_str(overlay.seal().word()).is_equal(tr("directive.issued").to_upper())
-	assert_bool(overlay.seal().visible).is_true()
 	await _wait(overlay)
 	await await_idle_frame()
 	assert_bool(_stall(store).is_busy()).is_false()
@@ -241,7 +244,7 @@ func test_a_kept_campaign_reaches_the_tray_and_nothing_is_left_behind() -> void:
 	await _wait(overlay)
 	var kept: String = _app.controller.store.opened_envelope().item_id(1)
 	overlay.papers()[1].keep.pressed.emit()
-	await get_tree().create_timer(0.3).timeout
+	await _sealed(overlay)
 	var word: String = overlay.seal().word()
 	assert_str(word).is_equal(tr("envelope.kept").to_upper())
 	await _wait(overlay)

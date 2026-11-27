@@ -31,7 +31,14 @@ func test_the_newest_play_lies_on_top_upright_with_every_rank_showing() -> void:
 	var pile: TrickPile = table.pile
 	pile.show_play(_cards([0, 1]), Vector2.ZERO)
 	pile.show_play(_cards([10, 11, 12, 13, 14]), Vector2.ZERO)
-	await await_millis(int((UiMotion.PRESETS.fly_time + 0.4) * 1000.0))
+	var looks: Callable = func() -> Array:
+		var seen: Array = []
+		for child: Node in pile.get_children():
+			var view: CardView = child as CardView
+			if view != null:
+				seen.append([view.get_global_transform(), view.modulate])
+		return seen
+	await TestWait.still(self, looks, "the plays to land")
 	assert_int(pile.play_count()).is_equal(2)
 	assert_array(pile.top_ids()).is_equal([10, 11, 12, 13, 14])
 	var top: Array[CardView] = pile.top_views()
@@ -55,8 +62,9 @@ func test_every_card_of_a_fresh_deal_shows_its_face() -> void:
 	var hand_view: HandView = table.hand_view
 	hand_view.show_cards()
 	hand_view.deal_in()
-	var settle: float = UiMotion.PRESETS.fly_time + 20 * UiMotion.PRESETS.deal_stagger
-	await await_millis(int((settle + 0.4) * 1000.0))
+	var dealt: Callable = func() -> bool:
+		return hand_view.views().all(func(view: CardView) -> bool: return view.modulate.a == 1.0)
+	await TestWait.until(self, dealt, "every card to be dealt in")
 	var shown: int = 0
 	for child: Node in hand_view.get_children():
 		var view: CardView = child as CardView

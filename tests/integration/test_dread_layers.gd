@@ -190,8 +190,8 @@ func test_a_flashed_extra_chair_hides_again() -> void:
 	var dressing: DreadDressing = table.dressing
 	dressing.flash_piece("extra_chair", 0.1)
 	assert_bool(dressing.is_shown("extra_chair")).is_true()
-	await await_millis(400)
-	assert_bool(dressing.is_shown("extra_chair")).is_false()
+	var hidden: Callable = func() -> bool: return not dressing.is_shown("extra_chair")
+	await TestWait.until(self, hidden, "the flashed chair to hide again")
 
 
 func test_layer_values_stay_inside_their_range() -> void:

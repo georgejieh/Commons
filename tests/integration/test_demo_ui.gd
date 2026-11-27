@@ -75,15 +75,16 @@ func test_the_table_plays_a_set_to_its_summary() -> void:
 	var report: SetSummaryScreen = _app.switcher.current()
 	var state: RunState = _app.controller.state_copy()
 	var target: float = _app.controller.figures.target()
-	await await_millis(int((SetSummaryScreen.START + SetSummaryScreen.FILL) * 1000.0) + 400)
+	var sealed: Callable = func() -> bool: return not report.bar().seal_word().is_empty()
+	await TestWait.until(self, sealed, "the Quota bar to fill and be sealed")
 	assert_float(report.bar().value).is_equal_approx(minf(state.set_progress, target), 0.5)
 	var met: bool = state.set_progress >= target
 	assert_bool(report.bar().is_met()).is_equal(met)
 	var word: String = tr("table.quota_met" if met else "summary.short").to_upper()
 	assert_str(report.bar().seal_word()).is_equal(word)
 	# Then what it paid or cost is counted in.
-	await await_millis(int(SetSummaryScreen.BEAT * 4000.0) + 300)
 	var after: Array[Control] = report.after
+	await TestWait.until(self, _shown.bind(after), "what the Quota paid or cost to be shown")
 	for piece: Control in after:
 		assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
 
@@ -200,6 +201,7 @@ func test_rejoining_the_table_raises_no_old_banner() -> void:
 			return
 	var table: TableScreen = _app.show_screen("table", true)
 	var moments: TableMoments = table.moments
+	# Timed: that no banner is raised is seen only by giving one the time to come.
 	await await_millis(400)
 	assert_bool(moments.callout.is_showing()).is_false()
 
@@ -275,11 +277,15 @@ func test_an_overfulfilled_quota_is_sealed_twice_and_counts_the_bonus() -> void:
 		await await_idle_frame()
 		if not reduced:
 			assert_str(report.over_seal_word()).is_empty()
-			await await_millis(int((SetSummaryScreen.START + SetSummaryScreen.FILL) * 1000.0) + 400)
+		var over: Callable = func() -> bool: return not report.over_seal_word().is_empty()
+		await TestWait.until(self, over, "the bar to fill and be sealed twice")
 		assert_str(report.bar().seal_word()).is_equal(tr("table.quota_met").to_upper())
 		assert_str(report.over_seal_word()).is_equal(tr("summary.over").to_upper())
-		await await_millis(int(SetSummaryScreen.BEAT * 6000.0) + 600)
 		var after: Array[Control] = report.after
+		var coupons: String = str(_app.controller.state_copy().coupons)
+		var counted: Callable = func() -> bool:
+			return _shown(after) and _number_in(after[0], 0).text == coupons
+		await TestWait.until(self, counted, "the pay and the bonus to be counted in")
 		assert_int(after.size()).is_equal(3)
 		var bonus: int = steps * SetConfig.DEFAULT_PARAMS.over_bonus_coupons
 		assert_int(_app.controller.figures.over_bonus()).is_equal(bonus)
@@ -313,6 +319,11 @@ func test_the_next_quota_shows_the_raised_norm() -> void:
 
 
 ## The number on a stat tile: the tile's index-th title label.
+## True once every piece has faded fully in.
+func _shown(pieces: Array[Control]) -> bool:
+	return pieces.all(func(piece: Control) -> bool: return piece.modulate.a >= 0.999)
+
+
 func _number_in(tile: Control, index: int) -> Label:
 	var found: Array[Label] = []
 	for node: Node in tile.find_children("*", "Label", true, false):

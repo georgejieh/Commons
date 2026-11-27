@@ -22,3 +22,18 @@ static func until(
 		await tree.process_frame
 		waited += suite.get_process_delta_time()
 	return true
+
+
+## Waits until read gives the same value two frames running, as a motion does once it has
+## come to rest, and returns whether it did; on a timeout the test fails. A motion that has
+## not begun holds still too, so start it, or wait for it to start, first.
+static func still(
+	suite: GdUnitTestSuite, read: Callable, what: String, seconds: float = SECONDS
+) -> bool:
+	var last: Array = [null]
+	var held: Callable = func() -> bool:
+		var now: Variant = read.call()
+		var same: bool = now == last[0]
+		last[0] = now
+		return same
+	return await until(suite, held, what, seconds)
