@@ -104,6 +104,7 @@ static func priced(state: RunState, price: int) -> int:
 	var raise: int = state.books.price_percent
 	if raise == 0:
 		return price
+	@warning_ignore("integer_division")
 	return (price * (PERCENT + raise) + PERCENT - 1) / PERCENT
 
 

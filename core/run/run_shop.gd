@@ -200,12 +200,14 @@ func sale_price(cost: int) -> int:
 
 ## What a counter pays for a held item listed at cost (sale_price()).
 static func sale_of(state: RunState, params: ShopParams, cost: int) -> int:
+	@warning_ignore("integer_division")
 	return maxi(1, price_of(state, params, cost) * params.sell_percent / PERCENT)
 
 
 ## What a counter with params charges for an item listed at cost: the cost at its
 ## price_percent, rounded up, then under any raise the books made (ADR 0022).
 static func price_of(state: RunState, params: ShopParams, cost: int) -> int:
+	@warning_ignore("integer_division")
 	return RunBooks.priced(state, (cost * params.price_percent + PERCENT - 1) / PERCENT)
 
 

@@ -29,10 +29,10 @@ func test_a_sale_pays_half_the_price_at_that_counter_rounded_down_and_never_noth
 		var at_store: int = ceili(cost * STORE.price_percent / 100.0)
 		var at_market: int = ceili(cost * MARKET.price_percent / 100.0)
 		assert_int(RunShop.sale_of(state, STORE, cost)).is_equal(
-			maxi(1, at_store * STORE.sell_percent / 100)
+			maxi(1, floori(at_store * STORE.sell_percent / 100.0))
 		)
 		assert_int(RunShop.sale_of(state, MARKET, cost)).is_equal(
-			maxi(1, at_market * MARKET.sell_percent / 100)
+			maxi(1, floori(at_market * MARKET.sell_percent / 100.0))
 		)
 	assert_int(RunShop.sale_of(state, STORE, 1)).is_equal(1)
 

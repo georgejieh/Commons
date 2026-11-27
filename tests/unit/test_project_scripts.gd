@@ -22,6 +22,7 @@ const ERRORS: Array[String] = [
 	"unassigned_variable",
 	"enum_variable_without_default",
 	"redundant_await",
+	"integer_division",
 ]
 
 
