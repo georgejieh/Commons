@@ -4,6 +4,11 @@ extends GdUnitTestSuite
 ## states a claim as a share and stays on screen.
 
 
+func after_test() -> void:
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
+	Settings.set_value(TextSize.SETTING, SettingsStore.DEFAULTS.get(TextSize.SETTING))
+
+
 func test_the_need_panel_says_what_a_declaration_pays() -> void:
 	var panel: NeedPanel = auto_free(NeedPanel.new())
 	add_child(panel)
@@ -11,15 +16,15 @@ func test_the_need_panel_says_what_a_declaration_pays() -> void:
 	panel.ask(1200, "Zhao", 0.15)
 	assert_int(panel.percent()).is_equal(50)
 	assert_int(panel.preview_share()).is_equal(600)
-	var shown: Label = panel.get("_value")
+	var shown: Label = panel.shown
 	assert_str(shown.text).is_equal("50%")
-	var more: Button = panel.get("_more")
+	var more: Button = panel.more
 	for _step: int in 10:
 		more.pressed.emit()
 	assert_int(panel.value()).is_equal(20)
 	assert_int(panel.percent()).is_equal(67)
 	assert_int(panel.preview_share()).is_equal(800)
-	var note: Label = panel.get("_note")
+	var note: Label = panel.note
 	assert_str(note.text).is_equal(tr("need.lie").format({"rise": 5, "chance": 15}))
 
 
@@ -32,7 +37,7 @@ func test_the_need_panel_stays_on_screen_and_centered() -> void:
 	await await_millis(200)
 	assert_float(panel.position.y + panel.size.y).is_less(760.0)
 	assert_float(panel.position.x + panel.size.x / 2.0).is_equal_approx(790.0, 1.0)
-	var declare: Button = panel.get("_declare")
+	var declare: Button = panel.declare_button()
 	assert_float(declare.size.x).is_less(panel.size.x * 0.7)
 
 

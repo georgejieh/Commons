@@ -86,7 +86,7 @@ func _to_player_play(following: bool) -> void:
 				return
 		if not script.act(_controller):
 			_controller.finish_set()
-	assert_bool(false).override_failure_message("never reached the player's turn").is_true()
+	fail("never reached the player's turn")
 
 
 ## Follows a single with a lower single the player holds. Returns its card ID.
@@ -101,7 +101,7 @@ func _to_unbeatable_single() -> int:
 					_hand.refresh()
 					return card.id()
 		script.act(_controller)
-	assert_bool(false).override_failure_message("never faced a beatable single").is_true()
+	fail("never faced a beatable single")
 	return -1
 
 

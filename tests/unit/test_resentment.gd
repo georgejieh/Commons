@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.2: Resentment rises from its three sources, reaches Denunciation through one data
+## Resentment rises from its three sources, reaches Denunciation through one data
 ## curve, and becomes every bot's grudge against the player.
 
 const PARAMS: ResentmentParams = preload("res://data/run/resentment.tres")

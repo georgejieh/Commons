@@ -282,10 +282,10 @@ func _put_back_files(kept: Dictionary[String, String]) -> void:
 
 ## The table's menu, Abandon run, and its question, then Abandon: the title, with no save.
 func _abandon_frames(table: Node, saves: Object) -> void:
-	var hud: Object = member(table, "_hud")
+	var hud: Object = member(table, "hud")
 	await _press(hud.get("menu"))
 	await _frames(20)
-	var pause: Node = member(table, "_pause")
+	var pause: Node = member(table, "pause")
 	await _press_text_in(pause, tr("menu.abandon"))
 	await _frames(20)
 	await _shot("pause_abandon_confirm")

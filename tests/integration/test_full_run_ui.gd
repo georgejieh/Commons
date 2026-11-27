@@ -7,18 +7,15 @@ extends GdUnitTestSuite
 ## each later one cost.
 
 const SEED: int = 7720
-const SAVE_PATH: String = "user://test_full_run_ui/run.json"
+
+static var _save_path: String = TestFolder.of("test_full_run_ui") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -61,7 +58,7 @@ func test_continue_shows_only_for_a_run_that_loads() -> void:
 	assert_bool(_app.controller.seats.has_village()).is_true()
 	assert_str(_app.switcher.current_id()).is_equal(_app.table_id())
 	# A save and backup that are both damaged offer nothing to continue.
-	for path: String in [SAVE_PATH, SAVE_PATH + SaveService.BACKUP_SUFFIX]:
+	for path: String in [_save_path, _save_path + SaveService.BACKUP_SUFFIX]:
 		FileAccess.open(path, FileAccess.WRITE).store_string("{broken")
 	assert_bool(_title_has_continue()).is_false()
 
@@ -97,7 +94,7 @@ func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
 	await await_idle_frame()
 	menu.keep_button().pressed.emit()
 	assert_bool(menu.visible).is_false()
-	assert_bool(FileAccess.file_exists(SAVE_PATH)).is_true()
+	assert_bool(FileAccess.file_exists(_save_path)).is_true()
 	menu.open()
 	_press(tr("menu.abandon"))
 	await await_idle_frame()
@@ -105,7 +102,7 @@ func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
 	menu.abandon_button().pressed.emit()
 	await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("title")
-	assert_bool(FileAccess.file_exists(SAVE_PATH)).is_false()
+	assert_bool(FileAccess.file_exists(_save_path)).is_false()
 	var after: ProfileData = Profile.read(Saves.profile_service())
 	assert_array(after.history).is_empty()
 	assert_int(after.finished_runs).is_equal(before.finished_runs)
@@ -116,15 +113,15 @@ func test_the_table_menu_abandons_too() -> void:
 	_app.new_run(SEED, true)
 	var table: TableScreen = _app.show_screen(_app.table_id(), true)
 	await await_idle_frame()
-	table.call("_open_pause")
-	var pause: PauseMenu = table.get("_pause")
+	table.hud.menu.pressed.emit()
+	var pause: PauseMenu = table.pause
 	_press(tr("menu.abandon"))
 	await await_idle_frame()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(pause.keep_button())
 	pause.abandon_button().pressed.emit()
 	await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("title")
-	assert_bool(FileAccess.file_exists(SAVE_PATH)).is_false()
+	assert_bool(FileAccess.file_exists(_save_path)).is_false()
 
 
 func test_the_endings_way_home_clears_the_run_save() -> void:
@@ -145,7 +142,7 @@ func test_the_endings_way_home_clears_the_run_save() -> void:
 	screen.home_button().pressed.emit()
 	await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("title")
-	assert_bool(FileAccess.file_exists(SAVE_PATH)).is_false()
+	assert_bool(FileAccess.file_exists(_save_path)).is_false()
 	assert_int(Profile.read(Saves.profile_service()).history.size()).is_equal(1)
 
 

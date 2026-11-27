@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 ## count loads with none; and the bots play the Sets with no refused action.
 
 const SEED: int = 4311
-const SAVE_PATH: String = "user://test_hungry_claims/run.json"
 const STEPS: int = 1500
 
 var _app: DemoApp = null
@@ -91,12 +90,8 @@ func test_a_save_from_before_the_count_loads_with_none() -> void:
 
 
 func test_the_dossier_tells_the_shift_once_it_was_seen() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED, true)
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.table[1] = "qin"

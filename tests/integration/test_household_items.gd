@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0039, second note of 2026-11-24: whatever the player buys that changes how the game
+## ADR 0039: whatever the player buys that changes how the game
 ## is played works for the player's seat alone. Golden tricks from both sides for Mass
 ## Line's and Model Worker's wild ranks and Industrialization's bigger bombs, alone, with
 ## each other, and with Promotion of the Masses and Shock Brigade: what the player may play

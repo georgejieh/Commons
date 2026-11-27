@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0022's books command (P4.19): figures reported from outside the game are taken as
+## ADR 0022's books command: figures reported from outside the game are taken as
 ## official, never refused for being untrue. Each figure raised and lowered, the clamp,
 ## the norm and price proportions against the data, the caps, and a malformed command
 ## refused. Saves, replays and the file's raise are in test_books_saves.gd.

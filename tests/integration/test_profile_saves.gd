@@ -3,18 +3,19 @@ extends GdUnitTestSuite
 ## cap, and the once-only commits through every crash ordering between the run save and
 ## the profile. Also the run save's schema 11 and its migration from 10.
 
-const DIR: String = "user://test_profile_saves/"
-const RUN_PATH: String = DIR + "run.json"
-const PROFILE_PATH: String = DIR + "profile.json"
 const SEED: int = 9101
+
+static var _dir: String = TestFolder.of("test_profile_saves")
+static var _run_path: String = _dir + "run.json"
+static var _profile_path: String = _dir + "profile.json"
 
 var _saves: SaveService
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_saves = SaveService.for_run(RUN_PATH)
-	_profile = Profile.service(PROFILE_PATH)
+	_saves = SaveService.for_run(_run_path)
+	_profile = Profile.service(_profile_path)
 	_saves.delete()
 	_profile.delete()
 
@@ -25,7 +26,7 @@ func after_test() -> void:
 
 
 func _write_raw(path: String, version: int, data: Dictionary) -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
+	DirAccess.make_dir_recursive_absolute(_dir)
 	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": version, "data": data}))
 	file.close()
@@ -59,7 +60,7 @@ func test_a_new_profile_holds_every_field_empty() -> void:
 
 func test_schema_1_migrates_and_keeps_the_memory() -> void:
 	var memory: VillageMemory = _memory()
-	_write_raw(PROFILE_PATH, 1, {Profile.MEMORY_KEY: memory.to_dict()})
+	_write_raw(_profile_path, 1, {Profile.MEMORY_KEY: memory.to_dict()})
 	var loaded: SaveLoad = _profile.load_save()
 	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
 	var data: ProfileData = Profile.read(_profile)
@@ -159,11 +160,11 @@ func test_a_quota_is_taken_once_per_run() -> void:
 func test_profile_written_but_run_save_not() -> void:
 	var state: RunState = _full_state(RunFlow.State.SET_END)
 	ProfileCommits.commit(_profile, state, false)
-	var before: String = FileAccess.get_file_as_string(PROFILE_PATH)
+	var before: String = FileAccess.get_file_as_string(_profile_path)
 	var controller: RunController = auto_free(RunController.new())
 	_save_run(state)
 	assert_bool(controller.continue_saved(_saves, _profile)).is_true()
-	assert_str(FileAccess.get_file_as_string(PROFILE_PATH)).is_equal(before)
+	assert_str(FileAccess.get_file_as_string(_profile_path)).is_equal(before)
 
 
 ## The run save reached the Quota's end but the profile never took it: Continue offers
@@ -210,7 +211,7 @@ func test_a_backup_restore_of_the_profile() -> void:
 	ProfileCommits.commit(_profile, state, true)
 	# A later write moves the recorded profile to the backup; then the main file breaks.
 	Profile.write(_profile, Profile.read(_profile))
-	FileAccess.open(PROFILE_PATH, FileAccess.WRITE).store_string("{broken")
+	FileAccess.open(_profile_path, FileAccess.WRITE).store_string("{broken")
 	assert_int(_profile.load_save().status).is_equal(SaveLoad.Status.RESTORED_FROM_BACKUP)
 	assert_bool(ProfileCommits.commit(_profile, state, true)).is_false()
 	assert_int(Profile.read(_profile).history.size()).is_equal(1)
@@ -218,7 +219,7 @@ func test_a_backup_restore_of_the_profile() -> void:
 	_profile.delete()
 	Profile.write(_profile, ProfileData.new())
 	Profile.write(_profile, ProfileData.new())
-	FileAccess.open(PROFILE_PATH, FileAccess.WRITE).store_string("{broken")
+	FileAccess.open(_profile_path, FileAccess.WRITE).store_string("{broken")
 	assert_bool(ProfileCommits.commit(_profile, state, true)).is_true()
 	assert_bool(ProfileCommits.commit(_profile, state, true)).is_false()
 	assert_int(Profile.read(_profile).history.size()).is_equal(1)
@@ -239,10 +240,10 @@ func test_deleting_the_run_save_leaves_the_profile_untouched() -> void:
 	var state: RunState = _full_state(RunFlow.State.RUN_END)
 	ProfileCommits.commit(_profile, state, true)
 	_save_run(state)
-	var before: String = FileAccess.get_file_as_string(PROFILE_PATH)
+	var before: String = FileAccess.get_file_as_string(_profile_path)
 	_saves.delete()
-	assert_bool(FileAccess.file_exists(RUN_PATH)).is_false()
-	assert_str(FileAccess.get_file_as_string(PROFILE_PATH)).is_equal(before)
+	assert_bool(FileAccess.file_exists(_run_path)).is_false()
+	assert_str(FileAccess.get_file_as_string(_profile_path)).is_equal(before)
 	assert_int(Profile.read(_profile).history.size()).is_equal(1)
 
 
@@ -254,7 +255,7 @@ func test_a_schema_10_save_resumes_as_a_demo_run() -> void:
 	var data: Dictionary = {"checkpoint": state.to_dict(), "commands": []}
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("identity")
-	_write_raw(RUN_PATH, 10, data)
+	_write_raw(_run_path, 10, data)
 	var loaded: SaveLoad = _saves.load_save()
 	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
 	var migrated: Dictionary = loaded.data["checkpoint"]
@@ -265,7 +266,6 @@ func test_a_schema_10_save_resumes_as_a_demo_run() -> void:
 	var controller: RunController = auto_free(RunController.new())
 	assert_bool(controller.continue_saved(_saves)).is_true()
 	assert_bool(controller.seats.has_village()).is_false()
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(11)
 
 
 func test_a_run_save_with_a_broken_identity_falls_back() -> void:

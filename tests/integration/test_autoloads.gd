@@ -31,9 +31,12 @@ func test_autoload_list_matches_exactly() -> void:
 func test_dev_only_autoloads_never_ship() -> void:
 	var presets: String = FileAccess.get_file_as_string("res://export_presets.cfg")
 	var filter: String = DEV_ONLY_PREFIX.trim_prefix("res://") + "*"
+	var filters: int = 0
 	for line: String in presets.split("\n"):
 		if line.begins_with("exclude_filter="):
+			filters += 1
 			assert_str(line).contains(filter)
+	assert_int(filters).override_failure_message("no export preset has a filter").is_greater(0)
 
 
 func test_no_autoload_names_a_run_type() -> void:
@@ -75,7 +78,7 @@ func test_no_autoload_holds_an_object_field() -> void:
 
 
 func test_settings_default_then_round_trip_through_the_file() -> void:
-	var path: String = "user://test_settings.cfg"
+	var path: String = TestFolder.of("test_autoloads") + "settings.cfg"
 	DirAccess.remove_absolute(path)
 	var settings: SettingsStore = auto_free(SettingsStore.new())
 	settings.load_from(path)
@@ -93,7 +96,7 @@ func test_settings_default_then_round_trip_through_the_file() -> void:
 ## Settings are written whole and renamed into place: a write that cannot be finished
 ## leaves the last file as it was.
 func test_a_settings_write_that_cannot_finish_leaves_the_last_file() -> void:
-	var folder: String = "user://test_settings_write/"
+	var folder: String = TestFolder.of("test_settings_write")
 	var path: String = folder + "settings.cfg"
 	DirAccess.make_dir_recursive_absolute(folder)
 	var settings: SettingsStore = auto_free(SettingsStore.new())

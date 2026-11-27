@@ -10,7 +10,6 @@ extends GdUnitTestSuite
 
 const SEED: int = 4242
 const SEEDS: int = 12
-const SAVE_PATH: String = "user://test_wild_ui/run.json"
 const WAIT_SECONDS: float = 12.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
 const WORKERS: Array[String] = ["model_worker", "model_worker"]
@@ -22,11 +21,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = SCREEN
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -68,22 +64,22 @@ func _open_table() -> TableScreen:
 
 
 func _wait_idle(table: TableScreen) -> void:
-	var player: EventPlayer = table.get("_player")
-	var waited: float = 0.0
-	while not player.is_idle() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	var player: EventPlayer = table.player
+	await TestWait.until(
+		self, func() -> bool: return player.is_idle(), "the table's events to play", WAIT_SECONDS
+	)
 
 
-func _press(table: TableScreen, action: String) -> void:
+func _press(action: String) -> void:
 	var event: InputEventAction = InputEventAction.new()
 	event.action = action
 	event.pressed = true
-	table.call("_unhandled_input", event)
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
 
 
 func _wild(table: TableScreen) -> TableWild:
-	return table.get("_wild")
+	return table.wild
 
 
 func _rank_of(card_id: int) -> int:
@@ -147,18 +143,17 @@ func _last_command() -> Dictionary:
 func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 	assert_bool(_to_first_lead(SEED, WORKERS)).is_true()
 	var table: TableScreen = await _open_table()
-	var hand_view: HandView = table.get("_hand_view")
-	var strip: DebuffStrip = table.get("_debuffs")
-	var moments: TableMoments = table.get("_moments")
+	var hand_view: HandView = table.hand_view
+	var strip: DebuffStrip = table.debuffs
+	var moments: TableMoments = table.moments
 	for view: CardView in hand_view.views():
 		assert_bool(view.shows_wild()).is_false()
 	assert_str(strip.shown_text()).not_contains(tr("wild.strip"))
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
 	var first: int = _app.controller.table.wild_ranks()[0]
-	var waited: float = 0.0
-	while not moments.callout.is_showing() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self, func() -> bool: return moments.callout.is_showing(), "the callout", WAIT_SECONDS
+	)
 	var one: Array[int] = [first]
 	assert_str(moments.callout.shown_word()).is_equal(ReadingText.wild_line(one).to_upper())
 	await _wait_idle(table)
@@ -174,11 +169,9 @@ func test_the_call_out_strip_and_ribbons_name_the_wild_ranks() -> void:
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
 	var both: Array[int] = _app.controller.table.wild_ranks()
 	assert_int(both.size()).is_equal(2)
-	waited = 0.0
 	var line: String = ReadingText.wild_line(both)
-	while not moments.callout.shown_sub().contains(line) and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	var said: Callable = func() -> bool: return moments.callout.shown_sub().contains(line)
+	await TestWait.until(self, said, "the callout's line", WAIT_SECONDS)
 	assert_str(moments.callout.shown_sub()).contains(ReadingText.wild_line(both))
 	await _wait_idle(table)
 	assert_str(strip.shown_text()).contains(ReadingText.wild_line(both))
@@ -236,21 +229,21 @@ func test_the_picker_opens_only_with_a_choice_plays_by_keys_and_cancels_cleanly(
 	var picker: ReadingPicker = _wild(table).picker
 	var readings: Array[Pattern] = _app.controller.table.readings_for(ids)
 	_select(ids)
-	table.actions().play.pressed.emit()
+	table.actions.play.pressed.emit()
 	assert_bool(picker.visible).is_true()
 	assert_array(Array(picker.shown())).is_equal(Array(ReadingText.describe_all(readings)))
 	assert_int(picker.focused()).is_equal(0)
 	assert_int(picker.get_index()).is_equal(table.get_child_count() - 1)
 	var slip: Rect2 = picker.slip_rect()
-	var hand_view: HandView = table.get("_hand_view")
+	var hand_view: HandView = table.hand_view
 	assert_bool(slip.intersects(hand_view.get_global_rect())).is_false()
-	assert_bool(slip.intersects(table.actions().get_global_rect())).is_false()
+	assert_bool(slip.intersects(table.actions.get_global_rect())).is_false()
 	assert_bool(Rect2(Vector2.ZERO, Vector2(SCREEN)).encloses(slip)).is_true()
 	# Cancel closes it with the selection kept and nothing sent.
 	var commands: int = _loop().record.commands.size()
-	_press(table, "ui_down")
+	_press("ui_down")
 	assert_int(picker.focused()).is_equal(1)
-	_press(table, "ui_cancel")
+	_press("ui_cancel")
 	assert_bool(picker.visible).is_false()
 	assert_int(_loop().record.commands.size()).is_equal(commands)
 	var kept: Array[int] = _app.hand.selected_ids()
@@ -259,10 +252,10 @@ func test_the_picker_opens_only_with_a_choice_plays_by_keys_and_cancels_cleanly(
 	wanted.sort()
 	assert_array(kept).is_equal(wanted)
 	# Opened again, down and confirm play the second reading.
-	table.actions().play.pressed.emit()
+	table.actions.play.pressed.emit()
 	assert_int(picker.focused()).is_equal(0)
-	_press(table, "ui_down")
-	_press(table, "ui_accept")
+	_press("ui_down")
+	_press("ui_accept")
 	assert_bool(picker.visible).is_false()
 	var last: Dictionary = _last_command()
 	assert_str(str(last["type"])).is_equal("play")
@@ -278,7 +271,7 @@ func test_one_reading_plays_straight_away() -> void:
 	assert_int(_app.controller.table.readings_for(ids).size()).is_equal(1)
 	var commands: int = _loop().record.commands.size()
 	_select(ids)
-	table.actions().play.pressed.emit()
+	table.actions.play.pressed.emit()
 	assert_bool(_wild(table).picker.visible).is_false()
 	assert_int(_loop().record.commands.size()).is_equal(commands + 1)
 
@@ -295,13 +288,15 @@ func test_a_stand_in_on_the_pile_names_the_rank_it_stands_for() -> void:
 	for card: CardInstance in _app.controller.table.player_cards():
 		held[card.id()] = card
 	_select(ids)
-	table.actions().play.pressed.emit()
+	table.actions.play.pressed.emit()
 	_wild(table).picker.choice(0).pressed.emit()
-	var pile: TrickPile = table.get("_pile")
-	var waited: float = 0.0
-	while pile.top_ids().size() != ids.size() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	var pile: TrickPile = table.pile
+	await TestWait.until(
+		self,
+		func() -> bool: return pile.top_ids().size() == ids.size(),
+		"the play to land on the pile",
+		WAIT_SECONDS
+	)
 	var cards: Array[CardInstance] = []
 	var views: Array[CardView] = pile.top_views()
 	for view: CardView in views:
@@ -343,7 +338,7 @@ func test_the_hint_plays_the_reading_it_meant() -> void:
 	_app.hand.set("_hint_turn", _app.controller.table.seat_view().public.history.size())
 	_app.hand.select_only(ids)
 	assert_bool(_app.hand.hint_reading().same_reading(readings[-1])).is_true()
-	table.actions().play.pressed.emit()
+	table.actions.play.pressed.emit()
 	assert_bool(_wild(table).picker.visible).is_false()
 	var played: Pattern = ReadingCodec.decode(_last_command()[ReadingCodec.KEY])
 	assert_bool(played.same_reading(readings[-1])).is_true()
@@ -352,7 +347,7 @@ func test_the_hint_plays_the_reading_it_meant() -> void:
 func test_the_rules_sheet_explains_wild_ranks_only_while_one_is_wild() -> void:
 	assert_bool(_to_first_lead(SEED, WORKERS)).is_true()
 	var table: TableScreen = await _open_table()
-	var sheet: CheatSheet = table.get("_cheat_sheet")
+	var sheet: CheatSheet = table.cheat_sheet
 	sheet.toggle(_app.controller)
 	assert_str(sheet.wild_text()).is_empty()
 	sheet.toggle(_app.controller)

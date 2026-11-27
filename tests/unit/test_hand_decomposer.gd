@@ -2,8 +2,7 @@ extends GdUnitTestSuite
 ## Minimum-hands search against brute force, and its limits.
 
 const CAP: int = 50000
-const MEDIAN_LIMIT_USEC: int = 5000
-const TIMED_HANDS: int = 300
+const HANDS: int = 300
 
 var _rules: RuleSet = RuleSet.default_rules()
 var _map: PackedByteArray = Ranks.identity_map()
@@ -72,20 +71,16 @@ func test_the_memo_never_passes_its_cap() -> void:
 			assert_int(capped.memo_size()).is_less_equal(cap)
 
 
-func test_the_median_for_twenty_cards_is_inside_budget() -> void:
+## The work a twenty-card hand takes is bounded by the memo's cap; its time is measured
+## by tools/perf_budget.gd.
+func test_a_twenty_card_hand_keeps_the_memo_inside_its_cap() -> void:
 	var stream: RandomStream = RandomStream.new(2203)
-	var times: Array[int] = []
 	var largest: int = 0
 	var decomposer: HandDecomposer = _decomposer()
-	for _hand: int in TIMED_HANDS:
+	for _hand: int in HANDS:
 		var counts: PackedByteArray = _random_counts(stream, 20)
 		decomposer.clear()
-		var started: int = Time.get_ticks_usec()
 		decomposer.score(counts)
-		times.append(Time.get_ticks_usec() - started)
 		largest = maxi(largest, decomposer.memo_size())
-	times.sort()
-	var middle: int = times[times.size() >> 1]
-	print("decompose median %d usec, slowest %d, memo peak %d" % [middle, times[-1], largest])
-	assert_int(middle).is_less(MEDIAN_LIMIT_USEC)
+	assert_int(largest).is_greater(0)
 	assert_int(largest).is_less_equal(CAP)

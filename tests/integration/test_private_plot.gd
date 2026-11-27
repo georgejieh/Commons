@@ -106,8 +106,7 @@ func test_a_swap_brings_the_plot_card_in_and_leaves_the_plot_as_it_was() -> void
 	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 	var script: RunScript = RunScript.new()
 	loop.start_set()
-	while loop.awaiting() != RunLoop.Awaiting.PLAYER_SWAP:
-		script.act(loop)
+	script.play_to(self, loop, RunLoop.Awaiting.PLAYER_SWAP)
 	var given: CardInstance = loop.player_cards()[0]
 	var taken: int = state.inventory.plot[1].id()
 	var plot_before: String = _plot_text(state)
@@ -132,8 +131,7 @@ func test_the_plot_card_comes_back_and_the_set_aside_card_is_dealt_again() -> vo
 		var loop: RunLoop = RunLoop.new(state, RunScript.bots())
 		var script: RunScript = RunScript.new()
 		loop.start_set()
-		while loop.awaiting() != RunLoop.Awaiting.PLAYER_SWAP:
-			script.act(loop)
+		script.play_to(self, loop, RunLoop.Awaiting.PLAYER_SWAP)
 		var given: int = loop.player_cards()[0].id()
 		var taken: int = state.inventory.plot[0].id()
 		assert_int(loop.player_swap([given], [taken])).is_equal(RunLoop.Reason.OK)
@@ -230,8 +228,7 @@ func test_a_plot_the_old_rule_reissued_into_still_loads_and_swaps() -> void:
 	var loop: RunLoop = RunLoop.new(loaded, RunScript.bots())
 	var script: RunScript = RunScript.new()
 	loop.start_set()
-	while loop.awaiting() != RunLoop.Awaiting.PLAYER_SWAP:
-		script.act(loop)
+	script.play_to(self, loop, RunLoop.Awaiting.PLAYER_SWAP)
 	var given: int = loop.player_cards()[0].id()
 	assert_int(loop.player_swap([given], [reissued.id()])).is_equal(RunLoop.Reason.OK)
 	assert_str(_plot_text(loaded)).is_equal(plot_before)

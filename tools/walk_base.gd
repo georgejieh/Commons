@@ -122,7 +122,7 @@ func _screen_id() -> String:
 ## screen is not the table.
 func _part(part: String) -> Object:
 	var screen: Node = _current()
-	if screen == null or not is_instance_valid(screen) or screen.get("_player") == null:
+	if screen == null or not is_instance_valid(screen) or screen.get("player") == null:
 		return null
 	if screen.has_method(part):
 		return screen.call(part)
@@ -131,7 +131,7 @@ func _part(part: String) -> Object:
 
 ## True once the table's events have all played, or when the table is not on screen.
 func _idle() -> bool:
-	var events: Object = _part("_player")
+	var events: Object = _part("player")
 	return events == null or bool(events.call("is_idle"))
 
 
@@ -301,7 +301,7 @@ func _click_first_button() -> void:
 
 ## Clicks the strip of the card that the next card in the fan leaves showing.
 func _click_card(table: Node, card_id: int) -> void:
-	var views: Array = member(member(table, "_hand_view"), "_views")
+	var views: Array = member(member(table, "hand_view"), "_views")
 	for index: int in views.size():
 		var view: Control = views[index]
 		if view.get("card_id") != card_id:

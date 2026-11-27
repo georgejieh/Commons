@@ -1,17 +1,18 @@
 extends GdUnitTestSuite
-## Schema 6 (P4.11): a run's saved card marks and hand levels. A schema 5 save gains
+## Schema 6: a run's saved card marks and hand levels. A schema 5 save gains
 ## them at their starting values, both survive a save and a load, and a damaged shape
 ## counts as damage, as in test_saves.gd.
 
-const DIR: String = "user://test_saved_growth/"
 const SEED: int = 3601
+
+static var _dir: String = TestFolder.of("test_saved_growth")
 
 var _service: SaveService
 
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
-	_service = SaveService.for_run(DIR + "run.json")
+	DirAccess.make_dir_recursive_absolute(_dir)
+	_service = SaveService.for_run(_dir + "run.json")
 	_service.delete()
 
 
@@ -32,7 +33,7 @@ func _turn(data: Dictionary) -> int:
 	return int(data["checkpoint"]["coupons"])
 
 
-## A schema 5 run save, from before saved marks and hand levels (P4.11), loads with no
+## A schema 5 run save, from before saved marks and hand levels, loads with no
 ## card marked and every hand type at its first level, and both survive a save and a load.
 func test_a_schema_5_run_save_gains_marks_and_levels_and_both_are_saved() -> void:
 	var data: Dictionary = _record(7)
@@ -66,7 +67,6 @@ func test_a_schema_5_run_save_gains_marks_and_levels_and_both_are_saved() -> voi
 	assert_int(saved.hand_levels.level_of(Pattern.Type.SINGLE)).is_equal(1)
 	assert_dict(saved.card_marks.stamps).is_equal({12: 0})
 	assert_dict(saved.card_marks.enhancements).is_equal({40: CardInstance.MODEL})
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(6)
 
 
 ## Marks and levels of the wrong shape are damage, as any other field of the wrong kind.

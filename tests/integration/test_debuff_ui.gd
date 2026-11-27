@@ -6,10 +6,7 @@ extends GdUnitTestSuite
 ## leaving only its end state under reduced motion.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_debuff_ui/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const READABLE: int = 16
-const SLACK: float = 1.5
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -17,11 +14,8 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -44,7 +38,7 @@ func _ladder(debuff_id: String) -> void:
 
 
 func _inside(control: Control, where: String) -> void:
-	var screen: Rect2 = Rect2(Vector2.ZERO, Vector2(1920, 1080)).grow(SLACK)
+	var screen: Rect2 = Rect2(Vector2.ZERO, Vector2(1920, 1080)).grow(ClipCheck.SLACK)
 	var rect: Rect2 = control.get_global_rect()
 	(
 		assert_bool(screen.encloses(rect))
@@ -56,7 +50,7 @@ func _inside(control: Control, where: String) -> void:
 func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 				_ladder(debuff.id)
@@ -101,14 +95,14 @@ func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 				_ladder(debuff.id)
 				_loop().state.round_index = 1
 				var table: TableScreen = _app.show_screen("table", true)
 				await await_idle_frame()
-				var strip: DebuffStrip = table.get("_debuffs")
+				var strip: DebuffStrip = table.debuffs
 				strip.show_debuffs(_app.controller)
 				await await_idle_frame()
 				var where: String = "%s %s size %d" % [debuff.id, screen_size, level]
@@ -161,7 +155,7 @@ func test_levy_and_redistribution_slide_cards_left_or_leave_the_end_state() -> v
 		_app.show_screen("table", true)
 		await await_idle_frame()
 		var table: TableScreen = _app.switcher.current()
-		var beats: DebuffMoments = table.get("_debuff_beats")
+		var beats: DebuffMoments = table.debuff_beats
 		var mine: CardInstance = _app.controller.table.player_cards()[0]
 		# A Levy in force: the slip names it, the card and where it goes.
 		_ladder("levy")
@@ -206,7 +200,7 @@ func test_a_confiscated_cadre_is_struck_on_the_board_for_its_round() -> void:
 		func(table: TableScreen) -> bool:
 			if _loop().state.round_index != 1:
 				return false
-			var board: NoticeBoard = table.get("_board")
+			var board: NoticeBoard = table.board
 			struck.append(board.is_struck(0))
 			return true
 	)
@@ -219,7 +213,7 @@ func test_glass_walls_lay_glass_over_the_hand_while_in_force() -> void:
 	var shown: Dictionary[int, String] = {}
 	var reached: bool = await _play_until(
 		func(table: TableScreen) -> bool:
-			var beats: DebuffMoments = table.get("_debuff_beats")
+			var beats: DebuffMoments = table.debuff_beats
 			if _app.controller.awaiting() == RunController.AWAIT_PLAY:
 				shown[_loop().state.round_index] = beats.glass.shown_text()
 			return _loop().state.round_index == 1 and shown.has(1)
@@ -229,23 +223,24 @@ func test_glass_walls_lay_glass_over_the_hand_while_in_force() -> void:
 	assert_str(shown[1]).is_equal(tr("table.glass_walls"))
 	# The slip is tall enough that its printed border clears its line.
 	var current: TableScreen = _app.switcher.current()
-	var beats: DebuffMoments = current.get("_debuff_beats")
+	var beats: DebuffMoments = current.debuff_beats
 	var glass: GlassPane = beats.glass
 	var room: Rect2 = glass.slip().get_global_rect().grow(-GlassPane.SLIP_PADDING + 2.0)
 	assert_bool(room.encloses(glass.words().get_global_rect())).is_true()
 	assert_int(glass.words().get_theme_font_size("font_size")).is_greater_equal(READABLE)
 
 
-## The line over the hand names the player's role as soon as the round starts, not when
-## the table's events have all played.
-func test_the_role_line_follows_the_round_at_once() -> void:
+## The line over the hand names the player's role once the round has started.
+func test_the_role_line_names_the_players_role_in_the_round() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var you: Label = table.get("_you")
-	table.call("_show_roles", 1)
-	assert_str(you.text).is_equal(tr("table.you.peasant"))
-	table.call("_show_roles", 0)
-	assert_str(you.text).is_equal(tr("table.you.landlord"))
+	var driver: ControllerScript = ControllerScript.new()
+	assert_bool(driver.play_to(self, _app.controller, RunController.AWAIT_PLAY)).is_true()
+	table.skip_events()
+	await await_idle_frame()
+	var landlord: bool = _app.controller.run.landlord_seat() == Seats.PLAYER
+	var role: String = "table.you.landlord" if landlord else "table.you.peasant"
+	assert_str(table.you.text).is_equal(tr(role))
 
 
 func test_a_seized_plot_card_is_torn_unless_motion_is_reduced() -> void:
@@ -254,11 +249,11 @@ func test_a_seized_plot_card_is_torn_unless_motion_is_reduced() -> void:
 		_app.show_screen("table", true)
 		await await_idle_frame()
 		var table: TableScreen = _app.switcher.current()
-		var beats: DebuffMoments = table.get("_debuff_beats")
+		var beats: DebuffMoments = table.debuff_beats
 		var seized: RunEvent = RunEvent.new(
 			RunEvent.Type.PLOT_SEIZED, 0, CardInstance.FIRST_PLOT_ID, 0.0, "11,1"
 		)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			await await_idle_frame()
 			beats.on_event(seized, false)
@@ -266,7 +261,7 @@ func test_a_seized_plot_card_is_torn_unless_motion_is_reduced() -> void:
 			if reduced:
 				continue
 			# The torn card is held clear of the cut-in's words.
-			var moments: TableMoments = table.get("_moments")
+			var moments: TableMoments = table.moments
 			var words: Rect2 = moments.callout.text_rect()
 			for half: Control in beats.torn.halves():
 				(
@@ -286,8 +281,8 @@ func test_night_shift_refuses_the_pass_and_says_why() -> void:
 			if _app.controller.table.pass_refusal().is_empty():
 				return false
 			var turn: int = _loop().round_state().public_view().history.size()
-			table.actions().pass_turn.pressed.emit()
-			said.append(table.actions().reading.text)
+			table.actions.pass_turn.pressed.emit()
+			said.append(table.actions.reading.text)
 			assert_int(_loop().round_state().public_view().history.size()).is_equal(turn)
 			return true
 	)

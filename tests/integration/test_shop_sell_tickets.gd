@@ -5,22 +5,17 @@ extends GdUnitTestSuite
 ## changed is taken back, so the second press never sells something else.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_shop_sell_tickets/run.json"
 const LOAN: String = "grain_loan"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	_loop().state.coupons = 60
 	_app.controller.reseal_book()
@@ -52,8 +47,8 @@ func _price_of(campaign_id: String) -> int:
 
 ## The ticket on a tray place, shown as hover shows it.
 func _ticket(store: StoreScreen, slot: int) -> SellTag:
-	var stall: CampaignStall = store.get("_campaign_stall")
-	var sale: SellDesk = store.get("_sale")
+	var stall: CampaignStall = store.campaign_stall
+	var sale: SellDesk = store.sale
 	var leaflet: CampaignLeaflet = stall.tray.leaflet(slot)
 	var tag: SellTag = sale.tag_on(leaflet)
 	if tag != null:
@@ -65,7 +60,7 @@ func test_a_campaign_bought_into_an_empty_tray_gets_its_ticket() -> void:
 	_loop().state.inventory.consumables.clear()
 	_app.controller.reseal_book()
 	var store: StoreScreen = await _open()
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	var bought: String = _loop().visit.shop.campaigns.stock()[0]
 	stall.panel(0).buy.pressed.emit()
 	await await_idle_frame()
@@ -86,7 +81,7 @@ func test_a_campaign_used_in_the_shop_moves_the_next_with_its_own_price() -> voi
 	_loop().state.inventory.consumables.assign([LOAN, next])
 	_app.controller.reseal_book()
 	var store: StoreScreen = await _open()
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	# A sale asked for on the second place, then the loan in the first is used.
 	var second: SellTag = _ticket(store, 1)
 	second.press()

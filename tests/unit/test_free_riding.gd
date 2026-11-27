@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.4: the teammate's effort falls from full at a fair share to its own cooperation at
+## The teammate's effort falls from full at a fair share to its own cooperation at
 ## a full share, and a slacking bot still plays only legal moves.
 
 const PARAMS: FreeRideParams = preload("res://data/run/free_ride.tres")

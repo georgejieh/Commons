@@ -1,11 +1,10 @@
 extends GdUnitTestSuite
-## A Cadre that seldom reaches a counter is stamped Scarce (P5.2a), so a rare one cannot
+## A Cadre that seldom reaches a counter is stamped Scarce, so a rare one cannot
 ## be taken for a routine one: the stamp is on the rare card and no other, it is pressed
 ## a beat after the cards arrive, and with motion off it is simply there. The tooltip
 ## says what the word means.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_scarce_stamp/run.json"
 const POOL: CadrePool = preload("res://data/run/cadre_pool.tres")
 const MARKET_POOL: CadrePool = preload("res://data/run/market_pool.tres")
 const PARAMS: ShopParams = preload("res://data/run/default_shop.tres")
@@ -17,15 +16,11 @@ var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 
 
@@ -104,7 +99,7 @@ func test_a_scarce_cadre_is_stamped_and_a_routine_one_is_not() -> void:
 	assert_str(_buy_button(cards[0]).tooltip_text).contains(note)
 	assert_str(_buy_button(cards[1]).tooltip_text).not_contains(note)
 	# A page refreshed, as after a purchase, shows it at rest: it is pressed once.
-	store.call("_refresh")
+	store.refresh()
 	await await_idle_frame()
 	var after: Array[ScarceStamp] = _stamps(store.blocks()["counter"].get_child(0))
 	assert_int(after.size()).is_equal(1)

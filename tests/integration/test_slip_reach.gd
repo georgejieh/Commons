@@ -1,17 +1,14 @@
 extends GdUnitTestSuite
-## Every slip and tooltip stands right beside what it explains (the owner's playtest of
-## 2026-11-24): the Mutual Aid slip on the counter at the foot of the store no longer
-## jumps to the top of the screen; a slip slides along its side to keep off a button
+## Every slip and tooltip stands right beside what it explains : the Mutual Aid
+## slip on the counter at the foot of the store stands beside it, not at the top of the
+## screen; a slip slides along its side to keep off a button
 ## when it can, and covers one rather than leave its thing; an engine tooltip is moved
 ## beside the control it explains and off its button; and at the table, at both window
 ## sizes and every text size, a keyword's slip and a Cadre's tooltip on the notice board
 ## stand within SlipPlacer.REACH of their thing.
 
 const SCREEN: Rect2 = Rect2(0, 0, 1920, 1080)
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.0
 const FAR: Vector2 = Vector2(-500, -500)
-const SAVE_PATH: String = "user://test_slip_reach/run.json"
 
 var _was_size: Vector2i
 
@@ -31,8 +28,8 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
-## The owner's frame: a piece at the foot of the screen, papers with Buy buttons over it.
-## The slip stands at the piece's edge, not at the top of the screen as it did.
+## A piece at the foot of the screen, papers with Buy buttons over it: the slip stands
+## at the piece's edge, not at the top of the screen.
 func test_a_slip_over_papers_stays_on_its_piece() -> void:
 	var host: Control = auto_free(Control.new())
 	add_child(host)
@@ -44,7 +41,9 @@ func test_a_slip_over_papers_stays_on_its_piece() -> void:
 	var slip: Rect2 = Rect2(at, size)
 	assert_float(SlipPlacer.distance(slip, piece)).is_less_equal(SlipPlacer.REACH)
 	assert_bool(slip.intersects(piece)).is_false()
-	assert_float(slip.position.y).is_greater(piece.position.y - size.y - SlipPlacer.REACH - SLACK)
+	assert_float(slip.position.y).is_greater(
+		piece.position.y - size.y - SlipPlacer.REACH - ClipCheck.SLACK
+	)
 
 
 ## A button where the slip would first stand: it slides along the same side to miss it.
@@ -111,7 +110,7 @@ func test_an_engine_tooltip_moves_beside_its_card() -> void:
 	placer.settle(panel)
 	var tip: Rect2 = Rect2(Vector2(panel.position), Vector2(panel.size))
 	var thing: Rect2 = Rect2(Vector2(700, 400), Vector2(300, 400))
-	assert_bool(tip.grow(-SLACK).intersects(thing)).is_false()
+	assert_bool(tip.grow(-ClipCheck.SLACK).intersects(thing)).is_false()
 	assert_float(SlipPlacer.distance(tip, thing)).is_less_equal(SlipPlacer.REACH)
 	assert_bool(SCREEN.encloses(tip)).is_true()
 	panel.queue_free()
@@ -120,11 +119,8 @@ func test_an_engine_tooltip_moves_beside_its_card() -> void:
 ## At the table: the slip for a keyword in the debuff strip, and the tooltip for a held
 ## Cadre on the notice board, at both window sizes and every text size.
 func test_slips_at_the_table_stand_beside_their_thing() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: DemoApp = auto_free(scene.instantiate())
-	add_child(app)
+	AppKit.fresh_saves(self)
+	var app: DemoApp = AppKit.make(self)
 	app.new_run(4242)
 	var loop: RunLoop = app.controller.run_loop()
 	if loop.state.inventory.cadres.is_empty():
@@ -134,7 +130,7 @@ func test_slips_at_the_table_stand_beside_their_thing() -> void:
 	add_child(placer)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			var table: TableScreen = app.show_screen("table", true)
 			await await_idle_frame()
@@ -172,8 +168,8 @@ func _check_keyword(table: Control, where: String) -> void:
 	tips.tick(10.0, FAR)
 
 
-func _check_board_tip(table: Control, placer: TipPlacer, where: String) -> void:
-	var board: NoticeBoard = table.get("_board")
+func _check_board_tip(table: TableScreen, placer: TipPlacer, where: String) -> void:
+	var board: NoticeBoard = table.board
 	var card: Control = null
 	for node: Node in board.get_children():
 		if node is TipHost and not (node as TipHost).tip_rule().is_empty():
@@ -191,21 +187,21 @@ func _check_board_tip(table: Control, placer: TipPlacer, where: String) -> void:
 
 
 func _check(slip: Rect2, thing: Rect2, where: String) -> void:
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	(
 		assert_bool(screen.encloses(slip))
 		. override_failure_message("%s: %s off" % [where, slip])
 		. is_true()
 	)
 	(
-		assert_bool(slip.grow(-SLACK).intersects(thing))
+		assert_bool(slip.grow(-ClipCheck.SLACK).intersects(thing))
 		. override_failure_message("%s: %s over %s" % [where, slip, thing])
 		. is_false()
 	)
 	(
 		assert_float(SlipPlacer.distance(slip, thing))
 		. override_failure_message("%s: %s far from %s" % [where, slip, thing])
-		. is_less_equal(SlipPlacer.REACH + SLACK)
+		. is_less_equal(SlipPlacer.REACH + ClipCheck.SLACK)
 	)
 
 

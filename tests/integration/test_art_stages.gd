@@ -1,10 +1,9 @@
 extends GdUnitTestSuite
-## The art itself changes with corruption (P3B.12, ADR 0018): each key asset resolves to
+## The art itself changes with corruption (ADR 0018): each key asset resolves to
 ## its variant for the current stage, falling back to the nearest earlier stage, on
 ## every screen and on the table as the stage changes.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_art_stages/run.json"
 
 const EARLY: String = "res://art/backdrops/stages/table_surface_s0.png"
 const LATE: String = "res://art/backdrops/stages/table_surface_s4.png"
@@ -22,11 +21,8 @@ func before_test() -> void:
 	back.stage_paths = [BACK_EARLY]
 	ArtStages.variants_override = [surface, back]
 	ArtStages.stage_override = 0
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -52,12 +48,12 @@ func test_a_stage_falls_back_to_the_nearest_earlier_art() -> void:
 func test_the_table_shows_the_stage_art_and_follows_a_stage_change() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var surface: TextureRect = table.get("_surface")
+	var surface: TextureRect = table.surface
 	assert_str(Lighting.diffuse(surface.texture).resource_path).is_equal(EARLY)
-	var dread: DreadLayers = table.get("_dread")
+	var dread: DreadLayers = table.dread
 	dread.force(10, 10, false, 9)
 	assert_str(Lighting.diffuse(surface.texture).resource_path).is_equal(LATE)
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var back: TextureRect = seats[1].get("_back")
 	assert_str(back.texture.resource_path).is_equal(BACK_EARLY)
 
@@ -95,7 +91,7 @@ func test_only_the_stage_shown_is_loaded() -> void:
 func test_the_table_surface_is_lit_with_the_normal_map_for_its_stage() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var surface: TextureRect = table.get("_surface")
+	var surface: TextureRect = table.surface
 	var canvas: CanvasTexture = surface.texture as CanvasTexture
 	assert_object(canvas).is_not_null()
 	assert_str(canvas.normal_texture.resource_path).is_equal(

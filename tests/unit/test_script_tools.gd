@@ -31,6 +31,7 @@ func test_script_tools_compile_without_autoloads() -> void:
 		var arguments: PackedStringArray = [
 			"--headless", "--path", project, "--check-only", "--script", tool_path
 		]
+		# OS.execute has no time limit of its own: tools/test.sh bounds the whole run.
 		OS.execute(OS.get_executable_path(), arguments, output, true)
 		var text: String = "\n".join(PackedStringArray(output))
 		(

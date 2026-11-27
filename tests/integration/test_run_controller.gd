@@ -141,7 +141,7 @@ func test_a_whole_year_plays_through_the_controller() -> void:
 
 ## A save taken in the store resumes there with the same stock and the purchase kept.
 func test_a_save_in_the_store_resumes_with_the_same_stock() -> void:
-	var service: SaveService = SaveService.for_run("user://test_controller/run.json")
+	var service: SaveService = SaveService.for_run(TestFolder.of("test_controller") + "run.json")
 	service.delete()
 	var controller: RunController = auto_free(RunController.new())
 	controller.start_run(SEED, RunScript.bots(), SetConfig.new(), service, 20)
@@ -173,7 +173,7 @@ func test_a_save_in_the_store_resumes_with_the_same_stock() -> void:
 
 ## A run resumed mid-round hands the view only events it has not read from the log.
 func test_a_resumed_run_never_repeats_an_event() -> void:
-	var service: SaveService = SaveService.for_run("user://test_controller/run.json")
+	var service: SaveService = SaveService.for_run(TestFolder.of("test_controller") + "run.json")
 	service.delete()
 	var controller: RunController = auto_free(RunController.new())
 	controller.start_run(SEED, RunScript.bots(), SetConfig.new(), service)

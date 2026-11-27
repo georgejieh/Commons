@@ -30,8 +30,8 @@ func table() -> void:
 	for card: CardInstance in deal.hands[1].cards().slice(0, ASIDE):
 		deal.set_aside.append(card)
 		ids.append(str(card.id()))
-	var beats: Object = _part("_deal_beats")
-	var pile: Object = _part("_pile")
+	var beats: Object = _part("deal_beats")
+	var pile: Object = _part("pile")
 	pile.call("clear")
 	var aside: RunEvent = RunEvent.new(RunEvent.Type.CARDS_SET_ASIDE, 0, 0, 0.0, ",".join(ids))
 	beats.call("on_event", aside, false)
@@ -40,7 +40,7 @@ func table() -> void:
 		await tree.create_timer(BEAT_SECONDS[index] - waited).timeout
 		waited = BEAT_SECONDS[index]
 		await _picture("table_set_aside_%d" % index)
-	var strip: Object = _part("_debuffs")
+	var strip: Object = _part("debuffs")
 	strip.call("show_debuffs", controller)
 	var line: String = tr("table.set_aside").format(
 		{"cards": view(controller, "table").call("set_aside_names")}

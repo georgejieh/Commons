@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 ## setback, or the death, still comes.
 
 const SEED: int = 7213
-const SAVE_PATH: String = "user://test_dark_figures/run.json"
 ## Values no other number on these screens shares.
 const FAMINE: int = 83
 const DENUNCIATION: int = 79
@@ -16,11 +15,8 @@ var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -47,10 +43,7 @@ func _darken(figures: Array[String]) -> void:
 
 func _to_set_over() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	var guard: int = 0
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER and guard < 2000:
-		guard += 1
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 
 
 ## Every word a screen shows, joined.
@@ -79,7 +72,7 @@ func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 	_darken(["famine", "norm"])
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var hud: TableHud = table.get("_hud")
+	var hud: TableHud = table.hud
 	assert_bool(hud.famine.visible).is_false()
 	assert_bool(hud.denunciation.visible).is_true()
 	assert_bool(hud.shows_meter("famine")).is_false()
@@ -109,7 +102,7 @@ func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
 		assert_int(Audio.effects.next_take(AudioEvents.METER_ROSE)).is_not_equal(before)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var dread: DreadLayers = table.get("_dread")
+	var dread: DreadLayers = table.dread
 	var copy: RunState = _app.controller.state_copy()
 	copy.famine = 90
 	dread.refresh(RunView.new(copy), true)
@@ -150,7 +143,7 @@ func test_the_black_market_shows_a_dark_resentment_as_none_reported() -> void:
 	_darken(["resentment"])
 	var market: StoreScreen = _app.show_screen("black_market", true)
 	await await_idle_frame()
-	var count: Label = market.get("_resentment")
+	var count: Label = market.resentment
 	assert_str(count.text).is_equal(ShownFigures.none_reported())
 	_never_shows(market, [RESENTMENT])
 

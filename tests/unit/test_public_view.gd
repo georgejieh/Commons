@@ -50,7 +50,7 @@ func test_the_view_announces_at_two_and_one_cards() -> void:
 	assert_int(round_state.public_view().announced[0]).is_equal(2)
 	_apply(round_state, "5")
 	assert_int(round_state.public_view().announced[0]).is_equal(1)
-	assert_bool(_announcements(round_state) == [2, 1]).is_true()
+	assert_that(_announcements(round_state)).is_equal([2, 1])
 
 
 func _announcements(round_state: RoundState) -> Array[int]:

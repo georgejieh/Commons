@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## A scored play acted out (P5.2a, the owner's playtest of 2026-11-24): the cards tick,
+## A scored play acted out: the cards tick,
 ## Rate and Zeal land, then each Cadre, mark, level or debuff that changed the score fires
 ## one at a time in the engine's order, with a tag of what it added and a sound a step up
 ## (or down, for a cut); then the total rolls and is stamped. The table waits for it, a
@@ -8,6 +8,10 @@ extends GdUnitTestSuite
 ## figure and sound with nothing moving.
 
 const HOLDER: int = 0
+
+
+func after_test() -> void:
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
 
 
 func _def(id: String) -> ModifierDef:
@@ -107,7 +111,7 @@ func test_a_tag_says_what_a_step_added() -> void:
 		ScoreStep.Figure.ZEAL, ScoreStep.Source.MODIFIER, ScoreStep.Op.ADD, -0.5, 1.5, 1.0
 	)
 	assert_str(ScoreSequence.tag_text(cut)).is_equal("−0.5 " + tr("keyword.zeal.name"))
-	assert_bool(ScoreSequence.ink_of(cut) == ScreenKit.LOSS).is_true()
+	assert_that(ScoreSequence.ink_of(cut)).is_equal(ScreenKit.LOSS)
 
 
 func test_the_table_waits_for_the_sequence_and_a_click_hurries_it() -> void:
@@ -144,7 +148,7 @@ func test_the_table_waits_for_the_sequence_and_a_click_hurries_it() -> void:
 
 func test_sitting_out_plays_a_villagers_score_at_the_hurried_pace() -> void:
 	var moments: TableMoments = _moments()
-	# A Cadre no longer scores for an opponent (ADR 0039), so the villager's play here
+	# A Cadre never scores for an opponent (ADR 0039), so the villager's play here
 	# is the holder's scored play at the villager's seat: the same steps to act out.
 	var event: RunEvent = _scored("999", ["canteen"], HOLDER)
 	event.seat = 1
@@ -210,6 +214,8 @@ func test_reduced_motion_keeps_every_tag_figure_and_sound_and_moves_nothing() ->
 	)
 	moments.on_event(event)
 	rest = moments.tally.position
+	# The sequence runs, so the frames below are watched while it does.
+	assert_bool(moments.sequence.is_running()).is_true()
 	while moments.sequence.is_running():
 		for tile: Control in moments.tally.find_children("*", "PanelContainer", false, false):
 			moved[0] = moved[0] or tile.scale != Vector2.ONE

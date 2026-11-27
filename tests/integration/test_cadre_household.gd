@@ -76,8 +76,8 @@ func test_cultural_revolution_turns_only_the_holders_order() -> void:
 	var table: SeatRules = _table("cultural_revolution")
 	var trick: RoundState = _round(table, ["99993", "8888KKKK", "AAAA4"])
 	assert_int(_play(trick, "9999")).is_equal(OK)
-	assert_bool(table.map_for(0) == Ranks.identity_map()).is_true()
-	assert_bool(table.map_for(2) == Ranks.identity_map()).is_true()
+	assert_that(table.map_for(0)).is_equal(Ranks.identity_map())
+	assert_that(table.map_for(2)).is_equal(Ranks.identity_map())
 	assert_int(table.map_for(HOLDER)[Ranks.THREE]).is_equal(Ranks.BIG_JOKER)
 	assert_int(_play(trick, "KKKK")).is_equal(DOES_NOT_BEAT)
 	assert_int(_play(trick, "8888")).is_equal(OK)
@@ -89,7 +89,7 @@ func test_cultural_revolution_turns_only_the_holders_order() -> void:
 	assert_int(_play(after, "7777")).is_equal(DOES_NOT_BEAT)
 	_pass(after)
 	_pass(after)
-	assert_bool(table.map_for(HOLDER) == Ranks.identity_map()).is_true()
+	assert_that(table.map_for(HOLDER)).is_equal(Ranks.identity_map())
 
 
 ## The holder may lead a 4-card Straight. A villager has no 4-card Straight to answer it

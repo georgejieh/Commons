@@ -1,12 +1,9 @@
 extends GdUnitTestSuite
-## The Quota report's seals stand whole (P5.2a): the owner saw the met seal at the bar's
-## right end cut off by the Famine figure under it. The bar now stands in a band as tall as
-## its widest seal, so the met, overfulfilled and short seals stand clear of the Coupons
+## The Quota report's seals stand whole: the bar stands in a band as tall as its widest
+## seal, so the met, overfulfilled and short seals stand clear of the Coupons
 ## and Famine figures at every text size and both screen sizes.
 
 const SEED: int = 5303
-const SAVE_PATH: String = "user://test_summary_seals/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -15,11 +12,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -47,7 +41,7 @@ func test_the_reports_seals_stand_clear_of_the_figures() -> void:
 	for first: float in [0.01, 1e12]:
 		_play_first_quota(first)
 		for level: int in TextSize.count():
-			for screen_size: Vector2i in SIZES:
+			for screen_size: Vector2i in ClipCheck.SIZES:
 				Settings.set_value(TextSize.SETTING, level)
 				get_tree().root.size = screen_size
 				var report: SetSummaryScreen = _app.show_screen("set_summary", true)

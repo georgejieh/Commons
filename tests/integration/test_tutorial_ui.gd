@@ -1,22 +1,21 @@
 extends GdUnitTestSuite
-## The arrival through the app (ADR 0026, P4.15): offered only with no profile save,
+## The arrival through the app (ADR 0026): offered only with no profile save,
 ## after the content note; finished with the keyboard alone, its slip beside every step's
 ## target and never over it or the hand, in type 20 px or more, at 1920x1080 and
 ## 1280x800; finishing writes the profile's first save once, with the arrival seen, then
 ## run setup; skipping writes the same and goes to the title; quitting part-way writes
 ## nothing; a replay ends at the title and leaves the profile and a real run save as they
-## were; a refused action pulses the slip. Since the first cloud frames: the slip keeps
+## were; a refused action pulses the slip. The slip keeps
 ## clear of the brigade notice, and the store's detail slip stays closed while the
 ## arrival runs.
 
-const SAVE_PATH: String = "user://test_tutorial_ui/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
 const LEAST_TYPE: int = 20
 const DARK_INK: float = 0.35
-const SLACK: float = 1.5
 ## The longest any wait may take, in milliseconds.
 const WAIT_MSEC: int = 20000
+
+static var _save_path: String = TestFolder.of("test_tutorial_ui") + "run.json"
 
 var _app: DemoApp = null
 var _was_size: Vector2i
@@ -29,7 +28,7 @@ func before_test() -> void:
 		_saved[key] = Settings.value(key)
 	Settings.set_value("content_note_seen", true)
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 
@@ -45,9 +44,7 @@ func after_test() -> void:
 func _launch() -> DemoApp:
 	if _app != null and is_instance_valid(_app):
 		_app.free()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	await await_idle_frame()
 	return _app
 
@@ -55,7 +52,7 @@ func _launch() -> DemoApp:
 ## Takes the surname page's default with one press of Enter, for the Arrival page.
 func _past_surname() -> void:
 	assert_str(_app.switcher.current_id()).is_equal("surname")
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	await await_idle_frame()
 
 
@@ -127,7 +124,7 @@ func test_quitting_part_way_writes_nothing_and_offers_it_again() -> void:
 	await _launch()
 	_app.arrival.start()
 	await _until_prompt()
-	await _key(KEY_SPACE)
+	await TestInput.tap_key(self, KEY_SPACE)
 	_app.free()
 	_app = null
 	assert_bool(ProfileSeen.exists(Saves.profile_service())).is_false()
@@ -143,7 +140,7 @@ func test_a_refused_action_changes_nothing_and_marks_the_slip() -> void:
 	var director: TutorialDirector = _app.arrival.director
 	assert_int(director.index()).is_equal(0)
 	# Calling is not what the first step asks for: Enter presses Call, which is refused.
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_int(director.index()).is_equal(0)
 	assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_BID)
 	assert_bool(_app.arrival.layer.slip().shows_cross()).is_true()
@@ -152,13 +149,13 @@ func test_a_refused_action_changes_nothing_and_marks_the_slip() -> void:
 ## The whole arrival with the keyboard alone at 1920x1080, then run setup and the
 ## profile's first save.
 func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
-	get_tree().root.size = SIZES[0]
+	get_tree().root.size = ClipCheck.SIZES[0]
 	await _launch()
 	var naming: SurnameScreen = _app.switcher.current()
 	var surname: String = naming.field().text
 	await _past_surname()
 	(_app.switcher.current() as ArrivalScreen).sit_in_button().grab_focus()
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	await _walk("1080")
 	assert_str(_app.switcher.current_id()).is_equal("run_setup")
 	var data: ProfileData = Profile.read(Saves.profile_service())
@@ -173,7 +170,7 @@ func test_the_keyboard_finishes_the_arrival_at_1080() -> void:
 ## Replayed from the title at 1280x800 over a profile with history and a run in progress:
 ## it ends at the title, and the profile and the run save are byte for byte as they were.
 func test_a_replay_at_800_leaves_the_profile_and_run_save_alone() -> void:
-	get_tree().root.size = SIZES[1]
+	get_tree().root.size = ClipCheck.SIZES[1]
 	var data: ProfileData = ProfileData.new()
 	data.seen.append("tutorial")
 	data.finished_runs = 2
@@ -235,22 +232,22 @@ func _walk(where: String) -> void:
 func _answer(step: TutorialStep) -> void:
 	match step.action:
 		TutorialStep.Action.BID_PASS, TutorialStep.Action.PASS:
-			await _key(KEY_SPACE)
+			await TestInput.tap_key(self, KEY_SPACE)
 		TutorialStep.Action.BID_CALL, TutorialStep.Action.PLAY, TutorialStep.Action.NEED:
-			await _key(KEY_ENTER)
+			await TestInput.tap_key(self, KEY_ENTER)
 		TutorialStep.Action.BUTTON:
 			if step.button == "rules":
-				await _key(KEY_R)
+				await TestInput.tap_key(self, KEY_R)
 				await _until_line(step.then_key)
 				await _check_slip("rules open")
-				await _key(KEY_ESCAPE)
+				await TestInput.tap_key(self, KEY_ESCAPE)
 			elif not step.via.is_empty():
-				await _key(KEY_ENTER)
+				await TestInput.tap_key(self, KEY_ENTER)
 				await _until_prompt()
 				await _check_slip("black market")
-				await _key(KEY_ENTER)
+				await TestInput.tap_key(self, KEY_ENTER)
 			else:
-				await _key(KEY_ENTER)
+				await TestInput.tap_key(self, KEY_ENTER)
 
 
 ## Waits until the step is done: the director moved past it, or the arrival ended.
@@ -300,7 +297,7 @@ func _check_slip(where: String) -> void:
 	var ink: float = label.get_theme_color("font_color").get_luminance()
 	assert_float(ink).override_failure_message(where).is_less(DARK_INK)
 	var rect: Rect2 = slip.get_global_rect()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(rect)).override_failure_message(where).is_true()
 	var target: Rect2 = layer.glow().lit_area()
 	assert_bool(target.has_area()).override_failure_message(where + " light").is_true()
@@ -308,15 +305,15 @@ func _check_slip(where: String) -> void:
 	var table: TableScreen = _app.switcher.current() as TableScreen
 	if table != null:
 		# The hand, and the brigade notice on the wall behind the table.
-		for hand: Rect2 in table.tutorial().tutorial_avoid():
+		for hand: Rect2 in table.tutorial.tutorial_avoid():
 			assert_bool(rect.intersects(hand)).override_failure_message(where + " hand").is_false()
-		var sheet: CheatSheet = table.get("_cheat_sheet")
+		var sheet: CheatSheet = table.cheat_sheet
 		if not sheet.visible:
-			var pile: Control = table.get("_pile")
-			var moments: TableMoments = table.get("_moments")
+			var pile: Control = table.pile
+			var moments: TableMoments = table.moments
 			var kept: Dictionary[String, Rect2] = {
-				"prompt": table.actions().reading.get_global_rect(),
-				"buttons": table.actions().get_global_rect(),
+				"prompt": table.actions.reading.get_global_rect(),
+				"buttons": table.actions.get_global_rect(),
 				"trick": pile.get_global_rect(),
 				"score": moments.sequence.room(),
 			}
@@ -324,28 +321,16 @@ func _check_slip(where: String) -> void:
 				var over: bool = rect.intersects(kept[piece])
 				assert_bool(over).override_failure_message("%s %s" % [where, piece]).is_false()
 			# The empty Cadre board is put away under the slip, and Skip clears the ledger.
-			var board: Control = table.get("_board")
+			var board: Control = table.board
 			assert_bool(board.visible).override_failure_message(where + " board").is_false()
-			var ledger: Control = table.get("_ledger")
+			var ledger: Control = table.ledger
 			var paper: Rect2 = (ledger.get_parent() as Control).get_global_rect()
 			var skip: bool = layer.skip_button().get_global_rect().intersects(paper)
 			assert_bool(skip).override_failure_message(where + " skip on ledger").is_false()
 	var store: StoreScreen = _app.switcher.current() as StoreScreen
 	if store != null:
 		# Wang's slip is the only explanation on screen while the arrival runs.
-		assert_bool(store.slip().visible).override_failure_message(where + " detail").is_false()
-
-
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.physical_keycode = code
-		key.keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-	await await_idle_frame()
+		assert_bool(store.slip.visible).override_failure_message(where + " detail").is_false()
 
 
 ## The table names the brigade notice among what the slip must keep clear of.
@@ -355,7 +340,7 @@ func test_the_table_names_the_notice_to_keep_clear_of() -> void:
 	_app.arrival.start()
 	await _until_prompt()
 	var table: TableScreen = _app.switcher.current()
-	var notice: bool = table.tutorial().tutorial_avoid().any(
+	var notice: bool = table.tutorial.tutorial_avoid().any(
 		func(rect: Rect2) -> bool: return rect.size.is_equal_approx(DreadDressing.NOTICE_AT.size)
 	)
 	assert_bool(notice).is_true()

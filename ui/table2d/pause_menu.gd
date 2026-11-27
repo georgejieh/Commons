@@ -27,16 +27,20 @@ const DIM: Color = Color(0.05, 0.03, 0.02, 0.78)
 ## The table's own menu: its settings sheet says a new text size reaches the table at
 ## the next deal (ADR 0034). Set before the menu enters the tree.
 var at_table: bool = false
+## The menu's first page, with its ways out.
+var main: VBoxContainer
+## The settings page.
+var settings: VBoxContainer
+## The question before abandoning the run.
+var confirm: VBoxContainer
+## The window's settings.
+var window: VBoxContainer
 var _app: DemoApp = null
 var _stack: VBoxContainer = VBoxContainer.new()
 ## The text size the pages were built at, and the one the menu opened at.
 var _built_size: int = -1
 var _opened_size: int = -1
-var _main: VBoxContainer
-var _settings: VBoxContainer
-var _confirm: VBoxContainer
 var _controls: ControlsPage
-var _window: VBoxContainer
 var _resume: Button
 var _keep: Button
 var _abandon: Button
@@ -66,17 +70,17 @@ func _build_pages() -> void:
 		_stack.remove_child(page)
 		page.queue_free()
 	_built_size = TextSize.level()
-	_main = _menu()
-	_settings = _settings_page()
-	_confirm = _confirm_page()
+	main = _menu()
+	settings = _settings_page()
+	confirm = _confirm_page()
 	_controls = ControlsPage.new(true)
-	_controls.left.connect(_back_to_settings.bind(SettingsPanel.controls_button(_settings)))
-	_window = _window_page()
-	_stack.add_child(_main)
-	_stack.add_child(_settings)
-	_stack.add_child(_confirm)
+	_controls.left.connect(_back_to_settings.bind(SettingsPanel.controls_button(settings)))
+	window = _window_page()
+	_stack.add_child(main)
+	_stack.add_child(settings)
+	_stack.add_child(confirm)
 	_stack.add_child(_controls)
-	_stack.add_child(_window)
+	_stack.add_child(window)
 
 
 ## A new text size rebuilds the pages at once, still on the settings page, with the focus
@@ -90,8 +94,8 @@ func _rebuild_on_settings() -> void:
 	if _built_size == TextSize.level():
 		return
 	_build_pages()
-	_show_page(_settings)
-	SettingsPanel.chosen_text_size(_settings).grab_focus()
+	_show_page(settings)
+	SettingsPanel.chosen_text_size(settings).grab_focus()
 
 
 ## Sends the menu's ways out to the app's screens.
@@ -110,7 +114,7 @@ func open() -> void:
 	_opened_size = TextSize.level()
 	visible = true
 	move_to_front()
-	_show_page(_main)
+	_show_page(main)
 
 
 func close() -> void:
@@ -134,10 +138,10 @@ func _menu() -> VBoxContainer:
 	sheet.add_child(
 		_wide(tr("pause.last_round"), CommonsTheme.SECONDARY, _leave.bind(last_round_chosen))
 	)
-	var settings: Callable = func() -> void: _show_page(_settings)
-	sheet.add_child(_wide(tr("pause.settings"), CommonsTheme.SECONDARY, settings))
+	var to_settings: Callable = func() -> void: _show_page(settings)
+	sheet.add_child(_wide(tr("pause.settings"), CommonsTheme.SECONDARY, to_settings))
 	sheet.add_child(_wide(tr("pause.to_title"), CommonsTheme.GHOST, _leave.bind(title_chosen)))
-	var ask: Callable = func() -> void: _show_page(_confirm)
+	var ask: Callable = func() -> void: _show_page(confirm)
 	sheet.add_child(_wide(tr("menu.abandon"), CommonsTheme.GHOST, ask))
 	sheet.add_child(_wide(tr("pause.quit"), CommonsTheme.GHOST, _leave.bind(quit_chosen)))
 	sheet.add_child(ScreenKit.styled(tr("pause.saved"), CommonsTheme.CAPTION))
@@ -149,10 +153,10 @@ func _menu() -> VBoxContainer:
 func _settings_page() -> VBoxContainer:
 	var page: VBoxContainer = VBoxContainer.new()
 	page.add_theme_constant_override("separation", 16)
-	var controls: Callable = func() -> void: _show_page(_controls)
-	var window: Callable = func() -> void: _show_page(_window)
-	page.add_child(SettingsPanel.build(at_table, controls, window))
-	var back: Callable = func() -> void: _show_page(_main)
+	var to_controls: Callable = func() -> void: _show_page(_controls)
+	var to_window: Callable = func() -> void: _show_page(window)
+	page.add_child(SettingsPanel.build(at_table, to_controls, to_window))
+	var back: Callable = func() -> void: _show_page(main)
 	page.add_child(_wide(tr("settings.back"), CommonsTheme.PRIMARY, back))
 	return page
 
@@ -161,7 +165,7 @@ func _window_page() -> VBoxContainer:
 	var page: VBoxContainer = VBoxContainer.new()
 	page.add_theme_constant_override("separation", 16)
 	page.add_child(WindowSheet.build())
-	var back: Callable = _back_to_settings.bind(SettingsPanel.window_button(_settings))
+	var back: Callable = _back_to_settings.bind(SettingsPanel.window_button(settings))
 	page.add_child(_wide(tr("settings.back"), CommonsTheme.PRIMARY, back))
 	return page
 
@@ -184,20 +188,20 @@ func _confirm_page() -> VBoxContainer:
 
 ## Shows one page, with the focus on its first way out.
 func _show_page(page: VBoxContainer) -> void:
-	for each: VBoxContainer in [_main, _settings, _confirm, _controls, _window]:
+	for each: VBoxContainer in [main, settings, confirm, _controls, window]:
 		each.visible = each == page
 	UiMotion.enter([page] as Array[Control])
-	if page == _main:
+	if page == main:
 		_resume.grab_focus()
-	elif page == _confirm:
+	elif page == confirm:
 		_keep.grab_focus()
 	elif page == _controls:
 		_controls.focus_first()
-	elif page == _window:
-		WindowSheet.chosen_mode(_window).grab_focus()
+	elif page == window:
+		WindowSheet.chosen_mode(window).grab_focus()
 	else:
 		# The settings sheet's first control, so a keyboard or gamepad can reach Controls.
-		var first: Control = _settings.find_next_valid_focus()
+		var first: Control = settings.find_next_valid_focus()
 		if first != null:
 			first.grab_focus()
 
@@ -205,7 +209,7 @@ func _show_page(page: VBoxContainer) -> void:
 ## From the Controls or Window page back to the settings, with the focus on the ticket
 ## that opened it.
 func _back_to_settings(ticket: Button) -> void:
-	_show_page(_settings)
+	_show_page(settings)
 	ticket.grab_focus()
 
 
@@ -216,7 +220,7 @@ func controls_page() -> ControlsPage:
 
 ## True while the menu asks whether to abandon the run.
 func is_confirming() -> bool:
-	return visible and _confirm.visible
+	return visible and confirm.visible
 
 
 ## The confirm page's two buttons, for tests and the playtest.
@@ -244,10 +248,10 @@ func _wide(text: String, kind: String, action: Callable) -> Button:
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):
 		# Cancel on the question goes back to the menu, not past it.
-		if _confirm.visible:
-			_show_page(_main)
-		elif _window.visible:
-			_back_to_settings(SettingsPanel.window_button(_settings))
+		if confirm.visible:
+			_show_page(main)
+		elif window.visible:
+			_back_to_settings(SettingsPanel.window_button(settings))
 		else:
 			close()
 		get_viewport().set_input_as_handled()

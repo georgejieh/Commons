@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 ## judged on, so the save and load times are NOT MEASURED too. It exits 1 exactly when a
 ## measured row missed.
 
-const REPORT: String = "user://test_perf_budget/report.md"
 const HEADLESS_ROWS: Array[String] = [
 	"Hand classification",
 	"Legal moves, 20-card hand",
@@ -41,9 +40,11 @@ const TINY: PackedStringArray = [
 	"2",
 ]
 
+static var _report: String = TestFolder.of("test_perf_budget") + "report.md"
+
 
 func after_test() -> void:
-	DirAccess.remove_absolute(REPORT)
+	DirAccess.remove_absolute(_report)
 
 
 func _run(extra: PackedStringArray) -> int:
@@ -57,7 +58,8 @@ func _run(extra: PackedStringArray) -> int:
 	]
 	arguments.append_array(TINY)
 	arguments.append_array(extra)
-	arguments.append_array(["--out", REPORT])
+	arguments.append_array(["--out", _report])
+	# OS.execute has no time limit of its own: tools/test.sh bounds the whole run.
 	return OS.execute(OS.get_executable_path(), arguments)
 
 
@@ -70,7 +72,7 @@ func _row(text: String, row_name: String) -> String:
 
 func test_the_headless_report_has_every_row_and_the_exit_code_follows_the_misses() -> void:
 	var code: int = _run(PackedStringArray(["--windowed-rows"]))
-	var text: String = FileAccess.get_file_as_string(REPORT)
+	var text: String = FileAccess.get_file_as_string(_report)
 	assert_str(text).contains("# Performance budget")
 	assert_str(text).contains("- Godot: ")
 	for row_name: String in HEADLESS_ROWS:

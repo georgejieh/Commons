@@ -1,19 +1,15 @@
 extends GdUnitTestSuite
-## Every screen is reachable through the buttons a player presses (P3B.9), and going
+## Every screen is reachable through the buttons a player presses, and going
 ## back from a screen opened over the run never changes the run.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_screen_navigation/run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -55,7 +51,7 @@ func test_the_table_menu_reaches_the_dossier_and_last_round_and_back() -> void:
 	var before: Dictionary = _app.controller.state_copy().to_dict()
 	for pair: Array in [["dossier.open", "dossier"], ["pause.last_round", "round_summary"]]:
 		table = _app.switcher.current()
-		table.call("_open_pause")
+		table.hud.menu.pressed.emit()
 		_press(pair[0])
 		await await_idle_frame()
 		assert_str(_app.switcher.current_id()).is_equal(pair[1])

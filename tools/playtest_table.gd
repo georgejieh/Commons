@@ -17,7 +17,7 @@ var hint_shot: bool = false
 ## Presses every table control once and photographs the result.
 func tour(table: Node) -> void:
 	await _moment_frames(table)
-	var actions: Object = table.call("actions")
+	var actions: Object = table.get("actions")
 	for mode: int in 3:
 		await _press(actions.get("sort"))
 		await _frames(30)
@@ -33,11 +33,11 @@ func tour(table: Node) -> void:
 	await _shot("tour_rules")
 	await _mouse_click(Vector2(60, 1040))
 	await _frames(10)
-	var hud: Object = member(table, "_hud")
+	var hud: Object = member(table, "hud")
 	await _press(hud.get("menu"))
 	await _frames(30)
 	await _shot("tour_menu")
-	var pause: Node = member(table, "_pause")
+	var pause: Node = member(table, "pause")
 	await _press_text_in(pause, tr("pause.settings"))
 	await _frames(30)
 	await _shot("tour_menu_settings")
@@ -63,13 +63,13 @@ func tour(table: Node) -> void:
 ## tour's own hint may have been a pass. A turn whose hint marks nothing is left for a
 ## later one. The selection is cleared after, so the walk plays its own choice.
 func hint_cards_frame(table: Node, where: String) -> void:
-	var pile: Node = member(table, "_pile")
+	var pile: Node = member(table, "pile")
 	if int(pile.call("play_count")) > 0:
 		return
 	var hand: Object = app.get("hand")
 	hand.call("clear")
 	await _frames(2)
-	var actions: Object = table.call("actions")
+	var actions: Object = table.get("actions")
 	await _press(actions.get("hint"))
 	await _frames(20)
 	var ticked: Array = hand.call("selected_ids")
@@ -86,7 +86,7 @@ func hint_cards_frame(table: Node, where: String) -> void:
 ## The fan must show exactly the cards the player holds, each once.
 func check_fan(table: Node, where: String) -> void:
 	var held: Array = view(_controller(), "table").call("player_cards")
-	var views: Array = member(member(table, "_hand_view"), "_views")
+	var views: Array = member(member(table, "hand_view"), "_views")
 	var shown: Dictionary[int, bool] = {}
 	for view: Control in views:
 		if view.visible:
@@ -97,10 +97,10 @@ func check_fan(table: Node, where: String) -> void:
 
 ## Menu, Return to title, then Continue: the run must pick up on the same bid.
 func leave_and_continue(table: Node) -> void:
-	var hud: Object = member(table, "_hud")
+	var hud: Object = member(table, "hud")
 	await _press(hud.get("menu"))
 	await _frames(20)
-	await _press_text_in(member(table, "_pause"), tr("pause.to_title"))
+	await _press_text_in(member(table, "pause"), tr("pause.to_title"))
 	await _frames(30)
 	await _shot("resume_title")
 	await _click_button_with_text(tr("title.continue"))
@@ -114,7 +114,7 @@ func leave_and_continue(table: Node) -> void:
 ## Photographs the audit dice as they tumble and once they have settled, when the bowl
 ## drops in after a claim; the claims on the slip come first, a step apart.
 func dice_frames(table: Node, round_number: int) -> void:
-	var moments: Object = member(table, "_moments")
+	var moments: Object = member(table, "moments")
 	# Held weakly: under reduced motion the round can end and take the table with it
 	# before the dice are looked at, and a gone bowl rolls no more.
 	var bowl: WeakRef = weakref(moments.get("dice"))
@@ -141,7 +141,7 @@ func campaign_turn(table: Node) -> void:
 	var loop: RunLoop = _loop()
 	var snapshot: Dictionary = loop.record.to_dict()
 	loop.state.inventory.consumables.assign(["model_harvest", "registration_drive"])
-	var campaigns: Object = member(table, "_campaigns")
+	var campaigns: Object = member(table, "campaigns")
 	campaigns.call("refresh")
 	var tray: Object = campaigns.get("tray")
 	await _shot("table_campaign_tray")
@@ -202,7 +202,7 @@ func _is_marked(card: CardInstance) -> bool:
 ## Plays the table's big moments by hand and photographs each a few frames apart, so
 ## their look can be checked without watching them move.
 func _moment_frames(table: Node) -> void:
-	var moments: Object = member(table, "_moments")
+	var moments: Object = member(table, "moments")
 	var callout: Object = moments.get("callout")
 	var face: Texture2D = app.call("seat_portrait", 1, Vector2.ONE)
 	var red: Color = Color("b02a17")
@@ -218,7 +218,7 @@ func _moment_frames(table: Node) -> void:
 	for frame: int in 3:
 		await _snap("moment_kitty_%d" % frame)
 	await tree.create_timer(2.0).timeout
-	var hud: Object = member(table, "_hud")
+	var hud: Object = member(table, "hud")
 	hud.call("add_progress", 1600.0, 0.0)
 	callout.call("shout", "Quota met", 1, red, "1.6K of 1.5K work points", null, true)
 	for frame: int in 3:
@@ -248,7 +248,7 @@ func _moment_frames(table: Node) -> void:
 ## The dice bowl settled on a 1 and a 4, so the red 1 and its audit ring show, at each of
 ## BOWL_STAGES. The stage override is put back after.
 func _bowl_frames(table: Node) -> void:
-	var moments: Object = member(table, "_moments")
+	var moments: Object = member(table, "moments")
 	var bowl: Object = moments.get("dice")
 	var seats: Array[int] = [1, 2]
 	var faces: Array[int] = [1, 4]

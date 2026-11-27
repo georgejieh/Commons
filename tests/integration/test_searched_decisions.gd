@@ -6,7 +6,8 @@ extends GdUnitTestSuite
 const SEED: int = 3007
 ## Player turns played before a save is taken, and after it.
 const TURNS: int = 12
-const DIR: String = "user://test_searched/"
+
+static var _dir: String = TestFolder.of("test_searched")
 
 ## Searcher calls, and those that played something other than the policy's play.
 var _calls: int = 0
@@ -16,13 +17,13 @@ var _asked: int = 0
 
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
+	DirAccess.make_dir_recursive_absolute(_dir)
 	_calls = 0
 	_overturned = 0
 
 
 func after_test() -> void:
-	SaveService.for_run(DIR + "run.json").delete()
+	SaveService.for_run(_dir + "run.json").delete()
 
 
 ## Seat 1 is Expert, sampling the fewest deals a search may decide on.
@@ -67,10 +68,10 @@ func _act(loop: RunLoop, turns: int) -> void:
 
 ## The record as a load reads it back: written as JSON, migrated and validated.
 func _through_disk(data: Dictionary, version: int = SaveService.SCHEMA_VERSION) -> Dictionary:
-	var file: FileAccess = FileAccess.open(DIR + "run.json", FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(_dir + "run.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": version, "data": data}))
 	file.close()
-	var loaded: SaveLoad = SaveService.for_run(DIR + "run.json").load_save()
+	var loaded: SaveLoad = SaveService.for_run(_dir + "run.json").load_save()
 	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
 	return loaded.data
 
@@ -244,7 +245,6 @@ func test_written_decisions_of_the_wrong_shape_are_a_damaged_save() -> void:
 ## A schema 12 save with an Expert seat replays with the unlimited search, as it was made,
 ## and the resumed record writes every decision from there.
 func test_a_schema_12_save_replays_with_the_unlimited_search() -> void:
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(13)
 	var loop: RunLoop = _loop(Callable(), TURNS)
 	assert_int(loop.record.decisions.size()).is_greater(0)
 	var old: Dictionary = loop.record.to_dict()

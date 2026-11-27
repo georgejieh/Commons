@@ -4,7 +4,6 @@ extends GdUnitTestSuite
 ## tutorial's slip refusing a click under reduced motion shows a cross with its border.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_colour_cues/run.json"
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const CARD: PackedScene = preload("res://ui/cards/card_view.tscn")
 ## The narrowest strip of a card the fan leaves showing that the tick must sit in.
@@ -43,11 +42,8 @@ func test_the_seat_count_says_few_cards_in_words() -> void:
 
 ## The longer words fit on every seat at every text size on both screens.
 func test_the_few_cards_words_fit_every_seat() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: DemoApp = auto_free(scene.instantiate())
-	add_child(app)
+	AppKit.fresh_saves(self)
+	var app: DemoApp = AppKit.make(self)
 	app.new_run(SEED)
 	var problems: PackedStringArray = []
 	for level: int in TextSize.count():
@@ -57,7 +53,7 @@ func test_the_few_cards_words_fit_every_seat() -> void:
 			var table: TableScreen = app.show_screen("table", true)
 			await await_idle_frame()
 			table.skip_events()
-			var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+			var seats: Dictionary[int, SeatPanel] = table.seats
 			for cards: int in [2, 1]:
 				for seat: int in seats:
 					seats[seat].set_count(cards)

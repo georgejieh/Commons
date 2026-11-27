@@ -9,7 +9,6 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 ## How many seeds the opening test may try before it fails.
 const OPENING_SEEDS: int = 8
-const SAVE_PATH: String = "user://test_campaign_ui/run.json"
 const WAIT_SECONDS: float = 6.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
 
@@ -20,11 +19,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = SCREEN
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -70,24 +66,24 @@ func _open_table() -> TableScreen:
 
 
 func _campaigns(table: TableScreen) -> TableCampaigns:
-	return table.get("_campaigns")
+	return table.campaigns
 
 
 func _wait_idle(table: TableScreen) -> void:
-	var player: EventPlayer = table.get("_player")
-	var waited: float = 0.0
-	while (
-		(not player.is_idle() or _campaigns(table).moments.is_playing()) and waited < WAIT_SECONDS
-	):
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	var player: EventPlayer = table.player
+	var moments: CampaignMoments = _campaigns(table).moments
+	var idle: Callable = func() -> bool: return player.is_idle() and not moments.is_playing()
+	await TestWait.until(
+		self, idle, "the table's events and Campaign moments to play", WAIT_SECONDS
+	)
 
 
-func _press(table: TableScreen, action: String) -> void:
+func _press(action: String) -> void:
 	var event: InputEventAction = InputEventAction.new()
 	event.action = action
 	event.pressed = true
-	table.call("_unhandled_input", event)
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
 
 
 func test_the_tray_shows_held_leaflets_clear_of_the_table() -> void:
@@ -110,7 +106,7 @@ func test_arming_then_cancelling_leaves_no_state_behind() -> void:
 	var table: TableScreen = await _open_table()
 	var tray: CampaignTray = _campaigns(table).tray
 	var hand: HandModel = _app.hand
-	var reading: String = table.actions().reading.text
+	var reading: String = table.actions.reading.text
 	var before: Dictionary = _app.controller.state_copy().to_dict()
 	var commands: int = _record_size()
 	hand.toggle(hand.cards()[0].id())
@@ -119,21 +115,21 @@ func test_arming_then_cancelling_leaves_no_state_behind() -> void:
 	assert_bool(tray.use.visible).is_true()
 	assert_array(hand.selected_ids()).is_empty()
 	# Armed, the Use and Cancel buttons stay clear of the trick and the hand too.
-	var pile: Control = table.get("_pile")
-	var hand_view: Control = table.get("_hand_view")
+	var pile: Control = table.pile
+	var hand_view: Control = table.hand_view
 	for button: Button in [tray.use, tray.cancel]:
 		assert_bool(button.get_global_rect().intersects(pile.get_global_rect())).is_false()
 		assert_bool(button.get_global_rect().intersects(hand_view.get_global_rect())).is_false()
-	assert_str(table.actions().reading.text).is_equal(
+	assert_str(table.actions.reading.text).is_equal(
 		_app.controller.texts.campaign_prompt("model_harvest")
 	)
-	assert_bool(table.actions().play.disabled).is_true()
+	assert_bool(table.actions.play.disabled).is_true()
 	hand.toggle(hand.cards()[1].id())
 	tray.cancel.pressed.emit()
 	assert_int(tray.armed_slot()).is_equal(-1)
 	assert_bool(tray.use.visible).is_false()
 	assert_array(hand.selected_ids()).is_empty()
-	assert_str(table.actions().reading.text).is_equal(reading)
+	assert_str(table.actions.reading.text).is_equal(reading)
 	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
 	assert_int(_record_size()).is_equal(commands)
 
@@ -174,7 +170,7 @@ func test_a_use_plays_out_marks_the_hand_and_leaves_no_node_behind() -> void:
 	assert_bool(_drive_to(RunController.AWAIT_PLAY)).is_true()
 	var table: TableScreen = await _open_table()
 	var campaigns: TableCampaigns = _campaigns(table)
-	var pool: CardPool = table.get("_pool")
+	var pool: CardPool = table.pool
 	var free: int = pool.free_count()
 	var parts: int = campaigns.moments.get_child_count()
 	var hand: HandModel = _app.hand
@@ -192,12 +188,12 @@ func test_a_use_plays_out_marks_the_hand_and_leaves_no_node_behind() -> void:
 	assert_bool(campaigns.moments.is_playing()).is_false()
 	assert_int(campaigns.moments.get_child_count()).is_equal(parts)
 	assert_int(pool.free_count()).is_equal(free)
-	var hand_view: HandView = table.get("_hand_view")
+	var hand_view: HandView = table.hand_view
 	var marked: int = 0
 	for child: Node in hand_view.get_children():
 		var view: CardView = child as CardView
 		if view != null and view.visible and chosen.has(view.card_id):
-			assert_bool(view.shown_enhancement() == CardInstance.MODEL).is_true()
+			assert_that(view.shown_enhancement()).is_equal(CardInstance.MODEL)
 			marked += 1
 	assert_int(marked).is_equal(2)
 	assert_bool(campaigns.tray.leaflet(0).visible).is_false()
@@ -208,7 +204,7 @@ func test_a_seizure_flies_real_cards_and_gives_the_pool_back() -> void:
 	assert_bool(_drive_to(RunController.AWAIT_PLAY)).is_true()
 	var table: TableScreen = await _open_table()
 	var campaigns: TableCampaigns = _campaigns(table)
-	var pool: CardPool = table.get("_pool")
+	var pool: CardPool = table.pool
 	var free: int = pool.free_count()
 	campaigns.tray.arm(0)
 	campaigns.tray.use_armed()
@@ -234,18 +230,18 @@ func test_the_keyboard_reaches_the_tray_and_backs_out() -> void:
 	assert_bool(_drive_to(RunController.AWAIT_PLAY)).is_true()
 	var table: TableScreen = await _open_table()
 	var tray: CampaignTray = _campaigns(table).tray
-	_press(table, "commons_campaign")
+	_press("commons_campaign")
 	assert_int(tray.cursor_slot()).is_equal(0)
 	assert_bool(tray.leaflet(0).cursor).is_true()
-	_press(table, "commons_play")
+	_press("commons_play")
 	assert_int(tray.armed_slot()).is_equal(0)
-	_press(table, "ui_cancel")
+	_press("ui_cancel")
 	assert_int(tray.armed_slot()).is_equal(-1)
-	var pause: PauseMenu = table.get("_pause")
+	var pause: PauseMenu = table.pause
 	assert_bool(pause.visible).is_false()
-	_press(table, "commons_campaign")
+	_press("commons_campaign")
 	assert_int(tray.cursor_slot()).is_equal(1)
-	_press(table, "commons_campaign")
+	_press("commons_campaign")
 	assert_int(tray.cursor_slot()).is_equal(-1)
 
 
@@ -276,8 +272,7 @@ func test_campaign_paper_is_aged_and_wears_with_the_stage() -> void:
 
 func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
@@ -286,7 +281,7 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 		var store: StoreScreen = _app.show_screen(screen_id, true)
 		await await_idle_frame()
 		await await_idle_frame()
-		var stall: CampaignStall = store.get("_campaign_stall")
+		var stall: CampaignStall = store.campaign_stall
 		var buy: Button = null
 		for node: Node in store.find_children("*", "Button", true, false):
 			var button: Button = node as Button
@@ -300,10 +295,12 @@ func test_the_shops_offer_a_campaign_and_its_tray_within_1080() -> void:
 		_check_inside(store, screen_id)
 		var held: int = _app.controller.items.held_campaigns().size()
 		buy.pressed.emit()
-		var waited: float = 0.0
-		while stall.is_busy() and waited < WAIT_SECONDS:
-			await get_tree().process_frame
-			waited += get_process_delta_time()
+		await TestWait.until(
+			self,
+			func() -> bool: return not stall.is_busy(),
+			"the stall to finish what it acts out",
+			WAIT_SECONDS
+		)
 		assert_int(_app.controller.items.held_campaigns().size()).is_equal(held + 1)
 		assert_bool(stall.tray.leaflet(held).visible).is_true()
 
@@ -347,7 +344,7 @@ func test_the_opening_offers_play_on_and_plays_on() -> void:
 			break
 	assert_bool(reached).is_true()
 	var table: TableScreen = await _open_table()
-	var actions: ActionBar = table.actions()
+	var actions: ActionBar = table.actions
 	assert_bool(actions.play_on.is_visible_in_tree()).is_true()
 	assert_str(actions.reading.text).is_equal(tr("campaign.opening"))
 	assert_float(_campaigns(table).tray.leaflet(0).modulate.a).is_equal(1.0)

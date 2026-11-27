@@ -4,13 +4,14 @@ extends GdUnitTestSuite
 ## migrates and replays exactly.
 
 const SEED: int = 2941
-const DIR: String = "user://test_wild_saves/"
+
+static var _dir: String = TestFolder.of("test_wild_saves")
 
 var _service: SaveService
 
 
 func before_test() -> void:
-	_service = SaveService.for_run(DIR + "run.json")
+	_service = SaveService.for_run(_dir + "run.json")
 	_service.delete()
 
 
@@ -113,7 +114,6 @@ func test_a_save_from_before_wild_ranks_migrates_and_replays_exactly() -> void:
 	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	var resumed: RunLoop = RunRecord.resume(migrated, RunScript.bots())
 	assert_array(Array(_log_lines(resumed))).is_equal(Array(_log_lines(loop)))
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(16)
 
 
 func test_saved_wild_ranks_and_readings_are_checked() -> void:

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0022's books across saves (P4.19): a run with corrections replays to the same
+## ADR 0022's books across saves: a run with corrections replays to the same
 ## state, the dark flags survive a save and a reload, the family's file raises every
 ## target, a run with neither computes as before, the saved shapes validate strictly,
 ## and a schema 16 record migrates with empty books.
@@ -44,8 +44,17 @@ func test_a_run_with_corrections_replays_to_the_same_state() -> void:
 	)
 
 
+func after_test() -> void:
+	_service().delete()
+
+
+## The suite's own run save.
+func _service() -> SaveService:
+	return SaveService.for_run(TestFolder.of("test_books_saves") + "run.json")
+
+
 func test_dark_flags_survive_a_save_and_a_reload() -> void:
-	var service: SaveService = SaveService.for_run("user://test_run_books/run.json")
+	var service: SaveService = _service()
 	service.delete()
 	var loop: RunLoop = _at_set_over()
 	var famine: int = loop.state.famine + 20
@@ -58,7 +67,6 @@ func test_dark_flags_survive_a_save_and_a_reload() -> void:
 	assert_array(resumed.state.books.dark).contains_exactly(["famine"])
 	assert_int(resumed.state.books.price_percent).is_equal(loop.state.books.price_percent)
 	assert_int(resumed.state.famine).is_equal(famine)
-	service.delete()
 
 
 func test_the_file_raises_every_target_ten_percent_an_entry_up_to_double() -> void:

@@ -324,6 +324,5 @@ func test_wild_generation_stays_inside_its_budget() -> void:
 	full_times.sort()
 	var lean: int = lean_times[TIMED_HANDS >> 1]
 	var full: int = full_times[TIMED_HANDS >> 1]
-	print("Wild move generation median: lean %d usec, complete %d usec" % [lean, full])
 	assert_int(lean).is_less(LEAN_BUDGET_USEC)
 	assert_int(full).is_less(FULL_BUDGET_USEC)

@@ -1,9 +1,9 @@
 extends GdUnitTestSuite
-## A round that begins with no bidding says so the moment it begins (P5.2a, the owner's
-## Year 2 boss Quota): the landlord who won the last round keeps the seat, and the risen
-## villager starts the boss Quota as landlord. The table calls it out once a round, live,
-## or once its replay is over when it opens on such a round; the swap sheet prints the
-## line instead when it opens over it. A round that was bid for says nothing.
+## A round that begins with no bidding says so the moment it begins: the landlord who won the
+## last round keeps the seat, and the risen villager starts the boss Quota as landlord. The
+## table calls it out once a round, live, or once its replay is over when it opens on such a
+## round; the swap sheet prints the line instead when it opens over it. A round that was bid
+## for says nothing.
 
 const NAMES: Dictionary[int, String] = {0: "You", 1: "Zhao", 2: "Qian"}
 
@@ -64,11 +64,9 @@ func test_the_table_calls_a_kept_seat_once() -> void:
 ## What was called is forgotten when a run starts or is left, so a new run in the same
 ## session, even one on the same seed, calls its own first kept seat.
 func test_a_new_run_forgets_what_the_last_one_called() -> void:
-	Saves.use_run_path("user://test_kept_seat/run.json")
+	Saves.use_run_path(TestFolder.of("test_kept_seat") + "run.json")
 	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: DemoApp = auto_free(scene.instantiate())
-	add_child(app)
+	var app: DemoApp = AppKit.make(self)
 	KeptSeat.said = "4:2"
 	assert_bool(app.new_run(5)).is_true()
 	assert_str(KeptSeat.said).is_empty()

@@ -6,10 +6,7 @@ extends GdUnitTestSuite
 ## clear the cards.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_plot_swap_layout/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const LANDLORD_HAND: int = 20
-const SLACK: float = 1.0
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -17,11 +14,8 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -63,14 +57,14 @@ func _to_swap() -> TableScreen:
 			break
 		table.skip_events()
 		if _app.controller.awaiting() == RunController.AWAIT_BID:
-			table.actions().decline.pressed.emit()
+			table.actions.decline.pressed.emit()
 		await await_idle_frame()
 	assert_bool(_sheet(table).is_open()).is_true()
 	return table
 
 
 func _sheet(table: TableScreen) -> PlotSwapSheet:
-	return table.get("_swap_sheet")
+	return table.swap_sheet
 
 
 ## Lays the board out with a full landlord hand and the full plot, two pairs traded.
@@ -82,7 +76,7 @@ func _fill(table: TableScreen) -> void:
 	var sheet: PlotSwapSheet = _sheet(table)
 	var board: SwapBoard = sheet.board()
 	var no_wild: Array[int] = []
-	board.show_cards(hand, plot, _most_swaps(), table.get("_pool"), _app.hand, no_wild)
+	board.show_cards(hand, plot, _most_swaps(), table.pool, _app.hand, no_wild)
 	for pair: int in _most_swaps():
 		board.press(hand[pair].id())
 		board.press(plot[pair].id())
@@ -94,7 +88,7 @@ func test_a_full_hand_and_plot_fit_on_both_screens_at_every_text_size() -> void:
 	var table: TableScreen = await _to_swap()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			table = _app.show_screen("table", true)
 			await await_idle_frame()
@@ -107,7 +101,7 @@ func test_a_full_hand_and_plot_fit_on_both_screens_at_every_text_size() -> void:
 
 func _check(table: TableScreen, where: String) -> void:
 	var sheet: PlotSwapSheet = _sheet(table)
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var paper: Rect2 = sheet.paper().get_global_rect()
 	for node: Node in sheet.paper().find_children("*", "Control", true, false):
 		var control: Control = node as Control
@@ -128,7 +122,7 @@ func _check(table: TableScreen, where: String) -> void:
 			var rect: Rect2 = board.card_rect(card_id)
 			rect.position += board.global_position
 			(
-				assert_bool(paper.grow(SLACK).encloses(rect))
+				assert_bool(paper.grow(ClipCheck.SLACK).encloses(rect))
 				. override_failure_message("%s: card %d at %s" % [where, card_id, rect])
 				. is_true()
 			)
@@ -145,4 +139,4 @@ func _check(table: TableScreen, where: String) -> void:
 	var cards: Rect2 = board.get_global_rect()
 	for button: Button in [sheet.swap_button(), sheet.keep_button()]:
 		assert_bool(screen.encloses(button.get_global_rect())).is_true()
-		assert_bool(button.get_global_rect().intersects(cards.grow(-SLACK))).is_false()
+		assert_bool(button.get_global_rect().intersects(cards.grow(-ClipCheck.SLACK))).is_false()

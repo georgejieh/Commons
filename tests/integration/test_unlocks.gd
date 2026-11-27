@@ -10,17 +10,18 @@ extends GdUnitTestSuite
 const SEEDS: int = 60
 const REROLLS: int = 4
 const RICH: int = 10000
-const DIR: String = "user://test_unlocks/"
-const RUN_PATH: String = DIR + "run.json"
-const PROFILE_PATH: String = DIR + "profile.json"
+
+static var _dir: String = TestFolder.of("test_unlocks")
+static var _run_path: String = _dir + "run.json"
+static var _profile_path: String = _dir + "profile.json"
 
 var _saves: SaveService
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_saves = SaveService.for_run(RUN_PATH)
-	_profile = Profile.service(PROFILE_PATH)
+	_saves = SaveService.for_run(_run_path)
+	_profile = Profile.service(_profile_path)
 	_saves.delete()
 	_profile.delete()
 
@@ -247,28 +248,6 @@ func test_tier_zero_fills_every_counter() -> void:
 	assert_int(loop.pools.reforms.size()).is_greater_equal(store.reform_offers)
 	assert_int(loop.pools.store.envelopes.size()).is_equal(store.envelopes.size())
 	assert_int(loop.pools.market.envelopes.size()).is_equal(market.envelopes.size())
-	for tier: int in RunUnlocks.LAST_TIER + 1:
-		print("tier %d: %s" % [tier, _counts(tier)])
-
-
-func _counts(tier: int) -> String:
-	var pools: Dictionary[String, Array] = {
-		"store cadres": RunPools.STORE_CADRES.cadres,
-		"market cadres": RunPools.MARKET_CADRES.cadres,
-		"directives": RunPools.DIRECTIVES.directives,
-		"store campaigns": RunPools.STORE_CAMPAIGNS.campaigns,
-		"market campaigns": RunPools.MARKET_CAMPAIGNS.campaigns,
-		"reforms": RunPools.REFORMS.reforms,
-		"envelopes": RunPools.STORE.envelopes + RunPools.MARKET.envelopes,
-	}
-	var parts: PackedStringArray = []
-	for pool: String in pools:
-		var count: int = 0
-		for item: Resource in pools[pool]:
-			if int(item.get("unlock_tier")) == tier:
-				count += 1
-		parts.append("%s %d" % [pool, count])
-	return ", ".join(parts)
 
 
 func test_families_join_the_village_by_finished_runs() -> void:
@@ -381,7 +360,7 @@ func test_an_all_open_request_opens_everything_without_a_profile() -> void:
 	assert_object(RunStarter.state(limited)).is_null()
 	# With a profile the option is refused, and the profile is never written.
 	assert_object(RunStarter.state(request, _profile)).is_null()
-	assert_bool(FileAccess.file_exists(PROFILE_PATH)).is_false()
+	assert_bool(FileAccess.file_exists(_profile_path)).is_false()
 
 
 func _entry(class_id: String, outcome: String) -> HistoryEntry:

@@ -1,12 +1,11 @@
 extends GdUnitTestSuite
 ## Nothing clips at any text size (ADR 0034), at 1920x1080 and at 1280x800, the Steam
-## Deck's screen (P3B.11). With the canvas_items stretch and expand aspect, a 16:10
+## Deck's screen. With the canvas_items stretch and expand aspect, a 16:10
 ## window shows a 1920x1200 canvas. Every screen and the table's menus are opened at each
 ## size on each screen, and ClipCheck says what clipping is. The Controls page (ADR 0035)
 ## is a screen of its own at the title and a page of the table's menu, so both are opened.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_steam_deck_layout/run.json"
 const DECK: Vector2i = Vector2i(1280, 800)
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), DECK]
 
@@ -17,11 +16,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = DECK
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -72,14 +68,14 @@ func test_the_table_menus_do_not_clip_at_any_text_size() -> void:
 			get_tree().root.size = screen
 			var table: TableScreen = _app.show_screen("table", true)
 			await await_idle_frame()
-			table.call("_open_pause")
+			table.hud.menu.pressed.emit()
 			await await_idle_frame()
 			ClipCheck.check(table, _where("pause", level, screen), problems)
-			var pause: PauseMenu = table.get("_pause")
-			pause.call("_show_page", pause.get("_settings"))
+			var pause: PauseMenu = table.pause
+			TestInput.press(self, pause.main, tr("pause.settings"))
 			await await_idle_frame()
 			ClipCheck.check(table, _where("pause settings", level, screen), problems)
-			pause.call("_show_page", pause.controls_page())
+			SettingsPanel.controls_button(pause.settings).pressed.emit()
 			await await_idle_frame()
 			ClipCheck.check(table, _where("pause controls", level, screen), problems)
 			# Asking for a key prints its own words on the ticket.
@@ -88,7 +84,7 @@ func test_the_table_menus_do_not_clip_at_any_text_size() -> void:
 			ClipCheck.check(table, _where("pause controls asking", level, screen), problems)
 			pause.controls_page().cancel_capture()
 			pause.visible = false
-			var sheet: CheatSheet = table.get("_cheat_sheet")
+			var sheet: CheatSheet = table.cheat_sheet
 			sheet.toggle(_app.controller)
 			await await_idle_frame()
 			ClipCheck.check(table, _where("cheat sheet", level, screen), problems)
@@ -141,17 +137,20 @@ func test_the_check_catches_each_kind_of_clipping() -> void:
 func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var resize: TableResize = table.get("_resize")
-	var plays: Callable = func() -> bool: return int(resize.get("_plays")) > 0
+	var view: RunTableView = _app.controller.table
+	# A play made this round, so the next deal is a new one.
+	var plays: Callable = func() -> bool:
+		var seen: SeatView = view.seat_view()
+		return seen != null and not seen.public.history.is_empty()
 	assert_bool(await _play_until(table, plays)).is_true()
 	var cards: Array[CardInstance] = _app.hand.cards()
 	_app.hand.toggle(cards[0].id())
 	table.keep_sort(HandView.Sort.SUIT)
 	var before: Array = _round(table)
 	var deals: int = _deals()
-	table.call("_open_pause")
-	var pause: PauseMenu = table.get("_pause")
-	pause.call("_show_page", pause.get("_settings"))
+	table.hud.menu.pressed.emit()
+	var pause: PauseMenu = table.pause
+	TestInput.press(self, pause.main, tr("pause.settings"))
 	await await_idle_frame()
 	var note: String = tr("settings.text_size.table")
 	assert_object(_labelled(pause, note)).override_failure_message(note).is_not_null()
@@ -172,7 +171,7 @@ func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
 	var problems: PackedStringArray = []
 	ClipCheck.check(table, "table after the menu", problems)
 	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()
-	var you: Label = table.get("_you")
+	var you: Label = table.you
 	assert_int(you.get_theme_font_size("font_size")).is_equal(28)
 	var rebuilt: Callable = func() -> bool: return _app.switcher.current() != table
 	assert_bool(await _play_until(table, rebuilt)).is_true()
@@ -185,19 +184,18 @@ func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
 	var start: bool = awaiting == RunController.AWAIT_BID or awaiting == RunController.AWAIT_PLAY
 	assert_bool(start).override_failure_message(str(awaiting)).is_true()
 	assert_int(_app.controller.searches_running()).is_equal(0)
-	assert_int(opened.sort_mode()).is_equal(HandView.Sort.SUIT)
+	assert_int(opened.hand_view.sort_mode).is_equal(HandView.Sort.SUIT)
 	# The new table is set at the new size: the prompt takes it whole, and the line over
 	# the hand grows as far as its room between the notice and a lifted card lets it.
-	var opened_actions: ActionBar = opened.get("_actions")
+	var opened_actions: ActionBar = opened.actions
 	var prompt_px: int = opened_actions.reading.get_theme_font_size("font_size")
 	assert_int(prompt_px).is_equal(TextSize.px(24))
-	var opened_you: Label = opened.get("_you")
+	var opened_you: Label = opened.you
 	var you_px: int = opened_you.get_theme_font_size("font_size")
 	assert_int(you_px).is_between(29, TextSize.px(28))
 	var round_now: Array = _round(opened)
 	assert_array(round_now[2]).override_failure_message("hand").is_equal(_hand_ids())
-	var opened_resize: TableResize = opened.get("_resize")
-	assert_int(int(opened_resize.get("_plays"))).is_equal(0)
+	assert_array(opened.pile.top_ids()).is_empty()
 	ClipCheck.check(opened, "table at the next deal", problems)
 	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()
 
@@ -267,7 +265,7 @@ func test_a_new_text_size_rebuilds_a_run_screen_when_the_menu_closes() -> void:
 	await await_idle_frame()
 	var menu: PauseMenu = _app.get("_menu")
 	menu.open()
-	menu.call("_show_page", menu.get("_settings"))
+	TestInput.press(self, menu.main, tr("pause.settings"))
 	await await_idle_frame()
 	var large: CheckBox = menu.find_child(SettingsPanel.TEXT_SIZE_BOX % 1, true, false)
 	large.button_pressed = true
@@ -288,7 +286,7 @@ func _round(table: TableScreen) -> Array:
 	var ids: Array[int] = []
 	for card: CardInstance in _app.hand.cards():
 		ids.append(card.id())
-	var view: HandView = table.get("_hand_view")
+	var view: HandView = table.hand_view
 	return [
 		_app.controller.awaiting(),
 		_app.controller.set_events().size(),
@@ -301,14 +299,14 @@ func _round(table: TableScreen) -> Array:
 
 ## What the table shows of the round: your line, each seat's name and count, the HUD.
 func _shown(table: TableScreen) -> PackedStringArray:
-	var you: Label = table.get("_you")
+	var you: Label = table.you
 	var shown: PackedStringArray = [you.text]
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	for seat: int in seats:
 		for part: String in ["_name", "_count"]:
 			var label: Label = seats[seat].get(part)
 			shown.append(label.text)
-	var hud: TableHud = table.get("_hud")
+	var hud: TableHud = table.hud
 	shown.append(hud.coupons.text)
 	return shown
 

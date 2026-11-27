@@ -101,14 +101,12 @@ func _lies(config: BotConfig) -> int:
 func test_bomb_aggression_raises_bombs() -> void:
 	var low: int = _bombs_by_peasants(_medium(_set_bombs, Personality.Level.LOW))
 	var high: int = _bombs_by_peasants(_medium(_set_bombs, Personality.Level.HIGH))
-	print("peasant bombs low %d high %d" % [low, high])
 	assert_int(high).is_greater(low)
 
 
 func test_cooperation_lowers_plays_over_a_teammate() -> void:
 	var low: int = _plays_over_teammate(_medium(_set_cooperation, Personality.Level.LOW))
 	var high: int = _plays_over_teammate(_medium(_set_cooperation, Personality.Level.HIGH))
-	print("over teammate low %d high %d" % [low, high])
 	assert_int(low).is_greater(high)
 
 
@@ -142,12 +140,10 @@ func test_a_lie_only_ever_inflates_need() -> void:
 func test_ambition_raises_claims() -> void:
 	var low: int = _claims(_medium(_set_ambition, Personality.Level.LOW))
 	var high: int = _claims(_medium(_set_ambition, Personality.Level.HIGH))
-	print("claims low %d high %d" % [low, high])
 	assert_int(high).is_greater(low)
 
 
 func test_grudge_raises_plays_over_a_remembered_seat() -> void:
 	var low: int = _plays_over_hated_seat(_medium(_set_grudge, Personality.Level.LOW))
 	var high: int = _plays_over_hated_seat(_medium(_set_grudge, Personality.Level.HIGH))
-	print("over hated seat low %d high %d" % [low, high])
 	assert_int(high).is_greater(low)

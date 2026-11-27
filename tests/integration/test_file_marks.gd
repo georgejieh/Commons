@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## What the family's file leaves on screen (ADR 0022, P4.19): the title's stamp, only
+## What the family's file leaves on screen (ADR 0022): the title's stamp, only
 ## with an entry and clear of every button and the title; the file's page in the
 ## history, oldest first, absent with no entry; villagers' lines about the work team's
 ## visit, only in a run that began with an entry; and the stage past the last, reached
@@ -8,9 +8,6 @@ extends GdUnitTestSuite
 ## the screen.
 
 const SEED: int = 7217
-const SAVE_PATH: String = "user://test_file_marks/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 const FAMINE: int = 83
 const VISIT: WorkTeamTalk = preload("res://data/ui/work_team_talk.tres")
 ## Lines a seat is asked for in the villagers' test: enough that a 4% chance shows.
@@ -22,12 +19,8 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -70,7 +63,7 @@ func test_the_stamp_shows_only_with_an_entry_clear_of_the_buttons() -> void:
 	await await_idle_frame()
 	assert_object(title.stamp()).is_null()
 	_file(2)
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
 		title = _app.show_screen("title", true)
 		await await_idle_frame()
@@ -79,7 +72,7 @@ func test_the_stamp_shows_only_with_an_entry_clear_of_the_buttons() -> void:
 		assert_object(stamp).is_not_null()
 		assert_array(Array(stamp.words())).contains(["2 ENTRIES"])
 		var area: Rect2 = stamp.get_global_rect()
-		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 		assert_bool(screen.encloses(area)).is_true()
 		assert_int(stamp.mouse_filter).is_equal(Control.MOUSE_FILTER_IGNORE)
 		for node: Node in title.find_children("*", "Control", true, false):
@@ -115,7 +108,7 @@ func _visit_lines(entries: int) -> int:
 	_app.controller.reseal_book()
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var speech: TableSpeech = table.get("_speech")
+	var speech: TableSpeech = table.speech
 	var visits: Array[int] = [0]
 	speech.spoke.connect(
 		func(_seat: int, _event: String, line: SpeechLine) -> void:
@@ -181,12 +174,12 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	await await_idle_frame()
-	var hud: TableHud = table.get("_hud")
+	var hud: TableHud = table.hud
 	assert_str(hud.quota.text()).is_equal(tr(ShownFigures.FULFILLED))
 	assert_bool(hud.famine.visible).is_false()
 	assert_bool(hud.denunciation.visible).is_false()
 	assert_str(hud.coupons.text).is_equal(tr(ShownFigures.AMPLE))
-	var ledger: Ledger = table.get("_ledger")
+	var ledger: Ledger = table.ledger
 	assert_bool(ledger.books.is_visible_in_tree()).is_true()
 	var slip: String = " ".join(ledger.books.texts())
 	assert_str(slip).contains("Famine %d" % FAMINE).contains("Coupons 37")
@@ -195,57 +188,54 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	var plays: Control = ledger.get("_plays")
 	assert_bool(books.intersects(plays.get_global_rect())).is_false()
 	var paper: Control = ledger.get_parent()
-	assert_bool(paper.get_global_rect().grow(SLACK).encloses(books)).is_true()
+	assert_bool(paper.get_global_rect().grow(ClipCheck.SLACK).encloses(books)).is_true()
 	# The same run at stage 9 shows its figures as they are, and no slip.
 	ArtStages.stage_override = ArtStages.LAST_STAGE
 	table = _app.show_screen("table", true)
 	await await_idle_frame()
-	ledger = table.get("_ledger")
+	ledger = table.ledger
 	assert_bool(ledger.books.visible).is_false()
-	hud = table.get("_hud")
+	hud = table.hud
 	assert_str(hud.coupons.text).is_equal(Strings.count("table.coupons", 37))
 
 
 func test_at_the_stage_past_the_last_both_shops_keep_the_small_ledger() -> void:
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	var guard: int = 0
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER and guard < 2000:
-		guard += 1
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	_figures()
 	ArtStages.stage_override = ArtStages.FILED_STAGE
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
 		for screen_id: String in ["store", "black_market"]:
 			var shop: StoreScreen = _app.show_screen(screen_id, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			var where: String = "%s %s" % [screen_id, screen_size]
-			var books: SmallLedger = shop.get("_books")
+			var books: SmallLedger = shop.books
 			assert_bool(books.is_visible_in_tree()).override_failure_message(where).is_true()
 			assert_str(" ".join(books.texts())).contains("Coupons 37").contains("Famine 83")
-			var coupons: Label = shop.get("_coupons")
+			var coupons: Label = shop.coupons
 			assert_str(coupons.text).is_equal(tr(ShownFigures.AMPLE))
 			_check_blocks(shop, books, where)
 
 
 ## Every block of the page and the slip lie inside the screen and apart.
 func _check_blocks(shop: StoreScreen, books: Control, where: String) -> void:
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var rects: Dictionary[String, Rect2] = {}
 	for name: String in shop.blocks():
 		rects[name] = shop.blocks()[name].get_global_rect()
 	assert_bool(screen.encloses(books.get_global_rect())).override_failure_message(where).is_true()
 	var names: Array[String] = rects.keys()
 	for first: int in names.size():
-		var a: Rect2 = rects[names[first]].grow(-SLACK)
+		var a: Rect2 = rects[names[first]].grow(-ClipCheck.SLACK)
 		assert_bool(screen.encloses(rects[names[first]])).override_failure_message(where).is_true()
 		for second: int in range(first + 1, names.size()):
-			var b: Rect2 = rects[names[second]].grow(-SLACK)
+			var b: Rect2 = rects[names[second]].grow(-ClipCheck.SLACK)
 			var pair: String = "%s: %s and %s" % [where, names[first], names[second]]
 			assert_bool(a.intersects(b)).override_failure_message(pair).is_false()
 	for name: String in ["counter", "side", "buttons", "board", "shelf", "notes"]:
-		var apart: bool = not books.get_global_rect().grow(-SLACK).intersects(rects[name])
+		var apart: bool = not books.get_global_rect().grow(-ClipCheck.SLACK).intersects(rects[name])
 		assert_bool(apart).override_failure_message("%s: slip over %s" % [where, name]).is_true()

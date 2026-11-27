@@ -5,19 +5,19 @@ extends GdUnitTestSuite
 ## Leave ends the visit, so Cancel there leaves the page where it is.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_cancel_goes_back/run.json"
 const TITLE_PAGES: Array[String] = ["settings", "collection", "village_history", "run_setup"]
 const RUN_PAGES: Array[String] = ["dossier", "round_summary"]
+
+static var _save_path: String = TestFolder.of("test_cancel_goes_back") + "run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
-	_app = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -39,8 +39,7 @@ func test_cancel_goes_back_from_the_runs_records() -> void:
 func test_cancel_goes_back_from_the_black_market_and_not_from_the_store() -> void:
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	await _check_back("black_market", "store")
 	await _cancel()

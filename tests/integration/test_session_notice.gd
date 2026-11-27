@@ -5,11 +5,10 @@ extends GdUnitTestSuite
 ## and every text size, with its buttons on the sheet; the title's is said once, with OK
 ## focused, taken by keyboard, and a button that opens the folder.
 
-const SAVE_PATH: String = "user://test_session_notice/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## A folder named as the game names one, under the deepest user folder a player may have.
-const KEPT: String = "user://crashes/2026-11-24T21.07.45"
-const SLACK: float = 1.5
+const KEPT: String = "user://crashes/2000-01-01T00.00.00"
+
+static var _save_path: String = TestFolder.of("test_session_notice") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -17,11 +16,10 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
-	_app = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -31,30 +29,23 @@ func after_test() -> void:
 	Saves.profile_service().delete()
 
 
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.keycode = code
-		key.physical_keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-
-
 func _assert_whole(notice: SessionNotice, where: String) -> void:
-	var window: Rect2 = notice.get_viewport_rect().grow(SLACK)
+	var window: Rect2 = notice.get_viewport_rect().grow(ClipCheck.SLACK)
 	var sheet: Rect2 = notice.sheet().get_global_rect()
 	assert_bool(window.encloses(sheet)).override_failure_message(where + " sheet").is_true()
 	for button: Button in notice.buttons():
 		var rect: Rect2 = button.get_global_rect()
-		assert_bool(sheet.grow(SLACK).encloses(rect)).override_failure_message(where).is_true()
+		(
+			assert_bool(sheet.grow(ClipCheck.SLACK).encloses(rect))
+			. override_failure_message(where)
+			. is_true()
+		)
 
 
 func test_every_notice_stands_whole_at_every_size() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			var notices: Array[SessionNotice] = [
 				SessionNotice.already_open(20, func() -> void: pass, func() -> void: pass),
@@ -89,7 +80,7 @@ func test_the_title_says_once_where_the_last_session_was_kept() -> void:
 	for label: Node in notice.find_children("*", "Label", true, false):
 		texts.append((label as Label).text)
 	assert_array(texts).contains([shown])
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	await await_idle_frame()
 	assert_bool(is_instance_valid(notice)).is_false()
 	var new_run: Button = null

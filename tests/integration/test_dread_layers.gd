@@ -1,10 +1,9 @@
 extends GdUnitTestSuite
-## Dread layers (P3B.12): weights follow the Plan's seven board states and ease toward
+## Dread layers: weights follow the Plan's seven board states and ease toward
 ## them; horror intensity 0 gives the clean board; horror never changes a value the
 ## player reads; no-flash stops every flicker; and the content note leads a first launch.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_dread_layers/run.json"
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
 ## Layer indices in horror_config.tres.
 const FAMINE: int = 0
@@ -23,11 +22,8 @@ func before_test() -> void:
 	Settings.set_value("horror_intensity", 1.0)
 	Settings.set_value("no_flash", false)
 	Settings.set_value("content_note_seen", true)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -122,7 +118,7 @@ func test_full_horror_changes_the_board() -> void:
 
 func test_horror_never_changes_what_the_player_reads() -> void:
 	var table: TableScreen = await _open_table()
-	var dread: DreadLayers = table.get("_dread")
+	var dread: DreadLayers = table.dread
 	Settings.set_value("horror_intensity", 0.0)
 	dread.force(0, 0, false)
 	await await_idle_frame()
@@ -169,7 +165,7 @@ func _open_table() -> TableScreen:
 
 func _table_dread() -> DreadLayers:
 	var table: TableScreen = await _open_table()
-	return table.get("_dread")
+	return table.dread
 
 
 ## Every label text and card on the table outside the dread dressing, in tree order.
@@ -191,7 +187,7 @@ func _readings(node: Node, dread: DreadLayers) -> PackedStringArray:
 
 func test_a_flashed_extra_chair_hides_again() -> void:
 	var table: TableScreen = await _open_table()
-	var dressing: DreadDressing = table.get("_dressing")
+	var dressing: DreadDressing = table.dressing
 	dressing.flash_piece("extra_chair", 0.1)
 	assert_bool(dressing.is_shown("extra_chair")).is_true()
 	await await_millis(400)

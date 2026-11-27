@@ -14,15 +14,6 @@ const RICH: int = 1000
 const CARD: int = 21
 
 
-func _at_the_shops(seed_value: int, coupons: int = RICH) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = coupons
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 func test_the_desks_prices_live_in_data() -> void:
 	assert_int(STORE.desk_price).is_equal(3)
 	assert_bool(STORE.desk_stamps).is_false()
@@ -33,7 +24,7 @@ func test_the_desks_prices_live_in_data() -> void:
 func test_the_store_offers_one_enhancement_a_visit_drawn_the_same_on_a_replay() -> void:
 	var offers: Dictionary[String, bool] = {}
 	for seed_value: int in range(30, 42):
-		var loop: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		assert_bool(loop.visit.shop.desk.is_open).is_true()
 		assert_bool(CardInstance.ENHANCEMENTS.has(loop.visit.shop.desk.offer)).is_true()
 		offers[loop.visit.shop.desk.offer] = true
@@ -46,7 +37,7 @@ func test_the_store_offers_one_enhancement_a_visit_drawn_the_same_on_a_replay() 
 
 
 func test_the_store_desk_marks_a_deck_card_for_the_run() -> void:
-	var loop: RunLoop = _at_the_shops(31)
+	var loop: RunLoop = RunScript.at_the_shops(self, 31, RICH)
 	var offer: String = loop.visit.shop.desk.offer
 	var coupons: int = loop.state.coupons
 	var resentment: int = loop.state.resentment
@@ -67,7 +58,7 @@ func test_the_store_desk_marks_a_deck_card_for_the_run() -> void:
 
 
 func test_a_new_mark_replaces_the_old_one() -> void:
-	var loop: RunLoop = _at_the_shops(31)
+	var loop: RunLoop = RunScript.at_the_shops(self, 31, RICH)
 	var other: String = CardInstance.MODEL
 	if loop.visit.shop.desk.offer == CardInstance.MODEL:
 		other = CardInstance.SURPLUS
@@ -77,7 +68,7 @@ func test_a_new_mark_replaces_the_old_one() -> void:
 
 
 func test_the_black_market_stamps_the_card_and_adds_resentment() -> void:
-	var loop: RunLoop = _at_the_shops(33)
+	var loop: RunLoop = RunScript.at_the_shops(self, 33, RICH)
 	var resentment: int = loop.state.resentment
 	var coupons: int = loop.state.coupons
 	assert_int(loop.player_mark_card(CARD, true)).is_equal(RunLoop.Reason.OK)
@@ -94,10 +85,10 @@ func test_the_black_market_stamps_the_card_and_adds_resentment() -> void:
 
 
 func test_a_refused_use_changes_nothing() -> void:
-	var poor: RunLoop = _at_the_shops(34, STORE.desk_price - 1)
+	var poor: RunLoop = RunScript.at_the_shops(self, 34, STORE.desk_price - 1)
 	assert_int(poor.visit.shop.desk.check(CARD, RunLoop.PLAYER)).is_equal(MarkDesk.Reason.TOO_POOR)
 	_refused(poor, CARD, false)
-	var loop: RunLoop = _at_the_shops(34)
+	var loop: RunLoop = RunScript.at_the_shops(self, 34, RICH)
 	CardMarks.enhance(loop.state, Deck.new().card(CARD), loop.visit.shop.desk.offer)
 	CardMarks.stamp(loop.state, Deck.new().card(CARD + 1), RunLoop.PLAYER)
 	assert_int(loop.visit.shop.desk.check(CARD, 0)).is_equal(MarkDesk.Reason.ALREADY_MARKED)
@@ -117,7 +108,7 @@ func test_nothing_is_marked_away_from_the_shops() -> void:
 
 
 func test_a_use_replays_from_a_save_and_an_older_save_still_loads() -> void:
-	var loop: RunLoop = _at_the_shops(36)
+	var loop: RunLoop = RunScript.at_the_shops(self, 36, RICH)
 	var older: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = older["checkpoint"]
 	checkpoint["coupons"] = RICH

@@ -20,6 +20,12 @@ var center: Vector2 = Vector2.ZERO
 var foot: float = 0.0
 var head: float = 0.0
 
+## The claim, as a share of the pool.
+var shown: Label = Label.new()
+## Raises the claim by a step.
+var more: Button = ScreenKit.button("+", CommonsTheme.GHOST)
+## What the claim says of itself: honest, a lie and what it risks, or less than needed.
+var note: Label = Label.new()
 var _need: int = 0
 var _true_need: int = 0
 var _cap: int = 0
@@ -29,11 +35,8 @@ var _pool_units: int = 0
 var _mate: String = ""
 var _pool: Label = Label.new()
 var _rule: Label = Label.new()
-var _value: Label = Label.new()
 var _less: Button = ScreenKit.button("−", CommonsTheme.GHOST)
-var _more: Button = ScreenKit.button("+", CommonsTheme.GHOST)
 var _preview: Label = Label.new()
-var _note: Label = Label.new()
 var _declare: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 
 
@@ -43,30 +46,30 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 10)
 	box.custom_minimum_size = Vector2(WIDTH, 0)
 	box.add_child(ScreenKit.styled(tr("need.title"), CommonsTheme.TITLE))
-	_value.theme_type_variation = CommonsTheme.TITLE
-	_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_value.custom_minimum_size = Vector2(120, 0)
-	for button: Button in [_less, _more]:
+	shown.theme_type_variation = CommonsTheme.TITLE
+	shown.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	shown.custom_minimum_size = Vector2(120, 0)
+	for button: Button in [_less, more]:
 		button.custom_minimum_size = Vector2(64, 0)
 		button.focus_mode = Control.FOCUS_NONE
 	_less.pressed.connect(_step.bind(-1))
-	_more.pressed.connect(_step.bind(1))
+	more.pressed.connect(_step.bind(1))
 	var stepper: HBoxContainer = HBoxContainer.new()
 	stepper.alignment = BoxContainer.ALIGNMENT_CENTER
-	for child: Control in [_less, _value, _more]:
+	for child: Control in [_less, shown, more]:
 		stepper.add_child(child)
 	_declare.text = tr("need.declare")
 	_declare.custom_minimum_size = Vector2(DECLARE_WIDTH, 0)
 	_declare.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_declare.pressed.connect(func() -> void: declared.emit(_need))
-	for label: Label in [_pool, _rule, _preview, _note]:
+	for label: Label in [_pool, _rule, _preview, note]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		label.custom_minimum_size = Vector2(WIDTH, 0)
 	_pool.mouse_filter = Control.MOUSE_FILTER_STOP
 	_pool.tooltip_text = Keywords.wrapped(tr("keyword.commons.text"))
-	_note.mouse_filter = Control.MOUSE_FILTER_STOP
-	_note.tooltip_text = Keywords.wrapped(tr("keyword.audit.text"))
-	for child: Control in [_pool, _rule, stepper, _preview, _note, _declare]:
+	note.mouse_filter = Control.MOUSE_FILTER_STOP
+	note.tooltip_text = Keywords.wrapped(tr("keyword.audit.text"))
+	for child: Control in [_pool, _rule, stepper, _preview, note, _declare]:
 		box.add_child(child)
 	add_child(box)
 	visible = false
@@ -139,9 +142,9 @@ func _step(by: int) -> void:
 
 
 func _show() -> void:
-	_value.text = tr("need.percent").format({"percent": percent()})
+	shown.text = tr("need.percent").format({"percent": percent()})
 	_less.disabled = _need <= 0
-	_more.disabled = _need >= _cap
+	more.disabled = _need >= _cap
 	_pool.text = tr("need.pool").format({"pool": Strings.score(_pool_units)})
 	_rule.text = tr("need.rule").format({"name": _mate})
 	var yours: int = preview_share()
@@ -156,14 +159,14 @@ func _show() -> void:
 		)
 	)
 	var lie: bool = _need > _true_need
-	_value.add_theme_color_override("font_color", ScreenKit.SEAL if lie else ScreenKit.INK)
-	_note.add_theme_color_override("font_color", ScreenKit.SEAL if lie else ScreenKit.INK)
+	shown.add_theme_color_override("font_color", ScreenKit.SEAL if lie else ScreenKit.INK)
+	note.add_theme_color_override("font_color", ScreenKit.SEAL if lie else ScreenKit.INK)
 	if lie:
-		_note.text = tr("need.lie").format({"rise": _lie_cost, "chance": _audit_percent})
+		note.text = tr("need.lie").format({"rise": _lie_cost, "chance": _audit_percent})
 	elif _need < _true_need:
-		_note.text = tr("need.less").format({"name": _mate})
+		note.text = tr("need.less").format({"name": _mate})
 	else:
-		_note.text = tr("need.honest").format({"chance": _audit_percent})
+		note.text = tr("need.honest").format({"chance": _audit_percent})
 	_fit.call_deferred()
 
 

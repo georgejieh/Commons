@@ -65,8 +65,7 @@ func _expected() -> Dictionary[String, String]:
 
 
 func test_the_table_holds_the_adrs_text_word_for_word() -> void:
-	if not FileAccess.file_exists(ADR):
-		return
+	assert_bool(FileAccess.file_exists(ADR)).override_failure_message(ADR).is_true()
 	var expected: Dictionary[String, String] = _expected()
 	# Every key but the deaths' titles, which the ADR leaves to the build.
 	assert_int(expected.size()).is_equal(Endings.keys().size() - 2)

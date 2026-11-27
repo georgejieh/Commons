@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Every domain event type maps to an audio event name (P3B.10).
+## Every domain event type maps to an audio event name.
 
 
 func test_every_run_event_type_has_a_name() -> void:

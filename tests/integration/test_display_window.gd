@@ -4,10 +4,11 @@ extends GdUnitTestSuite
 ## only when the player says so, else put back, on the sheet too, and saved. A test, like
 ## any run under a script, never touches the window.
 
-const SAVE_PATH: String = "user://test_display_window/run.json"
 const KEYS: Array[String] = [DisplayWindow.MODE, DisplayWindow.SIZE, DisplayWindow.VSYNC]
 const BORDERLESS: int = 1
 const EXCLUSIVE: int = 2
+
+static var _save_path: String = TestFolder.of("test_display_window") + "run.json"
 
 ## Each call the display made to the window, as [mode, size, vsync].
 var _calls: Array[Array] = []
@@ -42,9 +43,8 @@ func _timer(display: DisplayWindow) -> Timer:
 
 
 func _app() -> DemoApp:
-	Saves.use_run_path(SAVE_PATH)
-	var app: DemoApp = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
-	add_child(app)
+	Saves.use_run_path(_save_path)
+	var app: DemoApp = AppKit.make(self)
 	return app
 
 
@@ -217,13 +217,13 @@ func test_the_window_page_stands_whole_at_every_size() -> void:
 			_assert_whole(screen, where + " screen")
 			var table: TableScreen = app.show_screen("table", true)
 			await await_idle_frame()
-			table.call("_open_pause")
-			var pause: PauseMenu = table.get("_pause")
-			pause.call("_show_page", pause.get("_settings"))
+			table.hud.menu.pressed.emit()
+			var pause: PauseMenu = table.pause
+			TestInput.press(self, pause.main, tr("pause.settings"))
 			SettingsPanel.window_button(pause).pressed.emit()
 			await await_idle_frame()
 			await await_idle_frame()
-			var page: Control = pause.get("_window")
+			var page: Control = pause.window
 			assert_bool(page.visible).override_failure_message(where).is_true()
 			_assert_whole(page, where + " menu")
 			pause.visible = false

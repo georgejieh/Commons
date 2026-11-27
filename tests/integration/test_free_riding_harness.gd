@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.4 harness: the same Sets played with the player holding a fair Commons share and
+## The same Sets played with the player holding a fair Commons share and
 ## holding all of it. A low-cooperation teammate scores measurably less in the second.
 
 const SEEDS: Array[int] = [4401, 4402, 4403, 4404, 4405, 4406, 4407, 4408]
@@ -35,5 +35,4 @@ func _teammate_mean(received: int) -> float:
 func test_the_teammate_contributes_less_at_a_high_player_share() -> void:
 	var fair: float = _teammate_mean(BIG / 2)
 	var greedy: float = _teammate_mean(BIG)
-	print("teammate mean round total: %.1f at a fair share, %.1f at a full share" % [fair, greedy])
 	assert_float(greedy).is_less(fair * 0.9)

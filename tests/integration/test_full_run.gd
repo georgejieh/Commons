@@ -4,21 +4,22 @@ extends GdUnitTestSuite
 ## the profile; the demo never moves it. A save and the profile can each be lost or
 ## written alone, and the profile still takes everything exactly once.
 
-const DIR: String = "user://test_full_run/"
-const RUN_PATH: String = DIR + "run.json"
-const PROFILE_PATH: String = DIR + "profile.json"
 const SEED: int = 2514
 const START_TIME: int = 1_763_200_000
 ## A full run is played to its end; it stops early only if it runs past this many Sets.
 const MAX_SETS: int = 30
+
+static var _dir: String = TestFolder.of("test_full_run")
+static var _run_path: String = _dir + "run.json"
+static var _profile_path: String = _dir + "profile.json"
 
 var _saves: SaveService
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_saves = SaveService.for_run(RUN_PATH)
-	_profile = Profile.service(PROFILE_PATH)
+	_saves = SaveService.for_run(_run_path)
+	_profile = Profile.service(_profile_path)
 	_saves.delete()
 	_profile.delete()
 
@@ -72,7 +73,6 @@ func _loop(controller: RunController) -> RunLoop:
 
 
 func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:
-	var began: int = Time.get_ticks_msec()
 	var controller: RunController = auto_free(RunController.new())
 	controller.start(_request(RunRequest.FULL), _saves, _profile)
 	var opening: RunState = controller.state_copy()
@@ -92,7 +92,7 @@ func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:
 	assert_int(_loop(resumed).sets().years()).is_equal(8)
 	assert_int(resumed.awaiting()).is_equal(controller.awaiting())
 	controller.queue_free()
-	var rest: int = _play(resumed)
+	_play(resumed)
 	assert_int(resumed.awaiting()).is_equal(RunController.AWAIT_RUN_OVER)
 	var final: RunState = resumed.state_copy()
 	var data: ProfileData = Profile.read(_profile)
@@ -113,8 +113,6 @@ func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:
 		assert_int(reopened.awaiting()).is_equal(RunController.AWAIT_RUN_OVER)
 	assert_int(Profile.read(_profile).history.size()).is_equal(1)
 	assert_int(Profile.read(_profile).finished_runs).is_equal(1)
-	var seconds: float = (Time.get_ticks_msec() - began) / 1000.0
-	print("Full run: %d Sets, Year %d, %s, %.1f s" % [first + rest, final.year, outcome, seconds])
 
 
 func _dead(state: RunState) -> int:
@@ -146,7 +144,7 @@ func test_a_run_that_does_not_write_the_profile_leaves_it_alone() -> void:
 	request.writes_profile = false
 	var controller: RunController = auto_free(RunController.new())
 	controller.start(request, _saves, _profile)
-	assert_bool(FileAccess.file_exists(PROFILE_PATH)).is_false()
+	assert_bool(FileAccess.file_exists(_profile_path)).is_false()
 	assert_int(controller.state_copy().identity.generation).is_equal(0)
 
 

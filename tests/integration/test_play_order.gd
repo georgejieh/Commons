@@ -1,11 +1,9 @@
 extends GdUnitTestSuite
-## A play lies on the trick as a player reads it: the owner saw pair runs laid out
-## of rank order. The run hands a play's cards over in the order they were chosen, so the
-## pile lays them by its reading: body low to high, each rank together, then kickers, a
-## wild card with the rank it stands for.
+## A play lies on the trick as a player reads it, never out of rank order. The run hands a
+## play's cards over in the order they were chosen, so the pile lays them by its reading: body
+## low to high, each rank together, then kickers, a wild card with the rank it stands for.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_play_order/run.json"
 ## Any mark that makes a card not plain.
 const ENHANCEMENT: String = "gilded"
 
@@ -68,16 +66,13 @@ func test_a_changed_rank_order_keeps_the_run_in_sequence() -> void:
 
 ## The trick itself lays the cards in that order, wherever they fly from.
 func test_the_pile_lays_a_play_as_it_reads() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	var app: DemoApp = auto_free(scene.instantiate())
-	add_child(app)
+	AppKit.fresh_saves(self)
+	var app: DemoApp = AppKit.make(self)
 	app.new_run(SEED)
 	var table: TableScreen = app.show_screen("table", true)
 	await await_idle_frame()
-	var pile: TrickPile = table.get("_pile")
-	var motion: TableMotion = table.get("_motion")
+	var pile: TrickPile = table.pile
+	var motion: TableMotion = table.motion
 	motion.set_still(true)
 	var cards: Array[CardInstance] = _cards([8, 0, 5, 9, 1, 4])
 	pile.show_play(cards, Vector2.ZERO, [], _read(cards))

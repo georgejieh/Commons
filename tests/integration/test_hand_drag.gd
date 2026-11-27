@@ -3,7 +3,6 @@ extends GdUnitTestSuite
 ## release select or clear them, and the Play button and reading follow the selection.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_hand_drag/run.json"
 ## Inside a card's uncovered left strip, clear of the next card in the fan.
 const GRIP: Vector2 = Vector2(14, 60)
 
@@ -12,11 +11,8 @@ var _table: TableScreen
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	_table = _app.show_screen("table", true)
 	await await_idle_frame()
@@ -57,9 +53,9 @@ func test_two_unmatched_cards_disable_play_with_a_reason() -> void:
 	assert_int(pair.size()).is_equal(2)
 	await _drag(pair)
 	assert_bool(_app.hand.can_play()).is_false()
-	assert_bool(_table.actions().play.disabled).is_true()
-	assert_str(_table.actions().reading.text).starts_with(tr(_app.hand.label_key()))
-	assert_str(_table.actions().reading.text).is_not_empty()
+	assert_bool(_table.actions.play.disabled).is_true()
+	assert_str(_table.actions.reading.text).starts_with(tr(_app.hand.label_key()))
+	assert_str(_table.actions.reading.text).is_not_empty()
 
 
 func test_one_clicked_card_reads_as_a_single() -> void:
@@ -70,8 +66,8 @@ func test_one_clicked_card_reads_as_a_single() -> void:
 
 
 func _assert_actions_follow_the_model() -> void:
-	assert_bool(_table.actions().play.disabled).is_equal(not _app.hand.can_play())
-	assert_str(_table.actions().reading.text).starts_with(tr(_app.hand.label_key()))
+	assert_bool(_table.actions.play.disabled).is_equal(not _app.hand.can_play())
+	assert_str(_table.actions.reading.text).starts_with(tr(_app.hand.label_key()))
 
 
 ## Plays bids and need declarations by button until it is the player's turn to play.
@@ -85,14 +81,14 @@ func _reach_play_turn() -> void:
 				await await_idle_frame()
 				return
 			RunController.AWAIT_BID:
-				_table.actions().decline.pressed.emit()
+				_table.actions.decline.pressed.emit()
 			RunController.AWAIT_NEED:
-				_table.need_panel().declared.emit(ControllerScript.NEED)
+				_table.need_panel.declared.emit(ControllerScript.NEED)
 
 
 ## The hand's views in fan order, left to right.
 func _views() -> Array[CardView]:
-	var hand_view: HandView = _table.get("_hand_view")
+	var hand_view: HandView = _table.hand_view
 	var views: Array[CardView] = []
 	for child: Node in hand_view.get_children():
 		var view: CardView = child as CardView

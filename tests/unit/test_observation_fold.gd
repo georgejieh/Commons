@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## What the dossier records about villagers, on events built by hand (P3B.8).
+## What the dossier records about villagers, on events built by hand.
 
 const FAMILIES: Array[String] = ["player", "wang", "zhao"]
 const PLAYER: int = 0

@@ -3,15 +3,16 @@ extends GdUnitTestSuite
 ## removed when it closes and only by the copy that wrote it; a file left unwritten past
 ## the stale beats, or one cut off, is a copy that stopped.
 
-const FOLDER: String = "user://test_session_file"
 const PARAMS: SessionParams = preload("res://data/session/session_params.tres")
+
+static var _folder: String = TestFolder.of("test_session_file")
 
 var _file: SessionFile
 
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(FOLDER)
-	_file = SessionFile.new(PARAMS, FOLDER.path_join("session.json"))
+	DirAccess.make_dir_recursive_absolute(_folder)
+	_file = SessionFile.new(PARAMS, _folder.path_join("session.json"))
 	_file.end()
 	if FileAccess.file_exists(_file.path()):
 		DirAccess.remove_absolute(_file.path())

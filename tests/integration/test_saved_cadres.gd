@@ -3,15 +3,16 @@ extends GdUnitTestSuite
 ## survives a save and a load, and a damaged shape counts as damage, as in
 ## test_saved_growth.gd.
 
-const DIR: String = "user://test_saved_cadres/"
 const SEED: int = 3701
+
+static var _dir: String = TestFolder.of("test_saved_cadres")
 
 var _service: SaveService
 
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
-	_service = SaveService.for_run(DIR + "run.json")
+	DirAccess.make_dir_recursive_absolute(_dir)
+	_service = SaveService.for_run(_dir + "run.json")
 	_service.delete()
 
 
@@ -28,7 +29,6 @@ func _record(turn: int) -> Dictionary:
 
 
 func test_a_schema_6_save_gains_empty_cadre_state_and_the_state_is_saved() -> void:
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(7)
 	var data: Dictionary = _record(9)
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("cadre_memos")

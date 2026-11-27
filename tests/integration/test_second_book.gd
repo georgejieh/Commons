@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0022's second book (P4.19), through the controller as the game runs it, with acting
+## ADR 0022's second book, through the controller as the game runs it, with acting
 ## turned on for a controller built here and a profile in this suite's folder. A figure
 ## changed while nobody acted is put back and taken as official through the books
 ## command, and filed once; a development build and a run outside the profile only log;
@@ -7,9 +7,9 @@ extends GdUnitTestSuite
 ## migrated and played on, a full Year continued at every stopping point, and whole
 ## seeded runs.
 
-const DIR: String = "user://test_second_book/"
+static var _dir: String = TestFolder.of("test_second_book")
 
-var _kit: FileWatchKit = FileWatchKit.new(DIR)
+var _kit: FileWatchKit = FileWatchKit.new(_dir)
 
 
 func before_test() -> void:

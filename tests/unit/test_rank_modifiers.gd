@@ -34,8 +34,8 @@ func _pass(round_state: RoundState) -> void:
 func test_promotion_puts_threes_above_twos_and_below_jokers() -> void:
 	var table: SeatRules = _table(["promotion_of_the_masses"])
 	var map: PackedByteArray = table.map_for(0)
-	assert_bool(table.map_for(1) == Ranks.identity_map()).is_true()
-	assert_bool(table.map_for(2) == Ranks.identity_map()).is_true()
+	assert_that(table.map_for(1)).is_equal(Ranks.identity_map())
+	assert_that(table.map_for(2)).is_equal(Ranks.identity_map())
 	assert_bool(map[Ranks.THREE] > map[Ranks.TWO]).is_true()
 	assert_bool(map[Ranks.THREE] < map[Ranks.SMALL_JOKER]).is_true()
 	for rank: int in range(Ranks.FOUR, Ranks.TWO):
@@ -76,8 +76,8 @@ func test_inverted_order_reverses_only_the_holders_plays() -> void:
 
 func test_inverted_order_reverses_every_rank_for_the_holder_alone() -> void:
 	var table: SeatRules = _table(["inverted_order"], 1)
-	assert_bool(table.map_for(0) == Ranks.identity_map()).is_true()
-	assert_bool(table.map_for(2) == Ranks.identity_map()).is_true()
+	assert_that(table.map_for(0)).is_equal(Ranks.identity_map())
+	assert_that(table.map_for(2)).is_equal(Ranks.identity_map())
 	for rank: int in Ranks.COUNT:
 		assert_int(table.map_for(1)[rank]).is_equal(Ranks.COUNT - 1 - rank)
 
@@ -99,7 +99,7 @@ func test_a_promoted_chain_compares_by_its_lowest_rank() -> void:
 func test_repeated_promotion_changes_nothing() -> void:
 	var once: SeatRules = _table(["promotion_of_the_masses"])
 	var twice: SeatRules = _table(["promotion_of_the_masses", "promotion_of_the_masses"])
-	assert_bool(once.map_for(0) == twice.map_for(0)).is_true()
+	assert_that(once.map_for(0)).is_equal(twice.map_for(0))
 
 
 func _assert_no_ties(rank_map: PackedByteArray) -> void:
@@ -165,14 +165,14 @@ func test_a_round_ending_on_a_bomb_clears_the_inversion() -> void:
 	var table: SeatRules = _table(["cultural_revolution"])
 	var round_state: RoundState = _round(table, ["3333", "4", "5"])
 	assert_int(_play(round_state, table, "3333")).is_equal(RoundState.Reason.OK)
-	assert_bool(table.map_for(0) == Ranks.identity_map()).is_true()
+	assert_that(table.map_for(0)).is_equal(Ranks.identity_map())
 
 
 func test_a_new_round_starts_with_a_clean_table() -> void:
 	var table: SeatRules = _table(["cultural_revolution"])
 	table.set_trick_bombed(true)
 	_round(table, ["3", "4", "5"])
-	assert_bool(table.map_for(0) == Ranks.identity_map()).is_true()
+	assert_that(table.map_for(0)).is_equal(Ranks.identity_map())
 
 
 func test_cultural_revolution_inverts_after_a_bomb_until_the_trick_ends() -> void:

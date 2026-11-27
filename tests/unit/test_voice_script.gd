@@ -47,8 +47,6 @@ func test_questions_statements_exclamations_and_trailing_lines_differ() -> void:
 	var statement: Vector3 = _ending("Who dealt this.", 4)
 	var exclaim: Vector3 = _ending("Who dealt this!", 4)
 	var trail: Vector3 = _ending("Who dealt this...", 4)
-	var rises: Array[float] = [question.x, statement.x, exclaim.x, trail.x]
-	print("last-word rise: ? %.2f  . %.2f  ! %.2f  ... %.2f" % rises)
 	assert_float(question.x).is_greater(1.2)
 	assert_float(statement.x).is_less(0.95)
 	assert_float(trail.x).is_less(statement.x - 0.1)

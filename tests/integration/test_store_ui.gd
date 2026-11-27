@@ -3,17 +3,13 @@ extends GdUnitTestSuite
 ## after leaving to the title and pressing Continue.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_store_ui/run.json"
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 

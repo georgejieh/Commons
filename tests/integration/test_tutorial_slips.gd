@@ -4,8 +4,8 @@ extends GdUnitTestSuite
 ## slip stays shut while the arrival runs.
 
 
-## The slip keeps clear of the brigade notice at step 7's cards, where it once covered
-## it: the notice, the hand and the cards as they stood in the first cloud frames.
+## The slip keeps clear of the brigade notice at step 7's cards, with the notice, the
+## hand and the cards where the table first lays them.
 func test_the_slip_keeps_clear_of_the_brigade_notice() -> void:
 	var cards: Rect2 = Rect2(330, 790, 330, 200)
 	var hand: Rect2 = Rect2(320, 780, 690, 230)

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Card-count announcements fire exactly once per threshold crossing (P3B.8): a play
+## Card-count announcements fire exactly once per threshold crossing: a play
 ## that leaves a seat at 2 or 1 cards announces it once, the same count never announces
 ## twice in a round, and no other play announces anything.
 

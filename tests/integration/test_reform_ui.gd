@@ -7,7 +7,6 @@ extends GdUnitTestSuite
 ## the Set intro names what is in force; and the decree paper is aged and wears.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_reform_ui/run.json"
 const WAIT_SECONDS: float = 4.0
 
 var _app: DemoApp
@@ -17,15 +16,11 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = Vector2i(1920, 1080)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	_loop().state.coupons = 60
 	_app.controller.reseal_book()
@@ -50,14 +45,16 @@ func _open(screen_id: String = "store") -> StoreScreen:
 
 
 func _stall(store: StoreScreen) -> ReformStall:
-	return store.get("_reform_stall")
+	return store.reform_stall
 
 
 func _wait(store: StoreScreen) -> void:
-	var waited: float = 0.0
-	while store.is_issuing() and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
+	await TestWait.until(
+		self,
+		func() -> bool: return not store.is_issuing(),
+		"the store to finish what it acts out",
+		WAIT_SECONDS
+	)
 
 
 func test_the_store_offers_a_decree_explained_by_the_slip() -> void:
@@ -70,7 +67,7 @@ func test_the_store_offers_a_decree_explained_by_the_slip() -> void:
 	assert_bool(panel.buy.disabled).is_false()
 	panel.described.emit(panel)
 	await await_idle_frame()
-	var slip: DetailSlip = store.slip()
+	var slip: DetailSlip = store.slip
 	assert_bool(slip.visible).is_true()
 	assert_str(slip.shown_rule()).is_equal(_app.controller.texts.reform_text(offered))
 	assert_bool(slip.get_global_rect().intersects(panel.get_global_rect())).is_false()
@@ -102,13 +99,13 @@ func test_enacting_stamps_holds_purchases_and_pins_the_decree() -> void:
 	assert_str(stall.seal().word()).is_equal(tr("reform.enacted").to_upper())
 	# Nothing else is bought while the decree is in the air.
 	var cadres: int = _app.controller.state_copy().inventory.cadres.size()
-	var counter_stall: CadreCounter = store.get("_cadres")
+	var counter_stall: CadreCounter = store.cadres
 	var counter: HBoxContainer = counter_stall.row
 	var cadre_buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	cadre_buy.pressed.emit()
-	var campaigns: CampaignStall = store.get("_campaign_stall")
+	var campaigns: CampaignStall = store.campaign_stall
 	campaigns.panel(0).buy.pressed.emit()
-	var reroll: Button = store.get("_reroll")
+	var reroll: Button = store.reroll
 	reroll.pressed.emit()
 	assert_int(_app.controller.state_copy().inventory.cadres.size()).is_equal(cadres)
 	assert_int(_loop().record.commands.size()).is_equal(commands + 1)
@@ -124,8 +121,8 @@ func test_enacting_stamps_holds_purchases_and_pins_the_decree() -> void:
 	await await_idle_frame()
 	assert_int(store.find_children("*", "", true, false).size()).is_less_equal(children + 2)
 	tag.focus_entered.emit()
-	assert_str(store.slip().shown_rule()).is_equal(_app.controller.texts.reform_text(offered))
-	assert_bool(store.slip().get_global_rect().intersects(tag.get_global_rect())).is_false()
+	assert_str(store.slip.shown_rule()).is_equal(_app.controller.texts.reform_text(offered))
+	assert_bool(store.slip.get_global_rect().intersects(tag.get_global_rect())).is_false()
 
 
 func test_reduced_motion_enacts_at_once() -> void:
@@ -159,24 +156,23 @@ func test_the_black_market_shows_the_strip_and_no_offer() -> void:
 
 func test_enlarged_committee_gives_both_boards_six_slots() -> void:
 	var store: StoreScreen = await _open()
-	var five: NoticeBoard = store.get("_board")
+	var five: NoticeBoard = store.board
 	assert_int(five.slot_count()).is_equal(5)
 	_loop().state.reforms.append("enlarged_committee")
 	store = await _open()
-	var board: NoticeBoard = store.get("_board")
+	var board: NoticeBoard = store.board
 	assert_int(board.slot_count()).is_equal(6)
 	_app.controller.leave_store()
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_PLAY:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_PLAY)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	await await_idle_frame()
-	var notice: NoticeBoard = table.get("_board")
+	var notice: NoticeBoard = table.board
 	assert_int(notice.slot_count()).is_equal(6)
 	var area: Rect2 = notice.get_global_rect()
 	var cards: Array[TipHost] = notice.get("_cards")
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	for card: TipHost in cards:
 		assert_bool(area.encloses(card.get_global_rect())).is_true()
 		for seat: SeatPanel in seats.values():
@@ -186,7 +182,7 @@ func test_enlarged_committee_gives_both_boards_six_slots() -> void:
 func test_couriers_bag_gives_the_shop_tray_three_places() -> void:
 	_loop().state.reforms.append("couriers_bag")
 	var store: StoreScreen = await _open()
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	var tray: CampaignTray = stall.tray
 	assert_int(tray.campaign_count()).is_equal(3)
 

@@ -113,7 +113,7 @@ func test_a_seat_counts_the_dealt_deck_and_the_player_their_own_swap() -> void:
 	var deal: DealResult = Dealer.deal(deck.cards(), RandomStream.new(5))
 	var round_state: RoundState = RoundState.new(deal, 0, SeatRules.new(ModifierStack.new()))
 	for seat: int in Seats.COUNT:
-		assert_bool(round_state.view_for(seat).deck_counts == deck.rank_counts()).is_true()
+		assert_that(round_state.view_for(seat).deck_counts).is_equal(deck.rank_counts())
 	var out: CardInstance = round_state.view_for(0).own_cards[0]
 	var plot_king: CardInstance = CardInstance.new(
 		CardInstance.FIRST_PLOT_ID, Ranks.KING, 0, CardInstance.Origin.PLOT
@@ -122,10 +122,10 @@ func test_a_seat_counts_the_dealt_deck_and_the_player_their_own_swap() -> void:
 	var known: PackedByteArray = deck.rank_counts()
 	known[out.base_rank()] -= 1
 	known[Ranks.KING] += 1
-	assert_bool(round_state.view_for(0).deck_counts == known).is_true()
+	assert_that(round_state.view_for(0).deck_counts).is_equal(known)
 	# The villagers cannot know what the player set aside or brought in.
 	for seat: int in [1, 2]:
-		assert_bool(round_state.view_for(seat).deck_counts == deck.rank_counts()).is_true()
+		assert_that(round_state.view_for(seat).deck_counts).is_equal(deck.rank_counts())
 	var unseen: PackedByteArray = UnseenCards.from_view(round_state.view_for(0))
 	var own: PackedByteArray = round_state.view_for(0).own_counts
 	for rank: int in Ranks.COUNT:

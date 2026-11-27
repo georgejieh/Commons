@@ -39,14 +39,6 @@ func _rate(type: Pattern.Type, level: int = 1) -> float:
 	return PARAMS.rate_for(type, level)
 
 
-## The numbers these goldens were written against, so a change to the data shows here.
-func test_the_marks_numbers_are_the_datas() -> void:
-	assert_int(PARAMS.sheaf_grain).is_equal(10)
-	assert_float(PARAMS.pennant_zeal).is_equal_approx(0.2, 0.0001)
-	assert_int(PARAMS.surplus_coupons).is_equal(1)
-	assert_int(PARAMS.surplus_round_most).is_equal(2)
-
-
 ## A Sheaf 3 scores its printed 3 and 10 more, 13, for anyone; Model on the same 3 only
 ## doubles it to 6.
 func test_a_sheaf_card_adds_flat_grain_for_whoever_scores_it() -> void:

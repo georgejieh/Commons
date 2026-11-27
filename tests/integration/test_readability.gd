@@ -8,7 +8,6 @@ extends GdUnitTestSuite
 ## collection and the village history each sit on one sheet with the shops' heading colour.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_readability/run.json"
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 ## The least type that reads on a 1080 screen, and the least a board name may shrink to.
 const READABLE: int = 16
@@ -23,11 +22,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = Vector2i(1920, 1080)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -40,8 +36,7 @@ func after_test() -> void:
 
 func _to_store() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 
 
@@ -59,7 +54,7 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 	loop.visit.market.set("_stock", offered)
 	for screen_id: String in ["store", "black_market"]:
 		var store: StoreScreen = await _open(screen_id)
-		var cadres: CadreCounter = store.get("_cadres")
+		var cadres: CadreCounter = store.cadres
 		var counter: HBoxContainer = cadres.row
 		var stock: Array[String] = _app.controller.store.desk(screen_id == "black_market").stock()
 		for slot: int in stock.size():
@@ -128,7 +123,7 @@ func test_the_reforms_strip_and_board_names_fit_without_clipping() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.reforms.assign(["supply_cooperative", "work_point_reform", "couriers_bag"])
 	var store: StoreScreen = await _open("store")
-	var stall: ReformStall = store.get("_reform_stall")
+	var stall: ReformStall = store.reform_stall
 	var strip: ReformStrip = stall.strip
 	var notes: Control = store.blocks()["notes"]
 	assert_float(strip.size.x).is_greater(notes.size.x - 2.0)
@@ -170,7 +165,7 @@ func test_card_marks_sit_in_the_strip_a_fan_leaves_showing() -> void:
 func test_the_rank_picker_stands_over_a_scrim() -> void:
 	_to_store()
 	var store: StoreScreen = await _open("black_market")
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var picker: RankPicker = cadres.picker
 	picker.ask("Pick", store, func(_rank: int) -> void: pass)
 	await await_idle_frame()

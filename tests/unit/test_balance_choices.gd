@@ -126,11 +126,12 @@ func test_the_percentile_reads_between_values() -> void:
 
 
 func test_the_sampled_weights_are_a_copy() -> void:
+	var before: int = BotConfig.DEFAULT_WEIGHTS.expert_samples
 	var copy: BotWeights = BalanceDriver.sampling(12)
 	assert_int(copy.expert_samples).is_equal(12)
 	assert_int(copy.expert_min_samples).is_less_equal(12)
 	assert_object(copy).is_not_same(BotConfig.DEFAULT_WEIGHTS)
-	assert_int(BotConfig.DEFAULT_WEIGHTS.expert_samples).is_equal(48)
+	assert_int(BotConfig.DEFAULT_WEIGHTS.expert_samples).is_equal(before)
 
 
 func test_the_seat_by_strategy() -> void:

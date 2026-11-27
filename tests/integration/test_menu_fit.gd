@@ -1,14 +1,11 @@
 extends GdUnitTestSuite
-## The menus stand whole at every text size at 1920x1080 and 1280x800 (P5.2a): the
+## The menus stand whole at every text size at 1920x1080 and 1280x800: the
 ## settings sheets fit the page with nothing out of sight, the Controls rows stop at a
 ## whole row with the fade over the cut, no title button lies on a face in the poster,
 ## the dialogs over the notice wall cover its blank board, the set summary's seals stay
 ## on the paper and off each other, and a dialog's words keep clear of its printed rule.
 
 const SEED: int = 5303
-const SAVE_PATH: String = "user://test_menu_fit/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 ## How far a dialog sheet may leave its board uncovered at an edge, the board's own frame.
 const BOARD_SLACK: float = 30.0
 
@@ -19,12 +16,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -46,7 +39,7 @@ func _show(screen_id: String) -> Control:
 func _each() -> Array[Array]:
 	var made: Array[Array] = []
 	for level: int in TextSize.count():
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			made.append([level, screen_size])
 	return made
 
@@ -61,7 +54,7 @@ func test_the_settings_sheets_stand_whole_at_every_size() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
 		var screen: SettingsScreen = await _show("settings")
-		var view: Rect2 = screen.scroll().get_global_rect().grow(SLACK)
+		var view: Rect2 = screen.scroll().get_global_rect().grow(ClipCheck.SLACK)
 		for sheet: Control in screen.sheets():
 			var rect: Rect2 = sheet.get_global_rect()
 			(
@@ -84,9 +77,9 @@ func test_the_tables_text_size_line_stands_under_its_boxes() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
 		var table: TableScreen = await _show("table")
-		table.call("_open_pause")
-		var pause: PauseMenu = table.get("_pause")
-		pause.call("_show_page", pause.get("_settings"))
+		table.hud.menu.pressed.emit()
+		var pause: PauseMenu = table.pause
+		TestInput.press(self, pause.main, tr("pause.settings"))
 		await await_idle_frame()
 		var note: Label = _labelled(pause, tr("settings.text_size.table"))
 		var standard: Control = pause.find_child(SettingsPanel.TEXT_SIZE_BOX % 0, true, false)
@@ -94,13 +87,13 @@ func test_the_tables_text_size_line_stands_under_its_boxes() -> void:
 		var motion: Control = _labelled_button(pause, tr("settings.reduced_motion"))
 		var line: Rect2 = note.get_global_rect()
 		assert_float(line.position.x).override_failure_message(where).is_greater_equal(
-			standard.get_global_rect().position.x - SLACK
+			standard.get_global_rect().position.x - ClipCheck.SLACK
 		)
 		assert_float(line.position.y).override_failure_message(where).is_greater_equal(
-			largest.get_global_rect().end.y - SLACK
+			largest.get_global_rect().end.y - ClipCheck.SLACK
 		)
 		assert_float(line.end.y).override_failure_message(where).is_less_equal(
-			motion.get_global_rect().position.y + SLACK
+			motion.get_global_rect().position.y + ClipCheck.SLACK
 		)
 		pause.visible = false
 
@@ -113,10 +106,10 @@ func test_the_controls_rows_stop_at_a_whole_row() -> void:
 		var screen: ControlsScreen = await _show("controls")
 		var page: ControlsPage = screen.page()
 		var rows: ProseScroll = page.rows_scroll()
-		var view: Rect2 = rows.get_global_rect().grow(SLACK)
+		var view: Rect2 = rows.get_global_rect().grow(ClipCheck.SLACK)
 		for action: String in KeyBindings.ACTIONS:
 			var rect: Rect2 = page.ticket(action).get_global_rect()
-			var whole: bool = view.encloses(rect) or rect.position.y >= view.end.y - SLACK
+			var whole: bool = view.encloses(rect) or rect.position.y >= view.end.y - ClipCheck.SLACK
 			(
 				assert_bool(whole)
 				. override_failure_message("%s %s %s" % [where, action, rect])
@@ -143,7 +136,7 @@ func test_no_title_button_lies_on_a_face() -> void:
 			faces.append(_on_cover(poster, face))
 		var continued: bool = false
 		assert_object(title.replay_button()).override_failure_message(where).is_not_null()
-		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 		for node: Node in title.find_children("*", "Button", true, false):
 			var button: Button = node as Button
 			continued = continued or button.text == tr("title.continue")
@@ -206,13 +199,13 @@ func test_the_dialogs_keep_their_padding() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
 		var table: TableScreen = await _show("table")
-		table.call("_open_pause")
-		var pause: PauseMenu = table.get("_pause")
+		table.hud.menu.pressed.emit()
+		var pause: PauseMenu = table.pause
 		await await_idle_frame()
-		_check_padding(_sheet_of(pause.get("_main")), where + " menu")
-		pause.call("_show_page", pause.get("_confirm"))
+		_check_padding(_sheet_of(pause.main), where + " menu")
+		TestInput.press(self, pause.main, tr("menu.abandon"))
 		await await_idle_frame()
-		var confirm: Control = _sheet_of(pause.get("_confirm"))
+		var confirm: Control = _sheet_of(pause.confirm)
 		_check_padding(confirm, where + " question")
 		assert_object(_labelled(confirm, tr("menu.abandon"))).is_not_null()
 		pause.visible = false
@@ -222,7 +215,7 @@ func test_the_dialogs_keep_their_padding() -> void:
 
 ## No word or button on a padded sheet comes closer to its edge than its padding.
 func _check_padding(sheet: Control, where: String) -> void:
-	var inside: Rect2 = sheet.get_global_rect().grow(-SheetPad.INSET + SLACK)
+	var inside: Rect2 = sheet.get_global_rect().grow(-SheetPad.INSET + ClipCheck.SLACK)
 	for node: Node in sheet.find_children("*", "Control", true, false):
 		var control: Control = node as Control
 		var prints: bool = control is Label or control is Button
@@ -289,7 +282,7 @@ func test_the_collections_bar_stands_beside_its_cards() -> void:
 		var bar: VScrollBar = scroll.get_v_scroll_bar()
 		var gap: float = bar.get_global_rect().position.x - right
 		assert_float(gap).override_failure_message("%s gap %.0f" % [where, gap]).is_between(
-			0.0, CollectionScreen.BAR_ROOM + SLACK
+			0.0, CollectionScreen.BAR_ROOM + ClipCheck.SLACK
 		)
 		var fade: ScrollFade = scroll.find_child("ScrollFade", false, false)
 		assert_bool(fade.more_below()).override_failure_message(where).is_true()

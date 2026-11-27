@@ -5,7 +5,6 @@ extends GdUnitTestSuite
 ## Clerk shows lies face up under its note, still on a replay, until the seat is chosen.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_deal_moments/run.json"
 const ASIDE: int = 5
 const KITTY: String = "51,52,53"
 
@@ -13,11 +12,8 @@ var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -40,9 +36,9 @@ func test_set_aside_cards_lie_on_the_pile_and_the_slip_names_them() -> void:
 	for reduced: bool in [false, true]:
 		Settings.set_value("reduced_motion", reduced)
 		var table: TableScreen = await _table()
-		var beats: DealMoments = table.get("_deal_beats")
-		var pile: TrickPile = table.get("_pile")
-		var strip: DebuffStrip = table.get("_debuffs")
+		var beats: DealMoments = table.deal_beats
+		var pile: TrickPile = table.pile
+		var strip: DebuffStrip = table.debuffs
 		_loop().state.boss_id = "the_handicap"
 		var card: CardInstance = _app.controller.table.deck_card(ASIDE)
 		var deal: DealResult = _loop().get("_deal")
@@ -71,8 +67,8 @@ func test_the_kitty_seen_lies_face_up_until_the_seat_is_chosen() -> void:
 	for reduced: bool in [false, true]:
 		Settings.set_value("reduced_motion", reduced)
 		var table: TableScreen = await _table()
-		var beats: DealMoments = table.get("_deal_beats")
-		var pile: TrickPile = table.get("_pile")
+		var beats: DealMoments = table.deal_beats
+		var pile: TrickPile = table.pile
 		pile.clear()
 		beats.on_event(RunEvent.new(RunEvent.Type.KITTY_SEEN, 0, 0, 0.0, KITTY), false)
 		assert_bool(beats.kitty_shown()).is_true()

@@ -1,6 +1,6 @@
 class_name SourceScan
 extends RefCounted
-## Reads the project's own scripts, scenes and resources for the text scans of P5.1.
+## Reads the project's own scripts, scenes and resources for the text scans.
 ## Each check takes one file's path and text, so a test can feed it a made-up line, and
 ## returns its offences as "path:line: what". Comments are blanked before a script is
 ## read, so offsets and line numbers stay as they were.

@@ -1,10 +1,9 @@
 extends GdUnitTestSuite
-## The open rules card follows the run within the same frame (P3B.5): at every run event,
+## The open rules card follows the run within the same frame: at every run event,
 ## before any frame is drawn, its rank order and active rules match the controller's.
 
 ## A seed whose first Set reaches Criticism Meeting in round 3, so the order changes.
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_cheat_sheet/run.json"
 const RANK_DEBUFF: String = "criticism_meeting"
 
 var _app: DemoApp
@@ -15,11 +14,8 @@ var _saw_debuff_listed: bool = false
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -35,7 +31,7 @@ func test_the_open_sheet_matches_the_run_at_every_event() -> void:
 	assert_array(_app.controller.items.ladder()).contains([RANK_DEBUFF])
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	_sheet = table.get("_cheat_sheet")
+	_sheet = table.cheat_sheet
 	_sheet.toggle(_app.controller)
 	# Connected after the sheet, so this runs once the sheet has redrawn for the event.
 	_app.controller.event_emitted.connect(_check)
@@ -85,14 +81,14 @@ func _expected_order() -> String:
 func _press(table: TableScreen, driver: ControllerScript) -> void:
 	match _app.controller.awaiting():
 		RunController.AWAIT_BID:
-			table.actions().decline.pressed.emit()
+			table.actions.decline.pressed.emit()
 		RunController.AWAIT_NEED:
-			table.need_panel().declared.emit(ControllerScript.NEED)
+			table.need_panel.declared.emit(ControllerScript.NEED)
 		RunController.AWAIT_PLAY:
 			var ids: Array[int] = driver.choose_play(_app.controller)
 			if ids.is_empty():
-				table.actions().pass_turn.pressed.emit()
+				table.actions.pass_turn.pressed.emit()
 				return
 			for card_id: int in ids:
 				_app.hand.toggle(card_id)
-			table.actions().play.pressed.emit()
+			table.actions.play.pressed.emit()

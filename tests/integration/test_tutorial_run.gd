@@ -1,11 +1,11 @@
 extends GdUnitTestSuite
-## The arrival played whole with its authored inputs (ADR 0026, P4.15): through the run
+## The arrival played whole with its authored inputs (ADR 0026): through the run
 ## controller and the director, every step takes exactly its one action and refuses a
 ## wrong one, no scripted villager move is refused, the player goes out first as a
 ## peasant and then as landlord, Famine and Denunciation each change once, and both
 ## purchases happen. A tutorial run writes no save and no profile.
 
-const SAVE_PATH: String = "user://test_tutorial_run/run.json"
+static var _save_path: String = TestFolder.of("test_tutorial_run") + "run.json"
 
 var _controller: RunController
 var _director: TutorialDirector
@@ -14,7 +14,7 @@ var _screen: String = "table"
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 	_controller = auto_free(RunController.new())

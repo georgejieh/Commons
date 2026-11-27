@@ -25,7 +25,7 @@ var exchanged: bool = false
 ## The deck sheet read-only, then one use of the state store's desk, from the store.
 func store() -> void:
 	var screen: Node = _current()
-	var sheet: Object = member(screen, "_deck")
+	var sheet: Object = member(screen, "deck")
 	await _press_and_wait(_button_in(screen, tr("deck.open")))
 	if not await _until(func() -> bool: return bool(sheet.call("is_open"))):
 		_misclick("deck sheet did not open")
@@ -50,7 +50,7 @@ func table() -> void:
 		loop.round_state().mark(RunLoop.PLAYER, cards[index].id(), marked)
 	var hand: Object = app.get("hand")
 	hand.call("refresh")
-	var hand_view: Object = member(_current(), "_hand_view")
+	var hand_view: Object = member(_current(), "hand_view")
 	hand_view.call("show_cards")
 	await _frames(5)
 	var shown: int = 0
@@ -65,7 +65,7 @@ func table() -> void:
 
 ## The deck sheet over the table, opened by the Deck key and shut by Cancel.
 func table_deck() -> void:
-	var sheet: Object = member(_current(), "_deck")
+	var sheet: Object = member(_current(), "deck")
 	await _key_action(KeyBindings.DECK)
 	if not await _until(func() -> bool: return bool(sheet.call("is_open"))):
 		_misclick("the Deck key did not open the deck sheet")
@@ -79,7 +79,7 @@ func table_deck() -> void:
 func _desk(screen: Node, sheet: Object) -> void:
 	var desk: Object = view(_controller(), "store").call("mark_desk", false)
 	await _afford(screen, int(desk.call("price")))
-	var stall: Object = member(screen, "_desk_stall")
+	var stall: Object = member(screen, "desk_stall")
 	var ticket: Button = stall.get("ticket")
 	await _press_and_wait(ticket)
 	if not await _until(func() -> bool: return bool(sheet.call("is_open"))):
@@ -106,7 +106,7 @@ func _exchange(screen: Node, sheet: Object) -> void:
 	var controller: Object = _controller()
 	var stall: Object = view(controller, "store").call("deck_stall")
 	await _afford(screen, int(stall.call("price", 0)))
-	var goods: Object = member(screen, "_deck_goods")
+	var goods: Object = member(screen, "deck_goods")
 	var buy: Button = goods.call("card_button", 0)
 	var coming: CardInstance = stall.call("card", 0)
 	await _shot("deck_stall")
@@ -162,7 +162,7 @@ func _afford(screen: Node, price: int) -> void:
 	loop.state.coupons += price
 	loop.record.checkpoint["coupons"] = int(loop.record.checkpoint["coupons"]) + price
 	controller.call("reseal_book")
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(5)
 
 

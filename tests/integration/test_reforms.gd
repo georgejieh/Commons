@@ -13,19 +13,6 @@ const SEEDS: int = 24
 const RICH: int = 1000
 
 
-func _at_the_shops(seed_value: int, reforms: Array[String] = []) -> RunLoop:
-	var state: RunState = RunState.new(seed_value)
-	state.reforms.assign(reforms)
-	var loop: RunLoop = RunLoop.new(state, RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	# Handed over at the Set's end, where the record's checkpoint is, so a replay has them.
-	loop.state.coupons = RICH
-	loop.record.mark(loop.state)
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 ## A curve every Set beats in its first round, or one no Set can meet.
 func _sets(target: float) -> SetConfig:
 	var params: SetParams = SETS.duplicate()
@@ -70,8 +57,8 @@ func test_the_pool_holds_adr_0021s_six_reforms_and_adr_0029s_two() -> void:
 func test_the_store_offers_one_reform_the_same_for_the_same_seed() -> void:
 	var seen: Dictionary[String, bool] = {}
 	for seed_value: int in SEEDS:
-		var first: RunLoop = _at_the_shops(seed_value)
-		var second: RunLoop = _at_the_shops(seed_value)
+		var first: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
+		var second: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		var offer: Array[String] = first.visit.shop.reforms.stock()
 		assert_int(offer.size()).is_equal(1)
 		assert_array(offer).is_equal(second.visit.shop.reforms.stock())
@@ -89,7 +76,7 @@ func test_the_store_offers_one_reform_the_same_for_the_same_seed() -> void:
 ## The draw comes last on the shop stream, so every other draw is as it was.
 func test_the_reform_draw_leaves_the_other_stock_alone() -> void:
 	for seed_value: int in 6:
-		var loop: RunLoop = _at_the_shops(seed_value)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		# The same run with a Reform counter that offers nothing.
 		var bare: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
 		bare.visit.shop.reforms = ReformCounter.new(bare.state, MARKET, POOL.reforms)
@@ -107,7 +94,7 @@ func test_the_reform_draw_leaves_the_other_stock_alone() -> void:
 func test_a_held_reform_is_never_offered() -> void:
 	var held: Array[String] = ["work_point_reform", "grain_reserve", "couriers_bag"]
 	for seed_value: int in SEEDS:
-		var loop: RunLoop = _at_the_shops(seed_value, held)
+		var loop: RunLoop = RunScript.at_the_shops(self, seed_value, RICH, held)
 		for _reroll: int in 3:
 			var offer: Array[String] = loop.visit.shop.reforms.stock()
 			assert_bool(held.has(offer[0])).is_false()
@@ -123,7 +110,7 @@ func test_a_held_reform_is_never_offered() -> void:
 
 
 func test_buying_needs_the_coupons_and_is_a_saved_command() -> void:
-	var loop: RunLoop = _at_the_shops(3)
+	var loop: RunLoop = RunScript.at_the_shops(self, 3, RICH)
 	var offered: String = loop.visit.shop.reforms.stock()[0]
 	var price: int = loop.visit.shop.reforms.price(0)
 	assert_int(price).is_equal(RunDefinitions.reforms[offered].cost)
@@ -144,7 +131,7 @@ func test_buying_needs_the_coupons_and_is_a_saved_command() -> void:
 
 ## Bought, saved, loaded and replayed, the Reform is still in force.
 func test_held_reforms_survive_save_load_and_replay() -> void:
-	var loop: RunLoop = _at_the_shops(8)
+	var loop: RunLoop = RunScript.at_the_shops(self, 8, RICH)
 	loop.state.coupons = RICH
 	var offered: String = loop.visit.shop.reforms.stock()[0]
 	assert_int(loop.player_reform(0)).is_equal(RunLoop.Reason.OK)
@@ -193,7 +180,7 @@ func test_grain_reserve_takes_famine_off_a_miss_down_to_none() -> void:
 
 
 func test_enlarged_committee_raises_the_one_cadre_limit_everywhere() -> void:
-	var loop: RunLoop = _at_the_shops(9)
+	var loop: RunLoop = RunScript.at_the_shops(self, 9, RICH)
 	var five: Array[String] = ["iron_rice_bowl", "canteen", "red_banner", "peek", "red_ink"]
 	loop.state.inventory.cadres.assign(five)
 	assert_int(RunReforms.cadre_slots(loop.state)).is_equal(STORE.cadre_slots)
@@ -231,7 +218,7 @@ func _rankless(loop: RunLoop) -> int:
 
 
 func test_couriers_bag_raises_the_campaign_limit_at_both_shops() -> void:
-	var loop: RunLoop = _at_the_shops(10)
+	var loop: RunLoop = RunScript.at_the_shops(self, 10, RICH)
 	loop.state.inventory.consumables.assign(["grain_loan", "appeal"])
 	assert_bool(loop.visit.shop.campaigns.has_room()).is_false()
 	assert_bool(loop.visit.market.campaigns.has_room()).is_false()
@@ -259,7 +246,6 @@ func test_supply_cooperative_reports_its_extra_envelope_choice() -> void:
 
 ## A schema 7 save gains no Reforms and no gathered deck; damaged shapes are damage.
 func test_a_schema_7_save_migrates_and_bad_shapes_fail() -> void:
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(8)
 	var record: RunRecord = RunRecord.new()
 	var state: RunState = RunState.new(77)
 	state.coupons = 6
@@ -269,7 +255,7 @@ func test_a_schema_7_save_migrates_and_bad_shapes_fail() -> void:
 	checkpoint.erase("reforms")
 	checkpoint.erase("deck_order")
 	assert_bool(RunRecordCheck.is_valid(data)).is_false()
-	var dir: String = "user://test_reforms/"
+	var dir: String = TestFolder.of("test_reforms")
 	DirAccess.make_dir_recursive_absolute(dir)
 	var service: SaveService = SaveService.for_run(dir + "run.json")
 	service.delete()

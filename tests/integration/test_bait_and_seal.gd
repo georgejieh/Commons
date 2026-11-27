@@ -1,14 +1,14 @@
 extends GdUnitTestSuite
-## ADR 0022's bait and seal (P4.19), through the controller as the game runs them, with
+## ADR 0022's bait and seal, through the controller as the game runs them, with
 ## acting turned on for a controller built here and a profile in this suite's folder.
 ## The ledger is written with every save and removed with it; a changed ledger is taken,
 ## in play and on continue, and filed once; a missing, unreadable or older ledger is
 ## nothing. A hand-edited run save or profile still loads and is filed once; a
 ## development build only logs a broken seal.
 
-const DIR: String = "user://test_bait_and_seal/"
+static var _dir: String = TestFolder.of("test_bait_and_seal")
 
-var _kit: FileWatchKit = FileWatchKit.new(DIR)
+var _kit: FileWatchKit = FileWatchKit.new(_dir)
 
 
 func before_test() -> void:

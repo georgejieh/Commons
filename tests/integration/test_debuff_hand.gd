@@ -292,7 +292,7 @@ func test_glass_walls_show_your_hand_to_both_villagers_and_no_one_else() -> void
 					assert_dict(exposed).is_empty()
 				else:
 					assert_array(exposed.keys()).is_equal([RunLoop.PLAYER])
-					assert_bool(exposed[RunLoop.PLAYER] == mine).is_true()
+					assert_that(exposed[RunLoop.PLAYER]).is_equal(mine)
 			checked.append(at.state.round_index)
 			return false
 	)

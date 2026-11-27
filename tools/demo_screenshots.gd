@@ -86,7 +86,7 @@ func _notices(app: Node) -> void:
 ## Plays the first Set by bot so the store and summary have something to show.
 func _finish_set(app: Node) -> void:
 	var controller: Node = app.get("controller")
-	var script: GDScript = load("res://tests/unit/controller_script.gd")
+	var script: GDScript = load("res://tests/support/controller_script.gd")
 	var driver: Object = script.new()
 	while driver.call("act", controller):
 		pass

@@ -163,8 +163,8 @@ func _guide() -> Object:
 	var screen: Node = _app.switcher.current()
 	if screen == null:
 		return null
-	if screen.has_method("tutorial"):
-		return screen.call("tutorial")
+	if screen is TableScreen:
+		return (screen as TableScreen).tutorial
 	return screen
 
 

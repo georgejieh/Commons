@@ -24,13 +24,13 @@ func test_streams_are_independent() -> void:
 	var busy: RandomStreams = RandomStreams.new(SEED)
 	for _i: int in DRAWS:
 		busy.stream(RandomStreams.SHOP).next_float()
-	assert_bool(_draws(busy, RandomStreams.DEAL) == _draws(quiet, RandomStreams.DEAL)).is_true()
+	assert_that(_draws(busy, RandomStreams.DEAL)).is_equal(_draws(quiet, RandomStreams.DEAL))
 
 
 func test_different_run_seeds_give_different_draws() -> void:
 	var first: PackedInt32Array = _draws(RandomStreams.new(SEED), RandomStreams.DEAL)
 	var second: PackedInt32Array = _draws(RandomStreams.new(SEED + 1), RandomStreams.DEAL)
-	assert_bool(first == second).is_false()
+	assert_that(first).is_not_equal(second)
 
 
 func test_saved_state_resumes_every_stream_through_json() -> void:
@@ -40,7 +40,7 @@ func test_saved_state_resumes_every_stream_through_json() -> void:
 	var saved: Dictionary = JSON.parse_string(JSON.stringify(original.to_dict()))
 	var restored: RandomStreams = RandomStreams.from_dict(saved)
 	for stream_name: String in RandomStreams.NAMES:
-		assert_bool(_draws(restored, stream_name) == _draws(original, stream_name)).is_true()
+		assert_that(_draws(restored, stream_name)).is_equal(_draws(original, stream_name))
 	assert_str(JSON.stringify(restored.to_dict())).is_equal(JSON.stringify(original.to_dict()))
 
 

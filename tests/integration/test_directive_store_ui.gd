@@ -7,7 +7,6 @@ extends GdUnitTestSuite
 ## rank note and the selection edge.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_directive_store_ui/run.json"
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 ## Seconds an issue may take to act out before the test gives up on it.
 const ISSUE_SECONDS: float = 4.0
@@ -22,15 +21,11 @@ func before_test() -> void:
 	# The layout is measured at the size the store is drawn for.
 	_was_size = get_tree().root.size
 	get_tree().root.size = Vector2i(1920, 1080)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 
 
@@ -47,7 +42,7 @@ func _open_store() -> StoreScreen:
 
 
 func _row(store: StoreScreen) -> DirectiveRow:
-	return store.get("_directives")
+	return store.directives
 
 
 func _documents(row: DirectiveRow) -> Array[Control]:
@@ -130,13 +125,10 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 	_check_seal_clear(row, ticket)
 	# A reroll waits for the issue: the counter keeps its stock and its coupons.
 	var coupons: int = _app.controller.state_copy().coupons
-	store.call("_on_reroll")
+	store.reroll.pressed.emit()
 	assert_int(_app.controller.state_copy().coupons).is_equal(coupons)
-	var waited: float = 0.0
-	while row.is_busy() and waited < ISSUE_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
-	assert_bool(row.is_busy()).is_false()
+	var issued_out: Callable = func() -> bool: return not row.is_busy()
+	await TestWait.until(self, issued_out, "the Directive's issue", ISSUE_SECONDS)
 	assert_bool(row.seal().visible).is_false()
 	for type: int in _app.controller.items.directive_types(issued):
 		assert_int(_app.controller.figures.hand_level(type)).is_equal(2)
@@ -213,16 +205,16 @@ func test_a_card_view_shows_each_mark_clear_of_the_note_and_edge() -> void:
 	var plain: CardInstance = Deck.new().card(20)
 	view.bind(plain)
 	assert_bool(view.shows_stamp()).is_false()
-	assert_bool(view.shown_enhancement() == CardInstance.MODEL).is_false()
+	assert_that(view.shown_enhancement()).is_not_equal(CardInstance.MODEL)
 	var marked: CardInstance = Deck.new().card(20)
 	CardModifiers.stamp(marked, 0)
 	view.bind(marked)
 	assert_bool(view.shows_stamp()).is_true()
-	assert_bool(view.shown_enhancement() == CardInstance.MODEL).is_false()
+	assert_that(view.shown_enhancement()).is_not_equal(CardInstance.MODEL)
 	CardModifiers.enhance(marked, CardInstance.MODEL)
 	view.bind(marked)
 	assert_bool(view.shows_stamp()).is_true()
-	assert_bool(view.shown_enhancement() == CardInstance.MODEL).is_true()
+	assert_that(view.shown_enhancement()).is_equal(CardInstance.MODEL)
 	# The generic enhancement bar is not drawn under a rosette.
 	var bar: Control = view.get_node("Frame/Enhancement")
 	assert_bool(bar.visible).is_false()

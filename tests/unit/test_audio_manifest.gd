@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Every sound under audio/ is logged with a license we may ship (P3C.8, commons-sfx):
+## Every sound under audio/ is logged with a license we may ship (commons-sfx):
 ## no row, no ship, and nothing NC, SA or Sampling+.
 
 const ROOT: String = "res://audio"
@@ -36,7 +36,9 @@ func test_no_entry_uses_a_banned_license() -> void:
 
 
 func test_every_entry_names_a_file_that_exists() -> void:
-	for file: String in _manifest():
+	var logged: Dictionary[String, String] = _manifest()
+	assert_int(logged.size()).is_greater(0)
+	for file: String in logged:
 		(
 			assert_bool(FileAccess.file_exists("res://" + file))
 			. override_failure_message(file)

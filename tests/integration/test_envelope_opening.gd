@@ -1,9 +1,8 @@
 extends GdUnitTestSuite
-## The envelope's opening act can be ended (P5.2a): an envelope is opened many times a
+## The envelope's opening act can be ended: an envelope is opened many times a
 ## run, so a click lays its papers out at once, and that click chooses nothing.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_envelope_opening/run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -13,21 +12,18 @@ func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = Vector2i(1920, 1080)
 	Settings.set_value("reduced_motion", false)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	_loop().state.coupons = 60
 	_app.controller.reseal_book()
 
 
 func after_test() -> void:
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
 	get_tree().root.size = _was_size
 	Saves.run_service().delete()
 
@@ -44,7 +40,7 @@ func _open() -> StoreScreen:
 
 
 func _bought(store: StoreScreen) -> EnvelopeOverlay:
-	var stall: EnvelopeStall = store.get("_envelope_stall")
+	var stall: EnvelopeStall = store.envelope_stall
 	stall.panel(0).buy.pressed.emit()
 	return stall.overlay()
 

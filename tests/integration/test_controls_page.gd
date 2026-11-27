@@ -6,7 +6,6 @@ extends GdUnitTestSuite
 ## the focus is never lost; and no set of bindings can lock the page in or out.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_controls_page/run.json"
 ## Bindings on the keys the menus use, as hostile as the rules allow.
 const HOSTILE: Dictionary[String, Key] = {
 	"commons_play": KEY_ENTER,
@@ -24,11 +23,8 @@ var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -218,7 +214,7 @@ func test_no_binding_set_locks_the_page() -> void:
 	await await_idle_frame()
 	table.skip_events()
 	await _tap(KEY_ESCAPE)
-	var pause: PauseMenu = table.get("_pause")
+	var pause: PauseMenu = table.pause
 	assert_bool(pause.visible).is_true()
 	var settings: Button = _button_in(pause, tr("pause.settings"))
 	settings.grab_focus()

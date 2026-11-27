@@ -8,8 +8,6 @@ extends GdUnitTestSuite
 ## never covers a rank's name. At the table the Deck key opens the sheet.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_deck_exchange_ui/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const WAIT_SECONDS: float = 6.0
 ## A plain deck's slot of a 3.
 const THREE: int = 1
@@ -21,11 +19,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	get_tree().root.size = Vector2i(1920, 1080)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -41,8 +36,7 @@ func _loop() -> RunLoop:
 
 func _to_the_store(coupons: int = 60) -> StoreScreen:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	_loop().state.coupons = coupons
 	_app.controller.reseal_book()
@@ -53,7 +47,7 @@ func _to_the_store(coupons: int = 60) -> StoreScreen:
 
 
 func _goods(store: StoreScreen) -> DeckGoods:
-	return store.get("_deck_goods")
+	return store.deck_goods
 
 
 func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() -> void:
@@ -61,7 +55,7 @@ func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() ->
 	var stall: DeckStallView = _app.controller.store.deck_stall()
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			store = _app.show_screen("store", true)
 			await await_idle_frame()
@@ -79,7 +73,7 @@ func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() ->
 				assert_str(buy.text).is_equal(tr("store.buy").format({"price": price}))
 				assert_str(view.shown_enhancement()).is_equal(stall.card(slot).enhancement_id())
 	var market: StoreScreen = _app.show_screen("black_market", true)
-	assert_object(market.get("_deck_goods")).is_null()
+	assert_object(market.deck_goods).is_null()
 
 
 func test_a_ticket_says_why_it_cannot_be_bought() -> void:
@@ -112,7 +106,7 @@ func test_a_ticket_opens_the_sheet_and_back_changes_nothing() -> void:
 	var before: Dictionary = _app.controller.state_copy().to_dict()
 	_goods(store).card_button(0).pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	assert_bool(sheet.is_open()).is_true()
 	assert_bool(sheet.incoming_view().visible).is_true()
 	assert_int(sheet.incoming_view().card_id).is_equal(coming.id())
@@ -139,7 +133,7 @@ func test_confirming_puts_the_card_in_the_deck_for_its_price() -> void:
 	var price: int = stall.price(0)
 	_goods(store).card_button(0).pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	sheet.board().press(THREE)
 	sheet.confirm_button().pressed.emit()
 	await await_idle_frame()
@@ -162,7 +156,7 @@ func test_the_sheet_tells_an_exchanged_deck_from_a_plain_one() -> void:
 		if state.deck.rank_of(slot) == Ranks.THREE:
 			state.deck.replace(slot, Ranks.KING, slot % Deck.SUITS)
 	_app.controller.reseal_book()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	sheet.open_deck()
 	await await_idle_frame()
 	var names: Array = sheet.board().get("_names")
@@ -186,10 +180,10 @@ func test_the_sheet_tells_an_exchanged_deck_from_a_plain_one() -> void:
 
 func test_the_slip_never_covers_a_ranks_name() -> void:
 	var store: StoreScreen = await _to_the_store()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			await await_idle_frame()
 			sheet.open_deck()
@@ -223,9 +217,9 @@ func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 	var store: StoreScreen = await _to_the_store()
 	var stock: Array[String] = ["deck_envelope"]
 	_loop().visit.shop.envelopes.set("_stock", stock)
-	store.call("_refresh")
+	store.refresh()
 	await await_idle_frame()
-	var stall: EnvelopeStall = store.get("_envelope_stall")
+	var stall: EnvelopeStall = store.envelope_stall
 	Settings.set_value("reduced_motion", true)
 	stall.panel(0).buy.pressed.emit()
 	var overlay: EnvelopeOverlay = stall.overlay()
@@ -235,7 +229,7 @@ func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 	var coming: CardInstance = shelf.card(0)
 	overlay.papers()[0].keep.pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	assert_bool(sheet.is_open()).is_true()
 	assert_int(sheet.incoming_view().card_id).is_equal(coming.id())
 	# Back: the envelope stays open at its choice, and the deck as it was.
@@ -262,7 +256,7 @@ func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 
 
 func test_the_deck_key_opens_the_sheet_at_the_table() -> void:
-	var table: Node = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	var press: InputEventAction = InputEventAction.new()
 	press.action = "commons_deck"
@@ -272,9 +266,9 @@ func test_the_deck_key_opens_the_sheet_at_the_table() -> void:
 	release.action = "commons_deck"
 	get_viewport().push_input(release)
 	await await_idle_frame()
-	var sheet: DeckSheet = table.get("_deck")
+	var sheet: DeckSheet = table.deck
 	assert_bool(sheet.is_open()).is_true()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	assert_bool(player.is_processing()).is_false()
 	sheet.close()
 	assert_bool(player.is_processing()).is_true()

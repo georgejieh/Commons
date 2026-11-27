@@ -1,14 +1,11 @@
 extends GdUnitTestSuite
-## ADR 0022's notice (P4.19): a live correction brings the state's notice over whatever
+## ADR 0022's notice: a live correction brings the state's notice over whatever
 ## screen the player is on, saying what the event says and never a dark figure's true
 ## value; it holds the table's events until a key or button acknowledges it, keeps the
 ## focus and takes every other key; it shows again for the next correction, and never on
 ## a replay, a reload or a table that joins the run. It fits the screen at its longest.
 
 const SEED: int = 7211
-const SAVE_PATH: String = "user://test_books_notice/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 
 var _app: DemoApp
 var _lines: PackedStringArray = []
@@ -17,13 +14,9 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
+	AppKit.fresh_saves(self)
 	_lines.clear()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.controller.live_search = false
 	_app.controller.file_watch.report = func(line: String) -> void: _lines.append(line)
 
@@ -56,27 +49,6 @@ func _raised() -> BooksCorrection:
 	return correction
 
 
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.keycode = code
-		key.physical_keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-
-
-func _pad_accept() -> void:
-	for down: bool in [true, false]:
-		var pad: InputEventJoypadButton = InputEventJoypadButton.new()
-		pad.button_index = JOY_BUTTON_A
-		pad.pressed = down
-		Input.parse_input_event(pad)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-
-
 func _start_full_run() -> void:
 	_app.controller.file_watch.release = true
 	assert_bool(_app.new_run(SEED, true)).is_true()
@@ -98,15 +70,15 @@ func test_a_live_correction_brings_the_notice_over_the_table_and_holds_it() -> v
 		{"name": "Coupons", "recorded": coupons, "entered": coupons + 500}
 	)
 	assert_array(Array(notice.shown_lines())).contains([recorded])
-	var events: EventPlayer = table.get("_player")
+	var events: EventPlayer = table.player
 	assert_bool(events.is_processing()).is_false()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(notice.acknowledge_button())
-	await _key(KEY_ESCAPE)
+	await TestInput.tap_key(self, KEY_ESCAPE)
 	assert_bool(notice.is_showing()).is_true()
 	assert_bool(_app.menu_is_open()).is_false()
-	var pause: PauseMenu = table.get("_pause")
+	var pause: PauseMenu = table.pause
 	assert_bool(pause.visible).is_false()
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_bool(notice.is_showing()).is_false()
 	assert_bool(events.is_processing()).is_true()
 	assert_array(Array(_lines)).is_empty()
@@ -120,7 +92,7 @@ func test_no_notice_on_a_reload_or_a_table_joining_the_run() -> void:
 	ControllerScript.new().act(_app.controller)
 	await await_idle_frame()
 	assert_bool(_app.notice.is_showing()).is_true()
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	_app.resume_to_screen()
 	await await_idle_frame()
 	assert_bool(_app.notice.is_showing()).is_false()
@@ -138,10 +110,7 @@ func test_no_notice_on_a_reload_or_a_table_joining_the_run() -> void:
 func test_the_notice_on_every_kind_of_screen_and_every_time() -> void:
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	var guard: int = 0
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER and guard < 2000:
-		guard += 1
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.show_screen("set_summary", true)
 	await await_idle_frame()
 	await _shown_and_acknowledged()
@@ -153,11 +122,11 @@ func test_the_notice_on_every_kind_of_screen_and_every_time() -> void:
 	await _send(_raised())
 	await _send(BooksCorrection.new())
 	assert_int(_app.notice.waiting()).is_equal(1)
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_bool(_app.notice.is_showing()).is_true()
 	var seal: String = TranslationServer.translate("notice.seal.title")
 	assert_array(Array(_app.notice.shown_lines())).contains([seal])
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_bool(_app.notice.is_showing()).is_false()
 
 
@@ -166,7 +135,7 @@ func _shown_and_acknowledged() -> void:
 	assert_bool(_app.notice.is_showing()).is_true()
 	await await_idle_frame()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(_app.notice.acknowledge_button())
-	await _pad_accept()
+	await TestInput.tap_pad(self, JOY_BUTTON_A)
 	assert_bool(_app.notice.is_showing()).is_false()
 
 
@@ -220,15 +189,18 @@ func test_the_longest_notice_fits_the_screen() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		# The notice takes the text size as it is shown.
 		await _send(longest)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			await await_idle_frame()
 			await await_idle_frame()
-			var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+			var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 			# The notice covers the whole screen, so nothing under it takes a click, and its
 			# sheet sits in the middle.
 			var whole: Rect2 = get_tree().root.get_visible_rect()
-			assert_bool(_app.notice.get_global_rect().grow(SLACK).encloses(whole)).is_true()
+			(
+				assert_bool(_app.notice.get_global_rect().grow(ClipCheck.SLACK).encloses(whole))
+				. is_true()
+			)
 			var sheet: Rect2 = (
 				_app.notice.acknowledge_button().get_parent_control().get_global_rect()
 			)
@@ -243,7 +215,7 @@ func test_the_longest_notice_fits_the_screen() -> void:
 				var where: String = "%s %s at %s" % [screen_size, control.get_path(), rect]
 				assert_bool(screen.encloses(rect)).override_failure_message(where).is_true()
 			_clips(_app.notice, str(screen_size))
-		await _key(KEY_ENTER)
+		await TestInput.tap_key(self, KEY_ENTER)
 
 
 ## Nothing under root clips, as ClipCheck says (ADR 0034).

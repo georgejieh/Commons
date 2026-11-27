@@ -3,16 +3,17 @@ extends GdUnitTestSuite
 ## seed and plain cards of 10 to K, no setback fired before the run starts, and a
 ## household above the open tier refused with nothing written.
 
-const DIR: String = "user://test_households/"
-const PROFILE_PATH: String = DIR + "profile.json"
 const START_TIME: int = 1_763_300_000
 const BASE: int = 4
+
+static var _dir: String = TestFolder.of("test_households")
+static var _profile_path: String = _dir + "profile.json"
 
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_profile = Profile.service(PROFILE_PATH)
+	_profile = Profile.service(_profile_path)
 	_profile.delete()
 
 

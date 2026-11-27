@@ -1,12 +1,10 @@
 extends GdUnitTestSuite
-## The norm (P5.2a). The owner could not tell whether beating a Quota raised the next one.
-## It does: each full quarter over a Quota's target is a step, up to four, and each step
+## The norm: each full quarter over a Quota's target is a step, up to four, and each step
 ## raises every later Quota's target by 3% of its base, added, never compounded. The
-## Quota's report now says how far the target was beaten and what that did to the norm,
+## Quota's report says how far the target was beaten and what that did to the norm,
 ## and the next Quota's introduction says how far the norm raised its target and why.
 
 const SEED: int = 5303
-const SAVE_PATH: String = "user://test_norm_shown/run.json"
 ## Every Quota's target after the first, so the raise reads as a plain figure.
 const LATER_TARGET: float = 1000.0
 
@@ -17,11 +15,8 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:

@@ -1,10 +1,9 @@
 extends GdUnitTestSuite
-## Villagers at the table (P3B.8): speech lines come from data with valid moods and
+## Villagers at the table: speech lines come from data with valid moods and
 ## string keys, a Set played through the table speaks one cards-left line per
 ## announcement, and the dossier shows what was seen.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_villager_speech/run.json"
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
 
 var _app: DemoApp
@@ -14,11 +13,8 @@ var _said_any: int = 0
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -44,7 +40,7 @@ func test_the_same_salt_picks_the_same_line() -> void:
 func test_each_announcement_is_spoken_once_and_the_dossier_fills() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var speech: TableSpeech = table.get("_speech")
+	var speech: TableSpeech = table.speech
 	speech.spoke.connect(_on_spoke)
 	_app.controller.event_emitted.connect(_on_event)
 	await _play_set(table)
@@ -90,17 +86,17 @@ func _play_set(table: TableScreen) -> void:
 			return
 		match _app.controller.awaiting():
 			RunController.AWAIT_BID:
-				table.actions().decline.pressed.emit()
+				table.actions.decline.pressed.emit()
 			RunController.AWAIT_NEED:
-				table.need_panel().declared.emit(ControllerScript.NEED)
+				table.need_panel.declared.emit(ControllerScript.NEED)
 			RunController.AWAIT_PLAY:
 				var ids: Array[int] = driver.choose_play(_app.controller)
 				if ids.is_empty():
-					table.actions().pass_turn.pressed.emit()
+					table.actions.pass_turn.pressed.emit()
 				else:
 					for card_id: int in ids:
 						_app.hand.toggle(card_id)
-					table.actions().play.pressed.emit()
+					table.actions.play.pressed.emit()
 		await await_idle_frame()
 
 
@@ -108,7 +104,7 @@ func _play_set(table: TableScreen) -> void:
 func test_reopening_the_table_says_nothing_again() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var speech: TableSpeech = table.get("_speech")
+	var speech: TableSpeech = table.speech
 	speech.spoke.connect(_on_spoke_any)
 	var driver: ControllerScript = ControllerScript.new()
 	for _turn: int in 200:
@@ -125,7 +121,7 @@ func test_reopening_the_table_says_nothing_again() -> void:
 	var reopened: TableScreen = _app.show_screen("table", true)
 	reopened.skip_events()
 	await await_idle_frame()
-	var echo: TableSpeech = reopened.get("_speech")
+	var echo: TableSpeech = reopened.speech
 	assert_int(echo.lines_said()).is_equal(0)
 
 

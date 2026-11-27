@@ -4,17 +4,18 @@ extends GdUnitTestSuite
 ## next run taking it once and clearing it from the profile, a family missing from its
 ## roster skipped, and starting amounts adding up with the household and the stake.
 
-const DIR: String = "user://test_lineage/"
-const PROFILE_PATH: String = DIR + "profile.json"
 const START_TIME: int = 1_763_500_000
 const METERS: MeterTable = RunDefaults.METERS
 const MEMORY: MemoryParams = RunDefaults.MEMORY
+
+static var _dir: String = TestFolder.of("test_lineage")
+static var _profile_path: String = _dir + "profile.json"
 
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_profile = Profile.service(PROFILE_PATH)
+	_profile = Profile.service(_profile_path)
 	_profile.delete()
 
 

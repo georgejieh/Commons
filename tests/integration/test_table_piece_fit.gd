@@ -6,9 +6,7 @@ extends GdUnitTestSuite
 ## between its text and its scroll bar.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_table_piece_fit/run.json"
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -16,11 +14,8 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	Settings.set_value("reduced_motion", true)
 
@@ -63,7 +58,7 @@ func test_a_seat_keeps_its_width_and_its_tag_clear_of_its_name() -> void:
 			problems.append("%s: tag set at %d" % [where, tag_size])
 		if not panel.get_global_rect().encloses(tag):
 			problems.append("%s: tag %s off its seat" % [where, tag])
-		if absf(panel.size.x - TableScreen.SEAT_WIDTH) > SLACK:
+		if absf(panel.size.x - TableScreen.SEAT_WIDTH) > ClipCheck.SLACK:
 			problems.append("%s: seat %.0f wide" % [where, panel.size.x])
 			for part: String in ["_name", "_count_row", "_role", "_speech", "_info", "_row"]:
 				var piece: Control = panel.get(part)
@@ -118,7 +113,7 @@ func test_the_action_column_keeps_its_foot_and_width() -> void:
 			get_tree().root.size = screen
 			var table: TableScreen = _app.show_screen("table", true)
 			await await_idle_frame()
-			var actions: ActionBar = table.actions()
+			var actions: ActionBar = table.actions
 			for bidding: bool in [false, true]:
 				actions.show_bidding(bidding)
 				var prompts: Array[String] = PromptLines.every(_app.controller, bidding)
@@ -133,9 +128,12 @@ func test_the_action_column_keeps_its_foot_and_width() -> void:
 func _check_column(actions: ActionBar, where: String, problems: PackedStringArray) -> void:
 	var column: Rect2 = actions.get_global_rect()
 	var at: Rect2 = actions.held()
-	if absf(column.end.y - at.end.y) > SLACK:
+	if absf(column.end.y - at.end.y) > ClipCheck.SLACK:
 		problems.append("%s: column foot at %.0f" % [where, column.end.y])
-	if absf(column.position.x - at.position.x) > SLACK or column.size.x > at.size.x + SLACK:
+	if (
+		absf(column.position.x - at.position.x) > ClipCheck.SLACK
+		or column.size.x > at.size.x + ClipCheck.SLACK
+	):
 		problems.append("%s: column %s wider than %s" % [where, column, at])
 		for child: Node in actions.find_children("*", "Control", true, false):
 			var part: Control = child as Control
@@ -144,7 +142,7 @@ func _check_column(actions: ActionBar, where: String, problems: PackedStringArra
 	for button: Button in actions.find_children("*", "Button", true, false):
 		if (
 			button.is_visible_in_tree()
-			and not column.grow(SLACK).encloses(button.get_global_rect())
+			and not column.grow(ClipCheck.SLACK).encloses(button.get_global_rect())
 		):
 			problems.append("%s: %s outside the column" % [where, button.text])
 	ClipCheck.check(actions, where, problems)
@@ -159,7 +157,7 @@ func test_the_rules_sheet_keeps_a_gap_at_its_scroll_bar() -> void:
 			get_tree().root.size = screen
 			var table: TableScreen = _app.show_screen("table", true)
 			await await_idle_frame()
-			var sheet: CheatSheet = table.get("_cheat_sheet")
+			var sheet: CheatSheet = table.cheat_sheet
 			sheet.toggle(_app.controller)
 			await await_idle_frame()
 			await await_idle_frame()
@@ -168,7 +166,9 @@ func test_the_rules_sheet_keeps_a_gap_at_its_scroll_bar() -> void:
 			if not bar.is_visible_in_tree():
 				continue
 			scrolled += 1
-			var edge: float = bar.get_global_rect().position.x - ProseScroll.BAR_GAP + SLACK
+			var edge: float = (
+				bar.get_global_rect().position.x - ProseScroll.BAR_GAP + ClipCheck.SLACK
+			)
 			for label: Label in scroll.find_children("*", "Label", true, false):
 				var rect: Rect2 = label.get_global_rect()
 				if label.is_visible_in_tree() and rect.end.x > edge:

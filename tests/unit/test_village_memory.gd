@@ -1,13 +1,14 @@
 extends GdUnitTestSuite
-## P4.6: the village's memory builds from Set summaries, fades by the data rate at each
+## The village's memory builds from Set summaries, fades by the data rate at each
 ## new run, weighs each kind by data, and survives in the profile save.
 
 const PARAMS: MemoryParams = preload("res://data/villagers/memory.tres")
-const PATH: String = "user://test_memory_profile.json"
+
+static var _path: String = TestFolder.of("test_village_memory") + "memory_profile.json"
 
 
 func after_test() -> void:
-	for path: String in [PATH, PATH + SaveService.BACKUP_SUFFIX]:
+	for path: String in [_path, _path + SaveService.BACKUP_SUFFIX]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -58,7 +59,7 @@ func test_memory_round_trips_through_the_profile_save() -> void:
 	var memory: VillageMemory = VillageMemory.new()
 	memory.record(_summary("zhao", SetSummary.Kind.BOMBED, 3))
 	memory = memory.carried(PARAMS)
-	var profile: SaveService = Profile.service(PATH)
+	var profile: SaveService = Profile.service(_path)
 	var kept: ProfileData = ProfileData.new()
 	kept.generation = 7
 	kept.memory = memory
@@ -69,7 +70,7 @@ func test_memory_round_trips_through_the_profile_save() -> void:
 
 
 func test_a_missing_or_damaged_profile_remembers_nothing() -> void:
-	var profile: SaveService = Profile.service(PATH)
+	var profile: SaveService = Profile.service(_path)
 	assert_dict(Profile.read(profile).memory.to_dict()).is_empty()
 	profile.save({Profile.MEMORY_KEY: {"zhao": [1]}})
 	assert_dict(Profile.read(profile).memory.to_dict()).is_empty()

@@ -2,22 +2,23 @@ extends GdUnitTestSuite
 ## Saves survive a kill at every state boundary and mid-round, fall back to the backup
 ## when damaged, migrate old versions, and stay small.
 
-const DIR: String = "user://test_saves/"
 const SEED: int = 3601
 const MAX_BYTES: int = 64 * 1024
 const STRINGS: String = "res://data/strings/strings.csv"
+
+static var _dir: String = TestFolder.of("test_saves")
 
 var _service: SaveService
 
 
 func before_test() -> void:
-	_service = SaveService.for_run(DIR + "run.json")
+	_service = SaveService.for_run(_dir + "run.json")
 	_service.delete()
 
 
 func after_test() -> void:
 	_service.delete()
-	SaveService.new(DIR + "profile.json").delete()
+	SaveService.new(_dir + "profile.json").delete()
 
 
 ## One Year, so the boss, the Year's end and the run's end are all saved and resumed.
@@ -183,7 +184,7 @@ func test_an_old_version_is_migrated_one_step_at_a_time() -> void:
 
 
 func test_run_and_profile_saves_are_separate_files() -> void:
-	var profile: SaveService = SaveService.new(DIR + "profile.json")
+	var profile: SaveService = SaveService.new(_dir + "profile.json")
 	profile.save({"surname": "Wang"})
 	_service.save(_record(1))
 	_service.save(_record(2))

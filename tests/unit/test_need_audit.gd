@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.3: each declaring seat rolls the audit die once, and a face at or below the audit
+## Each declaring seat rolls the audit die once, and a face at or below the audit
 ## faces checks its claim. The faces are base + informer + the audit hook, capped below
 ## certain; a checked lie is caught and replaced by the true need, so the split is made
 ## on honest needs.
@@ -146,7 +146,6 @@ func test_the_audit_share_comes_to_the_faces_over_the_sides() -> void:
 					audited += 1
 		var share: float = float(audited) / rolled
 		var expected: float = float(faces) / PARAMS.die_sides
-		print("faces %d, audited %.4f of %d" % [faces, share, rolled])
 		assert_float(share).is_between(expected - 0.015, expected + 0.015)
 
 
@@ -211,7 +210,6 @@ func test_audit_rates_match_the_configuration_over_10000_splits() -> void:
 	for faces: int in [PARAMS.base_faces, PARAMS.base_faces + PARAMS.informer_faces]:
 		var rate: float = _simulate(faces)
 		var expected: float = float(faces) / PARAMS.die_sides
-		print("faces %d, audited %.4f" % [faces, rate])
 		assert_float(rate).is_between(expected - 0.015, expected + 0.015)
 
 

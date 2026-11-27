@@ -6,10 +6,7 @@ extends GdUnitTestSuite
 ## its caption, with Take Nothing gone from under it.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_envelope_reads/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const WAIT_SECONDS: float = 5.0
-const SLACK: float = 1.0
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -17,16 +14,12 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	get_tree().root.size = SIZES[0]
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	get_tree().root.size = ClipCheck.SIZES[0]
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 
 
@@ -53,7 +46,7 @@ func _opened(kind: String) -> EnvelopeOverlay:
 	counter.set("_stock", [kind] as Array[String])
 	var store: StoreScreen = _app.show_screen("black_market" if kind == "parcel" else "store", true)
 	await await_idle_frame()
-	var stall: EnvelopeStall = store.get("_envelope_stall")
+	var stall: EnvelopeStall = store.envelope_stall
 	stall.panel(0).buy.pressed.emit()
 	await await_idle_frame()
 	await await_idle_frame()
@@ -86,7 +79,7 @@ func test_the_column_keeps_clear_of_the_screen_edges() -> void:
 	Settings.set_value("reduced_motion", true)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for full: bool in [false, true]:
 				var held: Array[String] = []
@@ -102,12 +95,12 @@ func test_the_column_keeps_clear_of_the_screen_edges() -> void:
 					(
 						assert_float(heading.position.y - screen.position.y)
 						. override_failure_message(where + " top")
-						. is_greater_equal(EnvelopeOverlay.EDGE - SLACK)
+						. is_greater_equal(EnvelopeOverlay.EDGE - ClipCheck.SLACK)
 					)
 					(
 						assert_float(screen.end.y - button.end.y)
 						. override_failure_message(where + " bottom")
-						. is_greater_equal(EnvelopeOverlay.EDGE - SLACK)
+						. is_greater_equal(EnvelopeOverlay.EDGE - ClipCheck.SLACK)
 					)
 					overlay.nothing_button().pressed.emit()
 					await await_idle_frame()
@@ -116,10 +109,12 @@ func test_the_column_keeps_clear_of_the_screen_edges() -> void:
 func test_a_kept_seal_lies_off_its_caption_and_take_nothing_goes() -> void:
 	for kind: String in ["parcel", "directive_envelope"]:
 		var overlay: EnvelopeOverlay = await _opened(kind)
-		var waited: float = 0.0
-		while overlay.is_busy() and waited < WAIT_SECONDS:
-			await get_tree().process_frame
-			waited += get_process_delta_time()
+		await TestWait.until(
+			self,
+			func() -> bool: return not overlay.is_busy(),
+			"the envelope to settle",
+			WAIT_SECONDS
+		)
 		var index: int = 0
 		while not overlay.papers()[index].is_takeable():
 			index += 1
@@ -127,7 +122,7 @@ func test_a_kept_seal_lies_off_its_caption_and_take_nothing_goes() -> void:
 		paper.keep.pressed.emit()
 		await get_tree().create_timer(0.45).timeout
 		assert_bool(overlay.seal().visible).override_failure_message(kind).is_true()
-		var seal: Rect2 = overlay.seal().get_global_rect().grow(-SLACK)
+		var seal: Rect2 = overlay.seal().get_global_rect().grow(-ClipCheck.SLACK)
 		if paper.caption_strip().is_visible_in_tree():
 			var strip: Rect2 = paper.caption_strip().get_global_rect()
 			(
@@ -139,7 +134,9 @@ func test_a_kept_seal_lies_off_its_caption_and_take_nothing_goes() -> void:
 			0.05
 		)
 		assert_bool(overlay.nothing_button().disabled).is_true()
-		waited = 0.0
-		while is_instance_valid(overlay) and waited < WAIT_SECONDS:
-			await get_tree().process_frame
-			waited += get_process_delta_time()
+		await TestWait.until(
+			self,
+			func() -> bool: return not is_instance_valid(overlay),
+			"the envelope to close",
+			WAIT_SECONDS
+		)

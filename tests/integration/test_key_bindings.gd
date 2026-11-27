@@ -5,12 +5,13 @@ extends GdUnitTestSuite
 ## each bad value falling back and a clash in the file sending every key home. Every
 ## commons_ action has a binding, a row and a string.
 
-const PATH: String = "user://test_key_bindings.cfg"
 const ACTION_PREFIX: String = "commons_"
+
+static var _path: String = TestFolder.of("test_key_bindings") + "key_bindings.cfg"
 
 
 func after_test() -> void:
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(_path))
 	# A test's own bindings write the shared InputMap: the autoload's put it back.
 	Settings.bindings.restore_defaults()
 
@@ -116,16 +117,16 @@ func test_restoring_the_defaults() -> void:
 
 func test_the_settings_file_round_trip() -> void:
 	var store: SettingsStore = auto_free(SettingsStore.new())
-	store.load_from(PATH)
+	store.load_from(_path)
 	assert_bool(_is_default(store.bindings)).is_true()
 	store.bindings.bind("commons_rules", KEY_F1)
 	store.bindings.bind("commons_hint", KEY_S)
 	assert_int(store.save()).is_equal(OK)
 	var file: ConfigFile = ConfigFile.new()
-	assert_int(file.load(PATH)).is_equal(OK)
+	assert_int(file.load(_path)).is_equal(OK)
 	assert_int(int(file.get_value(KeyBindings.SECTION, "commons_rules"))).is_equal(KEY_F1)
 	var reloaded: SettingsStore = auto_free(SettingsStore.new())
-	reloaded.load_from(PATH)
+	reloaded.load_from(_path)
 	assert_int(reloaded.bindings.key("commons_rules")).is_equal(KEY_F1)
 	assert_int(reloaded.bindings.key("commons_hint")).is_equal(KEY_S)
 	assert_int(reloaded.bindings.key("commons_sort")).is_equal(KEY_H)

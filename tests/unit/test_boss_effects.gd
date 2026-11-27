@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.7: each official's twist, checked through the modifier stack the run uses.
+## Each official's twist, checked through the modifier stack the run uses.
 
 const REQUISITION: ModifierDef = preload("res://data/modifiers/bosses/requisition.tres")
 const GREAT_LEAP: ModifierDef = preload("res://data/modifiers/bosses/great_leap.tres")

@@ -63,5 +63,4 @@ func test_the_bid_rate_stays_in_its_band() -> void:
 		if SelfPlay.bid_round(deal, configs, _table, deal_seed % Seats.COUNT).landlord() != -1:
 			claimed += 1
 	var rate: float = float(claimed) / deals
-	print("bid rate %.4f over %d deals" % [rate, deals])
 	assert_float(rate).is_between(_weights.bid_rate_low, _weights.bid_rate_high)

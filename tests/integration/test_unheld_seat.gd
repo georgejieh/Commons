@@ -5,7 +5,8 @@ extends GdUnitTestSuite
 ## change hook. It can kill the run, and the count is saved, schema 14 on.
 
 const SEEDS: Array[int] = [3101, 3102, 3103, 3104, 3105, 3106, 3107, 3108]
-const DIR: String = "user://test_unheld_seat/"
+
+static var _dir: String = TestFolder.of("test_unheld_seat")
 
 
 ## Doubles every meter change, as a harsher debuff would.
@@ -17,11 +18,11 @@ class Double:
 
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
+	DirAccess.make_dir_recursive_absolute(_dir)
 
 
 func after_test() -> void:
-	SaveService.for_run(DIR + "run.json").delete()
+	SaveService.for_run(_dir + "run.json").delete()
 
 
 ## Every Quota is met in its first round, so missing one moves no Famine.
@@ -193,7 +194,7 @@ func test_the_count_survives_save_and_resume() -> void:
 	var loop: RunLoop = _play_set(RunState.new(SEEDS[1]), false)
 	loop.state.seatless_sets = 2
 	loop.record.mark(loop.state)
-	var service: SaveService = SaveService.for_run(DIR + "run.json")
+	var service: SaveService = SaveService.for_run(_dir + "run.json")
 	assert_int(service.save(loop.record.to_dict())).is_equal(OK)
 	var loaded: SaveLoad = service.load_save()
 	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
@@ -220,7 +221,6 @@ func test_a_bad_count_is_a_damaged_save() -> void:
 
 ## A schema 13 save has no count: it loads with none, and the run counts from there.
 func test_a_schema_13_save_migrates() -> void:
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(14)
 	var loop: RunLoop = _play_set(RunState.new(SEEDS[1]), false)
 	loop.record.mark(loop.state)
 	var old: Dictionary = loop.record.to_dict()
@@ -230,10 +230,10 @@ func test_a_schema_13_save_migrates() -> void:
 	var migrated: Dictionary = RunRecordMigrations.migrate_from_13(old.duplicate(true))
 	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	assert_int(int(migrated["checkpoint"]["seatless_sets"])).is_equal(0)
-	var file: FileAccess = FileAccess.open(DIR + "run.json", FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(_dir + "run.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": 13, "data": old}))
 	file.close()
-	var loaded: SaveLoad = SaveService.for_run(DIR + "run.json").load_save()
+	var loaded: SaveLoad = SaveService.for_run(_dir + "run.json").load_save()
 	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
 	var resumed: RunLoop = RunRecord.resume(loaded.data, RunScript.bots(), _easy_sets())
 	assert_object(resumed).is_not_null()

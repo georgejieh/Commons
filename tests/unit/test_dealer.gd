@@ -46,9 +46,6 @@ func test_unbiased_deals_pass_chi_square_at_the_one_percent_level() -> void:
 			counts[order[index].id() * DESTINATIONS + _destination(index)] += 1
 
 	var statistic: float = _chi_square(counts) * (Deck.SIZE - 1) / Deck.SIZE
-	print(
-		"Chi-square over %d deals: %.2f (critical %.1f)" % [DEALS, statistic, CHI_SQUARE_CRITICAL]
-	)
 	assert_float(statistic).is_less(CHI_SQUARE_CRITICAL)
 
 
@@ -126,7 +123,6 @@ func _assert_bias_hits_target(rank: int, seat: int, multiplier: float) -> void:
 
 	var rate: float = float(landed) / copies
 	var target: float = multiplier * Dealer.HAND_SIZE / Deck.SIZE
-	print("Bias rank %d seat %d: %.4f (target %.4f)" % [rank, seat, rate, target])
 	assert_float(rate).is_between(target - BIAS_TOLERANCE, target + BIAS_TOLERANCE)
 
 

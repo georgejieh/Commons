@@ -4,20 +4,21 @@ extends GdUnitTestSuite
 ## formula and clamping, once-only commits through the four crash orderings, a demo run
 ## adding nothing, and The Commons resetting it.
 
-const DIR: String = "user://test_corruption/"
-const RUN_PATH: String = DIR + "run.json"
-const PROFILE_PATH: String = DIR + "profile.json"
 const SEED: int = 9301
 const PLAYER: int = 0
 const TRUE_NEED: int = 10
+
+static var _dir: String = TestFolder.of("test_corruption")
+static var _run_path: String = _dir + "run.json"
+static var _profile_path: String = _dir + "profile.json"
 
 var _saves: SaveService
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_saves = SaveService.for_run(RUN_PATH)
-	_profile = Profile.service(PROFILE_PATH)
+	_saves = SaveService.for_run(_run_path)
+	_profile = Profile.service(_profile_path)
 	_saves.delete()
 	_profile.delete()
 
@@ -179,17 +180,8 @@ func test_a_quotas_events_keep_their_order() -> void:
 # Purchases in a famine, through the real loop -----------------------------------------
 
 
-func _at_the_shops(seed_value: int) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = 1000
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 func test_every_market_purchase_in_high_famine_counts_and_a_reroll_does_not() -> void:
-	var loop: RunLoop = _at_the_shops(SEED)
+	var loop: RunLoop = RunScript.at_the_shops(self, SEED, 1000)
 	loop.state.famine = 80
 	assert_int(loop.player_market_reroll()).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.famine_market_buys).is_equal(0)
@@ -198,7 +190,7 @@ func test_every_market_purchase_in_high_famine_counts_and_a_reroll_does_not() ->
 	assert_int(loop.player_market_buy(0, Ranks.SEVEN)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.famine_market_buys).is_equal(2)
 	# The same purchase with Famine in its middle band counts nothing.
-	var calm: RunLoop = _at_the_shops(SEED)
+	var calm: RunLoop = RunScript.at_the_shops(self, SEED, 1000)
 	calm.state.famine = 60
 	assert_int(calm.player_market_buy(0, Ranks.SEVEN)).is_equal(RunLoop.Reason.OK)
 	assert_int(calm.player_upgrade(PlotUpgrades.CAPACITY)).is_equal(RunLoop.Reason.OK)
@@ -313,7 +305,7 @@ func test_a_backup_restore_adds_once() -> void:
 	var state: RunState = _quota_state(0, [CorruptionEvents.HOSTILE_CAMPAIGN])
 	Profile.write(_profile, ProfileData.new())
 	Profile.write(_profile, ProfileData.new())
-	var broken: FileAccess = FileAccess.open(PROFILE_PATH, FileAccess.WRITE)
+	var broken: FileAccess = FileAccess.open(_profile_path, FileAccess.WRITE)
 	broken.store_string("{broken")
 	broken.close()
 	assert_bool(ProfileCommits.commit(_profile, state, false)).is_true()
@@ -374,4 +366,3 @@ func test_a_schema_11_save_migrates() -> void:
 	var broken: Dictionary = migrated.duplicate(true)
 	broken["checkpoint"]["quota_corruption"] = [3]
 	assert_bool(RunRecordCheck.is_valid(broken)).is_false()
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(12)

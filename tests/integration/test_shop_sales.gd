@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## Selling Cadres and Campaigns back at either shop (ADR 0040, the owner's playtest of
-## 2026-11-24): a sale pays sell_percent of the item's price at that counter now, rounded
+## Selling Cadres and Campaigns back at either shop (ADR 0040): a
+## sale pays sell_percent of the item's price at that counter now, rounded
 ## down and never under one coupon; the item leaves for good with its saved state, frees
 ## its place at once, is not offered again that visit, gives back nothing its purchase
 ## changed and changes no meter; a sale is refused away from the shops, for an item not
@@ -9,15 +9,6 @@ extends GdUnitTestSuite
 const STORE: ShopParams = preload("res://data/run/default_shop.tres")
 const MARKET: ShopParams = preload("res://data/run/black_market.tres")
 const RICH: int = 1000
-
-
-func _at_the_shops(seed_value: int, coupons: int = RICH) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = coupons
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
 
 
 func _cost(cadre_id: String) -> int:
@@ -47,7 +38,7 @@ func test_a_sale_pays_half_the_price_at_that_counter_rounded_down_and_never_noth
 
 
 func test_selling_a_cadre_pays_frees_its_place_and_forgets_it() -> void:
-	var loop: RunLoop = _at_the_shops(21)
+	var loop: RunLoop = RunScript.at_the_shops(self, 21, RICH)
 	assert_int(loop.player_buy(0)).is_equal(RunLoop.Reason.OK)
 	var held: Array[String] = loop.state.inventory.cadres.duplicate()
 	var index: int = held.size() - 1
@@ -76,7 +67,7 @@ func test_selling_a_cadre_pays_frees_its_place_and_forgets_it() -> void:
 
 
 func test_a_sale_at_the_market_pays_the_markets_price_and_raises_no_resentment() -> void:
-	var loop: RunLoop = _at_the_shops(22)
+	var loop: RunLoop = RunScript.at_the_shops(self, 22, RICH)
 	assert_int(loop.player_market_buy(0, Ranks.SEVEN)).is_equal(RunLoop.Reason.OK)
 	var index: int = loop.state.inventory.cadres.size() - 1
 	var cadre_id: String = loop.state.inventory.cadres[index]
@@ -92,7 +83,7 @@ func test_a_sale_at_the_market_pays_the_markets_price_and_raises_no_resentment()
 
 
 func test_a_full_board_has_room_again_the_moment_a_cadre_is_sold() -> void:
-	var loop: RunLoop = _at_the_shops(23)
+	var loop: RunLoop = RunScript.at_the_shops(self, 23, RICH)
 	var spare: Array[String] = []
 	for definition: ModifierDef in RunLoop.all_cadres():
 		if not loop.state.inventory.cadres.has(definition.id):
@@ -105,7 +96,7 @@ func test_a_full_board_has_room_again_the_moment_a_cadre_is_sold() -> void:
 
 
 func test_the_households_first_cadre_sells_like_any_other() -> void:
-	var loop: RunLoop = _at_the_shops(24)
+	var loop: RunLoop = RunScript.at_the_shops(self, 24, RICH)
 	if loop.state.inventory.cadres.is_empty():
 		loop.state.inventory.cadres.append(RunLoop.all_cadres()[0].id)
 	var first: String = loop.state.inventory.cadres[0]
@@ -114,7 +105,7 @@ func test_the_households_first_cadre_sells_like_any_other() -> void:
 
 
 func test_a_refused_sale_changes_nothing() -> void:
-	var loop: RunLoop = _at_the_shops(25)
+	var loop: RunLoop = RunScript.at_the_shops(self, 25, RICH)
 	var before: Dictionary = loop.state.to_dict()
 	assert_int(loop.player_sell_cadre(-1)).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_int(loop.player_sell_cadre(99)).is_equal(RunLoop.Reason.ILLEGAL)
@@ -146,7 +137,7 @@ func test_nothing_is_sold_at_the_table() -> void:
 
 
 func test_selling_a_campaign_pays_frees_its_place_and_keeps_it_off_the_counter() -> void:
-	var loop: RunLoop = _at_the_shops(27)
+	var loop: RunLoop = RunScript.at_the_shops(self, 27, RICH)
 	var campaign: CampaignDef = RunCampaigns.all()[0]
 	while loop.state.inventory.consumables.size() < RunReforms.campaign_slots(loop.state):
 		loop.state.inventory.consumables.append(campaign.id)
@@ -167,7 +158,7 @@ func test_selling_a_campaign_pays_frees_its_place_and_keeps_it_off_the_counter()
 
 
 func test_sales_replay_from_a_save_and_an_older_save_still_loads() -> void:
-	var loop: RunLoop = _at_the_shops(28)
+	var loop: RunLoop = RunScript.at_the_shops(self, 28, RICH)
 	# A record with no sale in it, as every save before ADR 0040, loads as it did.
 	var older: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = older["checkpoint"]
@@ -194,7 +185,7 @@ func test_sales_replay_from_a_save_and_an_older_save_still_loads() -> void:
 ## A loop at the shops holding a copy of the Campaign the counter offers in slot 0, as a
 ## player who bought it on an earlier visit would.
 func _holding_the_shelfs_campaign(seed_value: int, at_market: bool) -> RunLoop:
-	var probe: RunLoop = _at_the_shops(seed_value)
+	var probe: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 	var counter: CampaignCounter = (
 		probe.visit.market.campaigns if at_market else probe.visit.shop.campaigns
 	)
@@ -259,7 +250,7 @@ func test_a_sold_campaign_cannot_be_bought_back_from_the_shelf_that_visit() -> v
 ## offers it that visit.
 func test_a_sold_cadre_cannot_be_bought_back_from_either_shelf_that_visit() -> void:
 	for at_market: bool in [false, true]:
-		var loop: RunLoop = _at_the_shops(30)
+		var loop: RunLoop = RunScript.at_the_shops(self, 30, RICH)
 		var counter: RunShop = loop.visit.market if at_market else loop.visit.shop
 		var cadre_id: String = counter.stock()[0]
 		loop.state.inventory.cadres.append(cadre_id)
@@ -276,7 +267,7 @@ func test_a_sold_cadre_cannot_be_bought_back_from_either_shelf_that_visit() -> v
 
 ## A Campaign sold back cannot be kept from an envelope opened after the sale that visit.
 func test_an_envelope_will_not_hand_back_a_campaign_sold_that_visit() -> void:
-	var loop: RunLoop = _at_the_shops(31)
+	var loop: RunLoop = RunScript.at_the_shops(self, 31, RICH)
 	var counter: EnvelopeCounter = loop.visit.shop.envelopes
 	var campaign_id: String = RunCampaigns.all()[0].id
 	loop.visit.shop.campaigns.withheld.append(campaign_id)

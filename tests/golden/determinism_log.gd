@@ -1,7 +1,7 @@
 class_name DeterminismLog
 extends RefCounted
-## Builds the scripted log the determinism golden test compares. It stands in for the
-## real event log until P1B.8: draws from every stream in a fixed order, then deals, per seed.
+## Builds the scripted log the determinism golden test compares: draws from every stream
+## in a fixed order, then deals, per seed.
 
 const SEEDS: PackedInt64Array = [1, 2026, -7, 9007199254740993]
 const DRAWS: int = 4

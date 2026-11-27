@@ -4,12 +4,14 @@ extends RefCounted
 ## by a fixed bot and declares a fixed need.
 
 const NEED: int = 12
+## The most commands play_to gives before it fails: far more than a whole Set needs.
+const MOST_TURNS: int = 5000
 
 var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
 
 
 ## Takes one player turn. Returns false when the run is not waiting on the player. A
-## villager whose play is searched (P5.0) is waited for, as a UI would, then it goes on.
+## villager whose play is searched is waited for, as a UI would, then it goes on.
 func act(controller: RunController) -> bool:
 	match controller.awaiting():
 		RunController.AWAIT_VILLAGER:
@@ -31,6 +33,19 @@ func act(controller: RunController) -> bool:
 			return controller.declare_need(NEED) == RunController.OK
 		RunController.AWAIT_OPENING:
 			return controller.begin_round() == RunController.OK
+	return false
+
+
+## Takes the player's turns until the run awaits moment, and says whether it got there. It
+## fails suite, naming both moments, when the run stops waiting on the player first or
+## after MOST_TURNS commands.
+func play_to(suite: GdUnitTestSuite, controller: RunController, moment: int) -> bool:
+	for _turn: int in MOST_TURNS:
+		if controller.awaiting() == moment or not act(controller):
+			break
+	if controller.awaiting() == moment:
+		return true
+	suite.fail("The run awaits %d, not %d" % [controller.awaiting(), moment])
 	return false
 
 

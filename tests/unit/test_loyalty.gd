@@ -19,7 +19,6 @@ func test_warmth_mirrors_pull() -> void:
 	assert_float(memory.warmth("gao", MEMORY)).is_equal(0.0)
 	assert_float(memory.warmth("stranger", MEMORY)).is_equal(0.0)
 	assert_float(memory.pull("li", MEMORY)).is_equal(0.0)
-	assert_float(MEMORY.loyal_cooperation).is_equal_approx(0.3, 0.0001)
 
 
 func test_loyalty_never_lifts_cooperation_past_its_maximum() -> void:

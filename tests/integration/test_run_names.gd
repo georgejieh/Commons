@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Names (ADR 0028, P4.17): 10,000 runs named through RunStarter's own path, with every
+## Names (ADR 0028): 10,000 runs named through RunStarter's own path, with every
 ## family, youth arriving, generations 1 to 6 and the player's surname each of the
 ## offered, village and youth surnames, hold no given name twice and no blocked name. A
 ## run's names survive a save, a load and a replay; the migration from schema 14 names an
@@ -8,9 +8,6 @@ extends GdUnitTestSuite
 ## changes; run setup shows the name the run then really uses; the pages that introduce
 ## a person print the full name and the table the surname alone.
 
-const DIR: String = "user://test_run_names/"
-const RUN_PATH: String = DIR + "run.json"
-const PROFILE_PATH: String = DIR + "profile.json"
 const RUNS: int = 10_000
 const GENERATIONS: int = 6
 ## Youth arrivals forced in each simulated run: two at a time, all four times.
@@ -18,13 +15,17 @@ const ARRIVALS: int = 4
 const START_TIME: int = 1_763_200_000
 const BOOK: NameBook = preload("res://data/villagers/names.tres")
 
+static var _dir: String = TestFolder.of("test_run_names")
+static var _run_path: String = _dir + "run.json"
+static var _profile_path: String = _dir + "profile.json"
+
 var _saves: SaveService
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_saves = SaveService.for_run(RUN_PATH)
-	_profile = Profile.service(PROFILE_PATH)
+	_saves = SaveService.for_run(_run_path)
+	_profile = Profile.service(_profile_path)
 	_saves.delete()
 	_profile.delete()
 
@@ -71,7 +72,6 @@ func _surname_of(state: RunState, family_id: String) -> String:
 
 func test_ten_thousand_runs_hold_no_name_twice_and_no_blocked_name() -> void:
 	var surnames: Array[String] = _surnames()
-	var began: int = Time.get_ticks_msec()
 	var problems: PackedStringArray = []
 	for run: int in RUNS:
 		var surname: String = surnames[run % surnames.size()]
@@ -95,7 +95,6 @@ func test_ten_thousand_runs_hold_no_name_twice_and_no_blocked_name() -> void:
 				problems.append("run %d: a youth shares %s" % [run, surname])
 		if problems.size() > 20:
 			break
-	print("10,000 named runs took %d ms" % (Time.get_ticks_msec() - began))
 	assert_array(problems).is_empty()
 
 
@@ -205,7 +204,7 @@ func test_the_migration_names_an_old_save_the_same_way_twice() -> void:
 
 
 func test_an_old_save_on_disk_loads_named() -> void:
-	SaveService.new(RUN_PATH, {}, 14).save(_old_record(707, 2))
+	SaveService.new(_run_path, {}, 14).save(_old_record(707, 2))
 	var loaded: SaveLoad = _saves.load_save()
 	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
 	var state: RunState = RunState.from_dict(loaded.data["checkpoint"])
@@ -250,7 +249,7 @@ func test_run_setup_shows_the_name_the_run_then_uses() -> void:
 	for seed_value: int in [1, 99, 1_763_000_000]:
 		var view: SetupView = SetupView.of(_profile, seed_value)
 		# The run starts from a copy of the same profile, which it moves a generation on.
-		var copy: SaveService = Profile.service(DIR + "copy.json")
+		var copy: SaveService = Profile.service(_dir + "copy.json")
 		Profile.write(copy, data)
 		var request: RunRequest = RunRequest.new(RunRequest.FULL, seed_value, START_TIME)
 		var state: RunState = RunStarter.state(request, copy)

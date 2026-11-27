@@ -1,17 +1,16 @@
 extends GdUnitTestSuite
-## The score tally never lies on the cards laid on the trick, the hand or a seat (P5.2a,
-## the owner's playtest of 2026-11-24: "sometimes it covers the cards in play slightly"),
-## at 1920x1080 and 1280x800 and at every text size, through all of its motion: every
-## frame of a big play's sequence is measured, its chits' swell and its shake included,
-## not only where it rests. The trick holds a 20-card plane, a long pair run and plays
-## buried under them. Fitted to its room, its type is never smaller than at Standard.
+## The score tally never lies on the cards laid on the trick, the hand or a seat at 1920x1080
+## and 1280x800 and at every text size, through all of its motion: every frame of a big play's
+## sequence is measured, its chits' swell and its shake included, not only where it rests. The
+## trick holds a 20-card plane, a long pair run and plays buried under them. Fitted to its
+## room, its type is never smaller than at Standard.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_score_room/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 ## The Quota target the play is measured against: small, so the play lands at its hardest.
 const SMALL_TARGET: float = 50.0
 const MOST_FRAMES: int = 600
+
+static var _save_path: String = TestFolder.of("test_score_room") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -19,7 +18,7 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 
 
@@ -33,9 +32,7 @@ func after_test() -> void:
 func _table(level: int, screen_size: Vector2i) -> TableScreen:
 	Settings.set_value(TextSize.SETTING, level)
 	get_tree().root.size = screen_size
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
@@ -84,7 +81,7 @@ func _big_play() -> RunEvent:
 
 func test_the_tally_keeps_off_the_cards_the_hand_and_the_seats_through_its_motion() -> void:
 	for level: int in TextSize.count():
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			var where: String = "text size %d at %s" % [level, screen_size]
 			var table: TableScreen = await _table(level, screen_size)
 			await _check_table(table, where)
@@ -93,11 +90,11 @@ func test_the_tally_keeps_off_the_cards_the_hand_and_the_seats_through_its_motio
 
 
 func _check_table(table: TableScreen, where: String) -> void:
-	var moments: TableMoments = table.get("_moments")
-	var pile: TrickPile = table.get("_pile")
-	var motion: TableMotion = table.get("_motion")
-	var hand: HandView = table.get("_hand_view")
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var moments: TableMoments = table.moments
+	var pile: TrickPile = table.pile
+	var motion: TableMotion = table.motion
+	var hand: HandView = table.hand_view
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var hand_box: Rect2 = hand.get_global_rect()
 	var lifted: float = HandView.LIFT + HandView.ARMED_LIFT
 	hand_box = Rect2(hand_box.position - Vector2(0, lifted), hand_box.size + Vector2(0, lifted))
@@ -123,7 +120,7 @@ func _check_table(table: TableScreen, where: String) -> void:
 		moments.on_event(_big_play())
 		var rest: Array[Rect2] = moments.tally.drawn_rects()
 		# The line over the hand shares the tally's band, so it steps aside for it.
-		var line: Label = table.get("_you")
+		var line: Label = table.you
 		assert_float(line.modulate.a).override_failure_message(where + " line").is_equal(0.0)
 		# Fitted to its room, its type is never drawn smaller than at Standard.
 		var drawn: float = moments.tally.scale.x * TextSize.factor()

@@ -6,21 +6,21 @@ extends RefCounted
 ## Every visible piece of the tray, its head, leaflets and buttons, keeps clear of the
 ## table's pieces and of where the dice bowl lands, and stays on screen.
 static func check_clear(suite: GdUnitTestSuite, table: TableScreen, screen: Vector2) -> void:
-	var campaigns: TableCampaigns = table.get("_campaigns")
+	var campaigns: TableCampaigns = table.campaigns
 	var tray: CampaignTray = campaigns.tray
-	var ledger: Control = table.get("_ledger")
+	var ledger: Control = table.ledger
 	var keep_clear: Array[Control] = [
-		table.get("_hand_view"),
-		table.actions(),
-		table.get("_board"),
-		table.get("_you"),
-		table.get("_pile"),
-		table.get("_debuffs"),
+		table.hand_view,
+		table.actions,
+		table.board,
+		table.you,
+		table.pile,
+		table.debuffs,
 		ledger.get_parent() as Control,
 	]
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	keep_clear.append_array(seats.values())
-	var dressing: Control = table.get("_dressing")
+	var dressing: Control = table.dressing
 	for child: Node in dressing.get_children():
 		if (
 			child is PanelContainer

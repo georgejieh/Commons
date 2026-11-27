@@ -6,9 +6,6 @@ extends GdUnitTestSuite
 ## whichever back is chosen. The history page is one ink sheet across the page, and the
 ## run in progress reads as a record, one line per family a Quota touched.
 
-const SAVE_PATH: String = "user://test_history_and_card_backs/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 const READABLE: int = 18
 const SEED: int = 9321
 ## The darkest a page's ink may be read as light: its luminance stays under this.
@@ -22,12 +19,8 @@ var _was_back: String
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	_was_back = str(Settings.value(CardBacks.SETTING))
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -106,7 +99,7 @@ func test_fifty_generations_scroll_by_focus_at_both_sizes() -> void:
 			dead = _keys(2)
 		entries.append(_entry(index + 1, Endings.ENDINGS[index % 7], index % 2 == 0, dead))
 	_write_history(entries)
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
 		var screen: VillageHistoryScreen = await _history()
 		var where: String = str(screen_size)
@@ -115,7 +108,7 @@ func test_fifty_generations_scroll_by_focus_at_both_sizes() -> void:
 		assert_str(records[0].accessibility_name).is_equal(HistoryView.line(entries[-1]))
 		assert_str(records[-1].accessibility_name).is_equal(HistoryView.line(entries[0]))
 		_check_type(screen, where)
-		var visible: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		var visible: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 		assert_bool(visible.encloses(screen.back_button().get_global_rect())).is_true()
 		assert_bool(visible.encloses(screen.scroll().get_global_rect())).is_true()
 		# The arrows and the d-pad walk the sheets, and the scroll follows to the last.
@@ -123,7 +116,7 @@ func test_fifty_generations_scroll_by_focus_at_both_sizes() -> void:
 		records[-1].grab_focus()
 		await await_idle_frame()
 		await await_idle_frame()
-		var view: Rect2 = screen.scroll().get_global_rect().grow(SLACK)
+		var view: Rect2 = screen.scroll().get_global_rect().grow(ClipCheck.SLACK)
 		(
 			assert_bool(view.encloses(records[-1].get_global_rect()))
 			. override_failure_message(where)
@@ -197,24 +190,24 @@ func test_the_page_is_one_ink_sheet_at_both_sizes() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	var family: String = loop.state.table[1]
 	loop.state.summaries.assign([_summary(0, {family: [2, 0, 1, 0]}), _summary(1, {})])
-	for screen_size: Vector2i in SIZES:
+	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
 		var screen: VillageHistoryScreen = await _history()
 		var where: String = str(screen_size)
 		assert_int(screen.run_lines().size()).is_equal(2)
 		assert_str(screen.run_lines()[1]).is_equal("Quota 2. Nothing to record.")
-		var screen_rect: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		var screen_rect: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 		var sheet: Rect2 = screen.sheet().get_global_rect()
 		assert_bool(screen_rect.encloses(sheet)).override_failure_message(where).is_true()
 		assert_float(sheet.size.x).is_greater(screen_rect.size.x * 0.8)
-		_check_inside(screen, sheet.grow(SLACK), where)
+		_check_inside(screen, sheet.grow(ClipCheck.SLACK), where)
 		_check_type(screen, where)
 		_check_ink(screen, where)
 		var records: Array[AgedSheet] = screen.records()
 		records[-1].grab_focus()
 		await await_idle_frame()
 		await await_idle_frame()
-		var view: Rect2 = screen.scroll().get_global_rect().grow(SLACK)
+		var view: Rect2 = screen.scroll().get_global_rect().grow(ClipCheck.SLACK)
 		assert_bool(view.encloses(records[-1].get_global_rect())).is_true()
 
 
@@ -267,7 +260,7 @@ func test_the_card_back_row_at_both_sizes() -> void:
 		var data: ProfileData = ProfileData.new()
 		data.finished_runs = runs
 		Profile.write(Saves.profile_service(), data)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			var screen: SettingsScreen = await _settings()
 			var where: String = "%d %s" % [runs, screen_size]
@@ -289,7 +282,7 @@ func test_the_card_back_row_at_both_sizes() -> void:
 			for sheet: AgedSheet in swatches:
 				assert_int(sheet.focus_mode).is_equal(Control.FOCUS_ALL)
 			_check_type(screen, where)
-			var visible: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+			var visible: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 			for node: Node in screen.find_children("*", "Control", true, false):
 				var control: Control = node as Control
 				if control.is_visible_in_tree() and not control is TextureRect:
@@ -327,10 +320,10 @@ func test_the_table_draws_the_chosen_design() -> void:
 	_app.new_run(SEED)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var beats: DebuffMoments = table.get("_debuff_beats")
+	var beats: DebuffMoments = table.debuff_beats
 	for back: Node in beats.find_children("*", "CardBack", true, false):
 		assert_object((back as CardBack).design).is_same(CardBacks.current())
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var picture: TextureRect = seats[1].get("_back")
 	assert_object(picture.texture).is_same(CardBacks.picture(CardBacks.current()))
 

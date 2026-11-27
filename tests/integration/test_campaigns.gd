@@ -282,8 +282,7 @@ func test_grain_loan_pays_coupons_for_famine_at_the_table_and_in_the_shop() -> v
 	assert_str(meter[-1].text).is_equal(RunMeters.FAMINE)
 	assert_int(_events_of(loop, RunEvent.Type.COUPONS_GAINED)[0].value).is_equal(5)
 	RunScript.new().play_until_set_over(loop)
-	while loop.awaiting() != RunLoop.Awaiting.SET_OVER:
-		assert_bool(RunScript.new().act(loop)).is_true()
+	RunScript.new().play_to(self, loop, RunLoop.Awaiting.SET_OVER)
 	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
 	coupons = loop.state.coupons
 	assert_int(loop.player_campaign(0, none)).is_equal(RunLoop.Reason.OK)

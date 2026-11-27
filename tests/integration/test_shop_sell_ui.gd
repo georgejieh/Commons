@@ -8,9 +8,6 @@ extends GdUnitTestSuite
 ## slip stay on the screen, and the slip keeps off the ticket.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_shop_sell_ui/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.0
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -18,15 +15,11 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 60
@@ -67,7 +60,7 @@ func _open(screen_id: String) -> StoreScreen:
 
 
 func _tiles(store: StoreScreen) -> Array[Control]:
-	var board: NoticeBoard = store.get("_board")
+	var board: NoticeBoard = store.board
 	var tiles: Array[Control] = []
 	for node: Node in board.get_children():
 		if node is TipHost:
@@ -79,7 +72,7 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 	for screen_id: String in ["store", "black_market"]:
 		_hold(2)
 		var store: StoreScreen = await _open(screen_id)
-		var sale: SellDesk = store.get("_sale")
+		var sale: SellDesk = store.sale
 		var desk: ShopDesk = _app.controller.store.desk(screen_id == "black_market")
 		var tile: Control = _tiles(store)[0]
 		var tag: SellTag = sale.tag_on(tile)
@@ -107,7 +100,7 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 		assert_int(state.inventory.cadres.size()).is_equal(held.size() - 1)
 		assert_array(state.inventory.cadres).not_contains([held[0]])
 		assert_int(state.coupons).is_equal(coupons + paid)
-		var shown: Label = store.get("_coupons")
+		var shown: Label = store.coupons
 		assert_str(shown.text).contains(str(state.coupons))
 		tile.mouse_exited.emit()
 
@@ -115,7 +108,7 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 func test_selling_clears_no_room_on_the_counter_in_the_same_visit() -> void:
 	_hold(RunReforms.cadre_slots(_loop().state))
 	var store: StoreScreen = await _open("store")
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	assert_str(buy.text).is_equal(tr("store.buy.full"))
@@ -133,7 +126,7 @@ func test_selling_clears_no_room_on_the_counter_in_the_same_visit() -> void:
 func test_a_held_campaign_sells_from_the_tray() -> void:
 	_hold(1)
 	var store: StoreScreen = await _open("store")
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	var leaflet: CampaignLeaflet = stall.tray.leaflet(0)
 	var tag: SellTag = _sale(store).tag_on(leaflet)
 	assert_object(tag).is_not_null()
@@ -153,7 +146,7 @@ func test_the_keyboard_reaches_a_sale_and_the_slip_stands_beside_it() -> void:
 	_hold(2)
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for screen_id: String in ["store", "black_market"]:
 				var store: StoreScreen = await _open(screen_id)
@@ -169,22 +162,22 @@ func _check_focus(store: StoreScreen, where: String) -> void:
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_bool(tag.visible).override_failure_message(where).is_true()
-	var slip: DetailSlip = store.slip()
+	var slip: DetailSlip = store.slip
 	assert_object(slip.anchor()).override_failure_message(where).is_same(tile)
 	var ticket: Rect2 = tag.button.get_global_rect()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(ticket)).override_failure_message(where + " ticket").is_true()
 	var paper: Rect2 = slip.get_global_rect()
 	assert_bool(screen.encloses(paper)).override_failure_message(where + " slip").is_true()
 	(
-		assert_bool(paper.grow(-SLACK).intersects(ticket))
+		assert_bool(paper.grow(-ClipCheck.SLACK).intersects(ticket))
 		. override_failure_message("%s: slip %s on the ticket %s" % [where, paper, ticket])
 		. is_false()
 	)
 	(
 		assert_float(SlipPlacer.distance(paper, tile.get_global_rect()))
 		. override_failure_message(where + " slip far")
-		. is_less_equal(SlipPlacer.REACH + SLACK)
+		. is_less_equal(SlipPlacer.REACH + ClipCheck.SLACK)
 	)
 	var accept: InputEventAction = InputEventAction.new()
 	accept.action = "ui_accept"
@@ -197,5 +190,5 @@ func _check_focus(store: StoreScreen, where: String) -> void:
 
 
 func _sale(store: StoreScreen) -> SellDesk:
-	var sale: SellDesk = store.get("_sale")
+	var sale: SellDesk = store.sale
 	return sale

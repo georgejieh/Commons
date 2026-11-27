@@ -1,11 +1,9 @@
 extends GdUnitTestSuite
-## A finished round plays out and is put away before the next hand is dealt (P5.2a). The
-## owner saw the next hand dealt the moment a round ended: the run deals it as soon as the
-## round is settled, and the table read the player's hand from the run while the round's
-## end was still being shown.
+## A finished round plays out and is put away before the next hand is dealt: the run
+## deals as soon as the round is settled, and the table shows the next hand only once the
+## round's end has been shown.
 
 const SEED: int = 3
-const SAVE_PATH: String = "user://test_round_close/run.json"
 ## Seconds the walk through a round's end may take at most.
 const WAIT_SECONDS: float = 12.0
 
@@ -13,12 +11,9 @@ var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
+	AppKit.fresh_saves(self)
 	Settings.set_value("reduced_motion", false)
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -42,7 +37,7 @@ func test_closing_comes_once_between_a_rounds_end_and_the_next_deal() -> void:
 	player.push(RunEvent.new(RunEvent.Type.SHARE_PAID, 0, 10))
 	assert_bool(player.deal_waiting()).is_true()
 	player.push(RunEvent.new(RunEvent.Type.DEALT, Seats.NONE, 1))
-	await _until(player.is_idle)
+	await TestWait.until(self, player.is_idle, "the table's events to play", WAIT_SECONDS)
 	assert_array(seen).is_equal(
 		["DEALT", "REDEALT", "DEALT", "ROUND_ENDED", "SHARE_PAID", "closing", "DEALT"]
 	)
@@ -53,16 +48,18 @@ func test_closing_comes_once_between_a_rounds_end_and_the_next_deal() -> void:
 ## end stays in view for its beat, its trick is swept off, and only then is the hand dealt.
 func test_the_next_hand_waits_until_the_round_is_put_away() -> void:
 	var table: TableScreen = await _open_table()
-	var player: EventPlayer = table.get("_player")
-	var pile: TrickPile = table.get("_pile")
-	var hand_view: HandView = table.get("_hand_view")
+	var player: EventPlayer = table.player
+	var pile: TrickPile = table.pile
+	var hand_view: HandView = table.hand_view
 	var card: CardInstance = _app.controller.table.player_cards()[0]
 	var marks: Dictionary = {}
 	player.closing.connect(func() -> void: marks["closing"] = _now())
 	player.played.connect(_on_played.bind(marks, hand_view, pile, card.id()))
 	for event: RunEvent in _round_end(card):
 		player.push(event)
-	await _until(func() -> bool: return marks.has("dealt"))
+	await TestWait.until(
+		self, func() -> bool: return marks.has("dealt"), "the next deal", WAIT_SECONDS
+	)
 	# The run already holds the next hand, but the fan never showed it before the deal.
 	assert_bool(marks.get("shown_after_play", true)).is_false()
 	assert_bool(marks.has("closing")).is_true()
@@ -77,7 +74,7 @@ func test_the_next_hand_waits_until_the_round_is_put_away() -> void:
 func test_reduced_motion_still_reads_the_round_before_the_deal() -> void:
 	Settings.set_value("reduced_motion", true)
 	var table: TableScreen = await _open_table()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	var card: CardInstance = _app.controller.table.player_cards()[0]
 	var marks: Dictionary = {}
 	player.closing.connect(func() -> void: marks["closing"] = _now())
@@ -88,7 +85,9 @@ func test_reduced_motion_still_reads_the_round_before_the_deal() -> void:
 	)
 	for event: RunEvent in _round_end(card):
 		player.push(event)
-	await _until(func() -> bool: return marks.has("dealt"))
+	await TestWait.until(
+		self, func() -> bool: return marks.has("dealt"), "the next deal", WAIT_SECONDS
+	)
 	var read: float = UiMotion.PRESETS.round_close_steps * player.step
 	assert_float(float(marks["dealt"]) - float(marks["closing"])).is_greater_equal(read)
 
@@ -100,7 +99,7 @@ func _on_played(
 		marks["shown_after_play"] = _shows(hand_view, card_id)
 	elif event.type == RunEvent.Type.DEALT:
 		marks["dealt"] = _now()
-		var moments: TableMoments = pile.get_parent().get("_moments")
+		var moments: TableMoments = (pile.get_parent() as TableScreen).moments
 		marks["pile_at_deal"] = pile.card_count()
 		marks["slip_at_deal"] = moments.slip.visible
 
@@ -126,8 +125,8 @@ func _round_end(card: CardInstance) -> Array[RunEvent]:
 func _open_table() -> TableScreen:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var player: EventPlayer = table.get("_player")
-	await _until(player.is_idle)
+	var player: EventPlayer = table.player
+	await TestWait.until(self, player.is_idle, "the table's events to play", WAIT_SECONDS)
 	return table
 
 
@@ -137,13 +136,6 @@ func _shows(hand_view: HandView, card_id: int) -> bool:
 		if view.card_id == card_id and view.visible and view.modulate.a > 0.0:
 			return true
 	return false
-
-
-func _until(done: Callable) -> void:
-	var waited: float = 0.0
-	while not bool(done.call()) and waited < WAIT_SECONDS:
-		await get_tree().process_frame
-		waited += get_process_delta_time()
 
 
 func _now() -> float:

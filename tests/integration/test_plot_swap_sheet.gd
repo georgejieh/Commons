@@ -7,18 +7,14 @@ extends GdUnitTestSuite
 ## the keys move a cursor and press, and with reduced motion the cards stand at once.
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_plot_swap_sheet/run.json"
 const PLOT_CARDS: int = 3
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -46,25 +42,25 @@ func _to_swap() -> TableScreen:
 		state.inventory.plot.append(card)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var sheet: PlotSwapSheet = table.get("_swap_sheet")
+	var sheet: PlotSwapSheet = table.swap_sheet
 	for _turn: int in 60:
 		if sheet.is_open():
 			break
 		table.skip_events()
 		if _app.controller.awaiting() == RunController.AWAIT_BID:
-			table.actions().decline.pressed.emit()
+			table.actions.decline.pressed.emit()
 		await await_idle_frame()
 	assert_bool(sheet.is_open()).is_true()
 	return table
 
 
 func _sheet(table: TableScreen) -> PlotSwapSheet:
-	return table.get("_swap_sheet")
+	return table.swap_sheet
 
 
 func test_nothing_plays_while_the_sheet_is_open_and_the_round_plays_on_after() -> void:
 	var table: TableScreen = await _to_swap()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	var landlord: int = _loop().state.landlord_seat
 	assert_bool(player.is_idle()).is_true()
 	var played: Array[RunEvent] = []

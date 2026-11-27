@@ -66,7 +66,7 @@ func rules() -> void:
 		var play: Array[CardInstance] = []
 		for card: CardInstance in held.slice(0, 3):
 			play.append(card)
-		var pile: Node = member(table, "_pile")
+		var pile: Node = member(table, "pile")
 		pile.call("show_play", play, Vector2(790, 200))
 		await _shot(frame)
 		await _restore(snapshot)
@@ -147,7 +147,7 @@ func _decline_ready(controller: Object) -> bool:
 ## The table on screen and how many debuff beats it has acted out: [its ID, the count],
 ## or [0, 0] off the table.
 func _beats_now() -> Array[int]:
-	var beats_part: Object = _part("_debuff_beats")
+	var beats_part: Object = _part("debuff_beats")
 	if beats_part == null:
 		return [0, 0]
 	return [_current().get_instance_id(), int(beats_part.get("beats_played"))]
@@ -181,7 +181,7 @@ func _night_shift_frame(controller: Object, driver: Object) -> void:
 
 ## True while a Cadre on the notice board is struck out for the round.
 func _struck_on_board() -> bool:
-	var board: Object = _part("_board")
+	var board: Object = _part("board")
 	if board == null:
 		return false
 	for index: int in int(board.call("slot_count")):

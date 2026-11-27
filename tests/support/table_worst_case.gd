@@ -59,8 +59,8 @@ static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> T
 ## ranks on the slip; intel puts the tallest intel lines on both seats; armed arms the
 ## tray's first Campaign, so Use and Cancel show.
 static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
-	table.call("_still", true)
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	table.motion.set_still(true)
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var surname: String = longest_surname(app.controller)
 	for seat: int in seats:
 		var panel: SeatPanel = seats[seat]
@@ -75,26 +75,26 @@ static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 		panel.set_intel(
 			IntelWorstCase.worst_intel(app, panel) if options.get("intel", false) else ""
 		)
-	var you: Label = table.get("_you")
+	var you: Label = table.you
 	you.text = widest(you, _texts("table.you."))
-	var actions: ActionBar = table.actions()
+	var actions: ActionBar = table.actions
 	var bidding: bool = options.get("bidding", false)
 	actions.show_bidding(bidding)
 	actions.reading.text = tallest(actions.reading, PromptLines.every(app.controller, bidding))
-	var dressing: DreadDressing = table.get("_dressing")
+	var dressing: DreadDressing = table.dressing
 	dressing.show_piece("redaction", 1.0 if options.get("redacted", false) else 0.0)
 	# The first notice, which none stands taller than (test_brigade_notice).
 	dressing.post_notice(DreadDressing.notice_key(1, 0))
 	# Every piece of dressing up, so the pieces that must keep clear are seen doing it.
 	for piece: String in DRESSING:
 		dressing.show_piece(piece, 1.0)
-	var hand: HandView = table.get("_hand_view")
+	var hand: HandView = table.hand_view
 	app.hand.set("_cards", cards(HAND_IDS))
 	hand.show_cards()
-	var pile: TrickPile = table.get("_pile")
+	var pile: TrickPile = table.pile
 	pile.clear()
 	pile.show_play(cards(PLAY_IDS), pile.global_position)
-	var campaigns: TableCampaigns = table.get("_campaigns")
+	var campaigns: TableCampaigns = table.campaigns
 	var tray: CampaignTray = campaigns.tray
 	tray.refresh()
 	tray.visible = true
@@ -103,37 +103,37 @@ static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 		# Armed whatever the moment allows, so Use and Cancel show for the layout.
 		tray.set("_armed", 0)
 		tray.call("_show_marks")
-	var strip: DebuffStrip = table.get("_debuffs")
+	var strip: DebuffStrip = table.debuffs
 	strip.wild_ranks = longest_wild_ranks() if options.get("wild", false) else ([] as Array[int])
 	strip.show_debuffs(app.controller)
-	var columns: TableColumns = table.get("_columns")
+	var columns: TableColumns = table.columns
 	columns.fit()
 
 
 ## Each piece of the table that must stay clear of the others, by name, as drawn.
 static func pieces(table: TableScreen) -> Dictionary[String, Rect2]:
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
-	var actions: ActionBar = table.actions()
-	var ledger: Control = table.get("_ledger")
-	var dressing: DreadDressing = table.get("_dressing")
-	var campaigns: TableCampaigns = table.get("_campaigns")
-	var hud: Control = table.get("_hud")
-	var board: Control = table.get("_board")
-	var strip: Control = table.get("_debuffs")
-	var you: Control = table.get("_you")
+	var seats: Dictionary[int, SeatPanel] = table.seats
+	var actions: ActionBar = table.actions
+	var ledger: Control = table.ledger
+	var dressing: DreadDressing = table.dressing
+	var campaigns: TableCampaigns = table.campaigns
+	var hud: Control = table.hud
+	var board: Control = table.board
+	var strip: Control = table.debuffs
+	var you: Control = table.you
 	var found: Dictionary[String, Rect2] = {
 		"hud": hud.get_global_rect(),
 		"left seat": seats[2].get_global_rect(),
 		"right seat": seats[1].get_global_rect(),
 		"Cadre board": board.get_global_rect(),
 		"rules slip": strip.get_global_rect() if strip.visible else Rect2(),
-		"trick pile": _pile_area(table.get("_pile")),
+		"trick pile": _pile_area(table.pile),
 		"brigade notice": dressing.notice_rect(),
 		"Campaign tray": _drawn_children(campaigns.tray),
 		"status line": you.get_global_rect(),
 		"prompt": actions.reading.get_global_rect(),
 		"action buttons": _buttons(actions),
-		"hand": _cards_area(table.get("_hand_view")),
+		"hand": _cards_area(table.hand_view),
 		"ledger": (ledger.get_parent() as Control).get_global_rect(),
 		"household notice": _piece_rect(dressing, "poster"),
 		"extra chair": _piece_rect(dressing, "extra_chair"),

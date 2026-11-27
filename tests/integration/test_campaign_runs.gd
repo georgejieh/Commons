@@ -15,15 +15,6 @@ const RICH: int = 1000
 const TRY_PERCENT: int = 35
 
 
-func _at_the_shops(seed_value: int) -> RunLoop:
-	var loop: RunLoop = RunLoop.new(RunState.new(seed_value), RunScript.bots(), SetConfig.new())
-	loop.start_set()
-	RunScript.new().play_until_set_over(loop)
-	loop.state.coupons = RICH
-	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
-	return loop
-
-
 func _in_pool(pool: CampaignPool, campaign_id: String) -> bool:
 	for campaign: CampaignDef in pool.campaigns:
 		if campaign.id == campaign_id:
@@ -49,8 +40,8 @@ func test_the_pools_hold_adr_0021s_campaigns_by_tag() -> void:
 func test_each_shop_offers_its_campaign_the_same_for_the_same_seed() -> void:
 	var seen: Dictionary[String, bool] = {}
 	for seed_value: int in SEEDS:
-		var first: RunLoop = _at_the_shops(seed_value)
-		var second: RunLoop = _at_the_shops(seed_value)
+		var first: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
+		var second: RunLoop = RunScript.at_the_shops(self, seed_value, RICH)
 		var store: Array[String] = first.visit.shop.campaigns.stock()
 		assert_int(store.size()).is_equal(STORE.campaign_offers)
 		assert_bool(_in_pool(STORE_POOL, store[0])).is_true()
@@ -70,7 +61,7 @@ func test_each_shop_offers_its_campaign_the_same_for_the_same_seed() -> void:
 
 
 func test_buying_fills_the_slots_and_a_third_is_refused() -> void:
-	var loop: RunLoop = _at_the_shops(5)
+	var loop: RunLoop = RunScript.at_the_shops(self, 5, RICH)
 	var coupons: int = loop.state.coupons
 	var price: int = loop.visit.shop.campaigns.price(0)
 	var bought: String = loop.visit.shop.campaigns.stock()[0]
@@ -90,7 +81,7 @@ func test_buying_fills_the_slots_and_a_third_is_refused() -> void:
 
 
 func test_the_market_charges_its_percent_rounded_up() -> void:
-	var loop: RunLoop = _at_the_shops(9)
+	var loop: RunLoop = RunScript.at_the_shops(self, 9, RICH)
 	var offered: String = loop.visit.market.campaigns.stock()[0]
 	var cost: int = RunDefinitions.campaigns[offered].cost
 	assert_int(MARKET.price_percent).is_greater(100)

@@ -6,7 +6,6 @@ extends GdUnitTestSuite
 enum Method { MOUSE, KEYBOARD, GAMEPAD }
 
 const SEED: int = 4301
-const SAVE_PATH: String = "user://test_input_methods/run.json"
 const MAX_STEPS: int = 400
 ## Inside a card's uncovered left strip, clear of the next card in the fan.
 const GRIP: Vector2 = Vector2(14, 60)
@@ -33,11 +32,8 @@ var _plays: int = 0
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	_table = _app.show_screen("table", true)
 	await await_idle_frame()
@@ -72,7 +68,7 @@ func _play_round(method: Method) -> void:
 			break
 		match _app.controller.awaiting():
 			RunController.AWAIT_BID:
-				await _press_action(method, "pass", _table.actions().decline)
+				await _press_action(method, "pass", _table.actions.decline)
 			RunController.AWAIT_NEED:
 				await _declare(method)
 			RunController.AWAIT_PLAY:
@@ -95,19 +91,19 @@ func _round_over(start: int) -> bool:
 func _take_turn(method: Method, driver: ControllerScript) -> void:
 	var ids: Array[int] = driver.choose_play(_app.controller)
 	if ids.is_empty():
-		await _press_action(method, "pass", _table.actions().pass_turn)
+		await _press_action(method, "pass", _table.actions.pass_turn)
 		return
 	for card_id: int in ids:
 		await _pick(method, card_id)
 	assert_array(_app.hand.selected_ids()).contains_exactly_in_any_order(ids)
 	var before: int = _app.controller.table.player_cards().size()
-	await _press_action(method, "play", _table.actions().play)
+	await _press_action(method, "play", _table.actions.play)
 	assert_int(_app.controller.table.player_cards().size()).is_equal(before - ids.size())
 	_plays += 1
 
 
 func _pick(method: Method, card_id: int) -> void:
-	var hand_view: HandView = _table.get("_hand_view")
+	var hand_view: HandView = _table.hand_view
 	if method == Method.MOUSE:
 		var view: CardView = _view_for(hand_view, card_id)
 		await _click(view.get_global_transform_with_canvas() * GRIP)
@@ -125,8 +121,8 @@ func _pick(method: Method, card_id: int) -> void:
 
 func _declare(method: Method) -> void:
 	if method == Method.MOUSE:
-		var panel: NeedPanel = _table.need_panel()
-		await _click(_center(panel.get("_declare")))
+		var panel: NeedPanel = _table.need_panel
+		await _click(_center(panel.declare_button()))
 	else:
 		await _send(method, "accept")
 
@@ -205,11 +201,11 @@ func test_the_cursor_shows_on_a_selected_card() -> void:
 			RunController.AWAIT_PLAY:
 				break
 			RunController.AWAIT_BID:
-				await _press_action(Method.KEYBOARD, "pass", _table.actions().decline)
+				await _press_action(Method.KEYBOARD, "pass", _table.actions.decline)
 			RunController.AWAIT_NEED:
 				await _declare(Method.KEYBOARD)
 	assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_PLAY)
-	var hand_view: HandView = _table.get("_hand_view")
+	var hand_view: HandView = _table.hand_view
 	await _send(Method.KEYBOARD, "right")
 	await _send(Method.KEYBOARD, "select")
 	var view: CardView = _view_for(hand_view, hand_view.cursor_card())

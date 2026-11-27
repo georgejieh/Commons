@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.2 simulation: the same positions, decided by the same high-grudge bot with and
+## The same positions, decided by the same high-grudge bot with and
 ## without Resentment. Once the player owns a trick, a resented player's tricks are
 ## answered more often, by opponents and by their own teammate.
 
@@ -52,14 +52,12 @@ func _answers(resentment: int, landlord: int) -> int:
 func test_opponents_answer_a_resented_player_more() -> void:
 	var calm: int = _answers(0, 0)
 	var resented: int = _answers(PARAMS.max, 0)
-	print("opponent answers: %d calm, %d resented" % [calm, resented])
 	assert_int(resented).is_greater(calm)
 
 
 func test_a_teammate_covers_less_for_a_resented_player() -> void:
 	var calm: int = _answers(0, 2)
 	var resented: int = _answers(PARAMS.max, 2)
-	print("teammate answers: %d calm, %d resented" % [calm, resented])
 	assert_int(resented).is_greater(calm)
 
 

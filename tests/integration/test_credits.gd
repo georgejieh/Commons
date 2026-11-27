@@ -3,9 +3,7 @@ extends GdUnitTestSuite
 ## sound records and the engine say, stand whole at both screens and every text size with
 ## the cut faded, scroll by keys, and go back by Back or Escape.
 
-const SAVE_PATH: String = "user://test_credits/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
+static var _save_path: String = TestFolder.of("test_credits") + "run.json"
 
 var _app: DemoApp
 var _was_size: Vector2i
@@ -14,11 +12,10 @@ var _was_size: Vector2i
 func before_test() -> void:
 	_was_size = get_tree().root.size
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
-	_app = auto_free((load("res://ui/main.tscn") as PackedScene).instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -73,12 +70,12 @@ func test_the_credits_say_what_their_sources_say() -> void:
 
 func test_the_credits_stand_whole_at_every_size() -> void:
 	for level: int in TextSize.count():
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			Settings.set_value(TextSize.SETTING, level)
 			get_tree().root.size = screen_size
 			var where: String = "text size %d at %s" % [level, screen_size]
 			var screen: CreditsScreen = await _credits()
-			var view: Rect2 = screen.get_viewport_rect().grow(SLACK)
+			var view: Rect2 = screen.get_viewport_rect().grow(ClipCheck.SLACK)
 			for piece: Control in [screen.scroll(), screen.back_button()]:
 				var rect: Rect2 = piece.get_global_rect()
 				assert_bool(view.encloses(rect)).override_failure_message(where).is_true()

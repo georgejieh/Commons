@@ -6,22 +6,17 @@ extends GdUnitTestSuite
 ## say Buy like every other price.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_shop_buy_reasons/run.json"
 const FIVE: Array[String] = ["iron_rice_bowl", "red_banner", "peek", "stakhanovite", "red_ink"]
 
 var _app: DemoApp
 
 
 func before_test() -> void:
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 
 
@@ -40,7 +35,7 @@ func _open(screen_id: String) -> StoreScreen:
 
 
 func _cadre_buy(store: StoreScreen, slot: int) -> Button:
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	return counter.get_child(slot).find_children("*", "Button", true, false)[0]
 
@@ -60,20 +55,23 @@ func test_short_of_coupons_every_buy_says_what_it_needs() -> void:
 	var buy: Button = _cadre_buy(store, 0)
 	_assert_readable(buy, "cadre")
 	assert_str(buy.text).is_equal(tr("store.buy.poor").format({"price": desk.price(0)}))
-	var directives: DirectiveRow = store.get("_directives")
+	var directives: DirectiveRow = store.directives
 	var issue: Button = directives.find_children("*", "Button", true, false)[0]
 	_assert_readable(issue, "directive")
 	assert_str(issue.text).is_equal(tr("store.buy.poor").format({"price": desk.directive_price(0)}))
-	for stall: String in ["_campaign_stall", "_reform_stall", "_envelope_stall"]:
-		var owner: Object = store.get(stall)
-		var panel: CounterPanel = owner.call("panel", 0)
+	var offers: Array[CounterPanel] = [
+		store.campaign_stall.panel(0), store.reform_stall.panel(0), store.envelope_stall.panel(0)
+	]
+	for index: int in offers.size():
+		var panel: CounterPanel = offers[index]
 		if panel == null or not panel.buy.visible:
 			continue
+		var stall: String = ["campaign", "reform", "envelope"][index]
 		_assert_readable(panel.buy, stall)
 		assert_str(panel.buy.text).override_failure_message(stall).starts_with(
 			tr("store.buy.poor").split("{")[0]
 		)
-	var reroll: Button = store.get("_reroll")
+	var reroll: Button = store.reroll
 	_assert_readable(reroll, "reroll")
 
 
@@ -95,7 +93,7 @@ func test_plot_cards_say_buy_and_their_price() -> void:
 	_loop().state.coupons = 40
 	_app.controller.reseal_book()
 	var market: StoreScreen = await _open("black_market")
-	var goods: MarketGoods = market.get("_goods")
+	var goods: MarketGoods = market.goods
 	var desk: ShopDesk = _app.controller.store.desk(true)
 	var button: Button = goods.card_button(0)
 	assert_object(button).is_not_null()
@@ -113,7 +111,7 @@ func test_a_campaign_sold_back_says_it_returns_next_visit() -> void:
 	var index: int = _loop().state.inventory.consumables.size() - 1
 	assert_int(_app.controller.sell_campaign(index)).is_equal(RunLoop.Reason.OK)
 	var store: StoreScreen = await _open("store")
-	var stall: Object = store.get("_campaign_stall")
+	var stall: Object = store.campaign_stall
 	var panel: CounterPanel = stall.call("panel", 0)
 	_assert_readable(panel.buy, "sold back campaign")
 	assert_str(panel.buy.text).is_equal(tr("store.buy.sold_back"))

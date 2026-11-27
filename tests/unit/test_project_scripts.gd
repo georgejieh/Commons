@@ -46,4 +46,5 @@ func _check_in_new_process(path: String) -> int:
 		"--check",
 		path,
 	]
+	# OS.execute has no time limit of its own: tools/test.sh bounds the whole run.
 	return OS.execute(OS.get_executable_path(), arguments)

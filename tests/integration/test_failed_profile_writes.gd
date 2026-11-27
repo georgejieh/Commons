@@ -3,15 +3,16 @@ extends GdUnitTestSuite
 ## Quota both say they wrote nothing, so no caller tells the player it was recorded, and
 ## once the profile can be written again the same entry and Quota are taken.
 
-const DIR: String = "user://test_failed_profile_writes/"
-const PATH: String = DIR + "profile.json"
 const SEED: int = 5281
+
+static var _dir: String = TestFolder.of("test_failed_profile_writes")
+static var _path: String = _dir + "profile.json"
 
 var _profile: SaveService
 
 
 func before_test() -> void:
-	_profile = Profile.service(PATH)
+	_profile = Profile.service(_path)
 	_unblock()
 	_profile.delete()
 
@@ -23,11 +24,11 @@ func after_test() -> void:
 
 ## A folder where the temporary file would go: no write can open it.
 func _block() -> void:
-	DirAccess.make_dir_recursive_absolute(PATH + SaveService.TEMP_SUFFIX)
+	DirAccess.make_dir_recursive_absolute(_path + SaveService.TEMP_SUFFIX)
 
 
 func _unblock() -> void:
-	DirAccess.remove_absolute(PATH + SaveService.TEMP_SUFFIX)
+	DirAccess.remove_absolute(_path + SaveService.TEMP_SUFFIX)
 
 
 func _quota_state() -> RunState:

@@ -49,7 +49,7 @@ func drained(awaiting: int) -> void:
 func _rebuild() -> void:
 	if not _table.is_inside_tree() or _app.switcher.current() != _table or not is_due():
 		return
-	var sort: HandView.Sort = _table.sort_mode()
+	var sort: HandView.Sort = _table.hand_view.sort_mode
 	var built: TableScreen = _app.switcher.reload()
 	built.open(_app)
 	built.keep_sort(sort)

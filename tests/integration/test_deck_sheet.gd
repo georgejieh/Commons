@@ -7,9 +7,6 @@ extends GdUnitTestSuite
 ## Cancel. At the table it opens from the menu, and nothing plays while it is open.
 
 const SEED: int = 4242
-const SAVE_PATH: String = "user://test_deck_sheet/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-const SLACK: float = 1.5
 const MODEL_CARD: int = 0
 const STAMPED_CARD: int = 9
 const SURPLUS_CARD: int = 53
@@ -20,11 +17,8 @@ var _was_size: Vector2i
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(SAVE_PATH)
-	Saves.run_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
@@ -40,8 +34,7 @@ func _loop() -> RunLoop:
 
 func _to_the_store() -> StoreScreen:
 	var driver: ControllerScript = ControllerScript.new()
-	while _app.controller.awaiting() != RunController.AWAIT_SET_OVER:
-		driver.act(_app.controller)
+	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
 	_app.controller.finish_set()
 	var state: RunState = _loop().state
 	CardMarks.enhance(state, Deck.new().card(MODEL_CARD), CardInstance.MODEL)
@@ -64,7 +57,7 @@ func test_the_sheet_shows_every_deck_card_with_its_marks() -> void:
 	await await_idle_frame()
 	_deck_button(store).pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	assert_bool(sheet.is_open()).is_true()
 	var board: DeckBoard = sheet.board()
 	var plot: int = _app.controller.state_copy().inventory.plot.size()
@@ -90,17 +83,17 @@ func test_the_sheet_shows_every_deck_card_with_its_marks() -> void:
 func test_the_sheet_fits_both_screens_at_every_text_size() -> void:
 	var store: StoreScreen = _to_the_store()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
-		for screen_size: Vector2i in SIZES:
+		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			await await_idle_frame()
 			sheet.open_deck()
 			await await_idle_frame()
 			await await_idle_frame()
 			var label: String = "text %d at %s" % [level, screen_size]
-			var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+			var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 			(
 				assert_bool(screen.encloses(sheet.paper().get_global_rect()))
 				. override_failure_message(label)
@@ -113,11 +106,11 @@ func test_the_sheet_fits_both_screens_at_every_text_size() -> void:
 				(
 					assert_float(board.custom_minimum_size.y)
 					. override_failure_message(label)
-					. is_less_equal(scroll.size.y + SLACK)
+					. is_less_equal(scroll.size.y + ClipCheck.SLACK)
 				)
 			assert_float(board.card_scale()).is_greater_equal(DeckFit.LEAST_SCALE - 0.001)
 			assert_float(board.custom_minimum_size.x).override_failure_message(label).is_less_equal(
-				scroll.size.x + SLACK
+				scroll.size.x + ClipCheck.SLACK
 			)
 			sheet.close()
 
@@ -125,7 +118,7 @@ func test_the_sheet_fits_both_screens_at_every_text_size() -> void:
 func test_the_sheet_keeps_the_focus_and_cancel_closes_it() -> void:
 	var store: StoreScreen = _to_the_store()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	sheet.open_deck()
 	await await_idle_frame()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(sheet.board())
@@ -150,18 +143,18 @@ func _tap(action: String) -> void:
 
 
 func test_the_table_opens_it_from_its_menu_and_waits() -> void:
-	var table: Node = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var menu: PauseMenu = table.get("_pause")
-	table.call("_open_pause")
+	var menu: PauseMenu = table.pause
+	table.hud.menu.pressed.emit()
 	var deck: Button = _deck_button(menu)
 	assert_object(deck).is_not_null()
 	deck.pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = table.get("_deck")
+	var sheet: DeckSheet = table.deck
 	assert_bool(sheet.is_open()).is_true()
 	assert_bool(menu.visible).is_false()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	assert_bool(player.is_processing()).is_false()
 	sheet.close()
 	assert_bool(player.is_processing()).is_true()

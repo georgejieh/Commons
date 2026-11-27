@@ -42,7 +42,7 @@ func _run() -> void:
 	for stage: int in STAGES:
 		ArtStages.stage_override = stage
 		var table: Node = app.call("show_screen", "table", true)
-		_show_all_cadres(WalkBase.member(table, "_board"))
+		_show_all_cadres(WalkBase.member(table, "board"))
 		_show_all_cards(table)
 		for _frame: int in SETTLE_FRAMES:
 			await process_frame
@@ -71,7 +71,7 @@ func _show_all_cadres(board: Node) -> void:
 ## Binds the whole deck to free views from the table's own pool.
 func _show_all_cards(table: Node) -> void:
 	# Reached by name: a card view names the screens' kit, which needs the autoloads.
-	var pool: Object = WalkBase.member(table, "_pool")
+	var pool: Object = WalkBase.member(table, "pool")
 	for deck_id: int in Deck.SIZE:
 		var view: Control = pool.call("acquire")
 		if view == null:

@@ -1,12 +1,10 @@
 extends GdUnitTestSuite
-## P5.0: the loop stands still for a searching villager when its searches are answered
+## The loop stands still for a searching villager when its searches are answered
 ## from outside, hands the search what it needs, takes the play back as a bot's, and
 ## resumes a save written while one was thinking standing still for it again. With that
 ## off it plays exactly as it did before.
-## Set UPDATE_GOLDEN=1 to rewrite the golden file after an intended change.
 
 const GOLDEN_PATH: String = "res://tests/golden/searched_turns.golden"
-const DIR: String = "user://test_search_await/"
 const SEED: int = 5011
 ## Player turns played for the golden log.
 const TURNS: int = 14
@@ -16,13 +14,15 @@ const STEPS: int = 70
 const SAVE_EVERY: int = 4
 const ILLEGAL_ACTION: String = "Assertion failed: A bot chose an illegal action"
 
+static var _dir: String = TestFolder.of("test_search_await")
+
 
 func before_test() -> void:
-	DirAccess.make_dir_recursive_absolute(DIR)
+	DirAccess.make_dir_recursive_absolute(_dir)
 
 
 func after_test() -> void:
-	SaveService.for_run(DIR + "run.json").delete()
+	SaveService.for_run(_dir + "run.json").delete()
 
 
 ## Seats 1 and 2 are Expert, sampling the fewest deals a search may decide on.
@@ -86,16 +86,15 @@ func _step(loop: RunLoop, script: RunScript, answer: Callable) -> bool:
 ## Runs until the loop stands still for a villager, by the player's commands alone.
 func _to_a_villager(loop: RunLoop) -> void:
 	var script: RunScript = RunScript.new()
-	while loop.awaiting() != RunLoop.Awaiting.VILLAGER_SEARCH:
-		assert_bool(script.act(loop)).is_true()
+	script.play_to(self, loop, RunLoop.Awaiting.VILLAGER_SEARCH)
 
 
 ## The record as a load reads it back: written as JSON, migrated and validated.
 func _through_disk(data: Dictionary) -> Dictionary:
-	var file: FileAccess = FileAccess.open(DIR + "run.json", FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(_dir + "run.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify({"schema_version": SaveService.SCHEMA_VERSION, "data": data}))
 	file.close()
-	var loaded: SaveLoad = SaveService.for_run(DIR + "run.json").load_save()
+	var loaded: SaveLoad = SaveService.for_run(_dir + "run.json").load_save()
 	assert_int(loaded.status).is_equal(SaveLoad.Status.OK)
 	return loaded.data
 
@@ -118,7 +117,8 @@ func _text(data: Dictionary) -> String:
 
 
 ## With nothing answered from outside, a searching seat searches with no limit inside
-## the loop, as every tool does, and the events are the ones it gave before P5.0.
+## the loop, as every tool does, and the events are the ones a loop gives
+## that no one answers from outside.
 func test_the_flag_off_plays_as_before() -> void:
 	var loop: RunLoop = RunLoop.new(RunState.new(SEED), configs(), SetConfig.new())
 	loop.start_set()
@@ -127,11 +127,7 @@ func test_the_flag_off_plays_as_before() -> void:
 		if not script.act(loop):
 			break
 	var text: String = log_of(loop)
-	if OS.get_environment("UPDATE_GOLDEN") == "1":
-		var file: FileAccess = FileAccess.open(GOLDEN_PATH, FileAccess.WRITE)
-		file.store_string(text)
-		file.close()
-	assert_str(text).is_equal(FileAccess.get_file_as_string(GOLDEN_PATH))
+	assert_str(GoldenFile.text(GOLDEN_PATH, text)).is_equal(text)
 
 
 ## Answered at once with the search the loop would make itself, standing still changes
@@ -272,7 +268,7 @@ func test_a_save_while_a_villager_thinks_resumes_standing_still_for_it() -> void
 	assert_int(request.seat).is_equal(loop.search_request().seat)
 	assert_str(str(request.view.own_counts)).is_equal(str(loop.search_request().view.own_counts))
 	assert_str(_text(resumed.state.to_dict())).is_equal(_text(loop.state.to_dict()))
-	# Resumed as before P5.0, with nothing answered from outside, the villager is decided
+	# Resumed with nothing answered from outside, the villager is decided
 	# during the load.
 	var inside: RunLoop = RunRecord.resume(saved, configs(), SetConfig.new())
 	assert_object(inside).is_not_null()

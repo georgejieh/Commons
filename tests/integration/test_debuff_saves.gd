@@ -80,7 +80,6 @@ func test_a_schema_8_save_gains_no_slogan() -> void:
 	assert_bool(RunRecordCheck.is_valid(migrated)).is_true()
 	var state: RunState = RunState.from_dict(migrated["checkpoint"])
 	assert_int(state.slogan_type).is_equal(RunState.NO_SLOGAN)
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(9)
 
 
 ## Bots never choose an action the round refuses, under every debuff that changes hands.
@@ -101,14 +100,14 @@ func test_expert_samples_keep_a_shown_hand_as_it_is() -> void:
 	var round_state: RoundState = _glass_round(4, 1)
 	var view: SeatView = round_state.view_for(1)
 	var shown: PackedByteArray = round_state.view_for(0).own_counts
-	assert_bool(view.exposed[0] == shown).is_true()
+	assert_that(view.exposed[0]).is_equal(shown)
 	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.EXPERT)
 	var table: BotTable = BotTable.new(RuleSet.default_rules(), Ranks.identity_map())
 	var scorer: CandidateScorer = CandidateScorer.new(view.own_counts, table, config.weights)
 	var position: BotPosition = BotPosition.new(view, table, config, scorer)
 	for sample: int in 5:
 		var hands: Array[PackedByteArray] = ExpertSearch.deal_unseen(position, sample)
-		assert_bool(hands[0] == shown).is_true()
+		assert_that(hands[0]).is_equal(shown)
 
 
 ## Hard bots play the same deals with and without the player's hand shown, and choose

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The surname step (ADR 0028, P4.17): on a first launch, after the content note and
+## The surname step (ADR 0028): on a first launch, after the content note and
 ## before the Arrival page, never with a profile. It opens with the field focused and a
 ## default from the 24 in it, so one press finishes it in well under 30 seconds; the
 ## field keeps only Latin letters, at most 12, capitalised; a village family's surname is
@@ -8,15 +8,14 @@ extends GdUnitTestSuite
 ## says why not while a run is saved. The full names fit their pages at 1920x1080 and
 ## 1280x800 with the longest name the game can make.
 
-const SAVE_PATH: String = "user://test_surname_ui/run.json"
-const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
-const SLACK: float = 1.5
 const LEAST_TYPE: int = 20
 const BOOK: NameBook = preload("res://data/villagers/names.tres")
 ## The widest surname the field takes: twelve of its widest letters.
 const WIDEST_SURNAME: String = "Wmwmwmwmwmwm"
 const STEP_SECONDS: float = 30.0
+
+static var _save_path: String = TestFolder.of("test_surname_ui") + "run.json"
 
 var _app: DemoApp = null
 var _was_size: Vector2i
@@ -29,7 +28,7 @@ func before_test() -> void:
 		_saved[key] = Settings.value(key)
 	Settings.set_value("content_note_seen", true)
 	Settings.set_value("reduced_motion", true)
-	Saves.use_run_path(SAVE_PATH)
+	Saves.use_run_path(_save_path)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
 
@@ -45,9 +44,7 @@ func after_test() -> void:
 func _launch() -> DemoApp:
 	if _app != null and is_instance_valid(_app):
 		_app.free()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	add_child(_app)
+	_app = AppKit.make(self)
 	await await_idle_frame()
 	return _app
 
@@ -106,7 +103,7 @@ func test_one_press_finishes_the_step_well_inside_thirty_seconds() -> void:
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(page.field())
 	var default: String = page.field().text
 	assert_array(Surnames.offered()).contains([default])
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_str(_app.switcher.current_id()).is_equal("arrival")
 	assert_str(_app.arrival.surname).is_equal(default)
 	assert_float((Time.get_ticks_msec() - began) / 1000.0).is_less(STEP_SECONDS)
@@ -118,7 +115,7 @@ func test_typing_keeps_only_what_the_field_accepts() -> void:
 	await _launch()
 	var page: SurnameScreen = _page()
 	page.field().select_all()
-	await _key(KEY_BACKSPACE)
+	await TestInput.tap_key(self, KEY_BACKSPACE)
 	await _type("yu 7an-")
 	assert_str(page.field().text).is_equal("Yuan")
 	await _type("abcdefghijk")
@@ -257,16 +254,16 @@ func test_the_field_is_written_on_paper() -> void:
 	assert_bool(holds).override_failure_message(rects).is_true()
 	var ink: Color = field.get_theme_color("font_color")
 	assert_float(ink.get_luminance()).is_less(0.2)
-	await _key(KEY_ENTER)
+	await TestInput.tap_key(self, KEY_ENTER)
 	assert_str(_app.switcher.current_id()).is_equal("arrival")
 
 
 func test_the_page_fits_both_screens() -> void:
-	for size: Vector2i in SIZES:
+	for size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = size
 		await _launch()
 		await await_idle_frame()
-		var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+		var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 		var page: SurnameScreen = _page()
 		var parts: Array[Control] = [page.field(), page.confirm_button(), page.random_button()]
 		for ticket: SurnameTicket in page.tickets():
@@ -288,7 +285,7 @@ func test_the_longest_full_name_fits_run_setup_and_the_ending() -> void:
 	data.surname = WIDEST_SURNAME
 	data.generation = 11
 	Profile.write(Saves.profile_service(), data)
-	for size: Vector2i in SIZES:
+	for size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = size
 		await _launch()
 		var setup: Control = _app.show_screen("run_setup")
@@ -304,7 +301,7 @@ func test_the_longest_full_name_fits_run_setup_and_the_ending() -> void:
 ## each name stays inside its sheet and the screen.
 func test_the_dossier_holds_the_longest_full_names() -> void:
 	Profile.write(Saves.profile_service(), ProfileData.new())
-	for size: Vector2i in SIZES:
+	for size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = size
 		await _launch()
 		assert_bool(_app.new_run(97, true)).is_true()
@@ -354,25 +351,13 @@ func _check_fits(label: Label, text: String, size: Vector2i) -> void:
 		return
 	label.text = text
 	await await_idle_frame()
-	var screen: Rect2 = get_tree().root.get_visible_rect().grow(SLACK)
+	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(label.get_global_rect())).override_failure_message(where).is_true()
 	var font: Font = label.get_theme_font("font")
 	var font_size: int = label.get_theme_font_size("font_size")
 	assert_int(font_size).override_failure_message(where).is_greater_equal(LEAST_TYPE)
 	var wide: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	assert_float(wide).override_failure_message(where).is_less_equal(label.size.x + SLACK)
-
-
-func _key(code: Key) -> void:
-	for down: bool in [true, false]:
-		var key: InputEventKey = InputEventKey.new()
-		key.physical_keycode = code
-		key.keycode = code
-		key.pressed = down
-		Input.parse_input_event(key)
-		Input.flush_buffered_events()
-	await await_idle_frame()
-	await await_idle_frame()
+	assert_float(wide).override_failure_message(where).is_less_equal(label.size.x + ClipCheck.SLACK)
 
 
 func _type(text: String) -> void:
