@@ -1,7 +1,7 @@
 # gdlint: disable=max-file-lines
-# Over 400 lines: the one node that makes every piece of the table, wires each to the run
-# and the others, and hands each event to the pieces that show it; each piece's own work
-# lives in its class beside this one.
+# Over 400 lines: the one node that holds every piece of the table, each a documented part
+# tests and the walks read, wires each to the run and the others, and hands each event to
+# the pieces that show it; each piece's own work lives in its class beside this one.
 class_name TableScreen
 extends Control
 ## The 2D table (ADR 0017), seen as a play area rather than a whole table: a wooden rail
