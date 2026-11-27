@@ -8,6 +8,10 @@ const KINDS: Array[String] = [
 const STATES: Array[String] = ["normal", "hover", "pressed", "disabled", "focus"]
 
 
+func after_test() -> void:
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
+
+
 func test_every_button_kind_has_every_state() -> void:
 	var theme: Theme = CommonsTheme.build()
 	for kind: String in KINDS:

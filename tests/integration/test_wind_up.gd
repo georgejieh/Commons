@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The beat before a villager's play (P5.2a): the table marks the seat, and its cards
+## The beat before a villager's play: the table marks the seat, and its cards
 ## leave a moment later, so a play the player did not choose can be followed. Their own
 ## play answers at once.
 

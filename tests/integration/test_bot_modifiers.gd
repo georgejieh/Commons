@@ -29,8 +29,8 @@ const PAIR_GAMES: int = 4
 ## Cultural Revolution, then Rehabilitation on the 4, then Inverted Order: after a bomb the
 ## 4 climbs past the turned-over 3 and is turned over again.
 const CLIMB: Array[String] = ["cultural_revolution", "rehabilitation", "inverted_order"]
-## What the player buys that changes play, held by seat 0 alone (ADR 0039, second note of
-## 2026-11-24): wild ranks (Mass Line, Model Worker), Industrialization, and each with a
+## What the player buys that changes play, held by seat 0 alone (ADR 0039): wild
+## ranks (Mass Line, Model Worker), Industrialization, and each with a
 ## rank Cadre and a rule Cadre. Each row: the wild ranks, the Reforms, the Cadres.
 const HOUSEHOLD: Array[Array] = [
 	[[Ranks.SEVEN], [], []],

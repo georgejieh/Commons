@@ -1,7 +1,6 @@
 extends GdUnitTestSuite
-## The Quota report's seals stand whole (P5.2a): the owner saw the met seal at the bar's
-## right end cut off by the Famine figure under it. The bar now stands in a band as tall as
-## its widest seal, so the met, overfulfilled and short seals stand clear of the Coupons
+## The Quota report's seals stand whole: the bar stands in a band as tall as its widest
+## seal, so the met, overfulfilled and short seals stand clear of the Coupons
 ## and Famine figures at every text size and both screen sizes.
 
 const SEED: int = 5303

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P5.0: a sample still running when its stop expires is abandoned and counts as not
+## A sample still running when its stop expires is abandoned and counts as not
 ## finished, so an Expert decision has a ceiling whatever the machine (ADR 0030).
 
 var _rules: RuleSet = RuleSet.default_rules()
@@ -41,7 +41,8 @@ func test_a_rollout_ends_at_once_when_its_stop_has_expired() -> void:
 	assert_int(rollout.play_out(steps)).is_not_equal(Seats.NONE)
 
 
-## The deadline and the grace together stay under P2.9's 400 ms with room for one step.
+## The deadline and the grace together stay under the Expert's 400 ms
+## with room for one step.
 func test_the_deadline_and_its_grace_leave_room_under_the_budget() -> void:
 	var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS
 	assert_int(weights.expert_grace_usec).is_greater(0)

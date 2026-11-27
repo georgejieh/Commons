@@ -1,10 +1,9 @@
 extends GdUnitTestSuite
-## The score tally never lies on the cards laid on the trick, the hand or a seat (P5.2a,
-## the owner's playtest of 2026-11-24: "sometimes it covers the cards in play slightly"),
-## at 1920x1080 and 1280x800 and at every text size, through all of its motion: every
-## frame of a big play's sequence is measured, its chits' swell and its shake included,
-## not only where it rests. The trick holds a 20-card plane, a long pair run and plays
-## buried under them. Fitted to its room, its type is never smaller than at Standard.
+## The score tally never lies on the cards laid on the trick, the hand or a seat at 1920x1080
+## and 1280x800 and at every text size, through all of its motion: every frame of a big play's
+## sequence is measured, its chits' swell and its shake included, not only where it rests. The
+## trick holds a 20-card plane, a long pair run and plays buried under them. Fitted to its
+## room, its type is never smaller than at Standard.
 
 const SEED: int = 3
 ## The Quota target the play is measured against: small, so the play lands at its hardest.

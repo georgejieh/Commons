@@ -83,5 +83,4 @@ func test_playback_stays_inside_the_frame_budget() -> void:
 			spent += Time.get_ticks_usec() - start
 			frames += 1
 	var mean: float = float(spent) / frames
-	print("voice: %.1f usec per frame over %d frames" % [mean, frames])
 	assert_float(mean).is_less(BUDGET_USEC)

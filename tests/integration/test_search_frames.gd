@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P5.0 through the controller in the tree, as the game runs it: an Expert villager's
+## The Expert's search through the controller in the tree, as the game runs it: an Expert villager's
 ## search runs on the worker pool while frames go on, its play is handed in, saved and
 ## sealed into the second book, a save taken while one thinks loads and searches again,
 ## and a run abandoned or replaced mid-search leaves nothing behind.
@@ -216,12 +216,6 @@ func test_frames_go_on_while_two_experts_think() -> void:
 	get_tree().process_frame.disconnect(_on_frame)
 	_search_times.sort()
 	var slowest: int = _search_times[-1] if not _search_times.is_empty() else 0
-	var middle: int = _search_times[_search_times.size() >> 1] if slowest > 0 else 0
-	var line: String = "P5.0 frames: %d searches, %d frames thinking, longest frame %d usec"
-	print(line % [_search_times.size(), _thinking_frames, _longest_gap])
-	print("P5.0 search time: median %d usec, slowest %d usec" % [middle, slowest])
-	var split: String = "P5.0 longest frame handing a play in %d usec, only waiting %d usec"
-	print(split % [_longest_hand_in, _longest_wait])
 	assert_int(_hand_ins).is_greater(ROUNDS)
 	assert_int(slowest).is_greater(SEARCH_FLOOR_USEC)
 	assert_int(_thinking_frames).is_greater(_hand_ins)

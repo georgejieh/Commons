@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The menus stand whole at every text size at 1920x1080 and 1280x800 (P5.2a): the
+## The menus stand whole at every text size at 1920x1080 and 1280x800: the
 ## settings sheets fit the page with nothing out of sight, the Controls rows stop at a
 ## whole row with the fade over the cut, no title button lies on a face in the poster,
 ## the dialogs over the notice wall cover its blank board, the set summary's seals stay

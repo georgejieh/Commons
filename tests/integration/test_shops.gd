@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The two shops between Sets (P4.10). The state store sells collective Cadres cheaply
+## The two shops between Sets. The state store sells collective Cadres cheaply
 ## from a limited stock; the black market sells private ones dearer, with no limit, and
 ## every purchase there raises Resentment. Both draw stock on the shop stream, so a
 ## seed always sees the same counters.

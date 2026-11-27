@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The table polish left open from the owner's first playtest (P5.2c), each held by a
+## The table's smaller marks, each held by a
 ## rectangle at both screen sizes and every text size: an ink frame on the sheet of the
 ## villager whose turn it is, following the events; the brigade notice on worn paper with
 ## its words inside the printed border; each rule's name closed before its text on the

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The arrival played whole with its authored inputs (ADR 0026, P4.15): through the run
+## The arrival played whole with its authored inputs (ADR 0026): through the run
 ## controller and the director, every step takes exactly its one action and refuses a
 ## wrong one, no scripted villager move is refused, the player goes out first as a
 ## peasant and then as landlord, Famine and Denunciation each change once, and both

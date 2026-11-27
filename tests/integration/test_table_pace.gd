@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The table's pace is the player's to set (P5.2a): Slow gives every step of the table
+## The table's pace is the player's to set: Slow gives every step of the table
 ## longer, Fast less, Standard is as it was, and a change takes hold at once at a table
 ## already open, with the beat before a villager's play scaled to match.
 

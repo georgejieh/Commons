@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The Plan's four slow horrors (P5.2c): the eyes on the card backs, the hand's tremble,
+## The Plan's four slow horrors: the eyes on the card backs, the hand's tremble,
 ## the names leaving the wall roster and speech turning to slogans. Each is nothing on a
 ## clean profile at any board, grows with the corruption stage under its meter, is gone at
 ## the lowest horror intensity, and moves nothing the player clicks or reads.

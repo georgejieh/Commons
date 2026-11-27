@@ -60,14 +60,6 @@ func _check(board: DeckBoard, where: String) -> void:
 			names.append(node as Control)
 	assert_int(names.size()).is_greater(0)
 	for card_id: int in board.card_ids():
-		var v: CardView = board.view_of(card_id)
-		print(
-			(
-				"DBG CARD %s pos %s scale %s pivot %s size %s"
-				% [CardName.of(board.card_of(card_id)), v.position, v.scale, v.pivot_offset, v.size]
-			)
-		)
-	for card_id: int in board.card_ids():
 		var card: Rect2 = EnvelopeOverlay.shown_rect(board.view_of(card_id)).grow(-ClipCheck.SLACK)
 		for name: Control in names:
 			var label: Label = name as Label

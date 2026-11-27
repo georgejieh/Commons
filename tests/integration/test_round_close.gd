@@ -1,8 +1,7 @@
 extends GdUnitTestSuite
-## A finished round plays out and is put away before the next hand is dealt (P5.2a). The
-## owner saw the next hand dealt the moment a round ended: the run deals it as soon as the
-## round is settled, and the table read the player's hand from the run while the round's
-## end was still being shown.
+## A finished round plays out and is put away before the next hand is dealt: the run
+## deals as soon as the round is settled, and the table shows the next hand only once the
+## round's end has been shown.
 
 const SEED: int = 3
 ## Seconds the walk through a round's end may take at most.

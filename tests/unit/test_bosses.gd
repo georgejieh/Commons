@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.7: boss Sets alternate between officials and risen villagers, fall back to
+## Boss Sets alternate between officials and risen villagers, fall back to
 ## officials, end with the New Landlord, and the New Landlord copies the player's style.
 
 const POOL: BossPool = preload("res://data/run/boss_pool.tres")

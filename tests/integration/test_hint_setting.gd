@@ -1,8 +1,7 @@
 extends GdUnitTestSuite
-## The Hint can be turned off (the owner's playtest of 2026-11-24): a setting on the
-## sheet, on by default. Off, the table shows no Hint button, its key does nothing, the
-## button's press does nothing, and the Controls page leaves its row out; turned on again
-## at an open table, the button is back at once.
+## The Hint can be turned off: a setting on the sheet, on by default. Off, the table shows no
+## Hint button, its key does nothing, the button's press does nothing, and the Controls page
+## leaves its row out; turned on again at an open table, the button is back at once.
 
 const SEED: int = 3
 const WAIT_FRAMES: int = 600

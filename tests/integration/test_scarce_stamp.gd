@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## A Cadre that seldom reaches a counter is stamped Scarce (P5.2a), so a rare one cannot
+## A Cadre that seldom reaches a counter is stamped Scarce, so a rare one cannot
 ## be taken for a routine one: the stamp is on the rare card and no other, it is pressed
 ## a beat after the cards arrive, and with motion off it is simply there. The tooltip
 ## says what the word means.

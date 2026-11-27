@@ -1,8 +1,7 @@
 extends GdUnitTestSuite
-## A count on a Cadre's card reads at a glance (P5.2a). The owner saw Ration Coupon's
-## "2/3" over a green band that never moved, and took it for a stuck meter. The band now
-## fills with a count of so many out of so many and empties when the count starts again;
-## a count that is not out of anything, a number, a factor or a rank, has no band.
+## A count on a Cadre's card reads at a glance: its band fills with a count of so many out of
+## so many and empties when the count starts again; a count that is not out of anything, a
+## number, a factor or a rank, has no band.
 
 const SEED: int = 5104
 const CAP: int = 3

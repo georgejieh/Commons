@@ -11,7 +11,7 @@ var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.
 
 
 ## Takes one player turn. Returns false when the run is not waiting on the player. A
-## villager whose play is searched (P5.0) is waited for, as a UI would, then it goes on.
+## villager whose play is searched is waited for, as a UI would, then it goes on.
 func act(controller: RunController) -> bool:
 	match controller.awaiting():
 		RunController.AWAIT_VILLAGER:

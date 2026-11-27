@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The envelope's opening act can be ended (P5.2a): an envelope is opened many times a
+## The envelope's opening act can be ended: an envelope is opened many times a
 ## run, so a click lays its papers out at once, and that click chooses nothing.
 
 const SEED: int = 4242
@@ -23,6 +23,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
 	get_tree().root.size = _was_size
 	Saves.run_service().delete()
 

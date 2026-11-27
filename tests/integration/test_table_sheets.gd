@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## What a reader of the cloud frames found at the table (P5.2a), each held by a rectangle
+## Faults a reader of the table's frames would see, each held by a rectangle
 ## and not by an eye: the buttons under the prompt stay where they are when the prompt
 ## takes a second line; a play's sum and its score share one line of the ledger at a
 ## size that can be read; the claim sheet leaves no half line showing under it; the

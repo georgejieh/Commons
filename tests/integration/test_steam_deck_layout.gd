@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## Nothing clips at any text size (ADR 0034), at 1920x1080 and at 1280x800, the Steam
-## Deck's screen (P3B.11). With the canvas_items stretch and expand aspect, a 16:10
+## Deck's screen. With the canvas_items stretch and expand aspect, a 16:10
 ## window shows a 1920x1200 canvas. Every screen and the table's menus are opened at each
 ## size on each screen, and ClipCheck says what clipping is. The Controls page (ADR 0035)
 ## is a screen of its own at the title and a page of the table's menu, so both are opened.

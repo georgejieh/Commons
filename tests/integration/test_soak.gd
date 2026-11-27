@@ -35,6 +35,10 @@ func after() -> void:
 	OS.remove_logger(_log)
 
 
+func after_test() -> void:
+	SaveService.for_run(_folder.path_join("run.json")).delete()
+
+
 func _strategy() -> BalanceStrategy:
 	return BalanceDriver.strategy_named("collective")
 
@@ -59,7 +63,6 @@ func test_a_damaged_save_fails_the_run_and_is_counted() -> void:
 	var failed: Array[BalanceResult] = [result]
 	var report: String = load(SOAK).call("markdown", spoilt.faults, failed, 1, SEED, "")
 	assert_str(report).contains("| load failures | 1 |").contains("- seed %d," % SEED)
-	spoilt.saves.delete()
 
 
 func test_runs_take_the_strategies_and_stakes_in_turn() -> void:

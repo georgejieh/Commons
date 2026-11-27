@@ -1,8 +1,7 @@
 extends GdUnitTestSuite
 ## The black market's cards for the private plot are drawn as the table draws a card, at
 ## a card's proportions, over Buy tickets wider than they are, on both screens at every
-## text size (the owner's playtest of 2026-11-24: they were squashed to the ticket's
-## width).
+## text size, never squashed to the ticket's width.
 
 const SEED: int = 4301
 

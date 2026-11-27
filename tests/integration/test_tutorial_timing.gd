@@ -1,9 +1,9 @@
 extends GdUnitTestSuite
-## The arrival's words come after what they describe (ADR 0026, the owner's playtest of
-## 2026-11-24): played at the table's own pace with motion on, every line Wang says at
-## the table, a prompt or the line after the player's action, shows only once the
-## villagers' answer has been played out and the cards on top of the trick have landed.
-## The answer ends where the table waits on the player again, or where a new deal begins.
+## The arrival's words come after what they describe (ADR 0026): played at the table's own pace
+## with motion on, every line Wang says at the table, a prompt or the line after the player's
+## action, shows only once the villagers' answer has been played out and the cards on top of
+## the trick have landed. The answer ends where the table waits on the player again, or where a
+## new deal begins.
 
 const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion", "table_pace"]
 ## The fast pace, so the walk takes less time; every wait still follows it.

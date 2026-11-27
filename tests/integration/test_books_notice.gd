@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0022's notice (P4.19): a live correction brings the state's notice over whatever
+## ADR 0022's notice: a live correction brings the state's notice over whatever
 ## screen the player is on, saying what the event says and never a dark figure's true
 ## value; it holds the table's events until a key or button acknowledges it, keeps the
 ## focus and takes every other key; it shows again for the next correction, and never on

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0037's amendment of 2026-11-25: a save a newer build wrote is never deleted or
+## ADR 0037: a save a newer build wrote is never deleted or
 ## written over by this one. Before this build first writes over or deletes its path, it
 ## is moved aside beside it, one aside a path, the latest, and the move is logged; a write
 ## whose move fails is refused and the newer file stays. A load reports it as from a newer

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The art itself changes with corruption (P3B.12, ADR 0018): each key asset resolves to
+## The art itself changes with corruption (ADR 0018): each key asset resolves to
 ## its variant for the current stage, falling back to the nearest earlier stage, on
 ## every screen and on the table as the stage changes.
 

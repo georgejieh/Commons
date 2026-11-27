@@ -1,8 +1,7 @@
 extends GdUnitTestSuite
-## The norm (P5.2a). The owner could not tell whether beating a Quota raised the next one.
-## It does: each full quarter over a Quota's target is a step, up to four, and each step
+## The norm: each full quarter over a Quota's target is a step, up to four, and each step
 ## raises every later Quota's target by 3% of its base, added, never compounded. The
-## Quota's report now says how far the target was beaten and what that did to the norm,
+## Quota's report says how far the target was beaten and what that did to the norm,
 ## and the next Quota's introduction says how far the norm raised its target and why.
 
 const SEED: int = 5303

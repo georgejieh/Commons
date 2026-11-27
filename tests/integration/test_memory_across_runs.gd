@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.6 Done-when: a villager bombed repeatedly in one run opens the next run
+## A villager bombed repeatedly in one run opens the next run
 ## differently. The previous run's memory goes through the real profile save and the
 ## controller's carry into a new run; the new runs replay the same seeds with and without
 ## it, and Zhao's answers to the player's tricks in the opening Set are counted.
@@ -63,7 +63,6 @@ func test_a_bombed_family_opens_the_next_run_more_hostile() -> void:
 	var carried: VillageMemory = Profile.read(profile).memory.carried(RunDefaults.MEMORY)
 	assert_float(carried.pull(ZHAO, RunDefaults.MEMORY)).is_greater(0.0)
 	var remembered: int = _zhao_answers(profile)
-	print("zhao answers the player's tricks: %d fresh, %d after being bombed" % [calm, remembered])
 	assert_int(remembered).is_greater(calm)
 
 

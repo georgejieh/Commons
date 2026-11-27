@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Table motion (P3B.6): the deal, sweep and count-up run as tweens bound to the nodes
+## Table motion: the deal, sweep and count-up run as tweens bound to the nodes
 ## they move, so none is left once the table is gone; a sweep hands its cards back to
 ## the pool; and reduced motion turns shake and hit-stop off.
 

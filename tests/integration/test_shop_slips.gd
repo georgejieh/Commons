@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## A slip stands right beside what it explains (commons-screens states.md, the owner's
-## playtest of 2026-11-24): on both shops, at 1920x1080 and 1280x800 and at every text
+## A slip stands right beside what it explains (commons-screens states.md): on
+## both shops, at 1920x1080 and 1280x800 and at every text
 ## size, the slip for a Cadre on the counter, for each offer on the counter (the Campaign,
 ## the Reform and the envelope), for a Reform in force and for a keyword in a Cadre's
 ## rules lies wholly on the screen, within SlipPlacer.REACH of the thing it explains, and

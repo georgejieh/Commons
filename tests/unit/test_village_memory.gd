@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.6: the village's memory builds from Set summaries, fades by the data rate at each
+## The village's memory builds from Set summaries, fades by the data rate at each
 ## new run, weighs each kind by data, and survives in the profile save.
 
 const PARAMS: MemoryParams = preload("res://data/villagers/memory.tres")

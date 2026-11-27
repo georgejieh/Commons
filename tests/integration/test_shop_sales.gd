@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## Selling Cadres and Campaigns back at either shop (ADR 0040, the owner's playtest of
-## 2026-11-24): a sale pays sell_percent of the item's price at that counter now, rounded
+## Selling Cadres and Campaigns back at either shop (ADR 0040): a
+## sale pays sell_percent of the item's price at that counter now, rounded
 ## down and never under one coupon; the item leaves for good with its saved state, frees
 ## its place at once, is not offered again that visit, gives back nothing its purchase
 ## changed and changes no meter; a sale is refused away from the shops, for an item not

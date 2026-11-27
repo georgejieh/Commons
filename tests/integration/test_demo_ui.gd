@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## A scripted smoke test of the demo UI (P3B.9 in part, ADR 0017): every demo screen
+## A scripted smoke test of the demo UI (ADR 0017): every demo screen
 ## opens over a live run, back navigation keeps the run, and the table drives a whole
 ## Set to its summary through the same buttons a player presses.
 
@@ -33,6 +33,8 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value("post_process", SettingsStore.DEFAULTS.get("post_process"))
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
 	Saves.run_service().delete()
 
 

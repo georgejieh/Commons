@@ -59,6 +59,7 @@ func _run(extra: PackedStringArray) -> int:
 	arguments.append_array(TINY)
 	arguments.append_array(extra)
 	arguments.append_array(["--out", _report])
+	# OS.execute has no time limit of its own: tools/test.sh bounds the whole run.
 	return OS.execute(OS.get_executable_path(), arguments)
 
 

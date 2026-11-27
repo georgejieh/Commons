@@ -1,8 +1,8 @@
 extends GdUnitTestSuite
-## The informant's reading of the opponents' hands (P4.9) reads each opponent's cards under
+## The informant's reading of the opponents' hands reads each opponent's cards under
 ## that opponent's own rules (ADR 0039): a Cadre that lets the player play a short Straight
 ## or a two-pair run never shows a villager holding one, and the player's wild rank never
-## makes a villager's card a stand-in (second note of 2026-11-24).
+## makes a villager's card a stand-in (ADR 0039).
 
 const PLAYER: int = 0
 

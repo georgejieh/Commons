@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The open rules card follows the run within the same frame (P3B.5): at every run event,
+## The open rules card follows the run within the same frame: at every run event,
 ## before any frame is drawn, its rank order and active rules match the controller's.
 
 ## A seed whose first Set reaches Criticism Meeting in round 3, so the order changes.

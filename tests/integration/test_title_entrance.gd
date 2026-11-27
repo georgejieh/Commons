@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The title's arrival (P5.2a): the poster is laid down, the eyebrow fades in, the name
+## The title's arrival: the poster is laid down, the eyebrow fades in, the name
 ## is pressed letter by letter, and the minor row comes last, the whole page in about a
 ## second and a half and every button live from the first frame. Under reduced motion it
 ## stands printed at once. The name is never clean and sits worse at each stage.

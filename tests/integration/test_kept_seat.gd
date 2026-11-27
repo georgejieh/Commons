@@ -1,9 +1,9 @@
 extends GdUnitTestSuite
-## A round that begins with no bidding says so the moment it begins (P5.2a, the owner's
-## Year 2 boss Quota): the landlord who won the last round keeps the seat, and the risen
-## villager starts the boss Quota as landlord. The table calls it out once a round, live,
-## or once its replay is over when it opens on such a round; the swap sheet prints the
-## line instead when it opens over it. A round that was bid for says nothing.
+## A round that begins with no bidding says so the moment it begins: the landlord who won the
+## last round keeps the seat, and the risen villager starts the boss Quota as landlord. The
+## table calls it out once a round, live, or once its replay is over when it opens on such a
+## round; the swap sheet prints the line instead when it opens over it. A round that was bid
+## for says nothing.
 
 const NAMES: Dictionary[int, String] = {0: "You", 1: "Zhao", 2: "Qian"}
 

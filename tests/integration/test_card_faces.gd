@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Every card face is composed from CardArt parts (P3C.5): the 54 faces bind from the
+## Every card face is composed from CardArt parts: the 54 faces bind from the
 ## deck, and swapping one part restyles every card that uses it.
 
 const SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")

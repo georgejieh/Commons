@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Villagers at the table (P3B.8): speech lines come from data with valid moods and
+## Villagers at the table: speech lines come from data with valid moods and
 ## string keys, a Set played through the table speaks one cards-left line per
 ## announcement, and the dossier shows what was seen.
 

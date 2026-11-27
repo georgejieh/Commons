@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Every sound under audio/ is logged with a license we may ship (P3C.8, commons-sfx):
+## Every sound under audio/ is logged with a license we may ship (commons-sfx):
 ## no row, no ship, and nothing NC, SA or Sampling+.
 
 const ROOT: String = "res://audio"

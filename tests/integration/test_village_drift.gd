@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Generations (ADR 0028, P4.17): the village's drift is the same for the same profile,
+## Generations (ADR 0028): the village's drift is the same for the same profile,
 ## accumulates over the generations a step at a time within LOW..HIGH, shifts a voice's
 ## pitch no more than the limit, never changes the shared definitions, and is applied
 ## only to a full run, through the profile's once-only write at a run's start; the demo

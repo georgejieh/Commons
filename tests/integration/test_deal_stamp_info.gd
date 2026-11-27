@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.9: Planned Allocation biases the deal through the deal hook, an owner stamp scores
+## Planned Allocation biases the deal through the deal hook, an owner stamp scores
 ## only for its owner in the card-scored hook, and information upgrades add to the
 ## player's view through explicit flags, so with none it equals a bot's public view.
 
@@ -75,7 +75,6 @@ func test_planned_allocation_doubles_the_rank_through_the_deal_hook() -> void:
 		assert_int(deal.hands[0].size()).is_equal(17)
 	var rate: float = float(reached) / copies
 	var target: float = 2.0 * 17.0 / 54.0
-	print("planned allocation: %.4f against %.4f" % [rate, target])
 	assert_float(rate).is_between(target - TOLERANCE, target + TOLERANCE)
 
 

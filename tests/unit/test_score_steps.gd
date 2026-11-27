@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## What changed a play's score, recorded step by step for the table to act out (P5.2a).
+## What changed a play's score, recorded step by step for the table to act out.
 ## Recording never changes a score: every golden hand scores the same with it on, under
 ## every modifier there is. The steps, applied in order, give the play's Grain, Rate and
 ## Zeal, and their product with the Total steps gives its total. Each step names what made

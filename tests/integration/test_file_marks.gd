@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## What the family's file leaves on screen (ADR 0022, P4.19): the title's stamp, only
+## What the family's file leaves on screen (ADR 0022): the title's stamp, only
 ## with an entry and clear of every button and the title; the file's page in the
 ## history, oldest first, absent with no entry; villagers' lines about the work team's
 ## visit, only in a run that began with an entry; and the stage past the last, reached

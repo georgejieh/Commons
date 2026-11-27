@@ -248,28 +248,6 @@ func test_tier_zero_fills_every_counter() -> void:
 	assert_int(loop.pools.reforms.size()).is_greater_equal(store.reform_offers)
 	assert_int(loop.pools.store.envelopes.size()).is_equal(store.envelopes.size())
 	assert_int(loop.pools.market.envelopes.size()).is_equal(market.envelopes.size())
-	for tier: int in RunUnlocks.LAST_TIER + 1:
-		print("tier %d: %s" % [tier, _counts(tier)])
-
-
-func _counts(tier: int) -> String:
-	var pools: Dictionary[String, Array] = {
-		"store cadres": RunPools.STORE_CADRES.cadres,
-		"market cadres": RunPools.MARKET_CADRES.cadres,
-		"directives": RunPools.DIRECTIVES.directives,
-		"store campaigns": RunPools.STORE_CAMPAIGNS.campaigns,
-		"market campaigns": RunPools.MARKET_CAMPAIGNS.campaigns,
-		"reforms": RunPools.REFORMS.reforms,
-		"envelopes": RunPools.STORE.envelopes + RunPools.MARKET.envelopes,
-	}
-	var parts: PackedStringArray = []
-	for pool: String in pools:
-		var count: int = 0
-		for item: Resource in pools[pool]:
-			if int(item.get("unlock_tier")) == tier:
-				count += 1
-		parts.append("%s %d" % [pool, count])
-	return ", ".join(parts)
 
 
 func test_families_join_the_village_by_finished_runs() -> void:

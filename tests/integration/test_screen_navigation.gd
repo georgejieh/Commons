@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Every screen is reachable through the buttons a player presses (P3B.9), and going
+## Every screen is reachable through the buttons a player presses, and going
 ## back from a screen opened over the run never changes the run.
 
 const SEED: int = 4301

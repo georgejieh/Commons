@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Every villager portrait shows its whole face, centered in its box (P3B.8, P4.5). Each
+## Every villager portrait shows its whole face, centered in its box. Each
 ## portrait has a face rectangle in data; the crop for every box shape must contain it
 ## and stay inside the image.
 
@@ -11,7 +11,7 @@ const UNIT: Rect2 = Rect2(0, 0, 1, 1)
 
 
 ## Every portrait in use, as [label, texture, face]: the demo's seats and every family
-## and youth template in the village (P4.5).
+## and youth template in the village.
 func _portraits() -> Array[Array]:
 	var found: Array[Array] = []
 	for seat: int in DEMO.portraits.size():

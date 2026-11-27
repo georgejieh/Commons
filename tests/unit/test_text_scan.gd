@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The text scans of P5.1 and ADR 0034, over every script, scene and resource in core/,
+## The text scans of ADR 0034, over every script, scene and resource in core/,
 ## game/, ui/ and data/: no hard-coded player-facing text, every key used is in the
 ## table, the table and the game are English only, and every font size in ui/ comes from
 ## TextSize. SourceScan says how a literal is known to reach the player, and SizeScan how

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Dread layers (P3B.12): weights follow the Plan's seven board states and ease toward
+## Dread layers: weights follow the Plan's seven board states and ease toward
 ## them; horror intensity 0 gives the clean board; horror never changes a value the
 ## player reads; no-flash stops every flicker; and the content note leads a first launch.
 

@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
-## Every slip and tooltip stands right beside what it explains (the owner's playtest of
-## 2026-11-24): the Mutual Aid slip on the counter at the foot of the store no longer
-## jumps to the top of the screen; a slip slides along its side to keep off a button
+## Every slip and tooltip stands right beside what it explains : the Mutual Aid
+## slip on the counter at the foot of the store stands beside it, not at the top of the
+## screen; a slip slides along its side to keep off a button
 ## when it can, and covers one rather than leave its thing; an engine tooltip is moved
 ## beside the control it explains and off its button; and at the table, at both window
 ## sizes and every text size, a keyword's slip and a Cadre's tooltip on the notice board
@@ -28,8 +28,8 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
-## The owner's frame: a piece at the foot of the screen, papers with Buy buttons over it.
-## The slip stands at the piece's edge, not at the top of the screen as it did.
+## A piece at the foot of the screen, papers with Buy buttons over it: the slip stands
+## at the piece's edge, not at the top of the screen.
 func test_a_slip_over_papers_stays_on_its_piece() -> void:
 	var host: Control = auto_free(Control.new())
 	add_child(host)

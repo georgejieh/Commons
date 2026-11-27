@@ -38,6 +38,10 @@ func before_test() -> void:
 	_ambience.set_process(false)
 
 
+func after_test() -> void:
+	Settings.set_value("horror_intensity", SettingsStore.DEFAULTS.get("horror_intensity"))
+
+
 func test_every_bed_is_a_loop_that_loads() -> void:
 	assert_int(SCORE.beds.size()).is_equal(9)
 	for bed: AmbienceBed in SCORE.beds:

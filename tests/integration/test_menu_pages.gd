@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Three things seen in the menu pages' frames (P5.2a): the Collection's text is ink on
+## Three things seen in the menu pages' frames: the Collection's text is ink on
 ## its paper, with no halo; the two Settings sheets stand as tall as each other; and run
 ## setup's papers stand into the page's spare room, with nothing moving when a stake is
 ## picked.

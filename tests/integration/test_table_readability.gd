@@ -21,6 +21,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
 	Saves.run_service().delete()
 
 

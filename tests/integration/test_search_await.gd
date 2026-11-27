@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P5.0: the loop stands still for a searching villager when its searches are answered
+## The loop stands still for a searching villager when its searches are answered
 ## from outside, hands the search what it needs, takes the play back as a bot's, and
 ## resumes a save written while one was thinking standing still for it again. With that
 ## off it plays exactly as it did before.
@@ -117,7 +117,8 @@ func _text(data: Dictionary) -> String:
 
 
 ## With nothing answered from outside, a searching seat searches with no limit inside
-## the loop, as every tool does, and the events are the ones it gave before P5.0.
+## the loop, as every tool does, and the events are the ones a loop gives
+## that no one answers from outside.
 func test_the_flag_off_plays_as_before() -> void:
 	var loop: RunLoop = RunLoop.new(RunState.new(SEED), configs(), SetConfig.new())
 	loop.start_set()
@@ -267,7 +268,7 @@ func test_a_save_while_a_villager_thinks_resumes_standing_still_for_it() -> void
 	assert_int(request.seat).is_equal(loop.search_request().seat)
 	assert_str(str(request.view.own_counts)).is_equal(str(loop.search_request().view.own_counts))
 	assert_str(_text(resumed.state.to_dict())).is_equal(_text(loop.state.to_dict()))
-	# Resumed as before P5.0, with nothing answered from outside, the villager is decided
+	# Resumed with nothing answered from outside, the villager is decided
 	# during the load.
 	var inside: RunLoop = RunRecord.resume(saved, configs(), SetConfig.new())
 	assert_object(inside).is_not_null()

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.1: every meter source moves its meter by its table row, mid-band setbacks fire once
+## Every meter source moves its meter by its table row, mid-band setbacks fire once
 ## per upward crossing with hysteresis, and either meter's death threshold is death.
 
 const TABLE: MeterTable = preload("res://data/run/meters.tres")

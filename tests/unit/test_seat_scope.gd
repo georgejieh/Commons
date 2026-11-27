@@ -27,8 +27,8 @@ func test_reach_follows_how_a_modifier_is_held() -> void:
 	for other: ModifierDef in [debuff, boss]:
 		assert_int(SeatScope.rules_reach(other)).is_equal(SeatScope.Reach.TABLE)
 		assert_int(SeatScope.score_reach(other)).is_equal(SeatScope.Reach.TABLE)
-	# A Reform's rule is the player's alone, like a Cadre's (ADR 0039, 2026-11-24 second
-	# note); its Zeal scores whatever play the rule allows, which only the holder can make.
+	# A Reform's rule is the player's alone, like a Cadre's (ADR 0039);
+	# its Zeal scores whatever play the rule allows, which only the holder can make.
 	assert_int(SeatScope.rules_reach(reform)).is_equal(SeatScope.Reach.HOLDER)
 	assert_int(SeatScope.score_reach(reform)).is_equal(SeatScope.Reach.TABLE)
 

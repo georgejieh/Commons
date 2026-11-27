@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Names (ADR 0028, P4.17): 10,000 runs named through RunStarter's own path, with every
+## Names (ADR 0028): 10,000 runs named through RunStarter's own path, with every
 ## family, youth arriving, generations 1 to 6 and the player's surname each of the
 ## offered, village and youth surnames, hold no given name twice and no blocked name. A
 ## run's names survive a save, a load and a replay; the migration from schema 14 names an
@@ -72,7 +72,6 @@ func _surname_of(state: RunState, family_id: String) -> String:
 
 func test_ten_thousand_runs_hold_no_name_twice_and_no_blocked_name() -> void:
 	var surnames: Array[String] = _surnames()
-	var began: int = Time.get_ticks_msec()
 	var problems: PackedStringArray = []
 	for run: int in RUNS:
 		var surname: String = surnames[run % surnames.size()]
@@ -96,7 +95,6 @@ func test_ten_thousand_runs_hold_no_name_twice_and_no_blocked_name() -> void:
 				problems.append("run %d: a youth shares %s" % [run, surname])
 		if problems.size() > 20:
 			break
-	print("10,000 named runs took %d ms" % (Time.get_ticks_msec() - began))
 	assert_array(problems).is_empty()
 
 

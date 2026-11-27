@@ -187,7 +187,7 @@ func test_run_setup_fits_both_screens() -> void:
 				_check_layout(screen, screen.scroll(), where)
 				_check_type(screen, where)
 				_clips(screen, where)
-				# The whole page shows without scrolling at every text size (P5.2a), and the
+				# The whole page shows without scrolling at every text size, and the
 				# stake row stands as wide as the household row.
 				var content: Control = screen.scroll().get_child(0)
 				assert_float(content.size.y).override_failure_message(where).is_less_equal(

@@ -52,7 +52,6 @@ func test_bad_weights_lower_the_win_rate() -> void:
 	for deal_seed: int in deals:
 		wins += SelfPlay.play_duplicate(SelfPlay.deal_from_seed(deal_seed), good, bad, table)
 	var rate: float = float(wins) / (deals * 2)
-	print("good weights beat bad weights %.3f over %d deals" % [rate, deals])
 	assert_float(rate).is_greater(BETTER_THAN_EVEN)
 
 

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## P4.5: the village's fourteen families, the roster's states, and the replacement rule
+## The village's fourteen families, the roster's states, and the replacement rule
 ## that keeps two opponents at every Set.
 
 const VILLAGE: VillageBook = preload("res://data/villagers/village.tres")

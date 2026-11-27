@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The surname step (ADR 0028, P4.17): on a first launch, after the content note and
+## The surname step (ADR 0028): on a first launch, after the content note and
 ## before the Arrival page, never with a profile. It opens with the field focused and a
 ## default from the 24 in it, so one press finishes it in well under 30 seconds; the
 ## field keeps only Latin letters, at most 12, capitalised; a village family's surname is

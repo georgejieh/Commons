@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## Wang's slip at the table stands in the player's eye line (ADR 0026, the owner's
-## playtest of 2026-11-24, on a large monitor): centred between the two seats, its foot
+## Wang's slip at the table stands in the player's eye line (ADR 0026), on any
+## monitor: centred between the two seats, its foot
 ## just over the trick, or over the claim sheet while that is up, and on none of the
 ## cards in play, the hand, the action column and its prompt, the ledger, the bar along
 ## the top, the seats or the Campaign tray. Where the claim sheet leaves no room over

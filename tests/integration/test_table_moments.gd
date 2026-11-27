@@ -4,6 +4,11 @@ extends GdUnitTestSuite
 ## states a claim as a share and stays on screen.
 
 
+func after_test() -> void:
+	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
+	Settings.set_value(TextSize.SETTING, SettingsStore.DEFAULTS.get(TextSize.SETTING))
+
+
 func test_the_need_panel_says_what_a_declaration_pays() -> void:
 	var panel: NeedPanel = auto_free(NeedPanel.new())
 	add_child(panel)

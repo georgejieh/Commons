@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0022's seal on the save (P4.19): what a save service writes always verifies when it
+## ADR 0022's seal on the save: what a save service writes always verifies when it
 ## is read back, the run save and the profile both, through the backup path too, over
 ## real saves taken all through a run and over values JSON does not round-trip. A file
 ## from before the seal is no offence; a hand edit, a missing seal or a changed extra

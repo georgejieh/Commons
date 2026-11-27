@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## ADR 0022's file in the profile (P4.19): an entry is written once with its corruption,
+## ADR 0022's file in the profile: an entry is written once with its corruption,
 ## outlives the collective ending's reset and every new or abandoned run, raises each
 ## later full run's targets ten percent an entry up to double, and is strictly checked.
 ## A profile from before the file migrates with an empty one.

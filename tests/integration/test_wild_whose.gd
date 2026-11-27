@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Whose wild ranks the table shows (ADR 0039, second note of 2026-11-24). Every item that
+## Whose wild ranks the table shows (ADR 0039). Every item that
 ## makes a rank wild is the player's, so the ranks are the player's alone: the call-out and
 ## the rules strip say so, a villager's played card of the rank lands on the pile plain,
 ## with no ribbon and no stand-in label, the player's own lands with its ribbon, and a

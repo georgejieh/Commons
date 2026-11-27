@@ -1,11 +1,11 @@
 extends GdUnitTestSuite
-## The arrival through the app (ADR 0026, P4.15): offered only with no profile save,
+## The arrival through the app (ADR 0026): offered only with no profile save,
 ## after the content note; finished with the keyboard alone, its slip beside every step's
 ## target and never over it or the hand, in type 20 px or more, at 1920x1080 and
 ## 1280x800; finishing writes the profile's first save once, with the arrival seen, then
 ## run setup; skipping writes the same and goes to the title; quitting part-way writes
 ## nothing; a replay ends at the title and leaves the profile and a real run save as they
-## were; a refused action pulses the slip. Since the first cloud frames: the slip keeps
+## were; a refused action pulses the slip. The slip keeps
 ## clear of the brigade notice, and the store's detail slip stays closed while the
 ## arrival runs.
 

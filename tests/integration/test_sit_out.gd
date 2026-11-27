@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Sitting out a trick (P5.2a, the owner's request). When the player must follow and
+## Sitting out a trick. When the player must follow and
 ## nothing they hold is legal, Sit out stands beside Pass; pressed, or pressed by its key,
 ## it passes for them through the ordinary pass command until the trick ends, the table's
 ## step shortened meanwhile, and it never reaches into the next trick. It is never offered

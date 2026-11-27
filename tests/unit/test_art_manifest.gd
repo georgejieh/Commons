@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Every image under art/ is logged in art/sources/manifest.csv (P3C.2), which is also
+## Every image under art/ is logged in art/sources/manifest.csv, which is also
 ## the store's AI-disclosure record, and every row points at a file that exists.
 
 const ART: String = "res://art"

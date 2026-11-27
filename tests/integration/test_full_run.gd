@@ -73,7 +73,6 @@ func _loop(controller: RunController) -> RunLoop:
 
 
 func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:
-	var began: int = Time.get_ticks_msec()
 	var controller: RunController = auto_free(RunController.new())
 	controller.start(_request(RunRequest.FULL), _saves, _profile)
 	var opening: RunState = controller.state_copy()
@@ -93,7 +92,7 @@ func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:
 	assert_int(_loop(resumed).sets().years()).is_equal(8)
 	assert_int(resumed.awaiting()).is_equal(controller.awaiting())
 	controller.queue_free()
-	var rest: int = _play(resumed)
+	_play(resumed)
 	assert_int(resumed.awaiting()).is_equal(RunController.AWAIT_RUN_OVER)
 	var final: RunState = resumed.state_copy()
 	var data: ProfileData = Profile.read(_profile)
@@ -114,8 +113,6 @@ func test_a_full_run_plays_through_continue_and_is_recorded_once() -> void:
 		assert_int(reopened.awaiting()).is_equal(RunController.AWAIT_RUN_OVER)
 	assert_int(Profile.read(_profile).history.size()).is_equal(1)
 	assert_int(Profile.read(_profile).finished_runs).is_equal(1)
-	var seconds: float = (Time.get_ticks_msec() - began) / 1000.0
-	print("Full run: %d Sets, Year %d, %s, %.1f s" % [first + rest, final.year, outcome, seconds])
 
 
 func _dead(state: RunState) -> int:
