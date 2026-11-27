@@ -16,7 +16,8 @@ signal picked_card(card_id: int)
 
 ## The card id when no card is picked or under the cursor.
 const NONE: int = -1
-## How far a picked card lifts at full scale, in pixels; the board keeps this much room above.
+## How far a picked card lifts at full scale, in pixels. Each group keeps that much room
+## between its name and its cards, so a lifted card never covers the name.
 const LIFT: float = 22.0
 ## The rank names above the groups, and the plot's.
 const NAME_SIZE: int = 18
@@ -113,7 +114,7 @@ func lay_out(room: Vector2) -> void:
 	var counts: Array[int] = []
 	for group: Array in _groups:
 		counts.append(group.size())
-	_fit = DeckFit.fit(counts, room, name_height)
+	_fit = DeckFit.fit(counts, room, name_height + LIFT)
 	for index: int in _groups.size():
 		var at: Vector2 = _fit.places[index]
 		names[index].position = at
@@ -126,10 +127,10 @@ func lay_out(room: Vector2) -> void:
 			# foot stays above the next row's names.
 			view.pivot_offset = Vector2.ZERO
 			view.scale = Vector2.ONE * _fit.scale
-			view.position = at + Vector2(place * _fit.steps[index], name_height)
+			view.position = Vector2(at.x + place * _fit.steps[index], _rest_y(card.id()))
 			view.z_index = 0
 			move_child(view, -1)
-	custom_minimum_size = _fit.size + Vector2(0.0, LIFT)
+	custom_minimum_size = _fit.size
 	_mark()
 
 
@@ -208,7 +209,7 @@ func _mark() -> void:
 
 func _rest_y(card_id: int) -> float:
 	var name_height: float = names[0].get_combined_minimum_size().y + 4.0
-	return _fit.places[_group_of[card_id]].y + name_height
+	return _fit.places[_group_of[card_id]].y + name_height + LIFT * _fit.scale
 
 
 func _on_hovered(card_id: int) -> void:

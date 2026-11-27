@@ -262,6 +262,16 @@ func tutorial_target(key: String) -> Control:
 	return _next if key == "continue" else null
 
 
+## What the arrival's slip keeps clear of here: every result counted in, so the slip by
+## the way on never stands over a line the Quota's report gives.
+func tutorial_avoid() -> Array[Rect2]:
+	var avoid: Array[Rect2] = []
+	for piece: Control in after + _quiet:
+		if piece.is_visible_in_tree():
+			avoid.append(piece.get_global_rect())
+	return avoid
+
+
 ## The overfulfilled seal, for tests.
 func over_seal() -> InkSeal:
 	return _over

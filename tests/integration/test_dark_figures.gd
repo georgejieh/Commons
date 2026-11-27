@@ -12,15 +12,19 @@ const RESENTMENT: int = 71
 const FAMINE_LAYER: int = 0
 
 var _app: App
+var _was_size: Vector2i
 
 
 func before_test() -> void:
+	_was_size = get_tree().root.size
 	AppKit.fresh_saves(self)
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
 
 
 func after_test() -> void:
+	Settings.set_value(TextSize.SETTING, 0)
+	get_tree().root.size = _was_size
 	Saves.run_service().delete()
 	ArtStages.stage_override = -1
 
@@ -79,6 +83,34 @@ func test_the_table_hud_shows_a_dark_meter_and_norm_as_none_reported() -> void:
 	var target: String = Strings.score(_app.controller.figures.target())
 	assert_str(hud.quota.text()).contains(ShownFigures.none_reported()).not_contains(target)
 	assert_str(_shown(hud)).contains(ShownFigures.none_reported())
+
+
+## With both meters and the norm dark, and at the stage past the last, where every figure
+## reads as a success in words, the words keep each figure's width, so the status line
+## stands whole at every text size on both screens.
+func test_the_status_line_stays_whole_while_figures_read_as_words() -> void:
+	_darken([RunCorrections.FAMINE, RunCorrections.DENUNCIATION, RunCorrections.NORM])
+	for filed: bool in [false, true]:
+		ArtStages.stage_override = ArtStages.FILED_STAGE if filed else -1
+		for level: int in TextSize.count():
+			Settings.set_value(TextSize.SETTING, level)
+			for screen_size: Vector2i in ClipCheck.SIZES:
+				get_tree().root.size = screen_size
+				var table: TableScreen = _app.show_screen(ScreenId.TABLE, true)
+				await await_idle_frame()
+				await await_idle_frame()
+				var status: Label = table.hud.status
+				var widths: PackedStringArray = []
+				for piece: Node in status.get_parent().get_children():
+					widths.append("%s %d" % [piece.get_class(), (piece as Control).size.x])
+				var where: String = (
+					"filed %s, text %d at %s: %s" % [filed, level, screen_size, ", ".join(widths)]
+				)
+				(
+					assert_float(ClipCheck.text_overflow(status))
+					. override_failure_message(where)
+					. is_less_equal(ClipCheck.SLACK)
+				)
 
 
 func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:

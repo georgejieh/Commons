@@ -139,6 +139,12 @@ func tutorial_target(key: String) -> Control:
 	return null
 
 
+## What the arrival's slip keeps clear of here: the row of buttons, so a slip by the
+## plot's card never stands over the way on or the Deck button.
+func tutorial_avoid() -> Array[Rect2]:
+	return [_blocks["buttons"].get_global_rect()]
+
+
 ## True while any purchase, issue or enactment is being acted out, or a rank is asked.
 func is_issuing() -> bool:
 	var directing: bool = directives != null and directives.is_busy()
@@ -264,13 +270,15 @@ func _bottom_row() -> Control:
 	held.add_theme_constant_override("separation", 4)
 	held.add_child(ScreenKit.eyebrow(tr("store.shelf")))
 	held.add_child(board)
-	var own: PanelContainer = _sheet(ScreenKit.row([held, campaign_stall.tray], SHELF_GAP))
+	var own: PanelContainer = StoreNotes.sheet(
+		ScreenKit.row([held, campaign_stall.tray], SHELF_GAP), SHEET_PADDING
+	)
 	var offers: Array[Control] = _offers()
 	var on_counter: VBoxContainer = VBoxContainer.new()
 	on_counter.add_theme_constant_override("separation", 4)
 	on_counter.add_child(ScreenKit.eyebrow(tr("store.counter")))
 	on_counter.add_child(ScreenKit.row(offers, 12))
-	var shelf: PanelContainer = _sheet(on_counter)
+	var shelf: PanelContainer = StoreNotes.sheet(on_counter, SHEET_PADDING)
 	# The counter keeps to the right edge, whatever room the board leaves it.
 	shelf.size_flags_horizontal = Control.SIZE_EXPAND | Control.SIZE_SHRINK_END
 	_blocks["board"] = own
@@ -281,14 +289,6 @@ func _bottom_row() -> Control:
 ## The offers "On the counter": the Campaign's, the Reform's and the envelope's.
 func _offers() -> Array[Control]:
 	return [campaign_stall.offers, reform_stall.offers, envelope_stall.offers]
-
-
-func _sheet(content: Control) -> PanelContainer:
-	var sheet: PanelContainer = PanelContainer.new()
-	sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
-	sheet.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	sheet.add_child(content)
-	return sheet
 
 
 ## A Cadre's purchase is over: the page shows the run, and the card's place on the board

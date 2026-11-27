@@ -1,7 +1,9 @@
 extends GdUnitTestSuite
 ## The playtest's layout audit (tools/layout_audit.gd) finds each kind of fault it is
 ## there for, and passes a clean page: text over text, text partly under another paper,
-## text cut by its own box, text that leaves the screen or its paper, and small type.
+## text cut by its own box, text that leaves the screen or its paper, and type under the
+## game's least. What is by design is left out: a piece in flight, a slip over the paper
+## of the word it was opened from.
 
 const AUDIT: GDScript = preload("res://tools/layout_audit.gd")
 
@@ -37,12 +39,7 @@ func _found() -> String:
 	await await_idle_frame()
 	await await_idle_frame()
 	var audit: RefCounted = AUDIT.new()
-	var lines: PackedStringArray = audit.call("check", get_tree().root)
-	var mine: PackedStringArray = []
-	for line: String in lines:
-		if line.contains("audit-"):
-			mine.append(line)
-	return "\n".join(mine)
+	return _mine(audit.call("check", get_tree().root))
 
 
 func test_a_clean_page_has_no_finding() -> void:
@@ -133,3 +130,70 @@ func _card(fan: Control, kind: GDScript, words: String, at: Vector2) -> Control:
 	face.position = Vector2(0, 40)
 	face.size = Vector2(400, 200)
 	return card
+
+
+func test_type_at_the_games_least_is_not_small() -> void:
+	var least: Label = _label("audit-at the least", Vector2(100, 100))
+	least.add_theme_font_size_override("font_size", SettingsStore.DEFAULTS.least_text_px)
+	assert_str(await _found()).is_empty()
+
+
+func test_a_piece_in_flight_is_left_until_it_rests() -> void:
+	_label("audit-under words", Vector2(100, 100))
+	var moving: Label = _label("audit-flying words", Vector2(140, 108))
+	await await_idle_frame()
+	var audit: RefCounted = AUDIT.new()
+	audit.call("look", get_tree().root)
+	moving.position.y += 3.0
+	assert_str(_mine(audit.call("check", get_tree().root))).is_empty()
+	audit.call("look", get_tree().root)
+	assert_str(_mine(audit.call("check", get_tree().root))).contains("OVERLAP")
+
+
+func test_a_slip_over_its_words_row_is_by_design_but_over_another_is_found() -> void:
+	var row: Control = Control.new()
+	_page.add_child(row)
+	var card: Panel = _paper(Rect2(100, 100, 400, 200))
+	var neighbour: Panel = _paper(Rect2(520, 100, 400, 200))
+	for paper: Panel in [card, neighbour]:
+		paper.reparent(row)
+	var name_label: Label = _label("audit-the card's name", Vector2(20, 20), card)
+	var word: Label = _label("audit-the rules with a word", Vector2(20, 120), card)
+	var beside: Label = _label("audit-the neighbour's name", Vector2(20, 20), neighbour)
+	var elsewhere: Label = _label("audit-another page's line", Vector2(100, 700))
+	var slip: Panel = _paper(Rect2(0, 0, 300, 120))
+	slip.set_script(_with_source())
+	slip.set("source", word)
+	for covered: Label in [name_label, beside]:
+		slip.global_position = covered.global_position + Vector2(covered.size.x * 0.5, -10.0)
+		assert_str(await _found()).not_contains("COVERED")
+	slip.global_position = elsewhere.global_position + Vector2(elsewhere.size.x * 0.5, -10.0)
+	assert_str(await _found()).contains('COVERED "audit-another page')
+
+
+func test_a_shout_over_the_table_is_by_design() -> void:
+	_label("audit-a line on the table", Vector2(100, 100))
+	var shout: Control = Control.new()
+	var kind: GDScript = GDScript.new()
+	kind.source_code = "extends Control\n\n\nfunc shout() -> void:\n\tpass\n"
+	assert_int(kind.reload()).is_equal(OK)
+	shout.set_script(kind)
+	_page.add_child(shout)
+	_label("audit-THE SHOUT", Vector2(140, 108), shout)
+	assert_str(await _found()).is_empty()
+
+
+## A paper script that names the text it was opened from, as a keyword's slip does.
+func _with_source() -> GDScript:
+	var script: GDScript = GDScript.new()
+	script.source_code = "extends Panel\n\nvar source: Control = null\n"
+	assert_int(script.reload()).is_equal(OK)
+	return script
+
+
+static func _mine(lines: PackedStringArray) -> String:
+	var mine: PackedStringArray = []
+	for line: String in lines:
+		if line.contains("audit-"):
+			mine.append(line)
+	return "\n".join(mine)

@@ -126,3 +126,12 @@ static func beside(controller: RunController, market: bool, strip: ReformStrip) 
 ## Coupons as a shop shows them: ample at the stage past the last (ADR 0022).
 static func coupon_text(value: float) -> String:
 	return ShownFigures.coupons(roundi(value), "store.coupons")
+
+
+## A sheet of paper holding content near its top, padded inside its printed border.
+static func sheet(content: Control, padding: int) -> PanelContainer:
+	var made: PanelContainer = PanelContainer.new()
+	made.add_theme_stylebox_override("panel", ScreenKit.paper_style(padding))
+	made.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	made.add_child(content)
+	return made

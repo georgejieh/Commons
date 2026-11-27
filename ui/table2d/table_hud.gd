@@ -20,6 +20,8 @@ const SEAL_WIDTH: float = 92.0
 const NONE_SIZE: int = 18
 ## The status line's type at Standard; fitted down, never under Standard, to its room.
 const STATUS_SIZE: int = 26
+## The coupons' type at Standard.
+const COUPONS_SIZE: int = 26
 ## Seconds a bar takes to reach a new value.
 const FILL_TIME: float = 0.6
 ## The key of the Quota's bar among the bars, beside the two meters' keys.
@@ -77,7 +79,7 @@ func _ready() -> void:
 	)
 	row.add_child(_icon(ScreenKit.ART.icon_coupon))
 	coupons.add_theme_color_override("font_color", ScreenKit.COUPON_ON_DARK)
-	coupons.add_theme_font_size_override("font_size", TextSize.px(26))
+	coupons.add_theme_font_size_override("font_size", TextSize.px(COUPONS_SIZE))
 	coupons.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	row.add_child(coupons)
 	menu.text = tr("pause.open")
@@ -104,6 +106,7 @@ func show_state(state: RunView, rounds: int) -> void:
 		)
 	)
 	coupons.text = ShownFigures.coupons(state.coupons(), "table.coupons")
+	_fit_coupons(Strings.count("table.coupons", state.coupons()))
 	_fit_status()
 	_state = state
 	quota.show_as(QuotaBar.mode_for(state))
@@ -111,6 +114,8 @@ func show_state(state: RunView, rounds: int) -> void:
 		var shown: bool = ShownFigures.is_true(state, meter)
 		_bars[meter].visible = shown
 		_none[meter].visible = not shown
+		if not shown:
+			_fit_none(_none[meter])
 
 
 ## The bar is of a fixed size: where you are grows with the text size only while it
@@ -124,6 +129,36 @@ func _fit_status() -> void:
 		)
 		return line.x <= room
 	status.add_theme_font_size_override("font_size", TextSize.fit(STATUS_SIZE, STATUS_SIZE, fits))
+
+
+## Fits the coupons' words, as the stage past the last shows them, down, never under
+## Standard, to the width the count itself would take, so the status line keeps its room
+## at every text size (ADR 0034).
+func _fit_coupons(counted: String) -> void:
+	var font: Font = ScreenKit.DISPLAY_BOLD
+	var room: float = (
+		font.get_string_size(counted, HORIZONTAL_ALIGNMENT_LEFT, -1, TextSize.px(COUPONS_SIZE)).x
+	)
+	var fits: Callable = func(font_size: int) -> bool:
+		var line: Vector2 = font.get_string_size(
+			coupons.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size
+		)
+		return line.x <= room
+	coupons.add_theme_font_size_override(
+		"font_size", TextSize.fit(COUPONS_SIZE, COUPONS_SIZE, fits)
+	)
+
+
+## Fits the words shown where a meter's bar would be down, never under Standard, to the
+## bar's width, so the status line keeps its room at every text size (ADR 0034).
+static func _fit_none(none: Label) -> void:
+	var font: Font = none.get_theme_font("font")
+	var fits: Callable = func(font_size: int) -> bool:
+		var line: Vector2 = font.get_string_size(
+			none.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size
+		)
+		return line.x <= METER_BAR.x
+	none.add_theme_font_size_override("font_size", TextSize.fit(NONE_SIZE, NONE_SIZE, fits))
 
 
 ## True while a meter is shown as it is, so its changes may be signalled.
