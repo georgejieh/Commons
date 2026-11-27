@@ -220,7 +220,7 @@ func test_the_slip_never_covers_a_ranks_name() -> void:
 func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 	var store: StoreScreen = await _to_the_store()
 	var stock: Array[String] = ["deck_envelope"]
-	_loop().visit.shop.envelopes.set("_stock", stock)
+	_loop().visit.shop.envelopes.stock_with(stock)
 	store.refresh()
 	await await_idle_frame()
 	var stall: EnvelopeStall = store.envelope_stall

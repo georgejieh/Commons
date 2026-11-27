@@ -17,7 +17,14 @@ class Double:
 		context.delta *= 2
 
 
+## The log and the modifiers the Sets counted here are told to, the suite's own.
+var _log: SetLog = SetLog.new()
+var _stack: ModifierStack = ModifierStack.new()
+
+
 func before_test() -> void:
+	_log = SetLog.new()
+	_stack = ModifierStack.new()
 	DirAccess.make_dir_recursive_absolute(_dir)
 
 
@@ -57,10 +64,11 @@ func _seatless_set(seed_value: int) -> RunLoop:
 	return loop
 
 
+## The Sets stood by that the loop logged, and those the suite's own close did.
 func _stood_by(loop: RunLoop) -> Array[RunEvent]:
-	return loop.events().filter(
-		func(event: RunEvent) -> bool: return event.type == RunEvent.Type.STOOD_BY
-	)
+	var events: Array[RunEvent] = loop.events().duplicate()
+	events.append_array(_log.events())
+	return events.filter(func(event: RunEvent) -> bool: return event.type == RunEvent.Type.STOOD_BY)
 
 
 func test_held_seat_reads_every_round_of_the_set() -> void:
@@ -151,7 +159,7 @@ func test_the_amount_is_the_steps_times_the_row() -> void:
 	assert_bool(YearClass.held_seat(loop.events(), RunLoop.PLAYER)).is_false()
 	state.famine = 0
 	state.seatless_sets = RunDefaults.PARAMS.seat_grace_sets + 1
-	_count_standing_by(loop)
+	_count_standing_by(loop, meters)
 	assert_int(state.famine).is_equal(2 * 5)
 
 
@@ -161,8 +169,7 @@ func test_the_cost_goes_through_the_meter_change_hook() -> void:
 	var definition: ModifierDef = ModifierDef.new()
 	definition.kind = ModifierDef.Kind.DEBUFF
 	definition.hooks.assign([Hooks.METER_CHANGE])
-	var stack: ModifierStack = loop.get("_stack")
-	stack.add_entry(ActiveModifier.new(definition, Double.new()))
+	_stack.add_entry(ActiveModifier.new(definition, Double.new()))
 	loop.state.seatless_sets = RunDefaults.PARAMS.seat_grace_sets + 2
 	_count_standing_by(loop)
 	var row: int = RunDefaults.METERS.source(RunMeters.STOOD_BY).amount
@@ -240,7 +247,8 @@ func test_a_schema_13_save_migrates() -> void:
 	assert_int(resumed.state.seatless_sets).is_equal(0)
 
 
-## Counts the Quota just played as one the player stood by in, or not, as its close does.
-func _count_standing_by(loop: RunLoop) -> void:
-	var close: QuotaClose = loop.get("_quota_close")
-	close.call("_count_standing_by")
+## Counts the Quota just played as one the player stood by in, or not, as the loop's close
+## does, with its modifiers and log the suite's own.
+func _count_standing_by(loop: RunLoop, meters: MeterTable = RunDefaults.METERS) -> void:
+	var close: QuotaClose = QuotaClose.new(loop.state, _log, _stack, meters, RunDefaults.PARAMS)
+	close.count_standing_by()

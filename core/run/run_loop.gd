@@ -266,7 +266,7 @@ func resume_at_checkpoint() -> void:
 func _start_round() -> void:
 	set_log.start_round()
 	campaigns.start_round()
-	_rebuild_modifiers()
+	rebuild_modifiers()
 	_seat = LandlordSeat.new()
 	_seat.assign(state.landlord_seat)
 	_deal_cards()
@@ -628,8 +628,15 @@ func sets() -> SetConfig:
 	return _sets
 
 
-## Cadres in slot order, then the ladder's debuffs so far, as the hook order says.
-func _rebuild_modifiers() -> void:
+## The round's deal as it was dealt, for tests and tools that check what was dealt.
+func deal() -> DealResult:
+	return _deal
+
+
+## Builds the modifier stack again from what the state holds: Cadres in slot order, then
+## the ladder's debuffs so far, as the hook order says. The loop runs it whenever the
+## inventory, the Reforms or the ladder change.
+func rebuild_modifiers() -> void:
 	_stack.clear()
 	for cadre_id: String in state.inventory.cadres:
 		_stack.add(RunDefinitions.modifiers[cadre_id], PLAYER, state.cadre_memos.entry(cadre_id))

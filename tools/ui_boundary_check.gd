@@ -90,6 +90,8 @@ const FORBIDDEN_WORDS: PackedStringArray = [
 	"set_owner_stamp",
 	"run_loop",
 	"state_copy",
+	"stock_with",
+	"rebuild_modifiers",
 ]
 const EXTENSIONS: PackedStringArray = ["gd", "tscn"]
 

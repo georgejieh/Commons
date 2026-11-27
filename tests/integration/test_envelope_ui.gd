@@ -51,7 +51,7 @@ func _stall(store: StoreScreen) -> EnvelopeStall:
 ## Puts one kind on the state store's counter, as only tests do.
 func _offer(envelope_id: String) -> void:
 	var stock: Array[String] = [envelope_id]
-	_loop().visit.shop.envelopes.set("_stock", stock)
+	_loop().visit.shop.envelopes.stock_with(stock)
 
 
 func _wait(overlay: EnvelopeOverlay) -> void:

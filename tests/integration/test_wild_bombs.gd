@@ -22,15 +22,20 @@ func _loop(seed_value: int, reforms: Array[String]) -> RunLoop:
 
 
 func _rules(reforms: Array[String], wild: Array[int]) -> SeatRules:
+	var table: SeatRules = SeatRules.new(_stack_of(reforms))
+	table.set_wild_ranks(wild)
+	table.refresh()
+	return table
+
+
+## The player's seat's modifiers with these Reforms in force, as the run builds them.
+func _stack_of(reforms: Array[String]) -> ModifierStack:
 	var state: RunState = RunState.new(SEED)
 	state.reforms.assign(reforms)
 	var stack: ModifierStack = ModifierStack.new()
 	for rule: ActiveModifier in RunReforms.table_rules(state, RunLoop.PLAYER):
 		stack.add_entry(rule)
-	var table: SeatRules = SeatRules.new(stack)
-	table.set_wild_ranks(wild)
-	table.refresh()
-	return table
+	return stack
 
 
 func _has_bomb(readings: Array[Pattern], cards: int) -> bool:
@@ -83,7 +88,7 @@ func test_industrialization_ranks_a_bigger_bomb_above_a_smaller_one() -> void:
 
 func test_industrialization_adds_zeal_for_each_card_past_the_fourth() -> void:
 	var table: SeatRules = _rules(["industrialization"], [])
-	var stack: ModifierStack = table.get("_stack")
+	var stack: ModifierStack = _stack_of(["industrialization"])
 	var rules: RuleSet = table.rules_for(0)
 	for seat: int in Seats.COUNT:
 		for text: String in ["9999", "99999", "999999"]:
@@ -104,7 +109,7 @@ func test_industrialization_adds_zeal_for_each_card_past_the_fourth() -> void:
 		. classify(RankText.counts("9999"), bare.rules_for(0), Ranks.identity_map())
 		. pattern
 	)
-	var plain: ScoreBreakdown = Scorer.score_play(four, bomb, 1, 0, false, bare.get("_stack"))
+	var plain: ScoreBreakdown = Scorer.score_play(four, bomb, 1, 0, false, _stack_of([]))
 	assert_float(plain.zeal).is_equal_approx(1.0, 0.0001)
 
 

@@ -17,6 +17,8 @@ func before_test() -> void:
 	AppKit.fresh_saves(self)
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
+	# A Quota no one meets, so a Set plays on into its debuffs' rounds.
+	_app.controller.start_run(SEED, RunScript.bots(), DebuffScript.hard_sets())
 
 
 func after_test() -> void:
@@ -129,8 +131,6 @@ func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 ## Plays the player's seat through the table until check returns true, at most turns times.
 func _play_until(check: Callable, turns: int = 600) -> bool:
 	var driver: ControllerScript = ControllerScript.new()
-	# A Quota no one meets, so the Set plays on into the debuff's round.
-	_loop().set("_sets", DebuffScript.hard_sets())
 	_app.show_screen("table", true)
 	await await_idle_frame()
 	for _turn: int in turns:

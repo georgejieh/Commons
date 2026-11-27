@@ -97,7 +97,8 @@ func test_loyalty_is_for_the_players_teammate_only() -> void:
 	for entry: RosterEntry in state.roster:
 		summary.add(entry.family_id, SetSummary.Kind.FED, 20)
 	state.memory.record(summary)
-	var loop: RunLoop = RunLoop.new(state, RunScript.bots())
+	var configs: Array[BotConfig] = RunScript.bots()
+	var loop: RunLoop = RunLoop.new(state, configs)
 	loop.start_set()
 	var script: RunScript = RunScript.new()
 	var seen_teammate: bool = false
@@ -106,7 +107,6 @@ func test_loyalty_is_for_the_players_teammate_only() -> void:
 	while loop.awaiting() != RunLoop.Awaiting.SET_OVER and guard < 400:
 		guard += 1
 		if loop.awaiting() == RunLoop.Awaiting.PLAYER_PLAY:
-			var configs: Array[BotConfig] = loop.get("_configs")
 			for seat: int in range(1, Seats.COUNT):
 				var teammate: bool = state.landlord_seat != 0 and state.landlord_seat != seat
 				var expected: float = MEMORY.loyal_cooperation if teammate else 0.0

@@ -269,11 +269,13 @@ func test_a_sold_cadre_cannot_be_bought_back_from_either_shelf_that_visit() -> v
 func test_an_envelope_will_not_hand_back_a_campaign_sold_that_visit() -> void:
 	var loop: RunLoop = RunScript.at_the_shops(self, 31, RICH)
 	var counter: EnvelopeCounter = loop.visit.shop.envelopes
-	var campaign_id: String = RunCampaigns.all()[0].id
+	# A Campaign envelope holds only Campaigns, so the first paper is one.
+	counter.stock_with(["campaign_envelope"] as Array[String])
+	assert_int(counter.buy(0)).is_equal(RunShop.Reason.OK)
+	var item: EnvelopeItem = counter.items()[0]
+	assert_int(item.content).is_equal(EnvelopeDef.Content.CAMPAIGN)
+	var campaign_id: String = item.item_id
 	loop.visit.shop.campaigns.withheld.append(campaign_id)
-	var item: EnvelopeItem = EnvelopeItem.new(EnvelopeDef.Content.CAMPAIGN, campaign_id)
-	counter.set("_opened", EnvelopeDef.new())
-	counter.set("_items", [item] as Array[EnvelopeItem])
 	assert_int(counter.check_pick(0)).is_equal(RunShop.Reason.SOLD_BACK)
 	assert_int(counter.pick(0, RunLoop.PLAYER)).is_equal(RunShop.Reason.SOLD_BACK)
 	assert_array(loop.state.inventory.consumables).not_contains([campaign_id])

@@ -56,7 +56,7 @@ func close(sets: SetConfig, target: float) -> void:
 	_reeducate_villagers()
 	_state.memory.record(_state.summaries[-1])
 	_record_style_and_risen()
-	_count_standing_by()
+	count_standing_by()
 	CorruptionEvents.close_quota(_state, _log.events(), _params.base_need)
 	var held: int = Resentment.private_cadres(_state.inventory.cadres, RunLoop.all_cadres())
 	Resentment.add(
@@ -150,7 +150,8 @@ func _record_style_and_risen() -> void:
 ## A Set the player never held the landlord's seat in lengthens a run of them, and past
 ## the grace each one costs Famine, more for each Set until the most (ADR 0031). The last
 ## free Set and every one that costs are logged, so the summary can say which it was.
-func _count_standing_by() -> void:
+## close() runs it; it is public for tests and tools that count Sets one at a time.
+func count_standing_by() -> void:
 	if YearClass.held_seat(_log.events(), RunLoop.PLAYER):
 		_state.seatless_sets = 0
 		return

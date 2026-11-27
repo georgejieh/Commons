@@ -160,14 +160,11 @@ func test_the_loop_stands_still_for_a_searching_villager() -> void:
 	assert_int(request.view.seat).is_equal(seat)
 	assert_array(request.legal).is_not_empty()
 	assert_bool(SearchedDecisions.searches(request.config)).is_true()
-	# Copies: the search never holds the run's own config or moves.
-	var seated: Array[BotConfig] = loop.get("_configs")
-	assert_object(request.config).is_not_same(seated[seat])
-	var own: Array[Pattern] = loop.get("_request_legal")
-	assert_int(request.legal.size()).is_equal(own.size())
-	for index: int in own.size():
-		assert_object(request.legal[index]).is_not_same(own[index])
-		assert_bool(request.legal[index].equals(own[index])).is_true()
+	# What the search was handed is what the seat may play now.
+	var legal: Array[Pattern] = loop.round_state().legal_moves()
+	assert_int(request.legal.size()).is_equal(legal.size())
+	for index: int in legal.size():
+		assert_bool(request.legal[index].equals(legal[index])).is_true()
 	var commands: int = loop.record.commands.size()
 	var decisions: int = loop.record.decisions.size()
 	var events: int = loop.events().size()

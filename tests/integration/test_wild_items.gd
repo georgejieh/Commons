@@ -186,8 +186,8 @@ func test_mass_line_leaves_the_deal_as_it_was() -> void:
 	for seed_value: int in range(SEED, SEED + 8):
 		var plain: RunLoop = _loop(seed_value, [])
 		var massed: RunLoop = _loop(seed_value, [], ["mass_line"])
-		var plain_deal: DealResult = plain.get("_deal")
-		var massed_deal: DealResult = massed.get("_deal")
+		var plain_deal: DealResult = plain.deal()
+		var massed_deal: DealResult = massed.deal()
 		for seat: int in Seats.COUNT:
 			var ids: Array[int] = []
 			var other: Array[int] = []

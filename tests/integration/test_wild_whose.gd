@@ -113,7 +113,7 @@ func test_a_reforms_rule_is_listed_as_the_players() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	_loop().state.reforms.assign(["industrialization"])
-	_loop().call("_rebuild_modifiers")
+	_loop().rebuild_modifiers()
 	var strip: DebuffStrip = table.debuffs
 	strip.show_debuffs(_app.controller)
 	var shown: String = strip.shown_text()

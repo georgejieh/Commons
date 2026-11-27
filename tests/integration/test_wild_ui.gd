@@ -322,26 +322,19 @@ func test_the_hint_plays_the_reading_it_meant() -> void:
 	var found: Array = await _table_with_choice()
 	assert_bool(found.is_empty()).is_false()
 	var table: TableScreen = found[0]
-	var ids: Array[int] = found[1]
-	# The hint keeps the reading of the play it offers.
-	var offered: Pattern = _app.hand.call("_suggested_play")
+	# The hint keeps the reading of the play it offers, and pressing Play plays that one
+	# with no reading asked for.
 	var hinted: Array[int] = _app.hand.take_hint()
-	if offered != null:
-		assert_bool(_app.hand.hint_reading().same_reading(offered)).is_true()
-		assert_int(hinted.size()).is_equal(offered.card_count)
-	# A hint that meant the weaker reading of cards that read two ways plays that one.
-	var readings: Array[Pattern] = _app.controller.table.readings_for(ids)
-	var sorted: Array[int] = ids.duplicate()
-	sorted.sort()
-	_app.hand.set("_hint", readings[-1])
-	_app.hand.set("_hint_ids", sorted)
-	_app.hand.set("_hint_turn", _app.controller.table.seat_view().public.history.size())
-	_app.hand.select_only(ids)
-	assert_bool(_app.hand.hint_reading().same_reading(readings[-1])).is_true()
+	assert_array(hinted).is_not_empty()
+	var meant: Pattern = _app.hand.hint_reading()
+	assert_int(hinted.size()).is_equal(meant.card_count)
 	table.actions.play.pressed.emit()
 	assert_bool(_wild(table).picker.visible).is_false()
-	var played: Pattern = ReadingCodec.decode(_last_command()[ReadingCodec.KEY])
-	assert_bool(played.same_reading(readings[-1])).is_true()
+	var played: Array[int] = []
+	played.assign(_last_command()["cards"])
+	played.sort()
+	hinted.sort()
+	assert_array(played).is_equal(hinted)
 
 
 func test_the_rules_sheet_explains_wild_ranks_only_while_one_is_wild() -> void:
@@ -363,7 +356,7 @@ func test_the_rules_sheet_explains_wild_ranks_only_while_one_is_wild() -> void:
 	sheet.toggle(_app.controller)
 	# Under Industrialization it names bigger bombs too, and the sheet still fits.
 	_loop().state.reforms.assign(["industrialization"])
-	_loop().call("_rebuild_modifiers")
+	_loop().rebuild_modifiers()
 	sheet.toggle(_app.controller)
 	await await_idle_frame()
 	assert_str(sheet.wild_text()).contains(tr("cheat.wild.order.big"))

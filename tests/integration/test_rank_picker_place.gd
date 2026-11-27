@@ -41,7 +41,7 @@ func test_the_picker_stands_beside_its_card_with_even_padding() -> void:
 				_app.controller.reseal_book()
 				var offered: Array[String] = ["steel_target", "last_sheaf", "loudspeaker"]
 				offered[slot] = "rehabilitation"
-				loop.visit.market.set("_stock", offered)
+				loop.visit.market.stock_with(offered, loop.visit.market.directive_stock())
 				var market: StoreScreen = _app.show_screen("black_market", true)
 				await await_idle_frame()
 				var market_cadres: CadreCounter = market.cadres

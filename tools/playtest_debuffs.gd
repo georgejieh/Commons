@@ -78,7 +78,7 @@ func rules() -> void:
 func _force_debuff(loop: RunLoop, debuff_id: String) -> void:
 	var round_index: int = loop.state.round_index
 	loop.state.debuff_ladder[maxi(round_index, 1)] = debuff_id
-	invoke(loop, "_rebuild_modifiers")
+	invoke(loop, "rebuild_modifiers")
 	if round_index >= 1:
 		return
 	var stack: ModifierStack = member(loop, "_stack")

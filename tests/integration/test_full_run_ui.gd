@@ -152,12 +152,9 @@ func test_the_summary_names_the_family_that_starved() -> void:
 	_app.new_run(SEED, true)
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.famine = RunDefaults.METERS.famine.high
+	# The Quota met already, so it closes at its first round and no miss moves Famine.
+	loop.state.set_progress = loop.target()
 	_app.controller.reseal_book()
-	# A Quota met at its first round, so no missed Quota moves Famine before its end.
-	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
-	params.targets = params.targets.duplicate()
-	params.targets.fill(1.0)
-	loop.set("_sets", SetConfig.new(params))
 	var script: ControllerScript = ControllerScript.new()
 	while script.act(_app.controller):
 		pass
@@ -186,10 +183,8 @@ func _seatless_summary(seatless: int) -> SetSummaryScreen:
 	_app.new_run(SEED, true)
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.seatless_sets = seatless
-	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
-	params.targets = params.targets.duplicate()
-	params.targets.fill(1.0)
-	loop.set("_sets", SetConfig.new(params))
+	# The Quota met already, so it closes at its first round.
+	loop.state.set_progress = loop.target()
 	var script: ControllerScript = ControllerScript.new()
 	while true:
 		if _app.controller.awaiting() == RunController.AWAIT_BID:

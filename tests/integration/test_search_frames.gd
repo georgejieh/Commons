@@ -19,6 +19,8 @@ const TIME_LIMIT_MSEC: int = 180_000
 ## Seeds tried for a full run that seats an Expert family in its first Quota.
 ## Enough finished runs for both Expert families to have joined the village.
 const FINISHED_RUNS: int = 5
+## Seeds tried for a full run that seats an Expert family.
+const EXPERT_SEEDS: int = 200
 
 static var _dir: String = TestFolder.of("test_search_frames")
 
@@ -303,20 +305,26 @@ func test_a_run_replaced_or_dropped_mid_search_leaves_nothing_behind() -> void:
 		await get_tree().process_frame
 
 
-## A full run with a profile, with the file's detectors acting. Both villagers at the
-## table are made Expert once it starts, whatever their families are, so every play of
-## theirs is searched off the frame, the ones that end a round among them.
+## A full run with a profile, with the file's detectors acting, on the first seed from
+## SEED that seats an Expert family at the table, so that villager's plays are searched
+## off the frame, the ones that end a round among them.
 func _full_run_with_an_expert() -> RunController:
-	_with_unlocked_profile()
-	var controller: RunController = _in_tree()
-	controller.file_watch.release = true
-	controller.file_watch.report = func(line: String) -> void: _kit.lines.append(line)
-	controller.search_weights = _weights(BotConfig.DEFAULT_WEIGHTS.expert_min_samples)
-	assert_bool(controller.start(FileWatchKit.full(SEED), _kit.saves, _kit.profile)).is_true()
-	var seated: Array[BotConfig] = _loop_of(controller).get("_configs")
-	for seat: int in [1, 2]:
-		seated[seat].tier = BotConfig.Tier.EXPERT
-	return controller
+	for seed_value: int in range(SEED, SEED + EXPERT_SEEDS):
+		_with_unlocked_profile()
+		var controller: RunController = _in_tree()
+		controller.file_watch.release = true
+		controller.file_watch.report = func(line: String) -> void: _kit.lines.append(line)
+		controller.search_weights = _weights(BotConfig.DEFAULT_WEIGHTS.expert_min_samples)
+		(
+			assert_bool(controller.start(FileWatchKit.full(seed_value), _kit.saves, _kit.profile))
+			. is_true()
+		)
+		for seat: int in [1, 2]:
+			if controller.seats.seated_family(seat).personality.tier == BotConfig.Tier.EXPERT:
+				return controller
+		controller.queue_free()
+	fail("no seed from %d seats an Expert family" % SEED)
+	return null
 
 
 func _with_unlocked_profile() -> void:
