@@ -52,7 +52,6 @@ func table(driver: Object) -> void:
 
 ## Each of the three items on the state store's counter in turn, then the stock put back.
 func store() -> void:
-	var controller: Object = _controller()
 	var loop: RunLoop = _loop()
 	var campaigns: Array[String] = loop.visit.shop.campaigns.stock()
 	var reforms: Array[String] = loop.visit.shop.reforms.stock()
@@ -91,7 +90,6 @@ func store() -> void:
 ## with market), stamped Scarce: the stamp part way through its landing, its clock held,
 ## then at rest. The counter is put back after.
 func scarce(market: bool) -> void:
-	var controller: Object = _controller()
 	var loop: RunLoop = _loop()
 	var shop: RunShop = loop.visit.market if market else loop.visit.shop
 	var stock: Array[String] = shop.stock()
