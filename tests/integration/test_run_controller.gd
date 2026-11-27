@@ -15,9 +15,10 @@ func test_ui_has_no_core_mutator_references() -> void:
 
 
 ## The bad fixtures each break the boundary once: one calls a loop command, one takes the
-## loop through the controller's way in for tests and tools.
+## loop through the controller's way in for tests and tools, and one takes it after a
+## string with a hash in it, which is not a comment.
 func test_checker_flags_a_mutator_and_ignores_comments() -> void:
-	assert_array(UiBoundaryCheck.scan(FIXTURES + "bad")).has_size(2)
+	assert_array(UiBoundaryCheck.scan(FIXTURES + "bad")).has_size(3)
 	assert_array(UiBoundaryCheck.scan(FIXTURES + "good")).is_empty()
 	assert_array(UiBoundaryCheck.scan(FIXTURES + "missing")).has_size(1)
 	# The seams tests and tools stock a shop and rebuild a run's modifiers through.

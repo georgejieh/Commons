@@ -77,7 +77,7 @@ static func _ids() -> Dictionary[String, bool]:
 static func _offences(
 	path: String, text: String, ids: Dictionary[String, bool]
 ) -> PackedStringArray:
-	var code: String = SourceScan.code_of(text)
+	var code: String = ScriptText.code_of(text)
 	var offences: PackedStringArray = []
 	for hit: RegExMatch in SourceScan.pattern(SourceScan.LITERAL).search_all(code):
 		var value: String = hit.get_string(1) if hit.get_start(1) >= 0 else hit.get_string(2)
