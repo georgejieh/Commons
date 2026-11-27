@@ -5,6 +5,7 @@ extends Resource
 ## for in Resentment, Denunciation or Famine. Applied by RunOpening before the first
 ## checkpoint.
 
+## The ID the pools, the saves and the profile's history name it by.
 @export var id: String
 ## Finished runs needed before it can be picked.
 @export var unlock_tier: int = 0

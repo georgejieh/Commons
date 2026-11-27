@@ -24,6 +24,7 @@ func path_at(stage: int) -> String:
 	return ""
 
 
+## True when path is one of the stage files, not the base.
 func has_path(path: String) -> bool:
 	return not path.is_empty() and stage_paths.has(path)
 

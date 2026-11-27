@@ -3,7 +3,9 @@ extends RefCounted
 ## Passed to the turn taken hook after each real play or pass in a round, and never for
 ## a preview, so an effect may count what it sees here in its own CadreMemo.
 
+## The seat that took the turn.
 var seat: int
+## The round's landlord seat.
 var landlord: int
 ## The play, or null for a pass.
 var pattern: Pattern
@@ -11,8 +13,9 @@ var pattern: Pattern
 var cards_left: int
 ## The run's player, whose Resentment and coupons a hook may raise.
 var player: int
-## Resentment and coupons to add to the player, to edit.
+## Resentment to add to the player, to edit.
 var resentment: int = 0
+## Coupons to add to the player, to edit.
 var coupons: int = 0
 
 
@@ -30,6 +33,7 @@ func _init(
 	player = player_value
 
 
+## True when the seat passed, so there is no play.
 func is_pass() -> bool:
 	return pattern == null
 

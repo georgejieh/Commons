@@ -4,14 +4,18 @@ extends ModifierEffect
 ## random on the deal stream to the seat on its left, all at once (ADR 0023). Seats draw
 ## in seat order, each from its hand in card ID order.
 
+## Parameter key: how many cards each seat passes.
 const CARDS: String = "cards"
+## The seat the passes are worked out from.
 const FIRST_SEAT: int = 0
 
 
+## Needs the number of cards each seat passes.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray([CARDS])
 
 
+## Has every seat pass cards to the seat on its left, all at once.
 func round_start(context: RoundContext) -> void:
 	# Seat a passes to b, b to c and c to a: two one-for-one trades make the turn.
 	var a: int = FIRST_SEAT

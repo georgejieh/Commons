@@ -80,6 +80,8 @@ static var _scripts: Dictionary[String, Script] = {
 }
 
 
+## True when the modifier ID has an effect script or is a loss meter; a definition without one is a
+## data error.
 static func has_effect(modifier_id: String) -> bool:
 	return _scripts.has(modifier_id) or LOSS_METERS.has(modifier_id)
 

@@ -6,6 +6,7 @@ extends Control
 var _page: ControlsPage = null
 
 
+## Builds the page for app, with the Controls page under its header; Back returns to Settings.
 func open(app: App) -> void:
 	var column: VBoxContainer = ScreenKit.page(self)
 	column.add_child(ScreenKit.header(tr("controls.eyebrow"), tr("controls.title")))

@@ -16,6 +16,7 @@ extends Control
 const NAME_SIZE: int = 32
 ## The black market is the store after dark, sealed in black ink.
 const NIGHT: Color = Color(0.36, 0.34, 0.46)
+## The dark laid over the black market's backdrop.
 const NIGHT_SHADE: Color = Color(0.03, 0.02, 0.09, 0.62)
 ## A card on the counter, the same in both shops.
 const CARD: Vector2 = Vector2(360, 470)
@@ -23,7 +24,9 @@ const CARD: Vector2 = Vector2(360, 470)
 const ROW_GAP: int = 14
 ## Between the heading's pieces, close enough to leave the notes and all six Reforms room.
 const HEADER_GAP: int = 40
+## The gap, in pixels, between the cards and the side beside them in the main row.
 const MAIN_GAP: int = 24
+## The gap, in pixels, between the pieces of the bottom row: your board and the counter.
 const SHELF_GAP: int = 20
 ## The most room the Cadre board takes; its cards shrink to fit six.
 const BOARD_BOX: Vector2 = Vector2(612, 122)
@@ -85,6 +88,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_back()
 
 
+## Builds the page for app's run; call once when the screen is served.
 func open(app: App) -> void:
 	_app = app
 	slip.quiet = app.arrival.is_running
@@ -186,10 +190,7 @@ func _set_up_stalls() -> void:
 
 
 func _header_row(app: App) -> Control:
-	var heading: Control = ScreenKit.header(
-		tr("market.eyebrow" if market else "store.eyebrow"),
-		tr("market.title" if market else "store.title")
-	)
+	var heading: Control = StoreNotes.heading(market)
 	var top: Array[Control] = [heading, StoreNotes.balance(coupons, books)]
 	if market:
 		resentment = ScreenKit.styled("", CommonsTheme.TITLE)

@@ -15,5 +15,6 @@ extends Resource
 @export var hostile_campaigns: Array[String] = []
 
 
+## The weight of an event by its ID, or 0 for one that has none.
 func weight(event_id: String) -> float:
 	return weights.get(event_id, 0.0)

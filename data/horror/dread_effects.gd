@@ -6,10 +6,15 @@ extends Resource
 ## corruption stage so a clean profile shows none of them; these numbers say what a weight
 ## looks like on the table.
 
+## The name of the effect of the eyes on the card backs, as a HorrorLayer names it.
 const EYES: String = "back_eyes"
+## The name of the effect of the hand's tremble.
 const TREMBLE: String = "tremble"
+## The name of the effect of names leaving the wall roster.
 const ROSTER: String = "roster"
+## The name of the effect of speech turning to slogans.
 const SLOGANS: String = "slogans"
+## Every effect's name, in the order of the effects above.
 const NAMES: Array[String] = [EYES, TREMBLE, ROSTER, SLOGANS]
 
 @export_group("Eyes on the card backs")

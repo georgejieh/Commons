@@ -4,6 +4,7 @@ extends RefCounted
 ## asked for is dropped first. A dropped picture still on screen stays loaded through the
 ## node showing it, and comes back as the same texture when asked for again.
 
+## The most pictures it holds at once, at least 1.
 var limit: int
 var _held: Dictionary[String, Texture2D] = {}
 ## Paths in the order they were last asked for, oldest first.
@@ -35,10 +36,12 @@ func held_count() -> int:
 	return _held.size()
 
 
+## True when the picture at path is held now.
 func holds(path: String) -> bool:
 	return _held.has(path)
 
 
+## Drops every held picture.
 func clear() -> void:
 	_held.clear()
 	_order.clear()

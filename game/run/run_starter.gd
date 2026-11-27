@@ -8,8 +8,11 @@ extends RefCounted
 ## each kind plays with, so Continue rebuilds exactly the kind that was saved. The
 ## arrival (ADR 0026) plays its script's one Quota and is never saved.
 
+## The full run's numbers: starting coupons, Sets and seats.
 const FULL_RUN: FullRunParams = preload("res://data/run/full_run.tres")
+## The demo's numbers: starting coupons, Sets and seats.
 const DEMO_RUN: DemoParams = preload("res://data/run/demo.tres")
+## Every household a full run may begin as.
 const HOUSEHOLDS: HouseholdPool = preload("res://data/run/households/households.tres")
 
 
@@ -111,6 +114,7 @@ static func unlocked_families(data: ProfileData) -> Array[String]:
 	return unlocked
 
 
+## The coupons a run of this kind begins with.
 static func starting_coupons(kind: RunIdentity.Kind) -> int:
 	match kind:
 		RunRequest.FULL:

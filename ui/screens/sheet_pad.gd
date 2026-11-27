@@ -5,10 +5,11 @@ extends RefCounted
 ## page sheets keep, so no headline, line or tile touches the rule. The sheet keeps its
 ## card stock and border; only the room inside grows.
 
-## Where the card stock's printed lines end, in from its edge, and the clear room kept
-## inside them.
+## How far in from its edge, in pixels, the card stock's printed lines end.
 const RULE: int = 17
+## The clear room, in pixels, kept inside the printed lines.
 const CLEAR: int = 13
+## The whole padding inside a dialog's sheet: the printed lines and the clear room together.
 const INSET: int = RULE + CLEAR
 ## How wide a sheet over the notice wall's board stands: past the board's right edge.
 const BOARD_WIDTH: float = 1040.0
@@ -35,6 +36,6 @@ static func over_board(root: Control, width: float) -> VBoxContainer:
 	var sheet: VBoxContainer = ScreenKit.side_sheet(root, ScreenKit.ART.notice_wall, width)
 	sheet.alignment = BoxContainer.ALIGNMENT_CENTER
 	var panel: Control = ScreenKit.card_panel(sheet)
-	panel.offset_left = ScreenKit.LEAST_PAGE_MARGIN
-	panel.offset_right = ScreenKit.LEAST_PAGE_MARGIN + width
+	panel.offset_left = PageFit.LEAST_PAGE_MARGIN
+	panel.offset_right = PageFit.LEAST_PAGE_MARGIN + width
 	return column(sheet)

@@ -24,6 +24,7 @@ extends Resource
 @export var ladder_severity: int = 0
 
 
+## The numbers its rules line prints, by the names the string table fills in.
 func text_values() -> Dictionary[String, Variant]:
 	return {
 		"percent": target_percent,

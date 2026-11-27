@@ -2,9 +2,13 @@ class_name SeatView
 extends RefCounted
 ## All a bot ever receives: the public view plus copies of its own hand.
 
+## The seat this view belongs to.
 var seat: int
+## What any seat may know of the round.
 var public: PublicView
+## The seat's own cards, counted by rank.
 var own_counts: PackedByteArray
+## Copies of the seat's own cards.
 var own_cards: Array[CardInstance]
 ## How many cards of each rank the seat knows the round holds: the deck as it was dealt,
 ## and after the seat's own plot swap, less what it set aside and with what it brought

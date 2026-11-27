@@ -10,19 +10,30 @@ extends RefCounted
 ## (ADR 0029) are a budget: a chain may take one per rank where a rank is one short,
 ## and the leaf places the rest (WildLeaf).
 
+## Where a memo key keeps the rank position, above the packed counts.
 const POSITION_SHIFT: int = 60
+## Where a score keeps its count of hands. Low singles and strength fill the bits below.
 const HAND_SHIFT: int = 32
+## Where a score keeps its count of low singles, above the strength it subtracts.
 const LOW_SINGLE_SHIFT: int = 16
+## The most strength a score can hold, added back before its fields are read.
 const STRENGTH_SPAN: int = 1 << LOW_SINGLE_SHIFT
+## Masks the low singles field once a score is shifted down to it.
 const LOW_FIELD_MASK: int = (1 << (HAND_SHIFT - LOW_SINGLE_SHIFT)) - 1
+## A score above any real one, where a search for the lowest starts.
 const NO_SCORE: int = 1 << 56
+## Where a packed airplane keeps its first rank, above its length.
 const PLANE_LENGTH_SHIFT: int = 4
+## The bits one airplane takes in the plane code that tells memos apart.
 const PLANE_CODE_SHIFT: int = 8
+## Where a memo code keeps the wild cards not yet taken. The budget takes five bits: two
+## wild ranks at the deck's most copies (ADR 0042) can put sixteen in one hand.
 const BUDGET_SHIFT: int = 40
-## The budget takes five bits: two wild ranks at the deck's most copies (ADR 0042) can put
-## sixteen wild cards in one hand.
+## Where a memo code keeps the hand's wild cards by printed rank.
 const OWN_SHIFT: int = 45
+## The bits one rank takes in the packed natural cards a chain took, so they can be put back.
 const TAKE_BITS: int = 2
+## Masks one rank's take out of the packed takes.
 const TAKE_MASK: int = 3
 
 var _rules: RuleSet
@@ -66,6 +77,7 @@ static func low_singles_in(score_value: int) -> int:
 	return ((score_value + STRENGTH_SPAN - 1) >> LOW_SINGLE_SHIFT) & LOW_FIELD_MASK
 
 
+## Forgets the memo, so the decomposer can serve the next decision.
 func clear() -> void:
 	_memos.clear()
 	_stored = 0
@@ -103,6 +115,7 @@ func _split_wilds() -> void:
 	_wild_leaf = WildLeaf.new(_leaf, _own) if _wilds > 0 else null
 
 
+## The hand's best split into plays, found by the same search as score.
 func decompose(counts: PackedByteArray) -> Decomposition:
 	var low: int = low_singles_in(score(counts))
 	var groups: Array[Pattern] = []

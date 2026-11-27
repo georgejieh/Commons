@@ -5,6 +5,7 @@ extends RefCounted
 
 ## A full hand, plus a large play in every seat's lane, still fits.
 const SIZE: int = 80
+## The scene each pooled card view is made from.
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 
 var _free: Array[CardView] = []
@@ -28,15 +29,18 @@ func acquire() -> CardView:
 	return _free.pop_back()
 
 
+## Returns a view to the pool, unbound and hidden. Releasing one twice is harmless.
 func release(view: CardView) -> void:
 	view.bind(null)
 	if not _free.has(view):
 		_free.append(view)
 
 
+## How many views are free to acquire now, for tests.
 func free_count() -> int:
 	return _free.size()
 
 
+## How many views the pool made, for the table performance walk.
 func size() -> int:
 	return _all.size()

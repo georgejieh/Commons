@@ -6,12 +6,16 @@ extends RefCounted
 ## reads the kind to rebuild the run that was saved. A tutorial run (ADR 0026) is never
 ## saved, so Continue never meets one.
 
+## What kind of run it is: the demo, a full run or the tutorial.
 enum Kind { DEMO, FULL, TUTORIAL }
 
+## The run's ID, made by make_id; the profile takes a run's record once by it.
 var id: String = ""
+## Which kind of run this is, which Continue reads to rebuild it.
 var kind: Kind = Kind.DEMO
 ## The household picked at run setup, or empty for none.
 var household: String = ""
+## The stake the run began with.
 var stake: int = 0
 ## Finished runs the profile held when this run started; unlocks read it.
 var finished_runs: int = 0
@@ -22,10 +26,12 @@ var generation: int = 0
 var file_entries: int = 0
 
 
+## Makes a run's ID from its seed and its start time.
 static func make_id(seed_value: int, start_time: int) -> String:
 	return "%d-%d" % [seed_value, start_time]
 
 
+## Rebuilds an identity from the run save; file_entries may be missing.
 static func from_dict(data: Dictionary) -> RunIdentity:
 	var identity: RunIdentity = RunIdentity.new()
 	identity.id = str(data["id"])
@@ -38,6 +44,7 @@ static func from_dict(data: Dictionary) -> RunIdentity:
 	return identity
 
 
+## The identity as a map for the run save.
 func to_dict() -> Dictionary:
 	return {
 		"id": id,
@@ -50,10 +57,12 @@ func to_dict() -> Dictionary:
 	}
 
 
+## True for a full run, not the demo or the tutorial.
 func is_full() -> bool:
 	return kind == Kind.FULL
 
 
+## True for the tutorial, which is never saved.
 func is_tutorial() -> bool:
 	return kind == Kind.TUTORIAL
 

@@ -6,13 +6,17 @@ extends Control
 ## left, the rounds two by two. Under a dark norm, or at the stage past the last, the
 ## target is "None reported" (ADR 0022).
 
+## The width, in pixels, of the one sheet at the left.
 const SHEET_WIDTH: float = 830.0
+## The size, in pixels, of one round's card on the debuff ladder.
 const STEP_SIZE: Vector2 = Vector2(370, 170)
-## The lines under the target, and a debuff's rules, at Standard.
+## The font size of the lines under the target, at Standard.
 const LINE_SIZE: int = 24
+## The font size of a debuff's rules, at Standard.
 const RULE_SIZE: int = 20
 
 
+## Builds the Set's sheet, ending in Begin, which goes to the table; call once when it is served.
 func open(app: App) -> void:
 	var controller: RunController = app.controller
 	var state: RunView = controller.run

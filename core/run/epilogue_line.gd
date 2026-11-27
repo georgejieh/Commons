@@ -6,6 +6,7 @@ extends RefCounted
 
 ## The families' roster IDs in roster order, or none for the line naming the dead.
 var family_ids: Array[String] = []
+## The string key of the line's text.
 var key: String
 ## The named families' surname keys in roster order: for {name}, or on the dead line
 ## for {names}.

@@ -7,28 +7,34 @@ extends Control
 ## reduced motion it looks straight ahead. Worn like every printed thing (BowlGrime): the
 ## lids are uneven from the first stage.
 
+## The horror data: how much ink the eye takes and when its gaze follows the pointer.
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
-## The eye's width as a share of the back's, its height as a share of its width, and its
-## middle as a share of the back's size.
+## The eye's width as a share of the back's.
 const WIDTH_SHARE: float = 0.62
+## The eye's height as a share of its width.
 const HEIGHT_SHARE: float = 0.42
+## The eye's middle as a share of the back's size, a little above the back's middle.
 const MIDDLE: Vector2 = Vector2(0.5, 0.46)
-## Points along each lid, and how far a lid's ink strays from a clean curve, as a share
-## of the eye's height, at no wear and at the most.
+## Points along each lid.
 const LID_POINTS: int = 12
+## How far a lid's ink strays from a clean curve, as a share of the eye's height: x at no wear, y
+## at the most.
 const LID_STRAY: Vector2 = Vector2(0.04, 0.12)
-## The iris's radius and the pupil's, as shares of the eye's height; how far the iris may
-## turn, as a share of the room between it and the corners.
+## The iris's radius as a share of the eye's height.
 const IRIS: float = 0.42
+## The pupil's radius as a share of the iris's.
 const PUPIL: float = 0.5
+## How far the iris may turn, as a share of the room between it and the corners.
 const TURN: float = 0.7
 ## How far from the eye the pointer must be for the gaze to turn all the way, in pixels.
 const LOOK_REACH: float = 360.0
-## Below this ink the eye is not drawn; a gaze or ink change under the steps is not drawn
-## again.
+## Below this ink the eye is not drawn.
 const LEAST_INK: float = 0.01
+## A gaze change under this, on either axis, is not drawn again.
 const LOOK_STEP: float = 0.02
+## An ink change under this is not drawn again.
 const INK_STEP: float = 0.01
+## The seed of the lids' unevenness, so every eye is shaped the same way.
 const SEED: int = 3307
 ## Every eye on screen, so the dread can wake them when they come to show.
 const GROUP: StringName = &"back_eyes"

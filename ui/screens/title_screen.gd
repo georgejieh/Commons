@@ -35,6 +35,7 @@ var _word: TitleWord = null
 var _arrives_in: float = 0.0
 
 
+## Builds the title and starts its arrival; call once when the screen is served.
 func open(app: App) -> void:
 	# The title reads the art's stage afresh, as a run's start does (ADR 0025).
 	ArtStages.latch(Saves.profile_service())

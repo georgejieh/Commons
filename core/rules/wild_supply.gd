@@ -6,6 +6,7 @@ extends RefCounted
 ## stand-ins: from the wild rank the hand holds fewer of, then the lower, so a larger
 ## group of a wild rank stays whole and the higher card stays for its own rank.
 
+## What fill returns for a reading these cards cannot spend.
 const NOTHING: PackedByteArray = []
 
 ## Printed counts with every wild rank at zero.
@@ -16,9 +17,10 @@ var wild: PackedByteArray = PackedByteArray()
 var total: int = 0
 ## The wild ranks the hand holds, in the order stand-ins are taken from them.
 var order: PackedByteArray = PackedByteArray()
-## For MoveGenerator: true in lean generation, and the ranks a kicker of wild cards alone
-## may read as in the kicker pool being built, in order.
+## For MoveGenerator: true in lean generation, which leaves out the plays is_lean refuses.
 var lean: bool = false
+## For MoveGenerator: the ranks a kicker of wild cards alone may read as in the kicker pool
+## being built, in order.
 var offered: PackedByteArray = PackedByteArray()
 
 

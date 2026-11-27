@@ -8,15 +8,22 @@ extends Control
 ## outside the slip cancels too. The table stays visible, a little dimmed, so the lifted
 ## cards can still be seen. Buttons sound as every button does.
 
+## Emitted with the reading the player picked; the selection is played that way.
 signal chosen(reading: Pattern)
+## Emitted when the slip closes, whether a reading was picked or the player cancelled.
 signal closed
 
-## The highest the slip's top may sit, under the HUD, and its gap from the cards.
+## The highest the slip's top may sit, under the HUD, in pixels.
 const TOP: float = 96.0
+## The slip's gap from the cards it asks about, in pixels.
 const GAP: float = 8.0
+## The slip's width in pixels.
 const WIDTH: float = 520.0
+## How dark the table goes behind the slip, as a colour with its opacity.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.45)
+## The slip's paper padding, in pixels.
 const PADDING: int = 22
+## The readings' type at Standard.
 const FONT_SIZE: int = 22
 
 ## Holds the slip and carries its fit, so the slip's own scale stays the entrance's.
@@ -129,10 +136,12 @@ func slip_rect() -> Rect2:
 	return _slip.get_global_rect()
 
 
+## The button of the reading at index, strongest first, for tests.
 func choice(index: int) -> Button:
 	return _buttons[index]
 
 
+## The slip's Cancel button, for tests.
 func cancel_button() -> Button:
 	return _cancel
 

@@ -3,8 +3,11 @@ extends RefCounted
 ## Reads one play from a count vector. Works from the masks of ranks holding 1, 2, 3
 ## and 4 cards, so a call is O(15) with no subset search. See ADR 0007.
 
+## The rank bits of the two jokers.
 const ROCKET_MASK: int = (1 << Ranks.SMALL_JOKER) | (1 << Ranks.BIG_JOKER)
+## The rank bits of the 2 and both jokers, which a wing may not be unless the rules allow.
 const TWO_AND_UP_MASK: int = (1 << Ranks.TWO) | ROCKET_MASK
+## The kickers of a play that carries none.
 const NO_KICKERS: PackedByteArray = []
 
 ## Index is a rank's card count. Counts above four land in the last slot.
@@ -18,6 +21,7 @@ func _init(rules: RuleSet, rank_map: PackedByteArray) -> void:
 	_rank_map = rank_map
 
 
+## Reads the counts as one play under the rules and the order, or says why they are none.
 static func classify(
 	counts: PackedByteArray, rules: RuleSet, rank_map: PackedByteArray
 ) -> Classification:

@@ -13,11 +13,17 @@ extends Control
 ## picking a stake moves nothing.
 ## With --demo it keeps its simple form and starts the demo.
 
+## The room, in pixels, between the page and the screen's edge.
 const PAGE_MARGIN: int = 40
+## The paper's inner padding, in pixels.
 const SHEET_PADDING: int = 26
+## The least size, in pixels, of a household paper, open or blank.
 const PAPER_MIN: Vector2 = Vector2(220, 210)
+## The font size of a household's name on its paper, at Standard.
 const NAME_SIZE: int = 26
+## The font size of the rules the chosen stake plays under, at Standard.
 const RULES_SIZE: int = 20
+## The font size of the inherited line and the stake's base rule, at Standard.
 const LINE_SIZE: int = 22
 ## Where the page has room to spare, the household papers stand this many times as tall
 ## as the room left under the rules.
@@ -45,6 +51,7 @@ var _start: Button
 var _back: Button
 
 
+## Builds the page, or the demo's simple form under --demo; call once when it is served.
 func open(app: App) -> void:
 	_app = app
 	if app.demo:
@@ -113,41 +120,47 @@ func _unhandled_input(event: InputEvent) -> void:
 		_app.back()
 
 
-## The household papers and stake tickets in order, and the chosen ones, for tests and
-## the playtest.
+## The household papers in order, for tests and the playtest.
 func papers() -> Array[AgedSheet]:
 	return _papers.duplicate()
 
 
+## The stake tickets in order, for tests and the playtest.
 func tickets() -> Array[StakeTicket]:
 	return _tickets.duplicate()
 
 
+## The id of the household chosen now, for tests and the playtest.
 func household() -> String:
 	return _household
 
 
+## The stake chosen now, as its level, for tests and the playtest.
 func stake() -> int:
 	return _stake
 
 
+## The rules shown for the chosen stake, for tests and the playtest.
 func rules_text() -> String:
 	return _rules.text
 
 
+## The scroll that holds the page's choices, for tests.
 func scroll() -> ScrollContainer:
 	return _scroll
 
 
+## The Start button, for tests and the playtest.
 func start_button() -> Button:
 	return _start
 
 
-## The seed Start will begin the run with, and the name the page gives the player.
+## The seed Start will begin the run with.
 func run_seed() -> int:
 	return _seed
 
 
+## The name the page gives the player, or empty on the demo's form; for tests and the playtest.
 func player_name() -> String:
 	return _view.player_name if _view != null else ""
 

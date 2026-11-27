@@ -8,10 +8,16 @@ extends RefCounted
 
 ## Warm, like the other village papers, so a leaflet never reads as greyed out.
 const PAPER: Color = Color("ecd7a2")
+## The darker tone of an empty place's fill and of a folded note's lower half.
 const SHADE: Color = Color("c9b68a")
+## The head band of a private Campaign's leaflet.
 const PRIVATE_BAND: Color = Color("2b2622")
+## The seed each sheet's wear is drawn from, with its index added, so a sheet looks the same each
+## time.
 const SEED: int = 7907
+## The fewest foxing specks a sheet carries, at corruption stage 0, and the most, at the worst.
 const FOXING: Vector2i = Vector2i(6, 40)
+## The fewest tea rings a sheet carries, at corruption stage 0, and the most, at the worst.
 const STAINS: Vector2i = Vector2i(1, 4)
 
 

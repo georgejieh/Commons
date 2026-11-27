@@ -5,17 +5,23 @@ extends RefCounted
 ## pointed paper in an open envelope). Nothing is clean (art/STYLE.md): the gilt is laid
 ## in uneven strokes at stage 0, and at each corruption stage more of it has flaked off.
 
+## The gilt's color.
 const GILT: Color = Color("f6c955")
+## The dark line laid under the frame, so it reads over any picture.
 const UNDER: Color = Color(0.09, 0.07, 0.05, 0.6)
+## The frame's stroke width, in pixels.
 const WIDTH: float = 4.0
+## How round the frame's corners are, in pixels.
 const RADIUS: float = 10.0
 ## How many passes paint the halo.
 const PASSES: int = 4
 ## The frame is laid in strokes about this long, each a little thicker or thinner.
 const STROKE: float = 16.0
+## How far a stroke's thickness varies either way, as a share of the width.
 const UNEVEN: float = 0.22
 ## The share of strokes flaked off per corruption stage.
 const FLAKED_PER_STAGE: float = 0.035
+## Seeds the strokes' randomness, so a frame draws the same each time.
 const SEED: int = 2617
 
 

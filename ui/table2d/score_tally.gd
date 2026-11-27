@@ -7,28 +7,41 @@ extends HBoxContainer
 ## Chits are made once; the tally only scales and fades its chits, and shakes as a whole,
 ## so the table can keep all its motion inside the room it gives it.
 
+## Emitted when the total has landed, with its text, so the table can send it to the ledger.
 signal landed(total_text: String)
 
-## A chit's least size, and its padding inside the paper's printed border.
+## A chit's least size, in pixels.
 const TILE: Vector2 = Vector2(96, 70)
+## A chit's padding inside the paper's printed border, in pixels.
 const PADDING: int = 18
+## The figures' type at Standard.
 const VALUE_SIZE: int = 26
+## The total's type at Standard.
 const TOTAL_SIZE: int = 30
+## The signs' type at Standard, the × and = between the chits.
 const SIGN_SIZE: int = 24
 ## The caption under each figure, smaller than the theme's eyebrow so the chit stays low.
 const CAPTION_SIZE: int = 14
+## The gap between the chits, in pixels.
 const GAP: int = 6
-## How long the total stands once it lands before the tally fades. HELD is the share of
-## that the table waits through, so the next play never starts over a total not yet read.
+## How long the total stands once it lands before the tally fades, in seconds.
 const LINGER: float = 0.9
+## The share of LINGER the table waits through, so the next play never starts over a total
+## not yet read.
 const HELD: float = 0.5
+## Seconds the tally takes to fade.
 const FADE: float = 0.2
+## The keywords the three figures are captioned with, in the order of the chits.
 const WORDS: PackedStringArray = ["grain", "rate", "zeal"]
+## A total that is the plain product, as a percent.
 const WHOLE: int = 100
-## The chits by place: Grain, Rate, Zeal, then the total.
+## The chits by place: Grain first.
 const GRAIN: int = 0
+## The Rate's chit.
 const RATE: int = 1
+## The Zeal's chit.
 const ZEAL: int = 2
+## The total's chit.
 const TOTAL: int = 3
 
 var _values: Array[Label] = []
@@ -150,6 +163,7 @@ static func read_time(pace: float) -> float:
 	return LINGER * HELD * minf(pace, 1.0)
 
 
+## Stops the tally and hides it at once.
 func clear() -> void:
 	_stop()
 	visible = false

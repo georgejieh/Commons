@@ -3,10 +3,13 @@ extends RefCounted
 ## Everything any seat may know about a round. Every field is an independent copy with
 ## no link back to the round, so changing a view changes nothing and reaches no hand.
 
+## The landlord's seat.
 var landlord: int
+## The seat whose turn it is, or Seats.NONE once the round is over.
 var seat_to_act: int
 ## Cards left per seat.
 var remaining: PackedInt32Array
+## Every play and pass so far, in order.
 var history: Array[PublicPlay]
 ## Rank counts of the revealed kitty.
 var kitty_counts: PackedByteArray

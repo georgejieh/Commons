@@ -3,6 +3,7 @@ extends Control
 ## The demo's last screen.
 
 
+## Builds the page for app, with a button back to the title that has the focus.
 func open(app: App) -> void:
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER

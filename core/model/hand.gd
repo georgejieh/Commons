@@ -50,6 +50,7 @@ func find(card_id: int) -> CardInstance:
 	return _cards[_index_by_id[card_id]]
 
 
+## The number of cards in the hand, kept current as cards come and go.
 func size() -> int:
 	return _cards.size()
 
@@ -59,6 +60,7 @@ func counts() -> PackedByteArray:
 	return _counts.duplicate()
 
 
+## A mask with a bit set for each rank the hand holds at least one card of.
 func rank_mask() -> int:
 	return _rank_mask
 
@@ -75,5 +77,6 @@ func stamp_mask(seat: int) -> int:
 	return stamped & ~plain
 
 
+## A copy of the hand's cards in no fixed order, so changing it leaves the hand as it is.
 func cards() -> Array[CardInstance]:
 	return _cards.duplicate()

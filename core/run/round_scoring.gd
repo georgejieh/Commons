@@ -28,6 +28,8 @@ func _init(levels: HandLevels, stack: ModifierStack) -> void:
 	_stack = stack
 
 
+## Begins a round under this landlord seat and Year, with every seat's score and play count
+## cleared.
 func start(landlord: int, year: int = 0) -> void:
 	_landlord = landlord
 	_year = year
@@ -49,14 +51,17 @@ func score(event: RoundEvent, cards_left: int = -1) -> float:
 	return total
 
 
+## The Grain of the play scored or previewed last.
 func last_grain() -> float:
 	return _last_grain
 
 
+## The Rate of the play scored or previewed last.
 func last_rate() -> float:
 	return _last_rate
 
 
+## The Zeal of the play scored or previewed last.
 func last_zeal() -> float:
 	return _last_zeal
 
@@ -76,6 +81,7 @@ func last_surplus_cards() -> Array[int]:
 	return _last_surplus
 
 
+## Each seat's score so far this round, indexed by seat.
 func scores() -> PackedFloat64Array:
 	return _scores
 

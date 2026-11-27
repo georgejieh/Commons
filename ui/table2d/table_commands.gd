@@ -6,10 +6,11 @@ extends RefCounted
 ## asks the gate first; during the arrival only the step's own action passes, and a
 ## refused press does nothing (ADR 0026).
 
-## What the prompt line says in place of the hand's reading, or "" to leave the reading.
-## Sitting out is asked first, then an armed Campaign or the opening; the first that says
-## something is shown. Unset, each says nothing.
+## What the prompt line says in place of the hand's reading while sitting out, or "" to
+## leave the reading. Asked first, before campaign_prompt; unset, it says nothing.
 var sit_out_prompt: Callable = Callable()
+## What the prompt line says in place of the hand's reading for an armed Campaign or the
+## opening, or "" to leave the reading. Asked after sit_out_prompt; unset, it says nothing.
 var campaign_prompt: Callable = Callable()
 ## Asked with an action's name and detail before it is sent; false refuses it. Unset, all
 ## pass.
@@ -32,6 +33,8 @@ var _names: Dictionary[int, String] = {}
 var _picking: Array[int] = []
 
 
+## Wires the action bar, the need panel, the hand and the event queue to the run controller, and
+## keeps the bar's reading and buttons in step.
 func setup(
 	controller: RunController,
 	hand: HandModel,

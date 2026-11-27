@@ -4,11 +4,15 @@ extends RefCounted
 ## for a locked one only the line saying when it opens. A locked sheet carries nothing
 ## else, so no view of it can name the item.
 
+## The item's ID; empty for a locked sheet.
 var id: String = ""
 ## The item's place in its list, such as a stake's number.
 var index: int = 0
+## True for an item the profile has opened.
 var open: bool = false
+## The open item's name; empty for a locked sheet.
 var name: String = ""
+## The open item's rules; empty for a locked sheet.
 var text: String = ""
 ## A Cadre's ID for its art, or empty for an item with none.
 var art_id: String = ""

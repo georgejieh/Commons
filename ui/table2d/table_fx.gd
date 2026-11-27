@@ -7,13 +7,20 @@ extends Control
 ## reduced motion, standing still, since it says what the tally's figures only show the sum
 ## of.
 
+## How many flying figures are made, so that many can be in flight at once.
 const FLIERS: int = 6
+## A flying figure's type at Standard.
 const FLY_SIZE: int = 38
+## Seconds a figure takes to fly from the tally to the ledger.
 const FLY_TIME: float = 0.5
+## How many tags are made, so that many can show at once.
 const TAGS: int = 6
+## A tag's type at Standard.
 const TAG_SIZE: int = 22
 ## A tag stands this far above what it labels, and never higher than the bar's foot.
 const TAG_GAP: float = 4.0
+## The least y a tag may stand at, the bar's foot, in pixels; below it, a tag goes under what it
+## labels.
 const TAG_TOP: float = 82.0
 
 var _fliers: Array[Label] = []

@@ -11,20 +11,31 @@ const FAMINE_SOURCE: String = "campaign_famine"
 ## The meter row a Campaign's Denunciation moves through; its amount is the Campaign's.
 const DENUNCIATION_SOURCE: String = "campaign_denunciation"
 
+## The Campaign being used; its parameters and timing are read from it.
 var definition: CampaignDef
+## The run's state, which a Campaign changes when it applies.
 var state: RunState
 ## Null in a shop.
 var round_state: RoundState = null
+## The round's seat rules, for a Campaign that changes what is wild or reads a rank order.
 var table: SeatRules
+## The modifier stack of the Set; a Campaign may switch an entry off in it.
 var stack: ModifierStack
+## The meter table a Campaign's Famine or Denunciation moves through.
 var meters: MeterTable
+## The run's parameters, read when a meter moves.
 var params: RunParams
+## What Campaigns hold in force this round; effects set and read it.
 var flags: CampaignRound
+## The Set's event log, where every event a Campaign makes goes.
 var set_log: SetLog
+## Where the run stands: between rounds, at the opening, on a turn or in a shop.
 var moment: Moment = Moment.ELSEWHERE
 ## True before the round's first play.
 var opening: bool = false
+## The IDs of the cards the player chose for this use; empty for a Campaign that takes none.
 var card_ids: Array[int] = []
+## The player's seat.
 var player: int = 0
 ## The Quota's target in force now, 0 when the loop gave none (ADR 0032).
 var target: float = 0.0
@@ -43,10 +54,12 @@ func seat_table(seat: int) -> BotTable:
 	return BotTable.of_seat(table, seat)
 
 
+## Logs an event in the Set's log.
 func add_event(event: RunEvent) -> void:
 	set_log.add(event)
 
 
+## Raises Resentment by amount for a Campaign; 0 does nothing.
 func resent(amount: int) -> void:
 	if amount != 0:
 		Resentment.add(state, amount, Resentment.CAMPAIGN, RunDefaults.RESENTMENT, set_log.events())

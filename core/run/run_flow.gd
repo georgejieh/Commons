@@ -3,6 +3,7 @@ extends RefCounted
 ## The run's states and the one table of moves between them. Any other move is refused
 ## with a reason code and changes nothing.
 
+## The states a run can be in; TRANSITIONS says which lead to which.
 enum State {
 	RUN_START,
 	SET_INTRO,
@@ -18,6 +19,7 @@ enum State {
 	RUN_END,
 	REEDUCATION,
 }
+## Why move() refused; OK means it moved.
 enum Reason { OK, ILLEGAL_TRANSITION }
 
 ## Bidding loops on itself for a redeal. A round ends in bidding when the landlord lost,
@@ -45,14 +47,17 @@ func _init(start: State = State.RUN_START) -> void:
 	_state = start
 
 
+## True when the table has a move from one state to the other.
 static func allows(from: State, to: State) -> bool:
 	return TRANSITIONS[from].has(to)
 
 
+## The state the run is in now.
 func state() -> State:
 	return _state
 
 
+## Moves to a state the table allows from the current one; otherwise refuses and changes nothing.
 func move(to: State) -> Reason:
 	if not allows(_state, to):
 		return Reason.ILLEGAL_TRANSITION

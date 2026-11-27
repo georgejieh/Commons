@@ -3,6 +3,7 @@ extends RefCounted
 ## Chooses a response to the play on the table.
 
 
+## The reply to the play on the table, by the first rule that applies. A pass is a play.
 static func choose(position: BotPosition, legal: Array[Pattern]) -> BotPlay:
 	var whole: Pattern = position.going_out(legal)
 	if whole != null:

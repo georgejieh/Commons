@@ -10,14 +10,16 @@ const YEARS: String = "years"
 ## The rank a Cadre picked when bought, for the Cadres that need one.
 const RANK: String = "rank"
 
-## Set when the effect fired in a way the player should see, with the amount it fired
-## for. The run loop logs it as CADRE_FIRED and clears it. Never saved.
+## Set when the effect fired in a way the player should see. The run loop logs it as
+## CADRE_FIRED and clears it. Never saved.
 var fired: bool = false
+## The amount the effect fired for, summed since the run loop last cleared it. Never saved.
 var fired_amount: int = 0
 
 var _values: Dictionary[String, int] = {}
 
 
+## Builds a memo from a saved map of names to numbers; any number is made a whole one.
 static func from_dict(data: Dictionary) -> CadreMemo:
 	var memo: CadreMemo = CadreMemo.new()
 	for key: Variant in data:
@@ -36,22 +38,27 @@ static func is_valid(read: Variant) -> bool:
 	return true
 
 
+## The memo's values as a map of names to ints, a copy, for the save.
 func to_dict() -> Dictionary:
 	return _values.duplicate()
 
 
+## A new memo with the same values, for a preview that must not change the real one.
 func copy() -> CadreMemo:
 	return CadreMemo.from_dict(to_dict())
 
 
+## True when the name has been put or added to.
 func has(key: String) -> bool:
 	return _values.has(key)
 
 
+## The whole number held under the name, or fallback when it has none.
 func value(key: String, fallback: int = 0) -> int:
 	return _values.get(key, fallback)
 
 
+## Sets the number held under the name, replacing any.
 func put(key: String, amount: int) -> void:
 	_values[key] = amount
 

@@ -10,41 +10,56 @@ extends Control
 
 ## Hovered or focused: the screen should explain this item.
 signal pointed(index: int)
+## Sent with the item's index when it is kept, by a click or by accept while it has the focus.
 signal kept(index: int)
 
+## The scene a plot card's face is made from, the same face the table draws.
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
-## The item's place with up to three choices, and with four or more. Each is a little
-## wider for its height than a Campaign's leaflet, the widest item, so a leaflet, a card
-## and a document all stand the place's full height and line up.
+## The item's place with up to three choices. It is a little wider for its height than a
+## Campaign's leaflet, the widest item, so a leaflet, a card and a document all stand the
+## place's full height and line up.
 const ITEM_FEW: Vector2 = Vector2(270, 340)
+## The item's place with four or more choices.
 const ITEM_MANY: Vector2 = Vector2(238, 300)
+## The most choices that still get the larger place, ITEM_FEW.
 const FEW: int = 3
-## The caption strip's height under the item, and the gap between them.
+## The caption strip's height under the item, in pixels.
 const CAPTION_HEIGHT: float = 92.0
+## The gap between the item and its caption strip, in pixels.
 const GAP: float = 8.0
 ## Room over the item for it to lift into with its tag, so a pointed paper never leaves
-## its own box; how far it lifts and grows, and how long that takes.
+## its own box.
 const LIFT_ROOM: float = 40.0
+## How far a pointed item lifts, in pixels.
 const LIFT: float = 12.0
+## How much larger a pointed item grows, as a scale.
 const LIFT_SCALE: float = 1.04
+## Seconds a pointed item takes to lift or settle.
 const LIFT_TIME: float = 0.16
-## The frame's stand-off from the item, its halo, and the Keep tag's side margins.
+## How far the gilt frame stands off the item, in pixels.
 const FRAME_OFF: float = 5.0
+## How far the gilt frame's halo reaches out, in pixels.
 const HALO_REACH: float = 10.0
+## The Keep tag's side margins, in pixels.
 const TAG_MARGIN: int = 12
+## The size of a Directive's name at full size and Standard text, before it shrinks to one line.
 const NAME_SIZE: int = 26
 ## A Directive's Rate lines, never under 16 px.
 const LINE_SIZE: int = 16
+## The size of the caption under the item, at Standard text.
 const CAPTION_SIZE: int = 17
+## The padding of the caption strip's paper, in pixels.
 const CAPTION_PADDING: int = 20
-## A Directive document's padding, clear of the paper's printed border (17 px), and the
-## room that padding takes from its name.
+## A Directive document's padding, clear of the paper's printed border (17 px).
 const DOCUMENT_PADDING: int = 20
+## The room a Directive document's padding and border take from its name's width, in pixels.
 const DOCUMENT_INSET: float = 44.0
+## The smallest a Directive's name is set to keep one line, at Standard text.
 const DOCUMENT_NAME_LEAST: int = 18
 ## A refusal is dark red ink, a caption dark ink.
 const REFUSED_INK: Color = Color("7a160d")
 
+## The item's place among the envelope's choices, from 0, sent with pointed and kept.
 var index: int = -1
 ## The item's own button: no face, the size of the item, over it.
 var keep: Button = Button.new()
@@ -57,6 +72,7 @@ var lift: float = 0.0:
 		queue_redraw()
 ## What the screen's explanation shows: the item's name and its full rules.
 var title: String = ""
+## The item's full rules, for the slip that explains it.
 var rule: String = ""
 ## The Directive's Rate lines, to tick when it is issued; empty for anything else.
 var lines: Array[Label] = []
@@ -192,10 +208,11 @@ func show_directive(controller: RunController, directive_id: String) -> void:
 ## to the size it has at Standard.
 func _fit_lines(sheet: VBoxContainer, name_label: Label) -> void:
 	var wide: float = item_size.x - DOCUMENT_PADDING * 2.0
+	var tall: float = item_size.y - DOCUMENT_PADDING * 2.0
 	var fits: Callable = func(font_size: int) -> bool:
 		for line: Label in lines:
 			line.add_theme_font_size_override("font_size", font_size)
-		return _document_height(sheet, wide) <= item_size.y
+		return ColumnMeasure.height(sheet, wide) <= tall
 	var line_px: int = TextSize.fit(LINE_SIZE, LINE_SIZE, fits)
 	fits.call(line_px)
 	var font: Font = name_label.get_theme_font("font")
@@ -204,37 +221,9 @@ func _fit_lines(sheet: VBoxContainer, name_label: Label) -> void:
 		font, name_label.text, wide_name, NAME_SIZE, TextSize.least(DOCUMENT_NAME_LEAST)
 	)
 	var name_px: int = name_label.get_theme_font_size("font_size")
-	while name_px > least and _document_height(sheet, wide) > item_size.y:
+	while name_px > least and ColumnMeasure.height(sheet, wide) > tall:
 		name_px -= 1
 		name_label.add_theme_font_size_override("font_size", maxi(name_px, TextSize.least(least)))
-
-
-## How tall the document's column stands with its wrapped lines set wide, before it is
-## laid out: its pieces, the gaps between them and its padding.
-func _document_height(sheet: VBoxContainer, wide: float) -> float:
-	var tall: float = DOCUMENT_PADDING * 2.0
-	var gap: float = float(sheet.get_theme_constant("separation"))
-	for child: Node in sheet.get_children():
-		var piece: Control = child as Control
-		var label: Label = piece as Label
-		if label != null and label.autowrap_mode != TextServer.AUTOWRAP_OFF:
-			tall += _wrapped_height(label, wide) + gap
-		else:
-			tall += piece.get_combined_minimum_size().y + gap
-	return tall - gap
-
-
-## How tall a label wrapping between words stands at width wide, from its font.
-static func _wrapped_height(label: Label, wide: float) -> float:
-	var font: Font = label.get_theme_font("font")
-	var font_size: int = label.get_theme_font_size("font_size")
-	var spacing: float = float(label.get_theme_constant("line_spacing"))
-	var flags: int = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND
-	var block: Vector2 = font.get_multiline_string_size(
-		label.text, HORIZONTAL_ALIGNMENT_LEFT, wide, font_size, -1, flags
-	)
-	var rows: int = maxi(roundi(block.y / font.get_height(font_size)), 1)
-	return rows * font.get_height(font_size) + (rows - 1) * spacing
 
 
 ## Sets a Directive's name on one line where a size from NAME_SIZE down to
@@ -284,6 +273,7 @@ func set_takeable(can: bool, why: String) -> void:
 		_say(why, REFUSED_INK)
 
 
+## True while the item can be kept now; false when a caption says why not.
 func is_takeable() -> bool:
 	return _takeable
 
@@ -293,10 +283,12 @@ func caption() -> String:
 	return _caption.text
 
 
+## The caption's label, for tests.
 func caption_label() -> Label:
 	return _caption
 
 
+## The paper strip the caption is printed on, for tests.
 func caption_strip() -> PanelContainer:
 	return _strip
 
@@ -332,6 +324,7 @@ func is_pointed() -> bool:
 	return _cursor
 
 
+## True while the Keep tag shows on a pointed item that can be kept, for tests.
 func shows_keep_tag() -> bool:
 	return _tag.visible
 

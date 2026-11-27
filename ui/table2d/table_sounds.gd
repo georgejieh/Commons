@@ -9,6 +9,8 @@ extends RefCounted
 const METERS: MeterTable = preload("res://data/run/meters.tres")
 
 
+## Plays the sound for event; landlord is the seat holding the land, and controller gives the run a
+## meter's change is read against.
 static func play(event: RunEvent, landlord: int, controller: RunController) -> void:
 	if event.type != RunEvent.Type.METER_CHANGED:
 		Audio.play(AudioEvents.name_for(event, landlord))

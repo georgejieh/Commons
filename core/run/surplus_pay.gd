@@ -9,6 +9,7 @@ extends RefCounted
 var _paid: int = 0
 
 
+## Starts the deal's count of coupons paid again.
 func start_round() -> void:
 	_paid = 0
 

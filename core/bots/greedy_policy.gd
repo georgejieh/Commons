@@ -4,6 +4,7 @@ extends RefCounted
 ## lowest play that beats the table. Bombs wait for an opponent about to go out.
 
 
+## The Easy tier's play for the position, a lead or a reply.
 static func choose(
 	view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig
 ) -> BotPlay:

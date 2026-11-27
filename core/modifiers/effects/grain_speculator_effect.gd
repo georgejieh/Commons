@@ -4,14 +4,18 @@ extends ModifierEffect
 ## on top of what every step pays and adds (ADR 0032). The norm's own rise is left as it
 ## is.
 
+## Parameter key: the coupons each step beaten by pays.
 const COUPONS: String = "coupons"
+## Parameter key: the Resentment each step beaten by adds.
 const RESENTMENT: String = "resentment"
 
 
+## Needs the coupons and the Resentment per step.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray([COUPONS, RESENTMENT])
 
 
+## Pays and adds for every step a met Quota beat its target by.
 func set_end(context: SetContext) -> void:
 	if context.over_steps <= 0:
 		return

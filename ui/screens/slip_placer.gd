@@ -19,14 +19,15 @@ const REACH: float = 24.0
 const STEP: float = 24.0
 ## How much of a slip stays level with the thing when it slides along a side.
 const OVERLAP: float = 48.0
-## A pixel of the slip on the thing costs more than anything else can; a pixel past REACH
-## next; a pixel on another button next; then each place down the order of sides; then a
-## pixel slid along a side.
+## The cost of each pixel of area the slip lies on the thing it explains, dearer than any other.
 const ON_THING: float = 1.0e9
+## The cost of each pixel the slip stands past REACH from the thing.
 const TOO_FAR: float = 1.0e7
 ## A pixel on a control kept clear costs more than taking another side.
 const ON_KEPT: float = 1.0e6
+## The cost of each pixel of area the slip covers on another button.
 const ON_BUTTON: float = 1.0e3
+## The cost of each place down the order of sides; a pixel slid along a side costs one.
 const SIDE_STEP: float = 1.0e5
 ## Kept clear around a button, so a slip's edge never lies on one.
 const BUTTON_CLEAR: float = 4.0

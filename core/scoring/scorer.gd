@@ -13,14 +13,17 @@ extends RefCounted
 ## card is body or kicker by where the reading puts it (PlayPlacement); Rate comes from
 ## the reading's type.
 
+## The scoring numbers from data, used when a caller gives none.
 const DEFAULT_PARAMS: ScoreParams = preload("res://data/scoring/default_scoring.tres")
 ## Largest value the display can show. NaN and infinity clamp to it.
 const MAX_SCORE: float = 1e300
 ## Every play's Zeal before hooks change it.
 const STARTING_ZEAL: float = 1.0
+## The divisor that turns a whole-number percent into a fraction.
 const PERCENT: float = 100.0
 
 
+## Scores a play through the stack's hooks; record keeps each change as the breakdown's trail.
 static func score_play(
 	cards: Array[CardInstance],
 	pattern: Pattern,
@@ -100,6 +103,7 @@ static func round_total(score: float, multiplier: float) -> float:
 	return clamp_score(score * multiplier)
 
 
+## The score kept within MAX_SCORE either way; NaN and infinity become MAX_SCORE.
 static func clamp_score(value: float) -> float:
 	if is_nan(value) or value > MAX_SCORE:
 		return MAX_SCORE

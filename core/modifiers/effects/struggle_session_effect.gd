@@ -4,6 +4,7 @@ extends ModifierEffect
 ## exchange for the kitty's lowest card, so every card stays in play.
 
 
+## Swaps the holder's highest card for the kitty's lowest.
 func on_deal(context: DealContext) -> void:
 	var hand: Hand = context.deal.hands[holder_seat]
 	if hand.size() == 0 or context.deal.kitty.is_empty():

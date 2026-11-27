@@ -10,7 +10,9 @@ extends RefCounted
 ## time when the game starts, so by the time this runs that copy is the newest of them
 ## that holds the game's start line.
 
+## The folder the crash folders are made in.
 const ROOT: String = "user://crashes"
+## The project setting that holds the engine's live log path.
 const LOG_PATH_SETTING: String = "debug/file_logging/log_path"
 ## How far into a log its start line is looked for: past the engine's own first lines.
 const START_LINES: int = 40

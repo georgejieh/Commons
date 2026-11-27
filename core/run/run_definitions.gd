@@ -6,9 +6,13 @@ extends RefCounted
 ## only: index one for an ID that must exist, or get() one that may not. A shop counter
 ## looks up in the pool it was given instead, since the arrival and tests hand it others.
 
+## Every debuff, Cadre and boss by ID.
 static var modifiers: Dictionary[String, ModifierDef] = _modifiers()
+## Every Directive by ID.
 static var directives: Dictionary[String, DirectiveDef] = _directives()
+## Every Campaign of both counters by ID.
 static var campaigns: Dictionary[String, CampaignDef] = _campaigns()
+## Every Reform by ID.
 static var reforms: Dictionary[String, ReformDef] = _reforms()
 
 

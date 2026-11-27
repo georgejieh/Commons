@@ -8,27 +8,41 @@ extends Control
 ## tint. A die at or below the audit faces gets a red ring and a hop; the others stay
 ## as they landed. Then the bowl lifts away. Reduced motion shows the settled dice at once.
 
+## How many faces a die has.
 const SIDES: int = 6
+## The bowl's radius in pixels when settled.
 const RADIUS: float = 190.0
+## A die's side in pixels.
 const DIE: float = 70.0
-## Seconds for the bowl to drop in, the dice to tumble, the settled dice to hold, the
-## audited die to hop within that hold, and the bowl to lift away.
+## Seconds for the bowl to drop in.
 const DROP: float = 0.2
+## Seconds for the dice to tumble.
 const ROLL: float = 0.9
+## Seconds the settled dice are held.
 const REST: float = 0.3
+## Seconds for the audited die to hop, within the hold.
 const HOP: float = 0.24
+## Seconds for the bowl to lift away.
 const LIFT: float = 0.2
 ## The bowl lands from this much larger, as if dropped from above.
 const DROP_FROM: float = 1.45
+## How dark the room goes behind the bowl, from 0 to 1.
 const DIM: float = 0.3
-## Face changes while a die tumbles, and the bounces it makes.
+## Face changes while a die tumbles.
 const FLIPS: int = 9
+## The bounces a die makes while it tumbles.
 const BOUNCES: float = 3.5
+## The bowl's white porcelain.
 const PORCELAIN: Color = Color("f5f7f9")
+## The glaze shading the bowl's wall.
 const GLAZE: Color = Color("dfe6f0")
+## The cobalt of the bowl's rim band, its foot ring and its flower.
 const COBALT: Color = Color("1f3f8f")
+## The paler cobalt of the bowl's flower and details.
 const COBALT_SOFT: Color = Color("6f8cc4")
+## The red of the one and the four's pips and of a ring round an audited die.
 const PIP_RED: Color = Color("c0221a")
+## The shadow under the bowl and the dice.
 const SHADOW: Color = Color(0.08, 0.06, 0.04, 0.32)
 ## Each seat's die and tag: the player ivory, seat 1 celadon, seat 2 pale indigo.
 const TINTS: Dictionary[int, Color] = {
@@ -36,6 +50,7 @@ const TINTS: Dictionary[int, Color] = {
 	1: Color("b9d6c2"),
 	2: Color("b7c3e0"),
 }
+## The name tag's type at Standard.
 const TAG_SIZE: int = 22
 ## The name tag's height at Standard; it grows with the text.
 const TAG_TALL: float = 32.0
@@ -66,11 +81,13 @@ const PIPS: Dictionary[int, Array] = {
 
 ## Where the bowl's middle sits.
 var center: Vector2 = Vector2.ZERO
-## How far the bowl has dropped in, the dice have tumbled, the audited dice have hopped
-## and the bowl has lifted away, each from 0 to 1. Tweened; everything is drawn from them.
+## How far the bowl has dropped in, from 0 to 1. Tweened; everything is drawn from it.
 var drop: float = 0.0
+## How far the dice have tumbled, from 0 to 1. Tweened; the dice are drawn from it.
 var tumble: float = 0.0
+## How far the audited dice have hopped, from 0 to 1. Tweened; the dice are drawn from it.
 var hop: float = 0.0
+## How far the bowl has lifted away, from 0 to 1. Tweened; everything is drawn from it.
 var lift: float = 0.0
 
 var _seats: Array[int] = []
@@ -153,6 +170,7 @@ func dismiss() -> void:
 	_hide()
 
 
+## True while the bowl is on screen, from its drop until it has lifted away.
 func is_showing() -> bool:
 	return visible
 

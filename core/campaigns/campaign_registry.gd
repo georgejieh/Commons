@@ -3,6 +3,7 @@ extends RefCounted
 ## Maps Campaign IDs to effect scripts. Definitions stay data; behaviour stays here.
 
 
+## True when a Campaign ID has an effect script; a definition without one is a data error.
 static func has_effect(campaign_id: String) -> bool:
 	return _build(campaign_id) != null
 

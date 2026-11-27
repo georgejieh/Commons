@@ -10,11 +10,17 @@ extends RefCounted
 ## lower, the true meter stays and keeps counting, and the meter goes dark. The norm is
 ## the same: higher is accepted, lower leaves the true norm and goes dark.
 
+## The coupons a books command reports.
 const COUPONS: String = "coupons"
+## The progress toward the Quota's target a books command reports.
 const PROGRESS: String = "progress"
+## The Famine meter a books command reports.
 const FAMINE: String = "famine"
+## The Denunciation meter a books command reports.
 const DENUNCIATION: String = "denunciation"
+## The Resentment a books command reports.
 const RESENTMENT: String = "resentment"
+## The norm a books command reports: the overfulfilment steps, as RunState.norm_steps.
 const NORM: String = "norm"
 ## Every figure the books can correct, in the order a correction applies them.
 const FIGURES: Array[String] = [COUPONS, PROGRESS, FAMINE, DENUNCIATION, RESENTMENT, NORM]

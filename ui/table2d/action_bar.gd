@@ -15,15 +15,26 @@ const TOGGLE_SIZE: int = 18
 ## The prompt's type at Standard.
 const PROMPT_SIZE: int = 24
 
+## The prompt line over the buttons: the selection's reading and projected score, or the bid.
 var reading: Label = Label.new()
+## Plays the selected cards; the primary button of the turn row.
 var play: Button = Button.new()
+## Passes the turn, beside Sit out; hidden while bidding.
 var pass_turn: Button = Button.new()
+## Sits the round out when nothing held can answer the trick; hidden unless offered.
 var sit_out: Button = Button.new()
+## Toggles the hint; shown only while the hint setting is on.
 var hint: Button = Button.new()
+## Cycles how the hand is sorted; its label names the mode.
 var sort: Button = Button.new()
+## Toggles the rules cheat sheet.
 var rules: Button = Button.new()
+## Calls the landlord; shown only while bidding, beside Decline.
 var call_landlord: Button = Button.new()
+## Declines to call the landlord; shown only while bidding.
 var decline: Button = Button.new()
+## Plays on from the opening before the first play; hidden except there, where a Campaign may be
+## used.
 var play_on: Button = Button.new()
 
 var _turn_row: VBoxContainer = VBoxContainer.new()
@@ -179,6 +190,7 @@ func _width(text: String, font_size: int) -> float:
 	return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 
 
+## Swaps Call and Decline in for the turn row while on, and hides Play on either way.
 func show_bidding(on: bool) -> void:
 	_bid_row.visible = on
 	_turn_row.visible = not on

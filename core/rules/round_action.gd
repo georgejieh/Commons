@@ -4,8 +4,11 @@ extends RefCounted
 ## name its reading (ADR 0029); with none, the strongest reading the round allows stands,
 ## which is the only one unless a wild card is among the cards.
 
+## The seat acting.
 var seat: int
+## The IDs of the cards played; empty for a pass.
 var card_ids: Array[int]
+## The reading the seat names for its cards, or null to take the strongest the round allows.
 var reading: Pattern = null
 
 
@@ -14,6 +17,7 @@ func _init(acting_seat: int, cards: Array[int] = []) -> void:
 	card_ids = cards
 
 
+## A play of the cards, as the seat holds them.
 static func from_cards(acting_seat: int, cards: Array[CardInstance]) -> RoundAction:
 	var ids: Array[int] = []
 	for card: CardInstance in cards:

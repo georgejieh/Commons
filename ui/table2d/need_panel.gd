@@ -6,18 +6,21 @@ extends PanelContainer
 ## split in proportion to the two needs, and equal needs split it evenly. A claim above the
 ## fair half is a lie, and an audit that catches it costs Denunciation.
 
+## Emitted with the need the player declares when they press Declare.
 signal declared(need: int)
 
 ## Wide enough that the claim's lines wrap once at most at Standard, so the sheet stays
 ## clear of the seats above it and short over the hand.
 const WIDTH: float = 520.0
+## The Declare button's width, in pixels.
 const DECLARE_WIDTH: float = 240.0
 
 ## Where the panel's middle sits; it grows and shrinks around this point.
 var center: Vector2 = Vector2.ZERO
-## The lowest its foot may stand and the highest its head, when set: a taller sheet, as at
-## the largest text size, grows up over the table and never down over the hand.
+## The lowest its foot may stand, when set: a taller sheet, as at the largest text size,
+## grows up over the table and never down over the hand.
 var foot: float = 0.0
+## The highest its head may stand, when set, so a taller sheet never grows up over the seats.
 var head: float = 0.0
 
 ## The claim, as a share of the pool.

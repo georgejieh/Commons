@@ -9,25 +9,44 @@ extends Control
 ## long as it runs and is taken down at once by the next, so nothing outlives it. Quiet
 ## events, from a replay or a skip, leave only the end state.
 
+## The scale the used leaflet is lifted to before it is slapped back down.
 const SLAP_SCALE: float = 1.35
+## Seconds the leaflet takes to lift.
 const LIFT_TIME: float = 0.14
+## Seconds the leaflet takes to slap back down.
 const SLAM_TIME: float = 0.1
+## Seconds the sealed leaflet is held before it fades.
 const SEAL_HOLD: float = 0.45
+## Seconds the sealed leaflet takes to fade.
 const FADE_TIME: float = 0.2
+## The ink seal's width in pixels.
 const SEAL_WIDTH: float = 96.0
+## The scale a mark starts at before it is pressed onto its card.
 const PRESS_FROM: float = 3.2
+## Seconds a mark takes to press onto its card.
 const PRESS_TIME: float = 0.16
+## Seconds between one card's mark being pressed and the next.
 const PRESS_STAGGER: float = 0.1
+## Seconds a card or a coupon ticket takes to fly.
 const FLY_TIME: float = 0.42
+## Seconds between one flying card setting off and the next.
 const FLY_STAGGER: float = 0.08
+## The folded note's size in pixels.
 const NOTE_SIZE: Vector2 = Vector2(54, 38)
+## Seconds the folded note takes to slide to the next seat.
 const NOTE_TIME: float = 0.45
+## How many tickets fly to the counter at most, however many coupons are earned.
 const TICKETS: int = 5
+## A flying coupon ticket's size in pixels.
 const TICKET: Vector2 = Vector2(30, 16)
+## Seconds between one ticket setting off and the next.
 const TICKET_STAGGER: float = 0.06
+## How many marks of each kind are made, so that many cards can be marked at once.
 const MARKS_PER_KIND: int = 3
+## How hard the leaflet's slap shakes the table.
 const THUMP: float = 0.18
 
+## The campaign tray the leaflets come from and the coupons fly out of; set by the table.
 var tray: CampaignTray = null
 
 ## The note a Campaign's moment shows.
@@ -78,6 +97,8 @@ func _ready() -> void:
 	add_child(_seal)
 
 
+## Wires the moments to the run's controller, the hand, the card pool, the event queue, the table's
+## moments, the debuff strip and the card lookup.
 func setup(
 	controller: RunController,
 	hand_view: HandView,

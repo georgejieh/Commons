@@ -9,14 +9,17 @@ extends Control
 ## deciding. On the player's own turn no seat is marked: the action column's prompt and its
 ## live Play say it is theirs. It lies wholly on its seat's sheet and never takes a click.
 
-## The rule's inset from the sheet's edge and its weight, and the notch's width and depth:
-## the notch reaches the sheet's edge and no further.
+## The rule's inset from the sheet's edge, in pixels.
 const INSET: float = 4.0
+## The rule's weight, in pixels.
 const WEIGHT: float = 4.0
+## The notch's width and depth, in pixels: it reaches the sheet's edge and no further.
 const NOTCH: Vector2 = Vector2(22, 6)
 ## How far the ruled line strays from straight, at no wear and at the most, in pixels.
 const STRAY: Vector2 = Vector2(0.4, 1.4)
+## How many points the ruled line is broken into, each strayed a little.
 const EDGE_POINTS: int = 8
+## The seed of the line's straying, so the same frame is drawn every time.
 const SEED: int = 6151
 
 ## The seat marked now, or Seats.NONE.

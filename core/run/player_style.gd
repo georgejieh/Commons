@@ -3,8 +3,11 @@ extends RefCounted
 ## How the player played one Set: how often they played each hand type and how
 ## often they called the landlord seat. The New Landlord and mirroring families copy it.
 
+## The plays of each hand type in the Set, indexed by Pattern.Type.
 var type_counts: PackedInt64Array = PackedInt64Array()
+## How many of the player's bids called the landlord seat.
 var calls: int = 0
+## How many bids the player took.
 var bid_turns: int = 0
 
 
@@ -25,6 +28,7 @@ static func from_events(events: Array[RunEvent], player: int) -> PlayerStyle:
 	return style
 
 
+## Rebuilds a style from the run save.
 static func from_dict(data: Dictionary) -> PlayerStyle:
 	var style: PlayerStyle = PlayerStyle.new()
 	var counts: Array = data["type_counts"]
@@ -35,6 +39,7 @@ static func from_dict(data: Dictionary) -> PlayerStyle:
 	return style
 
 
+## The style as a map for the run save.
 func to_dict() -> Dictionary:
 	return {"type_counts": Array(type_counts), "calls": calls, "bid_turns": bid_turns}
 

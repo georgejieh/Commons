@@ -9,9 +9,13 @@ extends Control
 ## While the family's file holds an entry its page follows, as the state keeps it: one
 ## line an entry, oldest first, and that the file is kept (ADR 0022).
 
+## The font size of the This run lines, at Standard.
 const LINE_SIZE: int = 22
+## The font size of the generations' and the file's lines, at Standard.
 const RECORD_SIZE: int = 20
+## The dark ink of a record's line on its aged sheet.
 const RECORD_INK: Color = Color("2a2118")
+## The paper sheet's inner padding, in pixels.
 const SHEET_PADDING: int = 28
 ## The file's sheet keeps stains of its own, apart from the generations' sheets.
 const FILE_SHEET: int = 97
@@ -26,6 +30,7 @@ var _back: Button
 var _app: App
 
 
+## Builds the page from the run and the profile; call once when the screen is served.
 func open(app: App) -> void:
 	_app = app
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
@@ -100,6 +105,7 @@ func file_lines() -> PackedStringArray:
 	return texts
 
 
+## The scroll inside the sheet, for tests.
 func scroll() -> ScrollContainer:
 	return _scroll
 
@@ -109,6 +115,7 @@ func sheet() -> PanelContainer:
 	return _sheet
 
 
+## The Back button, for tests.
 func back_button() -> Button:
 	return _back
 

@@ -8,18 +8,23 @@ extends RefCounted
 
 ## The envelope's size once it reaches the middle.
 const FIGURE: Vector2 = Vector2(540, 340)
-## Seconds: the envelope's arrival, its opening beat, each paper's slide, the gap between
-## one paper and the next, the envelope's fade once its papers are out, and a paper's fall.
+## Seconds the envelope takes to arrive in the middle.
 const ARRIVE_TIME: float = 0.3
+## Seconds of the envelope's opening beat.
 const OPEN_TIME: float = 0.5
+## Seconds each paper takes to slide out into its place in the row.
 const FAN_TIME: float = 0.32
+## Seconds between one paper starting to slide and the next.
 const FAN_STAGGER: float = 0.07
+## Seconds the envelope takes to fade once its papers are out.
 const FIGURE_FADE: float = 0.22
+## Seconds a paper not kept takes to fall.
 const FALL_TIME: float = 0.38
 ## A paper leaves the envelope at this scale and settles at full size.
 const FAN_FROM: float = 0.35
-## How far a paper not kept falls, and how far it turns as it goes, in radians.
+## How far a paper not kept falls, in pixels.
 const FALL: float = 340.0
+## How far a paper not kept turns as it falls, in radians.
 const FALL_TURN: float = 0.3
 ## The envelope stands this far above the middle, over the row its papers will take.
 const RAISED: Vector2 = Vector2(0, -40)
@@ -87,6 +92,7 @@ func play(
 	_tweens.append(tween)
 
 
+## True while any tween of the act is still running.
 func is_playing() -> bool:
 	return not _tweens.is_empty()
 

@@ -11,10 +11,12 @@ extends Control
 const WORDS: PackedStringArray = ["grain", "rate", "zeal", "commons", "kitty", "kicker"]
 ## How dark the table goes behind the open card.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.72)
-## The wild ranks' section in the smallest rules type, and the sheet's spacing while it
-## shows, so the sheet still fits 1080 with every part of it shown.
+## The wild ranks' section in the smallest rules type.
 const WILD_SIZE: int = 16
+## The sheet's spacing between its parts, in pixels.
 const SPACING: int = 14
+## The sheet's spacing while the wild section shows, so the sheet still fits 1080 with
+## every part of it shown.
 const WILD_SPACING: int = 8
 ## The least room kept clear above and below the sheet, in pixels.
 const MARGIN: float = 12.0
@@ -94,6 +96,8 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 
 
+## Opens the sheet or closes it. The first call keeps controller, whose events redraw an open
+## sheet.
 func toggle(controller: RunController) -> void:
 	if _controller == null:
 		_controller = controller
@@ -105,6 +109,7 @@ func toggle(controller: RunController) -> void:
 	refresh()
 
 
+## Redraws the sheet from the run as it stands now; does nothing while it is closed.
 func refresh() -> void:
 	if not visible or _controller == null:
 		return
@@ -215,10 +220,12 @@ func close_button() -> Button:
 	return _close
 
 
+## The rank order line as shown, for tests.
 func rank_order_text() -> String:
 	return _order.text
 
 
+## The rules in force as shown, for tests.
 func active_text() -> String:
 	return active_rules.text
 

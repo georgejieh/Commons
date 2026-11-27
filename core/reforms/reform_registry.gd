@@ -3,6 +3,7 @@ extends RefCounted
 ## Maps Reform IDs to effect scripts. Definitions stay data; behaviour stays here.
 
 
+## True when a Reform ID has an effect script; a definition without one is a data error.
 static func has_effect(reform_id: String) -> bool:
 	return _build(reform_id) != null
 

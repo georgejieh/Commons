@@ -5,7 +5,9 @@ extends Control
 ## will take, so a picture drops in without moving anything. Like all village print it is
 ## a little off true and fades with the stage (art/STYLE.md).
 
+## How far the outer rule sits in from the frame's edge, in pixels.
 const INSET: float = 4.0
+## The length of each arm of a corner mark, in pixels.
 const CORNER: float = 14.0
 
 

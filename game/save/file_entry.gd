@@ -6,22 +6,33 @@ extends RefCounted
 ## such as a broken seal, has none. key names the offence, so the same one, seen again
 ## on a replay or a second load, is never filed twice.
 
-## The three ways the game notices (ADR 0022).
+## The detector that compared the second book with the run's figures.
 const BOOK: String = "book"
+## The detector that found a save's seal missing or wrong.
 const SEAL: String = "seal"
+## The detector that found the private ledger holding a number the save does not.
 const BAIT: String = "bait"
+## Every detector there is; an entry read from a file must name one of them.
 const DETECTORS: Array[String] = [BOOK, SEAL, BAIT]
 
+## Which detector saw the offence, one of DETECTORS.
 var detector: String = BOOK
+## The ID of the run the offence was in.
 var run_id: String = ""
+## The generation of the run the offence was in.
 var generation: int = 0
-## The Year from 1 and the Quota from 0 across the run, or 0 with no run.
+## The Year the offence was in, from 1, or 0 with no run.
 var year: int = 0
+## The Quota the offence was in, counted from 0 across the run, or 0 with no run.
 var quota: int = 0
+## The figures found changed, by name, with the values they were found at, kept within
+## their limits; empty for an offence with no figure.
 var figures: Dictionary[String, float] = {}
+## Names the offence, so the same one seen again is never filed twice.
 var key: String = ""
 
 
+## The entry a saved dictionary holds.
 static func from_dict(data: Dictionary) -> FileEntry:
 	var entry: FileEntry = FileEntry.new()
 	entry.detector = str(data["detector"])
@@ -36,6 +47,7 @@ static func from_dict(data: Dictionary) -> FileEntry:
 	return entry
 
 
+## The entry as it is saved in the profile.
 func to_dict() -> Dictionary:
 	return {
 		"detector": detector,

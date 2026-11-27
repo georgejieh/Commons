@@ -7,8 +7,11 @@ extends RefCounted
 ## thread; start() returns at once, and is_finished() moves the decision on each time
 ## it is asked, so the game can poll it once a frame (ADR 0030).
 
+## Where a started decision stands: no decision, the policy's play being worked out,
+## the samples running, or made.
 enum Stage { IDLE, BUILDING, SEARCHING, DONE }
 
+## Milliseconds finish() sleeps between asking whether the decision is made.
 const WAIT_STEP_MSEC: int = 1
 
 var _job: BotSearchJob
@@ -25,6 +28,8 @@ var _group: int = -1
 var _play: BotPlay = null
 
 
+## Decides one play, waiting on this thread, and returns it. limit_usec is the deadline in
+## microseconds; a decision with no choice to search, or no time left, gets the fallback.
 func decide(
 	view: SeatView,
 	legal: Array[Pattern],
@@ -110,6 +115,7 @@ func sample_count() -> int:
 	return _job.sample_count()
 
 
+## How many samples of the last decision ran to the end; for tests.
 func finished_samples() -> int:
 	return _job.finished_samples()
 

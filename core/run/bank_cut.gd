@@ -4,9 +4,12 @@ extends RefCounted
 ## it when their side lost, then Grain Tax takes a share, rounded against the player.
 ## Each cut that takes something is logged.
 
+## The divisor that turns a whole-number percent into a fraction.
 const PERCENT: float = 100.0
 
+## True when Overtime voids what the player banks this round because their side lost.
 var voided: bool = false
+## Grain Tax's share of what is banked, in whole percent; 0 means no tax.
 var tax_percent: int = 0
 
 

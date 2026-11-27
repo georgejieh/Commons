@@ -27,6 +27,7 @@ static func readings(
 	return Readings.of(printed_counts(cards), rules, rank_map)
 
 
+## The count of each printed rank among the cards, as a hand would count them.
 static func printed_counts(cards: Array[CardInstance]) -> PackedByteArray:
 	var counts: PackedByteArray = PackedByteArray()
 	counts.resize(Ranks.COUNT)

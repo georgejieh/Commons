@@ -13,6 +13,7 @@ extends RefCounted
 ## The cards' scale: no taller than the row's tickets at the largest text, and the rank
 ## printed at 16 px, past the least type the page may use.
 const CARD_SCALE: float = 0.4
+## The gap between a card and its Buy ticket, in pixels.
 const GAP: int = 6
 
 ## The offers, for the row of buttons.
@@ -22,6 +23,7 @@ var _shop: StallContext
 var _items: Array[BuyItem] = []
 
 
+## Takes the shop whose stall to show and spaces the strip like the row of buttons it joins.
 func setup(shop: StallContext) -> void:
 	_shop = shop
 	strip.add_theme_constant_override("separation", ScreenKit.STYLE.gap)

@@ -4,6 +4,7 @@ extends RefCounted
 
 ## The seat being built.
 var seat: int
+## The round's landlord seat.
 var landlord: int
 ## A private copy to edit.
 var params: RuleParams

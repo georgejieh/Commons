@@ -3,6 +3,7 @@ extends Control
 ## The end of the demo's one Year: what you hold and how the village stands.
 
 
+## Builds the demo's Year summary, ending in a button on to the demo's close; call once when served.
 func open(app: App) -> void:
 	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.column(

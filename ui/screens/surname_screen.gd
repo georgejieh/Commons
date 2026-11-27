@@ -9,15 +9,20 @@ extends Control
 ## Settings it writes the profile and goes back. Keyboard, gamepad and mouse all work: a
 ## gamepad player can finish with the tickets, Random and Confirm alone.
 
+## How many surname tickets stand in a row of the grid.
 const COLUMNS: int = 8
+## The font size of the name typed in the field, at Standard.
 const FIELD_SIZE: int = 40
+## The width, in pixels, of the field and the slip it is written on.
 const FIELD_WIDTH: float = 420.0
+## The font size of the note under the field, which says why a name is refused, at Standard.
 const NOTE_SIZE: int = 22
-## The field is written on a slip of the village's paper, as the tickets are: its height,
-## the ink, the band and ring the tickets use, its own seed after theirs, and how far in
-## the name starts, past the band.
+## The field is written on a slip of the village's paper, as the tickets are, with the ink,
+## the band and the ring the tickets use. This is the slip's height, in pixels.
 const FIELD_HEIGHT: float = 80.0
+## The seed of the slip's wear, after the tickets' so it does not repeat theirs.
 const FIELD_SEED: int = 120
+## How far in the name starts, in pixels, as left, top, right and bottom; the left is past the band.
 const FIELD_INSET: Vector4 = Vector4(24, 6, 16, 14)
 
 var _app: App
@@ -33,6 +38,7 @@ var _confirm: Button
 var _seed: int = 0
 
 
+## Builds the page with a surname already in the field and the field focused; call once when served.
 func open(app: App) -> void:
 	_app = app
 	_renaming = not app.arrival.first_launch
@@ -87,14 +93,17 @@ func field_paper() -> Control:
 	return _paper
 
 
+## The surname tickets in the order offered, for tests.
 func tickets() -> Array[SurnameTicket]:
 	return _tickets.duplicate()
 
 
+## The Random button, which picks one of the offered surnames; for tests.
 func random_button() -> Button:
 	return _random
 
 
+## The Confirm button, which takes the name in the field; for tests and the playtest.
 func confirm_button() -> Button:
 	return _confirm
 

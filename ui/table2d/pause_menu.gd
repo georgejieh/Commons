@@ -8,6 +8,7 @@ extends Control
 ## the menu closes. The settings page opens the Controls page (ADR 0035) and the Window
 ## page (WindowSheet), whose Back and Escape come back to the settings.
 
+## Emitted when the menu closes; the table's event queue starts running again.
 signal resumed
 ## The player chose to go back to the title.
 signal title_chosen
@@ -22,6 +23,7 @@ signal abandoned
 ## At the table, the player asked for the deck sheet (ADR 0041).
 signal deck_chosen
 
+## How dark the room goes behind the menu, as a colour with its opacity.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.78)
 
 ## The table's own menu: its settings sheet says a new text size reaches the table at
@@ -108,6 +110,7 @@ func wire(app: App) -> void:
 	abandoned.connect(app.leave_run)
 
 
+## Opens the menu on its first page, building the pages again first if the text size changed.
 func open() -> void:
 	if _built_size != TextSize.level():
 		_build_pages()
@@ -117,6 +120,7 @@ func open() -> void:
 	_show_page(main)
 
 
+## Saves the settings, closes the menu and emits resumed.
 func close() -> void:
 	Settings.save()
 	visible = false
@@ -223,11 +227,12 @@ func is_confirming() -> bool:
 	return visible and confirm.visible
 
 
-## The confirm page's two buttons, for tests and the playtest.
+## The confirm page's button that keeps the run, for tests and the playtest.
 func keep_button() -> Button:
 	return _keep
 
 
+## The confirm page's button that abandons the run, for tests and the playtest.
 func abandon_button() -> Button:
 	return _abandon
 

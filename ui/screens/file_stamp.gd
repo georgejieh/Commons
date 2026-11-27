@@ -9,20 +9,31 @@ extends Control
 ## a tea ring. It takes no input, so it never blocks a button, and it keeps to the
 ## corner, clear of the title.
 
+## The side of the box the card and the chop stand in, in pixels.
 const SIDE: float = 220.0
 ## From the screen's top and right edges.
 const MARGIN: float = 48.0
+## The slant the card is pressed at, in radians.
 const TILT: float = -0.12
-## The card's and the chop's squares inside the box, so their tilted corners stay in it.
+## The share of the box the card's square takes, so its tilted corners stay in it.
 const CARD: float = 0.84
+## The share of the box the chop's square takes, so its tilted corners stay in it.
 const CHOP: float = 0.72
+## The card's stock before it is aged.
 const MANILA: Color = Color("d8bf86")
+## The width of the chop's border, as a share of the box's side.
 const BORDER: float = 0.05
+## The seed the card's wear and the chop's slips are drawn from, so it looks the same each time.
 const SEED: int = 8317
+## The fewest foxing specks the card carries, at corruption stage 0, and the most, at the worst.
 const FOXING: Vector2i = Vector2i(10, 60)
+## The fewest specks where the chop took no ink, at corruption stage 0, and the most, at the worst.
 const THIN: Vector2i = Vector2i(20, 110)
+## The fewest breaks in the chop's border, at corruption stage 0, and the most, at the worst.
 const BREAKS: Vector2i = Vector2i(1, 6)
+## The size of the file's name on the chop, which is drawn art and keeps its size.
 const NAME_SIZE: int = 16
+## The size of the count of entries on the chop, which is drawn art and keeps its size.
 const COUNT_SIZE: int = 22
 
 var _entries: int = 0

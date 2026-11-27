@@ -6,6 +6,7 @@ extends RefCounted
 ## run's own audit copy, and names the Denunciation the plot card's purchase adds. A
 ## tutorial run is never saved, so nothing here is.
 
+## The arrival's authored decks, decisions and audit faces.
 const SCRIPT: TutorialScript = preload("res://data/run/tutorial/arrival.tres")
 ## The meter table row the plot card's Denunciation goes through.
 const DENUNCIATION_ROW: String = "tutorial_denunciation"

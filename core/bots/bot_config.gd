@@ -2,27 +2,39 @@ class_name BotConfig
 extends RefCounted
 ## What makes one bot differ from another.
 
+## How a bot decides: Easy plays greedily, Medium by the scored policy, Hard also reads the
+## table, and Expert searches before it plays.
 enum Tier { EASY, MEDIUM, HARD, EXPERT }
 
+## The tuning numbers a bot scores and decides by unless it is given others.
 const DEFAULT_WEIGHTS: BotWeights = preload("res://data/bots/default_weights.tres")
+## The numbers each personality trait level sets, read by from_personality and take_traits.
 const TABLE: PersonalityTable = preload("res://data/bots/personality_table.tres")
 ## Cooperation is a chance, so loyalty never lifts it past certain.
 const MAX_COOPERATION: float = 1.0
 
+## The tuning numbers this bot scores and decides by. Shared between copies, never changed.
 var weights: BotWeights
+## How this bot decides; fixed when it is made.
 var tier: Tier
 ## Seeds a search's deals of the unseen cards. The run sets it from its ai stream.
 var search_seed: int
-## Neutral until a personality sets them.
+## Added to the cards at which this bot counts a landlord as running away, so a high value
+## has it bomb sooner; 0 until a personality sets it.
 var bomb_shift: float = 0.0
+## The chance, from 0 to 1, that this bot passes on its teammate's play; 1 until a
+## personality sets it.
 var cooperation: float = 1.0
 ## What a warm family's memory of the player adds to its cooperation while the player is
 ## its teammate (ADR 0025). The run sets it each round; 0 for everyone else.
 var loyalty: float = 0.0
+## The chance, from 0 to 1, that this bot declares its true need in a Mutual Aid trade.
 var honesty: float = 1.0
 ## The share of true need a lie adds.
 var lie_share: float = 0.0
+## Taken off the bid thresholds, so a high value has this bot bid on weaker hands.
 var ambition: float = 0.0
+## Score this bot adds, per point of memory, for answering a seat it holds a grudge against.
 var grudge: float = 0.0
 ## How much this bot holds against each seat, from villager memory.
 var memory: PackedFloat32Array = PackedFloat32Array([0.0, 0.0, 0.0])
@@ -44,6 +56,7 @@ func _init(
 	search_seed = seed_value
 
 
+## A config of the personality's tier with its five traits set, as a villager plays.
 static func from_personality(personality: Personality, seed_value: int = 0) -> BotConfig:
 	var tier_value: Tier = personality.tier
 	var config: BotConfig = BotConfig.new(DEFAULT_WEIGHTS, tier_value, seed_value)
@@ -90,10 +103,12 @@ func searches() -> bool:
 	return tier == Tier.EXPERT
 
 
+## How many candidate plays an Expert search weighs.
 func search_candidates() -> int:
 	return weights.expert_candidates
 
 
+## How many deals of the unseen cards an Expert search plays each candidate out on.
 func search_samples() -> int:
 	return weights.expert_samples
 

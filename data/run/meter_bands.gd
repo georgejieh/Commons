@@ -4,6 +4,7 @@ extends Resource
 ## fires on the way up through mid and re-arms only once the meter falls below
 ## mid - rearm_margin, so a meter hovering at mid triggers it once.
 
+## Where a meter's value sits against its thresholds, from CALM below low to DEATH.
 enum Band { CALM, LOW, MID, HIGH, DEATH }
 
 ## The value at which a meter enters the low band.
@@ -18,6 +19,7 @@ enum Band { CALM, LOW, MID, HIGH, DEATH }
 @export var rearm_margin: int = 5
 
 
+## The band a meter value sits in.
 func band(value: int) -> Band:
 	if value >= death:
 		return Band.DEATH
@@ -49,5 +51,7 @@ func marks() -> Array[int]:
 	return [low, mid, high]
 
 
+## True when a meter at this value has fallen far enough below mid to fire its setback
+## again.
 func rearms_at(value: int) -> bool:
 	return value < mid - rearm_margin

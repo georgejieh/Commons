@@ -4,49 +4,75 @@ extends RefCounted
 ## or paper, an eyebrow-and-headline header, buttons by kind, paper sheets, stat tiles
 ## and a footer bar. Screens compose these and call reveal() so they arrive in motion.
 
+## The art every page draws its backdrops, paper and pictures from.
 const ART: ArtLibrary = preload("res://data/ui/art.tres")
+## The design tokens the inks, gaps and sizes below are read from.
 const STYLE: UiStyle = preload("res://data/ui/ui_style.tres")
 ## The bold poster face for titles; everything else uses the theme's medium weight.
 const DISPLAY_BOLD: FontVariation = preload("res://ui/theme/oswald_bold.tres")
 ## A typewriter face for the ledger's tallies.
 const TYPEWRITER: FontFile = preload("res://art/fonts/CourierPrime-Regular.ttf")
+## The bold typewriter face, for a ledger's titles and bold lines.
 const TYPEWRITER_BOLD: FontFile = preload("res://art/fonts/CourierPrime-Bold.ttf")
-## The inks every screen shares, each defined once in the style data. A file reads these
-## names; it does not keep a colour of its own for one.
+## The card stock panels and cards are made of. The inks from here on are every screen's, each
+## defined once in the style data: a file reads these names and keeps no colour of its own.
 const PAPER: Color = STYLE.paper
+## The black of print and outlines.
 const INK: Color = STYLE.ink
+## The red of a signal: a stamp, a refusal, the main action.
 const RED: Color = STYLE.vermilion
+## The gold of a signal: this is the thing.
 const GOLD: Color = STYLE.gold
+## The green of coupons, and of what pays them, on paper.
 const COUPON: Color = STYLE.coupon
+## The lighter green of coupons shown over the dark table.
 const COUPON_ON_DARK: Color = STYLE.coupon_on_dark
+## The deep red of a seal's ink: a landlord's mark, a lie caught, a total.
 const SEAL: Color = STYLE.seal
+## The faded ink of a loss counted on the table.
 const LOSS: Color = STYLE.loss
+## The quiet brown of what is settled or waiting, such as a cleared audit.
 const QUIET: Color = STYLE.quiet
+## The near-black printed on tickets, chips and the surname's slip.
 const TICKET_INK: Color = STYLE.ticket_ink
+## The red of a picked ticket and of a printed band.
 const PICKED: Color = STYLE.picked
+## The brass ring around a ticket or paper that has the focus.
 const FOCUS_RING: Color = STYLE.focus_ring
+## The worn brown of a ticket's band, a locked ticket and a perforation.
 const WORN_PRINT: Color = STYLE.worn_print
+## The dark brown edge drawn around village paper.
 const PAPER_EDGE: Color = STYLE.paper_edge
+## The faint brown of a printed frame, a ledger's band and a keyword's soft words.
 const FAINT_INK: Color = STYLE.faint_ink
+## The brown line of a fold across paper.
 const FOLD: Color = STYLE.fold
+## The gold of a hint: a hinted card's edge and a usable Campaign's mark.
 const HINT: Color = STYLE.hint
+## The cream card stock a playing card is printed on.
 const CARD_STOCK: Color = STYLE.card_stock
+## The bright red printed on a wild card's ribbon and on a file's stamp.
 const PRINT_RED: Color = STYLE.print_red
+## The red of an ending's title and frame.
 const ENDING_INK: Color = STYLE.ending_ink
+## The older, darker paper of a portrait's mount and a notice posted on the wall.
 const OLD_PAPER: Color = STYLE.old_paper
+## The wheat ochre a Quota bar and the Famine meter fill with.
 const GRAIN_BAR: Color = STYLE.grain_bar
+## The empty ground of the table's top bar and the Quota bar.
 const BAR_GROUND: Color = STYLE.bar_ground
+## The warm gold of a met Quota's bar and of a callout's rays.
 const GLOW: Color = STYLE.glow
-## The layers a page draws in over its own pieces, lowest first, as z_index: a piece being
-## acted out lifts over its row; a seal, a flying paper and the rank picker's question
-## stand over every piece; the shop's slip explains any of those; an opened envelope
-## covers the page and the slip; the deck sheet stands over the envelope whose deck card
-## it places. A card dragged on the plot's swap board takes the sheet's layer, over the
-## pairs' tags (the over layer) and every other card.
+## The first of the layers a page draws in over its own pieces, lowest first, as z_index: a
+## piece being acted out lifts over its row.
 const LAYER_LIFTED: int = 1
+## A seal, a flying paper and the rank picker's question stand over every piece.
 const LAYER_OVER: int = 2
+## The shop's slip, which explains any of the pieces under it.
 const LAYER_SLIP: int = 3
+## An opened envelope, which covers the page and the slip.
 const LAYER_ENVELOPE: int = 4
+## The deck sheet, over the envelope whose deck card it places; a card dragged on the swap board.
 const LAYER_SHEET: int = 5
 ## How far the backdrop darkens under the content, so text on art stays readable.
 const SHADE: Color = Color(0.08, 0.06, 0.04, 0.3)
@@ -56,13 +82,9 @@ const VERDICT_SHADE: Color = Color(0.05, 0.03, 0.02, 0.55)
 const HALO_SIZE: int = 10
 ## Page margins and the widest a content column grows.
 const PAGE_MARGIN: int = 88
-## On a page that would overflow at a larger text size, the margin and the gaps between
-## its rows give way first, to this margin and this share of each gap (ADR 0034).
-const LEAST_PAGE_MARGIN: int = 24
-const LEAST_GAP_SHARE: float = 0.5
-const FULL_GAP: StringName = &"full_gap"
 ## Where a page keeps the fit it connected to its root's resized, for clear_page.
 const PAGE_FIT: StringName = &"page_fit"
+## The least width, in pixels, of a button, so a short label still makes a ticket.
 const MIN_BUTTON_WIDTH: int = 260
 
 
@@ -83,57 +105,11 @@ static func page(
 	var column: VBoxContainer = VBoxContainer.new()
 	column.add_theme_constant_override("separation", STYLE.gap + 8)
 	margin.add_child(column)
-	var make_room: Callable = _give_way.bind(root, margin, column)
+	var make_room: Callable = PageFit.give_way.bind(root, margin, column)
 	root.resized.connect(make_room)
 	root.set_meta(PAGE_FIT, make_room)
 	column.minimum_size_changed.connect(make_room)
 	return column
-
-
-## Shrinks a page's margin, then the gaps between its rows, as far as it must for what
-## is on it to fit the screen, and no further than LEAST_PAGE_MARGIN and LEAST_GAP_SHARE.
-## A page that fits keeps its full margin and gaps.
-static func _give_way(root: Control, margin: MarginContainer, column: VBoxContainer) -> void:
-	if root.size.x <= 0.0 or root.size.y <= 0.0:
-		return
-	if not column.has_meta(FULL_GAP):
-		column.set_meta(FULL_GAP, column.get_theme_constant("separation"))
-	var full_gap: int = column.get_meta(FULL_GAP)
-	var gaps: int = maxi(_shown_rows(column) - 1, 0)
-	var shown_gap: int = column.get_theme_constant("separation")
-	var need: Vector2 = column.get_combined_minimum_size()
-	var content_tall: float = need.y - shown_gap * gaps
-	var side: int = _room(root.size.x - need.x)
-	var top: int = _room(root.size.y - content_tall - full_gap * gaps)
-	var gap: int = full_gap
-	if gaps > 0 and top == LEAST_PAGE_MARGIN:
-		var spare: float = (root.size.y - content_tall - LEAST_PAGE_MARGIN * 2.0) / gaps
-		var least_gap: int = ceili(full_gap * LEAST_GAP_SHARE)
-		gap = clampi(floori(spare), least_gap, full_gap)
-	_set_constant(margin, "margin_left", side)
-	_set_constant(margin, "margin_right", side)
-	_set_constant(margin, "margin_top", top)
-	_set_constant(margin, "margin_bottom", top)
-	_set_constant(column, "separation", gap)
-
-
-## The margin a side keeps with spare room left over at the full margin.
-static func _room(spare: float) -> int:
-	return clampi(floori(spare / 2.0), LEAST_PAGE_MARGIN, PAGE_MARGIN)
-
-
-static func _shown_rows(column: VBoxContainer) -> int:
-	var rows: int = 0
-	for child: Node in column.get_children():
-		if child is Control and (child as Control).visible:
-			rows += 1
-	return rows
-
-
-## Sets a constant only when it changes, so a layout that settles stays settled.
-static func _set_constant(control: Control, constant: String, value: int) -> void:
-	if control.get_theme_constant(constant) != value:
-		control.add_theme_constant_override(constant, value)
 
 
 ## Frees every child of node, taken out of the tree at once so what is built in its place
@@ -225,6 +201,7 @@ static func header(eyebrow_text: String, headline_text: String, color: Color = R
 	return block
 
 
+## A one-line label in capitals in the eyebrow type level, for the small line above a heading.
 static func eyebrow(text: String) -> Label:
 	return styled(text.to_upper(), CommonsTheme.EYEBROW)
 

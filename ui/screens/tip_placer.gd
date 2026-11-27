@@ -8,7 +8,9 @@ extends Node
 
 ## How the engine marks its tooltip's panel.
 const VARIATION: StringName = &"TooltipPanel"
+## The room, in pixels, between a tooltip and the control it explains.
 const GAP: float = 10.0
+## The room, in pixels, a tooltip keeps from the screen's edge.
 const EDGE: float = 12.0
 
 

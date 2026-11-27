@@ -3,6 +3,7 @@ extends RefCounted
 ## Names the sound for every domain event. Views pass the event here and play the name on
 ## the Audio autoload, which plays its sound effect.
 
+## The sound name for each RunEvent type; "" for one that brings no sound of its own.
 const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.SET_STARTED: "set_started",
 	RunEvent.Type.DEBUFF_ADDED: "debuff_added",
@@ -63,6 +64,7 @@ const RUN_NAMES: Dictionary[RunEvent.Type, String] = {
 	RunEvent.Type.CARDS_SET_ASIDE: "",
 	RunEvent.Type.KITTY_SEEN: "",
 }
+## The sound name for each RoundEvent type, used when a ROUND event wraps one.
 const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 	RoundEvent.Type.ROUND_STARTED: "round_started",
 	RoundEvent.Type.KITTY_TAKEN: "kitty_taken",
@@ -74,42 +76,58 @@ const ROUND_NAMES: Dictionary[RoundEvent.Type, String] = {
 }
 ## Bombs and rockets get their own sound over the plain play.
 const BOMB_NAME: String = "bomb_played"
+## The sound a played Rocket makes, over the plain play's.
 const ROCKET_NAME: String = "rocket_played"
 ## A finished round sounds won or lost from the player's side once the landlord is known.
 const ROUND_WON: String = "round_won"
+## The sound of a round the player's side lost.
 const ROUND_LOST: String = "round_lost"
 ## A meter rising past one of its marks.
 const METER_ROSE: String = "meter_rose"
 ## A Cadre bought in the state store.
 const STORE_BUY: String = "store_buy"
-## A scored play acted out: each card counted, the Rate and Zeal landing, a
-## change that raised the score and one that cut it, the total rolling up and landing,
-## harder for a big one.
+## One card counted in a scored play acted out.
 const SCORE_TICK: String = "score_tick"
+## The Rate landing in a scored play.
 const SCORE_RATE: String = "score_rate"
+## The Zeal landing in a scored play.
 const SCORE_ZEAL: String = "score_zeal"
+## A change that raised the score.
 const SCORE_CHIME: String = "score_chime"
+## A change that cut the score.
 const SCORE_CUT: String = "score_cut"
+## The total rolling up before it lands.
 const SCORE_ROLL: String = "score_roll"
+## The total landing.
 const SCORE_LAND: String = "score_land"
+## The total landing when it is a big one.
 const SCORE_LAND_HEAVY: String = "score_land_heavy"
-## A motion's own sound, filled in by Audio.fill only where its event has none:
-## a stamp landing, a swell, a number rolling, a page's pieces arriving, a picture laid
-## down, a hover, a figure in flight, a villager taking up their cards, the ink wipe
-## between screens, a banner across the table, the audit's dice, and the Quota met or
-## missed.
+## A stamp landing. The MOTION_ and later sounds below are a motion's own, filled in by
+## Audio.fill only where its event has none.
 const MOTION_STAMP: String = "motion_stamp"
+## A swell, as a figure pulses.
 const MOTION_PULSE: String = "motion_pulse"
+## A number rolling.
 const MOTION_COUNT: String = "motion_count"
+## A page's pieces arriving.
 const MOTION_ENTER: String = "motion_enter"
+## A picture laid down.
 const MOTION_SETTLE: String = "motion_settle"
+## A hover over something that can be pressed.
 const MOTION_HOVER: String = "motion_hover"
+## A figure in flight.
 const MOTION_FLY: String = "motion_fly"
+## A villager taking up their cards.
 const MOTION_WIND: String = "motion_wind"
+## The ink wipe between screens.
 const MOTION_WIPE: String = "motion_wipe"
+## A banner across the table.
 const CALLOUT_CUT: String = "callout_cut"
+## The audit's dice.
 const DICE_ROLL: String = "dice_roll"
+## The Quota met.
 const QUOTA_MET: String = "quota_met"
+## The Quota missed.
 const QUOTA_MISSED: String = "quota_missed"
 
 

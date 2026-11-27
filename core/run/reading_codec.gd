@@ -5,7 +5,9 @@ extends RefCounted
 ## main rank, chain length, card count and kicker ranks; the cards it spends are the
 ## command's own.
 
+## The key a play's reading is saved under in a command.
 const KEY: String = "reading"
+## The fields a saved reading holds; every one is required.
 const FIELDS: Array[String] = ["type", "main", "chain", "cards", "kickers"]
 ## At most two ranks are wild at once, each from 3 to 2.
 const MAX_WILD_RANKS: int = 2
@@ -13,6 +15,7 @@ const MAX_WILD_RANKS: int = 2
 const MAX_CARDS: int = 64
 
 
+## A reading as a map of the fields in FIELDS, for a command or a written decision.
 static func encode(reading: Pattern) -> Dictionary:
 	return {
 		"type": reading.type,
@@ -36,6 +39,8 @@ static func decode(value: Variant) -> Pattern:
 	return Pattern.new(type, main, int(data["chain"]), int(data["cards"]), kickers, main)
 
 
+## True when value is a saved reading whose fields are all present and make a play Pattern can
+## hold.
 static func is_valid(value: Variant) -> bool:
 	if not value is Dictionary:
 		return false

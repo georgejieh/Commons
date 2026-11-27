@@ -8,6 +8,7 @@ var _app: App = null
 var _back: Button = null
 
 
+## Builds the page over WindowSheet, with Back; call once when the screen is served.
 func open(app: App) -> void:
 	_app = app
 	var column: VBoxContainer = ScreenKit.page(self)

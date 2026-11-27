@@ -3,6 +3,8 @@ extends Resource
 ## One villager's way of playing: a tier plus five parameters. Personality.Level values
 ## become numbers through one PersonalityTable.
 
+## How strongly a personality parameter reads; the PersonalityTable turns each level into a
+## number.
 enum Level { LOW, MID, HIGH }
 
 ## How strongly the villager plays.

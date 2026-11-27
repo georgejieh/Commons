@@ -7,15 +7,17 @@ extends PanelContainer
 ## Inside the paper's printed border, which ends 17 px in.
 const PADDING: int = 22
 
-## The keyword explained, and the text it was opened from.
+## The id of the keyword explained.
 var id: String = ""
+## The text control the slip was opened from.
 var source: Control = null
 ## True while the pointer is on the word that opened this slip.
 var word_held: bool = true
 ## Seconds since the pointer was last on the word, this slip or a slip opened from it.
 var idle: float = 0.0
-## Where the pointer was when the slip was asked for, and whether it has been stood yet.
+## Where the pointer was when the slip was asked for.
 var asked_at: Vector2 = Vector2.ZERO
+## Whether the slip has been stood beside its word yet.
 var placed: bool = false
 
 var _rule: KeywordText = KeywordText.new()
@@ -45,5 +47,6 @@ func rule_text() -> String:
 	return _rule.text
 
 
+## The text control the slip shows its meaning in, for tests.
 func rule() -> KeywordText:
 	return _rule

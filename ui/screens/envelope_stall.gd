@@ -42,6 +42,7 @@ func is_busy() -> bool:
 	return _overlay != null and is_instance_valid(_overlay)
 
 
+## The open envelope's overlay, or null while none is open, for tests and the playtest.
 func overlay() -> EnvelopeOverlay:
 	return _overlay if is_busy() else null
 

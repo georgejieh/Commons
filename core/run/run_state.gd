@@ -4,21 +4,31 @@ extends RefCounted
 ## 2^53 are saved as text, because JSON numbers are doubles, and floats as their exact
 ## bits, because the JSON writer does not round-trip every double.
 
+## The kinds of Set: a Small one, a Large one, or the Boss Set a boss runs.
 enum SetType { SMALL, LARGE, BOSS }
 
+## The debuff ID of a round with no debuff, as round 0 of a ladder has.
 const NO_DEBUFF: String = ""
+## The boss ID while the Set has no boss, as in a Small or Large Set.
 const NO_BOSS: String = ""
+## The slogan_type while the debuff ladder names no hand type.
 const NO_SLOGAN: int = -1
 ## Family IDs by seat for a run with no roster, and seat 0's name in every run.
 const DEFAULT_TABLE: Array[String] = ["player", "seat_1", "seat_2"]
 
+## The seed every stream of the run is derived from; saved, so a resumed run draws the same.
 var run_seed: int
+## Where the run stands in its state machine, saved so a resume starts there.
 var phase: RunFlow.State = RunFlow.State.RUN_START
+## The run's random streams, saved at their state so a resume draws the same.
 var streams: RandomStreams
 ## Years count from 1, Sets and rounds from 0.
 var year: int = 1
+## The Set in play within its Year, from 0; set_number() counts across the run.
 var set_index: int = 0
+## The kind of the Set in play.
 var set_type: SetType = SetType.SMALL
+## The round in play within the Set, from 0.
 var round_index: int = 0
 ## The player's banked score toward the current Set's target.
 var set_progress: float = 0.0
@@ -27,11 +37,14 @@ var debuff_ladder: Array[String] = []
 ## The hand type Slogan of the Week names, drawn and saved with the ladder, or
 ## NO_SLOGAN while the ladder has none (ADR 0023).
 var slogan_type: int = NO_SLOGAN
+## The Famine meter, from 0 to the run's meter_max.
 var famine: int = 0
+## The Denunciation meter, from 0 to the run's meter_max.
 var denunciation: int = 0
-## Setback state. A meter's setback is armed until it fires, and re-arms once the
-## meter falls back below its margin.
+## Whether Famine's setback is armed: it fires on a rise to mid, then re-arms once the meter
+## falls back below its margin.
 var famine_armed: bool = true
+## Whether Denunciation's setback is armed, as famine_armed is for Famine.
 var denunciation_armed: bool = true
 ## Rationing holds while true.
 var rationed: bool = false
@@ -47,61 +60,73 @@ var seatless_sets: int = 0
 var wild_ranks: Array[int] = []
 ## Each villager family's own Denunciation, from lies caught at audit.
 var villager_denunciation: Dictionary[String, int] = {}
-## Commons shares paid to the player, and to every peasant, this run.
+## Commons shares paid to the player this run.
 var commons_received: int = 0
+## Commons shares paid to every peasant this run, the player's included.
 var commons_paid: int = 0
 ## What each family remembers of the player, carried in from the profile.
 var memory: VillageMemory = VillageMemory.new()
-## Families that held the landlord seat for a whole Set this run, and those that have
-## already run a boss Set.
+## Families that held the landlord seat for a whole Set this run.
 var risen: Array[String] = []
+## The risen families that have already run a boss Set.
 var risen_used: Array[String] = []
 ## Officials that have run a boss Set since the pool last cycled.
 var officials_used: Array[String] = []
-## The current Set's boss, or NO_BOSS, and the risen family seated as it.
+## The current Set's boss, or NO_BOSS.
 var boss_id: String = NO_BOSS
+## The risen family seated as the Set's boss, or empty when the boss is not one.
 var boss_family: String = ""
 ## How the player played their most recent Sets, oldest first.
 var styles: Array[PlayerStyle] = []
-## The next ID for a card entering the plot, and the plot upgrades bought.
+## The next ID for a card entering the plot.
 var next_plot_id: int = CardInstance.FIRST_PLOT_ID
+## The cards of plot room the upgrades bought have added.
 var plot_capacity_bonus: int = 0
+## The swaps a round the upgrades bought have added.
 var swap_bonus: int = 0
 ## How many of each item the state store has sold this run, against its limited stock.
 var store_sold: Dictionary[String, int] = {}
-## Overfulfilment steps earned this run, which raise every later target, and the steps
-## the Set just finished earned, 0 again once the next Set starts. The target in force
-## for a Set counts norm_steps less over_steps.
+## Overfulfilment steps earned this run, which raise every later target. The target in
+## force for a Set counts norm_steps less over_steps.
 var norm_steps: int = 0
+## The steps the Set just finished earned, 0 again once the next Set starts.
 var over_steps: int = 0
 ## The steps False Report raised the norm by in the Set in play (ADR 0032), held like
 ## over_steps, so the target in force for that Set leaves them out too; 0 again once the
 ## next Set starts.
 var reported_steps: int = 0
-## Each hand type's level, which Directives raise, and the marks saved on deck cards.
+## Each hand type's level, which Directives raise.
 var hand_levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
+## The marks saved on deck cards, which every deal puts back on them.
 var card_marks: CardMarks = CardMarks.new()
 ## The communal deck, slot by slot, as the state store's exchanges left it (ADR 0042).
 var deck: Deck = Deck.new()
 ## Each held Cadre's own run state, such as a picked rank or a count it keeps (ADR 0021).
 var cadre_memos: CadreMemos = CadreMemos.new()
-## The Reforms enacted this run, in the order they were bought, and the deck as Unplanned
-## Economy gathered it from the last round: empty at a Quota's start and without it.
+## The Reforms enacted this run, in the order they were bought.
 var reforms: Array[String] = []
+## The deck's card IDs as Unplanned Economy gathered them from the last round, or empty.
 var deck_order: Array[int] = []
+## Every family's standing in the village this run.
 var roster: Array[RosterEntry] = []
 ## The family in each seat this Set.
 var table: Array[String] = DEFAULT_TABLE.duplicate()
+## What the player owns: Cadres, Campaigns and the private plot.
 var inventory: RunInventory = RunInventory.new()
+## The coupons the player holds.
 var coupons: int = 0
+## The commons' pool in pool units, filled by banked scores and split at a Set's end.
 var commons_pool: int = 0
+## The seat that holds the landlord's seat now, kept between rounds, or Seats.NONE.
 var landlord_seat: int = Seats.NONE
+## A summary of each finished Set, oldest first; the last is the Set just ended.
 var summaries: Array[SetSummary] = []
 ## What the player has seen each villager do this run, for the dossier.
 var observations: Observations = Observations.new()
-## The rounds played in the current Year, and those the player held the landlord seat in,
-## which give the run's final class (ADR 0024). Both start again with each Year.
+## The rounds played in the current Year; starts again with each Year.
 var year_rounds: int = 0
+## The rounds of the Year the player held the landlord seat in, which give the run's final
+## class; starts again with each Year.
 var year_landlord_rounds: int = 0
 ## Families that have starved this Year, against the village's limit (ADR 0025). It
 ## starts again with each Year.
@@ -109,9 +134,9 @@ var year_starved: int = 0
 ## Which run this is, of which kind, and what it began with (ADR 0025).
 var identity: RunIdentity = RunIdentity.new()
 ## The last Quota's corruption events, in order (CorruptionEvents), kept until the next
-## Quota starts so the profile can take them from a save at the Quota's end; and the
-## black-market purchases made in high Famine since the last Quota ended (ADR 0025).
+## Quota starts so the profile can take them from a save at the Quota's end.
 var quota_corruption: Array[String] = []
+## The black-market purchases made in high Famine since the last Quota ended.
 var famine_market_buys: int = 0
 ## Who is who: the player's and every family's given name (ADR 0028).
 var names: RunNames = RunNames.new()
@@ -126,6 +151,7 @@ func _init(seed_value: int) -> void:
 	streams = RandomStreams.new(seed_value)
 
 
+## Rebuilds the state from its saved map.
 static func from_dict(data: Dictionary) -> RunState:
 	var state: RunState = RunState.new(str(data["seed"]).to_int())
 	state.streams = RandomStreams.from_dict(data["streams"])
@@ -197,6 +223,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	return state
 
 
+## The state as a map for the run save, with large numbers as text and floats as their bits.
 func to_dict() -> Dictionary:
 	var roster_data: Array[Dictionary] = []
 	for entry: RosterEntry in roster:
@@ -298,6 +325,7 @@ static func is_count(value: Variant) -> bool:
 	return is_whole(value) and value >= 0
 
 
+## The float whose exact bits float_text wrote as hex text.
 static func float_from_text(text: String) -> float:
 	var bytes: PackedByteArray = PackedByteArray()
 	bytes.resize(8)

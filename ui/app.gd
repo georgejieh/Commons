@@ -8,6 +8,7 @@ extends Control
 ## arrival (ADR 0026): a scripted first evening at the table, played over its own layer,
 ## never saved, that writes the profile's first save, with that name, when it ends.
 
+## The demo's numbers, which the app reads portraits and the Need cap from.
 const DEMO: DemoParams = preload("res://data/run/demo.tres")
 ## The command-line flag that makes New Run start the demo.
 const DEMO_FLAG: String = "--demo"
@@ -52,9 +53,13 @@ const MENU_SCREENS: Array[String] = [
 
 ## True when New Run starts the demo. Tools set it before the app enters the tree.
 var demo: bool = OS.get_cmdline_user_args().has(DEMO_FLAG)
+## The run controller, the one way the screens touch a run.
 var controller: RunController = null
+## The player's hand as both table views see it.
 var hand: HandModel
+## Shows one screen at a time, with a way back.
 var switcher: SceneSwitcher = null
+## The full-screen pass drawn over every screen.
 var post: PostProcess = null
 ## The arrival (ADR 0026): offered on a first launch, and the one-time tooltips. Screens
 ## ask it whether an action is allowed.
@@ -144,6 +149,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+## True while the pause menu is showing.
 func menu_is_open() -> bool:
 	return menu != null and menu.visible
 
@@ -327,10 +333,12 @@ func seat_portrait(seat: int, box: Vector2 = Vector2.ZERO) -> Texture2D:
 	return FaceCrop.crop(picture, DEMO.portrait_faces[seat], box.x / box.y)
 
 
+## The most Need the demo lets the player declare.
 func need_cap() -> int:
 	return DEMO.need_cap
 
 
+## How many Sets make a Year.
 func sets_per_year() -> int:
 	return SetConfig.SETS_PER_YEAR
 

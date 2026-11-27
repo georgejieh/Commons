@@ -9,9 +9,9 @@ extends RefCounted
 ## through CardModifiers and save it. A card holds one enhancement at a time, so a new
 ## one replaces the old.
 
-## Deck card ID to the seat whose stamp it carries, and to its enhancement ID. An
-## unmarked card has no entry.
+## Deck card ID to the seat whose stamp it carries. An unmarked card has no entry.
 var stamps: Dictionary[int, int] = {}
+## Deck card ID to the enhancement ID it carries. An unmarked card has no entry.
 var enhancements: Dictionary[int, String] = {}
 
 
@@ -46,6 +46,7 @@ static func is_valid(value: Variant) -> bool:
 	return true
 
 
+## The marks as maps with text keys, for the run save; from_dict reads them back.
 func to_dict() -> Dictionary:
 	var stamp_data: Dictionary[String, int] = {}
 	for card_id: int in stamps:

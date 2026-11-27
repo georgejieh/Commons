@@ -12,7 +12,9 @@ extends RefCounted
 ## y 622. Three leaflets end by x 460.
 const TRAY_AT: Vector2 = Vector2(78, 358)
 
+## The tray of the held leaflets; hidden while none is held.
 var tray: CampaignTray = CampaignTray.new()
+## The layer that acts out each use of a Campaign.
 var moments: CampaignMoments = CampaignMoments.new()
 
 var _controller: RunController
@@ -32,6 +34,8 @@ func place(screen: Control) -> void:
 	moments.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
+## Wires the tray and the Play on button to the run, the hand, the action bar, the commands, the
+## event queue and the table's moments, and shows the tray if a Campaign is held.
 func setup(
 	controller: RunController,
 	hand: HandModel,

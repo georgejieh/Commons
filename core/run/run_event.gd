@@ -2,6 +2,7 @@ class_name RunEvent
 extends RefCounted
 ## One thing that happened in a run. Round play arrives wrapped as ROUND events.
 
+## What happened; a member's comment says what seat, value, amount and text hold for it.
 enum Type {
 	SET_STARTED,
 	DEBUFF_ADDED,
@@ -113,17 +114,24 @@ enum Type {
 	KITTY_SEEN,
 }
 
+## Which Type this is, which decides what the other fields hold.
 var type: Type
+## The seat that acted, or Seats.NONE for an event no seat caused.
 var seat: int
+## A whole number whose meaning depends on type.
 var value: int
+## A number with a fraction whose meaning depends on type, such as what was banked.
 var amount: float
+## A string whose meaning depends on type, such as an ID or a list of IDs.
 var text: String
 ## Set only for ROUND events.
 var round_event: RoundEvent
-## Set only for PLAY_SCORED: the play's Grain, Rate and Zeal. amount is their product,
+## Set only for PLAY_SCORED: the play's Grain. amount is Grain, Rate and Zeal multiplied,
 ## times any total scale a hook set.
 var grain: float = 0.0
+## Set only for PLAY_SCORED: the play's Rate.
 var rate: float = 0.0
+## Set only for PLAY_SCORED: the play's Zeal.
 var zeal: float = 0.0
 ## Set only for PLAY_SCORED: every change to the play's score in the order it was made,
 ## so the table can act each one out. Never saved.
@@ -154,6 +162,7 @@ func listed() -> Array[int]:
 	return found
 
 
+## Wraps a round event as a ROUND event for the seat that made it.
 static func wrap(event: RoundEvent) -> RunEvent:
 	var wrapped: RunEvent = RunEvent.new(Type.ROUND, event.seat)
 	wrapped.round_event = event

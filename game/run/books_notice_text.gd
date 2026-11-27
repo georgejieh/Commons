@@ -6,12 +6,18 @@ extends RefCounted
 ## file. A figure that is dark never has its true value printed: its line gives only the
 ## value reported. A broken seal, with nothing corrected, has its own short text.
 
+## The string key of a figure's name, filled with the figure's name.
 const NAME: String = "notice.name.%s"
 
+## The small line above the notice's heading.
 var eyebrow: String = ""
+## The notice's heading; a broken seal with nothing corrected has its own.
 var title: String = ""
+## The state's congratulation under the heading, or the broken seal's short text.
 var body: String = ""
+## One plain line for each figure corrected, then a line for any rise in the Norm or the prices.
 var lines: PackedStringArray = []
+## The line saying a note went into the household's file.
 var filed: String = ""
 
 

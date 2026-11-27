@@ -8,6 +8,8 @@ extends RefCounted
 ## 0042), whatever the coupons. Off, its words are dark ink that reads on the faded
 ## ticket, in colour and in grayscale.
 
+## Why a Buy ticket cannot be pressed: NONE when it can, then the coupons short, no room, an empty
+## place, an item sold back this visit, or a rank held at its most.
 enum Why { NONE, POOR, FULL, EMPTY, SOLD_BACK, AT_MOST }
 
 ## Ink on a ticket that cannot be pressed: dark enough to read, a little faded.

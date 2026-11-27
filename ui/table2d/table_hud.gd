@@ -7,24 +7,35 @@ extends PanelContainer
 ## never pulses, a dark norm hides the Quota's target, and at the stage past the last
 ## every figure reads as a success.
 
+## The ink of the Denunciation meter's bar.
 const ZEAL: Color = Color("c8341e")
 
-## The sizes of the bars.
+## The Quota bar's size, in pixels.
 const QUOTA_BAR: Vector2 = Vector2(300, 30)
+## Each meter bar's size, in pixels.
 const METER_BAR: Vector2 = Vector2(150, 18)
+## The width of the seal stamped on the Quota bar when it is met, in pixels.
 const SEAL_WIDTH: float = 92.0
 ## The size of "None reported" where a meter's bar would be.
 const NONE_SIZE: int = 18
+## The status line's type at Standard; fitted down, never under Standard, to its room.
 const STATUS_SIZE: int = 26
 ## Seconds a bar takes to reach a new value.
 const FILL_TIME: float = 0.6
+## The key of the Quota's bar among the bars, beside the two meters' keys.
 const QUOTA: String = "quota"
 
+## Where you are in the run, as a line across the bar's left.
 var status: Label = Label.new()
+## The coupons held, beside the coupon icon.
 var coupons: Label = Label.new()
+## The Quota as a bar that fills as work points reach you, sealed when met.
 var quota: QuotaBar = QuotaBar.new()
+## The Famine meter's bar.
 var famine: ProgressBar = ProgressBar.new()
+## The Denunciation meter's bar.
 var denunciation: ProgressBar = ProgressBar.new()
+## Opens the pause menu.
 var menu: Button = Button.new()
 
 var _target: float = 1.0
@@ -169,6 +180,7 @@ func goal(bar: String) -> float:
 	return _goals[bar]
 
 
+## True once the Quota is met and sealed, for tests.
 func is_met() -> bool:
 	return quota.is_met()
 

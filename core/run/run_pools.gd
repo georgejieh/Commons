@@ -8,35 +8,58 @@ extends RefCounted
 ## envelopes hold, and the Cadre reeducation gives in exchange. Lookups by ID stay on the
 ## whole pools. The arrival's counters hold only what its script puts on them (ADR 0026).
 
+## Every debuff the round ladders draw from.
 const DEBUFFS: DebuffPool = preload("res://data/run/debuff_pool.tres")
+## Every boss: the officials, the risen villager and the New Landlord.
 const BOSSES: BossPool = preload("res://data/run/boss_pool.tres")
+## The Cadres the state store sells.
 const STORE_CADRES: CadrePool = preload("res://data/run/cadre_pool.tres")
+## The Cadres the black market sells.
 const MARKET_CADRES: CadrePool = preload("res://data/run/market_pool.tres")
+## Every Directive a run may be offered.
 const DIRECTIVES: DirectivePool = preload("res://data/run/directive_pool.tres")
+## The Campaigns the state store sells.
 const STORE_CAMPAIGNS: CampaignPool = preload("res://data/run/campaign_pool.tres")
+## The Campaigns the black market sells.
 const MARKET_CAMPAIGNS: CampaignPool = preload("res://data/run/market_campaign_pool.tres")
+## Every Reform the state store may offer.
 const REFORMS: ReformPool = preload("res://data/run/reform_pool.tres")
+## The state store's counter numbers, before the stake and the unlocks change them.
 const STORE: ShopParams = preload("res://data/run/default_shop.tres")
+## The black market's counter numbers, before the unlocks change them.
 const MARKET: ShopParams = preload("res://data/run/black_market.tres")
+## The audit's numbers, before the stake changes them.
 const AUDIT: AuditParams = preload("res://data/run/audit.tres")
+## The debuff ladder's numbers, before the stake changes them.
 const LADDER: LadderParams = preload("res://data/run/default_ladder.tres")
+## What the black market's plot stall offers, before any change.
 const PLOT_CARDS: CardStallParams = preload("res://data/run/plot_stall.tres")
+## What the state store's deck stall offers, before any change.
 const DECK_CARDS: CardStallParams = preload("res://data/run/deck_stall.tres")
 
+## The state store's Cadres this run may be offered, by what is unlocked.
 var store_cadres: Array[ModifierDef]
+## The black market's Cadres this run may be offered, by what is unlocked.
 var market_cadres: Array[ModifierDef]
+## The Directives this run may be offered, by what is unlocked.
 var directives: Array[DirectiveDef]
+## The state store's Campaigns this run may be offered, by what is unlocked.
 var store_campaigns: Array[CampaignDef]
+## The black market's Campaigns this run may be offered, by what is unlocked.
 var market_campaigns: Array[CampaignDef]
+## The Reforms this run may be offered, by what is unlocked.
 var reforms: Array[ReformDef]
-## Each counter's numbers: the state store's slots under the stake, and only the open
-## envelope kinds.
+## The state store's numbers: its slots under the stake, and only the open envelope kinds.
 var store: ShopParams
+## The black market's numbers, with only the envelope kinds open to the run.
 var market: ShopParams
+## The audit's numbers under the stake.
 var audit: AuditParams
+## The debuff ladder's numbers under the stake.
 var ladder: LadderParams
-## What the black market's plot stall and the state store's deck stall offer.
+## What the black market's plot stall offers.
 var plot_cards: CardStallParams = PLOT_CARDS
+## What the state store's deck stall offers.
 var deck_cards: CardStallParams = DECK_CARDS
 ## The stake's numbers, its own and every lower stake's.
 var stake: StakeDef

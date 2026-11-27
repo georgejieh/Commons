@@ -5,11 +5,17 @@ extends Control
 ## copies of the real face make the halves; the torn edge is old paper, worn with
 ## BowlGrime.wear(). Reduced motion and quiet replays show nothing: the card is gone.
 
+## The card view scene the two halves are made from.
 const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
+## The scale the seized card is held up at.
 const SCALE: float = 1.6
+## Seconds the whole card is held before it tears.
 const SHOW_TIME: float = 0.5
+## Seconds the halves take to fall away.
 const TEAR_TIME: float = 0.6
+## How many teeth the torn edge has.
 const TEETH: int = 9
+## How far a tooth of the torn edge juts, in pixels.
 const TOOTH: float = 7.0
 
 var _halves: Array[Control] = []

@@ -37,6 +37,7 @@ extends Resource
 @export var voice_release_ms: float = 400.0
 
 
+## The bed with this ID, or null.
 func bed(bed_id: String) -> AmbienceBed:
 	for each: AmbienceBed in beds:
 		if each.id == bed_id:

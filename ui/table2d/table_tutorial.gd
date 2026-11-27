@@ -9,9 +9,9 @@ extends RefCounted
 ## foot just over the trick, clear of the cards in play, the hand, the prompt, the
 ## ledger and the bar.
 
-## The highest the slip's top may stand, level with the seats' tops under the bar, and
-## its gap over the trick, or over the claim sheet while that is up.
+## The highest the slip's top may stand, level with the seats' tops under the bar.
 const HOME_TOP: float = 118.0
+## The slip's gap over the trick, or over the claim sheet while that is up, in pixels.
 const HOME_GAP: float = 16.0
 ## The longest a report waits for a play's cards to land, in milliseconds, so a flight
 ## that never ends cannot hold the arrival.
@@ -37,6 +37,8 @@ var _report_by: int = 0
 var _pose: Array[Transform2D] = []
 
 
+## Gives the tutorial guide the app, the action bar, the hand, the need panel, the rules card, the
+## menu and the dressing it points at and keeps clear of.
 func setup(
 	app: App,
 	actions: ActionBar,
@@ -157,6 +159,8 @@ func tutorial_place(slip: TutorialSlip) -> bool:
 	return true
 
 
+## The screen rectangle of the table piece a tutorial step names by key, or none when it is not on
+## screen.
 func tutorial_rect(key: String) -> Rect2:
 	match key:
 		"cards":

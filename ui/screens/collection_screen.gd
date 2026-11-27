@@ -11,18 +11,25 @@ extends Control
 ## its picture will fill. The scroll is as wide as the whole cards that fit across, so
 ## its bar stands beside them, and it fades at a cut edge while more lies past it.
 
+## The size of a Cadre's art, or of the empty frame standing for it, in pixels.
 const ART_SIZE: Vector2 = Vector2(128, 168)
+## The width of an open item's card, in pixels.
 const CARD_WIDTH: float = 480.0
+## The width of the rules beside a Cadre's art, in pixels.
 const RULES_WIDTH: float = 280.0
 ## Rules beside no art take the card's whole width, less its padding.
 const WIDE_RULES: float = 420.0
+## The height of a locked sheet, in pixels.
 const LOCKED_HEIGHT: float = 150.0
+## The padding of the page's paper sheet, in pixels.
 const SHEET_PADDING: int = 28
+## The gap between cards, across and down, in pixels.
 const GAP: int = 20
 ## The room kept between the last card and the scroll's bar.
 const BAR_ROOM: int = 24
-## The open line and a sheet's rules, at Standard.
+## The size of the line saying how many are open, at Standard text.
 const LINE_SIZE: int = 22
+## The size of a sheet's rules, at Standard text.
 const RULE_SIZE: int = 20
 
 var _entries: Array[Control] = []
@@ -32,6 +39,8 @@ var _open_line: Label
 var _app: App
 
 
+## Builds the page for app: the open line and every kind's sections in a scroll that follows the
+## focus.
 func open(app: App) -> void:
 	_app = app
 	var view: CollectionView = CollectionView.of(Saves.profile_service())
@@ -91,6 +100,7 @@ func entries() -> Array[Control]:
 	return _entries.duplicate()
 
 
+## The scroll holding the sections, for tests.
 func scroll() -> ScrollContainer:
 	return _scroll
 

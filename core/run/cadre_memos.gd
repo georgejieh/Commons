@@ -7,6 +7,7 @@ extends RefCounted
 var _entries: Dictionary[String, CadreMemo] = {}
 
 
+## Rebuilds the memos from the run save; data must pass is_valid.
 static func from_dict(data: Dictionary) -> CadreMemos:
 	var memos: CadreMemos = CadreMemos.new()
 	for cadre_id: Variant in data:
@@ -25,6 +26,7 @@ static func is_valid(value: Variant) -> bool:
 	return true
 
 
+## The memos as a map of Cadre IDs to saved memos, for the run save.
 func to_dict() -> Dictionary:
 	var data: Dictionary[String, Dictionary] = {}
 	for cadre_id: String in _entries:
@@ -39,6 +41,7 @@ func entry(cadre_id: String) -> CadreMemo:
 	return _entries[cadre_id]
 
 
+## True when the Cadre has a state entry; unlike entry(), it makes none.
 func has(cadre_id: String) -> bool:
 	return _entries.has(cadre_id)
 
@@ -48,6 +51,7 @@ func peek(cadre_id: String) -> CadreMemo:
 	return _entries[cadre_id].copy() if _entries.has(cadre_id) else CadreMemo.new()
 
 
+## The IDs of every Cadre with a state entry.
 func ids() -> Array[String]:
 	var result: Array[String] = []
 	result.assign(_entries.keys())

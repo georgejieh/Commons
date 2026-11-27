@@ -18,6 +18,7 @@ extends Resource
 @export var ambition_span: float = 4.0
 
 
+## Every boss: the officials, then the risen villager, then the New Landlord.
 func all() -> Array[ModifierDef]:
 	var found: Array[ModifierDef] = officials.duplicate()
 	found.append(risen)

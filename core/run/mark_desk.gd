@@ -8,6 +8,7 @@ extends RefCounted
 ## any raise the books made (ADR 0022), and is shut through the arrival. A use is a
 ## recorded command, so nothing here is saved.
 
+## Why the desk refuses a mark; OK means it takes it.
 enum Reason { OK, CLOSED, USED, TOO_POOR, NO_SUCH_CARD, ALREADY_MARKED }
 
 ## The enhancement on offer, or CardInstance.NO_ID at a desk that stamps.
@@ -46,10 +47,12 @@ func open(shut: bool) -> void:
 	offer = kinds[stream.next_int(0, kinds.size() - 1)]
 
 
+## What the desk charges now: its data's price under any raise the books made.
 func price() -> int:
 	return RunBooks.priced(_state, _params.desk_price)
 
 
+## True once the desk has marked a card this visit.
 func used() -> bool:
 	return _used
 

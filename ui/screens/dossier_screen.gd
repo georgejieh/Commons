@@ -13,6 +13,7 @@ const LINES: Dictionary[String, Observations.Kind] = {
 	"dossier.went_out": Observations.Kind.WENT_OUT,
 	"dossier.landlord": Observations.Kind.LANDLORD_ROUNDS,
 }
+## The size of a villager's portrait, in pixels.
 const PORTRAIT_SIZE: Vector2 = Vector2(150, 188)
 ## A villager's lines, at Standard.
 const LINE_SIZE: int = 22
@@ -22,6 +23,8 @@ var _entries: Dictionary[int, PackedStringArray] = {}
 var _app: App
 
 
+## Builds the page for app: a card for each villager still in the village, from what the run has
+## seen.
 func open(app: App) -> void:
 	_app = app
 	var state: RunView = app.controller.run

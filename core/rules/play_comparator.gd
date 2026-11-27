@@ -17,6 +17,8 @@ enum BombKind { SOFT, NATURAL, PURE_WILD }
 const PURE_WILD_CARDS: int = 4
 
 
+## True when play beats current under the rules. Anything beats a pass, so a lead is free;
+## a pass beats nothing.
 static func beats(play: Pattern, current: Pattern, rules: RuleSet) -> bool:
 	if play.type == Pattern.Type.PASS:
 		return false

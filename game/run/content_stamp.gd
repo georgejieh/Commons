@@ -9,6 +9,7 @@ extends RefCounted
 
 ## The stamp's key in a save's extras.
 const KEY: String = "content"
+## The project setting that holds the game's version.
 const VERSION_SETTING: String = "application/config/version"
 ## Kinds of value a definition's fingerprint reads: plain ones, the same on every launch.
 const PLAIN: Array[int] = [TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING, TYPE_STRING_NAME]

@@ -12,10 +12,12 @@ func _enter_tree() -> void:
 	use_default_paths()
 
 
+## The service that saves and loads the run.
 func run_service() -> SaveService:
 	return _run
 
 
+## The service that saves and loads the profile, kept beside the run save.
 func profile_service() -> SaveService:
 	return _profile
 

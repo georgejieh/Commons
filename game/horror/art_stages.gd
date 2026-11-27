@@ -15,8 +15,11 @@ extends RefCounted
 ## reaches it. Art there is the last stage's and wear stays at its most; what changes is
 ## how the screens show the run's figures (ShownFigures).
 
+## The horror config: the layers and the art variants for each stage.
 const CONFIG: HorrorConfig = preload("res://data/horror/horror_config.tres")
+## The art library, whose picture_cache sets how many pictures stay loaded.
 const ART: ArtLibrary = preload("res://data/ui/art.tres")
+## The last stage corruption alone reaches.
 const LAST_STAGE: int = BoardState.CORRUPTION_STAGES - 1
 ## The stage past the last, reached only with an entry in the family's file.
 const FILED_STAGE: int = LAST_STAGE + 1
@@ -26,12 +29,16 @@ const STAGE_SPAN: float = 10.0
 ## stage flag takes 0 to FILED_STAGE (10), so a tool can show the stage past the last; the
 ## value flag never reaches it, as corruption alone never does.
 const STAGE_FLAG: String = "--corruption-stage"
+## The development flag that sets a corruption value from 0 to 100 for the session.
 const VALUE_FLAG: String = "--corruption"
+## The setting that caps the stage the art shows.
 const INTENSITY_KEY: String = "horror_intensity"
 
-## Tests and tools may set these; -1 and empty mean "use the real values".
+## The stage tests and tools force; -1 means use the real stage.
 static var stage_override: int = -1
+## The art variants tests and tools use in place of the config's; empty means the config's.
 static var variants_override: Array[ArtVariant] = []
+## The horror intensity tests and tools force, 0 to 1; -1 means the setting's.
 static var intensity_override: float = -1.0
 
 ## The stage latched from the profile the last time the app read it.
@@ -90,6 +97,7 @@ static func latch(profile: SaveService) -> void:
 	latch_value(data.corruption, not data.file.is_empty())
 
 
+## Latches the stage of a corruption value, 0 to 100, as latch does from a profile.
 static func latch_value(corruption: float, filed: bool = false) -> void:
 	_latched = stage_with_file(corruption, filed)
 

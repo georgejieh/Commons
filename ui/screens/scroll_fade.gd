@@ -6,8 +6,9 @@ extends Control
 ## once the scroll reaches its end. It stands outside the scroll's layout (top level) and
 ## follows the scroll's place on screen each frame.
 
-## How tall a band is, and how far it hides the paper's own colour at the very edge.
+## How tall, in pixels, a band is at most; it is never more than a third of the scroll.
 const BAND: float = 64.0
+## How far a band hides the paper's own colour at the very edge: the alpha of its solid side.
 const DEPTH: float = 0.94
 ## The scroll counts as at an end within this many pixels of it.
 const SLACK: float = 1.0

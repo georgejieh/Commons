@@ -5,14 +5,18 @@ extends Button
 ## by the stage). Focus and hover lift it and ring it in faded gold; the one in the field
 ## is stamped round in red.
 
+## The ticket's size in pixels.
 const SIZE: Vector2 = Vector2(120, 56)
+## How far, in pixels, the ticket rises while it is hovered or focused.
 const LIFT: float = 4.0
+## The font size of the surname on the ticket, at Standard.
 const NAME_SIZE: int = 24
 ## Seeds after the stake tickets', so no surname ticket wears like a stake's.
 const SEED_BASE: int = 80
 
 ## The surname it offers.
 var surname: String = ""
+## The ticket's place among those offered, from 0; with SEED_BASE it sets how this one wears.
 var index: int = 0
 ## True while it is the surname in the field.
 var picked: bool = false:

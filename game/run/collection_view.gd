@@ -4,6 +4,7 @@ extends RefCounted
 ## envelope either shop can sell, under one heading per kind, each open or locked by the
 ## profile's finished runs. A locked item's sheet says only when it opens.
 
+## The string keys of the headings, in the order of the section indexes below.
 const SECTION_KEYS: Array[String] = [
 	"coll.collective",
 	"coll.private",
@@ -12,11 +13,17 @@ const SECTION_KEYS: Array[String] = [
 	"coll.reforms",
 	"coll.envelopes",
 ]
+## The section of the Cadres the state store sells.
 const COLLECTIVE: int = 0
+## The section of the Cadres the black market sells.
 const PRIVATE: int = 1
+## The section of the Campaigns either shop sells.
 const CAMPAIGNS: int = 2
+## The section of the Directives.
 const DIRECTIVES: int = 3
+## The section of the Reforms.
 const REFORMS: int = 4
+## The section of the envelopes either shop sells.
 const ENVELOPES: int = 5
 
 ## The finished runs the page opens items by.
@@ -29,6 +36,7 @@ static func of(profile: SaveService) -> CollectionView:
 	return for_runs(Profile.read(profile).finished_runs)
 
 
+## The collection as it stands after this many finished runs.
 static func for_runs(runs: int) -> CollectionView:
 	var view: CollectionView = CollectionView.new()
 	view.finished_runs = runs
@@ -92,6 +100,7 @@ func sheets(section: int) -> Array[UnlockSheet]:
 	return found
 
 
+## How many items the page holds, open or locked.
 func total() -> int:
 	var count: int = 0
 	for section: Array in _sections:
@@ -99,6 +108,7 @@ func total() -> int:
 	return count
 
 
+## How many items the finished runs have opened.
 func open_count() -> int:
 	var count: int = 0
 	for section: Array in _sections:

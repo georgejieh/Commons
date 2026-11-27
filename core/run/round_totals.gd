@@ -3,6 +3,7 @@ extends RefCounted
 ## Applies the round-end multipliers to each seat's total. RoundScoring scores the plays.
 
 
+## Each seat's round total: its score times the round-end multiplier for how the round finished.
 static func totals(
 	scores: PackedFloat64Array,
 	landlord: int,

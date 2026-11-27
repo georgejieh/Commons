@@ -3,6 +3,7 @@ extends RefCounted
 ## Reads the run's shape from a SetParams Resource and checks it. Every Set number the
 ## run uses comes through here.
 
+## Why validate() refuses a SetParams; OK means its numbers hold together.
 enum Reason {
 	OK,
 	NO_YEARS,
@@ -14,7 +15,9 @@ enum Reason {
 	BAD_OVERFULFILMENT,
 }
 
+## The run's Set numbers, from data: Years, targets, rewards and overfulfilment.
 const DEFAULT_PARAMS: SetParams = preload("res://data/run/default_sets.tres")
+## How many Sets a Year holds, one of each SetType.
 const SETS_PER_YEAR: int = 3
 
 var _params: SetParams
@@ -57,10 +60,12 @@ func under_stake(sum: StakeDef) -> SetConfig:
 	return SetConfig.new(RunStakes.sets(_params, sum))
 
 
+## How many Years the run lasts.
 func years() -> int:
 	return _params.years
 
 
+## The most rounds a Set may play.
 func max_rounds() -> int:
 	return _params.max_rounds
 
@@ -70,6 +75,7 @@ func target(year: int, set_type: RunState.SetType) -> float:
 	return _params.targets[(year - 1) * SETS_PER_YEAR + set_type]
 
 
+## The coupons a finished Set of this type pays.
 func reward(set_type: RunState.SetType) -> int:
 	return _params.reward_coupons[set_type]
 

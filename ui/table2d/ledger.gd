@@ -7,11 +7,14 @@ extends VBoxContainer
 ## seat's total counts up as its play is stamped in. At the stage past the last
 ## the household's small ledger sits at its foot, with the run's true figures (ADR 0022).
 
+## How many of the round's last plays the ledger keeps a row for.
 const MAX_PLAYS: int = 5
 ## A play's Grain × Rate × Zeal line is set in the condensed face at the least size a
 ## player must read, so the whole sum and its score fit one line of the ledger.
 const SUM_SIZE: int = 16
+## The condensed face a play's Grain × Rate × Zeal sum is set in.
 const SUM_FACE: String = "res://ui/theme/oswald_medium.tres"
+## The bold condensed face a play's score is set in.
 const SCORE_FACE: String = "res://ui/theme/oswald_bold.tres"
 ## Rows wrap inside the ledger's paper.
 const ROW_WIDTH: float = 270.0
@@ -205,6 +208,7 @@ func set_final(seat: int, total: float) -> void:
 	_show()
 
 
+## Empties the rows and the totals for a new round.
 func clear_rows() -> void:
 	start_round(Seats.NONE)
 
@@ -214,6 +218,7 @@ func row_texts() -> PackedStringArray:
 	return _texts
 
 
+## The work points a seat has scored this round, for tests.
 func total_of(seat: int) -> float:
 	return _totals[seat]
 

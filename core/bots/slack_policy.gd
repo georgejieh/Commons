@@ -13,6 +13,7 @@ static func slacks(view: SeatView, config: BotConfig) -> bool:
 	return config.effort < 1.0 and BotPosition.roll_for(view, config, SALT) >= config.effort
 
 
+## The play of a bot that isn't trying. legal must not be empty when it leads.
 static func choose(view: SeatView, legal: Array[Pattern]) -> BotPlay:
 	if view.public.current_play != null:
 		return BotPlay.new(Pattern.pass_play(), BotRationale.Code.SLACKED)

@@ -9,15 +9,23 @@ extends RefCounted
 ## when its grudge is below zero. Sent-down youth are never chosen: their place in the
 ## village lasts one run.
 
+## The lineage kind of a run that leaves nothing.
 const NONE: String = ""
+## The lineage kind that leaves one Model plot card.
 const HEIRLOOM: String = "heirloom"
+## The lineage kind that leaves loyal families.
 const LOYAL: String = "loyal"
+## The lineage kind that leaves the label, which raises Denunciation.
 const LABEL: String = "label"
+## The key of the heirloom's rank in a lineage's values.
 const RANK: String = "rank"
+## The key of the heirloom's suit in a lineage's values.
 const SUIT: String = "suit"
+## The key of the loyal families' IDs in a lineage's values.
 const FAMILIES: String = "families"
 ## The stream the heirloom is drawn on, seeded from the finished run alone.
 const HEIRLOOM_STREAM: String = "heirloom"
+## The heirloom's ranks and the counts and amounts a lineage uses, when a caller gives none.
 const DEFAULT_PARAMS: LineageParams = preload("res://data/run/lineage.tres")
 
 

@@ -6,5 +6,6 @@ extends ModifierEffect
 const FREE_REROLLS: int = 1
 
 
+## Makes the first black market reroll of the visit free.
 func shop_open(context: ShopContext) -> void:
 	context.free_market_rerolls += FREE_REROLLS

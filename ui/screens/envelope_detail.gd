@@ -5,11 +5,17 @@ extends PanelContainer
 ## marked, and each keyword's meaning beside them in smaller type. It only explains:
 ## clicks pass through it.
 
+## The explanation's size, in pixels.
 const SIZE: Vector2 = Vector2(1040, 150)
+## The width of the column the rules wrap in, in pixels.
 const RULE_WIDTH: float = 560.0
+## The width of each keyword's meaning beside the rules, in pixels.
 const MEANING_WIDTH: float = 440.0
+## The size of the item's name, at Standard text.
 const TITLE_SIZE: int = 24
+## The size of the rules, at Standard text.
 const RULE_SIZE: int = 19
+## The size of a keyword's meaning, at Standard text.
 const MEANING_SIZE: int = 16
 ## Inside the paper's printed border, which ends 17 px in.
 const PADDING: int = 22
@@ -57,6 +63,7 @@ func explain(title: String, rule: String) -> void:
 		_meanings.add_child(meaning)
 
 
+## The name shown over the rules, for tests.
 func shown_title() -> String:
 	return _title.text
 

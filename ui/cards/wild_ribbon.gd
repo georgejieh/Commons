@@ -7,20 +7,26 @@ extends Control
 ## silk is creased, the tails fray and tea has spotted it; each stage fades and darkens it
 ## toward old blood, frays it further and at the last stages tears a hole through it.
 
-## The ribbon's box in card pixels, and where it hangs: under the suit pip, above the chop.
+## The ribbon's box, in card pixels.
 const SIZE: Vector2 = Vector2(13, 36)
+## Where the ribbon hangs on the card: under the suit pip, above the chop.
 const AT: Vector2 = Vector2(1, 90)
+## The silk's red, before the stage darkens it.
 const FOLD: Color = Color("6e120d")
+## The gold thread down the ribbon, before the stage fades it.
 const GOLD: Color = Color("d9a93c")
-## How deep the swallowtail cuts, and the room under the tails the frayed threads hang
-## in, so no thread reaches the chop below, in pixels.
+## How deep the swallowtail cuts, in pixels.
 const NOTCH: float = 6.0
+## The room under the tails the frayed threads hang in, so no thread reaches the chop
+## below, in pixels.
 const FRAY: float = 5.0
+## Seeds the ribbon's random wear, so it draws the same each time.
 const SEED: int = 7741
-## Frayed threads at the tails at stage 0 and at the last stage, and the stage from which a
-## hole is torn through the silk.
+## Frayed threads at the tails at stage 0 and at the last stage.
 const THREADS: Vector2i = Vector2i(2, 9)
+## Creases in the silk at stage 0 and at the last stage.
 const CREASES: Vector2i = Vector2i(1, 4)
+## The share of the last stage's wear from which a hole is torn through the silk.
 const TORN_FROM: float = 0.75
 
 ## Varies the grime from card to card, so a hand of wild cards is not one stamp repeated.

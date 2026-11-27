@@ -4,9 +4,12 @@ extends Control
 ## Stay. Stay has the focus, so a stray accept press keeps the player in, and Cancel
 ## stays too.
 
+## Emitted when the player answers Skip.
 signal skipped
 
+## The scrim laid over the screen behind the question.
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.7)
+## The type size of the question, at Standard.
 const QUESTION_SIZE: int = 28
 
 var _question: Label
@@ -52,14 +55,17 @@ func ask() -> void:
 	_stay.grab_focus()
 
 
+## True while the question shows; for tests.
 func is_asking() -> bool:
 	return visible
 
 
+## The Stay button, for tests.
 func stay_button() -> Button:
 	return _stay
 
 
+## The Skip button, for tests.
 func skip_button() -> Button:
 	return _skip
 

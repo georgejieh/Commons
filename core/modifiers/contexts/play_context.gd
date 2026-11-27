@@ -3,8 +3,11 @@ extends RefCounted
 ## Passed to the play scored hook. It runs for previews too, so an effect only reads its
 ## CadreMemo here; counting belongs in the turn taken hook.
 
+## The seat making the play.
 var seat: int
+## True when that seat is the round's landlord.
 var is_landlord: bool
+## The play being scored.
 var pattern: Pattern
 ## Summed, then applied before add_zeal.
 var add_grain: float
@@ -39,9 +42,9 @@ var total_scale: float = 1.0
 var landlord: int = Seats.NONE
 ## Cards left in the seat's hand once this play is made, or -1 when unknown.
 var cards_left: int = -1
-## Each seat's plays so far this round, and the Grain its last one scored. Empty when
-## the scorer was not given the round.
+## Each seat's plays so far this round. Empty when the scorer was not given the round.
 var seat_plays: PackedInt32Array = PackedInt32Array()
+## Each seat's Grain from its last play this round. Empty when the scorer was not given the round.
 var seat_grain: PackedFloat64Array = PackedFloat64Array()
 
 

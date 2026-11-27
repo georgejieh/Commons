@@ -14,27 +14,30 @@ const SLIP_AT: Vector2 = Vector2(790, 520)
 ## The bowl lands beside the slip, in the open table between it and the ledger, so the
 ## claims stay readable while their dice roll.
 const BOWL_AT: Vector2 = Vector2(1312, 575)
-## Seconds the ledger waits after the total lands, while it flies over, and the least the
-## table waits on a total once its sequence is done.
+## Seconds the ledger waits after the total lands, while it flies over.
 const FLIGHT: float = 0.35
+## The least the table waits on a total once its sequence is done, in seconds.
 const MIN_READ: float = 0.05
-## The kitty lies face up this long before the landlord takes it, and where it is
-## dealt from and labelled.
-const KITTY_SHOW: float = 0.9
-const KITTY_MARGIN: float = 0.12
-const KITTY_FROM: Vector2 = Vector2(790, 200)
-const KITTY_LABEL_AT: Vector2 = Vector2(790, 420)
+## Where the kitty is swept to when the player takes it, toward the hand.
 const HAND_AT: Vector2 = Vector2(628, 940)
-## Shake from a play landing, per card, and the most a plain play gives.
+## Shake from a play landing, per card.
 const THUMP_PER_CARD: float = 0.025
+## The most shake a plain play gives.
 const THUMP_MAX: float = 0.2
+## The shake a takeover callout gives.
 const TAKEOVER_SHAKE: float = 0.45
 
+## The table's shout, for a villager's call, a bomb or a round's end.
 var callout: Callout = Callout.new()
+## The tally of a play's Grain, Rate, Zeal and total.
 var tally: ScoreTally = ScoreTally.new()
+## Acts out each scored play on the tally, the pile, the board and the rules slip.
 var sequence: ScoreSequence = ScoreSequence.new()
+## The audit's claims, verdicts and what each claim paid.
 var slip: AuditSlip = AuditSlip.new()
+## The audit's dice, thrown in a bowl.
 var dice: DiceBowl = DiceBowl.new()
+## The points and tags in flight over the table.
 var fx: TableFx = TableFx.new()
 ## The bar the Quota and meters are shown on, when the table has one.
 var hud: TableHud = null
@@ -57,8 +60,7 @@ var _bids: Dictionary[int, String] = {}
 ## The seat whose score the tally is counting.
 var _scoring: int = Seats.NONE
 var _target: float = 0.0
-var _kitty_label: Label = Label.new()
-var _kitty: Tween = null
+var _kitty: KittyShow = KittyShow.new()
 ## The audit rolls of the split under way, until every claim has rolled, and the tween
 ## that runs the dice moment.
 var _rolls: Array[RunEvent] = []
@@ -73,15 +75,8 @@ func _ready() -> void:
 		layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	slip.center = SLIP_AT
 	dice.center = BOWL_AT
-	_kitty_label.text = tr("keyword.kitty.name").to_upper()
-	_kitty_label.theme_type_variation = CommonsTheme.TITLE
-	_kitty_label.add_theme_font_size_override("font_size", TextSize.px(34))
-	_kitty_label.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
-	_kitty_label.add_theme_color_override("font_outline_color", ScreenKit.INK)
-	_kitty_label.add_theme_constant_override("outline_size", 10)
-	_kitty_label.visible = false
-	add_child(_kitty_label)
-	move_child(_kitty_label, 0)
+	add_child(_kitty)
+	move_child(_kitty, 0)
 	add_child(sequence)
 	sequence.tally = tally
 	sequence.fx = fx
@@ -89,6 +84,8 @@ func _ready() -> void:
 	tally.landed.connect(_on_landed)
 
 
+## Gives the moments the ledger, the trick pile, the motion, the event queue and the seats' panels,
+## names and faces they act on.
 func setup(
 	ledger: Ledger,
 	pile: TrickPile,
@@ -130,7 +127,7 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 			_clear_tally()
 			callout.dismiss()
 			_end_dice()
-			_kitty_label.visible = false
+			_kitty.visible = false
 		RunEvent.Type.BID:
 			_on_bid(event.seat, event.value == 1, quiet)
 		RunEvent.Type.LANDLORD_CHOSEN:
@@ -169,6 +166,7 @@ func seats() -> Dictionary[int, SeatPanel]:
 	return _seats
 
 
+## Every seat's name, by seat, for the moments played beside these.
 func names() -> Dictionary[int, String]:
 	return _names
 
@@ -347,23 +345,11 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 			cards.append(controller.table.deck_card(card_id))
 	if cards.is_empty() or _player.step <= 0.0:
 		return
-	_pile.clear()
-	# The kitty's wild cards are wild only when they go to you (ADR 0039).
-	_pile.show_play(cards, KITTY_FROM, [], null, seat == Seats.PLAYER)
-	_kitty_label.reset_size()
-	_kitty_label.position = KITTY_LABEL_AT - _kitty_label.size / 2.0
-	_kitty_label.visible = true
-	UiMotion.stamp(_kitty_label)
 	var to: Vector2 = HAND_AT
 	if _seats.has(seat):
 		to = _seats[seat].global_position + _seats[seat].size / 2.0
-	UiMotion.end(_kitty)
-	_kitty = create_tween()
-	_kitty.tween_interval(KITTY_SHOW)
-	_kitty.tween_callback(_pile.sweep.bind(to))
-	_kitty.tween_callback(_kitty_label.hide)
-	# A little past the sweep, so the landlord's first play never lands under it.
-	_player.hold(KITTY_SHOW + UiMotion.PRESETS.sweep + KITTY_MARGIN)
+	# The kitty's wild cards are wild only when they go to you (ADR 0039).
+	_player.hold(_kitty.show_cards(_pile, cards, seat == Seats.PLAYER, to))
 
 
 ## Shakes the table a little, for a beat played on it.

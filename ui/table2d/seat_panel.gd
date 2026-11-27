@@ -12,17 +12,21 @@ signal speech_skipped(seat: int)
 ## The line typing out finished or was skipped.
 signal speech_finished(seat: int)
 
-## The portrait's frame, and the picture inside it after the frame's 4 px edge.
+## The portrait's frame, in pixels.
 const PORTRAIT_BOX: Vector2 = Vector2(110, 138)
+## The picture inside the frame, after the frame's 4 px edge, in pixels.
 const PICTURE_BOX: Vector2 = Vector2(102, 130)
 ## Room each side of the landlord tag's word, inside its red ground.
 const TAG_MARGIN: int = 10
 ## Seconds a flashed word stays on the role line.
 const FLASH_HOLD: float = 0.9
-## What an information Cadre reveals, and the cards left, at Standard.
+## What an information Cadre reveals, at Standard.
 const INTEL_SIZE: int = 17
+## The cards left, at Standard; fitted down, never under Standard, to the room beside the card
+## back.
 const COUNT_SIZE: int = 26
 
+## The seat this sheet shows; -1 until setup().
 var seat: int = -1
 ## The villager's last words, under the portrait row.
 var speech_line: SeatSpeech = SeatSpeech.new()
@@ -153,6 +157,7 @@ static func _tag_width(font: Font, word: String, font_size: int) -> float:
 	return font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 2 * TAG_MARGIN
 
 
+## Sets the seat this sheet shows, with the villager's name and portrait.
 func setup(seat_index: int, display_name: String, portrait: Texture2D = null) -> void:
 	seat = seat_index
 	name_label.text = display_name
@@ -176,6 +181,7 @@ func set_count(cards: int) -> void:
 	count.add_theme_font_size_override("font_size", TextSize.fit(COUNT_SIZE, COUNT_SIZE, fits))
 
 
+## The cards-left line for a count: "Last card" at one, "Only 2 cards" at two, else "N cards".
 static func count_text(cards: int) -> String:
 	if cards == 1:
 		return TranslationServer.translate("table.card_last")
@@ -183,6 +189,7 @@ static func count_text(cards: int) -> String:
 	return TranslationServer.translate(key).format({"count": cards})
 
 
+## Shows the seat's role: the landlord's tag and stamp, else teammate or peasant.
 func set_role(is_landlord: bool, teammate: bool) -> void:
 	# The tag keeps its space either way, so the seat never changes height.
 	var was_landlord: bool = banner.modulate.a > 0.5
@@ -246,10 +253,12 @@ func has_intel() -> bool:
 	return intel_line.visible
 
 
+## The type the intel line is set in now, which the column fits to the sheets.
 func intel_size() -> int:
 	return intel_line.get_theme_font_size("font_size")
 
 
+## The intel line as shown, or empty while it is hidden, for tests.
 func intel() -> String:
 	return intel_line.text if intel_line.visible else ""
 
@@ -311,6 +320,7 @@ func skip_speech() -> bool:
 	return speech_line.skip()
 
 
+## True while the villager's line is still typing out, for tests.
 func is_typing() -> bool:
 	return speech_line.is_typing()
 
@@ -328,5 +338,6 @@ func blink(seconds: float) -> void:
 	tween.tween_property(_picture, "modulate:v", 1.0, seconds * 0.7)
 
 
+## The villager's last words as shown, for tests.
 func speech() -> String:
 	return speech_line.text

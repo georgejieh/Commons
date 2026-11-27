@@ -7,15 +7,17 @@ extends PanelContainer
 ## purchase waiting on it. Keyboard and gamepad move along the tickets, and back or
 ## Cancel closes it with nothing bought.
 
-## The ranks offered: 3 up to 2. Jokers are never a pick.
+## The lowest rank offered, 3.
 const FIRST: int = Ranks.THREE
+## The highest rank offered, 2; jokers are never a pick.
 const LAST: int = Ranks.TWO
-## One padding on every side inside the paper's printed border, which ends 17 px in, and
-## the room between prompt, tickets and Cancel.
+## One padding on every side inside the paper's printed border, which ends 17 px in.
 const PADDING: int = 32
+## The room between the prompt, the tickets and Cancel.
 const SPACING: int = 16
-## Between the card asked about and the strip, and the strip and the screen's edge.
+## The room between the card asked about and the strip.
 const GAP: float = 14.0
+## The room the strip keeps from the screen's edge.
 const MARGIN: float = 16.0
 ## The question, at Standard.
 const PROMPT_SIZE: int = 24
@@ -83,6 +85,7 @@ func ask(prompt: String, about: Control, then: Callable) -> void:
 	UiMotion.enter(pieces)
 
 
+## True while the strip is showing.
 func is_open() -> bool:
 	return visible
 

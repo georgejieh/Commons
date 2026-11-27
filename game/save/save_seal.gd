@@ -8,7 +8,9 @@ extends RefCounted
 ## whose text changes but whose values do not, such as one reformatted by an editor,
 ## still verifies.
 
+## The key the checksum is made with.
 const KEY: String = "commons-the-brigade-books-v1"
+## The length of a seal, in hex digits.
 const HEX_LENGTH: int = 64
 
 

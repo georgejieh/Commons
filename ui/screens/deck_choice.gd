@@ -7,10 +7,12 @@ extends RefCounted
 ## store (ExchangeChoice).
 
 
+## The small line over the heading; each choice gives its own, and this one has none.
 func eyebrow() -> String:
 	return ""
 
 
+## The heading over the deck while a card is picked; each choice gives its own.
 func title() -> String:
 	return ""
 
@@ -25,6 +27,7 @@ func how() -> String:
 	return ""
 
 
+## The words on the confirm ticket, with the price where there is one.
 func confirm_text() -> String:
 	return ""
 

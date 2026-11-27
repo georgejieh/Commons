@@ -4,11 +4,17 @@ extends RefCounted
 ## whether it can be bought now, then, once it is open, what it shows and whether each
 ## item can be kept. Buying and keeping go through the run controller.
 
+## The kind of an item that is a Directive.
 const KIND_DIRECTIVE: int = EnvelopeDef.Content.DIRECTIVE
+## The kind of an item that is a Campaign.
 const KIND_CAMPAIGN: int = EnvelopeDef.Content.CAMPAIGN
+## The kind of an item that is a stamped card for the plot.
 const KIND_STAMPED: int = EnvelopeDef.Content.STAMPED_CARD
+## The kind of an item that is a model card for the plot.
 const KIND_MODEL: int = EnvelopeDef.Content.MODEL_CARD
+## The kind of an item that is a card for the communal deck.
 const KIND_DECK: int = EnvelopeDef.Content.DECK_CARD
+## The kind of an item that is a card for the communal deck, marked.
 const KIND_MARKED_DECK: int = EnvelopeDef.Content.MARKED_DECK_CARD
 
 ## True for the black market's counter.
@@ -29,24 +35,28 @@ func stock() -> Array[String]:
 	return _counter.stock()
 
 
+## The price in coupons of the envelope in slot.
 func price(slot: int) -> int:
 	return _counter.price(slot)
 
 
+## True when the envelope in slot can be bought now.
 func can_buy(slot: int) -> bool:
 	return _counter.check(slot) == RunShop.Reason.OK
 
 
-## An envelope's name, rules and wrapping, with how many items it shows filled in.
+## The envelope's name, as the string table gives it.
 func envelope_name(envelope_id: String) -> String:
 	return tr(_counter.definition(envelope_id).name_key)
 
 
+## The envelope's rules, with how many items it shows filled in.
 func envelope_text(envelope_id: String) -> String:
 	var text: String = tr(_counter.definition(envelope_id).text_key)
 	return text.format({"choices": _counter.choices(envelope_id)})
 
 
+## How the envelope is wrapped, for the screen to draw.
 func wrapping(envelope_id: String) -> EnvelopeDef.Wrapping:
 	return _counter.definition(envelope_id).wrapping
 
@@ -56,6 +66,7 @@ func bought_id() -> String:
 	return _counter.bought_id()
 
 
+## True once the bought envelope has been opened.
 func is_open() -> bool:
 	return _counter.is_open()
 
@@ -65,15 +76,17 @@ func opened_id() -> String:
 	return _counter.opened_id()
 
 
-## What the open envelope shows: how many items, and each one's kind and ID.
+## How many items the open envelope shows.
 func count() -> int:
 	return _counter.items().size()
 
 
+## The kind of item index in the open envelope, one of the KIND_ constants.
 func kind(index: int) -> int:
 	return _counter.items()[index].content
 
 
+## The ID of item index in the open envelope; a card has none.
 func item_id(index: int) -> String:
 	return _counter.items()[index].item_id
 
@@ -121,6 +134,7 @@ func exchange_refusal(index: int, out: int) -> String:
 	return "exchange.refused.other"
 
 
+## True when item index can be kept now.
 func can_take(index: int) -> bool:
 	return _counter.check_pick(index) == RunShop.Reason.OK
 

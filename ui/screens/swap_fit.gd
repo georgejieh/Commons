@@ -5,23 +5,30 @@ extends RefCounted
 ## lie, fitted to the board's width. The hand keeps at least its least step, as close as
 ## the table's own fan; the set-aside cards and the plot close up first to make room.
 
+## The size of a card on the swap board, as the table draws one.
 const CARD: Vector2 = Vector2(120, 168)
 ## The room between places.
 const GAP: float = 40.0
-## The hand's step at most, as wide as the table's fan, and at least.
+## The most the hand's cards step apart, in pixels, as wide as the table's fan.
 const HAND_STEP_MAX: float = 64.0
+## The least the hand's cards step apart; the side places narrow before the hand goes below it.
 const HAND_STEP_LEAST: float = 46.0
 ## The steps tried for the set-aside cards and the plot, widest first.
 const SIDE_STEPS: Array[float] = [132.0, 104.0, 84.0, 64.0]
+## The font size of a pair's number tag.
 const TAG_SIZE: int = 20
 ## An empty place is a faint sheet of the same paper.
 const PLACE_ALPHA: float = 0.35
 
 
-## The three places' cards as they stand: the hand as it will be played, sorted, the
-## cards set aside in the order they were traded, and the plot cards still in the plot.
+## The three places' cards as they stand: the hand as it will be played, sorted by
+## rank_map, the cards set aside in the order they were traded, and the plot cards still in
+## the plot.
 static func places(
-	hand: Array[CardInstance], plot: Array[CardInstance], trade: PlotTrade, sort: Callable
+	hand: Array[CardInstance],
+	plot: Array[CardInstance],
+	trade: PlotTrade,
+	rank_map: PackedByteArray
 ) -> Array[Array]:
 	var played: Array[CardInstance] = []
 	var out: Array[CardInstance] = []
@@ -38,8 +45,23 @@ static func places(
 		for card: CardInstance in hand:
 			if card.id() == card_id:
 				out.append(card)
-	var sorted: Array[CardInstance] = sort.call(played)
-	return [sorted, out, kept]
+	return [sorted(played, rank_map), out, kept]
+
+
+## The cards lowest first, by where each ranks now in rank_map, as the table's hand sorts.
+static func sorted(cards: Array[CardInstance], rank_map: PackedByteArray) -> Array[CardInstance]:
+	var ordered: Array[CardInstance] = cards.duplicate()
+	ordered.sort_custom(
+		func(a: CardInstance, b: CardInstance) -> bool:
+			var a_value: int = rank_map[a.base_rank()]
+			var b_value: int = rank_map[b.base_rank()]
+			if a_value != b_value:
+				return a_value < b_value
+			if a.base_rank() != b.base_rank():
+				return a.base_rank() < b.base_rank()
+			return a.id() < b.id()
+	)
+	return ordered
 
 
 ## Each place's left edge and step: the hand from the left, the plot at the right and the
@@ -61,6 +83,7 @@ static func fit(width: float, counts: Array[int], least_widths: Array[float]) ->
 	return [Vector2(0.0, hand_step), Vector2(out_x, side), Vector2(plot_x, side)]
 
 
+## The width of a place of count cards at a step, never less than least, the width of its name.
 static func span(count: int, step: float, least: float) -> float:
 	return maxf(least, CARD.x + (count - 1) * step)
 

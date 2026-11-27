@@ -4,13 +4,22 @@ extends RefCounted
 ## selection reads, what it would score, and the play a hint offers. Selection is local;
 ## playing it goes through RunController.
 
+## Emitted after the hand, the selection or the hint's reading changes, so the table
+## views redraw.
 signal changed
 
+## The label key shown while no card is selected.
 const KEY_SELECT: String = "hand.reason.select"
+## The label key shown while the selection has no reading yet, or it is not the player's turn.
 const KEY_WAIT: String = "hand.reason.wait"
+## The label key for a selection that forms a play but does not beat the one on the table.
 const KEY_DOES_NOT_BEAT: String = "hand.reason.does_not_beat"
+## The label key for a selection that does not beat the play on the table once a debuff folds
+## two ranks into one.
 const KEY_DOES_NOT_BEAT_FOLDED: String = "hand.reason.does_not_beat_folded"
+## The start of the label key for a selection that is no play; the refusal's name follows.
 const KEY_INVALID_PREFIX: String = "hand.reason."
+## The start of the label key for a selection that forms a play; the pattern's name follows.
 const KEY_PATTERN_PREFIX: String = "pattern."
 
 var _controller: RunController
@@ -53,18 +62,22 @@ func refresh() -> void:
 	_update()
 
 
+## The player's cards in hand order, as of the last refresh.
 func cards() -> Array[CardInstance]:
 	return _cards
 
 
+## True when the card with this id is selected.
 func is_selected(card_id: int) -> bool:
 	return _selected.has(card_id)
 
 
+## Selects the card if it is not selected, else unselects it.
 func toggle(card_id: int) -> void:
 	set_selected(card_id, not _selected.has(card_id))
 
 
+## Selects or unselects one card; a card not in the hand is ignored.
 func set_selected(card_id: int, on: bool) -> void:
 	if not _holds(card_id) or _selected.has(card_id) == on:
 		return
@@ -75,6 +88,7 @@ func set_selected(card_id: int, on: bool) -> void:
 	_update()
 
 
+## Unselects every card.
 func clear() -> void:
 	if _selected.is_empty():
 		return
@@ -91,10 +105,12 @@ func selected_ids() -> Array[int]:
 	return ids
 
 
+## True when the selection reads as a play the player may make now.
 func can_play() -> bool:
 	return _preview != null and _preview.can_play()
 
 
+## True when it is the player's turn and a play is on the table to pass on.
 func can_pass() -> bool:
 	var view: SeatView = _controller.table.seat_view()
 	return (

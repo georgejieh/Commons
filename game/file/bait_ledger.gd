@@ -10,9 +10,13 @@ extends RefCounted
 ## save is written, and any ledger beside a save that keeps no number, such as one read
 ## from its backup, which may be older than the ledger.
 
+## The ledger's file name beside the game's own run save.
 const FILE_NAME: String = "private_ledger.txt"
+## The suffix of the temporary file the ledger is written in before it is renamed into place.
 const TEMP_SUFFIX: String = ".tmp"
+## The save's extras key for the number the ledger was written with.
 const NUMBER_KEY: String = "ledger"
+## The save's extras key for the number the ledger held just before that write.
 const BEFORE_KEY: String = "ledger_before"
 ## No number: nothing written yet, or nothing found.
 const NONE: int = -1
@@ -35,10 +39,6 @@ static func path_for(save_path: String) -> String:
 	var base: String = save_path.get_file().get_basename()
 	var name: String = FILE_NAME if base == "run" else "%s_%s" % [base, FILE_NAME]
 	return save_path.get_base_dir().path_join(name)
-
-
-func path() -> String:
-	return _path
 
 
 ## What the save about to be written keeps beside its data: the coupons the ledger will

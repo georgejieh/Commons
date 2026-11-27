@@ -9,12 +9,19 @@ extends Control
 ## Reduced motion and quiet events, from a replay or a skip, leave only the end state. It
 ## listens to the table's event player itself, after the table has rendered each event.
 
+## Seconds a card takes to slide to the next seat.
 const FLY_TIME: float = 0.5
+## Seconds between one card setting off and the next.
 const FLY_STAGGER: float = 0.1
+## The scale of a card at a villager's seat, which is smaller than at the player's.
 const BOT_SCALE: float = 0.6
+## How many face-down backs are made, so that many villager's cards can fly at once.
 const BACKS: int = 4
+## The note's type at Standard.
 const NOTE_SIZE: int = 18
+## The note's paper padding, in pixels.
 const NOTE_PADDING: int = 22
+## How far above the moving cards' middle the note stands, in pixels.
 const NOTE_LIFT: float = 110.0
 ## How far a full hand's fan reaches past the hand's box at each end.
 const GLASS_REACH: float = 72.0
@@ -25,6 +32,7 @@ const TORN_GAP: float = 48.0
 
 ## Over the hand, while the villagers see it.
 var glass: GlassPane = GlassPane.new()
+## The seized plot card, torn in two beside the cut-in's words.
 var torn: TornCard = TornCard.new()
 ## What moved and why, while cards are in flight.
 var note: PanelContainer = PanelContainer.new()
@@ -77,6 +85,8 @@ func place(screen: Control, hand_view: Control) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
+## Wires the moments to the run's controller, the card lookup, the hand, the card pool, the event
+## queue, the table's moments and the notice board, and listens to the queue.
 func setup(
 	controller: RunController,
 	cards: TableCards,

@@ -9,18 +9,24 @@ extends Control
 ## Reduced motion, a replay or a skip drop the set-aside beat, whose cards the slip still
 ## names, and lay the kitty there still.
 
+## The stamped word's type at Standard.
 const WORD_SIZE: int = 34
+## The stamped word's outline, in pixels.
 const WORD_OUTLINE: int = 10
+## The note's type at Standard.
 const NOTE_SIZE: int = 18
+## The note's paper padding, in pixels.
 const NOTE_PADDING: int = 22
-## The word stands where the kitty's does; the note stands under the lowest a laid card
-## can reach, so it never covers one.
-const WORD_AT: Vector2 = TableMoments.KITTY_LABEL_AT
+## Where the word stands: where the kitty's label does.
+const WORD_AT: Vector2 = KittyShow.LABEL_AT
+## How far under the lowest a laid card can reach the note stands, in pixels, so it never
+## covers one.
 const NOTE_GAP: float = 12.0
-## How long the set-aside cards lie face up before they leave, and where they go: off the
-## top of the table, away from every seat.
+## How long the set-aside cards lie face up before they leave, in seconds.
 const ASIDE_SHOW: float = 1.4
+## Where the set-aside cards are swept to: off the top of the table, away from every seat.
 const OFF_TABLE: Vector2 = Vector2(790, -240)
+## Seconds the queue is held after the sweep, so the next beat does not start on it.
 const MARGIN: float = 0.12
 
 var _controller: RunController
@@ -61,6 +67,8 @@ func place(screen: Control, moments: TableMoments) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
+## Wires the deal's moments to the run's controller, the trick pile, the hand and the event queue,
+## and plays each event the queue releases.
 func setup(
 	controller: RunController, pile: TrickPile, hand_view: HandView, player: EventPlayer
 ) -> void:
@@ -124,7 +132,7 @@ func _see_kitty(cards: Array[CardInstance]) -> void:
 		return
 	_put_away()
 	_pile.clear()
-	_pile.show_play(cards, TableMoments.KITTY_FROM)
+	_pile.show_play(cards, KittyShow.FROM)
 	_show_words(tr("keyword.kitty.name"), tr("table.kitty_seen"))
 	_kitty_shown = true
 

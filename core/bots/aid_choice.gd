@@ -6,6 +6,8 @@ extends RefCounted
 ## its lowest other cards. A plain rule, so a trade never needs a search.
 
 
+## The IDs of the count cards the villager hands over, the loose lowest first and then the
+## lowest of the rest; fewer when the hand holds fewer. Cards are ranked by rank_map.
 static func choose(view: SeatView, rank_map: PackedByteArray, count: int) -> Array[int]:
 	var loose: Array[CardInstance] = []
 	var rest: Array[CardInstance] = []

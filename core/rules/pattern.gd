@@ -5,6 +5,8 @@ extends RefCounted
 ## cards it spends (ADR 0029): the type and ranks below are the reading, every card as
 ## what it stands for, and spent holds the printed ranks only when a wild card stands in.
 
+## The shapes a play can take, from a pass up to the rocket; plays of one type compare by
+## main rank.
 enum Type {
 	PASS,
 	SINGLE,
@@ -23,22 +25,33 @@ enum Type {
 	ROCKET,
 }
 
-## Cards of one rank in a single, a pair and a trio.
+## Cards of one rank in a single.
 const SINGLE_WIDTH: int = 1
+## Cards of one rank in a pair, and in each rank of a pair chain.
 const PAIR_WIDTH: int = 2
+## Cards of one rank in a trio, and in each rank of an airplane.
 const TRIO_WIDTH: int = 3
 ## The fewest cards of one rank that are a bomb, and the four of a four with two. With
 ## bigger bombs a bomb may hold more (ADR 0029, rule 6).
 const MIN_BOMB_WIDTH: int = 4
+## The bits the effective main rank takes at the bottom of a key.
 const KEY_RANK_BITS: int = 8
+## Where a key keeps the chain length.
 const KEY_CHAIN_SHIFT: int = 8
+## Where a key keeps the card count.
 const KEY_COUNT_SHIFT: int = 16
+## Where a key keeps the type, above everything else it holds.
 const KEY_TYPE_SHIFT: int = 24
+## Where an identity keeps the type, above the packed counts.
 const IDENTITY_TYPE_SHIFT: int = 60
 
+## The shape of the play.
 var type: Type
+## The base rank of the play's body; of a chain, its lowest rank.
 var main_rank: int
+## How many ranks the body spans; 1 for a play that is not a chain.
 var chain_length: int
+## How many cards the play spends.
 var card_count: int
 ## Sorted low to high.
 var kicker_ranks: PackedByteArray
@@ -74,6 +87,7 @@ func _init(
 	)
 
 
+## The pattern of a pass: no cards and no rank.
 static func pass_play() -> Pattern:
 	return Pattern.new(Type.PASS, Ranks.INVALID, 0, 0, PackedByteArray(), 0)
 
@@ -94,6 +108,8 @@ func rekeyed(effective_main: int) -> Pattern:
 	return result
 
 
+## The key without its rank: the type, card count and chain length. Plays of one shape
+## compare by rank alone.
 func shape() -> int:
 	return key >> KEY_RANK_BITS
 

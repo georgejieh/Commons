@@ -6,11 +6,17 @@ extends RefCounted
 
 ## The ending's ID, or the death's.
 var id: String = ""
+## True when the run ended in a death rather than an ending.
 var death: bool = false
+## The heading of the ending's page.
 var title: String = ""
+## The paragraph under the heading, with the family name and the Year filled in.
 var text: String = ""
+## Famine as the run ended.
 var famine: int = 0
+## Denunciation as the run ended.
 var denunciation: int = 0
+## True when the family ended the run as a landlord.
 var landlord: bool = false
 ## The epilogue's lines, filled in, in order.
 var lines: Array[String] = []

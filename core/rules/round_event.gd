@@ -3,15 +3,22 @@ extends RefCounted
 ## One domain event. Presentation reads these and never reaches into a round. Bots get
 ## a SeatView instead.
 
+## What happened: the round began, the kitty was taken, a play, a pass, a trick won, a
+## seat's call of its few cards left, or the round's end.
 enum Type { ROUND_STARTED, KITTY_TAKEN, PLAYED, PASSED, TRICK_WON, ANNOUNCED, ROUND_ENDED }
+## How a round ended: normally, as a Spring (the landlord won before a peasant played), or
+## as an Anti-Spring (the peasants won with the landlord having played once).
 enum Finish { NORMAL, SPRING, ANTI_SPRING }
 
+## Which event this is.
 var type: Type
+## The seat the event is about.
 var seat: int
 ## The cards played or taken. Empty for every other event.
 var card_ids: Array[int]
 ## Copies of the played cards, because scoring reads their enhancements and stamps.
 var cards: Array[CardInstance] = []
+## The play, for PLAYED; null for the other events.
 var pattern: Pattern
 ## Cards left for ANNOUNCED. A Finish for ROUND_ENDED.
 var value: int

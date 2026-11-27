@@ -8,6 +8,7 @@ extends RefCounted
 ## the loop is another one, or its record moved on without the controller (a tool driving
 ## the loop directly), there is nothing to compare and the book is only sealed again.
 
+## The run figures the book masks and compares, by name, as RunCorrections names them.
 const FIGURES: Array[String] = RunCorrections.FIGURES
 
 var _keys: PackedInt64Array = PackedInt64Array()

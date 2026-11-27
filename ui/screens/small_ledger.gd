@@ -8,14 +8,18 @@ extends PanelContainer
 ## hidden at every other stage. The table keeps one in its Work Points panel and both
 ## shops beside the coupons.
 
+## The font size of the slip's figures, at Standard.
 const LINE_SIZE: int = 16
+## The padding inside the slip, in pixels: across (x) and down (y).
 const MARGIN: Vector2i = Vector2i(16, 8)
-## Varies the slip's grime from the table's to the shops'.
+## The grime salt of the table's slip.
 const TABLE_SALT: int = 3
+## The grime salt of the shops' slips, which differs from the table's so they are not alike.
 const SHOP_SALT: int = 5
 ## Figures on the slip, wherever it is.
 const LINES: int = 4
 
+## The number that varies this slip's grime from another's; the show call that last ran sets it.
 var salt: int = 0
 var _grid: GridContainer = GridContainer.new()
 

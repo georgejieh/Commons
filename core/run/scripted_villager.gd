@@ -39,6 +39,7 @@ func finished() -> bool:
 	return all_bids and _play >= _script.plays.size() and _need >= _script.needs.size()
 
 
+## The next authored bid, true for a call; with none left it is a fault and does not call.
 func bid() -> bool:
 	if _script == null or _bid >= _script.bids.size():
 		_fault("no bid left")
@@ -74,6 +75,7 @@ func play(view: SeatView, legal: Array[Pattern]) -> BotPlay:
 	return _fallback(view, legal)
 
 
+## The next authored need; with none left it is a fault and the true need is declared.
 func need(true_need: int) -> int:
 	if _script == null or _need >= _script.needs.size():
 		_fault("no need left")

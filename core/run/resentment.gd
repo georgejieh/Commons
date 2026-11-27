@@ -5,10 +5,15 @@ extends RefCounted
 ## feeds Denunciation at each Set's end through one data curve, and sharpens every bot's
 ## grudge against the player.
 
+## The cause logged for Resentment from a black-market purchase.
 const PRIVATE_PURCHASE: String = "private_purchase"
+## The cause logged for Resentment from private Cadres held at a Set's end.
 const PRIVATE_CADRE: String = "private_cadre"
+## The cause logged for Resentment from a stamped card scored.
 const STAMPED_CARD: String = "stamped_card"
+## The cause logged for Resentment from grabbing the landlord seat.
 const GRAB: String = "grab"
+## The cause logged for Resentment from each step a Quota was beaten by.
 const OVERFULFILMENT: String = "overfulfilment"
 ## A private Campaign used (ADR 0021).
 const CAMPAIGN: String = "campaign"
@@ -16,6 +21,7 @@ const CAMPAIGN: String = "campaign"
 const CADRE: String = "cadre"
 
 
+## Raises Resentment by amount, never past the data's cap, and logs the change with its cause.
 static func add(
 	state: RunState, amount: int, cause: String, params: ResentmentParams, events: Array[RunEvent]
 ) -> void:

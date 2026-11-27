@@ -10,6 +10,7 @@ extends RefCounted
 
 ## True while the stall sells this visit.
 var is_open: bool = false
+## This visit's offers, which hold the slots, their prices and which are sold.
 var offers: CardOffers
 
 var _state: RunState

@@ -5,19 +5,23 @@ extends RefCounted
 ## start the next pair. It changes nothing in the run; the sheet sends the pairs as one
 ## swap when the player confirms.
 
+## What a press or a pair came to: OK, or NO_SWAPS_LEFT when the round's swaps are used up.
 enum Reason { OK, NO_SWAPS_LEFT }
 ## The two sides a card is picked from.
 enum Source { HAND, PLOT }
 
+## The card id and the pair index of nothing, as when no card is picked or a card is in no pair.
 const NONE: int = -1
 
 ## The most pairs the round allows.
 var limit: int = 0
-## The pairs in the order they were made: hand_ids[i] sits out for plot_ids[i].
+## The hand cards traded, in the order the pairs were made: hand_ids[i] sits out for plot_ids[i].
 var hand_ids: Array[int] = []
+## The plot cards brought in, in the same order: plot_ids[i] takes the place of hand_ids[i].
 var plot_ids: Array[int] = []
-## The card picked to start a pair, and its side, or NONE.
+## The card picked to start a pair, or NONE.
 var picked: int = NONE
+## The side picked came from; it means something only while picked is not NONE.
 var picked_side: Source = Source.HAND
 
 
@@ -25,10 +29,12 @@ func _init(swap_limit: int) -> void:
 	limit = swap_limit
 
 
+## How many pairs are traded so far.
 func pairs() -> int:
 	return hand_ids.size()
 
 
+## How many more pairs the round allows.
 func left() -> int:
 	return limit - pairs()
 
@@ -39,6 +45,7 @@ func pair_of(card_id: int) -> int:
 	return at if at >= 0 else plot_ids.find(card_id)
 
 
+## True when the card is in a pair, on either side.
 func is_traded(card_id: int) -> bool:
 	return pair_of(card_id) != NONE
 
@@ -78,6 +85,7 @@ func pair(hand_id: int, plot_id: int) -> Reason:
 	return Reason.OK
 
 
+## Takes the pair at an index back and closes the gap; an index out of range does nothing.
 func undo(index: int) -> void:
 	if index < 0 or index >= pairs():
 		return

@@ -2,8 +2,11 @@ class_name ModifierDef
 extends Resource
 ## One modifier of any kind. Behavior lives in the effect script registered under id.
 
+## What a modifier is: a Cadre, a Reform, a debuff or a boss's twist.
 enum Kind { CADRE, REFORM, DEBUFF, BOSS_TWIST }
+## Whether a Cadre is collective or private.
 enum Tag { COLLECTIVE, PRIVATE }
+## Which part of the game a modifier changes.
 enum Lever { RULE, RANK, SCORING, ECONOMY, HAND, METERS, INFO }
 ## How often a Cadre reaches a counter, which indexes ShopParams.rarity_weights.
 enum Rarity { COMMON, UNCOMMON, RARE }
@@ -14,6 +17,7 @@ const MAX_TIER: int = 4
 const ZEAL_PERCENT_PREFIX: String = "zeal_percent"
 ## Parameters named with this prefix hold a multiplier in hundredths, so 150 shows as 1.5.
 const TIMES_PERCENT_PREFIX: String = "times_percent"
+## The divisor that turns a parameter held in hundredths into its value.
 const PERCENT: float = 100.0
 
 ## The ID the registries, the saves and the pools name it by.

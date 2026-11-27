@@ -6,20 +6,29 @@ extends PanelContainer
 ## motion its border goes red for a moment instead, with a cross of two strokes in its
 ## top right corner, so the refusal does not rest on colour alone (ADR 0035).
 
+## The slip's usual width in pixels.
 const WIDTH: float = 540.0
+## The size of Wang's face, in pixels.
 const FACE: Vector2 = Vector2(96, 112)
+## The type size of the slip's line, at Standard.
 const TEXT_SIZE: int = 24
+## The gap the slip keeps from the thing it stands beside.
 const GAP: float = 28.0
+## The gap the slip keeps from the screen's edge.
 const MARGIN: float = 16.0
+## The paper's padding round the face and the line, in pixels.
 const PADDING: int = 20
 ## The gap between Wang's face and his line.
 const FACE_GAP: int = 14
+## The width of the red border under reduced motion.
 const ALARM_WIDTH: float = 5.0
 ## Seconds the red border holds under reduced motion.
 const ALARM_SECONDS: float = 0.6
-## The cross's box inside the slip's top right corner, its inset and its stroke.
+## The side of the cross's box inside the slip's top right corner.
 const CROSS: float = 22.0
+## How far in from the slip's top right corner the cross sits.
 const CROSS_INSET: float = 12.0
+## The width of the cross's two strokes.
 const CROSS_WIDTH: float = 4.0
 
 var _face: TextureRect = TextureRect.new()
@@ -48,6 +57,7 @@ func _init() -> void:
 	visible = false
 
 
+## Sets the picture of Wang's face.
 func set_face(face: Texture2D) -> void:
 	_face.texture = face
 
@@ -66,10 +76,12 @@ func say(spoken: String) -> void:
 	reset_size()
 
 
+## The line the slip says now; for tests.
 func line() -> String:
 	return _text.text
 
 
+## The font size the line is drawn at now; for tests.
 func text_size() -> int:
 	return _text.get_theme_font_size("font_size")
 

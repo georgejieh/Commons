@@ -4,6 +4,7 @@ extends RefCounted
 
 ## The seat being built.
 var seat: int
+## The round's landlord seat.
 var landlord: int
 ## True once a bomb has been played in this trick.
 var trick_bombed: bool

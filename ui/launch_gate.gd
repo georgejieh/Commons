@@ -16,6 +16,7 @@ extends Control
 ## The app opens; kept is the folder the last session's files were copied to, or empty.
 signal opened(kept: String)
 
+## The session's timings: how often the file is written and when it counts as stale.
 const PARAMS: SessionParams = preload("res://data/session/session_params.tres")
 
 ## What Quit on the notice does: the tree quits, which frees the app and the gate with it.

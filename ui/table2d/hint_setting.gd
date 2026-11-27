@@ -9,5 +9,6 @@ extends RefCounted
 const SETTING: String = "show_hint"
 
 
+## True while the hint setting is on, so the Hint button and its key are offered.
 static func shown() -> bool:
 	return bool(Settings.value(SETTING))

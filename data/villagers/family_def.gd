@@ -4,6 +4,8 @@ extends Resource
 ## portrait, its own speech lines and when it joins the village. Sent-down youth
 ## templates are FamilyDefs too, given a new surname when they arrive.
 
+## How a family joins the village: from the start, after some finished runs, or once a run
+## has ended as a landlord.
 enum Unlock { START, RUNS, LANDLORD_ENDING }
 
 ## The family's ID, which its saves and its speech name it by.

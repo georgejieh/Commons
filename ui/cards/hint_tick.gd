@@ -10,17 +10,25 @@ extends Control
 
 ## The tick's box, in card pixels, above the card's top left corner.
 const SIZE: Vector2 = Vector2(30, 28)
+## Where the tick sits, as an offset from the card's top left corner.
 const AT: Vector2 = Vector2(6, -32)
+## The pencil's color.
 const GRAPHITE: Color = Color("2e2b27")
+## The pencil stroke's width, in card pixels.
 const WIDTH: float = 3.0
+## The width of the pale paper edge under the stroke, in card pixels.
 const EDGE_WIDTH: float = 6.5
+## Seeds the tick's random wobble, so it draws the same each time.
 const SEED: int = 8821
-## The short stroke's start, its foot and the long stroke's end, as shares of the box.
+## The short stroke's start, as a share of the box.
 const SHORT: Vector2 = Vector2(0.08, 0.55)
+## The tick's foot, where its two strokes meet, as a share of the box.
 const FOOT: Vector2 = Vector2(0.38, 0.92)
+## The long stroke's end, as a share of the box.
 const LONG: Vector2 = Vector2(0.95, 0.06)
-## Pencil passes at stage 0 and at the last stage, and the smudge specks.
+## Pencil passes over the tick at stage 0 and at the last stage.
 const PASSES: Vector2i = Vector2i(2, 4)
+## Smudge specks of graphite at stage 0 and at the last stage.
 const SMUDGES: Vector2i = Vector2i(1, 9)
 
 ## Varies the strokes from card to card, so a hint of several cards is not one stamp.

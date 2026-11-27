@@ -11,13 +11,15 @@ extends Control
 ## between them (ADR 0034, rules 6 to 10). It renders the run's events one step apart and
 ## sends commands; it never changes the run.
 
+## The wooden rail's edge colour, round the screen.
 const RAIL_EDGE: Color = Color("3e2a19")
-## The play area's middle in x, and the seats' width and gap from that middle. The
-## Cadre board centers on it between the seats.
+## The play area's middle in x. The Cadre board centers on it between the seats.
 const PLAY_CENTER: float = 790.0
 ## Half the trick's width about its centre: clear of the Campaign tray at its left.
 const PILE_HALF_WIDTH: float = 320.0
+## A villager's seat sheet's width, in pixels.
 const SEAT_WIDTH: float = 380.0
+## How far each villager's seat stands from the play area's middle, in pixels.
 const SEAT_OFFSET: float = 330.0
 ## The height the need panel and the audit slip center on, between seats and hand.
 const SHEET_MIDDLE: float = 520.0
@@ -29,9 +31,9 @@ const ACTIONS_AT: Rect2 = Rect2(1218, 780, 280, 250)
 ## hand's last card, which reaches about 98 px past its middle, never runs under the
 ## buttons.
 const HAND_AT: Rect2 = Rect2(120, 830, 1016, 220)
-## The room the line over the hand stands in, down to a lifted card's top, and the least
-## gap between a sheet and the hand or the bar.
+## The room the line over the hand stands in, down to a lifted card's top, in pixels.
 const YOU_ROOM: float = 46.0
+## The least gap between a sheet and the hand or the bar, in pixels.
 const SHEET_GAP: float = 8.0
 
 ## Every card view the table draws, made once and reused.
@@ -188,6 +190,8 @@ func _lay_over() -> void:
 	move_child(pile, need_panel.get_index())
 
 
+## Takes the app's run and hand, wires the table to them and their events, and replays the Set so
+## far without motion.
 func open(app: App) -> void:
 	_app = app
 	_controller = app.controller
@@ -312,6 +316,7 @@ func _still(on: bool) -> void:
 	motion.set_still(on or UiMotion.reduced())
 
 
+## Sorts the hand by mode, as when the table is built again and the player's sort is kept.
 func keep_sort(mode: HandView.Sort) -> void:
 	_commands.set_sort(mode)
 

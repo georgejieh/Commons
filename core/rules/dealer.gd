@@ -4,11 +4,16 @@ extends RefCounted
 ## so a deal is always O(n) with no rejection sampling. Only one bias applies per deal:
 ## two would evict each other's cards, and nothing needs stacking yet.
 
+## The seats a deal serves.
 const SEATS: int = Seats.COUNT
+## The cards each seat is dealt.
 const HAND_SIZE: int = 17
+## The cards left over for the kitty.
 const KITTY_SIZE: int = 3
 
 
+## Shuffles the cards on the stream, applies the bias if there is one, and deals. The cards
+## must number three hands and a kitty.
 static func deal(
 	cards: Array[CardInstance], stream: RandomStream, bias: DealBias = null
 ) -> DealResult:

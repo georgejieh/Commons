@@ -3,13 +3,16 @@ extends RefCounted
 ## Short-scale display: 1,250 becomes 1.3K. Suffixes come from the string table under
 ## SUFFIX_KEYS, so the caller passes them in. Past the last suffix it uses an exponent.
 
+## The string keys of the thousand, million, billion and trillion suffixes, in order.
 const SUFFIX_KEYS: PackedStringArray = [
 	"score.suffix.thousand",
 	"score.suffix.million",
 	"score.suffix.billion",
 	"score.suffix.trillion",
 ]
+## The factor between one suffix and the next.
 const SCALE: float = 1000.0
+## The step a shortened number is rounded to, one decimal.
 const SHOWN_DECIMALS: float = 0.1
 ## A Rate or Zeal shows to the hundredth, so 0.75 Zeal never reads as 0.8.
 const FACTOR_STEP: float = 0.01

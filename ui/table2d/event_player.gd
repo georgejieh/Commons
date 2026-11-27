@@ -7,13 +7,18 @@ extends Node
 ## that has ended is put away before the next deal plays (closing): the run deals the next
 ## hand the moment the last is settled, but the table shows it only once the round is gone.
 
+## Emitted as each event's turn comes; views render the event, and read the run only once the queue
+## is empty.
 signal played(event: RunEvent)
 ## A seat other than the player's is about to play this event, wind seconds from now.
 signal winding(event: RunEvent)
+## Emitted when an event joins the queue, so a view can react before it plays.
 signal queued
 ## A finished round is about to give way to the next deal, which waits for any hold this
 ## asks for.
 signal closing
+## Emitted when the queue has emptied and every hold has passed; views read the run's end state
+## then.
 signal drained
 
 ## Seconds between events.
@@ -43,6 +48,7 @@ var _wound: bool = false
 var _round_over: bool = false
 
 
+## Joins event to the end of the queue, to play a step after those before it, and emits queued.
 func push(event: RunEvent) -> void:
 	_queue.append(event)
 	queued.emit()

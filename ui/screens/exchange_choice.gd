@@ -29,31 +29,38 @@ static func card_text(card: CardInstance) -> String:
 	return TranslationServer.translate("exchange.card").format({"card": named, "mark": mark})
 
 
+## The line over the heading, the same for every exchange.
 func eyebrow() -> String:
 	return tr("exchange.eyebrow")
 
 
+## The heading over the deck while the card that leaves is picked.
 func title() -> String:
 	return tr("exchange.title")
 
 
+## The card bought for the deck, which stands beside the heading.
 func incoming() -> CardInstance:
 	return _card
 
 
+## The line before a card is picked, naming the card coming in.
 func how() -> String:
 	return tr("exchange.how").format({"card": card_text(_card)})
 
 
+## The confirm ticket's words, as the stall or the envelope gave them.
 func confirm_text() -> String:
 	return _confirm
 
 
+## Why the card cannot leave, in words, or "" when it can; the stall or envelope decides.
 func refusal(card: CardInstance) -> String:
 	var key: String = str(_refuse.call(card.id()))
 	return "" if key.is_empty() else tr(key)
 
 
+## The line once a card is picked: the card in, the card out and any marks the card out carries.
 func change(card: CardInstance) -> String:
 	var values: Dictionary[String, Variant] = {"in": card_text(_card), "out": CardName.of(card)}
 	var marks: PackedStringArray = DeckSheet.marks(card)
@@ -65,5 +72,6 @@ func change(card: CardInstance) -> String:
 	return tr("exchange.change.marked").format(values)
 
 
+## Makes the exchange through the action the stall or envelope gave; false when the run refused.
 func commit(_controller: RunController, card_id: int) -> bool:
 	return int(_act.call(card_id)) == RunController.OK

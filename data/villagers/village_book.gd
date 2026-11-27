@@ -28,6 +28,7 @@ extends Resource
 @export var pitch_limit: float = 0.12
 
 
+## The family or sent-down youth template with this ID, or null.
 func family(family_id: String) -> FamilyDef:
 	for definition: FamilyDef in families + youth_templates:
 		if definition.id == family_id:

@@ -10,15 +10,22 @@ extends RefCounted
 ## final figures. A preview keeps none. The coupons a Surplus card pays come after, from
 ## the loop (SurplusPay), as steps of their own figure.
 
+## How many figures a step can change in the score: Grain, Rate, Zeal and the total.
 const FIGURES: int = 4
 ## Indexes into a play hook's fields.
 const ADD_GRAIN: int = 0
+## The index of the Zeal a play hook adds.
 const ADD_ZEAL: int = 1
+## The index of the factor a play hook multiplies Zeal by.
 const MUL_ZEAL: int = 2
+## The index of the percent of the hand's Rate a play hook leaves.
 const RATE_PERCENT: int = 3
+## The index of the cap a play hook puts on Rate.
 const RATE_CAP: int = 4
+## The index of the factor a play hook scales the total by.
 const TOTAL_SCALE: int = 5
 
+## The recorded steps, in the order the table acts them out.
 var steps: Array[ScoreStep] = []
 
 ## The card steps after the printed Grain, held until the base is laid out.

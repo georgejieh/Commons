@@ -4,6 +4,7 @@ extends ModifierEffect
 ## (SeatScope, ADR 0039).
 
 
+## Reverses the holder's rank order while the trick has a bomb in it.
 func build_rank_map(context: RankMapContext) -> void:
 	if context.trick_bombed:
 		ReversedRanks.reverse(context.rank_map, context.step)

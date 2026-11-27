@@ -8,8 +8,12 @@ extends RefCounted
 ## Warm, like the other village papers, and aged gently, so a row of tickets never reads
 ## as grey.
 const PAPER: Color = Color("ecd29a")
+## The base of every ticket's random stream, moved on by the ticket's number, so each looks the
+## same every time.
 const SEED: int = 6143
+## How deep, in pixels, the notch cut out of each end of the stub goes.
 const NOTCH: float = 5.0
+## How many foxing specks a ticket gets: the fewest when unworn (x), the most when worn through (y).
 const SPECKS: Vector2i = Vector2i(4, 26)
 ## How strongly the empty part of a meter band shows.
 const CHANNEL_ALPHA: float = 0.18

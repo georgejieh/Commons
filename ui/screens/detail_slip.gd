@@ -8,8 +8,11 @@ extends PanelContainer
 ## as it does through the arrival, whose slip is the only explanation on screen, it
 ## stays closed.
 
+## The gap between the slip and the piece it explains, in pixels.
 const GAP: float = 10.0
+## The least room kept between the slip and the screen's edge, in pixels.
 const MARGIN: float = 16.0
+## The padding inside the slip's paper, in pixels.
 const PADDING: int = 20
 ## Marks a piece whose leaving the tree already hides the slip.
 const WATCHED: StringName = &"detail_slip_watched"
@@ -72,17 +75,19 @@ func hide_for(piece: Control) -> void:
 		hide_slip()
 
 
+## Puts the slip away and forgets the piece it explained.
 func hide_slip() -> void:
 	_anchor = null
 	_rule = ""
 	visible = false
 
 
-## What the slip explains now, for tests: its piece and its rule.
+## The piece the slip explains now, for tests.
 func anchor() -> Control:
 	return _anchor
 
 
+## The rules the slip shows now, or "" while it is hidden, for tests.
 func shown_rule() -> String:
 	return _rule if visible else ""
 

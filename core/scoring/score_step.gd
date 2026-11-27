@@ -17,12 +17,17 @@ enum Source { CARD, HAND, START, LEVEL, MARK, MODIFIER }
 ## ADD adds value to the figure, MUL multiplies it by value, SET makes it value.
 enum Op { ADD, MUL, SET }
 
+## Which figure the step changes.
 var figure: Figure
+## What made the change.
 var source: Source
+## How the step applies value to the figure.
 var op: Op
+## The number the step applies to the figure.
 var value: float
-## The figure before and after this step.
+## The figure before this step.
 var before: float
+## The figure after this step.
 var after: float
 ## The modifier or enhancement that made the change, or "" for none.
 var source_id: String = ""

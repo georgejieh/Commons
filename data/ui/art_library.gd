@@ -42,6 +42,7 @@ extends Resource
 @export var hanzi_font: Font
 
 
+## True when the Cadre has a picture file.
 func has_cadre(cadre_id: String) -> bool:
 	return not cadre_path(cadre_id).is_empty()
 

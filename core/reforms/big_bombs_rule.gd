@@ -9,14 +9,17 @@ extends ModifierEffect
 const ZEAL_PERCENT: String = "zeal_percent_per_card"
 
 
+## Needs the Zeal each card past the fourth adds.
 func required_parameters() -> PackedStringArray:
 	return PackedStringArray([ZEAL_PERCENT])
 
 
+## Makes five or more cards of one rank a bomb for the seat.
 func build_ruleset(context: RulesetContext) -> void:
 	context.params.five_plus_is_bomb = true
 
 
+## Adds the Zeal for each card a bomb holds past the fourth.
 func play_scored(context: PlayContext) -> void:
 	var pattern: Pattern = context.pattern
 	if pattern.type != Pattern.Type.BOMB or pattern.card_count <= Pattern.MIN_BOMB_WIDTH:

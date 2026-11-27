@@ -2,7 +2,9 @@ class_name DealBias
 extends RefCounted
 ## Asks the allocation hook to send a rank to a seat more often than chance.
 
+## The seat the rank is sent to more often.
 var seat: int
+## The rank whose copies the seat is likelier to be dealt.
 var rank: int
 ## How many times likelier each copy is to reach the seat. 1 or less changes nothing,
 ## and draws nothing from the stream.

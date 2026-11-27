@@ -16,7 +16,9 @@ extends RefCounted
 ## The start of the one line a mismatch logs where the detectors do not act. The test
 ## script fails a run whose output holds it.
 const LOG_LINE: String = "COMMONS FILE MISMATCH"
+## The name an offence found in the profile's seal is entered under in the family's file.
 const PROFILE_FILE: String = "profile"
+## The name an offence found in the run save's seal is entered under in the family's file.
 const RUN_FILE: String = "run"
 
 ## True in a release build. A test may set it for a controller it builds, with a profile

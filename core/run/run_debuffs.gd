@@ -7,6 +7,7 @@ extends RefCounted
 ## round raises, and the Cadres Short Supply keeps off the next state store. What it holds
 ## lasts one round; a replay of the Set's commands builds it again.
 
+## The ID of the Slogan debuff, whose hand type is drawn with the ladder.
 const SLOGAN_ID: String = "slogan_of_the_week"
 
 ## The round's cap on plot swaps, or RoundContext.NO_CAP.

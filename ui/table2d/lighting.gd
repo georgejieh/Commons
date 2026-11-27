@@ -5,8 +5,11 @@ extends RefCounted
 ## has its own, so the relief always matches the art shown. Only items on MASK take
 ## the table light, so labels and controls are never lit.
 
+## The light mask of the items the table light reaches.
 const MASK: int = 2
+## The path of a texture's normal map, with the texture's file name in place of %s.
 const NORMALS: String = "res://art/normals/%s_n.png"
+## The side of a point light's glow texture, in pixels.
 const LIGHT_TEXTURE_SIZE: int = 256
 
 

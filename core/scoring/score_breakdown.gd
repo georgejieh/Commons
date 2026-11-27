@@ -2,9 +2,13 @@ class_name ScoreBreakdown
 extends RefCounted
 ## One play's score, and for a real play the trail of every change to it.
 
+## The play's Grain.
 var grain: float = 0.0
+## The play's Rate.
 var rate: float = 0.0
+## The play's Zeal.
 var zeal: float = 0.0
+## The play's score: Grain, Rate and Zeal multiplied, after any total hook, kept in range.
 var total: float = 0.0
 ## False when a hook waived the Resentment the play's stamped cards add (ADR 0032).
 var stamps_resented: bool = true

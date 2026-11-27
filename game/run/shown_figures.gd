@@ -12,10 +12,15 @@ extends RefCounted
 ##   figures are only on the small ledger, which shows them as the stages before it do.
 ## A run with no dark figure, below that stage, shows every figure as it is.
 
+## The string key of what a dark figure, or any meter at the filed stage, reads as.
 const NONE_REPORTED: String = "figure.none_reported"
+## The string key of what coupons read as at the filed stage.
 const AMPLE: String = "figure.coupons.ample"
+## The string key of what the Quota reads as at the filed stage.
 const FULFILLED: String = "figure.quota.fulfilled"
+## The string key of the ledger's Quota line, progress and target.
 const QUOTA: String = "table.quota"
+## The string key of the ledger's Quota line under a dark norm, progress alone.
 const QUOTA_DARK: String = "table.quota.dark"
 
 
@@ -103,5 +108,6 @@ static func ledger_quota(state: RunView, progress: float, target: float) -> Stri
 	)
 
 
+## What a dark meter or norm reads as: None reported.
 static func none_reported() -> String:
 	return TranslationServer.translate(NONE_REPORTED)

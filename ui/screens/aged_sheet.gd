@@ -7,11 +7,18 @@ extends PanelContainer
 ## sends chosen on a click or an accept press; the chosen one is ringed in red ink, the
 ## focused one in faded gold.
 
+## Sent when a choosable sheet is clicked or an accept key is pressed on it.
 signal chosen
 
+## The seed its foxing and stains are drawn from, with the sheet's index added, so a sheet always
+## looks the same.
 const SEED: int = 8317
+## The fewest foxing specks a sheet carries, at corruption stage 0, and the most, at the worst
+## stage.
 const SPECKS: Vector2i = Vector2i(6, 34)
+## The card-stock margin inside the sheet, in pixels.
 const PADDING: int = 20
+## The size of the line on a locked sheet that says when it opens, at Standard text.
 const LOCKED_SIZE: int = 18
 
 ## True when a click or accept press picks it.

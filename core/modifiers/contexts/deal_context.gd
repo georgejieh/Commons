@@ -2,7 +2,9 @@ class_name DealContext
 extends RefCounted
 ## Passed to the on deal hook.
 
+## The seat that took the kitty.
 var landlord: int
+## The deal being made, with every hand, for an effect to change.
 var deal: DealResult
 ## The deal stream, for effects that draw while dealing; every deal has one.
 var stream: RandomStream

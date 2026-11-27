@@ -4,14 +4,19 @@ extends RefCounted
 ## run save, with its own schema version, and deleting the run save never touches it.
 ## Its fields are ProfileData's; ProfileCommits decides what a run writes to it.
 
+## The profile save's current schema version, separate from the run save's.
 const SCHEMA_VERSION: int = 4
 ## The first profile schema that carries a seal (ADR 0022).
 const SEALED_FROM: int = 4
+## The save key of the village's memory of the player.
 const MEMORY_KEY: String = "memory"
+## The save key of how far each family has drifted.
 const DRIFT_KEY: String = "drift"
+## The save key of the family's file.
 const FILE_KEY: String = "file"
 
 
+## The profile's save service at path, with its migrations, validator and seal.
 static func service(path: String = SaveService.PROFILE_PATH) -> SaveService:
 	var migrations: Dictionary[int, Callable] = {
 		1: migrate_from_1, 2: migrate_from_2, 3: migrate_from_3
@@ -52,5 +57,6 @@ static func read(profile: SaveService) -> ProfileData:
 	return ProfileData.from_dict(loaded.data)
 
 
+## Saves the data as the profile, and returns the service's error.
 static func write(profile: SaveService, data: ProfileData) -> Error:
 	return profile.save(data.to_dict())

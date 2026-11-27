@@ -8,7 +8,9 @@ extends RefCounted
 ## so a stall that marks none draws only a rank and a suit. Offers are never saved:
 ## a save in the shop replays the visit, which draws them again.
 
+## The rank held in a slot once its card is bought.
 const SOLD: int = Ranks.INVALID
+## The divisor for drawing whether an offer is marked, against the data's marked_percent.
 const PERCENT: int = 100
 
 var _state: RunState
@@ -42,6 +44,7 @@ func draw(stream: RandomStream, open: Array[int]) -> void:
 		_marks.append(mark)
 
 
+## Forgets every offer, as at the start of a draw or when the stall shuts.
 func clear() -> void:
 	_ranks.clear()
 	_suits.clear()
@@ -53,6 +56,7 @@ func ranks() -> Array[int]:
 	return _params.ranks
 
 
+## How many slots were drawn this visit, the bought ones included.
 func count() -> int:
 	return _ranks.size()
 
@@ -62,6 +66,7 @@ func rank(slot: int) -> int:
 	return _ranks[slot]
 
 
+## The suit offered in a slot.
 func suit(slot: int) -> int:
 	return _suits[slot]
 
@@ -71,10 +76,12 @@ func enhancement(slot: int) -> String:
 	return _marks[slot]
 
 
+## True when slot is one of this visit's slots.
 func has_slot(slot: int) -> bool:
 	return slot >= 0 and slot < _ranks.size()
 
 
+## What the slot's card costs: its rank's price plus the mark's, under the books' raise.
 func price(slot: int) -> int:
 	var cost: int = _params.costs[_params.ranks.find(_ranks[slot])]
 	if _marks[slot] != CardInstance.NO_ID:

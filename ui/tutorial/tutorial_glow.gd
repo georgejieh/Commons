@@ -8,13 +8,15 @@ extends Control
 
 ## How far the frame stands off the thing.
 const OFF: float = 6.0
-## The halo: how far it reaches at rest, how much further at the top of a breath, and
-## how long a breath takes.
+## How far the halo reaches at rest.
 const REACH: float = 14.0
+## How much further the halo reaches at the top of a breath.
 const BREATH_REACH: float = 8.0
+## How long a breath of the halo takes, in seconds.
 const BREATH: float = 1.5
-## Moving to a new thing: seconds the frame takes to close in, and from how far out.
+## Moving to a new thing: seconds the frame takes to close in.
 const SWELL: float = 0.3
+## How much further out the frame stands when it has just moved to a new thing.
 const SWELL_BY: float = 18.0
 ## How deep the lamp gutters per corruption stage.
 const GUTTER_PER_STAGE: float = 0.05
@@ -61,6 +63,7 @@ func lit() -> Array[Rect2]:
 	return _rects if visible else ([] as Array[Rect2])
 
 
+## The box that holds every thing lit now, or an empty box while none is.
 func lit_area() -> Rect2:
 	var area: Rect2 = Rect2()
 	for rect: Rect2 in lit():

@@ -37,10 +37,13 @@ const INKS: Dictionary[String, String] = {
 	"zeal": "b02a17",
 	"commons": "3f6338",
 }
+## The ink, as a hex colour, of every keyword that has none in INKS.
 const LINK: String = "2b4a6b"
-## The width a tooltip wraps to, and its type size.
+## The width a tooltip wraps to, in pixels.
 const SLIP_WIDTH: float = 400.0
+## The type size of a tooltip, at Standard text.
 const SLIP_SIZE: int = 20
+## The most characters in a line of a tooltip wrapped for the engine's own tooltips.
 const WRAP_COLUMNS: int = 52
 ## The scoring numbers the marks' meanings quote, so a meaning never disagrees with data.
 const SCORING: ScoreParams = preload("res://data/scoring/default_scoring.tres")
@@ -79,6 +82,7 @@ static func found(text: String) -> PackedStringArray:
 	return ids
 
 
+## The text of a keyword's meaning, with the scoring numbers it quotes filled in from data.
 static func meaning(id: String) -> String:
 	var values: Dictionary[String, Variant] = {
 		"sheaf_grain": SCORING.sheaf_grain,

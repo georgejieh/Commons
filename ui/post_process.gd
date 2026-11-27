@@ -4,7 +4,9 @@ extends CanvasLayer
 ## turns it off. At the table the dread layers write its parameters; they never change
 ## what the player reads, only how the paper looks.
 
+## The full-screen shader the pass draws with.
 const SHADER: Shader = preload("res://shaders/post_process.gdshader")
+## The canvas layer the pass sits on, above the UI.
 const LAYER: int = 100
 ## The quality setting that turns the pass on and off.
 const SETTING: String = "post_process"
@@ -29,6 +31,7 @@ func material() -> ShaderMaterial:
 	return _material
 
 
+## True while the pass is showing; for tests.
 func is_on() -> bool:
 	return _rect.visible
 

@@ -12,6 +12,8 @@ var _skip: Button
 var _confirm: SkipConfirm = SkipConfirm.new()
 
 
+## Builds the page for app, whose arrival Sit in starts and Skip abandons once confirmed, and gives
+## Sit in the focus.
 func open(app: App) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
 	sheet.add_child(ScreenKit.header("", tr("tutorial.arrival.title")))
@@ -29,14 +31,17 @@ func open(app: App) -> void:
 	_sit_in.grab_focus()
 
 
+## The Sit in button, for tests and the walks.
 func sit_in_button() -> Button:
 	return _sit_in
 
 
+## The Skip button, for tests and the walks.
 func skip_button() -> Button:
 	return _skip
 
 
+## The question Skip asks before it goes to the title, for tests and the walks.
 func confirm() -> SkipConfirm:
 	return _confirm
 

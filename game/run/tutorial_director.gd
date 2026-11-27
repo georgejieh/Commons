@@ -10,18 +10,29 @@ extends RefCounted
 ## villager's play before it is on the table. With no director, screens accept
 ## everything.
 
+## Emitted when the step, the phase or what shows changes, so the layer redraws.
 signal changed
+## Emitted when an action is refused, so the prompt pulses.
 signal refused
+## Emitted once the last step is done.
 signal finished
 
+## Where the step under way stands: between steps, its prompt showing, its follow-up
+## held until the next prompt, or every step done.
 enum Phase { BETWEEN, PROMPT, UNTIL, DONE }
 
-## The names screens send for the run's own actions; a button sends its own name.
+## The name screens send for the player's bid to be landlord. This and the names below
+## are the run's own actions; a button sends its own name.
 const BID_CALL: String = "bid_call"
+## The name screens send for the player's pass in the bidding.
 const BID_PASS: String = "bid_pass"
+## The name screens send for the player's play.
 const PLAY: String = "play"
+## The name screens send for the player's pass in a round.
 const PASS: String = "pass"
+## The name screens send for the player's declared need.
 const NEED: String = "need"
+## What the run waits on before a screen has reported one.
 const NOTHING: int = -1
 
 var _script: TutorialScript
@@ -46,10 +57,12 @@ func step() -> TutorialStep:
 	return _script.steps[_index] if _index < _script.steps.size() else null
 
 
+## The index of the step under way; the step count once every step is done.
 func index() -> int:
 	return _index
 
 
+## Where the step under way stands.
 func phase() -> Phase:
 	return _phase
 

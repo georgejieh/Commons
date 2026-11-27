@@ -9,16 +9,21 @@ extends Control
 ## under it is named in the shared slip beside it. When picking, a press picks the card
 ## under the cursor and lifts it; a plot card cannot be picked.
 
+## Sent with the id of the card the cursor moved onto, so the sheet names it in the slip.
 signal cursor_moved(card_id: int)
+## Sent with the id of the card a press picked, which the board has lifted.
 signal picked_card(card_id: int)
 
+## The card id when no card is picked or under the cursor.
 const NONE: int = -1
+## How far a picked card lifts at full scale, in pixels; the board keeps this much room above.
 const LIFT: float = 22.0
 ## The rank names above the groups, and the plot's.
 const NAME_SIZE: int = 18
 
 ## True while a press picks a card, as the desks ask; false on the read-only sheet.
 var picking: bool = false
+## The id of the card the player picked, or NONE; the board lifts it.
 var picked: int = NONE
 
 ## The groups' names, one over each row.
@@ -133,18 +138,22 @@ func card_scale() -> float:
 	return _fit.scale if _fit != null else 1.0
 
 
+## The face drawn for a card id, or null for one not on the board.
 func view_of(card_id: int) -> CardView:
 	return _views.get(card_id)
 
 
+## The card behind an id, or null for one not on the board.
 func card_of(card_id: int) -> CardInstance:
 	return _cards.get(card_id)
 
 
+## The ids of the cards in cursor order: the groups' cards in rank order, then the plot's.
 func card_ids() -> Array[int]:
 	return _order.duplicate()
 
 
+## The id of the card under the cursor, or NONE when there is none.
 func cursor_card() -> int:
 	return _order[_cursor] if _cursor < _order.size() else NONE
 

@@ -47,6 +47,7 @@ func next_screen() -> String:
 	return ScreenId.SURNAME if surname.is_empty() else ScreenId.ARRIVAL
 
 
+## True while an arrival is under way, with its director walking the steps.
 func is_running() -> bool:
 	return director != null
 

@@ -15,15 +15,21 @@ extends Node
 ## playtest and the test run each run the tree under a script of their own, and a headless
 ## run has no window: there the settings change and nothing else does.
 
+## The settings' defaults, whose display_check_seconds is how long the player has to keep a
+## new mode.
 const PARAMS: SettingsParams = SettingsStore.DEFAULTS
 ## The window modes by the setting's value: a window, borderless full screen and exclusive
 ## full screen.
 const MODES: Array[Window.Mode] = [
 	Window.MODE_WINDOWED, Window.MODE_FULLSCREEN, Window.MODE_EXCLUSIVE_FULLSCREEN
 ]
+## The mode setting's value for a window, the first of MODES.
 const WINDOWED: int = 0
+## The setting that holds the window mode.
 const MODE: String = "window_mode"
+## The setting that holds the window size.
 const SIZE: String = "window_size"
+## The setting that holds whether the window syncs to the display.
 const VSYNC: String = "vsync"
 
 ## Puts the last window back when the player does not keep a new one in time.

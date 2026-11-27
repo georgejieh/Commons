@@ -5,8 +5,11 @@ extends PanelContainer
 ## rolls the same die each round, so every claim waits on the dice, whether or not it
 ## was a lie.
 
+## The slip's width in pixels.
 const WIDTH: float = 520.0
+## The side of the square seal that stamps each claim's verdict, in pixels.
 const SEAL: float = 34.0
+## How many claims the slip holds; a third claim clears it.
 const ROWS: int = 2
 
 ## Where the slip's middle sits.
@@ -59,6 +62,7 @@ func _ready() -> void:
 	visible = false
 
 
+## Gives the names to print against each seat's claim, by seat.
 func setup(names: Dictionary[int, String]) -> void:
 	_names = names
 
@@ -126,6 +130,7 @@ func pay(seat: int, amount: int) -> void:
 	UiMotion.pulse(_paid[row])
 
 
+## Empties both rows and forgets the claims, ready for the next audit.
 func clear() -> void:
 	for row: int in ROWS:
 		_claims[row].text = ""

@@ -4,6 +4,7 @@ extends RefCounted
 ## Bots never get one, so with no flags the player sees exactly the public view. Each
 ## opponent's hand is read under that opponent's own rules (ADR 0039), never the player's.
 
+## The key of a modifier's info flags in its parameters.
 const INFO: String = "info"
 
 
@@ -15,6 +16,7 @@ static func flags(definitions: Array[ModifierDef]) -> int:
 	return found
 
 
+## The seat's InfoView for a round under info_flags: opponents' hand types and the closest hand.
 static func build(round_state: RoundState, seat: int, info_flags: int, table: BotTable) -> InfoView:
 	var info: InfoView = InfoView.new()
 	info.flags = info_flags

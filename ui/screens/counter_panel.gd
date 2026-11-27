@@ -6,27 +6,36 @@ extends PanelContainer
 ## are in the screen's DetailSlip, which it asks for while it is hovered or its button
 ## holds focus. Every panel on the counter is one size.
 
-## Hovered or focused: the slip should explain this panel. Left: it may stop.
+## Hovered or focused: the slip should explain this panel.
 signal described(panel: CounterPanel)
+## Sent when neither hover nor focus holds the panel any more, so the slip may stop.
 signal left(panel: CounterPanel)
 
+## How a panel is drawn, by what it offers: a Campaign's leaflet, a Reform's decree or an envelope.
 enum Look { LEAFLET, DECREE, ENVELOPE }
 
+## The size every panel on the counter has, in pixels.
 const SIZE: Vector2 = Vector2(195, 122)
+## The size of the name before it shrinks to fit, at Standard text.
 const NAME_SIZE: int = 21
 ## A name shrinks this far to stay on one line, then wraps between words.
 const LEAST_NAME: int = 16
 ## The name's width: the panel less its side margins.
 const NAME_WIDTH: float = 171.0
+## The size of the Buy ticket's words, at Standard text.
 const BUY_SIZE: int = 18
+## The size of the kind eyebrow, at Standard text.
 const KIND_SIZE: int = 13
 ## How much less padding the compact Buy ticket has above and below its label.
 const TIGHTEN: float = 7.0
 
+## The panel's Buy ticket.
 var buy: Button = ScreenKit.button("", CommonsTheme.COUPON)
-## The item's ID, name and rules, for the slip.
+## The item's ID, for the slip.
 var item_id: String = ""
+## The item's name, for the slip.
 var title: String = ""
+## The item's full rules, for the slip.
 var rule: String = ""
 
 var _look: Look = Look.LEAFLET
@@ -133,6 +142,7 @@ func set_wrapping(chosen: EnvelopeDef.Wrapping) -> void:
 	queue_redraw()
 
 
+## How an envelope is wrapped; it matters only to an envelope's panel.
 func wrapping() -> EnvelopeDef.Wrapping:
 	return _wrapping
 
@@ -143,10 +153,12 @@ func set_private(on: bool) -> void:
 	queue_redraw()
 
 
+## True for a private Campaign's leaflet, whose band is black.
 func is_private() -> bool:
 	return _private
 
 
+## How the panel is drawn, by the kind of offer it holds.
 func look() -> Look:
 	return _look
 
@@ -165,6 +177,7 @@ func _fit_name(name_text: String) -> void:
 	NameFit.apply(_name, name_text, NAME_WIDTH, font_size, TextSize.least(LEAST_NAME))
 
 
+## The name the panel's label shows, for tests.
 func shown_name() -> String:
 	return _name.text
 

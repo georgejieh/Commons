@@ -15,10 +15,12 @@ func stock() -> Array[String]:
 	return _counter.stock()
 
 
+## The price in coupons of the Campaign in slot.
 func price(slot: int) -> int:
 	return _counter.price(slot)
 
 
+## True when the Campaign in slot can be bought now.
 func can_buy(slot: int) -> bool:
 	return _counter.check(slot) == RunShop.Reason.OK
 

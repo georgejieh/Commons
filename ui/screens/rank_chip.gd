@@ -4,13 +4,18 @@ extends Button
 ## a clean button (art/STYLE.md, "Nothing is clean"). Hover and focus lift it well clear
 ## of its row and ring it in red, so keyboard and gamepad see where they are.
 
+## The ticket's size in pixels, before a hover lifts it.
 const SIZE: Vector2 = Vector2(62, 86)
+## The ink the 2 is printed in; every other rank uses the ticket ink.
 const RED_INK: Color = Color("8c1a10")
-## How far a focused or hovered ticket rises, and its ring's width.
+## How far, in pixels, a focused or hovered ticket rises.
 const LIFT: float = 9.0
+## The width, in pixels, of the red ring round a lifted ticket.
 const RING_WIDTH: float = 3.5
+## The size of the rank inked on the ticket; art that holds a letter keeps its size.
 const FONT_SIZE: int = 34
 
+## The rank this ticket picks, a Ranks value; it also seeds the ticket's wear.
 var rank: int = Ranks.INVALID
 var _label: String = ""
 

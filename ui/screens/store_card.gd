@@ -8,11 +8,13 @@ extends RefCounted
 ## that seldom reaches the counter is stamped Scarce on its picture (ScarceStamp), and its
 ## slip says so.
 
-## The art's height on the card, and the type sizes, readable on a 1080 screen.
+## The art's height on the card, in pixels.
 const ART_HEIGHT: float = 158.0
 ## The card's padding, both sides together, which the picture is narrower by.
 const FACE_INSET: float = 48.0
+## The font size of the Cadre's name on the card, readable on a 1080 screen.
 const NAME_SIZE: int = 27
+## The font size of the Cadre's rules on the card, readable on a 1080 screen.
 const RULE_SIZE: int = 17
 ## The node name of the rules under the Cadre's name.
 const RULES: String = "Rules"

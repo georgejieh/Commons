@@ -7,26 +7,32 @@ extends Control
 ## the vermilion pass is a little out of register, and each corruption stage sets both
 ## further off. Under reduced motion the word stands printed at once.
 
+## The name's font size at Standard.
 const SIZE: int = 168
+## The width, in pixels, of the ink laid under every letter.
 const OUTLINE: int = 20
-## The face keeps room over its capitals and under its line that this word has no use
-## for. These shares of the size are left off its box, so the lines above and below sit
-## as close to it as they do to each other.
+## The face keeps room over its capitals that this word has no use for. This share of the
+## size is left off the top of its box, so the line above sits as close as lines do.
 const HEAD: float = 0.26
+## The share of the size left off the foot of the box, for the room under the line.
 const FOOT: float = 0.2
-## How far a letter sits off its line and off upright at stage 0, in pixels and radians,
-## and how much further each stage sets it.
+## How far, in pixels, a letter sits off its line at stage 0.
 const DROP: float = 1.5
+## How far, in radians, a letter sits off upright at stage 0.
 const LEAN: float = 0.007
+## How much further each stage sets the type off, as a share of stage 0's unevenness.
 const WORSE_PER_STAGE: float = 0.35
-## How far the vermilion pass lies out of register: at rest at stage 0, more per stage,
-## and as its letter lands.
+## How far, in pixels, the vermilion pass lies out of register at rest at stage 0.
 const SLIP: float = 3.0
+## How much further each stage sets the vermilion pass out of register, in pixels.
 const SLIP_PER_STAGE: float = 0.5
+## How far, in pixels, the vermilion pass lies out of register as its letter lands.
 const SLIP_LANDING: float = 9.0
+## The way the vermilion pass slips from the ink, to the right and a little down.
 const SLIP_ALONG: Vector2 = Vector2(1.0, 0.6)
 ## A letter comes down turned by up to this much.
 const TURN: float = 0.06
+## The seed of each letter's drop, lean and landing turn, so the word prints the same every time.
 const SEED: int = 5179
 
 ## The word it prints.

@@ -5,6 +5,7 @@ extends RefCounted
 ## to an official when no risen villager is left. Officials do not repeat until all have
 ## run. Draws are on the events stream.
 
+## The family id when no one villager held the landlord seat through a whole Set.
 const NO_FAMILY: String = ""
 
 

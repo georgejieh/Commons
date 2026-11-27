@@ -6,14 +6,20 @@ extends PanelContainer
 ## always see what they hold. Hovering a slip or giving it focus asks the
 ## screen's DetailSlip for its rules. A newly pinned one swells as it lands.
 
-## A slip is hovered or focused, or no longer is.
+## A slip is hovered or has focus; the screen's slip should show that Reform's rules.
 signal described(tag: Control, reform_id: String)
+## A slip is no longer hovered or focused; the screen's slip should be put away.
 signal left(tag: Control)
 
+## The height, in pixels, of a slip and of the heading's row.
 const TAG_HEIGHT: float = 38.0
+## The room, in pixels, added to a Reform's name to make its slip's width.
 const TAG_PADDING: float = 22.0
+## The font size of a Reform's name on its slip, at Standard.
 const NAME_SIZE: int = 16
+## The font size of the strip's heading, at Standard.
 const HEAD_SIZE: int = 16
+## The room, in pixels, between slips, across and down.
 const GAP: int = 8
 ## Clear of the paper's printed border.
 const PADDING: int = 20
@@ -111,6 +117,7 @@ func tag(index: int) -> Control:
 	return _tags[index]
 
 
+## How many Reforms the strip shows; for tests and the playtest.
 func held_count() -> int:
 	return _ids.size()
 

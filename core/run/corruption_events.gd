@@ -6,13 +6,21 @@ extends RefCounted
 ## does not claim to prove the cause. The Quota's list is kept in RunState, so a save
 ## loaded at the Quota's end still holds it; the profile applies it once.
 
+## The player declared a need above the true one.
 const DECLARED_OVER: String = "declared_over"
+## An audit caught the player's declaration false.
 const CAUGHT_LYING: String = "caught_lying"
+## The player answered the other peasant's play with a Bomb or a Rocket.
 const BOMBED_TEAMMATE: String = "bombed_teammate"
+## The player used a Campaign the data lists as hostile.
 const HOSTILE_CAMPAIGN: String = "hostile_campaign"
+## The player held the landlord seat in every round of the Quota.
 const LANDLORD_EVERY_ROUND: String = "landlord_every_round"
+## A black-market purchase made while Famine was in its high band.
 const FAMINE_PURCHASE: String = "famine_purchase"
+## The village starved while the player held coupons over the data's threshold.
 const STARVED_WHILE_RICH: String = "starved_while_rich"
+## A family went to reeducation after the player bombed or denounced it.
 const REEDUCATED_VICTIM: String = "reeducated_victim"
 ## Every event, in the ADR's order.
 const ALL: Array[String] = [
@@ -25,9 +33,11 @@ const ALL: Array[String] = [
 	STARVED_WHILE_RICH,
 	REEDUCATED_VICTIM,
 ]
+## The weights and thresholds used when a caller gives none.
 const DEFAULT_PARAMS: CorruptionParams = preload("res://data/run/corruption.tres")
 ## Landlord in every round counts only over at least this many rounds.
 const LANDLORD_ROUNDS: int = 2
+## The most corruption can be, in the points the weights add.
 const MAX_VALUE: float = 100.0
 
 

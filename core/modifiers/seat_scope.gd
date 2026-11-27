@@ -10,6 +10,8 @@ extends RefCounted
 ## effect needs a guard of its own, and a helper an effect shares with a debuff keeps its
 ## meaning.
 
+## How far a modifier acts: TABLE for every seat, HOLDER for the holder's seat alone, SIDE for the
+## holder's and, as a peasant, the teammate's.
 enum Reach { TABLE, HOLDER, SIDE }
 
 

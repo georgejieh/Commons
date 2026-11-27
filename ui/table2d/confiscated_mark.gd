@@ -7,17 +7,24 @@ extends Control
 ## fades further with BowlGrime.wear(). Drawn, not a label, so the board's only words
 ## stay in its tooltips and on its badges.
 
+## How dark the card is shaded, from 0 to 1.
 const SHADE: float = 0.38
+## The width of the red strikes across the card, in pixels.
 const STROKE: float = 3.0
 ## A stamp is art (ADR 0034): it keeps its size at every text size, and shrinks on a
 ## small card no further than the least size anything the player reads is set at.
 const STAMP_SIZE: int = 17
+## The smallest the stamp's type shrinks to on a small card.
 const LEAST_SIZE: int = 14
 ## The share of the card's diagonal the stamp may span.
 const FIT: float = 0.8
+## The stamp's tilt, in radians.
 const STAMP_TILT: float = -0.36
+## Room kept between the stamp's word and its band's edges, in pixels.
 const BAND_PAD: Vector2 = Vector2(7.0, 4.0)
+## The width of the rule drawn inside the stamp's band, in pixels.
 const RULE: float = 2.0
+## How far in from the card's corners the red strikes start, in pixels.
 const INSET: float = 8.0
 
 

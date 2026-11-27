@@ -9,6 +9,8 @@ extends RefCounted
 ## still on it. No card is created, lost or reissued.
 
 
+## True when the swap is allowed: equal counts within limit, no repeats, hand IDs in the hand, plot
+## IDs in the plot.
 static func is_valid(
 	hand: Array[CardInstance],
 	inventory: RunInventory,
@@ -44,11 +46,12 @@ static func apply(
 	round_state.exchange(seat, hand_ids, incoming)
 
 
-## The most cards the plot can hold, and the most swaps a round allows, with upgrades.
+## The most cards the plot can hold, with the run's upgrades.
 static func capacity(state: RunState, params: RunParams) -> int:
 	return params.plot_capacity + state.plot_capacity_bonus
 
 
+## The most swaps a round allows, with the run's upgrades.
 static func swaps(state: RunState, params: RunParams) -> int:
 	return params.swaps_per_round + state.swap_bonus
 

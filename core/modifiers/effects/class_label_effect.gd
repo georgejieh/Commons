@@ -6,6 +6,8 @@ extends ModifierEffect
 ## holder's hand carries the holder's stamp: an unstamped card never gains by it.
 
 
+## Lifts each rank the holder holds only stamped cards of above the 2s and below the jokers, while
+## the holder is landlord.
 func build_rank_map(context: RankMapContext) -> void:
 	if context.landlord != holder_seat or context.stamped == 0:
 		return

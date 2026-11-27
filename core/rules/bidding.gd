@@ -5,9 +5,13 @@ extends RefCounted
 ## was grabbed, the caller gets the last word: one chance to grab it back. The last seat
 ## to claim is the landlord. If everyone passes, the hand is redealt.
 
+## Where bidding stands: CALLING until a seat calls, GRABBING while the others may grab the
+## seat, and DONE once a landlord is settled or everyone has passed.
 enum Phase { CALLING, GRABBING, DONE }
+## What act answers: OK when the action was taken, else why it was refused.
 enum Reason { OK, OUT_OF_TURN, FINISHED }
 
+## The base stake and grab multiplier a bidding uses unless it is given others.
 const DEFAULT_PARAMS: BidParams = preload("res://data/rules/default_bid.tres")
 
 var _params: BidParams
@@ -28,6 +32,7 @@ func _init(first_seat: int, params: BidParams = DEFAULT_PARAMS) -> void:
 	_stake = params.base_stake
 
 
+## Where bidding stands now.
 func phase() -> Phase:
 	return _phase
 
@@ -37,10 +42,12 @@ func seat_to_act() -> int:
 	return Seats.NONE if _phase == Phase.DONE else _seat
 
 
+## The seat that holds the claim so far, the landlord once DONE; Seats.NONE before any call.
 func landlord() -> int:
 	return _landlord
 
 
+## The stake so far: the base stake, multiplied by the grab multiplier for each grab.
 func stake() -> int:
 	return _stake
 

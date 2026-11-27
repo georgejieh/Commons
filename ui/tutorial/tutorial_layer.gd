@@ -9,9 +9,11 @@ extends Control
 ## a home of their own, as the table does. It draws above every piece a screen lifts (the
 ## store's slips and seals, the envelope), and below the app's menu.
 
+## How far Skip stands in from the screen's right edge.
 const CORNER: float = 24.0
 ## From the screen's foot: close under it, so Skip clears the ledger's foot at the table.
 const FOOT: float = 8.0
+## The gap between the Begin button and Skip.
 const BEGIN_GAP: float = 16.0
 ## Above the highest piece a screen lifts, the envelope overlay's 4.
 const DRAW_ORDER: int = 5
@@ -58,6 +60,7 @@ func attach(app: App, director: TutorialDirector) -> void:
 	_on_changed()
 
 
+## Stops showing the arrival and hides every part of it.
 func detach() -> void:
 	_director = null
 	_confirm.visible = false
@@ -74,22 +77,27 @@ func on_screen(screen_id: String) -> void:
 		_director.ready(screen_id, _app.controller.awaiting())
 
 
+## Wang's slip, for tests.
 func slip() -> TutorialSlip:
 	return _slip
 
 
+## The light on what a step asks for, for tests.
 func glow() -> TutorialGlow:
 	return _glow
 
 
+## The Skip button, for tests.
 func skip_button() -> Button:
 	return _skip
 
 
+## The "Begin your first year" button, for the tutorial walk.
 func begin_button() -> Button:
 	return _begin
 
 
+## The question asked before the arrival is skipped, for tests.
 func confirm() -> SkipConfirm:
 	return _confirm
 

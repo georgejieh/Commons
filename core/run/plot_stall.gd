@@ -4,8 +4,10 @@ extends RefCounted
 ## cards through CardOffers, drawn on the shop stream from the ranks the data lists. A
 ## bought card goes into the plot under a new plot ID, if the plot has room.
 
+## Why a card cannot be bought; OK means it can.
 enum Reason { OK, NO_SUCH_SLOT, SOLD_OUT, TOO_POOR, PLOT_FULL }
 
+## This visit's offers, which hold the slots, their prices and which are sold.
 var offers: CardOffers
 
 var _state: RunState
@@ -23,6 +25,7 @@ func open() -> void:
 	offers.draw(_state.streams.stream(RandomStreams.SHOP), offers.ranks())
 
 
+## Why the slot's card cannot be bought now, or OK.
 func check_buy(slot: int) -> Reason:
 	if not offers.has_slot(slot):
 		return Reason.NO_SUCH_SLOT
@@ -35,6 +38,7 @@ func check_buy(slot: int) -> Reason:
 	return Reason.OK
 
 
+## Buys the slot's card into the plot under a new plot ID, or says why it cannot.
 func buy(slot: int) -> Reason:
 	var reason: Reason = check_buy(slot)
 	if reason != Reason.OK:

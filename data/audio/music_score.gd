@@ -23,6 +23,7 @@ extends Resource
 @export var fade_seconds: float = 3.0
 
 
+## The cue with this ID, or null.
 func cue(cue_id: String) -> MusicCue:
 	for each: MusicCue in cues:
 		if each.id == cue_id:

@@ -7,6 +7,7 @@ var _title: String = ""
 var _rule: String = ""
 
 
+## Sets the title and rules the tooltip shows; an empty rule shows no tooltip.
 func set_tip(title: String, rule: String) -> void:
 	_title = title
 	_rule = rule

@@ -6,20 +6,30 @@ extends RefCounted
 ## a row as gives the cards the largest scale that fits the room, never above full size.
 ## Below the least scale the cards keep it and the sheet scrolls.
 
+## A card's size at full scale, the same as on the swap board.
 const CARD: Vector2 = SwapFit.CARD
-## The step between a group's cards at full size, as wide as shows a card's marks, and
-## the most cards a group lays out at that step; a group with more closes up to fit.
+## The step between a group's cards at full size, as wide as shows a card's marks.
 const STEP: float = 46.0
+## The most cards a group lays out at the full step; a group with more closes up to fit.
 const GROUP_CARDS: int = 4
+## The gap between groups in a row, at full scale and in pixels.
 const GAP: float = 26.0
+## The gap between rows of groups, in pixels.
 const ROW_GAP: float = 14.0
+## The numbers of groups to a row the layout tries, most first, keeping the one that gives the
+## cards the largest scale.
 const COLUMNS: Array[int] = [8, 7, 6, 5, 4]
+## The least scale the cards are drawn at; below it they keep it and the sheet scrolls.
 const LEAST_SCALE: float = 0.6
 
-## The scale cards are drawn at, the groups in a row, and each group's place and step.
+## The scale cards are drawn at.
 var scale: float = 1.0
+## How many groups stand in a row.
 var columns: int = 1
+## Where each group's first card sits, in the room's pixels.
 var places: Array[Vector2] = []
+## The step between each group's cards, in pixels, closed up for a group with more than
+## GROUP_CARDS.
 var steps: Array[float] = []
 ## The room the whole layout takes.
 var size: Vector2 = Vector2.ZERO

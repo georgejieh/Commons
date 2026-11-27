@@ -12,9 +12,14 @@ extends Control
 ## reports its own licence and notices, so they are read from it as the screen opens, and
 ## the fonts' licences are read from art/fonts/, which every export carries for the OFL.
 
+## The credits as data, written by tools/write_credits.py from the records of the art, the sounds
+## and the components.
 const CREDITS: JSON = preload("res://data/credits/credits.json")
+## The width of the sheet of paper, in pixels.
 const WIDTH: float = 1180.0
+## The size of a section's heading, at Standard text.
 const HEADING_SIZE: int = 30
+## The size of a section's words, at Standard text.
 const BODY_SIZE: int = 24
 ## Licence texts keep their own line breaks, so they are set in the typewriter face.
 const NOTICE_SIZE: int = 18
@@ -26,6 +31,7 @@ var _back: Button = null
 var _fresh: bool = true
 
 
+## Builds the sheet for app, filling it from the credits and the engine's own licence and notices.
 func open(app: App) -> void:
 	_app = app
 	_fresh = true
@@ -55,11 +61,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_app.back()
 
 
-## The scroll and Back, for tests and the playtest.
+## The scroll that holds the sheet, for tests and the playtest.
 func scroll() -> ProseScroll:
 	return _scroll
 
 
+## The Back button, for tests and the playtest.
 func back_button() -> Button:
 	return _back
 

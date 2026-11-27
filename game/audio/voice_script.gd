@@ -7,11 +7,15 @@ extends RefCounted
 ## and "..." trails off. Digits are spelled out. Pure and deterministic: the same line
 ## in the same voice always gives the same plan, with no random stream.
 
+## The timing the plan uses unless a caller passes another.
 const DEFAULT: VoiceTiming = preload("res://data/ui/voice_timing.tres")
+## The words a digit is spelled out as, indexed by the digit.
 const DIGITS: Array[String] = [
 	"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
 ]
+## The mood of a slogan, which is spoken flat, without the rise and fall of speech.
 const SLOGAN: String = "slogan"
+## The ending that trails off; it is left out of its sentence.
 const TRAIL: String = "..."
 ## Sentence endings, by the index _sentences gives them.
 const ENDINGS: Array[String] = [".", "?", "!", TRAIL]

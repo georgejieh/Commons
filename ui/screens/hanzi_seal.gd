@@ -5,8 +5,11 @@ extends Control
 ## is drawn only from a face that holds every character, so it never shows the boxes of
 ## missing glyphs: without such a face, can_draw() is false and the screen leaves it out.
 
+## How opaque the red ink is at corruption stage 0; each stage thins it.
 const INK_ALPHA: float = 0.88
+## The slant the seal is pressed at, in radians.
 const TILT: float = 0.05
+## The width of the seal's border, as a share of its side.
 const BORDER: float = 0.06
 ## Each character's size as a share of the seal's side, per character.
 const CHARACTER: float = 0.84
@@ -32,6 +35,7 @@ static func _face_for(text: String) -> Font:
 	return null
 
 
+## True when text is not empty and a face holds every character of it, so the seal can be drawn.
 static func can_draw(text: String) -> bool:
 	return not text.is_empty() and _face_for(text) != null
 

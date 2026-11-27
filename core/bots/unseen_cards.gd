@@ -6,6 +6,7 @@ extends RefCounted
 ## of, so a rank it has seen more of than it knew stays at none unseen.
 
 
+## The count of each rank the seat has not seen, never below zero.
 static func from_view(view: SeatView) -> PackedByteArray:
 	var seen: PackedByteArray = view.own_counts.duplicate()
 	for play: PublicPlay in view.public.history:
@@ -19,6 +20,7 @@ static func from_view(view: SeatView) -> PackedByteArray:
 	return unseen
 
 
+## A mask with a bit set for each rank that has any count.
 static func mask_of(counts: PackedByteArray) -> int:
 	var mask: int = 0
 	for rank: int in Ranks.COUNT:

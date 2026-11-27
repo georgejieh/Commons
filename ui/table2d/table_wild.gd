@@ -9,6 +9,7 @@ extends RefCounted
 ## also holds the reading picker the table's Play opens when the chosen cards can be
 ## played more than one way now.
 
+## The slip that asks which reading to play when the chosen cards can be played more than one way.
 var picker: ReadingPicker = ReadingPicker.new()
 ## The ranks wild now as the events played so far have named them, in the order drawn.
 var ranks: Array[int] = []
@@ -25,6 +26,8 @@ func place(screen: Control) -> void:
 	screen.add_child(picker)
 
 
+## Wires the wild ranks to the hand, the pile, the rules slip, the moments, the event queue, the
+## commands and the input, and gives the commands the picker.
 func setup(
 	hand_view: HandView,
 	pile: TrickPile,

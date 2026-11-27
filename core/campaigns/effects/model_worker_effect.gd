@@ -6,10 +6,12 @@ extends CampaignEffect
 ## change at once, so the round in play reads it before the next action.
 
 
+## Refuses when two ranks are already wild.
 func check(context: CampaignContext) -> Reason:
 	return Reason.OK if RunWild.has_room(context.state) else Reason.WILD_FULL
 
 
+## Draws a wild rank on the deal stream, logs it and makes it wild for the player's seat.
 func apply(context: CampaignContext) -> void:
 	var rank: int = RunWild.add(context.state, context.state.streams.stream(RandomStreams.DEAL))
 	context.add_event(RunWild.event(context.state, rank))

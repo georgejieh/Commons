@@ -6,11 +6,15 @@ extends RefCounted
 ## never under its least; the whole stays within score_most, so a ten-step chain never
 ## takes ten times one step. Pace scales the lot. Pure: it only reads the presets.
 
+## What a beat shows: the entrance, a card's tick, the Rate or the Zeal stamped on, any other step
+## that changes the score, then the total's roll and stamp.
 enum Kind { ENTER, TICK, RATE, ZEAL, STEP, ROLL, STAMP }
 
-## Each beat's kind, the step it shows (-1 for none) and its seconds, in order.
+## Each beat's kind, in order.
 var kinds: Array[Kind] = []
+## The step each beat shows, or -1 for none, in the order of kinds.
 var step_index: Array[int] = []
+## Each beat's seconds, in the order of kinds.
 var seconds: Array[float] = []
 
 

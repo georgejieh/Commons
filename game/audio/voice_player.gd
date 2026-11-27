@@ -7,7 +7,9 @@ extends Node
 ## Stopping a line plays no more letters; the one sounding is a few hundredths of a
 ## second with its own fade, so it ends cleanly on its own.
 
+## The path of a letter's sound, filled with the letter bank's name and the letter.
 const BANK_PATH: String = "res://audio/voices/%s/%s.wav"
+## The letters that have a sound in a bank; any other character is only a pause.
 const LETTERS: String = "abcdefghijklmnopqrstuvwxyz"
 ## Letters may overlap for a moment when a fast voice outruns a clip.
 const POLYPHONY: int = 3
@@ -73,6 +75,7 @@ func stop(seat: int) -> void:
 	_plans[seat] = null
 
 
+## Plays no more of any seat's line.
 func stop_all() -> void:
 	for seat: int in Seats.COUNT:
 		stop(seat)
@@ -84,6 +87,7 @@ func reset() -> void:
 	dread = 0.0
 
 
+## True from a line's first syllable until its last has played, so a new line waits.
 func is_speaking(seat: int) -> bool:
 	return _plans[seat] != null
 

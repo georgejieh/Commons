@@ -6,14 +6,18 @@ extends Control
 ## with no art yet, its name inked on the stock. Drawn, not labelled, so the card stays one
 ## picture.
 
+## The paper ticket's size in pixels, pinned to the card's foot.
 const TICKET: Vector2 = Vector2(72, 32)
+## The count's type at Standard; grown with the text size as far as the ticket holds it.
 const COUNT_SIZE: int = 21
-## A name is set at NAME_SIZE, smaller only as far as its longest word needs to fit the
+## A name is set at this size, smaller only as far as its longest word needs to fit the
 ## card's width, and never below LEAST_NAME. Nothing is abbreviated or clipped.
 const NAME_SIZE: int = 16
+## The smallest a name is set at, whatever the card's width.
 const LEAST_NAME: int = 14
 ## Room kept between the count and the ticket's edges, in pixels.
 const COUNT_PAD: Vector2 = Vector2(12, 2)
+## Room kept on each side of a name, in pixels.
 const NAME_MARGIN: float = 5.0
 ## The band's fill for a count that is not a meter: no band.
 const NO_METER: float = -1.0
@@ -38,6 +42,7 @@ func show_name(cadre_name: String) -> void:
 	queue_redraw()
 
 
+## The count last shown on the ticket, empty when none, for tests.
 func count() -> String:
 	return _count
 
