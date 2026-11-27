@@ -1,4 +1,4 @@
-class_name DemoApp
+class_name App
 extends Control
 ## The game's root (ADR 0017): the run controller, the hand model, the scene switcher
 ## and the screen host. Screens get the app in open() and reach the run only through

@@ -10,7 +10,7 @@ const RUN_PAGES: Array[String] = ["dossier", "round_summary"]
 
 static var _save_path: String = TestFolder.of("test_cancel_goes_back") + "run.json"
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

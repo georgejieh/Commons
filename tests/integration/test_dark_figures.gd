@@ -11,7 +11,7 @@ const DENUNCIATION: int = 79
 const RESENTMENT: int = 71
 const FAMINE_LAYER: int = 0
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

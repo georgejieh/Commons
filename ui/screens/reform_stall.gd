@@ -19,7 +19,7 @@ const PIN_SCALE: float = 0.2
 var offers: HBoxContainer = HBoxContainer.new()
 var strip: ReformStrip = ReformStrip.new()
 
-var _app: DemoApp
+var _app: App
 var _shelf: ReformShelf = null
 var _slip: DetailSlip
 var _screen_busy: Callable

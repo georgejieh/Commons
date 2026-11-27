@@ -9,7 +9,7 @@ const WHOLE_BY: float = 1.6
 ## What a headless frame may run late by, in seconds.
 const SLACK: float = 0.3
 
-var _app: DemoApp
+var _app: App
 var _was_motion: bool
 var _was_size: Vector2i
 

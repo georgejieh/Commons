@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const READABLE: int = 16
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

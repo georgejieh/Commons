@@ -14,14 +14,14 @@ const NOTE_SIZE: int = 20
 
 ## The family name, beside its Change button.
 var family_line: Label
-var _app: DemoApp = null
+var _app: App = null
 var _card_backs: CardBackRow
 var _change: Button = null
 var _sheets: HBoxContainer
 var _scroll: ScrollContainer
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	if _app == null:
 		Settings.changed.connect(_on_setting)
 	_app = app
@@ -124,7 +124,7 @@ func name_line() -> String:
 
 
 ## The surname, then Change, or while a run is saved or the arrival plays, why not.
-func _family_name(app: DemoApp) -> VBoxContainer:
+func _family_name(app: App) -> VBoxContainer:
 	var block: VBoxContainer = VBoxContainer.new()
 	block.add_child(ScreenKit.eyebrow(tr("settings.family_name")))
 	family_line = ScreenKit.label(Surnames.of_profile(Saves.profile_service()), NAME_SIZE)

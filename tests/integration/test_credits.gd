@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 static var _save_path: String = TestFolder.of("test_credits") + "run.json"
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

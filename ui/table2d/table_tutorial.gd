@@ -19,7 +19,7 @@ const LANDING_WAIT_MSEC: int = 3000
 ## No report waits to be sent.
 const NO_REPORT: int = -2
 
-var _app: DemoApp
+var _app: App
 var _actions: ActionBar
 var _hand: HandModel
 var _hand_view: HandView
@@ -38,7 +38,7 @@ var _pose: Array[Transform2D] = []
 
 
 func setup(
-	app: DemoApp,
+	app: App,
 	actions: ActionBar,
 	hand_view: HandView,
 	need_panel: NeedPanel,

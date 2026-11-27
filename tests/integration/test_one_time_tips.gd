@@ -7,7 +7,7 @@ const SEED: int = 4242
 
 static var _save_path: String = TestFolder.of("test_one_time_tips") + "run.json"
 
-var _app: DemoApp = null
+var _app: App = null
 
 
 func before_test() -> void:

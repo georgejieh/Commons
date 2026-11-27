@@ -15,7 +15,7 @@ const PLAYERS: Array[String] = [
 	"user://settings.cfg",
 ]
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

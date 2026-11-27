@@ -19,7 +19,7 @@ const HOSTILE: Dictionary[String, Key] = {
 	"commons_campaign": KEY_BACKSPACE,
 }
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

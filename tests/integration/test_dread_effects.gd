@@ -21,7 +21,7 @@ const FRAME: float = 0.05
 ## How long the card backs' eyes are let turn before they are read.
 const TURN_SECONDS: float = 2.0
 
-var _app: DemoApp
+var _app: App
 var _saved: Dictionary[String, Variant] = {}
 
 

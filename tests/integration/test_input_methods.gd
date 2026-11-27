@@ -26,7 +26,7 @@ const PAD: Dictionary[String, JoyButton] = {
 	"accept": JOY_BUTTON_A,
 }
 
-var _app: DemoApp
+var _app: App
 var _table: TableScreen
 var _plays: int = 0
 

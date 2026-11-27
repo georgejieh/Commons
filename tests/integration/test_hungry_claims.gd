@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 const SEED: int = 4311
 const STEPS: int = 1500
 
-var _app: DemoApp = null
+var _app: App = null
 
 
 func after_test() -> void:

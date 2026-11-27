@@ -12,7 +12,7 @@ const DIM: Color = Color(0.05, 0.03, 0.02, 0.45)
 const WIDTH: float = 620.0
 const TEXT_SIZE: int = 24
 
-var _app: DemoApp
+var _app: App
 var _queue: Array[String] = []
 var _shown: String = ""
 var _paper: PanelContainer
@@ -25,7 +25,7 @@ var _right_half: bool = false
 ## Adds a slip to host for whichever of tip_ids are due now, and shows the first. Returns
 ## the slip, or null when none is due. right_half keeps it off a sheet on the left.
 static func offer(
-	host: Control, app: DemoApp, tip_ids: Array[String], right_half: bool = false
+	host: Control, app: App, tip_ids: Array[String], right_half: bool = false
 ) -> TipSlip:
 	var due: Array[String] = []
 	for tip_id: String in tip_ids:

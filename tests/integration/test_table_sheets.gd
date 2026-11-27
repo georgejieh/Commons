@@ -10,7 +10,7 @@ const SEED: int = 3
 const TUTORIAL: TutorialScript = preload("res://data/run/tutorial/arrival.tres")
 const LEAST_TYPE: int = 16
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

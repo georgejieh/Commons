@@ -17,7 +17,7 @@ const WAIT_MSEC: int = 20000
 
 static var _save_path: String = TestFolder.of("test_tutorial_ui") + "run.json"
 
-var _app: DemoApp = null
+var _app: App = null
 var _was_size: Vector2i
 var _saved: Dictionary[String, Variant] = {}
 
@@ -41,7 +41,7 @@ func after_test() -> void:
 	Saves.profile_service().delete()
 
 
-func _launch() -> DemoApp:
+func _launch() -> App:
 	if _app != null and is_instance_valid(_app):
 		_app.free()
 	_app = AppKit.make(self)

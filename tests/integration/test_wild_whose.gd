@@ -10,7 +10,7 @@ const WAIT_SECONDS: float = 12.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
 const WORKER: Array[String] = ["model_worker"]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

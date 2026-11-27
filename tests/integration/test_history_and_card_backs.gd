@@ -11,7 +11,7 @@ const SEED: int = 9321
 ## The darkest a page's ink may be read as light: its luminance stays under this.
 const DARK_INK: float = 0.35
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 var _was_back: String
 

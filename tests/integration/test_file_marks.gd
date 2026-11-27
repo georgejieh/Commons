@@ -13,7 +13,7 @@ const VISIT: WorkTeamTalk = preload("res://data/ui/work_team_talk.tres")
 ## Lines a seat is asked for in the villagers' test: enough that a 4% chance shows.
 const SAID: int = 600
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

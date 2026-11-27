@@ -160,7 +160,7 @@ static func chosen_text_size(root: Node) -> CheckBox:
 ## would be lost, so it takes the new size the next time it opens (at the next Set, a
 ## swap or a resume). Neither is the arrival's scripted evening; its pieces take the size
 ## at the next screen.
-static func rebuild_screen(app: DemoApp) -> void:
+static func rebuild_screen(app: App) -> void:
 	if app.arrival.is_running() or app.switcher.current_id() == app.table_id():
 		return
 	app.reopen()

@@ -19,10 +19,10 @@ const LINE_SIZE: int = 22
 
 var _entries: Dictionary[int, PackedStringArray] = {}
 
-var _app: DemoApp
+var _app: App
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
@@ -51,7 +51,7 @@ func entries(seat: int) -> PackedStringArray:
 	return _entries.get(seat, PackedStringArray())
 
 
-func _villager(app: DemoApp, state: RunView, seat: int) -> Control:
+func _villager(app: App, state: RunView, seat: int) -> Control:
 	var sheet: VBoxContainer = ScreenKit.card(Vector2(420, 0))
 	var portrait: TextureRect = TextureRect.new()
 	portrait.texture = app.seat_portrait(seat, PORTRAIT_SIZE)

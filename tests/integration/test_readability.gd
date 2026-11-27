@@ -15,7 +15,7 @@ const SHRUNK: int = 14
 ## How much of a card's left edge a fanned hand leaves showing, in card pixels.
 const FAN_STRIP: float = 57.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

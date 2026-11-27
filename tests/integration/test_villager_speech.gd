@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 const SEED: int = 4301
 const BOOK: SpeechBook = preload("res://data/ui/speech_book.tres")
 
-var _app: DemoApp
+var _app: App
 var _announced: Dictionary[int, int] = {}
 var _spoken: Dictionary[int, int] = {}
 var _said_any: int = 0

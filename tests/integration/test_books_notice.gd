@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 7211
 
-var _app: DemoApp
+var _app: App
 var _lines: PackedStringArray = []
 var _was_size: Vector2i
 

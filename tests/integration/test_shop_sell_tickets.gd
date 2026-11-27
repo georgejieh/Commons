@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const LOAN: String = "grain_loan"
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

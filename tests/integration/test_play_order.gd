@@ -67,7 +67,7 @@ func test_a_changed_rank_order_keeps_the_run_in_sequence() -> void:
 ## The trick itself lays the cards in that order, wherever they fly from.
 func test_the_pile_lays_a_play_as_it_reads() -> void:
 	AppKit.fresh_saves(self)
-	var app: DemoApp = AppKit.make(self)
+	var app: App = AppKit.make(self)
 	app.new_run(SEED)
 	var table: TableScreen = app.show_screen("table", true)
 	await await_idle_frame()

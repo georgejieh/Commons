@@ -9,7 +9,7 @@ const SLOW: float = 5.0
 ## Longer than any entrance on the screen shown after the table, in seconds.
 const SETTLE: float = 1.2
 
-var _app: DemoApp
+var _app: App
 var _was_reduced: bool
 var _saved_presets: Dictionary[String, float] = {}
 

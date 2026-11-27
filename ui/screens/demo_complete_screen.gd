@@ -3,7 +3,7 @@ extends Control
 ## The demo's last screen.
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(ScreenKit.header(tr("demo.eyebrow"), tr("demo.done")))

@@ -21,7 +21,7 @@ class Lines:
 
 
 var _lines: Lines
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

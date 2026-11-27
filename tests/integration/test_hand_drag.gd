@@ -6,7 +6,7 @@ const SEED: int = 4301
 ## Inside a card's uncovered left strip, clear of the next card in the fan.
 const GRIP: Vector2 = Vector2(14, 60)
 
-var _app: DemoApp
+var _app: App
 var _table: TableScreen
 
 

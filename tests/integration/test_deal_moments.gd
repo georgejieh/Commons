@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const KITTY: String = "51,52,53"
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

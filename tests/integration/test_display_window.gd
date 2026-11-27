@@ -38,9 +38,9 @@ func _display() -> DisplayWindow:
 	return display
 
 
-func _app() -> DemoApp:
+func _app() -> App:
 	Saves.use_run_path(_save_path)
-	var app: DemoApp = AppKit.make(self)
+	var app: App = AppKit.make(self)
 	return app
 
 
@@ -58,7 +58,7 @@ func test_a_new_player_gets_borderless_full_screen_with_sync() -> void:
 
 
 func test_the_app_under_a_script_never_touches_the_window() -> void:
-	var app: DemoApp = _app()
+	var app: App = _app()
 	var displays: Array[DisplayWindow] = []
 	for child: Node in app.get_children():
 		if child is DisplayWindow:
@@ -209,7 +209,7 @@ func _box_named(root: Node, text: String) -> CheckBox:
 ## goes back.
 func test_the_window_page_stands_whole_at_every_size() -> void:
 	var was: Vector2i = get_tree().root.size
-	var app: DemoApp = _app()
+	var app: App = _app()
 	app.new_run(4301)
 	for level: int in TextSize.count():
 		for screen_size: Vector2i in [Vector2i(1920, 1080), Vector2i(1280, 800)]:

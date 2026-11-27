@@ -9,7 +9,7 @@ const EARLY: String = "res://art/backdrops/stages/table_surface_s0.png"
 const LATE: String = "res://art/backdrops/stages/table_surface_s4.png"
 const BACK_EARLY: String = "res://art/cards/stages/card_back_s0.png"
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

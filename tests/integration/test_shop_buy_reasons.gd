@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const FIVE: Array[String] = ["iron_rice_bowl", "red_banner", "peek", "stakhanovite", "red_ink"]
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

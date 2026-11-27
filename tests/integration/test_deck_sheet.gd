@@ -11,7 +11,7 @@ const MODEL_CARD: int = 0
 const STAMPED_CARD: int = 9
 const SURPLUS_CARD: int = 53
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

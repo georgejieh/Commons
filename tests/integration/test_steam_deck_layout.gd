@@ -9,7 +9,7 @@ const SEED: int = 4301
 const DECK: Vector2i = Vector2i(1280, 800)
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), DECK]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -50,8 +50,8 @@ func test_no_screen_clips_at_any_text_size() -> void:
 		for screen: Vector2i in SCREENS_AT:
 			Settings.set_value(TextSize.SETTING, level)
 			get_tree().root.size = screen
-			for screen_id: String in DemoApp.SCREENS:
-				if not ResourceLoader.exists(DemoApp.SCREENS[screen_id]):
+			for screen_id: String in App.SCREENS:
+				if not ResourceLoader.exists(App.SCREENS[screen_id]):
 					continue
 				var shown: Node = _app.show_screen(screen_id, true)
 				await await_idle_frame()

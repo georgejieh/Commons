@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 5303
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

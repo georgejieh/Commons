@@ -7,7 +7,7 @@ const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
 
 static var _save_path: String = TestFolder.of("test_skip_confirm_layout") + "run.json"
 
-var _app: DemoApp = null
+var _app: App = null
 var _was_size: Vector2i
 var _saved: Dictionary[String, Variant] = {}
 

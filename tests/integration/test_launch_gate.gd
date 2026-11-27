@@ -180,7 +180,7 @@ func test_a_test_never_has_a_gate_or_touches_the_session_file() -> void:
 	var real: String = SessionFile.PATH
 	var was: String = FileAccess.get_file_as_string(real) if FileAccess.file_exists(real) else ""
 	var had: bool = FileAccess.file_exists(real)
-	var app: DemoApp = auto_free((load(APP) as PackedScene).instantiate())
+	var app: App = auto_free((load(APP) as PackedScene).instantiate())
 	Saves.use_run_path(_folder.path_join("app/run.json"))
 	add_child(app)
 	await await_idle_frame()
@@ -201,7 +201,7 @@ func test_quit_from_the_notice_leaves_nothing_of_the_app() -> void:
 	var was: String = FileAccess.get_file_as_string(_file.path())
 	var orphans: float = Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
 	# The app as it stands behind its gate: made, and not yet opened.
-	var app: DemoApp = (load(APP) as PackedScene).instantiate()
+	var app: App = (load(APP) as PackedScene).instantiate()
 	var gate: LaunchGate = LaunchGate.new(_params, _file, _keep)
 	var quit: Array[bool] = []
 	gate.leave = func() -> void: quit.append(true)

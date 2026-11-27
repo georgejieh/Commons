@@ -14,7 +14,7 @@ const WAIT_MSEC: int = 240000
 
 static var _save_path: String = TestFolder.of("test_tutorial_timing") + "run.json"
 
-var _app: DemoApp = null
+var _app: App = null
 var _saved: Dictionary[String, Variant] = {}
 ## The event the table played last.
 var _last: RunEvent = null

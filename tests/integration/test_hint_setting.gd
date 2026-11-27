@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 const SEED: int = 3
 const WAIT_FRAMES: int = 600
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

@@ -8,7 +8,7 @@ const SEED: int = 5303
 ## Every Quota's target after the first, so the raise reads as a plain figure.
 const LATER_TARGET: float = 1000.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

@@ -54,7 +54,7 @@ var _closing: QuotaClosing
 var _norm_text: String = ""
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var controller: RunController = app.controller
 	var state: RunView = controller.run
 	_met = state.set_progress() >= controller.figures.target()
@@ -139,7 +139,7 @@ func _results(controller: RunController, state: RunView) -> Array[Control]:
 
 
 ## The way on: to the store, or after the run's last Set to the Year's summary.
-func _way_on(app: DemoApp) -> Button:
+func _way_on(app: App) -> Button:
 	var controller: RunController = app.controller
 	var way_on: String = "summary.to_year" if controller.is_last_set() else "summary.to_store"
 	# In the arrival Wang says "Press Continue" (ADR 0026).

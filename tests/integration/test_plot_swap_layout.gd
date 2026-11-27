@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4301
 const LANDLORD_HAND: int = 20
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

@@ -3,7 +3,7 @@ extends Control
 ## The end of the demo's one Year: what you hold and how the village stands.
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.column(
 		ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)

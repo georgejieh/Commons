@@ -12,7 +12,7 @@ const MOST_FRAMES: int = 600
 
 static var _save_path: String = TestFolder.of("test_score_room") + "run.json"
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

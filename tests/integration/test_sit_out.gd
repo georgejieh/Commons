@@ -10,7 +10,7 @@ const WAIT_SECONDS: float = 40.0
 ## Seeds tried for a sit-out the table waits through on a searching villager.
 const SEARCH_SEEDS: Array[int] = [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

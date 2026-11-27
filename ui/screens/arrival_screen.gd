@@ -12,7 +12,7 @@ var _skip: Button
 var _confirm: SkipConfirm = SkipConfirm.new()
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
 	sheet.add_child(ScreenKit.header("", tr("tutorial.arrival.title")))
 	var line: Label = ScreenKit.label(tr("tutorial.arrival.text"), TEXT_SIZE)

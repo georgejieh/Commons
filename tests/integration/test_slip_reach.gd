@@ -120,7 +120,7 @@ func test_an_engine_tooltip_moves_beside_its_card() -> void:
 ## Cadre on the notice board, at both window sizes and every text size.
 func test_slips_at_the_table_stand_beside_their_thing() -> void:
 	AppKit.fresh_saves(self)
-	var app: DemoApp = AppKit.make(self)
+	var app: App = AppKit.make(self)
 	app.new_run(4242)
 	var loop: RunLoop = app.controller.run_loop()
 	if loop.state.inventory.cadres.is_empty():

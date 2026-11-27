@@ -13,7 +13,7 @@ const ISSUE_SECONDS: float = 4.0
 ## How far inside the card's edge a mark stays, past the selection edge's width.
 const EDGE_INSET: float = 6.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

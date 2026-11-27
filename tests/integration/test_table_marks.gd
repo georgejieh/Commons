@@ -10,7 +10,7 @@ const SEED: int = 4301
 ## A tremble of the slip's edge against its subject's, in pixels.
 const TREMBLE: float = 0.5
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 var _was_reduced: bool
 

@@ -12,7 +12,7 @@ const WAIT_SECONDS: float = 6.0
 ## A plain deck's slot of a 3.
 const THREE: int = 1
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

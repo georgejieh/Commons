@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 ## The most of run setup's sheet that may stand empty under the rules at 1080.
 const EMPTY_AT_MOST: float = 0.12
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

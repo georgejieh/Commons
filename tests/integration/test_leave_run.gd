@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 11
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

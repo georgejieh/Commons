@@ -12,7 +12,7 @@ const STRUGGLE: int = 2
 const LANDLORD: int = 3
 const SETTINGS: Array[String] = ["horror_intensity", "no_flash", "content_note_seen"]
 
-var _app: DemoApp
+var _app: App
 var _saved: Dictionary[String, Variant] = {}
 
 

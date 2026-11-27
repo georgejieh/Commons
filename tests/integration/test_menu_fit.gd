@@ -9,7 +9,7 @@ const SEED: int = 5303
 ## How far a dialog sheet may leave its board uncovered at an edge, the board's own frame.
 const BOARD_SLACK: float = 30.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

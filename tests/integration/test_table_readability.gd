@@ -11,7 +11,7 @@ const CARD_SCENE: PackedScene = preload("res://ui/cards/card_view.tscn")
 ## How much of each card in a play must show: enough for its rank and suit.
 const SHOWN_WIDTH: float = 40.0
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

@@ -23,7 +23,7 @@ const SCREENS: Array[String] = [
 	"village_history",
 ]
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

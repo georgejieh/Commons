@@ -17,7 +17,7 @@ var tray: CampaignTray = CampaignTray.new()
 ## The offers, one CounterPanel each, for the counter row.
 var offers: HBoxContainer = HBoxContainer.new()
 
-var _app: DemoApp
+var _app: App
 var _market: bool = false
 var _shelf: CampaignShelf
 var _slip: DetailSlip

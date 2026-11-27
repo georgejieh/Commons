@@ -12,7 +12,7 @@ const MARKET_PARAMS: ShopParams = preload("res://data/run/black_market.tres")
 const RARE: String = "seed_grain"
 const COMMON: String = "canteen"
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

@@ -8,7 +8,7 @@ const SLOW: int = 0
 const STANDARD: int = 1
 const FAST: int = 2
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

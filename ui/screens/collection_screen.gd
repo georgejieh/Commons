@@ -29,10 +29,10 @@ var _entries: Array[Control] = []
 var _scroll: ScrollContainer = ScrollContainer.new()
 var _open_line: Label
 
-var _app: DemoApp
+var _app: App
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	var view: CollectionView = CollectionView.of(Saves.profile_service())
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)

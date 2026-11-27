@@ -23,10 +23,10 @@ var _run_lines: Array[Label] = []
 var _file_lines: Array[Label] = []
 var _back: Button
 
-var _app: DemoApp
+var _app: App
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
 	_sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
@@ -147,7 +147,7 @@ func _file_page(entries: PackedStringArray) -> AgedSheet:
 
 
 ## The run's Quotas as a record, one line per family each Quota touched.
-static func history_lines(app: DemoApp) -> PackedStringArray:
+static func history_lines(app: App) -> PackedStringArray:
 	if not app.controller.has_run():
 		return PackedStringArray()
 	var table: Array[String] = app.controller.run.table()

@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 const SEED: int = 3
 const RANK_DEBUFF: String = "criticism_meeting"
 
-var _app: DemoApp
+var _app: App
 var _sheet: CheatSheet
 var _mismatches: PackedStringArray = []
 var _orders_seen: Dictionary[String, bool] = {}

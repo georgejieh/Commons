@@ -94,7 +94,7 @@ var sit_out: SitOut = SitOut.new()
 var swap_sheet: PlotSwapSheet = PlotSwapSheet.new()
 ## The frame round the villager whose turn it is.
 var turn: TurnMark = TurnMark.new()
-var _app: DemoApp
+var _app: App
 var _controller: RunController
 var _hand: HandModel
 var _pool_parent: Control = Control.new()
@@ -188,7 +188,7 @@ func _lay_over() -> void:
 	move_child(pile, need_panel.get_index())
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	_controller = app.controller
 	_hand = app.hand
@@ -199,7 +199,7 @@ func open(app: DemoApp) -> void:
 
 
 ## The event queue, the motion, the seats, the hand and the commands, wired to the run.
-func _wire_play(app: DemoApp) -> void:
+func _wire_play(app: App) -> void:
 	pool.fill(_pool_parent)
 	add_child(player)
 	add_child(motion)
@@ -237,7 +237,7 @@ func _wire_play(app: DemoApp) -> void:
 
 
 ## The ledger, the moments and the pieces that act the run's events out.
-func _wire_moments(app: DemoApp) -> void:
+func _wire_moments(app: App) -> void:
 	var names: Dictionary[int, String] = {
 		Seats.PLAYER: tr("ledger.you"),
 		Seats.RIGHT: app.seat_name(Seats.RIGHT),
@@ -268,7 +268,7 @@ func _wire_moments(app: DemoApp) -> void:
 
 
 ## The pace, the menu, the deck sheet, the keys and the dread.
-func _wire_menus(app: DemoApp) -> void:
+func _wire_menus(app: App) -> void:
 	_set_pace()
 	hud.menu.pressed.connect(_open_pause)
 	deck = TableDeck.attach(self, pause, _controller, player)
@@ -334,7 +334,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 ## Dread reads the run at round boundaries, and starts settled when the table opens.
-func _setup_dread(app: DemoApp) -> void:
+func _setup_dread(app: App) -> void:
 	var materials: Dictionary[String, ShaderMaterial] = DreadLayers.table_materials(
 		app.post.material(), _atmosphere, dressing
 	)

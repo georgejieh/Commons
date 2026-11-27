@@ -16,7 +16,7 @@ const BEGIN_GAP: float = 16.0
 ## Above the highest piece a screen lifts, the envelope overlay's 4.
 const DRAW_ORDER: int = 5
 
-var _app: DemoApp = null
+var _app: App = null
 var _director: TutorialDirector = null
 var _slip: TutorialSlip = TutorialSlip.new()
 var _glow: TutorialGlow = TutorialGlow.new()
@@ -46,7 +46,7 @@ func _ready() -> void:
 
 
 ## Starts showing the arrival the director walks.
-func attach(app: DemoApp, director: TutorialDirector) -> void:
+func attach(app: App, director: TutorialDirector) -> void:
 	_app = app
 	_director = director
 	_focused = ""

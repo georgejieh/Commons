@@ -10,7 +10,7 @@ const KEPT: String = "user://crashes/2000-01-01T00.00.00"
 
 static var _save_path: String = TestFolder.of("test_session_notice") + "run.json"
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

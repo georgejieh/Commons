@@ -56,7 +56,7 @@ const EXPECTED: Dictionary[String, String] = {
 ## The text sizes at which arming a Campaign puts the left seat's intel away.
 const EXPECTED_AWAY: Array[int] = [2]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const CARD: int = 20
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

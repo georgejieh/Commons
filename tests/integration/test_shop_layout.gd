@@ -18,7 +18,7 @@ const ALL_REFORMS: Array[String] = [
 	"unplanned_economy",
 ]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4301
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

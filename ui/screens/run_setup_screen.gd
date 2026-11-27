@@ -29,7 +29,7 @@ const ROW_GAPS: Array[int] = [20, 14, 10]
 ## not as a column of words.
 const RULES_WIDTH: float = 960.0
 
-var _app: DemoApp
+var _app: App
 var _view: SetupView
 var _household: String = ""
 var _stake: int = 0
@@ -45,7 +45,7 @@ var _start: Button
 var _back: Button
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	if app.demo:
 		_open_demo(app)
@@ -266,7 +266,7 @@ func _begin() -> void:
 
 
 ## The demo's page: one ticket for the base stake, and Start begins the demo.
-func _open_demo(app: DemoApp) -> void:
+func _open_demo(app: App) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
 	sheet.add_child(ScreenKit.header(tr("setup.eyebrow"), tr("setup.title")))
 	var base: Button = ScreenKit.button(tr("setup.stake_base"), CommonsTheme.SECONDARY)

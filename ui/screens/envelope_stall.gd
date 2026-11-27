@@ -15,7 +15,7 @@ signal settled
 ## The offers, one CounterPanel each, for the counter row.
 var offers: HBoxContainer = HBoxContainer.new()
 
-var _app: DemoApp
+var _app: App
 var _market: bool = false
 var _shelf: EnvelopeShelf
 var _slip: DetailSlip

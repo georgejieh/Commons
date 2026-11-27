@@ -13,7 +13,7 @@ const LINE_SIZE: int = 24
 const RULE_SIZE: int = 20
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var controller: RunController = app.controller
 	var state: RunView = controller.run
 	var art: Texture2D = ScreenKit.ART.notice_wall
@@ -89,7 +89,7 @@ func _ladder(column: VBoxContainer, controller: RunController) -> Array[Control]
 	return steps
 
 
-func _offer_tips(app: DemoApp) -> void:
+func _offer_tips(app: App) -> void:
 	var controller: RunController = app.controller
 	var ladder: Array[String] = controller.items.ladder()
 	# The first time a Quota lists a debuff, and the first time a family that remembers

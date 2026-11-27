@@ -7,7 +7,7 @@ const SEED: int = 4242
 ## Inside the paper's printed border, which ends 17 px in.
 const BORDER: float = 17.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

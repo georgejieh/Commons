@@ -7,7 +7,7 @@ const SEED: int = 3
 ## Seconds the walk through a round's end may take at most.
 const WAIT_SECONDS: float = 12.0
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

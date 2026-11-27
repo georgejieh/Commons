@@ -4,7 +4,7 @@ extends GdUnitTestSuite
 
 const SEEDS: int = 60
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:

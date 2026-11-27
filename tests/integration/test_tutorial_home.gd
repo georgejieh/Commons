@@ -20,7 +20,7 @@ const WAIT_MSEC: int = 60000
 
 static var _save_path: String = TestFolder.of("test_tutorial_home") + "run.json"
 
-var _app: DemoApp = null
+var _app: App = null
 var _saved: Dictionary[String, Variant] = {}
 var _was_size: Vector2i
 

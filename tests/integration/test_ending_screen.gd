@@ -20,7 +20,7 @@ const CASES: Dictionary[String, Array] = {
 	"death_denunciation": [40, 100, 1],
 }
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 var _was_reduced: bool
 

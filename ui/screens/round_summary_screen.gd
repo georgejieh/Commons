@@ -6,10 +6,10 @@ extends Control
 ## The stake's and the bank's lines, at Standard.
 const LINE_SIZE: int = 24
 
-var _app: DemoApp
+var _app: App
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	var controller: RunController = app.controller
 	var state: RunView = controller.run

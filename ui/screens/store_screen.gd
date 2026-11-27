@@ -66,7 +66,7 @@ var deck: DeckSheet = DeckSheet.new()
 var desk_stall: DeskStall = DeskStall.new()
 ## The household's true figures, shown only at the stage past the last (ADR 0022).
 var books: SmallLedger = SmallLedger.new(2)
-var _app: DemoApp
+var _app: App
 ## What every stall on the page is set up with.
 var _shop: StallContext
 var _shown_resentment: float = 0.0
@@ -85,7 +85,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_back()
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	slip.quiet = app.arrival.is_running
 	_shop = StallContext.new(app, market, slip, deck, is_issuing)
@@ -184,7 +184,7 @@ func _set_up_stalls() -> void:
 	sale.sold.connect(_on_sold)
 
 
-func _header_row(app: DemoApp) -> Control:
+func _header_row(app: App) -> Control:
 	var place: String = "market" if market else "store"
 	var heading: Control = ScreenKit.header(tr(place + ".eyebrow"), tr(place + ".title"))
 	var top: Array[Control] = [heading, StoreNotes.balance(coupons, books)]

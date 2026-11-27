@@ -19,7 +19,7 @@ const LONGEST_SURNAME: String = "Wwwwwwwwwwww"
 ## The table's seat width, where a villager speaks.
 const SEAT: Vector2 = Vector2(380, 0)
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 

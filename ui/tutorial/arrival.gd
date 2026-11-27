@@ -23,12 +23,12 @@ var first_launch: bool = false
 ## The overlay it plays on, which the app adds over its screens.
 var layer: TutorialLayer = TutorialLayer.new()
 
-var _app: DemoApp
+var _app: App
 ## True while the arrival plays again from the title.
 var _replay: bool = false
 
 
-func _init(app: DemoApp, first: bool) -> void:
+func _init(app: App, first: bool) -> void:
 	_app = app
 	first_launch = first
 

@@ -47,7 +47,7 @@ var _waiting: Array[WaitingLine] = []
 var _visit: RandomStream = null
 
 
-func setup(seats: Dictionary[int, SeatPanel], app: DemoApp = null) -> void:
+func setup(seats: Dictionary[int, SeatPanel], app: App = null) -> void:
 	_seats = seats
 	_waiting.clear()
 	for seat: int in seats:
