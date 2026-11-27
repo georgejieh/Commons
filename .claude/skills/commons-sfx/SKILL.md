@@ -1,6 +1,6 @@
 ---
 name: commons-sfx
-description: Source, design, render and check sound effects for Commons, from CC0 and royalty-free libraries or by synthesis, with license tracking. Use for sound effects, SFX, foley, UI sounds, ambience, audio feedback, drones, or auditing game sounds. Not for music, which is commons-bgm, or villager voices, which are P3B.13.
+description: Source, design, render and check sound effects for Commons, from CC0 and royalty-free libraries or by synthesis, with license tracking. Use for sound effects, SFX, foley, UI sounds, ambience, audio feedback, drones, or auditing game sounds. Not for music, which is commons-bgm, or villager voices, which the voice bank renders (`tools/voice_proto/`).
 ---
 
 # Commons sound effects
@@ -23,11 +23,11 @@ These follow the plan's guardrail and apply on every horror setting.
 
 - No screaming, crying, retching, beatings, gunshots or sounds of bodies.
 - No sounds of starving people. The plan's stomach-like low drone stays an abstract drone.
-- No recorded slogans, loudspeaker speech or real political audio. Any speech is P3B.13 gibberish.
+- No recorded slogans, loudspeaker speech or real political audio. Any speech is the voice bank's gibberish.
 - Crowd murmur stays wordless and never sounds like a mob attacking someone.
 - No flashes of loud noise to startle the player. The horror creeps.
-- Whispers and crowd murmur use invented, voice-bank material from P3B.13, so no recorded voices and no imitation Mandarin.
-- The horror-intensity setting scales every horror sound. Effects take part in the P5.5 sensitivity read.
+- Whispers and crowd murmur use invented, voice-bank material (`tools/voice_proto/`), so no recorded voices and no imitation Mandarin.
+- The horror-intensity setting scales every horror sound. Effects take part in the human sensitivity read before release.
 
 ## Choose a source
 
@@ -108,4 +108,4 @@ WAV, 16-bit, 44.1 kHz, mono by default. Use stereo where width helps, such as am
 
 ## Horror states
 
-Board-state sounds are data in the dread layers (P3B.12). They fade in, mostly at round boundaries, and never change what a sound tells the player about game state. A Bomb stays recognizable at every horror level, and legal-move and error sounds never change meaning.
+Board-state sounds are data in the dread layers. They fade in, mostly at round boundaries, and never change what a sound tells the player about game state. A Bomb stays recognizable at every horror level, and legal-move and error sounds never change meaning.

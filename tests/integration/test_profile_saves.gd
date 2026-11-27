@@ -235,7 +235,7 @@ func test_a_demo_run_is_never_recorded() -> void:
 	assert_dict(data.memory.to_dict()).is_equal(state.memory.to_dict())
 
 
-## The checklist's Done-when: deleting the run save leaves the profile as it was.
+## Deleting the run save leaves the profile as it was.
 func test_deleting_the_run_save_leaves_the_profile_untouched() -> void:
 	var state: RunState = _full_state(RunFlow.State.RUN_END)
 	ProfileCommits.commit(_profile, state, true)

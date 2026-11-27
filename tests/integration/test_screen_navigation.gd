@@ -76,8 +76,8 @@ func test_the_store_reaches_the_black_market_and_back() -> void:
 	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
-## Screens whose systems arrive in Phase 4 open over the table and go back to it.
-func test_phase_4_screens_open_over_the_run_and_go_back() -> void:
+## The reeducation screen opens over the table and goes back to it.
+func test_reeducation_opens_over_the_table_and_goes_back() -> void:
 	_app.new_run(SEED)
 	_app.show_screen("table", true)
 	await await_idle_frame()

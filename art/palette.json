@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Commons palette (P3C.1). The cleanup script (P3C.3) quantizes source art to these colors. Named entries are UI roles; the rest are poster print inks sampled from the approved art.",
+  "note": "Commons palette. The cleanup script (tools/art_cleanup.py) quantizes source art to these colors. Named entries are UI roles; the rest are poster print inks sampled from the approved art.",
   "colors": [
     {
       "name": "ink",

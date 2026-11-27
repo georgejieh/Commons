@@ -1,4 +1,4 @@
-// The one full-screen pass (P3B.7): pulls colors toward aged poster ink, adds still
+// The one full-screen pass: pulls colors toward aged poster ink, adds still
 // print grain and a slight ink misregistration, and darkens the edges.
 // dread (0 to 1) desaturates, closes the vignette and strengthens the grain, so the
 // board decays as the meters rise. It never moves or hides anything the player reads.

@@ -93,7 +93,7 @@ Each word must add a decision. "Sad, melancholy, sorrowful" is one idea stated t
 - Leave choirs out by default, to keep space for the voices. Use one only if the user wants it.
 - Early cues stay sincere. Do not make the warm cues secretly sinister.
 - Avoid horror clichés: music-box lullabies, detuned children's choirs, reversed cymbals, sudden stingers. The plan's horror is absence.
-- Music takes part in the P5.5 sensitivity read.
+- Music takes part in the human sensitivity read before release.
 
 ## What to return
 

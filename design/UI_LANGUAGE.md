@@ -1,6 +1,6 @@
 # UI language
 
-Commons' visual language for P3B.0, in the propaganda-poster direction ([ADR 0015](../docs/adr/0015-art-direction.md)). The reference board in `design/reference/` is private: 24 store-page screenshots, four per game, which are gitignored, excluded from exports, and never traced or used as image-model input. This file records what each reference solves and Commons' own answer to it, from the Plan's divergence table. The "problem it solves" column is a design reading, not a measured result. The reference descriptions were cross-checked with GPT-6.1-Sol on 2026-11-03.
+Commons' visual language, in the propaganda-poster direction ([ADR 0015](../docs/adr/0015-art-direction.md)). The reference board in `design/reference/` is private: 24 store-page screenshots, four per game, which are gitignored, excluded from exports, and never traced or used as image-model input. This file records what each reference solves and Commons' own answer to it, from the Plan's divergence table. The "problem it solves" column is a design reading, not a measured result. The reference descriptions were cross-checked with GPT-6.1-Sol on 2026-11-03.
 
 ## What each reference solves
 
@@ -27,11 +27,11 @@ The art reads as Mao-era propaganda at a glance and as something worse the longe
 
 **Colors as labels.** Grain is wheat ochre, Zeal is vermilion stamp ink, and coupons are ration-paper green. The landlord is lacquer red with gold trim. Every other surface is warm cream paper, with ink-black text and lines. No color is reused for a second meaning.
 
-**Texture.** Printed poster and paper grain, with slight print misregistration on large color blocks. There's no CRT frame. The dread layers (P3B.12) later bleach, crack or redact this paper, so it has to read as paper first.
+**Texture.** Printed poster and paper grain, with slight print misregistration on large color blocks. There's no CRT frame. The dread layers ([ADR 0018](../docs/adr/0018-escalating-corruption.md)) bleach, crack or redact this paper, so it has to read as paper first.
 
 **Meters.** Famine is the granary barrel and the wall roster of names. Denunciation is the posters and eyes on the wall. In the demo they are two labelled gauges at the top of the room, until the dread layers arrive.
 
-**Type.** A condensed poster face for titles and numbers, and a plain readable face for rules text. Both must be licensed for embedding. Choosing them is P3C.1 work. The demo uses Godot's default font at the right sizes.
+**Type.** A condensed poster face for titles and numbers, and a plain readable face for rules text. Both must be licensed for embedding; `docs/DEPENDENCIES.md` records the faces chosen.
 
 ## Screens the demo needs mocked up first
 

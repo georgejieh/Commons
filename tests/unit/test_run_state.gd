@@ -90,12 +90,12 @@ func _random_state(rng: RandomNumberGenerator) -> RunState:
 	for _i: int in rng.randi_range(0, 12):
 		var kind: int = rng.randi_range(0, Observations.Kind.size() - 1)
 		state.observations.add("family_%d" % rng.randi_range(0, 15), kind, rng.randi_range(1, 9))
-	_fill_phase_4(rng, state)
+	_fill_schema_3_fields(rng, state)
 	return state
 
 
-## The fields Phase 4 added: bosses used, Resentment, plot upgrades and the store's stock.
-func _fill_phase_4(rng: RandomNumberGenerator, state: RunState) -> void:
+## The fields schema 3 gained: bosses used, Resentment, plot upgrades and the store's stock.
+func _fill_schema_3_fields(rng: RandomNumberGenerator, state: RunState) -> void:
 	for i: int in rng.randi_range(0, 3):
 		state.risen.append("family_%d" % i)
 	for i: int in rng.randi_range(0, 2):

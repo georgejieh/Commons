@@ -1,8 +1,8 @@
 # Performance measurements
 
-Each measurement names its machine and the command that produced it. Phase 3B measures on the development PC, which stands in for minimum spec until P5.3 ([ADR 0016](adr/0016-phase-3b-measurement-machine.md)).
+Each measurement names its machine and the command that produced it. The development PC stands in for minimum spec until the minimum-spec machines are measured ([ADR 0016](adr/0016-phase-3b-measurement-machine.md), [ADR 0036](adr/0036-minimum-spec.md)).
 
-## 2D table (P3B.3)
+## 2D table
 
 Machine: Intel Core i7-6700K, NVIDIA GeForce GTX 1060 6 GB, 32 GB RAM, Windows 10 Pro 19045, Compatibility renderer, vsync on. Date: 2026-11-03.
 
@@ -19,7 +19,7 @@ A seeded Set played by bot at the table's real pacing until the Set ended (1,613
 | p99 frame time | 16.73 ms |
 | Scene nodes while a round is in play | 576 at every sample, so no node is made during a round |
 
-### With the art pass and the print post-process (P3B.7)
+### With the art pass and the print post-process
 
 Same machine and command, after the GPT Image art and the full-screen post-process shader (1,606 frames):
 
@@ -30,11 +30,11 @@ Same machine and command, after the GPT Image art and the full-screen post-proce
 | p99 frame time | 17.72 ms |
 | Scene nodes while a round is in play | 758 at every sample |
 
-The GPU cost of the post-process pass alone is isolated in the P3B.7 section below.
+The GPU cost of the post-process pass alone is isolated in the post-process section below.
 
-### 54-card stress case and the 80-view pool (P3B.3)
+### 54-card stress case and the 80-view pool
 
-Same machine, 2026-11-04. The pool is 80 views, not the checklist's 60: a full 20-card hand plus a long play in each of the three lanes needs more than 60.
+Same machine, 2026-11-04. The pool is 80 views, not the 60 first planned: a full 20-card hand plus a long play in each of the three lanes needs more than 60.
 
 ```bash
 godot --path . --script res://tools/table_perf.gd -- --seconds 20 --stress
@@ -50,7 +50,7 @@ All 54 deck cards bound to pooled views on the table at once, each moved every f
 
 The normal 40-second Set on the same build: mean 16.66 ms (60.0 fps), p99 16.85 ms, 806 nodes at every sample while a round was in play.
 
-## Post-process GPU cost (P3B.7)
+## Post-process GPU cost
 
 Same machine, 2026-11-04. The tool times the GPU each frame with the viewport's render timer (`RenderingServer.viewport_get_measured_render_time_gpu`) while a seeded Set plays. It turns the pass on and off every 60 frames, skips 5 frames after each switch, and takes the difference of the medians.
 
@@ -67,9 +67,9 @@ Five 30-second runs of each version of the screen sampler, in ms of GPU time per
 
 The pass never samples a lower mip, so building mipmaps of the screen copy each frame was wasted work. Dropping them changes nothing on screen.
 
-Runs 1 and 4 of the shipped version had pass-off baselines of 0.85 ms and 3.26 ms, against about 0.65 ms in the other runs. That points to the GPU running at lower clocks for the whole run, not to the pass. Run 4, at those low clocks, measured 1.015 ms, just over budget. P5.3 re-measures on the real minimum-spec machine.
+Runs 1 and 4 of the shipped version had pass-off baselines of 0.85 ms and 3.26 ms, against about 0.65 ms in the other runs. That points to the GPU running at lower clocks for the whole run, not to the pass. Run 4, at those low clocks, measured 1.015 ms, just over budget. The minimum-spec machines measure it again ([ADR 0036](adr/0036-minimum-spec.md)).
 
-## Dread layers GPU cost (P3B.12)
+## Dread layers GPU cost
 
 Same machine, 2026-11-04. The table is held still at its worst board state: both meters at 90 and the last corruption stage. Horror intensity switches between 0 and 1 every 60 frames, with the print pass on throughout.
 
@@ -81,9 +81,9 @@ godot --path . --script res://tools/table_perf.gd -- --seconds 30 --horror-ab
 | --- | --- | --- | --- | --- | --- | --- |
 | Dread layers, ms of GPU per frame | 0.093 | 0.064 | 0.048 | -0.160 | 0.046 | 0.048 |
 
-Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is noise. Together with the print pass (median 0.223 ms), the full-screen work costs about 0.27 ms, inside P3B.7's 1 ms budget.
+Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is noise. Together with the print pass (median 0.223 ms), the full-screen work costs about 0.27 ms, inside the post-process pass's 1 ms budget.
 
-## Texture memory (P3C.4)
+## Texture memory
 
 `tools/texture_budget.gd` loads a seeded run on the table with every Cadre slot filled and reads the profiler's texture-memory monitor (`Performance.RENDER_TEXTURE_MEM_USED`). It runs in the cloud playtest (software OpenGL under xvfb) and fails the step when over the 128 MB budget.
 
@@ -91,14 +91,14 @@ Run 4 ran at low GPU clocks (a 5.2 ms baseline), and its negative difference is 
 | --- | --- | --- |
 | Before (every asset at full size) | 170.4 MB | Over |
 | Large art capped at 512 px on import, icons packed into one atlas | 89.2 MB | Pass |
-| 18 more Cadres with art (P4.11h), Cadre art capped at 384 px | 125.0 MB peak | Pass |
-| Cadre and ending pictures loaded on demand (P4.14), 18 ending pictures added | 114.3 MB peak | Pass |
+| 18 more Cadres with art, Cadre art capped at 384 px | 125.0 MB peak | Pass |
+| Cadre and ending pictures loaded on demand, 18 ending pictures added | 114.3 MB peak | Pass |
 
-The art library preloads backdrops, paper and card art. Cadre and ending pictures load only when shown, through a cache of 12 (P4.14), so the table holds just the Cadres on its board. Stage versions load only when shown, so since the stage art arrived the tool also shows all 54 card faces and measures at stages 0, 4 and 9 in turn, reporting the peak.
+The art library preloads backdrops, paper and card art. Cadre and ending pictures load only when shown, through a cache of 12, so the table holds just the Cadres on its board. Stage versions load only when shown, so since the stage art arrived the tool also shows all 54 card faces and measures at stages 0, 4 and 9 in turn, reporting the peak.
 
-## Table light GPU cost (P3C.6)
+## Table light GPU cost
 
-`table_perf.gd --light-ab` switches the table's one `PointLight2D` on and off every 60 frames during play and compares the GPU time per frame, the P3B.7 method. It ran on the development PC (ADR 0016) with its window on the second monitor (`--screen 1`), five runs of 30 seconds.
+`table_perf.gd --light-ab` switches the table's one `PointLight2D` on and off every 60 frames during play and compares the GPU time per frame, the post-process section's method. It ran on the development PC (ADR 0016) with its window on the second monitor (`--screen 1`), five runs of 30 seconds.
 
 | Run | GPU on (ms) | GPU off (ms) | Light cost (ms) |
 | --- | --- | --- | --- |
@@ -108,9 +108,9 @@ The art library preloads backdrops, paper and card art. Cadre and ending picture
 | 4 | 1.890 | 1.495 | 0.395 |
 | 5 | 1.016 | 0.753 | 0.263 |
 
-The median cost is 0.266 ms, inside the 1 ms budget. Run 4 was taken while the GPU sat at a lower clock state, which doubled its baseline, as in P3B.7. Every run held 60 fps with a p99 frame time of 17.2 ms or less. The four normal maps add about 8 MB of texture memory, which leaves the full table near 97 MB of the 128 MB budget.
+The median cost is 0.266 ms, inside the 1 ms budget. Run 4 was taken while the GPU sat at a lower clock state, which doubled its baseline, as in the post-process runs. Every run held 60 fps with a p99 frame time of 17.2 ms or less. The four normal maps add about 8 MB of texture memory, which leaves the full table near 97 MB of the 128 MB budget.
 
-## Expert decision time (P4.16, ADR 0030)
+## Expert decision time (ADR 0030)
 
 Development PC (ADR 0016), 2026-11-15. The live game asks an Expert villager for its play through `ExpertRunner`, which spreads the samples over the worker pool and starts no more after the deadline in `BotWeights.expert_deadline_usec` (300 ms).
 
@@ -123,13 +123,13 @@ godot --headless --path . --script res://tools/expert_deadline.gd -- --deals 40 
 | `ExpertRunner` at the 300 ms deadline | 601 | not recorded | p99 352.9 ms | mean 32.2; all 48 in 206 decisions; fewest 6 |
 | `Bot.decide_play` with no limit, one thread | 40 | 889 ms (median 632 ms) | worst 3,796 ms | all 48 |
 
-The 40-deal run took 166 seconds and Expert beat Hard in 0.525 of 80 games with no illegal action. The p99 is inside P2.9's 400 ms budget. A decision that finishes fewer than 12 samples keeps the policy's play (`expert_min_samples`), so some decisions at the deadline are not searched at all.
+The 40-deal run took 166 seconds and Expert beat Hard in 0.525 of 80 games with no illegal action. The p99 is inside Expert's 400 ms budget (`tools/perf_limits.gd`). A decision that finishes fewer than 12 samples keeps the policy's play (`expert_min_samples`), so some decisions at the deadline are not searched at all.
 
 The unlimited figures were taken over seeds 0 to 4 of `SelfPlay.deal_from_seed`, with Expert as landlord on even seeds and as both peasants on odd ones, Hard in the other seats, timing only decisions that had a choice to search. That path is what tests, the tournament and the balance harness use, and what the game used before ADR 0030.
 
-The wait is still on the thread that handles the player's command, so a play can be followed by two deadlines before the player's next turn. P5.0 moves it off that thread.
+The wait is still on the thread that handles the player's command, so a play can be followed by two deadlines before the player's next turn. The next section moves it off that thread.
 
-## Expert decisions off the command thread (P5.0, ADR 0030)
+## Expert decisions off the command thread (ADR 0030)
 
 Development PC (ADR 0016), 2026-11-17, 8 logical processors, so the search has 7 worker threads.
 
@@ -151,7 +151,7 @@ godot --headless --path . --script res://tools/expert_deadline.gd -- --deals 100
 godot --headless --path . --script res://tools/expert_deadline.gd -- --deals 1000 --seed 0 --wild 1
 ```
 
-The first full run found the p99 over P2.9's 400 ms. The deadline stopped new samples from starting, and a sample already running finished however long it took.
+The first full run found the p99 over Expert's 400 ms budget. The deadline stopped new samples from starting, and a sample already running finished however long it took.
 
 | 1,000 deals, before the hard stop | Expert against Hard | Illegal actions | p99 | Searched decisions | Samples finished, of 48 |
 | --- | --- | --- | --- | --- | --- |
@@ -169,7 +169,7 @@ Both are inside the 400 ms budget. The p99 sits a little past the 360 ms ceiling
 
 Part of the first no-wild run shared the machine with other work, which may have raised its p99. The wild run and both runs after the stop had the machine to themselves.
 
-## Every budget, by one command (P5.3, ADR 0036)
+## Every budget, by one command (ADR 0036)
 
 ```bash
 godot --headless --path . --script res://tools/perf_budget.gd -- --out reports/perf_budget.md

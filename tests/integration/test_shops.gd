@@ -269,7 +269,7 @@ func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
 	assert_bool(loop.visit.market.reroll_changes()).is_true()
 
 
-func test_a_save_from_the_middle_of_phase_4_gains_every_missing_field() -> void:
+func test_a_schema_3_save_missing_late_fields_gains_every_one() -> void:
 	var data: Dictionary = RunState.new(3).to_dict()
 	for field: String in ["store_sold", "styles", "boss_family", "swap_bonus", "memory", "risen"]:
 		data.erase(field)

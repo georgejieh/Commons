@@ -21,7 +21,7 @@
 /tmp/
 *.log
 
-# Private UI reference board (P3B.0): third-party screenshots, never redistributed
+# Private UI reference board: third-party screenshots, never redistributed
 /design/reference/
 
 # Audio working files: Sonniss bars redistributing raw or derived sounds

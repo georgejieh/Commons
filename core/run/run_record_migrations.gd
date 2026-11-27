@@ -22,13 +22,13 @@ static func migrate_from_2(data: Dictionary) -> Dictionary:
 
 
 ## Version 3 saves predate the state store's limited stock: nothing sold yet.
-## Schema 3 was written all through Phase 4 while its fields were still being added, so
-## a save from the middle of it may lack some: every Phase 4 field missing gets the
-## value a run starts with.
+## Schema 3 was written for a long while as its fields were still being added, so a
+## save from the middle of it may lack some: every such field missing gets the value a
+## run starts with.
 static func migrate_from_3(data: Dictionary) -> Dictionary:
 	if data.get("checkpoint") is Dictionary:
 		var checkpoint: Dictionary = data["checkpoint"]
-		checkpoint.merge(_phase_4_defaults())
+		checkpoint.merge(_schema_3_defaults())
 	return data
 
 
@@ -196,8 +196,8 @@ static func migrate_from_19(data: Dictionary) -> Dictionary:
 	return data
 
 
-## Every field Phase 4 added to a run, at the value a run starts with.
-static func _phase_4_defaults() -> Dictionary:
+## Every field schema 3 gained while it was written, at the value a run starts with.
+static func _schema_3_defaults() -> Dictionary:
 	return {
 		"famine_armed": true,
 		"denunciation_armed": true,
