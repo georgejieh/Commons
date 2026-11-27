@@ -9,6 +9,18 @@ const ERRORS: Array[String] = [
 	"unsafe_method_access",
 	"unsafe_cast",
 	"unused_variable",
+	"unused_local_constant",
+	"unused_private_class_variable",
+	"unused_parameter",
+	"unused_signal",
+	"unreachable_code",
+	"unreachable_pattern",
+	"standalone_expression",
+	"standalone_ternary",
+	"assert_always_true",
+	"assert_always_false",
+	"unassigned_variable",
+	"enum_variable_without_default",
 ]
 
 
