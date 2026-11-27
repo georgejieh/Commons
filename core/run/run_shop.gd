@@ -1,3 +1,6 @@
+# gdlint: disable=max-public-methods
+# Over 20 public methods: the counter's queries and commands, and the one seam tests and
+# tools stock it through.
 class_name RunShop
 extends RefCounted
 ## One counter between Sets: the state store or the black market. It holds the visit's
@@ -100,6 +103,13 @@ func open() -> void:
 	reforms.clear()
 	envelopes.clear()
 	_restock()
+
+
+## Puts these Cadres and Directives on the counter in place of what was drawn. The run
+## never calls it: it is for tests and tools, which set a counter for what they check.
+func stock_with(cadres: Array[String], directives: Array[String]) -> void:
+	_stock.assign(cadres)
+	_directive_stock.assign(directives)
 
 
 ## IDs per slot; SOLD marks a slot already bought.

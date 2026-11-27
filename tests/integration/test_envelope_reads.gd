@@ -43,7 +43,7 @@ func _opened(kind: String) -> EnvelopeOverlay:
 	var counter: EnvelopeCounter = _loop().visit.shop.envelopes
 	if kind == "parcel":
 		counter = _loop().visit.market.envelopes
-	counter.set("_stock", [kind] as Array[String])
+	counter.stock_with([kind] as Array[String])
 	var store: StoreScreen = _app.show_screen("black_market" if kind == "parcel" else "store", true)
 	await await_idle_frame()
 	var stall: EnvelopeStall = store.envelope_stall

@@ -25,8 +25,10 @@ func before_test() -> void:
 	loop.state.coupons = 60
 	loop.state.reforms.assign(["unplanned_economy"])
 	_app.controller.reseal_book()
-	loop.visit.shop.set("_stock", ["canteen", "red_banner", "iron_rice_bowl"] as Array[String])
-	loop.visit.market.set("_stock", ["loudspeaker", "steel_target", "last_sheaf"] as Array[String])
+	var store_stock: Array[String] = ["canteen", "red_banner", "iron_rice_bowl"]
+	loop.visit.shop.stock_with(store_stock, loop.visit.shop.directive_stock())
+	var market_stock: Array[String] = ["loudspeaker", "steel_target", "last_sheaf"]
+	loop.visit.market.stock_with(market_stock, loop.visit.market.directive_stock())
 
 
 func after_test() -> void:

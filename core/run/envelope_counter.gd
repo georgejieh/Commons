@@ -42,6 +42,12 @@ func _init(
 	_run = run
 
 
+## Puts these envelopes on the counter in place of what was drawn. The run never calls
+## it: it is for tests and tools, which set a counter for what they check.
+func stock_with(ids: Array[String]) -> void:
+	_stock.assign(ids)
+
+
 ## Envelope IDs per slot; SOLD marks one already bought.
 func stock() -> Array[String]:
 	return _stock.duplicate()

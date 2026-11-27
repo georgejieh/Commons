@@ -16,7 +16,7 @@ const KINDS: Array[String] = ["directive_envelope", "campaign_envelope", "deck_e
 ## Puts one kind on the state store's counter, as only tests do.
 func _offer(loop: RunLoop, envelope_id: String) -> void:
 	var stock: Array[String] = [envelope_id]
-	loop.visit.shop.envelopes.set("_stock", stock)
+	loop.visit.shop.envelopes.stock_with(stock)
 
 
 func _ids(items: Array[EnvelopeItem]) -> Array[String]:
@@ -160,7 +160,7 @@ func test_while_open_every_other_shop_command_waits() -> void:
 	assert_int(loop.player_envelope_buy(0)).is_equal(RunLoop.Reason.OK)
 	# A black-market Cadre that needs a rank is refused as every other command is, rank or not.
 	var ranked: Array[String] = ["planned_allocation"]
-	loop.visit.market.set("_stock", ranked)
+	loop.visit.market.stock_with(ranked, loop.visit.market.directive_stock())
 	var before: String = JSON.stringify(loop.state.to_dict())
 	var commands: int = loop.record.commands.size()
 	var refused: Array[Callable] = [

@@ -41,7 +41,7 @@ func table(driver: Object) -> void:
 	params.targets = params.targets.duplicate()
 	params.targets.fill(1e9)
 	assign(loop, "_sets", SetConfig.new(params))
-	invoke(loop, "_rebuild_modifiers")
+	invoke(loop, "rebuild_modifiers")
 	app.call("show_screen", "table", true)
 	await _frames(20)
 	if await _to_the_opening(controller, driver):

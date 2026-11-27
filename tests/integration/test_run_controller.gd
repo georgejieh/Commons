@@ -20,6 +20,8 @@ func test_checker_flags_a_mutator_and_ignores_comments() -> void:
 	assert_array(UiBoundaryCheck.scan(FIXTURES + "bad")).has_size(2)
 	assert_array(UiBoundaryCheck.scan(FIXTURES + "good")).is_empty()
 	assert_array(UiBoundaryCheck.scan(FIXTURES + "missing")).has_size(1)
+	# The seams tests and tools stock a shop and rebuild a run's modifiers through.
+	assert_array(UiBoundaryCheck.scan(FIXTURES + "seams")).has_size(2)
 
 
 ## Every command the loop takes from the player is sent by the controller, and only

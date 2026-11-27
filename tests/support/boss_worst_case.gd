@@ -52,7 +52,7 @@ static func _tallest(app: DemoApp, suite: GdUnitTestSuite, ids: Array[String]) -
 ## Sets the round's deal's cards aside: the most the Handicap does, of the longest names,
 ## or none.
 static func _set_aside(app: DemoApp, handicap: bool) -> void:
-	var deal: DealResult = _loop(app).get("_deal")
+	var deal: DealResult = _loop(app).deal()
 	deal.set_aside.clear()
 	if not handicap:
 		return

@@ -53,11 +53,11 @@ func _fill() -> void:
 	state.resentment = 88
 	_app.controller.reseal_book()
 	var tall: Array[String] = ["on_combined_brigades", "on_launching_satellites"]
-	_loop().visit.shop.set("_directive_stock", tall)
+	_loop().visit.shop.stock_with(_loop().visit.shop.stock(), tall)
 	# The black market's counter is set, not drawn, so a larger pool does not change what
 	# the page is checked with; the Tally Clerk stands in its empty frame (ADR 0043).
 	var counter: Array[String] = ["the_tally_clerk", "last_sheaf", "the_bookkeeper"]
-	_loop().visit.market.set("_stock", counter)
+	_loop().visit.market.stock_with(counter, _loop().visit.market.directive_stock())
 
 
 func test_both_shops_fit_a_fresh_run() -> void:
@@ -161,7 +161,7 @@ func test_the_rank_picker_opens_on_the_screen() -> void:
 		_loop().state.coupons = 40
 		_app.controller.reseal_book()
 		var offered: Array[String] = ["rehabilitation", "steel_target", "last_sheaf"]
-		_loop().visit.market.set("_stock", offered)
+		_loop().visit.market.stock_with(offered, _loop().visit.market.directive_stock())
 		var market: StoreScreen = _app.show_screen("black_market", true)
 		await await_idle_frame()
 		var market_cadres: CadreCounter = market.cadres
@@ -197,7 +197,7 @@ func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
 					var counter: EnvelopeCounter = _loop().visit.market.envelopes
 					if kind != "parcel":
 						counter = _loop().visit.shop.envelopes
-					counter.set("_stock", stock)
+					counter.stock_with(stock)
 					var store: StoreScreen = _app.show_screen(screen_id, true)
 					await await_idle_frame()
 					var stall: EnvelopeStall = store.envelope_stall
@@ -350,7 +350,7 @@ func test_both_shops_fit_their_longest_cadres() -> void:
 		for measure: Callable in [_rule_length, _name_length]:
 			var counter: Array[String] = _longest(pool, measure)
 			var shop: RunShop = _loop().visit.market if market else _loop().visit.shop
-			shop.set("_stock", counter)
+			shop.stock_with(counter, shop.directive_stock())
 			var screen_id: String = "black_market" if market else "store"
 			for level: int in TextSize.count():
 				Settings.set_value(TextSize.SETTING, level)

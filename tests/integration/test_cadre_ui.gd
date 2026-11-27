@@ -34,7 +34,7 @@ func _market_with_rehabilitation() -> StoreScreen:
 	loop.state.coupons = 100
 	_app.controller.reseal_book()
 	var stock: Array[String] = ["rehabilitation", "show_trial", "last_sheaf"]
-	loop.visit.market.set("_stock", stock)
+	loop.visit.market.stock_with(stock, loop.visit.market.directive_stock())
 	return _app.show_screen("black_market")
 
 

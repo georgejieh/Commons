@@ -35,8 +35,9 @@ func _store() -> StoreScreen:
 	var loop: RunLoop = _app.controller.run_loop()
 	var pool: Array[ModifierDef] = POOL.cadres.duplicate()
 	var stock: Array[String] = [RARE, COMMON]
-	loop.visit.shop.set("_pool", pool)
-	loop.visit.shop.set("_stock", stock)
+	# A store of the whole pool, built as the run builds one, so both Cadres are open.
+	loop.visit.shop = RunShop.new(loop.state, loop.pools.store, pool)
+	loop.visit.shop.stock_with(stock, [])
 	var store: StoreScreen = _app.show_screen("store", true)
 	await await_idle_frame()
 	return store
@@ -61,7 +62,7 @@ func test_only_the_top_rarity_is_rare() -> void:
 	var shop: RunShop = RunShop.new(RunState.new(1), PARAMS, POOL.cadres)
 	shop.open()
 	var stock: Array[String] = [RARE, COMMON, RunShop.SOLD]
-	shop.set("_stock", stock)
+	shop.stock_with(stock, shop.directive_stock())
 	assert_bool(shop.is_rare(0)).is_true()
 	assert_bool(shop.is_rare(1)).is_false()
 	assert_bool(shop.is_rare(2)).is_false()

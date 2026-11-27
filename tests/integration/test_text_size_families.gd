@@ -72,12 +72,18 @@ func test_every_cadre_fits_its_shop_card() -> void:
 				ids.append(cadre.id)
 			for start: int in range(0, ids.size(), 3):
 				var stock: Array[String] = ids.slice(start, start + 3)
-				var shop: RunShop = (
-					_loop().visit.market if screen_id == "black_market" else _loop().visit.shop
-				)
-				# The run's pool holds only what it has open: every Cadre of the counter here.
-				shop.set("_pool", counters[screen_id])
-				shop.set("_stock", stock)
+				# A counter of the whole pool, built as the run builds one, so every Cadre is
+				# open here, whatever the run has unlocked.
+				var market: bool = screen_id == "black_market"
+				var pool: Array[ModifierDef] = []
+				pool.assign(counters[screen_id])
+				var params: ShopParams = _loop().pools.market if market else _loop().pools.store
+				var shop: RunShop = RunShop.new(_loop().state, params, pool)
+				if market:
+					_loop().visit.market = shop
+				else:
+					_loop().visit.shop = shop
+				shop.stock_with(stock, [])
 				var store: StoreScreen = _app.show_screen(screen_id, true)
 				await await_idle_frame()
 				await await_idle_frame()
@@ -124,7 +130,7 @@ func test_every_directive_fits_its_store_document() -> void:
 		get_tree().root.size = screen
 		for start: int in range(0, ids.size(), 2):
 			var stock: Array[String] = ids.slice(start, start + 2)
-			_loop().visit.shop.set("_directive_stock", stock)
+			_loop().visit.shop.stock_with(_loop().visit.shop.stock(), stock)
 			var store: StoreScreen = _app.show_screen("store", true)
 			await await_idle_frame()
 			await await_idle_frame()
