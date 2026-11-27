@@ -95,9 +95,9 @@ func test_a_stale_file_keeps_the_saves_and_the_last_log_before_anything_opens() 
 	var seen_at_open: Array[PackedStringArray] = []
 	var gate: LaunchGate = LaunchGate.new(_params, _file, _keep)
 	gate.opened.connect(
-		func(kept: String) -> void:
-			_opened.append(kept)
-			seen_at_open.append(DirAccess.get_files_at(kept))
+		func(folder: String) -> void:
+			_opened.append(folder)
+			seen_at_open.append(DirAccess.get_files_at(folder))
 	)
 	add_child(gate)
 	auto_free(gate)

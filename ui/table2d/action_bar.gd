@@ -86,7 +86,7 @@ func _ready() -> void:
 ## that width; a taller column grows upward from the foot.
 func hold(box: Rect2) -> void:
 	var wide: float = maxf(box.size.x, ceilf(_toggles_width(TextSize.least(TOGGLE_SIZE))))
-	var fits: Callable = func(font_size: int) -> bool: return _toggles_width(font_size) <= wide
+	var fits: Callable = func(tried: int) -> bool: return _toggles_width(tried) <= wide
 	var font_size: int = TextSize.fit(TOGGLE_SIZE, TOGGLE_SIZE, fits)
 	for button: Button in [hint, sort, rules]:
 		button.add_theme_font_size_override("font_size", font_size)
@@ -143,8 +143,8 @@ func held() -> Rect2:
 
 func _fit_prompt() -> void:
 	var text: String = reading.text
-	var fits: Callable = func(font_size: int) -> bool:
-		return _prompt_height(text, font_size) <= _prompt_room
+	var fits: Callable = func(tried: int) -> bool:
+		return _prompt_height(text, tried) <= _prompt_room
 	var font_size: int = TextSize.fit(PROMPT_SIZE, PROMPT_SIZE, fits)
 	reading.add_theme_font_size_override("font_size", font_size)
 

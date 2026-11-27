@@ -213,9 +213,9 @@ func test_glass_walls_lay_glass_over_the_hand_while_in_force() -> void:
 	var shown: Dictionary[int, String] = {}
 	var reached: bool = await _play_until(
 		func(table: TableScreen) -> bool:
-			var beats: DebuffMoments = table.debuff_beats
+			var moments: DebuffMoments = table.debuff_beats
 			if _app.controller.awaiting() == RunController.AWAIT_PLAY:
-				shown[_loop().state.round_index] = beats.glass.shown_text()
+				shown[_loop().state.round_index] = moments.glass.shown_text()
 			return _loop().state.round_index == 1 and shown.has(1)
 	)
 	assert_bool(reached).is_true()

@@ -190,15 +190,17 @@ func test_overlays_open_above_the_table() -> void:
 ## Joining a Set mid-way replays its earlier events without raising their banners.
 func test_rejoining_the_table_raises_no_old_banner() -> void:
 	var driver: ControllerScript = ControllerScript.new()
-	var ended: int = 0
+	# An array, so the count the handler keeps is the one the loop reads.
+	var ended: Array[int] = [0]
 	_app.controller.event_emitted.connect(
 		func(event: RunEvent) -> void:
 			if event.round_event != null and event.round_event.type == RoundEvent.Type.ROUND_ENDED:
-				ended += 1
+				ended[0] += 1
 	)
-	while not (ended >= 1 and _app.controller.awaiting() == RunController.AWAIT_BID):
+	while not (ended[0] >= 1 and _app.controller.awaiting() == RunController.AWAIT_BID):
 		if not driver.act(_app.controller):
-			return
+			break
+	assert_int(ended[0]).override_failure_message("no round ended").is_greater_equal(1)
 	var table: TableScreen = _app.show_screen("table", true)
 	var moments: TableMoments = table.moments
 	# Timed: that no banner is raised is seen only by giving one the time to come.

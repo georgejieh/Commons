@@ -28,6 +28,9 @@ const ERRORS: Array[String] = [
 	"incompatible_ternary",
 	"int_as_enum_without_cast",
 	"int_as_enum_without_match",
+	"confusable_local_declaration",
+	"confusable_local_usage",
+	"confusable_capture_reassignment",
 ]
 
 

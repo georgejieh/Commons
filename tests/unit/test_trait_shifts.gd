@@ -75,12 +75,12 @@ func test_qins_honesty_falls_at_the_band_and_returns_below_it() -> void:
 			table.honesty[Personality.Level.HIGH], 1e-6
 		)
 	# Once Famine falls back under the band, Qin's own honesty is back on the same config.
-	var state: RunState = _qin_run(high)
-	var configs: Array[BotConfig] = _configs()
-	TraitShifts.apply(state, configs, VILLAGE, RunDefaults.METERS)
-	state.famine = high - 1
-	TraitShifts.apply(state, configs, VILLAGE, RunDefaults.METERS)
-	assert_float(configs[1].honesty).is_equal_approx(table.honesty[Personality.Level.MID], 1e-6)
+	var easing: RunState = _qin_run(high)
+	var seated: Array[BotConfig] = _configs()
+	TraitShifts.apply(easing, seated, VILLAGE, RunDefaults.METERS)
+	easing.famine = high - 1
+	TraitShifts.apply(easing, seated, VILLAGE, RunDefaults.METERS)
+	assert_float(seated[1].honesty).is_equal_approx(table.honesty[Personality.Level.MID], 1e-6)
 
 
 func test_qins_claims_either_side_of_the_band_are_golden() -> void:
