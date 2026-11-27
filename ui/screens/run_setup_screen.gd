@@ -204,9 +204,9 @@ func _household_paper(sheet: UnlockSheet) -> AgedSheet:
 	paper.choosable = true
 	paper.accessibility_name = sheet.name
 	paper.accessibility_description = sheet.text
-	var name: Label = ScreenKit.label(sheet.name, NAME_SIZE)
-	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	paper.column().add_child(name)
+	var title: Label = ScreenKit.label(sheet.name, NAME_SIZE)
+	title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	paper.column().add_child(title)
 	paper.column().add_child(ScreenKit.label(sheet.text, RULES_SIZE))
 	paper.chosen.connect(_pick_household.bind(sheet.id))
 	return paper

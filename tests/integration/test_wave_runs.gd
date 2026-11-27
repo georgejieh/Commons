@@ -95,10 +95,10 @@ func _scored_next(events: Array[RunEvent], index: int) -> bool:
 	var later: Array[RunEvent.Type] = [
 		RunEvent.Type.NEED_DECLARED, RunEvent.Type.SEAT_KEPT, RunEvent.Type.SEAT_LOST
 	]
-	for after: int in range(index + 1, events.size()):
-		if events[after].type == RunEvent.Type.ROUND_SCORED:
+	for next: int in range(index + 1, events.size()):
+		if events[next].type == RunEvent.Type.ROUND_SCORED:
 			return true
-		if later.has(events[after].type):
+		if later.has(events[next].type):
 			return false
 	return false
 

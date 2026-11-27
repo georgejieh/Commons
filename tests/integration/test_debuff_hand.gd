@@ -144,10 +144,10 @@ func test_night_shift_refuses_the_first_pass_while_a_play_beats_the_table() -> v
 				if legal.is_empty():
 					assert_int(loop.player_play([])).is_equal(RunLoop.Reason.OK)
 					continue
-				var before: String = DebuffScript.snapshot(loop)
+				var was: String = DebuffScript.snapshot(loop)
 				assert_int(round_state.pass_reason()).is_equal(RoundState.Reason.MUST_PLAY)
 				assert_int(loop.player_play([])).is_equal(RunLoop.Reason.ILLEGAL)
-				assert_str(DebuffScript.snapshot(loop)).is_equal(before)
+				assert_str(DebuffScript.snapshot(loop)).is_equal(was)
 				refused += 1
 				var ids: Array[int] = round_state.action_for(legal[0]).card_ids
 				assert_int(loop.player_play(ids)).is_equal(RunLoop.Reason.OK)
@@ -380,7 +380,7 @@ func test_appeal_ends_glass_walls_for_the_round_and_leaves_a_seized_card_destroy
 	_appeal_once("plot_seized", 2, seized)
 
 
-func _appeal_once(debuff_id: String, plot: int, after: Callable) -> void:
+func _appeal_once(debuff_id: String, plot: int, then: Callable) -> void:
 	for seed_value: int in range(120, 170):
 		var setup: Callable = _held([], plot, ["appeal"] as Array[String])
 		var loop: RunLoop = DebuffScript.loop_with(seed_value, debuff_id, 1, setup)
@@ -391,7 +391,7 @@ func _appeal_once(debuff_id: String, plot: int, after: Callable) -> void:
 				if at.state.round_index != 1 or at.awaiting() != RunLoop.Awaiting.PLAYER_OPENING:
 					return false
 				assert_int(at.player_campaign(0, [])).is_equal(RunLoop.Reason.OK)
-				after.call(at)
+				then.call(at)
 				used.append(1)
 				return true
 		)

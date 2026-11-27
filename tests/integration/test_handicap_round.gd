@@ -45,10 +45,10 @@ func test_every_deal_of_the_set_is_short_and_no_villager_is_refused() -> void:
 			if not script.act(loop):
 				break
 		var over: Array[RunLoop.Awaiting] = [RunLoop.Awaiting.SET_OVER, RunLoop.Awaiting.RUN_OVER]
-		var name: String = "year %d" % year
-		assert_bool(over.has(loop.awaiting())).override_failure_message(name).is_true()
-		assert_int(loop.refused_bot_actions).override_failure_message(name).is_zero()
-		assert_int(checked).override_failure_message(name).is_greater(0)
+		var case: String = "year %d" % year
+		assert_bool(over.has(loop.awaiting())).override_failure_message(case).is_true()
+		assert_int(loop.refused_bot_actions).override_failure_message(case).is_zero()
+		assert_int(checked).override_failure_message(case).is_greater(0)
 		var deals: int = _count(loop, RunEvent.Type.DEALT)
 		assert_int(_count(loop, RunEvent.Type.CARDS_SET_ASIDE)).is_equal(deals)
 

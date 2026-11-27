@@ -103,9 +103,9 @@ func test_every_tier_plays_a_short_hand_legally() -> void:
 				configs.append(_config(tier, seed_value + seat))
 			var table: SeatRules = SeatRules.new(ModifierStack.new())
 			var result: SelfPlayResult = SelfPlay.play_round(deal, deal_index, configs, table)
-			var name: String = "tier %d deal %d" % [tier, deal_index]
-			assert_int(result.illegal_actions).override_failure_message(name).is_zero()
-			assert_int(result.winner).override_failure_message(name).is_not_equal(Seats.NONE)
+			var case: String = "tier %d deal %d" % [tier, deal_index]
+			assert_int(result.illegal_actions).override_failure_message(case).is_zero()
+			assert_int(result.winner).override_failure_message(case).is_not_equal(Seats.NONE)
 
 
 func _config(tier: BotConfig.Tier, seed_value: int) -> BotConfig:

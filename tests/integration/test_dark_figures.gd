@@ -87,15 +87,15 @@ func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
 	state.famine = mark
 	_app.controller.reseal_book()
 	var rise: RunEvent = RunEvent.new(RunEvent.Type.METER_CHANGED, Seats.NONE, 5, 0.0, "famine")
-	var before: int = Audio.effects.next_take(AudioEvents.METER_ROSE)
+	var was: int = Audio.effects.next_take(AudioEvents.METER_ROSE)
 	state.books.dark.assign(["famine"])
 	TableSounds.play(rise, Seats.NONE, _app.controller)
-	assert_int(Audio.effects.next_take(AudioEvents.METER_ROSE)).is_equal(before)
+	assert_int(Audio.effects.next_take(AudioEvents.METER_ROSE)).is_equal(was)
 	state.books.dark.clear()
 	TableSounds.play(rise, Seats.NONE, _app.controller)
 	var sounds: int = SfxPlayer.BANK.sound(AudioEvents.METER_ROSE).streams.size()
 	if sounds > 1:
-		assert_int(Audio.effects.next_take(AudioEvents.METER_ROSE)).is_not_equal(before)
+		assert_int(Audio.effects.next_take(AudioEvents.METER_ROSE)).is_not_equal(was)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	var dread: DreadLayers = table.dread

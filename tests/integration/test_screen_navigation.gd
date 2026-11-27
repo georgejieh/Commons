@@ -48,7 +48,7 @@ func test_the_table_menu_reaches_the_dossier_and_last_round_and_back() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	table.skip_events()
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	for pair: Array in [["dossier.open", "dossier"], ["pause.last_round", "round_summary"]]:
 		table = _app.switcher.current()
 		table.hud.menu.pressed.emit()
@@ -58,7 +58,7 @@ func test_the_table_menu_reaches_the_dossier_and_last_round_and_back() -> void:
 		_app.back()
 		await await_idle_frame()
 		assert_str(_app.switcher.current_id()).is_equal("table")
-		assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+		assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 func test_the_store_reaches_the_black_market_and_back() -> void:
@@ -66,14 +66,14 @@ func test_the_store_reaches_the_black_market_and_back() -> void:
 	_app.show_screen("set_intro", true)
 	_app.show_screen("store")
 	await await_idle_frame()
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	_press("market.open")
 	await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("black_market")
 	_press("market.back")
 	await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("store")
-	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 ## Screens whose systems arrive in Phase 4 open over the table and go back to it.
@@ -81,7 +81,7 @@ func test_phase_4_screens_open_over_the_run_and_go_back() -> void:
 	_app.new_run(SEED)
 	_app.show_screen("table", true)
 	await await_idle_frame()
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	for screen_id: String in ["reeducation"]:
 		_app.show_screen(screen_id)
 		await await_idle_frame()
@@ -89,7 +89,7 @@ func test_phase_4_screens_open_over_the_run_and_go_back() -> void:
 		_press_first()
 		await await_idle_frame()
 		assert_str(_app.switcher.current_id()).is_equal("table")
-	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 	_app.show_screen("ending", true)
 	await await_idle_frame()
 	_press("end.to_title")

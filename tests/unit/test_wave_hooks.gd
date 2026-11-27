@@ -47,11 +47,11 @@ func test_informers_reward_pays_for_each_villager_caught_and_not_the_player() ->
 		"player": [[HOLDER], 0],
 		"player and one": [[HOLDER, THIRD], 2],
 	}
-	for name: String in cases:
+	for case: String in cases:
 		var caught: Array[int] = []
-		caught.assign(cases[name][0])
+		caught.assign(cases[case][0])
 		var context: NeedContext = _settled(stack, HOLDER, NeedContext.NOT_DECLARED, caught)
-		assert_int(context.coupons).override_failure_message(name).is_equal(cases[name][1])
+		assert_int(context.coupons).override_failure_message(case).is_equal(cases[case][1])
 
 
 func _ended(stack: ModifierStack, landlord: int, winner: int, cards: int = 5) -> RoundContext:

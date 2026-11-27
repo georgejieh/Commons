@@ -103,9 +103,9 @@ func test_a_scarce_cadre_is_stamped_and_a_routine_one_is_not() -> void:
 	# A page refreshed, as after a purchase, shows it at rest: it is pressed once.
 	store.refresh()
 	await await_idle_frame()
-	var after: Array[ScarceStamp] = _stamps(store.blocks()["counter"].get_child(0))
-	assert_int(after.size()).is_equal(1)
-	assert_float(after[0].modulate.a).is_equal(1.0)
+	var now: Array[ScarceStamp] = _stamps(store.blocks()["counter"].get_child(0))
+	assert_int(now.size()).is_equal(1)
+	assert_float(now[0].modulate.a).is_equal(1.0)
 
 
 func test_with_motion_off_the_stamp_is_simply_there() -> void:

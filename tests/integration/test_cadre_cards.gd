@@ -38,11 +38,11 @@ func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void
 		var tip: String = ScreenKit.cadre_tip(_app.controller, stock[slot])
 		var buy: Button = panel.find_children("*", "Button", true, false)[0]
 		assert_str(buy.tooltip_text).is_equal(tip)
-		var name: String = tr("modifier.%s.name" % stock[slot])
-		assert_str(tip).contains(name)
+		var title: String = tr("modifier.%s.name" % stock[slot])
+		assert_str(tip).contains(title)
 		# The name is printed once, and the full rules under it.
 		var names: Array[Node] = _labels(panel).filter(
-			func(label: Node) -> bool: return (label as Label).text == name
+			func(label: Node) -> bool: return (label as Label).text == title
 		)
 		assert_int(names.size()).is_equal(1)
 		var rules: KeywordText = panel.find_children("*", "KeywordText", true, false)[0]
@@ -129,14 +129,14 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	assert_bool(market.market).is_true()
 	var stock: Array[String] = _app.controller.store.desk(true).stock()
 	assert_int(stock.size()).is_greater(0)
-	var before: int = _app.controller.state_copy().resentment
+	var was: int = _app.controller.state_copy().resentment
 	var market_cadres: CadreCounter = market.cadres
 	var counter: HBoxContainer = market_cadres.row
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	buy.pressed.emit()
 	var state: RunState = _app.controller.state_copy()
 	assert_array(state.inventory.cadres).contains([stock[0]])
-	assert_int(state.resentment).is_equal(before + _app.controller.figures.purchase_resentment())
+	assert_int(state.resentment).is_equal(was + _app.controller.figures.purchase_resentment())
 	var seal: InkSeal = market_cadres.seal
 	assert_str(seal.word()).is_equal(tr("market.paid").to_upper())
 	await TestWait.until(
@@ -148,11 +148,9 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	assert_int(tickets.get_child_count()).is_equal(PlotUpgrades.KINDS.size())
 	var enlarge: Button = tickets.get_child(0)
 	enlarge.pressed.emit()
-	var after: RunState = _app.controller.state_copy()
-	assert_int(after.plot_capacity_bonus).is_equal(1)
-	assert_int(after.resentment).is_equal(
-		before + 2 * _app.controller.figures.purchase_resentment()
-	)
+	var now: RunState = _app.controller.state_copy()
+	assert_int(now.plot_capacity_bonus).is_equal(1)
+	assert_int(now.resentment).is_equal(was + 2 * _app.controller.figures.purchase_resentment())
 
 
 func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:

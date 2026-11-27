@@ -92,11 +92,11 @@ func _try_campaign(loop: RunLoop, stream: RandomStream) -> bool:
 		if not ids.has(card_id):
 			ids.append(card_id)
 	var expected: int = loop.campaign_reason(slot, ids)
-	var before: int = loop.record.commands.size()
+	var was: int = loop.record.commands.size()
 	var reason: RunLoop.Reason = loop.player_campaign(slot, ids)
 	assert_bool(reason == RunLoop.Reason.OK).is_equal(expected == CampaignEffect.Reason.OK)
 	if reason != RunLoop.Reason.OK:
-		assert_int(loop.record.commands.size()).is_equal(before)
+		assert_int(loop.record.commands.size()).is_equal(was)
 	return reason == RunLoop.Reason.OK
 
 

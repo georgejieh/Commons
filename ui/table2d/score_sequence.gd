@@ -228,7 +228,7 @@ static func tag_text(step: ScoreStep) -> String:
 		name_key = "score.step.coupons" if step.value != 1.0 else "score.step.coupon"
 	elif step.figure != ScoreStep.Figure.TOTAL:
 		name_key = "keyword.%s.name" % ScoreTally.WORDS[step.figure]
-	var name: String = TranslationServer.translate(name_key)
+	var title: String = TranslationServer.translate(name_key)
 	var key: String = "score.step.set"
 	var value: String = _figure_text(step.figure, step.after)
 	if step.op == ScoreStep.Op.ADD:
@@ -237,7 +237,7 @@ static func tag_text(step: ScoreStep) -> String:
 	elif step.op == ScoreStep.Op.MUL and step.figure != ScoreStep.Figure.RATE:
 		key = "score.step.times"
 		value = Strings.factor(step.value)
-	return TranslationServer.translate(key).format({"value": value, "figure": name})
+	return TranslationServer.translate(key).format({"value": value, "figure": title})
 
 
 static func _figure_text(figure: ScoreStep.Figure, value: float) -> String:

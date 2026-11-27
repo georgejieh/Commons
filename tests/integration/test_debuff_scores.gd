@@ -174,11 +174,11 @@ func test_grain_tax_takes_a_fifth_of_what_you_bank_rounded_against_you() -> void
 		var result: Dictionary = results[round_index]
 		var landlord: bool = result["landlord"] == RunLoop.PLAYER
 		var kept: float = float(result["banked"]) if landlord else float(result["share"])
-		var before: float = kept + float(result["taxed"]) if landlord else kept
-		if round_index == 0 or before <= 0.0:
+		var was: float = kept + float(result["taxed"]) if landlord else kept
+		if round_index == 0 or was <= 0.0:
 			assert_float(float(result["taxed"])).is_equal(0.0)
 		else:
-			assert_float(float(result["taxed"])).is_equal(ceilf(before * 20 / 100.0))
+			assert_float(float(result["taxed"])).is_equal(ceilf(was * 20 / 100.0))
 			taxed += 1
 		progress += kept if landlord else kept - float(result["taxed"])
 	assert_int(taxed).is_greater(0)

@@ -37,10 +37,10 @@ func test_replace_clears_the_way_back() -> void:
 func test_screens_and_back_keep_the_run() -> void:
 	var controller: RunController = auto_free(RunController.new())
 	controller.start_run(3901, RunScript.bots())
-	var before: Dictionary = controller.state_copy().to_dict()
+	var was: Dictionary = controller.state_copy().to_dict()
 	var switcher: SceneSwitcher = _switcher()
 	for screen_id: String in ["a", "b", "c"]:
 		switcher.push(screen_id)
 	switcher.back()
 	switcher.back()
-	assert_dict(controller.state_copy().to_dict()).is_equal(before)
+	assert_dict(controller.state_copy().to_dict()).is_equal(was)

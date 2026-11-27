@@ -77,9 +77,9 @@ func texts() -> PackedStringArray:
 	if not visible:
 		return lines
 	for index: int in range(0, _grid.get_child_count(), 2):
-		var name: Label = _grid.get_child(index)
+		var label_cell: Label = _grid.get_child(index)
 		var value: Label = _grid.get_child(index + 1)
-		lines.append("%s %s" % [name.text, value.text])
+		lines.append("%s %s" % [label_cell.text, value.text])
 	return lines
 
 
@@ -92,8 +92,8 @@ func _shows() -> bool:
 
 
 ## Writes one figure's name and value on its line of the slip.
-func _write(line: int, name: String, value: String) -> void:
-	(_grid.get_child(line * 2) as Label).text = name
+func _write(line: int, label_text: String, value: String) -> void:
+	(_grid.get_child(line * 2) as Label).text = label_text
 	(_grid.get_child(line * 2 + 1) as Label).text = value
 
 

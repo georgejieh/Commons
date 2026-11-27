@@ -17,10 +17,10 @@ func _finished_set(state: RunState, sets: SetConfig = SetConfig.new()) -> RunLoo
 func test_a_finished_set_is_not_left_past_its_shops() -> void:
 	var loop: RunLoop = _finished_set(RunState.new(SEED))
 	assert_bool(loop.is_last_set()).is_false()
-	var before: String = JSON.stringify(loop.state.to_dict())
+	var was: String = JSON.stringify(loop.state.to_dict())
 	assert_int(loop.next_set()).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.SET_OVER)
-	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(before)
+	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(was)
 	assert_int(loop.open_shop()).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.next_set()).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.set_index).is_equal(1)

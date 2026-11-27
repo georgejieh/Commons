@@ -55,8 +55,8 @@ func table() -> void:
 	await _frames(5)
 	var shown: int = 0
 	var views: Array = member(hand_view, "_views")
-	for view: Control in views:
-		if view.visible and kinds.has(str(view.call("shown_enhancement"))):
+	for card_view: Control in views:
+		if card_view.visible and kinds.has(str(card_view.call("shown_enhancement"))):
 			shown += 1
 	if shown < mini(kinds.size(), cards.size()):
 		_fail("FAN MISMATCH marks shown %d" % shown)
@@ -135,8 +135,8 @@ func _exchange(screen: Node, sheet: Object) -> void:
 
 ## Clicks the card chosen on the deck sheet's board; false, said, when it was not picked.
 func _pick(board: Object, chosen: int) -> bool:
-	var view: Control = board.call("view_of", chosen)
-	await _mouse_click(view.get_global_transform_with_canvas() * CARD_SPOT)
+	var card_view: Control = board.call("view_of", chosen)
+	await _mouse_click(card_view.get_global_transform_with_canvas() * CARD_SPOT)
 	if int(board.get("picked")) != chosen:
 		_misclick("deck card %d" % chosen)
 		return false

@@ -110,14 +110,14 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 	var ticket: Button = _affordable(row)
 	assert_object(ticket).is_not_null()
 	var stock: Array[String] = _app.controller.store.desk(false).directive_stock()
-	var before: int = _app.controller.state_copy().coupons
+	var was: int = _app.controller.state_copy().coupons
 	ticket.pressed.emit()
 	var issued: String = ""
 	for directive_id: String in stock:
 		if not _app.controller.store.desk(false).directive_stock().has(directive_id):
 			issued = directive_id
 	assert_str(issued).is_not_empty()
-	assert_int(_app.controller.state_copy().coupons).is_less(before)
+	assert_int(_app.controller.state_copy().coupons).is_less(was)
 	assert_bool(row.is_busy()).is_true()
 	assert_bool(store.is_issuing()).is_true()
 	assert_bool(row.seal().visible).is_true()

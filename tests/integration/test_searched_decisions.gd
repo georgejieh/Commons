@@ -136,14 +136,14 @@ func test_a_written_decision_that_no_longer_fits_fails_the_resume() -> void:
 		"runs out": short,
 		"left over": left_over
 	}
-	for name: String in tampered:
+	for case: String in tampered:
 		# Each keeps the shape a save may have: the replay refuses it, not the validator.
 		(
-			assert_bool(RunRecordCheck.is_valid(tampered[name]))
-			. override_failure_message(name)
+			assert_bool(RunRecordCheck.is_valid(tampered[case]))
+			. override_failure_message(case)
 			. is_true()
 		)
-		assert_object(_resume(tampered[name])).override_failure_message(name).is_null()
+		assert_object(_resume(tampered[case])).override_failure_message(case).is_null()
 
 
 ## The game saves at every state move, and one inside a command comes before the
@@ -193,9 +193,9 @@ func test_a_resume_decides_with_the_weights_handed_in() -> void:
 ## a save made inside that command reads back: without the plays the command led to.
 func _saved_inside_a_command(loop: RunLoop) -> Dictionary:
 	var script: RunScript = RunScript.new()
-	var before: int = loop.record.decisions.size()
+	var was: int = loop.record.decisions.size()
 	for _turn: int in 40:
-		before = loop.record.decisions.size()
+		was = loop.record.decisions.size()
 		var commands: int = loop.record.commands.size()
 		var asked: int = _calls
 		assert_bool(script.act(loop)).is_true()
@@ -204,7 +204,7 @@ func _saved_inside_a_command(loop: RunLoop) -> Dictionary:
 			break
 	var saved: Dictionary = _through_disk(loop.record.to_dict())
 	var written: Array = saved["decisions"]
-	written.resize(before)
+	written.resize(was)
 	assert_bool(RunRecordCheck.is_valid(saved)).is_true()
 	return saved
 

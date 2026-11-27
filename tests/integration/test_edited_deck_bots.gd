@@ -74,9 +74,9 @@ func test_every_tier_plays_legally_on_every_shape() -> void:
 				var result: SelfPlayResult = SelfPlay.play_round(
 					deal, deal_index % 3, configs, table
 				)
-				var name: String = "shape %d tier %d deal %d" % [shape, tier, deal_index]
-				assert_int(result.illegal_actions).override_failure_message(name).is_zero()
-				assert_int(result.winner).override_failure_message(name).is_not_equal(Seats.NONE)
+				var case: String = "shape %d tier %d deal %d" % [shape, tier, deal_index]
+				assert_int(result.illegal_actions).override_failure_message(case).is_zero()
+				assert_int(result.winner).override_failure_message(case).is_not_equal(Seats.NONE)
 
 
 func test_whole_sets_on_an_exchanged_deck_with_a_plot_swap_refuse_no_villager() -> void:

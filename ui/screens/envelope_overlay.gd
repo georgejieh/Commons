@@ -170,9 +170,11 @@ func _heading() -> Control:
 	var lines: VBoxContainer = VBoxContainer.new()
 	lines.add_theme_constant_override("separation", 0)
 	lines.add_child(ScreenKit.eyebrow(tr("envelope.eyebrow")))
-	var name: Label = ScreenKit.styled(_shelf.envelope_name(_shelf.opened_id()), CommonsTheme.TITLE)
-	name.autowrap_mode = TextServer.AUTOWRAP_OFF
-	lines.add_child(name)
+	var title: Label = ScreenKit.styled(
+		_shelf.envelope_name(_shelf.opened_id()), CommonsTheme.TITLE
+	)
+	title.autowrap_mode = TextServer.AUTOWRAP_OFF
+	lines.add_child(title)
 	_refused = EnvelopeDetail.shared_refusal(_shelf)
 	_ask.text = tr("envelope.choose")
 	if not _refused.is_empty():

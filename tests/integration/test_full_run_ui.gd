@@ -98,14 +98,14 @@ func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
 	menu.open()
 	_press(tr("menu.abandon"))
 	await await_idle_frame()
-	var before: ProfileData = Profile.read(Saves.profile_service())
+	var was: ProfileData = Profile.read(Saves.profile_service())
 	menu.abandon_button().pressed.emit()
 	await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("title")
 	assert_bool(FileAccess.file_exists(_save_path)).is_false()
-	var after: ProfileData = Profile.read(Saves.profile_service())
-	assert_array(after.history).is_empty()
-	assert_int(after.finished_runs).is_equal(before.finished_runs)
+	var now: ProfileData = Profile.read(Saves.profile_service())
+	assert_array(now.history).is_empty()
+	assert_int(now.finished_runs).is_equal(was.finished_runs)
 	assert_bool(_title_has_continue()).is_false()
 
 
@@ -167,8 +167,8 @@ func test_the_summary_names_the_family_that_starved() -> void:
 			seat = event.seat
 	assert_str(dead).is_not_empty()
 	var summary: SetSummaryScreen = _app.show_screen("set_summary", true)
-	var name: String = tr(_app.controller.seats.family_name_key(dead))
-	var line: String = "The %s household did not come to the Commons." % name
+	var family: String = tr(_app.controller.seats.family_name_key(dead))
+	var line: String = "The %s household did not come to the Commons." % family
 	assert_array(summary.fate_lines()).contains_exactly([line])
 	assert_bool(_app.controller.seats.seat_gone(seat)).is_true()
 	var dossier: DossierScreen = _app.show_screen("dossier", true)

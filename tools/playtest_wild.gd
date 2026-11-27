@@ -198,8 +198,8 @@ func _ribbon_frames() -> void:
 		hand_view.call("show_cards")
 		await _frames(4)
 		var ribbons: int = 0
-		for view: Object in hand_view.call("views"):
-			ribbons += 1 if bool(view.call("shows_wild")) else 0
+		for card_view: Object in hand_view.call("views"):
+			ribbons += 1 if bool(card_view.call("shows_wild")) else 0
 		if ribbons == 0:
 			print("NOTE no wild card in the hand at stage %d" % stage)
 		await _shot("wild_hand_stage_%d" % stage)

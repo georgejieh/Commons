@@ -305,8 +305,8 @@ func _assert_no_leak(root: Node, names: Array) -> void:
 		if control is Label:
 			said.append((control as Label).text)
 		for text: String in said:
-			for name: Variant in names:
-				var named: String = str(name)
+			for entry: Variant in names:
+				var named: String = str(entry)
 				if named.is_empty():
 					continue
 				(

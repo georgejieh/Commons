@@ -105,9 +105,9 @@ func test_nothing_is_exchanged_away_from_the_shops() -> void:
 	var loop: RunLoop = RunLoop.new(RunState.new(35), RunScript.bots(), SetConfig.new())
 	loop.start_set()
 	loop.state.coupons = RICH
-	var before: Dictionary = loop.state.to_dict()
+	var was: Dictionary = loop.state.to_dict()
 	assert_int(loop.player_deck_card(0, OUT)).is_equal(RunLoop.Reason.NOT_AWAITED)
-	assert_dict(loop.state.to_dict()).is_equal(before)
+	assert_dict(loop.state.to_dict()).is_equal(was)
 
 
 func test_a_rank_at_the_most_is_never_offered_nor_raised_past_it() -> void:
@@ -225,8 +225,8 @@ func _fill_to_most(state: RunState, most: int) -> void:
 ## A refused purchase gives its reason and leaves the state and the record as they were.
 func _refused(loop: RunLoop, slot: int, out: int, why: RunShop.Reason) -> void:
 	assert_int(loop.visit.deck_stall.check_exchange(slot, out)).is_equal(why)
-	var before: Dictionary = loop.state.to_dict()
+	var was: Dictionary = loop.state.to_dict()
 	var commands: int = loop.record.commands.size()
 	assert_int(loop.player_deck_card(slot, out)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_dict(loop.state.to_dict()).is_equal(before)
+	assert_dict(loop.state.to_dict()).is_equal(was)
 	assert_int(loop.record.commands.size()).is_equal(commands)

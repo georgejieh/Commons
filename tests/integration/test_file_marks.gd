@@ -225,8 +225,8 @@ func test_at_the_stage_past_the_last_both_shops_keep_the_small_ledger() -> void:
 func _check_blocks(shop: StoreScreen, books: Control, where: String) -> void:
 	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var rects: Dictionary[String, Rect2] = {}
-	for name: String in shop.blocks():
-		rects[name] = shop.blocks()[name].get_global_rect()
+	for block: String in shop.blocks():
+		rects[block] = shop.blocks()[block].get_global_rect()
 	assert_bool(screen.encloses(books.get_global_rect())).override_failure_message(where).is_true()
 	var names: Array[String] = rects.keys()
 	for first: int in names.size():
@@ -236,6 +236,8 @@ func _check_blocks(shop: StoreScreen, books: Control, where: String) -> void:
 			var b: Rect2 = rects[names[second]].grow(-ClipCheck.SLACK)
 			var pair: String = "%s: %s and %s" % [where, names[first], names[second]]
 			assert_bool(a.intersects(b)).override_failure_message(pair).is_false()
-	for name: String in ["counter", "side", "buttons", "board", "shelf", "notes"]:
-		var apart: bool = not books.get_global_rect().grow(-ClipCheck.SLACK).intersects(rects[name])
-		assert_bool(apart).override_failure_message("%s: slip over %s" % [where, name]).is_true()
+	for block: String in ["counter", "side", "buttons", "board", "shelf", "notes"]:
+		var apart: bool = not books.get_global_rect().grow(-ClipCheck.SLACK).intersects(
+			rects[block]
+		)
+		assert_bool(apart).override_failure_message("%s: slip over %s" % [where, block]).is_true()

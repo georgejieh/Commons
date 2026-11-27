@@ -146,7 +146,7 @@ func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
 	var cards: Array[CardInstance] = _app.hand.cards()
 	_app.hand.toggle(cards[0].id())
 	table.keep_sort(HandView.Sort.SUIT)
-	var before: Array = _round(table)
+	var was: Array = _round(table)
 	var deals: int = _deals()
 	table.hud.menu.pressed.emit()
 	var pause: PauseMenu = table.pause
@@ -167,7 +167,7 @@ func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
 	await await_idle_frame()
 	assert_object(_app.switcher.current()).is_same(table)
 	assert_bool(table.is_inside_tree() and pause.is_inside_tree() and not pause.visible).is_true()
-	assert_array(_round(table)).is_equal(before)
+	assert_array(_round(table)).is_equal(was)
 	var problems: PackedStringArray = []
 	ClipCheck.check(table, "table after the menu", problems)
 	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()

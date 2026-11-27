@@ -60,12 +60,12 @@ func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "%s %s" % [debuff.id, screen_size]
-				var name: String = _app.controller.texts.modifier_name(debuff.id)
+				var title: String = _app.controller.texts.modifier_name(debuff.id)
 				var rule: String = _app.controller.texts.modifier_text(debuff.id)
 				var named: bool = false
 				for node: Node in intro.find_children("*", "Label", true, false):
 					var label: Label = node
-					if label.text == name:
+					if label.text == title:
 						named = true
 						assert_int(label.get_theme_font_size("font_size")).is_greater_equal(
 							READABLE

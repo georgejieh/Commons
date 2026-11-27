@@ -70,7 +70,7 @@ func test_a_seat_cannot_pass_on_the_lead() -> void:
 
 func test_rejected_actions_change_nothing() -> void:
 	var round_state: RoundState = _round(["345", "6", "7"])
-	var before: int = round_state.events().size()
+	var was: int = round_state.events().size()
 	assert_int(round_state.apply(RoundAction.new(1, [1]))).is_equal(RoundState.Reason.OUT_OF_TURN)
 	assert_int(round_state.apply(RoundAction.new(0, [99]))).is_equal(RoundState.Reason.UNKNOWN_CARD)
 	assert_int(round_state.apply(RoundAction.new(0, [0, 0]))).is_equal(
@@ -79,7 +79,7 @@ func test_rejected_actions_change_nothing() -> void:
 	assert_int(round_state.apply(RoundAction.new(0, [0, 4]))).is_equal(
 		RoundState.Reason.ILLEGAL_PLAY
 	)
-	assert_int(round_state.events().size()).is_equal(before)
+	assert_int(round_state.events().size()).is_equal(was)
 	assert_array(Array(round_state.remaining())).is_equal([3, 1, 1])
 
 
@@ -214,11 +214,11 @@ func test_a_played_event_carries_copies_of_the_cards() -> void:
 
 func test_every_applied_action_emits_an_event() -> void:
 	var round_state: RoundState = _round(["34567", "8", "9"])
-	var before: int = round_state.events().size()
+	var was: int = round_state.events().size()
 	_apply(round_state, "3")
-	assert_int(round_state.events().size()).is_equal(before + 1)
+	assert_int(round_state.events().size()).is_equal(was + 1)
 	_pass(round_state)
-	assert_int(round_state.events().size()).is_equal(before + 2)
+	assert_int(round_state.events().size()).is_equal(was + 2)
 
 
 func test_seats_get_their_turn_in_order() -> void:

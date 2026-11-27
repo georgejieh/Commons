@@ -254,8 +254,8 @@ func _eyes_on(seat: SeatPanel) -> BackEyes:
 
 
 func _seat_name(seat: SeatPanel) -> String:
-	var name: Label = seat.name_label
-	return name.text
+	var printed: Label = seat.name_label
+	return printed.text
 
 
 ## Lets the eye turn for two seconds of frames, then draw. Its turning is paced by the

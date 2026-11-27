@@ -77,12 +77,12 @@ func test_the_pitch_shift_is_clamped() -> void:
 
 
 func test_drift_never_changes_the_shared_definitions() -> void:
-	var before: Array = []
+	var was: Array = []
 	for family: FamilyDef in VILLAGE.families:
 		var levels: Array[int] = []
 		for trait_name: String in VillageDrift.TRAITS:
 			levels.append(int(family.personality.get(trait_name)))
-		before.append([levels, family.voice.pitch if family.voice != null else 0.0])
+		was.append([levels, family.voice.pitch if family.voice != null else 0.0])
 	var drift: VillageDrift = _through(40)
 	var state: RunState = RunState.new(3)
 	state.drift = drift
@@ -99,7 +99,7 @@ func test_drift_never_changes_the_shared_definitions() -> void:
 		for trait_name: String in VillageDrift.TRAITS:
 			levels.append(int(family.personality.get(trait_name)))
 		var pitch: float = family.voice.pitch if family.voice != null else 0.0
-		assert_array([levels, pitch]).is_equal(before[index])
+		assert_array([levels, pitch]).is_equal(was[index])
 
 
 func test_a_seated_family_plays_and_speaks_as_it_drifted() -> void:

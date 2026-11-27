@@ -18,13 +18,13 @@ const RUN_TYPES: Array[String] = [
 func test_autoload_list_matches_exactly() -> void:
 	var found: Dictionary[String, String] = {}
 	for property: Dictionary in ProjectSettings.get_property_list():
-		var name: String = property["name"]
-		if not name.begins_with("autoload/"):
+		var property_name: String = property["name"]
+		if not property_name.begins_with("autoload/"):
 			continue
-		var path: String = str(ProjectSettings.get_setting(name)).trim_prefix("*")
+		var path: String = str(ProjectSettings.get_setting(property_name)).trim_prefix("*")
 		if path.begins_with(DEV_ONLY_PREFIX):
 			continue
-		found[name.trim_prefix("autoload/")] = path
+		found[property_name.trim_prefix("autoload/")] = path
 	assert_dict(found).is_equal(ALLOWED)
 
 

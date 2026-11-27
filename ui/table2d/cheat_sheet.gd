@@ -111,10 +111,10 @@ func refresh() -> void:
 	if _types.get_child_count() == 0:
 		for type: Pattern.Type in ReadingText.hand_types():
 			var key: String = ReadingText.type_key(type)
-			var name: Label = ScreenKit.label(tr("pattern." + key), 22)
-			name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-			name.autowrap_mode = TextServer.AUTOWRAP_OFF
-			_types.add_child(name)
+			var type_label: Label = ScreenKit.label(tr("pattern." + key), 22)
+			type_label.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+			type_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+			_types.add_child(type_label)
 			var example: Label = ScreenKit.label(tr("cheat.example." + key), 20)
 			example.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 			example.autowrap_mode = TextServer.AUTOWRAP_OFF

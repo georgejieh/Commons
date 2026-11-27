@@ -288,19 +288,19 @@ func test_a_landlord_ending_is_counted_and_outlives_the_history() -> void:
 		"peasant_ending": [0, 10, 0],
 		"landlord_ending": [4, 10, 1],
 	}
-	for name: String in cases:
+	for case: String in cases:
 		_profile.delete()
 		var state: RunState = RunState.new(6700)
-		state.identity.id = "run-" + name
+		state.identity.id = "run-" + case
 		state.identity.kind = RunIdentity.Kind.FULL
 		state.phase = RunFlow.State.RUN_END
 		state.year = 8
 		state.year_rounds = 4
-		state.year_landlord_rounds = cases[name][0]
-		state.famine = cases[name][1]
+		state.year_landlord_rounds = cases[case][0]
+		state.famine = cases[case][1]
 		ProfileCommits.commit(_profile, state, true)
 		var counted: int = Profile.read(_profile).landlord_endings
-		assert_int(counted).override_failure_message(name).is_equal(cases[name][2])
+		assert_int(counted).override_failure_message(case).is_equal(cases[case][2])
 	var data: ProfileData = Profile.read(_profile)
 	for index: int in ProfileData.HISTORY_CAP:
 		var later: HistoryEntry = _entry(HistoryEntry.PEASANT, Endings.SECRET_CONTRACT)

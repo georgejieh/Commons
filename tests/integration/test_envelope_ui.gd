@@ -84,11 +84,11 @@ func _check_nothing_left(store: StoreScreen) -> void:
 			if script != null and script.get_global_name() == kind:
 				found += 1
 		assert_int(found).override_failure_message(kind).is_equal(0)
-	var after: int = store.find_children("*", "", true, false).size()
+	var now: int = store.find_children("*", "", true, false).size()
 	store.refresh()
 	await await_idle_frame()
 	await await_idle_frame()
-	assert_int(store.find_children("*", "", true, false).size()).is_equal(after)
+	assert_int(store.find_children("*", "", true, false).size()).is_equal(now)
 
 
 func _cancel() -> void:

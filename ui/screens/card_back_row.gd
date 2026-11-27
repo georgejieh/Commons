@@ -50,8 +50,8 @@ func _open_sheet(design: CardBackDef, index: int) -> AgedSheet:
 	var sheet: AgedSheet = AgedSheet.new(SWATCH.x, index)
 	sheet.custom_minimum_size = SWATCH
 	sheet.choosable = true
-	var name: String = tr(design.name_key)
-	sheet.accessibility_name = name
+	var title: String = tr(design.name_key)
+	sheet.accessibility_name = title
 	var holder: CenterContainer = CenterContainer.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -59,7 +59,7 @@ func _open_sheet(design: CardBackDef, index: int) -> AgedSheet:
 	back.design = design
 	holder.add_child(back)
 	sheet.column().add_child(holder)
-	var label: Label = ScreenKit.label(name, NAME_SIZE, ScreenKit.INK)
+	var label: Label = ScreenKit.label(title, NAME_SIZE, ScreenKit.INK)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sheet.column().add_child(label)

@@ -56,14 +56,14 @@ static func kept(folder: String) -> SessionNotice:
 	var ok: Button = ScreenKit.button(
 		TranslationServer.translate("session.kept.ok"), CommonsTheme.PRIMARY
 	)
-	var show: Button = ScreenKit.button(TranslationServer.translate("session.kept.open"))
+	var open_button: Button = ScreenKit.button(TranslationServer.translate("session.kept.open"))
 	var shown: String = ProjectSettings.globalize_path(folder)
-	show.pressed.connect(func() -> void: OS.shell_open(shown))
+	open_button.pressed.connect(func() -> void: OS.shell_open(shown))
 	var notice: SessionNotice = SessionNotice.new(
 		TranslationServer.translate("session.kept.eyebrow"),
 		TranslationServer.translate("session.kept.title"),
 		TranslationServer.translate("session.kept.body"),
-		[ok, show],
+		[ok, open_button],
 		shown
 	)
 	ok.pressed.connect(notice.close)

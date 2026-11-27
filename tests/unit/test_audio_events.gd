@@ -36,11 +36,11 @@ func test_round_events_take_their_round_name_and_bombs_their_own() -> void:
 
 func test_every_name_is_unique() -> void:
 	var seen: Dictionary[String, bool] = {}
-	for name: String in AudioEvents.RUN_NAMES.values() + AudioEvents.ROUND_NAMES.values():
-		if name.is_empty():
+	for sound: String in AudioEvents.RUN_NAMES.values() + AudioEvents.ROUND_NAMES.values():
+		if sound.is_empty():
 			continue
-		assert_bool(seen.has(name)).override_failure_message(name).is_false()
-		seen[name] = true
+		assert_bool(seen.has(sound)).override_failure_message(sound).is_false()
+		seen[sound] = true
 
 
 func test_rockets_and_bombs_have_their_own_names() -> void:

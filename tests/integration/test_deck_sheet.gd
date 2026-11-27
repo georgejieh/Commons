@@ -126,8 +126,8 @@ func test_the_sheet_keeps_the_focus_and_cancel_closes_it() -> void:
 	await _tap("ui_right")
 	assert_int(sheet.board().cursor_card()).is_not_equal(first)
 	await _tap("ui_down")
-	var owner: Control = get_viewport().gui_get_focus_owner()
-	assert_bool(owner == sheet.board() or sheet.is_ancestor_of(owner)).is_true()
+	var focused: Control = get_viewport().gui_get_focus_owner()
+	assert_bool(focused == sheet.board() or sheet.is_ancestor_of(focused)).is_true()
 	await _tap("ui_cancel")
 	assert_bool(sheet.is_open()).is_false()
 

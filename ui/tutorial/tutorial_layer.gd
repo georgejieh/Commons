@@ -133,10 +133,10 @@ func _layout() -> void:
 		_skip.position.x - BEGIN_GAP - _begin.size.x, size_now.y - _begin.size.y - FOOT
 	)
 	var guide: Object = _guide()
-	var hidden: bool = _app.menu_is_open()
+	var menu_open: bool = _app.menu_is_open()
 	if guide != null and guide.has_method("tutorial_hidden"):
-		hidden = hidden or bool(guide.call("tutorial_hidden"))
-	var showing: bool = not hidden and _on_its_screen()
+		menu_open = menu_open or bool(guide.call("tutorial_hidden"))
+	var showing: bool = not menu_open and _on_its_screen()
 	_slip.visible = showing and not _slip.line().is_empty()
 	var key: String = _director.highlight() if showing else ""
 	_glow.light(_targets(guide, key))

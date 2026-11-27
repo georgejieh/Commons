@@ -49,13 +49,13 @@ func test_every_demo_screen_opens() -> void:
 func test_back_navigation_keeps_the_run() -> void:
 	_app.show_screen("table", true)
 	await await_idle_frame()
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	_app.show_screen("settings")
 	await await_idle_frame()
 	_app.back()
 	await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("table")
-	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 func test_the_table_plays_a_set_to_its_summary() -> void:
@@ -83,9 +83,9 @@ func test_the_table_plays_a_set_to_its_summary() -> void:
 	var word: String = tr("table.quota_met" if met else "summary.short").to_upper()
 	assert_str(report.bar().seal_word()).is_equal(word)
 	# Then what it paid or cost is counted in.
-	var after: Array[Control] = report.after
-	await TestWait.until(self, _shown.bind(after), "what the Quota paid or cost to be shown")
-	for piece: Control in after:
+	var now: Array[Control] = report.after
+	await TestWait.until(self, _shown.bind(now), "what the Quota paid or cost to be shown")
+	for piece: Control in now:
 		assert_float(piece.modulate.a).is_equal_approx(1.0, 0.01)
 
 
@@ -283,22 +283,22 @@ func test_an_overfulfilled_quota_is_sealed_twice_and_counts_the_bonus() -> void:
 		await TestWait.until(self, over, "the bar to fill and be sealed twice")
 		assert_str(report.bar().seal_word()).is_equal(tr("table.quota_met").to_upper())
 		assert_str(report.over_seal_word()).is_equal(tr("summary.over").to_upper())
-		var after: Array[Control] = report.after
+		var now: Array[Control] = report.after
 		var coupons: String = str(_app.controller.state_copy().coupons)
 		var counted: Callable = func() -> bool:
-			return _shown(after) and _number_in(after[0], 0).text == coupons
+			return _shown(now) and _number_in(now[0], 0).text == coupons
 		await TestWait.until(self, counted, "the pay and the bonus to be counted in")
-		assert_int(after.size()).is_equal(3)
+		assert_int(now.size()).is_equal(3)
 		var bonus: int = steps * SetConfig.DEFAULT_PARAMS.over_bonus_coupons
 		assert_int(_app.controller.figures.over_bonus()).is_equal(bonus)
 		var paid: int = _app.controller.figures.quota_reward() + bonus
-		var line: Label = after[1]
+		var line: Label = now[1]
 		assert_str(line.text).is_equal(Strings.count("summary.paid", paid))
-		var norm: Label = after[2]
+		var norm: Label = now[2]
 		var added: int = steps * SetConfig.DEFAULT_PARAMS.norm_percent_per_step
 		assert_str(norm.text).is_equal(report.norm_text())
 		assert_str(norm.text).contains("%d%%" % added)
-		var tile: Label = _number_in(after[0], 0)
+		var tile: Label = _number_in(now[0], 0)
 		assert_str(tile.text).is_equal(str(_app.controller.state_copy().coupons))
 	Settings.set_value("reduced_motion", false)
 

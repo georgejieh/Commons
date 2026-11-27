@@ -83,8 +83,8 @@ func test_every_tier_leads_a_two_pair_run_to_go_out() -> void:
 			)
 			assert_bool(SelfPlay.is_offered(play, legal)).is_true()
 			var ploughed: bool = table.rules_for(0).min_pair_chain_length() == 2
-			var name: String = "%s %s" % [tier, ploughed]
-			assert_bool(_is_short_run(play.pattern)).override_failure_message(name).is_equal(
+			var case: String = "%s %s" % [tier, ploughed]
+			assert_bool(_is_short_run(play.pattern)).override_failure_message(case).is_equal(
 				ploughed
 			)
 

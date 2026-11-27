@@ -36,17 +36,17 @@ func _zhao_answers(profile: SaveService) -> int:
 		loop.state.table.assign(["player", ZHAO, "li"])
 		var script: RunScript = RunScript.new()
 		script.play_until_set_over(loop)
-		var owner: int = Seats.NONE
+		var holder: int = Seats.NONE
 		for event: RunEvent in loop.events():
 			var played: RoundEvent = event.round_event
 			if played == null:
 				continue
 			if played.type == RoundEvent.Type.TRICK_WON:
-				owner = Seats.NONE
+				holder = Seats.NONE
 			elif played.type == RoundEvent.Type.PLAYED:
-				if played.seat == 1 and owner == 0:
+				if played.seat == 1 and holder == 0:
 					answered += 1
-				owner = played.seat
+				holder = played.seat
 	return answered
 
 

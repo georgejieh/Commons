@@ -89,9 +89,9 @@ func test_the_credits_stand_whole_at_every_size() -> void:
 func test_keys_scroll_the_credits_and_escape_goes_back() -> void:
 	var screen: CreditsScreen = await _credits()
 	assert_bool(screen.scroll().has_focus()).is_true()
-	var before: int = screen.scroll().scroll_vertical
+	var was: int = screen.scroll().scroll_vertical
 	await _action("ui_down")
-	assert_int(screen.scroll().scroll_vertical).is_greater(before)
+	assert_int(screen.scroll().scroll_vertical).is_greater(was)
 	await _action("ui_cancel")
 	assert_str(_app.switcher.current_id()).is_equal("title")
 

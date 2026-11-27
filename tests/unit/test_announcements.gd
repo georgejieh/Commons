@@ -36,20 +36,20 @@ func _play_and_check(
 	while not round_state.is_over() and actions < MAX_ACTIONS:
 		actions += 1
 		var seat: int = round_state.seat_to_act()
-		var before: int = round_state.remaining()[seat]
+		var was: int = round_state.remaining()[seat]
 		var event_count: int = round_state.events().size()
 		round_state.apply(_random_action(round_state, stream))
-		var after: int = round_state.remaining()[seat]
-		var expected: bool = after != before and _rules.announces_at(after)
+		var now: int = round_state.remaining()[seat]
+		var expected: bool = now != was and _rules.announces_at(now)
 		var calls: Array[int] = _announcements(round_state, event_count)
 		if expected:
 			crossings += 1
-			var key: String = "%d:%d" % [seat, after]
-			if calls != [after] or announced.has(key):
-				problems.append("seat %d at %d announced %s" % [seat, after, calls])
+			var key: String = "%d:%d" % [seat, now]
+			if calls != [now] or announced.has(key):
+				problems.append("seat %d at %d announced %s" % [seat, now, calls])
 			announced[key] = true
 		elif not calls.is_empty():
-			problems.append("seat %d at %d announced %s unasked" % [seat, after, calls])
+			problems.append("seat %d at %d announced %s unasked" % [seat, now, calls])
 	return crossings
 
 

@@ -38,7 +38,7 @@ func _hashes() -> Array[String]:
 
 
 func test_an_app_with_no_paths_of_its_own_stays_in_the_sandbox() -> void:
-	var before: Array[String] = _hashes()
+	var was: Array[String] = _hashes()
 	assert_str(Saves.run_service().path()).is_equal(SavePaths.SANDBOX.path_join("run.json"))
 	assert_str(Saves.profile_service().path()).is_equal(SavePaths.SANDBOX.path_join("profile.json"))
 	_app = AppKit.make(self)
@@ -51,7 +51,7 @@ func test_an_app_with_no_paths_of_its_own_stays_in_the_sandbox() -> void:
 	Settings.save()
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_true()
 	_app.leave_run()
-	assert_array(_hashes()).is_equal(before)
+	assert_array(_hashes()).is_equal(was)
 
 
 func test_a_tools_own_folders_are_in_the_sandbox() -> void:

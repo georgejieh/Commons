@@ -66,11 +66,11 @@ func _events_of(loop: RunLoop, type: RunEvent.Type) -> Array[RunEvent]:
 
 ## A refused use leaves the state and the record as they were.
 func _refused(loop: RunLoop, slot: int, ids: Array[int], reason: CampaignEffect.Reason) -> void:
-	var before: Dictionary = loop.state.to_dict()
+	var was: Dictionary = loop.state.to_dict()
 	var commands: int = loop.record.commands.size()
 	assert_int(loop.campaign_reason(slot, ids)).is_equal(reason)
 	assert_int(loop.player_campaign(slot, ids)).is_not_equal(RunLoop.Reason.OK)
-	assert_dict(loop.state.to_dict()).is_equal(before)
+	assert_dict(loop.state.to_dict()).is_equal(was)
 	assert_int(loop.record.commands.size()).is_equal(commands)
 
 
@@ -346,16 +346,16 @@ func test_anonymous_letter_makes_the_next_seat_pass_your_play() -> void:
 	var seen: int = loop.events().size()
 	var ids: Array[int] = loop.round_state().action_for(move).card_ids
 	assert_int(loop.player_play(ids)).is_equal(RunLoop.Reason.OK)
-	var after: Array[RunEvent] = loop.events().slice(seen)
+	var now: Array[RunEvent] = loop.events().slice(seen)
 	var forced: int = -1
-	for index: int in after.size():
-		if after[index].type == RunEvent.Type.PASS_FORCED:
+	for index: int in now.size():
+		if now[index].type == RunEvent.Type.PASS_FORCED:
 			forced = index
-	if loop.round_state() == null or after.any(_ends_round):
+	if loop.round_state() == null or now.any(_ends_round):
 		return
 	assert_int(forced).is_greater_equal(0)
-	assert_int(after[forced].seat).is_equal(1)
-	var next: RoundEvent = after[forced + 1].round_event
+	assert_int(now[forced].seat).is_equal(1)
+	var next: RoundEvent = now[forced + 1].round_event
 	assert_int(next.type).is_equal(RoundEvent.Type.PASSED)
 	assert_int(next.seat).is_equal(1)
 

@@ -355,9 +355,9 @@ func _check(pieces: Dictionary[String, Rect2], where: String, problems: PackedSt
 	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var names: Array[String] = []
 	names.assign(pieces.keys())
-	for name: String in names:
-		if not screen.encloses(pieces[name]):
-			problems.append("%s: %s off screen at %s" % [where, name, pieces[name]])
+	for piece: String in names:
+		if not screen.encloses(pieces[piece]):
+			problems.append("%s: %s off screen at %s" % [where, piece, pieces[piece]])
 	for first: int in names.size():
 		for second: int in range(first + 1, names.size()):
 			var pair: String = "%s|%s" % [names[first], names[second]]

@@ -111,7 +111,7 @@ func _take(step: Resource) -> void:
 		actions = _current().get("actions")
 	match action:
 		TutorialStep.Action.BID_CALL:
-			await _press(actions.get("call"))
+			await _press(actions.get("call_landlord"))
 		TutorialStep.Action.BID_PASS:
 			await _press(actions.get("decline"))
 		TutorialStep.Action.PASS:

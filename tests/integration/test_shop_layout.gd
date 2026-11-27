@@ -228,9 +228,9 @@ func _check_apart(overlay: EnvelopeOverlay, where: String) -> void:
 		)
 		_check_paper(paper, overlay.papers().size(), where)
 	var blocks: Dictionary[String, Control] = overlay.blocks()
-	for name: String in ["heading", "detail", "button"]:
-		if blocks.has(name):
-			pieces.append(blocks[name])
+	for block: String in ["heading", "detail", "button"]:
+		if blocks.has(block):
+			pieces.append(blocks[block])
 	for first: int in pieces.size():
 		for second: int in range(first + 1, pieces.size()):
 			var a: Rect2 = pieces[first].get_global_rect().grow(-ClipCheck.SLACK)

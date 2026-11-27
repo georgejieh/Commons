@@ -117,12 +117,12 @@ func test_steps_grow_by_one_a_quota_up_to_the_most() -> void:
 	assert_int(row).is_equal(1)
 	var expected: Array[int] = [0, 0, 0, 1, 2, 3, 4, 4, 4]
 	for index: int in expected.size():
-		var before: int = loop.state.famine
+		var was: int = loop.state.famine
 		var logged: int = _stood_by(loop).size()
 		_count_standing_by(loop)
 		var steps: int = expected[index]
 		assert_int(loop.state.seatless_sets).is_equal(index + 1)
-		assert_int(loop.state.famine - before).is_equal(steps * row)
+		assert_int(loop.state.famine - was).is_equal(steps * row)
 		var found: Array[RunEvent] = _stood_by(loop)
 		var count: int = index + 1
 		if count < params.seat_grace_sets:

@@ -65,17 +65,17 @@ func _with_directives(coupons: int, resentment: int = 0) -> BalanceVisit:
 
 
 func test_every_strategy_issues_the_cheapest_directive_first_once_a_visit() -> void:
-	for name: String in BalanceDriver.STRATEGIES:
-		var strategy: BalanceStrategy = _strategy(name)
+	for chosen: String in BalanceDriver.STRATEGIES:
+		var strategy: BalanceStrategy = _strategy(chosen)
 		var first: BalanceOffer = strategy.purchase(_with_directives(50))
-		assert_int(_kind(first)).override_failure_message(name).is_equal(
+		assert_int(_kind(first)).override_failure_message(chosen).is_equal(
 			BalanceOffer.Kind.DIRECTIVE
 		)
-		assert_int(first.slot).override_failure_message(name).is_equal(1)
+		assert_int(first.slot).override_failure_message(chosen).is_equal(1)
 		assert_bool(first.market).is_false()
 		var issued: BalanceVisit = _with_directives(50)
 		issued.directive_bought = true
-		assert_int(_kind(strategy.purchase(issued))).override_failure_message(name).is_not_equal(
+		assert_int(_kind(strategy.purchase(issued))).override_failure_message(chosen).is_not_equal(
 			BalanceOffer.Kind.DIRECTIVE
 		)
 	# Private buys nothing else at the state store: with a Directive issued, the market.
@@ -126,12 +126,12 @@ func test_the_percentile_reads_between_values() -> void:
 
 
 func test_the_sampled_weights_are_a_copy() -> void:
-	var before: int = BotConfig.DEFAULT_WEIGHTS.expert_samples
+	var was: int = BotConfig.DEFAULT_WEIGHTS.expert_samples
 	var copy: BotWeights = BalanceDriver.sampling(12)
 	assert_int(copy.expert_samples).is_equal(12)
 	assert_int(copy.expert_min_samples).is_less_equal(12)
 	assert_object(copy).is_not_same(BotConfig.DEFAULT_WEIGHTS)
-	assert_int(BotConfig.DEFAULT_WEIGHTS.expert_samples).is_equal(before)
+	assert_int(BotConfig.DEFAULT_WEIGHTS.expert_samples).is_equal(was)
 
 
 func test_the_seat_by_strategy() -> void:
@@ -194,11 +194,11 @@ func test_private_rerolls_once_a_visit_when_nothing_was_affordable() -> void:
 	empty.rerolled = false
 	empty.market_bought = 1
 	assert_bool(private.rerolls(empty)).is_false()
-	for name: String in ["collective", "mixed"]:
+	for strategy: String in ["collective", "mixed"]:
 		var visit: BalanceVisit = _visit(1)
 		visit.market.clear()
 		visit.can_reroll = true
-		assert_bool(_strategy(name).rerolls(visit)).is_false()
+		assert_bool(_strategy(strategy).rerolls(visit)).is_false()
 
 
 ## The rule with coupons kept back, whatever the data keeps today (none, ADR 0027).
@@ -224,10 +224,10 @@ func test_mixed_keeps_coupons_back_then_buys_one_thing_under_the_limit() -> void
 
 
 func test_collective_and_mixed_shun_two_campaigns() -> void:
-	for name: String in ["collective", "mixed"]:
+	for strategy: String in ["collective", "mixed"]:
 		for campaign_id: String in _params().shunned_campaigns:
-			assert_bool(_strategy(name).uses_campaign(campaign_id)).is_false()
-		assert_bool(_strategy(name).uses_campaign("grain_loan")).is_true()
+			assert_bool(_strategy(strategy).uses_campaign(campaign_id)).is_false()
+		assert_bool(_strategy(strategy).uses_campaign("grain_loan")).is_true()
 	assert_bool(_strategy("private").uses_campaign("anonymous_letter")).is_true()
 	assert_bool(_strategy("collective").swaps()).is_false()
 	assert_bool(_strategy("private").swaps()).is_true()
@@ -321,11 +321,11 @@ func test_a_tally_without_every_strategy_is_not_judged() -> void:
 func test_a_hand_made_tally_reads_its_runs() -> void:
 	var tally: BalanceTally = BalanceTally.new()
 	for index: int in 10:
-		for name: String in BalanceDriver.STRATEGIES:
+		for chosen: String in BalanceDriver.STRATEGIES:
 			var run: BalanceResult = BalanceResult.new()
 			run.seed_value = 9 - index
-			run.strategy = name
-			run.survived = index < {"mixed": 9, "private": 5, "collective": 1}[name]
+			run.strategy = chosen
+			run.survived = index < {"mixed": 9, "private": 5, "collective": 1}[chosen]
 			run.outcome = Endings.STRUGGLED if run.survived else Endings.DEATH_FAMINE
 			run.year = 8 if run.survived else 3
 			tally.add(run)

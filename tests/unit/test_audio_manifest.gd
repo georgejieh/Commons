@@ -76,9 +76,9 @@ func _collect(dir_path: String, out: PackedStringArray) -> void:
 		return
 	for sub: String in DirAccess.get_directories_at(dir_path):
 		_collect(dir_path.path_join(sub), out)
-	for name: String in DirAccess.get_files_at(dir_path):
-		if AUDIO_EXTENSIONS.has(name.get_extension().to_lower()):
-			out.append(dir_path.path_join(name))
+	for file: String in DirAccess.get_files_at(dir_path):
+		if AUDIO_EXTENSIONS.has(file.get_extension().to_lower()):
+			out.append(dir_path.path_join(file))
 
 
 ## A license term as a whole word, so "SA" never matches inside another word.

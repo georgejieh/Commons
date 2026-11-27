@@ -30,11 +30,11 @@ func test_checker_flags_a_mutator_and_ignores_comments() -> void:
 func test_every_player_command_goes_through_act() -> void:
 	var commands: Array[String] = []
 	for method: Dictionary in LOOP.get_script_method_list():
-		var name: String = method["name"]
+		var method_name: String = method["name"]
 		# A command answers with a reason; a query such as player_cards() does not.
 		var reason: bool = str(method["return"]["class_name"]).ends_with("Reason")
-		if reason and (name.begins_with("player_") or MOVES.has(name)):
-			commands.append(name)
+		if reason and (method_name.begins_with("player_") or MOVES.has(method_name)):
+			commands.append(method_name)
 	assert_int(commands.size()).is_greater(MOVES.size())
 	var source: String = FileAccess.get_file_as_string(CONTROLLER)
 	var lines: PackedStringArray = source.split("\n")
@@ -109,10 +109,10 @@ func test_a_refused_command_signals_and_changes_nothing() -> void:
 	controller.command_refused.connect(
 		func(command: String, _reason: int) -> void: refused.append(command)
 	)
-	var before: Dictionary = controller.state_copy().to_dict()
+	var was: Dictionary = controller.state_copy().to_dict()
 	assert_int(controller.declare_need(5)).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_array(refused).contains_exactly(["declare_need"])
-	assert_dict(controller.state_copy().to_dict()).is_equal(before)
+	assert_dict(controller.state_copy().to_dict()).is_equal(was)
 
 
 func test_state_copy_is_not_the_run_state() -> void:

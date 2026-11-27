@@ -75,8 +75,8 @@ func test_a_card_the_desk_refuses_says_why_and_cannot_be_confirmed() -> void:
 	var sheet: DeckSheet = store.deck
 	sheet.board().press(CARD)
 	assert_bool(sheet.confirm_button().disabled).is_true()
-	var name: String = CardName.of(sheet.board().card_of(CARD))
-	assert_str(sheet.status_text()).contains(name)
+	var card_name: String = CardName.of(sheet.board().card_of(CARD))
+	assert_str(sheet.status_text()).contains(card_name)
 	sheet.back_button().pressed.emit()
 	assert_bool(sheet.is_open()).is_false()
 	assert_bool(_loop().visit.shop.desk.used()).is_false()

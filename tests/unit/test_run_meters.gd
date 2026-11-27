@@ -27,10 +27,10 @@ func _apply(source_id: String) -> void:
 	RunMeters.apply(_state, source_id, TABLE, ModifierStack.new(), RunDefaults.PARAMS, 0, _events)
 
 
-func _setbacks(name: String) -> Array[RunEvent]:
+func _setbacks(setback: String) -> Array[RunEvent]:
 	return _events.filter(
 		func(event: RunEvent) -> bool:
-			return event.type == RunEvent.Type.SETBACK and event.text == name
+			return event.type == RunEvent.Type.SETBACK and event.text == setback
 	)
 
 

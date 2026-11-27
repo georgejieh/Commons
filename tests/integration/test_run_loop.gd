@@ -127,7 +127,7 @@ func test_plot_swaps_conserve_cards() -> void:
 	while loop.awaiting() == RunLoop.Awaiting.PLAYER_BID:
 		script.act(loop)
 	assert_int(loop.awaiting()).is_equal(RunLoop.Awaiting.PLAYER_SWAP)
-	var before: Array[int] = _ids(loop.player_cards()) + _ids(state.inventory.plot)
+	var was: Array[int] = _ids(loop.player_cards()) + _ids(state.inventory.plot)
 	var hand_ids: Array[int] = [loop.player_cards()[0].id()]
 	var plot_ids: Array[int] = [state.inventory.plot[0].id()]
 	assert_int(loop.player_swap(hand_ids, [] as Array[int])).is_equal(RunLoop.Reason.ILLEGAL)
@@ -135,15 +135,15 @@ func test_plot_swaps_conserve_cards() -> void:
 	var given: CardInstance = null
 	for card: CardInstance in loop.round_state().view_for(RunLoop.PLAYER).own_cards:
 		given = card if card.id() == plot_ids[0] else given
-	var after: Array[int] = _ids(loop.player_cards()) + _ids(state.inventory.plot)
+	var now: Array[int] = _ids(loop.player_cards()) + _ids(state.inventory.plot)
 	# The kitty is in the landlord's hand by the swap; the plot card is in both (ADR 0038).
-	assert_int(after.size()).is_equal(before.size())
-	for card_id: int in before:
+	assert_int(now.size()).is_equal(was.size())
+	for card_id: int in was:
 		if card_id != hand_ids[0]:
-			assert_bool(after.has(card_id)).is_true()
+			assert_bool(now.has(card_id)).is_true()
 	assert_object(given).is_not_null()
 	# The deck card sits the round out: it is in neither the hand nor the plot.
-	assert_bool(after.has(hand_ids[0])).is_false()
+	assert_bool(now.has(hand_ids[0])).is_false()
 	assert_array(_ids(state.inventory.plot)).is_equal([CardInstance.FIRST_PLOT_ID, 1001])
 
 
@@ -151,9 +151,9 @@ func test_commands_out_of_turn_are_refused() -> void:
 	var loop: RunLoop = RunLoop.new(RunState.new(SEEDS[0]), RunScript.bots())
 	assert_int(loop.player_bid(true)).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_int(loop.start_set()).is_equal(RunLoop.Reason.OK)
-	var before: String = JSON.stringify(loop.state.to_dict())
+	var was: String = JSON.stringify(loop.state.to_dict())
 	assert_int(loop.start_set()).is_equal(RunLoop.Reason.NOT_AWAITED)
-	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(before)
+	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(was)
 	var none: Array[int] = []
 	if loop.awaiting() != RunLoop.Awaiting.PLAYER_NEED:
 		assert_int(loop.player_need(1)).is_equal(RunLoop.Reason.NOT_AWAITED)
@@ -163,7 +163,7 @@ func test_commands_out_of_turn_are_refused() -> void:
 		assert_int(loop.player_bid(false)).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_int(loop.player_swap(none, none)).is_equal(RunLoop.Reason.NOT_AWAITED)
 	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.NOT_AWAITED)
-	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(before)
+	assert_str(JSON.stringify(loop.state.to_dict())).is_equal(was)
 
 
 ## An all-pass bid redeals on the deal stream and bidding starts again.

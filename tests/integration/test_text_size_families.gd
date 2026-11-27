@@ -101,12 +101,12 @@ func test_every_cadre_fits_the_board_and_its_tip() -> void:
 	var font: Font = board.get_theme_default_font()
 	var tip_size: int = TextSize.px(CommonsTheme.STYLE.body_size)
 	for cadre: ModifierDef in RunLoop.all_cadres():
-		var name: String = tr(cadre.name_key)
-		var fitted: int = CadreBadge.name_size(font, name, tile)
+		var title: String = tr(cadre.name_key)
+		var fitted: int = CadreBadge.name_size(font, title, tile)
 		assert_int(fitted).is_greater_equal(TextSize.least(CadreBadge.LEAST_NAME))
 		(
-			assert_bool(NameFit.words_fit(font, name, tile, fitted))
-			. override_failure_message(name)
+			assert_bool(NameFit.words_fit(font, title, tile, fitted))
+			. override_failure_message(title)
 			. is_true()
 		)
 		var tip: String = ScreenKit.cadre_tip(_app.controller, cadre.id)
@@ -263,8 +263,8 @@ func test_every_keyword_slip_fits_the_screen() -> void:
 	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		for id: String in Keywords.TERMS:
-			var name: String = tr("keyword.%s.name" % id)
-			var slip: Control = Keywords.slip(Keywords.meaning(id), name)
+			var title: String = tr("keyword.%s.name" % id)
+			var slip: Control = Keywords.slip(Keywords.meaning(id), title)
 			auto_free(slip)
 			_app.add_child(slip)
 			await await_idle_frame()
@@ -350,9 +350,9 @@ func _keys(prefix: String) -> Array[String]:
 func _longest_surname() -> String:
 	var longest: String = ""
 	for family: FamilyDef in RunDefaults.VILLAGE.families:
-		var name: String = tr(family.name_key)
-		longest = name if name.length() > longest.length() else longest
+		var title: String = tr(family.name_key)
+		longest = title if title.length() > longest.length() else longest
 	for key: String in RunDefaults.VILLAGE.youth_surnames:
-		var name: String = tr(key)
-		longest = name if name.length() > longest.length() else longest
+		var title: String = tr(key)
+		longest = title if title.length() > longest.length() else longest
 	return longest

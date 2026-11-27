@@ -28,8 +28,8 @@ func _resources_under(folder: String) -> PackedStringArray:
 	return paths
 
 
-func _load_def(name: String) -> ModifierDef:
-	return ResourceLoader.load(DATA + "modifiers/" + name + ".tres")
+func _load_def(modifier_id: String) -> ModifierDef:
+	return ResourceLoader.load(DATA + "modifiers/" + modifier_id + ".tres")
 
 
 func test_every_definition_in_data_is_valid() -> void:

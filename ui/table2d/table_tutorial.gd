@@ -172,7 +172,7 @@ func tutorial_rect(key: String) -> Rect2:
 	var buttons: Dictionary[String, Button] = {
 		"pass": _actions.pass_turn,
 		"decline": _actions.decline,
-		"call": _actions.call,
+		"call": _actions.call_landlord,
 		"rules": _actions.rules,
 	}
 	return _visible_rect(buttons.get(key, null))

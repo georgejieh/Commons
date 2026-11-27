@@ -88,9 +88,9 @@ func check_fan(table: Node, where: String) -> void:
 	var held: Array = view(_controller(), "table").call("player_cards")
 	var views: Array = member(member(table, "hand_view"), "_views")
 	var shown: Dictionary[int, bool] = {}
-	for view: Control in views:
-		if view.visible:
-			shown[int(view.get("card_id"))] = true
+	for card_view: Control in views:
+		if card_view.visible:
+			shown[int(card_view.get("card_id"))] = true
 	if shown.size() != held.size() or views.size() != held.size():
 		_fail("FAN MISMATCH %s: holds %d, shows %d" % [where, held.size(), shown.size()])
 

@@ -99,7 +99,7 @@ func test_each_rule_name_is_closed_before_its_text() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", debuff, "", ""])
 	loop.state.round_index = 1
-	var name: String = _app.controller.texts.modifier_name(debuff)
+	var title: String = _app.controller.texts.modifier_name(debuff)
 	var wild: String = ReadingText.wild_line([Ranks.SEVEN] as Array[int])
 	for level: int in TextSize.count():
 		for screen: Vector2i in ClipCheck.SIZES:
@@ -115,7 +115,7 @@ func test_each_rule_name_is_closed_before_its_text() -> void:
 			)
 			if not strip.is_named():
 				assert_str(shown).override_failure_message(where).contains(
-					name + DebuffStrip.NAME_END + " "
+					title + DebuffStrip.NAME_END + " "
 				)
 
 

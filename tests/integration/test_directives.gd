@@ -139,15 +139,15 @@ func test_a_raised_level_scores_in_play() -> void:
 func test_buying_spends_coupons_and_is_refused_without_them() -> void:
 	var loop: RunLoop = RunScript.at_the_shops(self, 32, 0)
 	assert_int(loop.visit.shop.directive_stock().size()).is_equal(STORE.directive_slots)
-	var before: Array[int] = loop.state.hand_levels.to_array()
+	var was: Array[int] = loop.state.hand_levels.to_array()
 	assert_int(loop.player_directive(0)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_array(loop.state.hand_levels.to_array()).is_equal(before)
+	assert_array(loop.state.hand_levels.to_array()).is_equal(was)
 	assert_int(loop.state.coupons).is_equal(0)
 	var price: int = loop.visit.shop.directive_price(0)
 	loop.state.coupons = price
 	assert_int(loop.player_directive(0)).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.state.coupons).is_equal(0)
-	assert_array(loop.state.hand_levels.to_array()).is_not_equal(before)
+	assert_array(loop.state.hand_levels.to_array()).is_not_equal(was)
 	# Issued once, then gone from the counter.
 	loop.state.coupons = RICH
 	assert_int(loop.player_directive(0)).is_equal(RunLoop.Reason.ILLEGAL)

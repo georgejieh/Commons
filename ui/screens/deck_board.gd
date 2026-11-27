@@ -61,10 +61,10 @@ func show_cards(deck: Array[CardInstance], plot: Array[CardInstance], room: Vect
 			if card.base_rank() == rank:
 				group.append(card)
 		_groups.append(group)
-		var name: String = tr(CardView.RANK_KEYS[rank])
+		var rank_name: String = tr(CardView.RANK_KEYS[rank])
 		if group.size() != plain[rank]:
-			name = tr("deck.rank_count").format({"rank": name, "count": group.size()})
-		names.append(_name(name))
+			rank_name = tr("deck.rank_count").format({"rank": rank_name, "count": group.size()})
+		names.append(_name(rank_name))
 	if not plot.is_empty():
 		_groups.append(plot.duplicate())
 		names.append(_name(tr("deck.plot")))

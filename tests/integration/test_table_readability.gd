@@ -228,8 +228,8 @@ func test_a_rank_debuff_shows_on_the_table_and_on_the_cards_it_changes() -> void
 		var strip: DebuffStrip = table.debuffs
 		var hand_view: HandView = table.hand_view
 		var active: bool = _app.controller.items.active_debuff_ids().has(RANK_DEBUFF)
-		var name: String = tr("modifier.%s.name" % RANK_DEBUFF)
-		assert_bool(strip.shown_text().contains(name)).is_equal(active)
+		var title: String = tr("modifier.%s.name" % RANK_DEBUFF)
+		assert_bool(strip.shown_text().contains(title)).is_equal(active)
 		saw_strip = saw_strip or active
 		saw_note = saw_note or (active and _twos_marked(hand_view))
 		_press(table, driver)

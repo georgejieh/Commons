@@ -46,9 +46,9 @@ const HOUSEHOLD_GAMES: int = 5
 
 func _random_table(stream: RandomStream) -> SeatRules:
 	var stack: ModifierStack = ModifierStack.new()
-	for name: String in MODIFIERS:
+	for modifier_id: String in MODIFIERS:
 		if stream.next_int(0, 1) == 1:
-			var path: String = "res://data/modifiers/%s.tres" % name
+			var path: String = "res://data/modifiers/%s.tres" % modifier_id
 			stack.add(ResourceLoader.load(path), stream.next_int(0, Seats.COUNT - 1))
 	return SeatRules.new(stack)
 
@@ -87,9 +87,9 @@ func test_searching_bots_stay_legal_under_modifiers() -> void:
 ## plays by other rules, or while holding them.
 func test_no_bot_acts_illegally_while_one_seat_holds_a_cadre() -> void:
 	var expert: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.EXPERT)
-	for name: String in SEAT_CADRES:
+	for modifier_id: String in SEAT_CADRES:
 		var stack: ModifierStack = ModifierStack.new()
-		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), 0)
+		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % modifier_id), 0)
 		var table: SeatRules = SeatRules.new(stack)
 		for game: int in HELD_GAMES + 1:
 			var seats: Array[BotConfig] = [expert, expert, expert]
@@ -97,7 +97,7 @@ func test_no_bot_acts_illegally_while_one_seat_holds_a_cadre() -> void:
 				seats = _random_seats(RandomStream.new(game + 31))
 			var deal: DealResult = SelfPlay.deal_from_seed(4100 + game)
 			var result: SelfPlayResult = SelfPlay.play_round(deal, game % Seats.COUNT, seats, table)
-			var label: String = "%s game %d" % [name, game]
+			var label: String = "%s game %d" % [modifier_id, game]
 			assert_int(result.illegal_actions).override_failure_message(label).is_equal(0)
 			assert_bool(result.winner != Seats.NONE).override_failure_message(label).is_true()
 
@@ -128,10 +128,10 @@ func test_a_bot_answers_by_its_seats_rank_map() -> void:
 func test_no_bot_acts_illegally_while_one_seat_holds_two_rank_cadres() -> void:
 	for pair: Array in RANK_PAIRS:
 		var stack: ModifierStack = ModifierStack.new()
-		for name: String in pair:
+		for modifier_id: String in pair:
 			var memo: CadreMemo = CadreMemo.new()
 			memo.put(CadreMemo.RANK, Ranks.ACE)
-			stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), 0, memo)
+			stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % modifier_id), 0, memo)
 		var table: SeatRules = SeatRules.new(stack)
 		for game: int in PAIR_GAMES:
 			var seats: Array[BotConfig] = _random_seats(RandomStream.new(game + 57))
@@ -144,10 +144,10 @@ func test_no_bot_acts_illegally_while_one_seat_holds_two_rank_cadres() -> void:
 
 func test_no_bot_acts_illegally_while_the_holder_turns_a_climbed_rank_over() -> void:
 	var stack: ModifierStack = ModifierStack.new()
-	for name: String in CLIMB:
+	for modifier_id: String in CLIMB:
 		var memo: CadreMemo = CadreMemo.new()
 		memo.put(CadreMemo.RANK, Ranks.FOUR)
-		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), 0, memo)
+		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % modifier_id), 0, memo)
 	var table: SeatRules = SeatRules.new(stack)
 	for game: int in PAIR_GAMES * 2:
 		var seats: Array[BotConfig] = _random_seats(RandomStream.new(game + 71))
@@ -160,8 +160,8 @@ func test_no_bot_acts_illegally_while_the_holder_turns_a_climbed_rank_over() -> 
 
 func _household_table(row: Array) -> SeatRules:
 	var stack: ModifierStack = ModifierStack.new()
-	for name: String in row[2]:
-		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), 0)
+	for modifier_id: String in row[2]:
+		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % modifier_id), 0)
 	var state: RunState = RunState.new(1)
 	state.reforms.assign(row[1])
 	for rule: ActiveModifier in RunReforms.table_rules(state, 0):

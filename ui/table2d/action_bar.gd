@@ -22,7 +22,7 @@ var sit_out: Button = Button.new()
 var hint: Button = Button.new()
 var sort: Button = Button.new()
 var rules: Button = Button.new()
-var call: Button = Button.new()
+var call_landlord: Button = Button.new()
 var decline: Button = Button.new()
 var play_on: Button = Button.new()
 
@@ -70,9 +70,9 @@ func _ready() -> void:
 	Settings.changed.connect(_on_setting)
 	_turn_row.add_child(_toggles)
 	add_child(_turn_row)
-	_button(call, "action.call", CommonsTheme.PRIMARY)
+	_button(call_landlord, "action.call", CommonsTheme.PRIMARY)
 	_button(decline, "action.decline", CommonsTheme.SECONDARY)
-	for button: Button in [call, decline]:
+	for button: Button in [call_landlord, decline]:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_bid_row.add_child(button)
 	add_child(_bid_row)

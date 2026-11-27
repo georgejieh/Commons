@@ -48,11 +48,11 @@ func after_test() -> void:
 func _clear() -> void:
 	DirAccess.make_dir_recursive_absolute(_dir)
 	for folder: String in DirAccess.get_directories_at(_dir):
-		for name: String in DirAccess.get_files_at(_dir + folder):
-			DirAccess.remove_absolute(_dir.path_join(folder).path_join(name))
+		for file: String in DirAccess.get_files_at(_dir + folder):
+			DirAccess.remove_absolute(_dir.path_join(folder).path_join(file))
 		DirAccess.remove_absolute(_dir + folder)
-	for name: String in DirAccess.get_files_at(_dir):
-		DirAccess.remove_absolute(_dir + name)
+	for file: String in DirAccess.get_files_at(_dir):
+		DirAccess.remove_absolute(_dir + file)
 
 
 func _text(path: String) -> String:
@@ -122,8 +122,8 @@ func test_a_path_keeps_one_aside_the_latest() -> void:
 	_older.save({"turn": 4})
 	assert_str(_text(_path + SaveService.NEWER_SUFFIX)).is_equal(latest)
 	var asides: int = 0
-	for name: String in DirAccess.get_files_at(_dir):
-		if name.ends_with(SaveService.NEWER_SUFFIX):
+	for file: String in DirAccess.get_files_at(_dir):
+		if file.ends_with(SaveService.NEWER_SUFFIX):
 			asides += 1
 	assert_int(asides).is_equal(1)
 

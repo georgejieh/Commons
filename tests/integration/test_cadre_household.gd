@@ -82,13 +82,13 @@ func test_cultural_revolution_turns_only_the_holders_order() -> void:
 	assert_int(_play(trick, "KKKK")).is_equal(DOES_NOT_BEAT)
 	assert_int(_play(trick, "8888")).is_equal(OK)
 	assert_int(_play(trick, "AAAA")).is_equal(OK)
-	var after: RoundState = _round(table, ["99993", "8888K", "77774"])
-	_play(after, "9999")
-	_play(after, "8888")
+	var now: RoundState = _round(table, ["99993", "8888K", "77774"])
+	_play(now, "9999")
+	_play(now, "8888")
 	# The villager's 7s are below the holder's 8s in plain order and in turned order alike.
-	assert_int(_play(after, "7777")).is_equal(DOES_NOT_BEAT)
-	_pass(after)
-	_pass(after)
+	assert_int(_play(now, "7777")).is_equal(DOES_NOT_BEAT)
+	_pass(now)
+	_pass(now)
 	assert_that(table.map_for(HOLDER)).is_equal(Ranks.identity_map())
 
 

@@ -107,7 +107,7 @@ func test_arming_then_cancelling_leaves_no_state_behind() -> void:
 	var tray: CampaignTray = _campaigns(table).tray
 	var hand: HandModel = _app.hand
 	var reading: String = table.actions.reading.text
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	var commands: int = _record_size()
 	hand.toggle(hand.cards()[0].id())
 	tray.leaflet(0).chosen.emit(0)
@@ -130,7 +130,7 @@ func test_arming_then_cancelling_leaves_no_state_behind() -> void:
 	assert_bool(tray.use.visible).is_false()
 	assert_array(hand.selected_ids()).is_empty()
 	assert_str(table.actions.reading.text).is_equal(reading)
-	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 	assert_int(_record_size()).is_equal(commands)
 
 

@@ -90,19 +90,19 @@ func test_card_grain_is_the_rank_value() -> void:
 func test_a_level_change_shows_in_the_next_play() -> void:
 	var levels: HandLevels = HandLevels.new(Scorer.DEFAULT_PARAMS.max_level)
 	var pair: Pattern.Type = Pattern.Type.PAIR
-	var before: ScoreBreakdown = Scorer.score_play(
+	var was: ScoreBreakdown = Scorer.score_play(
 		_cards("99"), _pattern("99"), levels.level_of(pair), 0, false, _stack
 	)
-	assert_float(before.total).is_equal(18.0 * 3.0)
+	assert_float(was.total).is_equal(18.0 * 3.0)
 	levels.raise(pair)
-	var after: ScoreBreakdown = Scorer.score_play(
+	var now: ScoreBreakdown = Scorer.score_play(
 		_cards("99"), _pattern("99"), levels.level_of(pair), 0, false, _stack
 	)
 	# A level raises Rate only: Grain stays the cards' values.
-	assert_float(after.grain).is_equal(18.0)
-	assert_float(after.rate).is_equal(8.0)
-	assert_float(after.zeal).is_equal(1.0)
-	assert_float(after.total).is_equal(144.0)
+	assert_float(now.grain).is_equal(18.0)
+	assert_float(now.rate).is_equal(8.0)
+	assert_float(now.zeal).is_equal(1.0)
+	assert_float(now.total).is_equal(144.0)
 	assert_int(levels.level_of(Pattern.Type.TRIO)).is_equal(1)
 
 

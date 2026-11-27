@@ -185,10 +185,10 @@ func _veteran() -> ProfileData:
 ## Where in the collection of a profile with three finished runs the first locked sheet
 ## stands, or -1: the wild tier's.
 func _first_locked_sheet() -> int:
-	var view: CollectionView = CollectionView.for_runs(3)
+	var collection: CollectionView = CollectionView.for_runs(3)
 	var index: int = 0
-	for section: int in view.section_keys().size():
-		for sheet: UnlockSheet in view.sheets(section):
+	for section: int in collection.section_keys().size():
+		for sheet: UnlockSheet in collection.sheets(section):
 			if not sheet.open:
 				return index
 			index += 1

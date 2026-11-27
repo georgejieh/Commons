@@ -79,8 +79,8 @@ func _all_hooks() -> Array[String]:
 	return hooks
 
 
-func _load_def(name: String) -> ModifierDef:
-	return ResourceLoader.load(DATA + "modifiers/" + name + ".tres")
+func _load_def(modifier_id: String) -> ModifierDef:
+	return ResourceLoader.load(DATA + "modifiers/" + modifier_id + ".tres")
 
 
 func test_the_hook_list_is_complete_and_each_hook_is_a_method() -> void:
@@ -206,31 +206,31 @@ func test_queries_never_rebuild() -> void:
 	stack.add(_load_def("promotion_of_the_masses"), 0)
 	var table: SeatRules = SeatRules.new(stack)
 	table.start_round(0)
-	var before: int = table.rebuilds
+	var was: int = table.rebuilds
 	var counts: PackedByteArray = RankText.counts("3334")
 	var deal: DealResult = RoundScript.stacked_deal(["3456", "789", "TJQ"], "")
 	var round_state: RoundState = RoundState.new(deal, 0, table)
-	before = table.rebuilds
+	was = table.rebuilds
 	for index: int in QUERIES:
 		var seat: int = index % Seats.COUNT
 		Classifier.classify(counts, table.rules_for(seat), table.map_for(seat))
 		round_state.legal_moves()
-	assert_int(table.rebuilds).is_equal(before)
+	assert_int(table.rebuilds).is_equal(was)
 
 
 func test_each_change_marks_the_cache_for_one_rebuild() -> void:
 	var stack: ModifierStack = ModifierStack.new()
 	var table: SeatRules = SeatRules.new(stack)
-	var before: int = table.rebuilds
+	var was: int = table.rebuilds
 	var entry: ActiveModifier = stack.add(_load_def("promotion_of_the_masses"), 0)
 	table.refresh()
-	assert_int(table.rebuilds).is_equal(before + 1)
+	assert_int(table.rebuilds).is_equal(was + 1)
 	assert_int(table.map_for(0)[Ranks.THREE]).is_equal(Ranks.TWO)
 	table.refresh()
-	assert_int(table.rebuilds).is_equal(before + 1)
+	assert_int(table.rebuilds).is_equal(was + 1)
 	stack.set_enabled(entry, false)
 	table.refresh()
-	assert_int(table.rebuilds).is_equal(before + 2)
+	assert_int(table.rebuilds).is_equal(was + 2)
 	assert_int(table.map_for(0)[Ranks.THREE]).is_equal(Ranks.THREE)
 	stack.set_enabled(entry, true)
 	table.refresh()

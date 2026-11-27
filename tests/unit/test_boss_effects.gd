@@ -83,18 +83,18 @@ func test_landlords_ledger_doubles_the_kitty_as_a_later_deal_hook_left_it() -> v
 	ledger.holder_seat = 0
 	ledger.on_deal(DealContext.new(Seats.NONE, deal))
 	# Struggle Session runs after the Cadre and trades a card into the kitty.
-	var before: Array[int] = []
+	var was: Array[int] = []
 	for card: CardInstance in deal.kitty:
-		before.append(card.id())
+		was.append(card.id())
 	_stack(STRUGGLE).run_on_deal(DealContext.new(Seats.NONE, deal))
 	var entered: CardInstance = null
 	for card: CardInstance in deal.kitty:
-		if not before.has(card.id()):
+		if not was.has(card.id()):
 			entered = card
 	assert_object(entered).is_not_null()
 	var left: CardInstance = null
 	for card: CardInstance in deal.hands[0].cards():
-		if before.has(card.id()):
+		if was.has(card.id()):
 			left = card
 	assert_object(left).is_not_null()
 	var in_kitty: CardContext = CardContext.new(0, true, entered, 10.0)

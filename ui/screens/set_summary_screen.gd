@@ -213,8 +213,8 @@ func _fates(controller: RunController) -> Array[Label]:
 			key = "summary.deposed"
 		if key.is_empty():
 			continue
-		var name: String = tr(controller.seats.family_name_key(event.text))
-		var text: String = tr(key).format({"name": name})
+		var surname: String = tr(controller.seats.family_name_key(event.text))
+		var text: String = tr(key).format({"name": surname})
 		var line: Label = ScreenKit.label(text, FATE_SIZE, ScreenKit.INK)
 		line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		lines.append(line)

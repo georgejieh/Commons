@@ -103,7 +103,7 @@ func test_a_ticket_opens_the_sheet_and_back_changes_nothing() -> void:
 	var store: StoreScreen = await _to_the_store()
 	var stall: DeckStallView = _app.controller.store.deck_stall()
 	var coming: CardInstance = stall.card(0)
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	_goods(store).card_button(0).pressed.emit()
 	await await_idle_frame()
 	var sheet: DeckSheet = store.deck
@@ -122,7 +122,7 @@ func test_a_ticket_opens_the_sheet_and_back_changes_nothing() -> void:
 	sheet.back_button().pressed.emit()
 	await await_idle_frame()
 	assert_bool(sheet.is_open()).is_false()
-	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 func test_confirming_puts_the_card_in_the_deck_for_its_price() -> void:

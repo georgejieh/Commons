@@ -301,10 +301,10 @@ func test_a_choice_falls_back_to_the_first() -> void:
 	assert_object(CardBacks.chosen("wheat", 0)).is_same(first)
 	assert_object(CardBacks.chosen("lattice", 9)).is_same(first)
 	assert_object(CardBacks.chosen("no_such_back", 9)).is_same(first)
-	var ready: CardBackDef = CardBacks.POOL.back("wheat").duplicate()
-	ready.art_pending = false
-	assert_bool(CardBacks.is_open(ready, 1)).is_false()
-	assert_bool(CardBacks.is_open(ready, 2)).is_true()
+	var finished: CardBackDef = CardBacks.POOL.back("wheat").duplicate()
+	finished.art_pending = false
+	assert_bool(CardBacks.is_open(finished, 1)).is_false()
+	assert_bool(CardBacks.is_open(finished, 2)).is_true()
 	Settings.set_value(CardBacks.SETTING, "lattice")
 	assert_object(CardBacks.current()).is_same(first)
 	var screen: SettingsScreen = await _settings()

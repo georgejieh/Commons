@@ -89,9 +89,9 @@ func test_picking_a_stake_moves_nothing_on_run_setup() -> void:
 	get_tree().root.size = ClipCheck.SIZES[0]
 	var screen: RunSetupScreen = await _open("run_setup")
 	var tickets: Array[StakeTicket] = screen.tickets()
-	var before: Array[Rect2] = []
+	var placed: Array[Rect2] = []
 	for piece: Control in screen.papers() + tickets:
-		before.append(piece.get_global_rect())
+		placed.append(piece.get_global_rect())
 	var lines: Dictionary[int, bool] = {}
 	for stake: int in 3:
 		tickets[stake].pressed.emit()
@@ -101,7 +101,7 @@ func test_picking_a_stake_moves_nothing_on_run_setup() -> void:
 		var at: int = 0
 		for piece: Control in screen.papers() + tickets:
 			var where: String = "stake %d moved %s" % [stake, piece.get_path()]
-			var still: bool = piece.get_global_rect().is_equal_approx(before[at])
+			var still: bool = piece.get_global_rect().is_equal_approx(placed[at])
 			assert_bool(still).override_failure_message(where).is_true()
 			at += 1
 	# The rules did change length, so room was kept for the longest.

@@ -38,21 +38,21 @@ func test_the_table_calls_a_kept_seat_once() -> void:
 	var callout: Callout = Callout.new()
 	add_child(callout)
 	auto_free(callout)
-	var call: KeptSeatCall = KeptSeatCall.new()
+	var kept_call: KeptSeatCall = KeptSeatCall.new()
 	var faces: Dictionary[int, Texture2D] = {}
-	call.setup(player, callout, NAMES, faces)
+	kept_call.setup(player, callout, NAMES, faces)
 	for event: RunEvent in _events_of(1, 0, 2):
 		player.push(event)
 	player.flush()
 	assert_bool(callout.is_showing()).is_false()
-	call.after_replay(true)
+	kept_call.after_replay(true)
 	assert_bool(callout.is_showing()).is_false()
 	assert_str(KeptSeat.said).is_equal("4:1")
 	KeptSeat.said = ""
-	call.after_replay(false)
+	kept_call.after_replay(false)
 	assert_bool(callout.is_showing()).is_true()
 	callout.dismiss()
-	call.after_replay(false)
+	kept_call.after_replay(false)
 	assert_bool(callout.is_showing()).is_false()
 	# The next round, live: played one by one, the start of the round calls it.
 	for event: RunEvent in _events_of(2, 0, 2).slice(1):

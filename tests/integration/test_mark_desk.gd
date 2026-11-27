@@ -129,8 +129,8 @@ func test_a_use_replays_from_a_save_and_an_older_save_still_loads() -> void:
 
 ## A refused use leaves the state and the record as they were.
 func _refused(loop: RunLoop, card_id: int, market: bool) -> void:
-	var before: Dictionary = loop.state.to_dict()
+	var was: Dictionary = loop.state.to_dict()
 	var commands: int = loop.record.commands.size()
 	assert_int(loop.player_mark_card(card_id, market)).is_not_equal(RunLoop.Reason.OK)
-	assert_dict(loop.state.to_dict()).is_equal(before)
+	assert_dict(loop.state.to_dict()).is_equal(was)
 	assert_int(loop.record.commands.size()).is_equal(commands)

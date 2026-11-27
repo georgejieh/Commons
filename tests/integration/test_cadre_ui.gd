@@ -123,19 +123,19 @@ func test_the_quota_report_counts_the_bookkeepers_coupons_in_the_paid_line() -> 
 	_app.controller.reseal_book()
 	var report: SetSummaryScreen = _app.show_screen("set_summary", true)
 	await await_idle_frame()
-	var after: Array[Control] = report.after
+	var now: Array[Control] = report.after
 	var met: bool = _app.controller.run.set_progress() >= _app.controller.figures.target()
-	var name: String = tr("modifier.the_bookkeeper.name")
+	var title: String = tr("modifier.the_bookkeeper.name")
 	if met:
 		var paid: int = (
 			_app.controller.figures.quota_reward() + _app.controller.figures.over_bonus() + 2
 		)
-		var line: Label = after[1]
-		var words: Dictionary = {"count": paid, "kept": 2, "cadre": name}
+		var line: Label = now[1]
+		var words: Dictionary = {"count": paid, "kept": 2, "cadre": title}
 		assert_str(line.text).is_equal(tr("summary.paid_with").format(words))
 	else:
-		var kept: Label = after[2]
-		var text: String = Strings.count("summary.cadre_paid", 2).format({"cadre": name})
+		var kept: Label = now[2]
+		var text: String = Strings.count("summary.cadre_paid", 2).format({"cadre": title})
 		assert_str(kept.text).is_equal(text)
 
 

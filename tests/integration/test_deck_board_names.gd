@@ -61,10 +61,10 @@ func _check(board: DeckBoard, where: String) -> void:
 	assert_int(names.size()).is_greater(0)
 	for card_id: int in board.card_ids():
 		var card: Rect2 = EnvelopeOverlay.shown_rect(board.view_of(card_id)).grow(-ClipCheck.SLACK)
-		for name: Control in names:
-			var label: Label = name as Label
+		for shown: Control in names:
+			var label: Label = shown as Label
 			(
-				assert_bool(card.intersects(name.get_global_rect()))
+				assert_bool(card.intersects(shown.get_global_rect()))
 				. override_failure_message(
 					(
 						"%s: %s %s covers %s %s"
@@ -73,7 +73,7 @@ func _check(board: DeckBoard, where: String) -> void:
 							CardName.of(board.card_of(card_id)),
 							card,
 							label.text,
-							name.get_global_rect()
+							shown.get_global_rect()
 						]
 					)
 				)

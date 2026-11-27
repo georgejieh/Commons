@@ -59,8 +59,8 @@ func test_the_reports_seals_stand_clear_of_the_figures() -> void:
 func _check_seals(report: SetSummaryScreen, where: String) -> void:
 	var seals: Array[InkSeal] = [report.bar().seal, report.over_seal()]
 	var shown: int = 0
-	var after: Array[Control] = report.after
-	var row: Control = after[0]
+	var now: Array[Control] = report.after
+	var row: Control = now[0]
 	for seal: InkSeal in seals:
 		if not seal.visible:
 			continue

@@ -157,8 +157,8 @@ func _by_name() -> String:
 			continue
 		var names: PackedStringArray = []
 		for rule: Rule in group.rules:
-			var name: String = _name(rule.name)
-			names.append("[s]%s[/s]" % name if rule.lifted else name)
+			var rule_name: String = _name(rule.name)
+			names.append("[s]%s[/s]" % rule_name if rule.lifted else rule_name)
 		rows.append("%s  %s" % [_head(group.head), SEPARATOR.join(names)])
 	var one: bool = _named_count() == 1
 	rows.append(Keywords.escape(tr("table.rules_named.one" if one else "table.rules_named")))
@@ -192,9 +192,9 @@ func _wild_row() -> PackedStringArray:
 func _reform_rules(controller: RunController) -> Array[Rule]:
 	var rules: Array[Rule] = []
 	for reform_id: String in controller.items.table_rule_reforms():
-		var name: String = Keywords.escape(controller.texts.reform_name(reform_id))
+		var rule_name: String = Keywords.escape(controller.texts.reform_name(reform_id))
 		var text: String = Keywords.mark(controller.texts.reform_text(reform_id))
-		rules.append(Rule.new(name, text, false))
+		rules.append(Rule.new(rule_name, text, false))
 	return rules
 
 
@@ -210,13 +210,13 @@ func _head(key: String) -> String:
 	return "[font_size=%d]%s[/font_size]" % [TextSize.px(HEAD_SIZE), tr(key).to_upper()]
 
 
-func _name(name: String) -> String:
-	return "[b][color=#%s]%s[/color][/b]" % [ScreenKit.SEAL.to_html(false), name]
+func _name(rule_name: String) -> String:
+	return "[b][color=#%s]%s[/color][/b]" % [ScreenKit.SEAL.to_html(false), rule_name]
 
 
 ## A rule's name, closed by NAME_END, then its text.
-func _row(name: String, text: String) -> String:
-	return "%s %s" % [_name(name + NAME_END), text]
+func _row(rule_name: String, text: String) -> String:
+	return "%s %s" % [_name(rule_name + NAME_END), text]
 
 
 func _set_type(font_size: int) -> void:

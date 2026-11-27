@@ -63,13 +63,13 @@ func test_only_the_interface_is_used_outside_the_bots_folder() -> void:
 			if path.begins_with(BOT_FOLDER):
 				continue
 			var code: String = _code_of(FileAccess.get_file_as_string(path))
-			for name: String in private_names:
+			for member: String in private_names:
 				# By whole name in code, so the Controls page (ADR 0035) and its comments do
 				# not read as the bots' Controls.
-				var named: RegEx = RegEx.create_from_string("\\b%s\\b" % name)
+				var named: RegEx = RegEx.create_from_string("\\b%s\\b" % member)
 				(
 					assert_object(named.search(code))
-					. override_failure_message("%s reaches %s" % [path, name])
+					. override_failure_message("%s reaches %s" % [path, member])
 					. is_null()
 				)
 

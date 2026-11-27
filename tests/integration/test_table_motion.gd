@@ -34,14 +34,14 @@ func test_no_tween_outlives_the_table() -> void:
 	_slow_presets()
 	var tweens: Callable = func() -> int: return get_tree().get_processed_tweens().size()
 	await TestWait.still(self, tweens, "the motion before the table to end")
-	var before: int = tweens.call()
+	var was: int = tweens.call()
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	_start_every_motion(table)
-	assert_int(get_tree().get_processed_tweens().size()).is_greater(before)
+	assert_int(get_tree().get_processed_tweens().size()).is_greater(was)
 	_app.show_screen("settings", true)
 	# Within the settle, as a tween left without its node runs SLOW seconds on.
-	var ended: Callable = func() -> bool: return int(tweens.call()) <= before
+	var ended: Callable = func() -> bool: return int(tweens.call()) <= was
 	await TestWait.until(self, ended, "the table's tweens to end with it", SETTLE)
 
 

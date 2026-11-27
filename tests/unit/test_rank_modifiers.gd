@@ -10,8 +10,8 @@ const MAX_ACTIONS: int = 162
 
 func _table(names: Array[String], holder: int = 0) -> SeatRules:
 	var stack: ModifierStack = ModifierStack.new()
-	for name: String in names:
-		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % name), holder)
+	for modifier_id: String in names:
+		stack.add(ResourceLoader.load("res://data/modifiers/%s.tres" % modifier_id), holder)
 	return SeatRules.new(stack)
 
 
@@ -228,6 +228,8 @@ func test_every_generated_move_is_accepted_under_each_modifier() -> void:
 		"criticism_meeting",
 		"inverted_order",
 	]
-	for name: String in names:
+	for modifier_id: String in names:
 		for game: int in GAMES:
-			_random_game(_table([name], (game + 1) % Seats.COUNT), stream, game % Seats.COUNT)
+			_random_game(
+				_table([modifier_id], (game + 1) % Seats.COUNT), stream, game % Seats.COUNT
+			)

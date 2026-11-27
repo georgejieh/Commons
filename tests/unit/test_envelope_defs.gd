@@ -23,8 +23,8 @@ func _string_keys() -> Dictionary[String, bool]:
 ## twice, is caught; the three kinds cost 4, open at tier 0 and show 3 each.
 func test_envelopes_are_checked_and_hold_adr_0021s_numbers() -> void:
 	var keys: Dictionary[String, bool] = _string_keys()
-	for name: String in ["directive_envelope", "campaign_envelope", "parcel"]:
-		var envelope: EnvelopeDef = load(DATA + "modifiers/envelopes/%s.tres" % name)
+	for envelope_id: String in ["directive_envelope", "campaign_envelope", "parcel"]:
+		var envelope: EnvelopeDef = load(DATA + "modifiers/envelopes/%s.tres" % envelope_id)
 		assert_int(envelope.cost).is_equal(4)
 		assert_int(envelope.unlock_tier).is_equal(0)
 		assert_int(envelope.choices).is_equal(3)
