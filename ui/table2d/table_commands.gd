@@ -80,8 +80,7 @@ func refresh() -> void:
 		# The selection is the Campaign's while one is armed, so it is not played.
 		_actions.play.disabled = true
 		_actions.pass_turn.disabled = true
-		_actions.reading.text = asked
-		_actions.reading.tooltip_text = Keywords.tip(asked)
+		_actions.say(asked, Keywords.tip(asked))
 		return
 	if _controller.awaiting() == RunController.AWAIT_BID:
 		_show_bid()
@@ -110,8 +109,7 @@ func refresh() -> void:
 		)
 		if percent != ScoreTally.WHOLE:
 			text += " " + tr("hand.scaled").format({"percent": percent})
-	_actions.reading.text = text
-	_actions.reading.tooltip_text = Keywords.tip(text)
+	_actions.say(text, Keywords.tip(text))
 
 
 ## Calling is free and opens the seat; a grab takes it from whoever called.
@@ -119,13 +117,12 @@ func _show_bid() -> void:
 	var holder: int = _controller.table.bid_holder()
 	var grabbing: bool = holder != Seats.NONE
 	_actions.call.text = tr("action.grab" if grabbing else "action.call")
+	var prompt: String = tr("table.bid_prompt")
 	if grabbing:
 		var who: String = _names.get(holder, "")
 		var cost: int = _controller.figures.grab_cost()
-		_actions.reading.text = tr("table.grab_prompt").format({"name": who, "cost": cost})
-	else:
-		_actions.reading.text = tr("table.bid_prompt")
-	_actions.reading.tooltip_text = tr("table.bid_tip")
+		prompt = tr("table.grab_prompt").format({"name": who, "cost": cost})
+	_actions.say(prompt, tr("table.bid_tip"))
 
 
 ## Every command fills the event queue, so the buttons go off until it drains. Cards
@@ -172,8 +169,7 @@ func _on_pass() -> void:
 		return
 	var refusal: String = _controller.table.pass_refusal()
 	if not refusal.is_empty():
-		_actions.reading.text = tr(refusal)
-		_actions.reading.tooltip_text = tr(refusal)
+		_actions.say(tr(refusal), tr(refusal))
 		UiMotion.stamp(_actions.pass_turn)
 		return
 	_controller.pass_turn()
@@ -227,7 +223,7 @@ func _on_hint() -> void:
 	var ids: Array[int] = _hand.take_hint()
 	_hand_view.show_hint(ids)
 	if ids.is_empty():
-		_actions.reading.text = tr("hand.hint.pass")
+		_actions.say(tr("hand.hint.pass"), _actions.reading.tooltip_text)
 
 
 func _on_rules() -> void:

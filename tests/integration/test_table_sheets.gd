@@ -35,13 +35,13 @@ func test_the_buttons_stay_put_when_the_prompt_takes_a_second_line() -> void:
 	var table: TableScreen = await _table()
 	var actions: ActionBar = table.actions
 	actions.show_bidding(false)
-	actions.reading.text = "Pass."
+	actions.say("Pass.")
 	await await_idle_frame()
 	await await_idle_frame()
 	var play_at: float = actions.play.global_position.y
 	var hint_at: float = actions.hint.global_position.y
 	var prompt_at: float = actions.reading.global_position.y
-	actions.reading.text = "You may use a Campaign before the first play, or play on."
+	actions.say("You may use a Campaign before the first play, or play on.")
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_int(actions.reading.get_line_count()).is_greater(1)

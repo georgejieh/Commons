@@ -19,7 +19,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 4301
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
-## Pairs that may overlap by design, by name, and why. None: ADR 0034's rules 6 to 9 make
+## Pairs that may overlap by design, by name, and why. None: ADR 0034's rules 6 to 10 make
 ## room for everything.
 const ALLOWED: Dictionary[String, String] = {}
 ## The trick's place at 9cc9ecf, which it never leaves.
@@ -32,26 +32,26 @@ const EXPECTED: Dictionary[String, String] = {
 	"full|0|false|true": "NAMED heading:false notice:true intel:17/17 slip:20 room:345",
 	"full|0|true|false": "NAMED heading:false notice:false intel:17/17 slip:20 room:226",
 	"full|0|true|true": "NAMED heading:false notice:false intel:17/17 slip:20 room:226",
-	"full|1|false|false": "NAMED heading:true notice:true intel:20/20 slip:23 room:253",
-	"full|1|false|true": "NAMED heading:false notice:false intel:20/20 slip:23 room:253",
-	"full|1|true|false": "COUNTED heading:false notice:false intel:20/17 slip:23 room:134",
-	"full|1|true|true": "COUNTED heading:false notice:false intel:19/17 slip:23 room:134",
-	"full|2|false|false": "NAMED heading:false notice:true intel:22/22 slip:26 room:209",
-	"full|2|false|true": "NAMED heading:false notice:false intel:22/22 slip:26 room:209",
-	"full|2|true|false": "COUNTED heading:false notice:false intel:21/17 slip:20 room:90",
-	"full|2|true|true": "COUNTED heading:false notice:false intel:17/17 slip:20 room:90",
+	"full|1|false|false": "NAMED heading:true notice:true intel:20/20 slip:23 room:320",
+	"full|1|false|true": "NAMED heading:false notice:false intel:20/20 slip:23 room:320",
+	"full|1|true|false": "NAMED heading:false notice:false intel:20/20 slip:23 room:185",
+	"full|1|true|true": "NAMED heading:false notice:false intel:19/20 slip:23 room:185",
+	"full|2|false|false": "NAMED heading:false notice:true intel:22/22 slip:26 room:288",
+	"full|2|false|true": "NAMED heading:false notice:false intel:22/22 slip:26 room:288",
+	"full|2|true|false": "COUNTED heading:false notice:false intel:21/17 slip:26 room:169",
+	"full|2|true|true": "COUNTED heading:false notice:false intel:17/17 slip:26 room:169",
 	"named|0|false|false": "NAMED heading:true notice:true intel:17/17 slip:20 room:345",
 	"named|0|false|true": "NAMED heading:false notice:true intel:17/17 slip:20 room:345",
 	"named|0|true|false": "COUNTED heading:false notice:false intel:17/17 slip:20 room:226",
 	"named|0|true|true": "COUNTED heading:false notice:false intel:17/17 slip:20 room:226",
-	"named|1|false|false": "COUNTED heading:true notice:true intel:20/20 slip:23 room:253",
-	"named|1|false|true": "COUNTED heading:false notice:false intel:20/20 slip:23 room:253",
-	"named|1|true|false": "COUNTED heading:false notice:false intel:20/17 slip:20 room:134",
-	"named|1|true|true": "COUNTED heading:false notice:false intel:19/17 slip:20 room:134",
-	"named|2|false|false": "COUNTED heading:false notice:true intel:22/22 slip:26 room:209",
-	"named|2|false|true": "COUNTED heading:false notice:false intel:22/22 slip:26 room:209",
-	"named|2|true|false": "COUNTED heading:false notice:false intel:21/17 slip:20 room:90",
-	"named|2|true|true": "COUNTED heading:false notice:false intel:17/17 slip:20 room:90",
+	"named|1|false|false": "FITTED heading:true notice:true intel:20/20 slip:22 room:320",
+	"named|1|false|true": "FITTED heading:false notice:false intel:20/20 slip:22 room:320",
+	"named|1|true|false": "COUNTED heading:false notice:false intel:20/17 slip:23 room:201",
+	"named|1|true|true": "COUNTED heading:false notice:false intel:19/17 slip:23 room:201",
+	"named|2|false|false": "COUNTED heading:false notice:true intel:22/22 slip:26 room:288",
+	"named|2|false|true": "COUNTED heading:false notice:false intel:22/22 slip:26 room:288",
+	"named|2|true|false": "COUNTED heading:false notice:false intel:21/17 slip:20 room:169",
+	"named|2|true|true": "COUNTED heading:false notice:false intel:17/17 slip:20 room:169",
 }
 ## The text sizes at which arming a Campaign puts the left seat's intel away.
 const EXPECTED_AWAY: Array[int] = [2]
@@ -123,6 +123,9 @@ func _each_state(
 				)
 				if armed and table.campaigns.tray.armed_slot() < 0:
 					problems.append("%s: no Campaign could be armed" % where)
+				# The slip's last step, counted, must fit too: nothing gives way after it.
+				if not table.debuffs.fits():
+					problems.append("%s: the slip does not fit its room" % where)
 				_check(TableWorstCase.pieces(table), where, problems)
 				_note_column(table, where, problems)
 				ClipCheck.check(table, where, problems)

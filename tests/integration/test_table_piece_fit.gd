@@ -125,7 +125,8 @@ func test_the_action_column_keeps_its_foot_and_width() -> void:
 			for bidding: bool in [false, true]:
 				actions.show_bidding(bidding)
 				var prompts: Array[String] = PromptLines.every(_app.controller, bidding)
-				actions.reading.text = TableWorstCase.tallest(actions.reading, prompts)
+				actions.say("")
+				actions.say(TableWorstCase.tallest(actions.reading, prompts))
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "size %d on %s, bidding %s" % [level, screen, bidding]

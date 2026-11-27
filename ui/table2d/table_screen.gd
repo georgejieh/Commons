@@ -8,7 +8,7 @@ extends Control
 ## frames the screen, the two villagers sit along the top edge with their lanes in front of
 ## them, the ledger is set into the right rail and your hand runs along the bottom. Under
 ## the left seat is the Campaign tray, under the right one the rules slip; the trick lies
-## between them (ADR 0034, rules 6 to 9). It renders the run's events one step apart and
+## between them (ADR 0034, rules 6 to 10). It renders the run's events one step apart and
 ## sends commands; it never changes the run.
 
 const RAIL_EDGE: Color = Color("3e2a19")
@@ -222,6 +222,9 @@ func _wire_play(app: DemoApp) -> void:
 		_controller.figures.base_need(), app.need_cap(), _controller.figures.lie_cost()
 	)
 	hand_view.setup(_hand, pool)
+	var prompts: Array[String] = PromptLines.every(_controller, false)
+	prompts.append_array(PromptLines.every(_controller, true))
+	actions.size_prompt(prompts)
 	_commands.setup(_controller, _hand, hand_view, actions, need_panel, player)
 	_commands.open_rules = cheat_sheet.toggle.bind(_controller)
 	_commands.gate = app.arrival.attempt
@@ -256,7 +259,7 @@ func _wire_moments(app: DemoApp) -> void:
 	_close.setup(player, pile, moments, hand_view, _cards)
 	campaigns.setup(_controller, _hand, hand_view, actions, _commands, player, moments)
 	campaigns.attach(pool, debuffs, _cards)
-	columns.setup(seats, campaigns.tray, dressing, debuffs, actions, _controller)
+	columns.setup(seats, campaigns.tray, dressing, debuffs, actions)
 	sit_out.setup(_controller, actions, _commands, player, app.arrival.is_running)
 	sit_out.pace_changed.connect(_set_pace)
 	debuff_beats.setup(_controller, _cards, hand_view, pool, player, moments, board)

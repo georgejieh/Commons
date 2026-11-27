@@ -107,8 +107,10 @@ static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 	strip.show_debuffs(app.controller)
 	var columns: TableColumns = table.columns
 	columns.fit()
-	# Last, as the hand and the tray set the prompt line whenever they change.
-	actions.reading.text = tallest(actions.reading, PromptLines.every(app.controller, bidding))
+	# Last, as the hand and the tray set the prompt line whenever they change. The tallest
+	# is found at the chosen size, then shown as the table shows it, fitted to its box.
+	actions.say("")
+	actions.say(tallest(actions.reading, PromptLines.every(app.controller, bidding)))
 
 
 ## Arms the tray's first Campaign that can be used now, as a click on it does, and returns
