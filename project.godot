@@ -49,6 +49,8 @@ gdscript/warnings/integer_division=2
 gdscript/warnings/narrowing_conversion=2
 gdscript/warnings/static_called_on_instance=2
 gdscript/warnings/incompatible_ternary=2
+gdscript/warnings/int_as_enum_without_cast=2
+gdscript/warnings/int_as_enum_without_match=2
 
 [display]
 

@@ -220,7 +220,10 @@ func test_overtime_and_overfulfillment_together() -> void:
 		var loop: RunLoop = RunLoop.new(RunState.new(3), RunScript.bots())
 		loop.campaigns.flags.staked = true
 		loop.campaigns.flags.win_times = 2
-		var ending: RoundContext = RoundContext.new(RunLoop.PLAYER, 0 if won else 1, 0)
+		var winner: int = 0 if won else 1
+		var ending: RoundContext = RoundContext.new(
+			RunLoop.PLAYER, winner, RoundEvent.Finish.NORMAL
+		)
 		var overtime: OvertimeEffect = OvertimeEffect.new()
 		overtime.holder_seat = RunLoop.PLAYER
 		overtime.round_end(ending)

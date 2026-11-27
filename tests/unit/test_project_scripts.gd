@@ -26,6 +26,8 @@ const ERRORS: Array[String] = [
 	"narrowing_conversion",
 	"static_called_on_instance",
 	"incompatible_ternary",
+	"int_as_enum_without_cast",
+	"int_as_enum_without_match",
 ]
 
 

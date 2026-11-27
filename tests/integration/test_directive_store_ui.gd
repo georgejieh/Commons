@@ -154,7 +154,9 @@ func _check_seal_clear(row: DirectiveRow, ticket: Button) -> void:
 			continue
 		var font: Font = label.get_theme_font("font")
 		var font_size: int = label.get_theme_font_size("font_size")
-		var wide: float = font.get_string_size(label.text, 0, -1, font_size).x
+		var wide: float = (
+			font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		)
 		var printed: Rect2 = Rect2(label.global_position, Vector2(wide, label.size.y))
 		assert_bool(seal.intersects(printed)).override_failure_message(label.text).is_false()
 
@@ -234,6 +236,8 @@ func test_a_card_view_shows_each_mark_clear_of_the_note_and_edge() -> void:
 				var size: int = (
 					CardView.JOKER_SIZE if key.contains("joker") else CardView.GLYPH_SIZE
 				)
-				var wide: float = font.get_string_size(tr(key), 0, -1, size).x
+				var wide: float = (
+					font.get_string_size(tr(key), HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+				)
 				var glyph: Rect2 = Rect2(rank.position, Vector2(wide, size))
 				assert_bool(box.intersects(glyph)).override_failure_message(key).is_false()

@@ -18,7 +18,9 @@ const EXPERT_SAMPLES: int = 4
 
 
 func _configs(seed_value: int) -> Array[BotConfig]:
-	var configs: Array[BotConfig] = [BotConfig.new(BotConfig.DEFAULT_WEIGHTS, TIERS[1])]
+	var configs: Array[BotConfig] = [
+		BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
+	]
 	for seat: int in [1, 2]:
 		var tier: BotConfig.Tier = TIERS[(seed_value + seat * 3) % TIERS.size()]
 		var weights: BotWeights = BotConfig.DEFAULT_WEIGHTS

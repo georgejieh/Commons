@@ -42,8 +42,12 @@ func duration(seconds: float) -> float:
 func move(node: Control, to: Vector2, angle: float, seconds: float) -> Tween:
 	var view: CardView = node as CardView
 	var tween: Tween = (view.tween() if view != null else node.create_tween()).set_parallel(true)
+	# The presets are a preloaded constant, so the engine reads these fields as plain
+	# numbers, loses their enum type and finds no member for them.
+	@warning_ignore_start("int_as_enum_without_cast", "int_as_enum_without_match")
 	tween.set_trans(UiMotion.PRESETS.move_transition)
 	tween.set_ease(UiMotion.PRESETS.move_ease)
+	@warning_ignore_restore("int_as_enum_without_cast", "int_as_enum_without_match")
 	tween.tween_property(node, "position", to, duration(seconds))
 	tween.tween_property(node, "rotation", angle, duration(seconds))
 	return tween

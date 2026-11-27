@@ -98,6 +98,9 @@ func test_escape_and_bare_modifiers_are_refused() -> void:
 			. override_failure_message(str(key))
 			. is_false()
 		)
+	# A key held with a modifier is a Key and its mask, which no member of Key names, and
+	# what an event can hand bind all the same.
+	@warning_ignore("int_as_enum_without_match")
 	assert_bool(bindings.bind("commons_play", (KEY_J | KEY_MASK_SHIFT) as Key)).is_false()
 	assert_bool(_is_default(bindings)).is_true()
 	# Keys the menus also use are allowed, as the defaults use them.
