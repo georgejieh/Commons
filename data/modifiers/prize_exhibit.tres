@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "prize_exhibit"
+kind = 0
+tag = 1
+lever = 2
+tier = 0
+hooks = Array[String](["card_scored"])
+parameters = Dictionary[String, int]({"times_percent_grain": 300})
+rarity = 1
+cost = 5
+unlock_tier = 5
+name_key = "modifier.prize_exhibit.name"
+text_key = "modifier.prize_exhibit.text"

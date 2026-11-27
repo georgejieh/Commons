@@ -41,6 +41,8 @@ func describe() -> String:
 	if pattern != null:
 		line += " pattern=%s main=%d" % [Pattern.Type.keys()[pattern.type], pattern.main_rank]
 		line += " chain=%d kickers=%s" % [pattern.chain_length, str(Array(pattern.kicker_ranks))]
+		if not pattern.spent.is_empty():
+			line += " spent=%s" % str(Array(pattern.spent))
 	if type == Type.ANNOUNCED or type == Type.ROUND_ENDED:
 		line += " value=%d" % value
 	return line

@@ -8,6 +8,8 @@ extends Resource
 @export var hand_rate: Array[int]
 ## Each base rank's Grain.
 @export var card_grain: Array[int]
+## A Model card's Grain, in percent of its rank's (ADR 0021).
+@export var model_grain_percent: int = 200
 ## No play scores with less Zeal than this, so a Zeal debuff never zeroes a hand.
 @export var min_zeal: float = 1.0
 @export var first_out_multiplier: float

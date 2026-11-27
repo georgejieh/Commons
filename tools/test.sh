@@ -12,14 +12,32 @@ if ! "$godot" --headless --path . --import > "$log" 2>&1; then
 	exit 1
 fi
 
+# Tests keep their own settings file, started fresh each run, so no test reads or writes
+# the player's settings.
+export COMMONS_SETTINGS="user://test_run_settings.cfg"
+if [ -n "${APPDATA:-}" ]; then
+	user_dir="$APPDATA/Godot/app_userdata/Commons"
+elif [ "$(uname)" = "Darwin" ]; then
+	user_dir="$HOME/Library/Application Support/Godot/app_userdata/Commons"
+else
+	user_dir="${XDG_DATA_HOME:-$HOME/.local/share}/godot/app_userdata/Commons"
+fi
+rm -f "$user_dir/test_run_settings.cfg"
+
 if [ $# -eq 0 ]; then
 	set -- -a res://tests/unit -a res://tests/integration -a res://tests/golden
 fi
 # The unbound debug port stops a parse error from hanging in the interactive debugger.
 "$godot" --headless --path . -s -d --remote-debug tcp://127.0.0.1:0 \
-	res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode "$@" 2>&1 | tee "$log"
+	res://addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode --continue "$@" 2>&1 | tee "$log"
 
 if grep -q 'No test cases found' "$log"; then
 	echo "No tests ran." >&2
+	exit 1
+fi
+# An honest run never trips the file's detectors (ADR 0022). A test that trips one on
+# purpose takes the line itself, so it never reaches the output.
+if grep -q 'COMMONS FILE MISMATCH' "$log"; then
+	echo "A file detector logged a mismatch." >&2
 	exit 1
 fi

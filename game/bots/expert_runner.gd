@@ -32,6 +32,16 @@ func decide(
 	return _job.best()
 
 
+## The live game's searcher (ADR 0030): decides under the deadline in the config's weights.
+func search(view: SeatView, legal: Array[Pattern], table: BotTable, config: BotConfig) -> BotPlay:
+	return decide(view, legal, table, config, config.weights.expert_deadline_usec)
+
+
+## The samples the last decision had to run, none when it had no choice to search.
+func sample_count() -> int:
+	return _job.sample_count()
+
+
 func finished_samples() -> int:
 	return _job.finished_samples()
 

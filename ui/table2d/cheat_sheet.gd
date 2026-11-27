@@ -1,8 +1,11 @@
 class_name CheatSheet
 extends Control
-## The always-available rules card (P3B.5): every hand type with a small example, the
-## rule changes active now, and the current rank order, low to high. While open it
-## redraws on every run event, so a changed rule shows the frame it changes.
+## The always-available rules card (P3B.5): every hand type with a small example and its
+## Rate at the run's level for it, naming the level once a Directive has raised it, the
+## rule changes active now, the current rank order, low to high, and while a rank is wild
+## a section on wild cards (ADR 0029). While open it
+## redraws on every run event, so a changed rule shows the frame it changes. A sheet
+## with more rules than the screen has room for is drawn smaller, never cut off.
 
 const TYPES: Array[String] = [
 	"single",
@@ -25,11 +28,25 @@ const TYPES: Array[String] = [
 ## The keywords the sheet spells out; the rest explain themselves on hover.
 const WORDS: PackedStringArray = ["grain", "rate", "zeal", "commons", "kitty", "kicker"]
 const DIM: Color = Color(0.05, 0.03, 0.02, 0.72)
+## The wild ranks' section in the smallest rules type, and the sheet's spacing while it
+## shows, so the sheet still fits 1080 with every part of it shown.
+const WILD_SIZE: int = 16
+const SPACING: int = 14
+const WILD_SPACING: int = 8
+## The least room kept clear above and below the sheet, in pixels.
+const MARGIN: float = 12.0
 
 var _controller: RunController
 var _types: GridContainer = GridContainer.new()
+## Each hand type's Rate, in TYPES order.
+var _rates: Array[Label] = []
 var _active: Label = Label.new()
 var _order: Label = Label.new()
+## Shown only while a rank is wild (ADR 0029): its heading and its rules.
+var _wild_head: Label
+var _wild: Label = Label.new()
+var _close: Button
+var _panel: Control
 
 
 func _ready() -> void:
@@ -44,10 +61,10 @@ func _ready() -> void:
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(center)
-	var sheet: VBoxContainer = ScreenKit.card(Vector2(900, 0))
-	sheet.add_theme_constant_override("separation", 14)
+	var sheet: VBoxContainer = ScreenKit.card(Vector2(1100, 0))
+	sheet.add_theme_constant_override("separation", SPACING)
 	sheet.add_child(ScreenKit.header(tr("cheat.eyebrow"), tr("cheat.title"), ScreenKit.INK))
-	_types.columns = 4
+	_types.columns = 6
 	_types.add_theme_constant_override("h_separation", 28)
 	_types.add_theme_constant_override("v_separation", 6)
 	sheet.add_child(_types)
@@ -58,14 +75,24 @@ func _ready() -> void:
 		label.add_theme_font_size_override("font_size", 22)
 	sheet.add_child(_active)
 	sheet.add_child(_order)
+	_wild_head = ScreenKit.eyebrow(tr("cheat.wild"))
+	_wild.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_wild.custom_minimum_size = Vector2(840, 0)
+	_wild.add_theme_font_size_override("font_size", WILD_SIZE)
+	for part: Control in [_wild_head, _wild]:
+		part.visible = false
+		sheet.add_child(part)
 	sheet.add_child(ScreenKit.eyebrow(tr("cheat.keywords")))
 	var words: Label = ScreenKit.label(Keywords.glossary(WORDS, false), 18)
 	words.custom_minimum_size = Vector2(840, 0)
 	sheet.add_child(words)
-	var close: Button = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
-	close.pressed.connect(func() -> void: visible = false)
-	sheet.add_child(close)
-	center.add_child(ScreenKit.card_panel(sheet))
+	_close = ScreenKit.button(tr("cheat.close"), CommonsTheme.PRIMARY)
+	_close.pressed.connect(func() -> void: visible = false)
+	sheet.add_child(_close)
+	_panel = ScreenKit.card_panel(sheet)
+	center.add_child(_panel)
+	# A container lays its child out at full size, so the fit follows every layout.
+	center.sort_children.connect(_fit)
 	visible = false
 
 
@@ -100,18 +127,90 @@ func refresh() -> void:
 			example.add_theme_font_override("font", ScreenKit.TYPEWRITER)
 			example.autowrap_mode = TextServer.AUTOWRAP_OFF
 			_types.add_child(example)
+			var rate: Label = ScreenKit.label("", 20, Color(Keywords.INKS["rate"]))
+			rate.autowrap_mode = TextServer.AUTOWRAP_OFF
+			_types.add_child(rate)
+			_rates.append(rate)
+	for index: int in TYPES.size():
+		_rates[index].text = _rate_text(index + 1)
 	var active: PackedStringArray = []
 	for modifier_id: String in _controller.active_modifier_ids():
 		active.append(
 			(
 				"%s: %s"
-				% [tr("modifier.%s.name" % modifier_id), _controller.modifier_text(modifier_id)]
+				% [_controller.modifier_name(modifier_id), _controller.modifier_text(modifier_id)]
 			)
 		)
+	# A Reform's rule for every seat, such as Industrialization, is in play too.
+	for reform_id: String in _controller.table_rule_reforms():
+		var rule: String = _controller.reform_text(reform_id)
+		active.append("%s: %s" % [_controller.reform_name(reform_id), rule])
 	if active.is_empty():
 		active.append(tr("cheat.none"))
 	_active.text = "\n".join(active)
 	_order.text = tr("cheat.order").format({"order": " < ".join(_rank_order())})
+	_show_wild()
+
+
+## The wild ranks' section, while one is in force: which ranks, what a wild card may stand
+## in for, the bomb order, by size first under bigger bombs, and where Grain comes from.
+func _show_wild() -> void:
+	var ranks: Array[int] = _controller.wild_ranks()
+	_wild_head.visible = not ranks.is_empty()
+	_wild.visible = _wild_head.visible
+	var spacing: int = WILD_SPACING if _wild.visible else SPACING
+	var sheet: VBoxContainer = _wild.get_parent() as VBoxContainer
+	sheet.add_theme_constant_override("separation", spacing)
+	if ranks.is_empty():
+		_wild.text = ""
+		return
+	var order: String = "cheat.wild.order.big" if _controller.big_bombs() else "cheat.wild.order"
+	var lines: PackedStringArray = [
+		"%s. %s" % [ReadingText.wild_line(ranks), tr("cheat.wild.stand_in")],
+		"%s %s" % [tr(order), tr("cheat.wild.grain")],
+	]
+	_wild.text = "\n".join(lines)
+
+
+## Draws the sheet smaller when it is taller than the screen, and sets it in the screen's
+## middle itself: a container taller than the screen no longer centres its child there.
+func _fit() -> void:
+	var tall: float = _panel.size.y
+	var room: float = size.y - 2.0 * MARGIN
+	var fit: float = 1.0 if tall <= room or tall <= 0.0 else room / tall
+	_panel.pivot_offset = Vector2(_panel.size.x / 2.0, 0.0)
+	_panel.scale = Vector2(fit, fit)
+	_panel.position.y = floorf((size.y - tall * fit) / 2.0)
+
+
+## The sheet's box on screen as drawn, for tests.
+func sheet_rect() -> Rect2:
+	return _panel.get_global_rect()
+
+
+## The wild ranks' section as shown, or empty while it is hidden, for tests.
+func wild_text() -> String:
+	return _wild.text if _wild.visible else ""
+
+
+## A hand type's Rate at the run's level for it, with the level once it is above the
+## first. type is a Pattern.Type value.
+func _rate_text(type: int) -> String:
+	var level: int = _controller.hand_level(type)
+	var rate: int = _controller.hand_rate(type, level)
+	if level > 1:
+		return tr("cheat.rate.level").format({"rate": rate, "level": level})
+	return tr("cheat.rate").format({"rate": rate})
+
+
+## The Rate shown for a hand type, a Pattern.Type value, for tests.
+func rate_text(type: int) -> String:
+	return _rates[type - 1].text
+
+
+## The Close button, which the arrival points at (ADR 0026).
+func close_button() -> Button:
+	return _close
 
 
 func rank_order_text() -> String:

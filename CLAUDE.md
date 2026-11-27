@@ -62,27 +62,37 @@ Exports a Windows build. Create `build/windows` first. `Linux` works the same wa
 godot --headless --path . --script res://tools/tournament.gd -- --games 200 --a medium --b easy
 ```
 
-Plays seeded bot games between `easy`, `medium`, `hard` and `expert`, and writes `reports/tournament.csv`. Exits 1 on any illegal action. Add `--bidding`, `--seed N`, `--out PATH` or `--log PATH`. [docs/TOURNAMENT_LOG.md](docs/TOURNAMENT_LOG.md) has the formats.
+Plays seeded bot games between `easy`, `medium`, `hard` and `expert`, and writes `reports/tournament.csv`. Exits 1 on any illegal action. Add `--bidding`, `--seed N`, `--out PATH`, `--log PATH`, `--wild N` (1 or 2 wild ranks in every game) or `--big-bombs`. [docs/TOURNAMENT_LOG.md](docs/TOURNAMENT_LOG.md) has the formats.
 
 ```bash
 godot --headless --path . --script res://tools/expert_deadline.gd -- --deals 1000 --seed 0
 ```
 
-Plays Expert against Hard through `ExpertRunner` at its real deadline, 300 ms unless `--limit-usec N` says otherwise. The tournament gives Expert unlimited time, so use this for what players get. Takes hours, and reports strength and p99.
+Plays Expert against Hard through `ExpertRunner` at its real deadline, 300 ms unless `--limit-usec N` says otherwise. The tournament gives Expert unlimited time, so use this for what players get. Takes hours, and reports strength and p99. Add `--wild N` for wild ranks.
 
 ```bash
 godot --headless --path . --script res://tools/ladder_report.gd -- --ladders 100000
 ```
 
-Draws seeded debuff ladders and writes the tier share per Set type and round to `reports/ladder_tiers.csv`. Add `--seed N` or `--out PATH`. It uses the Plan's 20 debuffs, from `tests/fixtures/ladder/`, until P4.12 adds the real pool.
+Draws seeded debuff ladders and writes the tier share per Set type and round to `reports/ladder_tiers.csv`. Add `--seed N` or `--out PATH`. It draws from the real pool, `data/run/debuff_pool.tres`.
 
 ```bash
 git tag playtest/<name> && git push origin playtest/<name>
 ```
 
-Plays the demo through its real UI on a GitHub runner with a virtual display, so no window opens locally (about 10 minutes). It fails on any misclick, hand mismatch, missing button or script error. It also renders the demo screens and every dread board state and corruption stage. Get the screenshots and log with `gh run download <run id> -n playtest`. Use this for any visual check, so nothing opens a window on the owner's screen. Locally, `godot --path . --script res://tools/playtest.gd -- --rounds 6 --out reports/playtest` does the same in a window.
+Plays the demo through its real UI on a GitHub runner with a virtual display, so no window opens locally (about 10 minutes). It fails on any misclick, hand mismatch, missing button or script error. It also renders the demo screens and every dread board state and corruption stage. Get the screenshots and log with `gh run download <run id> -n playtest`. Use this for any visual check, so nothing opens a window on the owner's screen. Locally, `godot --path . --script res://tools/playtest.gd -- --demo --rounds 6 --out reports/playtest` does the same in a window. The app starts the full eight-Year run unless it is launched with `-- --demo`.
 
-Balance commands arrive with P4.16. Add them here when they work.
+```bash
+godot --headless --path . --script res://tools/playtest.gd -- --tutorial --out reports/tutorial
+```
+
+Plays the arrival (the first-launch tutorial) from no profile to run setup with real clicks, and prints MISCLICK on a step that does not advance. Headless it names its frames without saving them. Its profile lives in `user://playtest_tutorial/`. The cloud playtest runs it after the play-through.
+
+```bash
+godot --headless --path . --script res://tools/balance.gd -- --runs 20 --jobs 4
+```
+
+Plays full runs headless (no profile, every unlock tier open, Poor Peasants) with the collective, private and mixed strategies of [ADR 0027](docs/adr/0027-balance-harness.md) on the same seeds, and writes `reports/balance_runs.csv`, `reports/balance_quotas.csv` (a row per Quota played) and `reports/balance.md`. Add `--minutes M` for a time budget, `--seed S`, `--stake K`, `--strategies a,b`, `--out DIR`, `--expert-samples N` so Expert villagers sample N deals instead of 48 (12 at least; several times faster), or `--check` to exit 1 unless mixed > private > collective > 0 holds. It exits 1 on any refused command, illegal bot action or script error. A run takes from seconds to several minutes, longest when an Expert family is seated.
 
 ## Layers
 

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "ration_coupon"
+kind = 0
+tag = 0
+lever = 3
+tier = 0
+hooks = Array[String](["turn_taken", "set_end"])
+parameters = Dictionary[String, int]({"passes": 4, "coupons": 1, "cap": 3})
+rarity = 0
+cost = 4
+unlock_tier = 0
+name_key = "modifier.ration_coupon.name"
+text_key = "modifier.ration_coupon.text"
+state_key = "modifier.ration_coupon.state"

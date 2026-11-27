@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="StakeList" format=3]
+
+[ext_resource type="Script" path="res://data/run/stakes/stake_list.gd" id="1"]
+[ext_resource type="Resource" path="res://data/run/stakes/0_base.tres" id="2"]
+[ext_resource type="Resource" path="res://data/run/stakes/1_second_harvest.tres" id="3"]
+[ext_resource type="Resource" path="res://data/run/stakes/2_tight_books.tres" id="4"]
+[ext_resource type="Resource" path="res://data/run/stakes/3_short_rations.tres" id="5"]
+[ext_resource type="Resource" path="res://data/run/stakes/4_watchful_eyes.tres" id="6"]
+[ext_resource type="Resource" path="res://data/run/stakes/5_third_year.tres" id="7"]
+
+[resource]
+script = ExtResource("1")
+stakes = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7")])

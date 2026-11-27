@@ -1,6 +1,7 @@
 class_name PlayContext
 extends RefCounted
-## Passed to the play scored hook.
+## Passed to the play scored hook. It runs for previews too, so an effect only reads its
+## CadreMemo here; counting belongs in the turn taken hook.
 
 var seat: int
 var is_landlord: bool
@@ -17,10 +18,31 @@ var plays_before: int = 0
 var grain: float = 0.0
 ## Grain per base rank, for effects that score cards the play doesn't.
 var card_grain: Array[int] = []
+## The printed ranks of the cards the reading puts in its kickers (ADR 0029), which are
+## the kicker ranks unless a wild card stands in.
+var kicker_cards: PackedByteArray = PackedByteArray()
+## The printed ranks of the cards the play scores, in play order (ADR 0032).
+var body_cards: PackedByteArray = PackedByteArray()
+## The run's Year in play, from 1, or 0 when the scorer was not given the run.
+var year: int = 0
+## False when a hook waives the Resentment the seat's stamped cards add as they score
+## (Forged Seal, ADR 0032). Read once the play is scored.
+var stamps_resented: bool = true
+## The share of its Rate the play keeps, in percent, rounded up (ADR 0023). Applied before
+## the cap.
+var rate_percent: int = 100
 ## The most Rate the play may score with, whatever its hand type and level.
 var rate_cap: float = INF
 ## Multiplies the finished total, after every other step and the cap.
 var total_scale: float = 1.0
+## The round's landlord, or Seats.NONE outside a round.
+var landlord: int = Seats.NONE
+## Cards left in the seat's hand once this play is made, or -1 when unknown.
+var cards_left: int = -1
+## Each seat's plays so far this round, and the Grain its last one scored. Empty when
+## the scorer was not given the round.
+var seat_plays: PackedInt32Array = PackedInt32Array()
+var seat_grain: PackedFloat64Array = PackedFloat64Array()
 
 
 func _init(
@@ -37,3 +59,18 @@ func _init(
 	add_grain = add_grain_value
 	add_zeal = add_zeal_value
 	mul_zeal = mul_zeal_value
+
+
+## The other peasant's seat when this seat is a peasant, else Seats.NONE.
+func teammate() -> int:
+	if landlord == Seats.NONE or seat == landlord:
+		return Seats.NONE
+	for other: int in Seats.COUNT:
+		if other != seat and other != landlord:
+			return other
+	return Seats.NONE
+
+
+## True for a Bomb or a Rocket.
+func is_bomb() -> bool:
+	return pattern.type == Pattern.Type.BOMB or pattern.type == Pattern.Type.ROCKET

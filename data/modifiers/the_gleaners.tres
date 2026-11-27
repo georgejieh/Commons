@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "the_gleaners"
+kind = 0
+tag = 0
+lever = 3
+tier = 0
+hooks = Array[String](["round_end"])
+parameters = Dictionary[String, int]({"percent": 5})
+rarity = 1
+cost = 5
+unlock_tier = 3
+name_key = "modifier.the_gleaners.name"
+text_key = "modifier.the_gleaners.text"

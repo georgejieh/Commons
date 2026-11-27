@@ -9,6 +9,8 @@ enum Origin { DECK, PLOT }
 const FIRST_PLOT_ID: int = 1000
 const NO_ID: String = ""
 const NO_OWNER: int = -1
+## The enhancement that makes a card score more Grain for whoever scores it (ADR 0021).
+const MODEL: String = "model"
 
 var _id: int
 var _base_rank: int

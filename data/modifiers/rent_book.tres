@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "rent_book"
+kind = 0
+tag = 1
+lever = 2
+tier = 0
+hooks = Array[String](["play_scored", "turn_taken"])
+parameters = Dictionary[String, int]({"zeal_percent": 20, "resentment": 2})
+rarity = 2
+cost = 6
+unlock_tier = 4
+name_key = "modifier.rent_book.name"
+text_key = "modifier.rent_book.text"
+state_key = "modifier.rent_book.state"

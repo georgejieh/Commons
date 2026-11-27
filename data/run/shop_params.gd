@@ -4,8 +4,21 @@ extends Resource
 
 ## Cadres offered per visit.
 @export var slots: int = 3
-## Cadres the player can hold at once.
+## Directives offered per visit, beside the Cadres (ADR 0021).
+@export var directive_slots: int = 0
+## Cadres the player can hold at once, before any Reform. The player has one limit, so
+## only the state store's is read, through RunReforms.
 @export var cadre_slots: int = 5
+## Campaigns offered per visit from this counter's pool, and how many the player can
+## hold at once before any Reform, read like cadre_slots (ADR 0021).
+@export var campaign_offers: int = 0
+@export var campaign_slots: int = 2
+## Reforms offered per visit (ADR 0021).
+@export var reform_offers: int = 0
+## Envelopes offered per visit, and the kinds this counter sells, drawn evenly from those
+## with something to show (ADR 0021).
+@export var envelope_offers: int = 0
+@export var envelopes: Array[EnvelopeDef] = []
 ## Coupons for the first reroll, and how much each later one adds.
 @export var reroll_base: int = 2
 @export var reroll_step: int = 1

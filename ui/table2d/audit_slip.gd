@@ -1,13 +1,12 @@
 class_name AuditSlip
 extends PanelContainer
-## Shows the Commons being split: each claim on it, a seal that flips while the audit
-## is decided, the verdict, and what the claim paid. Every claim is checked at the same
-## chance each round, so every claim gets a flip, whether or not it was a lie.
+## Shows the Commons being split: each claim on it, a seal in the claimant's dice tint
+## while the audit dice are thrown, the verdict, and what the claim paid. Every claim
+## rolls the same die each round, so every claim waits on the dice, whether or not it
+## was a lie.
 
 const WIDTH: float = 520.0
 const SEAL: float = 34.0
-const FLIP: float = 0.12
-const WAITING: Color = Color("c9a227")
 const CLEAR: Color = Color("8a745c")
 const HONEST: Color = Color("3f6338")
 const CAUGHT: Color = Color("9e1b16")
@@ -23,7 +22,6 @@ var _claims: Array[Label] = []
 var _seals: Array[Panel] = []
 var _results: Array[Label] = []
 var _paid: Array[Label] = []
-var _flips: Array[Tween] = []
 var _names: Dictionary[int, String] = {}
 
 
@@ -60,7 +58,6 @@ func _ready() -> void:
 		_paid.append(paid)
 		_seals.append(seal)
 		_results.append(result)
-		_flips.append(null)
 	add_child(box)
 	visible = false
 
@@ -88,10 +85,24 @@ func claim(seat: int, need: int) -> void:
 	var row: int = _seats.size() - 1
 	_results[row].text = tr("audit.rolling")
 	_paid[row].text = ""
-	_tint(row, WAITING)
-	_spin(row)
+	_tint(row, DiceBowl.tint_for(seat))
 	visible = true
 	_fit.call_deferred()
+
+
+## How many claims the slip holds this split.
+func claim_count() -> int:
+	return _seats.size()
+
+
+## A seat's die missed the audit faces: its row says so quietly, before it is paid.
+func unchecked(seat: int) -> void:
+	var row: int = _seats.find(seat)
+	if row < 0 or _verdicts.has(seat):
+		return
+	_results[row].text = tr("audit.clear")
+	_results[row].add_theme_color_override("font_color", CLEAR)
+	_tint(row, CLEAR)
 
 
 ## A seat's claim was checked: lied is whether it was above the fair share.
@@ -105,7 +116,6 @@ func paid(seat: int, amount: int) -> void:
 	if row < 0:
 		return
 	var key: String = _verdicts.get(seat, "audit.clear")
-	_stop(row)
 	_results[row].text = tr(key)
 	var color: Color = CLEAR
 	if key == "audit.caught":
@@ -121,7 +131,6 @@ func paid(seat: int, amount: int) -> void:
 
 func clear() -> void:
 	for row: int in ROWS:
-		_stop(row)
 		_claims[row].text = ""
 		_results[row].text = ""
 		_paid[row].text = ""
@@ -138,23 +147,6 @@ func row_text(seat: int) -> String:
 	if row < 0:
 		return ""
 	return "%s | %s | %s" % [_claims[row].text, _results[row].text, _paid[row].text]
-
-
-func _spin(row: int) -> void:
-	_stop(row)
-	if UiMotion.reduced():
-		return
-	var tween: Tween = _seals[row].create_tween().set_loops()
-	tween.tween_property(_seals[row], "scale:x", 0.05, FLIP)
-	tween.tween_property(_seals[row], "scale:x", 1.0, FLIP)
-	_flips[row] = tween
-
-
-func _stop(row: int) -> void:
-	if _flips[row] != null and _flips[row].is_valid():
-		_flips[row].kill()
-	_flips[row] = null
-	_seals[row].scale = Vector2.ONE
 
 
 func _tint(row: int, color: Color) -> void:

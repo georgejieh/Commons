@@ -8,6 +8,9 @@ var own_counts: PackedByteArray
 var own_cards: Array[CardInstance]
 ## Information upgrades for the player only (P4.9). Bots' views never have one.
 var info: InfoView = null
+## The rank counts of each other seat whose hand is shown to the table (Glass Walls),
+## by seat. Empty while no hand is shown.
+var exposed: Dictionary[int, PackedByteArray] = {}
 
 
 func _init(

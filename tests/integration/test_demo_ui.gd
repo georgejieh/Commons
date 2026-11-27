@@ -281,3 +281,81 @@ func test_a_stocked_plot_opens_the_swap_screen_from_the_table() -> void:
 	await await_idle_frame()
 	assert_str(_app.switcher.current_id()).is_equal("table")
 	assert_int(_app.controller.awaiting()).is_not_equal(RunController.AWAIT_SWAP)
+
+
+## A curve the first scoring round beats many times over.
+func _easy_sets() -> SetConfig:
+	var params: SetParams = SetConfig.DEFAULT_PARAMS.duplicate()
+	params.targets = params.targets.duplicate()
+	params.targets.fill(0.01)
+	return SetConfig.new(params)
+
+
+## An overfulfilled Quota is sealed met, then overfulfilled in gold; the coupons count
+## in the bonus with the reward, and a second line says how far the norm rose. Reduced
+## motion shows the same at once.
+func test_an_overfulfilled_quota_is_sealed_twice_and_counts_the_bonus() -> void:
+	for reduced: bool in [false, true]:
+		Settings.set_value("reduced_motion", reduced)
+		_app.controller.start_run(SEED, RunScript.bots(), _easy_sets())
+		var driver: ControllerScript = ControllerScript.new()
+		while driver.act(_app.controller):
+			pass
+		assert_int(_app.controller.awaiting()).is_equal(RunController.AWAIT_SET_OVER)
+		var steps: int = _app.controller.over_steps()
+		assert_int(steps).is_equal(SetConfig.DEFAULT_PARAMS.over_max_steps)
+		var report: SetSummaryScreen = _app.show_screen("set_summary", true)
+		await await_idle_frame()
+		if not reduced:
+			assert_str(report.over_seal_word()).is_empty()
+			await await_millis(int((SetSummaryScreen.START + SetSummaryScreen.FILL) * 1000.0) + 400)
+		assert_str(report.bar().seal_word()).is_equal(tr("table.quota_met").to_upper())
+		assert_str(report.over_seal_word()).is_equal(tr("summary.over").to_upper())
+		await await_millis(int(SetSummaryScreen.BEAT * 6000.0) + 600)
+		var after: Array[Control] = report.get("_after")
+		assert_int(after.size()).is_equal(3)
+		var bonus: int = steps * SetConfig.DEFAULT_PARAMS.over_bonus_coupons
+		assert_int(_app.controller.over_bonus()).is_equal(bonus)
+		var paid: int = _app.controller.quota_reward() + bonus
+		var line: Label = after[1]
+		assert_str(line.text).is_equal(Strings.count("summary.paid", paid))
+		var norm: Label = after[2]
+		var added: int = steps * SetConfig.DEFAULT_PARAMS.norm_percent_per_step
+		assert_str(norm.text).is_equal(tr("summary.norm_raised").format({"percent": added}))
+		var tile: Label = _number_in(after[0], 0)
+		assert_str(tile.text).is_equal(str(_app.controller.state_copy().coupons))
+	Settings.set_value("reduced_motion", false)
+
+
+## The Set after shows its raised target with a note saying how far the norm rose.
+func test_the_next_quota_shows_the_raised_norm() -> void:
+	_app.controller.start_run(SEED, RunScript.bots(), _easy_sets())
+	var driver: ControllerScript = ControllerScript.new()
+	while driver.act(_app.controller):
+		pass
+	_app.controller.finish_set()
+	_app.controller.leave_store()
+	var percent: int = _app.controller.norm_percent()
+	assert_int(percent).is_greater(0)
+	_app.show_screen("set_intro", true)
+	await await_idle_frame()
+	var note: String = tr("intro.norm").format({"percent": percent})
+	assert_bool(_has_label(_app.switcher.current(), note)).is_true()
+
+
+## The number on a stat tile: the tile's index-th title label.
+func _number_in(tile: Control, index: int) -> Label:
+	var found: Array[Label] = []
+	for node: Node in tile.find_children("*", "Label", true, false):
+		var label: Label = node as Label
+		if label.theme_type_variation == CommonsTheme.TITLE:
+			found.append(label)
+	return found[index]
+
+
+func _has_label(root: Node, text: String) -> bool:
+	for node: Node in root.find_children("*", "Label", true, false):
+		var label: Label = node as Label
+		if label.text == text:
+			return true
+	return false

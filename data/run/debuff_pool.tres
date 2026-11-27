@@ -7,7 +7,21 @@
 [ext_resource type="Resource" path="res://data/modifiers/paperwork.tres" id="5"]
 [ext_resource type="Resource" path="res://data/modifiers/morning_meeting.tres" id="6"]
 [ext_resource type="Resource" path="res://data/modifiers/straightened_lines.tres" id="7"]
+[ext_resource type="Resource" path="res://data/modifiers/short_supply.tres" id="8"]
+[ext_resource type="Resource" path="res://data/modifiers/slogan_of_the_week.tres" id="9"]
+[ext_resource type="Resource" path="res://data/modifiers/levy.tres" id="10"]
+[ext_resource type="Resource" path="res://data/modifiers/work_point_audit.tres" id="11"]
+[ext_resource type="Resource" path="res://data/modifiers/night_shift.tres" id="12"]
+[ext_resource type="Resource" path="res://data/modifiers/grain_tax.tres" id="13"]
+[ext_resource type="Resource" path="res://data/modifiers/shared_kitchen.tres" id="14"]
+[ext_resource type="Resource" path="res://data/modifiers/confiscation.tres" id="15"]
+[ext_resource type="Resource" path="res://data/modifiers/glass_walls.tres" id="16"]
+[ext_resource type="Resource" path="res://data/modifiers/redistribution.tres" id="17"]
+[ext_resource type="Resource" path="res://data/modifiers/overtime.tres" id="18"]
+[ext_resource type="Resource" path="res://data/modifiers/big_character_poster.tres" id="19"]
+[ext_resource type="Resource" path="res://data/modifiers/hungry_winter.tres" id="20"]
+[ext_resource type="Resource" path="res://data/modifiers/plot_seized.tres" id="21"]
 
 [resource]
 script = ExtResource("1")
-debuffs = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7")])
+debuffs = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15"), ExtResource("16"), ExtResource("17"), ExtResource("18"), ExtResource("19"), ExtResource("20"), ExtResource("21")])

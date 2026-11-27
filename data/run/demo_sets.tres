@@ -8,3 +8,7 @@ years = 1
 max_rounds = 4
 targets = Array[float]([1500.0, 1875.0, 2250.0])
 reward_coupons = Array[int]([3, 4, 5])
+over_step_percent = 25
+over_max_steps = 4
+over_bonus_coupons = 1
+norm_percent_per_step = 3

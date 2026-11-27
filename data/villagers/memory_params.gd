@@ -12,6 +12,8 @@ extends Resource
 @export var kept_per_run: float = 0.5
 ## A grudge score at or above this pulls a bot's memory of the player to 1.
 @export var full_grudge: float = 10.0
+## How far a fully warm family's cooperation rises as the player's teammate (ADR 0025).
+@export var loyal_cooperation: float = 0.3
 
 
 func weight(kind: SetSummary.Kind) -> float:

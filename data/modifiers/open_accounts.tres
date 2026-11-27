@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "open_accounts"
+kind = 0
+tag = 0
+lever = 5
+tier = 0
+hooks = Array[String](["need_settled"])
+parameters = Dictionary[String, int]({"resentment": 1})
+rarity = 0
+cost = 4
+unlock_tier = 2
+name_key = "modifier.open_accounts.name"
+text_key = "modifier.open_accounts.text"

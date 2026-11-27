@@ -1,11 +1,12 @@
 extends SceneTree
 ## Draws seeded debuff ladders and writes the tier distribution per Set type and round
-## as CSV. Uses the Plan's pool until P4.12 adds the real one. Run:
+## as CSV, from the real debuff pool. Run:
 ##   godot --headless --path . --script res://tools/ladder_report.gd -- --ladders 100000
 ## Options: --seed N, --out PATH.
 
 const DEFAULT_OUT: String = "res://reports/ladder_tiers.csv"
 const ROUNDS: int = 4
+const POOL: DebuffPool = preload("res://data/run/debuff_pool.tres")
 
 
 func _initialize() -> void:
@@ -15,7 +16,7 @@ func _initialize() -> void:
 		printerr("Needs --ladders N of at least 1.")
 		quit(2)
 		return
-	var pool: Array[ModifierDef] = PlanDebuffs.pool()
+	var pool: Array[ModifierDef] = POOL.debuffs
 	var tiers: Dictionary[String, int] = {}
 	for definition: ModifierDef in pool:
 		tiers[definition.id] = definition.tier

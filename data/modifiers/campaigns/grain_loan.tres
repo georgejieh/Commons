@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CampaignDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/campaign_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "grain_loan"
+tag = 0
+cost = 2
+unlock_tier = 0
+when = 2
+min_cards = 0
+max_cards = 0
+parameters = Dictionary[String, int]({"coupons": 5, "famine": 3})
+name_key = "campaign.grain_loan.name"
+text_key = "campaign.grain_loan.text"
+prompt_key = "campaign.grain_loan.prompt"

@@ -1,0 +1,87 @@
+class_name ReformCounter
+extends RefCounted
+## The state store's Reforms (ADR 0021): reform_offers of them drawn evenly from the pool
+## after every other draw on the shop stream, never one the player holds or one held
+## back, redrawn by the counter's reroll and bought at the counter's price. A bought
+## Reform lasts the run.
+
+const SOLD: String = ""
+const PERCENT: int = 100
+
+var _state: RunState
+var _params: ShopParams
+var _pool: Array[ReformDef]
+var _stock: Array[String] = []
+
+
+func _init(state: RunState, params: ShopParams, pool: Array[ReformDef]) -> void:
+	_state = state
+	_params = params
+	_pool = pool
+
+
+## Reform IDs per slot; SOLD marks one already bought.
+func stock() -> Array[String]:
+	return _stock.duplicate()
+
+
+func price(slot: int) -> int:
+	var cost: int = (_reform(_stock[slot]).cost * _params.price_percent + PERCENT - 1) / PERCENT
+	return RunBooks.priced(_state, cost)
+
+
+## True when a reroll could offer another Reform.
+func reroll_changes() -> bool:
+	return _params.reform_offers > 0 and _open().size() > _params.reform_offers
+
+
+func check(slot: int) -> RunShop.Reason:
+	if slot < 0 or slot >= _stock.size():
+		return RunShop.Reason.NO_SUCH_SLOT
+	if _stock[slot] == SOLD or _state.reforms.has(_stock[slot]):
+		return RunShop.Reason.SOLD_OUT
+	if _state.coupons < price(slot):
+		return RunShop.Reason.TOO_POOR
+	return RunShop.Reason.OK
+
+
+## Enacts the Reform in slot for the rest of the run.
+func buy(slot: int) -> RunShop.Reason:
+	var reason: RunShop.Reason = check(slot)
+	if reason != RunShop.Reason.OK:
+		return reason
+	_state.coupons -= price(slot)
+	_state.reforms.append(_stock[slot])
+	_stock[slot] = SOLD
+	return RunShop.Reason.OK
+
+
+func clear() -> void:
+	_stock.clear()
+
+
+## Draws the visit's Reforms evenly from those still open. The run loop calls it last on
+## the shop stream, so Reforms leave every other draw a seed made as it was.
+func draw() -> void:
+	var open: Array[ReformDef] = _open()
+	_stock.clear()
+	var stream: RandomStream = _state.streams.stream(RandomStreams.SHOP)
+	while _stock.size() < _params.reform_offers and not open.is_empty():
+		var index: int = stream.next_int(0, open.size() - 1)
+		_stock.append(open[index].id)
+		open.remove_at(index)
+
+
+## The Reforms that can be offered: not held, and not held back, in pool order.
+func _open() -> Array[ReformDef]:
+	return _pool.filter(
+		func(reform: ReformDef) -> bool:
+			return not reform.held_back and not _state.reforms.has(reform.id)
+	)
+
+
+func _reform(reform_id: String) -> ReformDef:
+	for reform: ReformDef in _pool:
+		if reform.id == reform_id:
+			return reform
+	return null

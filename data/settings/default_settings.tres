@@ -12,3 +12,4 @@ post_process = true
 horror_intensity = 1.0
 no_flash = false
 content_note_seen = false
+card_back = "sunrise"

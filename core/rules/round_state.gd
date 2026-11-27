@@ -12,6 +12,9 @@ enum Reason {
 	REPEATED_CARD,
 	ILLEGAL_PLAY,
 	DOES_NOT_BEAT,
+	## A pass refused on the seat's first chance to pass while it holds a play that beats
+	## the table (Night Shift, ADR 0023).
+	MUST_PLAY,
 }
 
 const PASSES_TO_RESET: int = 2
@@ -32,6 +35,8 @@ var _winner: int = Seats.NONE
 var _events: Array[RoundEvent] = []
 var _history: Array[PublicPlay] = []
 var _announced: PackedInt32Array = PackedInt32Array()
+## 1 once a seat has answered a play on the table this round, played or passed.
+var _answered: PackedByteArray = PackedByteArray()
 
 
 ## The landlord takes the kitty and leads.
@@ -44,6 +49,7 @@ func _init(deal: DealResult, landlord: int, table: SeatRules) -> void:
 	_kitty = deal.kitty.duplicate()
 	_plays_by_seat.resize(Seats.COUNT)
 	_announced.resize(Seats.COUNT)
+	_answered.resize(Seats.COUNT)
 	_landlord = landlord
 	_table = table
 	_table.start_round(landlord)
@@ -62,9 +68,26 @@ func apply(action: RoundAction) -> Reason:
 	_sync_rules()
 	if action.seat != _turn:
 		return Reason.OUT_OF_TURN
-	if action.card_ids.is_empty():
-		return _apply_pass()
-	return _apply_play(action)
+	var answering: bool = _current != null
+	var reason: Reason = _apply_pass() if action.card_ids.is_empty() else _apply_play(action)
+	if reason == Reason.OK and answering:
+		_answered[action.seat] = 1
+	return reason
+
+
+## Whether the seat to act may pass now: OK, or why not. A seat whose rules make it
+## answer once must play on its first chance to pass when anything beats the table; with
+## nothing that does, it passes as usual and the rule is spent for the round.
+func pass_reason() -> Reason:
+	if is_over():
+		return Reason.ROUND_OVER
+	if _current == null:
+		return Reason.CANNOT_PASS_ON_LEAD
+	_sync_rules()
+	if _table.rules_for(_turn).must_answer_once() and _answered[_turn] == 0:
+		if not legal_moves().is_empty():
+			return Reason.MUST_PLAY
+	return Reason.OK
 
 
 ## Before anyone plays, trades cards in a seat's hand for others one for one: the
@@ -76,6 +99,54 @@ func exchange(seat: int, out_ids: Array[int], cards_in: Array[CardInstance]) -> 
 		taken.append(_hands[seat].remove(card_id))
 	for card: CardInstance in cards_in:
 		_hands[seat].add(card)
+	return taken
+
+
+## Moves cards between two seats one for one at any point of the round (a Campaign's
+## trade or seizure), so no hand changes size and the public counts stay true. A kitty
+## card that leaves the landlord's hand is no longer known to be there, so it leaves the
+## public kitty too. Returns UNKNOWN_CARD or REPEATED_CARD and changes nothing when a
+## card is not in its seat's hand.
+func trade(seat_a: int, ids_a: Array[int], seat_b: int, ids_b: Array[int]) -> Reason:
+	if is_over():
+		return Reason.ROUND_OVER
+	if ids_a.size() != ids_b.size() or seat_a == seat_b:
+		return Reason.ILLEGAL_PLAY
+	for side: Array in [[seat_a, ids_a], [seat_b, ids_b]]:
+		var seen: Dictionary[int, bool] = {}
+		for card_id: int in side[1]:
+			if seen.has(card_id):
+				return Reason.REPEATED_CARD
+			if _hands[side[0]].find(card_id) == null:
+				return Reason.UNKNOWN_CARD
+			seen[card_id] = true
+	var from_a: Array[CardInstance] = _take(seat_a, ids_a)
+	var from_b: Array[CardInstance] = _take(seat_b, ids_b)
+	for card: CardInstance in from_a:
+		_hands[seat_b].add(card)
+	for card: CardInstance in from_b:
+		_hands[seat_a].add(card)
+	return Reason.OK
+
+
+## Hands the live card in a seat's hand to edit, which marks it through CardModifiers.
+## False when the seat does not hold the card.
+func mark(seat: int, card_id: int, edit: Callable) -> bool:
+	var card: CardInstance = _hands[seat].find(card_id)
+	if card == null:
+		return false
+	edit.call(card)
+	return true
+
+
+func _take(seat: int, card_ids: Array[int]) -> Array[CardInstance]:
+	var taken: Array[CardInstance] = []
+	for card_id: int in card_ids:
+		taken.append(_hands[seat].remove(card_id))
+		if seat == _landlord:
+			for index: int in range(_kitty.size() - 1, -1, -1):
+				if _kitty[index].id() == card_id:
+					_kitty.remove_at(index)
 	return taken
 
 
@@ -121,9 +192,14 @@ func legal_moves() -> Array[Pattern]:
 	)
 
 
-## Turns a pattern into an action for the seat to act, using its least valuable cards.
+## Turns a pattern into an action for the seat to act, using its least valuable cards of
+## the ranks it spends, and naming its reading.
 func action_for(pattern: Pattern) -> RoundAction:
-	return RoundAction.from_cards(_turn, CardSelection.pick(_hands[_turn], pattern))
+	var action: RoundAction = RoundAction.from_cards(
+		_turn, CardSelection.pick(_hands[_turn], pattern)
+	)
+	action.reading = pattern
+	return action
 
 
 ## Cards in hand for every seat, which is all that is public about them.
@@ -140,17 +216,24 @@ func public_view() -> PublicView:
 	)
 
 
-## What one seat may know: the public view plus its own hand.
+## What one seat may know: the public view plus its own hand, and any other hand whose
+## rules show it to the table.
 func view_for(seat: int) -> SeatView:
 	var cards: Array[CardInstance] = []
 	for card: CardInstance in _hands[seat].cards():
 		cards.append(card.snapshot())
-	return SeatView.new(seat, public_view(), _hands[seat].counts(), cards)
+	var view: SeatView = SeatView.new(seat, public_view(), _hands[seat].counts(), cards)
+	for other: int in Seats.COUNT:
+		if other != seat and _table.rules_for(other).hand_shown():
+			view.exposed[other] = _hands[other].counts()
+	return view
 
 
 ## How the seat's cards read against the table, without playing them. A seat other than
-## the one to act gets OUT_OF_TURN with its pattern, so a view can still name it.
-func read_play(seat: int, card_ids: Array[int]) -> PlayReading:
+## the one to act gets OUT_OF_TURN with its pattern, so a view can still name it. Cards
+## with a wild card among them may read more than one way (ADR 0029): wanted names the
+## reading, and with none the strongest that may be played now stands.
+func read_play(seat: int, card_ids: Array[int], wanted: Pattern = null) -> PlayReading:
 	if is_over():
 		return PlayReading.new(Reason.ROUND_OVER)
 	_sync_rules()
@@ -164,14 +247,27 @@ func read_play(seat: int, card_ids: Array[int]) -> PlayReading:
 		seen[card_id] = true
 		reading.cards.append(card)
 	var rules: RuleSet = _table.rules_for(seat)
-	var classified: Classification = CardSelection.classify_cards(
-		reading.cards, rules, _table.map_for(seat)
-	)
+	var counts: PackedByteArray = CardSelection.printed_counts(reading.cards)
+	var classified: Classification = Classifier.classify(counts, rules, _table.map_for(seat))
 	reading.invalid_reason = classified.reason
-	if not classified.is_valid():
+	var options: Array[Pattern] = []
+	if WildSupply.of(counts, rules) != null:
+		options = Readings.of(counts, rules, _table.map_for(seat))
+	elif classified.is_valid():
+		options.append(classified.pattern)
+	if options.is_empty():
 		reading.reason = Reason.ILLEGAL_PLAY
 		return reading
-	reading.pattern = classified.pattern
+	reading.invalid_reason = Classification.Reason.OK
+	for option: Pattern in options:
+		if _current == null or PlayComparator.beats(option, _current, rules):
+			reading.readings.append(option)
+	reading.pattern = options[0] if reading.readings.is_empty() else reading.readings[0]
+	if wanted != null:
+		reading.pattern = Readings.checked(wanted, counts, rules, _table.map_for(seat))
+		if reading.pattern == null:
+			reading.reason = Reason.ILLEGAL_PLAY
+			return reading
 	if seat != _turn:
 		reading.reason = Reason.OUT_OF_TURN
 	elif _current != null and not PlayComparator.beats(reading.pattern, _current, rules):
@@ -180,8 +276,9 @@ func read_play(seat: int, card_ids: Array[int]) -> PlayReading:
 
 
 func _apply_pass() -> Reason:
-	if _current == null:
-		return Reason.CANNOT_PASS_ON_LEAD
+	var allowed: Reason = pass_reason()
+	if allowed != Reason.OK:
+		return allowed
 	var seat: int = _turn
 	_events.append(RoundEvent.new(RoundEvent.Type.PASSED, seat))
 	_history.append(PublicPlay.new(seat, Pattern.pass_play(), PackedByteArray()))
@@ -197,7 +294,7 @@ func _apply_pass() -> Reason:
 
 
 func _apply_play(action: RoundAction) -> Reason:
-	var reading: PlayReading = read_play(_turn, action.card_ids)
+	var reading: PlayReading = read_play(_turn, action.card_ids, action.reading)
 	if reading.reason == Reason.OK:
 		_commit_play(reading.cards, action.card_ids, reading.pattern)
 	return reading.reason
@@ -216,7 +313,7 @@ func _commit_play(cards: Array[CardInstance], card_ids: Array[int], pattern: Pat
 	for card: CardInstance in cards:
 		event.cards.append(card.snapshot())
 	_events.append(event)
-	_history.append(PublicPlay.new(seat, pattern.copy(), pattern.counts()))
+	_history.append(PublicPlay.new(seat, pattern.copy(), pattern.spent_counts()))
 	_leader_entry = _history.size() - 1
 	_current = pattern
 	_trick_leader = seat
@@ -241,8 +338,30 @@ func _rekey_current() -> void:
 
 
 func _sync_rules() -> void:
+	_sync_stamps()
 	if _table.refresh():
 		_rekey_current()
+
+
+## Tells the rules which ranks each seat holds only its own stamped cards of, for Class
+## Label (ADR 0021). The seat whose play is on the table keeps the mask it played
+## under, so emptying a rank by playing it never re-ranks the play it just made.
+func _sync_stamps() -> void:
+	for seat: int in Seats.COUNT:
+		if _current != null and seat == _trick_leader:
+			continue
+		_table.set_stamped(seat, _stamp_mask(seat))
+
+
+func _stamp_mask(seat: int) -> int:
+	var stamped: int = 0
+	var plain: int = 0
+	for card: CardInstance in _hands[seat].cards():
+		if card.owner_stamp() == seat:
+			stamped |= 1 << card.base_rank()
+		else:
+			plain |= 1 << card.base_rank()
+	return stamped & ~plain
 
 
 func _finish(seat: int) -> void:

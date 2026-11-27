@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StakeDef" format=3]
+
+[ext_resource type="Script" path="res://data/run/stakes/stake_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "watchful_eyes"
+name_key = "stake.watchful_eyes.name"
+text_key = "stake.watchful_eyes.text"
+target_percent = 0
+store_slot_cut = 0
+famine = 0
+denunciation = 10
+audit_faces = 1
+ladder_severity = 0

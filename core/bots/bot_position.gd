@@ -16,6 +16,11 @@ var teammate: int = Seats.NONE
 var opponent_cards: int = NO_CARDS
 var teammate_cards: int = NO_CARDS
 var unseen: PackedByteArray
+## The unseen cards an opponent could hold: all of them, unless a hand shown to the table
+## (Glass Walls) tells the bot which of them a teammate holds or which seat holds what.
+var threats: PackedByteArray
+## How many of the threats are wild cards (ADR 0029).
+var wild_threats: int = 0
 var groups: Array[Pattern]
 var controls: Controls
 
@@ -30,9 +35,12 @@ func _init(
 	seat = view.seat
 	_read_seats()
 	unseen = UnseenCards.from_view(view)
+	threats = _threats()
+	var supply: WildSupply = WildSupply.of(threats, table.rules)
+	wild_threats = 0 if supply == null else supply.total
 	groups = scorer.decompose_own_hand().groups
 	var counts_cards: bool = config.reads_the_table()
-	controls = Controls.new(groups, unseen, _largest_opposing_hand(), table, counts_cards)
+	controls = Controls.new(groups, threats, _largest_opposing_hand(), table, counts_cards)
 
 
 func hand_size() -> int:
@@ -95,7 +103,7 @@ func going_out(legal: Array[Pattern]) -> Pattern:
 ## holding back every group nothing unseen beats costs it about five points of win rate.
 func read_groups(other: Array[Pattern]) -> Controls:
 	var counts_cards: bool = config.reads_the_table() and not is_landlord()
-	return Controls.new(other, unseen, _largest_opposing_hand(), table, counts_cards)
+	return Controls.new(other, threats, _largest_opposing_hand(), table, counts_cards)
 
 
 ## A repeatable roll for this decision, from 0 to 1.
@@ -118,6 +126,18 @@ func rank_of(rank: int) -> int:
 	return table.rank_map[rank]
 
 
+## True when an opponent could hold width cards that read as rank, counting the threats
+## by the cards really spent. A wild card joins any rank from 3 to 2 that has a card of
+## its own, so it never makes a single on its own (ADR 0029, rule 2).
+func could_hold(rank: int, width: int) -> bool:
+	if threats[rank] >= width:
+		return true
+	if wild_threats == 0 or threats[rank] == 0 or rank > Ranks.TWO:
+		return false
+	var others: int = wild_threats - (threats[rank] if table.rules.is_wild(rank) else 0)
+	return threats[rank] + others >= width
+
+
 func _read_seats() -> void:
 	var landlord: int = view.public.landlord
 	if seat != landlord:
@@ -129,6 +149,28 @@ func _read_seats() -> void:
 			teammate_cards = view.public.remaining[other]
 		elif other != seat:
 			opponent_cards = mini(opponent_cards, view.public.remaining[other])
+
+
+## With no hand shown, every unseen card. Otherwise a shown opponent's cards, plus the
+## cards nobody showed when the seat that holds them is an opponent too.
+func _threats() -> PackedByteArray:
+	if view.exposed.is_empty():
+		return unseen
+	var hidden: PackedByteArray = unseen.duplicate()
+	var opposing: PackedByteArray = PackedByteArray()
+	opposing.resize(Ranks.COUNT)
+	for shown_seat: int in view.exposed:
+		var shown: PackedByteArray = view.exposed[shown_seat]
+		for rank: int in Ranks.COUNT:
+			hidden[rank] -= mini(hidden[rank], shown[rank])
+			if is_opponent(shown_seat):
+				opposing[rank] += shown[rank]
+	for other: int in Seats.COUNT:
+		if other != seat and not view.exposed.has(other) and is_opponent(other):
+			for rank: int in Ranks.COUNT:
+				opposing[rank] += hidden[rank]
+			break
+	return opposing
 
 
 func _largest_opposing_hand() -> int:

@@ -2,9 +2,14 @@ class_name QuotaBar
 extends ProgressBar
 ## The Quota as a bar of grain with the count written on it. It fills as work points
 ## arrive, turns gold once the Quota is met and is sealed "met"; a Quota that ends short
-## is sealed in black. The table's top bar and the Quota report both show one.
+## is sealed in black. The table's top bar and the Quota report both show one. It shows
+## its figures as ShownFigures says (ADR 0022): as they are, without the target under a
+## dark norm (no fill and no seal, so nothing gives the target away), or as fulfilled at
+## the stage past the last.
 
 signal filled
+
+enum Shown { AS_IS, NO_TARGET, FULFILLED }
 
 const GRAIN: Color = Color("c8952b")
 const MET: Color = Color("e0b23c")
@@ -18,6 +23,7 @@ var _seal: InkSeal = InkSeal.new()
 var _target: float = 1.0
 var _shown: float = 0.0
 var _tween: Tween = null
+var _mode: Shown = Shown.AS_IS
 
 
 func _init() -> void:
@@ -53,6 +59,20 @@ func set_target(target: float) -> void:
 	show_value(_shown)
 
 
+## How the bar shows its figures from now on.
+func show_as(mode: Shown) -> void:
+	if mode != _mode:
+		_mode = mode
+		show_value(_shown)
+
+
+## The bar's way of showing its figures for a run state, by ShownFigures.
+static func mode_for(state: RunState) -> Shown:
+	if ShownFigures.all_success():
+		return Shown.FULFILLED
+	return Shown.AS_IS if ShownFigures.shows_target(state) else Shown.NO_TARGET
+
+
 ## Shows a value at once: the fill, the count, and the seal once it reaches the target.
 func show_value(shown: float) -> void:
 	_shown = shown
@@ -63,6 +83,16 @@ func show_value(shown: float) -> void:
 	_text.text = tr("table.quota").format(
 		{"progress": Strings.score(shown), "target": Strings.score(_target)}
 	)
+	if _mode == Shown.NO_TARGET:
+		value = 0.0
+		_text.text = tr(ShownFigures.QUOTA_DARK).format({"progress": Strings.score(shown)})
+		_seal.visible = false
+		return
+	if _mode == Shown.FULFILLED:
+		met = true
+		value = _target
+		_fill.bg_color = MET
+		_text.text = tr(ShownFigures.FULFILLED)
 	if met and not _seal.visible:
 		_seal.prepare(tr("table.quota_met"), ScreenKit.RED, _seal.size.x)
 		_seal.press()
@@ -86,14 +116,21 @@ func fill_to(to: float, seconds: float, delay: float = 0.0) -> void:
 	_tween.tween_callback(filled.emit)
 
 
-## Seals a Quota that ended short, in black.
+## Seals a Quota that ended short, in black, unless the bar reads it as fulfilled.
 func seal_short() -> void:
+	if _mode == Shown.FULFILLED:
+		return
 	_seal.prepare(tr("summary.short"), INK, _seal.size.x)
 	_seal.press()
 
 
 func is_met() -> bool:
 	return _shown >= _target
+
+
+## The words written on the bar, for tests.
+func text() -> String:
+	return _text.text
 
 
 ## The word on the seal, or "" while there is none. For tests.

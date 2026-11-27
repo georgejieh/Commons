@@ -10,3 +10,4 @@ denounced_weight = 4.0
 betrayed_weight = 1.0
 kept_per_run = 0.5
 full_grudge = 10.0
+loyal_cooperation = 0.3

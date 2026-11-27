@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "grain_tax"
+kind = 4
+tag = 1
+lever = 3
+tier = 2
+hooks = Array[String](["round_end"])
+parameters = Dictionary[String, int]({"percent": 20})
+rarity = 0
+cost = 0
+name_key = "modifier.grain_tax.name"
+text_key = "modifier.grain_tax.text"

@@ -3,7 +3,9 @@ extends SceneTree
 ## with every Cadre slot filled and all 54 card faces shown (so every court and joker
 ## picture is loaded), at corruption stages 0, 4 and 9 in turn, reading the profiler's
 ## texture-memory monitor each time. Stage art loads on demand, so this also catches
-## art from an earlier stage that stays resident. Reports the peak and exits 1 when it
+## art from an earlier stage that stays resident. Cadre pictures load only when shown
+## (ScreenKit.cadre_art), so the board holds what a real table can: one picture per
+## Cadre slot, never the whole pool. Reports the peak and exits 1 when it
 ## is over budget. Needs a real renderer, not --headless; it runs in the cloud playtest
 ## so no window opens locally:
 ##   godot --path . --script res://tools/texture_budget.gd -- [--budget-mb 128]
@@ -49,7 +51,8 @@ func _run() -> void:
 	quit(0 if peak <= _budget_mb else 1)
 
 
-## Puts every Cadre's art on the notice board, as a full board would show it.
+## Puts a Cadre's art in every slot of the notice board, as a full board would show it:
+## as many pictures as the player can hold.
 func _show_all_cadres(board: Node) -> void:
 	var store: CadrePool = load("res://data/run/cadre_pool.tres")
 	var market: CadrePool = load("res://data/run/market_pool.tres")

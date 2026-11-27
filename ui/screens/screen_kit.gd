@@ -70,7 +70,9 @@ static func centered_sheet(root: Control, backdrop: Texture2D) -> VBoxContainer:
 
 
 ## A full-screen page over a backdrop with its content on one sheet down the left side,
-## so the art shows beside it and nothing hangs over the art's own paper.
+## so the art shows beside it and nothing hangs over the art's own paper. A sheet with
+## more on it than the page is tall is drawn smaller, so its last button is never off
+## the screen.
 static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBoxContainer:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.add_child(cover(backdrop))
@@ -88,7 +90,21 @@ static func side_sheet(root: Control, backdrop: Texture2D, width: float) -> VBox
 	panel.offset_top = PAGE_MARGIN / 2.0
 	panel.offset_bottom = -PAGE_MARGIN / 2.0
 	panel.offset_right = PAGE_MARGIN + width
+	var fit: Callable = fit_side_sheet.bind(root, panel)
+	panel.minimum_size_changed.connect(fit)
+	panel.resized.connect(fit)
+	root.resized.connect(fit)
 	return sheet
+
+
+## Draws a side sheet smaller, from its top left corner, when what is on it is taller
+## than the page between its margins.
+static func fit_side_sheet(root: Control, panel: Control) -> void:
+	var room: float = root.size.y - PAGE_MARGIN
+	var tall: float = panel.get_combined_minimum_size().y
+	var fit: float = 1.0 if tall <= room or room <= 0.0 else room / tall
+	panel.pivot_offset = Vector2.ZERO
+	panel.scale = Vector2(fit, fit)
 
 
 ## A small tracked label over a big headline, the way a poster leads.
@@ -206,6 +222,18 @@ static func stat(caption: String, value: float, from_value: float = 0.0) -> Cont
 	return card_panel(tile)
 
 
+## A stat tile for one of the run's figures (ShownFigures names them), as ShownFigures
+## shows it: the rolling number, or its words ("None reported", ample, fulfilled).
+static func figure_stat(caption: String, state: RunState, figure: String, value: float) -> Control:
+	var words: String = ShownFigures.tile_text(state, figure)
+	if words.is_empty():
+		return stat(caption, value)
+	var tile: VBoxContainer = card(Vector2(240, 0))
+	tile.add_child(eyebrow(caption))
+	tile.add_child(styled(words, CommonsTheme.TITLE))
+	return card_panel(tile)
+
+
 ## Brings a page's pieces in one after another.
 static func reveal(column: VBoxContainer) -> void:
 	var pieces: Array[Control] = []
@@ -250,7 +278,12 @@ static func face_region(size: Vector2, face: Rect2, aspect: float) -> Rect2:
 
 ## A Cadre's art for the current corruption stage.
 static func cadre_art(cadre_id: String) -> Texture2D:
-	return ArtStages.resolve(ART.cadre(cadre_id))
+	return ArtStages.picture(ART.cadre_path(cadre_id))
+
+
+## An ending's picture for the current corruption stage, or null while it has none.
+static func ending_art(ending_id: String) -> Texture2D:
+	return ArtStages.picture(ART.ending_path(ending_id))
 
 
 ## A modifier's rules, saying so when it changes the whole table and not only you.
@@ -258,6 +291,10 @@ static func rule_text(controller: RunController, modifier_id: String) -> String:
 	var rule: String = controller.modifier_text(modifier_id)
 	if controller.is_table_wide(modifier_id):
 		rule += " " + TranslationServer.translate("modifier.table_wide")
+	# A held Cadre with run state says where it stands (ADR 0021).
+	var standing: String = controller.cadre_standing(modifier_id).line
+	if not standing.is_empty():
+		rule += " " + standing
 	return rule
 
 

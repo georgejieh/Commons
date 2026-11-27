@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "loudspeaker"
+kind = 0
+tag = 1
+lever = 2
+tier = 0
+hooks = Array[String](["play_scored"])
+parameters = Dictionary[String, int]({"zeal_percent": 200})
+rarity = 1
+cost = 5
+unlock_tier = 3
+name_key = "modifier.loudspeaker.name"
+text_key = "modifier.loudspeaker.text"

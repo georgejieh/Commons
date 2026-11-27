@@ -13,6 +13,9 @@ const LOSS: Color = Color("3a322b")
 ## Where the tally and the audit slip sit, as their middles.
 const TALLY_AT: Vector2 = Vector2(790, 660)
 const SLIP_AT: Vector2 = Vector2(790, 520)
+## The bowl lands beside the slip, in the open table between it and the ledger, so the
+## claims stay readable while their dice roll.
+const BOWL_AT: Vector2 = Vector2(1312, 575)
 ## How fast a villager's score is counted, against the player's own at 1.
 const VILLAGER_PACE: float = 0.55
 ## Seconds the ledger waits after the total lands, while it flies over.
@@ -32,9 +35,12 @@ const TAKEOVER_SHAKE: float = 0.45
 var callout: Callout = Callout.new()
 var tally: ScoreTally = ScoreTally.new()
 var slip: AuditSlip = AuditSlip.new()
+var dice: DiceBowl = DiceBowl.new()
 var fx: TableFx = TableFx.new()
 ## The bar the Quota and meters are shown on, when the table has one.
 var hud: TableHud = null
+## A seat an Anonymous Letter makes pass next: its pass is tagged as forced.
+var forced_seat: int = Seats.NONE
 
 var _ledger: Ledger
 var _pile: TrickPile
@@ -52,15 +58,20 @@ var _scoring: int = Seats.NONE
 var _target: float = 0.0
 var _kitty_label: Label = Label.new()
 var _kitty: Tween = null
+## The audit rolls of the split under way, until every claim has rolled, and the tween
+## that runs the dice moment.
+var _rolls: Array[RunEvent] = []
+var _dice_beat: Tween = null
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for layer: Control in [slip, tally, fx, callout]:
+	for layer: Control in [slip, tally, dice, fx, callout]:
 		add_child(layer)
-	for layer: Control in [fx, callout]:
+	for layer: Control in [dice, fx, callout]:
 		layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	slip.center = SLIP_AT
+	dice.center = BOWL_AT
 	_kitty_label.text = tr("keyword.kitty.name").to_upper()
 	_kitty_label.theme_type_variation = CommonsTheme.TITLE
 	_kitty_label.add_theme_font_size_override("font_size", 34)
@@ -96,6 +107,9 @@ func setup(
 
 ## Acts out event. quiet keeps the bookkeeping and drops the show, for replays.
 func on_event(event: RunEvent, quiet: bool = false) -> void:
+	# A skip plays the rest at once, so a dice moment under way is taken down.
+	if quiet and (dice.is_showing() or not _rolls.is_empty()):
+		_end_dice()
 	match event.type:
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			if event.type == RunEvent.Type.SET_STARTED:
@@ -108,6 +122,7 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 			slip.clear()
 			tally.clear()
 			callout.dismiss()
+			_end_dice()
 			_kitty_label.visible = false
 		RunEvent.Type.BID:
 			_on_bid(event.seat, event.value == 1, quiet)
@@ -121,6 +136,9 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 			if not quiet:
 				tally.clear()
 				slip.claim(event.seat, event.value)
+		RunEvent.Type.AUDIT_ROLLED:
+			if not quiet:
+				_on_rolled(event)
 		RunEvent.Type.AUDITED:
 			slip.audited(event.seat, event.value == 1)
 		RunEvent.Type.SHARE_PAID:
@@ -137,6 +155,15 @@ func on_event(event: RunEvent, quiet: bool = false) -> void:
 		RunEvent.Type.SET_ENDED:
 			if not quiet:
 				_on_set_ended(event.value == 1, event.amount)
+
+
+## The villagers' seats and every seat's name, for the moments played beside these.
+func seats() -> Dictionary[int, SeatPanel]:
+	return _seats
+
+
+func names() -> Dictionary[int, String]:
+	return _names
 
 
 ## What a seat last did in the bidding, as a string key, or "" outside it.
@@ -169,8 +196,10 @@ func _on_round_event(event: RoundEvent, quiet: bool) -> void:
 			if not quiet:
 				_show_kitty(event.seat, event.card_ids)
 		RoundEvent.Type.PASSED:
+			var forced: bool = event.seat == forced_seat
+			forced_seat = Seats.NONE
 			if not quiet and _seats.has(event.seat):
-				_seats[event.seat].flash(tr("stamp.pass"))
+				_seats[event.seat].flash(tr("campaign.forced" if forced else "stamp.pass"))
 		RoundEvent.Type.PLAYED:
 			var type: Pattern.Type = event.pattern.type
 			if quiet or (type != Pattern.Type.BOMB and type != Pattern.Type.ROCKET):
@@ -222,14 +251,73 @@ func _gain(amount: float, from: Vector2) -> void:
 	hud.add_progress(amount, TableFx.FLY_TIME)
 
 
-## The Quota is met or missed across the whole screen, before the table is left.
+## The Quota is met or missed across the whole screen, before the table is left, in the
+## words the bar shows its figures in (ADR 0022).
 func _on_set_ended(met: bool, progress: float) -> void:
 	slip.clear()
 	var line: String = tr("callout.quota.sub").format(
 		{"progress": Strings.score(progress), "target": Strings.score(_target)}
 	)
+	if hud != null:
+		var shown: String = hud.end_line(progress, _target)
+		line = line if shown.is_empty() else shown
+		met = hud.reads_met(met)
 	var word: String = tr("callout.quota.met" if met else "callout.quota.missed")
 	_shout(word, Callout.Tier.TAKEOVER, ScreenKit.RED if met else LOSS, line, Seats.NONE)
+
+
+## Every claim's audit roll arrives together. Once each claim on the slip has rolled, the
+## bowl drops in and all the dice are thrown at once; when they settle, each audited
+## seat is called out and the rest are marked not audited, then the bowl lifts away. The
+## queue waits for all of it.
+func _on_rolled(event: RunEvent) -> void:
+	_rolls.append(event)
+	if _rolls.size() < slip.claim_count():
+		return
+	var seats: Array[int] = []
+	var faces: Array[int] = []
+	var names: Array[String] = []
+	for roll: RunEvent in _rolls:
+		seats.append(roll.seat)
+		faces.append(roll.value)
+		names.append(_names.get(roll.seat, ""))
+	var audit_faces: int = roundi(_rolls[0].amount)
+	_rolls.clear()
+	_kill_dice_beat()
+	var seconds: float = dice.roll(seats, faces, audit_faces, names)
+	_dice_beat = create_tween()
+	_dice_beat.tween_interval(seconds)
+	_dice_beat.tween_callback(_mark_unchecked.bind(seats, faces, audit_faces))
+	var cut_in: float = Callout.seconds_for(Callout.Tier.CUT_IN)
+	for seat: int in dice.audited_seats():
+		_dice_beat.tween_callback(_call_audit.bind(seat))
+		_dice_beat.tween_interval(cut_in)
+		seconds += cut_in
+	_dice_beat.tween_callback(dice.lift_away)
+	_player.hold(seconds + DiceBowl.lift_seconds())
+
+
+func _mark_unchecked(seats: Array[int], faces: Array[int], audit_faces: int) -> void:
+	for index: int in seats.size():
+		if faces[index] > audit_faces:
+			slip.unchecked(seats[index])
+
+
+func _call_audit(seat: int) -> void:
+	_shout(tr("callout.audit"), Callout.Tier.CUT_IN, ScreenKit.RED, _names.get(seat, ""), seat)
+
+
+## Takes the dice moment down at once, with nothing of it left running.
+func _end_dice() -> void:
+	_rolls.clear()
+	_kill_dice_beat()
+	dice.dismiss()
+
+
+func _kill_dice_beat() -> void:
+	if _dice_beat != null and _dice_beat.is_valid():
+		_dice_beat.kill()
+	_dice_beat = null
 
 
 ## The kitty is dealt face up in the middle for everyone to see, then goes to the
@@ -258,6 +346,11 @@ func _show_kitty(seat: int, card_ids: Array[int]) -> void:
 	_kitty.tween_callback(_kitty_label.hide)
 	# A little past the sweep, so the landlord's first play never lands under it.
 	_player.hold(KITTY_SHOW + TableMotion.PRESETS.sweep + KITTY_MARGIN)
+
+
+## Shakes the table a little, for a beat played on it.
+func bump(trauma: float) -> void:
+	_motion.bump(trauma)
 
 
 ## A play lands with a thump that grows with its size.

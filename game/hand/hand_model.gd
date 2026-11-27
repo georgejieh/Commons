@@ -17,6 +17,11 @@ var _controller: RunController
 var _cards: Array[CardInstance] = []
 var _selected: Dictionary[int, bool] = {}
 var _preview: PlayPreview = null
+## The play the last hint offered, its reading and its cards, so Play plays the reading the
+## hint meant while the selection is still the hint's (ADR 0029).
+var _hint: Pattern = null
+var _hint_ids: Array[int] = []
+var _hint_turn: int = -1
 
 
 func _init(controller: RunController) -> void:
@@ -129,11 +134,12 @@ static func fold(rank: int, rank_map: PackedByteArray) -> int:
 	return -1
 
 
-## Cards whose rank appears in any legal move. Moves are over ranks, not instances.
+## Cards whose rank appears in any legal move, as the cards the move spends. Moves are
+## over ranks, not instances.
 func hint_ids() -> Array[int]:
 	var ranks: Dictionary[int, bool] = {}
 	for move: Pattern in _controller.legal_moves():
-		var counts: PackedByteArray = move.counts()
+		var counts: PackedByteArray = move.spent_counts()
 		for rank: int in counts.size():
 			if counts[rank] > 0:
 				ranks[rank] = true
@@ -147,18 +153,55 @@ func hint_ids() -> Array[int]:
 ## The cards a Medium bot would play now, or none when passing is best or it isn't the
 ## player's turn.
 func suggested_ids() -> Array[int]:
-	var none: Array[int] = []
+	var play: Pattern = _suggested_play()
+	var ids: Array[int] = []
+	if play != null:
+		ids = _controller.card_ids_for(play)
+	return ids
+
+
+## The play a Medium bot would make now, as its reading, or null for a pass or when it
+## isn't the player's turn.
+func _suggested_play() -> Pattern:
 	var view: SeatView = _controller.seat_view()
 	var legal: Array[Pattern] = _controller.legal_moves()
 	if view == null or legal.is_empty():
-		return none
+		return null
 	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
 	var play: BotPlay = Bot.decide_play(
 		view, legal, _controller.player_table(), config, BotBudget.unlimited()
 	)
-	if play.is_pass():
-		return none
-	return _controller.card_ids_for(play.pattern)
+	return null if play.is_pass() else play.pattern
+
+
+## Selects the hint's play and keeps the reading it meant. Returns its cards, or none
+## when the hint is to pass.
+func take_hint() -> Array[int]:
+	var play: Pattern = _suggested_play()
+	_hint = play
+	_hint_ids.clear()
+	if play != null:
+		_hint_ids = _controller.card_ids_for(play)
+		_hint_ids.sort()
+		_hint_turn = _plays_so_far()
+	select_only(_hint_ids)
+	return _hint_ids.duplicate()
+
+
+## The reading the last hint meant while the selection is still its cards on the same
+## turn, else null.
+func hint_reading() -> Pattern:
+	if _hint == null or _hint_turn != _plays_so_far():
+		return null
+	var ids: Array[int] = selected_ids()
+	ids.sort()
+	return _hint if ids == _hint_ids else null
+
+
+## Plays and passes made so far this round, which tells one turn from the next.
+func _plays_so_far() -> int:
+	var view: SeatView = _controller.seat_view()
+	return -1 if view == null else view.public.history.size()
 
 
 ## Selects exactly these cards.
@@ -184,7 +227,7 @@ func grouped_cards() -> Array[CardInstance]:
 	var ordered: Array[CardInstance] = []
 	var config: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.MEDIUM)
 	for group: Pattern in Bot.suggest_groups(counts, _controller.player_table(), config):
-		var needed: PackedByteArray = group.counts()
+		var needed: PackedByteArray = group.spent_counts()
 		for card: CardInstance in left.duplicate():
 			if needed[card.base_rank()] > 0:
 				needed[card.base_rank()] -= 1
@@ -221,5 +264,5 @@ func _holds(card_id: int) -> bool:
 func _update() -> void:
 	_preview = null
 	if not _selected.is_empty() and _controller.seat_view() != null:
-		_preview = _controller.preview_play(selected_ids())
+		_preview = _controller.preview_play(selected_ids(), hint_reading())
 	changed.emit()

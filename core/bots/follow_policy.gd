@@ -39,12 +39,13 @@ static func spite(position: BotPosition) -> float:
 
 
 ## A grudge against the teammate who owns the trick makes covering for them less likely:
-## cooperation is divided by one plus the spite (P4.2).
+## cooperation is divided by one plus the spite (P4.2). A warm family's loyalty to the
+## player counts in its cooperation (ADR 0025).
 static func _leaves_it_to_teammate(position: BotPosition) -> bool:
 	var teammate_owns: bool = position.trick_owner() == position.teammate
 	if not teammate_owns:
 		return false
-	return position.roll() < position.config.cooperation / (1.0 + spite(position))
+	return position.roll() < position.config.team_cooperation() / (1.0 + spite(position))
 
 
 static func _without_teammate_bombs(position: BotPosition, legal: Array[Pattern]) -> Array[Pattern]:
@@ -85,7 +86,7 @@ static func _take_with_control(position: BotPosition, legal: Array[Pattern]) -> 
 	for index: int in position.groups.size():
 		if position.controls.flags[index]:
 			for move: Pattern in legal:
-				if move.equals(position.groups[index]):
+				if move.same_reading(position.groups[index]):
 					return move
 	return null
 

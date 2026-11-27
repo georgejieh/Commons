@@ -12,7 +12,13 @@ const KITTY_SIZE: int = 3
 static func deal(
 	cards: Array[CardInstance], stream: RandomStream, bias: DealBias = null
 ) -> DealResult:
-	var order: Array[CardInstance] = arrange(cards, stream, bias)
+	return deal_in_order(arrange(cards, stream, bias))
+
+
+## Deals cards as they lie, with no shuffle: seat 0's hand first, then seat 1's and seat
+## 2's, then the kitty. Unplanned Economy deals its gathered deck this way (ADR 0021).
+static func deal_in_order(order: Array[CardInstance]) -> DealResult:
+	assert(order.size() == SEATS * HAND_SIZE + KITTY_SIZE)
 	var result: DealResult = DealResult.new()
 	for seat: int in SEATS:
 		var hand: Hand = Hand.new()

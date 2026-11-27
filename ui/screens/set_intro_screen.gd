@@ -1,8 +1,10 @@
 class_name SetIntroScreen
 extends Control
-## Before a Set: its type, its target and reward, and the debuff ladder drawn for it,
+## Before a Set: its type, its target and reward, how far the norm has raised it, who
+## of the village sits at the table in a full run, and the debuff ladder drawn for it,
 ## one card per round, with round 1 always clean. Everything sits on one sheet at the
-## left, the rounds two by two.
+## left, the rounds two by two. Under a dark norm, or at the stage past the last, the
+## target is "None reported" (ADR 0022).
 
 const SHEET_WIDTH: float = 800.0
 const STEP_SIZE: Vector2 = Vector2(370, 170)
@@ -20,9 +22,27 @@ func open(app: DemoApp) -> void:
 	var target: String = tr("intro.target").format(
 		{"target": Strings.score(controller.target()), "rounds": app.max_rounds()}
 	)
+	# A dark norm hides the target, and with it how far the norm raised it (ADR 0022).
+	var shown: bool = ShownFigures.shows_target(state)
+	if not shown:
+		target = tr("intro.target.unreported").format({"rounds": app.max_rounds()})
 	column.add_child(ScreenKit.styled(target, CommonsTheme.TITLE))
+	if controller.norm_percent() > 0 and shown:
+		var norm: Label = ScreenKit.label(
+			tr("intro.norm").format({"percent": controller.norm_percent()}), 24
+		)
+		norm.add_theme_color_override("font_color", ScreenKit.RED)
+		column.add_child(norm)
+	if controller.has_village():
+		var names: String = ", ".join(
+			[controller.seated_full_name(1), controller.seated_full_name(2)]
+		)
+		column.add_child(ScreenKit.label(tr("intro.seated").format({"names": names}), 24))
 	if not controller.boss().is_empty():
 		column.add_child(_boss_line(controller))
+	var reforms: Label = reforms_line(controller)
+	if reforms != null:
+		column.add_child(reforms)
 	column.add_child(ScreenKit.eyebrow(tr("intro.ladder")))
 	var steps: Array[Control] = []
 	var ladder: Array[String] = controller.ladder()
@@ -41,6 +61,26 @@ func open(app: DemoApp) -> void:
 	ScreenKit.reveal(column)
 	UiMotion.enter(steps)
 	begin.grab_focus()
+	# The first time a Quota lists a debuff, and the first time a family that remembers
+	# the player sits down, a one-time tooltip says what that means (ADR 0026).
+	var tips: Array[String] = []
+	if ladder.any(func(debuff_id: String) -> bool: return not debuff_id.is_empty()):
+		tips.append("tip.debuffs")
+	if controller.remembers_seated():
+		tips.append("tip.memory")
+	TipSlip.offer(self, app, tips)
+
+
+## The Reforms in force, named in one line, or null while none is (ADR 0021).
+static func reforms_line(controller: RunController) -> Label:
+	var names: PackedStringArray = []
+	for reform_id: String in controller.held_reforms():
+		names.append(controller.reform_name(reform_id))
+	if names.is_empty():
+		return null
+	var text: String = TranslationServer.translate("reform.held_line")
+	var line: Label = ScreenKit.label(text.format({"names": ", ".join(names)}), 24)
+	return line
 
 
 ## The boss's name and rule, so the twist is never hidden (P4.7).
@@ -67,7 +107,7 @@ func _step(controller: RunController, round_index: int, debuff_id: String) -> Co
 		card.add_child(ScreenKit.styled(tr(title_key), CommonsTheme.TITLE))
 		card.add_child(ScreenKit.styled(tr(text_key), CommonsTheme.CAPTION))
 	else:
-		var name: Label = ScreenKit.styled(tr("modifier.%s.name" % debuff_id), CommonsTheme.TITLE)
+		var name: Label = ScreenKit.styled(controller.modifier_name(debuff_id), CommonsTheme.TITLE)
 		name.add_theme_font_size_override("font_size", StoreScreen.NAME_SIZE)
 		name.add_theme_color_override("font_color", ScreenKit.RED)
 		card.add_child(name)

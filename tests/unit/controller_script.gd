@@ -25,10 +25,13 @@ func act(controller: RunController) -> bool:
 			return _play(controller)
 		RunController.AWAIT_NEED:
 			return controller.declare_need(NEED) == RunController.OK
+		RunController.AWAIT_OPENING:
+			return controller.begin_round() == RunController.OK
 	return false
 
 
-## Plays Sets until the run is over, buying the first Cadre it can afford at each store.
+## Plays Sets until the run is over, buying the first Cadre it can afford at each store,
+## and going back from reeducation when it is owed.
 func play_run(controller: RunController) -> void:
 	while true:
 		while act(controller):
@@ -42,6 +45,8 @@ func play_run(controller: RunController) -> void:
 						controller.buy(slot)
 						break
 				controller.leave_store()
+			RunController.AWAIT_REEDUCATION:
+				controller.leave_reeducation()
 			_:
 				return
 
@@ -52,19 +57,19 @@ func choose_play(controller: RunController) -> Array[int]:
 	var play: BotPlay = Bot.decide_play(
 		view, controller.legal_moves(), controller.player_table(), config, BotBudget.unlimited()
 	)
+	if play.is_pass() and not controller.pass_refusal().is_empty():
+		# Night Shift refuses the pass: the first legal play goes instead (ADR 0023).
+		return controller.card_ids_for(controller.legal_moves()[0])
 	if play.is_pass():
 		return []
 	return controller.card_ids_for(play.pattern)
 
 
 func _play(controller: RunController) -> bool:
-	var view: SeatView = controller.seat_view()
-	var play: BotPlay = Bot.decide_play(
-		view, controller.legal_moves(), controller.player_table(), config, BotBudget.unlimited()
-	)
-	if play.is_pass():
+	var ids: Array[int] = choose_play(controller)
+	if ids.is_empty():
 		return controller.pass_turn() == RunController.OK
-	return controller.play(controller.card_ids_for(play.pattern)) == RunController.OK
+	return controller.play(ids) == RunController.OK
 
 
 static func counts(cards: Array[CardInstance]) -> PackedByteArray:

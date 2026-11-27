@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="HouseholdDef" format=3]
+
+[ext_resource type="Script" path="res://data/run/households/household_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "middle_peasants"
+unlock_tier = 1
+name_key = "household.middle_peasants.name"
+text_key = "household.middle_peasants.text"
+coupons = 0
+plot_cards = 2
+plot_low_rank = 7
+plot_high_rank = 10
+cadre_id = ""
+resentment = 5
+denunciation = 0

@@ -1,0 +1,135 @@
+class_name ReformStrip
+extends PanelContainer
+## The Reforms in force (ADR 0021), on a paper strip across the notes column that both
+## shops show: each enacted Reform a pinned decree slip with its name, in the order
+## enacted, wrapping onto a second line when they will not fit one, so the player can
+## always see what they hold. Hovering a slip or giving it focus asks the
+## screen's DetailSlip for its rules. A newly pinned one swells as it lands.
+
+## A slip is hovered or focused, or no longer is.
+signal described(tag: Control, reform_id: String)
+signal left(tag: Control)
+
+const TAG_HEIGHT: float = 38.0
+const TAG_PADDING: float = 22.0
+const NAME_SIZE: int = 16
+const HEAD_SIZE: int = 16
+const GAP: int = 8
+const INK: Color = Color("1e1a16")
+## Clear of the paper's printed border.
+const PADDING: int = 18
+
+var _row: HFlowContainer = HFlowContainer.new()
+var _column: VBoxContainer = VBoxContainer.new()
+var _none: Label = ScreenKit.label("", NAME_SIZE)
+var _tags: Array[Control] = []
+var _ids: Array[String] = []
+var _names: Array[String] = []
+
+
+func _init() -> void:
+	add_theme_stylebox_override("panel", ScreenKit.paper_style(PADDING))
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var column: VBoxContainer = _column
+	column.add_theme_constant_override("separation", 4)
+	_row.add_theme_constant_override("h_separation", GAP)
+	_row.add_theme_constant_override("v_separation", GAP)
+	_row.custom_minimum_size = Vector2(0, TAG_HEIGHT)
+	column.add_child(_row)
+	# The head leads the row of slips, so the strip keeps to one line while they fit.
+	var head: Label = ScreenKit.eyebrow("")
+	head.text = TranslationServer.translate("reform.strip").to_upper()
+	head.add_theme_font_size_override("font_size", HEAD_SIZE)
+	for label: Label in [head, _none]:
+		label.custom_minimum_size = Vector2(0, TAG_HEIGHT)
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_row.add_child(label)
+	_none.text = TranslationServer.translate("reform.strip.none")
+	_none.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_none.add_theme_color_override("font_color", INK)
+	add_child(column)
+
+
+## Prints a shop's note on the strip's sheet, above the slips: one sheet, one border.
+func add_note(note: Control) -> void:
+	_column.add_child(note)
+	_column.move_child(note, 0)
+
+
+## Shows the Reforms the run holds, one slip each.
+func show_reforms(controller: RunController) -> void:
+	_ids = controller.held_reforms()
+	_names.clear()
+	for reform_id: String in _ids:
+		_names.append(controller.reform_name(reform_id))
+	while _tags.size() < _ids.size():
+		var tag: Control = Control.new()
+		tag.focus_mode = Control.FOCUS_ALL
+		tag.mouse_filter = Control.MOUSE_FILTER_STOP
+		tag.draw.connect(_draw_tag.bind(tag))
+		var index: int = _tags.size()
+		tag.mouse_entered.connect(_describe.bind(index))
+		tag.focus_entered.connect(_describe.bind(index))
+		tag.mouse_exited.connect(func() -> void: left.emit(tag))
+		tag.focus_exited.connect(func() -> void: left.emit(tag))
+		tag.focus_entered.connect(tag.queue_redraw)
+		tag.focus_exited.connect(tag.queue_redraw)
+		_row.add_child(tag)
+		_tags.append(tag)
+	for index: int in _tags.size():
+		var tag: Control = _tags[index]
+		tag.visible = index < _ids.size()
+		if tag.visible:
+			tag.custom_minimum_size = Vector2(_width(_names[index]), TAG_HEIGHT)
+			tag.queue_redraw()
+	_none.visible = _ids.is_empty()
+
+
+## The slip for the Reform enacted index-th, for tests and the pinning.
+func tag(index: int) -> Control:
+	return _tags[index]
+
+
+func held_count() -> int:
+	return _ids.size()
+
+
+## Where the next Reform's slip will be pinned, its middle on screen.
+func next_center() -> Vector2:
+	var count: int = _ids.size()
+	if count == 0 or count > _tags.size():
+		return _none.global_position + Vector2(TAG_PADDING, TAG_HEIGHT / 2.0)
+	var last: Control = _tags[count - 1]
+	return last.global_position + Vector2(last.size.x + GAP + TAG_PADDING, TAG_HEIGHT / 2.0)
+
+
+## Swells a pinned slip, as when its Reform lands on the strip.
+func pulse(index: int) -> void:
+	if index >= 0 and index < _tags.size():
+		_tags[index].pivot_offset = _tags[index].size / 2.0
+		UiMotion.pulse(_tags[index])
+
+
+func _describe(index: int) -> void:
+	if index < _ids.size():
+		described.emit(_tags[index], _ids[index])
+
+
+func _width(text: String) -> float:
+	var font: Font = get_theme_default_font()
+	return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, NAME_SIZE).x + TAG_PADDING
+
+
+func _draw_tag(tag: Control) -> void:
+	var index: int = _tags.find(tag)
+	if index < 0 or index >= _names.size():
+		return
+	var worn: float = BowlGrime.wear()
+	DecreePaper.tag(tag, Rect2(Vector2.ZERO, tag.size), worn, _ids[index].hash() & 0xFF)
+	var font: Font = get_theme_default_font()
+	var ink: Color = BowlGrime.faded(INK, worn)
+	var baseline: Vector2 = Vector2(TAG_PADDING * 0.62, tag.size.y * 0.5 + NAME_SIZE * 0.42)
+	tag.draw_string(font, baseline, _names[index], HORIZONTAL_ALIGNMENT_LEFT, -1, NAME_SIZE, ink)
+	if tag.has_focus():
+		var gold: Color = CampaignPaper.ink(CampaignLeaflet.GOLD, worn * 0.5)
+		tag.draw_rect(Rect2(Vector2.ZERO, tag.size).grow(2.0), gold, false, 2.0)

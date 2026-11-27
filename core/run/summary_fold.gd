@@ -1,7 +1,9 @@
 class_name SummaryFold
 extends RefCounted
 ## Folds one round's events into the Set's summary, by ADR 0012: what the player did to
-## each villager. families maps seats to family IDs.
+## each villager. families maps seats to family IDs. The Anonymous Letter is the
+## player's denunciation (ADR 0025): the family it forces to pass, teammate or not, is
+## denounced; a Letter wasted on nobody denounces nobody.
 
 
 static func fold_round(
@@ -27,6 +29,8 @@ static func fold_round(
 		elif event.type == RunEvent.Type.SHARE_PAID and event.seat != player:
 			if player_banked and event.value > 0:
 				summary.add(families[event.seat], SetSummary.Kind.FED)
+		elif event.type == RunEvent.Type.PASS_FORCED and event.seat != player:
+			summary.add(families[event.seat], SetSummary.Kind.DENOUNCED)
 
 
 static func _count_answer(

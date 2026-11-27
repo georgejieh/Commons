@@ -38,6 +38,9 @@ func open(app: DemoApp) -> void:
 	_refresh()
 	sheet.add_child(ScreenKit.row([_swap, keep]))
 	ScreenKit.reveal(sheet)
+	# The first time the swap is offered, a one-time tooltip explains it (ADR 0026).
+	if swapping:
+		TipSlip.offer(self, app, ["tip.plot"] as Array[String])
 	keep.grab_focus()
 
 

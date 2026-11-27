@@ -13,5 +13,6 @@ hooks = Array[String](["on_deal", "card_scored"])
 parameters = Dictionary[String, int]({})
 rarity = 1
 cost = 5
+unlock_tier = 0
 name_key = "modifier.landlords_ledger.name"
 text_key = "modifier.landlords_ledger.text"

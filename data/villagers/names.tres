@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="NameBook" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://data/villagers/name_book.gd" id="1"]
+[ext_resource type="Script" path="res://data/villagers/name_pool.gd" id="2"]
+
+[sub_resource type="Resource" id="old"]
+script = ExtResource("2")
+id = "old"
+first_generation = 1
+names = Array[String](["Fugui", "Youcai", "Changgui", "Laifu", "Desheng", "Shuigen", "Jinbao", "Yongfu", "Changshun", "Tiezhu", "Dashan", "Shuanzhu", "Mancang", "Changfa", "Fusheng", "Laixi", "Shunfa", "Maosheng", "Genfa", "Erhu", "Shitou", "Dazhu", "Xiaoman", "Guilan", "Xiulan", "Yulan", "Shuzhen", "Guiying", "Xiuying", "Cuihua", "Chunhua", "Lanying", "Guihua", "Yuzhen", "Suzhen", "Shulan", "Guizhi", "Fengying", "Baozhu", "Jinfeng"])
+
+[sub_resource type="Resource" id="founding"]
+script = ExtResource("2")
+id = "founding"
+first_generation = 2
+names = Array[String](["Jianguo", "Jianhua", "Guoqing", "Jiefang", "Xinhua", "Jianjun", "Heping", "Yuanchao", "Kangmei", "Xinmin", "Jianmin", "Guoqiang", "Aiguo", "Aimin", "Xinsheng", "Fanshen", "Jianshe", "Guangrong", "Shengli", "Baoguo", "Weiguo", "Lixin", "Minzhu", "Huping", "Aihua", "Guohua", "Jianping", "Yongjun", "Weimin", "Jianxin", "Xianjin", "Yuejin", "Chaoying", "Chaomei", "Gangtie", "Weixing", "Gonghe", "Liqun", "Qunying", "Hezuo"])
+
+[sub_resource type="Resource" id="red"]
+script = ExtResource("2")
+id = "red"
+first_generation = 3
+names = Array[String](["Weidong", "Xiangdong", "Hongwei", "Weihong", "Yonghong", "Wenge", "Hongbing", "Weibing", "Jihong", "Xuejun", "Xuenong", "Xuegong", "Zhihong", "Hongjun", "Aihong", "Jiange", "Hongmei", "Hongying", "Hongyan", "Hongxia", "Dongfang", "Chaoyang", "Xiangyang", "Hongxing", "Hongtao", "Yongge", "Changzheng", "Fanxiu", "Weiwu", "Dongsheng", "Hongguang", "Yanhong", "Lihong", "Xiaohong", "Jianhong", "Hongqi", "Hongbo", "Wenhua", "Weiqun", "Hongyu"])
+
+[sub_resource type="Resource" id="reform"]
+script = ExtResource("2")
+id = "reform"
+first_generation = 4
+names = Array[String](["Wei", "Lei", "Jing", "Yan", "Na", "Fang", "Min", "Jun", "Tao", "Chao", "Bo", "Ming", "Juan", "Ting", "Xue", "Hui", "Yang", "Kai", "Hao", "Xin", "Dan", "Yu", "Qiang", "Bin", "Jie", "Ping", "Xia", "Mei", "Yong", "Liang", "Tingting", "Lili", "Dandan", "Jingjing", "Xiaoming", "Xiaoli", "Xiaoyan", "Haitao", "Zhiqiang", "Haiyan"])
+
+[resource]
+script = ExtResource("1")
+pools = Array[Resource]([SubResource("old"), SubResource("founding"), SubResource("red"), SubResource("reform")])
+blocked_given = Array[String](["Zedong", "Enlai", "Xiaoping", "Shaoqi", "Dehuai", "Guofeng", "Ziyang", "Yaobang", "Jieshi", "Zhongshan", "Zemin", "Jintao", "Jinping", "Keqiang", "Jiabao", "Rongji", "Chunqiao", "Wenyuan", "Hongwen", "Anying", "Yonggui", "Jinxi", "Hulan", "Yulu", "Cunrui", "Jiguang", "Shaoyun", "Hongchang", "Junchang", "Xiangqian", "Yingchao", "Guangmei"])
+blocked_pairs = Array[String](["Lin Biao", "Zhu De", "Chen Yun", "Chen Yi", "Chen Boda", "Kang Sheng", "Jiang Qing", "Gao Gang", "He Long", "Peng Zhen", "Li Peng", "Wan Li", "Ye Jianying", "Li Xiannian", "Liu Bocheng", "Nie Rongzhen", "Luo Ronghuan", "Luo Ruiqing", "Yang Shangkun", "Wang Zhen", "Wang Dongxing", "Bo Yibo", "Tao Zhu", "Xie Fuzhi", "Tan Zhenlin", "Ke Qingshi", "Li Jingquan", "Zeng Xisheng", "Wu Zhipu", "Mao Yuanxin", "Sun Wen", "Sun Yixian", "Jiang Zhongzheng", "Jiang Jingguo", "Song Qingling", "Song Meiling", "Wang Jingwei", "Zhang Xueliang", "Yuan Shikai", "Lei Feng", "Wang Jie", "Shi Chuanxiang", "Xing Yanzi", "Zhang Zhixin", "Lin Zhao", "Yu Luoke", "Nie Yuanzi", "Kuai Dafu", "Song Binbin", "Lu Xun", "Guo Moruo", "Ba Jin", "Lao She", "Cao Yu", "Chen Duxiu", "Li Dazhao", "Ren Bishi", "Zhang Wentian", "Dong Biwu", "Deng Zihui", "Zhang Zhongliang", "Shu Tong", "Wang Renzhong", "Wei Guoqing", "Zhang Side", "Yang Gensi", "Luo Shengjiao", "Peng Pai", "Bian Zhongyun", "Wang Ming", "Wang Ping", "Wang Fang", "Wang Jun", "Wang Yang", "Wang Tao", "Li Desheng", "Li Xiuying", "Li Jianguo", "Li Yuanchao", "Li Qiang", "Li Tao", "Li Jing", "Li Yan", "Li Min", "Li Ming", "Li Heping", "Li Baoguo", "Li Dongsheng", "Zhao Guilan", "Zhao Dan", "Sun Yong", "Sun Jun", "Chen Yu", "Chen Bo", "Chen Lei", "Chen Hui", "Chen Xin", "Chen Jie", "Chen Yan", "Chen Qiang", "Chen Yong", "Liu Yongfu", "Liu Wei", "Qin Hui", "Qin Guangrong", "Gao Yang", "Xu Xin", "Xu Tao", "Zhou Yang", "Zhou Hui", "Ma Jun", "Ma Hui", "Feng Yong", "Tang Liang", "Tang Tao", "Deng Liqun", "Hu Ping", "Hu Wei", "Lin Wei", "Lin Xiangyang", "Guo Bo", "Song Ping", "Xie Fang", "Xie Liang", "Xie Xuegong", "Han Jun", "Yang Kai", "Yang Bo", "Yang Yong", "Peng Bo", "Zhang Fugui", "Zhang Guohua", "Zhang Hao", "Zhang Wei", "Zhang Bo", "Zhang Jun", "Zhang Ping", "Zhang Yang", "Zhang Chao", "Huang Jing", "Huang Wei", "He Weidong", "He Hongjun", "Dong Jun", "Tian Guiying", "Tian Fang", "Pan Fusheng"])
+offered_surnames = Array[String](["Zhang", "Yang", "Huang", "Wu", "Lin", "Zhu", "He", "Guo", "Luo", "Song", "Xie", "Han", "Cao", "Peng", "Hu", "Jiang", "Cai", "Ding", "Shen", "Ye", "Tian", "Pan", "Yuan", "Dong"])
+fallback_surname = "Zhang"

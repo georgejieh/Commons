@@ -14,7 +14,7 @@ const RED: Color = Color("9e1b16")
 const GILT: Color = Color("c9a227")
 ## Where the pieces sit, in the table's 1920x1080 frame: wall space clear of the seats,
 ## play lanes, hand, buttons and ledger.
-const NOTICE_AT: Rect2 = Rect2(150, 540, 280, 150)
+const NOTICE_AT: Rect2 = Rect2(150, 622, 280, 124)
 const POSTER_AT: Rect2 = Rect2(1190, 520, 200, 200)
 const CHAIR_SPOTS: Array[Vector2] = [Vector2(36, 560), Vector2(1440, 590)]
 const EXTRA_CHAIR_SPOT: Vector2 = Vector2(740, 330)
@@ -24,6 +24,7 @@ var spotlight_material: ShaderMaterial = ShaderMaterial.new()
 
 var _pieces: Dictionary[String, Control] = {}
 var _flash_until: Dictionary[String, int] = {}
+var _notice: PanelContainer = PanelContainer.new()
 
 
 func _ready() -> void:
@@ -35,6 +36,11 @@ func _ready() -> void:
 	_add_chairs("extra_chair", [EXTRA_CHAIR_SPOT] as Array[Vector2])
 	_add_poster()
 	_add_gilt()
+
+
+## Where the brigade notice hangs on screen, for what must keep clear of it.
+func notice_rect() -> Rect2:
+	return _notice.get_global_rect() if _notice.is_inside_tree() else Rect2()
 
 
 ## Fades a piece to weight; at 0 it is hidden.
@@ -84,7 +90,7 @@ func _add_spotlight() -> void:
 
 ## The brigade notice is always on the wall; only its redaction bars come and go.
 func _add_notice() -> void:
-	var notice: PanelContainer = PanelContainer.new()
+	var notice: PanelContainer = _notice
 	notice.add_theme_stylebox_override("panel", _box(PAPER, INK, 2))
 	notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	notice.position = NOTICE_AT.position

@@ -1,3 +1,5 @@
+# gdlint: disable=max-public-methods
+# Over 20 public methods: one read-only accessor per rule parameter, as the params hold.
 class_name RuleSet
 extends RefCounted
 ## Every legality parameter, frozen at construction. Modifiers edit a copy of the
@@ -91,3 +93,13 @@ func anti_spring_doubles() -> bool:
 
 func announces_at(cards_left: int) -> bool:
 	return _params.announce_at.has(cards_left)
+
+
+## True when the seat must play on its first chance to pass if anything beats the table.
+func must_answer_once() -> bool:
+	return _params.must_answer_once
+
+
+## True when every other seat sees this seat's hand.
+func hand_shown() -> bool:
+	return _params.hand_shown

@@ -1,7 +1,8 @@
 class_name ActionBar
 extends VBoxContainer
 ## What the player can do on their turn: the selection's reading and projected score,
-## Play and Pass, and the Hint, Sort and Rules toggles. Bidding swaps in Call and Pass.
+## Play and Pass, and the Hint, Sort and Rules toggles. Bidding swaps in Call and Pass,
+## and the opening before the first play, where a Campaign may be used, swaps in Play on.
 
 var reading: Label = Label.new()
 var play: Button = Button.new()
@@ -11,6 +12,7 @@ var sort: Button = Button.new()
 var rules: Button = Button.new()
 var call: Button = Button.new()
 var decline: Button = Button.new()
+var play_on: Button = Button.new()
 
 var _turn_row: VBoxContainer = VBoxContainer.new()
 var _bid_row: HBoxContainer = HBoxContainer.new()
@@ -43,12 +45,21 @@ func _ready() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_bid_row.add_child(button)
 	add_child(_bid_row)
+	_button(play_on, "action.play_on", CommonsTheme.PRIMARY)
+	add_child(play_on)
 	show_bidding(false)
 
 
 func show_bidding(on: bool) -> void:
 	_bid_row.visible = on
 	_turn_row.visible = not on
+	play_on.visible = false
+
+
+## The opening: Play on in place of the turn's buttons.
+func show_opening(on: bool) -> void:
+	play_on.visible = on
+	_turn_row.visible = not on and not _bid_row.visible
 
 
 func _button(button: Button, key: String, kind: String) -> void:

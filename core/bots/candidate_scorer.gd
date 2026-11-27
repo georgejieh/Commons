@@ -10,6 +10,7 @@ var _counts: PackedByteArray
 var _weights: BotWeights
 var _rank_map: PackedByteArray
 var _decomposer: HandDecomposer
+var _scores: Dictionary[Pattern, float] = {}
 
 
 func _init(
@@ -25,14 +26,19 @@ func _init(
 	_decomposer = HandDecomposer.new(table.rules, table.rank_map, weights.memo_cap)
 
 
+## Each move is scored once per decision: the policy and the search weigh the same moves.
 func score_play(move: Pattern) -> float:
+	if _scores.has(move):
+		return _scores[move]
 	var bonus: float = 0.0 if _bias.is_empty() else _bias[move.type]
-	return _score_play(move) + bonus
+	var value: float = _score_play(move) + bonus
+	_scores[move] = value
+	return value
 
 
 func _score_play(move: Pattern) -> float:
 	var left: PackedByteArray = _counts.duplicate()
-	var used: PackedByteArray = move.counts()
+	var used: PackedByteArray = move.spent_counts()
 	var cards_left: int = 0
 	for rank: int in Ranks.COUNT:
 		left[rank] -= used[rank]

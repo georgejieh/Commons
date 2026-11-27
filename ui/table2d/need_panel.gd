@@ -90,6 +90,11 @@ func ask(pool_units: int = 0, mate: String = "", audit_chance: float = 0.0) -> v
 	_declare.grab_focus()
 
 
+## The Declare button, which the arrival points at (ADR 0026).
+func declare_button() -> Button:
+	return _declare
+
+
 ## The need that Declare would send.
 func value() -> int:
 	return _need

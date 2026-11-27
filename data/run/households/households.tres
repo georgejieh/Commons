@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="HouseholdPool" format=3]
+
+[ext_resource type="Script" path="res://data/run/households/household_pool.gd" id="1"]
+[ext_resource type="Resource" path="res://data/run/households/poor_peasants.tres" id="2"]
+[ext_resource type="Resource" path="res://data/run/households/middle_peasants.tres" id="3"]
+[ext_resource type="Resource" path="res://data/run/households/shopkeepers.tres" id="4"]
+[ext_resource type="Resource" path="res://data/run/households/old_family.tres" id="5"]
+[ext_resource type="Resource" path="res://data/run/households/mutual_aid_team.tres" id="6"]
+[ext_resource type="Resource" path="res://data/run/households/returned_soldier.tres" id="7"]
+
+[resource]
+script = ExtResource("1")
+households = Array[Resource]([ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7")])
+default_id = "poor_peasants"

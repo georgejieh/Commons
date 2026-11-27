@@ -1,10 +1,15 @@
 class_name TitleScreen
 extends Control
 ## The title: start a new run through run setup, continue a saved one, or open the
-## collection, village history or settings.
+## collection, village history or settings. While the family's file holds an entry, its
+## stamp stands in the top right corner (ADR 0022).
+
+var _stamp: FileStamp = null
 
 
 func open(app: DemoApp) -> void:
+	# The title reads the art's stage afresh, as a run's start does (ADR 0025).
+	ArtStages.latch(Saves.profile_service())
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title_night)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(ScreenKit.eyebrow(tr("title.eyebrow")))
@@ -40,3 +45,12 @@ func open(app: DemoApp) -> void:
 	column.add_child(ScreenKit.row([collection, history, settings, quit]))
 	ScreenKit.reveal(column)
 	new_run.grab_focus()
+	var filed: int = ProfileFile.entries(Saves.profile_service()).size()
+	if filed > 0:
+		_stamp = FileStamp.new(filed)
+		add_child(_stamp)
+
+
+## The family's file's stamp, or null while the file is empty. For tests.
+func stamp() -> FileStamp:
+	return _stamp

@@ -230,3 +230,96 @@ func test_a_cut_total_still_adds_up_on_the_tally() -> void:
 	tally.show_score(25.0, 7.0, 1.0, 87.5)
 	assert_str(tally.shown()).contains(tr("tally.scaled").format({"percent": 50}))
 	Settings.set_value("reduced_motion", false)
+
+
+## Both claims declared, then both dice rolled: faces[i] for the claim of seats[i].
+func _split(
+	moments: TableMoments, seats: Array[int], faces: Array[int], quiet: bool = false
+) -> void:
+	for seat: int in seats:
+		moments.on_event(RunEvent.new(RunEvent.Type.NEED_DECLARED, seat, 12), quiet)
+	for index: int in seats.size():
+		var roll: RunEvent = RunEvent.new(
+			RunEvent.Type.AUDIT_ROLLED, seats[index], faces[index], 1.0
+		)
+		moments.on_event(roll, quiet)
+
+
+func _settle_ms() -> int:
+	return int((DiceBowl.DROP + DiceBowl.ROLL) * 1000.0) + 150
+
+
+func test_the_dice_are_thrown_together_and_settle_on_the_rolled_faces() -> void:
+	Settings.set_value("reduced_motion", false)
+	var moments: TableMoments = _moments(_no_seats())
+	var seats: Array[int] = [0, 2]
+	moments.on_event(RunEvent.new(RunEvent.Type.NEED_DECLARED, 0, 12))
+	moments.on_event(RunEvent.new(RunEvent.Type.NEED_DECLARED, 2, 12))
+	moments.on_event(RunEvent.new(RunEvent.Type.AUDIT_ROLLED, 0, 3, 1.0))
+	# The bowl waits for every claim's roll.
+	assert_bool(moments.dice.is_showing()).is_false()
+	moments.on_event(RunEvent.new(RunEvent.Type.AUDIT_ROLLED, 2, 5, 1.0))
+	assert_bool(moments.dice.is_showing()).is_true()
+	assert_bool(moments.dice.is_rolling()).is_true()
+	await await_millis(_settle_ms())
+	assert_bool(moments.dice.is_rolling()).is_false()
+	assert_array(moments.dice.faces()).is_equal([3, 5])
+	assert_array(moments.dice.audited_seats()).is_empty()
+	await await_millis(int((DiceBowl.REST + DiceBowl.LIFT) * 1000.0) + 300)
+	# Neither die was audited: both rows say so, and the bowl has lifted away.
+	for seat: int in seats:
+		assert_str(moments.slip.row_text(seat)).contains(tr("audit.clear"))
+	assert_bool(moments.dice.is_showing()).is_false()
+	assert_bool(moments.callout.is_showing()).is_false()
+
+
+func test_an_audit_calls_out_the_seat_whose_die_landed_on_it() -> void:
+	Settings.set_value("reduced_motion", false)
+	var moments: TableMoments = _moments(_no_seats())
+	var seats: Array[int] = [0, 2]
+	var faces: Array[int] = [4, 1]
+	_split(moments, seats, faces)
+	assert_array(moments.dice.audited_seats()).is_equal([2])
+	await await_millis(_settle_ms() + int(DiceBowl.REST * 1000.0) + 100)
+	assert_array(moments.dice.faces()).is_equal(faces)
+	assert_str(moments.callout.shown_word()).is_equal(tr("callout.audit").to_upper())
+	assert_str(moments.callout.shown_sub()).is_equal("Zhao")
+	# The die that missed is marked not audited; the audited one waits for its verdict.
+	assert_str(moments.slip.row_text(0)).contains(tr("audit.clear"))
+	assert_str(moments.slip.row_text(2)).contains(tr("audit.rolling"))
+	var cut_in: float = Callout.seconds_for(Callout.Tier.CUT_IN)
+	await await_millis(int((cut_in + DiceBowl.LIFT) * 1000.0) + 300)
+	assert_bool(moments.dice.is_showing()).is_false()
+
+
+func test_reduced_motion_shows_the_settled_dice_at_once() -> void:
+	Settings.set_value("reduced_motion", true)
+	var moments: TableMoments = _moments(_no_seats())
+	var faces: Array[int] = [1, 6]
+	_split(moments, [0, 1] as Array[int], faces)
+	assert_bool(moments.dice.is_showing()).is_true()
+	assert_bool(moments.dice.is_rolling()).is_false()
+	assert_array(moments.dice.faces()).is_equal(faces)
+	assert_array(moments.dice.audited_seats()).is_equal([0])
+	Settings.set_value("reduced_motion", false)
+
+
+func test_a_quiet_replay_leaves_no_bowl_on_screen() -> void:
+	Settings.set_value("reduced_motion", false)
+	var moments: TableMoments = _moments(_no_seats())
+	_split(moments, [0, 2] as Array[int], [1, 1] as Array[int], true)
+	assert_bool(moments.dice.is_showing()).is_false()
+	assert_bool(moments.callout.is_showing()).is_false()
+	# A skip in the middle of the throw takes the bowl down with it.
+	_split(moments, [0, 2] as Array[int], [2, 1] as Array[int])
+	assert_bool(moments.dice.is_showing()).is_true()
+	moments.on_event(RunEvent.new(RunEvent.Type.SHARE_PAID, 0, 600), true)
+	assert_bool(moments.dice.is_showing()).is_false()
+	await await_millis(_settle_ms() + int(DiceBowl.REST * 1000.0) + 100)
+	assert_bool(moments.dice.is_showing()).is_false()
+	assert_bool(moments.callout.is_showing()).is_false()
+
+
+func _no_seats() -> Dictionary[int, SeatPanel]:
+	var seats: Dictionary[int, SeatPanel] = {}
+	return seats

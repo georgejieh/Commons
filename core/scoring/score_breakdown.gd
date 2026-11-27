@@ -13,6 +13,8 @@ var grain: float = 0.0
 var rate: float = 0.0
 var zeal: float = 0.0
 var total: float = 0.0
+## False when a hook waived the Resentment the play's stamped cards add (ADR 0032).
+var stamps_resented: bool = true
 var steps: PackedFloat64Array = PackedFloat64Array()
 var step_count: int = 0
 

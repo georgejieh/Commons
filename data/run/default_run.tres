@@ -8,3 +8,5 @@ base_need = 10
 swaps_per_round = 1
 plot_capacity = 4
 meter_max = 100
+seat_grace_sets = 3
+seat_max_steps = 4

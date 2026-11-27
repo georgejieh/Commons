@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ModifierDef" format=3]
+
+[ext_resource type="Script" path="res://data/modifiers/modifier_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "collective_farm"
+kind = 0
+tag = 0
+lever = 2
+tier = 0
+hooks = Array[String](["play_scored"])
+parameters = Dictionary[String, int]({})
+rarity = 0
+cost = 5
+unlock_tier = 0
+name_key = "modifier.collective_farm.name"
+text_key = "modifier.collective_farm.text"
+table_wide = true

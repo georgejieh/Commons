@@ -37,6 +37,64 @@ enum Type {
 	BOSS_CHOSEN,
 	## The Purge destroyed a Cadre: text is its ID.
 	CADRE_PURGED,
+	## A declaring seat rolled the audit die: value is the face shown, amount the number
+	## of faces that mean an audit. Every roll comes before any AUDITED.
+	AUDIT_ROLLED,
+	## A met Quota beat its target by a step or more: value is the steps earned.
+	OVERFULFILLED,
+	## The player used a held Campaign (ADR 0021): value is its slot, text its ID.
+	CAMPAIGN_USED,
+	## Cards in the player's hand took a mark for the run: value 1 for Model, 0 for the
+	## player's stamp; text is the card IDs, joined by commas.
+	CARDS_MARKED,
+	## Cards moved from seat to the seat in value mid-round; text is their IDs.
+	CARDS_MOVED,
+	## An Anonymous Letter makes seat pass the play it was answering.
+	PASS_FORCED,
+	## An Anonymous Letter was spent for nothing: seat is the seat it was sent to.
+	LETTER_LAPSED,
+	## Overfulfillment settled the landlord's bank: value 1 when it doubled, 0 when it was
+	## voided; amount is what is banked.
+	STAKE_SETTLED,
+	## Appeal lifted this round's debuff: value is the round, text the debuff ID.
+	DEBUFF_LIFTED,
+	## The player gained coupons outside a Set's reward: value is how many.
+	COUPONS_GAINED,
+	## A held Cadre fired in a way the player should see (ADR 0021): value is what it
+	## fired for, such as coupons paid or 1 for a count that grew; text is its ID.
+	CADRE_FIRED,
+	## A debuff moved cards before play (ADR 0023): from seat to the seat in value; text
+	## is their IDs, joined by commas.
+	CARDS_PASSED,
+	## Confiscation left a held Cadre out of the round: value is its slot, text its ID.
+	CADRE_CONFISCATED,
+	## Plot Seized destroyed a plot card for the run: value is its ID, text its rank and
+	## suit, joined by a comma.
+	PLOT_SEIZED,
+	## Grain Tax took from what the player banked: value is the percent, amount what was
+	## taken.
+	GRAIN_TAXED,
+	## Overtime voided the player's bank for a lost round: amount is what was voided.
+	BANK_VOIDED,
+	## A seated family starved at a Quota's end (ADR 0025): seat is where it sat, value
+	## its fed count that Quota, text its family ID. It is dead for the rest of the run.
+	STARVED,
+	## A risen villager whose boss Quota the player met was put out of the landlord's seat
+	## (ADR 0025): seat is where it sat, text its family ID.
+	DEPOSED,
+	## A Quota ended without the player holding the landlord's seat, at or past the grace
+	## (ADR 0031): value is the steps it cost, 0 on the last free Quota, and amount the
+	## Famine it added.
+	STOOD_BY,
+	## A rank became wild for every seat this round (ADR 0029), drawn by Mass Line after the
+	## deal or by Model Worker: value is the rank, text every rank wild now, joined by
+	## commas, in the order they were drawn.
+	WILD_RANKS,
+	## Figures reported from outside the game were taken as official (ADR 0022): value is
+	## the run's count of corrections, text the figures that differed, joined by commas,
+	## and correction says what each was and what followed. An offence with nothing to
+	## correct, such as a failed seal, has an empty correction.
+	BOOKS_CORRECTED,
 }
 
 var type: Type
@@ -51,6 +109,8 @@ var round_event: RoundEvent
 var grain: float = 0.0
 var rate: float = 0.0
 var zeal: float = 0.0
+## Set only for BOOKS_CORRECTED.
+var correction: BooksCorrection = null
 
 
 func _init(
@@ -82,4 +142,6 @@ func describe() -> String:
 		line += " amount=%.3f" % amount
 	if not text.is_empty():
 		line += " " + text
+	if correction != null and not correction.is_empty():
+		line += " [%s]" % correction.describe()
 	return line
