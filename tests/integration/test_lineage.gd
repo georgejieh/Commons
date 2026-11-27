@@ -7,6 +7,7 @@ extends GdUnitTestSuite
 const START_TIME: int = 1_763_500_000
 const METERS: MeterTable = RunDefaults.METERS
 const MEMORY: MemoryParams = RunDefaults.MEMORY
+const PROFILE_GOLDEN: String = "res://tests/golden/lineage_profile.golden"
 
 static var _dir: String = TestFolder.of("test_lineage")
 static var _profile_path: String = _dir + "profile.json"
@@ -238,3 +239,21 @@ func test_a_lineage_that_does_not_read_is_skipped() -> void:
 
 func _id(family: FamilyDef) -> String:
 	return family.id
+
+
+## The profile file each lineage is written into at a run's end, and as the next run
+## takes it, is the same byte for byte as the committed one: an heirloom, a loyal family,
+## the label and a death's nothing.
+func test_the_profile_file_each_lineage_writes_is_unchanged() -> void:
+	var ends: Array[Array] = [[30, 30, 40, 3], [30, 20, 40, 0], [20, 80, 40, 1], [100, 40, 40, 3]]
+	var written: PackedStringArray = []
+	for index: int in ends.size():
+		var values: Array = ends[index]
+		var state: RunState = _ended(values[0], values[1], values[2], values[3])
+		_feed(state, "wang", 3)
+		ProfileCommits.commit(_profile, state, true)
+		written.append(FileAccess.get_file_as_string(_profile_path))
+		_start("", 0, 9500 + index)
+		written.append(FileAccess.get_file_as_string(_profile_path))
+	var text: String = "\n".join(written) + "\n"
+	assert_str(GoldenFile.text(PROFILE_GOLDEN, text)).is_equal(text)
