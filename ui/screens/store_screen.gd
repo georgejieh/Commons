@@ -66,7 +66,7 @@ var deck: DeckSheet = DeckSheet.new()
 var desk_stall: DeskStall = DeskStall.new()
 ## The household's true figures, shown only at the stage past the last (ADR 0022).
 var books: SmallLedger = SmallLedger.new(2)
-var _app: DemoApp
+var _app: App
 ## What every stall on the page is set up with.
 var _shop: StallContext
 var _shown_resentment: float = 0.0
@@ -85,7 +85,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_back()
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	slip.quiet = app.arrival.is_running
 	_shop = StallContext.new(app, market, slip, deck, is_issuing)
@@ -99,6 +99,7 @@ func open(app: DemoApp) -> void:
 	column.add_child(_button_row())
 	column.add_child(_bottom_row())
 	add_child(cadres.seal)
+	cadres.picker.slip = slip
 	add_child(cadres.picker)
 	add_child(slip)
 	add_child(deck)
@@ -184,7 +185,7 @@ func _set_up_stalls() -> void:
 	sale.sold.connect(_on_sold)
 
 
-func _header_row(app: DemoApp) -> Control:
+func _header_row(app: App) -> Control:
 	var place: String = "market" if market else "store"
 	var heading: Control = ScreenKit.header(tr(place + ".eyebrow"), tr(place + ".title"))
 	var top: Array[Control] = [heading, StoreNotes.balance(coupons, books)]
@@ -231,7 +232,7 @@ func _button_row() -> Control:
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
 	)
 	var deck_button: Button = ScreenKit.button(tr("deck.open"), CommonsTheme.GHOST)
-	deck_button.tooltip_text = tr("deck.open_tip")
+	slip.follow(deck_button, "", tr("deck.open_tip"))
 	# The Deck button and the desk's ticket are as wide as their words, so the black
 	# market's row keeps its upgrades.
 	deck_button.custom_minimum_size = Vector2.ZERO
@@ -384,7 +385,7 @@ func _back() -> void:
 
 func _to_market() -> void:
 	if not is_issuing() and _app.arrival.attempt("door"):
-		_app.show_screen("black_market")
+		_app.show_screen(App.BLACK_MARKET)
 
 
 ## Leaves the store for the next Quota, once nothing is being acted out or chosen.
@@ -392,4 +393,4 @@ func _leave() -> void:
 	if is_issuing() or not _app.arrival.attempt("leave"):
 		return
 	_app.controller.leave_store()
-	_app.show_screen("set_intro", true)
+	_app.show_screen(App.SET_INTRO, true)

@@ -29,8 +29,8 @@ func _lines() -> String:
 		var pattern: Pattern = Classifier.classify(RankText.counts(text), rules, map).pattern
 		var cards: Array[CardInstance] = RoundScript.stacked_deal([text], "").hands[0].cards()
 		var score: ScoreBreakdown = Scorer.score_play(cards, pattern, 1, 0, false, stack)
-		var name: String = Pattern.Type.keys()[pattern.type]
-		var shown: Array[Variant] = [name, score.grain, score.rate, score.zeal, score.total]
+		var type_name: String = Pattern.Type.keys()[pattern.type]
+		var shown: Array[Variant] = [type_name, score.grain, score.rate, score.zeal, score.total]
 		lines.append("%s grain=%s rate=%s zeal=%s total=%s" % shown)
 		for finish: int in RoundEvent.Finish.values():
 			for first: bool in [false, true]:

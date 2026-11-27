@@ -20,7 +20,7 @@ static func add(
 	state: RunState, amount: int, cause: String, params: ResentmentParams, events: Array[RunEvent]
 ) -> void:
 	var before: int = state.resentment
-	state.resentment = clampi(before + amount, 0, params.max)
+	state.resentment = clampi(before + amount, 0, params.cap)
 	if state.resentment != before:
 		events.append(
 			RunEvent.new(
@@ -65,9 +65,9 @@ static func stamped(cards: Array[CardInstance], seat: int, pattern: Pattern = nu
 
 ## The Denunciation a Set's end adds at this Resentment.
 static func denunciation(resentment: int, params: ResentmentParams) -> int:
-	return roundi(params.denunciation.sample(float(resentment) / params.max))
+	return roundi(params.denunciation.sample(float(resentment) / params.cap))
 
 
 ## What every bot holds against the player at this Resentment.
 static func grudge(resentment: int, params: ResentmentParams) -> float:
-	return params.grudge_at_max * resentment / params.max
+	return params.grudge_at_max * resentment / params.cap

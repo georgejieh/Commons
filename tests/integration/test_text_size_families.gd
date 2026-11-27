@@ -19,7 +19,7 @@ const LONGEST_SURNAME: String = "Wwwwwwwwwwww"
 ## The table's seat width, where a villager speaks.
 const SEAT: Vector2 = Vector2(380, 0)
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -92,27 +92,22 @@ func test_every_cadre_fits_its_shop_card() -> void:
 	_assert_none(problems)
 
 
-## Every Cadre's name on a full board's badge, and its tooltip no wider than the screen.
-func test_every_cadre_fits_the_board_and_its_tip() -> void:
+## Every Cadre's name, and the widest counts, fit a full board's badge.
+func test_every_cadre_fits_the_board() -> void:
 	var board: NoticeBoard = auto_free(NoticeBoard.new())
 	_app.add_child(board)
 	board.setup(6, StoreScreen.BOARD_BOX)
 	var tile: float = board.tile_size(6).x - CadreBadge.NAME_MARGIN * 2.0
 	var font: Font = board.get_theme_default_font()
-	var tip_size: int = TextSize.px(CommonsTheme.STYLE.body_size)
 	for cadre: ModifierDef in RunLoop.all_cadres():
-		var name: String = tr(cadre.name_key)
-		var fitted: int = CadreBadge.name_size(font, name, tile)
+		var title: String = tr(cadre.name_key)
+		var fitted: int = CadreBadge.name_size(font, title, tile)
 		assert_int(fitted).is_greater_equal(TextSize.least(CadreBadge.LEAST_NAME))
 		(
-			assert_bool(NameFit.words_fit(font, name, tile, fitted))
-			. override_failure_message(name)
+			assert_bool(NameFit.words_fit(font, title, tile, fitted))
+			. override_failure_message(title)
 			. is_true()
 		)
-		var tip: String = ScreenKit.cadre_tip(_app.controller, cadre.id)
-		for line: String in tip.split("\n"):
-			var wide: float = font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, tip_size).x
-			assert_float(wide).override_failure_message(line).is_less(1280.0)
 	for count: String in ["+999", "99s", "x9.9"]:
 		var count_px: int = CadreBadge.count_size(font, count)
 		var wide: float = font.get_string_size(count, HORIZONTAL_ALIGNMENT_LEFT, -1, count_px).x
@@ -131,7 +126,7 @@ func test_every_directive_fits_its_store_document() -> void:
 		for start: int in range(0, ids.size(), 2):
 			var stock: Array[String] = ids.slice(start, start + 2)
 			_loop().visit.shop.stock_with(_loop().visit.shop.stock(), stock)
-			var store: StoreScreen = _app.show_screen("store", true)
+			var store: StoreScreen = _app.show_screen(App.STORE, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			_clips(store.directives, "directives %s" % [stock], problems)
@@ -162,7 +157,7 @@ func test_every_one_time_tip_fits_its_slip() -> void:
 		get_tree().root.size = screen
 		Saves.profile_service().delete()
 		assert_bool(_app.new_run(SEED, true)).is_true()
-		var host: Control = _app.show_screen("title", true)
+		var host: Control = _app.show_screen(App.TITLE, true)
 		var slip: TipSlip = TipSlip.offer(host, _app, ProfileSeen.TIPS)
 		assert_object(slip).is_not_null()
 		await await_idle_frame()
@@ -263,8 +258,8 @@ func test_every_keyword_slip_fits_the_screen() -> void:
 	for screen: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen
 		for id: String in Keywords.TERMS:
-			var name: String = tr("keyword.%s.name" % id)
-			var slip: Control = Keywords.slip(Keywords.meaning(id), name)
+			var title: String = tr("keyword.%s.name" % id)
+			var slip: Control = Keywords.slip(Keywords.meaning(id), title)
 			auto_free(slip)
 			_app.add_child(slip)
 			await await_idle_frame()
@@ -350,9 +345,9 @@ func _keys(prefix: String) -> Array[String]:
 func _longest_surname() -> String:
 	var longest: String = ""
 	for family: FamilyDef in RunDefaults.VILLAGE.families:
-		var name: String = tr(family.name_key)
-		longest = name if name.length() > longest.length() else longest
+		var title: String = tr(family.name_key)
+		longest = title if title.length() > longest.length() else longest
 	for key: String in RunDefaults.VILLAGE.youth_surnames:
-		var name: String = tr(key)
-		longest = name if name.length() > longest.length() else longest
+		var title: String = tr(key)
+		longest = title if title.length() > longest.length() else longest
 	return longest

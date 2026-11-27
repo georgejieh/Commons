@@ -12,7 +12,7 @@ const MARKET_PARAMS: ShopParams = preload("res://data/run/black_market.tres")
 const RARE: String = "seed_grain"
 const COMMON: String = "canteen"
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -38,7 +38,7 @@ func _store() -> StoreScreen:
 	# A store of the whole pool, built as the run builds one, so both Cadres are open.
 	loop.visit.shop = RunShop.new(loop.state, loop.pools.store, pool)
 	loop.visit.shop.stock_with(stock, [])
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	return store
 
@@ -68,10 +68,10 @@ func test_only_the_top_rarity_is_rare() -> void:
 	assert_bool(shop.is_rare(2)).is_false()
 	assert_bool(shop.is_rare(9)).is_false()
 	# The rare tier is the last weight on both counters, and no Cadre is rarer.
-	assert_int(PARAMS.rarity_weights.size()).is_equal(ModifierDef.RARE + 1)
-	assert_int(MARKET_PARAMS.rarity_weights.size()).is_equal(ModifierDef.RARE + 1)
+	assert_int(PARAMS.rarity_weights.size()).is_equal(ModifierDef.Rarity.size())
+	assert_int(MARKET_PARAMS.rarity_weights.size()).is_equal(ModifierDef.Rarity.size())
 	for definition: ModifierDef in POOL.cadres + MARKET_POOL.cadres:
-		assert_int(definition.rarity).is_between(0, ModifierDef.RARE)
+		assert_int(definition.rarity).is_between(0, ModifierDef.Rarity.RARE)
 
 
 func test_a_scarce_cadre_is_stamped_and_a_routine_one_is_not() -> void:
@@ -98,14 +98,17 @@ func test_a_scarce_cadre_is_stamped_and_a_routine_one_is_not() -> void:
 	assert_float(shown.end.y).is_less_equal(picture.end.y)
 	# The word is explained where the rules are, and only on the scarce card.
 	var note: String = tr("store.scarce.note")
-	assert_str(_buy_button(cards[0]).tooltip_text).contains(note)
-	assert_str(_buy_button(cards[1]).tooltip_text).not_contains(note)
+	_buy_button(cards[0]).grab_focus()
+	assert_str(store.slip.shown_rule()).contains(note)
+	_buy_button(cards[1]).grab_focus()
+	assert_str(store.slip.shown_rule()).not_contains(note)
+	_buy_button(cards[1]).release_focus()
 	# A page refreshed, as after a purchase, shows it at rest: it is pressed once.
 	store.refresh()
 	await await_idle_frame()
-	var after: Array[ScarceStamp] = _stamps(store.blocks()["counter"].get_child(0))
-	assert_int(after.size()).is_equal(1)
-	assert_float(after[0].modulate.a).is_equal(1.0)
+	var now: Array[ScarceStamp] = _stamps(store.blocks()["counter"].get_child(0))
+	assert_int(now.size()).is_equal(1)
+	assert_float(now[0].modulate.a).is_equal(1.0)
 
 
 func test_with_motion_off_the_stamp_is_simply_there() -> void:

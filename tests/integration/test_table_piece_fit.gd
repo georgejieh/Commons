@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4301
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 800)]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -119,7 +119,7 @@ func test_the_action_column_keeps_its_foot_and_width() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen: Vector2i in SCREENS_AT:
 			get_tree().root.size = screen
-			var table: TableScreen = _app.show_screen("table", true)
+			var table: TableScreen = _app.show_screen(App.TABLE, true)
 			await await_idle_frame()
 			var actions: ActionBar = table.actions
 			for bidding: bool in [false, true]:
@@ -164,7 +164,7 @@ func test_the_rules_sheet_keeps_a_gap_at_its_scroll_bar() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen: Vector2i in SCREENS_AT:
 			get_tree().root.size = screen
-			var table: TableScreen = _app.show_screen("table", true)
+			var table: TableScreen = _app.show_screen(App.TABLE, true)
 			await await_idle_frame()
 			var sheet: CheatSheet = table.cheat_sheet
 			sheet.toggle(_app.controller)

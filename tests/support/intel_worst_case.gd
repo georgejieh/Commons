@@ -14,7 +14,7 @@ static var _holds: Array[String] = []
 
 ## Every Holds line an Informant can print, from seeded hands of 17 and 20 cards grouped
 ## as the game groups them, each line once.
-static func holds_lines(app: DemoApp) -> Array[String]:
+static func holds_lines(app: App) -> Array[String]:
 	if not _holds.is_empty():
 		return _holds
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -44,7 +44,7 @@ static func holds_lines(app: DemoApp) -> Array[String]:
 
 ## The intel a seat can show at its worst: the Holds line that wraps tallest across the
 ## sheet at the type now, and a Cards line of twenty of the widest glyphs.
-static func worst_intel(app: DemoApp, panel: SeatPanel) -> String:
+static func worst_intel(app: App, panel: SeatPanel) -> String:
 	var label: Label = panel.intel_line
 	var font: Font = label.get_theme_font("font")
 	var font_size: int = TextSize.px(SeatPanel.INTEL_SIZE)

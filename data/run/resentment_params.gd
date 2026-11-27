@@ -1,9 +1,9 @@
 class_name ResentmentParams
 extends Resource
-## What breeds Resentment, and what it costs. Resentment runs from 0 to max.
+## What breeds Resentment, and what it costs. Resentment runs from 0 to cap.
 
 ## The most Resentment there is, in points.
-@export var max: int = 100
+@export var cap: int = 100
 ## Added each time the player buys from the black market.
 @export var private_purchase: int = 5
 ## Added at each Set's end for every private Cadre the player holds.
@@ -14,7 +14,7 @@ extends Resource
 @export var grab: int = 4
 ## Added for each step a met Quota is overfulfilled by: the village pays for the norm.
 @export var overfulfilment: int = 1
-## Denunciation added at each Set's end, sampled at Resentment as a share of max. This
+## Denunciation added at each Set's end, sampled at Resentment as a share of cap. This
 ## is the one mapping from Resentment to Denunciation.
 @export var denunciation: Curve
 ## How much a bot holds against the player at full Resentment, before its grudge scales it.

@@ -1,10 +1,10 @@
 # Commons style bible
 
-The rules every image in `art/` follows (P3C.1). The direction is [ADR 0015](../docs/adr/0015-art-direction.md): Mao-era propaganda posters, distorted by cosmic horror until no real nation can be named. The look changes over a profile through ten hidden corruption stages ([ADR 0018](../docs/adr/0018-escalating-corruption.md)), so most key assets exist in several stage versions. The interface itself stays plain ink and paper (`design/UI_LANGUAGE.md`).
+The rules every image in `art/` follows. The direction is [ADR 0015](../docs/adr/0015-art-direction.md): Mao-era propaganda posters, distorted by cosmic horror until no real nation can be named. The look changes over a profile through ten hidden corruption stages ([ADR 0018](../docs/adr/0018-escalating-corruption.md)), so most key assets exist in several stage versions. The interface itself stays plain ink and paper (`design/UI_LANGUAGE.md`).
 
 ## Palette
 
-[`palette.json`](palette.json) lists 27 colors as hex values. Eight have named UI roles, and nineteen are poster print inks sampled from the approved art. The cleanup script (P3C.3) quantizes every finished image to this palette, so assets from different generations still read as one print run. A color with a UI role keeps that one meaning everywhere:
+[`palette.json`](palette.json) lists 27 colors as hex values. Eight have named UI roles, and nineteen are poster print inks sampled from the approved art. The cleanup script (`tools/art_cleanup.py`) quantizes every finished image to this palette, so assets from different generations still read as one print run. A color with a UI role keeps that one meaning everywhere:
 
 | Name | Hex | Meaning |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ Every generation prompt starts with this prefix, then describes the subject and 
 
 > Aged 1960s village silkscreen propaganda poster, flat ink-outlined print with slight misregistration, red, gold and cream inks on worn paper, no text, no lettering, no flags with emblems, no stars, no real people.
 
-Edits of an existing asset attach it as the edit target and say what must stay unchanged. Every result is logged in `art/sources/manifest.csv` (P3C.2).
+Edits of an existing asset attach it as the edit target and say what must stay unchanged. Every result is logged in `art/sources/manifest.csv`.
 
 ## The ten corruption stages
 
@@ -75,7 +75,7 @@ Rules:
 - **A choice that is ready looks ready.** A playable selection rises and its edge turns gold; the Play ticket swells.
 - **Motion never carries a fact alone.** The ledger, seats and meters show the same thing at rest, and reduced motion keeps every fact.
 - **Decay comes later.** As corruption rises the same moves should smear, stutter and thin out. Build the clean version first.
-- **The slow horrors are wrong details, not events.** The Plan's four (P5.2c) are drawn in code, with no image files, and nothing of them shows on a clean profile: an eye printed faint on the card backs that later turns, slowly, toward the pointer; a card or two in the hand whose print shivers by a fraction of a pixel, more of them and further as the run worsens; names on the brigade's typed roster fading one by one to a scraped patch of paper; villagers' talk turning into slogans, then two of them saying the same one. Each starts as one thing a player may not be sure they saw, never a jump, never a flash, and reduced motion stills the eye and the hand. The print is grimed by the stage like every drawn thing (`BowlGrime`).
+- **The slow horrors are wrong details, not events.** The Plan's four are drawn in code, with no image files, and nothing of them shows on a clean profile: an eye printed faint on the card backs that later turns, slowly, toward the pointer; a card or two in the hand whose print shivers by a fraction of a pixel, more of them and further as the run worsens; names on the brigade's typed roster fading one by one to a scraped patch of paper; villagers' talk turning into slogans, then two of them saying the same one. Each starts as one thing a player may not be sure they saw, never a jump, never a flash, and reduced motion stills the eye and the hand. The print is grimed by the stage like every drawn thing (`BowlGrime`).
 - **A page arrives in order, and can be read as it does.** Its pieces come in from the top down, each over about half a second and a tenth apart, and a long page is whole inside about a second. Nothing waits on it: every button works from the first frame.
 - **One moment a page.** A page has at most one piece that arrives its own way, and the rest only fade and settle. On the title that piece is the name, pressed letter by letter like poster type. Small print (an eyebrow, a row of minor buttons) only fades.
 - **What does not move.** Backdrops hold still once a page is in, and so does dressing. Nothing pulses, floats or shimmers to fill a quiet page; the one thing that moves is the thing to look at.

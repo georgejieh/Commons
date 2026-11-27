@@ -32,7 +32,7 @@ const ALLOWED: Dictionary[String, String] = {
 	"sizes res://ui/screens/name_fit.gd":
 	"Sets the sizes its callers took from TextSize; every NameFit call is scanned.",
 	"sizes res://ui/theme/commons_theme.tres":
-	"The project's fallback theme at Standard; DemoApp sets its size from TextSize.",
+	"The project's fallback theme at Standard; App sets its size from TextSize.",
 }
 
 

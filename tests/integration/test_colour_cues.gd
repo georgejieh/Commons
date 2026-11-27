@@ -43,14 +43,14 @@ func test_the_seat_count_says_few_cards_in_words() -> void:
 ## The longer words fit on every seat at every text size on both screens.
 func test_the_few_cards_words_fit_every_seat() -> void:
 	AppKit.fresh_saves(self)
-	var app: DemoApp = AppKit.make(self)
+	var app: App = AppKit.make(self)
 	app.new_run(SEED)
 	var problems: PackedStringArray = []
 	for level: int in TextSize.count():
 		for screen: Vector2i in SCREENS_AT:
 			Settings.set_value(TextSize.SETTING, level)
 			get_tree().root.size = screen
-			var table: TableScreen = app.show_screen("table", true)
+			var table: TableScreen = app.show_screen(App.TABLE, true)
 			await await_idle_frame()
 			table.skip_events()
 			var seats: Dictionary[int, SeatPanel] = table.seats

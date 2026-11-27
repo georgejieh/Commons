@@ -32,10 +32,6 @@ func _corrections(loop: RunLoop) -> Array[RunEvent]:
 	return found
 
 
-func _json(loop: RunLoop) -> Dictionary:
-	return JSON.parse_string(JSON.stringify(loop.record.to_dict(), "", true, true))
-
-
 func test_a_raised_coupon_count_becomes_the_plan() -> void:
 	var loop: RunLoop = _loop(10)
 	assert_int(loop.player_books({"coupons": 25})).is_equal(RunLoop.Reason.OK)
@@ -55,9 +51,9 @@ func test_a_raised_coupon_count_becomes_the_plan() -> void:
 func test_the_raised_norm_waits_for_the_next_quota() -> void:
 	var honest: RunLoop = _loop(10)
 	var cheated: RunLoop = _loop(10)
-	var before: float = cheated.target()
+	var was: float = cheated.target()
 	cheated.player_books({"coupons": 20})
-	assert_float(cheated.target()).is_equal(before)
+	assert_float(cheated.target()).is_equal(was)
 	for loop: RunLoop in [honest, cheated]:
 		RunScript.new().play_until_set_over(loop)
 		assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
@@ -139,10 +135,10 @@ func test_raised_resentment_becomes_official() -> void:
 
 func test_the_norm_raised_is_accepted_and_lowered_goes_dark() -> void:
 	var loop: RunLoop = _loop()
-	var before: float = loop.target()
+	var was: float = loop.target()
 	loop.player_books({"norm": 5})
 	assert_int(loop.state.norm_steps).is_equal(5)
-	assert_float(loop.target()).is_greater(before)
+	assert_float(loop.target()).is_greater(was)
 	loop.player_books({"norm": 1})
 	assert_int(loop.state.norm_steps).is_equal(5)
 	assert_array(loop.state.books.dark).contains_exactly(["norm"])
@@ -169,7 +165,7 @@ func test_figures_past_their_fields_are_clamped() -> void:
 	assert_int(loop.state.coupons).is_equal(BOOKS.coupons_max)
 	assert_int(loop.state.famine).is_equal(RunDefaults.PARAMS.meter_max)
 	assert_int(loop.state.denunciation).is_equal(0)
-	assert_int(loop.state.resentment).is_equal(RunDefaults.RESENTMENT.max)
+	assert_int(loop.state.resentment).is_equal(RunDefaults.RESENTMENT.cap)
 	assert_int(loop.state.norm_steps).is_equal(BOOKS.norm_steps_max)
 	assert_float(loop.state.set_progress).is_equal(Scorer.MAX_SCORE)
 	var saved: Dictionary = loop.record.commands[-1]["figures"]
@@ -218,10 +214,10 @@ func test_malformed_figures_are_refused_and_change_nothing() -> void:
 		{"grain": 4}, {"coupons": "lots"}, {"coupons": [3]}, {"progress": "nothex"}, {3: 4}
 	]:
 		var loop: RunLoop = _loop(10)
-		var before: String = JSON.stringify(loop.state.to_dict())
+		var was: String = JSON.stringify(loop.state.to_dict())
 		var commands: int = loop.record.commands.size()
 		assert_int(loop.player_books(bad)).is_equal(RunLoop.Reason.ILLEGAL)
-		assert_str(JSON.stringify(loop.state.to_dict())).is_equal(before)
+		assert_str(JSON.stringify(loop.state.to_dict())).is_equal(was)
 		assert_int(loop.record.commands.size()).is_equal(commands)
 
 

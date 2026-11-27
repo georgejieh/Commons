@@ -7,7 +7,7 @@ const SEED: int = 3
 ## Seconds the walk through a round's end may take at most.
 const WAIT_SECONDS: float = 12.0
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -123,7 +123,7 @@ func _round_end(card: CardInstance) -> Array[RunEvent]:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var player: EventPlayer = table.player
 	await TestWait.until(self, player.is_idle, "the table's events to play", WAIT_SECONDS)

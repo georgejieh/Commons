@@ -61,7 +61,7 @@ static func clamped(
 			FAMINE, DENUNCIATION:
 				most = params.meter_max
 			RESENTMENT:
-				most = resentment.max
+				most = resentment.cap
 		kept[figure] = _whole(figures[figure], most)
 	return kept
 

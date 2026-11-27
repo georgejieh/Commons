@@ -113,12 +113,12 @@ func test_a_save_restored_from_its_backup_holds_the_ledger_to_nothing() -> void:
 func test_a_ledger_one_write_behind_is_no_offence() -> void:
 	var controller: RunController = _started(true)
 	assert_bool(_kit.one_command(controller)).is_true()
-	var before: String = _ledger()
+	var was: String = _ledger()
 	FileWatchKit.loop_of(controller).state.coupons += 9
 	controller.reseal_book()
 	assert_bool(_kit.one_command(controller)).is_true()
-	assert_str(_ledger()).is_not_equal(before)
-	FileWatchKit.write_text(_kit.ledger_path(), before)
+	assert_str(_ledger()).is_not_equal(was)
+	FileWatchKit.write_text(_kit.ledger_path(), was)
 	_continued(true)
 	assert_array(_kit.entries()).is_empty()
 	assert_array(Array(_kit.lines)).is_empty()

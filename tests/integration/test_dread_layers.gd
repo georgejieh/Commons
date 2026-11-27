@@ -12,7 +12,7 @@ const STRUGGLE: int = 2
 const LANDLORD: int = 3
 const SETTINGS: Array[String] = ["horror_intensity", "no_flash", "content_note_seen"]
 
-var _app: DemoApp
+var _app: App
 var _saved: Dictionary[String, Variant] = {}
 
 
@@ -135,8 +135,8 @@ func test_no_flash_stops_every_flicker() -> void:
 	var dread: DreadLayers = await _table_dread()
 	dread.set_process(false)
 	dread.force(100, 100, false)
-	var fired: Array[String] = []
-	dread.flickered.connect(func(kind: String) -> void: fired.append(kind))
+	var fired: Array[FlickerDef.Kind] = []
+	dread.flickered.connect(func(kind: FlickerDef.Kind) -> void: fired.append(kind))
 	for _second: int in 600:
 		dread.tick_flickers(1.0)
 	assert_array(fired).is_not_empty()
@@ -148,7 +148,7 @@ func test_no_flash_stops_every_flicker() -> void:
 
 
 func test_the_content_note_names_what_the_game_holds() -> void:
-	var note: ContentNoteScreen = _app.show_screen("content_note", true)
+	var note: ContentNoteScreen = _app.show_screen(App.CONTENT_NOTE, true)
 	await await_idle_frame()
 	var text: String = note.text().to_lower()
 	for theme: String in ["famine", "persecution", "surveillance", "horror intensity"]:
@@ -156,7 +156,7 @@ func test_the_content_note_names_what_the_game_holds() -> void:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	await await_idle_frame()

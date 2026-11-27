@@ -51,7 +51,7 @@ var _home: Button
 var _figures: HBoxContainer
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_view = app.controller.seats.ending()
 	_state = app.controller.run
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -256,7 +256,7 @@ func _village() -> VBoxContainer:
 
 ## The page's foot: the figures at the left, the way home at the right, level with the
 ## tiles' foot.
-func _buttons(app: DemoApp) -> HBoxContainer:
+func _buttons(app: App) -> HBoxContainer:
 	var bar: HBoxContainer = ScreenKit.row([_figures], 20)
 	var room: Control = Control.new()
 	room.size_flags_horizontal = Control.SIZE_EXPAND_FILL

@@ -86,19 +86,19 @@ func test_no_cadre_changes_a_villagers_rules_or_ranks() -> void:
 				table.set_trick_bombed(bombed)
 				table.refresh()
 				for seat: int in [1, 2]:
-					var name: String = "%s %d %d %s" % [cadre.id, landlord, seat, bombed]
+					var case: String = "%s %d %d %s" % [cadre.id, landlord, seat, bombed]
 					var same: bool = table.rules_for(seat).same_as(plain.rules_for(seat))
-					assert_bool(same).override_failure_message(name).is_true()
+					assert_bool(same).override_failure_message(case).is_true()
 					var order: PackedByteArray = table.map_in(seat, bombed)
 					(
 						assert_bool(order == Ranks.identity_map())
-						. override_failure_message(name)
+						. override_failure_message(case)
 						. is_true()
 					)
 					var standing: PackedByteArray = table.standing_in(seat, bombed)
 					(
 						assert_bool(standing == Standing.identity())
-						. override_failure_message(name)
+						. override_failure_message(case)
 						. is_true()
 					)
 
@@ -157,7 +157,7 @@ func test_no_cadre_pays_on_an_opponents_play() -> void:
 		# seat, landlord
 		for at: Vector2i in [Vector2i(2, 2), Vector2i(1, 0), Vector2i(2, 0)]:
 			for cards: Array in _plays():
-				var name: String = "%s %s %d" % [cadre.id, at, cards.size()]
+				var case: String = "%s %s %d" % [cadre.id, at, cards.size()]
 				var theirs: float = _total(stack, cards, at.x, at.y)
 				var plain: float = _total(empty, cards, at.x, at.y)
-				assert_float(theirs).override_failure_message(name).is_equal(plain)
+				assert_float(theirs).override_failure_message(case).is_equal(plain)

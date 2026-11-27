@@ -42,7 +42,7 @@ func _largest(moves: Array[Pattern]) -> Pattern:
 
 
 ## Each play is cards, or "-" for a pass.
-func _authored_log(name: String, hands: Array[String], plays: Array[String]) -> PackedStringArray:
+func _authored_log(case: String, hands: Array[String], plays: Array[String]) -> PackedStringArray:
 	var rules: RuleSet = RuleSet.default_rules()
 	var deal: DealResult = RoundScript.stacked_deal(hands, "")
 	var round_state: RoundState = RoundState.new(
@@ -54,7 +54,7 @@ func _authored_log(name: String, hands: Array[String], plays: Array[String]) -> 
 			action = RoundScript.play(round_state, play)
 		assert_int(round_state.apply(action)).is_equal(RoundState.Reason.OK)
 	assert_bool(round_state.is_over()).is_true()
-	var lines: PackedStringArray = ["game " + name]
+	var lines: PackedStringArray = ["game " + case]
 	for event: RoundEvent in round_state.events():
 		lines.append(event.describe())
 	return lines

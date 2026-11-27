@@ -37,7 +37,7 @@ static func state(request: RunRequest, profile: SaveService = null) -> RunState:
 	if request.all_open:
 		opening.identity.finished_runs = data.finished_runs
 	opening.coupons = starting_coupons(request.kind)
-	var lineage: Dictionary = RunLineage.make(request.lineage_kind, request.lineage_values)
+	var lineage: Lineage = Lineage.new(request.lineage_kind, request.lineage_values)
 	if profile != null:
 		opening.memory = data.memory.carried(RunDefaults.MEMORY)
 		lineage = ProfileCommits.start_run(profile, opening)
@@ -83,9 +83,9 @@ static func everything_open() -> ProfileData:
 
 ## The lineage first, so the heirloom goes into the plot before the household's cards,
 ## then the household, then the stake's starting meters (ADR 0025).
-static func _open(opening: RunState, request: RunRequest, lineage: Dictionary) -> void:
+static func _open(opening: RunState, request: RunRequest, lineage: Lineage) -> void:
 	var run: RunParams = RunDefaults.PARAMS
-	RunLineage.apply(opening, str(lineage["kind"]), lineage["values"], run)
+	RunLineage.apply(opening, lineage.kind, lineage.values, run)
 	var chosen: HouseholdDef = HOUSEHOLDS.household(request.household)
 	if chosen != null:
 		var cadre: ModifierDef = RunDefinitions.modifiers.get(chosen.cadre_id)

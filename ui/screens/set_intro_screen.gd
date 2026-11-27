@@ -13,7 +13,7 @@ const LINE_SIZE: int = 24
 const RULE_SIZE: int = 20
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var controller: RunController = app.controller
 	var state: RunView = controller.run
 	var art: Texture2D = ScreenKit.ART.notice_wall
@@ -37,7 +37,7 @@ func open(app: DemoApp) -> void:
 	column.add_child(caption)
 	var steps: Array[Control] = _ladder(column, controller)
 	var begin: Button = ScreenKit.button(tr("intro.begin"), CommonsTheme.PRIMARY)
-	begin.pressed.connect(func() -> void: app.show_screen(app.table_id(), true))
+	begin.pressed.connect(func() -> void: app.show_screen(App.TABLE, true))
 	column.add_child(begin)
 	ScreenKit.reveal(column)
 	UiMotion.enter(steps)
@@ -89,7 +89,7 @@ func _ladder(column: VBoxContainer, controller: RunController) -> Array[Control]
 	return steps
 
 
-func _offer_tips(app: DemoApp) -> void:
+func _offer_tips(app: App) -> void:
 	var controller: RunController = app.controller
 	var ladder: Array[String] = controller.items.ladder()
 	# The first time a Quota lists a debuff, and the first time a family that remembers
@@ -139,12 +139,12 @@ func _step(controller: RunController, round_index: int, debuff_id: String) -> Co
 		card.add_child(ScreenKit.styled(tr(title_key), CommonsTheme.TITLE))
 		card.add_child(ScreenKit.styled(tr(text_key), CommonsTheme.CAPTION))
 	else:
-		var name: Label = ScreenKit.styled(
+		var title: Label = ScreenKit.styled(
 			controller.texts.modifier_name(debuff_id), CommonsTheme.TITLE
 		)
-		name.add_theme_font_size_override("font_size", TextSize.px(StoreScreen.NAME_SIZE))
-		name.add_theme_color_override("font_color", ScreenKit.RED)
-		card.add_child(name)
+		title.add_theme_font_size_override("font_size", TextSize.px(StoreScreen.NAME_SIZE))
+		title.add_theme_color_override("font_color", ScreenKit.RED)
+		card.add_child(title)
 		var rule: KeywordText = KeywordText.new()
 		rule.add_theme_font_size_override("normal_font_size", TextSize.px(RULE_SIZE))
 		rule.add_theme_color_override("default_color", ScreenKit.INK)

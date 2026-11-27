@@ -89,13 +89,15 @@ func preview(
 	if reading.pattern == null:
 		return PlayPreview.new(reading, 0.0)
 	var left: int = round_state.remaining()[seat] - reading.cards.size()
-	var score: float = _score_cards(reading.cards, reading.pattern, seat, left)
-	var preview: PlayPreview = PlayPreview.new(reading, score, _last_grain, _last_rate, _last_zeal)
+	var scored: float = _score_cards(reading.cards, reading.pattern, seat, left)
+	var previewed: PlayPreview = PlayPreview.new(
+		reading, scored, _last_grain, _last_rate, _last_zeal
+	)
 	var copies: Array[CardInstance] = []
 	for card: CardInstance in reading.cards:
 		copies.append(card.snapshot())
 	reading.cards = copies
-	return preview
+	return previewed
 
 
 func _score_cards(

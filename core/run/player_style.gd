@@ -56,12 +56,12 @@ static func type_shares(styles: Array[PlayerStyle]) -> PackedFloat32Array:
 
 ## How often the player called across styles, or one half with no bids to go on.
 static func bid_rate(styles: Array[PlayerStyle]) -> float:
-	var calls: int = 0
+	var called: int = 0
 	var turns: int = 0
 	for style: PlayerStyle in styles:
-		calls += style.calls
+		called += style.calls
 		turns += style.bid_turns
-	return 0.5 if turns == 0 else float(calls) / turns
+	return 0.5 if turns == 0 else float(called) / turns
 
 
 ## Makes config play like the player in styles: a bonus toward each hand type by its

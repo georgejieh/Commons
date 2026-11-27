@@ -27,8 +27,8 @@ func test_five_to_eight_copies_read_as_one_bomb_only_with_big_bombs() -> void:
 			var reading: Classification = Classifier.classify(
 				_nines(count), _rules(big), Ranks.identity_map()
 			)
-			var name: String = "%d nines, big bombs %s" % [count, big]
-			assert_bool(reading.is_valid()).override_failure_message(name).is_equal(big)
+			var case: String = "%d nines, big bombs %s" % [count, big]
+			assert_bool(reading.is_valid()).override_failure_message(case).is_equal(big)
 			if big:
 				assert_int(reading.pattern.type).is_equal(Pattern.Type.BOMB)
 				assert_int(reading.pattern.card_count).is_equal(count)

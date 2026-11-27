@@ -14,14 +14,14 @@ const NOTE_SIZE: int = 20
 
 ## The family name, beside its Change button.
 var family_line: Label
-var _app: DemoApp = null
+var _app: App = null
 var _card_backs: CardBackRow
 var _change: Button = null
 var _sheets: HBoxContainer
 var _scroll: ScrollContainer
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	if _app == null:
 		Settings.changed.connect(_on_setting)
 	_app = app
@@ -38,27 +38,27 @@ func open(app: DemoApp) -> void:
 	backs.add_child(room)
 	backs.add_child(_family_name(app))
 	var panel: Control = SettingsPanel.build(false)
-	var sheets: HBoxContainer = ScreenKit.row([panel, ScreenKit.card_panel(backs)])
-	sheets.alignment = BoxContainer.ALIGNMENT_BEGIN
-	_sheets = sheets
+	var sheet_row: HBoxContainer = ScreenKit.row([panel, ScreenKit.card_panel(backs)])
+	sheet_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_sheets = sheet_row
 	# The sheets are laid out to stand whole on the page at every text size; should they
 	# ever stand taller, they scroll, follow the focus and fade at the cut, so Back and
 	# the header stay on screen and the cut reads as more (ADR 0034).
-	var scroll: ScrollContainer = ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.follow_focus = true
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var scroller: ScrollContainer = ScrollContainer.new()
+	scroller.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroller.follow_focus = true
+	scroller.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# As wide as the sheets, so its bar stands against them, not at the page's edge.
-	scroll.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	scroll.add_child(sheets)
-	ScrollFade.over(scroll)
-	_scroll = scroll
-	column.add_child(scroll)
+	scroller.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	scroller.add_child(sheet_row)
+	ScrollFade.over(scroller)
+	_scroll = scroller
+	column.add_child(scroller)
 	var back: Button = ScreenKit.button(tr("settings.back"), CommonsTheme.PRIMARY)
 	back.pressed.connect(_leave)
 	# The pages' tickets stand here with Back, where they are always whole.
 	var row: Array[Control] = [back]
-	row.append_array(SettingsPanel.pages(_open.bind("controls"), _open.bind("window")))
+	row.append_array(SettingsPanel.pages(_open.bind(App.CONTROLS), _open.bind(App.WINDOW)))
 	column.add_child(ScreenKit.row(row))
 	ScreenKit.reveal(column)
 	back.grab_focus()
@@ -124,7 +124,7 @@ func name_line() -> String:
 
 
 ## The surname, then Change, or while a run is saved or the arrival plays, why not.
-func _family_name(app: DemoApp) -> VBoxContainer:
+func _family_name(app: App) -> VBoxContainer:
 	var block: VBoxContainer = VBoxContainer.new()
 	block.add_child(ScreenKit.eyebrow(tr("settings.family_name")))
 	family_line = ScreenKit.label(Surnames.of_profile(Saves.profile_service()), NAME_SIZE)
@@ -140,7 +140,7 @@ func _family_name(app: DemoApp) -> VBoxContainer:
 	_change.pressed.connect(
 		func() -> void:
 			Settings.save()
-			app.show_screen("surname")
+			app.show_screen(App.SURNAME)
 	)
 	block.add_child(ScreenKit.row([family_line, _change]))
 	return block

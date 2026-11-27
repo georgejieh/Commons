@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 static var _save_path: String = TestFolder.of("test_credits") + "run.json"
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -27,7 +27,7 @@ func after_test() -> void:
 
 
 func _credits() -> CreditsScreen:
-	var title: Control = _app.show_screen("title", true)
+	var title: Control = _app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	for node: Node in title.find_children("*", "Button", true, false):
 		if (node as Button).text == tr("title.credits"):
@@ -89,11 +89,11 @@ func test_the_credits_stand_whole_at_every_size() -> void:
 func test_keys_scroll_the_credits_and_escape_goes_back() -> void:
 	var screen: CreditsScreen = await _credits()
 	assert_bool(screen.scroll().has_focus()).is_true()
-	var before: int = screen.scroll().scroll_vertical
+	var was: int = screen.scroll().scroll_vertical
 	await _action("ui_down")
-	assert_int(screen.scroll().scroll_vertical).is_greater(before)
+	assert_int(screen.scroll().scroll_vertical).is_greater(was)
 	await _action("ui_cancel")
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 
 
 func _action(action: String) -> void:

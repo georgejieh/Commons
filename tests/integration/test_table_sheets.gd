@@ -10,7 +10,7 @@ const SEED: int = 3
 const TUTORIAL: TutorialScript = preload("res://data/run/tutorial/arrival.tres")
 const LEAST_TYPE: int = 16
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -25,7 +25,7 @@ func after_test() -> void:
 
 
 func _table() -> TableScreen:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return table

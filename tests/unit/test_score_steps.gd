@@ -34,10 +34,10 @@ func _def(id: String) -> ModifierDef:
 ## Every modifier that can sit in the stack while a play is scored.
 func _scoring_ids() -> Array[String]:
 	var ids: Array[String] = []
-	for name: String in DirAccess.get_files_at(MODIFIERS):
-		if name.get_extension() != "tres":
+	for file: String in DirAccess.get_files_at(MODIFIERS):
+		if file.get_extension() != "tres":
 			continue
-		var definition: ModifierDef = ResourceLoader.load(MODIFIERS.path_join(name)) as ModifierDef
+		var definition: ModifierDef = ResourceLoader.load(MODIFIERS.path_join(file)) as ModifierDef
 		if definition == null:
 			continue
 		var hooks: Array[String] = [Hooks.PLAY_SCORED, Hooks.CARD_SCORED]

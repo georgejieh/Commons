@@ -9,7 +9,7 @@ const SEED: int = 4301
 const DECK: Vector2i = Vector2i(1280, 800)
 const SCREENS_AT: Array[Vector2i] = [Vector2i(1920, 1080), DECK]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -50,8 +50,8 @@ func test_no_screen_clips_at_any_text_size() -> void:
 		for screen: Vector2i in SCREENS_AT:
 			Settings.set_value(TextSize.SETTING, level)
 			get_tree().root.size = screen
-			for screen_id: String in DemoApp.SCREENS:
-				if not ResourceLoader.exists(DemoApp.SCREENS[screen_id]):
+			for screen_id: String in App.SCREENS:
+				if not ResourceLoader.exists(App.SCREENS[screen_id]):
 					continue
 				var shown: Node = _app.show_screen(screen_id, true)
 				await await_idle_frame()
@@ -66,7 +66,7 @@ func test_the_table_menus_do_not_clip_at_any_text_size() -> void:
 		for screen: Vector2i in SCREENS_AT:
 			Settings.set_value(TextSize.SETTING, level)
 			get_tree().root.size = screen
-			var table: TableScreen = _app.show_screen("table", true)
+			var table: TableScreen = _app.show_screen(App.TABLE, true)
 			await await_idle_frame()
 			table.hud.menu.pressed.emit()
 			await await_idle_frame()
@@ -135,7 +135,7 @@ func test_the_check_catches_each_kind_of_clipping() -> void:
 ## the next deal it is built again at the new size, the sort kept, the old table gone
 ## and no search waiting.
 func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var view: RunTableView = _app.controller.table
 	# A play made this round, so the next deal is a new one.
@@ -146,7 +146,7 @@ func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
 	var cards: Array[CardInstance] = _app.hand.cards()
 	_app.hand.toggle(cards[0].id())
 	table.keep_sort(HandView.Sort.SUIT)
-	var before: Array = _round(table)
+	var was: Array = _round(table)
 	var deals: int = _deals()
 	table.hud.menu.pressed.emit()
 	var pause: PauseMenu = table.pause
@@ -167,7 +167,7 @@ func test_a_new_text_size_reaches_the_table_at_the_next_deal() -> void:
 	await await_idle_frame()
 	assert_object(_app.switcher.current()).is_same(table)
 	assert_bool(table.is_inside_tree() and pause.is_inside_tree() and not pause.visible).is_true()
-	assert_array(_round(table)).is_equal(before)
+	assert_array(_round(table)).is_equal(was)
 	var problems: PackedStringArray = []
 	ClipCheck.check(table, "table after the menu", problems)
 	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()
@@ -260,8 +260,8 @@ func test_display_type_holds_its_size() -> void:
 ## Away from the table the screen under the menu is built again when it closes, with the
 ## way back kept.
 func test_a_new_text_size_rebuilds_a_run_screen_when_the_menu_closes() -> void:
-	_app.show_screen("title", true)
-	var intro: Node = _app.show_screen("set_intro")
+	_app.show_screen(App.TITLE, true)
+	var intro: Node = _app.show_screen(App.SET_INTRO)
 	await await_idle_frame()
 	var menu: PauseMenu = _app.menu
 	menu.open()
@@ -275,9 +275,9 @@ func test_a_new_text_size_rebuilds_a_run_screen_when_the_menu_closes() -> void:
 	await await_idle_frame()
 	var rebuilt: Node = _app.switcher.current()
 	assert_bool(rebuilt != intro).is_true()
-	assert_str(_app.switcher.current_id()).is_equal("set_intro")
+	assert_str(_app.switcher.current_id()).is_equal(App.SET_INTRO)
 	assert_bool(_app.back()).is_true()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 
 
 ## The round as the run and the table hold it: what the run waits on, its events, the

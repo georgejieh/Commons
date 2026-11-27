@@ -53,7 +53,7 @@ func setup(
 	actions.hint.pressed.connect(_on_hint)
 	actions.sort.pressed.connect(_toggle_sort)
 	actions.rules.pressed.connect(_on_rules)
-	actions.call.pressed.connect(_on_bid.bind(true))
+	actions.call_landlord.pressed.connect(_on_bid.bind(true))
 	actions.decline.pressed.connect(_on_bid.bind(false))
 	need_panel.declared.connect(_on_need)
 	_show_sort()
@@ -116,7 +116,7 @@ func refresh() -> void:
 func _show_bid() -> void:
 	var holder: int = _controller.table.bid_holder()
 	var grabbing: bool = holder != Seats.NONE
-	_actions.call.text = tr("action.grab" if grabbing else "action.call")
+	_actions.call_landlord.text = tr("action.grab" if grabbing else "action.call")
 	var prompt: String = tr("table.bid_prompt")
 	if grabbing:
 		var who: String = _names.get(holder, "")

@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const WAIT_SECONDS: float = 5.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -44,7 +44,9 @@ func _opened(kind: String) -> EnvelopeOverlay:
 	if kind == "parcel":
 		counter = _loop().visit.market.envelopes
 	counter.stock_with([kind] as Array[String])
-	var store: StoreScreen = _app.show_screen("black_market" if kind == "parcel" else "store", true)
+	var store: StoreScreen = _app.show_screen(
+		App.BLACK_MARKET if kind == "parcel" else "store", true
+	)
 	await await_idle_frame()
 	var stall: EnvelopeStall = store.envelope_stall
 	stall.panel(0).buy.pressed.emit()

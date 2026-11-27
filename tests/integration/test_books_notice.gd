@@ -7,7 +7,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 7211
 
-var _app: DemoApp
+var _app: App
 var _lines: PackedStringArray = []
 var _was_size: Vector2i
 
@@ -58,7 +58,7 @@ func _start_full_run() -> void:
 ## sees it: the detector corrects the books and the notice comes over the table.
 func test_a_live_correction_brings_the_notice_over_the_table_and_holds_it() -> void:
 	_start_full_run()
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var coupons: int = _loop().state.coupons
 	_loop().state.coupons = coupons + 500
@@ -100,7 +100,7 @@ func test_no_notice_on_a_reload_or_a_table_joining_the_run() -> void:
 	for event: RunEvent in _app.controller.set_events():
 		replayed += 1 if event.type == RunEvent.Type.BOOKS_CORRECTED else 0
 	assert_int(replayed).is_equal(1)
-	_app.show_screen("table", true)
+	_app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	assert_bool(_app.notice.is_showing()).is_false()
 
@@ -111,7 +111,7 @@ func test_the_notice_on_every_kind_of_screen_and_every_time() -> void:
 	_app.new_run(SEED)
 	var driver: ControllerScript = ControllerScript.new()
 	driver.play_to(self, _app.controller, RunController.AWAIT_SET_OVER)
-	_app.show_screen("set_summary", true)
+	_app.show_screen(App.SET_SUMMARY, true)
 	await await_idle_frame()
 	await _shown_and_acknowledged()
 	_app.controller.finish_set()

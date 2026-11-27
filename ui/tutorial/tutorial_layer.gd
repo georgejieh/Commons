@@ -16,7 +16,7 @@ const BEGIN_GAP: float = 16.0
 ## Above the highest piece a screen lifts, the envelope overlay's 4.
 const DRAW_ORDER: int = 5
 
-var _app: DemoApp = null
+var _app: App = null
 var _director: TutorialDirector = null
 var _slip: TutorialSlip = TutorialSlip.new()
 var _glow: TutorialGlow = TutorialGlow.new()
@@ -46,7 +46,7 @@ func _ready() -> void:
 
 
 ## Starts showing the arrival the director walks.
-func attach(app: DemoApp, director: TutorialDirector) -> void:
+func attach(app: App, director: TutorialDirector) -> void:
 	_app = app
 	_director = director
 	_focused = ""
@@ -70,7 +70,7 @@ func detach() -> void:
 ## The app showed a screen. Every screen but the table reports where the run stands at
 ## once; the table reports when its events have played out.
 func on_screen(screen_id: String) -> void:
-	if _director != null and screen_id != "table" and _app.controller.has_run():
+	if _director != null and screen_id != App.TABLE and _app.controller.has_run():
 		_director.ready(screen_id, _app.controller.awaiting())
 
 
@@ -133,10 +133,10 @@ func _layout() -> void:
 		_skip.position.x - BEGIN_GAP - _begin.size.x, size_now.y - _begin.size.y - FOOT
 	)
 	var guide: Object = _guide()
-	var hidden: bool = _app.menu_is_open()
+	var menu_open: bool = _app.menu_is_open()
 	if guide != null and guide.has_method("tutorial_hidden"):
-		hidden = hidden or bool(guide.call("tutorial_hidden"))
-	var showing: bool = not hidden and _on_its_screen()
+		menu_open = menu_open or bool(guide.call("tutorial_hidden"))
+	var showing: bool = not menu_open and _on_its_screen()
 	_slip.visible = showing and not _slip.line().is_empty()
 	var key: String = _director.highlight() if showing else ""
 	_glow.light(_targets(guide, key))

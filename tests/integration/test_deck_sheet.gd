@@ -11,7 +11,7 @@ const MODEL_CARD: int = 0
 const STAMPED_CARD: int = 9
 const SURPLUS_CARD: int = 53
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -41,7 +41,7 @@ func _to_the_store() -> StoreScreen:
 	CardMarks.enhance(state, Deck.new().card(SURPLUS_CARD), CardInstance.SURPLUS)
 	CardMarks.stamp(state, Deck.new().card(STAMPED_CARD), RunLoop.PLAYER)
 	_app.controller.reseal_book()
-	return _app.show_screen("store", true)
+	return _app.show_screen(App.STORE, true)
 
 
 func _deck_button(root: Node) -> Button:
@@ -126,8 +126,8 @@ func test_the_sheet_keeps_the_focus_and_cancel_closes_it() -> void:
 	await _tap("ui_right")
 	assert_int(sheet.board().cursor_card()).is_not_equal(first)
 	await _tap("ui_down")
-	var owner: Control = get_viewport().gui_get_focus_owner()
-	assert_bool(owner == sheet.board() or sheet.is_ancestor_of(owner)).is_true()
+	var focused: Control = get_viewport().gui_get_focus_owner()
+	assert_bool(focused == sheet.board() or sheet.is_ancestor_of(focused)).is_true()
 	await _tap("ui_cancel")
 	assert_bool(sheet.is_open()).is_false()
 
@@ -143,7 +143,7 @@ func _tap(action: String) -> void:
 
 
 func test_the_table_opens_it_from_its_menu_and_waits() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var menu: PauseMenu = table.pause
 	table.hud.menu.pressed.emit()

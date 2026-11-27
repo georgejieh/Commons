@@ -10,10 +10,6 @@ const KIND_STAMPED: int = EnvelopeDef.Content.STAMPED_CARD
 const KIND_MODEL: int = EnvelopeDef.Content.MODEL_CARD
 const KIND_DECK: int = EnvelopeDef.Content.DECK_CARD
 const KIND_MARKED_DECK: int = EnvelopeDef.Content.MARKED_DECK_CARD
-## The wrappings, for the screen's drawings.
-const STRING_TIE: int = EnvelopeDef.Wrapping.STRING_TIE
-const WAX_SEAL: int = EnvelopeDef.Wrapping.WAX_SEAL
-const PARCEL: int = EnvelopeDef.Wrapping.PARCEL
 
 ## True for the black market's counter.
 var market: bool = false
@@ -51,7 +47,7 @@ func envelope_text(envelope_id: String) -> String:
 	return text.format({"choices": _counter.choices(envelope_id)})
 
 
-func wrapping(envelope_id: String) -> int:
+func wrapping(envelope_id: String) -> EnvelopeDef.Wrapping:
 	return _counter.definition(envelope_id).wrapping
 
 

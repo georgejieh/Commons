@@ -29,10 +29,10 @@ func test_a_sale_pays_half_the_price_at_that_counter_rounded_down_and_never_noth
 		var at_store: int = ceili(cost * STORE.price_percent / 100.0)
 		var at_market: int = ceili(cost * MARKET.price_percent / 100.0)
 		assert_int(RunShop.sale_of(state, STORE, cost)).is_equal(
-			maxi(1, at_store * STORE.sell_percent / 100)
+			maxi(1, floori(at_store * STORE.sell_percent / 100.0))
 		)
 		assert_int(RunShop.sale_of(state, MARKET, cost)).is_equal(
-			maxi(1, at_market * MARKET.sell_percent / 100)
+			maxi(1, floori(at_market * MARKET.sell_percent / 100.0))
 		)
 	assert_int(RunShop.sale_of(state, STORE, 1)).is_equal(1)
 
@@ -106,11 +106,11 @@ func test_the_households_first_cadre_sells_like_any_other() -> void:
 
 func test_a_refused_sale_changes_nothing() -> void:
 	var loop: RunLoop = RunScript.at_the_shops(self, 25, RICH)
-	var before: Dictionary = loop.state.to_dict()
+	var was: Dictionary = loop.state.to_dict()
 	assert_int(loop.player_sell_cadre(-1)).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_int(loop.player_sell_cadre(99)).is_equal(RunLoop.Reason.ILLEGAL)
 	assert_int(loop.player_sell_campaign(99)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_dict(loop.state.to_dict()).is_equal(before)
+	assert_dict(loop.state.to_dict()).is_equal(was)
 	# A Cadre a debuff holds stays; the reason says so.
 	if loop.state.inventory.cadres.is_empty():
 		loop.state.inventory.cadres.append(RunLoop.all_cadres()[0].id)
@@ -257,12 +257,12 @@ func test_a_sold_cadre_cannot_be_bought_back_from_either_shelf_that_visit() -> v
 		var index: int = loop.state.inventory.cadres.size() - 1
 		assert_int(loop.player_sell_cadre(index, at_market)).is_equal(RunLoop.Reason.OK)
 		assert_int(counter.check_buy(0)).is_equal(RunShop.Reason.SOLD_BACK)
-		var before: Dictionary = loop.state.to_dict()
+		var was: Dictionary = loop.state.to_dict()
 		var bought: RunLoop.Reason = (
 			loop.player_market_buy(0, Ranks.SEVEN) if at_market else loop.player_buy(0)
 		)
 		assert_int(bought).is_equal(RunLoop.Reason.ILLEGAL)
-		assert_dict(loop.state.to_dict()).is_equal(before)
+		assert_dict(loop.state.to_dict()).is_equal(was)
 
 
 ## A Campaign sold back cannot be kept from an envelope opened after the sale that visit.

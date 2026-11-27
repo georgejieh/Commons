@@ -193,10 +193,10 @@ func _rows() -> GridContainer:
 	for heading: String in ["action", "key", "pad"]:
 		grid.add_child(ScreenKit.eyebrow(tr("controls.heading." + heading)))
 	for action: String in KeyBindings.ACTIONS:
-		var name: Label = ScreenKit.label(tr("controls.action." + action), NAME_SIZE)
-		name.custom_minimum_size = Vector2(200, 0)
-		name.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		grid.add_child(name)
+		var action_label: Label = ScreenKit.label(tr("controls.action." + action), NAME_SIZE)
+		action_label.custom_minimum_size = Vector2(200, 0)
+		action_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		grid.add_child(action_label)
 		var key: Button = ScreenKit.button("", CommonsTheme.SECONDARY)
 		key.name = TICKET % action
 		key.pressed.connect(capture.bind(action))
@@ -206,7 +206,7 @@ func _rows() -> GridContainer:
 		pad.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		grid.add_child(pad)
 		if action == KeyBindings.HINT:
-			_hint_row.assign([name, key, pad])
+			_hint_row.assign([action_label, key, pad])
 	_show_keys()
 	return grid
 

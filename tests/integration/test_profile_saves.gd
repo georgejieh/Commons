@@ -160,11 +160,11 @@ func test_a_quota_is_taken_once_per_run() -> void:
 func test_profile_written_but_run_save_not() -> void:
 	var state: RunState = _full_state(RunFlow.State.SET_END)
 	ProfileCommits.commit(_profile, state, false)
-	var before: String = FileAccess.get_file_as_string(_profile_path)
+	var was: String = FileAccess.get_file_as_string(_profile_path)
 	var controller: RunController = auto_free(RunController.new())
 	_save_run(state)
 	assert_bool(controller.continue_saved(_saves, _profile)).is_true()
-	assert_str(FileAccess.get_file_as_string(_profile_path)).is_equal(before)
+	assert_str(FileAccess.get_file_as_string(_profile_path)).is_equal(was)
 
 
 ## The run save reached the Quota's end but the profile never took it: Continue offers
@@ -235,15 +235,15 @@ func test_a_demo_run_is_never_recorded() -> void:
 	assert_dict(data.memory.to_dict()).is_equal(state.memory.to_dict())
 
 
-## The checklist's Done-when: deleting the run save leaves the profile as it was.
+## Deleting the run save leaves the profile as it was.
 func test_deleting_the_run_save_leaves_the_profile_untouched() -> void:
 	var state: RunState = _full_state(RunFlow.State.RUN_END)
 	ProfileCommits.commit(_profile, state, true)
 	_save_run(state)
-	var before: String = FileAccess.get_file_as_string(_profile_path)
+	var was: String = FileAccess.get_file_as_string(_profile_path)
 	_saves.delete()
 	assert_bool(FileAccess.file_exists(_run_path)).is_false()
-	assert_str(FileAccess.get_file_as_string(_profile_path)).is_equal(before)
+	assert_str(FileAccess.get_file_as_string(_profile_path)).is_equal(was)
 	assert_int(Profile.read(_profile).history.size()).is_equal(1)
 
 

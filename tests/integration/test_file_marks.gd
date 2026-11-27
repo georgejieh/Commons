@@ -13,7 +13,7 @@ const VISIT: WorkTeamTalk = preload("res://data/ui/work_team_talk.tres")
 ## Lines a seat is asked for in the villagers' test: enough that a 4% chance shows.
 const SAID: int = 600
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -59,13 +59,13 @@ func _file(count: int, corruption: float = 0.0) -> Array[FileEntry]:
 
 
 func test_the_stamp_shows_only_with_an_entry_clear_of_the_buttons() -> void:
-	var title: TitleScreen = _app.show_screen("title", true)
+	var title: TitleScreen = _app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	assert_object(title.stamp()).is_null()
 	_file(2)
 	for screen_size: Vector2i in ClipCheck.SIZES:
 		get_tree().root.size = screen_size
-		title = _app.show_screen("title", true)
+		title = _app.show_screen(App.TITLE, true)
 		await await_idle_frame()
 		await await_idle_frame()
 		var stamp: FileStamp = title.stamp()
@@ -86,11 +86,11 @@ func test_the_stamp_shows_only_with_an_entry_clear_of_the_buttons() -> void:
 
 
 func test_the_history_lists_the_file_oldest_first_and_only_with_an_entry() -> void:
-	var page: VillageHistoryScreen = _app.show_screen("village_history", true)
+	var page: VillageHistoryScreen = _app.show_screen(App.VILLAGE_HISTORY, true)
 	await await_idle_frame()
 	assert_array(Array(page.file_lines())).is_empty()
 	var entries: Array[FileEntry] = _file(2)
-	page = _app.show_screen("village_history", true)
+	page = _app.show_screen(App.VILLAGE_HISTORY, true)
 	await await_idle_frame()
 	var lines: PackedStringArray = page.file_lines()
 	assert_int(lines.size()).is_equal(3)
@@ -106,7 +106,7 @@ func _visit_lines(entries: int) -> int:
 	_app.new_run(SEED)
 	_loop().state.identity.file_entries = entries
 	_app.controller.reseal_book()
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var speech: TableSpeech = table.speech
 	var visits: Array[int] = [0]
@@ -171,7 +171,7 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	_app.new_run(SEED)
 	_figures()
 	ArtStages.stage_override = ArtStages.FILED_STAGE
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var hud: TableHud = table.hud
@@ -191,7 +191,7 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	assert_bool(paper.get_global_rect().grow(ClipCheck.SLACK).encloses(books)).is_true()
 	# The same run at stage 9 shows its figures as they are, and no slip.
 	ArtStages.stage_override = ArtStages.LAST_STAGE
-	table = _app.show_screen("table", true)
+	table = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	ledger = table.ledger
 	assert_bool(ledger.books.visible).is_false()
@@ -225,8 +225,8 @@ func test_at_the_stage_past_the_last_both_shops_keep_the_small_ledger() -> void:
 func _check_blocks(shop: StoreScreen, books: Control, where: String) -> void:
 	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var rects: Dictionary[String, Rect2] = {}
-	for name: String in shop.blocks():
-		rects[name] = shop.blocks()[name].get_global_rect()
+	for block: String in shop.blocks():
+		rects[block] = shop.blocks()[block].get_global_rect()
 	assert_bool(screen.encloses(books.get_global_rect())).override_failure_message(where).is_true()
 	var names: Array[String] = rects.keys()
 	for first: int in names.size():
@@ -236,6 +236,8 @@ func _check_blocks(shop: StoreScreen, books: Control, where: String) -> void:
 			var b: Rect2 = rects[names[second]].grow(-ClipCheck.SLACK)
 			var pair: String = "%s: %s and %s" % [where, names[first], names[second]]
 			assert_bool(a.intersects(b)).override_failure_message(pair).is_false()
-	for name: String in ["counter", "side", "buttons", "board", "shelf", "notes"]:
-		var apart: bool = not books.get_global_rect().grow(-ClipCheck.SLACK).intersects(rects[name])
-		assert_bool(apart).override_failure_message("%s: slip over %s" % [where, name]).is_true()
+	for block: String in ["counter", "side", "buttons", "board", "shelf", "notes"]:
+		var apart: bool = not books.get_global_rect().grow(-ClipCheck.SLACK).intersects(
+			rects[block]
+		)
+		assert_bool(apart).override_failure_message("%s: slip over %s" % [where, block]).is_true()

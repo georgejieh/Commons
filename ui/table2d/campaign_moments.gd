@@ -233,8 +233,8 @@ func _move_cards(event: RunEvent) -> void:
 	var tween: Tween = _start_beat()
 	var wait: float = 0.0
 	if seizing and event.seat == Seats.PLAYER:
-		var name: String = _table.names().get(event.value, "")
-		var sub: String = tr("callout.seizure.sub").format({"name": name})
+		var surname: String = _table.names().get(event.value, "")
+		var sub: String = tr("callout.seizure.sub").format({"name": surname})
 		wait = _table.callout.shout(
 			tr("callout.seizure"), Callout.Tier.TAKEOVER, ScreenKit.RED, sub
 		)

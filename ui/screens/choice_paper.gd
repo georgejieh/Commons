@@ -85,21 +85,21 @@ static func item_for(count: int) -> Vector2:
 ## True when a paper in shelf's open envelope has a caption to print under it: what a
 ## card's mark does, or why an item cannot be kept. Then every paper keeps room for one.
 static func needs_strips(shelf: EnvelopeShelf) -> bool:
-	for index: int in shelf.count():
-		var kind: int = shelf.kind(index)
+	for place: int in shelf.count():
+		var kind: int = shelf.kind(place)
 		var plain: bool = (
 			kind == EnvelopeShelf.KIND_DIRECTIVE or kind == EnvelopeShelf.KIND_CAMPAIGN
 		)
-		if not plain or not shelf.refusal_key(index).is_empty():
+		if not plain or not shelf.refusal_key(place).is_empty():
 			return true
 	return false
 
 
 ## The whole paper's size for an item's place: room to lift, the item and, with strips,
 ## its caption strip.
-static func size_for(item: Vector2, strips: bool = true) -> Vector2:
+static func size_for(place: Vector2, strips: bool = true) -> Vector2:
 	var under: float = GAP + CAPTION_HEIGHT if strips else 0.0
-	return Vector2(item.x, LIFT_ROOM + item.y + under)
+	return Vector2(place.x, LIFT_ROOM + place.y + under)
 
 
 ## Lays the paper out for its place in the row; strips keeps room under the item for a
@@ -165,10 +165,10 @@ func show_directive(controller: RunController, directive_id: String) -> void:
 	sheet.add_theme_constant_override("separation", 2)
 	sheet.alignment = BoxContainer.ALIGNMENT_BEGIN
 	sheet.add_child(ScreenKit.eyebrow(tr(DirectiveSheet.EYEBROW)))
-	var name: Label = ScreenKit.label(title, NAME_SIZE)
-	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_fit_one_line(name, item_size.x - DOCUMENT_INSET)
-	sheet.add_child(name)
+	var name_label: Label = ScreenKit.label(title, NAME_SIZE)
+	name_label.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	_fit_one_line(name_label, item_size.x - DOCUMENT_INSET)
+	sheet.add_child(name_label)
 	sheet.add_child(HSeparator.new())
 	for type: int in controller.items.directive_types(directive_id):
 		var line: Label = ScreenKit.label(DirectiveSheet.rate_line(controller, type), LINE_SIZE)
@@ -183,14 +183,14 @@ func show_directive(controller: RunController, directive_id: String) -> void:
 	item.clip_contents = true
 	_place.add_child(item)
 	# Measured where the theme reaches it, so the sizes are the ones it is drawn at.
-	_fit_lines(sheet, name)
+	_fit_lines(sheet, name_label)
 
 
 ## The document is a place of a fixed size: its Rate lines grow with the text size only
 ## while the whole document still fits it (ADR 0034).
 ## When the lines at their Standard size still do not fit, the name is set smaller, down
 ## to the size it has at Standard.
-func _fit_lines(sheet: VBoxContainer, name: Label) -> void:
+func _fit_lines(sheet: VBoxContainer, name_label: Label) -> void:
 	var wide: float = item_size.x - DOCUMENT_PADDING * 2.0
 	var fits: Callable = func(font_size: int) -> bool:
 		for line: Label in lines:
@@ -198,15 +198,15 @@ func _fit_lines(sheet: VBoxContainer, name: Label) -> void:
 		return _document_height(sheet, wide) <= item_size.y
 	var line_px: int = TextSize.fit(LINE_SIZE, LINE_SIZE, fits)
 	fits.call(line_px)
-	var font: Font = name.get_theme_font("font")
+	var font: Font = name_label.get_theme_font("font")
 	var wide_name: float = item_size.x - DOCUMENT_INSET
 	var least: int = NameFit.one_line_size(
-		font, name.text, wide_name, NAME_SIZE, TextSize.least(DOCUMENT_NAME_LEAST)
+		font, name_label.text, wide_name, NAME_SIZE, TextSize.least(DOCUMENT_NAME_LEAST)
 	)
-	var name_px: int = name.get_theme_font_size("font_size")
+	var name_px: int = name_label.get_theme_font_size("font_size")
 	while name_px > least and _document_height(sheet, wide) > item_size.y:
 		name_px -= 1
-		name.add_theme_font_size_override("font_size", maxi(name_px, TextSize.least(least)))
+		name_label.add_theme_font_size_override("font_size", maxi(name_px, TextSize.least(least)))
 
 
 ## How tall the document's column stands with its wrapped lines set wide, before it is
@@ -240,11 +240,11 @@ static func _wrapped_height(label: Label, wide: float) -> float:
 ## Sets a Directive's name on one line where a size from NAME_SIZE down to
 ## DOCUMENT_NAME_LEAST allows, so its Rate lines keep the room; a longer name wraps
 ## between words at the least size.
-func _fit_one_line(name: Label, wide: float) -> void:
-	var font: Font = name.get_theme_font("font")
+func _fit_one_line(name_label: Label, wide: float) -> void:
+	var font: Font = name_label.get_theme_font("font")
 	var least: int = TextSize.least(DOCUMENT_NAME_LEAST)
 	var font_size: int = NameFit.one_line_size(font, title, wide, TextSize.px(NAME_SIZE), least)
-	NameFit.apply(name, title, wide, font_size, TextSize.least(NameFit.LEAST))
+	NameFit.apply(name_label, title, wide, font_size, TextSize.least(NameFit.LEAST))
 
 
 ## A Campaign: its leaflet, as the tray holds it, as large as the place allows.

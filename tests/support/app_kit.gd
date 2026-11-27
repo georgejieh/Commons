@@ -17,9 +17,9 @@ static func fresh_saves(suite: GdUnitTestSuite) -> void:
 
 ## A new app in the suite's tree, saving where the last fresh_saves pointed. No run is
 ## started, so a suite can set the app up first.
-static func make(suite: GdUnitTestSuite) -> DemoApp:
+static func make(suite: GdUnitTestSuite) -> App:
 	var scene: PackedScene = load(SCENE)
-	var app: DemoApp = suite.auto_free(scene.instantiate())
+	var app: App = suite.auto_free(scene.instantiate())
 	suite.add_child(app)
 	return app
 

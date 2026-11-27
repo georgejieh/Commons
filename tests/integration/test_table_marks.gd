@@ -10,7 +10,7 @@ const SEED: int = 4301
 ## A tremble of the slip's edge against its subject's, in pixels.
 const TREMBLE: float = 0.5
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 var _was_reduced: bool
 
@@ -33,7 +33,7 @@ func after_test() -> void:
 func _table(level: int, screen: Vector2i) -> TableScreen:
 	Settings.set_value(TextSize.SETTING, level)
 	get_tree().root.size = screen
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
 	await await_idle_frame()
@@ -99,7 +99,7 @@ func test_each_rule_name_is_closed_before_its_text() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.debuff_ladder.assign(["", debuff, "", ""])
 	loop.state.round_index = 1
-	var name: String = _app.controller.texts.modifier_name(debuff)
+	var title: String = _app.controller.texts.modifier_name(debuff)
 	var wild: String = ReadingText.wild_line([Ranks.SEVEN] as Array[int])
 	for level: int in TextSize.count():
 		for screen: Vector2i in ClipCheck.SIZES:
@@ -115,7 +115,7 @@ func test_each_rule_name_is_closed_before_its_text() -> void:
 			)
 			if not strip.is_named():
 				assert_str(shown).override_failure_message(where).contains(
-					name + DebuffStrip.NAME_END + " "
+					title + DebuffStrip.NAME_END + " "
 				)
 
 

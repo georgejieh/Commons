@@ -27,7 +27,7 @@ var _rank_map: PackedByteArray = PackedByteArray()
 var _wild: Array[int] = []
 var _hand: Array[CardInstance] = []
 var _plot: Array[CardInstance] = []
-var _plot_side: Dictionary[int, bool] = {}
+var _source: Dictionary[int, PlotTrade.Source] = {}
 var _views: Dictionary[int, CardView] = {}
 var _labels: Array[Label] = []
 var _out_places: Array[Control] = []
@@ -70,7 +70,7 @@ func show_cards(
 	_plot = _sorted(plot)
 	_build_places(limit)
 	for card: CardInstance in _hand + _plot:
-		_plot_side[card.id()] = _plot.has(card)
+		_source[card.id()] = PlotTrade.Source.PLOT if _plot.has(card) else PlotTrade.Source.HAND
 		var view: CardView = pool.acquire()
 		if view == null:
 			continue
@@ -93,7 +93,7 @@ func clear() -> void:
 		view.mouse_filter = Control.MOUSE_FILTER_STOP
 		_pool.release(view)
 	_views.clear()
-	_plot_side.clear()
+	_source.clear()
 	_spots.clear()
 	_order.clear()
 	for piece: Control in _labels + _out_places + _plot_places + _tags:
@@ -109,16 +109,16 @@ func clear() -> void:
 
 ## Presses a card as a click or a key does. Returns the trade's answer.
 func press(card_id: int) -> PlotTrade.Reason:
-	var side: int = PlotTrade.PLOT if _plot_side[card_id] else PlotTrade.HAND
-	var reason: PlotTrade.Reason = trade.press(side, card_id)
+	var reason: PlotTrade.Reason = trade.press(_source[card_id], card_id)
 	_after(reason)
 	return reason
 
 
 ## Trades two cards as a drop does.
 func drop(dragged: int, target: int) -> PlotTrade.Reason:
-	var hand_id: int = target if _plot_side[dragged] else dragged
-	var plot_id: int = dragged if _plot_side[dragged] else target
+	var plotted: bool = _source[dragged] == PlotTrade.Source.PLOT
+	var hand_id: int = target if plotted else dragged
+	var plot_id: int = dragged if plotted else target
 	var reason: PlotTrade.Reason = trade.pair(hand_id, plot_id)
 	_after(reason)
 	return reason
@@ -367,7 +367,7 @@ func _on_motion(motion: InputEventMouseMotion) -> void:
 	view.z_index = ScreenKit.LAYER_SHEET
 	view.position = motion.position - _grab
 	var target: int = _card_at(motion.position, _press_id)
-	if target != PlotTrade.NONE and _plot_side[target] == _plot_side[_press_id]:
+	if target != PlotTrade.NONE and _source[target] == _source[_press_id]:
 		target = PlotTrade.NONE
 	if target != _drop_id:
 		_drop_id = target

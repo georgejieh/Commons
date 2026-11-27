@@ -6,7 +6,6 @@ extends RefCounted
 ## Where the run stands when a Campaign is checked.
 enum Moment { ELSEWHERE, OPENING, TURN, SHOP }
 
-const RESENTMENT: ResentmentParams = preload("res://data/run/resentment.tres")
 ## The meter row a Campaign's Famine moves through; its amount is the Campaign's.
 const FAMINE_SOURCE: String = "campaign_famine"
 ## The meter row a Campaign's Denunciation moves through; its amount is the Campaign's.
@@ -50,13 +49,15 @@ func add_event(event: RunEvent) -> void:
 
 func resent(amount: int) -> void:
 	if amount != 0:
-		Resentment.add(state, amount, Resentment.CAMPAIGN, RESENTMENT, set_log.events())
+		Resentment.add(state, amount, Resentment.CAMPAIGN, RunDefaults.RESENTMENT, set_log.events())
 
 
 ## Lowers Resentment through its one path down (ADR 0032).
 func relent(amount: int) -> void:
 	if amount != 0:
-		Resentment.lower(state, amount, Resentment.CAMPAIGN, RESENTMENT, set_log.events())
+		Resentment.lower(
+			state, amount, Resentment.CAMPAIGN, RunDefaults.RESENTMENT, set_log.events()
+		)
 
 
 ## Moves a meter through the Campaign's row: a rise for a positive amount, a fall through
@@ -96,8 +97,8 @@ func _enhance(card: CardInstance, enhancement_id: String) -> void:
 	CardMarks.enhance(state, card, enhancement_id)
 
 
-static func _joined(card_ids: Array[int]) -> String:
+static func _joined(ids: Array[int]) -> String:
 	var parts: PackedStringArray = []
-	for card_id: int in card_ids:
+	for card_id: int in ids:
 		parts.append(str(card_id))
 	return ",".join(parts)

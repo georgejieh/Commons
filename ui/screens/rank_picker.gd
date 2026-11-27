@@ -24,6 +24,9 @@ const PROMPT_SIZE: int = 24
 var cancel_button: Button = ScreenKit.button("", CommonsTheme.GHOST)
 ## The question the picker asks.
 var prompt_label: Label = ScreenKit.label("", PROMPT_SIZE)
+## The page's slip, which names the rank on each ticket; set before the picker joins the
+## tree.
+var slip: DetailSlip = null
 var _chips: Array[RankChip] = []
 var _then: Callable = Callable()
 ## Made the first time the strip opens, and kept on the page from then on.
@@ -48,6 +51,7 @@ func _ready() -> void:
 	strip.add_theme_constant_override("separation", 6)
 	for rank: int in range(FIRST, LAST + 1):
 		var chip: RankChip = RankChip.new(rank, tr(Ranks.label_key(rank)))
+		slip.follow(chip, "", chip.label())
 		chip.pressed.connect(_choose.bind(rank))
 		strip.add_child(chip)
 		_chips.append(chip)

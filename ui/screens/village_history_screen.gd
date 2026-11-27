@@ -23,10 +23,10 @@ var _run_lines: Array[Label] = []
 var _file_lines: Array[Label] = []
 var _back: Button
 
-var _app: DemoApp
+var _app: App
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
 	_sheet.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
@@ -121,33 +121,33 @@ func _heading(text: String) -> Label:
 
 ## One generation's line on its own aged sheet, which takes focus so the page scrolls.
 func _record(text: String) -> AgedSheet:
-	var sheet: AgedSheet = AgedSheet.new(0.0, _records.size())
-	sheet.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sheet.accessibility_name = text
+	var record: AgedSheet = AgedSheet.new(0.0, _records.size())
+	record.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	record.accessibility_name = text
 	var line: Label = ScreenKit.label(text, RECORD_SIZE, RECORD_INK)
 	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sheet.column().add_child(line)
-	_records.append(sheet)
-	return sheet
+	record.column().add_child(line)
+	_records.append(record)
+	return record
 
 
 ## The family's file on one aged sheet, which takes focus so the page scrolls to it: a
 ## line an entry, then that the file is kept.
 func _file_page(entries: PackedStringArray) -> AgedSheet:
-	var sheet: AgedSheet = AgedSheet.new(0.0, FILE_SHEET)
-	sheet.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var page: AgedSheet = AgedSheet.new(0.0, FILE_SHEET)
+	page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	entries.append(tr("hist.file.kept"))
-	sheet.accessibility_name = " ".join(entries)
+	page.accessibility_name = " ".join(entries)
 	for text: String in entries:
 		var line: Label = ScreenKit.label(text, RECORD_SIZE, RECORD_INK)
 		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		sheet.column().add_child(line)
+		page.column().add_child(line)
 		_file_lines.append(line)
-	return sheet
+	return page
 
 
 ## The run's Quotas as a record, one line per family each Quota touched.
-static func history_lines(app: DemoApp) -> PackedStringArray:
+static func history_lines(app: App) -> PackedStringArray:
 	if not app.controller.has_run():
 		return PackedStringArray()
 	var table: Array[String] = app.controller.run.table()
@@ -156,5 +156,7 @@ static func history_lines(app: DemoApp) -> PackedStringArray:
 		if seat > 0:
 			return app.seat_name(seat)
 		var key: String = app.controller.seats.family_name_key(family)
-		return TranslationServer.translate(key) if not key.is_empty() else family
+		if key.is_empty():
+			return family
+		return TranslationServer.translate(key)
 	return app.controller.seats.history_lines(name_of)

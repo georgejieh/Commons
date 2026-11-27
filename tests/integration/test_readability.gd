@@ -15,7 +15,7 @@ const SHRUNK: int = 14
 ## How much of a card's left edge a fanned hand leaves showing, in card pixels.
 const FAN_STRIP: float = 57.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -69,14 +69,14 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 			assert_int(framed + pictured).is_greater_equal(1)
 			if not ScreenKit.ART.has_cadre(stock[slot]):
 				assert_int(framed).is_equal(1)
-			var name: String = tr("modifier.%s.name" % stock[slot])
+			var title: String = tr("modifier.%s.name" % stock[slot])
 			var shown: bool = false
 			for node: Node in card.find_children("*", "Label", true, false):
 				var label: Label = node
-				if label.text == name:
+				if label.text == title:
 					shown = true
 					assert_int(label.get_theme_font_size("font_size")).is_greater_equal(READABLE)
-			assert_bool(shown).override_failure_message(name).is_true()
+			assert_bool(shown).override_failure_message(title).is_true()
 			assert_bool(text.get_global_rect().end.y <= card.get_global_rect().end.y).is_true()
 
 
@@ -188,7 +188,7 @@ func _open_everything() -> void:
 
 func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 	_open_everything()
-	var collection: CollectionScreen = _app.show_screen("collection")
+	var collection: CollectionScreen = _app.show_screen(App.COLLECTION)
 	await await_idle_frame()
 	await await_idle_frame()
 	var scroll: ScrollContainer = collection.scroll()
@@ -208,7 +208,7 @@ func test_the_collection_sits_on_one_sheet_with_a_red_heading() -> void:
 
 
 func test_the_village_history_sits_on_one_sheet_with_a_red_heading() -> void:
-	var history: VillageHistoryScreen = _app.show_screen("village_history")
+	var history: VillageHistoryScreen = _app.show_screen(App.VILLAGE_HISTORY)
 	await await_idle_frame()
 	await await_idle_frame()
 	var sheet: PanelContainer = history.sheet()
@@ -231,21 +231,21 @@ func test_no_name_breaks_inside_a_word() -> void:
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
 		for campaign: CampaignDef in RunCampaigns.all():
-			var name: String = tr(campaign.name_key)
+			var title: String = tr(campaign.name_key)
 			for compact: bool in [false, true]:
 				var leaflet: CampaignLeaflet = auto_free(CampaignLeaflet.new())
 				add_child(leaflet)
 				leaflet.set_compact(compact)
-				leaflet.show_campaign(0, campaign.id, name, "", false)
+				leaflet.show_campaign(0, campaign.id, title, "", false)
 				await await_idle_frame()
 				_assert_fits(leaflet.name_label(), "leaflet %s" % compact)
 				_clips(leaflet, "leaflet %s %s" % [campaign.id, compact])
-			await _check_panel(name)
+			await _check_panel(title)
 			for count: int in [3, 4]:
 				var paper: ChoicePaper = await _choice(count)
 				paper.show_campaign(_app.controller, campaign.id)
 				await await_idle_frame()
-				_assert_fits(_named(paper, name), "campaign choice %d" % count)
+				_assert_fits(_named(paper, title), "campaign choice %d" % count)
 				_clips(paper, "campaign choice %s %d" % [campaign.id, count])
 		for reform: ReformDef in RunReforms.all():
 			await _check_panel(tr(reform.name_key))
@@ -269,22 +269,22 @@ func _check_cadres() -> void:
 	var tile: float = board.tile_size(6).x - CadreBadge.NAME_MARGIN * 2.0
 	var font: Font = board.get_theme_default_font()
 	for cadre: ModifierDef in RunLoop.all_cadres():
-		var name: String = tr(cadre.name_key)
+		var title: String = tr(cadre.name_key)
 		var words: VBoxContainer = auto_free(VBoxContainer.new())
 		words.custom_minimum_size = Vector2(StoreScreen.CARD.x - 48.0, 0)
 		add_child(words)
-		words.add_child(StoreCard.words(name, "rule"))
+		words.add_child(StoreCard.words(title, "rule"))
 		await await_idle_frame()
-		_assert_fits(_named(words, name), "store card")
-		_clips(words, "store card %s" % name)
-		var fitted: int = CadreBadge.name_size(font, name, tile)
+		_assert_fits(_named(words, title), "store card")
+		_clips(words, "store card %s" % title)
+		var fitted: int = CadreBadge.name_size(font, title, tile)
 		(
-			assert_bool(NameFit.words_fit(font, name, tile, fitted))
-			. override_failure_message(name)
+			assert_bool(NameFit.words_fit(font, title, tile, fitted))
+			. override_failure_message(title)
 			. is_true()
 		)
 	_open_everything()
-	var collection: CollectionScreen = _app.show_screen("collection")
+	var collection: CollectionScreen = _app.show_screen(App.COLLECTION)
 	await await_idle_frame()
 	await await_idle_frame()
 	for cadre: ModifierDef in RunLoop.all_cadres():
@@ -292,13 +292,13 @@ func _check_cadres() -> void:
 	_clips(collection, "collection with everything open")
 
 
-func _check_panel(name: String) -> void:
+func _check_panel(title: String) -> void:
 	var panel: CounterPanel = auto_free(CounterPanel.new())
 	add_child(panel)
-	panel.offer(CounterPanel.Look.LEAFLET, "KIND", "id", name, "rule", "Buy")
+	panel.offer(CounterPanel.Look.LEAFLET, "KIND", "id", title, "rule", "Buy")
 	await await_idle_frame()
 	_assert_fits(panel.name_label(), "counter panel")
-	_clips(panel, "counter panel %s" % name)
+	_clips(panel, "counter panel %s" % title)
 
 
 func _choice(count: int) -> ChoicePaper:
@@ -310,9 +310,9 @@ func _choice(count: int) -> ChoicePaper:
 
 
 ## The label under root that prints name.
-func _named(root: Node, name: String) -> Label:
+func _named(root: Node, wanted: String) -> Label:
 	for node: Node in root.find_children("*", "Label", true, false):
-		if (node as Label).text == name:
+		if (node as Label).text == wanted:
 			return node as Label
 	return null
 

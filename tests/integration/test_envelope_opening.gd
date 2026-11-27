@@ -4,7 +4,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 4242
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -33,7 +33,7 @@ func _loop() -> RunLoop:
 
 
 func _open() -> StoreScreen:
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return store

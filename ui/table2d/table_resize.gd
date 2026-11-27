@@ -9,14 +9,14 @@ extends RefCounted
 ## lives in the app's HandModel and the searches in the controller, so neither is touched.
 
 var _table: TableScreen
-var _app: DemoApp
+var _app: App
 var _menu: PauseMenu
 ## The text size the table's pieces were set at, and the plays shown since the deal.
 var _built: int = 0
 var _plays: int = 0
 
 
-func setup(table: TableScreen, app: DemoApp, menu: PauseMenu) -> void:
+func setup(table: TableScreen, app: App, menu: PauseMenu) -> void:
 	_table = table
 	_app = app
 	_menu = menu

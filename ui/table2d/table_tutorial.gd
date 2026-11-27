@@ -19,7 +19,7 @@ const LANDING_WAIT_MSEC: int = 3000
 ## No report waits to be sent.
 const NO_REPORT: int = -2
 
-var _app: DemoApp
+var _app: App
 var _actions: ActionBar
 var _hand: HandModel
 var _hand_view: HandView
@@ -38,7 +38,7 @@ var _pose: Array[Transform2D] = []
 
 
 func setup(
-	app: DemoApp,
+	app: App,
 	actions: ActionBar,
 	hand_view: HandView,
 	need_panel: NeedPanel,
@@ -89,7 +89,7 @@ func _report_when_landed() -> void:
 	var director: TutorialDirector = _app.arrival.director
 	# The table may have given way to another screen, which reports for itself.
 	if director != null and _pile.is_visible_in_tree():
-		director.ready("table", awaiting)
+		director.ready(App.TABLE, awaiting)
 
 
 ## True when the trick is empty, or every card of the play on top has landed and stood
@@ -172,7 +172,7 @@ func tutorial_rect(key: String) -> Rect2:
 	var buttons: Dictionary[String, Button] = {
 		"pass": _actions.pass_turn,
 		"decline": _actions.decline,
-		"call": _actions.call,
+		"call": _actions.call_landlord,
 		"rules": _actions.rules,
 	}
 	return _visible_rect(buttons.get(key, null))

@@ -29,11 +29,11 @@ var _hinter: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier
 ## The rank a rank folds into when a debuff ranks it as another, such as a 2 that ranks as
 ## a 3, or -1 when it ranks as itself. A reordering alone, with no two ranks equal, folds
 ## nothing.
-static func fold(rank: int, rank_map: PackedByteArray) -> int:
-	if rank >= rank_map.size() or rank_map[rank] == rank:
+static func fold(rank: int, mapping: PackedByteArray) -> int:
+	if rank >= mapping.size() or mapping[rank] == rank:
 		return -1
-	for other: int in rank_map.size():
-		if other != rank and rank_map[other] == rank_map[rank]:
+	for other: int in mapping.size():
+		if other != rank and mapping[other] == mapping[rank]:
 			return other
 	return -1
 

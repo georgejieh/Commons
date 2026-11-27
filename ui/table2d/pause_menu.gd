@@ -35,7 +35,7 @@ var settings: VBoxContainer
 var confirm: VBoxContainer
 ## The window's settings.
 var window: VBoxContainer
-var _app: DemoApp = null
+var _app: App = null
 var _stack: VBoxContainer = VBoxContainer.new()
 ## The text size the pages were built at, and the one the menu opened at.
 var _built_size: int = -1
@@ -99,12 +99,12 @@ func _rebuild_on_settings() -> void:
 
 
 ## Sends the menu's ways out to the app's screens.
-func wire(app: DemoApp) -> void:
+func wire(app: App) -> void:
 	_app = app
-	title_chosen.connect(func() -> void: app.show_screen("title", true))
+	title_chosen.connect(func() -> void: app.show_screen(App.TITLE, true))
 	quit_chosen.connect(func() -> void: app.get_tree().quit())
-	dossier_chosen.connect(func() -> void: app.show_screen("dossier"))
-	last_round_chosen.connect(func() -> void: app.show_screen("round_summary"))
+	dossier_chosen.connect(func() -> void: app.show_screen(App.DOSSIER))
+	last_round_chosen.connect(func() -> void: app.show_screen(App.ROUND_SUMMARY))
 	abandoned.connect(app.leave_run)
 
 

@@ -35,17 +35,17 @@ func _mask(counts: PackedByteArray) -> int:
 func test_the_classifier_and_move_generator_read_two_pairs_only_under_the_plough() -> void:
 	var counts: PackedByteArray = RankText.counts("3344")
 	for table: SeatRules in [_plough(), _plain()]:
-		var held: bool = table.rules_for(0).min_pair_chain_length() == 2
+		var ploughs: bool = table.rules_for(0).min_pair_chain_length() == 2
 		for seat: int in Seats.COUNT:
-			var ploughed: bool = held and seat == 0
+			var ploughed: bool = ploughs and seat == 0
 			assert_int(table.rules_for(seat).min_pair_chain_length()).is_equal(2 if ploughed else 3)
-			var rules: RuleSet = table.rules_for(seat)
-			var read: Classification = Classifier.classify(counts, rules, Ranks.identity_map())
+			var seat_rules: RuleSet = table.rules_for(seat)
+			var read: Classification = Classifier.classify(counts, seat_rules, Ranks.identity_map())
 			assert_bool(read.is_valid()).is_equal(ploughed)
 			if ploughed:
 				assert_bool(_is_short_run(read.pattern)).is_true()
 			var moves: Array[Pattern] = MoveGenerator.generate(
-				RankText.counts("33445566"), _mask(counts), null, rules, Ranks.identity_map()
+				RankText.counts("33445566"), _mask(counts), null, seat_rules, Ranks.identity_map()
 			)
 			assert_bool(moves.any(_is_short_run)).is_equal(ploughed)
 	# Three pairs still read as they always did, and a 2-pair run is answered by a higher
@@ -83,8 +83,8 @@ func test_every_tier_leads_a_two_pair_run_to_go_out() -> void:
 			)
 			assert_bool(SelfPlay.is_offered(play, legal)).is_true()
 			var ploughed: bool = table.rules_for(0).min_pair_chain_length() == 2
-			var name: String = "%s %s" % [tier, ploughed]
-			assert_bool(_is_short_run(play.pattern)).override_failure_message(name).is_equal(
+			var case: String = "%s %s" % [tier, ploughed]
+			assert_bool(_is_short_run(play.pattern)).override_failure_message(case).is_equal(
 				ploughed
 			)
 

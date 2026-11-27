@@ -32,6 +32,8 @@ var _busy: bool = false
 ## The screen's own purchase in progress, which holds this row too.
 var _screen_busy: Callable
 var _seal: InkSeal = InkSeal.new()
+## The shop's shared slip, which explains each document and its Buy button.
+var _slip: DetailSlip = null
 
 
 func _init() -> void:
@@ -42,6 +44,7 @@ func setup(shop: StallContext) -> void:
 	_controller = shop.controller
 	_desk = shop.desk
 	_screen_busy = shop.busy
+	_slip = shop.slip
 	_seal.prepare(tr("directive.issued"), ScreenKit.RED, SEAL_WIDTH)
 	# Above the documents and out of the row's layout.
 	_seal.top_level = true
@@ -82,10 +85,10 @@ func _document(slot: int, directive_id: String) -> Control:
 	heading.add_theme_constant_override("separation", 0)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(ScreenKit.eyebrow(tr("directive.eyebrow")))
-	var name: Label = ScreenKit.label(_controller.texts.directive_name(directive_id), NAME_SIZE)
-	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	name.autowrap_mode = TextServer.AUTOWRAP_OFF
-	heading.add_child(name)
+	var title: Label = ScreenKit.label(_controller.texts.directive_name(directive_id), NAME_SIZE)
+	title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	title.autowrap_mode = TextServer.AUTOWRAP_OFF
+	heading.add_child(title)
 	var buy: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	buy.custom_minimum_size = Vector2.ZERO
 	buy.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -101,24 +104,18 @@ func _document(slot: int, directive_id: String) -> Control:
 		sheet.add_child(line)
 		lines.append(line)
 	var panel: Control = ScreenKit.card_panel(sheet)
-	var tip: String = (
-		"%s\n%s"
-		% [
-			_controller.texts.directive_name(directive_id),
-			Keywords.wrapped(_controller.texts.directive_text(directive_id)),
-		]
-	)
-	panel.tooltip_text = tip
-	buy.tooltip_text = tip
-	buy.set_meta(TipPlacer.SUBJECT, panel)
-	buy.pressed.connect(_issue.bind(slot, directive_id, panel, lines, buy, name))
+	var named: String = _controller.texts.directive_name(directive_id)
+	var rule: String = _controller.texts.directive_text(directive_id)
+	_slip.follow(panel, named, rule)
+	_slip.follow(buy, named, rule, panel)
+	buy.pressed.connect(_issue.bind(slot, directive_id, panel, lines, buy, title))
 	return panel
 
 
 ## Issues the Directive and acts it out: sealed, each Rate ticked from what it was to what
 ## it is now, then filed away. Reduced motion skips to the result.
 func _issue(
-	slot: int, directive_id: String, panel: Control, lines: Array[Label], buy: Control, name: Label
+	slot: int, directive_id: String, panel: Control, lines: Array[Label], buy: Control, title: Label
 ) -> void:
 	if _busy or _screen_busy.call():
 		return
@@ -132,7 +129,7 @@ func _issue(
 		settled.emit()
 		return
 	_busy = true
-	_place_seal(buy, name, lines)
+	_place_seal(buy, title, lines)
 	_seal.press()
 	panel.pivot_offset = panel.size / 2.0
 	var tween: Tween = panel.create_tween()
@@ -149,10 +146,10 @@ func _issue(
 
 ## The seal presses on the spent Buy ticket at the document's top right, sized so it
 ## covers neither the Directive's name nor its first Rate line.
-func _place_seal(buy: Control, name: Label, lines: Array[Label]) -> void:
+func _place_seal(buy: Control, title: Label, lines: Array[Label]) -> void:
 	var middle: Vector2 = buy.global_position + buy.size / 2.0
 	var radius: float = SEAL_WIDTH / 2.0
-	radius = minf(radius, middle.x - name_right(name) - SEAL_CLEARANCE)
+	radius = minf(radius, middle.x - name_right(title) - SEAL_CLEARANCE)
 	if not lines.is_empty():
 		radius = minf(radius, lines[0].global_position.y - middle.y - SEAL_CLEARANCE)
 	_seal.prepare(tr("directive.issued"), ScreenKit.RED, maxf(radius, 1.0) * 2.0)
@@ -160,11 +157,11 @@ func _place_seal(buy: Control, name: Label, lines: Array[Label]) -> void:
 
 
 ## Where a name's printed text ends on screen, for the seal and for tests.
-static func name_right(name: Label) -> float:
-	var font: Font = name.get_theme_font("font")
-	var font_size: int = name.get_theme_font_size("font_size")
-	var wide: float = font.get_string_size(name.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	return name.global_position.x + wide
+static func name_right(title: Label) -> float:
+	var font: Font = title.get_theme_font("font")
+	var font_size: int = title.get_theme_font_size("font_size")
+	var wide: float = font.get_string_size(title.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	return title.global_position.x + wide
 
 
 func _filed() -> void:

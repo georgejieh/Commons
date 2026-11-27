@@ -10,7 +10,7 @@ const KEPT: String = "user://crashes/2000-01-01T00.00.00"
 
 static var _save_path: String = TestFolder.of("test_session_notice") + "run.json"
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -62,7 +62,7 @@ func test_every_notice_stands_whole_at_every_size() -> void:
 
 func test_the_title_says_once_where_the_last_session_was_kept() -> void:
 	_app.kept_crash = KEPT
-	var title: TitleScreen = _app.show_screen("title", true)
+	var title: TitleScreen = _app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var notice: SessionNotice = null
@@ -89,7 +89,7 @@ func test_the_title_says_once_where_the_last_session_was_kept() -> void:
 			new_run = node
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(new_run)
 	# Said once: the title again shows none.
-	title = _app.show_screen("title", true)
+	title = _app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	for child: Node in title.get_children():
 		assert_bool(child is SessionNotice).is_false()

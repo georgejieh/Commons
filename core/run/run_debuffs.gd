@@ -84,7 +84,9 @@ func rebuilt() -> void:
 func round_context(
 	round_state: RoundState, table: SeatRules, arrived: ActiveModifier
 ) -> RoundContext:
-	var context: RoundContext = RoundContext.new(round_state.landlord(), Seats.NONE, 0)
+	var context: RoundContext = RoundContext.new(
+		round_state.landlord(), Seats.NONE, RoundEvent.Finish.NORMAL
+	)
 	context.round_state = round_state
 	context.table = table
 	context.stream = _state.streams.stream(RandomStreams.DEAL)

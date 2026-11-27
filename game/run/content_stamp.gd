@@ -72,8 +72,8 @@ static func extras() -> Dictionary:
 
 
 ## True when a save's extras carry this build's stamp.
-static func matches(extras: Dictionary) -> bool:
-	return str(extras.get(KEY, "")) == current()
+static func matches(saved: Dictionary) -> bool:
+	return str(saved.get(KEY, "")) == current()
 
 
 ## A save's data as it stood at its checkpoint: no commands since, and no decisions written

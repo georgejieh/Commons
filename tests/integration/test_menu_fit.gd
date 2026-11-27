@@ -9,7 +9,7 @@ const SEED: int = 5303
 ## How far a dialog sheet may leave its board uncovered at an edge, the board's own frame.
 const BOARD_SLACK: float = 30.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -218,8 +218,8 @@ func _check_padding(sheet: Control, where: String) -> void:
 	var inside: Rect2 = sheet.get_global_rect().grow(-SheetPad.INSET + ClipCheck.SLACK)
 	for node: Node in sheet.find_children("*", "Control", true, false):
 		var control: Control = node as Control
-		var prints: bool = control is Label or control is Button
-		if not prints or not control.is_visible_in_tree() or control.get_parent() is InkSeal:
+		var has_words: bool = control is Label or control is Button
+		if not has_words or not control.is_visible_in_tree() or control.get_parent() is InkSeal:
 			continue
 		var rect: Rect2 = control.get_global_rect()
 		(

@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 5303
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -44,7 +44,7 @@ func test_the_reports_seals_stand_clear_of_the_figures() -> void:
 			for screen_size: Vector2i in ClipCheck.SIZES:
 				Settings.set_value(TextSize.SETTING, level)
 				get_tree().root.size = screen_size
-				var report: SetSummaryScreen = _app.show_screen("set_summary", true)
+				var report: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "target %s, size %d at %s" % [first, level, screen_size]
@@ -59,8 +59,8 @@ func test_the_reports_seals_stand_clear_of_the_figures() -> void:
 func _check_seals(report: SetSummaryScreen, where: String) -> void:
 	var seals: Array[InkSeal] = [report.bar().seal, report.over_seal()]
 	var shown: int = 0
-	var after: Array[Control] = report.after
-	var row: Control = after[0]
+	var now: Array[Control] = report.after
+	var row: Control = now[0]
 	for seal: InkSeal in seals:
 		if not seal.visible:
 			continue

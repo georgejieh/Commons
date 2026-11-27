@@ -52,11 +52,11 @@ func test_buying_from_the_black_market_always_raises_resentment() -> void:
 		for slot: int in loop.visit.market.stock().size():
 			if loop.visit.market.check_buy(slot) != RunShop.Reason.OK:
 				continue
-			var before: int = loop.state.resentment
+			var was: int = loop.state.resentment
 			var events: int = _resentment_events(loop)
 			# A rank for the Cadres that ask for one; the others ignore it (ADR 0021).
 			assert_int(loop.player_market_buy(slot, Ranks.SEVEN)).is_equal(RunLoop.Reason.OK)
-			assert_int(loop.state.resentment).is_greater(before)
+			assert_int(loop.state.resentment).is_greater(was)
 			assert_int(_resentment_events(loop)).is_equal(events + 1)
 			assert_str(loop.events()[-1].text).is_equal(Resentment.PRIVATE_PURCHASE)
 			bought += 1
@@ -65,19 +65,19 @@ func test_buying_from_the_black_market_always_raises_resentment() -> void:
 
 func test_a_refused_market_purchase_raises_nothing() -> void:
 	var loop: RunLoop = RunScript.at_the_shops(self, 11, 0)
-	var before: int = loop.state.resentment
+	var was: int = loop.state.resentment
 	assert_int(loop.player_market_buy(0)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_int(loop.state.resentment).is_equal(before)
+	assert_int(loop.state.resentment).is_equal(was)
 	assert_int(loop.player_upgrade(PlotUpgrades.CAPACITY)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_int(loop.state.resentment).is_equal(before)
+	assert_int(loop.state.resentment).is_equal(was)
 
 
 func test_the_state_store_never_raises_resentment() -> void:
 	var loop: RunLoop = RunScript.at_the_shops(self, 12, RICH)
-	var before: int = loop.state.resentment
+	var was: int = loop.state.resentment
 	for slot: int in loop.visit.shop.stock().size():
 		assert_int(loop.player_buy(slot)).is_equal(RunLoop.Reason.OK)
-	assert_int(loop.state.resentment).is_equal(before)
+	assert_int(loop.state.resentment).is_equal(was)
 
 
 func test_the_market_charges_more_than_the_store_for_the_same_cost() -> void:
@@ -132,9 +132,9 @@ func test_plot_upgrades_enlarge_the_plot_up_to_their_limit_and_raise_resentment(
 	var room: int = PlotSwap.capacity(loop.state, RunDefaults.PARAMS)
 	var coupons: int = loop.state.coupons
 	for step: int in UPGRADES.capacity_max:
-		var before: int = loop.state.resentment
+		var was: int = loop.state.resentment
 		assert_int(loop.player_upgrade(PlotUpgrades.CAPACITY)).is_equal(RunLoop.Reason.OK)
-		assert_int(loop.state.resentment).is_greater(before)
+		assert_int(loop.state.resentment).is_greater(was)
 		assert_int(PlotSwap.capacity(loop.state, RunDefaults.PARAMS)).is_equal(room + step + 1)
 	assert_int(loop.state.coupons).is_equal(
 		coupons - UPGRADES.capacity_cost * UPGRADES.capacity_max
@@ -207,7 +207,7 @@ func test_the_market_sells_cards_for_the_plot_the_same_for_the_same_seed() -> vo
 func test_a_bought_plot_card_enters_the_plot_and_raises_resentment() -> void:
 	var loop: RunLoop = RunScript.at_the_shops(self, 16, RICH)
 	var rank: int = loop.visit.stall.offers.rank(0)
-	var before: int = loop.state.resentment
+	var was: int = loop.state.resentment
 	var coupons: int = loop.state.coupons
 	var price: int = loop.visit.stall.offers.price(0)
 	assert_int(loop.player_plot_card(0)).is_equal(RunLoop.Reason.OK)
@@ -217,11 +217,11 @@ func test_a_bought_plot_card_enters_the_plot_and_raises_resentment() -> void:
 	assert_int(card.id()).is_greater_equal(CardInstance.FIRST_PLOT_ID)
 	assert_int(card.origin()).is_equal(CardInstance.Origin.PLOT)
 	assert_int(loop.state.coupons).is_equal(coupons - price)
-	assert_int(loop.state.resentment).is_greater(before)
+	assert_int(loop.state.resentment).is_greater(was)
 	# Sold once, and refused without changing anything.
-	var after: int = loop.state.resentment
+	var now: int = loop.state.resentment
 	assert_int(loop.player_plot_card(0)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_int(loop.state.resentment).is_equal(after)
+	assert_int(loop.state.resentment).is_equal(now)
 	# The purchase replays from a save.
 	var record: Dictionary = loop.record.to_dict()
 	var checkpoint: Dictionary = record["checkpoint"]
@@ -269,7 +269,7 @@ func test_a_reroll_is_only_offered_when_it_can_change_the_counter() -> void:
 	assert_bool(loop.visit.market.reroll_changes()).is_true()
 
 
-func test_a_save_from_the_middle_of_phase_4_gains_every_missing_field() -> void:
+func test_a_schema_3_save_missing_late_fields_gains_every_one() -> void:
 	var data: Dictionary = RunState.new(3).to_dict()
 	for field: String in ["store_sold", "styles", "boss_family", "swap_bonus", "memory", "risen"]:
 		data.erase(field)

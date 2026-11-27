@@ -110,10 +110,10 @@ func test_a_swap_brings_the_plot_card_in_and_leaves_the_plot_as_it_was() -> void
 	var given: CardInstance = loop.player_cards()[0]
 	var taken: int = state.inventory.plot[1].id()
 	var plot_before: String = _plot_text(state)
-	var before: int = state.next_plot_id
+	var was: int = state.next_plot_id
 	assert_int(loop.player_swap([given.id()], [taken])).is_equal(RunLoop.Reason.OK)
 	assert_str(_plot_text(state)).is_equal(plot_before)
-	assert_int(state.next_plot_id).is_equal(before)
+	assert_int(state.next_plot_id).is_equal(was)
 	var hand: Array[int] = _ids(loop.player_cards())
 	assert_array(hand).contains([taken])
 	assert_array(hand).not_contains([given.id()])
@@ -174,8 +174,8 @@ func test_a_landlord_may_swap_a_kitty_card_which_then_sits_the_round_out() -> vo
 		assert_array(_ids(state.inventory.plot)).not_contains([kitty[0]])
 		assert_array(_ids(loop.player_cards())).not_contains([kitty[0]])
 		# The table no longer counts the set-aside card among the landlord's kitty.
-		var after: int = loop.round_state().view_for(1).public.kitty_counts[rank]
-		assert_int(after).is_equal(shown - 1)
+		var now: int = loop.round_state().view_for(1).public.kitty_counts[rank]
+		assert_int(now).is_equal(shown - 1)
 		return
 	fail("No seed made the player landlord")
 

@@ -14,7 +14,7 @@ extends RefCounted
 ## Campaign, clear for a held Cadre.
 signal sold(campaign: bool)
 
-var _app: DemoApp
+var _app: App
 var _market: bool = false
 var _desk: ShopDesk
 var _board: NoticeBoard

@@ -29,7 +29,7 @@ const ROW_GAPS: Array[int] = [20, 14, 10]
 ## not as a column of words.
 const RULES_WIDTH: float = 960.0
 
-var _app: DemoApp
+var _app: App
 var _view: SetupView
 var _household: String = ""
 var _stake: int = 0
@@ -45,7 +45,7 @@ var _start: Button
 var _back: Button
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	if app.demo:
 		_open_demo(app)
@@ -204,9 +204,9 @@ func _household_paper(sheet: UnlockSheet) -> AgedSheet:
 	paper.choosable = true
 	paper.accessibility_name = sheet.name
 	paper.accessibility_description = sheet.text
-	var name: Label = ScreenKit.label(sheet.name, NAME_SIZE)
-	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	paper.column().add_child(name)
+	var title: Label = ScreenKit.label(sheet.name, NAME_SIZE)
+	title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	paper.column().add_child(title)
 	paper.column().add_child(ScreenKit.label(sheet.text, RULES_SIZE))
 	paper.chosen.connect(_pick_household.bind(sheet.id))
 	return paper
@@ -262,11 +262,11 @@ func _show_choice() -> void:
 
 func _begin() -> void:
 	if _app.new_run(_seed, true, _household, _stake):
-		_app.show_screen("set_intro", true)
+		_app.show_screen(App.SET_INTRO, true)
 
 
 ## The demo's page: one ticket for the base stake, and Start begins the demo.
-func _open_demo(app: DemoApp) -> void:
+func _open_demo(app: App) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
 	sheet.add_child(ScreenKit.header(tr("setup.eyebrow"), tr("setup.title")))
 	var base: Button = ScreenKit.button(tr("setup.stake_base"), CommonsTheme.SECONDARY)
@@ -279,7 +279,7 @@ func _open_demo(app: DemoApp) -> void:
 	_start.pressed.connect(
 		func() -> void:
 			app.new_run(int(Time.get_unix_time_from_system()))
-			app.show_screen("set_intro", true)
+			app.show_screen(App.SET_INTRO, true)
 	)
 	_back = ScreenKit.button(tr("setup.back"), CommonsTheme.GHOST)
 	_back.pressed.connect(app.back)

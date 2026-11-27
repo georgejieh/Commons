@@ -32,9 +32,9 @@ func before_test() -> void:
 	_params.beat_seconds = 0.05
 	_file = SessionFile.new(_params, _folder.path_join("session.json"))
 	var saves: Array[String] = []
-	for name: String in SAVE_NAMES:
-		saves.append(_folder.path_join("saves").path_join(name))
-		_write(saves.back(), "the %s as the last session left it" % name)
+	for save_name: String in SAVE_NAMES:
+		saves.append(_folder.path_join("saves").path_join(save_name))
+		_write(saves.back(), "the %s as the last session left it" % save_name)
 	var game_log: String = "%s\n%sunnumbered, development build\n" % [ENGINE_LINE, GameLog.STARTED]
 	_write(_folder.path_join("logs").path_join(LOGS[0]), game_log)
 	_write(_folder.path_join("logs").path_join(LOGS[1]), game_log)
@@ -51,10 +51,10 @@ func after_test() -> void:
 func _clear(folder: String) -> void:
 	if not DirAccess.dir_exists_absolute(folder):
 		return
-	for name: String in DirAccess.get_directories_at(folder):
-		_clear(folder.path_join(name))
-	for name: String in DirAccess.get_files_at(folder):
-		DirAccess.remove_absolute(folder.path_join(name))
+	for file: String in DirAccess.get_directories_at(folder):
+		_clear(folder.path_join(file))
+	for file: String in DirAccess.get_files_at(folder):
+		DirAccess.remove_absolute(folder.path_join(file))
 	DirAccess.remove_absolute(folder)
 
 
@@ -95,9 +95,9 @@ func test_a_stale_file_keeps_the_saves_and_the_last_log_before_anything_opens() 
 	var seen_at_open: Array[PackedStringArray] = []
 	var gate: LaunchGate = LaunchGate.new(_params, _file, _keep)
 	gate.opened.connect(
-		func(kept: String) -> void:
-			_opened.append(kept)
-			seen_at_open.append(DirAccess.get_files_at(kept))
+		func(folder: String) -> void:
+			_opened.append(folder)
+			seen_at_open.append(DirAccess.get_files_at(folder))
 	)
 	add_child(gate)
 	auto_free(gate)
@@ -108,12 +108,15 @@ func test_a_stale_file_keeps_the_saves_and_the_last_log_before_anything_opens() 
 	# The game's own last log, not the newer one a tool's run left.
 	expected.append(LOGS[1])
 	assert_array(Array(seen_at_open[0])).contains_exactly_in_any_order(expected)
-	for name: String in SAVE_NAMES:
-		var copy: String = FileAccess.get_file_as_string(kept.path_join(name))
-		assert_str(copy).is_equal("the %s as the last session left it" % name)
+	for save_name: String in SAVE_NAMES:
+		var copy: String = FileAccess.get_file_as_string(kept.path_join(save_name))
+		assert_str(copy).is_equal("the %s as the last session left it" % save_name)
 	# The originals are where they were, untouched, and the file is this copy's now.
-	for name: String in SAVE_NAMES:
-		assert_bool(FileAccess.file_exists(_folder.path_join("saves").path_join(name))).is_true()
+	for save_name: String in SAVE_NAMES:
+		(
+			assert_bool(FileAccess.file_exists(_folder.path_join("saves").path_join(save_name)))
+			. is_true()
+		)
 	assert_bool(_file.is_mine()).is_true()
 
 
@@ -132,7 +135,7 @@ func test_only_the_newest_crash_folders_stay() -> void:
 func test_a_live_file_shows_the_notice_and_opens_nothing_until_the_player_chooses() -> void:
 	# The other copy keeps beating through the test: well ahead of the clock.
 	_other_copy(Time.get_unix_time_from_system() + 3600.0)
-	var before: String = FileAccess.get_file_as_string(_file.path())
+	var was: String = FileAccess.get_file_as_string(_file.path())
 	var gate: LaunchGate = _gate()
 	await await_idle_frame()
 	var notice: SessionNotice = gate.notice()
@@ -142,7 +145,7 @@ func test_a_live_file_shows_the_notice_and_opens_nothing_until_the_player_choose
 	# Timed: that nothing opens is seen only by giving the launch the time to go on.
 	await await_millis(200)
 	assert_array(_opened).is_empty()
-	assert_str(FileAccess.get_file_as_string(_file.path())).is_equal(before)
+	assert_str(FileAccess.get_file_as_string(_file.path())).is_equal(was)
 	var buttons: Array[Button] = notice.buttons()
 	assert_str(buttons[0].text).is_equal(tr("session.open.quit"))
 	assert_str(buttons[1].text).is_equal(tr("session.open.anyway"))
@@ -177,7 +180,7 @@ func test_a_test_never_has_a_gate_or_touches_the_session_file() -> void:
 	var real: String = SessionFile.PATH
 	var was: String = FileAccess.get_file_as_string(real) if FileAccess.file_exists(real) else ""
 	var had: bool = FileAccess.file_exists(real)
-	var app: DemoApp = auto_free((load(APP) as PackedScene).instantiate())
+	var app: App = auto_free((load(APP) as PackedScene).instantiate())
 	Saves.use_run_path(_folder.path_join("app/run.json"))
 	add_child(app)
 	await await_idle_frame()
@@ -195,10 +198,10 @@ func test_a_test_never_has_a_gate_or_touches_the_session_file() -> void:
 ## opened, and nothing it made to open with is left outside the tree.
 func test_quit_from_the_notice_leaves_nothing_of_the_app() -> void:
 	_other_copy(Time.get_unix_time_from_system() + 3600.0)
-	var before: String = FileAccess.get_file_as_string(_file.path())
+	var was: String = FileAccess.get_file_as_string(_file.path())
 	var orphans: float = Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
 	# The app as it stands behind its gate: made, and not yet opened.
-	var app: DemoApp = (load(APP) as PackedScene).instantiate()
+	var app: App = (load(APP) as PackedScene).instantiate()
 	var gate: LaunchGate = LaunchGate.new(_params, _file, _keep)
 	var quit: Array[bool] = []
 	gate.leave = func() -> void: quit.append(true)
@@ -214,7 +217,7 @@ func test_quit_from_the_notice_leaves_nothing_of_the_app() -> void:
 	await await_idle_frame()
 	var left: float = Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
 	assert_float(left).is_equal(orphans)
-	assert_str(FileAccess.get_file_as_string(_file.path())).is_equal(before)
+	assert_str(FileAccess.get_file_as_string(_file.path())).is_equal(was)
 
 
 ## With only tools' logs beside the live one, no log is kept, and the saves still are.

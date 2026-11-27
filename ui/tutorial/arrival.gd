@@ -10,7 +10,7 @@ extends RefCounted
 
 ## The screens the arrival plays on, and those its menu opens over the table.
 const SCREENS: Array[String] = [
-	"table", "set_summary", "store", "black_market", "dossier", "round_summary"
+	App.TABLE, App.SET_SUMMARY, App.STORE, App.BLACK_MARKET, App.DOSSIER, App.ROUND_SUMMARY
 ]
 
 ## The surname chosen on the first launch's surname page (ADR 0028), held until the
@@ -23,12 +23,12 @@ var first_launch: bool = false
 ## The overlay it plays on, which the app adds over its screens.
 var layer: TutorialLayer = TutorialLayer.new()
 
-var _app: DemoApp
+var _app: App
 ## True while the arrival plays again from the title.
 var _replay: bool = false
 
 
-func _init(app: DemoApp, first: bool) -> void:
+func _init(app: App, first: bool) -> void:
 	_app = app
 	first_launch = first
 
@@ -38,8 +38,8 @@ func _init(app: DemoApp, first: bool) -> void:
 ## profile: the arrival's end or skip writes the surname with the profile's first save.
 func next_screen() -> String:
 	if not first_launch:
-		return "title"
-	return "surname" if surname.is_empty() else "arrival"
+		return App.TITLE
+	return App.SURNAME if surname.is_empty() else App.ARRIVAL
 
 
 func is_running() -> bool:
@@ -61,14 +61,14 @@ func start(replay: bool = false) -> void:
 	director = TutorialDirector.new()
 	director.finished.connect(_on_finished)
 	layer.attach(_app, director)
-	_app.show_screen(_app.table_id(), true)
+	_app.show_screen(App.TABLE, true)
 
 
 ## Skips it, from its page or its corner button once asked; then the title.
 func skip() -> void:
 	end()
 	_remember()
-	_app.show_screen("title", true)
+	_app.show_screen(App.TITLE, true)
 
 
 ## The app showed a screen: the arrival follows it, or ends on one it does not play on.
@@ -108,7 +108,7 @@ func _on_finished() -> void:
 	var replay: bool = _replay
 	end()
 	_remember()
-	_app.show_screen("title" if replay else "run_setup", true)
+	_app.show_screen(App.TITLE if replay else App.RUN_SETUP, true)
 
 
 ## Writes the profile's first save, with the arrival seen and the surname chosen, on a

@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4301
 const SCREEN: Vector2i = Vector2i(1920, 1080)
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -28,7 +28,7 @@ func after_test() -> void:
 
 func _table_at(level: int) -> TableScreen:
 	Settings.set_value(TextSize.SETTING, level)
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return table

@@ -5,7 +5,7 @@ extends RefCounted
 ## whether anything is being acted out. A stall reports a purchase made on the page by its
 ## spent signal; one made through the deck sheet is reported by the sheet's chosen.
 
-var app: DemoApp
+var app: App
 var controller: RunController
 ## True for the black market, false for the state store.
 var market: bool
@@ -19,7 +19,7 @@ var busy: Callable
 
 
 func _init(
-	shop_app: DemoApp, in_market: bool, page_slip: DetailSlip, sheet: DeckSheet, page_busy: Callable
+	shop_app: App, in_market: bool, page_slip: DetailSlip, sheet: DeckSheet, page_busy: Callable
 ) -> void:
 	app = shop_app
 	controller = shop_app.controller

@@ -84,8 +84,8 @@ func test_a_slip_with_no_room_above_goes_below() -> void:
 	assert_float(SlipPlacer.distance(slip, piece)).is_less_equal(SlipPlacer.REACH)
 
 
-## The engine's tooltip, which it lays at the pointer, is moved beside its control and
-## off the Buy button the control names as its card's.
+## The engine's tooltip, which it lays at the pointer, is moved beside the card it was
+## shown for and off the card's own button.
 func test_an_engine_tooltip_moves_beside_its_card() -> void:
 	var host: Control = auto_free(Control.new())
 	host.size = SCREEN.size
@@ -98,15 +98,14 @@ func test_an_engine_tooltip_moves_beside_its_card() -> void:
 	buy.position = Vector2(20, 340)
 	buy.size = Vector2(260, 50)
 	card.add_child(buy)
-	buy.set_meta(TipPlacer.SUBJECT, card)
 	var placer: TipPlacer = auto_free(TipPlacer.new())
 	add_child(placer)
 	var panel: PopupPanel = PopupPanel.new()
 	panel.theme_type_variation = TipPlacer.VARIATION
 	panel.size = Vector2i(280, 120)
-	# Where the engine puts it: at the pointer on the Buy button, over the card.
+	# Where the engine puts it: at the pointer on the card's button, over the card.
 	panel.position = Vector2i(760, 760)
-	buy.add_child(panel)
+	card.add_child(panel)
 	placer.settle(panel)
 	var tip: Rect2 = Rect2(Vector2(panel.position), Vector2(panel.size))
 	var thing: Rect2 = Rect2(Vector2(700, 400), Vector2(300, 400))
@@ -120,7 +119,7 @@ func test_an_engine_tooltip_moves_beside_its_card() -> void:
 ## Cadre on the notice board, at both window sizes and every text size.
 func test_slips_at_the_table_stand_beside_their_thing() -> void:
 	AppKit.fresh_saves(self)
-	var app: DemoApp = AppKit.make(self)
+	var app: App = AppKit.make(self)
 	app.new_run(4242)
 	var loop: RunLoop = app.controller.run_loop()
 	if loop.state.inventory.cadres.is_empty():
@@ -132,7 +131,7 @@ func test_slips_at_the_table_stand_beside_their_thing() -> void:
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			var table: TableScreen = app.show_screen("table", true)
+			var table: TableScreen = app.show_screen(App.TABLE, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			var where: String = "table %s text %d" % [screen_size, level]

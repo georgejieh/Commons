@@ -9,7 +9,7 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const WAIT_SECONDS: float = 4.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -165,7 +165,7 @@ func test_enlarged_committee_gives_both_boards_six_slots() -> void:
 	_app.controller.leave_store()
 	var driver: ControllerScript = ControllerScript.new()
 	driver.play_to(self, _app.controller, RunController.AWAIT_PLAY)
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var notice: NoticeBoard = table.board
@@ -190,7 +190,7 @@ func test_couriers_bag_gives_the_shop_tray_three_places() -> void:
 func test_the_set_intro_names_the_reforms_in_force() -> void:
 	_loop().state.reforms.assign(["work_point_reform", "unplanned_economy"])
 	_app.controller.leave_store()
-	var intro: Control = _app.show_screen("set_intro", true)
+	var intro: Control = _app.show_screen(App.SET_INTRO, true)
 	await await_idle_frame()
 	var line: String = tr("reform.held_line").format(
 		{
@@ -212,7 +212,7 @@ func test_a_set_intro_too_tall_for_the_page_keeps_begin_on_screen() -> void:
 		held.append(reform.id)
 	_loop().state.reforms.assign(held)
 	_app.controller.leave_store()
-	var intro: Control = _app.show_screen("set_intro", true)
+	var intro: Control = _app.show_screen(App.SET_INTRO, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	var begin: Button = null

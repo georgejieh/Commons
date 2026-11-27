@@ -20,7 +20,7 @@ const FIELD_HEIGHT: float = 80.0
 const FIELD_SEED: int = 120
 const FIELD_INSET: Vector4 = Vector4(24, 6, 16, 14)
 
-var _app: DemoApp
+var _app: App
 ## True when the page changes a profile's surname from Settings.
 var _renaming: bool = false
 var _field: LineEdit = LineEdit.new()
@@ -33,7 +33,7 @@ var _confirm: Button
 var _seed: int = 0
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	_renaming = not app.arrival.first_launch
 	_seed = int(Time.get_ticks_usec())

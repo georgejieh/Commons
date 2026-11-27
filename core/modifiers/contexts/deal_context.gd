@@ -4,7 +4,7 @@ extends RefCounted
 
 var landlord: int
 var deal: DealResult
-## The deal stream, for effects that draw while dealing.
+## The deal stream, for effects that draw while dealing; every deal has one.
 var stream: RandomStream
 ## The Year in play, for an effect whose size grows with the run (ADR 0043).
 var year: int
@@ -13,7 +13,7 @@ var year: int
 func _init(
 	landlord_value: int,
 	deal_value: DealResult,
-	stream_value: RandomStream = null,
+	stream_value: RandomStream,
 	year_value: int = 1,
 ) -> void:
 	landlord = landlord_value

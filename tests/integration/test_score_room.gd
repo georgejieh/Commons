@@ -12,7 +12,7 @@ const MOST_FRAMES: int = 600
 
 static var _save_path: String = TestFolder.of("test_score_room") + "run.json"
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -34,7 +34,7 @@ func _table(level: int, screen_size: Vector2i) -> TableScreen:
 	get_tree().root.size = screen_size
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return table

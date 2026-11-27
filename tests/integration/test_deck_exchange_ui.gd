@@ -12,7 +12,7 @@ const WAIT_SECONDS: float = 6.0
 ## A plain deck's slot of a 3.
 const THREE: int = 1
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -40,7 +40,7 @@ func _to_the_store(coupons: int = 60) -> StoreScreen:
 	_app.controller.finish_set()
 	_loop().state.coupons = coupons
 	_app.controller.reseal_book()
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return store
@@ -57,7 +57,7 @@ func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() ->
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
-			store = _app.show_screen("store", true)
+			store = _app.show_screen(App.STORE, true)
 			await await_idle_frame()
 			await await_idle_frame()
 			for slot: int in stall.count():
@@ -72,7 +72,7 @@ func test_the_stall_shows_its_cards_at_a_cards_proportions_with_buy_tickets() ->
 				var price: int = stall.price(slot)
 				assert_str(buy.text).is_equal(tr("store.buy").format({"price": price}))
 				assert_str(view.shown_enhancement()).is_equal(stall.card(slot).enhancement_id())
-	var market: StoreScreen = _app.show_screen("black_market", true)
+	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET, true)
 	assert_object(market.deck_goods).is_null()
 
 
@@ -92,7 +92,7 @@ func test_a_ticket_says_why_it_cannot_be_bought() -> void:
 			state.deck.replace(slot, rank, 0)
 	state.coupons = 60
 	_app.controller.reseal_book()
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	buy = _goods(store).card_button(0)
 	assert_bool(buy.disabled).is_true()
@@ -103,7 +103,7 @@ func test_a_ticket_opens_the_sheet_and_back_changes_nothing() -> void:
 	var store: StoreScreen = await _to_the_store()
 	var stall: DeckStallView = _app.controller.store.deck_stall()
 	var coming: CardInstance = stall.card(0)
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	_goods(store).card_button(0).pressed.emit()
 	await await_idle_frame()
 	var sheet: DeckSheet = store.deck
@@ -122,7 +122,7 @@ func test_a_ticket_opens_the_sheet_and_back_changes_nothing() -> void:
 	sheet.back_button().pressed.emit()
 	await await_idle_frame()
 	assert_bool(sheet.is_open()).is_false()
-	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 func test_confirming_puts_the_card_in_the_deck_for_its_price() -> void:
@@ -260,7 +260,7 @@ func test_a_requisitions_deck_card_asks_for_the_card_it_replaces() -> void:
 
 
 func test_the_deck_key_opens_the_sheet_at_the_table() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var press: InputEventAction = InputEventAction.new()
 	press.action = "commons_deck"

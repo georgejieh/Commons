@@ -121,8 +121,8 @@ func shake(pixels: float, seconds: float) -> void:
 	var hops: int = 4
 	for hop: int in hops:
 		var side: float = -1.0 if hop % 2 == 0 else 1.0
-		var reach: float = pixels * (1.0 - float(hop) / hops)
-		_shake.tween_property(self, "position", _rest + Vector2(side * reach, 0.0), seconds / hops)
+		var swing: float = pixels * (1.0 - float(hop) / hops)
+		_shake.tween_property(self, "position", _rest + Vector2(side * swing, 0.0), seconds / hops)
 	_shake.tween_property(self, "position", _rest, seconds / hops)
 
 
@@ -219,14 +219,14 @@ func _add_tile(caption: String, ink: Color, value_size: int) -> void:
 	value.add_theme_color_override("font_color", ink)
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	value.autowrap_mode = TextServer.AUTOWRAP_OFF
-	var name: Label = Label.new()
-	name.text = caption.to_upper()
-	name.theme_type_variation = CommonsTheme.EYEBROW
-	name.add_theme_font_size_override("font_size", TextSize.px(CAPTION_SIZE))
-	name.add_theme_color_override("font_color", ink)
-	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var title: Label = Label.new()
+	title.text = caption.to_upper()
+	title.theme_type_variation = CommonsTheme.EYEBROW
+	title.add_theme_font_size_override("font_size", TextSize.px(CAPTION_SIZE))
+	title.add_theme_color_override("font_color", ink)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(value)
-	box.add_child(name)
+	box.add_child(title)
 	tile.add_child(box)
 	add_child(tile)
 	_tiles.append(tile)

@@ -4,8 +4,9 @@ extends RefCounted
 ## printed empty frame it will sit in while it has none, then its name and its full rules
 ## with every value filled in, then its Buy button; or a sold place. Each keyword in the
 ## rules explains itself on hover, and the screen's DetailSlip shows the rules again while
-## the button has focus, for keyboard and gamepad. A Cadre that seldom reaches the counter
-## is stamped Scarce on its picture (ScarceStamp), and its tooltip and slip say so.
+## the button is hovered or has focus, so keyboard and gamepad read them too. A Cadre
+## that seldom reaches the counter is stamped Scarce on its picture (ScarceStamp), and its
+## slip says so.
 
 ## The art's height on the card, and the type sizes, readable on a 1080 screen.
 const ART_HEIGHT: float = 158.0
@@ -39,7 +40,6 @@ static func make(
 		UiMotion.stamp(sold)
 		return ScreenKit.card_panel(card)
 	card.add_theme_constant_override("separation", 6)
-	var tip: String = ScreenKit.cadre_tip(controller, cadre_id)
 	var title: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
 	var rule: String = ScreenKit.rule_text(controller, cadre_id)
 	var picture: Control = face(cadre_id, StoreScreen.CARD.x)
@@ -52,7 +52,6 @@ static func make(
 		var stamp: ScarceStamp = ScarceStamp.new(TranslationServer.translate("store.scarce"), ink)
 		stamp.place_on(StoreScreen.CARD.x - FACE_INSET)
 		picture.add_child(stamp)
-		tip += "\n" + TranslationServer.translate("store.scarce.note")
 		told += "\n\n" + TranslationServer.translate("store.scarce.note")
 	var button: Button = ScreenKit.button("", CommonsTheme.COUPON)
 	button.size_flags_horizontal = Control.SIZE_FILL
@@ -61,11 +60,8 @@ static func make(
 	if desk.sold_back.has(desk.stock()[slot]):
 		why = BuyTicket.Why.SOLD_BACK
 	BuyTicket.dress(button, desk.can_buy(slot), desk.price(slot), coupons, why)
-	button.tooltip_text = tip
 	var panel: Control = ScreenKit.card_panel(card)
-	button.set_meta(TipPlacer.SUBJECT, panel)
-	button.focus_entered.connect(slip.show_for.bind(panel, title, told, false))
-	button.focus_exited.connect(slip.hide_for.bind(panel))
+	slip.follow(button, title, told, panel)
 	card.add_child(button)
 	button.pressed.connect(buy.bind(panel))
 	UiMotion.hoverable(panel)
@@ -90,23 +86,23 @@ static func face(cadre_id: String, wide: float) -> Control:
 
 ## The name in dark type, then the rules with their keywords marked.
 static func words(title: String, rule: String) -> Control:
-	var words: VBoxContainer = VBoxContainer.new()
-	words.add_theme_constant_override("separation", 2)
-	words.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var column: VBoxContainer = VBoxContainer.new()
+	column.add_theme_constant_override("separation", 2)
+	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var name: Label = ScreenKit.label(title, NAME_SIZE)
 	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
 	var wide: float = StoreScreen.CARD.x - FACE_INSET
 	NameFit.apply(name, title, wide, TextSize.px(NAME_SIZE), TextSize.least(NameFit.LEAST))
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	words.add_child(name)
+	column.add_child(name)
 	var rules: KeywordText = KeywordText.new()
 	rules.name = RULES
 	var px: int = TextSize.px(RULE_SIZE)
 	rules.add_theme_font_size_override("normal_font_size", px)
 	rules.add_theme_color_override("default_color", ScreenKit.INK)
 	rules.set_rule(rule)
-	words.add_child(rules)
-	return words
+	column.add_child(rules)
+	return column
 
 
 ## A card's rules are print in a box of the card's fixed height (ADR 0034, rule 5): when

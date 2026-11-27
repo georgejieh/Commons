@@ -1,7 +1,7 @@
 class_name LineageParams
 extends Resource
 ## What the last finished run leaves the next one (ADR 0025, "Lineage"). Ranks are Ranks
-## values (data does not name core types): 8 is J and 11 is A.
+## values, which are numbered constants and not an enum: 8 is J and 11 is A.
 
 ## The lowest rank an heirloom can have, as a Ranks value.
 @export var heirloom_low_rank: int = 8

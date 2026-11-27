@@ -28,8 +28,8 @@ func _resources_under(folder: String) -> PackedStringArray:
 	return paths
 
 
-func _load_def(name: String) -> ModifierDef:
-	return ResourceLoader.load(DATA + "modifiers/" + name + ".tres")
+func _load_def(modifier_id: String) -> ModifierDef:
+	return ResourceLoader.load(DATA + "modifiers/" + modifier_id + ".tres")
 
 
 func test_every_definition_in_data_is_valid() -> void:
@@ -57,7 +57,7 @@ func test_every_definition_in_data_is_valid() -> void:
 			reforms += 1
 			assert_array(Array(ModifierValidator.validate_reform(reform, keys))).is_empty()
 	assert_bool(checked >= 4).is_true()
-	# ADR 0021's six Directives and eight Campaigns (P4.11), ADR 0029's Model Worker,
+	# ADR 0021's six Directives and eight Campaigns, ADR 0029's Model Worker,
 	# Mass Line and Industrialization, ADR 0032's three Campaigns and ADR 0041's three.
 	assert_int(directives).is_equal(6)
 	assert_int(campaigns).is_equal(15)

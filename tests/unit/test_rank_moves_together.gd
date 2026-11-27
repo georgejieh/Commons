@@ -296,13 +296,13 @@ func test_every_rank_mover_at_once_stays_inside_its_gaps() -> void:
 			_assert_gaps_hold(table, bombed, "turn %d bombed %s" % [turn, bombed])
 
 
-func _assert_gaps_hold(table: SeatRules, bombed: bool, name: String) -> void:
+func _assert_gaps_hold(table: SeatRules, bombed: bool, case: String) -> void:
 	var standing: PackedByteArray = table.standing_in(HOLDER, bombed)
 	var order: PackedByteArray = table.map_in(HOLDER, bombed)
 	var turned: PackedByteArray = Standing.identity()
 	ReversedRanks.reverse(turned, Standing.STEP)
 	for rank: int in Ranks.COUNT:
-		var label: String = "%s rank %d: %s" % [name, rank, Array(standing)]
+		var label: String = "%s rank %d: %s" % [case, rank, Array(standing)]
 		var own: Array[int] = [Standing.identity()[rank], turned[rank]]
 		if standing[rank] % Standing.STEP == 0:
 			assert_bool(own.has(standing[rank])).override_failure_message(label).is_true()

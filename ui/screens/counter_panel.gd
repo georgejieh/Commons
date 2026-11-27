@@ -31,8 +31,8 @@ var rule: String = ""
 
 var _look: Look = Look.LEAFLET
 var _private: bool = false
-## An envelope's wrapping, one of EnvelopePaper's.
-var _wrapping: int = EnvelopePaper.STRING_TIE
+## An envelope's wrapping.
+var _wrapping: EnvelopeDef.Wrapping = EnvelopeDef.Wrapping.STRING_TIE
 var _which: int = 0
 var _kind: Label = Label.new()
 var _name: Label = Label.new()
@@ -94,9 +94,9 @@ func _ready() -> void:
 
 ## Shows an item for sale: its kind, name and rules, and a Buy button at price.
 func offer(
-	look: Look, kind: String, id: String, name_text: String, rule_text: String, price: String
+	appearance: Look, kind: String, id: String, name_text: String, rule_text: String, price: String
 ) -> void:
-	_look = look
+	_look = appearance
 	item_id = id
 	title = name_text
 	rule = rule_text
@@ -113,8 +113,8 @@ func offer(
 
 
 ## Shows a sold place: the paper with one word on it and no button.
-func sold(look: Look, word: String) -> void:
-	_look = look
+func sold(appearance: Look, word: String) -> void:
+	_look = appearance
 	item_id = ""
 	title = ""
 	rule = ""
@@ -127,13 +127,13 @@ func sold(look: Look, word: String) -> void:
 	queue_redraw()
 
 
-## How an envelope is wrapped, one of EnvelopePaper's wrappings.
-func set_wrapping(wrapping: int) -> void:
-	_wrapping = wrapping
+## How an envelope is wrapped.
+func set_wrapping(chosen: EnvelopeDef.Wrapping) -> void:
+	_wrapping = chosen
 	queue_redraw()
 
 
-func wrapping() -> int:
+func wrapping() -> EnvelopeDef.Wrapping:
 	return _wrapping
 
 

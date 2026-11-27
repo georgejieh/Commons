@@ -84,8 +84,8 @@ func _shortcut(event: InputEvent) -> bool:
 
 
 func _play_button() -> Button:
-	if _actions.call.is_visible_in_tree():
-		return _actions.call
+	if _actions.call_landlord.is_visible_in_tree():
+		return _actions.call_landlord
 	return _actions.play_on if _actions.play_on.is_visible_in_tree() else _actions.play
 
 

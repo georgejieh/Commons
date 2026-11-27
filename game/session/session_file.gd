@@ -20,9 +20,9 @@ var _started: float = 0.0
 var _mine: bool = false
 
 
-func _init(params: SessionParams, path: String = PATH) -> void:
+func _init(params: SessionParams, file_path: String = PATH) -> void:
 	_params = params
-	_path = path
+	_path = file_path
 
 
 func path() -> String:
@@ -42,8 +42,8 @@ func look(now: float) -> Found:
 	var written: Dictionary = json.data
 	if not written.get(BEAT_KEY) is float:
 		return Found.STALE
-	var beat: float = written[BEAT_KEY]
-	return Found.STALE if now - beat > _params.stale_after() else Found.LIVE
+	var last_beat: float = written[BEAT_KEY]
+	return Found.STALE if now - last_beat > _params.stale_after() else Found.LIVE
 
 
 ## This copy is open from now: the file is written, and is this copy's to remove.

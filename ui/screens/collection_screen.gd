@@ -29,10 +29,10 @@ var _entries: Array[Control] = []
 var _scroll: ScrollContainer = ScrollContainer.new()
 var _open_line: Label
 
-var _app: DemoApp
+var _app: App
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	var view: CollectionView = CollectionView.of(Saves.profile_service())
 	var page: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.notice_wall)
@@ -133,12 +133,12 @@ func _entry(sheet: UnlockSheet) -> Control:
 		width = RULES_WIDTH
 	var words: VBoxContainer = VBoxContainer.new()
 	words.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var name: Label = ScreenKit.styled("", CommonsTheme.TITLE)
-	name.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	name.custom_minimum_size = Vector2(width, 0)
+	var title: Label = ScreenKit.styled("", CommonsTheme.TITLE)
+	title.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	title.custom_minimum_size = Vector2(width, 0)
 	var title_size: int = TextSize.px(ScreenKit.STYLE.title_size)
-	NameFit.apply(name, sheet.name, width, title_size, TextSize.least(NameFit.LEAST))
-	words.add_child(name)
+	NameFit.apply(title, sheet.name, width, title_size, TextSize.least(NameFit.LEAST))
+	words.add_child(title)
 	var rules: Label = ScreenKit.label(sheet.text, RULE_SIZE)
 	rules.custom_minimum_size = Vector2(width, 0)
 	words.add_child(rules)

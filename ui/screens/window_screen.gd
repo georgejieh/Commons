@@ -4,11 +4,11 @@ extends Control
 ## the WindowSheet, and Back, which Escape also presses. Changes apply at once and save
 ## on the way back, as on the settings screen.
 
-var _app: DemoApp = null
+var _app: App = null
 var _back: Button = null
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	var column: VBoxContainer = ScreenKit.page(self)
 	column.add_child(ScreenKit.header(tr("settings.eyebrow"), tr("settings.window")))

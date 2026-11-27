@@ -3,7 +3,7 @@ extends Control
 ## The envelope itself while it is opened (ADR 0021): drawn as EnvelopePaper has it, at
 ## whatever size it is moved to, and opened as far as opened says, from 0 to 1.
 
-var wrapping: int = EnvelopePaper.STRING_TIE
+var wrapping: EnvelopeDef.Wrapping = EnvelopeDef.Wrapping.STRING_TIE
 var which: int = 0
 var opened: float = 0.0:
 	set(value):

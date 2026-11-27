@@ -17,14 +17,6 @@ const SLACK: float = 1.0
 const PAPER_LINES: float = 18.0
 
 
-## Fails suite with every problem check finds under root, named with where and the text
-## size now.
-static func assert_clear(suite: GdUnitTestSuite, root: Node, where: String) -> void:
-	var problems: PackedStringArray = []
-	check(root, "%s at text size %d" % [where, TextSize.level()], problems)
-	suite.assert_array(problems).override_failure_message("\n".join(problems)).is_empty()
-
-
 ## Checks node and everything under it, adding each problem to problems.
 static func check(
 	node: Node, where: String, problems: PackedStringArray, scrolled: bool = false

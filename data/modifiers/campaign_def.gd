@@ -4,7 +4,7 @@ extends Resource
 ## rule names. Its behaviour is a small effect script registered by ID in
 ## CampaignRegistry, and every number it uses is in parameters.
 
-## When it may be used. Data does not name the loop's states, so these stand for them.
+## When it may be used: each is a set of the loop's moments that no one loop state names.
 enum When {
 	## On your turn in a round.
 	TURN,

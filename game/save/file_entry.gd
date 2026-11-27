@@ -29,9 +29,9 @@ static func from_dict(data: Dictionary) -> FileEntry:
 	entry.generation = int(data["generation"])
 	entry.year = int(data["year"])
 	entry.quota = int(data["quota"])
-	var figures: Dictionary = data["figures"]
-	for figure: String in figures:
-		entry.figures[figure] = float(figures[figure])
+	var saved: Dictionary = data["figures"]
+	for figure: String in saved:
+		entry.figures[figure] = float(saved[figure])
 	entry.key = str(data["key"])
 	return entry
 
@@ -62,9 +62,9 @@ static func is_valid(value: Variant) -> bool:
 			return false
 	if not data.get("figures") is Dictionary:
 		return false
-	var figures: Dictionary = data["figures"]
-	for figure: Variant in figures:
-		var number: Variant = figures[figure]
+	var saved: Dictionary = data["figures"]
+	for figure: Variant in saved:
+		var number: Variant = saved[figure]
 		if not RunCorrections.FIGURES.has(figure) or not (number is int or number is float):
 			return false
 	return true

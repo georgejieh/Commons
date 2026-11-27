@@ -21,36 +21,32 @@ const HEIRLOOM_STREAM: String = "heirloom"
 const DEFAULT_PARAMS: LineageParams = preload("res://data/run/lineage.tres")
 
 
-## The lineage a run that ended in this state leaves: {"kind": ..., "values": {...}}.
+## The lineage a run that ended in this state leaves.
 static func left_by(
 	state: RunState,
 	meters: MeterTable,
 	memory: MemoryParams,
 	params: LineageParams = DEFAULT_PARAMS
-) -> Dictionary:
+) -> Lineage:
 	var outcome: String = Endings.outcome(state, meters)
 	if Endings.is_death(outcome):
-		return make(NONE)
+		return Lineage.new()
 	if YearClass.is_landlord(state):
 		var stream: RandomStream = RandomStream.new(
 			RandomStreams.derive_seed(state.run_seed, HEIRLOOM_STREAM)
 		)
 		var rank: int = stream.next_int(params.heirloom_low_rank, params.heirloom_high_rank)
 		var suit: int = stream.next_int(0, Deck.SUITS - 1)
-		return make(HEIRLOOM, {RANK: rank, SUIT: suit})
+		return Lineage.new(HEIRLOOM, {RANK: rank, SUIT: suit})
 	if outcome == Endings.LABELED:
-		return make(LABEL)
+		return Lineage.new(LABEL)
 	var count: int = params.social_families
 	if outcome == Endings.THE_COMMONS:
 		count = params.commons_families
 	var loyal: Array[String] = loyal_families(state, memory, count)
 	if loyal.is_empty():
-		return make(NONE)
-	return make(LOYAL, {FAMILIES: loyal})
-
-
-static func make(kind: String, values: Dictionary = {}) -> Dictionary:
-	return {"kind": kind, "values": values}
+		return Lineage.new()
+	return Lineage.new(LOYAL, {FAMILIES: loyal})
 
 
 ## Up to count active families whose grudge is below zero, lowest first, the earlier in

@@ -51,13 +51,13 @@ func _answers(resentment: int, landlord: int) -> int:
 
 func test_opponents_answer_a_resented_player_more() -> void:
 	var calm: int = _answers(0, 0)
-	var resented: int = _answers(PARAMS.max, 0)
+	var resented: int = _answers(PARAMS.cap, 0)
 	assert_int(resented).is_greater(calm)
 
 
 func test_a_teammate_covers_less_for_a_resented_player() -> void:
 	var calm: int = _answers(0, 2)
-	var resented: int = _answers(PARAMS.max, 2)
+	var resented: int = _answers(PARAMS.cap, 2)
 	assert_int(resented).is_greater(calm)
 
 

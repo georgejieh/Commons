@@ -7,7 +7,7 @@ const SETTINGS: Array[String] = ["content_note_seen", "reduced_motion"]
 
 static var _save_path: String = TestFolder.of("test_skip_confirm_layout") + "run.json"
 
-var _app: DemoApp = null
+var _app: App = null
 var _was_size: Vector2i
 var _saved: Dictionary[String, Variant] = {}
 
@@ -43,7 +43,7 @@ func test_the_question_on_the_arrival_page_covers_the_screen() -> void:
 	for screen_size: Vector2i in ClipCheck.SIZES:
 		await _launch(screen_size)
 		# The surname page's default with Enter, then the arrival page, as on a first launch.
-		assert_str(_app.switcher.current_id()).is_equal("surname")
+		assert_str(_app.switcher.current_id()).is_equal(App.SURNAME)
 		await TestInput.tap_key(self, KEY_ENTER)
 		await await_idle_frame()
 		var page: ArrivalScreen = _app.switcher.current()

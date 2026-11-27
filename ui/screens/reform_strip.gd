@@ -84,25 +84,25 @@ func show_reforms(controller: RunController) -> void:
 	for reform_id: String in _ids:
 		_names.append(controller.texts.reform_name(reform_id))
 	while _tags.size() < _ids.size():
-		var tag: Control = Control.new()
-		tag.focus_mode = Control.FOCUS_ALL
-		tag.mouse_filter = Control.MOUSE_FILTER_STOP
-		tag.draw.connect(_draw_tag.bind(tag))
+		var shown: Control = Control.new()
+		shown.focus_mode = Control.FOCUS_ALL
+		shown.mouse_filter = Control.MOUSE_FILTER_STOP
+		shown.draw.connect(_draw_tag.bind(shown))
 		var index: int = _tags.size()
-		tag.mouse_entered.connect(_describe.bind(index))
-		tag.focus_entered.connect(_describe.bind(index))
-		tag.mouse_exited.connect(func() -> void: left.emit(tag))
-		tag.focus_exited.connect(func() -> void: left.emit(tag))
-		tag.focus_entered.connect(tag.queue_redraw)
-		tag.focus_exited.connect(tag.queue_redraw)
-		_row.add_child(tag)
-		_tags.append(tag)
+		shown.mouse_entered.connect(_describe.bind(index))
+		shown.focus_entered.connect(_describe.bind(index))
+		shown.mouse_exited.connect(func() -> void: left.emit(shown))
+		shown.focus_exited.connect(func() -> void: left.emit(shown))
+		shown.focus_entered.connect(shown.queue_redraw)
+		shown.focus_exited.connect(shown.queue_redraw)
+		_row.add_child(shown)
+		_tags.append(shown)
 	for index: int in _tags.size():
-		var tag: Control = _tags[index]
-		tag.visible = index < _ids.size()
-		if tag.visible:
-			tag.custom_minimum_size = Vector2(_width(_names[index]), TAG_HEIGHT)
-			tag.queue_redraw()
+		var shown: Control = _tags[index]
+		shown.visible = index < _ids.size()
+		if shown.visible:
+			shown.custom_minimum_size = Vector2(_width(_names[index]), TAG_HEIGHT)
+			shown.queue_redraw()
 	none_line.visible = _ids.is_empty()
 
 
@@ -142,17 +142,17 @@ func _width(text: String) -> float:
 	return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, name_px).x + TAG_PADDING
 
 
-func _draw_tag(tag: Control) -> void:
-	var index: int = _tags.find(tag)
+func _draw_tag(drawn: Control) -> void:
+	var index: int = _tags.find(drawn)
 	if index < 0 or index >= _names.size():
 		return
 	var worn: float = BowlGrime.wear()
-	DecreePaper.tag(tag, Rect2(Vector2.ZERO, tag.size), worn, _ids[index].hash() & 0xFF)
+	DecreePaper.tag(drawn, Rect2(Vector2.ZERO, drawn.size), worn, _ids[index].hash() & 0xFF)
 	var font: Font = get_theme_default_font()
 	var ink: Color = BowlGrime.faded(ScreenKit.INK, worn)
 	var name_px: int = TextSize.px(NAME_SIZE)
-	var baseline: Vector2 = Vector2(TAG_PADDING * 0.62, tag.size.y * 0.5 + name_px * 0.42)
-	tag.draw_string(font, baseline, _names[index], HORIZONTAL_ALIGNMENT_LEFT, -1, name_px, ink)
-	if tag.has_focus():
+	var at: Vector2 = Vector2(TAG_PADDING * 0.62, drawn.size.y * 0.5 + name_px * 0.42)
+	drawn.draw_string(font, at, _names[index], HORIZONTAL_ALIGNMENT_LEFT, -1, name_px, ink)
+	if drawn.has_focus():
 		var gold: Color = CampaignPaper.ink(ScreenKit.HINT, worn * 0.5)
-		tag.draw_rect(Rect2(Vector2.ZERO, tag.size).grow(2.0), gold, false, 2.0)
+		drawn.draw_rect(Rect2(Vector2.ZERO, drawn.size).grow(2.0), gold, false, 2.0)

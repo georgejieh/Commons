@@ -22,8 +22,8 @@ func _init() -> void:
 
 
 ## Sets the seal's word, ink and width. Its height equals its width.
-func prepare(word: String, ink: Color, width: float) -> void:
-	_word = word.to_upper()
+func prepare(text: String, ink: Color, width: float) -> void:
+	_word = text.to_upper()
 	_ink = ink
 	custom_minimum_size = Vector2.ONE * width
 	size = Vector2.ONE * width

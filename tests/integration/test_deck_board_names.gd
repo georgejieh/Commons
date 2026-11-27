@@ -7,7 +7,7 @@ const SEED: int = 4242
 
 static var _save_path: String = TestFolder.of("test_deck_board_names") + "run.json"
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -36,7 +36,7 @@ func test_no_card_covers_a_group_name() -> void:
 		for screen_size: Vector2i in ClipCheck.SIZES:
 			get_tree().root.size = screen_size
 			for choosing: bool in [false, true]:
-				var store: StoreScreen = _app.show_screen("store", true)
+				var store: StoreScreen = _app.show_screen(App.STORE, true)
 				await await_idle_frame()
 				var sheet: DeckSheet = store.deck
 				if choosing:
@@ -61,10 +61,10 @@ func _check(board: DeckBoard, where: String) -> void:
 	assert_int(names.size()).is_greater(0)
 	for card_id: int in board.card_ids():
 		var card: Rect2 = EnvelopeOverlay.shown_rect(board.view_of(card_id)).grow(-ClipCheck.SLACK)
-		for name: Control in names:
-			var label: Label = name as Label
+		for shown: Control in names:
+			var label: Label = shown as Label
 			(
-				assert_bool(card.intersects(name.get_global_rect()))
+				assert_bool(card.intersects(shown.get_global_rect()))
 				. override_failure_message(
 					(
 						"%s: %s %s covers %s %s"
@@ -73,7 +73,7 @@ func _check(board: DeckBoard, where: String) -> void:
 							CardName.of(board.card_of(card_id)),
 							card,
 							label.text,
-							name.get_global_rect()
+							shown.get_global_rect()
 						]
 					)
 				)

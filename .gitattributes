@@ -31,7 +31,7 @@
 *.ttf filter=lfs diff=lfs merge=lfs -text
 *.otf filter=lfs diff=lfs merge=lfs -text
 
-# Compiled string table (P1A.1)
+# Compiled string table
 *.translation filter=lfs diff=lfs merge=lfs -text
 
 # Golden logs

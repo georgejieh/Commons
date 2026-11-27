@@ -75,10 +75,10 @@ static func resume(
 	# Before the checkpoint resumes, since villagers can act before the first command.
 	var written: Array[Dictionary] = []
 	written.assign(data.get("decisions", []))
-	var commands: Array = data["commands"]
-	loop.decisions.begin_replay(written, bool(data.get(WRITTEN_KEY, false)), commands.size())
+	var recorded: Array = data["commands"]
+	loop.decisions.begin_replay(written, bool(data.get(WRITTEN_KEY, false)), recorded.size())
 	loop.resume_at_checkpoint()
-	for command: Dictionary in commands:
+	for command: Dictionary in recorded:
 		loop.decisions.next_command()
 		if loop.decisions.failed() or _replay(loop, command) != RunLoop.Reason.OK:
 			return null

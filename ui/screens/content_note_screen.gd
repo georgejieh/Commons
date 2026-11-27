@@ -8,7 +8,7 @@ extends Control
 const LINE_SIZE: int = 26
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
 	sheet.add_child(ScreenKit.header(tr("note.eyebrow"), tr("note.title")))
 	for key: String in ["note.themes", "note.board", "note.settings"]:
@@ -18,7 +18,7 @@ func open(app: DemoApp) -> void:
 	var next: Button = ScreenKit.button(tr("note.continue"), CommonsTheme.PRIMARY)
 	next.pressed.connect(
 		func() -> void:
-			Settings.set_value(DemoApp.CONTENT_NOTE_SEEN, true)
+			Settings.set_value(App.CONTENT_NOTE_SEEN, true)
 			Settings.save()
 			app.show_screen(app.arrival.next_screen(), true)
 	)

@@ -54,7 +54,7 @@ var _closing: QuotaClosing
 var _norm_text: String = ""
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var controller: RunController = app.controller
 	var state: RunView = controller.run
 	_met = state.set_progress() >= controller.figures.target()
@@ -139,7 +139,7 @@ func _results(controller: RunController, state: RunView) -> Array[Control]:
 
 
 ## The way on: to the store, or after the run's last Set to the Year's summary.
-func _way_on(app: DemoApp) -> Button:
+func _way_on(app: App) -> Button:
 	var controller: RunController = app.controller
 	var way_on: String = "summary.to_year" if controller.is_last_set() else "summary.to_store"
 	# In the arrival Wang says "Press Continue" (ADR 0026).
@@ -158,12 +158,12 @@ func _way_on(app: DemoApp) -> Button:
 
 ## The seals overhang the bar above and below; the bar stands in a band as tall as the
 ## wider seal, so the figures under it never cover a seal.
-func _seal_room(bar: QuotaBar) -> MarginContainer:
+func _seal_room(quota_bar: QuotaBar) -> MarginContainer:
 	var room: MarginContainer = MarginContainer.new()
 	var overhang: int = ceili((maxf(OVER_WIDTH, SEAL_WIDTH) - BAR.y) / 2.0)
 	room.add_theme_constant_override("margin_bottom", overhang)
 	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	room.add_child(bar)
+	room.add_child(quota_bar)
 	return room
 
 
@@ -213,8 +213,8 @@ func _fates(controller: RunController) -> Array[Label]:
 			key = "summary.deposed"
 		if key.is_empty():
 			continue
-		var name: String = tr(controller.seats.family_name_key(event.text))
-		var text: String = tr(key).format({"name": name})
+		var surname: String = tr(controller.seats.family_name_key(event.text))
+		var text: String = tr(key).format({"name": surname})
 		var line: Label = ScreenKit.label(text, FATE_SIZE, ScreenKit.INK)
 		line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		lines.append(line)

@@ -8,7 +8,7 @@ const SLOW: int = 0
 const STANDARD: int = 1
 const FAST: int = 2
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -60,7 +60,7 @@ func test_the_settings_sheet_offers_the_three_paces() -> void:
 
 
 func test_a_change_takes_hold_at_an_open_table() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var player: EventPlayer = table.player
 	var presets: MotionPresets = UiMotion.PRESETS

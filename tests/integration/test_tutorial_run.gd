@@ -128,9 +128,9 @@ func _play_through() -> Array[RunEvent]:
 			TutorialDirector.Phase.PROMPT
 		)
 		var wrong: Array = _wrong(step)
-		var before: int = _controller.awaiting()
+		var was: int = _controller.awaiting()
 		assert_bool(_director.attempt(wrong[0], wrong[1])).is_false()
-		assert_int(_controller.awaiting()).is_equal(before)
+		assert_int(_controller.awaiting()).is_equal(was)
 		if not step.via.is_empty():
 			assert_bool(_director.attempt(step.via)).is_true()
 			_screen = "black_market"
@@ -211,6 +211,6 @@ func test_a_wrong_scripted_move_is_a_fault_and_falls_back_to_a_legal_one() -> vo
 
 func test_a_fault_counts_as_a_refused_bot_action_in_the_run() -> void:
 	var loop: RunLoop = _loop()
-	var before: int = loop.refused_bot_actions
+	var was: int = loop.refused_bot_actions
 	loop.tutorial.on_fault.call()
-	assert_int(loop.refused_bot_actions).is_equal(before + 1)
+	assert_int(loop.refused_bot_actions).is_equal(was + 1)

@@ -5,8 +5,8 @@ extends Resource
 
 ## The ID the registries, the saves and the pools name it by.
 @export var id: String
-## Pattern.Type values. Data does not name core enums, so the numbers stand for them.
-@export var hand_types: Array[int]
+## The hand types it raises.
+@export var hand_types: Array[Pattern.Type]
 ## What it costs at the counter, in coupons.
 @export var cost: int
 ## Finished runs needed before it is offered; RunUnlocks reads it (ADR 0025).

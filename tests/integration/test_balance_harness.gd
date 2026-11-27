@@ -42,12 +42,12 @@ func _each(strategy: String) -> Array[BalanceResult]:
 func test_every_strategy_plays_its_runs_to_their_end() -> void:
 	for strategy: String in BalanceDriver.STRATEGIES:
 		for run: BalanceResult in _each(strategy):
-			var name: String = "%s seed %d" % [strategy, run.seed_value]
-			assert_str(run.failure).override_failure_message(name + ": " + run.failure).is_empty()
-			assert_str(run.outcome).override_failure_message(name).is_not_empty()
-			assert_int(run.quotas_played).override_failure_message(name).is_greater(0)
+			var case: String = "%s seed %d" % [strategy, run.seed_value]
+			assert_str(run.failure).override_failure_message(case + ": " + run.failure).is_empty()
+			assert_str(run.outcome).override_failure_message(case).is_not_empty()
+			assert_int(run.quotas_played).override_failure_message(case).is_greater(0)
 			var columns: int = BalanceResult.HEADER.split(",").size()
-			assert_int(run.csv().split(",").size()).override_failure_message(name).is_equal(columns)
+			assert_int(run.csv().split(",").size()).override_failure_message(case).is_equal(columns)
 
 
 func test_a_seed_plays_the_same_twice() -> void:
@@ -81,9 +81,9 @@ func test_every_strategy_issues_directives() -> void:
 func test_each_quota_played_has_its_row() -> void:
 	for strategy: String in BalanceDriver.STRATEGIES:
 		for run: BalanceResult in _each(strategy):
-			var name: String = "%s seed %d" % [strategy, run.seed_value]
+			var case: String = "%s seed %d" % [strategy, run.seed_value]
 			var rows: Array[BalanceQuota] = run.ledger.quotas
-			assert_int(rows.size()).override_failure_message(name).is_equal(run.quotas_played)
+			assert_int(rows.size()).override_failure_message(case).is_equal(run.quotas_played)
 			var started: Array[RunEvent] = run.ledger.events.filter(
 				func(event: RunEvent) -> bool: return event.type == RunEvent.Type.SET_STARTED
 			)
@@ -93,9 +93,9 @@ func test_each_quota_played_has_its_row() -> void:
 			assert_int(ended.size()).is_equal(rows.size())
 			for at: int in rows.size():
 				var row: BalanceQuota = rows[at]
-				assert_int(row.index).override_failure_message(name).is_equal(at + 1)
+				assert_int(row.index).override_failure_message(case).is_equal(at + 1)
 				assert_float(row.target).is_equal_approx(started[at].amount, 0.001)
-				assert_bool(row.met).override_failure_message(name).is_equal(ended[at].value == 1)
+				assert_bool(row.met).override_failure_message(case).is_equal(ended[at].value == 1)
 				assert_float(row.progress).is_equal_approx(ended[at].amount, 0.001)
 				assert_int(row.rounds).is_greater(0)
 				var columns: int = BalanceQuota.HEADER.split(",").size()

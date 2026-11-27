@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 4301
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -25,8 +25,8 @@ func after_test() -> void:
 	Saves.run_service().delete()
 
 
-func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void:
-	var store: StoreScreen = _app.show_screen("store")
+func test_store_cards_print_name_and_rules_and_buy_shows_no_plain_tooltip() -> void:
+	var store: StoreScreen = _app.show_screen(App.STORE)
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
@@ -35,14 +35,12 @@ func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void
 	assert_int(counter.get_child_count()).is_equal(stock.size())
 	for slot: int in stock.size():
 		var panel: Control = counter.get_child(slot) as Control
-		var tip: String = ScreenKit.cadre_tip(_app.controller, stock[slot])
 		var buy: Button = panel.find_children("*", "Button", true, false)[0]
-		assert_str(buy.tooltip_text).is_equal(tip)
-		var name: String = tr("modifier.%s.name" % stock[slot])
-		assert_str(tip).contains(name)
+		assert_str(buy.tooltip_text).is_empty()
+		var title: String = tr("modifier.%s.name" % stock[slot])
 		# The name is printed once, and the full rules under it.
 		var names: Array[Node] = _labels(panel).filter(
-			func(label: Node) -> bool: return (label as Label).text == name
+			func(label: Node) -> bool: return (label as Label).text == title
 		)
 		assert_int(names.size()).is_equal(1)
 		var rules: KeywordText = panel.find_children("*", "KeywordText", true, false)[0]
@@ -55,7 +53,7 @@ func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void
 
 
 func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
-	var store: StoreScreen = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen(App.STORE)
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
@@ -95,7 +93,7 @@ func _labels(node: Node) -> Array[Node]:
 
 
 func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
-	var store: StoreScreen = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen(App.STORE)
 	await await_idle_frame()
 	var stock: Array[String] = _app.controller.store.store_stock()
 	var slot: int = range(stock.size()).filter(_app.controller.store.can_buy).front()
@@ -124,19 +122,19 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 100
 	_app.controller.reseal_book()
-	var market: StoreScreen = _app.show_screen("black_market")
+	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET)
 	await await_idle_frame()
 	assert_bool(market.market).is_true()
 	var stock: Array[String] = _app.controller.store.desk(true).stock()
 	assert_int(stock.size()).is_greater(0)
-	var before: int = _app.controller.state_copy().resentment
+	var was: int = _app.controller.state_copy().resentment
 	var market_cadres: CadreCounter = market.cadres
 	var counter: HBoxContainer = market_cadres.row
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	buy.pressed.emit()
 	var state: RunState = _app.controller.state_copy()
 	assert_array(state.inventory.cadres).contains([stock[0]])
-	assert_int(state.resentment).is_equal(before + _app.controller.figures.purchase_resentment())
+	assert_int(state.resentment).is_equal(was + _app.controller.figures.purchase_resentment())
 	var seal: InkSeal = market_cadres.seal
 	assert_str(seal.word()).is_equal(tr("market.paid").to_upper())
 	await TestWait.until(
@@ -148,18 +146,16 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	assert_int(tickets.get_child_count()).is_equal(PlotUpgrades.KINDS.size())
 	var enlarge: Button = tickets.get_child(0)
 	enlarge.pressed.emit()
-	var after: RunState = _app.controller.state_copy()
-	assert_int(after.plot_capacity_bonus).is_equal(1)
-	assert_int(after.resentment).is_equal(
-		before + 2 * _app.controller.figures.purchase_resentment()
-	)
+	var now: RunState = _app.controller.state_copy()
+	assert_int(now.plot_capacity_bonus).is_equal(1)
+	assert_int(now.resentment).is_equal(was + 2 * _app.controller.figures.purchase_resentment())
 
 
 func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.coupons = 100
 	_app.controller.reseal_book()
-	var store: StoreScreen = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen(App.STORE)
 	await await_idle_frame()
 	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
@@ -177,7 +173,7 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 
 
 func test_the_collection_lists_the_cadres_of_both_shops() -> void:
-	var collection: Control = _app.show_screen("collection")
+	var collection: Control = _app.show_screen(App.COLLECTION)
 	await await_idle_frame()
 	var flows: Array[Node] = collection.find_children("*", "HFlowContainer", true, false)
 	var cadres: int = flows[0].get_child_count() + flows[1].get_child_count()

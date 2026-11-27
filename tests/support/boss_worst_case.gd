@@ -10,7 +10,7 @@ const HANDICAP: String = "the_handicap"
 const MOST_ASIDE: int = 3
 
 
-static func worst(app: DemoApp, suite: GdUnitTestSuite, named: bool) -> String:
+static func worst(app: App, suite: GdUnitTestSuite, named: bool) -> String:
 	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
 	var ids: Array[String] = []
@@ -29,7 +29,7 @@ static func worst(app: DemoApp, suite: GdUnitTestSuite, named: bool) -> String:
 	return chosen
 
 
-static func _tallest(app: DemoApp, suite: GdUnitTestSuite, ids: Array[String]) -> String:
+static func _tallest(app: App, suite: GdUnitTestSuite, ids: Array[String]) -> String:
 	var state: RunState = _loop(app).state
 	var strip: DebuffStrip = DebuffStrip.new()
 	app.add_child(strip)
@@ -51,7 +51,7 @@ static func _tallest(app: DemoApp, suite: GdUnitTestSuite, ids: Array[String]) -
 
 ## Sets the round's deal's cards aside: the most the Handicap does, of the longest names,
 ## or none.
-static func _set_aside(app: DemoApp, handicap: bool) -> void:
+static func _set_aside(app: App, handicap: bool) -> void:
 	var deal: DealResult = _loop(app).deal()
 	deal.set_aside.clear()
 	if not handicap:
@@ -66,5 +66,5 @@ static func _set_aside(app: DemoApp, handicap: bool) -> void:
 		deal.set_aside.append(deck.card(slots[index]))
 
 
-static func _loop(app: DemoApp) -> RunLoop:
+static func _loop(app: App) -> RunLoop:
 	return app.controller.run_loop()

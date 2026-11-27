@@ -235,18 +235,18 @@ func _swap() -> void:
 func _play() -> void:
 	var table: RunTableView = _controller.table
 	var legal: Array[Pattern] = table.legal_moves()
-	var play: BotPlay = Bot.decide_play(
+	var decided: BotPlay = Bot.decide_play(
 		table.seat_view(), legal, table.player_table(), _hard, BotBudget.unlimited()
 	)
-	if play.is_pass() and not table.pass_refusal().is_empty():
+	if decided.is_pass() and not table.pass_refusal().is_empty():
 		# Night Shift refuses the pass: the first legal play goes instead (ADR 0023).
 		_send("play", _controller.play(table.card_ids_for(legal[0])))
-	elif play.is_pass():
+	elif decided.is_pass():
 		_send("pass", _controller.pass_turn())
 	else:
 		# Under a wild rank the play is sent as the reading the bot chose (ADR 0029).
-		var reading: Pattern = null if table.wild_ranks().is_empty() else play.pattern
-		_send("play", _controller.play(table.card_ids_for(play.pattern), reading))
+		var reading: Pattern = null if table.wild_ranks().is_empty() else decided.pattern
+		_send("play", _controller.play(table.card_ids_for(decided.pattern), reading))
 
 
 func _need() -> void:

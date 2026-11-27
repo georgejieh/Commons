@@ -35,7 +35,7 @@ var _word: TitleWord = null
 var _arrives_in: float = 0.0
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	# The title reads the art's stage afresh, as a run's start does (ADR 0025).
 	ArtStages.latch(Saves.profile_service())
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.title_night)
@@ -57,7 +57,7 @@ func open(app: DemoApp) -> void:
 	spacer.custom_minimum_size = Vector2(0, 24)
 	column.add_child(spacer)
 	var new_run: Button = ScreenKit.button(tr("title.new_run"), CommonsTheme.PRIMARY)
-	new_run.pressed.connect(func() -> void: app.show_screen("run_setup"))
+	new_run.pressed.connect(func() -> void: app.show_screen(App.RUN_SETUP))
 	var starts: HBoxContainer = ScreenKit.row([new_run])
 	if app.has_saved_run():
 		var resume: Button = ScreenKit.button(tr("title.continue"))
@@ -73,17 +73,17 @@ func open(app: DemoApp) -> void:
 
 ## The row of minor buttons: the collection, the history, the arrival again once it has
 ## been played, the settings, the credits and Quit.
-func _minors(app: DemoApp) -> HBoxContainer:
+func _minors(app: App) -> HBoxContainer:
 	var settings: Button = ScreenKit.button(tr("title.settings"), CommonsTheme.GHOST)
-	settings.pressed.connect(func() -> void: app.show_screen("settings"))
+	settings.pressed.connect(func() -> void: app.show_screen(App.SETTINGS))
 	var credits: Button = ScreenKit.button(tr("title.credits"), CommonsTheme.GHOST)
-	credits.pressed.connect(func() -> void: app.show_screen("credits"))
+	credits.pressed.connect(func() -> void: app.show_screen(App.CREDITS))
 	var quit: Button = ScreenKit.button(tr("title.quit"), CommonsTheme.GHOST)
 	quit.pressed.connect(func() -> void: get_tree().quit())
 	var collection: Button = ScreenKit.button(tr("title.collection"), CommonsTheme.GHOST)
-	collection.pressed.connect(func() -> void: app.show_screen("collection"))
+	collection.pressed.connect(func() -> void: app.show_screen(App.COLLECTION))
 	var history: Button = ScreenKit.button(tr("title.history"), CommonsTheme.GHOST)
-	history.pressed.connect(func() -> void: app.show_screen("village_history"))
+	history.pressed.connect(func() -> void: app.show_screen(App.VILLAGE_HISTORY))
 	var minors: Array[Control] = [collection, history]
 	if ProfileSeen.has(Saves.profile_service(), ProfileSeen.TUTORIAL):
 		minors.append(_replay_button(app))
@@ -93,7 +93,7 @@ func _minors(app: DemoApp) -> HBoxContainer:
 
 ## The family's file's stamp while it holds an entry, and the notice of a session that did
 ## not close, after which New Run takes the focus back.
-func _notices(app: DemoApp, new_run: Button) -> void:
+func _notices(app: App, new_run: Button) -> void:
 	var filed: int = ProfileFile.entries(Saves.profile_service()).size()
 	if filed > 0:
 		_stamp = FileStamp.new(filed)
@@ -108,7 +108,7 @@ func _notices(app: DemoApp, new_run: Button) -> void:
 
 ## The arrival again (ADR 0026). It is never saved and ends at the title, so a saved run
 ## and the profile are left as they were.
-func _replay_button(app: DemoApp) -> Button:
+func _replay_button(app: App) -> Button:
 	var replay: Button = ScreenKit.button(tr("title.replay_arrival"), CommonsTheme.GHOST)
 	replay.name = REPLAY
 	replay.pressed.connect(func() -> void: app.arrival.start(true))

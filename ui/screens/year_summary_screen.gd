@@ -3,7 +3,7 @@ extends Control
 ## The end of the demo's one Year: what you hold and how the village stands.
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var state: RunView = app.controller.run
 	var column: VBoxContainer = SheetPad.column(
 		ScreenKit.centered_sheet(self, ScreenKit.ART.title_night)
@@ -22,7 +22,7 @@ func open(app: DemoApp) -> void:
 	]
 	column.add_child(ScreenKit.row(tiles, 20))
 	var next: Button = ScreenKit.button(tr("year.next"), CommonsTheme.PRIMARY)
-	next.pressed.connect(func() -> void: app.show_screen("demo_complete", true))
+	next.pressed.connect(func() -> void: app.show_screen(App.DEMO_COMPLETE, true))
 	column.add_child(next)
 	ScreenKit.reveal(column)
 	UiMotion.stamp(heading)

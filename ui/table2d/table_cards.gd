@@ -36,7 +36,9 @@ func card(card_id: int) -> CardInstance:
 func point(seat: int, card_id: int = -1) -> Vector2:
 	if seat == Seats.PLAYER and card_id >= 0:
 		return _hand_view.card_center(card_id)
-	var at: Control = _hand_view if seat == Seats.PLAYER else _seats[seat]
+	var at: Control = _hand_view
+	if seat != Seats.PLAYER:
+		at = _seats[seat]
 	return at.global_position + at.size / 2.0
 
 

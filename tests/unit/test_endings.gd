@@ -258,12 +258,12 @@ func test_working_out_the_ending_never_changes_the_state() -> void:
 	state.roster[1].status = RosterEntry.Status.DEAD
 	state.roster[2].status = RosterEntry.Status.REEDUCATION
 	_add(state.memory, "wang", SetSummary.Kind.FED, 3.0)
-	var before: Dictionary = state.to_dict()
+	var was: Dictionary = state.to_dict()
 	var ending_id: String = Endings.outcome(state, METERS, PARAMS)
 	Endings.epilogue(state, ending_id, BOOK, MEMORY, PARAMS)
 	for family: String in ["wang", "li", "sun", "chen", "nobody"]:
 		Endings.disposition(state.memory, family, MEMORY, PARAMS)
-	assert_dict(state.to_dict()).is_equal(before)
+	assert_dict(state.to_dict()).is_equal(was)
 
 
 func test_every_key_the_endings_use_is_in_the_string_table() -> void:

@@ -56,7 +56,7 @@ const EXPECTED: Dictionary[String, String] = {
 ## The text sizes at which arming a Campaign puts the left seat's intel away.
 const EXPECTED_AWAY: Array[int] = [2]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -190,7 +190,7 @@ func test_a_table_with_no_rule_stands_as_before_at_standard() -> void:
 	loop.state.inventory.consumables.assign(["mutual_aid"])
 	for screen: Vector2i in SCREENS_AT:
 		get_tree().root.size = screen
-		var table: TableScreen = _app.show_screen("table", true)
+		var table: TableScreen = _app.show_screen(App.TABLE, true)
 		await await_idle_frame()
 		await await_idle_frame()
 		var campaigns: TableCampaigns = table.campaigns
@@ -262,7 +262,7 @@ func test_the_strings_are_the_longest_of_their_families() -> void:
 ## The slip stands in front of the room's dressing, the right chair included, and the
 ## moments layer, where the dice bowl lands, lies over the slip.
 func test_the_slip_draws_over_the_dressing_and_under_the_moments() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var dressing: Control = table.dressing
 	var strip: Control = table.debuffs
@@ -355,9 +355,9 @@ func _check(pieces: Dictionary[String, Rect2], where: String, problems: PackedSt
 	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	var names: Array[String] = []
 	names.assign(pieces.keys())
-	for name: String in names:
-		if not screen.encloses(pieces[name]):
-			problems.append("%s: %s off screen at %s" % [where, name, pieces[name]])
+	for piece: String in names:
+		if not screen.encloses(pieces[piece]):
+			problems.append("%s: %s off screen at %s" % [where, piece, pieces[piece]])
 	for first: int in names.size():
 		for second: int in range(first + 1, names.size()):
 			var pair: String = "%s|%s" % [names[first], names[second]]

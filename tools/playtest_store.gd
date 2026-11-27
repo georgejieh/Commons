@@ -277,8 +277,8 @@ func _requisition_choice(screen: Node) -> void:
 	for card_id: int in board.call("card_ids"):
 		var card: CardInstance = board.call("card_of", card_id)
 		if not bool(board.call("is_plot", card_id)) and card.base_rank() < Ranks.SMALL_JOKER:
-			var view: Control = board.call("view_of", card_id)
-			await _mouse_click(view.get_global_transform_with_canvas() * Vector2(14.0, 84.0))
+			var card_view: Control = board.call("view_of", card_id)
+			await _mouse_click(card_view.get_global_transform_with_canvas() * Vector2(14.0, 84.0))
 			break
 	await _press(sheet.call("confirm_button"))
 	if bool(sheet.call("is_open")):

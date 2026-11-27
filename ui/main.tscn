@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://ui/demo_app.gd" id="1_app"]
+[ext_resource type="Script" path="res://ui/app.gd" id="1_app"]
 
-[node name="DemoApp" type="Control"]
+[node name="App" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

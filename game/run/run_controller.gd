@@ -375,8 +375,8 @@ func drop() -> void:
 
 ## Takes figures reported from outside the game as official (ADR 0022), by
 ## RunCorrections' names. The file's detectors send it; it is a command like any other.
-func books(figures: Dictionary) -> int:
-	return _act("books", _loop.player_books.bind(figures.duplicate()))
+func books(reported: Dictionary) -> int:
+	return _act("books", _loop.player_books.bind(reported.duplicate()))
 
 
 ## For development tools and tests only: after changing the run's figures directly, tells
@@ -462,9 +462,9 @@ func _finish(command: String, reason: RunLoop.Reason) -> int:
 ## Hands in a searched villager's play when its search on the pool has finished, and
 ## starts the search for a villager the loop stands still for if none runs (ADR 0030).
 func _process(_delta: float) -> void:
-	var play: BotPlay = _searches.poll(_loop)
-	if play != null:
-		_hand_in(play)
+	var decided: BotPlay = _searches.poll(_loop)
+	if decided != null:
+		_hand_in(decided)
 	elif _awaits_villager():
 		_searches.serve(_loop)
 
@@ -481,10 +481,10 @@ func _exit_tree() -> void:
 func settle_search() -> void:
 	if not _awaits_villager():
 		return
-	var play: BotPlay = _searches.wait(_loop)
-	if play == null:
-		play = _search_now()
-	_hand_in(play)
+	var decided: BotPlay = _searches.wait(_loop)
+	if decided == null:
+		decided = _search_now()
+	_hand_in(decided)
 
 
 ## Searches still running on the pool, for tests: one for the villager awaited now, and
@@ -521,8 +521,8 @@ func _search_now() -> BotPlay:
 ## A searched play goes in as a command's result does: its events out, the run saved,
 ## and the second book sealed again over the figures the play changed, since a play can
 ## end a round and bank Grain, before anyone is told what the run waits on now.
-func _hand_in(play: BotPlay) -> void:
-	var reason: RunLoop.Reason = _loop.villager_play(play)
+func _hand_in(decided: BotPlay) -> void:
+	var reason: RunLoop.Reason = _loop.villager_play(decided)
 	assert(reason == RunLoop.Reason.OK, "The loop refused the play it stood still for")
 	_serve()
 	_loop.set_log.flush()

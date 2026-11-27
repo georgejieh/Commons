@@ -127,7 +127,7 @@ func price(slot: int) -> int:
 func is_rare(slot: int) -> bool:
 	if slot < 0 or slot >= _stock.size() or _stock[slot] == SOLD:
 		return false
-	return _definition(_stock[slot]).rarity >= ModifierDef.RARE
+	return _definition(_stock[slot]).rarity == ModifierDef.Rarity.RARE
 
 
 ## How many more of an item this counter will sell this run, or -1 when unlimited.
@@ -150,11 +150,11 @@ func reroll_price() -> int:
 ## Campaigns than their offers while the player has room for one, or more Reforms open
 ## than their offers.
 func reroll_changes() -> bool:
-	var open: int = 0
+	var open_count: int = 0
 	for definition: ModifierDef in _pool:
 		if not _state.inventory.cadres.has(definition.id) and left(definition.id) != 0:
-			open += 1
-	if has_room() and open > slot_count():
+			open_count += 1
+	if has_room() and open_count > slot_count():
 		return true
 	if campaigns.reroll_changes() or reforms.reroll_changes() or envelopes.reroll_changes():
 		return true
@@ -200,12 +200,14 @@ func sale_price(cost: int) -> int:
 
 ## What a counter pays for a held item listed at cost (sale_price()).
 static func sale_of(state: RunState, params: ShopParams, cost: int) -> int:
+	@warning_ignore("integer_division")
 	return maxi(1, price_of(state, params, cost) * params.sell_percent / PERCENT)
 
 
 ## What a counter with params charges for an item listed at cost: the cost at its
 ## price_percent, rounded up, then under any raise the books made (ADR 0022).
 static func price_of(state: RunState, params: ShopParams, cost: int) -> int:
+	@warning_ignore("integer_division")
 	return RunBooks.priced(state, (cost * params.price_percent + PERCENT - 1) / PERCENT)
 
 
@@ -292,13 +294,13 @@ static func issue(state: RunState, directive: DirectiveDef) -> void:
 ## Draws the visit's Directives. The run loop calls it once every counter has drawn its
 ## Cadres and cards, so Directives leave the stock a seed drew before them as it was.
 func stock_directives() -> void:
-	var open: Array[DirectiveDef] = _open_directives()
+	var available: Array[DirectiveDef] = _open_directives()
 	_directive_stock.clear()
 	var stream: RandomStream = _state.streams.stream(RandomStreams.SHOP)
-	while _directive_stock.size() < _params.directive_slots and not open.is_empty():
-		var index: int = stream.next_int(0, open.size() - 1)
-		_directive_stock.append(open[index].id)
-		open.remove_at(index)
+	while _directive_stock.size() < _params.directive_slots and not available.is_empty():
+		var index: int = stream.next_int(0, available.size() - 1)
+		_directive_stock.append(available[index].id)
+		available.remove_at(index)
 
 
 func _restock() -> void:
@@ -347,19 +349,19 @@ static func draw(
 	weights: Array[int],
 	stream: RandomStream
 ) -> Array[String]:
-	var open: Array[ModifierDef] = pool.filter(
+	var unowned: Array[ModifierDef] = pool.filter(
 		func(definition: ModifierDef) -> bool: return not owned.has(definition.id)
 	)
 	var drawn: Array[String] = []
-	while drawn.size() < count and not open.is_empty():
+	while drawn.size() < count and not unowned.is_empty():
 		var total: int = 0
-		for definition: ModifierDef in open:
+		for definition: ModifierDef in unowned:
 			total += weights[definition.rarity]
 		var roll: int = stream.next_int(0, total - 1)
-		for index: int in open.size():
-			roll -= weights[open[index].rarity]
+		for index: int in unowned.size():
+			roll -= weights[unowned[index].rarity]
 			if roll < 0:
-				drawn.append(open[index].id)
-				open.remove_at(index)
+				drawn.append(unowned[index].id)
+				unowned.remove_at(index)
 				break
 	return drawn

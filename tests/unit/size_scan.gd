@@ -22,25 +22,25 @@ const ASKS: String = "TextSize."
 
 ## The font sizes in one file that do not come from TextSize.
 static func offences(path: String, text: String) -> PackedStringArray:
-	var offences: PackedStringArray = []
+	var found: PackedStringArray = []
 	if path.get_extension() != "gd":
 		var lines: PackedStringArray = text.split("\n")
 		for index: int in lines.size():
 			if lines[index].contains("font_size"):
-				offences.append("%s:%d: %s" % [path, index + 1, lines[index].strip_edges()])
-		return offences
+				found.append("%s:%d: %s" % [path, index + 1, lines[index].strip_edges()])
+		return found
 	var code: String = SourceScan.code_of(text)
 	var sized: Dictionary[String, bool] = sized_names(code)
 	for span: Vector3i in SourceScan.calls(code, SIZE_CALLS):
 		if not _asks(code.substr(span.y, span.z - span.y), sized):
 			var head: String = code.substr(span.x, span.y - span.x)
-			offences.append("%s:%d: %s" % [path, SourceScan.line_of(code, span.x), head])
+			found.append("%s:%d: %s" % [path, SourceScan.line_of(code, span.x), head])
 	var code_lines: PackedStringArray = code.split("\n")
 	for index: int in code_lines.size():
 		var line: String = code_lines[index]
 		if SourceScan.pattern(SIZE_LINES).search(line) != null and not _asks(line, sized):
-			offences.append("%s:%d: %s" % [path, index + 1, line.strip_edges()])
-	return offences
+			found.append("%s:%d: %s" % [path, index + 1, line.strip_edges()])
+	return found
 
 
 ## The functions of the script that ask TextSize, and the values it takes from TextSize

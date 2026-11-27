@@ -94,6 +94,7 @@ func expert(deals: int) -> PerfRow:
 			"Bot decision, Expert", PerfLimits.expert_budget(), "no deals asked for"
 		)
 	var p99_ms: float = play.p99_usec() / USEC_PER_MSEC
+	@warning_ignore("integer_division")
 	var note: String = "at the %d ms deadline on %d worker threads" % [limit / 1000, _threads()]
 	if play.illegal > 0:
 		note += ", %d illegal actions" % play.illegal

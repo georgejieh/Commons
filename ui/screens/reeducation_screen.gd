@@ -7,7 +7,7 @@ extends Control
 const BODY_SIZE: int = 26
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	var sheet: VBoxContainer = ScreenKit.centered_sheet(self, ScreenKit.ART.watchers)
 	var heading: Control = ScreenKit.header(tr("reed.eyebrow"), tr("reed.title"))
 	sheet.add_child(heading)
@@ -21,10 +21,10 @@ func open(app: DemoApp) -> void:
 
 
 ## Back to the run. Opened from anywhere else, as the screen tests do, it just goes back.
-func _leave(app: DemoApp) -> void:
+func _leave(app: App) -> void:
 	if app.controller.awaiting() != RunController.AWAIT_REEDUCATION:
 		app.back()
 		return
 	app.controller.leave_reeducation()
 	var over: bool = app.controller.awaiting() == RunController.AWAIT_RUN_OVER
-	app.show_screen(app.screen_for(RunController.AWAIT_RUN_OVER) if over else "set_intro", true)
+	app.show_screen(app.screen_for(RunController.AWAIT_RUN_OVER) if over else App.SET_INTRO, true)

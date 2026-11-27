@@ -8,7 +8,7 @@ extends GdUnitTestSuite
 const SEED: int = 4242
 const READABLE: int = 16
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -56,16 +56,16 @@ func test_every_debuff_reads_in_full_on_the_set_intro() -> void:
 			get_tree().root.size = screen_size
 			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 				_ladder(debuff.id)
-				var intro: Control = _app.show_screen("set_intro", true)
+				var intro: Control = _app.show_screen(App.SET_INTRO, true)
 				await await_idle_frame()
 				await await_idle_frame()
 				var where: String = "%s %s" % [debuff.id, screen_size]
-				var name: String = _app.controller.texts.modifier_name(debuff.id)
+				var title: String = _app.controller.texts.modifier_name(debuff.id)
 				var rule: String = _app.controller.texts.modifier_text(debuff.id)
 				var named: bool = false
 				for node: Node in intro.find_children("*", "Label", true, false):
 					var label: Label = node
-					if label.text == name:
+					if label.text == title:
 						named = true
 						assert_int(label.get_theme_font_size("font_size")).is_greater_equal(
 							READABLE
@@ -102,7 +102,7 @@ func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 			for debuff: ModifierDef in DebuffScript.POOL.debuffs:
 				_ladder(debuff.id)
 				_loop().state.round_index = 1
-				var table: TableScreen = _app.show_screen("table", true)
+				var table: TableScreen = _app.show_screen(App.TABLE, true)
 				await await_idle_frame()
 				var strip: DebuffStrip = table.debuffs
 				strip.show_debuffs(_app.controller)
@@ -131,7 +131,7 @@ func test_every_debuff_reads_in_full_in_the_table_strip() -> void:
 ## Plays the player's seat through the table until check returns true, at most turns times.
 func _play_until(check: Callable, turns: int = 600) -> bool:
 	var driver: ControllerScript = ControllerScript.new()
-	_app.show_screen("table", true)
+	_app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	for _turn: int in turns:
 		if _app.switcher.current_id() != "table":
@@ -152,7 +152,7 @@ func _play_until(check: Callable, turns: int = 600) -> bool:
 func test_levy_and_redistribution_slide_cards_left_or_leave_the_end_state() -> void:
 	for reduced: bool in [false, true]:
 		Settings.set_value("reduced_motion", reduced)
-		_app.show_screen("table", true)
+		_app.show_screen(App.TABLE, true)
 		await await_idle_frame()
 		var table: TableScreen = _app.switcher.current()
 		var beats: DebuffMoments = table.debuff_beats
@@ -213,9 +213,9 @@ func test_glass_walls_lay_glass_over_the_hand_while_in_force() -> void:
 	var shown: Dictionary[int, String] = {}
 	var reached: bool = await _play_until(
 		func(table: TableScreen) -> bool:
-			var beats: DebuffMoments = table.debuff_beats
+			var moments: DebuffMoments = table.debuff_beats
 			if _app.controller.awaiting() == RunController.AWAIT_PLAY:
-				shown[_loop().state.round_index] = beats.glass.shown_text()
+				shown[_loop().state.round_index] = moments.glass.shown_text()
 			return _loop().state.round_index == 1 and shown.has(1)
 	)
 	assert_bool(reached).is_true()
@@ -232,7 +232,7 @@ func test_glass_walls_lay_glass_over_the_hand_while_in_force() -> void:
 
 ## The line over the hand names the player's role once the round has started.
 func test_the_role_line_names_the_players_role_in_the_round() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var driver: ControllerScript = ControllerScript.new()
 	assert_bool(driver.play_to(self, _app.controller, RunController.AWAIT_PLAY)).is_true()
@@ -246,7 +246,7 @@ func test_the_role_line_names_the_players_role_in_the_round() -> void:
 func test_a_seized_plot_card_is_torn_unless_motion_is_reduced() -> void:
 	for reduced: bool in [false, true]:
 		Settings.set_value("reduced_motion", reduced)
-		_app.show_screen("table", true)
+		_app.show_screen(App.TABLE, true)
 		await await_idle_frame()
 		var table: TableScreen = _app.switcher.current()
 		var beats: DebuffMoments = table.debuff_beats

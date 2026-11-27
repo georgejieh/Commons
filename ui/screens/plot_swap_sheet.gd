@@ -23,7 +23,7 @@ const SEAT_SIZE: int = 22
 var count: Label = ScreenKit.label("", COUNT_SIZE)
 ## What the swaps chosen will do.
 var status: Label = ScreenKit.label("", RULE_SIZE)
-var _app: DemoApp
+var _app: App
 var _pool: CardPool
 var _board: SwapBoard = SwapBoard.new()
 var _paper: PanelContainer = PanelContainer.new()
@@ -99,7 +99,7 @@ func _footer() -> Control:
 	return ScreenKit.row([notes, buttons])
 
 
-func setup(app: DemoApp, pool: CardPool) -> void:
+func setup(app: App, pool: CardPool) -> void:
 	_app = app
 	_pool = pool
 

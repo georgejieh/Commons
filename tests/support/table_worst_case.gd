@@ -27,7 +27,7 @@ const STRIP_WIDTH: float = 428.0
 ## with the longest names, every Reform held, a full board of the longest-named Cadres,
 ## and two wild ranks (set by fill); and either way the worst boss (BossWorstCase).
 ## Cadres are never on the strip (ADR 0039).
-static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> TableScreen:
+static func open(app: App, suite: GdUnitTestSuite, named: bool = false) -> TableScreen:
 	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
 	if state.landlord_seat != Seats.PLAYER:
@@ -50,7 +50,7 @@ static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> T
 	await BossWorstCase.worst(app, suite, named)
 	state.debuff_ladder.assign(["", debuffs[0], debuffs[1], debuffs[2]])
 	state.round_index = 3
-	var table: TableScreen = app.show_screen("table", true)
+	var table: TableScreen = app.show_screen(App.TABLE, true)
 	await suite.await_idle_frame()
 	await suite.await_idle_frame()
 	return table
@@ -60,7 +60,7 @@ static func open(app: DemoApp, suite: GdUnitTestSuite, named: bool = false) -> T
 ## the play set; redacted lays the bars over the brigade notice; wild names two wild
 ## ranks on the slip; intel puts the tallest intel lines on both seats; armed arms the
 ## tray's first Campaign that can be used now, so Use and Cancel show.
-static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
+static func fill(app: App, table: TableScreen, options: Dictionary) -> void:
 	table.motion.set_still(true)
 	var seats: Dictionary[int, SeatPanel] = table.seats
 	var surname: String = longest_surname(app.controller)
@@ -157,8 +157,8 @@ static func pieces(table: TableScreen) -> Dictionary[String, Rect2]:
 
 ## A piece of dressing as drawn: its own box, or its parts' for a group; nothing hidden.
 static func _piece_rect(dressing: DreadDressing, piece: String) -> Rect2:
-	var pieces: Dictionary[String, Control] = dressing.pieces
-	var control: Control = pieces[piece]
+	var dressed: Dictionary[String, Control] = dressing.pieces
+	var control: Control = dressed[piece]
 	if not control.is_visible_in_tree():
 		return Rect2()
 	if control.size != Vector2.ZERO:
@@ -299,7 +299,7 @@ static func speech_lines() -> Array[String]:
 
 ## The three debuffs that stand tallest on the strip, each measured on a strip of the
 ## table's width at the text size now.
-static func tallest_debuffs(app: DemoApp, suite: GdUnitTestSuite) -> Array[String]:
+static func tallest_debuffs(app: App, suite: GdUnitTestSuite) -> Array[String]:
 	var loop: RunLoop = app.controller.run_loop()
 	var state: RunState = loop.state
 	var strip: DebuffStrip = DebuffStrip.new()
@@ -368,7 +368,7 @@ static func longest_slogan_type() -> int:
 
 ## The held Campaigns with the longest names, as many as a full tray holds. Each of them
 ## can be used on the landlord's lead, so the armed tray is one the player can have.
-static func longest_campaigns(app: DemoApp) -> Array[String]:
+static func longest_campaigns(app: App) -> Array[String]:
 	var ids: Array[String] = []
 	for pool: CampaignPool in [RunPools.STORE_CAMPAIGNS, RunPools.MARKET_CAMPAIGNS]:
 		for campaign: CampaignDef in pool.campaigns:

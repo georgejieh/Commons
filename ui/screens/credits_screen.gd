@@ -19,14 +19,14 @@ const BODY_SIZE: int = 24
 ## Licence texts keep their own line breaks, so they are set in the typewriter face.
 const NOTICE_SIZE: int = 18
 
-var _app: DemoApp = null
+var _app: App = null
 var _scroll: ProseScroll = null
 var _back: Button = null
 ## True until the scroll has taken the focus it offers once it can scroll.
 var _fresh: bool = true
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	_fresh = true
 	var column: VBoxContainer = ScreenKit.page(self)

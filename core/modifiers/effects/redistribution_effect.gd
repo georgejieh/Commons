@@ -13,8 +13,6 @@ func required_parameters() -> PackedStringArray:
 
 
 func round_start(context: RoundContext) -> void:
-	if context.round_state == null or context.stream == null:
-		return
 	# Seat a passes to b, b to c and c to a: two one-for-one trades make the turn.
 	var a: int = FIRST_SEAT
 	var b: int = Seats.left(a)

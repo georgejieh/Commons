@@ -9,7 +9,7 @@ const WAIT_SECONDS: float = 12.0
 const SCREEN: Vector2i = Vector2i(1920, 1080)
 const WORKERS: Array[String] = ["model_worker", "model_worker"]
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -59,7 +59,7 @@ func _to_first_lead(seed_value: int, held: Array[String]) -> bool:
 
 
 func _open_table() -> TableScreen:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	await await_idle_frame()
 	return table

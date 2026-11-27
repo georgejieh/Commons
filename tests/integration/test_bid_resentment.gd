@@ -4,7 +4,7 @@ extends GdUnitTestSuite
 
 const SEEDS: int = 60
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -25,9 +25,9 @@ func test_a_grab_adds_resentment_and_a_call_adds_none() -> void:
 		if controller.awaiting() != RunController.AWAIT_BID:
 			continue
 		var held: bool = controller.table.bid_holder() != Seats.NONE
-		var before: int = controller.state_copy().resentment
+		var was: int = controller.state_copy().resentment
 		assert_int(controller.bid(true)).is_equal(RunController.OK)
-		var rise: int = controller.state_copy().resentment - before
+		var rise: int = controller.state_copy().resentment - was
 		assert_int(rise).is_equal(controller.figures.grab_cost() if held else 0)
 		grabs += 1 if held else 0
 		calls += 0 if held else 1

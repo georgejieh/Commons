@@ -27,3 +27,5 @@ Bots stay pure.
 ## Consequences
 
 An expired deadline can change a decision, so only callers that pass a real clock can lose determinism. Harnesses that must replay exactly pass no clock. Every new `BotRationale` code needs a line in the text table, and a test enforces that.
+
+2026-11-27: `tools/bot_rationale_text.gd` was deleted on 2026-11-25, as no tool printed it, and its text table and the test of that table went with it. Bots still return the integer `BotRationale` code, and no build carries readable text for it.

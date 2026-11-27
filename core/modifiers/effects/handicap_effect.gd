@@ -22,8 +22,6 @@ static func count_at(values: Dictionary[String, int], year: int) -> int:
 
 ## Drawn from the hand in card-ID order, so the draw never depends on how the hand is held.
 func on_deal(context: DealContext) -> void:
-	if context.stream == null:
-		return
 	var hand: Hand = context.deal.hands[holder_seat]
 	var ids: Array[int] = []
 	for card: CardInstance in hand.cards():

@@ -11,10 +11,10 @@ const YOUTH_PREFIX: String = "youth_"
 ## A new run's roster: every family that starts in the village, plus any unlocked.
 static func start(state: RunState, book: VillageBook, unlocked: Array[String]) -> void:
 	state.roster.clear()
-	for definition: FamilyDef in book.families:
-		var joins: bool = definition.unlock == FamilyDef.Unlock.START
-		if joins or unlocked.has(definition.id):
-			state.roster.append(RosterEntry.new(definition.id))
+	for family: FamilyDef in book.families:
+		var joins: bool = family.unlock == FamilyDef.Unlock.START
+		if joins or unlocked.has(family.id):
+			state.roster.append(RosterEntry.new(family.id))
 
 
 ## Readies the roster for a Set and seats its opponents.

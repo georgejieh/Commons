@@ -160,11 +160,11 @@ func show_cadres(controller: RunController) -> void:
 			_marks[index].strike(false)
 		_marks[index].visible = struck
 		if held:
-			var name: String = tr("modifier.%s.name" % cadre_ids[index])
+			var title: String = tr("modifier.%s.name" % cadre_ids[index])
 			var rule: String = ScreenKit.rule_text(controller, cadre_ids[index])
 			if struck:
 				rule = tr("table.confiscated_tip") + " " + rule
-			cards[index].set_tip(name, rule)
+			cards[index].set_tip(title, rule)
 		else:
 			cards[index].set_tip("", "")
 		pictures[index].texture = ScreenKit.cadre_art(cadre_ids[index]) if held else null

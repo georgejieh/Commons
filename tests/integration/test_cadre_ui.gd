@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 4301
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -35,7 +35,7 @@ func _market_with_rehabilitation() -> StoreScreen:
 	_app.controller.reseal_book()
 	var stock: Array[String] = ["rehabilitation", "show_trial", "last_sheaf"]
 	loop.visit.market.stock_with(stock, loop.visit.market.directive_stock())
-	return _app.show_screen("black_market")
+	return _app.show_screen(App.BLACK_MARKET)
 
 
 func _buy_button(store: StoreScreen, slot: int) -> Button:
@@ -121,26 +121,26 @@ func test_the_quota_report_counts_the_bookkeepers_coupons_in_the_paid_line() -> 
 	loop.set_log.add(RunEvent.new(RunEvent.Type.CADRE_FIRED, 0, 2, 0.0, "the_bookkeeper"))
 	loop.state.coupons += 2
 	_app.controller.reseal_book()
-	var report: SetSummaryScreen = _app.show_screen("set_summary", true)
+	var report: SetSummaryScreen = _app.show_screen(App.SET_SUMMARY, true)
 	await await_idle_frame()
-	var after: Array[Control] = report.after
+	var now: Array[Control] = report.after
 	var met: bool = _app.controller.run.set_progress() >= _app.controller.figures.target()
-	var name: String = tr("modifier.the_bookkeeper.name")
+	var title: String = tr("modifier.the_bookkeeper.name")
 	if met:
 		var paid: int = (
 			_app.controller.figures.quota_reward() + _app.controller.figures.over_bonus() + 2
 		)
-		var line: Label = after[1]
-		var words: Dictionary = {"count": paid, "kept": 2, "cadre": name}
+		var line: Label = now[1]
+		var words: Dictionary = {"count": paid, "kept": 2, "cadre": title}
 		assert_str(line.text).is_equal(tr("summary.paid_with").format(words))
 	else:
-		var kept: Label = after[2]
-		var text: String = Strings.count("summary.cadre_paid", 2).format({"cadre": name})
+		var kept: Label = now[2]
+		var text: String = Strings.count("summary.cadre_paid", 2).format({"cadre": title})
 		assert_str(kept.text).is_equal(text)
 
 
 func test_the_collections_sections_scroll_with_focus() -> void:
-	var collection: CollectionScreen = _app.show_screen("collection")
+	var collection: CollectionScreen = _app.show_screen(App.COLLECTION)
 	await await_idle_frame()
 	var flows: Array[Node] = collection.find_children("*", "HFlowContainer", true, false)
 	assert_int(flows.size()).is_equal(CollectionView.SECTION_KEYS.size())

@@ -22,7 +22,7 @@ var sit_out: Button = Button.new()
 var hint: Button = Button.new()
 var sort: Button = Button.new()
 var rules: Button = Button.new()
-var call: Button = Button.new()
+var call_landlord: Button = Button.new()
 var decline: Button = Button.new()
 var play_on: Button = Button.new()
 
@@ -70,9 +70,9 @@ func _ready() -> void:
 	Settings.changed.connect(_on_setting)
 	_turn_row.add_child(_toggles)
 	add_child(_turn_row)
-	_button(call, "action.call", CommonsTheme.PRIMARY)
+	_button(call_landlord, "action.call", CommonsTheme.PRIMARY)
 	_button(decline, "action.decline", CommonsTheme.SECONDARY)
-	for button: Button in [call, decline]:
+	for button: Button in [call_landlord, decline]:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_bid_row.add_child(button)
 	add_child(_bid_row)
@@ -86,7 +86,7 @@ func _ready() -> void:
 ## that width; a taller column grows upward from the foot.
 func hold(box: Rect2) -> void:
 	var wide: float = maxf(box.size.x, ceilf(_toggles_width(TextSize.least(TOGGLE_SIZE))))
-	var fits: Callable = func(font_size: int) -> bool: return _toggles_width(font_size) <= wide
+	var fits: Callable = func(tried: int) -> bool: return _toggles_width(tried) <= wide
 	var font_size: int = TextSize.fit(TOGGLE_SIZE, TOGGLE_SIZE, fits)
 	for button: Button in [hint, sort, rules]:
 		button.add_theme_font_size_override("font_size", font_size)
@@ -120,7 +120,9 @@ func say(text: String, tip: String = "") -> void:
 ## How tall the column stands with the prompt's box over the play set, or over Call and
 ## Pass when bidding.
 func tallest(bidding: bool) -> float:
-	var row: Control = _bid_row if bidding else _turn_row
+	var row: Control = _turn_row
+	if bidding:
+		row = _bid_row
 	return _prompt_room + get_theme_constant("separation") + row.get_combined_minimum_size().y
 
 
@@ -141,8 +143,8 @@ func held() -> Rect2:
 
 func _fit_prompt() -> void:
 	var text: String = reading.text
-	var fits: Callable = func(font_size: int) -> bool:
-		return _prompt_height(text, font_size) <= _prompt_room
+	var fits: Callable = func(tried: int) -> bool:
+		return _prompt_height(text, tried) <= _prompt_room
 	var font_size: int = TextSize.fit(PROMPT_SIZE, PROMPT_SIZE, fits)
 	reading.add_theme_font_size_override("font_size", font_size)
 

@@ -98,6 +98,9 @@ func test_escape_and_bare_modifiers_are_refused() -> void:
 			. override_failure_message(str(key))
 			. is_false()
 		)
+	# A key held with a modifier is a Key and its mask, which no member of Key names, and
+	# what an event can hand bind all the same.
+	@warning_ignore("int_as_enum_without_match")
 	assert_bool(bindings.bind("commons_play", (KEY_J | KEY_MASK_SHIFT) as Key)).is_false()
 	assert_bool(_is_default(bindings)).is_true()
 	# Keys the menus also use are allowed, as the defaults use them.
@@ -187,9 +190,9 @@ func test_a_missing_file_loads_the_defaults() -> void:
 func test_every_action_has_a_binding_a_row_and_a_string() -> void:
 	var found: Array[String] = []
 	for property: Dictionary in ProjectSettings.get_property_list():
-		var name: String = property["name"]
-		if name.begins_with("input/" + ACTION_PREFIX):
-			found.append(name.trim_prefix("input/"))
+		var property_name: String = property["name"]
+		if property_name.begins_with("input/" + ACTION_PREFIX):
+			found.append(property_name.trim_prefix("input/"))
 	assert_array(found).contains_exactly_in_any_order(KeyBindings.ACTIONS)
 	var page: ControlsPage = auto_free(ControlsPage.new())
 	add_child(page)

@@ -4,9 +4,16 @@ extends Resource
 ## was not there. It fires only while its layer is past min_weight, then waits a
 ## cooldown before it can fire again. The no-flash setting turns every flicker off.
 
-## What flickers: "portrait_blink" blinks a villager's portrait, "extra_chair" flashes a
-## chair that was not there.
-@export var kind: String = ""
+## What flickers.
+enum Kind {
+	## A villager's portrait blinks.
+	PORTRAIT_BLINK,
+	## A chair that was not there flashes at the table.
+	EXTRA_CHAIR,
+}
+
+## What flickers.
+@export var kind: Kind = Kind.PORTRAIT_BLINK
 ## Index of the layer in HorrorConfig.layers that gates it.
 @export var layer: int = 0
 ## The layer's weight, from 0 to 1, it must be past for the flicker to fire.

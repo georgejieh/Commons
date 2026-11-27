@@ -33,12 +33,12 @@ func _init() -> void:
 	resized.connect(_place)
 
 
-## Explains anchor: title over rule, above it or below it.
-func show_for(anchor: Control, title: String, rule: String, above: bool = true) -> void:
+## Explains piece: title over rule, above it or below it.
+func show_for(piece: Control, title: String, rule: String, above: bool = true) -> void:
 	if quiet.is_valid() and bool(quiet.call()):
 		hide_slip()
 		return
-	_anchor = anchor
+	_anchor = piece
 	_above = above
 	_rule = rule
 	ScreenKit.clear(self)
@@ -47,25 +47,28 @@ func show_for(anchor: Control, title: String, rule: String, above: bool = true) 
 	# It only explains: a click goes through it to whatever lies under.
 	for node: Node in [content] + content.find_children("*", "Control", true, false):
 		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if not anchor.has_meta(WATCHED):
-		anchor.set_meta(WATCHED, true)
-		anchor.tree_exiting.connect(hide_for.bind(anchor))
+	if not piece.has_meta(WATCHED):
+		piece.set_meta(WATCHED, true)
+		piece.tree_exiting.connect(hide_for.bind(piece))
 	visible = true
 	reset_size()
 	_place()
 
 
-## Explains control, title over rule, while it is hovered or holds the focus.
-func follow(control: Control, title: String, rule: String) -> void:
-	control.mouse_entered.connect(show_for.bind(control, title, rule))
-	control.focus_entered.connect(show_for.bind(control, title, rule))
-	control.mouse_exited.connect(hide_for.bind(control))
-	control.focus_exited.connect(hide_for.bind(control))
+## Explains piece, title over rule, while control is hovered or holds the focus. The piece
+## is the control itself, or the paper a Buy button on it stands for, which the slip then
+## keeps off whole.
+func follow(control: Control, title: String, rule: String, piece: Control = null) -> void:
+	var explained: Control = control if piece == null else piece
+	control.mouse_entered.connect(show_for.bind(explained, title, rule))
+	control.focus_entered.connect(show_for.bind(explained, title, rule))
+	control.mouse_exited.connect(hide_for.bind(explained))
+	control.focus_exited.connect(hide_for.bind(explained))
 
 
-## Hides the slip if it is explaining anchor.
-func hide_for(anchor: Control) -> void:
-	if _anchor == anchor:
+## Hides the slip if it is explaining piece.
+func hide_for(piece: Control) -> void:
+	if _anchor == piece:
 		hide_slip()
 
 
@@ -89,6 +92,6 @@ func _place() -> void:
 		return
 	var screen: Rect2 = get_viewport_rect().grow(-MARGIN)
 	var around: Rect2 = SlipPlacer.on_screen(_anchor)
-	var side: int = SlipPlacer.ABOVE if _above else SlipPlacer.BELOW
+	var side: SlipPlacer.Beside = SlipPlacer.Beside.ABOVE if _above else SlipPlacer.Beside.BELOW
 	var root: Node = within if within != null else get_tree().root
 	global_position = SlipPlacer.place(size, around, GAP, screen, root, self, side)

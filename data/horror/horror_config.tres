@@ -104,7 +104,7 @@ audio_stems = Array[String]([])
 
 [sub_resource type="Resource" id="flicker_1"]
 script = ExtResource("3")
-kind = "portrait_blink"
+kind = 0
 layer = 0
 min_weight = 0.5
 cooldown = Vector2(25.0, 50.0)
@@ -112,7 +112,7 @@ duration = 0.12
 
 [sub_resource type="Resource" id="flicker_2"]
 script = ExtResource("3")
-kind = "extra_chair"
+kind = 1
 layer = 0
 min_weight = 0.75
 cooldown = Vector2(40.0, 80.0)
@@ -120,7 +120,7 @@ duration = 0.6
 
 [sub_resource type="Resource" id="flicker_3"]
 script = ExtResource("3")
-kind = "portrait_blink"
+kind = 0
 layer = 1
 min_weight = 0.6
 cooldown = Vector2(30.0, 60.0)

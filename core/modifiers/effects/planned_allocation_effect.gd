@@ -18,8 +18,6 @@ func rank_parameters() -> PackedStringArray:
 
 
 func on_deal(context: DealContext) -> void:
-	if context.stream == null:
-		return
 	var bias: DealBias = DealBias.new(holder_seat, picked(), fraction(parameters[PERCENT]))
 	Dealer.rebias(context.deal, bias, context.stream)
 

@@ -124,8 +124,12 @@ func sweep(toward: Vector2) -> void:
 	for view: CardView in _views:
 		var target: Vector2 = view.position + (toward - view.global_position) * SWEEP_REACH
 		last = view.tween().set_parallel(true)
+		# The presets are a preloaded constant, so the engine reads these fields as plain
+		# numbers, loses their enum type and finds no member for them.
+		@warning_ignore_start("int_as_enum_without_cast", "int_as_enum_without_match")
 		last.set_trans(UiMotion.PRESETS.sweep_transition)
 		last.set_ease(UiMotion.PRESETS.sweep_ease)
+		@warning_ignore_restore("int_as_enum_without_cast", "int_as_enum_without_match")
 		last.tween_property(view, "position", target, seconds)
 		last.tween_property(view, "scale", Vector2.ONE * LAUNCH_SCALE, seconds)
 		last.tween_property(view, "modulate:a", 0.0, seconds)

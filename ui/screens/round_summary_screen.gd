@@ -6,28 +6,30 @@ extends Control
 ## The stake's and the bank's lines, at Standard.
 const LINE_SIZE: int = 24
 
-var _app: DemoApp
+var _app: App
 
 
-func open(app: DemoApp) -> void:
+func open(app: App) -> void:
 	_app = app
 	var controller: RunController = app.controller
 	var state: RunView = controller.run
 	var sheet: VBoxContainer = SheetPad.over_board(self, SheetPad.BOARD_WIDTH)
-	var last: Dictionary = last_round(controller.set_events())
+	var last: RoundResult = RoundResult.last(controller.set_events())
 	var title_key: String = "round.none"
-	if not last.is_empty():
-		title_key = "round.won" if bool(last["won"]) else "round.lost"
+	if last != null:
+		title_key = "round.won" if last.won else "round.lost"
+	else:
+		last = RoundResult.new()
 	var eyebrow: String = tr("round.eyebrow").format({"round": maxi(1, state.round_index())})
 	sheet.add_child(ScreenKit.header(eyebrow, tr(title_key)))
 	var tiles: Array[Control] = [
-		StatTile.rolling(tr("round.score"), float(last.get("score", 0.0))),
-		StatTile.rolling(tr("round.share"), float(last.get("share", 0))),
+		StatTile.rolling(tr("round.score"), last.score),
+		StatTile.rolling(tr("round.share"), float(last.share)),
 		StatTile.figure(tr("round.progress"), state, RunCorrections.PROGRESS, state.set_progress()),
 	]
 	sheet.add_child(ScreenKit.row(tiles, 20))
 	# Overfulfillment's stake is part of the result: the bank multiplied, or voided.
-	if last.has("stake"):
+	if last.staked:
 		sheet.add_child(ScreenKit.label(stake_line(last), LINE_SIZE, ScreenKit.RED))
 	# What debuffs took from the bank is part of the result too (ADR 0023).
 	for line: String in debuff_lines(last):
@@ -46,48 +48,19 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 ## What Overfulfillment did to the round's bank, for a result that carries a stake.
-static func stake_line(last: Dictionary) -> String:
-	if bool(last["stake"]):
-		var amount: String = Strings.score(float(last["banked"]))
+static func stake_line(last: RoundResult) -> String:
+	if last.stake_won:
+		var amount: String = Strings.score(last.banked)
 		return TranslationServer.translate("round.stake.won").format({"amount": amount})
 	return TranslationServer.translate("round.stake.lost")
 
 
 ## Overtime's and Grain Tax's lines, for a result they cut.
-static func debuff_lines(last: Dictionary) -> PackedStringArray:
+static func debuff_lines(last: RoundResult) -> PackedStringArray:
 	var lines: PackedStringArray = []
-	if last.has("voided"):
+	if last.voided:
 		lines.append(TranslationServer.translate("round.voided"))
-	if last.has("taxed"):
-		var amount: String = Strings.score(float(last["taxed"]))
+	if last.taxed:
+		var amount: String = Strings.score(last.tax)
 		lines.append(TranslationServer.translate("round.taxed").format({"amount": amount}))
 	return lines
-
-
-## The player's result in the Set's last finished round, or empty when none has.
-static func last_round(events: Array[RunEvent]) -> Dictionary:
-	var result: Dictionary = {}
-	var finished: Dictionary = {}
-	var landlord: int = Seats.NONE
-	for event: RunEvent in events:
-		if event.round_event != null:
-			var played: RoundEvent = event.round_event
-			if played.type == RoundEvent.Type.ROUND_STARTED:
-				landlord = played.seat
-				result = {}
-			elif played.type == RoundEvent.Type.ROUND_ENDED:
-				result["won"] = (played.seat == landlord) == (landlord == Seats.PLAYER)
-		elif event.type == RunEvent.Type.ROUND_SCORED and event.seat == Seats.PLAYER:
-			result["score"] = event.amount
-		elif event.type == RunEvent.Type.SHARE_PAID and event.seat == Seats.PLAYER:
-			result["share"] = event.value
-		elif event.type == RunEvent.Type.STAKE_SETTLED and event.seat == Seats.PLAYER:
-			result["stake"] = event.value == 1
-			result["banked"] = event.amount
-		elif event.type == RunEvent.Type.GRAIN_TAXED and event.seat == Seats.PLAYER:
-			result["taxed"] = event.amount
-		elif event.type == RunEvent.Type.BANK_VOIDED and event.seat == Seats.PLAYER:
-			result["voided"] = event.amount
-		if result.has("won"):
-			finished = result
-	return finished

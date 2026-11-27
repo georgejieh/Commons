@@ -4,7 +4,7 @@ extends GdUnitTestSuite
 
 const SEED: int = 4301
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -17,7 +17,7 @@ func after_test() -> void:
 
 
 func test_the_title_reaches_setup_collection_and_history() -> void:
-	_app.show_screen("title", true)
+	_app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	for pair: Array in [
 		["title.collection", "collection"],
@@ -29,26 +29,26 @@ func test_the_title_reaches_setup_collection_and_history() -> void:
 		assert_str(_app.switcher.current_id()).is_equal(pair[1])
 		_app.back()
 		await await_idle_frame()
-		assert_str(_app.switcher.current_id()).is_equal("title")
+		assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 
 
 func test_run_setup_starts_a_run_at_the_set_intro() -> void:
-	_app.show_screen("title", true)
+	_app.show_screen(App.TITLE, true)
 	await await_idle_frame()
 	_press("title.new_run")
 	await await_idle_frame()
 	_press("setup.start")
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("set_intro")
+	assert_str(_app.switcher.current_id()).is_equal(App.SET_INTRO)
 	assert_bool(_app.controller.has_run()).is_true()
 
 
 func test_the_table_menu_reaches_the_dossier_and_last_round_and_back() -> void:
 	_app.new_run(SEED)
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	table.skip_events()
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	for pair: Array in [["dossier.open", "dossier"], ["pause.last_round", "round_summary"]]:
 		table = _app.switcher.current()
 		table.hud.menu.pressed.emit()
@@ -57,44 +57,44 @@ func test_the_table_menu_reaches_the_dossier_and_last_round_and_back() -> void:
 		assert_str(_app.switcher.current_id()).is_equal(pair[1])
 		_app.back()
 		await await_idle_frame()
-		assert_str(_app.switcher.current_id()).is_equal("table")
-		assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+		assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
+		assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
 func test_the_store_reaches_the_black_market_and_back() -> void:
 	_app.new_run(SEED)
-	_app.show_screen("set_intro", true)
-	_app.show_screen("store")
+	_app.show_screen(App.SET_INTRO, true)
+	_app.show_screen(App.STORE)
 	await await_idle_frame()
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	_press("market.open")
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("black_market")
+	assert_str(_app.switcher.current_id()).is_equal(App.BLACK_MARKET)
 	_press("market.back")
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("store")
-	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
+	assert_str(_app.switcher.current_id()).is_equal(App.STORE)
+	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
 
 
-## Screens whose systems arrive in Phase 4 open over the table and go back to it.
-func test_phase_4_screens_open_over_the_run_and_go_back() -> void:
+## The reeducation screen opens over the table and goes back to it.
+func test_reeducation_opens_over_the_table_and_goes_back() -> void:
 	_app.new_run(SEED)
-	_app.show_screen("table", true)
+	_app.show_screen(App.TABLE, true)
 	await await_idle_frame()
-	var before: Dictionary = _app.controller.state_copy().to_dict()
+	var was: Dictionary = _app.controller.state_copy().to_dict()
 	for screen_id: String in ["reeducation"]:
 		_app.show_screen(screen_id)
 		await await_idle_frame()
 		assert_str(_app.switcher.current_id()).is_equal(screen_id)
 		_press_first()
 		await await_idle_frame()
-		assert_str(_app.switcher.current_id()).is_equal("table")
-	assert_dict(_app.controller.state_copy().to_dict()).is_equal(before)
-	_app.show_screen("ending", true)
+		assert_str(_app.switcher.current_id()).is_equal(App.TABLE)
+	assert_dict(_app.controller.state_copy().to_dict()).is_equal(was)
+	_app.show_screen(App.ENDING, true)
 	await await_idle_frame()
 	_press("end.to_title")
 	await await_idle_frame()
-	assert_str(_app.switcher.current_id()).is_equal("title")
+	assert_str(_app.switcher.current_id()).is_equal(App.TITLE)
 
 
 func test_a_finished_round_shows_in_the_last_round_summary() -> void:
@@ -106,9 +106,8 @@ func test_a_finished_round_shows_in_the_last_round_summary() -> void:
 			break
 		if not driver.act(_app.controller):
 			break
-	var last: Dictionary = RoundSummaryScreen.last_round(_app.controller.set_events())
-	assert_bool(last.has("won")).is_true()
-	assert_bool(last.has("score")).is_true()
+	var last: RoundResult = RoundResult.last(_app.controller.set_events())
+	assert_object(last).override_failure_message("no round finished").is_not_null()
 
 
 func _press(key: String) -> void:
@@ -144,17 +143,17 @@ func test_last_round_reports_exact_values_and_keeps_them() -> void:
 		RunEvent.new(RunEvent.Type.SHARE_PAID, 0, 30),
 		RunEvent.wrap(RoundEvent.new(RoundEvent.Type.ROUND_STARTED, 0)),
 	]
-	var last: Dictionary = RoundSummaryScreen.last_round(events)
-	assert_bool(last["won"]).is_true()
-	assert_float(last["score"]).is_equal(120.0)
-	assert_int(last["share"]).is_equal(30)
+	var last: RoundResult = RoundResult.last(events)
+	assert_bool(last.won).is_true()
+	assert_float(last.score).is_equal(120.0)
+	assert_int(last.share).is_equal(30)
 	events.append(RunEvent.wrap(RoundEvent.new(RoundEvent.Type.ROUND_ENDED, 1)))
-	var lost: Dictionary = RoundSummaryScreen.last_round(events)
-	assert_bool(lost["won"]).is_false()
+	var lost: RoundResult = RoundResult.last(events)
+	assert_bool(lost.won).is_false()
 
 
 ## A run saved while its plot swap waits continues at the table, which opens the swap's
 ## sheet over itself (ADR 0038): there is no swap screen to land on.
 func test_a_waiting_swap_continues_at_the_table() -> void:
 	_app.new_run(SEED)
-	assert_str(_app.screen_for(RunController.AWAIT_SWAP)).is_equal(_app.table_id())
+	assert_str(_app.screen_for(RunController.AWAIT_SWAP)).is_equal(App.TABLE)

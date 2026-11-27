@@ -27,7 +27,7 @@ extends Resource
 ## Whether the table offers its Hint button (HintSetting).
 @export var show_hint: bool = true
 ## The window (DisplayWindow): 0 a window, 1 borderless full screen, 2 exclusive full
-## screen.
+## screen. A number, as DisplayWindow's modes are the UI's and data cannot name ui/.
 @export var window_mode: int = 1
 ## The size of a window: an index into window_sizes.
 @export var window_size: int = 2

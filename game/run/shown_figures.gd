@@ -48,7 +48,9 @@ static func meter(state: RunView, figure: String, value: int) -> String:
 ## Coupons as text through a count key: the count, or ample at the stage past the last.
 ## Coupons never go dark.
 static func coupons(amount: int, key: String) -> String:
-	return TranslationServer.translate(AMPLE) if all_success() else Strings.count(key, amount)
+	if all_success():
+		return TranslationServer.translate(AMPLE)
+	return Strings.count(key, amount)
 
 
 ## True when the Quota's target is shown.

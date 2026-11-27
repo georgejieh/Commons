@@ -41,7 +41,7 @@ func _spend(controller: RunController, strategy_name: String) -> Array[BalanceOf
 		var offer: BalanceOffer = strategy.purchase(visit)
 		if offer == null:
 			return bought
-		var before: Array[CardInstance] = controller.store.deck_cards()
+		var was: Array[CardInstance] = controller.store.deck_cards()
 		var incoming: CardInstance = null
 		if offer.kind == BalanceOffer.Kind.DECK_CARD:
 			incoming = controller.store.deck_stall().card(offer.slot)
@@ -50,9 +50,9 @@ func _spend(controller: RunController, strategy_name: String) -> Array[BalanceOf
 			RunController.OK
 		)
 		if offer.kind == BalanceOffer.Kind.DECK_CARD:
-			_check_exchange(before, controller.store.deck_cards(), offer.card, incoming)
+			_check_exchange(was, controller.store.deck_cards(), offer.card, incoming)
 		elif offer.kind == BalanceOffer.Kind.MARK:
-			_check_mark(before, controller.store.deck_cards(), offer)
+			_check_mark(was, controller.store.deck_cards(), offer)
 			_resentment_rises.append(controller.state_copy().resentment - state.resentment)
 		if offer.market:
 			market_bought += 1
@@ -64,25 +64,23 @@ func _spend(controller: RunController, strategy_name: String) -> Array[BalanceOf
 ## The card that went out was the first of the lowest rank the deck held, the one that
 ## came in ranks above it, and the deck still holds 54.
 func _check_exchange(
-	before: Array[CardInstance], after: Array[CardInstance], out: int, incoming: CardInstance
+	was: Array[CardInstance], now: Array[CardInstance], out: int, incoming: CardInstance
 ) -> void:
-	assert_int(after.size()).is_equal(Deck.SIZE)
-	for card: CardInstance in before:
-		assert_int(before[out].base_rank()).is_less_equal(card.base_rank())
-		if card.base_rank() == before[out].base_rank():
+	assert_int(now.size()).is_equal(Deck.SIZE)
+	for card: CardInstance in was:
+		assert_int(was[out].base_rank()).is_less_equal(card.base_rank())
+		if card.base_rank() == was[out].base_rank():
 			assert_int(out).is_less_equal(card.id())
-	assert_int(incoming.base_rank()).is_greater(before[out].base_rank())
-	assert_int(after[out].base_rank()).is_equal(incoming.base_rank())
-	assert_int(after[out].suit()).is_equal(incoming.suit())
+	assert_int(incoming.base_rank()).is_greater(was[out].base_rank())
+	assert_int(now[out].base_rank()).is_equal(incoming.base_rank())
+	assert_int(now[out].suit()).is_equal(incoming.suit())
 
 
 ## The mark went on the highest card that had no mark of the desk's kind, the lowest slot
 ## on a tie, and nothing else changed.
-func _check_mark(
-	before: Array[CardInstance], after: Array[CardInstance], offer: BalanceOffer
-) -> void:
+func _check_mark(was: Array[CardInstance], now: Array[CardInstance], offer: BalanceOffer) -> void:
 	var stamps: bool = offer.market
-	for card: CardInstance in before:
+	for card: CardInstance in was:
 		var marked: bool = (
 			card.owner_stamp() != CardInstance.NO_OWNER
 			if stamps
@@ -90,13 +88,13 @@ func _check_mark(
 		)
 		if marked or card.id() == offer.card:
 			continue
-		assert_int(card.base_rank()).is_less_equal(before[offer.card].base_rank())
-		if card.base_rank() == before[offer.card].base_rank():
+		assert_int(card.base_rank()).is_less_equal(was[offer.card].base_rank())
+		if card.base_rank() == was[offer.card].base_rank():
 			assert_int(card.id()).is_greater(offer.card)
 	if stamps:
-		assert_int(after[offer.card].owner_stamp()).is_equal(RunLoop.PLAYER)
+		assert_int(now[offer.card].owner_stamp()).is_equal(RunLoop.PLAYER)
 	else:
-		assert_str(after[offer.card].enhancement_id()).is_equal(offer.item_id)
+		assert_str(now[offer.card].enhancement_id()).is_equal(offer.item_id)
 
 
 func _kinds(bought: Array[BalanceOffer], market: bool) -> Array[int]:

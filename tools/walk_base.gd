@@ -303,12 +303,12 @@ func _click_first_button() -> void:
 func _click_card(table: Node, card_id: int) -> void:
 	var views: Array = member(member(table, "hand_view"), "_views")
 	for index: int in views.size():
-		var view: Control = views[index]
-		if view.get("card_id") != card_id:
+		var card_view: Control = views[index]
+		if card_view.get("card_id") != card_id:
 			continue
-		var grip: float = GRIP_X if index < views.size() - 1 else view.size.x / 2.0
-		var local: Vector2 = Vector2(grip, view.size.y * GRIP_HEIGHT)
-		await _mouse_click(view.get_global_transform_with_canvas() * local)
+		var grip: float = GRIP_X if index < views.size() - 1 else card_view.size.x / 2.0
+		var local: Vector2 = Vector2(grip, card_view.size.y * GRIP_HEIGHT)
+		await _mouse_click(card_view.get_global_transform_with_canvas() * local)
 		return
 	_misclick("card %d not in the fan" % card_id)
 

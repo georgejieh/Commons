@@ -9,7 +9,7 @@ const EARLY: String = "res://art/backdrops/stages/table_surface_s0.png"
 const LATE: String = "res://art/backdrops/stages/table_surface_s4.png"
 const BACK_EARLY: String = "res://art/cards/stages/card_back_s0.png"
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -46,7 +46,7 @@ func test_a_stage_falls_back_to_the_nearest_earlier_art() -> void:
 
 
 func test_the_table_shows_the_stage_art_and_follows_a_stage_change() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var surface: TextureRect = table.surface
 	assert_str(Lighting.diffuse(surface.texture).resource_path).is_equal(EARLY)
@@ -89,7 +89,7 @@ func test_only_the_stage_shown_is_loaded() -> void:
 
 
 func test_the_table_surface_is_lit_with_the_normal_map_for_its_stage() -> void:
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var surface: TextureRect = table.surface
 	var canvas: CanvasTexture = surface.texture as CanvasTexture

@@ -16,21 +16,21 @@ extends RefCounted
 ## A full run starting is the family's next generation. Writes the profile, and the
 ## generation and finished runs it started from into the run's identity, and the
 ## village's drift for that generation into both (ADR 0028), and the entries the family's
-## file holds into the identity (ADR 0022). Returns the lineage the run
-## inherits, {"kind", "values"}, taken out of the profile in the same write; a run that
-## is not full inherits nothing and drifts nothing.
-static func start_run(profile: SaveService, state: RunState) -> Dictionary:
+## file holds into the identity (ADR 0022). Returns the lineage the run inherits, taken
+## out of the profile in the same write; a run that is not full inherits nothing and
+## drifts nothing.
+static func start_run(profile: SaveService, state: RunState) -> Lineage:
 	var data: ProfileData = Profile.read(profile)
 	state.identity.finished_runs = data.finished_runs
 	if not state.identity.is_full():
-		return RunLineage.make(RunLineage.NONE)
+		return Lineage.new()
 	data.generation += 1
 	state.identity.generation = data.generation
 	# Every entry in the family's file raises the run's targets (ADR 0022).
 	state.identity.file_entries = data.file.size()
 	data.drift = VillageDrift.next(data.drift, data.generation, RunDefaults.VILLAGE)
 	state.drift = VillageDrift.from_dict(data.drift.to_dict())
-	var taken: Dictionary = RunLineage.make(data.lineage_kind, data.lineage_values.duplicate(true))
+	var taken: Lineage = Lineage.new(data.lineage_kind, data.lineage_values.duplicate(true))
 	data.lineage_kind = RunLineage.NONE
 	data.lineage_values = {}
 	Profile.write(profile, data)
@@ -82,9 +82,9 @@ static func _record(data: ProfileData, state: RunState) -> void:
 		# A win at the highest stake unlocked opens the next, up to the last.
 		if state.identity.stake == data.stake:
 			data.stake = mini(data.stake + 1, RunStakes.last())
-	var left: Dictionary = RunLineage.left_by(state, RunDefaults.METERS, RunDefaults.MEMORY)
-	data.lineage_kind = left["kind"]
-	data.lineage_values = left["values"]
+	var left: Lineage = RunLineage.left_by(state, RunDefaults.METERS, RunDefaults.MEMORY)
+	data.lineage_kind = left.kind
+	data.lineage_values = left.values
 	var entry: HistoryEntry = HistoryEntry.new()
 	entry.run_id = state.identity.id
 	entry.generation = state.identity.generation

@@ -9,7 +9,7 @@ point_count = 3
 
 [resource]
 script = ExtResource("1")
-max = 200
+cap = 200
 private_purchase = 3
 private_cadre = 1
 stamped_card = 1

@@ -1,6 +1,6 @@
 class_name ScarceStamp
 extends Control
-## The office's mark on a Cadre that seldom reaches a counter (ModifierDef.RARE): the word
+## The office's mark on a Cadre that seldom reaches a counter (ModifierDef.Rarity.RARE): the word
 ## in a ruled box of stamp ink, pressed at a slant on the top right corner of the card's
 ## picture. A routine card has none, so a scarce one cannot be taken for one. At rest it
 ## is simply there, and it says the same thing in grayscale and with motion off; when a
@@ -31,8 +31,8 @@ var _font: Font = ScreenKit.DISPLAY_BOLD
 var _pressing: Tween = null
 
 
-func _init(word: String = "", ink: Color = ScreenKit.RED) -> void:
-	_word = word.to_upper()
+func _init(text: String = "", ink: Color = ScreenKit.RED) -> void:
+	_word = text.to_upper()
 	_ink = ink
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	custom_minimum_size = BOX + ROOM * 2.0

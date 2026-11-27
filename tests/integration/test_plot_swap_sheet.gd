@@ -9,7 +9,7 @@ extends GdUnitTestSuite
 const SEED: int = 4301
 const PLOT_CARDS: int = 3
 
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -40,7 +40,7 @@ func _to_swap() -> TableScreen:
 		if index == 1:
 			CardMarks.stamp(state, card, RunLoop.PLAYER)
 		state.inventory.plot.append(card)
-	var table: TableScreen = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	var sheet: PlotSwapSheet = table.swap_sheet
 	for _turn: int in 60:
@@ -93,9 +93,9 @@ func test_the_board_shows_real_cards_in_rank_order_with_their_marks() -> void:
 	assert_int(hand.size()).is_equal(_app.controller.table.player_cards().size())
 	var rank_map: PackedByteArray = _app.hand.rank_map()
 	for index: int in range(1, hand.size()):
-		var before: CardInstance = _card(hand[index - 1])
-		var after: CardInstance = _card(hand[index])
-		assert_bool(rank_map[before.base_rank()] <= rank_map[after.base_rank()]).is_true()
+		var was: CardInstance = _card(hand[index - 1])
+		var now: CardInstance = _card(hand[index])
+		assert_bool(rank_map[was.base_rank()] <= rank_map[now.base_rank()]).is_true()
 	var plot: Array[int] = board.place_ids(SwapBoard.Place.PLOT)
 	assert_int(plot.size()).is_equal(PLOT_CARDS)
 	var shown: String = board.view_of(CardInstance.FIRST_PLOT_ID).shown_enhancement()

@@ -21,7 +21,7 @@ class Lines:
 
 
 var _lines: Lines
-var _app: DemoApp
+var _app: App
 
 
 func before_test() -> void:
@@ -39,10 +39,10 @@ func after_test() -> void:
 	OS.remove_logger(_lines)
 	Saves.run_service().delete()
 	Saves.profile_service().delete()
-	for name: String in DirAccess.get_directories_at(_folder):
-		DirAccess.remove_absolute(_folder.path_join(name))
-	for name: String in DirAccess.get_files_at(_folder):
-		DirAccess.remove_absolute(_folder.path_join(name))
+	for folder: String in DirAccess.get_directories_at(_folder):
+		DirAccess.remove_absolute(_folder.path_join(folder))
+	for folder: String in DirAccess.get_files_at(_folder):
+		DirAccess.remove_absolute(_folder.path_join(folder))
 
 
 func _said(part: String) -> bool:

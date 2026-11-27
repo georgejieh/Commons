@@ -29,14 +29,14 @@ func _status(state: RunState, family_id: String) -> RosterEntry.Status:
 
 func test_the_family_fed_less_starves_in_high_famine() -> void:
 	var state: RunState = _state(["li", "chen"], [1, 3], METERS.famine.high)
-	var log: SetLog = SetLog.new()
+	var set_log: SetLog = SetLog.new()
 	(
-		assert_str(VillageFates.starve(state, METERS.famine, VILLAGE.starvations_per_year, log))
+		assert_str(VillageFates.starve(state, METERS.famine, VILLAGE.starvations_per_year, set_log))
 		. is_equal("li")
 	)
 	assert_int(_status(state, "li")).is_equal(RosterEntry.Status.DEAD)
 	assert_int(_status(state, "chen")).is_equal(RosterEntry.Status.ACTIVE)
-	var event: RunEvent = log.events()[-1]
+	var event: RunEvent = set_log.events()[-1]
 	assert_int(event.type).is_equal(RunEvent.Type.STARVED)
 	assert_int(event.seat).is_equal(1)
 	assert_int(event.value).is_equal(1)
@@ -173,13 +173,13 @@ func test_a_met_quota_deposes_the_risen_boss_until_the_next_year() -> void:
 	var state: RunState = _state(["li", "chen"], [0, 0], 0)
 	state.boss_id = BOSSES.risen.id
 	state.boss_family = "li"
-	var log: SetLog = SetLog.new()
-	assert_str(VillageFates.depose(state, BOSSES.risen.id, log)).is_equal("li")
+	var set_log: SetLog = SetLog.new()
+	assert_str(VillageFates.depose(state, BOSSES.risen.id, set_log)).is_equal("li")
 	assert_int(_status(state, "li")).is_equal(RosterEntry.Status.DEPOSED)
-	assert_int(log.events()[-1].type).is_equal(RunEvent.Type.DEPOSED)
+	assert_int(set_log.events()[-1].type).is_equal(RunEvent.Type.DEPOSED)
 	assert_bool(VillageFates.is_gone(state, "li")).is_true()
 	assert_bool(Roster.available(state).any(_is.bind("li"))).is_false()
-	VillageFates.new_year(state, log)
+	VillageFates.new_year(state, set_log)
 	assert_int(_status(state, "li")).is_equal(RosterEntry.Status.ACTIVE)
 	assert_bool(VillageFates.is_gone(state, "li")).is_false()
 

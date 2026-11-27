@@ -6,7 +6,8 @@ extends RefCounted
 ## another paper, and type under 16 px. It reads the tree and never changes it. What is
 ## behind a dim over the page (a dialog, the deck sheet or an open envelope) is not compared
 ## with what is in front of it, nor what a large sheet covers with the sheet; cards in a
-## fan cover one another on purpose; and what a ScrollContainer cuts off is scrolled.
+## fan cover one another on purpose, and a slip may lie over the row of the piece it
+## explains; and what a ScrollContainer cuts off is scrolled.
 ## A finding is a line to read, not a failure: a slip that explains a card covers part of
 ## the page on purpose. Each is reported once a run.
 ## Loaded at run time by playtest.gd; it names no ui/ class. Development only.
@@ -171,6 +172,8 @@ func _check_covered(found: PackedStringArray) -> void:
 				continue
 			if _is_sheet(paper["box"]) or _alike(sheet, text["paper"]):
 				continue
+			if _follows_row(sheet, control) or _one_fan(sheet, control):
+				continue
 			var hidden: float = box.intersection(paper["box"]).get_area() / area
 			if hidden > COVERED.x and hidden < COVERED.y:
 				var by: String = _name(sheet)
@@ -182,6 +185,34 @@ func _check_covered(found: PackedStringArray) -> void:
 ## covers is behind it, as behind a dim.
 func _is_sheet(box: Rect2) -> bool:
 	return box.get_area() >= _screen.get_area() * SHEET
+
+
+## A slip that explains a piece, and says which through anchor(), stands beside it and
+## may lie over the row the piece stands in: the cards beside the one it explains.
+static func _follows_row(sheet: Control, control: Control) -> bool:
+	if not sheet.has_method("anchor"):
+		return false
+	var found: Variant = sheet.call("anchor")
+	if not found is Control:
+		return false
+	var piece: Control = found
+	var row: Node = piece.get_parent()
+	return row != null and row.is_ancestor_of(control)
+
+
+## Cards of one fan overlap on purpose: below the nearest node the paper and the text
+## share, they lie in two pieces of one kind, made by one script, as two cards are.
+static func _one_fan(sheet: Control, control: Control) -> bool:
+	var holder: Node = sheet
+	while holder.get_parent() != null and not holder.get_parent().is_ancestor_of(control):
+		holder = holder.get_parent()
+	var shared: Node = holder.get_parent()
+	if shared == null:
+		return false
+	var other: Node = control
+	while other.get_parent() != shared:
+		other = other.get_parent()
+	return holder.get_script() != null and holder.get_script() == other.get_script()
 
 
 ## Two papers of one kind, as cards in a fan or in the plays of a pile, overlap on purpose.

@@ -207,10 +207,10 @@ static func _fit_side_sheet(root: Control, panel: Control) -> void:
 
 ## Takes a Cancel press (Escape, or B on a pad) on a page that is showing: true when the
 ## event was one, and it is then handled. Every page with a Back button goes back on it.
-static func take_cancel(page: Control, event: InputEvent) -> bool:
-	if not page.is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
+static func take_cancel(shown: Control, event: InputEvent) -> bool:
+	if not shown.is_visible_in_tree() or not event.is_action_pressed("ui_cancel"):
 		return false
-	page.get_viewport().set_input_as_handled()
+	shown.get_viewport().set_input_as_handled()
 	return true
 
 
@@ -359,9 +359,9 @@ static func reveal(column: VBoxContainer) -> void:
 
 ## A paper-colored edge around text that sits straight on the table, so it stays
 ## readable however dark the room behind it gets.
-static func paper_outline(label: Label) -> void:
-	label.add_theme_color_override("font_outline_color", PAPER)
-	label.add_theme_constant_override("outline_size", 8)
+static func paper_outline(outlined: Label) -> void:
+	outlined.add_theme_color_override("font_outline_color", PAPER)
+	outlined.add_theme_constant_override("outline_size", 8)
 
 
 ## A Cadre's art for the current corruption stage.
@@ -384,9 +384,3 @@ static func rule_text(controller: RunController, modifier_id: String) -> String:
 	if not standing.is_empty():
 		rule += " " + standing
 	return rule
-
-
-## A Cadre's name over its rules, wrapped for a plain tooltip.
-static func cadre_tip(controller: RunController, cadre_id: String) -> String:
-	var name: String = TranslationServer.translate("modifier.%s.name" % cadre_id)
-	return "%s\n%s" % [name, Keywords.wrapped(rule_text(controller, cadre_id))]

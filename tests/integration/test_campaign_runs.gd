@@ -75,9 +75,9 @@ func test_buying_fills_the_slots_and_a_third_is_refused() -> void:
 	assert_int(loop.state.inventory.consumables.size()).is_equal(STORE.campaign_slots)
 	assert_int(loop.player_reroll()).is_equal(RunLoop.Reason.OK)
 	assert_int(loop.visit.shop.campaigns.check(0)).is_equal(RunShop.Reason.CAMPAIGNS_FULL)
-	var before: Dictionary = loop.state.to_dict()
+	var was: Dictionary = loop.state.to_dict()
 	assert_int(loop.player_campaign_buy(0)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_dict(loop.state.to_dict()).is_equal(before)
+	assert_dict(loop.state.to_dict()).is_equal(was)
 
 
 func test_the_market_charges_its_percent_rounded_up() -> void:

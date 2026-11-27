@@ -13,7 +13,7 @@ const ISSUE_SECONDS: float = 4.0
 ## How far inside the card's edge a mark stays, past the selection edge's width.
 const EDGE_INSET: float = 6.0
 
-var _app: DemoApp
+var _app: App
 var _was_size: Vector2i
 
 
@@ -36,7 +36,7 @@ func after_test() -> void:
 
 
 func _open_store() -> StoreScreen:
-	var store: StoreScreen = _app.show_screen("store", true)
+	var store: StoreScreen = _app.show_screen(App.STORE, true)
 	await await_idle_frame()
 	return store
 
@@ -99,7 +99,7 @@ func test_the_store_shows_each_directive_with_its_rate_lines() -> void:
 			)
 			assert_array(Array(texts)).contains([line])
 	# The black market issues none.
-	var market: StoreScreen = _app.show_screen("black_market")
+	var market: StoreScreen = _app.show_screen(App.BLACK_MARKET)
 	await await_idle_frame()
 	assert_object(_row(market)).is_null()
 
@@ -110,14 +110,14 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 	var ticket: Button = _affordable(row)
 	assert_object(ticket).is_not_null()
 	var stock: Array[String] = _app.controller.store.desk(false).directive_stock()
-	var before: int = _app.controller.state_copy().coupons
+	var was: int = _app.controller.state_copy().coupons
 	ticket.pressed.emit()
 	var issued: String = ""
 	for directive_id: String in stock:
 		if not _app.controller.store.desk(false).directive_stock().has(directive_id):
 			issued = directive_id
 	assert_str(issued).is_not_empty()
-	assert_int(_app.controller.state_copy().coupons).is_less(before)
+	assert_int(_app.controller.state_copy().coupons).is_less(was)
 	assert_bool(row.is_busy()).is_true()
 	assert_bool(store.is_issuing()).is_true()
 	assert_bool(row.seal().visible).is_true()
@@ -154,7 +154,9 @@ func _check_seal_clear(row: DirectiveRow, ticket: Button) -> void:
 			continue
 		var font: Font = label.get_theme_font("font")
 		var font_size: int = label.get_theme_font_size("font_size")
-		var wide: float = font.get_string_size(label.text, 0, -1, font_size).x
+		var wide: float = (
+			font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		)
 		var printed: Rect2 = Rect2(label.global_position, Vector2(wide, label.size.y))
 		assert_bool(seal.intersects(printed)).override_failure_message(label.text).is_false()
 
@@ -234,6 +236,8 @@ func test_a_card_view_shows_each_mark_clear_of_the_note_and_edge() -> void:
 				var size: int = (
 					CardView.JOKER_SIZE if key.contains("joker") else CardView.GLYPH_SIZE
 				)
-				var wide: float = font.get_string_size(tr(key), 0, -1, size).x
+				var wide: float = (
+					font.get_string_size(tr(key), HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+				)
 				var glyph: Rect2 = Rect2(rank.position, Vector2(wide, size))
 				assert_bool(box.intersects(glyph)).override_failure_message(key).is_false()

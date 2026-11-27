@@ -84,3 +84,52 @@ func test_small_type_is_found() -> void:
 	var small: Label = _label("audit-small", Vector2(100, 100))
 	small.add_theme_font_size_override("font_size", 12)
 	assert_str(await _found()).contains("SMALL")
+
+
+func test_a_slip_over_the_row_it_explains_is_by_design_but_over_another_is_found() -> void:
+	var row: HBoxContainer = HBoxContainer.new()
+	_page.add_child(row)
+	row.position = Vector2(100, 400)
+	var explained: Label = _label("audit-the card explained", Vector2.ZERO, row)
+	var neighbour_label: Label = _label("audit-its neighbour", Vector2.ZERO, row)
+	var elsewhere: Label = _label("audit-another page's line", Vector2(100, 700))
+	var slip: DetailSlip = DetailSlip.new()
+	_page.add_child(slip)
+	slip.show_for(explained, "slip title", "slip rule")
+	await await_idle_frame()
+	var neighbour: Rect2 = neighbour_label.get_global_rect()
+	slip.global_position = neighbour.position + Vector2(neighbour.size.x * 0.5, -10.0)
+	var found: String = await _found()
+	assert_str(found).not_contains("audit-its neighbour")
+	slip.global_position = elsewhere.global_position + Vector2(elsewhere.size.x * 0.5, -10.0)
+	assert_str(await _found()).contains('COVERED "audit-another page')
+
+
+func test_cards_of_one_fan_are_by_design_but_another_paper_over_a_card_is_found() -> void:
+	var kind: GDScript = GDScript.new()
+	kind.source_code = "extends Control\n"
+	assert_int(kind.reload()).is_equal(OK)
+	var fan: Control = Control.new()
+	_page.add_child(fan)
+	var under: Control = _card(fan, kind, "audit-the card under", Vector2(100, 100))
+	_card(fan, kind, "audit-the card over", Vector2(220, 60))
+	assert_str(await _found()).not_contains("COVERED")
+	under.position = Vector2(100, 400)
+	var stranger: Control = _card(fan, null, "audit-a stranger", Vector2(220, 360))
+	assert_object(stranger).is_not_null()
+	assert_str(await _found()).contains('COVERED "audit-the card under')
+
+
+## A card: its words, and over them a paper of its own, as a card's face is.
+func _card(fan: Control, kind: GDScript, words: String, at: Vector2) -> Control:
+	var card: Control = Control.new()
+	card.set_script(kind)
+	fan.add_child(card)
+	card.position = at
+	_label(words, Vector2.ZERO, card)
+	var face: Panel = Panel.new()
+	face.add_theme_stylebox_override("panel", StyleBoxFlat.new())
+	card.add_child(face)
+	face.position = Vector2(0, 40)
+	face.size = Vector2(400, 200)
+	return card

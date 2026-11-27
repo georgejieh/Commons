@@ -44,7 +44,7 @@ var _known_counts: Array[PackedByteArray] = []
 
 
 ## The landlord takes the kitty and leads.
-func _init(deal: DealResult, landlord: int, table: SeatRules) -> void:
+func _init(deal: DealResult, landlord_seat: int, table: SeatRules) -> void:
 	for dealt: Hand in deal.hands:
 		var hand: Hand = Hand.new()
 		for card: CardInstance in dealt.cards():
@@ -56,16 +56,16 @@ func _init(deal: DealResult, landlord: int, table: SeatRules) -> void:
 	_plays_by_seat.resize(Seats.COUNT)
 	_announced.resize(Seats.COUNT)
 	_answered.resize(Seats.COUNT)
-	_landlord = landlord
+	_landlord = landlord_seat
 	_table = table
-	_table.start_round(landlord)
-	_turn = landlord
-	_events.append(RoundEvent.new(RoundEvent.Type.ROUND_STARTED, landlord))
+	_table.start_round(landlord_seat)
+	_turn = landlord_seat
+	_events.append(RoundEvent.new(RoundEvent.Type.ROUND_STARTED, landlord_seat))
 	var kitty_ids: Array[int] = []
 	for card: CardInstance in _kitty:
-		_hands[landlord].add(card)
+		_hands[landlord_seat].add(card)
 		kitty_ids.append(card.id())
-	_events.append(RoundEvent.new(RoundEvent.Type.KITTY_TAKEN, landlord, kitty_ids))
+	_events.append(RoundEvent.new(RoundEvent.Type.KITTY_TAKEN, landlord_seat, kitty_ids))
 
 
 func apply(action: RoundAction) -> Reason:

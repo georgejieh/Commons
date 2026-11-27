@@ -33,6 +33,7 @@ func _teammate_mean(received: int) -> float:
 
 
 func test_the_teammate_contributes_less_at_a_high_player_share() -> void:
+	@warning_ignore("integer_division")
 	var fair: float = _teammate_mean(BIG / 2)
 	var greedy: float = _teammate_mean(BIG)
 	assert_float(greedy).is_less(fair * 0.9)

@@ -120,11 +120,11 @@ func test_model_worker_makes_one_rank_wild_then_a_second_then_refuses() -> void:
 	# Golden: this seed's opening draws these two ranks.
 	assert_array(loop.state.wild_ranks).is_equal(GOLDEN_WORKER)
 	# A third is refused and spends nothing.
-	var before: Dictionary = loop.state.to_dict()
+	var was: Dictionary = loop.state.to_dict()
 	var commands: int = loop.record.commands.size()
 	assert_int(loop.campaign_reason(0, none)).is_equal(CampaignEffect.Reason.WILD_FULL)
 	assert_int(loop.player_campaign(0, none)).is_equal(RunLoop.Reason.ILLEGAL)
-	assert_dict(loop.state.to_dict()).is_equal(before)
+	assert_dict(loop.state.to_dict()).is_equal(was)
 	assert_int(loop.record.commands.size()).is_equal(commands)
 	assert_array(loop.state.inventory.consumables).is_equal(["model_worker"])
 

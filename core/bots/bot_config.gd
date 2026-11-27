@@ -45,7 +45,7 @@ func _init(
 
 
 static func from_personality(personality: Personality, seed_value: int = 0) -> BotConfig:
-	var tier_value: Tier = personality.tier as Tier
+	var tier_value: Tier = personality.tier
 	var config: BotConfig = BotConfig.new(DEFAULT_WEIGHTS, tier_value, seed_value)
 	config.take_traits(personality)
 	return config

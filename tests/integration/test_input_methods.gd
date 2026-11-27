@@ -26,7 +26,7 @@ const PAD: Dictionary[String, JoyButton] = {
 	"accept": JOY_BUTTON_A,
 }
 
-var _app: DemoApp
+var _app: App
 var _table: TableScreen
 var _plays: int = 0
 
@@ -35,7 +35,7 @@ func before_test() -> void:
 	AppKit.fresh_saves(self)
 	_app = AppKit.make(self)
 	_app.new_run(SEED)
-	_table = _app.show_screen("table", true)
+	_table = _app.show_screen(App.TABLE, true)
 	await await_idle_frame()
 	_plays = 0
 
@@ -96,9 +96,9 @@ func _take_turn(method: Method, driver: ControllerScript) -> void:
 	for card_id: int in ids:
 		await _pick(method, card_id)
 	assert_array(_app.hand.selected_ids()).contains_exactly_in_any_order(ids)
-	var before: int = _app.controller.table.player_cards().size()
+	var was: int = _app.controller.table.player_cards().size()
 	await _press_action(method, "play", _table.actions.play)
-	assert_int(_app.controller.table.player_cards().size()).is_equal(before - ids.size())
+	assert_int(_app.controller.table.player_cards().size()).is_equal(was - ids.size())
 	_plays += 1
 
 

@@ -17,7 +17,7 @@ var tray: CampaignTray = CampaignTray.new()
 ## The offers, one CounterPanel each, for the counter row.
 var offers: HBoxContainer = HBoxContainer.new()
 
-var _app: DemoApp
+var _app: App
 var _market: bool = false
 var _shelf: CampaignShelf
 var _slip: DetailSlip
@@ -150,7 +150,7 @@ func _on_used(_slot: int, _campaign_id: String) -> void:
 	spent.emit()
 	show_offer()
 	if _app.controller.awaiting() == RunController.AWAIT_RUN_OVER:
-		_app.show_screen("set_summary", true)
+		_app.show_screen(App.SET_SUMMARY, true)
 
 
 ## While a leaflet is armed, the slip says what Use will do, over the tray.
