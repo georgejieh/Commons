@@ -324,7 +324,7 @@ func test_the_table_draws_the_chosen_design() -> void:
 	for back: Node in beats.find_children("*", "CardBack", true, false):
 		assert_object((back as CardBack).design).is_same(CardBacks.current())
 	var seats: Dictionary[int, SeatPanel] = table.seats
-	var picture: TextureRect = seats[1].get("_back")
+	var picture: TextureRect = seats[1].back
 	assert_object(picture.texture).is_same(CardBacks.picture(CardBacks.current()))
 
 

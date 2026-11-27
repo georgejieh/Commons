@@ -238,7 +238,7 @@ func test_speech_turns_to_slogans_by_degrees_then_unison() -> void:
 
 
 func _eyes_on(seat: SeatPanel) -> BackEyes:
-	var back: TextureRect = seat.get("_back")
+	var back: TextureRect = seat.back
 	for child: Node in back.get_children():
 		if child is BackEyes:
 			return child as BackEyes
@@ -246,7 +246,7 @@ func _eyes_on(seat: SeatPanel) -> BackEyes:
 
 
 func _seat_name(seat: SeatPanel) -> String:
-	var name: Label = seat.get("_name")
+	var name: Label = seat.name_label
 	return name.text
 
 

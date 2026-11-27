@@ -54,7 +54,8 @@ func test_the_text_types_out_in_step_and_skipping_stops_the_voice() -> void:
 	var plan: VoicePlan = _voice.speak(1, LINE, "", ZHAO, "zhao")
 	panel.say(LINE, plan.reveal)
 	assert_int(panel.shown_characters()).is_equal(0)
-	panel._process(plan.length / 2.0)
+	var started: Callable = func() -> bool: return panel.shown_characters() > 0
+	await TestWait.until(self, started, "the line to start typing")
 	assert_int(panel.shown_characters()).is_between(1, LINE.length() - 1)
 	assert_bool(panel.skip_speech()).is_true()
 	assert_int(panel.shown_characters()).is_equal(LINE.length())

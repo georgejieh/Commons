@@ -38,21 +38,21 @@ func test_a_seat_keeps_its_width_and_its_tag_clear_of_its_name() -> void:
 		panel.size = Vector2(TableScreen.SEAT_WIDTH, 0)
 		panel.setup(2, TableWorstCase.longest_surname(_app.controller))
 		panel.set_role(true, false)
-		var role: Label = panel.get("_role")
+		var role: Label = panel.role
 		panel.set_bid(TableWorstCase.widest(role, TableWorstCase.role_lines(), true))
 		panel.set_count(2)
-		var speech: Label = panel.get("_speech")
+		var speech: Label = panel.speech_line
 		panel.say(TableWorstCase.widest(speech, TableWorstCase.speech_lines()))
 		await await_idle_frame()
 		await await_idle_frame()
 		var where: String = "size %d" % level
-		var banner_label: Label = panel.get("_banner")
-		var name_label: Label = panel.get("_name")
+		var banner_label: Label = panel.banner
+		var name_label: Label = panel.name_label
 		var tag: Rect2 = banner_label.get_global_rect()
 		var name_rect: Rect2 = name_label.get_global_rect()
 		if tag.intersects(name_rect):
 			problems.append("%s: tag %s meets name %s" % [where, tag, name_rect])
-		var banner: Label = panel.get("_banner")
+		var banner: Label = panel.banner
 		var tag_size: int = banner.get_theme_font_size("font_size")
 		if tag_size < base or tag_size > TextSize.px(base):
 			problems.append("%s: tag set at %d" % [where, tag_size])
@@ -60,9 +60,16 @@ func test_a_seat_keeps_its_width_and_its_tag_clear_of_its_name() -> void:
 			problems.append("%s: tag %s off its seat" % [where, tag])
 		if absf(panel.size.x - TableScreen.SEAT_WIDTH) > ClipCheck.SLACK:
 			problems.append("%s: seat %.0f wide" % [where, panel.size.x])
-			for part: String in ["_name", "_count_row", "_role", "_speech", "_info", "_row"]:
-				var piece: Control = panel.get(part)
-				problems.append("  %s min %s" % [part, piece.get_combined_minimum_size()])
+			var pieces: Array[Control] = [
+				panel.name_label,
+				panel.count_row,
+				panel.role,
+				panel.speech_line,
+				panel.info,
+				panel.row
+			]
+			for piece: Control in pieces:
+				problems.append("  %s min %s" % [piece, piece.get_combined_minimum_size()])
 		ClipCheck.check(panel, where, problems)
 		panel.queue_free()
 	assert_array(problems).override_failure_message("\n".join(problems)).is_empty()
@@ -75,13 +82,13 @@ func test_the_tag_is_unchanged_at_standard() -> void:
 	panel.setup(2, TableWorstCase.longest_surname(_app.controller))
 	panel.set_role(true, false)
 	await await_idle_frame()
-	var banner: Label = panel.get("_banner")
+	var banner: Label = panel.banner
 	var base: int = CommonsTheme.STYLE.eyebrow_size
 	assert_int(banner.get_theme_font_size("font_size")).is_equal(base)
 	var font: Font = banner.get_theme_font("font")
 	var word: float = font.get_string_size(banner.text, HORIZONTAL_ALIGNMENT_LEFT, -1, base).x
 	var natural: float = maxf(SeatPanel.PORTRAIT_BOX.x, word + 2 * SeatPanel.TAG_MARGIN)
-	var shown: Label = panel.get("_banner")
+	var shown: Label = panel.banner
 	assert_float(shown.get_global_rect().size.x).is_equal_approx(natural, 1.0)
 
 
@@ -97,7 +104,7 @@ func test_a_tag_stamped_and_lost_at_once_stays_off() -> void:
 	panel.set_role(true, false)
 	panel.set_role(false, false)
 	await get_tree().create_timer(UiMotion.PRESETS.stamp_time + 0.2).timeout
-	var banner: Label = panel.get("_banner")
+	var banner: Label = panel.banner
 	assert_float(banner.modulate.a).is_equal(0.0)
 	panel.set_role(true, false)
 	await get_tree().create_timer(UiMotion.PRESETS.stamp_time + 0.2).timeout

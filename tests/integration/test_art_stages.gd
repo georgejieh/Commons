@@ -54,7 +54,7 @@ func test_the_table_shows_the_stage_art_and_follows_a_stage_change() -> void:
 	dread.force(10, 10, false, 9)
 	assert_str(Lighting.diffuse(surface.texture).resource_path).is_equal(LATE)
 	var seats: Dictionary[int, SeatPanel] = table.seats
-	var back: TextureRect = seats[1].get("_back")
+	var back: TextureRect = seats[1].back
 	assert_str(back.texture.resource_path).is_equal(BACK_EARLY)
 
 
