@@ -30,6 +30,8 @@ const THUMP: float = 0.18
 
 var tray: CampaignTray = null
 
+## The note a Campaign's moment shows.
+var note: Control = Control.new()
 var _controller: RunController
 var _hand_view: HandView
 var _pool: CardPool
@@ -40,7 +42,6 @@ var _debuffs: DebuffStrip
 var _cards: TableCards
 var _leaflet: CampaignLeaflet = CampaignLeaflet.new()
 var _seal: InkSeal = InkSeal.new()
-var _note: Control = Control.new()
 var _tickets: Array[Control] = []
 var _marks: Array[CardMark] = []
 var _fliers: Array[CardView] = []
@@ -54,10 +55,10 @@ var _letter_out: bool = false
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_leaflet.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_note.size = NOTE_SIZE
-	_note.pivot_offset = NOTE_SIZE / 2.0
-	_note.draw.connect(_draw_note)
-	_note.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	note.size = NOTE_SIZE
+	note.pivot_offset = NOTE_SIZE / 2.0
+	note.draw.connect(_draw_note)
+	note.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for _index: int in TICKETS:
 		var ticket: Control = Control.new()
 		ticket.size = TICKET
@@ -68,7 +69,7 @@ func _ready() -> void:
 	for kind: int in CardMark.Kind.values():
 		for _index: int in MARKS_PER_KIND:
 			_marks.append(CardMark.new(kind as CardMark.Kind))
-	var parts: Array[Control] = [_leaflet, _note]
+	var parts: Array[Control] = [_leaflet, note]
 	parts.append_array(_tickets)
 	parts.append_array(_marks)
 	for part: Control in parts:
@@ -307,27 +308,27 @@ func _set_letter(out: bool, animate: bool = false) -> void:
 	_note_tween = null
 	var seat: SeatPanel = _table.seats().get(Seats.RIGHT)
 	if seat == null:
-		_note.visible = false
+		note.visible = false
 		return
 	var rest: Vector2 = seat.global_position + Vector2(seat.size.x - NOTE_SIZE.x - 8, -10)
 	rest -= global_position
 	if not animate or UiMotion.reduced():
-		_note.visible = out
-		_note.position = rest
-		_note.modulate.a = 1.0
-		_note.rotation = 0.12
+		note.visible = out
+		note.position = rest
+		note.modulate.a = 1.0
+		note.rotation = 0.12
 		return
-	_note.visible = true
+	note.visible = true
 	_note_tween = create_tween()
 	if out:
-		_note.position = tray.global_position - global_position
-		_note.modulate.a = 1.0
-		_note_tween.tween_property(_note, "position", rest, NOTE_TIME).set_trans(Tween.TRANS_CUBIC)
-		_note_tween.parallel().tween_property(_note, "rotation", 0.12, NOTE_TIME)
+		note.position = tray.global_position - global_position
+		note.modulate.a = 1.0
+		_note_tween.tween_property(note, "position", rest, NOTE_TIME).set_trans(Tween.TRANS_CUBIC)
+		_note_tween.parallel().tween_property(note, "rotation", 0.12, NOTE_TIME)
 	else:
-		_note_tween.tween_property(_note, "rotation", -0.4, NOTE_TIME * 0.5)
-		_note_tween.parallel().tween_property(_note, "modulate:a", 0.0, NOTE_TIME * 0.5)
-		_note_tween.tween_callback(_note.hide)
+		_note_tween.tween_property(note, "rotation", -0.4, NOTE_TIME * 0.5)
+		_note_tween.parallel().tween_property(note, "modulate:a", 0.0, NOTE_TIME * 0.5)
+		_note_tween.tween_callback(note.hide)
 
 
 ## Takes the beat under way down at once, leaving its end state, and starts a new one.
@@ -356,7 +357,7 @@ func _put_away() -> void:
 
 ## Where a seat's cards come from or go: a card in the hand, the hand, or the seat.
 func _draw_note() -> void:
-	CampaignPaper.note(_note, Rect2(Vector2.ZERO, NOTE_SIZE), BowlGrime.wear())
+	CampaignPaper.note(note, Rect2(Vector2.ZERO, NOTE_SIZE), BowlGrime.wear())
 
 
 func _draw_ticket(ticket: Control) -> void:

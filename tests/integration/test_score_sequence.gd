@@ -9,6 +9,9 @@ extends GdUnitTestSuite
 
 const HOLDER: int = 0
 
+## The event queue the last moments made were set up with.
+var _events: EventPlayer
+
 
 func after_test() -> void:
 	Settings.set_value("reduced_motion", SettingsStore.DEFAULTS.get("reduced_motion"))
@@ -47,6 +50,7 @@ func _moments() -> TableMoments:
 	var pile: TrickPile = auto_free(TrickPile.new())
 	var motion: TableMotion = auto_free(TableMotion.new())
 	var player: EventPlayer = auto_free(EventPlayer.new())
+	_events = player
 	for node: Node in [moments, ledger, pile, motion, player]:
 		add_child(node)
 	moments.size = Vector2(1920, 1080)
@@ -116,7 +120,7 @@ func test_a_tag_says_what_a_step_added() -> void:
 
 func test_the_table_waits_for_the_sequence_and_a_click_hurries_it() -> void:
 	var moments: TableMoments = _moments()
-	var player: EventPlayer = moments.get("_player")
+	var player: EventPlayer = _events
 	var next: Array[int] = [0]
 	player.played.connect(
 		func(played: RunEvent) -> void:

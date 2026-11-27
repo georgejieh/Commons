@@ -85,7 +85,7 @@ func full_run(file: FileWalk, wild_ranks: Wild) -> void:
 	_expect(named == promised, "RUN NAME %s IS NOT SETUP'S %s" % [named, promised])
 	await _shot("full_run_set_intro")
 	await _dossier_names()
-	var menu: Node = member(app, "_menu")
+	var menu: Node = member(app, "menu")
 	menu.call("open")
 	await _frames(10)
 	await _press_text_in(menu, tr("pause.to_title"))

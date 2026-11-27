@@ -319,7 +319,7 @@ func test_long_prose_scrolls_on_its_paper_by_keys() -> void:
 	var down: InputEventAction = InputEventAction.new()
 	down.action = "ui_down"
 	down.pressed = true
-	scroll.call("_gui_input", down)
+	TestInput.push(self, down)
 	assert_int(scroll.scroll_vertical).is_greater(0)
 	var short: ProseScroll = auto_free(ProseScroll.new(ScreenKit.label("One line", 22)))
 	_app.add_child(short)

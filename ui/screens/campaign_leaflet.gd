@@ -34,11 +34,12 @@ var reason: int = 0
 var armed: bool = false
 var cursor: bool = false
 
+## Why the leaflet cannot be used now, or nothing.
+var status: Label = Label.new()
 var _private: bool = false
 var _eyebrow: Label = Label.new()
 var _name: Label = Label.new()
 var _compact: bool = false
-var _status: Label = Label.new()
 
 
 func _init() -> void:
@@ -67,12 +68,12 @@ func _init() -> void:
 	_name.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# A fixed width, so the wrapped name never makes the leaflet grow.
 	_name.custom_minimum_size = Vector2(SIZE.x - SIDE * 2.0, 0)
-	_status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
-	_status.add_theme_font_size_override("font_size", TextSize.px(STATUS_SIZE))
-	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status.text = tr("campaign.not_now")
-	_status.visible = false
-	for label: Label in [_eyebrow, _name, _status]:
+	status.add_theme_font_override("font", ScreenKit.DISPLAY_BOLD)
+	status.add_theme_font_size_override("font_size", TextSize.px(STATUS_SIZE))
+	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	status.text = tr("campaign.not_now")
+	status.visible = false
+	for label: Label in [_eyebrow, _name, status]:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		label.add_theme_constant_override("outline_size", HALO)
 		column.add_child(label)
@@ -90,10 +91,10 @@ func show_campaign(
 	_eyebrow.text = _eyebrow.text.to_upper()
 	_fit_name(title)
 	var paper: Color = CampaignPaper.paper(BowlGrime.wear())
-	for label: Label in [_eyebrow, _name, _status]:
+	for label: Label in [_eyebrow, _name, status]:
 		label.add_theme_color_override("font_color", ScreenKit.INK)
 		label.add_theme_color_override("font_outline_color", paper)
-	_status.add_theme_color_override("font_color", ScreenKit.RED)
+	status.add_theme_color_override("font_color", ScreenKit.RED)
 	set_tip(title, rule)
 	queue_redraw()
 
@@ -102,7 +103,7 @@ func show_campaign(
 ## It stays at full strength either way.
 func set_reason(refusal: int, why: String) -> void:
 	reason = refusal
-	_status.visible = refusal != 0
+	status.visible = refusal != 0
 	var rule: String = tip_rule()
 	var base: String = rule.split("\n\n")[0]
 	set_tip(_name.text, base if refusal == 0 else "%s\n\n%s" % [base, why])
@@ -157,7 +158,7 @@ func set_cursor(on: bool) -> void:
 
 ## True while its red line says it cannot be used now.
 func says_not_now() -> bool:
-	return _status.visible
+	return status.visible
 
 
 func is_private() -> bool:

@@ -24,7 +24,8 @@ var picked: bool = false:
 	set(value):
 		picked = value
 		queue_redraw()
-var _words: Label
+## The stake's words on the ticket.
+var words_label: Label
 
 
 func _init(stake_number: int, unlocked: bool, words: String) -> void:
@@ -36,31 +37,31 @@ func _init(stake_number: int, unlocked: bool, words: String) -> void:
 	for style: String in ["normal", "hover", "pressed", "focus", "disabled", "hover_pressed"]:
 		add_theme_stylebox_override(style, StyleBoxEmpty.new())
 	var ink: Color = BowlGrime.faded(ScreenKit.TICKET_INK, BowlGrime.wear())
-	_words = ScreenKit.label("", NAME_SIZE if unlocked else LINE_SIZE, ink)
+	words_label = ScreenKit.label("", NAME_SIZE if unlocked else LINE_SIZE, ink)
 	var wide: float = SIZE.x - WORDS_LEFT - WORDS_RIGHT
 	var base: int = TextSize.px(NAME_SIZE if unlocked else LINE_SIZE)
-	NameFit.apply(_words, words, wide, base, TextSize.least(NameFit.LEAST))
-	_words.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_words.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_words.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_words.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_words.offset_left = WORDS_LEFT
-	_words.offset_right = -WORDS_RIGHT
-	_words.offset_top = 4.0
-	_words.offset_bottom = -16.0
-	add_child(_words)
+	NameFit.apply(words_label, words, wide, base, TextSize.least(NameFit.LEAST))
+	words_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	words_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	words_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	words_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	words_label.offset_left = WORDS_LEFT
+	words_label.offset_right = -WORDS_RIGHT
+	words_label.offset_top = 4.0
+	words_label.offset_bottom = -16.0
+	add_child(words_label)
 	for signal_name: String in ["focus_entered", "focus_exited", "mouse_entered", "mouse_exited"]:
 		connect(signal_name, _lift)
 
 
 ## What the ticket prints, for tests.
 func words() -> String:
-	return _words.text
+	return words_label.text
 
 
 func _lift() -> void:
 	var lifted: bool = has_focus() or is_hovered()
-	_words.position.y = (4.0 - LIFT) if lifted else 4.0
+	words_label.position.y = (4.0 - LIFT) if lifted else 4.0
 	queue_redraw()
 
 

@@ -75,7 +75,7 @@ func test_abandon_asks_first_then_clears_the_run_and_records_nothing() -> void:
 	_app.new_run(SEED, true)
 	_app.show_screen("set_intro", true)
 	await await_idle_frame()
-	var menu: PauseMenu = _app.get("_menu")
+	var menu: PauseMenu = _app.menu
 	menu.open()
 	_press(tr("menu.abandon"))
 	await await_idle_frame()

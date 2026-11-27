@@ -59,9 +59,10 @@ var notice: BooksNotice = null
 ## The folder the last session's files were copied to when it did not close (ADR 0037),
 ## until the title has told the player; empty otherwise.
 var kept_crash: String = ""
+## The menu over every screen but the table's.
+var menu: PauseMenu = null
 var _wipe: ColorRect = null
 var _wipe_layer: CanvasLayer = null
-var _menu: PauseMenu = null
 
 @onready var _host: Control = $Screens
 
@@ -94,7 +95,7 @@ func _open(kept: String = "") -> void:
 	notice = BooksNotice.new()
 	_wipe = ColorRect.new()
 	_wipe_layer = CanvasLayer.new()
-	_menu = PauseMenu.new()
+	menu = PauseMenu.new()
 	add_child(controller)
 	add_child(switcher)
 	add_child(post)
@@ -107,10 +108,10 @@ func _open(kept: String = "") -> void:
 	_wipe_layer.add_child(_wipe)
 	add_child(_wipe_layer)
 	add_child(arrival.layer)
-	add_child(_menu)
+	add_child(menu)
 	# Over the arrival's layer, which draws above every piece a screen lifts.
-	_menu.z_index = TutorialLayer.DRAW_ORDER + 1
-	_menu.wire(self)
+	menu.z_index = TutorialLayer.DRAW_ORDER + 1
+	menu.wire(self)
 	add_child(notice)
 	# Every tooltip stands beside what it explains, off it and its button.
 	add_child(TipPlacer.new())
@@ -131,15 +132,15 @@ func _exit_tree() -> void:
 ## Escape opens the menu on a run's screens away from the table (the table handles its
 ## own, first).
 func _unhandled_input(event: InputEvent) -> void:
-	if _menu == null or not event.is_action_pressed("ui_cancel") or _menu.visible:
+	if menu == null or not event.is_action_pressed("ui_cancel") or menu.visible:
 		return
 	if MENU_SCREENS.has(switcher.current_id()):
-		_menu.open()
+		menu.open()
 		get_viewport().set_input_as_handled()
 
 
 func menu_is_open() -> bool:
-	return _menu != null and _menu.visible
+	return menu != null and menu.visible
 
 
 ## The first screen of this launch: the content note until it is seen, then where the

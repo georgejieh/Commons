@@ -18,6 +18,8 @@ const SETTINGS: Array[String] = [
 ]
 ## Seconds a frame lasts when a test steps the effects by hand.
 const FRAME: float = 0.05
+## How long the card backs' eyes are let turn before they are read.
+const TURN_SECONDS: float = 2.0
 
 var _app: DemoApp
 var _saved: Dictionary[String, Variant] = {}
@@ -250,11 +252,13 @@ func _seat_name(seat: SeatPanel) -> String:
 	return name.text
 
 
-## Turns the eye for two seconds, then lets it draw.
+## Lets the eye turn for two seconds of frames, then draw. Its turning is paced by the
+## frames' time, so the frames go by as the game's would.
 func _step_eyes(eyes: BackEyes) -> void:
-	for _frame: int in 40:
-		eyes.call("_process", FRAME)
-	await await_idle_frame()
+	var turned: float = 0.0
+	while turned < TURN_SECONDS and is_instance_valid(eyes):
+		await get_tree().process_frame
+		turned += get_process_delta_time()
 	await await_idle_frame()
 
 

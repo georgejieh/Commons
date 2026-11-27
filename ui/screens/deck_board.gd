@@ -21,6 +21,8 @@ const NAME_SIZE: int = 18
 var picking: bool = false
 var picked: int = NONE
 
+## The groups' names, one over each row.
+var names: Array[Label] = []
 var _pool: CardPool = null
 var _views: Dictionary[int, CardView] = {}
 var _cards: Dictionary[int, CardInstance] = {}
@@ -28,7 +30,6 @@ var _cards: Dictionary[int, CardInstance] = {}
 var _order: Array[int] = []
 var _group_of: Dictionary[int, int] = {}
 var _groups: Array[Array] = []
-var _names: Array[Label] = []
 var _fit: DeckFit = null
 var _cursor: int = 0
 
@@ -63,10 +64,10 @@ func show_cards(deck: Array[CardInstance], plot: Array[CardInstance], room: Vect
 		var name: String = tr(CardView.RANK_KEYS[rank])
 		if group.size() != plain[rank]:
 			name = tr("deck.rank_count").format({"rank": name, "count": group.size()})
-		_names.append(_name(name))
+		names.append(_name(name))
 	if not plot.is_empty():
 		_groups.append(plot.duplicate())
-		_names.append(_name(tr("deck.plot")))
+		names.append(_name(tr("deck.plot")))
 	for index: int in _groups.size():
 		for card: CardInstance in _groups[index]:
 			var view: CardView = _pool.acquire()
@@ -91,10 +92,10 @@ func clear() -> void:
 	_cards.clear()
 	_order.clear()
 	_group_of.clear()
-	for label: Label in _names:
+	for label: Label in names:
 		remove_child(label)
 		label.queue_free()
-	_names.clear()
+	names.clear()
 	picked = NONE
 	_cursor = 0
 
@@ -103,15 +104,15 @@ func clear() -> void:
 func lay_out(room: Vector2) -> void:
 	if _groups.is_empty():
 		return
-	var name_height: float = _names[0].get_combined_minimum_size().y + 4.0
+	var name_height: float = names[0].get_combined_minimum_size().y + 4.0
 	var counts: Array[int] = []
 	for group: Array in _groups:
 		counts.append(group.size())
 	_fit = DeckFit.fit(counts, room, name_height)
 	for index: int in _groups.size():
 		var at: Vector2 = _fit.places[index]
-		_names[index].position = at
-		_names[index].size = _names[index].get_combined_minimum_size()
+		names[index].position = at
+		names[index].size = names[index].get_combined_minimum_size()
 		var cards: Array = _groups[index]
 		for place: int in cards.size():
 			var card: CardInstance = cards[place]
@@ -197,7 +198,7 @@ func _mark() -> void:
 
 
 func _rest_y(card_id: int) -> float:
-	var name_height: float = _names[0].get_combined_minimum_size().y + 4.0
+	var name_height: float = names[0].get_combined_minimum_size().y + 4.0
 	return _fit.places[_group_of[card_id]].y + name_height
 
 

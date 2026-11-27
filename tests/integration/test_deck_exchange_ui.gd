@@ -159,7 +159,7 @@ func test_the_sheet_tells_an_exchanged_deck_from_a_plain_one() -> void:
 	var sheet: DeckSheet = store.deck
 	sheet.open_deck()
 	await await_idle_frame()
-	var names: Array = sheet.board().get("_names")
+	var names: Array = sheet.board().names
 	var king: String = tr(CardView.RANK_KEYS[Ranks.KING])
 	var three: String = tr(CardView.RANK_KEYS[Ranks.THREE])
 	var kings: Label = names[Ranks.KING]
@@ -173,7 +173,11 @@ func test_the_sheet_tells_an_exchanged_deck_from_a_plain_one() -> void:
 	# The cursor crosses the row with the empty group and never lands on nothing.
 	sheet.board().point_at(sheet.board().card_ids()[0])
 	for _step: int in 6:
-		sheet.board().call("_step_row", 1)
+		var down: InputEventAction = InputEventAction.new()
+		down.action = "ui_down"
+		down.pressed = true
+		sheet.board().grab_focus()
+		TestInput.push(self, down)
 		assert_int(sheet.board().cursor_card()).is_not_equal(DeckBoard.NONE)
 	sheet.close()
 
@@ -189,7 +193,7 @@ func test_the_slip_never_covers_a_ranks_name() -> void:
 			sheet.open_deck()
 			await await_idle_frame()
 			await await_idle_frame()
-			var names: Array = sheet.board().get("_names")
+			var names: Array = sheet.board().names
 			for card_id: int in sheet.board().card_ids():
 				# A card the scroll cuts is pointed at once it is scrolled into sight.
 				var view: CardView = sheet.board().view_of(card_id)

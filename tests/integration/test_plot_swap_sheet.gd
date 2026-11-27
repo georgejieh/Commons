@@ -152,12 +152,13 @@ func test_dragging_a_plot_card_onto_a_hand_card_trades_them() -> void:
 	var board: SwapBoard = _sheet(table).board()
 	var target: int = board.place_ids(SwapBoard.Place.HAND)[3]
 	var dragged: int = CardInstance.FIRST_PLOT_ID
-	var from: Vector2 = board.card_rect(dragged).get_center()
-	var to: Vector2 = board.card_rect(target).position + Vector2(8, 60)
-	board.call("_gui_input", _button(from, true))
-	board.call("_gui_input", _motion(from.lerp(to, 0.5)))
-	board.call("_gui_input", _motion(to))
-	board.call("_gui_input", _button(to, false))
+	var into: Transform2D = board.get_global_transform()
+	var from: Vector2 = into * board.card_rect(dragged).get_center()
+	var to: Vector2 = into * (board.card_rect(target).position + Vector2(8, 60))
+	for event: InputEvent in [
+		_button(from, true), _motion(from.lerp(to, 0.5)), _motion(to), _button(to, false)
+	]:
+		TestInput.push(self, event)
 	assert_int(board.trade.pairs()).is_equal(1)
 	assert_array(board.trade.hand_ids).is_equal([target])
 	assert_array(board.trade.plot_ids).is_equal([dragged])
@@ -169,9 +170,9 @@ func test_keys_move_the_cursor_and_press_and_focus_stays_on_the_sheet() -> void:
 	var board: SwapBoard = sheet.board()
 	assert_bool(board.has_focus()).is_true()
 	var first: int = board.cursor_card()
-	board.call("_gui_input", _action("ui_right"))
+	TestInput.push(self, _action("ui_right"))
 	assert_int(board.cursor_card()).is_not_equal(first)
-	board.call("_gui_input", _action("ui_accept"))
+	TestInput.push(self, _action("ui_accept"))
 	assert_int(board.trade.picked).is_equal(board.cursor_card())
 	# Below the cards is Keep hand while nothing is traded; the buttons lead back up.
 	assert_object(board.get_node(board.focus_neighbor_bottom)).is_same(sheet.keep_button())
