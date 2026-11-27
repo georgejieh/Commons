@@ -60,7 +60,7 @@ func test_a_call_takes_the_screen_and_every_bid_stays_on_its_seat() -> void:
 	assert_str(moments.bid_key(1)).is_equal("bid.grab")
 	assert_str(moments.bid_key(2)).is_equal("bid.grab")
 	assert_str(moments.bid_key(0)).is_equal("bid.pass")
-	var role: Label = wang.get("_role")
+	var role: Label = wang.role
 	assert_str(role.text).is_equal(tr("bid.grab").to_upper())
 	moments.on_event(RunEvent.new(RunEvent.Type.LANDLORD_CHOSEN, 1, 0))
 	assert_str(moments.bid_key(1)).is_empty()
@@ -74,7 +74,7 @@ func test_a_pass_is_tagged_on_its_seat_and_the_role_comes_back() -> void:
 	var zhao: SeatPanel = auto_free(SeatPanel.new())
 	add_child(zhao)
 	zhao.set_role(false, true)
-	var role: Label = zhao.get("_role")
+	var role: Label = zhao.role
 	zhao.flash(tr("stamp.pass"))
 	assert_str(role.text).is_equal(tr("stamp.pass").to_upper())
 	await await_millis(int(SeatPanel.FLASH_HOLD * 1000.0) + 200)

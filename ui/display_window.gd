@@ -26,6 +26,8 @@ const MODE: String = "window_mode"
 const SIZE: String = "window_size"
 const VSYNC: String = "vsync"
 
+## Puts the last window back when the player does not keep a new one in time.
+var revert_timer: Timer = Timer.new()
 var _host: Control
 var _window: Callable
 ## The mode and size the player has kept, which a new one unkept goes back to.
@@ -34,7 +36,6 @@ var _kept_size: int = 0
 var _notice: SessionNotice = null
 ## What had the focus when the notice came, which has it again once the notice goes.
 var _focus: Control = null
-var _timer: Timer = Timer.new()
 var _restoring: bool = false
 
 
@@ -100,10 +101,10 @@ static func size_chosen(usable: Vector2i) -> int:
 
 
 func _ready() -> void:
-	_timer.one_shot = true
-	_timer.wait_time = PARAMS.display_check_seconds
-	_timer.timeout.connect(_restore)
-	add_child(_timer)
+	revert_timer.one_shot = true
+	revert_timer.wait_time = PARAMS.display_check_seconds
+	revert_timer.timeout.connect(_restore)
+	add_child(revert_timer)
 	_kept_mode = mode_chosen()
 	_kept_size = size_chosen(usable_screen())
 	if _window.is_valid():
@@ -127,7 +128,7 @@ func _on_setting(key: String) -> void:
 		_focus = _host.get_viewport().gui_get_focus_owner()
 		_notice = SessionNotice.display_check(PARAMS.display_check_seconds, _keep, _restore)
 		_host.add_child(_notice)
-		_timer.start()
+		revert_timer.start()
 	elif not moved:
 		_kept_size = size
 
@@ -151,7 +152,7 @@ func _restore() -> void:
 
 
 func _close() -> void:
-	_timer.stop()
+	revert_timer.stop()
 	if _notice != null:
 		_notice.close()
 		_notice = null

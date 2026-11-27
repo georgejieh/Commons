@@ -41,6 +41,8 @@ const ASK_SIZE: int = 18
 ## Kept clear between the column and the screen's top and bottom.
 const EDGE: float = 16.0
 
+## Explains the paper hovered or focused.
+var detail: EnvelopeDetail = EnvelopeDetail.new()
 var _controller: RunController
 var _shelf: EnvelopeShelf
 var _dim: Scrim = Scrim.new()
@@ -48,7 +50,6 @@ var _figure: EnvelopeFigure = EnvelopeFigure.new()
 var _column: VBoxContainer = VBoxContainer.new()
 var _row: HBoxContainer = HBoxContainer.new()
 var _papers: Array[ChoicePaper] = []
-var _detail: EnvelopeDetail = EnvelopeDetail.new()
 var _nothing: Button = ScreenKit.button("", CommonsTheme.GHOST)
 ## True once a cancel has asked for a second, which Take Nothing's words say.
 var _confirming: bool = false
@@ -97,10 +98,10 @@ func open(
 	_column.add_child(_row)
 	_fill_row()
 	# Always in the tree, so it is freed with the overlay; hidden, it takes no room.
-	_column.add_child(_detail)
-	_detail.visible = EnvelopeDetail.needed(_shelf)
-	if _detail.visible:
-		_blocks["detail"] = _detail
+	_column.add_child(detail)
+	detail.visible = EnvelopeDetail.needed(_shelf)
+	if detail.visible:
+		_blocks["detail"] = detail
 	_nothing.text = tr("envelope.nothing")
 	_nothing.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_nothing.pressed.connect(_take_nothing)
@@ -271,7 +272,7 @@ func _point(index: int) -> void:
 	var rule: String = paper.rule
 	if not paper.is_takeable() and _refused.is_empty():
 		rule += "\n\n" + paper.caption()
-	_detail.explain(paper.title, rule)
+	detail.explain(paper.title, rule)
 
 
 func _input(event: InputEvent) -> void:

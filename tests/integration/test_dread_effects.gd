@@ -18,6 +18,8 @@ const SETTINGS: Array[String] = [
 ]
 ## Seconds a frame lasts when a test steps the effects by hand.
 const FRAME: float = 0.05
+## How long the card backs' eyes are let turn before they are read.
+const TURN_SECONDS: float = 2.0
 
 var _app: DemoApp
 var _saved: Dictionary[String, Variant] = {}
@@ -99,7 +101,7 @@ func test_the_lowest_intensity_shows_none_of_them() -> void:
 	var dressing: DreadDressing = table.dressing
 	var roster: WallRoster = dressing.roster()
 	assert_int(roster.names_left()).is_equal(roster.name_count())
-	var tremble: HandTremble = dread.get("_tremble")
+	var tremble: HandTremble = dread.tremble
 	tremble.step(FRAME, dread.effect_weight(DreadEffects.TREMBLE))
 	var hand: HandView = table.hand_view
 	for view: CardView in hand.views():
@@ -147,7 +149,7 @@ func test_the_hand_trembles_without_moving_a_card() -> void:
 	var table: TableScreen = await _table()
 	var hand: HandView = table.hand_view
 	var dread: DreadLayers = table.dread
-	var tremble: HandTremble = dread.get("_tremble")
+	var tremble: HandTremble = dread.tremble
 	# The fan at rest, its deal over.
 	await await_millis(1500)
 	var rects: Dictionary[int, Rect2] = {}
@@ -238,7 +240,7 @@ func test_speech_turns_to_slogans_by_degrees_then_unison() -> void:
 
 
 func _eyes_on(seat: SeatPanel) -> BackEyes:
-	var back: TextureRect = seat.get("_back")
+	var back: TextureRect = seat.back
 	for child: Node in back.get_children():
 		if child is BackEyes:
 			return child as BackEyes
@@ -246,15 +248,17 @@ func _eyes_on(seat: SeatPanel) -> BackEyes:
 
 
 func _seat_name(seat: SeatPanel) -> String:
-	var name: Label = seat.get("_name")
+	var name: Label = seat.name_label
 	return name.text
 
 
-## Turns the eye for two seconds, then lets it draw.
+## Lets the eye turn for two seconds of frames, then draw. Its turning is paced by the
+## frames' time, so the frames go by as the game's would.
 func _step_eyes(eyes: BackEyes) -> void:
-	for _frame: int in 40:
-		eyes.call("_process", FRAME)
-	await await_idle_frame()
+	var turned: float = 0.0
+	while turned < TURN_SECONDS and is_instance_valid(eyes):
+		await get_tree().process_frame
+		turned += get_process_delta_time()
 	await await_idle_frame()
 
 

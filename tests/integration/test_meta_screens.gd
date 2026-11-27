@@ -7,21 +7,14 @@ extends GdUnitTestSuite
 
 const READABLE: int = 16
 
-static var _save_path: String = TestFolder.of("test_meta_screens") + "run.json"
-
 var _app: DemoApp
 var _was_size: Vector2i
 
 
 func before_test() -> void:
 	_was_size = get_tree().root.size
-	Saves.use_run_path(_save_path)
-	Saves.run_service().delete()
-	Saves.profile_service().delete()
-	var scene: PackedScene = load("res://ui/main.tscn")
-	_app = auto_free(scene.instantiate())
-	_app.demo = false
-	add_child(_app)
+	AppKit.fresh_saves(self)
+	_app = AppKit.make(self)
 
 
 func after_test() -> void:
@@ -148,12 +141,14 @@ func test_an_accept_press_or_click_picks_a_household() -> void:
 	var accept: InputEventAction = InputEventAction.new()
 	accept.action = "ui_accept"
 	accept.pressed = true
-	paper.call("_gui_input", accept)
+	paper.grab_focus()
+	TestInput.push(self, accept)
 	assert_str(screen.household()).is_equal("shopkeepers")
 	var click: InputEventMouseButton = InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
-	screen.papers()[1].call("_gui_input", click)
+	click.position = screen.papers()[1].get_global_rect().get_center()
+	TestInput.push(self, click)
 	assert_str(screen.household()).is_equal("middle_peasants")
 
 
@@ -222,7 +217,7 @@ func test_stake_tickets_read_at_16_px_on_warm_paper() -> void:
 			get_tree().root.size = screen_size
 			var screen: RunSetupScreen = await _setup()
 			for ticket: StakeTicket in screen.tickets():
-				var words: Label = ticket.get("_words")
+				var words: Label = ticket.words_label
 				var where: String = "%s %s %s" % [profile, screen_size, ticket.words()]
 				if ticket.words().is_empty():
 					continue

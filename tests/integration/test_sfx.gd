@@ -104,12 +104,12 @@ func test_a_motion_sound_never_lands_on_an_events_own() -> void:
 	Audio.fill(AudioEvents.MOTION_STAMP)
 	await await_millis(30)
 	assert_str(Audio.last_filled).is_empty()
-	# The moment has passed: set the last sound back rather than wait on the clock, so a
-	# sound left playing by another suite cannot land inside the wait.
-	Audio.set("_played_msec", Time.get_ticks_msec() - AudioMixer.FILL_GUARD_MSEC - 1)
-	Audio.fill(AudioEvents.MOTION_STAMP)
-	await await_millis(30)
-	assert_str(Audio.last_filled).is_equal(AudioEvents.MOTION_STAMP)
+	# The guard counts real time, and a sound from elsewhere starts it again, so the fill is
+	# asked again each frame until the moment has passed.
+	var played: Callable = func() -> bool:
+		Audio.fill(AudioEvents.MOTION_STAMP)
+		return Audio.last_filled == AudioEvents.MOTION_STAMP
+	await TestWait.until(self, played, "the motion sound once its moment passed", 2.0)
 
 
 func test_a_step_up_raises_the_pitch() -> void:

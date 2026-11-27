@@ -45,7 +45,7 @@ static func holds_lines(app: DemoApp) -> Array[String]:
 ## The intel a seat can show at its worst: the Holds line that wraps tallest across the
 ## sheet at the type now, and a Cards line of twenty of the widest glyphs.
 static func worst_intel(app: DemoApp, panel: SeatPanel) -> String:
-	var label: Label = panel.get("_intel")
+	var label: Label = panel.intel_line
 	var font: Font = label.get_theme_font("font")
 	var font_size: int = TextSize.px(SeatPanel.INTEL_SIZE)
 	var wide: float = panel.size.x - panel.get_theme_stylebox("panel").get_minimum_size().x

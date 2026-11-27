@@ -66,11 +66,11 @@ static func fill(app: DemoApp, table: TableScreen, options: Dictionary) -> void:
 		var panel: SeatPanel = seats[seat]
 		panel.setup(seat, surname)
 		panel.set_role(seat == 2, false)
-		var role: Label = panel.get("_role")
+		var role: Label = panel.role
 		panel.set_bid(widest(role, role_lines(), true))
-		var count: Label = panel.get("_count")
+		var count: Label = panel.count
 		panel.set_count(_widest_count(count))
-		var speech: Label = panel.get("_speech")
+		var speech: Label = panel.speech_line
 		panel.say(widest(speech, speech_lines()))
 		panel.set_intel(
 			IntelWorstCase.worst_intel(app, panel) if options.get("intel", false) else ""
@@ -144,7 +144,7 @@ static func pieces(table: TableScreen) -> Dictionary[String, Rect2]:
 
 ## A piece of dressing as drawn: its own box, or its parts' for a group; nothing hidden.
 static func _piece_rect(dressing: DreadDressing, piece: String) -> Rect2:
-	var pieces: Dictionary[String, Control] = dressing.get("_pieces")
+	var pieces: Dictionary[String, Control] = dressing.pieces
 	var control: Control = pieces[piece]
 	if not control.is_visible_in_tree():
 		return Rect2()

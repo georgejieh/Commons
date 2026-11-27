@@ -73,8 +73,7 @@ func _unfinished(table: TableScreen) -> String:
 	var player: EventPlayer = table.player
 	var new_deal: bool = _last != null and _last.type == RunEvent.Type.DEALT
 	if not player.is_idle() and not new_deal:
-		var queue: Array[RunEvent] = player.get("_queue")
-		return "%d events still to play" % queue.size()
+		return "events still to play"
 	var pile: TrickPile = table.pile
 	for view: CardView in pile.top_views():
 		if not view.scale.is_equal_approx(Vector2.ONE * TrickPile.PLAY_SCALE):

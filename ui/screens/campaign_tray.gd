@@ -45,8 +45,9 @@ var show_empty: bool = true
 var use: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 var cancel: Button = ScreenKit.button("", CommonsTheme.SECONDARY)
 
+## The tray's heading, which it drops when the column is short (ADR 0034).
+var head_label: Label = ScreenKit.eyebrow("")
 var _controller: RunController
-var _head: Label = ScreenKit.eyebrow("")
 var _leaflets: Array[CampaignLeaflet] = []
 var _armed: int = -1
 var _cursor: int = -1
@@ -65,9 +66,9 @@ func _init() -> void:
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_head.text = tr("campaign.tray").to_upper()
-	ScreenKit.paper_outline(_head)
-	add_child(_head)
+	head_label.text = tr("campaign.tray").to_upper()
+	ScreenKit.paper_outline(head_label)
+	add_child(head_label)
 	for button: Button in [use, cancel]:
 		add_child(button)
 	use.text = tr("campaign.use")
@@ -283,7 +284,7 @@ func _head_height() -> float:
 func _head_extra() -> float:
 	if not compact:
 		return 0.0
-	return maxf(_head.get_combined_minimum_size().y + HEAD_CLEAR - HEAD, 0.0)
+	return maxf(head_label.get_combined_minimum_size().y + HEAD_CLEAR - HEAD, 0.0)
 
 
 ## Shows or drops the head; the leaflets and buttons move up into its place.
@@ -291,7 +292,7 @@ func show_heading(on: bool) -> void:
 	if on == _heading:
 		return
 	_heading = on
-	_head.visible = on
+	head_label.visible = on
 	refresh()
 
 
@@ -307,7 +308,7 @@ func standing_height(heading: bool) -> float:
 		top = CampaignLeaflet.LIFT
 	var foot: float = top + _tallest_leaf()
 	if heading:
-		foot = maxf(foot, _head.get_combined_minimum_size().y)
+		foot = maxf(foot, head_label.get_combined_minimum_size().y)
 	if _armed >= 0 and not side_buttons and not vertical:
 		var button: float = maxf(use.get_combined_minimum_size().y, BUTTON.y)
 		foot = maxf(foot, top + _leaf().y + GAP + button)

@@ -32,7 +32,7 @@ func test_the_seat_count_says_few_cards_in_words() -> void:
 	assert_str(SeatPanel.count_text(17)).is_equal("17 cards")
 	var panel: SeatPanel = auto_free(SeatPanel.new())
 	add_child(panel)
-	var count: Label = panel.get("_count")
+	var count: Label = panel.count
 	for cards: int in [3, 2, 1, 0]:
 		panel.set_count(cards)
 		assert_str(count.text).is_equal(SeatPanel.count_text(cards))
@@ -102,7 +102,7 @@ func test_the_tick_leaves_the_card_layout_and_hit_box_alone() -> void:
 	assert_float(tick.end.y).is_less_equal(0.0)
 	assert_float(tick.position.x).is_greater_equal(0.0)
 	assert_float(tick.end.x).is_less_equal(STRIP)
-	var mark: HintTick = view.get("_tick")
+	var mark: HintTick = view.tick
 	assert_int(mark.mouse_filter).is_equal(Control.MOUSE_FILTER_IGNORE)
 
 

@@ -28,6 +28,12 @@ static func tap_pad(suite: GdUnitTestSuite, button: JoyButton) -> void:
 	await _settle(suite)
 
 
+## Sends event into the suite's viewport, its position in the viewport's own pixels: a
+## mouse event reaches the control under its position, any other the control with the focus.
+static func push(suite: GdUnitTestSuite, event: InputEvent) -> void:
+	suite.get_viewport().push_input(event, true)
+
+
 ## Presses the shown button under root whose words are text, as a click does, and fails
 ## suite when there is none.
 static func press(suite: GdUnitTestSuite, root: Node, text: String) -> void:

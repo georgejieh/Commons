@@ -263,7 +263,7 @@ func test_a_new_text_size_rebuilds_a_run_screen_when_the_menu_closes() -> void:
 	_app.show_screen("title", true)
 	var intro: Node = _app.show_screen("set_intro")
 	await await_idle_frame()
-	var menu: PauseMenu = _app.get("_menu")
+	var menu: PauseMenu = _app.menu
 	menu.open()
 	TestInput.press(self, menu.main, tr("pause.settings"))
 	await await_idle_frame()
@@ -303,9 +303,8 @@ func _shown(table: TableScreen) -> PackedStringArray:
 	var shown: PackedStringArray = [you.text]
 	var seats: Dictionary[int, SeatPanel] = table.seats
 	for seat: int in seats:
-		for part: String in ["_name", "_count"]:
-			var label: Label = seats[seat].get(part)
-			shown.append(label.text)
+		shown.append(seats[seat].name_label.text)
+		shown.append(seats[seat].count.text)
 	var hud: TableHud = table.hud
 	shown.append(hud.coupons.text)
 	return shown

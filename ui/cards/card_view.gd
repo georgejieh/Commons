@@ -86,19 +86,26 @@ static var _fade: GradientTexture2D = null
 
 var card_id: int = -1
 
+## The hint's tick in the card's corner.
+var tick: HintTick = HintTick.new()
+## The Model mark.
+var badge: CardMark = CardMark.new(CardMark.Kind.MODEL)
+## The owner's stamp.
+var chop: CardMark = CardMark.new(CardMark.Kind.STAMP)
 var _cursor_mark: ColorRect = ColorRect.new()
-var _chop: CardMark = CardMark.new(CardMark.Kind.STAMP)
-var _badge: CardMark = CardMark.new(CardMark.Kind.MODEL)
 var _ribbon: WildRibbon = WildRibbon.new()
-var _tick: HintTick = HintTick.new()
 
 ## Every tween moving this view, so a reused view can stop them all.
 var _tweens: Array[Tween] = []
 
-@onready var _frame: Panel = $Frame
-@onready var _rank: Label = $Frame/Rank
-@onready var _suit: TextureRect = $Frame/Suit
-@onready var _picture: TextureRect = $Frame/Picture
+## The card's face.
+@onready var frame_panel: Panel = $Frame
+## The rank in the corner.
+@onready var rank_label: Label = $Frame/Rank
+## The suit under the rank.
+@onready var suit: TextureRect = $Frame/Suit
+## The card's picture.
+@onready var picture: TextureRect = $Frame/Picture
 @onready var _index: TextureRect = $Frame/Index
 @onready var _rank_note: Label = $Frame/RankNote
 @onready var _enhancement: ColorRect = $Frame/Enhancement
@@ -107,11 +114,11 @@ var _tweens: Array[Tween] = []
 
 
 func _ready() -> void:
-	_frame.add_theme_stylebox_override("panel", _card_stock())
-	_frame.light_mask = Lighting.MASK
+	frame_panel.add_theme_stylebox_override("panel", _card_stock())
+	frame_panel.light_mask = Lighting.MASK
 	var tilt: ShaderMaterial = ShaderMaterial.new()
 	tilt.shader = TILT_SHADER
-	_frame.material = tilt
+	frame_panel.material = tilt
 	_cursor_mark.color = CURSOR
 	_cursor_mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_cursor_mark.visible = false
@@ -119,15 +126,15 @@ func _ready() -> void:
 	_cursor_mark.offset_top = CURSOR_BAR
 	_cursor_mark.offset_bottom = CURSOR_BAR * 2.0
 	add_child(_cursor_mark)
-	add_child(_tick)
+	add_child(tick)
 	_rank_note.add_theme_stylebox_override("normal", _rank_note_tag())
 	_index.texture = _corner_fade()
-	_rank.add_theme_color_override("font_outline_color", ScreenKit.CARD_STOCK)
-	for mark: CardMark in [_chop, _badge]:
-		_frame.add_child(mark)
-	_frame.add_child(_ribbon)
-	_chop.position = CHOP_AT
-	_badge.position = ENHANCEMENT_AT
+	rank_label.add_theme_color_override("font_outline_color", ScreenKit.CARD_STOCK)
+	for mark: CardMark in [chop, badge]:
+		frame_panel.add_child(mark)
+	frame_panel.add_child(_ribbon)
+	chop.position = CHOP_AT
+	badge.position = ENHANCEMENT_AT
 
 
 ## The card parts in use.
@@ -165,28 +172,28 @@ func bind(card: CardInstance) -> void:
 		return
 	card_id = card.id()
 	var rank: int = card.base_rank()
-	_rank.text = tr(RANK_KEYS[rank])
+	rank_label.text = tr(RANK_KEYS[rank])
 	var joker: bool = rank >= Ranks.SMALL_JOKER
-	_rank.add_theme_font_size_override("font_size", JOKER_SIZE if joker else GLYPH_SIZE)
+	rank_label.add_theme_font_size_override("font_size", JOKER_SIZE if joker else GLYPH_SIZE)
 	var art: CardArt = parts()
-	_suit.visible = not joker
+	suit.visible = not joker
 	if not joker:
-		_suit.texture = ArtStages.resolve(art.suits[card.suit()])
-	_picture.texture = ArtStages.resolve(art.picture(rank, card.suit()))
+		suit.texture = ArtStages.resolve(art.suits[card.suit()])
+	picture.texture = ArtStages.resolve(art.picture(rank, card.suit()))
 	var pip: bool = rank < Ranks.JACK or (rank > Ranks.KING and not joker)
-	_picture.modulate.a = art.pip_alpha if pip else 1.0
+	picture.modulate.a = art.pip_alpha if pip else 1.0
 	_lay_out_face(pip, joker)
 	var red: bool = rank == Ranks.BIG_JOKER or (not joker and RED_SUITS.has(card.suit()))
-	_rank.add_theme_color_override("font_color", ScreenKit.RED if red else ScreenKit.INK)
+	rank_label.add_theme_color_override("font_color", ScreenKit.RED if red else ScreenKit.INK)
 	var enhancement: String = card.enhancement_id()
 	var drawn: bool = CardMark.draws(enhancement)
 	_enhancement.visible = enhancement != CardInstance.NO_ID and not drawn
-	_badge.visible = drawn
-	if drawn and _badge.kind != CardMark.KINDS[enhancement]:
-		_badge.kind = CardMark.KINDS[enhancement]
-		_badge.queue_redraw()
+	badge.visible = drawn
+	if drawn and badge.kind != CardMark.KINDS[enhancement]:
+		badge.kind = CardMark.KINDS[enhancement]
+		badge.queue_redraw()
 	_seal.visible = card.seal_id() != CardInstance.NO_ID
-	_chop.visible = card.owner_stamp() != CardInstance.NO_OWNER
+	chop.visible = card.owner_stamp() != CardInstance.NO_OWNER
 	_ribbon.show_on(false)
 	set_rank_note("")
 	set_marked(false, false)
@@ -243,21 +250,21 @@ func _place_marks() -> void:
 	_rank_note.offset_left = span.x
 	_rank_note.offset_right = span.y
 	if _rank_note.visible:
-		_badge.position = ENHANCEMENT_BY_NOTE
+		badge.position = ENHANCEMENT_BY_NOTE
 	else:
-		_badge.position = ENHANCEMENT_BY_RIBBON if _ribbon.visible else ENHANCEMENT_AT
+		badge.position = ENHANCEMENT_BY_RIBBON if _ribbon.visible else ENHANCEMENT_AT
 
 
 ## The marks shown, for tests and playtests: a stamp's chop, and the enhancement whose
 ## mark the card shows, or "" for none.
 func shows_stamp() -> bool:
-	return _chop.visible
+	return chop.visible
 
 
 func shown_enhancement() -> String:
-	if not _badge.visible:
+	if not badge.visible:
 		return CardInstance.NO_ID
-	return CardMark.KINDS.find_key(_badge.kind)
+	return CardMark.KINDS.find_key(badge.kind)
 
 
 ## True when the face is a picture card: art over the whole face under a corner index.
@@ -269,15 +276,15 @@ func is_picture_card() -> bool:
 ## face, with the rank and suit on a paper index sized to the rank.
 func _lay_out_face(pip: bool, joker: bool) -> void:
 	var box: Vector4 = PIP_BOX if pip else ART_BOX
-	_picture.offset_left = box.x
-	_picture.offset_top = box.y
-	_picture.offset_right = box.z
-	_picture.offset_bottom = box.w
-	_picture.stretch_mode = (
+	picture.offset_left = box.x
+	picture.offset_top = box.y
+	picture.offset_right = box.z
+	picture.offset_bottom = box.w
+	picture.stretch_mode = (
 		TextureRect.STRETCH_KEEP_ASPECT_CENTERED if pip else TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	)
 	_index.visible = not pip
-	_rank.add_theme_constant_override("outline_size", 0 if pip else RANK_OUTLINE)
+	rank_label.add_theme_constant_override("outline_size", 0 if pip else RANK_OUTLINE)
 	_index.size = JOKER_FADE_SIZE if joker else FADE_SIZE
 
 
@@ -329,16 +336,16 @@ func set_marked(selected: bool, hinted: bool, cursor: bool = false, armed: bool 
 	_highlight.visible = selected or hinted
 	_highlight.modulate = (ARMED if armed else ScreenKit.RED) if selected else ScreenKit.HINT
 	_cursor_mark.visible = cursor
-	_tick.show_on(hinted, card_id)
+	tick.show_on(hinted, card_id)
 
 
 func shows_hint_tick() -> bool:
-	return _tick.visible
+	return tick.visible
 
 
 ## The tick's box on the card, in card pixels, for tests.
 func hint_tick_rect() -> Rect2:
-	return Rect2(_tick.position, _tick.size)
+	return Rect2(tick.position, tick.size)
 
 
 func has_cursor() -> bool:
@@ -363,6 +370,6 @@ func _notification(what: int) -> void:
 
 
 func _set_tilt(tilt: Vector2) -> void:
-	var tilt_material: ShaderMaterial = _frame.material as ShaderMaterial
+	var tilt_material: ShaderMaterial = frame_panel.material as ShaderMaterial
 	if tilt_material != null:
 		tilt_material.set_shader_parameter("tilt", tilt.clamp(-Vector2.ONE, Vector2.ONE))

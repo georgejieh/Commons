@@ -69,14 +69,14 @@ func test_the_pieces_read_at_every_size() -> void:
 func _check_tray(store: StoreScreen, where: String) -> void:
 	var stall: CampaignStall = store.campaign_stall
 	var tray: CampaignTray = stall.tray
-	var head: Label = tray.get("_head")
+	var head: Label = tray.head_label
 	var first: CampaignLeaflet = tray.leaflet(0)
 	var gap: float = first.get_global_rect().position.y - head.get_global_rect().end.y
 	assert_float(gap).override_failure_message(where + " head on leaflet").is_greater_equal(
 		CampaignTray.HEAD_CLEAR - ClipCheck.SLACK
 	)
 	assert_bool(first.says_not_now()).override_failure_message(where).is_true()
-	var status: Label = first.get("_status")
+	var status: Label = first.status
 	assert_int(status.get_theme_font_size("font_size")).is_greater_equal(16)
 
 
@@ -106,8 +106,8 @@ func _check_counter(store: StoreScreen, where: String) -> void:
 
 func _check_strip(store: StoreScreen, where: String) -> void:
 	var stall: ReformStall = store.reform_stall
-	var head: Label = stall.strip.get("_head")
-	var none: Label = stall.strip.get("_none")
+	var head: Label = stall.strip.heading
+	var none: Label = stall.strip.none_line
 	if not none.is_visible_in_tree():
 		return
 	var head_at: float = head.get_global_rect().position.y + _baseline(head)

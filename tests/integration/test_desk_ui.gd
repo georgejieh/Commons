@@ -90,7 +90,7 @@ func test_the_black_market_desk_stamps_the_card() -> void:
 	stall.ticket.pressed.emit()
 	await await_idle_frame()
 	var sheet: DeckSheet = market.deck
-	assert_str(sheet.get("_title").text).is_equal(tr("deck.desk.stamp_title"))
+	assert_str(sheet.title_label.text).is_equal(tr("deck.desk.stamp_title"))
 	var resentment: int = _app.controller.state_copy().resentment
 	sheet.board().press(CARD)
 	sheet.confirm_button().pressed.emit()

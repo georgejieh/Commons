@@ -245,7 +245,7 @@ func test_a_deaths_column_is_centred_on_the_sheet() -> void:
 	var screen: EndingScreen = _finish("death_famine")
 	for frame: int in 4:
 		await await_idle_frame()
-	var heading: Control = screen.get("_heading")
+	var heading: Control = screen.heading_row
 	# The story is centred in its scroll, which fills the columns (ADR 0034).
 	var story: Control = heading
 	while story != null and not (story.get_parent() is CenterContainer):

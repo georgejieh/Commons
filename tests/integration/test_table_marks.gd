@@ -84,7 +84,7 @@ func test_the_brigade_notice_is_worn_paper_with_its_words_inside_the_border() ->
 		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
 			var dressing: DreadDressing = table.dressing
-			var notice: PanelContainer = dressing.get("_notice")
+			var notice: PanelContainer = dressing.notice_paper
 			var where: String = "size %d on %s" % [level, screen]
 			var paper: StyleBox = notice.get_theme_stylebox("panel")
 			assert_bool(paper is StyleBoxTexture).override_failure_message(where).is_true()

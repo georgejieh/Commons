@@ -59,7 +59,7 @@ func test_a_plays_sum_and_score_share_one_readable_line() -> void:
 	ledger.add_play(1, 45.0, 10.0, 1.5, 675.0)
 	await await_idle_frame()
 	await await_idle_frame()
-	var plays: KeywordText = ledger.get("_plays")
+	var plays: KeywordText = ledger.plays
 	# Who played what, then the whole sum with its score: two lines, never three.
 	assert_int(plays.get_line_count()).is_equal(2)
 	assert_str(plays.get_parsed_text().get_slice("\n", 1)).ends_with(Strings.score(675.0))

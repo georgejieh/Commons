@@ -40,9 +40,11 @@ const BAR_STEP: Vector2 = Vector2(9, 30)
 
 var spotlight_material: ShaderMaterial = ShaderMaterial.new()
 
-var _pieces: Dictionary[String, Control] = {}
+## The brigade notice on the wall.
+var notice_paper: PanelContainer = PanelContainer.new()
+## Each piece of the dressing, by its id.
+var pieces: Dictionary[String, Control] = {}
 var _flash_until: Dictionary[String, int] = {}
-var _notice: PanelContainer = PanelContainer.new()
 var _notice_words: Label = Label.new()
 var _bars: Control = Control.new()
 var _roster: WallRoster = WallRoster.new()
@@ -67,9 +69,9 @@ func _ready() -> void:
 ## Where the brigade notice hangs on screen, for what must keep clear of it; nothing
 ## while it is taken down.
 func notice_rect() -> Rect2:
-	if not _notice.is_inside_tree() or _notice_down:
+	if not notice_paper.is_inside_tree() or _notice_down:
 		return Rect2()
-	return _notice.get_global_rect()
+	return notice_paper.get_global_rect()
 
 
 ## The key of the notice the brigade has posted: plain and welcome in a run's early
@@ -92,7 +94,7 @@ func post_notice(key: String) -> void:
 	_notice_words.text = text
 	# Stood again at once, so whoever lays the left column out next reads its true top.
 	_notice_words.update_minimum_size()
-	_notice.update_minimum_size()
+	notice_paper.update_minimum_size()
 	_fit_notice()
 
 
@@ -103,7 +105,7 @@ func notice_text() -> String:
 
 ## Where the notice's top stands when it is up, at the text size now.
 func notice_top() -> float:
-	return _notice.position.y
+	return notice_paper.position.y
 
 
 ## Takes the notice down when the left column needs its wall, and puts it back when
@@ -118,15 +120,17 @@ func take_down_notice(down: bool) -> void:
 	if down:
 		_bars.visible = false
 	else:
-		_notice.visible = true
+		notice_paper.visible = true
 	if UiMotion.reduced():
-		_notice.modulate.a = weight
-		_notice.visible = not down
+		notice_paper.modulate.a = weight
+		notice_paper.visible = not down
 		return
-	_notice_fade = _notice.create_tween()
-	_notice_fade.tween_property(_notice, "modulate:a", weight, UiMotion.PRESETS.hover_time * 2.0)
+	_notice_fade = notice_paper.create_tween()
+	_notice_fade.tween_property(
+		notice_paper, "modulate:a", weight, UiMotion.PRESETS.hover_time * 2.0
+	)
 	if down:
-		_notice_fade.tween_callback(_notice.hide)
+		_notice_fade.tween_callback(notice_paper.hide)
 
 
 func is_notice_down() -> bool:
@@ -153,10 +157,10 @@ func roster_rect() -> Rect2:
 
 ## Fades a piece to weight; at 0 it is hidden.
 func show_piece(piece: String, weight: float) -> void:
-	if not _pieces.has(piece):
+	if not pieces.has(piece):
 		return
 	var flashing: bool = Time.get_ticks_msec() < _flash_until.get(piece, 0)
-	var control: Control = _pieces[piece]
+	var control: Control = pieces[piece]
 	control.modulate.a = 1.0 if flashing else weight
 	control.visible = (flashing or weight > 0.01) and not (piece == "redaction" and _notice_down)
 
@@ -164,11 +168,11 @@ func show_piece(piece: String, weight: float) -> void:
 ## Shows a piece in full for a moment, as a flicker. Pieces no layer drives, such as the
 ## extra chair, hide again on their own.
 func flash_piece(piece: String, seconds: float) -> void:
-	if not _pieces.has(piece):
+	if not pieces.has(piece):
 		return
 	_flash_until[piece] = Time.get_ticks_msec() + int(seconds * 1000.0)
 	show_piece(piece, 0.0)
-	var control: Control = _pieces[piece]
+	var control: Control = pieces[piece]
 	var tween: Tween = control.create_tween()
 	tween.tween_interval(seconds)
 	tween.tween_callback(_end_flash.bind(piece))
@@ -176,12 +180,12 @@ func flash_piece(piece: String, seconds: float) -> void:
 
 func _end_flash(piece: String) -> void:
 	_flash_until.erase(piece)
-	var control: Control = _pieces[piece]
+	var control: Control = pieces[piece]
 	control.visible = control.visible and control.modulate.a < 1.0 and control.modulate.a > 0.01
 
 
 func is_shown(piece: String) -> bool:
-	return _pieces.has(piece) and _pieces[piece].visible
+	return pieces.has(piece) and pieces[piece].visible
 
 
 func _add_spotlight() -> void:
@@ -200,7 +204,7 @@ func _add_spotlight() -> void:
 ## larger text size its paper grows upward (ADR 0034), its bottom and left edges kept, so
 ## it never reaches the status line under it, and the bars follow the lines of its text.
 func _add_notice() -> void:
-	var notice: PanelContainer = _notice
+	var notice: PanelContainer = notice_paper
 	notice.add_theme_stylebox_override("panel", ScreenKit.paper_style(NOTICE_PADDING))
 	notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	notice.position = NOTICE_AT.position
@@ -229,14 +233,14 @@ func _add_notice() -> void:
 ## Stands the notice as tall as its words need, up from its bottom edge, and lays a bar
 ## over each of the first lines of its text, centred on the line.
 func _fit_notice() -> void:
-	var tall: float = maxf(NOTICE_AT.size.y, _notice.get_combined_minimum_size().y)
+	var tall: float = maxf(NOTICE_AT.size.y, notice_paper.get_combined_minimum_size().y)
 	var top: Vector2 = Vector2(NOTICE_AT.position.x, NOTICE_AT.end.y - tall)
-	if _notice.position != top or _notice.size.y != tall:
-		_notice.position = top
-		_notice.size = Vector2(NOTICE_AT.size.x, tall)
+	if notice_paper.position != top or notice_paper.size.y != tall:
+		notice_paper.position = top
+		notice_paper.size = Vector2(NOTICE_AT.size.x, tall)
 	_bars.position = top
-	_bars.custom_minimum_size = _notice.size
-	_bars.size = _notice.size
+	_bars.custom_minimum_size = notice_paper.size
+	_bars.size = notice_paper.size
 	var line_tall: float = _notice_words.get_line_height()
 	var pitch: float = line_tall + _notice_words.get_theme_constant("line_spacing")
 	var bar_tall: float = roundf(line_tall * BAR_SHARE)
@@ -314,7 +318,7 @@ func _place(piece: String, control: Control, at: Rect2) -> void:
 		control.custom_minimum_size = at.size
 		control.size = at.size
 	control.visible = false
-	_pieces[piece] = control
+	pieces[piece] = control
 
 
 static func _box(fill: Color, edge: Color, width: int) -> StyleBoxFlat:

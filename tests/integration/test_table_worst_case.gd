@@ -231,7 +231,7 @@ func test_the_strings_are_the_longest_of_their_families() -> void:
 	TableWorstCase.fill(_app, table, {})
 	await await_idle_frame()
 	var seats: Dictionary[int, SeatPanel] = table.seats
-	var role: Label = seats[1].get("_role")
+	var role: Label = seats[1].role
 	var font: Font = role.get_theme_font("font")
 	var font_size: int = role.get_theme_font_size("font_size")
 	var shown: float = font.get_string_size(role.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
@@ -285,7 +285,7 @@ func test_an_armed_campaign_puts_the_intel_away_only_when_still_short() -> void:
 		var short: bool = _short_when_armed(columns, tray, left)
 		TableWorstCase.fill(_app, table, {"intel": true, "armed": true})
 		await await_idle_frame()
-		var away: bool = left.get("_intel_away")
+		var away: bool = not left.intel_line.text.is_empty() and not left.intel_line.visible
 		assert_bool(away).override_failure_message(str(level)).is_equal(short)
 		assert_bool(left.has_intel()).is_equal(not short)
 		if short:

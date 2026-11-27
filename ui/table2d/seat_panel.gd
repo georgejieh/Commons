@@ -5,7 +5,7 @@ extends PanelContainer
 ## under them (ADR 0034, rule 9), and their last words underneath. The card back by the
 ## count carries the dread's eye (BackEyes). The landlord tag lies across the portrait's
 ## top. The card count turns red at 2 and 1 cards and says so in words. A line types out
-## in step with the villager's voice; a click shows the rest at once.
+## in step with the villager's voice (SeatSpeech).
 
 ## The player skipped the line typing out, so its voice should stop.
 signal speech_skipped(seat: int)
@@ -19,78 +19,79 @@ const PICTURE_BOX: Vector2 = Vector2(102, 130)
 const TAG_MARGIN: int = 10
 ## Seconds a flashed word stays on the role line.
 const FLASH_HOLD: float = 0.9
-## The speech's type and the lines of room it keeps: at least 54 px, times the text
-## size's factor, and never less than two lines of the type really stand. A line that
-## would need a third line there is set smaller, down to the Standard size (ADR 0034).
-const SPEECH_SIZE: int = 20
-const SPEECH_LINES: int = 2
-const SPEECH_ROOM: Vector2 = Vector2(200, 54)
 ## What an information Cadre reveals, and the cards left, at Standard.
 const INTEL_SIZE: int = 17
 const COUNT_SIZE: int = 26
 
 var seat: int = -1
-
-var _banner: Label = Label.new()
+## The villager's last words, under the portrait row.
+var speech_line: SeatSpeech = SeatSpeech.new()
+## The landlord's tag across the portrait's top, shown while the seat holds the land.
+var banner: Label = Label.new()
+## The villager's name, beside the portrait.
+var name_label: Label = Label.new()
+## The cards left, in words as well as ink.
+var count: Label = Label.new()
+## The seat's role in the round, or its bid while the bidding goes on.
+var role: Label = Label.new()
+## What an information Cadre shows about this villager's hand; empty without one.
+var intel_line: Label = Label.new()
+## The name, the count and the role, beside the portrait.
+var info: VBoxContainer = VBoxContainer.new()
+## The card back by the count, which carries the dread's eye.
+var back: TextureRect = TextureRect.new()
+## The card back and the count, side by side.
+var count_row: HBoxContainer = HBoxContainer.new()
+## The portrait and the lines beside it.
+var row: HBoxContainer = HBoxContainer.new()
 var _portrait: ColorRect = ColorRect.new()
 var _picture: TextureRect = TextureRect.new()
-var _name: Label = Label.new()
-var _count: Label = Label.new()
-var _role: Label = Label.new()
-var _speech: Label = Label.new()
-## What an information Cadre shows about this villager's hand; empty without one.
-var _intel: Label = Label.new()
 ## True while the intel waits for an armed Campaign to be used or put down (ADR 0034).
 var _intel_away: bool = false
-var _info: VBoxContainer = VBoxContainer.new()
-var _back: TextureRect = TextureRect.new()
-var _count_row: HBoxContainer = HBoxContainer.new()
-var _row: HBoxContainer = HBoxContainer.new()
 var _stack: VBoxContainer = VBoxContainer.new()
 ## What the role line says at rest, and the tween that puts it back after a flash.
 var _role_text: String = ""
 var _flash: Tween = null
 ## The landlord tag's stamp while it lands, so a role that changes first can stop it.
 var _tag_stamp: Tween = null
-## When each character of the current line shows, and how long it has been typing.
-var _reveal: PackedFloat32Array = PackedFloat32Array()
-var _typed: float = 0.0
 
 
 func _init() -> void:
 	theme_type_variation = CommonsTheme.SHEET
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_row.add_theme_constant_override("separation", 14)
+	row.add_theme_constant_override("separation", 14)
 	_stack.add_theme_constant_override("separation", 6)
 	add_child(_stack)
-	_stack.add_child(_row)
-	_info.add_theme_constant_override("separation", 2)
-	_info.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_stack.add_child(row)
+	info.add_theme_constant_override("separation", 2)
+	info.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_build_portrait()
 	_build_lines()
-	_row.add_child(_portrait)
+	row.add_child(_portrait)
 	_build_count()
-	for child: Control in [_name, _count_row, _role]:
-		_info.add_child(child)
-	_row.add_child(_info)
-	_stack.add_child(_intel)
-	_stack.add_child(_speech)
+	for child: Control in [name_label, count_row, role]:
+		info.add_child(child)
+	row.add_child(info)
+	_stack.add_child(intel_line)
+	_stack.add_child(speech_line)
+	speech_line.skipped.connect(func() -> void: speech_skipped.emit(seat))
+	speech_line.finished.connect(func() -> void: speech_finished.emit(seat))
 
 
 ## The portrait on its mount, with the landlord's tag across its top.
 func _build_portrait() -> void:
-	_banner.text = tr("table.landlord").to_upper()
-	_banner.theme_type_variation = CommonsTheme.EYEBROW
-	_banner.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
+	banner.text = tr("table.landlord").to_upper()
+	banner.theme_type_variation = CommonsTheme.EYEBROW
+	banner.add_theme_color_override("font_color", ScreenKit.STYLE.paper_bright)
 	var tag: StyleBoxFlat = StyleBoxFlat.new()
 	tag.bg_color = ScreenKit.STYLE.vermilion
 	tag.set_corner_radius_all(ScreenKit.STYLE.radius)
 	tag.content_margin_left = TAG_MARGIN
 	tag.content_margin_right = TAG_MARGIN
-	_banner.add_theme_stylebox_override("normal", tag)
-	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_banner.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	_banner.offset_top = 6
+	banner.add_theme_stylebox_override("normal", tag)
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	banner.offset_top = 6
 	_portrait.custom_minimum_size = PORTRAIT_BOX
 	_portrait.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_portrait.color = ScreenKit.OLD_PAPER
@@ -100,59 +101,35 @@ func _build_portrait() -> void:
 		Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 4
 	)
 	_portrait.add_child(_picture)
-	_portrait.add_child(_banner)
+	_portrait.add_child(banner)
 
 
-## The name, the role and the speech line beside the portrait.
+## The name and the role beside the portrait.
 func _build_lines() -> void:
-	_name.theme_type_variation = CommonsTheme.TITLE
-	_name.add_theme_font_size_override("font_size", TextSize.px(36))
-	_count.add_theme_font_size_override("font_size", TextSize.px(COUNT_SIZE))
-	_count.add_theme_color_override("font_color", ScreenKit.INK)
-	_role.theme_type_variation = CommonsTheme.EYEBROW
-	_speech.add_theme_font_size_override("font_size", TextSize.px(SPEECH_SIZE))
-	_speech.add_theme_color_override("font_color", ScreenKit.INK)
-	_speech.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	# Two lines of room, said or not, so the sheet never changes height; _ready makes it
-	# as tall as two lines of the type really stand.
-	_speech.custom_minimum_size = Vector2(SPEECH_ROOM.x, ceilf(SPEECH_ROOM.y * TextSize.factor()))
-	_speech.max_lines_visible = SPEECH_LINES
-	_speech.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
-	_speech.mouse_filter = Control.MOUSE_FILTER_STOP
-	_speech.gui_input.connect(_on_speech_input)
+	name_label.theme_type_variation = CommonsTheme.TITLE
+	name_label.add_theme_font_size_override("font_size", TextSize.px(36))
+	count.add_theme_font_size_override("font_size", TextSize.px(COUNT_SIZE))
+	count.add_theme_color_override("font_color", ScreenKit.INK)
+	role.theme_type_variation = CommonsTheme.EYEBROW
 
 
 ## The card back and count of the cards left, and the intel line under the row.
 func _build_count() -> void:
-	_back.texture = CardBacks.picture(CardBacks.current())
-	_back.custom_minimum_size = Vector2(30, 42)
-	_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	_back.add_child(BackEyes.new())
-	_count_row.add_child(_back)
-	_count_row.add_child(_count)
-	_intel.add_theme_font_size_override("font_size", TextSize.px(INTEL_SIZE))
-	_intel.add_theme_color_override("font_color", ScreenKit.SEAL)
-	_intel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_intel.visible = false
+	back.texture = CardBacks.picture(CardBacks.current())
+	back.custom_minimum_size = Vector2(30, 42)
+	back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	back.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+	back.add_child(BackEyes.new())
+	count_row.add_child(back)
+	count_row.add_child(count)
+	intel_line.add_theme_font_size_override("font_size", TextSize.px(INTEL_SIZE))
+	intel_line.add_theme_color_override("font_color", ScreenKit.SEAL)
+	intel_line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intel_line.visible = false
 
 
-## Entering the tree turns processing back on, and a panel that has said nothing is
-## not typing.
 func _ready() -> void:
-	set_process(false)
 	_fit_banner()
-	_hold_speech_room()
-
-
-## The speech's room stands as tall as two lines of its type, so a line that wraps to a
-## second never makes the sheet taller than it was with nothing said.
-func _hold_speech_room() -> void:
-	var font: Font = _speech.get_theme_font("font")
-	var line: float = font.get_height(TextSize.px(SPEECH_SIZE))
-	var gaps: float = _speech.get_theme_constant("line_spacing") * (SPEECH_LINES - 1)
-	var tall: float = maxf(_speech.custom_minimum_size.y, ceilf(line * SPEECH_LINES + gaps))
-	_speech.custom_minimum_size.y = tall
 
 
 ## The landlord tag is print in a fixed box on the portrait (ADR 0034): the portrait's
@@ -160,15 +137,15 @@ func _hold_speech_room() -> void:
 ## under its Standard size, so the tag never reaches the name beside the portrait. The
 ## role line under the count says the same in type that grows.
 func _fit_banner() -> void:
-	var font: Font = _banner.get_theme_font("font")
+	var font: Font = banner.get_theme_font("font")
 	var base: int = CommonsTheme.STYLE.eyebrow_size
-	var word: String = _banner.text
+	var word: String = banner.text
 	var standard: float = ceilf(_tag_width(font, word, TextSize.least(base)))
 	var box: float = maxf(PORTRAIT_BOX.x, standard)
 	var fits: Callable = func(font_size: int) -> bool:
 		return _tag_width(font, word, font_size) <= box
-	_banner.add_theme_font_size_override("font_size", TextSize.fit(base, base, fits))
-	_banner.offset_right = box - PORTRAIT_BOX.x
+	banner.add_theme_font_size_override("font_size", TextSize.fit(base, base, fits))
+	banner.offset_right = box - PORTRAIT_BOX.x
 
 
 ## The tag's width with its word set at font_size, its margins included.
@@ -178,7 +155,7 @@ static func _tag_width(font: Font, word: String, font_size: int) -> float:
 
 func setup(seat_index: int, display_name: String, portrait: Texture2D = null) -> void:
 	seat = seat_index
-	_name.text = display_name
+	name_label.text = display_name
 	_picture.texture = portrait
 
 
@@ -186,17 +163,17 @@ func setup(seat_index: int, display_name: String, portrait: Texture2D = null) ->
 ## "Last card" at one, so the warning does not rest on colour alone.
 func set_count(cards: int) -> void:
 	var text: String = SeatPanel.count_text(cards)
-	if _count.text != text and not _count.text.is_empty():
-		UiMotion.pulse(_count)
-	_count.text = text
-	_count.add_theme_color_override("font_color", ScreenKit.SEAL if cards <= 2 else ScreenKit.INK)
+	if count.text != text and not count.text.is_empty():
+		UiMotion.pulse(count)
+	count.text = text
+	count.add_theme_color_override("font_color", ScreenKit.SEAL if cards <= 2 else ScreenKit.INK)
 	# Print beside the portrait: it fits the room the sheet leaves, never under Standard.
-	var font: Font = _count.get_theme_font("font")
-	var gap: float = _count_row.get_theme_constant("separation")
-	var room: float = _info_room() - _back.custom_minimum_size.x - gap
+	var font: Font = count.get_theme_font("font")
+	var gap: float = count_row.get_theme_constant("separation")
+	var room: float = _info_room() - back.custom_minimum_size.x - gap
 	var fits: Callable = func(font_size: int) -> bool:
 		return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= room
-	_count.add_theme_font_size_override("font_size", TextSize.fit(COUNT_SIZE, COUNT_SIZE, fits))
+	count.add_theme_font_size_override("font_size", TextSize.fit(COUNT_SIZE, COUNT_SIZE, fits))
 
 
 static func count_text(cards: int) -> String:
@@ -208,13 +185,13 @@ static func count_text(cards: int) -> String:
 
 func set_role(is_landlord: bool, teammate: bool) -> void:
 	# The tag keeps its space either way, so the seat never changes height.
-	var was_landlord: bool = _banner.modulate.a > 0.5
+	var was_landlord: bool = banner.modulate.a > 0.5
 	# A stamp still landing would bring the tag back after the seat lost it.
 	if _tag_stamp != null and _tag_stamp.is_valid():
 		_tag_stamp.kill()
-		_banner.scale = Vector2.ONE
-		_banner.rotation = 0.0
-	_banner.modulate.a = 1.0 if is_landlord else 0.0
+		banner.scale = Vector2.ONE
+		banner.rotation = 0.0
+	banner.modulate.a = 1.0 if is_landlord else 0.0
 	_portrait.color = ScreenKit.HINT if is_landlord else ScreenKit.OLD_PAPER
 	if is_landlord:
 		_rest_role(tr("table.role.landlord"))
@@ -224,14 +201,14 @@ func set_role(is_landlord: bool, teammate: bool) -> void:
 		_rest_role(tr("table.role.peasant"))
 	# Taking the seat is stamped onto the portrait.
 	if is_landlord and not was_landlord:
-		_tag_stamp = UiMotion.stamp(_banner)
+		_tag_stamp = UiMotion.stamp(banner)
 		bump()
 
 
 ## Shows what an information Cadre reveals about this hand, or nothing.
 func set_intel(text: String) -> void:
-	_intel.text = text
-	_intel.visible = not text.is_empty() and not _intel_away
+	intel_line.text = text
+	intel_line.visible = not text.is_empty() and not _intel_away
 	# The sheet stands as tall as it needs, shorter again once the line goes.
 	fit_intel(TextSize.px(INTEL_SIZE))
 
@@ -240,8 +217,10 @@ func set_intel(text: String) -> void:
 ## down, never under its Standard size (ADR 0034, rule 9).
 func fit_intel(font_size: int) -> void:
 	var edges: float = get_theme_stylebox("panel").get_minimum_size().x
-	_intel.custom_minimum_size.x = maxf(size.x - edges, 0.0)
-	_intel.add_theme_font_size_override("font_size", maxi(font_size, TextSize.least(INTEL_SIZE)))
+	intel_line.custom_minimum_size.x = maxf(size.x - edges, 0.0)
+	intel_line.add_theme_font_size_override(
+		"font_size", maxi(font_size, TextSize.least(INTEL_SIZE))
+	)
 	_stand_again()
 
 
@@ -250,29 +229,29 @@ func put_away_intel(away: bool) -> void:
 	if away == _intel_away:
 		return
 	_intel_away = away
-	_intel.visible = not _intel.text.is_empty() and not away
+	intel_line.visible = not intel_line.text.is_empty() and not away
 	_stand_again()
 
 
 ## The sheet at the height its lines need now, its width kept. Each cached minimum size
 ## is thrown out by hand, innermost first: Godot can leave a stale one standing.
 func _stand_again() -> void:
-	for control: Control in [_intel, _stack, self]:
+	for control: Control in [intel_line, _stack, self]:
 		control.update_minimum_size()
 	size = Vector2(size.x, 0.0)
 
 
 ## True while the intel line shows.
 func has_intel() -> bool:
-	return _intel.visible
+	return intel_line.visible
 
 
 func intel_size() -> int:
-	return _intel.get_theme_font_size("font_size")
+	return intel_line.get_theme_font_size("font_size")
 
 
 func intel() -> String:
-	return _intel.text if _intel.visible else ""
+	return intel_line.text if intel_line.visible else ""
 
 
 ## Says what the seat did in the bidding, in place of its role, until a landlord is
@@ -284,7 +263,7 @@ func set_bid(text: String) -> void:
 ## Shows text on the role line for a moment, such as a pass, then the role again.
 func flash(text: String) -> void:
 	_show_role(text.to_upper())
-	UiMotion.pulse(_role)
+	UiMotion.pulse(role)
 	UiMotion.end(_flash)
 	_flash = create_tween()
 	_flash.tween_interval(FLASH_HOLD)
@@ -305,13 +284,13 @@ func _rest_role(text: String) -> void:
 ## The role line is print on the sheet beside the portrait (ADR 0034): it fits the room
 ## the sheet leaves it, never under its Standard size, so the sheet keeps its width.
 func _show_role(text: String) -> void:
-	_role.text = text
-	var font: Font = _role.get_theme_font("font")
+	role.text = text
+	var font: Font = role.get_theme_font("font")
 	var room: float = _info_room()
 	var fits: Callable = func(font_size: int) -> bool:
 		return font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x <= room
 	var base: int = CommonsTheme.STYLE.eyebrow_size
-	_role.add_theme_font_size_override("font_size", TextSize.fit(base, base, fits))
+	role.add_theme_font_size_override("font_size", TextSize.fit(base, base, fits))
 
 
 ## The width beside the portrait inside the sheet, or no limit before the sheet is sized.
@@ -319,73 +298,26 @@ func _info_room() -> float:
 	if size.x <= 0.0:
 		return INF
 	var edges: float = get_theme_stylebox("panel").get_minimum_size().x
-	return size.x - edges - PORTRAIT_BOX.x - _row.get_theme_constant("separation")
+	return size.x - edges - PORTRAIT_BOX.x - row.get_theme_constant("separation")
 
 
-## Shows a line. With reveal times from the voice plan it types out, one character at
-## each time; without, it shows at once.
+## Shows a line, typing out at the voice plan's reveal times when it has them.
 func say(text: String, reveal: PackedFloat32Array = PackedFloat32Array()) -> void:
-	_speech.text = text
-	_fit_speech(text)
-	_reveal = reveal
-	_typed = 0.0
-	_speech.visible_characters = -1 if reveal.is_empty() else 0
-	set_process(not reveal.is_empty())
-
-
-## The line at the text size, smaller where it would need more lines than the room has.
-func _fit_speech(text: String) -> void:
-	var font: Font = _speech.get_theme_font("font")
-	var wide: float = maxf(_speech.size.x, _speech.custom_minimum_size.x)
-	var fits: Callable = func(font_size: int) -> bool:
-		var tall: float = (
-			font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, wide, font_size).y
-		)
-		return roundi(tall / font.get_height(font_size)) <= SPEECH_LINES
-	var font_size: int = TextSize.fit(SPEECH_SIZE, SPEECH_SIZE, fits)
-	_speech.add_theme_font_size_override("font_size", font_size)
+	speech_line.say(text, reveal)
 
 
 ## Shows the rest of a line still typing out. True if one was.
 func skip_speech() -> bool:
-	if not is_typing():
-		return false
-	_finish_typing()
-	speech_skipped.emit(seat)
-	return true
+	return speech_line.skip()
 
 
 func is_typing() -> bool:
-	return is_processing()
+	return speech_line.is_typing()
 
 
 ## Characters of the current line shown so far.
 func shown_characters() -> int:
-	return _speech.text.length() if _speech.visible_characters < 0 else _speech.visible_characters
-
-
-func _process(delta: float) -> void:
-	_typed += delta
-	var shown: int = maxi(0, _speech.visible_characters)
-	while shown < _reveal.size() and _reveal[shown] <= _typed:
-		shown += 1
-	if shown >= _reveal.size():
-		_finish_typing()
-	else:
-		_speech.visible_characters = shown
-
-
-func _finish_typing() -> void:
-	_speech.visible_characters = -1
-	set_process(false)
-	speech_finished.emit(seat)
-
-
-func _on_speech_input(event: InputEvent) -> void:
-	var click: InputEventMouseButton = event as InputEventMouseButton
-	if click != null and click.pressed and click.button_index == MOUSE_BUTTON_LEFT:
-		if skip_speech():
-			_speech.accept_event()
+	return speech_line.shown_characters()
 
 
 ## Dims the portrait for a moment, as a flicker. The tween belongs to the picture, so it
@@ -397,4 +329,4 @@ func blink(seconds: float) -> void:
 
 
 func speech() -> String:
-	return _speech.text
+	return speech_line.text

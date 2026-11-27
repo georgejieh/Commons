@@ -19,13 +19,15 @@ const RULE_SIZE: int = 20
 const COUNT_SIZE: int = 40
 const SEAT_SIZE: int = 22
 
+## The swaps left, in the sheet's head.
+var count: Label = ScreenKit.label("", COUNT_SIZE)
+## What the swaps chosen will do.
+var status: Label = ScreenKit.label("", RULE_SIZE)
 var _app: DemoApp
 var _pool: CardPool
 var _board: SwapBoard = SwapBoard.new()
 var _paper: PanelContainer = PanelContainer.new()
-var _count: Label = ScreenKit.label("", COUNT_SIZE)
 var _seat: Label = ScreenKit.label("", SEAT_SIZE)
-var _status: Label = ScreenKit.label("", RULE_SIZE)
 var _pairs: VBoxContainer = VBoxContainer.new()
 var _swap: Button = ScreenKit.button("", CommonsTheme.PRIMARY)
 var _keep: Button = ScreenKit.button("", CommonsTheme.SECONDARY)
@@ -77,9 +79,9 @@ func _header() -> Control:
 	var caption: Label = ScreenKit.eyebrow(tr("plot.left"))
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	counter.add_child(caption)
-	_count.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	counter.add_child(_count)
+	count.autowrap_mode = TextServer.AUTOWRAP_OFF
+	count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	counter.add_child(count)
 	var row: HBoxContainer = ScreenKit.row([titles, counter])
 	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return row
@@ -91,7 +93,7 @@ func _footer() -> Control:
 	notes.add_theme_constant_override("separation", 4)
 	notes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	notes.add_child(_pairs)
-	notes.add_child(_status)
+	notes.add_child(status)
 	var buttons: HBoxContainer = ScreenKit.row([_swap, _keep])
 	buttons.size_flags_vertical = Control.SIZE_SHRINK_END
 	return ScreenKit.row([notes, buttons])
@@ -139,7 +141,7 @@ func open() -> void:
 		names[seat] = _app.seat_name(seat)
 	_seat.text = reader.line(names) if reader.kept() else ""
 	_seat.visible = reader.kept()
-	_status.text = ""
+	status.text = ""
 	visible = true
 	# Over everything at the table; the table's menu still comes to the front when opened.
 	move_to_front()
@@ -161,12 +163,12 @@ func open() -> void:
 
 func _refresh() -> void:
 	var trade: PlotTrade = _board.trade
-	_count.text = tr("plot.left.count").format({"left": trade.left(), "limit": trade.limit})
+	count.text = tr("plot.left.count").format({"left": trade.left(), "limit": trade.limit})
 	_swap.disabled = trade.pairs() == 0
 	if not _refused_now:
-		_status.text = ""
+		status.text = ""
 	_refused_now = false
-	_status.visible = not _status.text.is_empty()
+	status.visible = not status.text.is_empty()
 	ScreenKit.clear(_pairs)
 	_undo.clear()
 	if trade.pairs() == 0:
@@ -197,8 +199,8 @@ func _pair_text(trade: PlotTrade, index: int) -> String:
 ## A pick past the round's swaps is refused where the count is: it says why, and pulses.
 func _on_refused() -> void:
 	_refused_now = true
-	_status.text = tr("plot.none_left")
-	UiMotion.pulse(_count)
+	status.text = tr("plot.none_left")
+	UiMotion.pulse(count)
 
 
 ## Focus stays on the sheet: the board above, the Undo buttons and the two buttons in a

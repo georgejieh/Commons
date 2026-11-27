@@ -45,7 +45,7 @@ func table() -> void:
 	var line: String = tr("table.set_aside").format(
 		{"cards": view(controller, "table").call("set_aside_names")}
 	)
-	var lines: Object = member(strip, "_lines")
+	var lines: Object = member(strip, "lines")
 	# The slip spells out each rule only when the full form fits; at the largest text sizes
 	# it names the rules alone, and the set-aside line goes with the boss's rule.
 	var full: bool = int(member(strip, "_form")) == DebuffStrip.Form.FULL

@@ -18,10 +18,12 @@ const GAP: int = 8
 ## Clear of the paper's printed border.
 const PADDING: int = 20
 
+## The strip's heading.
+var heading: Label = ScreenKit.eyebrow("")
+## Says so when no Reform is in force.
+var none_line: Label = ScreenKit.label("", NAME_SIZE)
 var _row: HFlowContainer = HFlowContainer.new()
 var _column: VBoxContainer = VBoxContainer.new()
-var _head: Label = ScreenKit.eyebrow("")
-var _none: Label = ScreenKit.label("", NAME_SIZE)
 var _tags: Array[Control] = []
 var _ids: Array[String] = []
 var _names: Array[String] = []
@@ -37,24 +39,24 @@ func _init() -> void:
 	_row.custom_minimum_size = Vector2(0, TAG_HEIGHT)
 	column.add_child(_row)
 	# The head leads the row of slips, so the strip keeps to one line while they fit.
-	var head: Label = _head
+	var head: Label = heading
 	head.text = tr("reform.strip").to_upper()
 	head.add_theme_font_size_override("font_size", TextSize.px(HEAD_SIZE))
-	for label: Label in [head, _none]:
+	for label: Label in [head, none_line]:
 		label.custom_minimum_size = Vector2(0, TAG_HEIGHT)
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		_row.add_child(label)
-	_none.text = tr("reform.strip.none")
-	_none.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_none.add_theme_color_override("font_color", ScreenKit.INK)
+	none_line.text = tr("reform.strip.none")
+	none_line.autowrap_mode = TextServer.AUTOWRAP_OFF
+	none_line.add_theme_color_override("font_color", ScreenKit.INK)
 	add_child(column)
 
 
 ## "None yet" stands on the head's baseline. Both are centred in the row, and their faces
 ## set the baseline at different depths, so the higher one is pushed down to meet the other.
 func _ready() -> void:
-	var gap: float = baseline(_head) - baseline(_none)
-	var higher: Label = _none if gap > 0.0 else _head
+	var gap: float = baseline(heading) - baseline(none_line)
+	var higher: Label = none_line if gap > 0.0 else heading
 	var push: StyleBoxEmpty = StyleBoxEmpty.new()
 	# A top margin moves centred text down by half of it.
 	push.content_margin_top = absf(gap) * 2.0
@@ -101,7 +103,7 @@ func show_reforms(controller: RunController) -> void:
 		if tag.visible:
 			tag.custom_minimum_size = Vector2(_width(_names[index]), TAG_HEIGHT)
 			tag.queue_redraw()
-	_none.visible = _ids.is_empty()
+	none_line.visible = _ids.is_empty()
 
 
 ## The slip for the Reform enacted index-th, for tests and the pinning.
@@ -117,7 +119,7 @@ func held_count() -> int:
 func next_center() -> Vector2:
 	var count: int = _ids.size()
 	if count == 0 or count > _tags.size():
-		return _none.global_position + Vector2(TAG_PADDING, TAG_HEIGHT / 2.0)
+		return none_line.global_position + Vector2(TAG_PADDING, TAG_HEIGHT / 2.0)
 	var last: Control = _tags[count - 1]
 	return last.global_position + Vector2(last.size.x + GAP + TAG_PADDING, TAG_HEIGHT / 2.0)
 

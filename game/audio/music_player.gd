@@ -9,7 +9,8 @@ extends Node
 
 const SCORE: MusicScore = preload("res://data/audio/music_score.tres")
 
-var _player: AudioStreamPlayer = AudioStreamPlayer.new()
+## Plays the cue's stems as one synchronized stream on the Music bus.
+var player: AudioStreamPlayer = AudioStreamPlayer.new()
 var _current: MusicCue = null
 var _pending: MusicCue = null
 var _gains: PackedFloat32Array = []
@@ -26,21 +27,31 @@ static func bar_at(cue: MusicCue, position: float) -> int:
 
 
 func _init() -> void:
-	_player.bus = AudioMixer.BUS_MUSIC
-	add_child(_player)
+	player.bus = AudioMixer.BUS_MUSIC
+	add_child(player)
 
 
 func _process(delta: float) -> void:
 	if _current == null:
 		return
-	_check_bar(_player.get_playback_position() if _player.playing else 0.0)
+	check_bar(player.get_playback_position() if player.playing else 0.0)
 	var step: float = delta / maxf(SCORE.fade_seconds, 0.01)
-	var mix: AudioStreamSynchronized = _player.stream as AudioStreamSynchronized
+	var mix: AudioStreamSynchronized = player.stream as AudioStreamSynchronized
 	for stem: int in _gains.size():
 		_gains[stem] = move_toward(_gains[stem], _targets[stem], step)
 		if mix != null:
 			var db: float = maxf(linear_to_db(_gains[stem]), AudioMixer.SILENT_DB)
 			mix.set_sync_stream_volume(stem, db)
+
+
+## Starts the waiting cue once playback has crossed into a new bar, or wrapped round the
+## loop, since the last frame. A silent cue has no bars, so the change happens at once.
+func check_bar(position: float) -> void:
+	var bar: int = bar_at(_current, position)
+	var crossed: bool = bar != _last_bar and _last_bar >= 0
+	_last_bar = bar
+	if _pending != null and (crossed or not _current.has_audio()):
+		_start(_pending)
 
 
 ## The id of the cue playing, or "" when silent.
@@ -62,7 +73,7 @@ func request(cue_id: String) -> void:
 	if cue == _current:
 		_pending = null
 		return
-	if _current == null or not _player.playing:
+	if _current == null or not player.playing:
 		_start(cue)
 	else:
 		_pending = cue
@@ -94,16 +105,6 @@ func stem_gain(stem: String) -> float:
 	return _gains[index] if index >= 0 else -1.0
 
 
-## Starts the waiting cue once playback has crossed into a new bar, or wrapped round the
-## loop, since the last frame. A silent cue has no bars, so the change happens at once.
-func _check_bar(position: float) -> void:
-	var bar: int = bar_at(_current, position)
-	var crossed: bool = bar != _last_bar and _last_bar >= 0
-	_last_bar = bar
-	if _pending != null and (crossed or not _current.has_audio()):
-		_start(_pending)
-
-
 func _start(cue: MusicCue) -> void:
 	# Stems that both cues share keep their gain, so a held-down stem stays down.
 	var carried: PackedFloat32Array = []
@@ -119,14 +120,14 @@ func _start(cue: MusicCue) -> void:
 	_gains = carried.duplicate()
 	_targets = carried
 	_last_bar = -1
-	_player.stop()
+	player.stop()
 	if not cue.has_audio():
-		_player.stream = null
+		player.stream = null
 		return
 	var mix: AudioStreamSynchronized = AudioStreamSynchronized.new()
 	mix.stream_count = cue.stems.size()
 	for index: int in cue.stems.size():
 		mix.set_sync_stream(index, cue.stems[index])
 		mix.set_sync_stream_volume(index, maxf(linear_to_db(_gains[index]), AudioMixer.SILENT_DB))
-	_player.stream = mix
-	_player.play()
+	player.stream = mix
+	player.play()

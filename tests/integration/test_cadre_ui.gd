@@ -60,7 +60,7 @@ func test_buying_a_rank_cadre_asks_for_a_rank_then_seals_it_with_the_rank() -> v
 	# Focus lands on the first ticket and walks along the strip and down to Cancel.
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(chips[0])
 	assert_object(chips[0].find_valid_focus_neighbor(SIDE_RIGHT)).is_same(chips[1])
-	var cancel: Button = picker.get("_cancel")
+	var cancel: Button = picker.cancel_button
 	assert_object(chips[5].find_valid_focus_neighbor(SIDE_BOTTOM)).is_same(cancel)
 	chips[Ranks.SEVEN].pressed.emit()
 	assert_bool(picker.is_open()).is_false()
@@ -75,7 +75,7 @@ func test_buying_a_rank_cadre_asks_for_a_rank_then_seals_it_with_the_rank() -> v
 	var board: NoticeBoard = store.board
 	var slot: int = state.inventory.cadres.find("rehabilitation")
 	assert_str(board.count_at(slot)).is_equal("7s")
-	var cards: Array[TipHost] = board.get("_cards")
+	var cards: Array[TipHost] = board.cards
 	assert_str(cards[slot].tip_rule()).contains("Your 7s")
 
 
@@ -86,7 +86,7 @@ func test_cancel_closes_the_picker_with_nothing_bought() -> void:
 	_buy_button(store, 0).pressed.emit()
 	var cadres: CadreCounter = store.cadres
 	var picker: RankPicker = cadres.picker
-	var cancel: Button = picker.get("_cancel")
+	var cancel: Button = picker.cancel_button
 	cancel.pressed.emit()
 	assert_bool(picker.is_open()).is_false()
 	assert_int(_app.controller.state_copy().coupons).is_equal(coupons)
@@ -107,7 +107,7 @@ func test_a_cadre_with_a_count_shows_it_on_its_card_and_swells_when_it_fires() -
 	board.show_cadres(_app.controller)
 	assert_str(board.count_at(0)).is_equal("+6")
 	assert_str(board.count_at(1)).is_empty()
-	var cards: Array[TipHost] = board.get("_cards")
+	var cards: Array[TipHost] = board.cards
 	assert_str(cards[0].tip_rule()).contains("Now +6 Grain on each of your plays.")
 	board.fired(_app.controller, "the_bookkeeper", 2)
 	assert_str(board.count_at(1)).is_equal("+2")
@@ -123,8 +123,8 @@ func test_the_quota_report_counts_the_bookkeepers_coupons_in_the_paid_line() -> 
 	_app.controller.reseal_book()
 	var report: SetSummaryScreen = _app.show_screen("set_summary", true)
 	await await_idle_frame()
-	var after: Array[Control] = report.get("_after")
-	var met: bool = report.get("_met")
+	var after: Array[Control] = report.after
+	var met: bool = _app.controller.run.set_progress() >= _app.controller.figures.target()
 	var name: String = tr("modifier.the_bookkeeper.name")
 	if met:
 		var paid: int = (

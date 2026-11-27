@@ -12,10 +12,11 @@ extends Control
 const NAME_SIZE: int = 30
 const NOTE_SIZE: int = 20
 
+## The family name, beside its Change button.
+var family_line: Label
 var _app: DemoApp = null
 var _card_backs: CardBackRow
 var _change: Button = null
-var _name_line: Label
 var _sheets: HBoxContainer
 var _scroll: ScrollContainer
 
@@ -119,19 +120,19 @@ func change_button() -> Button:
 
 
 func name_line() -> String:
-	return _name_line.text
+	return family_line.text
 
 
 ## The surname, then Change, or while a run is saved or the arrival plays, why not.
 func _family_name(app: DemoApp) -> VBoxContainer:
 	var block: VBoxContainer = VBoxContainer.new()
 	block.add_child(ScreenKit.eyebrow(tr("settings.family_name")))
-	_name_line = ScreenKit.label(Surnames.of_profile(Saves.profile_service()), NAME_SIZE)
+	family_line = ScreenKit.label(Surnames.of_profile(Saves.profile_service()), NAME_SIZE)
 	# One line: a wrapping label beside a button is given a letter's width.
-	_name_line.autowrap_mode = TextServer.AUTOWRAP_OFF
+	family_line.autowrap_mode = TextServer.AUTOWRAP_OFF
 	var running: bool = app.has_saved_run() or app.arrival.is_running()
 	if running:
-		block.add_child(_name_line)
+		block.add_child(family_line)
 		block.add_child(ScreenKit.label(tr("settings.name_locked"), NOTE_SIZE))
 		return block
 	_change = ScreenKit.button(tr("settings.change_name"), CommonsTheme.SECONDARY)
@@ -141,5 +142,5 @@ func _family_name(app: DemoApp) -> VBoxContainer:
 			Settings.save()
 			app.show_screen("surname")
 	)
-	block.add_child(ScreenKit.row([_name_line, _change]))
+	block.add_child(ScreenKit.row([family_line, _change]))
 	return block

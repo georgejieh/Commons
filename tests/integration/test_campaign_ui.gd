@@ -221,7 +221,7 @@ func test_a_quiet_replay_shows_the_letter_at_its_seat_and_nothing_moving() -> vo
 	var moments: CampaignMoments = _campaigns(table).moments
 	assert_bool(moments.letter_out()).is_true()
 	assert_bool(moments.is_playing()).is_false()
-	var note: Control = moments.get("_note")
+	var note: Control = moments.note
 	assert_bool(note.visible).is_true()
 
 
