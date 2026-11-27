@@ -49,8 +49,8 @@ func test_the_turn_mark_stands_over_the_seat_whose_turn_it_is() -> void:
 	for level: int in TextSize.count():
 		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
-			var turn: TurnMark = table.get("_turn")
-			var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+			var turn: TurnMark = table.turn
+			var seats: Dictionary[int, SeatPanel] = table.seats
 			var where: String = "size %d on %s" % [level, screen]
 			assert_int(turn.mouse_filter).is_equal(Control.MOUSE_FILTER_IGNORE)
 			# Your play hands the turn to the right seat, its pass to the left one, and
@@ -83,7 +83,7 @@ func test_the_brigade_notice_is_worn_paper_with_its_words_inside_the_border() ->
 	for level: int in TextSize.count():
 		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
-			var dressing: DreadDressing = table.get("_dressing")
+			var dressing: DreadDressing = table.dressing
 			var notice: PanelContainer = dressing.get("_notice")
 			var where: String = "size %d on %s" % [level, screen]
 			var paper: StyleBox = notice.get_theme_stylebox("panel")
@@ -104,7 +104,7 @@ func test_each_rule_name_is_closed_before_its_text() -> void:
 	for level: int in TextSize.count():
 		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
-			var strip: DebuffStrip = table.get("_debuffs")
+			var strip: DebuffStrip = table.debuffs
 			strip.wild_ranks = [Ranks.SEVEN]
 			strip.show_debuffs(_app.controller)
 			await await_idle_frame()
@@ -124,13 +124,13 @@ func test_the_reading_picker_stands_beside_the_chosen_cards() -> void:
 	for level: int in TextSize.count():
 		for screen: Vector2i in ClipCheck.SIZES:
 			var table: TableScreen = await _table(level, screen)
-			var hand: HandView = table.get("_hand_view")
+			var hand: HandView = table.hand_view
 			for view: CardView in hand.views().slice(4, 7):
 				_app.hand.set_selected(view.card_id, true)
 			await await_idle_frame()
 			var chosen: Rect2 = hand.selection_rect()
 			assert_bool(chosen.has_area()).is_true()
-			var wild: TableWild = table.get("_wild")
+			var wild: TableWild = table.wild
 			for readings: Array[Pattern] in [_many(), _many().slice(0, 2)]:
 				wild.picker.open(readings, chosen)
 				await await_idle_frame()
@@ -145,7 +145,7 @@ func _assert_beside(slip: Rect2, chosen: Rect2, table: TableScreen, where: Strin
 	assert_bool(slip.intersects(chosen)).override_failure_message(where).is_false()
 	var gap: float = SlipPlacer.distance(slip, chosen)
 	assert_bool(gap <= SlipPlacer.REACH + TREMBLE).override_failure_message(where).is_true()
-	var column: Rect2 = table.actions().get_global_rect()
+	var column: Rect2 = table.actions.get_global_rect()
 	assert_bool(slip.intersects(column)).override_failure_message(where).is_false()
 	var screen: Rect2 = Rect2(0, ReadingPicker.TOP, 1920, 1080 - ReadingPicker.TOP).grow(TREMBLE)
 	assert_bool(screen.encloses(slip)).override_failure_message(where).is_true()

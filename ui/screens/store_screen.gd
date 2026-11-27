@@ -33,38 +33,44 @@ const SHEET_PADDING: int = 20
 ## True for the black market. Set on the scene.
 @export var market: bool = false
 
+## The Cadres on the counter, with the seal pressed on one bought and the rank it asks.
+var cadres: CadreCounter = CadreCounter.new()
+## The coupons the player holds, in the heading.
+var coupons: Label = ScreenKit.styled("", CommonsTheme.TITLE)
+## The player's Cadres, pinned on the board at the foot of the page.
+var board: NoticeBoard = NoticeBoard.new()
+## The black market's Resentment count; the state store has none.
+var resentment: Label = null
+## The black market's plot cards and upgrades; the state store has none.
+var goods: MarketGoods = null
+## Rerolls the Cadres on the counter, at the price it shows.
+var reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
+## The state store's Directives beside its Cadres; the black market has none.
+var directives: DirectiveRow = null
+## The state store's cards for the communal deck (ADR 0042); the black market has none.
+var deck_goods: DeckGoods = null
+## The Campaign on the counter, and the tray of those held.
+var campaign_stall: CampaignStall = CampaignStall.new()
+## The Reform on the counter, and the strip of those in force.
+var reform_stall: ReformStall = ReformStall.new()
+## Explains what is hovered or focused on the counter, the board and the strip.
+var slip: DetailSlip = DetailSlip.new()
+## The envelope on the counter, and the envelope opened over the page (ADR 0021).
+var envelope_stall: EnvelopeStall = EnvelopeStall.new()
+## Sells back the held Cadres and Campaigns (ADR 0040).
+var sale: SellDesk = SellDesk.new()
+## The whole deck and the plot, with their marks (ADR 0041).
+var deck: DeckSheet = DeckSheet.new()
+## The desk that marks a deck card (ADR 0041): its ticket is in the state store's row of
+## buttons, and under the black market's plot stall.
+var desk_stall: DeskStall = DeskStall.new()
+## The household's true figures, shown only at the stage past the last (ADR 0022).
+var books: SmallLedger = SmallLedger.new(2)
 var _app: DemoApp
 ## What every stall on the page is set up with.
 var _shop: StallContext
-## The Cadres on the counter, with the seal pressed on one bought and the rank it asks.
-var _cadres: CadreCounter = CadreCounter.new()
-var _coupons: Label = ScreenKit.styled("", CommonsTheme.TITLE)
-var _board: NoticeBoard = NoticeBoard.new()
-## The black market's Resentment count, plot cards and upgrades; the state store has none.
-var _resentment: Label = null
 var _shown_resentment: float = 0.0
-var _goods: MarketGoods = null
-var _reroll: Button = ScreenKit.button("", CommonsTheme.GHOST)
 var _shown_coupons: float = 0.0
-## The state store's Directives beside its Cadres, and its cards for the communal deck at
-## the end of its row of buttons (ADR 0042); the black market has neither.
-var _directives: DirectiveRow = null
-var _deck_goods: DeckGoods = null
-var _campaign_stall: CampaignStall = CampaignStall.new()
-var _reform_stall: ReformStall = ReformStall.new()
-## Explains what is hovered or focused on the counter, the board and the strip.
-var _slip: DetailSlip = DetailSlip.new()
-## The envelope on the counter, and the envelope opened over the page (ADR 0021).
-var _envelope_stall: EnvelopeStall = EnvelopeStall.new()
-## Sells back the held Cadres and Campaigns (ADR 0040).
-var _sale: SellDesk = SellDesk.new()
-## The whole deck and the plot, with their marks (ADR 0041).
-var _deck: DeckSheet = DeckSheet.new()
-## The desk that marks a deck card (ADR 0041): its ticket is in the state store's row of
-## buttons, and under the black market's plot stall.
-var _desk_stall: DeskStall = DeskStall.new()
-## The household's true figures, shown only at the stage past the last (ADR 0022).
-var _books: SmallLedger = SmallLedger.new(2)
 ## The page's main blocks by name, for the layout test.
 var _blocks: Dictionary[String, Control] = {}
 ## The page's first button, which leaves or goes back, and the state store's door to the
@@ -81,8 +87,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func open(app: DemoApp) -> void:
 	_app = app
-	_slip.quiet = app.arrival.is_running
-	_shop = StallContext.new(app, market, _slip, _deck, is_issuing)
+	slip.quiet = app.arrival.is_running
+	_shop = StallContext.new(app, market, slip, deck, is_issuing)
 	var shade: Color = NIGHT_SHADE if market else ScreenKit.SHADE
 	var tint: Color = NIGHT if market else Color.WHITE
 	var column: VBoxContainer = ScreenKit.page(self, ScreenKit.ART.store, shade, tint)
@@ -92,22 +98,22 @@ func open(app: DemoApp) -> void:
 	column.add_child(_main_row())
 	column.add_child(_button_row())
 	column.add_child(_bottom_row())
-	add_child(_cadres.seal)
-	add_child(_cadres.picker)
-	add_child(_slip)
-	add_child(_deck)
-	_deck.setup(app.controller)
-	_deck.closed.connect(_on_deck_closed)
-	_deck.chosen.connect(_on_chosen)
-	_desk_stall.setup(_shop)
+	add_child(cadres.seal)
+	add_child(cadres.picker)
+	add_child(slip)
+	add_child(deck)
+	deck.setup(app.controller)
+	deck.closed.connect(_on_deck_closed)
+	deck.chosen.connect(_on_chosen)
+	desk_stall.setup(_shop)
 	_shown_coupons = app.controller.run.coupons()
 	_shown_resentment = app.controller.run.resentment()
-	_refresh()
+	refresh()
 	ScreenKit.reveal(column)
-	ScarceStamp.press_under(_cadres.row, UiMotion.PRESETS.scarce_wait)
+	ScarceStamp.press_under(cadres.row, UiMotion.PRESETS.scarce_wait)
 	_leave_button.grab_focus()
 	# An envelope left open, as by a save taken while choosing, is shown open again.
-	_envelope_stall.resume()
+	envelope_stall.resume()
 
 
 ## The page's main blocks by name, each a rectangle that must fit the screen without
@@ -116,62 +122,76 @@ func blocks() -> Dictionary[String, Control]:
 	return _blocks.duplicate()
 
 
-## The shared slip, for tests.
-func slip() -> DetailSlip:
-	return _slip
-
-
 ## What the arrival points at here (ADR 0026): the first Cadre, the door, a plot card.
 func tutorial_target(key: String) -> Control:
 	match key:
 		"buy":
-			return _cadres.row.get_child(0) if _cadres.row.get_child_count() > 0 else null
+			return cadres.row.get_child(0) if cadres.row.get_child_count() > 0 else null
 		"door":
 			return _door
 		"plot_card":
-			return null if _goods == null else _goods.card_button(0)
+			return null if goods == null else goods.card_button(0)
 	return null
-
-
-## True while a purchase is being acted out, for tests.
-func is_buying() -> bool:
-	return _cadres.is_buying()
 
 
 ## True while any purchase, issue or enactment is being acted out, or a rank is asked.
 func is_issuing() -> bool:
-	var directing: bool = _directives != null and _directives.is_busy()
-	var stalls: bool = _campaign_stall.is_busy() or _reform_stall.is_busy()
-	stalls = stalls or _envelope_stall.is_busy() or _cadres.is_busy()
-	return stalls or directing or _deck.is_open()
+	var directing: bool = directives != null and directives.is_busy()
+	var stalls: bool = campaign_stall.is_busy() or reform_stall.is_busy()
+	stalls = stalls or envelope_stall.is_busy() or cadres.is_busy()
+	return stalls or directing or deck.is_open()
+
+
+## Shows the run as it is now: the coupons, every stall's offers and the board.
+func refresh() -> void:
+	var controller: RunController = _app.controller
+	var state: RunView = controller.run
+	UiMotion.count(coupons, _shown_coupons, state.coupons(), StoreNotes.coupon_text)
+	_shown_coupons = state.coupons()
+	cadres.show_stock()
+	reroll.text = tr("store.reroll").format({"price": _shop.desk.reroll_price()})
+	reroll.disabled = not _shop.desk.can_reroll()
+	books.show_shop(state)
+	if market:
+		_shown_resentment = StoreNotes.count_resentment(resentment, _shown_resentment, state)
+		goods.refresh()
+	else:
+		directives.show_offers()
+		deck_goods.refresh()
+	board.show_cadres(controller)
+	campaign_stall.show_offer()
+	reform_stall.show_offer()
+	envelope_stall.show_offer()
+	desk_stall.show_offer()
+	sale.refresh()
 
 
 ## The stalls every shop has, each reporting back to the page.
 func _set_up_stalls() -> void:
-	_cadres.setup(_shop, _board, self)
-	_cadres.paid.connect(_roll_coupons)
-	_cadres.settled.connect(_on_cadre_settled)
-	_campaign_stall.setup(_shop)
-	_campaign_stall.spent.connect(_on_spent)
-	_reform_stall.setup(_shop)
-	_reform_stall.spent.connect(_on_spent)
-	_envelope_stall.setup(_shop, self)
-	_envelope_stall.spent.connect(_on_spent)
-	_envelope_stall.settled.connect(_on_envelope_settled)
-	_board.setup(_shop.controller.figures.cadre_slots(), BOARD_BOX)
-	_board.empty_line = tr("store.shelf.empty")
-	_sale.setup(_shop, _board, _campaign_stall.tray)
-	_sale.sold.connect(_on_sold)
+	cadres.setup(_shop, board, self)
+	cadres.paid.connect(_roll_coupons)
+	cadres.settled.connect(_on_cadre_settled)
+	campaign_stall.setup(_shop)
+	campaign_stall.spent.connect(_on_spent)
+	reform_stall.setup(_shop)
+	reform_stall.spent.connect(_on_spent)
+	envelope_stall.setup(_shop, self)
+	envelope_stall.spent.connect(_on_spent)
+	envelope_stall.settled.connect(_on_envelope_settled)
+	board.setup(_shop.controller.figures.cadre_slots(), BOARD_BOX)
+	board.empty_line = tr("store.shelf.empty")
+	sale.setup(_shop, board, campaign_stall.tray)
+	sale.sold.connect(_on_sold)
 
 
 func _header_row(app: DemoApp) -> Control:
 	var place: String = "market" if market else "store"
 	var heading: Control = ScreenKit.header(tr(place + ".eyebrow"), tr(place + ".title"))
-	var top: Array[Control] = [heading, StoreNotes.balance(_coupons, _books)]
+	var top: Array[Control] = [heading, StoreNotes.balance(coupons, books)]
 	if market:
-		_resentment = ScreenKit.styled("", CommonsTheme.TITLE)
-		top.append(StoreNotes.resentment_box(_resentment))
-	var notes: VBoxContainer = StoreNotes.beside(app.controller, market, _reform_stall.strip)
+		resentment = ScreenKit.styled("", CommonsTheme.TITLE)
+		top.append(StoreNotes.resentment_box(resentment))
+	var notes: VBoxContainer = StoreNotes.beside(app.controller, market, reform_stall.strip)
 	top.append(notes)
 	_blocks["heading"] = heading
 	_blocks["notes"] = notes
@@ -181,53 +201,53 @@ func _header_row(app: DemoApp) -> Control:
 func _main_row() -> Control:
 	var side: Control
 	if market:
-		_goods = MarketGoods.new()
-		_goods.setup(_shop)
-		_goods.spent.connect(_refresh)
-		var stall: Control = _goods.panel()
+		goods = MarketGoods.new()
+		goods.setup(_shop)
+		goods.spent.connect(refresh)
+		var stall: Control = goods.panel()
 		stall.add_theme_stylebox_override("panel", ScreenKit.paper_style(SHEET_PADDING))
 		# The black market's row of buttons is full with its upgrades, so its desk's
 		# ticket stands under the plot stall.
 		side = VBoxContainer.new()
 		side.add_child(stall)
-		side.add_child(_desk_stall.ticket)
+		side.add_child(desk_stall.ticket)
 	else:
-		_directives = DirectiveRow.new()
-		_directives.setup(_shop)
-		_directives.spent.connect(_on_spent)
-		_directives.settled.connect(_refresh)
-		side = _directives
+		directives = DirectiveRow.new()
+		directives.setup(_shop)
+		directives.spent.connect(_on_spent)
+		directives.settled.connect(refresh)
+		side = directives
 	side.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	_blocks["counter"] = _cadres.row
+	_blocks["counter"] = cadres.row
 	_blocks["side"] = side
-	return ScreenKit.row([_cadres.row, side], MAIN_GAP)
+	return ScreenKit.row([cadres.row, side], MAIN_GAP)
 
 
 ## The leave, reroll and door buttons, or the black market's upgrade tickets.
 func _button_row() -> Control:
-	_reroll.pressed.connect(_on_reroll)
-	BuyTicket.readable(_reroll)
+	reroll.pressed.connect(_on_reroll)
+	BuyTicket.readable(reroll)
 	_leave_button = ScreenKit.button(
 		tr("market.back" if market else "store.leave"), CommonsTheme.PRIMARY
 	)
-	var deck: Button = ScreenKit.button(tr("deck.open"), CommonsTheme.GHOST)
-	deck.tooltip_text = tr("deck.open_tip")
+	var deck_button: Button = ScreenKit.button(tr("deck.open"), CommonsTheme.GHOST)
+	deck_button.tooltip_text = tr("deck.open_tip")
 	# The Deck button and the desk's ticket are as wide as their words, so the black
 	# market's row keeps its upgrades.
-	deck.custom_minimum_size = Vector2.ZERO
-	deck.pressed.connect(_open_deck)
+	deck_button.custom_minimum_size = Vector2.ZERO
+	deck_button.pressed.connect(_open_deck)
 	var buttons: HBoxContainer
 	if market:
 		_leave_button.pressed.connect(_back)
-		buttons = ScreenKit.row([_leave_button, _reroll, _goods.upgrades, deck])
+		buttons = ScreenKit.row([_leave_button, reroll, goods.upgrades, deck_button])
 	else:
 		_leave_button.pressed.connect(_leave)
 		_door = ScreenKit.button(tr("market.open"), CommonsTheme.GHOST)
 		_door.pressed.connect(_to_market)
-		_deck_goods = DeckGoods.new()
-		_deck_goods.setup(_shop)
+		deck_goods = DeckGoods.new()
+		deck_goods.setup(_shop)
 		var row: Array[Control] = [
-			_leave_button, _reroll, _door, deck, _desk_stall.ticket, _deck_goods.strip
+			_leave_button, reroll, _door, deck_button, desk_stall.ticket, deck_goods.strip
 		]
 		buttons = ScreenKit.row(row)
 	_blocks["buttons"] = buttons
@@ -236,11 +256,11 @@ func _button_row() -> Control:
 
 ## Your board on the left, and what is on the counter on the right.
 func _bottom_row() -> Control:
-	var cadres: VBoxContainer = VBoxContainer.new()
-	cadres.add_theme_constant_override("separation", 4)
-	cadres.add_child(ScreenKit.eyebrow(tr("store.shelf")))
-	cadres.add_child(_board)
-	var board: PanelContainer = _sheet(ScreenKit.row([cadres, _campaign_stall.tray], SHELF_GAP))
+	var held: VBoxContainer = VBoxContainer.new()
+	held.add_theme_constant_override("separation", 4)
+	held.add_child(ScreenKit.eyebrow(tr("store.shelf")))
+	held.add_child(board)
+	var own: PanelContainer = _sheet(ScreenKit.row([held, campaign_stall.tray], SHELF_GAP))
 	var offers: Array[Control] = _offers()
 	var on_counter: VBoxContainer = VBoxContainer.new()
 	on_counter.add_theme_constant_override("separation", 4)
@@ -249,14 +269,14 @@ func _bottom_row() -> Control:
 	var shelf: PanelContainer = _sheet(on_counter)
 	# The counter keeps to the right edge, whatever room the board leaves it.
 	shelf.size_flags_horizontal = Control.SIZE_EXPAND | Control.SIZE_SHRINK_END
-	_blocks["board"] = board
+	_blocks["board"] = own
 	_blocks["shelf"] = shelf
-	return ScreenKit.row([board, shelf], SHELF_GAP)
+	return ScreenKit.row([own, shelf], SHELF_GAP)
 
 
 ## The offers "On the counter": the Campaign's, the Reform's and the envelope's.
 func _offers() -> Array[Control]:
-	return [_campaign_stall.offers, _reform_stall.offers, _envelope_stall.offers]
+	return [campaign_stall.offers, reform_stall.offers, envelope_stall.offers]
 
 
 func _sheet(content: Control) -> PanelContainer:
@@ -267,58 +287,35 @@ func _sheet(content: Control) -> PanelContainer:
 	return sheet
 
 
-func _refresh() -> void:
-	var controller: RunController = _app.controller
-	var state: RunView = controller.run
-	UiMotion.count(_coupons, _shown_coupons, state.coupons(), StoreNotes.coupon_text)
-	_shown_coupons = state.coupons()
-	_cadres.show_stock()
-	_reroll.text = tr("store.reroll").format({"price": _shop.desk.reroll_price()})
-	_reroll.disabled = not _shop.desk.can_reroll()
-	_books.show_shop(state)
-	if market:
-		_shown_resentment = StoreNotes.count_resentment(_resentment, _shown_resentment, state)
-		_goods.refresh()
-	else:
-		_directives.show_offers()
-		_deck_goods.refresh()
-	_board.show_cadres(controller)
-	_campaign_stall.show_offer()
-	_reform_stall.show_offer()
-	_envelope_stall.show_offer()
-	_desk_stall.show_offer()
-	_sale.refresh()
-
-
 ## A Cadre's purchase is over: the page shows the run, and the card's place on the board
 ## swells once the card has flown there.
 func _on_cadre_settled(slot: int) -> void:
-	_refresh()
+	refresh()
 	if slot >= 0:
-		_board.pulse_slot(slot)
+		board.pulse_slot(slot)
 
 
 ## The coupons roll down to what the run holds now, and the count swells.
 func _roll_coupons() -> void:
-	var coupons: int = _app.controller.run.coupons()
-	UiMotion.count(_coupons, _shown_coupons, coupons, StoreNotes.coupon_text)
-	_shown_coupons = coupons
-	UiMotion.pulse(_coupons)
+	var held: int = _app.controller.run.coupons()
+	UiMotion.count(coupons, _shown_coupons, held, StoreNotes.coupon_text)
+	_shown_coupons = held
+	UiMotion.pulse(coupons)
 
 
 ## Coupons were paid elsewhere on the page: they roll down while the purchase plays.
 func _on_spent() -> void:
 	_roll_coupons()
-	_reroll.disabled = not _shop.desk.can_reroll()
-	_books.show_shop(_app.controller.run)
+	reroll.disabled = not _shop.desk.can_reroll()
+	books.show_shop(_app.controller.run)
 
 
 ## Something held was sold back: the coupons count up, and the freed place swells.
 func _on_sold(campaign: bool) -> void:
 	_on_spent()
-	_refresh()
+	refresh()
 	if not campaign:
-		_board.pulse_slot(_app.controller.run.held_cadres().size())
+		board.pulse_slot(_app.controller.run.held_cadres().size())
 	if get_viewport().gui_get_focus_owner() == null:
 		_leave_button.grab_focus()
 
@@ -331,34 +328,34 @@ func _on_reroll() -> void:
 		_app.controller.market_reroll()
 	else:
 		_app.controller.reroll()
-	_slip.hide_slip()
-	_refresh()
+	slip.hide_slip()
+	refresh()
 	var fresh: Array[Control] = []
-	for child: Node in _cadres.row.get_children():
+	for child: Node in cadres.row.get_children():
 		fresh.append(child as Control)
 	var shelves: Array[Node] = []
 	shelves.assign(_offers())
-	if _directives != null:
-		shelves.append(_directives)
+	if directives != null:
+		shelves.append(directives)
 	for shelf: Node in shelves:
 		for child: Node in shelf.get_children():
 			if child is PanelContainer:
 				fresh.append(child as Control)
 	UiMotion.enter(fresh)
-	ScarceStamp.press_under(_cadres.row, UiMotion.PRESETS.scarce_wait)
+	ScarceStamp.press_under(cadres.row, UiMotion.PRESETS.scarce_wait)
 
 
 ## The deck sheet, read-only, over the page.
 func _open_deck() -> void:
 	if not is_issuing():
-		_slip.hide_slip()
-		_deck.open_deck()
+		slip.hide_slip()
+		deck.open_deck()
 
 
 ## Back to the page's first button, unless the sheet stood over an open envelope, which
 ## takes the focus back itself.
 func _on_deck_closed() -> void:
-	if not _envelope_stall.is_busy():
+	if not envelope_stall.is_busy():
 		_leave_button.grab_focus()
 
 
@@ -366,15 +363,15 @@ func _on_deck_closed() -> void:
 ## paper says it is done.
 func _on_chosen(_card_id: int) -> void:
 	# A deck card kept from an envelope sounds as the envelope acts it out.
-	if not _envelope_stall.is_busy():
+	if not envelope_stall.is_busy():
 		Audio.play(AudioEvents.STORE_BUY)
 	_on_spent()
-	_refresh()
+	refresh()
 
 
 ## An envelope was answered: the page shows what it gave, wherever that went.
 func _on_envelope_settled() -> void:
-	_refresh()
+	refresh()
 	_leave_button.grab_focus()
 
 

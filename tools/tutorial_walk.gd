@@ -93,7 +93,7 @@ func _surname_page() -> void:
 func _try_refused() -> void:
 	_refused = true
 	var before: int = _index()
-	var actions: Object = _current().call("actions")
+	var actions: Object = _current().get("actions")
 	await _press(actions.get("pass_turn"))
 	await _frames(4)
 	await _shot("tutorial_refused")
@@ -108,7 +108,7 @@ func _take(step: Resource) -> void:
 	var action: int = int(step.get("action"))
 	var actions: Object = null
 	if _screen_id() == "table":
-		actions = _current().call("actions")
+		actions = _current().get("actions")
 	match action:
 		TutorialStep.Action.BID_CALL:
 			await _press(actions.get("call"))
@@ -117,7 +117,7 @@ func _take(step: Resource) -> void:
 		TutorialStep.Action.PASS:
 			await _press(actions.get("pass_turn"))
 		TutorialStep.Action.NEED:
-			var panel: Object = _current().call("need_panel")
+			var panel: Object = _current().get("need_panel")
 			await _press(panel.call("declare_button"))
 		TutorialStep.Action.PLAY:
 			await _play(step, actions)
@@ -146,7 +146,7 @@ func _button(step: Resource, actions: Object) -> void:
 			await _press(actions.get("rules"))
 			await _until(func() -> bool: return _slip_line() == tr(step.get("then_key")))
 			await _shot("tutorial_rules_open")
-			var sheet: Object = member(_current(), "_cheat_sheet")
+			var sheet: Object = member(_current(), "cheat_sheet")
 			await _press(sheet.call("close_button"))
 		"begin":
 			await _press(_layer().call("begin_button"))

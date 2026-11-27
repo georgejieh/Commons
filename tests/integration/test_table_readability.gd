@@ -27,7 +27,7 @@ func after_test() -> void:
 func test_the_newest_play_lies_on_top_upright_with_every_rank_showing() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var pile: TrickPile = table.get("_pile")
+	var pile: TrickPile = table.pile
 	pile.show_play(_cards([0, 1]), Vector2.ZERO)
 	pile.show_play(_cards([10, 11, 12, 13, 14]), Vector2.ZERO)
 	await await_millis(int((UiMotion.PRESETS.fly_time + 0.4) * 1000.0))
@@ -51,7 +51,7 @@ func test_the_newest_play_lies_on_top_upright_with_every_rank_showing() -> void:
 func test_every_card_of_a_fresh_deal_shows_its_face() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var hand_view: HandView = table.get("_hand_view")
+	var hand_view: HandView = table.hand_view
 	hand_view.show_cards()
 	hand_view.deal_in()
 	var settle: float = UiMotion.PRESETS.fly_time + 20 * UiMotion.PRESETS.deal_stagger
@@ -72,9 +72,9 @@ func test_every_card_of_a_fresh_deal_shows_its_face() -> void:
 func test_the_same_play_lands_the_same_way() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var pile: TrickPile = table.get("_pile")
+	var pile: TrickPile = table.pile
 	Settings.set_value("reduced_motion", true)
-	var motion: TableMotion = table.get("_motion")
+	var motion: TableMotion = table.motion
 	motion.set_still(true)
 	pile.show_play(_cards([5, 6, 7]), Vector2.ZERO)
 	var first: Array[Vector2] = _spots(pile.top_views())
@@ -215,8 +215,8 @@ func test_a_rank_debuff_shows_on_the_table_and_on_the_cards_it_changes() -> void
 		await await_idle_frame()
 		if _app.switcher.current() != table:
 			continue
-		var strip: DebuffStrip = table.get("_debuffs")
-		var hand_view: HandView = table.get("_hand_view")
+		var strip: DebuffStrip = table.debuffs
+		var hand_view: HandView = table.hand_view
 		var active: bool = _app.controller.items.active_debuff_ids().has(RANK_DEBUFF)
 		var name: String = tr("modifier.%s.name" % RANK_DEBUFF)
 		assert_bool(strip.shown_text().contains(name)).is_equal(active)
@@ -231,17 +231,17 @@ func test_a_rank_debuff_shows_on_the_table_and_on_the_cards_it_changes() -> void
 func _press(table: TableScreen, driver: ControllerScript) -> void:
 	match _app.controller.awaiting():
 		RunController.AWAIT_BID:
-			table.actions().decline.pressed.emit()
+			table.actions.decline.pressed.emit()
 		RunController.AWAIT_NEED:
-			table.need_panel().declared.emit(ControllerScript.NEED)
+			table.need_panel.declared.emit(ControllerScript.NEED)
 		RunController.AWAIT_PLAY:
 			var ids: Array[int] = driver.choose_play(_app.controller)
 			if ids.is_empty():
-				table.actions().pass_turn.pressed.emit()
+				table.actions.pass_turn.pressed.emit()
 				return
 			for card_id: int in ids:
 				_app.hand.toggle(card_id)
-			table.actions().play.pressed.emit()
+			table.actions.play.pressed.emit()
 
 
 ## True when the fan holds a 2 and every 2 in it says it ranks as a 3.

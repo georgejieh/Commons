@@ -57,17 +57,15 @@ func test_every_slip_on_both_shops_stands_beside_its_piece() -> void:
 
 ## The shared slip for every piece that asks for it.
 func _check_details(store: StoreScreen, where: String) -> void:
-	var slip: DetailSlip = store.slip()
-	var cadres: CadreCounter = store.get("_cadres")
+	var slip: DetailSlip = store.slip
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	var card: Control = counter.get_child(0) as Control
 	var buy: Button = card.find_children("*", "Button", true, false)[0]
 	buy.focus_entered.emit()
 	await _check_slip(store, slip, card.get_global_rect(), where + " cadre")
 	buy.focus_exited.emit()
-	var stalls: Array[Object] = [
-		store.get("_campaign_stall"), store.get("_reform_stall"), store.get("_envelope_stall")
-	]
+	var stalls: Array[Object] = [store.campaign_stall, store.reform_stall, store.envelope_stall]
 	for stall: Object in stalls:
 		var panel: CounterPanel = stall.call("panel", 0)
 		if panel == null:
@@ -75,7 +73,7 @@ func _check_details(store: StoreScreen, where: String) -> void:
 		panel.described.emit(panel)
 		await _check_slip(store, slip, panel.get_global_rect(), where + " " + panel.title)
 		panel.left.emit(panel)
-	var reforms: ReformStall = store.get("_reform_stall")
+	var reforms: ReformStall = store.reform_stall
 	var tag: Control = reforms.strip.tag(0)
 	tag.focus_entered.emit()
 	await _check_slip(store, slip, tag.get_global_rect(), where + " in force")
@@ -85,7 +83,7 @@ func _check_details(store: StoreScreen, where: String) -> void:
 
 ## The slip for a keyword in the first Cadre's rules, the pointer on its first line.
 func _check_keyword(store: StoreScreen, where: String) -> void:
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	var text: KeywordText = counter.get_child(0).find_children("*", "KeywordText", true, false)[0]
 	var found: RegExMatch = RegEx.create_from_string("\\[url=([a-z_]+)\\]").search(text.text)

@@ -108,7 +108,7 @@ func _visit_lines(entries: int) -> int:
 	_app.controller.reseal_book()
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var speech: TableSpeech = table.get("_speech")
+	var speech: TableSpeech = table.speech
 	var visits: Array[int] = [0]
 	speech.spoke.connect(
 		func(_seat: int, _event: String, line: SpeechLine) -> void:
@@ -174,12 +174,12 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	await await_idle_frame()
-	var hud: TableHud = table.get("_hud")
+	var hud: TableHud = table.hud
 	assert_str(hud.quota.text()).is_equal(tr(ShownFigures.FULFILLED))
 	assert_bool(hud.famine.visible).is_false()
 	assert_bool(hud.denunciation.visible).is_false()
 	assert_str(hud.coupons.text).is_equal(tr(ShownFigures.AMPLE))
-	var ledger: Ledger = table.get("_ledger")
+	var ledger: Ledger = table.ledger
 	assert_bool(ledger.books.is_visible_in_tree()).is_true()
 	var slip: String = " ".join(ledger.books.texts())
 	assert_str(slip).contains("Famine %d" % FAMINE).contains("Coupons 37")
@@ -193,9 +193,9 @@ func test_at_the_stage_past_the_last_the_table_reads_as_success() -> void:
 	ArtStages.stage_override = ArtStages.LAST_STAGE
 	table = _app.show_screen("table", true)
 	await await_idle_frame()
-	ledger = table.get("_ledger")
+	ledger = table.ledger
 	assert_bool(ledger.books.visible).is_false()
-	hud = table.get("_hud")
+	hud = table.hud
 	assert_str(hud.coupons.text).is_equal(Strings.count("table.coupons", 37))
 
 
@@ -213,10 +213,10 @@ func test_at_the_stage_past_the_last_both_shops_keep_the_small_ledger() -> void:
 			await await_idle_frame()
 			await await_idle_frame()
 			var where: String = "%s %s" % [screen_id, screen_size]
-			var books: SmallLedger = shop.get("_books")
+			var books: SmallLedger = shop.books
 			assert_bool(books.is_visible_in_tree()).override_failure_message(where).is_true()
 			assert_str(" ".join(books.texts())).contains("Coupons 37").contains("Famine 83")
-			var coupons: Label = shop.get("_coupons")
+			var coupons: Label = shop.coupons
 			assert_str(coupons.text).is_equal(tr(ShownFigures.AMPLE))
 			_check_blocks(shop, books, where)
 

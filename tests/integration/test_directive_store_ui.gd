@@ -42,7 +42,7 @@ func _open_store() -> StoreScreen:
 
 
 func _row(store: StoreScreen) -> DirectiveRow:
-	return store.get("_directives")
+	return store.directives
 
 
 func _documents(row: DirectiveRow) -> Array[Control]:
@@ -125,7 +125,7 @@ func test_issuing_seals_ticks_holds_rerolls_and_files_the_document() -> void:
 	_check_seal_clear(row, ticket)
 	# A reroll waits for the issue: the counter keeps its stock and its coupons.
 	var coupons: int = _app.controller.state_copy().coupons
-	store.call("_on_reroll")
+	store.reroll.pressed.emit()
 	assert_int(_app.controller.state_copy().coupons).is_equal(coupons)
 	var issued_out: Callable = func() -> bool: return not row.is_busy()
 	await TestWait.until(self, issued_out, "the Directive's issue", ISSUE_SECONDS)

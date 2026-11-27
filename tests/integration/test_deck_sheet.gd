@@ -57,7 +57,7 @@ func test_the_sheet_shows_every_deck_card_with_its_marks() -> void:
 	await await_idle_frame()
 	_deck_button(store).pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	assert_bool(sheet.is_open()).is_true()
 	var board: DeckBoard = sheet.board()
 	var plot: int = _app.controller.state_copy().inventory.plot.size()
@@ -83,7 +83,7 @@ func test_the_sheet_shows_every_deck_card_with_its_marks() -> void:
 func test_the_sheet_fits_both_screens_at_every_text_size() -> void:
 	var store: StoreScreen = _to_the_store()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	for level: int in TextSize.count():
 		Settings.set_value(TextSize.SETTING, level)
 		for screen_size: Vector2i in ClipCheck.SIZES:
@@ -118,7 +118,7 @@ func test_the_sheet_fits_both_screens_at_every_text_size() -> void:
 func test_the_sheet_keeps_the_focus_and_cancel_closes_it() -> void:
 	var store: StoreScreen = _to_the_store()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	sheet.open_deck()
 	await await_idle_frame()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(sheet.board())
@@ -143,18 +143,18 @@ func _tap(action: String) -> void:
 
 
 func test_the_table_opens_it_from_its_menu_and_waits() -> void:
-	var table: Node = _app.show_screen("table", true)
+	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var menu: PauseMenu = table.get("_pause")
-	table.call("_open_pause")
+	var menu: PauseMenu = table.pause
+	table.hud.menu.pressed.emit()
 	var deck: Button = _deck_button(menu)
 	assert_object(deck).is_not_null()
 	deck.pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = table.get("_deck")
+	var sheet: DeckSheet = table.deck
 	assert_bool(sheet.is_open()).is_true()
 	assert_bool(menu.visible).is_false()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	assert_bool(player.is_processing()).is_false()
 	sheet.close()
 	assert_bool(player.is_processing()).is_true()

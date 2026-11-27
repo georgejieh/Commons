@@ -70,12 +70,12 @@ func test_every_line_at_the_table_follows_what_it_describes() -> void:
 
 ## What of the villagers' answer is still to be seen, or "" when it has all played out.
 func _unfinished(table: TableScreen) -> String:
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	var new_deal: bool = _last != null and _last.type == RunEvent.Type.DEALT
 	if not player.is_idle() and not new_deal:
 		var queue: Array[RunEvent] = player.get("_queue")
 		return "%d events still to play" % queue.size()
-	var pile: TrickPile = table.get("_pile")
+	var pile: TrickPile = table.pile
 	for view: CardView in pile.top_views():
 		if not view.scale.is_equal_approx(Vector2.ONE * TrickPile.PLAY_SCALE):
 			return "the top play's cards are still in the air"
@@ -86,7 +86,7 @@ func _watch(table: TableScreen) -> void:
 	if table == null or table == _watched:
 		return
 	_watched = table
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	player.played.connect(func(event: RunEvent) -> void: _last = event)
 
 

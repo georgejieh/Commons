@@ -47,13 +47,13 @@ func _table() -> TableScreen:
 	table.skip_events()
 	await await_idle_frame()
 	# The tests step the effects themselves, frame by frame.
-	var dread: DreadLayers = table.get("_dread")
+	var dread: DreadLayers = table.dread
 	dread.set_process(false)
 	return table
 
 
 func _force(table: TableScreen, effect: String, stage: int) -> DreadLayers:
-	var dread: DreadLayers = table.get("_dread")
+	var dread: DreadLayers = table.dread
 	var meters: Vector2i = DRIVERS[effect]
 	dread.force(meters.x, meters.y, false, stage)
 	return dread
@@ -61,7 +61,7 @@ func _force(table: TableScreen, effect: String, stage: int) -> DreadLayers:
 
 func test_no_effect_shows_on_a_clean_profile_at_any_board() -> void:
 	var table: TableScreen = await _table()
-	var dread: DreadLayers = table.get("_dread")
+	var dread: DreadLayers = table.dread
 	for state: String in BoardState.BOARD_STATES:
 		var inputs: Vector3 = BoardState.BOARD_STATES[state]
 		dread.force(int(inputs.x), int(inputs.y), inputs.z > 0.0, 0)
@@ -83,7 +83,7 @@ func test_each_effect_grows_with_the_stage_under_its_meter() -> void:
 			last = weight
 		assert_float(last).override_failure_message(effect).is_greater(0.9)
 		# Its meter makes the most of it: calm meters at the last stage show less.
-		var dread: DreadLayers = table.get("_dread")
+		var dread: DreadLayers = table.dread
 		dread.force(10, 10, false, LAST_STAGE)
 		assert_float(dread.effect_weight(effect)).override_failure_message(effect).is_less(last)
 
@@ -91,24 +91,24 @@ func test_each_effect_grows_with_the_stage_under_its_meter() -> void:
 func test_the_lowest_intensity_shows_none_of_them() -> void:
 	var table: TableScreen = await _table()
 	Settings.set_value("horror_intensity", 0.0)
-	var dread: DreadLayers = table.get("_dread")
+	var dread: DreadLayers = table.dread
 	dread.force(100, 100, false, LAST_STAGE)
 	for effect: String in DreadEffects.NAMES:
 		assert_float(dread.effect_weight(effect)).override_failure_message(effect).is_equal(0.0)
 	assert_float(BackEyes.shown).is_equal(0.0)
-	var dressing: DreadDressing = table.get("_dressing")
+	var dressing: DreadDressing = table.dressing
 	var roster: WallRoster = dressing.roster()
 	assert_int(roster.names_left()).is_equal(roster.name_count())
 	var tremble: HandTremble = dread.get("_tremble")
 	tremble.step(FRAME, dread.effect_weight(DreadEffects.TREMBLE))
-	var hand: HandView = table.get("_hand_view")
+	var hand: HandView = table.hand_view
 	for view: CardView in hand.views():
 		assert_vector(view.offset_transform_position).is_equal(Vector2.ZERO)
 
 
 func test_the_eyes_print_faintly_then_follow_the_pointer() -> void:
 	var table: TableScreen = await _table()
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var eyes: BackEyes = _eyes_on(seats[1])
 	assert_object(eyes).is_not_null()
 	assert_int(eyes.mouse_filter).is_equal(Control.MOUSE_FILTER_IGNORE)
@@ -145,8 +145,8 @@ func test_the_eyes_print_faintly_then_follow_the_pointer() -> void:
 
 func test_the_hand_trembles_without_moving_a_card() -> void:
 	var table: TableScreen = await _table()
-	var hand: HandView = table.get("_hand_view")
-	var dread: DreadLayers = table.get("_dread")
+	var hand: HandView = table.hand_view
+	var dread: DreadLayers = table.dread
 	var tremble: HandTremble = dread.get("_tremble")
 	# The fan at rest, its deal over.
 	await await_millis(1500)
@@ -183,9 +183,9 @@ func test_the_hand_trembles_without_moving_a_card() -> void:
 
 func test_names_leave_the_roster_with_the_stage_under_famine() -> void:
 	var table: TableScreen = await _table()
-	var dressing: DreadDressing = table.get("_dressing")
+	var dressing: DreadDressing = table.dressing
 	var roster: WallRoster = dressing.roster()
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var names: PackedStringArray = [_seat_name(seats[1]), _seat_name(seats[2])]
 	assert_int(roster.name_count()).is_equal(RunDefaults.VILLAGE.families.size())
 	_force(table, DreadEffects.ROSTER, 0)
@@ -204,8 +204,8 @@ func test_names_leave_the_roster_with_the_stage_under_famine() -> void:
 
 func test_speech_turns_to_slogans_by_degrees_then_unison() -> void:
 	var table: TableScreen = await _table()
-	var speech: TableSpeech = table.get("_speech")
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var speech: TableSpeech = table.speech
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	speech.hurrying = true
 	var said: Array[SpeechLine] = []
 	speech.spoke.connect(

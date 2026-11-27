@@ -72,8 +72,8 @@ func test_the_pile_lays_a_play_as_it_reads() -> void:
 	app.new_run(SEED)
 	var table: TableScreen = app.show_screen("table", true)
 	await await_idle_frame()
-	var pile: TrickPile = table.get("_pile")
-	var motion: TableMotion = table.get("_motion")
+	var pile: TrickPile = table.pile
+	var motion: TableMotion = table.motion
 	motion.set_still(true)
 	var cards: Array[CardInstance] = _cards([8, 0, 5, 9, 1, 4])
 	pile.show_play(cards, Vector2.ZERO, [], _read(cards))

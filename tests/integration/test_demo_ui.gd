@@ -90,18 +90,18 @@ func test_the_table_plays_a_set_to_its_summary() -> void:
 func _press(table: TableScreen, driver: ControllerScript) -> void:
 	match _app.controller.awaiting():
 		RunController.AWAIT_BID:
-			table.actions().decline.pressed.emit()
+			table.actions.decline.pressed.emit()
 		RunController.AWAIT_NEED:
-			table.need_panel().declared.emit(ControllerScript.NEED)
+			table.need_panel.declared.emit(ControllerScript.NEED)
 		RunController.AWAIT_PLAY:
 			var ids: Array[int] = driver.choose_play(_app.controller)
 			if ids.is_empty():
-				table.actions().pass_turn.pressed.emit()
+				table.actions.pass_turn.pressed.emit()
 				return
 			for card_id: int in ids:
 				_app.hand.toggle(card_id)
-			assert_bool(table.actions().play.disabled).is_false()
-			table.actions().play.pressed.emit()
+			assert_bool(table.actions.play.disabled).is_false()
+			table.actions.play.pressed.emit()
 
 
 ## After a command the buttons stay off until the bots' plays have been shown.
@@ -121,12 +121,12 @@ func test_buttons_lock_while_events_play() -> void:
 	for card_id: int in ids:
 		_app.hand.toggle(card_id)
 	if ids.is_empty():
-		table.actions().pass_turn.pressed.emit()
+		table.actions.pass_turn.pressed.emit()
 	else:
-		table.actions().play.pressed.emit()
+		table.actions.play.pressed.emit()
 	if _app.controller.awaiting() == RunController.AWAIT_PLAY:
-		assert_bool(table.actions().pass_turn.disabled).is_true()
-		assert_bool(table.actions().play.disabled).is_true()
+		assert_bool(table.actions.pass_turn.disabled).is_true()
+		assert_bool(table.actions.play.disabled).is_true()
 
 
 ## A shortcut presses the same button a click does: Pass on the bid turns the call down.
@@ -160,26 +160,26 @@ func test_sort_cycles_and_names_its_mode() -> void:
 	table.skip_events()
 	var seen: Array[String] = []
 	for _press_count: int in 3:
-		table.actions().sort.pressed.emit()
-		seen.append(table.actions().sort.text)
+		table.actions.sort.pressed.emit()
+		seen.append(table.actions.sort.text)
 	assert_int(seen.size()).is_equal(3)
 	assert_bool(seen[0] != seen[1] and seen[1] != seen[2]).is_true()
-	assert_str(table.actions().sort.tooltip_text).is_not_empty()
+	assert_str(table.actions.sort.tooltip_text).is_not_empty()
 
 
 ## The rules card and the menu sit above the table and block clicks to it.
 func test_overlays_open_above_the_table() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	table.actions().rules.pressed.emit()
-	var sheet: Control = table.get("_cheat_sheet")
+	table.actions.rules.pressed.emit()
+	var sheet: Control = table.cheat_sheet
 	assert_bool(sheet.visible).is_true()
 	assert_int(sheet.get_index()).is_equal(table.get_child_count() - 1)
 	assert_int(sheet.mouse_filter).is_equal(Control.MOUSE_FILTER_STOP)
 	sheet.visible = false
-	var hud: TableHud = table.get("_hud")
+	var hud: TableHud = table.hud
 	hud.menu.pressed.emit()
-	var pause: Control = table.get("_pause")
+	var pause: Control = table.pause
 	assert_bool(pause.visible).is_true()
 	assert_int(pause.get_index()).is_equal(table.get_child_count() - 1)
 
@@ -197,7 +197,7 @@ func test_rejoining_the_table_raises_no_old_banner() -> void:
 		if not driver.act(_app.controller):
 			return
 	var table: TableScreen = _app.show_screen("table", true)
-	var moments: TableMoments = table.get("_moments")
+	var moments: TableMoments = table.moments
 	await await_millis(400)
 	assert_bool(moments.callout.is_showing()).is_false()
 
@@ -218,7 +218,7 @@ func test_the_ledger_counts_each_play_once() -> void:
 			break
 	table.skip_events()
 	assert_int(plays[0]).is_greater_equal(3)
-	var ledger: Ledger = table.get("_ledger")
+	var ledger: Ledger = table.ledger
 	for seat: int in scored:
 		assert_float(ledger.total_of(seat)).is_equal_approx(scored[seat], 0.001)
 
@@ -230,13 +230,13 @@ func test_a_stocked_plot_opens_the_swap_sheet_over_the_table() -> void:
 	)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var sheet: PlotSwapSheet = table.get("_swap_sheet")
+	var sheet: PlotSwapSheet = table.swap_sheet
 	for _turn: int in 40:
 		if sheet.is_open():
 			break
 		table.skip_events()
 		if _app.controller.awaiting() == RunController.AWAIT_BID:
-			table.actions().decline.pressed.emit()
+			table.actions.decline.pressed.emit()
 		await await_idle_frame()
 	assert_bool(sheet.is_open()).is_true()
 	assert_str(_app.switcher.current_id()).is_equal("table")

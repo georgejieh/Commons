@@ -26,9 +26,9 @@ func after_test() -> void:
 
 
 func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void:
-	var store: Control = _app.show_screen("store")
+	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	var stock: Array[String] = _app.controller.store.store_stock()
 	assert_int(stock.size()).is_greater(0)
@@ -57,9 +57,9 @@ func test_store_cards_print_name_and_rules_and_buy_carries_the_tooltip() -> void
 func test_focusing_a_buy_button_reads_the_cadre_out() -> void:
 	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
-	var slip: DetailSlip = store.slip()
+	var slip: DetailSlip = store.slip
 	assert_bool(slip.visible).is_false()
 	var card: Control = counter.get_child(0)
 	var buy: Button = card.find_children("*", "Button", true, false)[0]
@@ -101,20 +101,20 @@ func test_buying_seals_the_card_and_pins_it_to_your_board() -> void:
 	var slot: int = range(stock.size()).filter(_app.controller.store.can_buy).front()
 	var bought: String = stock[slot]
 	var held: int = _app.controller.state_copy().inventory.cadres.size()
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	var buy: Button = counter.get_child(slot).find_children("*", "Button", true, false)[0]
 	buy.pressed.emit()
 	# The purchase is made at once; only its show takes time.
 	assert_array(_app.controller.state_copy().inventory.cadres).contains([bought])
-	assert_bool(store.is_buying()).is_true()
+	assert_bool(store.cadres.is_buying()).is_true()
 	var seal: InkSeal = cadres.seal
 	assert_bool(seal.visible).is_true()
 	assert_str(seal.word()).is_equal(tr("store.approved").to_upper())
 	await await_millis(int((CadreCounter.SEAL_HOLD + CadreCounter.PIN_TIME) * 1000.0) + 300)
-	assert_bool(store.is_buying()).is_false()
+	assert_bool(store.cadres.is_buying()).is_false()
 	assert_bool(seal.visible).is_false()
-	var board: NoticeBoard = store.get("_board")
+	var board: NoticeBoard = store.board
 	var cards: Array[TipHost] = board.get("_cards")
 	assert_str(cards[held].tip_rule()).is_equal(ScreenKit.rule_text(_app.controller, bought))
 
@@ -130,7 +130,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	var stock: Array[String] = _app.controller.store.desk(true).stock()
 	assert_int(stock.size()).is_greater(0)
 	var before: int = _app.controller.state_copy().resentment
-	var market_cadres: CadreCounter = market.get("_cadres")
+	var market_cadres: CadreCounter = market.cadres
 	var counter: HBoxContainer = market_cadres.row
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	buy.pressed.emit()
@@ -141,7 +141,7 @@ func test_the_black_market_sells_private_cadres_and_counts_the_resentment() -> v
 	assert_str(seal.word()).is_equal(tr("market.paid").to_upper())
 	await await_millis(int((CadreCounter.SEAL_HOLD + CadreCounter.PIN_TIME) * 1000.0) + 300)
 	# The plot upgrades are on the counter too, and each is a private purchase.
-	var market_goods: MarketGoods = market.get("_goods")
+	var market_goods: MarketGoods = market.goods
 	var tickets: HBoxContainer = market_goods.upgrades
 	assert_int(tickets.get_child_count()).is_equal(PlotUpgrades.KINDS.size())
 	var enlarge: Button = tickets.get_child(0)
@@ -159,19 +159,19 @@ func test_a_reroll_waits_for_a_purchase_being_acted_out() -> void:
 	_app.controller.reseal_book()
 	var store: StoreScreen = _app.show_screen("store")
 	await await_idle_frame()
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	buy.pressed.emit()
-	assert_bool(store.is_buying()).is_true()
+	assert_bool(store.cadres.is_buying()).is_true()
 	var stock: Array[String] = _app.controller.store.store_stock()
 	var coupons: int = _app.controller.state_copy().coupons
-	var reroll: Button = store.get("_reroll")
+	var reroll: Button = store.reroll
 	reroll.pressed.emit()
 	assert_array(_app.controller.store.store_stock()).is_equal(stock)
 	assert_int(_app.controller.state_copy().coupons).is_equal(coupons)
 	await await_millis(int((CadreCounter.SEAL_HOLD + CadreCounter.PIN_TIME) * 1000.0) + 300)
-	assert_bool(store.is_buying()).is_false()
+	assert_bool(store.cadres.is_buying()).is_false()
 
 
 func test_the_collection_lists_the_cadres_of_both_shops() -> void:

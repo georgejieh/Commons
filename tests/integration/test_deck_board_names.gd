@@ -38,7 +38,7 @@ func test_no_card_covers_a_group_name() -> void:
 			for choosing: bool in [false, true]:
 				var store: StoreScreen = _app.show_screen("store", true)
 				await await_idle_frame()
-				var sheet: DeckSheet = store.get("_deck")
+				var sheet: DeckSheet = store.deck
 				if choosing:
 					var card: CardInstance = _app.controller.store.deck_stall().card(0)
 					var refuse: Callable = func(_out: int) -> String: return ""

@@ -44,7 +44,7 @@ func test_the_picker_stands_beside_its_card_with_even_padding() -> void:
 				loop.visit.market.set("_stock", offered)
 				var market: StoreScreen = _app.show_screen("black_market", true)
 				await await_idle_frame()
-				var market_cadres: CadreCounter = market.get("_cadres")
+				var market_cadres: CadreCounter = market.cadres
 				var counter: HBoxContainer = market_cadres.row
 				var card: Control = counter.get_child(slot) as Control
 				var buy: Button = card.find_children("*", "Button", true, false)[0]

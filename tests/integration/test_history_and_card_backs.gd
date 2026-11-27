@@ -320,10 +320,10 @@ func test_the_table_draws_the_chosen_design() -> void:
 	_app.new_run(SEED)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var beats: DebuffMoments = table.get("_debuff_beats")
+	var beats: DebuffMoments = table.debuff_beats
 	for back: Node in beats.find_children("*", "CardBack", true, false):
 		assert_object((back as CardBack).design).is_same(CardBacks.current())
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var picture: TextureRect = seats[1].get("_back")
 	assert_object(picture.texture).is_same(CardBacks.picture(CardBacks.current()))
 

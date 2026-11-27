@@ -54,7 +54,7 @@ func test_shop_cadre_cards_print_their_rules_under_art_or_its_frame() -> void:
 	loop.visit.market.set("_stock", offered)
 	for screen_id: String in ["store", "black_market"]:
 		var store: StoreScreen = await _open(screen_id)
-		var cadres: CadreCounter = store.get("_cadres")
+		var cadres: CadreCounter = store.cadres
 		var counter: HBoxContainer = cadres.row
 		var stock: Array[String] = _app.controller.store.desk(screen_id == "black_market").stock()
 		for slot: int in stock.size():
@@ -123,7 +123,7 @@ func test_the_reforms_strip_and_board_names_fit_without_clipping() -> void:
 	var loop: RunLoop = _app.controller.run_loop()
 	loop.state.reforms.assign(["supply_cooperative", "work_point_reform", "couriers_bag"])
 	var store: StoreScreen = await _open("store")
-	var stall: ReformStall = store.get("_reform_stall")
+	var stall: ReformStall = store.reform_stall
 	var strip: ReformStrip = stall.strip
 	var notes: Control = store.blocks()["notes"]
 	assert_float(strip.size.x).is_greater(notes.size.x - 2.0)
@@ -165,7 +165,7 @@ func test_card_marks_sit_in_the_strip_a_fan_leaves_showing() -> void:
 func test_the_rank_picker_stands_over_a_scrim() -> void:
 	_to_store()
 	var store: StoreScreen = await _open("black_market")
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var picker: RankPicker = cadres.picker
 	picker.ask("Pick", store, func(_rank: int) -> void: pass)
 	await await_idle_frame()

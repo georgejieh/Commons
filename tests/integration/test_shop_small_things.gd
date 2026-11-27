@@ -42,12 +42,12 @@ func _open(screen_id: String) -> StoreScreen:
 func test_an_empty_board_says_what_goes_there() -> void:
 	_loop().state.inventory.cadres.clear()
 	var store: StoreScreen = await _open("store")
-	var board: NoticeBoard = store.get("_board")
+	var board: NoticeBoard = store.board
 	assert_bool(board.shows_empty_line()).is_true()
 	assert_str(board.empty_line).is_equal(tr("store.shelf.empty"))
 	_loop().state.inventory.cadres.assign(["canteen"])
 	store = await _open("store")
-	board = store.get("_board")
+	board = store.board
 	assert_bool(board.shows_empty_line()).is_false()
 
 
@@ -67,7 +67,7 @@ func test_the_pieces_read_at_every_size() -> void:
 
 
 func _check_tray(store: StoreScreen, where: String) -> void:
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	var tray: CampaignTray = stall.tray
 	var head: Label = tray.get("_head")
 	var first: CampaignLeaflet = tray.leaflet(0)
@@ -82,9 +82,10 @@ func _check_tray(store: StoreScreen, where: String) -> void:
 
 func _check_counter(store: StoreScreen, where: String) -> void:
 	var papers: Array[CounterPanel] = []
-	for name: String in ["_campaign_stall", "_reform_stall", "_envelope_stall"]:
-		var owner: Object = store.get(name)
-		var panel: CounterPanel = owner.call("panel", 0)
+	var offers: Array[CounterPanel] = [
+		store.campaign_stall.panel(0), store.reform_stall.panel(0), store.envelope_stall.panel(0)
+	]
+	for panel: CounterPanel in offers:
 		if panel != null:
 			papers.append(panel)
 	assert_int(papers.size()).override_failure_message(where).is_greater_equal(2)
@@ -104,7 +105,7 @@ func _check_counter(store: StoreScreen, where: String) -> void:
 
 
 func _check_strip(store: StoreScreen, where: String) -> void:
-	var stall: ReformStall = store.get("_reform_stall")
+	var stall: ReformStall = store.reform_stall
 	var head: Label = stall.strip.get("_head")
 	var none: Label = stall.strip.get("_none")
 	if not none.is_visible_in_tree():

@@ -37,7 +37,7 @@ func _table_at(level: int) -> TableScreen:
 func test_the_notice_grows_upward_and_keeps_clear_at_every_size() -> void:
 	for level: int in TextSize.count():
 		var table: TableScreen = await _table_at(level)
-		var dressing: DreadDressing = table.get("_dressing")
+		var dressing: DreadDressing = table.dressing
 		var notice: Rect2 = dressing.notice_rect()
 		var at: String = "size %d: %s" % [level, notice]
 		assert_float(notice.end.y).override_failure_message(at).is_equal(
@@ -53,13 +53,13 @@ func test_the_notice_grows_upward_and_keeps_clear_at_every_size() -> void:
 			assert_bool(notice.is_equal_approx(DreadDressing.NOTICE_AT)).is_true()
 		var words: Rect2 = dressing.notice_words().get_global_rect()
 		assert_bool(notice.encloses(words)).override_failure_message(at).is_true()
-		var status: Label = table.get("_you")
+		var status: Label = table.you
 		(
 			assert_bool(notice.intersects(status.get_global_rect()))
 			. override_failure_message(at)
 			. is_false()
 		)
-		var campaigns: TableCampaigns = table.get("_campaigns")
+		var campaigns: TableCampaigns = table.campaigns
 		var tray: CampaignTray = campaigns.tray
 		if tray.is_visible_in_tree() and tray.get_global_rect().has_area():
 			(
@@ -73,7 +73,7 @@ func test_each_redaction_bar_lies_over_a_line_of_the_notice() -> void:
 	for level: int in TextSize.count():
 		for shown: bool in [false, true]:
 			var table: TableScreen = await _table_at(level)
-			var dressing: DreadDressing = table.get("_dressing")
+			var dressing: DreadDressing = table.dressing
 			# The dread layers drive the bars' weight each update; the bars' place is the
 			# same either way.
 			dressing.show_piece("redaction", 1.0 if shown else 0.0)
@@ -119,7 +119,7 @@ func test_the_notice_changes_with_the_deal_and_the_years() -> void:
 	assert_str(DreadDressing.notice_key(6, 0)).contains(".late.")
 	for level: int in TextSize.count():
 		var table: TableScreen = await _table_at(level)
-		var dressing: DreadDressing = table.get("_dressing")
+		var dressing: DreadDressing = table.dressing
 		var first: float = dressing.notice_rect().size.y
 		for key: String in seen:
 			dressing.post_notice(key)
@@ -137,8 +137,8 @@ func test_the_notice_changes_with_the_deal_and_the_years() -> void:
 func test_the_tally_keeps_clear_of_the_notice_and_the_buttons() -> void:
 	Settings.set_value("reduced_motion", true)
 	var table: TableScreen = await _table_at(0)
-	var dressing: DreadDressing = table.get("_dressing")
-	var moments: TableMoments = table.get("_moments")
+	var dressing: DreadDressing = table.dressing
+	var moments: TableMoments = table.moments
 	for wide: bool in [false, true]:
 		var scored: RunEvent = RunEvent.new(
 			RunEvent.Type.PLAY_SCORED, 0, 0, 999999.0 if wide else 567.0
@@ -151,7 +151,7 @@ func test_the_tally_keeps_clear_of_the_notice_and_the_buttons() -> void:
 		await await_idle_frame()
 		var tally: Rect2 = moments.tally.get_global_rect()
 		assert_bool(tally.has_area()).is_true()
-		assert_bool(tally.intersects(table.actions().get_global_rect())).is_false()
+		assert_bool(tally.intersects(table.actions.get_global_rect())).is_false()
 		if not wide:
 			assert_bool(tally.intersects(dressing.notice_rect())).is_false()
 	Settings.set_value("reduced_motion", false)

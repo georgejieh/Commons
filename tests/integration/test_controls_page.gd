@@ -214,7 +214,7 @@ func test_no_binding_set_locks_the_page() -> void:
 	await await_idle_frame()
 	table.skip_events()
 	await _tap(KEY_ESCAPE)
-	var pause: PauseMenu = table.get("_pause")
+	var pause: PauseMenu = table.pause
 	assert_bool(pause.visible).is_true()
 	var settings: Button = _button_in(pause, tr("pause.settings"))
 	settings.grab_focus()

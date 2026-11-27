@@ -113,8 +113,8 @@ func test_the_table_menu_abandons_too() -> void:
 	_app.new_run(SEED, true)
 	var table: TableScreen = _app.show_screen(_app.table_id(), true)
 	await await_idle_frame()
-	table.call("_open_pause")
-	var pause: PauseMenu = table.get("_pause")
+	table.hud.menu.pressed.emit()
+	var pause: PauseMenu = table.pause
 	_press(tr("menu.abandon"))
 	await await_idle_frame()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(pause.keep_button())

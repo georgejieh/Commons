@@ -69,7 +69,7 @@ func _run() -> void:
 		return
 	var horror: bool = _ab_key == "horror_intensity"
 	if horror:
-		var dread: Object = WalkBase.member(table, "_dread")
+		var dread: Object = WalkBase.member(table, "dread")
 		dread.call("force", 90, 90, false, 9)
 	await _play.play_set(self, _seconds, _sample_ab, not horror)
 	_report()
@@ -80,7 +80,7 @@ func _run() -> void:
 func _run_stress(table: Node) -> void:
 	# The pool and its views are reached by name: a card view names the screens' kit, which
 	# needs the autoloads a --script tool compiles without.
-	var pool: Object = WalkBase.member(table, "_pool")
+	var pool: Object = WalkBase.member(table, "pool")
 	var parent: Control = Control.new()
 	table.add_child(parent)
 	var views: Array[Control] = []

@@ -96,12 +96,12 @@ func _check(table: TableScreen, where: String) -> void:
 	var rect: Rect2 = slip.get_global_rect()
 	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
 	assert_bool(screen.encloses(rect)).override_failure_message("%s %s" % [where, rect]).is_true()
-	var rules: CheatSheet = table.get("_cheat_sheet")
+	var rules: CheatSheet = table.cheat_sheet
 	if rules.visible:
 		return
 	var at: String = "%s: slip %s" % [where, rect]
 	var kept: Dictionary[String, Rect2] = _kept(table)
-	var need: NeedPanel = table.need_panel()
+	var need: NeedPanel = table.need_panel
 	var sheet: Rect2 = need.get_global_rect()
 	if need.visible and rect.end.y > sheet.position.y:
 		# Beside the sheet, over Wang's seat, which is what it may cover.
@@ -114,7 +114,7 @@ func _check(table: TableScreen, where: String) -> void:
 		assert_float(rect.get_center().x).override_failure_message(at).is_equal_approx(
 			TableScreen.PLAY_CENTER, ClipCheck.SLACK
 		)
-		var pile: Control = table.get("_pile")
+		var pile: Control = table.pile
 		var foot: float = sheet.position.y if need.visible else pile.get_global_rect().position.y
 		# Close over the play: its foot within the gap of what it stands on.
 		assert_float(rect.end.y).override_failure_message(at).is_between(
@@ -129,24 +129,24 @@ func _check(table: TableScreen, where: String) -> void:
 ## Everything the slip must keep clear of at the table, by name.
 func _kept(table: TableScreen) -> Dictionary[String, Rect2]:
 	var kept: Dictionary[String, Rect2] = {}
-	var pile: Control = table.get("_pile")
+	var pile: Control = table.pile
 	kept["trick"] = pile.get_global_rect()
-	var hand: Control = table.get("_hand_view")
+	var hand: Control = table.hand_view
 	kept["hand"] = hand.get_global_rect()
-	kept["actions"] = table.actions().get_global_rect()
-	kept["prompt"] = table.actions().reading.get_global_rect()
-	var ledger: Control = table.get("_ledger")
+	kept["actions"] = table.actions.get_global_rect()
+	kept["prompt"] = table.actions.reading.get_global_rect()
+	var ledger: Control = table.ledger
 	kept["ledger"] = (ledger.get_parent() as Control).get_global_rect()
-	var hud: Control = table.get("_hud")
+	var hud: Control = table.hud
 	kept["bar"] = hud.get_global_rect()
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	for seat: int in seats:
 		kept["seat %d" % seat] = seats[seat].get_global_rect()
-	var campaigns: TableCampaigns = table.get("_campaigns")
+	var campaigns: TableCampaigns = table.campaigns
 	if campaigns.tray.visible:
 		kept["campaigns"] = campaigns.tray.get_global_rect()
-	if table.need_panel().visible:
-		kept["claim sheet"] = table.need_panel().get_global_rect()
+	if table.need_panel.visible:
+		kept["claim sheet"] = table.need_panel.get_global_rect()
 	return kept
 
 

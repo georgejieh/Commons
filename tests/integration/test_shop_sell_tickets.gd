@@ -47,8 +47,8 @@ func _price_of(campaign_id: String) -> int:
 
 ## The ticket on a tray place, shown as hover shows it.
 func _ticket(store: StoreScreen, slot: int) -> SellTag:
-	var stall: CampaignStall = store.get("_campaign_stall")
-	var sale: SellDesk = store.get("_sale")
+	var stall: CampaignStall = store.campaign_stall
+	var sale: SellDesk = store.sale
 	var leaflet: CampaignLeaflet = stall.tray.leaflet(slot)
 	var tag: SellTag = sale.tag_on(leaflet)
 	if tag != null:
@@ -60,7 +60,7 @@ func test_a_campaign_bought_into_an_empty_tray_gets_its_ticket() -> void:
 	_loop().state.inventory.consumables.clear()
 	_app.controller.reseal_book()
 	var store: StoreScreen = await _open()
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	var bought: String = _loop().visit.shop.campaigns.stock()[0]
 	stall.panel(0).buy.pressed.emit()
 	await await_idle_frame()
@@ -81,7 +81,7 @@ func test_a_campaign_used_in_the_shop_moves_the_next_with_its_own_price() -> voi
 	_loop().state.inventory.consumables.assign([LOAN, next])
 	_app.controller.reseal_book()
 	var store: StoreScreen = await _open()
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	# A sale asked for on the second place, then the loan in the first is used.
 	var second: SellTag = _ticket(store, 1)
 	second.press()

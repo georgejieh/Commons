@@ -14,7 +14,7 @@ func parcel() -> void:
 	if _parcel_shot:
 		return
 	var screen: Node = _current()
-	var stall: Object = member(screen, "_envelope_stall")
+	var stall: Object = member(screen, "envelope_stall")
 	if stall == null or stall.call("panel", 0) == null:
 		return
 	_parcel_shot = true
@@ -24,7 +24,7 @@ func parcel() -> void:
 	loop.state.inventory.plot.clear()
 	# Handed over by this tool for the frame, so the second book is told (ADR 0022).
 	_controller().call("reseal_book")
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 	var offer: Control = stall.call("panel", 0)
 	await _hover(offer)
@@ -74,16 +74,16 @@ func counter() -> void:
 	state.coupons = maxi(coupons, 40)
 	# The coupons are a frame's, put back before any command; the second book is told.
 	controller.call("reseal_book")
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 	await _shot("black_market_cadre_rules")
-	var counter: Node = member(member(screen, "_cadres"), "row")
+	var counter: Node = member(member(screen, "cadres"), "row")
 	await _press_in(counter.get_child(0))
-	await _picker_frames(member(member(screen, "_cadres"), "picker"))
+	await _picker_frames(member(member(screen, "cadres"), "picker"))
 	_hand_counted_cadres(state)
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _shot("notice_board_counts")
-	var board: Object = member(screen, "_board")
+	var board: Object = member(screen, "board")
 	board.call("fired", controller, "seed_grain", 3)
 	await _snap("notice_board_fired")
 	state.inventory.cadres.assign(held)
@@ -91,7 +91,7 @@ func counter() -> void:
 	state.coupons = coupons
 	controller.call("reseal_book")
 	assign(market, "_stock", stock)
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 
 

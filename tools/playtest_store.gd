@@ -72,8 +72,8 @@ func _buy_one() -> void:
 		var button: Button = child as Button
 		if button.theme_type_variation == "CouponButton" and not button.disabled:
 			# The seal as it lands on a card, pressed by hand so it can be photographed.
-			var seal: Control = member(member(screen, "_cadres"), "seal")
-			var counter: Control = member(member(screen, "_cadres"), "row")
+			var seal: Control = member(member(screen, "cadres"), "seal")
+			var counter: Control = member(member(screen, "cadres"), "row")
 			var card: Control = counter.get_child(0)
 			seal.position = card.global_position + card.size / 2.0 - seal.size / 2.0
 			seal.call("press")
@@ -92,7 +92,7 @@ func _buy_one() -> void:
 func _issue_one() -> void:
 	if _issued:
 		return
-	var row: Control = member(_current(), "_directives")
+	var row: Control = member(_current(), "directives")
 	if row == null or row.get_child_count() < 2:
 		return
 	_issued = true
@@ -114,11 +114,11 @@ func _buy_campaign() -> void:
 	if campaign_bought:
 		return
 	var screen: Node = _current()
-	var stall: Object = member(screen, "_campaign_stall")
+	var stall: Object = member(screen, "campaign_stall")
 	if stall.call("panel", 0) == null:
 		return
 	_grant_coupons(12)
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 	var offer: Control = stall.call("panel", 0)
 	var buy: Button = offer.get("buy")
@@ -140,12 +140,12 @@ func _reform_frames() -> void:
 	if _reform_shot:
 		return
 	var screen: Node = _current()
-	var stall: Object = member(screen, "_reform_stall")
+	var stall: Object = member(screen, "reform_stall")
 	if stall == null or stall.call("panel", 0) == null:
 		return
 	_reform_shot = true
 	_grant_coupons(12)
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 	var offer: Control = stall.call("panel", 0)
 	await _hover(offer)
@@ -231,12 +231,12 @@ func _envelope_frames() -> void:
 	if _envelope_shot:
 		return
 	var screen: Node = _current()
-	var stall: Object = member(screen, "_envelope_stall")
+	var stall: Object = member(screen, "envelope_stall")
 	if stall == null or stall.call("panel", 0) == null:
 		return
 	_envelope_shot = true
 	_grant_coupons(8)
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 	var offer: Control = stall.call("panel", 0)
 	await _hover(offer)
@@ -269,7 +269,7 @@ func _envelope_frames() -> void:
 ## A Requisition's deck card asks for the card it replaces (ADR 0042): the first deck card
 ## that may leave is clicked on the deck sheet, and the exchange confirmed.
 func _requisition_choice(screen: Node) -> void:
-	var sheet: Object = member(screen, "_deck")
+	var sheet: Object = member(screen, "deck")
 	if not bool(sheet.call("is_open")):
 		return
 	await _shot("requisition_choose")

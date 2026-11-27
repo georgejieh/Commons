@@ -40,7 +40,7 @@ func grant(loop: RunLoop) -> void:
 
 ## Answers the swap the table waits on, with clicks, as the walk has reached it.
 func answer(table: Node, round_number: int) -> void:
-	var sheet: Object = member(table, "_swap_sheet")
+	var sheet: Object = member(table, "swap_sheet")
 	if not await _until(func() -> bool: return bool(sheet.call("is_open"))):
 		_fail("NO SWAP SHEET")
 		return

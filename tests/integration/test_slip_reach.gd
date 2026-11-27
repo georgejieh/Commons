@@ -168,8 +168,8 @@ func _check_keyword(table: Control, where: String) -> void:
 	tips.tick(10.0, FAR)
 
 
-func _check_board_tip(table: Control, placer: TipPlacer, where: String) -> void:
-	var board: NoticeBoard = table.get("_board")
+func _check_board_tip(table: TableScreen, placer: TipPlacer, where: String) -> void:
+	var board: NoticeBoard = table.board
 	var card: Control = null
 	for node: Node in board.get_children():
 		if node is TipHost and not (node as TipHost).tip_rule().is_empty():

@@ -55,6 +55,6 @@ func play_set(tree: SceneTree, seconds: float, on_frame: Callable, act: bool) ->
 			node_counts.append(int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
 		if not is_instance_valid(table) or table.get_parent() == null:
 			break
-		var events: Node = WalkBase.member(table, "_player")
+		var events: Node = WalkBase.member(table, "player")
 		if events.call("is_idle") and act:
 			driver.call("act", controller)

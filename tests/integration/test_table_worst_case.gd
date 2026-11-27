@@ -124,7 +124,7 @@ func _each_state(
 				_check(TableWorstCase.pieces(table), where, problems)
 				_note_column(table, where, problems)
 				ClipCheck.check(table, where, problems)
-				var pile: TrickPile = table.get("_pile")
+				var pile: TrickPile = table.pile
 				if not pile.position.is_equal_approx(TRICK_AT):
 					problems.append("%s: the trick moved to %s" % [where, pile.position])
 				# One answer per case, whatever the screen and whoever is bidding.
@@ -137,8 +137,8 @@ func _each_state(
 
 ## Numbers for a left column that does not fit even after its last step.
 func _note_column(table: TableScreen, where: String, problems: PackedStringArray) -> void:
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
-	var campaigns: TableCampaigns = table.get("_campaigns")
+	var seats: Dictionary[int, SeatPanel] = table.seats
+	var campaigns: TableCampaigns = table.campaigns
 	var tray: CampaignTray = campaigns.tray
 	var foot: float = tray.position.y + tray.standing_height(tray.has_heading())
 	if foot > DreadDressing.NOTICE_AT.end.y:
@@ -159,10 +159,10 @@ func _note_column(table: TableScreen, where: String, problems: PackedStringArray
 
 ## The slip's form, the tray's heading, the notice and each seat's intel type, in words.
 func _steps(table: TableScreen) -> String:
-	var strip: DebuffStrip = table.get("_debuffs")
-	var campaigns: TableCampaigns = table.get("_campaigns")
-	var dressing: DreadDressing = table.get("_dressing")
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var strip: DebuffStrip = table.debuffs
+	var campaigns: TableCampaigns = table.campaigns
+	var dressing: DreadDressing = table.dressing
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	return (
 		"%s heading:%s notice:%s intel:%d/%d slip:%d room:%d"
 		% [
@@ -188,19 +188,19 @@ func test_a_table_with_no_rule_stands_as_before_at_standard() -> void:
 		var table: TableScreen = _app.show_screen("table", true)
 		await await_idle_frame()
 		await await_idle_frame()
-		var campaigns: TableCampaigns = table.get("_campaigns")
-		var dressing: DreadDressing = table.get("_dressing")
-		var strip: DebuffStrip = table.get("_debuffs")
-		var pile: TrickPile = table.get("_pile")
+		var campaigns: TableCampaigns = table.campaigns
+		var dressing: DreadDressing = table.dressing
+		var strip: DebuffStrip = table.debuffs
+		var pile: TrickPile = table.pile
 		assert_bool(strip.visible).is_false()
 		assert_vector(pile.position).is_equal(TRICK_AT)
 		assert_bool(campaigns.tray.visible and campaigns.tray.has_heading()).is_true()
 		assert_float(campaigns.tray.position.y).is_equal(367.0)
 		assert_bool(dressing.is_notice_down()).is_false()
 		assert_bool(dressing.notice_rect().is_equal_approx(DreadDressing.NOTICE_AT)).is_true()
-		var held: Rect2 = table.actions().held()
+		var held: Rect2 = table.actions.held()
 		assert_bool(held.is_equal_approx(Rect2(1218, 780, 330, 250))).is_true()
-		var hand: HandView = table.get("_hand_view")
+		var hand: HandView = table.hand_view
 		assert_bool(hand.get_global_rect().is_equal_approx(TableScreen.HAND_AT)).is_true()
 
 
@@ -209,7 +209,7 @@ func test_a_table_with_no_rule_stands_as_before_at_standard() -> void:
 func test_the_rules_sheet_has_every_rule_in_force_in_full() -> void:
 	var table: TableScreen = await TableWorstCase.open(_app, self, true)
 	TableWorstCase.fill(_app, table, {"wild": true})
-	var sheet: CheatSheet = table.get("_cheat_sheet")
+	var sheet: CheatSheet = table.cheat_sheet
 	sheet.toggle(_app.controller)
 	await await_idle_frame()
 	var shown: String = sheet.active_text()
@@ -230,7 +230,7 @@ func test_the_strings_are_the_longest_of_their_families() -> void:
 	var table: TableScreen = await TableWorstCase.open(_app, self)
 	TableWorstCase.fill(_app, table, {})
 	await await_idle_frame()
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var role: Label = seats[1].get("_role")
 	var font: Font = role.get_theme_font("font")
 	var font_size: int = role.get_theme_font_size("font_size")
@@ -240,16 +240,16 @@ func test_the_strings_are_the_longest_of_their_families() -> void:
 			font.get_string_size(line.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 		)
 		assert_float(wide).override_failure_message(line).is_less_equal(shown)
-	var prompt: Label = table.actions().reading
+	var prompt: Label = table.actions.reading
 	assert_int(prompt.get_line_count()).is_greater_equal(2)
-	var strip: DebuffStrip = table.get("_debuffs")
+	var strip: DebuffStrip = table.debuffs
 	for debuff_id: String in _app.controller.items.active_debuff_ids():
 		assert_str(strip.shown_text()).contains(_app.controller.texts.modifier_name(debuff_id))
 	assert_int(_app.controller.items.active_debuff_ids().size()).is_equal(3)
 	assert_float(strip.size.x).is_equal(TableWorstCase.STRIP_WIDTH)
-	var campaigns: TableCampaigns = table.get("_campaigns")
+	var campaigns: TableCampaigns = table.campaigns
 	assert_int(campaigns.tray.campaign_count()).is_equal(TableWorstCase.TRAY_SIZE)
-	var pile: TrickPile = table.get("_pile")
+	var pile: TrickPile = table.pile
 	assert_int(pile.card_count()).is_equal(TableWorstCase.MOST_CARDS)
 
 
@@ -258,9 +258,9 @@ func test_the_strings_are_the_longest_of_their_families() -> void:
 func test_the_slip_draws_over_the_dressing_and_under_the_moments() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var dressing: Control = table.get("_dressing")
-	var strip: Control = table.get("_debuffs")
-	var moments: TableMoments = table.get("_moments")
+	var dressing: Control = table.dressing
+	var strip: Control = table.debuffs
+	var moments: TableMoments = table.moments
 	assert_int(dressing.get_index()).is_less(strip.get_index())
 	assert_int(strip.get_index()).is_less(moments.get_index())
 	assert_bool(moments.is_ancestor_of(moments.dice)).is_true()
@@ -276,11 +276,11 @@ func test_an_armed_campaign_puts_the_intel_away_only_when_still_short() -> void:
 		var table: TableScreen = await TableWorstCase.open(_app, self)
 		TableWorstCase.fill(_app, table, {"intel": true})
 		await await_idle_frame()
-		var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+		var seats: Dictionary[int, SeatPanel] = table.seats
 		var left: SeatPanel = seats[2]
 		assert_bool(left.has_intel()).is_true()
-		var columns: TableColumns = table.get("_columns")
-		var campaigns: TableCampaigns = table.get("_campaigns")
+		var columns: TableColumns = table.columns
+		var campaigns: TableCampaigns = table.campaigns
 		var tray: CampaignTray = campaigns.tray
 		var short: bool = _short_when_armed(columns, tray, left)
 		TableWorstCase.fill(_app, table, {"intel": true, "armed": true})
@@ -323,7 +323,7 @@ func test_the_columns_settle_and_stop_laying_out() -> void:
 	TableWorstCase.fill(_app, table, {"intel": true, "armed": true, "wild": true})
 	for frame: int in 3:
 		await await_idle_frame()
-	var columns: TableColumns = table.get("_columns")
+	var columns: TableColumns = table.columns
 	var first: String = _layout(table)
 	var count: int = columns.refits
 	for frame: int in 10:
@@ -333,9 +333,9 @@ func test_the_columns_settle_and_stop_laying_out() -> void:
 
 
 func _layout(table: TableScreen) -> String:
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
-	var strip: DebuffStrip = table.get("_debuffs")
-	var campaigns: TableCampaigns = table.get("_campaigns")
+	var seats: Dictionary[int, SeatPanel] = table.seats
+	var strip: DebuffStrip = table.debuffs
+	var campaigns: TableCampaigns = table.campaigns
 	return (
 		"%s %s %s %s %s"
 		% [
@@ -380,7 +380,7 @@ func _check(pieces: Dictionary[String, Rect2], where: String, problems: PackedSt
 ## The sheets laid over the table on purpose stay whole on the screen and do not clip.
 func _check_sheets(table: TableScreen, where: String, problems: PackedStringArray) -> void:
 	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
-	var need: NeedPanel = table.need_panel()
+	var need: NeedPanel = table.need_panel
 	need.visible = true
 	need.ask(9999, TableWorstCase.longest_surname(_app.controller), 0.5)
 	await await_idle_frame()
@@ -388,9 +388,9 @@ func _check_sheets(table: TableScreen, where: String, problems: PackedStringArra
 		problems.append("%s: need panel off screen at %s" % [where, need.get_global_rect()])
 	ClipCheck.check(need, where + " need panel", problems)
 	need.visible = false
-	table.call("_open_pause")
+	table.hud.menu.pressed.emit()
 	await await_idle_frame()
-	var pause: PauseMenu = table.get("_pause")
+	var pause: PauseMenu = table.pause
 	ClipCheck.check(pause, where + " pause", problems)
 	pause.close()
 	await await_idle_frame()

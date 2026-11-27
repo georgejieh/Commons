@@ -62,7 +62,7 @@ func test_the_settings_sheet_offers_the_three_paces() -> void:
 func test_a_change_takes_hold_at_an_open_table() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	var presets: MotionPresets = UiMotion.PRESETS
 	assert_float(player.step).is_equal_approx(presets.event_step, 0.0001)
 	var wind: float = player.wind

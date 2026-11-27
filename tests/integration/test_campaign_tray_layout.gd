@@ -48,7 +48,7 @@ func _open_table() -> TableScreen:
 
 
 func _campaigns(table: TableScreen) -> TableCampaigns:
-	return table.get("_campaigns")
+	return table.campaigns
 
 
 func _check_tray_clear(table: TableScreen) -> void:

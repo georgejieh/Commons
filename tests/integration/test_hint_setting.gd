@@ -26,7 +26,7 @@ func after_test() -> void:
 func _table_at_play() -> TableScreen:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	for _frame: int in WAIT_FRAMES:
 		var awaiting: int = _app.controller.awaiting()
 		if awaiting == RunController.AWAIT_PLAY and player.is_idle():
@@ -58,10 +58,10 @@ func test_the_hint_is_on_by_default_and_on_the_sheet() -> void:
 
 func test_with_the_hint_on_its_key_lights_a_play() -> void:
 	var table: TableScreen = await _table_at_play()
-	assert_bool(table.actions().hint.is_visible_in_tree()).is_true()
+	assert_bool(table.actions.hint.is_visible_in_tree()).is_true()
 	await TestInput.tap_key(self, Settings.bindings.key(KeyBindings.HINT))
 	var hinted: bool = not _app.hand.selected_ids().is_empty()
-	var passing: bool = table.actions().reading.text == tr("hand.hint.pass")
+	var passing: bool = table.actions.reading.text == tr("hand.hint.pass")
 	assert_bool(hinted or passing).is_true()
 
 
@@ -69,14 +69,14 @@ func test_with_the_hint_off_neither_button_nor_key_does_anything() -> void:
 	var table: TableScreen = await _table_at_play()
 	Settings.set_value(HintSetting.SETTING, false)
 	await await_idle_frame()
-	var hint: Button = table.actions().hint
+	var hint: Button = table.actions.hint
 	assert_bool(hint.is_visible_in_tree()).is_false()
-	var reading: String = table.actions().reading.text
+	var reading: String = table.actions.reading.text
 	await TestInput.tap_key(self, Settings.bindings.key(KeyBindings.HINT))
 	hint.pressed.emit()
 	await await_idle_frame()
 	assert_array(_app.hand.selected_ids()).is_empty()
-	assert_str(table.actions().reading.text).is_equal(reading)
+	assert_str(table.actions.reading.text).is_equal(reading)
 	# Turned on again at the open table, the button is back at once.
 	Settings.set_value(HintSetting.SETTING, true)
 	assert_bool(hint.is_visible_in_tree()).is_true()

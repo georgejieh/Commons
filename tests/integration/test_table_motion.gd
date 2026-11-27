@@ -46,8 +46,8 @@ func test_no_tween_outlives_the_table() -> void:
 func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var pool: CardPool = table.get("_pool")
-	var pile: TrickPile = table.get("_pile")
+	var pool: CardPool = table.pool
+	var pile: TrickPile = table.pile
 	var free_before: int = pool.free_count()
 	pile.show_play(_cards(3), Vector2.ZERO)
 	assert_int(pool.free_count()).is_equal(free_before - 3)
@@ -61,7 +61,7 @@ func test_a_sweep_gives_its_cards_back_to_the_pool() -> void:
 func test_a_ledger_score_counts_up_to_its_value() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var ledger: Ledger = table.get("_ledger")
+	var ledger: Ledger = table.ledger
 	ledger.start_round(1)
 	ledger.set_pending("Pair")
 	ledger.add_play(1, 96.0, 5.0, 1.0, 480.0)
@@ -81,7 +81,7 @@ func test_reduced_motion_turns_off_shake_and_hit_stop() -> void:
 	Settings.set_value("reduced_motion", true)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var motion: TableMotion = table.get("_motion")
+	var motion: TableMotion = table.motion
 	motion.impact()
 	assert_float(motion.trauma()).is_equal(0.0)
 	assert_bool(motion.is_stopped()).is_false()
@@ -90,7 +90,7 @@ func test_reduced_motion_turns_off_shake_and_hit_stop() -> void:
 func test_turning_reduced_motion_on_stops_a_shake_under_way() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var motion: TableMotion = table.get("_motion")
+	var motion: TableMotion = table.motion
 	motion.impact()
 	assert_float(motion.trauma()).is_greater(0.0)
 	Settings.set_value("reduced_motion", true)
@@ -103,7 +103,7 @@ func test_reduced_motion_clears_a_sweep_at_once() -> void:
 	Settings.set_value("reduced_motion", true)
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var pile: TrickPile = table.get("_pile")
+	var pile: TrickPile = table.pile
 	pile.show_play(_cards(2), Vector2.ZERO)
 	pile.sweep(Vector2.ZERO)
 	assert_int(pile.card_count()).is_equal(0)
@@ -111,15 +111,15 @@ func test_reduced_motion_clears_a_sweep_at_once() -> void:
 
 ## A deal, a play dropped and swept, a ledger count and a bomb's shake, all at once.
 func _start_every_motion(table: TableScreen) -> void:
-	var hand_view: HandView = table.get("_hand_view")
+	var hand_view: HandView = table.hand_view
 	hand_view.show_cards()
 	hand_view.deal_in()
-	var pile: TrickPile = table.get("_pile")
+	var pile: TrickPile = table.pile
 	pile.show_play(_cards(4), Vector2.ZERO)
 	pile.sweep(Vector2.ZERO)
-	var ledger: Ledger = table.get("_ledger")
+	var ledger: Ledger = table.ledger
 	ledger.add_play(1, 60.0, 5.0, 1.0, 300.0)
-	var motion: TableMotion = table.get("_motion")
+	var motion: TableMotion = table.motion
 	motion.impact()
 
 

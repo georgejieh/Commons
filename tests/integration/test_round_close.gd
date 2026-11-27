@@ -49,9 +49,9 @@ func test_closing_comes_once_between_a_rounds_end_and_the_next_deal() -> void:
 ## end stays in view for its beat, its trick is swept off, and only then is the hand dealt.
 func test_the_next_hand_waits_until_the_round_is_put_away() -> void:
 	var table: TableScreen = await _open_table()
-	var player: EventPlayer = table.get("_player")
-	var pile: TrickPile = table.get("_pile")
-	var hand_view: HandView = table.get("_hand_view")
+	var player: EventPlayer = table.player
+	var pile: TrickPile = table.pile
+	var hand_view: HandView = table.hand_view
 	var card: CardInstance = _app.controller.table.player_cards()[0]
 	var marks: Dictionary = {}
 	player.closing.connect(func() -> void: marks["closing"] = _now())
@@ -75,7 +75,7 @@ func test_the_next_hand_waits_until_the_round_is_put_away() -> void:
 func test_reduced_motion_still_reads_the_round_before_the_deal() -> void:
 	Settings.set_value("reduced_motion", true)
 	var table: TableScreen = await _open_table()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	var card: CardInstance = _app.controller.table.player_cards()[0]
 	var marks: Dictionary = {}
 	player.closing.connect(func() -> void: marks["closing"] = _now())
@@ -100,7 +100,7 @@ func _on_played(
 		marks["shown_after_play"] = _shows(hand_view, card_id)
 	elif event.type == RunEvent.Type.DEALT:
 		marks["dealt"] = _now()
-		var moments: TableMoments = pile.get_parent().get("_moments")
+		var moments: TableMoments = (pile.get_parent() as TableScreen).moments
 		marks["pile_at_deal"] = pile.card_count()
 		marks["slip_at_deal"] = moments.slip.visible
 
@@ -126,7 +126,7 @@ func _round_end(card: CardInstance) -> Array[RunEvent]:
 func _open_table() -> TableScreen:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	await TestWait.until(self, player.is_idle, "the table's events to play", WAIT_SECONDS)
 	return table
 

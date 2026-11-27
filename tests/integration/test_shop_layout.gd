@@ -71,11 +71,11 @@ func test_both_shops_fit_the_most_a_run_holds() -> void:
 	await _check_all("full")
 	var store: StoreScreen = _app.show_screen("store", true)
 	await await_idle_frame()
-	var board: NoticeBoard = store.get("_board")
+	var board: NoticeBoard = store.board
 	assert_int(board.slot_count()).is_equal(6)
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	assert_int(stall.tray.campaign_count()).is_equal(3)
-	var reforms: ReformStall = store.get("_reform_stall")
+	var reforms: ReformStall = store.reform_stall
 	assert_int(reforms.strip.held_count()).is_equal(6)
 
 
@@ -164,7 +164,7 @@ func test_the_rank_picker_opens_on_the_screen() -> void:
 		_loop().visit.market.set("_stock", offered)
 		var market: StoreScreen = _app.show_screen("black_market", true)
 		await await_idle_frame()
-		var market_cadres: CadreCounter = market.get("_cadres")
+		var market_cadres: CadreCounter = market.cadres
 		var counter: HBoxContainer = market_cadres.row
 		var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 		buy.pressed.emit()
@@ -200,7 +200,7 @@ func test_an_open_envelope_fits_with_three_and_four_choices() -> void:
 					counter.set("_stock", stock)
 					var store: StoreScreen = _app.show_screen(screen_id, true)
 					await await_idle_frame()
-					var stall: EnvelopeStall = store.get("_envelope_stall")
+					var stall: EnvelopeStall = store.envelope_stall
 					stall.panel(0).buy.pressed.emit()
 					await await_idle_frame()
 					await await_idle_frame()

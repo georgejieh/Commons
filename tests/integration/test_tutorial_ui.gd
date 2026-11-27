@@ -305,15 +305,15 @@ func _check_slip(where: String) -> void:
 	var table: TableScreen = _app.switcher.current() as TableScreen
 	if table != null:
 		# The hand, and the brigade notice on the wall behind the table.
-		for hand: Rect2 in table.tutorial().tutorial_avoid():
+		for hand: Rect2 in table.tutorial.tutorial_avoid():
 			assert_bool(rect.intersects(hand)).override_failure_message(where + " hand").is_false()
-		var sheet: CheatSheet = table.get("_cheat_sheet")
+		var sheet: CheatSheet = table.cheat_sheet
 		if not sheet.visible:
-			var pile: Control = table.get("_pile")
-			var moments: TableMoments = table.get("_moments")
+			var pile: Control = table.pile
+			var moments: TableMoments = table.moments
 			var kept: Dictionary[String, Rect2] = {
-				"prompt": table.actions().reading.get_global_rect(),
-				"buttons": table.actions().get_global_rect(),
+				"prompt": table.actions.reading.get_global_rect(),
+				"buttons": table.actions.get_global_rect(),
 				"trick": pile.get_global_rect(),
 				"score": moments.sequence.room(),
 			}
@@ -321,16 +321,16 @@ func _check_slip(where: String) -> void:
 				var over: bool = rect.intersects(kept[piece])
 				assert_bool(over).override_failure_message("%s %s" % [where, piece]).is_false()
 			# The empty Cadre board is put away under the slip, and Skip clears the ledger.
-			var board: Control = table.get("_board")
+			var board: Control = table.board
 			assert_bool(board.visible).override_failure_message(where + " board").is_false()
-			var ledger: Control = table.get("_ledger")
+			var ledger: Control = table.ledger
 			var paper: Rect2 = (ledger.get_parent() as Control).get_global_rect()
 			var skip: bool = layer.skip_button().get_global_rect().intersects(paper)
 			assert_bool(skip).override_failure_message(where + " skip on ledger").is_false()
 	var store: StoreScreen = _app.switcher.current() as StoreScreen
 	if store != null:
 		# Wang's slip is the only explanation on screen while the arrival runs.
-		assert_bool(store.slip().visible).override_failure_message(where + " detail").is_false()
+		assert_bool(store.slip.visible).override_failure_message(where + " detail").is_false()
 
 
 ## The table names the brigade notice among what the slip must keep clear of.
@@ -340,7 +340,7 @@ func test_the_table_names_the_notice_to_keep_clear_of() -> void:
 	_app.arrival.start()
 	await _until_prompt()
 	var table: TableScreen = _app.switcher.current()
-	var notice: bool = table.tutorial().tutorial_avoid().any(
+	var notice: bool = table.tutorial.tutorial_avoid().any(
 		func(rect: Rect2) -> bool: return rect.size.is_equal_approx(DreadDressing.NOTICE_AT.size)
 	)
 	assert_bool(notice).is_true()

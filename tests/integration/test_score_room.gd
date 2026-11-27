@@ -91,11 +91,11 @@ func test_the_tally_keeps_off_the_cards_the_hand_and_the_seats_through_its_motio
 
 
 func _check_table(table: TableScreen, where: String) -> void:
-	var moments: TableMoments = table.get("_moments")
-	var pile: TrickPile = table.get("_pile")
-	var motion: TableMotion = table.get("_motion")
-	var hand: HandView = table.get("_hand_view")
-	var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+	var moments: TableMoments = table.moments
+	var pile: TrickPile = table.pile
+	var motion: TableMotion = table.motion
+	var hand: HandView = table.hand_view
+	var seats: Dictionary[int, SeatPanel] = table.seats
 	var hand_box: Rect2 = hand.get_global_rect()
 	var lifted: float = HandView.LIFT + HandView.ARMED_LIFT
 	hand_box = Rect2(hand_box.position - Vector2(0, lifted), hand_box.size + Vector2(0, lifted))
@@ -121,7 +121,7 @@ func _check_table(table: TableScreen, where: String) -> void:
 		moments.on_event(_big_play())
 		var rest: Array[Rect2] = moments.tally.drawn_rects()
 		# The line over the hand shares the tally's band, so it steps aside for it.
-		var line: Label = table.get("_you")
+		var line: Label = table.you
 		assert_float(line.modulate.a).override_failure_message(where + " line").is_equal(0.0)
 		# Fitted to its room, its type is never drawn smaller than at Standard.
 		var drawn: float = moments.tally.scale.x * TextSize.factor()

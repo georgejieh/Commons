@@ -217,13 +217,13 @@ func test_the_window_page_stands_whole_at_every_size() -> void:
 			_assert_whole(screen, where + " screen")
 			var table: TableScreen = app.show_screen("table", true)
 			await await_idle_frame()
-			table.call("_open_pause")
-			var pause: PauseMenu = table.get("_pause")
-			pause.call("_show_page", pause.get("_settings"))
+			table.hud.menu.pressed.emit()
+			var pause: PauseMenu = table.pause
+			TestInput.press(self, pause.main, tr("pause.settings"))
 			SettingsPanel.window_button(pause).pressed.emit()
 			await await_idle_frame()
 			await await_idle_frame()
-			var page: Control = pause.get("_window")
+			var page: Control = pause.window
 			assert_bool(page.visible).override_failure_message(where).is_true()
 			_assert_whole(page, where + " menu")
 			pause.visible = false

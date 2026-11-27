@@ -60,7 +60,7 @@ func _open(screen_id: String) -> StoreScreen:
 
 
 func _tiles(store: StoreScreen) -> Array[Control]:
-	var board: NoticeBoard = store.get("_board")
+	var board: NoticeBoard = store.board
 	var tiles: Array[Control] = []
 	for node: Node in board.get_children():
 		if node is TipHost:
@@ -72,7 +72,7 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 	for screen_id: String in ["store", "black_market"]:
 		_hold(2)
 		var store: StoreScreen = await _open(screen_id)
-		var sale: SellDesk = store.get("_sale")
+		var sale: SellDesk = store.sale
 		var desk: ShopDesk = _app.controller.store.desk(screen_id == "black_market")
 		var tile: Control = _tiles(store)[0]
 		var tag: SellTag = sale.tag_on(tile)
@@ -100,7 +100,7 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 		assert_int(state.inventory.cadres.size()).is_equal(held.size() - 1)
 		assert_array(state.inventory.cadres).not_contains([held[0]])
 		assert_int(state.coupons).is_equal(coupons + paid)
-		var shown: Label = store.get("_coupons")
+		var shown: Label = store.coupons
 		assert_str(shown.text).contains(str(state.coupons))
 		tile.mouse_exited.emit()
 
@@ -108,7 +108,7 @@ func test_a_cadre_sells_in_two_presses_at_either_shop() -> void:
 func test_selling_clears_no_room_on_the_counter_in_the_same_visit() -> void:
 	_hold(RunReforms.cadre_slots(_loop().state))
 	var store: StoreScreen = await _open("store")
-	var cadres: CadreCounter = store.get("_cadres")
+	var cadres: CadreCounter = store.cadres
 	var counter: HBoxContainer = cadres.row
 	var buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	assert_str(buy.text).is_equal(tr("store.buy.full"))
@@ -126,7 +126,7 @@ func test_selling_clears_no_room_on_the_counter_in_the_same_visit() -> void:
 func test_a_held_campaign_sells_from_the_tray() -> void:
 	_hold(1)
 	var store: StoreScreen = await _open("store")
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	var leaflet: CampaignLeaflet = stall.tray.leaflet(0)
 	var tag: SellTag = _sale(store).tag_on(leaflet)
 	assert_object(tag).is_not_null()
@@ -162,7 +162,7 @@ func _check_focus(store: StoreScreen, where: String) -> void:
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_bool(tag.visible).override_failure_message(where).is_true()
-	var slip: DetailSlip = store.slip()
+	var slip: DetailSlip = store.slip
 	assert_object(slip.anchor()).override_failure_message(where).is_same(tile)
 	var ticket: Rect2 = tag.button.get_global_rect()
 	var screen: Rect2 = get_tree().root.get_visible_rect().grow(ClipCheck.SLACK)
@@ -190,5 +190,5 @@ func _check_focus(store: StoreScreen, where: String) -> void:
 
 
 func _sale(store: StoreScreen) -> SellDesk:
-	var sale: SellDesk = store.get("_sale")
+	var sale: SellDesk = store.sale
 	return sale

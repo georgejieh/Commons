@@ -76,14 +76,14 @@ func store() -> void:
 			reform_stock[0] = item_id
 		assign(loop.visit.shop.campaigns, "_stock", campaign_stock)
 		assign(loop.visit.shop.reforms, "_stock", reform_stock)
-		invoke(screen, "_refresh")
+		invoke(screen, "refresh")
 		await _frames(10)
 		await _shot("store_wild_%s" % item_id)
 	assign(loop.visit.shop.campaigns, "_stock", campaigns)
 	assign(loop.visit.shop.reforms, "_stock", reforms)
 	assign(loop.visit.shop.campaigns, "_pool", campaign_pool)
 	assign(loop.visit.shop.reforms, "_pool", reform_pool)
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 
 
@@ -104,7 +104,7 @@ func scarce(market: bool) -> void:
 	assign(shop, "_pool", whole.cadres.duplicate())
 	assign(shop, "_stock", forced)
 	var screen: Node = _current()
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 	var name: String = "market_scarce" if market else "store_scarce"
 	var stamp: Control = null
@@ -128,7 +128,7 @@ func scarce(market: bool) -> void:
 		await _shot(name)
 	assign(shop, "_stock", stock)
 	assign(shop, "_pool", pool)
-	invoke(screen, "_refresh")
+	invoke(screen, "refresh")
 	await _frames(10)
 
 
@@ -183,7 +183,7 @@ func _use_and_photograph(controller: Object) -> void:
 
 ## The call-out in motion, once it is on screen.
 func _callout_frames(name: String) -> void:
-	var moments: Object = _part("_moments")
+	var moments: Object = _part("moments")
 	var callout: Object = moments.get("callout") if moments != null else null
 	if callout == null or not await _until(func() -> bool: return callout.call("is_showing")):
 		_fail("NO WILD CALL-OUT")
@@ -196,7 +196,7 @@ func _callout_frames(name: String) -> void:
 func _ribbon_frames() -> void:
 	for stage: int in RIBBON_STAGES:
 		ArtStages.stage_override = stage
-		var hand_view: Object = _part("_hand_view")
+		var hand_view: Object = _part("hand_view")
 		hand_view.call("show_cards")
 		await _frames(4)
 		var ribbons: int = 0
@@ -206,12 +206,12 @@ func _ribbon_frames() -> void:
 			print("NOTE no wild card in the hand at stage %d" % stage)
 		await _shot("wild_hand_stage_%d" % stage)
 	ArtStages.stage_override = -1
-	_part("_hand_view").call("show_cards")
+	_part("hand_view").call("show_cards")
 
 
 func _rules_frame() -> void:
 	var actions: Object = _part("actions")
-	var sheet: Object = _part("_cheat_sheet")
+	var sheet: Object = _part("cheat_sheet")
 	var rules: Button = actions.get("rules")
 	rules.pressed.emit()
 	await _frames(10)
@@ -230,10 +230,10 @@ func _picker_frame(controller: Object) -> void:
 	if readings.size() < 3:
 		_fail("NO CARDS READ THREE WAYS")
 		return
-	var wild: Object = _part("_wild")
+	var wild: Object = _part("wild")
 	var picker: Object = wild.get("picker")
 	# Beside the fan, as over cards the player had chosen; nothing here is chosen.
-	var hand: Control = _part("_hand_view") as Control
+	var hand: Control = _part("hand_view") as Control
 	picker.call("open", readings, hand.get_global_rect())
 	await _frames(10)
 	await _shot("wild_picker_%d_readings" % readings.size())
@@ -256,7 +256,7 @@ func _pile_frame(controller: Object) -> void:
 	for suit: int in 3:
 		cards.append(Deck.new().card(rank * Deck.SUITS + suit))
 	cards.append(Deck.new().card(wild[0] * Deck.SUITS + 3))
-	var pile: Object = _part("_pile")
+	var pile: Object = _part("pile")
 	pile.call("clear")
 	var none: Array[Vector2] = []
 	pile.call("show_play", cards, PILE_FROM, none, reading)

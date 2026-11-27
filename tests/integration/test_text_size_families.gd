@@ -81,7 +81,7 @@ func test_every_cadre_fits_its_shop_card() -> void:
 				var store: StoreScreen = _app.show_screen(screen_id, true)
 				await await_idle_frame()
 				await await_idle_frame()
-				var cadres: CadreCounter = store.get("_cadres")
+				var cadres: CadreCounter = store.cadres
 				_clips(cadres.row, "%s %s" % [screen_id, stock], problems)
 	_assert_none(problems)
 
@@ -128,7 +128,7 @@ func test_every_directive_fits_its_store_document() -> void:
 			var store: StoreScreen = _app.show_screen("store", true)
 			await await_idle_frame()
 			await await_idle_frame()
-			_clips(store.get("_directives"), "directives %s" % [stock], problems)
+			_clips(store.directives, "directives %s" % [stock], problems)
 	_assert_none(problems)
 
 

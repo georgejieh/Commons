@@ -34,7 +34,7 @@ func test_the_black_markets_plot_cards_keep_a_cards_proportions() -> void:
 			var market: StoreScreen = _app.show_screen("black_market", true)
 			await await_idle_frame()
 			await await_idle_frame()
-			var goods: MarketGoods = market.get("_goods")
+			var goods: MarketGoods = market.goods
 			for slot: int in 2:
 				var view: CardView = goods.card_view(slot)
 				assert_object(view).is_not_null()
@@ -54,11 +54,11 @@ func test_a_plot_cards_ticket_is_explained_in_the_slip() -> void:
 	_app.controller.finish_set()
 	var market: StoreScreen = _app.show_screen("black_market", true)
 	await await_idle_frame()
-	var goods: MarketGoods = market.get("_goods")
+	var goods: MarketGoods = market.goods
 	var buy: Button = goods.card_button(0)
 	assert_str(buy.tooltip_text).is_empty()
 	buy.focus_entered.emit()
-	assert_object(market.slip().anchor()).is_same(buy)
-	assert_str(market.slip().shown_rule()).is_equal(tr("market.plot.tip"))
+	assert_object(market.slip.anchor()).is_same(buy)
+	assert_str(market.slip.shown_rule()).is_equal(tr("market.plot.tip"))
 	buy.focus_exited.emit()
-	assert_str(market.slip().shown_rule()).is_empty()
+	assert_str(market.slip.shown_rule()).is_empty()

@@ -113,7 +113,7 @@ func test_the_action_column_keeps_its_foot_and_width() -> void:
 			get_tree().root.size = screen
 			var table: TableScreen = _app.show_screen("table", true)
 			await await_idle_frame()
-			var actions: ActionBar = table.actions()
+			var actions: ActionBar = table.actions
 			for bidding: bool in [false, true]:
 				actions.show_bidding(bidding)
 				var prompts: Array[String] = PromptLines.every(_app.controller, bidding)
@@ -157,7 +157,7 @@ func test_the_rules_sheet_keeps_a_gap_at_its_scroll_bar() -> void:
 			get_tree().root.size = screen
 			var table: TableScreen = _app.show_screen("table", true)
 			await await_idle_frame()
-			var sheet: CheatSheet = table.get("_cheat_sheet")
+			var sheet: CheatSheet = table.cheat_sheet
 			sheet.toggle(_app.controller)
 			await await_idle_frame()
 			await await_idle_frame()

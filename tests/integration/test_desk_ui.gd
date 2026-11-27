@@ -37,14 +37,14 @@ func test_the_store_desk_marks_the_chosen_card() -> void:
 	var offer: String = _loop().visit.shop.desk.offer
 	var other: String = CardInstance.SURPLUS if offer == CardInstance.MODEL else CardInstance.MODEL
 	CardMarks.enhance(_loop().state, Deck.new().card(CARD), other)
-	var stall: DeskStall = store.get("_desk_stall")
+	var stall: DeskStall = store.desk_stall
 	stall.show_offer()
 	assert_bool(stall.ticket.is_visible_in_tree()).is_true()
 	assert_str(stall.ticket.text).contains(tr("keyword.%s.name" % offer))
 	assert_bool(stall.ticket.disabled).is_false()
 	stall.ticket.pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	assert_bool(sheet.is_open()).is_true()
 	assert_bool(sheet.confirm_button().disabled).is_true()
 	sheet.board().press(CARD)
@@ -69,10 +69,10 @@ func test_a_card_the_desk_refuses_says_why_and_cannot_be_confirmed() -> void:
 	var store: StoreScreen = _app.show_screen("store", true)
 	await await_idle_frame()
 	CardMarks.enhance(_loop().state, Deck.new().card(CARD), _loop().visit.shop.desk.offer)
-	var stall: DeskStall = store.get("_desk_stall")
+	var stall: DeskStall = store.desk_stall
 	stall.ticket.pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = store.get("_deck")
+	var sheet: DeckSheet = store.deck
 	sheet.board().press(CARD)
 	assert_bool(sheet.confirm_button().disabled).is_true()
 	var name: String = CardName.of(sheet.board().card_of(CARD))
@@ -85,11 +85,11 @@ func test_a_card_the_desk_refuses_says_why_and_cannot_be_confirmed() -> void:
 func test_the_black_market_desk_stamps_the_card() -> void:
 	var market: StoreScreen = _app.show_screen("black_market", true)
 	await await_idle_frame()
-	var stall: DeskStall = market.get("_desk_stall")
+	var stall: DeskStall = market.desk_stall
 	assert_str(stall.ticket.text).is_equal(tr("desk.ticket.stamp").format({"price": 3}))
 	stall.ticket.pressed.emit()
 	await await_idle_frame()
-	var sheet: DeckSheet = market.get("_deck")
+	var sheet: DeckSheet = market.deck
 	assert_str(sheet.get("_title").text).is_equal(tr("deck.desk.stamp_title"))
 	var resentment: int = _app.controller.state_copy().resentment
 	sheet.board().press(CARD)

@@ -51,7 +51,7 @@ func _to_first_lead() -> bool:
 
 
 func _wait_idle(table: TableScreen) -> void:
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	await TestWait.until(
 		self, func() -> bool: return player.is_idle(), "the table's events to play", WAIT_SECONDS
 	)
@@ -76,8 +76,8 @@ func test_the_words_and_the_pile_say_the_wild_rank_is_the_players() -> void:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
 	await await_idle_frame()
-	var strip: DebuffStrip = table.get("_debuffs")
-	var moments: TableMoments = table.get("_moments")
+	var strip: DebuffStrip = table.debuffs
+	var moments: TableMoments = table.moments
 	assert_int(_app.controller.campaign(0)).is_equal(RunController.OK)
 	var rank: int = _app.controller.table.wild_ranks()[0]
 	await TestWait.until(
@@ -91,14 +91,16 @@ func test_the_words_and_the_pile_say_the_wild_rank_is_the_players() -> void:
 	# The rules say so: the player's seat holds the rank wild, a villager's does not.
 	assert_array(_loop().seat_table(0).rules.wild_ranks()).is_equal([rank])
 	assert_array(_loop().seat_table(1).rules.wild_ranks()).is_empty()
-	var pile: TrickPile = table.get("_pile")
-	var motion: TableMotion = table.get("_motion")
+	var pile: TrickPile = table.pile
+	var motion: TableMotion = table.motion
 	motion.set_still(true)
-	table.call("_show_play", _pair_event(1, rank))
+	table.player.push(RunEvent.wrap(_pair_event(1, rank)))
+	table.player.flush()
 	for view: CardView in pile.top_views():
 		assert_bool(view.shows_wild()).override_failure_message("villager's card").is_false()
 		assert_str(view.rank_note()).is_empty()
-	table.call("_show_play", _pair_event(0, rank))
+	table.player.push(RunEvent.wrap(_pair_event(0, rank)))
+	table.player.flush()
 	for view: CardView in pile.top_views():
 		assert_bool(view.shows_wild()).override_failure_message("player's card").is_true()
 	pile.clear()
@@ -112,7 +114,7 @@ func test_a_reforms_rule_is_listed_as_the_players() -> void:
 	await await_idle_frame()
 	_loop().state.reforms.assign(["industrialization"])
 	_loop().call("_rebuild_modifiers")
-	var strip: DebuffStrip = table.get("_debuffs")
+	var strip: DebuffStrip = table.debuffs
 	strip.show_debuffs(_app.controller)
 	var shown: String = strip.shown_text()
 	assert_str(shown).contains(tr("table.rules_reforms").to_upper())

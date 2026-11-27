@@ -30,11 +30,12 @@ func _loop() -> RunLoop:
 	return _app.controller.run_loop()
 
 
-func _key(table: TableScreen, key: Key) -> void:
+func _key(key: Key) -> void:
 	var event: InputEventKey = InputEventKey.new()
 	event.physical_keycode = key
 	event.pressed = true
-	table.call("_unhandled_input", event)
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
 
 
 ## A new run played to the player's first lead, holding these Campaigns.
@@ -65,7 +66,7 @@ func _open_table() -> TableScreen:
 
 
 func _wait_idle(table: TableScreen) -> void:
-	var player: EventPlayer = table.get("_player")
+	var player: EventPlayer = table.player
 	await TestWait.until(
 		self, func() -> bool: return player.is_idle(), "the table's events to play", WAIT_SECONDS
 	)
@@ -77,34 +78,34 @@ func test_a_moved_key_acts_at_the_table_and_the_old_one_does_not() -> void:
 	await _wait_idle(table)
 	Settings.bindings.bind("commons_sort", KEY_J)
 	Settings.bindings.bind("commons_hint", KEY_K)
-	var sort: HandView.Sort = table.sort_mode()
-	_key(table, KEY_S)
-	assert_int(table.sort_mode()).is_equal(sort)
-	_key(table, KEY_J)
-	assert_int(table.sort_mode()).is_not_equal(sort)
-	var hand_view: HandView = table.get("_hand_view")
+	var sort: HandView.Sort = table.hand_view.sort_mode
+	_key(KEY_S)
+	assert_int(table.hand_view.sort_mode).is_equal(sort)
+	_key(KEY_J)
+	assert_int(table.hand_view.sort_mode).is_not_equal(sort)
+	var hand_view: HandView = table.hand_view
 	var ticked: Callable = func() -> bool:
 		return hand_view.views().any(func(view: CardView) -> bool: return view.shows_hint_tick())
-	_key(table, KEY_H)
+	_key(KEY_H)
 	assert_bool(ticked.call()).is_false()
-	_key(table, KEY_K)
+	_key(KEY_K)
 	assert_bool(ticked.call()).is_true()
 
 
 func test_a_moved_key_reaches_the_campaign_tray() -> void:
 	assert_bool(_to_first_lead(SEED, ["grain_loan", "model_harvest"])).is_true()
 	var table: TableScreen = await _open_table()
-	var campaigns: TableCampaigns = table.get("_campaigns")
+	var campaigns: TableCampaigns = table.campaigns
 	var tray: CampaignTray = campaigns.tray
 	Settings.bindings.bind("commons_campaign", KEY_G)
 	Settings.bindings.bind("commons_play", KEY_P)
-	_key(table, KEY_C)
+	_key(KEY_C)
 	assert_int(tray.cursor_slot()).is_equal(-1)
-	_key(table, KEY_G)
+	_key(KEY_G)
 	assert_int(tray.cursor_slot()).is_equal(0)
-	_key(table, KEY_ENTER)
+	_key(KEY_ENTER)
 	assert_int(tray.armed_slot()).is_equal(-1)
-	_key(table, KEY_P)
+	_key(KEY_P)
 	assert_int(tray.armed_slot()).is_equal(0)
 
 
@@ -116,18 +117,18 @@ func test_a_moved_play_key_opens_the_reading_picker() -> void:
 	assert_bool(found.is_empty()).override_failure_message("no choice found").is_false()
 	var table: TableScreen = found[0]
 	var ids: Array[int] = found[1]
-	var wild: TableWild = table.get("_wild")
+	var wild: TableWild = table.wild
 	var picker: ReadingPicker = wild.picker
 	Settings.bindings.bind("commons_play", KEY_P)
 	_app.hand.clear()
 	for card_id: int in ids:
 		_app.hand.toggle(card_id)
 	var commands: int = _loop().record.commands.size()
-	_key(table, KEY_ENTER)
+	_key(KEY_ENTER)
 	assert_bool(picker.visible).is_false()
-	_key(table, KEY_P)
+	_key(KEY_P)
 	assert_bool(picker.visible).is_true()
-	_key(table, KEY_P)
+	_key(KEY_P)
 	assert_bool(picker.visible).is_true()
 	assert_int(_loop().record.commands.size()).is_equal(commands)
 

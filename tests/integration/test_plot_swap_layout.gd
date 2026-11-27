@@ -57,14 +57,14 @@ func _to_swap() -> TableScreen:
 			break
 		table.skip_events()
 		if _app.controller.awaiting() == RunController.AWAIT_BID:
-			table.actions().decline.pressed.emit()
+			table.actions.decline.pressed.emit()
 		await await_idle_frame()
 	assert_bool(_sheet(table).is_open()).is_true()
 	return table
 
 
 func _sheet(table: TableScreen) -> PlotSwapSheet:
-	return table.get("_swap_sheet")
+	return table.swap_sheet
 
 
 ## Lays the board out with a full landlord hand and the full plot, two pairs traded.
@@ -76,7 +76,7 @@ func _fill(table: TableScreen) -> void:
 	var sheet: PlotSwapSheet = _sheet(table)
 	var board: SwapBoard = sheet.board()
 	var no_wild: Array[int] = []
-	board.show_cards(hand, plot, _most_swaps(), table.get("_pool"), _app.hand, no_wild)
+	board.show_cards(hand, plot, _most_swaps(), table.pool, _app.hand, no_wild)
 	for pair: int in _most_swaps():
 		board.press(hand[pair].id())
 		board.press(plot[pair].id())

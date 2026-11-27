@@ -45,7 +45,7 @@ func _open(screen_id: String = "store") -> StoreScreen:
 
 
 func _stall(store: StoreScreen) -> EnvelopeStall:
-	return store.get("_envelope_stall")
+	return store.envelope_stall
 
 
 ## Puts one kind on the state store's counter, as only tests do.
@@ -81,7 +81,7 @@ func _check_nothing_left(store: StoreScreen) -> void:
 				found += 1
 		assert_int(found).override_failure_message(kind).is_equal(0)
 	var after: int = store.find_children("*", "", true, false).size()
-	store.call("_refresh")
+	store.refresh()
 	await await_idle_frame()
 	await await_idle_frame()
 	assert_int(store.find_children("*", "", true, false).size()).is_equal(after)
@@ -109,7 +109,7 @@ func test_each_shop_offers_an_envelope_explained_by_the_slip() -> void:
 		assert_str(panel.shown_name()).is_equal(shelf.envelope_name(offered))
 		assert_bool(panel.buy.disabled).is_false()
 		panel.described.emit(panel)
-		var slip: DetailSlip = store.slip()
+		var slip: DetailSlip = store.slip
 		assert_bool(slip.visible).is_true()
 		assert_str(slip.shown_rule()).is_equal(shelf.envelope_text(offered))
 		assert_str(slip.shown_rule()).contains("3")
@@ -130,11 +130,11 @@ func test_buying_opens_it_and_holds_every_other_purchase() -> void:
 	assert_bool(store.is_issuing()).is_true()
 	assert_bool(overlay.figure().visible).is_true()
 	var cadres: int = _app.controller.state_copy().inventory.cadres.size()
-	var counter_stall: CadreCounter = store.get("_cadres")
+	var counter_stall: CadreCounter = store.cadres
 	var counter: HBoxContainer = counter_stall.row
 	var cadre_buy: Button = counter.get_child(0).find_children("*", "Button", true, false)[0]
 	cadre_buy.pressed.emit()
-	var reroll: Button = store.get("_reroll")
+	var reroll: Button = store.reroll
 	reroll.pressed.emit()
 	var leave: Button = store.blocks()["buttons"].get_child(0)
 	leave.pressed.emit()
@@ -249,7 +249,7 @@ func test_a_kept_campaign_reaches_the_tray_and_nothing_is_left_behind() -> void:
 	await await_idle_frame()
 	assert_bool(is_instance_valid(overlay)).is_false()
 	assert_array(_app.controller.items.held_campaigns()).is_equal([kept])
-	var stall: CampaignStall = store.get("_campaign_stall")
+	var stall: CampaignStall = store.campaign_stall
 	var tray: CampaignTray = stall.tray
 	assert_int(tray.campaign_count()).is_greater_equal(1)
 	await _check_nothing_left(store)

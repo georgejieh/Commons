@@ -99,7 +99,7 @@ func test_a_scarce_cadre_is_stamped_and_a_routine_one_is_not() -> void:
 	assert_str(_buy_button(cards[0]).tooltip_text).contains(note)
 	assert_str(_buy_button(cards[1]).tooltip_text).not_contains(note)
 	# A page refreshed, as after a purchase, shows it at rest: it is pressed once.
-	store.call("_refresh")
+	store.refresh()
 	await await_idle_frame()
 	var after: Array[ScarceStamp] = _stamps(store.blocks()["counter"].get_child(0))
 	assert_int(after.size()).is_equal(1)

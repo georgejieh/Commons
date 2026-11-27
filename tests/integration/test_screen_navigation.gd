@@ -51,7 +51,7 @@ func test_the_table_menu_reaches_the_dossier_and_last_round_and_back() -> void:
 	var before: Dictionary = _app.controller.state_copy().to_dict()
 	for pair: Array in [["dossier.open", "dossier"], ["pause.last_round", "round_summary"]]:
 		table = _app.switcher.current()
-		table.call("_open_pause")
+		table.hud.menu.pressed.emit()
 		_press(pair[0])
 		await await_idle_frame()
 		assert_str(_app.switcher.current_id()).is_equal(pair[1])

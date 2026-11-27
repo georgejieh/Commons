@@ -53,7 +53,7 @@ func test_the_few_cards_words_fit_every_seat() -> void:
 			var table: TableScreen = app.show_screen("table", true)
 			await await_idle_frame()
 			table.skip_events()
-			var seats: Dictionary[int, SeatPanel] = table.get("_seats")
+			var seats: Dictionary[int, SeatPanel] = table.seats
 			for cards: int in [2, 1]:
 				for seat: int in seats:
 					seats[seat].set_count(cards)

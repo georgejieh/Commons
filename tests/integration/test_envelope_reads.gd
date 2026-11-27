@@ -46,7 +46,7 @@ func _opened(kind: String) -> EnvelopeOverlay:
 	counter.set("_stock", [kind] as Array[String])
 	var store: StoreScreen = _app.show_screen("black_market" if kind == "parcel" else "store", true)
 	await await_idle_frame()
-	var stall: EnvelopeStall = store.get("_envelope_stall")
+	var stall: EnvelopeStall = store.envelope_stall
 	stall.panel(0).buy.pressed.emit()
 	await await_idle_frame()
 	await await_idle_frame()

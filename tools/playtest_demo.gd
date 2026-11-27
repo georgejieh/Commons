@@ -146,12 +146,12 @@ func _table_step() -> void:
 	var table: Node = _current()
 	if not _idle():
 		return
-	var actions: Object = table.call("actions")
+	var actions: Object = table.get("actions")
 	match int(_controller().call("awaiting")):
 		AWAIT_BID:
 			await _bid(table)
 		AWAIT_NEED:
-			var need_panel: Node = table.call("need_panel")
+			var need_panel: Node = table.get("need_panel")
 			await _press(member(need_panel, "_more"))
 			await _frames(6)
 			await _shot("round%d_need" % _rounds_seen)
@@ -193,7 +193,7 @@ func _bid(table: Node) -> void:
 		await _file.table()
 		await _deal.table()
 		return
-	var actions: Object = table.call("actions")
+	var actions: Object = table.get("actions")
 	await _press(actions.get("decline"))
 	if _rounds_seen <= 2:
 		await _frames(5)
@@ -224,7 +224,7 @@ func _play_turn(table: Node) -> void:
 		return
 	var controller: Object = _controller()
 	var ids: Array[int] = _driver.call("choose_play", controller)
-	var actions: Object = table.call("actions")
+	var actions: Object = table.get("actions")
 	if ids.is_empty():
 		await _press(actions.get("pass_turn"))
 		return

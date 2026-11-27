@@ -34,49 +34,78 @@ const HAND_AT: Rect2 = Rect2(120, 830, 1016, 220)
 const YOU_ROOM: float = 46.0
 const SHEET_GAP: float = 8.0
 
+## Every card view the table draws, made once and reused.
+var pool: CardPool = CardPool.new()
+## Plays the run's events one step apart.
+var player: EventPlayer = EventPlayer.new()
+## Each villager's panel by seat: portrait, name, role, cards left and speech.
+var seats: Dictionary[int, SeatPanel] = {}
+## The bar across the top: where the run is, the Quota and the meters.
+var hud: TableHud = TableHud.new()
+## The trick in the middle of the table.
+var pile: TrickPile = TrickPile.new()
+## The player's hand, fanned along the bottom.
+var hand_view: HandView = HandView.new()
+## The round's scoreboard, set into the right rail.
+var ledger: Ledger = Ledger.new()
+## The player's Cadres, pinned between the seats once one is held.
+var board: NoticeBoard = NoticeBoard.new()
+## The rules slip under the right seat: the rules in force this round.
+var debuffs: DebuffStrip = DebuffStrip.new()
+## The column of the player's buttons: bid, play, pass, hint and sort.
+var actions: ActionBar = ActionBar.new()
+## The sheet the player declares their need on.
+var need_panel: NeedPanel = NeedPanel.new()
+## The rules card, every hand type with its Rate.
+var cheat_sheet: CheatSheet = CheatSheet.new()
+## The line over the hand that says the player's role.
+var you: Label = Label.new()
+## How the table's pieces move, and whether they move at all.
+var motion: TableMotion = TableMotion.new()
+## The menu over the table.
+var pause: PauseMenu = PauseMenu.new()
+## The deck sheet over the table, opened from the menu or its key.
+var deck: DeckSheet = null
+## What the villagers say at the table.
+var speech: TableSpeech = TableSpeech.new()
+## The board's dread drawn over the room.
+var dread: DreadLayers = DreadLayers.new()
+## The dread's set dressing: notices and marks on the room.
+var dressing: DreadDressing = DreadDressing.new()
+## The table's surface, which the corruption stages wear.
+var surface: TextureRect
+## The beats, banners and tallies that act the run out over the play.
+var moments: TableMoments = TableMoments.new()
+## The player's Campaigns: the tray and its moments.
+var campaigns: TableCampaigns = TableCampaigns.new()
+## The debuffs acted out at the table.
+var debuff_beats: DebuffMoments = DebuffMoments.new()
+## What a deal shows before the bid.
+var deal_beats: DealMoments = DealMoments.new()
+## What the arrival's slip points at on the table (ADR 0026).
+var tutorial: TableTutorial = TableTutorial.new()
+## The wild ranks at the table: the call-out, the strip and the picker.
+var wild: TableWild = TableWild.new()
+## The two side columns under the seats, laid out to fit (ADR 0034).
+var columns: TableColumns = TableColumns.new()
+## Sitting out a trick, and its pace.
+var sit_out: SitOut = SitOut.new()
+## The private-plot swap, a sheet over the table (ADR 0038).
+var swap_sheet: PlotSwapSheet = PlotSwapSheet.new()
+## The frame round the villager whose turn it is.
+var turn: TurnMark = TurnMark.new()
 var _app: DemoApp
 var _controller: RunController
 var _hand: HandModel
-var _pool: CardPool = CardPool.new()
-var _player: EventPlayer = EventPlayer.new()
-var _seats: Dictionary[int, SeatPanel] = {}
-var _pile: TrickPile = TrickPile.new()
-
-var _hand_view: HandView = HandView.new()
-var _hud: TableHud = TableHud.new()
-var _ledger: Ledger = Ledger.new()
-var _board: NoticeBoard = NoticeBoard.new()
-var _debuffs: DebuffStrip = DebuffStrip.new()
-var _actions: ActionBar = ActionBar.new()
-var _need_panel: NeedPanel = NeedPanel.new()
-var _cheat_sheet: CheatSheet = CheatSheet.new()
 var _pool_parent: Control = Control.new()
-var _you: Label = Label.new()
-var _motion: TableMotion = TableMotion.new()
 var _replaying: bool = false
-var _pause: PauseMenu = PauseMenu.new()
-var _deck: DeckSheet = null
 var _atmosphere: TableAtmosphere = TableAtmosphere.new()
 var _landlord: int = Seats.NONE
-var _speech: TableSpeech = TableSpeech.new()
 var _input: TableInput = TableInput.new()
 var _commands: TableCommands = TableCommands.new()
-var _dread: DreadLayers = DreadLayers.new()
-var _dressing: DreadDressing = DreadDressing.new()
-var _surface: TextureRect
-var _moments: TableMoments = TableMoments.new()
-var _campaigns: TableCampaigns = TableCampaigns.new()
-var _debuff_beats: DebuffMoments = DebuffMoments.new()
-var _deal_beats: DealMoments = DealMoments.new()
-var _tutorial: TableTutorial = TableTutorial.new()
-var _wild: TableWild = TableWild.new()
 var _resize: TableResize = TableResize.new()
-var _columns: TableColumns = TableColumns.new()
 var _close: RoundClose = RoundClose.new()
-var _sit_out: SitOut = SitOut.new()
-var _swap_sheet: PlotSwapSheet = PlotSwapSheet.new()
 var _kept: KeptSeatCall = KeptSeatCall.new()
-var _turn: TurnMark = TurnMark.new()
 var _cards: TableCards
 ## Each villager's card count as the events played so far leave it.
 var _counts: Dictionary[int, int] = {}
@@ -94,16 +123,16 @@ func _lay_room() -> void:
 	var rail: ColorRect = ColorRect.new()
 	rail.color = RAIL_EDGE
 	rail.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_surface = ScreenKit.cover(ScreenKit.ART.table_surface)
+	surface = ScreenKit.cover(ScreenKit.ART.table_surface)
 	# The room fills the screen below the bar, so a 16:10 screen shows more table, not
 	# a band of nothing.
-	for backdrop: Control in [rail, _surface, _atmosphere]:
+	for backdrop: Control in [rail, surface, _atmosphere]:
 		add_child(backdrop)
 		backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		backdrop.offset_top = 0.0 if backdrop == rail else 72.0
 	_atmosphere.name = "Atmosphere"
-	add_child(_dressing)
-	add_child(_dread)
+	add_child(dressing)
+	add_child(dread)
 
 
 ## The bar, the ledger, the board, the hand, the line over it, the buttons, the rules slip
@@ -114,49 +143,49 @@ func _lay_papers() -> void:
 	ledger_paper.theme_type_variation = CommonsTheme.SHEET
 	ledger_paper.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_place(ledger_paper, Vector2(1556, 112), Vector2(328, 900))
-	ledger_paper.add_child(_ledger)
-	_place(_hud, Vector2.ZERO, Vector2(1920, 72))
-	_place(_board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
-	_place(_hand_view, HAND_AT.position, HAND_AT.size)
-	_you.theme_type_variation = CommonsTheme.TITLE
-	ScreenKit.paper_outline(_you)
-	_place(_you, Vector2(120, 750), Vector2(900, 40))
+	ledger_paper.add_child(ledger)
+	_place(hud, Vector2.ZERO, Vector2(1920, 72))
+	_place(board, Vector2(PLAY_CENTER - 298.0, 128), Vector2(596, 140))
+	_place(hand_view, HAND_AT.position, HAND_AT.size)
+	you.theme_type_variation = CommonsTheme.TITLE
+	ScreenKit.paper_outline(you)
+	_place(you, Vector2(120, 750), Vector2(900, 40))
 	# The line stands between the notice over it and a lifted card under it: its type fits
 	# that room, never under Standard.
-	var face: Font = _you.get_theme_font("font")
+	var face: Font = you.get_theme_font("font")
 	var fits: Callable = func(type: int) -> bool: return face.get_height(type) <= YOU_ROOM
-	_you.add_theme_font_size_override("font_size", TextSize.fit(28, 28, fits))
-	_place(_actions, ACTIONS_AT.position, ACTIONS_AT.size)
+	you.add_theme_font_size_override("font_size", TextSize.fit(28, 28, fits))
+	_place(actions, ACTIONS_AT.position, ACTIONS_AT.size)
 	# Held at its foot: a taller prompt grows up into the empty table, never down.
-	_actions.hold(ACTIONS_AT)
+	actions.hold(ACTIONS_AT)
 	# The rules slip under the right seat, as wide as from its edge to the column's.
 	var slip_x: float = PLAY_CENTER + SEAT_OFFSET
-	_place(_debuffs, Vector2(slip_x, 112), Vector2(_actions.held().end.x - slip_x, 0))
-	_place(_need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
-	_need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
-	_need_panel.foot = HAND_AT.position.y - SHEET_GAP
-	_need_panel.head = _hud.size.y + SHEET_GAP
+	_place(debuffs, Vector2(slip_x, 112), Vector2(actions.held().end.x - slip_x, 0))
+	_place(need_panel, Vector2(PLAY_CENTER - 262.0, 360), Vector2(524, 0))
+	need_panel.center = Vector2(PLAY_CENTER, SHEET_MIDDLE)
+	need_panel.foot = HAND_AT.position.y - SHEET_GAP
+	need_panel.head = hud.size.y + SHEET_GAP
 
 
 ## What lies over the play: the moments, the sheets and the menu, the trick and the pieces
 ## placed around it.
 func _lay_over() -> void:
-	_place(_moments, Vector2.ZERO, Vector2(1920, 1080))
-	_pause.at_table = true
-	add_child(_swap_sheet)
-	for sheet: Control in [_cheat_sheet, _pause]:
+	_place(moments, Vector2.ZERO, Vector2(1920, 1080))
+	pause.at_table = true
+	add_child(swap_sheet)
+	for sheet: Control in [cheat_sheet, pause]:
 		add_child(sheet)
 		sheet.set_deferred("size", Vector2(1920, 1080))
 	_place(_pool_parent, Vector2(-4000, -4000), Vector2.ZERO)
 	_pool_parent.visible = false
 	# Narrower than the table, so the Campaign tray has the room at its left.
 	var pile_at: Vector2 = Vector2(PLAY_CENTER - PILE_HALF_WIDTH, 380)
-	_place(_pile, pile_at, Vector2(PILE_HALF_WIDTH * 2.0, 300))
-	_campaigns.place(self)
-	_debuff_beats.place(self, _hand_view)
-	_wild.place(self)
+	_place(pile, pile_at, Vector2(PILE_HALF_WIDTH * 2.0, 300))
+	campaigns.place(self)
+	debuff_beats.place(self, hand_view)
+	wild.place(self)
 	# The need panel, sheets and banner all lie over the pile.
-	move_child(_pile, _need_panel.get_index())
+	move_child(pile, need_panel.get_index())
 
 
 func open(app: DemoApp) -> void:
@@ -171,37 +200,37 @@ func open(app: DemoApp) -> void:
 
 ## The event queue, the motion, the seats, the hand and the commands, wired to the run.
 func _wire_play(app: DemoApp) -> void:
-	_pool.fill(_pool_parent)
-	add_child(_player)
-	add_child(_motion)
-	_player.motion = _motion
-	_motion.setup(self, UiMotion.reduced())
+	pool.fill(_pool_parent)
+	add_child(player)
+	add_child(motion)
+	player.motion = motion
+	motion.setup(self, UiMotion.reduced())
 	Settings.changed.connect(_on_setting)
-	_pile.setup(_pool, _pool_parent, _motion)
-	_hand_view.motion = _motion
+	pile.setup(pool, _pool_parent, motion)
+	hand_view.motion = motion
 	_build_seats()
-	_cards = TableCards.new(_controller, _hand, _hand_view, _seats)
-	add_child(_turn)
-	_turn.setup(_seats, _player, _controller)
+	_cards = TableCards.new(_controller, _hand, hand_view, seats)
+	add_child(turn)
+	turn.setup(seats, player, _controller)
 	# The moments layer lies over everything, seats included, so a takeover dims it all.
-	move_child(_moments, -1)
-	_speech.setup(_seats, app)
-	_board.setup(_controller.figures.cadre_slots(), _board.size)
+	move_child(moments, -1)
+	speech.setup(seats, app)
+	board.setup(_controller.figures.cadre_slots(), board.size)
 	# Wang's slip stands where the board is through the arrival, which holds no Cadre.
-	_board.visible = not app.arrival.is_running()
-	_need_panel.setup(
+	board.visible = not app.arrival.is_running()
+	need_panel.setup(
 		_controller.figures.base_need(), app.need_cap(), _controller.figures.lie_cost()
 	)
-	_hand_view.setup(_hand, _pool)
-	_commands.setup(_controller, _hand, _hand_view, _actions, _need_panel, _player)
-	_commands.open_rules = _cheat_sheet.toggle.bind(_controller)
+	hand_view.setup(_hand, pool)
+	_commands.setup(_controller, _hand, hand_view, actions, need_panel, player)
+	_commands.open_rules = cheat_sheet.toggle.bind(_controller)
 	_commands.gate = app.arrival.attempt
-	_tutorial.setup(app, _actions, _hand_view, _need_panel, _cheat_sheet, _pause, _dressing)
-	_tutorial.watch(_pile, _player)
-	_player.played.connect(_on_event)
-	_player.winding.connect(_on_winding)
-	_player.drained.connect(_on_drained)
-	_controller.event_emitted.connect(_player.push)
+	tutorial.setup(app, actions, hand_view, need_panel, cheat_sheet, pause, dressing)
+	tutorial.watch(pile, player)
+	player.played.connect(_on_event)
+	player.winding.connect(_on_winding)
+	player.drained.connect(_on_drained)
+	_controller.event_emitted.connect(player.push)
 
 
 ## The ledger, the moments and the pieces that act the run's events out.
@@ -211,43 +240,43 @@ func _wire_moments(app: DemoApp) -> void:
 		Seats.RIGHT: app.seat_name(Seats.RIGHT),
 		Seats.LEFT: app.seat_name(Seats.LEFT),
 	}
-	_ledger.setup(names)
+	ledger.setup(names)
 	_commands.set_names(names)
 	var faces: Dictionary[int, Texture2D] = {}
-	for seat: int in _seats:
+	for seat: int in seats:
 		faces[seat] = app.seat_portrait(seat, Vector2.ONE)
-	_moments.setup(_ledger, _pile, _motion, _player, _seats, names, faces)
-	_moments.tally.visibility_changed.connect(_step_aside)
-	_kept.setup(_player, _moments.callout, names, faces)
-	_swap_sheet.setup(app, _pool)
-	_moments.hud = _hud
-	_moments.controller = _controller
-	_moments.sequence.attach(_board, _debuffs, _controller)
+	moments.setup(ledger, pile, motion, player, seats, names, faces)
+	moments.tally.visibility_changed.connect(_step_aside)
+	_kept.setup(player, moments.callout, names, faces)
+	swap_sheet.setup(app, pool)
+	moments.hud = hud
+	moments.controller = _controller
+	moments.sequence.attach(board, debuffs, _controller)
 	add_child(_close)
-	_close.setup(_player, _pile, _moments, _hand_view, _cards)
-	_campaigns.setup(_controller, _hand, _hand_view, _actions, _commands, _player, _moments)
-	_campaigns.attach(_pool, _debuffs, _cards)
-	_columns.setup(_seats, _campaigns.tray, _dressing, _debuffs, _actions, _controller)
-	_sit_out.setup(_controller, _actions, _commands, _player, app.arrival.is_running)
-	_sit_out.pace_changed.connect(_set_pace)
-	_debuff_beats.setup(_controller, _cards, _hand_view, _pool, _player, _moments, _board)
-	_deal_beats.place(self, _moments)
-	_deal_beats.setup(_controller, _pile, _hand_view, _player)
+	_close.setup(player, pile, moments, hand_view, _cards)
+	campaigns.setup(_controller, _hand, hand_view, actions, _commands, player, moments)
+	campaigns.attach(pool, debuffs, _cards)
+	columns.setup(seats, campaigns.tray, dressing, debuffs, actions, _controller)
+	sit_out.setup(_controller, actions, _commands, player, app.arrival.is_running)
+	sit_out.pace_changed.connect(_set_pace)
+	debuff_beats.setup(_controller, _cards, hand_view, pool, player, moments, board)
+	deal_beats.place(self, moments)
+	deal_beats.setup(_controller, pile, hand_view, player)
 
 
 ## The pace, the menu, the deck sheet, the keys and the dread.
 func _wire_menus(app: DemoApp) -> void:
 	_set_pace()
-	_hud.menu.pressed.connect(_open_pause)
-	_deck = TableDeck.attach(self, _pause, _controller, _player)
-	_pause.resumed.connect(func() -> void: _player.set_process(true))
+	hud.menu.pressed.connect(_open_pause)
+	deck = TableDeck.attach(self, pause, _controller, player)
+	pause.resumed.connect(func() -> void: player.set_process(true))
 	# The events wait behind the books' notice until it is acknowledged (ADR 0022).
-	app.notice.hold(_player)
-	_pause.wire(app)
-	_resize.setup(self, app, _pause)
-	_input.setup(_pause, _cheat_sheet, _actions, _hand_view, _controller, _open_pause, _open_deck)
-	_input.tray = _campaigns.tray
-	_wild.setup(_hand_view, _pile, _debuffs, _moments, _player, _commands, _input)
+	app.notice.hold(player)
+	pause.wire(app)
+	_resize.setup(self, app, pause)
+	_input.setup(pause, cheat_sheet, actions, hand_view, _controller, _open_pause, _open_deck)
+	_input.tray = campaigns.tray
+	wild.setup(hand_view, pile, debuffs, moments, player, _commands, _input)
 	_setup_dread(app)
 
 
@@ -256,62 +285,43 @@ func _replay_set() -> void:
 	_replaying = true
 	_still(true)
 	for event: RunEvent in _controller.set_events():
-		_player.push(event)
-	_player.flush()
+		player.push(event)
+	player.flush()
 	_still(false)
 	_replaying = false
 	_kept.after_replay(_controller.awaiting() == RunController.AWAIT_SWAP)
-	_hud.sync(_controller.run, _controller.figures.target())
+	hud.sync(_controller.run, _controller.figures.target())
 
 
 ## Plays every queued event at once, skipping the pacing.
 func skip_events() -> void:
-	_speech.hurrying = true
+	speech.hurrying = true
 	_still(true)
-	_player.flush()
+	player.flush()
 	_still(false)
-	_speech.skip_all()
+	speech.skip_all()
 
 
 ## While the queue is played at once, nothing moves: cards land where they lie and a
 ## won trick is cleared, not swept, so no tween outlives the catch-up and clears a
 ## later play.
 func _still(on: bool) -> void:
-	_motion.set_still(on or UiMotion.reduced())
-
-
-## The buttons, for scripted UI tests.
-func actions() -> ActionBar:
-	return _actions
-
-
-func need_panel() -> NeedPanel:
-	return _need_panel
-
-
-## The hand's sort, kept when the table is built again at a new text size (ADR 0034).
-func sort_mode() -> HandView.Sort:
-	return _hand_view.sort_mode
+	motion.set_still(on or UiMotion.reduced())
 
 
 func keep_sort(mode: HandView.Sort) -> void:
 	_commands.set_sort(mode)
 
 
-## What the arrival's slip points at on the table (ADR 0026).
-func tutorial() -> TableTutorial:
-	return _tutorial
-
-
 func _open_pause() -> void:
-	_player.set_process(false)
-	_pause.open()
+	player.set_process(false)
+	pause.open()
 
 
 ## The deck sheet over the table, its events held until it is closed, as from the menu.
 func _open_deck() -> void:
-	_player.set_process(false)
-	_deck.open_deck()
+	player.set_process(false)
+	deck.open_deck()
 
 
 ## Keyboard and gamepad go through TableInput.
@@ -323,20 +333,20 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Dread reads the run at round boundaries, and starts settled when the table opens.
 func _setup_dread(app: DemoApp) -> void:
 	var materials: Dictionary[String, ShaderMaterial] = DreadLayers.table_materials(
-		app.post.material(), _atmosphere, _dressing
+		app.post.material(), _atmosphere, dressing
 	)
 	var panels: Array[SeatPanel] = []
-	panels.assign(_seats.values())
-	var slots: Dictionary[String, TextureRect] = {"table_surface": _surface}
-	_dread.setup(materials, _dressing, panels, slots, _hand_view)
-	_speech.dread = _dread
-	_dread.refresh(_controller.run, true)
+	panels.assign(seats.values())
+	var slots: Dictionary[String, TextureRect] = {"table_surface": surface}
+	dread.setup(materials, dressing, panels, slots, hand_view)
+	speech.dread = dread
+	dread.refresh(_controller.run, true)
 
 
 func _exit_tree() -> void:
-	_dread.clear()
-	if _controller != null and _controller.event_emitted.is_connected(_player.push):
-		_controller.event_emitted.disconnect(_player.push)
+	dread.clear()
+	if _controller != null and _controller.event_emitted.is_connected(player.push):
+		_controller.event_emitted.disconnect(player.push)
 
 
 ## Seat 1 acts after you, so it sits on your right; seat 2 on your left. Both sit
@@ -351,36 +361,36 @@ func _build_seats() -> void:
 			else PLAY_CENTER - SEAT_OFFSET - SEAT_WIDTH
 		)
 		_place(panel, Vector2(x, 112), Vector2(SEAT_WIDTH, 0))
-		_seats[seat] = panel
+		seats[seat] = panel
 
 
 func _on_event(event: RunEvent) -> void:
 	# Rejoining replays the Set silently: nothing is said or played twice.
 	if not _replaying:
 		TableSounds.play(event, _landlord, _controller)
-		_speech.on_event(event)
+		speech.on_event(event)
 	# Campaigns first, so a forced pass is tagged as one when its pass arrives.
-	_campaigns.on_event(event, _replaying or _player.flushing)
-	_moments.on_event(event, _replaying or _player.flushing)
-	_wild.on_event(event, _replaying or _player.flushing)
+	campaigns.on_event(event, _replaying or player.flushing)
+	moments.on_event(event, _replaying or player.flushing)
+	wild.on_event(event, _replaying or player.flushing)
 	_resize.on_event(event)
 	match event.type:
 		RunEvent.Type.ROUND:
 			_on_round_event(event.round_event)
 		RunEvent.Type.ROUND_SCORED:
-			_ledger.set_final(event.seat, event.amount)
-			_dread.refresh(_controller.run)
+			ledger.set_final(event.seat, event.amount)
+			dread.refresh(_controller.run)
 		RunEvent.Type.SET_STARTED, RunEvent.Type.DEALT:
 			_new_deal()
-			_dread.refresh(_controller.run)
+			dread.refresh(_controller.run)
 		RunEvent.Type.SET_ENDED, RunEvent.Type.METER_CHANGED:
-			_dread.refresh(_controller.run)
+			dread.refresh(_controller.run)
 		RunEvent.Type.LANDLORD_CHOSEN:
 			_landlord = event.seat
-			_dread.refresh(_controller.run, false, event.seat)
+			dread.refresh(_controller.run, false, event.seat)
 		RunEvent.Type.CADRE_FIRED:
-			if not (_replaying or _player.flushing):
-				_board.fired(_controller, event.text, event.value)
+			if not (_replaying or player.flushing):
+				board.fired(_controller, event.text, event.value)
 	_refresh_status()
 
 
@@ -389,7 +399,7 @@ func _on_round_event(event: RoundEvent) -> void:
 		RoundEvent.Type.ROUND_STARTED:
 			# A kept seat is never bid for again, so the round itself names the landlord.
 			_landlord = event.seat
-			_ledger.start_round(event.seat)
+			ledger.start_round(event.seat)
 			_show_roles(event.seat)
 		RoundEvent.Type.KITTY_TAKEN:
 			_count_cards(event.seat, event.card_ids.size())
@@ -399,70 +409,70 @@ func _on_round_event(event: RoundEvent) -> void:
 			if event.seat == Seats.PLAYER:
 				_close.own_play(event)
 			if event.pattern.type == Pattern.Type.BOMB or event.pattern.type == Pattern.Type.ROCKET:
-				_motion.impact()
-			_ledger.set_pending(DirectiveSheet.type_name(event.pattern.type))
+				motion.impact()
+			ledger.set_pending(DirectiveSheet.type_name(event.pattern.type))
 		RoundEvent.Type.TRICK_WON:
 			# A replayed or skipped trick is cleared at once: a sweep still running would
 			# clear the plays that come after it.
-			if _replaying or _player.flushing:
-				_pile.clear()
+			if _replaying or player.flushing:
+				pile.clear()
 			else:
-				_pile.sweep(_cards.point(event.seat))
+				pile.sweep(_cards.point(event.seat))
 
 
 ## A fresh deal wipes the last round off the table: lanes, ledger, speech, the
 ## round's banner and the landlord tag, and every villager back to a full hand. Your
 ## new hand rises in now, not after the bots' first plays.
 func _new_deal() -> void:
-	_pile.clear()
-	_ledger.clear_rows()
+	pile.clear()
+	ledger.clear_rows()
 	_landlord = Seats.NONE
-	_speech.skip_all()
-	for seat: int in _seats:
+	speech.skip_all()
+	for seat: int in seats:
 		_counts[seat] = Dealer.HAND_SIZE
-	for panel: SeatPanel in _seats.values():
+	for panel: SeatPanel in seats.values():
 		panel.set_count(Dealer.HAND_SIZE)
 		panel.set_role(false, false)
 		panel.say("")
 	_hand.refresh()
-	_hand_view.show_cards()
-	_hand_view.deal_in()
+	hand_view.show_cards()
+	hand_view.deal_in()
 
 
 func _on_drained() -> void:
 	_refresh_seats()
 	_refresh_status()
 	var state: RunView = _controller.run
-	_hud.sync(state, _controller.figures.target())
-	_dressing.post_notice(
+	hud.sync(state, _controller.figures.target())
+	dressing.post_notice(
 		DreadDressing.notice_key(state.year(), state.set_index() + state.round_index())
 	)
-	_board.show_cadres(_controller)
+	board.show_cadres(_controller)
 	# A row of empty slots says nothing: the board stands once a Cadre is held.
-	_board.visible = not (_app.arrival.is_running() or state.held_cadres().is_empty())
-	_debuffs.show_debuffs(_controller)
+	board.visible = not (_app.arrival.is_running() or state.held_cadres().is_empty())
+	debuffs.show_debuffs(_controller)
 	var awaiting: int = _controller.awaiting()
-	_actions.show_bidding(awaiting == RunController.AWAIT_BID)
-	_need_panel.visible = awaiting == RunController.AWAIT_NEED
+	actions.show_bidding(awaiting == RunController.AWAIT_BID)
+	need_panel.visible = awaiting == RunController.AWAIT_NEED
 	_clear_for_sheet()
 	if awaiting == RunController.AWAIT_NEED:
-		_need_panel.ask(
+		need_panel.ask(
 			state.commons_pool(),
 			_app.seat_name(Seats.teammate(Seats.PLAYER, _landlord)),
 			_controller.figures.audit_chance()
 		)
 	_hand.refresh()
-	_hand_view.show_cards()
-	_campaigns.refresh()
+	hand_view.show_cards()
+	campaigns.refresh()
 	_commands.refresh()
-	_columns.fit()
-	_tutorial.settled(awaiting)
+	columns.fit()
+	tutorial.settled(awaiting)
 	_resize.drained(awaiting)
 	if awaiting == RunController.AWAIT_SET_OVER or awaiting == RunController.AWAIT_RUN_OVER:
 		_app.show_screen("set_summary", true)
 	elif awaiting == RunController.AWAIT_SWAP:
 		# The plot swap is a sheet over the table, opened once the queue is empty (ADR 0038).
-		_swap_sheet.open()
+		swap_sheet.open()
 
 
 ## A play flies to the pile from the seat that made it; yours leaves from your hand. Only
@@ -471,15 +481,15 @@ func _show_play(event: RoundEvent) -> void:
 	var origins: Array[Vector2] = []
 	if event.seat == Seats.PLAYER:
 		for card: CardInstance in event.cards:
-			origins.append(_hand_view.card_center(card.id()))
-	_pile.show_play(
+			origins.append(hand_view.card_center(card.id()))
+	pile.show_play(
 		event.cards, _cards.point(event.seat), origins, event.pattern, event.seat == Seats.PLAYER
 	)
 
 
 func _on_setting(key: String) -> void:
 	if key == UiMotion.SETTING:
-		_motion.set_still(UiMotion.reduced())
+		motion.set_still(UiMotion.reduced())
 	if key == UiMotion.SETTING or key == SettingsPanel.PACE_SETTING:
 		_set_pace()
 
@@ -487,69 +497,69 @@ func _on_setting(key: String) -> void:
 ## The step between events, and every wait measured in it, at the pace chosen in
 ## settings: it takes hold at once, mid-round.
 func _set_pace() -> void:
-	_player.step = _app.motion_step() * _sit_out.pace()
-	_moments.sequence.hurrying_villagers = _sit_out.is_active()
-	_player.play_wait = UiMotion.PRESETS.fly_time * _player.step / UiMotion.PRESETS.event_step
-	_player.wind = _wind()
-	_player.holds = {
-		RunEvent.Type.NEED_DECLARED: _player.step, RunEvent.Type.SHARE_PAID: _player.step * 1.6
+	player.step = _app.motion_step() * sit_out.pace()
+	moments.sequence.hurrying_villagers = sit_out.is_active()
+	player.play_wait = UiMotion.PRESETS.fly_time * player.step / UiMotion.PRESETS.event_step
+	player.wind = _wind()
+	player.holds = {
+		RunEvent.Type.NEED_DECLARED: player.step, RunEvent.Type.SHARE_PAID: player.step * 1.6
 	}
 
 
 ## The beat a villager's seat is marked for before its cards leave, at the table's pace;
 ## none under reduced motion.
 func _wind() -> float:
-	if _motion.still:
+	if motion.still:
 		return 0.0
-	return UiMotion.PRESETS.wind_up * _player.step / UiMotion.PRESETS.event_step
+	return UiMotion.PRESETS.wind_up * player.step / UiMotion.PRESETS.event_step
 
 
 func _on_winding(event: RunEvent) -> void:
 	var seat: int = event.round_event.seat
-	if not _replaying and _seats.has(seat):
-		_motion.wind_up(_seats[seat], _player.wind)
+	if not _replaying and seats.has(seat):
+		motion.wind_up(seats[seat], player.wind)
 
 
 ## The seats take their roles as the round starts, and their card counts tick as cards
 ## are taken and played, without waiting for the queue to drain.
 func _show_roles(landlord: int) -> void:
-	for seat: int in _seats:
-		_seats[seat].set_role(landlord == seat, Seats.teammate(Seats.PLAYER, landlord) == seat)
+	for seat: int in seats:
+		seats[seat].set_role(landlord == seat, Seats.teammate(Seats.PLAYER, landlord) == seat)
 	_show_you(landlord)
 
 
 ## The line over your hand says your role, from the moment the round starts.
 func _show_you(landlord: int) -> void:
 	var role: String = "landlord" if landlord == Seats.PLAYER else "peasant"
-	_you.text = tr("table.you." + ("bidding" if landlord == Seats.NONE else role))
+	you.text = tr("table.you." + ("bidding" if landlord == Seats.NONE else role))
 	_clear_for_sheet()
 
 
 ## The tally's band is the line's too: the line over the hand steps aside while a play's
 ## score is shown, its role told by then, and is back when the tally is put away.
 func _step_aside() -> void:
-	_you.modulate.a = 0.0 if _moments.tally.visible else 1.0
+	you.modulate.a = 0.0 if moments.tally.visible else 1.0
 
 
 ## The claim sheet lies over the line above the hand, and half a line showing under a
 ## sheet reads as a fault: the line is put away while the sheet is up, and the Glass
 ## Walls slip keeps clear of both.
 func _clear_for_sheet() -> void:
-	_you.visible = not _need_panel.visible
-	_debuff_beats.clear_slip(_you, _need_panel.visible)
+	you.visible = not need_panel.visible
+	debuff_beats.clear_slip(you, need_panel.visible)
 
 
 func _count_cards(seat: int, change: int) -> void:
-	if _seats.has(seat):
+	if seats.has(seat):
 		_counts[seat] = maxi(int(_counts.get(seat, Dealer.HAND_SIZE)) + change, 0)
-		_seats[seat].set_count(_counts[seat])
+		seats[seat].set_count(_counts[seat])
 
 
 func _refresh_seats() -> void:
 	var view: SeatView = _controller.table.seat_view()
 	var landlord: int = _controller.run.landlord_seat()
-	for seat: int in _seats:
-		var panel: SeatPanel = _seats[seat]
+	for seat: int in seats:
+		var panel: SeatPanel = seats[seat]
 		if view != null:
 			panel.set_count(view.public.remaining[seat])
 			_counts[seat] = view.public.remaining[seat]
@@ -557,7 +567,7 @@ func _refresh_seats() -> void:
 		var teammate: bool = Seats.teammate(Seats.PLAYER, landlord) == seat
 		panel.set_role(landlord == seat, teammate)
 		panel.set_intel(IntelText.for_seat(view.info if view != null else null, seat))
-		var bid: String = _moments.bid_key(seat)
+		var bid: String = moments.bid_key(seat)
 		if landlord == Seats.NONE and not bid.is_empty():
 			panel.set_bid(tr(bid))
 	_show_you(landlord)
@@ -565,8 +575,8 @@ func _refresh_seats() -> void:
 
 func _refresh_status() -> void:
 	var state: RunView = _controller.run
-	_hud.show_state(state, _app.max_rounds())
-	_ledger.show_books(state, _controller.figures.target())
+	hud.show_state(state, _app.max_rounds())
+	ledger.show_books(state, _controller.figures.target())
 
 
 func _place(node: Control, at: Vector2, extent: Vector2) -> void:

@@ -39,7 +39,7 @@ func _open() -> StoreScreen:
 
 
 func _bought(store: StoreScreen) -> EnvelopeOverlay:
-	var stall: EnvelopeStall = store.get("_envelope_stall")
+	var stall: EnvelopeStall = store.envelope_stall
 	stall.panel(0).buy.pressed.emit()
 	return stall.overlay()
 

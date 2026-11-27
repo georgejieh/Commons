@@ -118,7 +118,7 @@ func test_full_horror_changes_the_board() -> void:
 
 func test_horror_never_changes_what_the_player_reads() -> void:
 	var table: TableScreen = await _open_table()
-	var dread: DreadLayers = table.get("_dread")
+	var dread: DreadLayers = table.dread
 	Settings.set_value("horror_intensity", 0.0)
 	dread.force(0, 0, false)
 	await await_idle_frame()
@@ -165,7 +165,7 @@ func _open_table() -> TableScreen:
 
 func _table_dread() -> DreadLayers:
 	var table: TableScreen = await _open_table()
-	return table.get("_dread")
+	return table.dread
 
 
 ## Every label text and card on the table outside the dread dressing, in tree order.
@@ -187,7 +187,7 @@ func _readings(node: Node, dread: DreadLayers) -> PackedStringArray:
 
 func test_a_flashed_extra_chair_hides_again() -> void:
 	var table: TableScreen = await _open_table()
-	var dressing: DreadDressing = table.get("_dressing")
+	var dressing: DreadDressing = table.dressing
 	dressing.flash_piece("extra_chair", 0.1)
 	assert_bool(dressing.is_shown("extra_chair")).is_true()
 	await await_millis(400)

@@ -77,9 +77,9 @@ func test_the_tables_text_size_line_stands_under_its_boxes() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
 		var table: TableScreen = await _show("table")
-		table.call("_open_pause")
-		var pause: PauseMenu = table.get("_pause")
-		pause.call("_show_page", pause.get("_settings"))
+		table.hud.menu.pressed.emit()
+		var pause: PauseMenu = table.pause
+		TestInput.press(self, pause.main, tr("pause.settings"))
 		await await_idle_frame()
 		var note: Label = _labelled(pause, tr("settings.text_size.table"))
 		var standard: Control = pause.find_child(SettingsPanel.TEXT_SIZE_BOX % 0, true, false)
@@ -199,13 +199,13 @@ func test_the_dialogs_keep_their_padding() -> void:
 	for pair: Array in _each():
 		var where: String = _at(pair)
 		var table: TableScreen = await _show("table")
-		table.call("_open_pause")
-		var pause: PauseMenu = table.get("_pause")
+		table.hud.menu.pressed.emit()
+		var pause: PauseMenu = table.pause
 		await await_idle_frame()
-		_check_padding(_sheet_of(pause.get("_main")), where + " menu")
-		pause.call("_show_page", pause.get("_confirm"))
+		_check_padding(_sheet_of(pause.main), where + " menu")
+		TestInput.press(self, pause.main, tr("menu.abandon"))
 		await await_idle_frame()
-		var confirm: Control = _sheet_of(pause.get("_confirm"))
+		var confirm: Control = _sheet_of(pause.confirm)
 		_check_padding(confirm, where + " question")
 		assert_object(_labelled(confirm, tr("menu.abandon"))).is_not_null()
 		pause.visible = false

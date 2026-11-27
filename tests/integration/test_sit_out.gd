@@ -61,37 +61,35 @@ func _last_player(view: SeatView) -> int:
 func _open_table() -> TableScreen:
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	await TestWait.until(
-		self, table.get("_player").is_idle, "the table's events to play", WAIT_SECONDS
-	)
+	await TestWait.until(self, table.player.is_idle, "the table's events to play", WAIT_SECONDS)
 	return table
 
 
 func test_it_is_offered_only_with_nothing_but_a_pass() -> void:
 	assert_bool(_to_turn(false)).is_true()
 	var table: TableScreen = await _open_table()
-	assert_bool(table.actions().sit_out.visible).is_true()
-	assert_str(table.actions().sit_out.tooltip_text).is_equal(tr("action.sit_out_tip"))
+	assert_bool(table.actions.sit_out.visible).is_true()
+	assert_str(table.actions.sit_out.tooltip_text).is_equal(tr("action.sit_out_tip"))
 	# With any legal play in hand, a bomb or rocket among them, it is not offered.
 	assert_bool(_to_turn(true)).is_true()
 	table = await _open_table()
-	assert_bool(table.actions().sit_out.visible).is_false()
-	var sit_out: SitOut = table.get("_sit_out")
+	assert_bool(table.actions.sit_out.visible).is_false()
+	var sit_out: SitOut = table.sit_out
 	assert_bool(sit_out.offered()).is_false()
 
 
 func test_sitting_out_passes_to_the_tricks_end_at_a_faster_step() -> void:
 	assert_bool(_to_turn(false)).is_true()
 	var table: TableScreen = await _open_table()
-	var player: EventPlayer = table.get("_player")
-	var sit_out: SitOut = table.get("_sit_out")
+	var player: EventPlayer = table.player
+	var sit_out: SitOut = table.sit_out
 	var normal: float = player.step
 	var seen: Dictionary = {"passes": 0, "plays": 0, "ended": false, "fast": true}
 	player.played.connect(_count.bind(seen, sit_out, player, normal))
-	table.actions().sit_out.pressed.emit()
+	table.actions.sit_out.pressed.emit()
 	assert_bool(sit_out.is_active()).is_true()
 	assert_float(player.step).is_equal_approx(normal * UiMotion.PRESETS.sit_out_scale, 0.0001)
-	assert_str(table.actions().reading.text).is_equal(tr("table.sitting_out"))
+	assert_str(table.actions.reading.text).is_equal(tr("table.sitting_out"))
 	await TestWait.until(
 		self,
 		_sat_out_to_the_end.bind(seen, sit_out),
@@ -126,11 +124,11 @@ func test_sitting_out_holds_while_a_villager_searches() -> void:
 		if not _to_turn(false, configs, [seed_value], 2):
 			continue
 		var table: TableScreen = await _open_table()
-		var sit_out: SitOut = table.get("_sit_out")
-		var player: EventPlayer = table.get("_player")
+		var sit_out: SitOut = table.sit_out
+		var player: EventPlayer = table.player
 		var seen: Dictionary = {"passes": 0, "plays": 0, "ended": false, "fast": true}
 		player.played.connect(_count.bind(seen, sit_out, player, player.step))
-		table.actions().sit_out.pressed.emit()
+		table.actions.sit_out.pressed.emit()
 		assert_bool(sit_out.is_active()).is_true()
 		await TestWait.until(
 			self,
@@ -167,20 +165,21 @@ func _sat_out_to_the_end(seen: Dictionary, sit_out: SitOut) -> bool:
 func test_the_key_sits_out_as_the_button_does() -> void:
 	assert_bool(_to_turn(false)).is_true()
 	var table: TableScreen = await _open_table()
-	var sit_out: SitOut = table.get("_sit_out")
+	var sit_out: SitOut = table.sit_out
 	assert_bool(KeyBindings.ACTIONS.has("commons_sit_out")).is_true()
 	assert_bool(InputMap.has_action("commons_sit_out")).is_true()
 	var event: InputEventAction = InputEventAction.new()
 	event.action = "commons_sit_out"
 	event.pressed = true
-	table.call("_unhandled_input", event)
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
 	assert_bool(sit_out.is_active()).is_true()
 
 
 func test_it_is_never_offered_during_the_arrival() -> void:
 	assert_bool(_to_turn(false)).is_true()
 	var table: TableScreen = await _open_table()
-	var sit_out: SitOut = table.get("_sit_out")
+	var sit_out: SitOut = table.sit_out
 	sit_out.set("_blocked", func() -> bool: return true)
 	assert_bool(sit_out.offered()).is_false()
 

@@ -43,7 +43,7 @@ func _run() -> void:
 	app.call("new_run", SEED)
 	var table: Node = app.call("show_screen", "table", true)
 	await _settle()
-	var dread: Node = WalkBase.member(table, "_dread")
+	var dread: Node = WalkBase.member(table, "dread")
 	var states: Dictionary = load("res://game/horror/board_state.gd").get("BOARD_STATES")
 	for state: String in states:
 		var inputs: Vector3 = states[state]
@@ -64,7 +64,7 @@ func _run() -> void:
 
 ## The slow horrors at three stages, then the turn's frame on the right seat.
 func _effect_frames(table: Node, dread: Node) -> void:
-	var speech: Object = WalkBase.member(table, "_speech")
+	var speech: Object = WalkBase.member(table, "speech")
 	speech.set("hurrying", true)
 	Input.warp_mouse(POINTER_AT)
 	for stage: int in EFFECT_STAGES:
@@ -76,7 +76,7 @@ func _effect_frames(table: Node, dread: Node) -> void:
 		await create_timer(TREMBLE_GAP).timeout
 		await _shot("horrors_stage_%d_later" % stage)
 	dread.call("force", 10, 10, false, 0)
-	var turn: Object = WalkBase.member(table, "_turn")
+	var turn: Object = WalkBase.member(table, "turn")
 	turn.call("mark", 1)
 	await _settle()
 	await _shot("turn_mark")

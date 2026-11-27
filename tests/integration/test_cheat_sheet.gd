@@ -31,7 +31,7 @@ func test_the_open_sheet_matches_the_run_at_every_event() -> void:
 	assert_array(_app.controller.items.ladder()).contains([RANK_DEBUFF])
 	var table: TableScreen = _app.show_screen("table", true)
 	await await_idle_frame()
-	_sheet = table.get("_cheat_sheet")
+	_sheet = table.cheat_sheet
 	_sheet.toggle(_app.controller)
 	# Connected after the sheet, so this runs once the sheet has redrawn for the event.
 	_app.controller.event_emitted.connect(_check)
@@ -81,14 +81,14 @@ func _expected_order() -> String:
 func _press(table: TableScreen, driver: ControllerScript) -> void:
 	match _app.controller.awaiting():
 		RunController.AWAIT_BID:
-			table.actions().decline.pressed.emit()
+			table.actions.decline.pressed.emit()
 		RunController.AWAIT_NEED:
-			table.need_panel().declared.emit(ControllerScript.NEED)
+			table.need_panel.declared.emit(ControllerScript.NEED)
 		RunController.AWAIT_PLAY:
 			var ids: Array[int] = driver.choose_play(_app.controller)
 			if ids.is_empty():
-				table.actions().pass_turn.pressed.emit()
+				table.actions.pass_turn.pressed.emit()
 				return
 			for card_id: int in ids:
 				_app.hand.toggle(card_id)
-			table.actions().play.pressed.emit()
+			table.actions.play.pressed.emit()

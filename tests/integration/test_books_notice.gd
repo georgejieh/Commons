@@ -70,13 +70,13 @@ func test_a_live_correction_brings_the_notice_over_the_table_and_holds_it() -> v
 		{"name": "Coupons", "recorded": coupons, "entered": coupons + 500}
 	)
 	assert_array(Array(notice.shown_lines())).contains([recorded])
-	var events: EventPlayer = table.get("_player")
+	var events: EventPlayer = table.player
 	assert_bool(events.is_processing()).is_false()
 	assert_object(get_viewport().gui_get_focus_owner()).is_same(notice.acknowledge_button())
 	await TestInput.tap_key(self, KEY_ESCAPE)
 	assert_bool(notice.is_showing()).is_true()
 	assert_bool(_app.menu_is_open()).is_false()
-	var pause: PauseMenu = table.get("_pause")
+	var pause: PauseMenu = table.pause
 	assert_bool(pause.visible).is_false()
 	await TestInput.tap_key(self, KEY_ENTER)
 	assert_bool(notice.is_showing()).is_false()
