@@ -78,4 +78,4 @@ func test_a_count_key_holds_every_count_up_to_its_most() -> void:
 	for rank: int in Ranks.COUNT:
 		counts[rank] = rank % (CountKey.MAX_COUNT + 1)
 	counts[Ranks.NINE] = CountKey.MAX_COUNT
-	assert_bool(CountKey.decode(CountKey.encode(counts)) == counts).is_true()
+	assert_that(CountKey.decode(CountKey.encode(counts))).is_equal(counts)

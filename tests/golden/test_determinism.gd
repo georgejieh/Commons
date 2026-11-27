@@ -7,7 +7,7 @@ const GOLDEN_PATH: String = "res://tests/golden/determinism.golden"
 func test_two_runs_produce_identical_logs() -> void:
 	var first: PackedStringArray = DeterminismLog.build()
 	var second: PackedStringArray = DeterminismLog.build()
-	assert_bool(first == second).is_true()
+	assert_that(first).is_equal(second)
 
 
 func test_log_matches_the_golden_file() -> void:

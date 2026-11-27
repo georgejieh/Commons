@@ -77,7 +77,7 @@ func test_every_seat_counts_the_round_without_the_cards_set_aside() -> void:
 	var plain: PackedByteArray = Deck.new().rank_counts()
 	for card: CardInstance in deal.set_aside:
 		plain[card.base_rank()] -= 1
-	assert_bool(deal.deck_counts == plain).is_true()
+	assert_that(deal.deck_counts).is_equal(plain)
 	var round_state: RoundState = RoundState.new(deal, 1, SeatRules.new(ModifierStack.new()))
 	for seat: int in Seats.COUNT:
 		var view: SeatView = round_state.view_for(seat)

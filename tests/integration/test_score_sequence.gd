@@ -107,7 +107,7 @@ func test_a_tag_says_what_a_step_added() -> void:
 		ScoreStep.Figure.ZEAL, ScoreStep.Source.MODIFIER, ScoreStep.Op.ADD, -0.5, 1.5, 1.0
 	)
 	assert_str(ScoreSequence.tag_text(cut)).is_equal("−0.5 " + tr("keyword.zeal.name"))
-	assert_bool(ScoreSequence.ink_of(cut) == ScreenKit.LOSS).is_true()
+	assert_that(ScoreSequence.ink_of(cut)).is_equal(ScreenKit.LOSS)
 
 
 func test_the_table_waits_for_the_sequence_and_a_click_hurries_it() -> void:
@@ -210,6 +210,8 @@ func test_reduced_motion_keeps_every_tag_figure_and_sound_and_moves_nothing() ->
 	)
 	moments.on_event(event)
 	rest = moments.tally.position
+	# The sequence runs, so the frames below are watched while it does.
+	assert_bool(moments.sequence.is_running()).is_true()
 	while moments.sequence.is_running():
 		for tile: Control in moments.tally.find_children("*", "PanelContainer", false, false):
 			moved[0] = moved[0] or tile.scale != Vector2.ONE

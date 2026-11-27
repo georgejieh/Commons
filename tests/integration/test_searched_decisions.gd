@@ -245,7 +245,6 @@ func test_written_decisions_of_the_wrong_shape_are_a_damaged_save() -> void:
 ## A schema 12 save with an Expert seat replays with the unlimited search, as it was made,
 ## and the resumed record writes every decision from there.
 func test_a_schema_12_save_replays_with_the_unlimited_search() -> void:
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(13)
 	var loop: RunLoop = _loop(Callable(), TURNS)
 	assert_int(loop.record.decisions.size()).is_greater(0)
 	var old: Dictionary = loop.record.to_dict()

@@ -35,13 +35,23 @@ func test_each_enhancement_draws_its_own_mark_and_a_card_shows_one() -> void:
 	assert_str(view.shown_enhancement()).is_empty()
 
 
-func test_every_mark_draws_at_every_stage_without_error() -> void:
-	for kind: int in CardMark.Kind.values():
-		var mark: CardMark = auto_free(CardMark.new(kind as CardMark.Kind))
-		mark.visible = true
-		add_child(mark)
-		mark.queue_redraw()
-	await await_idle_frame()
+func after_test() -> void:
+	ArtStages.stage_override = -1
+
+
+func test_every_mark_draws_at_every_stage() -> void:
+	var drawn: int = 0
+	for stage: int in ArtStages.LAST_STAGE + 1:
+		ArtStages.stage_override = stage
+		for kind: int in CardMark.Kind.values():
+			var mark: CardMark = auto_free(CardMark.new(kind as CardMark.Kind))
+			mark.visible = true
+			add_child(mark)
+			mark.queue_redraw()
+			await await_idle_frame()
+			assert_int(mark.kind).is_equal(kind)
+			drawn += 1
+	assert_int(drawn).is_equal((ArtStages.LAST_STAGE + 1) * CardMark.Kind.size())
 
 
 func test_each_marks_keyword_quotes_the_data() -> void:
@@ -61,7 +71,7 @@ func test_a_coupon_step_and_a_pennant_step_say_what_they_gave() -> void:
 		ScoreStep.Figure.COUPONS, ScoreStep.Source.MARK, ScoreStep.Op.ADD, 1.0, 0.0, 1.0
 	)
 	assert_str(ScoreSequence.tag_text(coupon)).is_equal("+1 " + tr("score.step.coupon"))
-	assert_bool(ScoreSequence.ink_of(coupon) == ScreenKit.COUPON).is_true()
+	assert_that(ScoreSequence.ink_of(coupon)).is_equal(ScreenKit.COUPON)
 	var two: ScoreStep = ScoreStep.new(
 		ScoreStep.Figure.COUPONS, ScoreStep.Source.MARK, ScoreStep.Op.ADD, 2.0, 0.0, 2.0
 	)

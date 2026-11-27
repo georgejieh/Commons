@@ -36,7 +36,9 @@ func test_no_entry_uses_a_banned_license() -> void:
 
 
 func test_every_entry_names_a_file_that_exists() -> void:
-	for file: String in _manifest():
+	var logged: Dictionary[String, String] = _manifest()
+	assert_int(logged.size()).is_greater(0)
+	for file: String in logged:
 		(
 			assert_bool(FileAccess.file_exists("res://" + file))
 			. override_failure_message(file)

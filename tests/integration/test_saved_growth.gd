@@ -67,7 +67,6 @@ func test_a_schema_5_run_save_gains_marks_and_levels_and_both_are_saved() -> voi
 	assert_int(saved.hand_levels.level_of(Pattern.Type.SINGLE)).is_equal(1)
 	assert_dict(saved.card_marks.stamps).is_equal({12: 0})
 	assert_dict(saved.card_marks.enhancements).is_equal({40: CardInstance.MODEL})
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(6)
 
 
 ## Marks and levels of the wrong shape are damage, as any other field of the wrong kind.

@@ -1,11 +1,8 @@
 extends GdUnitTestSuite
 ## The Expert search on real threads and a real clock.
 
-## COMMONS_TIMING=1 holds the p99 to its limit. CI machines vary too much to enforce it.
-const TIMING_FLAG: String = "COMMONS_TIMING"
 ## Under the limit by the length of a sample, which can't stop part way.
 const DEADLINE_USEC: int = 300000
-const P99_LIMIT_USEC: int = 400000
 const SOON_USEC: int = 1
 ## Shorter than a full search of an opening hand on any machine.
 const MID_RUN_USEC: int = 10000
@@ -18,35 +15,32 @@ var _bot_table: BotTable = BotTable.new(_rules, _map)
 var _expert: BotConfig = BotConfig.new(BotConfig.DEFAULT_WEIGHTS, BotConfig.Tier.EXPERT)
 
 
-func _times_for_game(deal_seed: int) -> PackedInt64Array:
+## Plays a whole game of Expert decisions and returns how many it made.
+func _decisions_in_game(deal_seed: int) -> int:
 	var deal: DealResult = SelfPlay.deal_from_seed(deal_seed)
 	var round_state: RoundState = RoundState.new(deal, 0, _table)
-	var times: PackedInt64Array = PackedInt64Array()
+	var decisions: int = 0
 	while not round_state.is_over():
 		var seat: int = round_state.seat_to_act()
 		var legal: Array[Pattern] = round_state.legal_moves()
-		var started: int = Time.get_ticks_usec()
 		var play: BotPlay = ExpertRunner.new().decide(
 			round_state.view_for(seat), legal, _bot_table, _expert, DEADLINE_USEC
 		)
-		times.append(Time.get_ticks_usec() - started)
+		decisions += 1
 		var action: RoundAction = RoundAction.new(seat)
 		if not play.is_pass():
 			action = round_state.action_for(play.pattern)
 		assert_int(round_state.apply(action)).is_equal(RoundState.Reason.OK)
-	return times
+	return decisions
 
 
-func test_p99_stays_under_the_limit() -> void:
-	var times: PackedInt64Array = PackedInt64Array()
+## Whole games played by Expert on threads at its real deadline make only legal plays.
+## The deadline's p99 is measured by tools/perf_budget.gd, where time is measured.
+func test_expert_on_threads_plays_whole_games() -> void:
+	var decisions: int = 0
 	for deal_seed: int in LongRun.sample(3, 40):
-		times.append_array(_times_for_game(deal_seed))
-	times.sort()
-	@warning_ignore("integer_division")
-	var p99: int = times[times.size() * 99 / 100]
-	print("expert on threads: %d decisions, p99 %d usec" % [times.size(), p99])
-	if OS.get_environment(TIMING_FLAG) == "1":
-		assert_int(p99).is_less(P99_LIMIT_USEC)
+		decisions += _decisions_in_game(deal_seed)
+	assert_int(decisions).is_greater(0)
 
 
 func test_a_passed_deadline_leaves_the_hard_decision() -> void:

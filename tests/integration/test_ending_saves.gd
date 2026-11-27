@@ -88,7 +88,6 @@ func test_a_schema_9_save_starts_its_counts_at_nothing() -> void:
 	var state: RunState = RunState.from_dict(loaded.data["checkpoint"])
 	assert_int(state.year_rounds).is_equal(0)
 	assert_int(state.year_landlord_rounds).is_equal(0)
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(10)
 
 
 func test_counters_out_of_order_are_a_damaged_save() -> void:

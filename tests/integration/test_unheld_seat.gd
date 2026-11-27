@@ -221,7 +221,6 @@ func test_a_bad_count_is_a_damaged_save() -> void:
 
 ## A schema 13 save has no count: it loads with none, and the run counts from there.
 func test_a_schema_13_save_migrates() -> void:
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(14)
 	var loop: RunLoop = _play_set(RunState.new(SEEDS[1]), false)
 	loop.record.mark(loop.state)
 	var old: Dictionary = loop.record.to_dict()

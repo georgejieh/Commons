@@ -366,4 +366,3 @@ func test_a_schema_11_save_migrates() -> void:
 	var broken: Dictionary = migrated.duplicate(true)
 	broken["checkpoint"]["quota_corruption"] = [3]
 	assert_bool(RunRecordCheck.is_valid(broken)).is_false()
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(12)

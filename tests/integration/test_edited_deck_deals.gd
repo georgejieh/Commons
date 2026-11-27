@@ -93,7 +93,7 @@ func _check(state: RunState, deal: DealResult) -> void:
 		held.append_array(hand.cards())
 	held.append_array(deal.kitty)
 	_check_cards(state, held)
-	assert_bool(deal.deck_counts == state.deck.rank_counts()).is_true()
+	assert_that(deal.deck_counts).is_equal(state.deck.rank_counts())
 
 
 ## The cards are the deck's 54, each slot once, as the deck and its saved marks hold it.

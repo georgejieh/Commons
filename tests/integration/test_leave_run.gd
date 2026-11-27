@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
-## Abandoning a run lets it go for good (P5.2a): the controller holds no run afterwards,
-## so a villager's search still in flight has nowhere to hand its play in and the cleared
-## save stays cleared. The cloud walk caught the save written back after Abandon.
+## Abandoning a run lets it go for good: the controller holds no run afterwards, so a
+## villager's search still in flight has nowhere to hand its play in and the cleared save
+## stays cleared.
 
 const SEED: int = 11
 
@@ -19,7 +19,8 @@ func after_test() -> void:
 
 
 func test_leaving_a_run_lets_it_go_and_the_save_stays_cleared() -> void:
-	_app.controller.call("_save")
+	# A command the player gives saves the run.
+	assert_bool(ControllerScript.new().act(_app.controller)).is_true()
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_true()
 	assert_bool(_app.controller.has_run()).is_true()
 	_app.leave_run()
@@ -35,5 +36,6 @@ func test_a_new_run_starts_clean_after_one_was_left() -> void:
 	_app.leave_run()
 	_app.new_run(SEED + 1)
 	assert_bool(_app.controller.has_run()).is_true()
-	_app.controller.call("_save")
+	# A command the player gives saves the run.
+	assert_bool(ControllerScript.new().act(_app.controller)).is_true()
 	assert_bool(FileAccess.file_exists(Saves.run_service().path())).is_true()

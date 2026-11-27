@@ -151,7 +151,7 @@ func test_the_next_deal_deals_the_exchanged_deck() -> void:
 	assert_int(RunScript.next_set(loop)).is_equal(RunLoop.Reason.OK)
 	var held: Array[CardInstance] = _dealt(loop)
 	var counts: PackedByteArray = CardSelection.printed_counts(held)
-	assert_bool(counts == loop.state.deck.rank_counts()).is_true()
+	assert_that(counts).is_equal(loop.state.deck.rank_counts())
 	for card: CardInstance in held:
 		if card.id() == THREE:
 			assert_int(card.base_rank()).is_equal(rank)
@@ -169,7 +169,6 @@ func test_a_save_before_the_exchange_loads_as_a_plain_deck() -> void:
 	var resumed: RunLoop = RunRecord.resume(migrated, RunScript.bots(), SetConfig.new())
 	assert_object(resumed).is_not_null()
 	assert_array(resumed.state.deck.changed_slots()).is_empty()
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(19)
 
 
 func test_a_run_with_exchanges_resumes_to_the_same_deck_at_every_checkpoint() -> void:

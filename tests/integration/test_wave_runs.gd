@@ -87,7 +87,7 @@ func test_public_granarys_fall_comes_before_the_rounds_scores() -> void:
 				assert_bool(_scored_next(events, index)).is_true()
 		assert_int(loop.state.famine).is_greater_equal(0)
 		return
-	assert_bool(false).override_failure_message("no seed won a round").is_true()
+	fail("no seed won a round")
 
 
 ## True when the round's scores come after index before the round's need or seat does.
@@ -138,7 +138,7 @@ func test_informers_reward_pays_two_coupons_for_each_villager_caught() -> void:
 		assert_int(paid).is_equal(caught.size() * 2)
 		if not caught.is_empty():
 			return
-	assert_bool(false).override_failure_message("no villager was caught").is_true()
+	fail("no villager was caught")
 
 
 ## Every deck card carries the player's stamp: without Forged Seal each one scored adds
@@ -194,7 +194,7 @@ func test_rent_book_counts_each_round_won_as_landlord_and_resents_it() -> void:
 		assert_int(resented).is_equal(kept.size() * 2)
 		if not kept.is_empty():
 			return
-	assert_bool(false).override_failure_message("the player never won as landlord").is_true()
+	fail("the player never won as landlord")
 
 
 ## Year 3: a play in the Quota's clean first round has 1 + 3 × 0.1 Zeal.
@@ -220,7 +220,7 @@ func test_the_gleaners_fire_for_each_round_the_peasants_win_with_cards_left() ->
 			assert_int(event.value).is_greater(0)
 		if not fired.is_empty():
 			return
-	assert_bool(false).override_failure_message("the peasants never won").is_true()
+	fail("the peasants never won")
 
 
 ## Bought at the black market, the first reroll that visit is free at once; the record

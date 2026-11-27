@@ -222,7 +222,7 @@ func test_valid_patterns_reproduce_their_cards() -> void:
 		var text: String = row[0]
 		var result: Classification = _classify(text)
 		if result.is_valid():
-			assert_bool(result.pattern.counts() == RankText.counts(text)).is_true()
+			assert_that(result.pattern.counts()).is_equal(RankText.counts(text))
 			assert_int(result.pattern.card_count).is_equal(text.length())
 
 

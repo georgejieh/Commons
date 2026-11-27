@@ -246,7 +246,6 @@ func test_supply_cooperative_reports_its_extra_envelope_choice() -> void:
 
 ## A schema 7 save gains no Reforms and no gathered deck; damaged shapes are damage.
 func test_a_schema_7_save_migrates_and_bad_shapes_fail() -> void:
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(8)
 	var record: RunRecord = RunRecord.new()
 	var state: RunState = RunState.new(77)
 	state.coupons = 6

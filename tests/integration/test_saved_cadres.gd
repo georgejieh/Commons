@@ -29,7 +29,6 @@ func _record(turn: int) -> Dictionary:
 
 
 func test_a_schema_6_save_gains_empty_cadre_state_and_the_state_is_saved() -> void:
-	assert_int(SaveService.SCHEMA_VERSION).is_greater_equal(7)
 	var data: Dictionary = _record(9)
 	var checkpoint: Dictionary = data["checkpoint"]
 	checkpoint.erase("cadre_memos")

@@ -31,9 +31,12 @@ func test_autoload_list_matches_exactly() -> void:
 func test_dev_only_autoloads_never_ship() -> void:
 	var presets: String = FileAccess.get_file_as_string("res://export_presets.cfg")
 	var filter: String = DEV_ONLY_PREFIX.trim_prefix("res://") + "*"
+	var filters: int = 0
 	for line: String in presets.split("\n"):
 		if line.begins_with("exclude_filter="):
+			filters += 1
 			assert_str(line).contains(filter)
+	assert_int(filters).override_failure_message("no export preset has a filter").is_greater(0)
 
 
 func test_no_autoload_names_a_run_type() -> void:

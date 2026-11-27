@@ -24,8 +24,7 @@ func _list(text: String) -> Array[String]:
 
 
 func test_the_pools_are_the_adrs_word_for_word() -> void:
-	if not FileAccess.file_exists(ADR):
-		return
+	assert_bool(FileAccess.file_exists(ADR)).override_failure_message(ADR).is_true()
 	var text: String = _adr()
 	assert_int(BOOK.pools.size()).is_equal(POOLS.size())
 	var index: int = 0
@@ -39,8 +38,7 @@ func test_the_pools_are_the_adrs_word_for_word() -> void:
 
 
 func test_the_blocked_lists_are_the_adrs_word_for_word() -> void:
-	if not FileAccess.file_exists(ADR):
-		return
+	assert_bool(FileAccess.file_exists(ADR)).override_failure_message(ADR).is_true()
 	var text: String = _adr()
 	var every: RegExMatch = (
 		RegEx

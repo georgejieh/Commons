@@ -21,7 +21,9 @@ func test_every_image_is_in_the_manifest() -> void:
 
 
 func test_every_row_is_complete_and_points_at_a_file() -> void:
-	for row: PackedStringArray in _rows():
+	var rows: Array[PackedStringArray] = _rows()
+	assert_array(rows).is_not_empty()
+	for row: PackedStringArray in rows:
 		var path: String = "res://" + row[0]
 		assert_bool(FileAccess.file_exists(path)).override_failure_message(path).is_true()
 		assert_str(row[1]).is_not_empty()

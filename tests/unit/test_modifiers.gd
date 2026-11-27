@@ -195,16 +195,16 @@ func test_the_validator_catches_a_cadre_missing_its_state_line_or_rank() -> void
 	var keys: Dictionary[String, bool] = _string_keys()
 	var no_state: ModifierDef = _load_def("seed_grain").duplicate()
 	no_state.state_key = ""
-	assert_array(Array(ModifierValidator.validate(no_state, keys))).is_not_empty()
+	assert_str(" ".join(ModifierValidator.validate(no_state, keys))).contains("missing state key")
 	var stray: ModifierDef = _load_def("canteen").duplicate()
 	stray.state_key = "modifier.canteen.text"
-	assert_array(Array(ModifierValidator.validate(stray, keys))).is_not_empty()
+	assert_str(" ".join(ModifierValidator.validate(stray, keys))).contains("state key without")
 	var no_rank: ModifierDef = _load_def("planned_allocation").duplicate()
 	no_rank.parameters = {"percent": 200}
-	assert_array(Array(ModifierValidator.validate(no_rank, keys))).is_not_empty()
+	assert_str(" ".join(ModifierValidator.validate(no_rank, keys))).contains("rank")
 	var no_tier: ModifierDef = _load_def("canteen").duplicate()
 	no_tier.unlock_tier = -1
-	assert_array(Array(ModifierValidator.validate(no_tier, keys))).is_not_empty()
+	assert_str(" ".join(ModifierValidator.validate(no_tier, keys))).contains("bad unlock tier")
 
 
 ## Each reason a Campaign can be refused has its own line for the tray to show.
