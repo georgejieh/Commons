@@ -3,7 +3,8 @@ extends RefCounted
 ## Scans UI scripts for anything that could change run state without a command:
 ## the core loop and round types, and the mutators on them, and the controller's way in
 ## for tests and tools. The UI reaches a run only through RunController's commands and
-## the views it builds, which hand out copies.
+## the views it builds, which hand out copies. A script's comments are not read; its
+## strings are, a hash in one included.
 
 const FORBIDDEN_WORDS: PackedStringArray = [
 	"RunLoop",
@@ -103,10 +104,12 @@ static func scan(root: String) -> PackedStringArray:
 	var pattern: RegEx = RegEx.create_from_string("\\b(%s)\\b" % "|".join(FORBIDDEN_WORDS))
 	var found: PackedStringArray = []
 	for path: String in ToolFiles.under(root, EXTENSIONS):
-		var lines: PackedStringArray = FileAccess.get_file_as_string(path).split("\n")
+		var text: String = FileAccess.get_file_as_string(path)
+		if path.get_extension() == "gd":
+			text = ScriptText.code_of(text)
+		var lines: PackedStringArray = text.split("\n")
 		for index: int in lines.size():
-			var code: String = lines[index].get_slice("#", 0)
-			var hit: RegExMatch = pattern.search(code)
+			var hit: RegExMatch = pattern.search(lines[index])
 			if hit != null:
 				found.append("%s:%d: %s" % [path, index + 1, hit.get_string()])
 	return found

@@ -140,6 +140,24 @@ func test_a_write_whose_move_aside_fails_is_refused_and_the_newer_save_stays() -
 	assert_bool(_said("save of save.json failed")).is_true()
 
 
+## A newer build that stopped before its rename left its temporary file whole: this
+## build's write moves it aside before writing its own there, or is refused when it cannot.
+func test_a_newer_temporary_file_is_moved_aside_before_a_write() -> void:
+	var temp: String = _path + SaveService.TEMP_SUFFIX
+	var newer_temp: String = _write_newer(temp, NEWER)
+	assert_int(_older.save({"turn": 1})).is_equal(OK)
+	assert_str(_text(temp + SaveService.NEWER_SUFFIX)).is_equal(newer_temp)
+	assert_int(_turn(_older)).is_equal(1)
+	_write_newer(temp, NEWER)
+	var blocked: String = temp + SaveService.NEWER_SUFFIX
+	DirAccess.remove_absolute(blocked)
+	DirAccess.make_dir_recursive_absolute(blocked)
+	FileAccess.open(blocked.path_join("held"), FileAccess.WRITE).store_string("x")
+	assert_int(_older.save({"turn": 2})).is_not_equal(OK)
+	assert_str(_text(temp)).is_equal(newer_temp)
+	assert_int(_turn(_older)).is_equal(1)
+
+
 func test_delete_moves_a_newer_save_aside() -> void:
 	_newer.save({"turn": 1})
 	_newer.save({"turn": 2})

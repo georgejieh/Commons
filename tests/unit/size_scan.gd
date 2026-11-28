@@ -29,7 +29,7 @@ static func offences(path: String, text: String) -> PackedStringArray:
 			if lines[index].contains("font_size"):
 				found.append("%s:%d: %s" % [path, index + 1, lines[index].strip_edges()])
 		return found
-	var code: String = SourceScan.code_of(text)
+	var code: String = ScriptText.code_of(text)
 	var sized: Dictionary[String, bool] = sized_names(code)
 	for span: Vector3i in SourceScan.calls(code, SIZE_CALLS):
 		if not _asks(code.substr(span.y, span.z - span.y), sized):

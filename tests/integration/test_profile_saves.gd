@@ -141,17 +141,30 @@ func _save_run(state: RunState) -> void:
 	_saves.save(record.to_dict())
 
 
+## Commits the state, and says whether that changed the profile's file.
+func _wrote(state: RunState, finished: bool) -> bool:
+	var was: String = _profile_text()
+	assert_int(ProfileCommits.commit(_profile, state, finished)).is_equal(OK)
+	return _profile_text() != was
+
+
+func _profile_text() -> String:
+	if not FileAccess.file_exists(_profile_path):
+		return ""
+	return FileAccess.get_file_as_string(_profile_path)
+
+
 func test_a_quota_is_taken_once_per_run() -> void:
 	var state: RunState = _full_state(RunFlow.State.SET_END)
-	assert_bool(ProfileCommits.commit(_profile, state, false)).is_true()
-	assert_bool(ProfileCommits.commit(_profile, state, false)).is_false()
+	assert_bool(_wrote(state, false)).is_true()
+	assert_bool(_wrote(state, false)).is_false()
 	state.set_index = 1
-	assert_bool(ProfileCommits.commit(_profile, state, false)).is_true()
+	assert_bool(_wrote(state, false)).is_true()
 	state.set_index = 0
-	assert_bool(ProfileCommits.commit(_profile, state, false)).is_false()
+	assert_bool(_wrote(state, false)).is_false()
 	var other: RunState = _full_state(RunFlow.State.SET_END)
 	other.identity.id = "another"
-	assert_bool(ProfileCommits.commit(_profile, other, false)).is_true()
+	assert_bool(_wrote(other, false)).is_true()
 	assert_int(Profile.read(_profile).committed_quota).is_equal(0)
 
 
@@ -213,22 +226,22 @@ func test_a_backup_restore_of_the_profile() -> void:
 	Profile.write(_profile, Profile.read(_profile))
 	FileAccess.open(_profile_path, FileAccess.WRITE).store_string("{broken")
 	assert_int(_profile.load_save().status).is_equal(SaveLoad.Status.RESTORED_FROM_BACKUP)
-	assert_bool(ProfileCommits.commit(_profile, state, true)).is_false()
+	assert_bool(_wrote(state, true)).is_false()
 	assert_int(Profile.read(_profile).history.size()).is_equal(1)
 	# A backup from before the run ended: the record is taken once, then never again.
 	_profile.delete()
 	Profile.write(_profile, ProfileData.new())
 	Profile.write(_profile, ProfileData.new())
 	FileAccess.open(_profile_path, FileAccess.WRITE).store_string("{broken")
-	assert_bool(ProfileCommits.commit(_profile, state, true)).is_true()
-	assert_bool(ProfileCommits.commit(_profile, state, true)).is_false()
+	assert_bool(_wrote(state, true)).is_true()
+	assert_bool(_wrote(state, true)).is_false()
 	assert_int(Profile.read(_profile).history.size()).is_equal(1)
 
 
 func test_a_demo_run_is_never_recorded() -> void:
 	var state: RunState = _full_state(RunFlow.State.RUN_END)
 	state.identity.kind = RunIdentity.Kind.DEMO
-	assert_bool(ProfileCommits.commit(_profile, state, true)).is_true()
+	assert_bool(_wrote(state, true)).is_true()
 	var data: ProfileData = Profile.read(_profile)
 	assert_array(data.history).is_empty()
 	assert_int(data.finished_runs).is_equal(0)

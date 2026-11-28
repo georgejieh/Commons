@@ -33,8 +33,8 @@ var wind: float = 0.0
 var flushing: bool = false
 ## Holds the queue still during a hit-stop.
 var motion: TableMotion = null
-## Holds the queue still while it returns true, as while a scored play is acted out
-##: the next seat's play waits for the sequence to finish or be hurried.
+## Holds the queue still while it returns true, as while a scored play is acted out: the
+## next seat's play waits for the sequence to finish or be hurried.
 var waits_on: Callable = Callable()
 
 var _queue: Array[RunEvent] = []

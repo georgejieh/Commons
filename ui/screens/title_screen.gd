@@ -4,7 +4,8 @@ extends Control
 ## collection, village history, settings or credits, or, once the profile has finished or
 ## skipped the arrival, play it again (ADR 0026). While the family's file holds an entry,
 ## its stamp stands in the top right corner (ADR 0022). After a session that did not close,
-## a notice over the page says where its files were copied (ADR 0037).
+## a notice over the page says where its files were copied (ADR 0037); after a finished run
+## the profile could not record, one says its save was kept.
 ## The page arrives in order and is whole in about a second and a half: the poster is
 ## laid down, the eyebrow fades in, the name is pressed letter by letter (TitleWord, the
 ## page's one moment), then the line under it, the buttons that start a run, and last
@@ -93,18 +94,24 @@ func _minors(app: App) -> HBoxContainer:
 
 
 ## The family's file's stamp while it holds an entry, and the notice of a session that did
-## not close, after which New Run takes the focus back.
+## not close, or else of a finished run kept unrecorded, after which New Run takes the
+## focus back. Each is said once, over the page; one waiting behind the other is said
+## the next time the title opens.
 func _notices(app: App, new_run: Button) -> void:
 	var filed: int = ProfileFile.entries(Saves.profile_service()).size()
 	if filed > 0:
 		_stamp = FileStamp.new(filed)
 		add_child(_stamp)
-	# The last session did not close (ADR 0037): said once, over the page.
+	var shown: SessionNotice = null
 	if not app.kept_crash.is_empty():
-		var kept: SessionNotice = SessionNotice.kept(app.kept_crash)
-		add_child(kept)
-		kept.buttons()[0].pressed.connect(new_run.grab_focus)
+		shown = SessionNotice.kept(app.kept_crash)
 		app.kept_crash = ""
+	elif app.kept_run:
+		shown = SessionNotice.run_kept()
+		app.kept_run = false
+	if shown != null:
+		add_child(shown)
+		shown.buttons()[0].pressed.connect(new_run.grab_focus)
 
 
 ## The arrival again (ADR 0026). It is never saved and ends at the title, so a saved run

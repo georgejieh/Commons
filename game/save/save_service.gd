@@ -14,9 +14,9 @@ extends RefCounted
 ## is valid; the load says so, and the service remembers it until it is taken.
 ##
 ## A save a newer build wrote is not damaged, only beyond this build (ADR 0037). It is
-## never deleted or written over: before this build writes over its path, or deletes it,
-## it is moved aside beside it, under NEWER_SUFFIX, and a write whose move fails is
-## refused.
+## never deleted or written over: before this build writes over its path, its backup or
+## its temporary file, or deletes it, it is moved aside beside it, under NEWER_SUFFIX, and
+## a write whose move fails is refused.
 
 ## The run save's current schema version.
 const SCHEMA_VERSION: int = 20
@@ -126,6 +126,10 @@ func save(data: Dictionary, extras: Dictionary = {}) -> Error:
 func _replace(data: Dictionary, extras: Dictionary) -> Error:
 	var temp: String = _path + TEMP_SUFFIX
 	DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
+	# A newer build that stopped before its rename left its temporary file whole.
+	var moved: Error = _keep_if_newer(temp)
+	if moved != OK:
+		return moved
 	var written: Error = _write(temp, data, extras)
 	if written != OK:
 		return written

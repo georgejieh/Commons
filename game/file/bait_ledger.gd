@@ -101,26 +101,33 @@ func accepted() -> Array[int]:
 
 ## Writes the coupons into the ledger through a temporary file, so a crash never leaves
 ## half a number there, once the save that names them is written. before is what the
-## save kept as the ledger's number before. A write that fails is not reported: the
-## ledger keeps the number before, which the save accepts, so nothing is taken.
-func write(coupons: int, before: int) -> void:
+## save kept as the ledger's number before. Returns the write's error, logged once; the
+## ledger then keeps the number before, which the save accepts, so nothing is taken.
+func write(coupons: int, before: int) -> Error:
 	_fresh = false
 	_accepted.clear()
 	_accepted.append(coupons)
 	if before != NONE and before != coupons:
 		_accepted.append(before)
+	var written: Error = _replace(coupons)
+	if written != OK:
+		GameLog.save_failed(_path, written)
+	return written
+
+
+func _replace(coupons: int) -> Error:
 	var temp: String = _path + TEMP_SUFFIX
 	DirAccess.make_dir_recursive_absolute(_path.get_base_dir())
 	var file: FileAccess = FileAccess.open(temp, FileAccess.WRITE)
 	if file == null:
-		return
+		return FileAccess.get_open_error()
 	var stored: bool = file.store_string("%d\n" % coupons)
 	file.close()
 	if not stored:
-		return
+		return ERR_FILE_CANT_WRITE
 	if FileAccess.file_exists(_path):
 		DirAccess.remove_absolute(_path)
-	DirAccess.rename_absolute(temp, _path)
+	return DirAccess.rename_absolute(temp, _path)
 
 
 ## The whole numbers a save kept for the ledger.

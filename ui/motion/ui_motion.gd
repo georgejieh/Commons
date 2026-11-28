@@ -3,7 +3,9 @@ extends RefCounted
 ## Interface motion for every screen: buttons that lift on hover and sink when pressed,
 ## pieces that fade and settle in one after another, numbers that roll, and stamps that
 ## land. Motion uses scale and fade, never position, so containers keep their layout.
-## Every tween belongs to the node it moves. Reduced motion shortens or skips it all.
+## Every tween belongs to the node it moves, and each helper keeps the one it made there,
+## so a second call ends the first instead of running beside it. Reduced motion shortens
+## or skips it all.
 ## Each kind of motion has its own sound, filled in through Audio.fill only where
 ## the moment's event has none, and played under reduced motion too.
 
@@ -15,6 +17,14 @@ const SETTING: String = "reduced_motion"
 const ENTER_SCALE: float = 0.96
 ## Where a control keeps its hover tween, so a new one replaces it.
 const TWEEN_META: StringName = &"ui_motion_tween"
+## Where a control keeps its entrance tween.
+const ENTER_META: StringName = &"ui_motion_enter"
+## Where a label keeps the tween that rolls its number.
+const COUNT_META: StringName = &"ui_motion_count"
+## Where a control keeps its stamp tween.
+const STAMP_META: StringName = &"ui_motion_stamp"
+## Where a control keeps its pulse tween.
+const PULSE_META: StringName = &"ui_motion_pulse"
 ## Marks a control that lifts on hover. Its scale is its hover's, so an entrance only
 ## fades it.
 const LIFTS: StringName = &"ui_motion_lifts"
@@ -40,6 +50,16 @@ static func seconds(base: float) -> float:
 static func end(tween: Tween) -> void:
 	if tween != null and tween.is_valid():
 		tween.kill()
+
+
+## Ends the tween node holds under key, if it is still alive, and holds tween there in its
+## place. Returns tween.
+static func hold(node: Node, key: StringName, tween: Tween) -> Tween:
+	if node.has_meta(key):
+		var running: Tween = node.get_meta(key)
+		end(running)
+	node.set_meta(key, tween)
+	return tween
 
 
 ## Lifts a control on hover or focus and sinks it while pressed.
@@ -77,7 +97,7 @@ static func enter_at(control: Control, delay: float, quiet: bool = false) -> voi
 	if reduced():
 		return
 	control.modulate.a = 0.0
-	var tween: Tween = control.create_tween().set_parallel(true)
+	var tween: Tween = hold(control, ENTER_META, control.create_tween().set_parallel(true))
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(control, "modulate:a", 1.0, PRESETS.enter_time).set_delay(delay)
 	if quiet or control.has_meta(LIFTS):
@@ -106,6 +126,10 @@ static func settle(picture: Control) -> void:
 static func count(label: Label, from: float, to: float, shown: Callable) -> Tween:
 	var last: String = shown.call(to)
 	var ends: Array[String] = [last]
+	# A roll still running would write over the number set now, rolled or not.
+	if label.has_meta(COUNT_META):
+		var rolling: Tween = label.get_meta(COUNT_META)
+		end(rolling)
 	if reduced() or is_equal_approx(from, to):
 		label.text = last
 		_reserve(label, ends)
@@ -113,7 +137,7 @@ static func count(label: Label, from: float, to: float, shown: Callable) -> Twee
 	Audio.fill(AudioEvents.MOTION_COUNT)
 	var both: Array[String] = [shown.call(from), last]
 	_reserve(label, both)
-	var tween: Tween = label.create_tween()
+	var tween: Tween = hold(label, COUNT_META, label.create_tween())
 	tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	tween.tween_method(
 		func(value: float) -> void: label.text = shown.call(value), from, to, PRESETS.count_time
@@ -159,7 +183,7 @@ static func stamp(control: Control) -> Tween:
 	control.scale = Vector2.ONE * PRESETS.stamp_from_scale
 	control.rotation = PRESETS.stamp_tilt
 	control.modulate.a = 0.0
-	var tween: Tween = control.create_tween().set_parallel(true)
+	var tween: Tween = hold(control, STAMP_META, control.create_tween().set_parallel(true))
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(control, "scale", Vector2.ONE, PRESETS.stamp_time)
 	tween.tween_property(control, "rotation", 0.0, PRESETS.stamp_time)
@@ -173,7 +197,7 @@ static func pulse(control: Control) -> void:
 	_center_pivot(control)
 	if reduced():
 		return
-	var tween: Tween = control.create_tween()
+	var tween: Tween = hold(control, PULSE_META, control.create_tween())
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(control, "scale", Vector2.ONE * 1.12, PRESETS.hover_time)
 	tween.tween_property(control, "scale", Vector2.ONE, PRESETS.hover_time * 2.0)
@@ -183,12 +207,7 @@ static func _scale_to(control: Control, target: float) -> void:
 	if reduced():
 		control.scale = Vector2.ONE
 		return
-	if control.has_meta(TWEEN_META):
-		var running: Tween = control.get_meta(TWEEN_META)
-		if running != null and running.is_valid():
-			running.kill()
-	var tween: Tween = control.create_tween()
-	control.set_meta(TWEEN_META, tween)
+	var tween: Tween = hold(control, TWEEN_META, control.create_tween())
 	tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(control, "scale", Vector2.ONE * target, PRESETS.hover_time)
 

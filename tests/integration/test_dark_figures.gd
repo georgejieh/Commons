@@ -114,7 +114,7 @@ func test_the_status_line_stays_whole_while_figures_read_as_words() -> void:
 
 
 func test_a_dark_meter_makes_no_sound_and_no_dread() -> void:
-	var mark: int = TableSounds.METERS.famine.low
+	var mark: int = RunDefaults.METERS.famine.low
 	var state: RunState = _loop().state
 	state.famine = mark
 	_app.controller.reseal_book()

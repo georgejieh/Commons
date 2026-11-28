@@ -238,7 +238,7 @@ func test_settings_will_not_change_it_while_a_run_is_saved() -> void:
 
 
 ## The field is ink on the village's paper, no clean white box: its boxes draw nothing,
-## the paper under it is drawn, and its ink is the tickets' ink, faded by the stage.
+## the page draws the paper under it, and its ink is the tickets' ink, faded by the stage.
 func test_the_field_is_written_on_paper() -> void:
 	await _launch()
 	var page: SurnameScreen = _page()
@@ -247,7 +247,11 @@ func test_the_field_is_written_on_paper() -> void:
 		assert_object(field.get_theme_stylebox(style)).is_instanceof(StyleBoxEmpty)
 	var paper: Control = page.field_paper()
 	assert_object(field.get_parent()).is_same(paper)
-	assert_bool(paper.draw.is_connected(Callable(page, "_draw_paper"))).is_true()
+	var drawers: Array[Object] = []
+	for connection: Dictionary in paper.draw.get_connections():
+		var drawer: Callable = connection["callable"]
+		drawers.append(drawer.get_object())
+	assert_array(drawers).contains([page])
 	await await_idle_frame()
 	var holds: bool = paper.get_global_rect().encloses(field.get_global_rect())
 	var rects: String = "%s %s" % [paper.get_global_rect(), field.get_global_rect()]

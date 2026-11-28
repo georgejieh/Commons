@@ -308,15 +308,15 @@ func test_a_backup_restore_adds_once() -> void:
 	var broken: FileAccess = FileAccess.open(_profile_path, FileAccess.WRITE)
 	broken.store_string("{broken")
 	broken.close()
-	assert_bool(ProfileCommits.commit(_profile, state, false)).is_true()
-	assert_bool(ProfileCommits.commit(_profile, state, false)).is_false()
+	assert_int(ProfileCommits.commit(_profile, state, false)).is_equal(OK)
+	assert_int(ProfileCommits.commit(_profile, state, false)).is_equal(OK)
 	assert_float(_corruption()).is_equal(2.0)
 
 
 func test_a_demo_run_adds_nothing() -> void:
 	var state: RunState = _quota_state(0, [CorruptionEvents.STARVED_WHILE_RICH])
 	state.identity.kind = RunIdentity.Kind.DEMO
-	assert_bool(ProfileCommits.commit(_profile, state, false)).is_true()
+	assert_int(ProfileCommits.commit(_profile, state, false)).is_equal(OK)
 	assert_float(_corruption()).is_equal(0.0)
 
 
@@ -333,10 +333,12 @@ func test_the_commons_resets_and_nothing_of_the_run_comes_back() -> void:
 	state.denunciation = 10
 	state.year_rounds = 4
 	assert_str(Endings.outcome(state, RunDefaults.METERS)).is_equal(Endings.THE_COMMONS)
-	assert_bool(ProfileCommits.commit(_profile, state, true)).is_true()
+	assert_int(ProfileCommits.commit(_profile, state, true)).is_equal(OK)
 	assert_float(_corruption()).is_equal(0.0)
 	state.set_index = 6
-	assert_bool(ProfileCommits.commit(_profile, state, true)).is_false()
+	var recorded: String = FileAccess.get_file_as_string(_profile_path)
+	assert_int(ProfileCommits.commit(_profile, state, true)).is_equal(OK)
+	assert_str(FileAccess.get_file_as_string(_profile_path)).is_equal(recorded)
 	assert_float(_corruption()).is_equal(0.0)
 	# Any other ending keeps what the run added.
 	_profile.delete()

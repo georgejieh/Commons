@@ -75,6 +75,34 @@ func test_a_count_lands_on_its_value() -> void:
 	Settings.set_value("reduced_motion", was)
 
 
+## Each helper called again on the same piece ends the tween it made there before, so two
+## quick purchases leave one roll and one pulse on the coupon label, not two of each.
+func test_a_second_call_ends_the_first_tween() -> void:
+	Settings.set_value("reduced_motion", false)
+	var shown: Callable = func(value: float) -> String: return str(roundi(value))
+	var helpers: Dictionary[String, Callable] = {
+		"count": func(label: Label) -> void: UiMotion.count(label, 0.0, 9.0, shown),
+		"pulse": func(label: Label) -> void: UiMotion.pulse(label),
+		"stamp": func(label: Label) -> void: UiMotion.stamp(label),
+		"enter_at": func(label: Label) -> void: UiMotion.enter_at(label, 0.0),
+	}
+	for helper: String in helpers:
+		var label: Label = auto_free(Label.new())
+		add_child(label)
+		var earlier: Array[Tween] = get_tree().get_processed_tweens()
+		helpers[helper].call(label)
+		helpers[helper].call(label)
+		var running: Array[Tween] = TweenWatch.running_since(get_tree(), earlier)
+		assert_int(running.size()).override_failure_message(helper).is_equal(1)
+	var coupons: Label = auto_free(Label.new())
+	add_child(coupons)
+	var purchases: Array[Tween] = get_tree().get_processed_tweens()
+	for _purchase: int in 2:
+		UiMotion.count(coupons, 9.0, 5.0, shown)
+		UiMotion.pulse(coupons)
+	assert_int(TweenWatch.running_since(get_tree(), purchases).size()).is_equal(2)
+
+
 ## A page of many pieces closes its gaps up: the last piece waits its turn and is still
 ## in by enter_within.
 func test_a_long_page_is_in_by_enter_within() -> void:

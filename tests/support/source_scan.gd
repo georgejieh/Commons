@@ -2,8 +2,8 @@ class_name SourceScan
 extends RefCounted
 ## Reads the project's own scripts, scenes and resources for the text scans.
 ## Each check takes one file's path and text, so a test can feed it a made-up line, and
-## returns its offences as "path:line: what". Comments are blanked before a script is
-## read, so offsets and line numbers stay as they were.
+## returns its offences as "path:line: what". Comments are cut before a script is read
+## (ScriptText.code_of), so line numbers stay as they were.
 ##
 ## A literal reaches the player when it is assigned to text, tooltip_text,
 ## placeholder_text or title; when it is an argument of draw_string,
@@ -86,34 +86,6 @@ static func pattern(source: String) -> RegEx:
 	if not _patterns.has(source):
 		_patterns[source] = RegEx.create_from_string(source)
 	return _patterns[source]
-
-
-## A script's text with every comment blanked, so offsets and lines stay as they were.
-static func code_of(text: String) -> String:
-	var lines: PackedStringArray = text.split("\n")
-	for index: int in lines.size():
-		var line: String = lines[index]
-		if line.contains("#"):
-			lines[index] = _without_comment(line)
-	return "\n".join(lines)
-
-
-static func _without_comment(line: String) -> String:
-	var quote: String = ""
-	var at: int = 0
-	while at < line.length():
-		var mark: String = line[at]
-		if not quote.is_empty():
-			if mark == "\\":
-				at += 1
-			elif mark == quote:
-				quote = ""
-		elif mark == '"' or mark == "'":
-			quote = mark
-		elif mark == "#":
-			return line.substr(0, at)
-		at += 1
-	return line
 
 
 ## Where the parenthesis opened at open_at closes, skipping strings; the end of the text
@@ -221,7 +193,7 @@ static func literals(text: String, from: int = 0, to: int = -1) -> Array[Array]:
 
 ## A script's code with its developer text, its keys and format()'s names blanked.
 static func player_code(text: String) -> String:
-	var code: String = blank_calls(code_of(text), DEVELOPER_CALLS)
+	var code: String = blank_calls(ScriptText.code_of(text), DEVELOPER_CALLS)
 	code = blank_calls(code, KEY_CALLS)
 	return blank_calls(code, FORMAT_CALLS)
 
@@ -291,7 +263,7 @@ static func key_offences(
 	path: String, text: String, keys: Dictionary[String, bool]
 ) -> PackedStringArray:
 	var offences: PackedStringArray = []
-	var code: String = code_of(text)
+	var code: String = ScriptText.code_of(text)
 	for span: Vector3i in calls(code, KEY_CALLS.replace("|has", "")):
 		var first: String = _first_argument(code.substr(span.y, span.z - span.y))
 		var quoted: RegExMatch = pattern('^"([^"]*)"\\s*(.?)').search(first)
